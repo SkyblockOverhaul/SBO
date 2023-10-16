@@ -1,0 +1,7 @@
+{
+  "name": "ExampleModule",
+  "creator": "YourNameHere",
+  "description": "Our first module!",
+  "version": "1.0.0",
+  "entry": "index.js"
+}
