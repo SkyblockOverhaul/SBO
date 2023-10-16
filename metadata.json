@@ -1,7 +1,7 @@
 {
-  "name": "ExampleModule",
-  "creator": "YourNameHere",
-  "description": "Our first module!",
-  "version": "1.0.0",
+  "name": "SBO",
+  "creator": "RolexDE, D4rkswift",
+  "description": "SBO is meta",
+  "version": "1.0.1",
   "entry": "index.js"
 }
