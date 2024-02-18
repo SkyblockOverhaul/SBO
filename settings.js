@@ -8,7 +8,7 @@ import {
     @SwitchProperty,
     @TextProperty,
     @Vigilant,
-} from './index';
+} from 'Vigilance';
 
 // The only parameter that is required is the first, which should be the Module name.
 // The other 2 parameters are optional.
