@@ -27,20 +27,20 @@ import {
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
-    getSubcategoryComparator: () => (a, b) => {
-        // These function examples will sort the subcategories by the order in the array, so eeeeeee
-        // will be above Category.
-        const subcategories = ["eeeeee", "Category"];
+    // getSubcategoryComparator: () => (a, b) => {
+    //     // These function examples will sort the subcategories by the order in the array, so eeeeeee
+    //     // will be above Category.
+    //     const subcategories = ["eeeeee", "Category"];
 
-        return subcategories.indexOf(a.getValue()[0].attributesExt.subcategory) -
-            subcategories.indexOf(b.getValue()[0].attributesExt.subcategory);
-    },
-    getPropertyComparator: () => (a, b) => {
-        // And this will put the properties in the order we want them to appear.
-        const names = ["Do action!!!", "password", "text", "Color Picker"];
+    //     return subcategories.indexOf(a.getValue()[0].attributesExt.subcategory) -
+    //         subcategories.indexOf(b.getValue()[0].attributesExt.subcategory);
+    // },
+    // getPropertyComparator: () => (a, b) => {
+    //     // And this will put the properties in the order we want them to appear.
+    //     const names = ["Do action!!!", "password", "text", "Color Picker"];
 
-        return names.indexOf(a.attributesExt.name) - names.indexOf(b.attributesExt.name);
-    }
+    //     return names.indexOf(a.attributesExt.name) - names.indexOf(b.attributesExt.name);
+    // }
 })
 class Settings {
     @TextProperty({
@@ -105,13 +105,7 @@ class Settings {
 
     constructor() {
         this.initialize(this);
-        this.registerListener('text', newText => {
-            console.log(`Text changed to ${newText}`);
-        });
-
         this.addDependency("Checkbox", "Do action!!!")
-        this.setCategoryDescription('General', 'shows... cool stuff :)');
-        this.setSubcategoryDescription('General', 'Category', 'Shows off some nifty property examples.');
     }
 }
 
