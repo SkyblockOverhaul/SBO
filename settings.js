@@ -45,7 +45,7 @@ import {
 class Settings {
 
 
-    
+    isInSkyblock = Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK");
     //-----------Diana----------------
     @SwitchProperty({
         name: "Diana Waypoint",
@@ -95,6 +95,14 @@ class Settings {
         subcategory: "Diana Tracker"
     })
     dianaMobTracker = false;
+
+    @SwitchProperty({
+        name: "Diana Loot Tracker",
+        description: "Tracks your Diana loot",
+        category: "Tracker",
+        subcategory: "Diana Tracker"
+    })
+    dianaLootTracker = false;
 
     // @TextProperty({
     //     name: 'text',

@@ -39,3 +39,10 @@ export function mobAnnouncement(chat,mob,x,y,z){
 
     ChatLib.command(`pc x: ${x} y: ${y} z: ${z} | ${mob} found at ${area}!`);
 }
+
+export function getSBID(item) {
+    return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("id") || null;
+}
+export function getSBUUID(item) {
+    return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("uuid") || null;
+}
