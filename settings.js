@@ -16,7 +16,7 @@ import {
 // category list.
 // The 3rd parameter is an object that determines the sorting order of the categories.
 
-@Vigilant('SBO', 'My Settings', {
+@Vigilant('SBO', 'SkyblockOverhaul', {
     getCategoryComparator: () => (a, b) => {
         // By default, categories, subcategories, and properties are sorted alphabetically.
         // You can override this behavior by returning a negative number if a should be sorted before b,
@@ -43,60 +43,85 @@ import {
     // }
 })
 class Settings {
-    @TextProperty({
-        name: 'text',
-        description: 'Example of text input that does not wrap the text',
-        category: 'Tracker',
-        subcategory: 'Category',
-        placeholder: 'Empty... :(',
-        triggerActionOnInitialization: false,
-    })
-    textInput = '';
 
-    @TextProperty({
-        name: 'password',
-        description: 'Example of text input that uses protected',
-        category: 'General',
-        subcategory: 'Category',
-        protected: true,
-    })
-    password = '';
 
-    @ColorProperty({
-        name: 'Color Picker',
-        description: 'Pick a color! (hopefully...)',
-        category: 'General',
-        subcategory: 'Category',
-    })
-    myColor = Color.BLUE;
-
-    @SelectorProperty({
-        name: 'Selector',
-        description: 'Select an option',
-        category: 'General',
-        subcategory: 'eeeeee',
-        options: ['opt1', 'opty2', 'third option'],
-    })
-    myOptions = 0; // Stores index of option
-
-    @PercentSliderProperty({
-        name: 'Percent Slider',
-        description: 'Select a percent',
-        category: 'General',
-        subcategory: 'eeeeee',
-    })
-    percentSlider = 0.0;
-
+    
+    //-----------Diana----------------
     @SwitchProperty({
-        name: 'Do action!!!',
-        description: 'toggle the checkbox in Not general! tab!',
-        category: 'General',
-        subcategory: 'Category',
-        placeholder: 'Activate',
+        name: "Diana Waypoint",
+        description: "Estimates Diana burrows (particles => ON, /togglemusic => OFF)",
+        category: "General",
+        subcategory: "Diana",
     })
-    switch = false;
+    dianaWaypoint = false;
+    
+    @SwitchProperty({
+        name: "Diana Warp",
+        description: "change button in controls to warp to closest location to guess.",
+        category: "General",
+        subcategory: "Diana"
+    })
+    dianaWarp = false;
 
+    // --- Griffin Burrow ---
+    @SwitchProperty({
+        name: "Burrow Detection",
+        description: "Identifies and generates waypoints for the burrow particles surrounding you.",
+        category: "General",
+        subcategory: "Griffin Burrow"
+    })
+    dianaBurrow = false;
+    @SwitchProperty({
+        name: "Burrow Chat Alert",
+        description: "Chat massage for burrow detection.",
+        category: "General",
+        subcategory: "Griffin Burrow"
+    })
+    dianaChat = false;
 
+    // @TextProperty({
+    //     name: 'text',
+    //     description: 'Example of text input that does not wrap the text',
+    //     category: 'Tracker',
+    //     subcategory: 'Category',
+    //     placeholder: 'Empty... :(',
+    //     triggerActionOnInitialization: false,
+    // })
+    // textInput = '';
+
+    // @TextProperty({
+    //     name: 'password',
+    //     description: 'Example of text input that uses protected',
+    //     category: 'General',
+    //     subcategory: 'Category',
+    //     protected: true,
+    // })
+    // password = '';
+
+    // @ColorProperty({
+    //     name: 'Color Picker',
+    //     description: 'Pick a color! (hopefully...)',
+    //     category: 'General',
+    //     subcategory: 'Category',
+    // })
+    // myColor = Color.BLUE;
+
+    // @SelectorProperty({
+    //     name: 'Selector',
+    //     description: 'Select an option',
+    //     category: 'General',
+    //     subcategory: 'eeeeee',
+    //     options: ['opt1', 'opty2', 'third option'],
+    // })
+    // myOptions = 0; // Stores index of option
+
+    // @PercentSliderProperty({
+    //     name: 'Percent Slider',
+    //     description: 'Select a percent',
+    //     category: 'General',
+    //     subcategory: 'eeeeee',
+    // })
+    // percentSlider = 0.0;
 
     constructor() {
         this.initialize(this);
