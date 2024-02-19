@@ -10,7 +10,7 @@ import PogObject from "../../PogData";
 // --- PERSISTENT DATA ---
 
 // Initializing a persistent data object using the PogObject class
-export let data = new PogObject("VolcAddons", {
+export let data = new PogObject("SkyblockOverhaul", {
     // Properties with default values for various settings and data
     "newUser": true,
     "version": "2.3.1",
@@ -79,7 +79,7 @@ export let data = new PogObject("VolcAddons", {
     // Rift waypoint properties
     "enigmaSouls": ENIGMA_SOULS,
     "catSouls": CAT_SOULS
-}, "datitee.json");
+}, "SboConstants.json");
 
 
 // --- LIST CONTROL ---
