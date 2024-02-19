@@ -1,14 +1,20 @@
-register("command", showGui).setName("showgui")
-register("command", hideGui).setName("hidegui")
+import settings from "./settings";
+
+
+register("command", DianaMobTrackerToggle).setName("showgui")
 
 
 
-function showGui() {
-    SimpleDisplay.show()
+function DianaMobTrackerToggle() {
+    if(settings.dianaMobTracker) {
+        SimpleDisplay.show();
+    }
+    else if(!settings.dianaMobTracker) {
+        SimpleDisplay.hide();
+    }
+    
 }
-function hideGui() {
-    SimpleDisplay.hide()
-}
+
 
 var mygui = new Gui()
 mygui.registerDraw(drawMyGui)

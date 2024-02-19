@@ -201,7 +201,7 @@ export function getPaused() {
 }
 
 // Key binding for pausing or unpausing trackers
-const pauseKey = new KeyBind("Pause Trackers", 25, "VolcAddons");
+const pauseKey = new KeyBind("Pause Trackers", Keyboard.KEY_NONE, "SkyblockOverhaul");
 pauseKey.registerKeyPress(() => {
     paused = !paused;
     const message = paused ? `${RED}Paused` : `${GREEN}Resumed`;

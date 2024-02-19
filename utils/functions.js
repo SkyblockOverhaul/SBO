@@ -21,3 +21,21 @@ export function convertToPascalCase(input) {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join("");
 }
+/** 
+ * @param {string} chat
+ * @param {string} mob
+ * @param {number} x
+ * @param {number} y
+ * @param {number} z
+ */
+export function mobAnnouncement(chat,mob,x,y,z){
+    x = Math.round(x);
+    y = Math.round(y);
+    z = Math.round(z);
+
+    let zone = Scoreboard.getLines().find(line => line.getName().includes("⏣"));
+    if(zone === undefined) zone = Scoreboard.getLines().find(line => line.getName().includes("ф"));
+    const area = zone === undefined ? "None" : zone.getName().removeFormatting();
+
+    ChatLib.command(`pc x: ${x} y: ${y} z: ${z} | ${mob} found at ${area}!`);
+}

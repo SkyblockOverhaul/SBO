@@ -54,7 +54,7 @@ class Settings {
         subcategory: "Diana",
     })
     dianaWaypoint = false;
-    
+
     @SwitchProperty({
         name: "Diana Warp",
         description: "change button in controls to warp to closest location to guess.",
@@ -62,6 +62,14 @@ class Settings {
         subcategory: "Diana"
     })
     dianaWarp = false;
+    
+    @SwitchProperty({
+        name: "Inquis Detection",
+        description: "Chat massage for Inquis detection.",
+        category: "General",
+        subcategory: "Diana"
+    })
+    inquisDetect = false;
 
     // --- Griffin Burrow ---
     @SwitchProperty({
@@ -78,6 +86,15 @@ class Settings {
         subcategory: "Griffin Burrow"
     })
     dianaChat = false;
+
+    // --- Diana Tracker ---
+    @SwitchProperty({
+        name: "Diana Mob Tracker",
+        description: "Tracks your Diana Mob kills",
+        category: "Tracker",
+        subcategory: "Diana Tracker"
+    })
+    dianaMobTracker = false;
 
     // @TextProperty({
     //     name: 'text',

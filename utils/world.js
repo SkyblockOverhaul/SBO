@@ -1,4 +1,5 @@
 import { delay } from "./threads"; // Importing delay function for asynchronous operations
+import { setRegisters } from "./variables"; // Importing setRegisters function from the variables file
 
 export function setPlayer() {
     player = Player.asPlayerMP().getEntity();
