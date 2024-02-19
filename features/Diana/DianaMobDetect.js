@@ -6,15 +6,6 @@ import {mobAnnouncement} from "../../utils/functions";
 import { getWorld } from "../../utils/world";
 let inquis = undefined;
 
-// registerWhen(register("command", () => {
-//     entities = World.getAllEntities();
-//     inquis = entities.find(entity => entity.getName().includes("Minos Inquisitor"));
-//     if(inquis !== undefined && settings.inquisDetect) {
-//         mobAnnouncement("pc", "Inquisitor", inquis.getX(), inquis.getY(), inquis.getZ());
-//     }
-// }).setName("detect"), () => getWorld() === "Hub" && settings.inquisDetect);
-
-
 registerWhen(register("chat", (woah, mob) => {
     if (mob="Minos Inquisitor"){
         ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()))
@@ -22,6 +13,13 @@ registerWhen(register("chat", (woah, mob) => {
 }).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.inquisDetect);
 
 
+// registerWhen(register("command", () => {
+//     entities = World.getAllEntities();
+//     inquis = entities.find(entity => entity.getName().includes("Minos Inquisitor"));
+//     if(inquis !== undefined && settings.inquisDetect) {
+//         mobAnnouncement("pc", "Inquisitor", inquis.getX(), inquis.getY(), inquis.getZ());
+//     }
+// }).setName("detect"), () => getWorld() === "Hub" && settings.inquisDetect);
 // let inquisitors = [];
 
 // registerWhen(register("command", () => {
