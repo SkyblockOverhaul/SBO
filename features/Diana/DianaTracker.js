@@ -89,7 +89,7 @@ register('command', () => {
     for (var item in loot) {
         ChatLib.chat(item + ": " + loot[item]);
     }
-}).setName("sbotest", true);
+}).setName("sbotest");
 
 // if (getSBUUID(playerInvItems[i]) === null) {
 //     if (playerItems[getSBID(playerInvItems[i])]) {
