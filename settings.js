@@ -23,7 +23,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['Not general!', 'General'];
+        const categories = ['General','Tracker'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -46,7 +46,7 @@ class Settings {
     @TextProperty({
         name: 'text',
         description: 'Example of text input that does not wrap the text',
-        category: 'General',
+        category: 'Tracker',
         subcategory: 'Category',
         placeholder: 'Empty... :(',
         triggerActionOnInitialization: false,
@@ -96,16 +96,11 @@ class Settings {
     })
     switch = false;
 
-    @CheckboxProperty({
-        name: 'Checkbox',
-        description: 'Check this box',
-        category: 'Not general!',
-    })
-    myCheckbox = false;
+
 
     constructor() {
         this.initialize(this);
-        this.addDependency("Checkbox", "Do action!!!")
+        // this.addDependency("Checkbox", "Do action!!!")
     }
 }
 
