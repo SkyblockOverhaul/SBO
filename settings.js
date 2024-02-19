@@ -45,7 +45,6 @@ import {
 class Settings {
 
 
-    isInSkyblock = Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK");
     //-----------Diana----------------
     @SwitchProperty({
         name: "Diana Waypoint",

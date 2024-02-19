@@ -46,3 +46,7 @@ export function getSBID(item) {
 export function getSBUUID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("uuid") || null;
 }
+
+export function isInSkyblock() {
+    return Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK");
+}

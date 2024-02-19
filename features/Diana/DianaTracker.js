@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
+import { isInSkyblock } from '../../utils/functions.js';
 
 // mob tracker
 registerWhen(register("chat", (woah, mob) => {
@@ -9,7 +10,7 @@ registerWhen(register("chat", (woah, mob) => {
             ChatLib.chat("Minos Inquisitor");
             break;
     }
-}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker && settings.isInSkyblock);
+}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker);
 
 // loot tracker
 fileLocation = "config/ChatTriggers/modules/SBO/dianaLootCounter.json";
@@ -62,11 +63,11 @@ registerWhen(register("chat", (drop) => {
             ChatLib.chat("Washed-up Souvenir");
             break;
     }
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
 
 registerWhen(register("chat", (coins) => {
     ChatLib.chat(coins);
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
 
 registerWhen(register("chat", (drop, mf) => {
     switch (drop) {
@@ -80,7 +81,7 @@ registerWhen(register("chat", (drop, mf) => {
             ChatLib.chat("Carrot");
             break;
     }
-}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
 
 
 // test command
@@ -88,7 +89,7 @@ register('command', () => {
     for (var item in loot) {
         ChatLib.chat(item + ": " + loot[item]);
     }
-}).setName("sbotest");
+}).setName("sbotest", true);
 
 // if (getSBUUID(playerInvItems[i]) === null) {
 //     if (playerItems[getSBID(playerInvItems[i])]) {
