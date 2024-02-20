@@ -1,71 +1,11 @@
-
+import settings from "../settings";
+import { BOLD, ITALIC } from "./constants";
+import { registerWhen } from "./variables";
+import { getWorld } from "./world";
 
 const overlays = [];
-let currentOverlay = undefined;
 const gui = new Gui();
 export function openGUI() { gui.open() };
-register("renderOverlay", () => {
-    if (!gui.isOpen()) return;
-    
-    overlays.forEach(overlay => {
-        if (!settings[overlay.setting]) return;
-        // Draw example text
-        Renderer.drawRect(
-            Renderer.color(69, 69, 69, 169),
-            overlay.loc[0] - 3*overlay.loc[2], overlay.loc[1] - 2*overlay.loc[2],
-            overlay.width, overlay.height
-        );
-        renderScale(overlay.loc[2], overlay.example, overlay.X, overlay.Y);
-    });
-
-    // GUI Instructions
-    renderScale(
-        1.2, GUI_INSTRUCT,
-        Renderer.screen.getWidth() / 2 - Renderer.getStringWidth(GUI_INSTRUCT) / 1.2,
-        Renderer.screen.getHeight() / 2.4,
-    );
-});
-register("guiMouseClick", (x, y, button, screen) => {
-    if (!gui.isOpen()) return;
-    currentOverlay = undefined;
-
-    overlays.forEach(overlay => {
-        if (x > overlay.loc[0] - 3*overlay.loc[2] &&
-            x < overlay.loc[0] - 3*overlay.loc[2] + overlay.width &&
-            y > overlay.loc[1] - 2*overlay.loc[2] &&
-            y < overlay.loc[1] - 2*overlay.loc[2] + overlay.height
-        ) currentOverlay = overlay;
-    });
-});
-register("dragged", (dx, dy, x, y) => {
-    if (currentOverlay === undefined) return;
-
-    if (gui.isOpen()) {
-        // Changes location of text
-        currentOverlay.loc[0] = parseInt(x);
-        currentOverlay.loc[1] = parseInt(y);
-        currentOverlay.X = currentOverlay.loc[0] / currentOverlay.loc[2];
-        currentOverlay.Y = currentOverlay.loc[1] / currentOverlay.loc[2];
-    }
-});
-register("guiKey", (char, keyCode, gui, event) => {
-    if (currentOverlay === undefined) return;
-    
-    if (keyCode === 13) {  // Increase Scale (+ key)
-        currentOverlay.loc[2] += 0.05;
-        currentOverlay.X = currentOverlay.loc[0] / currentOverlay.loc[2];
-        currentOverlay.Y = currentOverlay.loc[1] / currentOverlay.loc[2];
-    } else if (keyCode === 12) {  // Decrease Scale (- key)
-        currentOverlay.loc[2] -= 0.05;
-        currentOverlay.X = currentOverlay.loc[0] / currentOverlay.loc[2];
-        currentOverlay.Y = currentOverlay.loc[1] / currentOverlay.loc[2];
-    } else if (keyCode === 19) {  // Reset Scale (r key)
-        currentOverlay.loc[2] = 1;
-        currentOverlay.X = currentOverlay.loc[0];
-        currentOverlay.Y = currentOverlay.loc[1];
-    }
-    currentOverlay.setSize();
-});
 
 /**
  * Render scaled text on a graphical canvas or rendering context.
@@ -118,18 +58,11 @@ export class Overlay {
                     `${ITALIC}x: ${Math.round(this.loc[0])}, y: ${Math.round(this.loc[1])}, s: ${this.loc[2].toFixed(2)}`,
                     this.X, this.Y - 10
                 );
-                Renderer.drawLine(Renderer.WHITE, this.loc[0], 1, this.loc[0], Renderer.screen.getHeight(), 0.5);
-                Renderer.drawLine(Renderer.WHITE, Renderer.screen.getWidth(), this.loc[1], 1, this.loc[1], 0.5);
 
                 // Draw example text
                 renderScale(this.loc[2], this.example, this.X, this.Y);
 
                 // GUI Instructions
-                renderScale(
-                    1.2, GUI_INSTRUCT,
-                    Renderer.screen.getWidth() / 2 - Renderer.getStringWidth(GUI_INSTRUCT) / 1.2,
-                    Renderer.screen.getHeight() / 2.4,
-                );
             } else if (settings[this.setting] && (this.requires.has(getWorld()) || this.requires.has("all")) && !gui.isOpen()) {
                 if (this.requires.has("misc")) {
                     if (Player.getContainer().getName() !== "Paid Chest") return;
