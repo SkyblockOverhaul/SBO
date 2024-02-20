@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { GRAY, LOGO, WHITE } from "../../utils/constants";
+import { GRAY,  WHITE } from "../../utils/constants";
 import { getClosest } from "../../utils/functions";
 import { getMayor, getPerks } from "../../utils/mayor";
 import { delay } from "../../utils/threads";
@@ -62,7 +62,7 @@ registerWhen(register("spawnParticle", (particle, type) => {
                     burrows.push(xyz);
                     // Burrow Alerts
                     if (settings.dianaChat)
-                        ChatLib.chat(`${LOGO} ${WHITE}Burrow Detected at ${GRAY}x: ${x}, y: ${y}, z: ${z}!`);
+                        ChatLib.chat(`${WHITE}Burrow Detected at ${GRAY}x: ${x}, y: ${y}, z: ${z}!`);
                 }
             }
             break;
