@@ -106,7 +106,7 @@ register('command', () => {
 // loot tracker
 fileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";
 function loadTracker(type) {
-    let loadedTracker;
+    let loadedTracker = {};
     try {
         loadedTracker = JSON.parse(FileLib.read(fileLocation + type + ".json")) || {};
     } catch (e) {
@@ -151,13 +151,11 @@ registerWhen(register("step", () => {
         ChatLib.chat("No date for mayor election found (undefined)");
     }
 }).setFps(1), () => !trackerMayor.hasOwnProperty('election'));
-
 // total tracker
 let trackerTotal = loadTracker("Total");
-if (trackerTotal.length === 0) {
+if (Object.keys(trackerTotal).length == 0) {
     trackerTotal = initializeTracker();
 }
-
 // session tracker
 let trackerSession = {};
 trackerSession = initializeTracker();
@@ -200,8 +198,12 @@ function initializeTracker() {
 
 export function trackItem(item, category, amount) {
     trackOne(trackerMayor, item, category, "Mayor", amount);
-    trackOne(trackerTotal, item, category, "Total", amount);
+    ChatLib.chat("done1");
     trackOne(trackerSession, item, category, "Session", amount);
+    ChatLib.chat("done2");
+    trackOne(trackerTotal, item, category, "Total", amount);
+    ChatLib.chat("done3");
+    
     
     if (category === "items") {
         refreshItemOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView);
@@ -215,9 +217,7 @@ function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
         if (((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000))) {       
             ChatLib.chat("new mayor now?: " + ((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000)));
-            tracker = {};
-            tracker.items = {};
-            tracker.mobs = {};
+            trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
             setDateMayorElected("27.3." + (getSkyblockDate().getFullYear() + 1));
             tracker.election = getDateMayorElected().getFullYear();
         }
