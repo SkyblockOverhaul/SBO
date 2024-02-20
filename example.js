@@ -46,9 +46,9 @@ Minos Hunter: 30
             
     }
 }), () => getWorld() === "Hub" && settings.dianaMobTracker !== 0);
-registerWhen(register("step", () => {
-    print(isActiveForOneSecond());
-}).setFps(1), () => getWorld() === "Hub" && settings.dianaMobTracker !== 0);
+// registerWhen(register("step", () => {
+//     print(isActiveForOneSecond());
+// }).setFps(1), () => getWorld() === "Hub" && settings.dianaMobTracker !== 0);
 // registerWhen(register("RenderOverlay", DianaMobTrackerToggle), () => settings.dianaMobTracker);
 
 
