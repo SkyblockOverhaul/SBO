@@ -1,6 +1,7 @@
 import settings from "./settings";
 import { registerWhen } from "./utils/variables";
 import { Overlay } from "./utils/overlay";
+import { getWorld } from "./utils/world";
 
 dianaMobTrackerExample = 
 `&4Diana Mob Kills
@@ -13,8 +14,8 @@ Minos Hunter:
 `
 
 const DianaMobTracker = new Overlay("dianaMobTracker",["Hub"], [150,150,1],"moveMobCoounter",dianaMobTrackerExample);
-
-DianaMobTracker.message =
+registerWhen(register("entityDeath", () => {
+    DianaMobTracker.message = settings.dianaMobTracker === 1 ?
 `&4Diana Mob Kills
 Minos Inquisitor: 40
 Minos Champion: 20
@@ -22,7 +23,10 @@ Minotaur: 30
 Gaia Construct: 10
 Siamese Lynx: 20 
 Minos Hunter: 30
-`;
+`: dianaMobTrackerExample;
+}), () => getWorld() === "Hub" && settings.dianaMobTracker !== 0);
+
+
 // registerWhen(register("RenderOverlay", DianaMobTrackerToggle), () => settings.dianaMobTracker);
 
 

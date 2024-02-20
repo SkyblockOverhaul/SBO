@@ -23,7 +23,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Tracker'];
+        const categories = ['General','Trackers'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -87,18 +87,25 @@ class Settings {
     dianaChat = false;
 
     // --- Diana Tracker ---
-    @SwitchProperty({
+    @SelectorProperty({
         name: "Diana Mob Tracker",
         description: "Tracks your Diana Mob kills",
-        category: "Tracker",
-        subcategory: "Diana Tracker"
+        category: "Trackers",
+        subcategory: "Diana Tracker",
+        options: ["OFF", "Overall View", "Event View", "Session View"]
     })
-    dianaMobTracker = false;
-
+    dianaMobTracker = 0;
+    // @SelectorProperty({
+    //     name: "Diana Mob Tracker v2",
+    //     description: "Tracks your Diana Mob kills",
+    //     category: "Trackerffff",
+    //     options: ["OFF", "Overall View", "Session View"]
+    // })
+    // mobTracker = 0;
     @SwitchProperty({
         name: "Diana Loot Tracker",
         description: "Tracks your Diana loot",
-        category: "Tracker",
+        category: "Trackers",
         subcategory: "Diana Tracker"
     })
     dianaLootTracker = false;
