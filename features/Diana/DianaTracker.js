@@ -3,7 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock } from '../../utils/functions.js';
 import { getMayor, getPerks } from "../../utils/mayor";
-import { isActiveForOneSecond } from '../../example.js';
+import { isActiveForOneSecond } from "../../utils/functions";
 
 
 // mob tracker
