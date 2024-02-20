@@ -241,9 +241,15 @@ function trackOne(tracker, item, category, type, amount) {
             tracker.election = getDateMayorElected().getFullYear();
         }
         tracker[getDateMayorElected().getFullYear()][category][item] += amount;
+        if (category === "mobs") {
+            tracker[getDateMayorElected().getFullYear()]["mobs"]["TotalMobs"] += amount;
+        }
     }
     else {
         tracker[category][item] += amount;
+        if (category === "mobs") {
+            tracker["mobs"]["TotalMobs"] += amount;
+        }
     }
     if (type !== "Session") {
         saveLoot(tracker, type);
