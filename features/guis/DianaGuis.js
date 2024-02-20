@@ -16,27 +16,27 @@ registerWhen(register("entityDeath", () => {
 dianaMobTrackerExample = 
 `${YELLOW}${BOLD}Diana Mob Tracker
 ------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${GRAY}3
-${DARK_PURPLE}${BOLD}Minos Champion: ${GRAY}${BOLD}2
-${GOLD}${BOLD}Minotaur: ${AQUA}${BOLD}10
-${GREEN}${BOLD}Gaia Construct: ${WHITE}${BOLD}100
-${GREEN}${BOLD}Siamese Lynx:
-${GREEN}${BOLD}Minos Hunter:
-${GRAY}${BOLD}Total Mobs:
+${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
+${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
+${GOLD}${BOLD}Minotaur: ${WHITE}
+${GREEN}${BOLD}Gaia Construct: ${WHITE}
+${GREEN}${BOLD}Siamese Lynx: ${WHITE}
+${GREEN}${BOLD}Minos Hunter: ${WHITE}
+${GRAY}${BOLD}Total Mobs: ${WHITE}
 `
 dianaLootTrackerExample = 
 `${YELLOW}${BOLD}Diana Loot Tracker
 -------------------
-${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}100
-${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}10
-${GOLD}${BOLD}Daedalus Stick: ${GRAY}2
-${GOLD}${BOLD}Griffin Feather: ${GRAY}3
-${GOLD}${BOLD}Crown of Greed:
-${GOLD}${BOLD}Washed-up Souvenir:
-${DARK_GREEN}${BOLD}Dwarf Turtle Shelmet:
-${DARK_GREEN}${BOLD}Crochet Tiger Plushies:
-${DARK_GREEN}${BOLD}Antique Remedies:
-${GOLD}${BOLD}Coins:
+${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
+${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
+${GOLD}${BOLD}Daedalus Stick: ${WHITE}
+${GOLD}${BOLD}Griffin Feather: ${WHITE}
+${GOLD}${BOLD}Crown of Greed: ${WHITE}
+${GOLD}${BOLD}Souvenir: ${WHITE}
+${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
+${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
+${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
+${GOLD}${BOLD}Coins: ${WHITE}
 `
 
 // ${GRAY}${BOLD}Enchanted Gold: 
@@ -59,13 +59,13 @@ export function refreshMobOverlay(mobTracker, setting) {
     DianaMobTracker.message =
     `${YELLOW}${BOLD}Diana Mob Tracker
 ------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${mobTracker["mobs"]["Minos Inquisitor"]}
-${DARK_PURPLE}${BOLD}Minos Champion: ${mobTracker["mobs"]["Minos Champion"]}
-${GOLD}${BOLD}Minotaur: ${mobTracker["mobs"]["Minotaur"]}
-${GREEN}${BOLD}Gaia Construct: ${mobTracker["mobs"]["Gaia Construct"]}
-${GREEN}${BOLD}Siamese Lynx: ${mobTracker["mobs"]["Siamese Lynx"]}
-${GREEN}${BOLD}Minos Hunter: ${mobTracker["mobs"]["Minos Hunter"]}
-${GRAY}${BOLD}Total Mobs:
+${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]}
+${DARK_PURPLE}${BOLD}Minos Champion: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Champion"]}
+${GOLD}${BOLD}Minotaur: ${AQUA}${BOLD}${mobTracker["mobs"]["Minotaur"]}
+${GREEN}${BOLD}Gaia Construct: ${AQUA}${BOLD}${mobTracker["mobs"]["Gaia Construct"]}
+${GREEN}${BOLD}Siamese Lynx: ${AQUA}${BOLD}${mobTracker["mobs"]["Siamese Lynx"]}
+${GREEN}${BOLD}Minos Hunter: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Hunter"]}
+${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${lootTracker["mobs"]["TotalMobs"]}
 `
     }
 }
@@ -81,17 +81,17 @@ export function refreshItemOverlay(lootTracker, setting){
     DianaLootTracker.message =
     `${YELLOW}${BOLD}Diana Loot Tracker
 -------------------
-${LIGHT_PURPLE}${BOLD}Chimera: ${GRAY}${lootTracker["items"]["Chimera"]}
-${DARK_PURPLE}${BOLD}Minos Relic: ${GRAY}${lootTracker["items"][""]}
-${GOLD}${BOLD}Daedalus Stick: ${GRAY}${lootTracker["items"]["Daedalus Stick"]}
-${GOLD}${BOLD}Griffin Feather: ${GRAY}${lootTracker["items"]["Griffin Feather"]}
-${GOLD}${BOLD}Crown of Greed: ${GRAY}${lootTracker["items"]["Crown of Greed"]}
-${GOLD}${BOLD}Washed-up Souvenir: ${GRAY}${lootTracker["items"]["Washed-up Souvenir"]}
-${DARK_GREEN}${BOLD}Dwarf Turtle Shelmet: ${GRAY}${lootTracker["items"][""]}
-${DARK_GREEN}${BOLD}Crochet Tiger Plushies: ${GRAY}${lootTracker["items"][""]}
-${DARK_GREEN}${BOLD}Antique Remedies: ${GRAY}${lootTracker["items"][""]}
-${GOLD}${BOLD}Coins: ${GRAY}${lootTracker["items"]["coins"]}
-${GRAY}${BOLD}Total Mobs: ${GRAY}${lootTracker["items"]["ROTTEN_FLESH"]}
+${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]}
+${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${BOLD}${lootTracker["items"]["MINOS_RELIC"]}
+${GOLD}${BOLD}Daedalus Stick: ${AQUA}${BOLD}${lootTracker["items"]["Daedalus Stick"]}
+${GOLD}${BOLD}Griffin Feather: ${AQUA}${BOLD}${lootTracker["items"]["Griffin Feather"]}
+${GOLD}${BOLD}Crown of Greed: ${AQUA}${BOLD}${lootTracker["items"]["Crown of Greed"]}
+${GOLD}${BOLD}Souvenir: ${AQUA}${BOLD}${lootTracker["items"]["Washed-up Souvenir"]}
+${DARK_GREEN}${BOLD}Turtle Shelmet: ${AQUA}${BOLD}${lootTracker["items"]["DWARF_TURTLE_SHELMET"]}
+${DARK_GREEN}${BOLD}Tiger Plushie: ${AQUA}${BOLD}${lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]}
+${DARK_GREEN}${BOLD}Antique Remedies: ${AQUA}${BOLD}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
+${GOLD}${BOLD}Coins: ${AQUA}${BOLD}${lootTracker["items"]["coins"]}
+${GRAY}${BOLD}Rotten Flesh: ${AQUA}${BOLD}${lootTracker["items"]["ROTTEN_FLESH"]}
 `
     }
 }
