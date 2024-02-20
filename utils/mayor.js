@@ -51,15 +51,17 @@ export function getNewMayorAtDate() {
     return newMayorAtDate;
 }
 
+export function setDateMayorElected(dateString) {
+    dateMayorElected = convertStringToDate(dateString);
+}
+
 export function getDateMayorElected() {
     return dateMayorElected;
 }
 
-
 export function checkDiana() {
-    mayor = getMayor();
-    perks = getPerks();
-    return getWorld() === "Hub" && mayor === "Diana" && perks.has("Mythological Ritual");
+    // spate in hotbar missing
+    return getWorld() === "Hub" && getMayor() === "Diana" && getPerks().has("Mythological Ritual");
 }
 
 

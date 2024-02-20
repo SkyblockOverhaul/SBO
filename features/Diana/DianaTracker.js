@@ -1,10 +1,10 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock } from '../../utils/functions';
+import { isInSkyblock, getDateString } from '../../utils/functions';
 import { refreshItemOverlay, refreshMobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
-import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected } from "../../utils/mayor";
+import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
 
 // mob tracker
 registerWhen(register("chat", (woah, mob) => {
@@ -42,8 +42,6 @@ registerWhen(register("chat", () => {
 // lootchare books erkennen
 // pickuplog updaterate vielleicht anpassen
 
-// tracker[type][item]
-// type = "mobs" or "items"
 
 registerWhen(register("chat", (drop) => {
     drop = drop.removeFormatting();
@@ -117,9 +115,8 @@ function loadTracker(type) {
     return loadedTracker;
 }
 
-
 export function dianaLootCounter(item, amount) {
-    countThisIds = ["ROTTEN_FLESH", "WOOD"]
+    countThisIds = ["ROTTEN_FLESH", "WOOD", "DWARF_TURTLE_SHELMET", "CROCHET_TIGER_PLUSHIE", "ANTIQUE_REMEDIES", "ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "MINOS_RELIC"]
     if (isActiveForOneSecond()) {
         for (var i in countThisIds.values()) {
             if (item === i) {
@@ -133,12 +130,6 @@ function saveLoot(tracker, type) {
     FileLib.write(fileLocation + type + ".json", JSON.stringify(tracker));
 }
 
-
-
-let trackerMayor = loadTracker("Mayor");
-let trackerTotal = loadTracker("Total");
-let trackerSession = {};
-
 export function getTracker(type) {
     switch (type) {
         case 1:
@@ -151,29 +142,61 @@ export function getTracker(type) {
 }
 
 // mayor tracker
-if (!trackerMayor.hasOwnProperty('items')) {
-    trackerMayor.items = {};
-}
-if (!trackerMayor.hasOwnProperty('mobs')) {
-    trackerMayor.mobs = {};
-}
-if (!trackerMayor.hasOwnProperty('election')) {
-    trackerMayor.election = dateMayorElected;
-}
+let trackerMayor = loadTracker("Mayor");
+registerWhen(register("step", () => {
+    if (getDateMayorElected() != undefined) {
+        trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
+    }
+    else {
+        ChatLib.chat("No date for mayor election found (undefined)");
+    }
+}).setFps(1), () => !trackerMayor.hasOwnProperty('election'));
+
 // total tracker
-if (!trackerTotal.hasOwnProperty('items')) {
-    trackerTotal.items = {};
+let trackerTotal = loadTracker("Total");
+if (trackerTotal.length === 0) {
+    trackerTotal = initializeTracker();
 }
-if (!trackerTotal.hasOwnProperty('mobs')) {
-    trackerTotal.mobs = {};
-}
+
 // session tracker
-if (!trackerSession.hasOwnProperty('items')) {
-    trackerSession.items = {};
+let trackerSession = {};
+trackerSession = initializeTracker();
+
+
+function initializeTracker() {
+    tempTracker = {
+        items: {
+            "coins": 0,
+            "Griffin Feather": 0,
+            "Crown of Greed": 0,
+            "Washed-up Souvenir": 0,
+            "Chimera": 0,
+            "Daedalus Stick": 0,
+            "DWARF_TURTLE_SHELMET": 0,
+            "CROCHET_TIGER_PLUSHIE": 0,
+            "ANTIQUE_REMEDIES": 0,
+            "ENCHANTED_ANCIENT_CLAW": 0,
+            "ANCIENT_CLAW": 0,
+            "MINOS_RELIC": 0,
+
+            "ROTTEN_FLESH": 0,
+            "WOOD": 0,
+            "Potato": 0,
+            "Carrot": 0
+        },
+        mobs: {
+            "Minos Inquisitor": 0,
+            "Minos Champion": 0,
+            "Minotaur": 0,
+            "Gaia Construct": 0,
+            "Siamese Lynx": 0,
+            "Minos Hunter": 0,
+            "TotalMobs": 0
+        }
+    };
+    return tempTracker;
 }
-if (!trackerSession.hasOwnProperty('mobs')) {
-    trackerSession.mobs = {};
-}
+
 
 export function trackItem(item, category, amount) {
     trackOne(trackerMayor, item, category, "Mayor", amount);
@@ -188,31 +211,23 @@ export function trackItem(item, category, amount) {
     }
 }
 
-
-register("command", () => {
-    ChatLib.chat("new Mayor at: " + getNewMayorAtDate());
-    ChatLib.chat("last Mayor elected: " + getDateMayorElected());
-    ChatLib.chat("current date: " + getSkyblockDate());
-    ChatLib.chat("new mayor now?: " + ((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000)))
-}).setName("sbottt");
-
 function trackOne(tracker, item, category, type, amount) {
-    // if (type == "Mayor") {
-    //     if (((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000))) {
-    //         ChatLib.chat("new mayor now?: " + ((getSkyblockDate().getTime() / 1000) > (newMaygetNewMayorAtDate().getTime() / 1000)));
-    //         tracker = {};
-    //         tracker.items = {};
-    //         tracker.mobs = {};
-    //         tracker.election = dateMayorElected;
-    //     }
-    // }
-    if (tracker[category][item]) {
-        tracker[category][item] += amount;
+    if (type == "Mayor") {
+        if (((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000))) {       
+            ChatLib.chat("new mayor now?: " + ((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000)));
+            tracker = {};
+            tracker.items = {};
+            tracker.mobs = {};
+            setDateMayorElected("27.3." + (getSkyblockDate().getFullYear() + 1));
+            tracker.election = getDateMayorElected().getFullYear();
+        }
+        tracker[getDateMayorElected().getFullYear()][category][item] += amount;
     }
     else {
-        tracker[category][item] = amount;
+        tracker[category][item] += amount;
     }
     if (type !== "Session") {
         saveLoot(tracker, type);
     }
 }
+

@@ -51,6 +51,9 @@ const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10,150,1],
  * @param {string} setting 
  */
 export function refreshMobOverlay(mobTracker, setting) {
+    if (setting == 2) {
+        mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
+    }
     if(setting > 0){
     DianaMobTracker.message =
     `${YELLOW}${BOLD}Diana Mob Tracker
@@ -70,6 +73,9 @@ ${GRAY}${BOLD}Total Mobs:
  * @param {string} setting 
  */
 export function refreshItemOverlay(lootTracker, setting){
+    if (setting == 2) {
+        lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
+    }
     if(setting > 0){
     DianaLootTracker.message =
     `${YELLOW}${BOLD}Diana Loot Tracker

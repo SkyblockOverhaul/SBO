@@ -64,6 +64,18 @@ function pickuplog() {
     }
 }
 
+export function checkItemInHotbar(item) {
+    var hotbar = Player.getHotbar();
+    for (var i in hotbar.getItems()) {
+        if (hotbar.getItems()[i] !== null) {
+            if (getSBID(hotbar.getItems()[i]) === item) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 registerWhen(register('step', () => {
     pickuplog();
 }).setFps(10), () => settings.dianaLootTracker && isInSkyblock() && getWorld() === "Hub");
