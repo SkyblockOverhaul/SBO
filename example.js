@@ -1,7 +1,7 @@
 import settings from "./settings";
 import { registerWhen } from "./utils/variables";
 
-registerWhen(register("RenderOverlay", DianaMobTrackerToggle), () => settings.dianaMobTracker);
+// registerWhen(register("RenderOverlay", DianaMobTrackerToggle), () => settings.dianaMobTracker);
 
 
 
