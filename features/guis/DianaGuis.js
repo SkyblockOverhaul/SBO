@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { Overlay } from "../../utils/overlay";
 import { getWorld } from "../../utils/world";
-import { isActiveForOneSecond, getTracker } from "../../utils/functions";
+import { getTracker, state } from "../../utils/functions";
 dianaMobTrackerExample = 
 `&4Diana Mob Kills
 Minos Inquisitor: 
@@ -14,13 +14,12 @@ Minos Hunter:
 `
 
 
-let entityDeathOccurred = false;
+
 const DianaMobTracker = new Overlay("dianaMobTracker",["Hub"], [150,150,1],"moveMobCoounter",dianaMobTrackerExample);
 registerWhen(register("entityDeath", () => {
-    entityDeathOccurred = true;
+    state.entityDeathOccurred = true;
     setTimeout(() => {
-        isActiveForOneSecond(entityDeathOccurred);
-        entityDeathOccurred = false;
+        state.entityDeathOccurred = false;
     }, 1000);
     switch (settings.dianaMobTracker){
         case 1:
