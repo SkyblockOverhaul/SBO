@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock } from '../../utils/functions.js';
-import axios from "./../../../axios"
+import { getMayor, getPerks } from "../../utils/mayor";
 
 
 // mob tracker
@@ -67,64 +67,16 @@ function saveLoot(tracker, type) {
     FileLib.write(fileLocation + type + ".json", JSON.stringify(tracker));
 }
 
-year = 0;
-function getYear() { // not working
-    if (year === 0) {
-        try {
-            const response = axios.get('https://api.hypixel.net/v2/resources/skyblock/election');
-            year = response.data;
-            console.log(year);
-            return year;
-        } catch (error) {
-            console.error("Error fetching year:", error);
-            return null;
-        }
-    } else {
-        return year;
-    }
-}
 
+// todo: 
+// getYear() // fertig
+// make pickuplog only works while in no gui open
+// trackerMayor reset on new mayor
+// mayor tracker nur reseten wenn neuer mayor diana ist
+// vielleicht tracker für die letzten 5 mayor speichern
+// lootchare books erkennen
+// pickuplog updaterate vielleicht anpassen
 
-function convertDate(dateStr) {
-    var seasonToMonth = {
-        'Early Spring': '1',
-        "Spring": '2',
-        "Late Spring": '3',
-        "Early Summer": '4',
-        "Summer": '5',
-        "Late Summer": '6',
-        "Early Autumn": '7',
-        "Autumn": '8',
-        "Late Autumn": '9',
-        "Early Winter": '10',
-        "Winter": '11',
-        "Late Winter": '12'
-    };
-
-    dateStr = dateStr.toString().replace(/[^a-z0-9\s-]/gi, '');
-    var parts = dateStr.split(' ');
-    if (parts.length === 4) {
-        season = parts[1] + ' ' + parts[2];
-        day = parts[3];
-    }
-    else {
-        season = parts[1];
-        day = parts[2];
-    }
-    
-    day = day.replace(/(st|nd|rd|th)$/, '');
-
-    var month = seasonToMonth[season] || '';
-    year = getYear();
-    date = day + '.' + month + '.' + year;
-    return date
-}
-
-
-register("command", () => {
-    skyblockDate = convertDate(Scoreboard.getLines()[7]);
-    ChatLib.chat(skyblockDate);
-}).setName("sbodate");
 
 export var trackerMayor = loadTracker("Mayor");
 export var trackerTotal = loadTracker("Total");
@@ -162,6 +114,12 @@ export function dianaLootCounter(item, amount) {
             trackItem(item, "items", amount);
         }
     }
+}
+
+export function checkDiana() {
+    mayor = getMayor();
+    perks = getPerks();
+    return getWorld() === "Hub" && mayor === "Diana" && perks.has("Mythological Ritual");
 }
 
 registerWhen(register("chat", (drop) => {
