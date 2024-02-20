@@ -200,7 +200,17 @@ function initializeTracker() {
     };
     return tempTracker;
 }
+let tempSettingLoot = -1;
+registerWhen(register("step", () => {
+    tempSettingLoot = settings.dianaLootTrackerView;
+    refreshItemOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView);
+}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView);
 
+let tempSettingMob = -1;
+registerWhen(register("step", () => {
+    tempSettingMob = settings.dianaMobTrackerView;
+    refreshMobOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView);
+}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
 export function trackItem(item, category, amount) {
     trackOne(trackerMayor, item, category, "Mayor", amount);
