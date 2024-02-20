@@ -143,14 +143,20 @@ export function getTracker(type) {
 
 // mayor tracker
 let trackerMayor = loadTracker("Mayor");
+let trackerBool = false;
 registerWhen(register("step", () => {
     if (getDateMayorElected() != undefined) {
+        if (!trackerMayor.hasOwnProperty(getDateMayorElected().getFullYear())) {
         trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
+        }
+        else {
+            trackerBool = true;
+        }
     }
     else {
         ChatLib.chat("No date for mayor election found (undefined)");
     }
-}).setFps(1), () => !trackerMayor.hasOwnProperty('election'));
+}).setFps(1), () => getDateMayorElected() != undefined && !trackerBool);
 // total tracker
 let trackerTotal = loadTracker("Total");
 if (Object.keys(trackerTotal).length == 0) {

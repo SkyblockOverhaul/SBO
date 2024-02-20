@@ -1,9 +1,10 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import {  state } from "../../utils/functions";
+import { state } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC} from "../../utils/constants";
+import { getDateMayorElected } from "../../utils/mayor";
 
 registerWhen(register("entityDeath", () => {
     state.entityDeathOccurred = true;
@@ -17,7 +18,7 @@ dianaMobTrackerExample =
 ------------------
 ${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${GRAY}3
 ${DARK_PURPLE}${BOLD}Minos Champion: ${GRAY}${BOLD}2
-${GOLD}${BOLD}Minotaur: ${AQUA}10
+${GOLD}${BOLD}Minotaur: ${AQUA}${BOLD}10
 ${GREEN}${BOLD}Gaia Construct: ${WHITE}${BOLD}100
 ${GREEN}${BOLD}Siamese Lynx:
 ${GREEN}${BOLD}Minos Hunter:
@@ -90,6 +91,7 @@ ${DARK_GREEN}${BOLD}Dwarf Turtle Shelmet: ${GRAY}${lootTracker["items"][""]}
 ${DARK_GREEN}${BOLD}Crochet Tiger Plushies: ${GRAY}${lootTracker["items"][""]}
 ${DARK_GREEN}${BOLD}Antique Remedies: ${GRAY}${lootTracker["items"][""]}
 ${GOLD}${BOLD}Coins: ${GRAY}${lootTracker["items"]["coins"]}
+${GRAY}${BOLD}Total Mobs: ${GRAY}${lootTracker["items"]["ROTTEN_FLESH"]}
 `
     }
 }
