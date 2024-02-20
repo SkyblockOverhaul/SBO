@@ -2,6 +2,8 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock } from '../../utils/functions.js';
+import axios from "./../../../axios"
+
 
 // mob tracker
 registerWhen(register("chat", (woah, mob) => {
@@ -63,6 +65,24 @@ function saveLoot(tracker, type) {
     FileLib.write(fileLocation + type + ".json", JSON.stringify(tracker));
 }
 
+year = 0;
+function getYear() { // not working
+    if (year === 0) {
+        try {
+            const response = axios.get('https://api.hypixel.net/v2/resources/skyblock/election');
+            year = response.data;
+            console.log(year);
+            return year;
+        } catch (error) {
+            console.error("Error fetching year:", error);
+            return null;
+        }
+    } else {
+        return year;
+    }
+}
+
+
 function convertDate(dateStr) {
     var seasonToMonth = {
         'Early Spring': '1',
@@ -90,14 +110,12 @@ function convertDate(dateStr) {
         day = parts[2];
     }
     
-
-
     day = day.replace(/(st|nd|rd|th)$/, '');
 
-
     var month = seasonToMonth[season] || '';
-
-    return day + '.' + month;
+    year = getYear();
+    date = day + '.' + month + '.' + year;
+    return date
 }
 
 
