@@ -4,6 +4,7 @@ import "./features/general/pickuplog";
 import "./features/Diana/DianaMobDetect";
 import "./features/Diana/DianaWaypoints";
 import "./features/guis/DianaGuis";
+import "./features/Diana/DianaTracker";
 
 
 

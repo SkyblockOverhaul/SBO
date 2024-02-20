@@ -67,3 +67,93 @@ export function isActiveForOneSecond(entityDeathOccurred) {
 register("step", () => {
     inSkyblock = checkIfInSkyblock();
 }).setFps(1);
+
+
+
+// loot tracker
+fileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";
+function loadTracker(type) {
+    let loadedTracker;
+    try {
+        loadedTracker = JSON.parse(FileLib.read(fileLocation + type + ".json")) || {};
+    } catch (e) {
+        loadedTracker = {};
+    }
+    return loadedTracker;
+}
+
+
+export function dianaLootCounter(item, amount) {
+    countThisIds = ["ROTTEN_FLESH", "WOOD"]
+    ChatLib.chat("counting " + item);
+    ChatLib.chat("active " + isActiveForOneSecond());
+    if (isActiveForOneSecond()) {
+        for (var i in countThisIds.values()) {
+            if (item === i) {
+                trackItem(item, "items", amount);
+            }
+        }
+    }
+}
+
+function saveLoot(tracker, type) {
+    FileLib.write(fileLocation + type + ".json", JSON.stringify(tracker));
+}
+
+export function getTracker(type) {
+    switch (type) {
+        case "Mayor":
+            return trackerMayor;
+        case "Total":
+            return trackerTotal;
+        case "Session":
+            return trackerSession;
+    }
+}
+
+let trackerMayor = loadTracker("Mayor");
+let trackerTotal = loadTracker("Total");
+let trackerSession = {};
+
+// mayor tracker
+if (!trackerMayor.hasOwnProperty('items')) {
+    trackerMayor.items = {};
+}
+if (!trackerMayor.hasOwnProperty('mobs')) {
+    trackerMayor.mobs = {};
+}
+if (!trackerMayor.hasOwnProperty('election')) {
+    trackerMayor.election = {};
+}
+// total tracker
+if (!trackerTotal.hasOwnProperty('items')) {
+    trackerTotal.items = {};
+}
+if (!trackerTotal.hasOwnProperty('mobs')) {
+    trackerTotal.mobs = {};
+}
+// session tracker
+if (!trackerSession.hasOwnProperty('items')) {
+    trackerSession.items = {};
+}
+if (!trackerSession.hasOwnProperty('mobs')) {
+    trackerSession.mobs = {};
+}
+
+export function trackItem(item, category, amount) {
+    trackOne(trackerMayor, item, category, "Mayor", amount);
+    trackOne(trackerTotal, item, category, "Total", amount);
+    trackOne(trackerSession, item, category, "Session", amount);
+}
+
+function trackOne(tracker, item, category, type, amount) {
+    if (tracker[category][item]) {
+        tracker[category][item] += amount;
+    }
+    else {
+        tracker[category][item] = amount;
+    }
+    if (type !== "Session") {
+        saveLoot(tracker, type);
+    }
+}

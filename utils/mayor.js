@@ -1,4 +1,5 @@
 import { request } from "../../requestV2";
+import { getWorld } from "./world";
 
 
 let perks = new Set([]);
@@ -31,6 +32,14 @@ export function getSkyblockDate() {
 register("worldLoad", () => {
     year, mayor = getYearMayorRequestV2();
 });
+
+
+export function checkDiana() {
+    mayor = getMayor();
+    perks = getPerks();
+    return getWorld() === "Hub" && mayor === "Diana" && perks.has("Mythological Ritual");
+}
+
 
 function getYearMayorRequestV2() {
     request({

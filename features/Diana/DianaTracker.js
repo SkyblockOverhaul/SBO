@@ -1,10 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock } from '../../utils/functions.js';
-import { getMayor, getPerks } from "../../utils/mayor";
-import { isActiveForOneSecond } from "../../utils/functions";
-
+import { isInSkyblock, trackItem, getTracker } from '../../utils/functions';
 
 // mob tracker
 registerWhen(register("chat", (woah, mob) => {
@@ -33,42 +30,6 @@ registerWhen(register("chat", (woah, mob) => {
 registerWhen(register("chat", () => {
     trackItem("Minos Inquisitor", "mobs", 1);
 }).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker);
-
-function trackItem(item, category, amount) {
-    trackOne(trackerMayor, item, category, "Mayor", amount);
-    trackOne(trackerTotal, item, category, "Total", amount);
-    trackOne(trackerSession, item, category, "Session", amount);
-}
-
-function trackOne(tracker, item, category, type, amount) {
-    if (tracker[category][item]) {
-        tracker[category][item] += amount;
-    }
-    else {
-        tracker[category][item] = amount;
-    }
-    if (type !== "Session") {
-        saveLoot(tracker, type);
-    }
-}
-
-// loot tracker
-fileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";
-function loadTracker(type) {
-    let loadedTracker;
-    try {
-        loadedTracker = JSON.parse(FileLib.read(fileLocation + type + ".json")) || {};
-    } catch (e) {
-        loadedTracker = {};
-    }
-    return loadedTracker;
-}
-
-function saveLoot(tracker, type) {
-    FileLib.write(fileLocation + type + ".json", JSON.stringify(tracker));
-}
-
-
 // todo: 
 // trackerMayor reset on new mayor
 // mayor tracker nur reseten wenn neuer mayor diana ist
@@ -80,62 +41,6 @@ function saveLoot(tracker, type) {
 
 // tracker[type][item]
 // type = "mobs" or "items"
-export function getTracker(type) {
-    switch (type) {
-        case "Mayor":
-            return trackerMayor;
-        case "Total":
-            return trackerTotal;
-        case "Session":
-            return trackerSession;
-    }
-}
-
-let trackerMayor = loadTracker("Mayor");
-let trackerTotal = loadTracker("Total");
-let trackerSession = {};
-
-// mayor tracker
-if (!trackerMayor.hasOwnProperty('items')) {
-    trackerMayor.items = {};
-}
-if (!trackerMayor.hasOwnProperty('mobs')) {
-    trackerMayor.mobs = {};
-}
-if (!trackerMayor.hasOwnProperty('election')) {
-    trackerMayor.election = {};
-}
-// total tracker
-if (!trackerTotal.hasOwnProperty('items')) {
-    trackerTotal.items = {};
-}
-if (!trackerTotal.hasOwnProperty('mobs')) {
-    trackerTotal.mobs = {};
-}
-// session tracker
-if (!trackerSession.hasOwnProperty('items')) {
-    trackerSession.items = {};
-}
-if (!trackerSession.hasOwnProperty('mobs')) {
-    trackerSession.mobs = {};
-}
-
-export function dianaLootCounter(item, amount) {
-    countThisIds = ["ROTTEN_FLESH", "WOOD"]
-    if (isActiveForOneSecond()) {
-        for (var i in countThisIds.values()) {
-            if (item === i) {
-                trackItem(item, "items", amount);
-            }
-        }
-    }
-}
-
-export function checkDiana() {
-    mayor = getMayor();
-    perks = getPerks();
-    return getWorld() === "Hub" && mayor === "Diana" && perks.has("Mythological Ritual");
-}
 
 registerWhen(register("chat", (drop) => {
     drop = drop.removeFormatting();
@@ -177,17 +82,20 @@ registerWhen(register("chat", (drop, mf) => {
 
 // test command
 register('command', () => {
+    trackerSession = getTracker("Session");
     for (var item in trackerSession["items"]) {
         ChatLib.chat(item + ": " + trackerSession["items"][item]);
     }
 }).setName("sbots");
 register('command', () => {
+    trackerMayor = getTracker("Mayor");
     for (var item in trackerMayor["items"]) {
         ChatLib.chat(item + ": " + trackerMayor["items"][item]);
     }
 }).setName("sbotm");
 
 register('command', () => {
+    trackerTotal = getTracker("Total");
     for (var item in trackerTotal["items"]) {
         ChatLib.chat(item + ": " + trackerTotal["items"][item]);
     }

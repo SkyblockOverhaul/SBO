@@ -2,8 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { Overlay } from "../../utils/overlay";
 import { getWorld } from "../../utils/world";
-import { getTracker } from "../diana/DianaTracker";
-import { isActiveForOneSecond } from "../../utils/functions";
+import { isActiveForOneSecond, getTracker } from "../../utils/functions";
 dianaMobTrackerExample = 
 `&4Diana Mob Kills
 Minos Inquisitor: 
