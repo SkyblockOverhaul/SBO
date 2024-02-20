@@ -212,6 +212,9 @@ registerWhen(register("step", () => {
     refreshMobOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView);
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
+refreshItemOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView);
+refreshMobOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView);
+
 export function trackItem(item, category, amount) {
     trackOne(trackerMayor, item, category, "Mayor", amount);
     ChatLib.chat("done1");
