@@ -47,6 +47,14 @@ ${GOLD}${BOLD}Coins: ${WHITE}
 const DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10,50,1],"moveMobCoounter",dianaMobTrackerExample,"dianaMobTracker");
 const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10,150,1],"moveLootCoounter",dianaLootTrackerExample,"dianaLootTracker");
 
+function calcProcents(tracker) {
+    procentDict = {};
+    for (var mob in tracker["mobs"]) {
+        procentDict[mob] = Math.round((tracker["mobs"][mob] / tracker["mobs"]["TotalMobs"]) * 100);
+    }
+    return procentDict;
+}
+
 /**
  * 
  * @param {string} setting 
@@ -55,11 +63,12 @@ export function refreshMobOverlay(mobTracker, setting) {
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
+    procentDict = calcProcents(mobTracker)
     if(setting > 0){
     DianaMobTracker.message =
     `${YELLOW}${BOLD}Diana Mob Tracker
 ------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]}
+${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]} ${procentDict["Minos Inquisitor"]}%
 ${DARK_PURPLE}${BOLD}Minos Champion: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Champion"]}
 ${GOLD}${BOLD}Minotaur: ${AQUA}${BOLD}${mobTracker["mobs"]["Minotaur"]}
 ${GREEN}${BOLD}Gaia Construct: ${AQUA}${BOLD}${mobTracker["mobs"]["Gaia Construct"]}

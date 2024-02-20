@@ -232,6 +232,8 @@ export function trackItem(item, category, amount) {
     }
 }
 
+
+
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
         if (((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000))) {       
