@@ -57,12 +57,11 @@ let inSkyblock = false;
 export function isInSkyblock() {
     return inSkyblock;
 }
-/**
- * 
- * @param {boolean} entityDeathOccurred 
- */
-export function isActiveForOneSecond(entityDeathOccurred) {
-    return entityDeathOccurred;
+export let state = {
+    entityDeathOccurred: false
+}
+export function isActiveForOneSecond() {
+    return state.entityDeathOccurred;
 }
 register("step", () => {
     inSkyblock = checkIfInSkyblock();
