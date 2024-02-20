@@ -11,14 +11,6 @@ registerWhen(register("entityDeath", () => {
     }, 1000);
 }), () => getWorld() === "Hub" && settings.dianaMobTracker);
 
-
-
-
-
-
-
-
-
 dianaMobTrackerExample = 
 `&4Diana Mob Tracker
 Minos Inquisitor: 
@@ -45,9 +37,12 @@ Coins:
 const DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [150,150,1],"moveMobCoounter",dianaMobTrackerExample,"dianaMobTracker");
 const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [250,150,1],"moveLootCoounter",dianaLootTrackerExample,"dianaLootTracker");
 
-let mobTracker = undefined;
-let lootTracker = undefined;
-export function refreshMobOverlay(mobTracker) {
+/**
+ * 
+ * @param {string} setting 
+ */
+export function refreshMobOverlay(mobTracker, setting) {
+    if(setting > 0){
     DianaMobTracker.message =
     `&4Diana Mob Tracker
 Minos Inquisitor: ${mobTracker["mobs"]["Minos Inquisitor"]}
@@ -58,9 +53,16 @@ Siamese Lynx: ${mobTracker["mobs"]["Siamese Lynx"]}
 Minos Hunter: ${mobTracker["mobs"]["Minos Hunter"]}
 Total Mobs: 
 `
+    }
 }
 
-export function refreshItemOverlay(lootTracker){
+
+/**
+ * 
+ * @param {string} setting 
+ */
+export function refreshItemOverlay(lootTracker, setting){
+    if(setting > 0){
     DianaLootTracker.message = 
     `&4Diana Loot Tracker
 Griffin Feather: ${lootTracker["items"]["ROTTEN_FLESH"]}
@@ -74,4 +76,5 @@ Crown of Greed:
 Washed-up Souvenir:
 Coins:
 `
+    }
 }

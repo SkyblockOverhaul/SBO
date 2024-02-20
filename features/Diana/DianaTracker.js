@@ -181,10 +181,10 @@ export function trackItem(item, category, amount) {
     trackOne(trackerSession, item, category, "Session", amount);
     
     if (category === "items") {
-        refreshItemOverlay(getTracker(settings.dianaLootTrackerView));
+        refreshItemOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView);
     }
     else if (category === "mobs") {
-        refreshMobOverlay(getTracker(settings.dianaMobTrackerView));
+        refreshMobOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView);
     }
 }
 
