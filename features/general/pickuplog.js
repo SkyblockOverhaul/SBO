@@ -27,21 +27,21 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
             if (diff > 0 || diff < 0) {
                 if (diff > 0) {
                     dianaLootCounter(item, diff);
-                    // ChatLib.chat("+ " + diff + "x " + item);
+                    ChatLib.chat("+ " + diff + "x " + item);
                 }
                 else {
-                    // ChatLib.chat("- " + diff*(-1) + "x " + item);
+                    ChatLib.chat("- " + diff*(-1) + "x " + item);
                 }
             }
         }
         else {
             dianaLootCounter(item, newPlayerItems[item]);
-            // ChatLib.chat("+ " + newPlayerItems[item] + "x " + item);
+            ChatLib.chat("+ " + newPlayerItems[item] + "x " + item);
         }
     }
     for (var item in oldPlayerItems) {
         if (!newPlayerItems[item]) {
-            // ChatLib.chat("- " + oldPlayerItems[item] + "x " + item);
+            ChatLib.chat("- " + oldPlayerItems[item] + "x " + item);
         }
     }
 }
@@ -62,11 +62,10 @@ function pickuplog() {
     }
 }
 
-
 registerWhen(register('step', () => {
-    if (isInSkyblock) { // Überprüfen Sie, ob der Spieler in SkyBlock ist
-        if (World.getWorld() != null) { // Überprüfen Sie, ob der Spieler in einer Welt ist
-            pickuplog();
-        }
+    console.log("getWorld(): " + getWorld());
+    if (World.getWorld() != null) { // Überprüfen Sie, ob der Spieler in einer Welt ist
+        pickuplog();
     }
-}).setFps(20), () => settings.dianaLootTracker && isInSkyblock());
+
+}).setFps(10), () => settings.dianaLootTracker && isInSkyblock());

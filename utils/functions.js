@@ -1,3 +1,4 @@
+
 export function getClosest(origin, positions) {
     let closestPosition = positions.length > 0 ? positions[0] : [0, 0, 0];
     let closestDistance = 999;
@@ -47,6 +48,16 @@ export function getSBUUID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("uuid") || null;
 }
 
-export function isInSkyblock() {
+export function checkIfInSkyblock() {
     return Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK");
 }
+
+let inSkyblock = false;
+
+export function isInSkyblock() {
+    return inSkyblock;
+}
+
+register("step", () => {
+    inSkyblock = checkIfInSkyblock();
+}).setFps(1);
