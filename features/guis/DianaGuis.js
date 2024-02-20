@@ -3,7 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import {  state } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
-import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY} from "../../utils/constants";
+import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC} from "../../utils/constants";
 
 registerWhen(register("entityDeath", () => {
     state.entityDeathOccurred = true;
@@ -15,10 +15,10 @@ registerWhen(register("entityDeath", () => {
 dianaMobTrackerExample = 
 `${YELLOW}${BOLD}Diana Mob Tracker
 ------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: 
-${DARK_PURPLE}${BOLD}Minos Champion:
-${GOLD}${BOLD}Minotaur:
-${GREEN}${BOLD}Gaia Construct:
+${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${GRAY}3
+${DARK_PURPLE}${BOLD}Minos Champion: ${GRAY}${BOLD}2
+${GOLD}${BOLD}Minotaur: ${AQUA}10
+${GREEN}${BOLD}Gaia Construct: ${WHITE}${BOLD}100
 ${GREEN}${BOLD}Siamese Lynx:
 ${GREEN}${BOLD}Minos Hunter:
 ${GRAY}${BOLD}Total Mobs:
@@ -26,21 +26,23 @@ ${GRAY}${BOLD}Total Mobs:
 dianaLootTrackerExample = 
 `${YELLOW}${BOLD}Diana Loot Tracker
 -------------------
-${LIGHT_PURPLE}${BOLD}Chimera:
-${DARK_PURPLE}${BOLD}Minos Relic:
-${GOLD}${BOLD}Griffin Feather:
-${GOLD}${BOLD}Daedalus Stick:
+${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}100
+${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}10
+${GOLD}${BOLD}Daedalus Stick: ${GRAY}2
+${GOLD}${BOLD}Griffin Feather: ${GRAY}3
 ${GOLD}${BOLD}Crown of Greed:
 ${GOLD}${BOLD}Washed-up Souvenir:
 ${DARK_GREEN}${BOLD}Dwarf Turtle Shelmet:
 ${DARK_GREEN}${BOLD}Crochet Tiger Plushies:
 ${DARK_GREEN}${BOLD}Antique Remedies:
-${GRAY}${BOLD}Enchanted Gold: 
-${GRAY}${BOLD}Enchanted Iron: 
-${GRAY}${BOLD}Enchanted Ancient Claw: 
-${GRAY}${BOLD}Ancient Claw: 
 ${GOLD}${BOLD}Coins:
 `
+
+// ${GRAY}${BOLD}Enchanted Gold: 
+// ${GRAY}${BOLD}Enchanted Iron: 
+// ${GRAY}${BOLD}Enchanted Ancient Claw: 
+// ${GRAY}${BOLD}Ancient Claw: 
+
 const DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10,50,1],"moveMobCoounter",dianaMobTrackerExample,"dianaMobTracker");
 const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10,150,1],"moveLootCoounter",dianaLootTrackerExample,"dianaLootTracker");
 
@@ -61,15 +63,6 @@ ${GREEN}${BOLD}Siamese Lynx: ${mobTracker["mobs"]["Siamese Lynx"]}
 ${GREEN}${BOLD}Minos Hunter: ${mobTracker["mobs"]["Minos Hunter"]}
 ${GRAY}${BOLD}Total Mobs:
 `
-    `&4Diana Mob Tracker
-Minos Inquisitor: ${GRAY}${mobTracker["mobs"]["Minos Inquisitor"]}
-Minos Champion: ${GRAY}${mobTracker["mobs"]["Minos Champion"]}
-Minotaur: ${GRAY}${mobTracker["mobs"]["Minotaur"]}
-Gaia Construct: ${GRAY}${mobTracker["mobs"]["Gaia Construct"]}
-Siamese Lynx: ${GRAY}${mobTracker["mobs"]["Siamese Lynx"]}
-Minos Hunter: ${GRAY}${mobTracker["mobs"]["Minos Hunter"]}
-Total Mobs: 
-`
     }
 }
 /**
@@ -83,18 +76,19 @@ export function refreshItemOverlay(lootTracker, setting){
 -------------------
 ${LIGHT_PURPLE}${BOLD}Chimera: ${GRAY}${lootTracker["items"]["Chimera"]}
 ${DARK_PURPLE}${BOLD}Minos Relic: ${GRAY}${lootTracker["items"][""]}
-${GOLD}${BOLD}Griffin Feather: ${GRAY}${lootTracker["items"]["Griffin Feather"]}
 ${GOLD}${BOLD}Daedalus Stick: ${GRAY}${lootTracker["items"]["Daedalus Stick"]}
+${GOLD}${BOLD}Griffin Feather: ${GRAY}${lootTracker["items"]["Griffin Feather"]}
 ${GOLD}${BOLD}Crown of Greed: ${GRAY}${lootTracker["items"]["Crown of Greed"]}
 ${GOLD}${BOLD}Washed-up Souvenir: ${GRAY}${lootTracker["items"]["Washed-up Souvenir"]}
 ${DARK_GREEN}${BOLD}Dwarf Turtle Shelmet: ${GRAY}${lootTracker["items"][""]}
 ${DARK_GREEN}${BOLD}Crochet Tiger Plushies: ${GRAY}${lootTracker["items"][""]}
 ${DARK_GREEN}${BOLD}Antique Remedies: ${GRAY}${lootTracker["items"][""]}
-${GRAY}${BOLD}Enchanted Gold: ${GRAY}${lootTracker["items"]["ENCHANTED_GOLD"]}
-${GRAY}${BOLD}Enchanted Iron: ${GRAY}${lootTracker["items"]["ENCHANTED_IRON"]}
-${GRAY}${BOLD}Enchanted Ancient Claw: ${GRAY}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
-${GRAY}${BOLD}Ancient Claw: ${GRAY}${lootTracker["items"]["ANCIENT_CLAW"]}
 ${GOLD}${BOLD}Coins: ${GRAY}${lootTracker["items"]["coins"]}
 `
     }
 }
+
+// ${GRAY}${BOLD}Enchanted Gold: ${GRAY}${lootTracker["items"]["ENCHANTED_GOLD"]}
+// ${GRAY}${BOLD}Enchanted Iron: ${GRAY}${lootTracker["items"]["ENCHANTED_IRON"]}
+// ${GRAY}${BOLD}Enchanted Ancient Claw: ${GRAY}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
+// ${GRAY}${BOLD}Ancient Claw: ${GRAY}${lootTracker["items"]["ANCIENT_CLAW"]}
