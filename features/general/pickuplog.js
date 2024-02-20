@@ -1,7 +1,8 @@
 import settings from "../../settings";
-import { getSBID, isInSkyblock, dianaLootCounter } from '../../utils/functions';
+import { getSBID, isInSkyblock } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
 import { getWorld } from '../../utils/world';
+import { dianaLootCounter } from '../diana/DianaTracker';
 
 
 function readPlayerInventory() {
