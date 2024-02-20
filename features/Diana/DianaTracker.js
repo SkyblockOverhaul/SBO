@@ -3,6 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock } from '../../utils/functions.js';
 import { getMayor, getPerks } from "../../utils/mayor";
+import { isActiveForOneSecond } from '../../example.js';
 
 
 // mob tracker
@@ -34,17 +35,17 @@ registerWhen(register("chat", () => {
 }).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker);
 
 function trackItem(item, category, amount) {
-    trackOne(trackerMayor, item, category, "Mayor");
-    trackOne(trackerTotal, item, category, "Total");
-    trackOne(trackerSession, item, category, "Session");
+    trackOne(trackerMayor, item, category, "Mayor", amount);
+    trackOne(trackerTotal, item, category, "Total", amount);
+    trackOne(trackerSession, item, category, "Session", amount);
 }
 
-function trackOne(tracker, item, category, type) {
+function trackOne(tracker, item, category, type, amount) {
     if (tracker[category][item]) {
-        tracker[category][item] += 1;
+        tracker[category][item] += amount;
     }
     else {
-        tracker[category][item] = 1;
+        tracker[category][item] = amount;
     }
     if (type !== "Session") {
         saveLoot(tracker, type);
@@ -109,9 +110,11 @@ if (!trackerSession.hasOwnProperty('mobs')) {
 
 export function dianaLootCounter(item, amount) {
     countThisIds = ["ROTTEN_FLESH", "WOOD"]
-    for (var i in countThisIds.values()) {
-        if (item === i) {
-            trackItem(item, "items", amount);
+    if (isActiveForOneSecond()) {
+        for (var i in countThisIds.values()) {
+            if (item === i) {
+                trackItem(item, "items", amount);
+            }
         }
     }
 }
@@ -171,6 +174,7 @@ register('command', () => {
         ChatLib.chat(item + ": " + trackerMayor["items"][item]);
     }
 }).setName("sbotm");
+
 register('command', () => {
     for (var item in trackerTotal["items"]) {
         ChatLib.chat(item + ": " + trackerTotal["items"][item]);

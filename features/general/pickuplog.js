@@ -1,7 +1,9 @@
+import settings from "../../settings";
 import { dianaLootCounter } from '../diana/DianaTracker.js';
 import { getSBID, isInSkyblock } from '../../utils/functions.js';
-import settings from "../../settings";
 import { registerWhen } from '../../utils/variables.js';
+import { getWorld } from '../../utils/world.js';
+
 
 function readPlayerInventory() {
     playerItems = {}
@@ -63,9 +65,5 @@ function pickuplog() {
 }
 
 registerWhen(register('step', () => {
-    console.log("getWorld(): " + getWorld());
-    if (World.getWorld() != null) { // Überprüfen Sie, ob der Spieler in einer Welt ist
-        pickuplog();
-    }
-
-}).setFps(10), () => settings.dianaLootTracker && isInSkyblock());
+    pickuplog();
+}).setFps(10), () => settings.dianaLootTracker && isInSkyblock() && getWorld() === "Hub");
