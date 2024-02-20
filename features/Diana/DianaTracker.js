@@ -70,18 +70,30 @@ function saveLoot(tracker, type) {
 
 
 // todo: 
-// getYear() // fertig
-// make pickuplog only works while in no gui open
 // trackerMayor reset on new mayor
 // mayor tracker nur reseten wenn neuer mayor diana ist
 // vielleicht tracker für die letzten 5 mayor speichern
+
+// make pickuplog only works while in no gui open
 // lootchare books erkennen
 // pickuplog updaterate vielleicht anpassen
 
+// tracker[type][item]
+// type = "mobs" or "items"
+export function getTracker(type) {
+    switch (type) {
+        case "Mayor":
+            return trackerMayor;
+        case "Total":
+            return trackerTotal;
+        case "Session":
+            return trackerSession;
+    }
+}
 
-export var trackerMayor = loadTracker("Mayor");
-export var trackerTotal = loadTracker("Total");
-export var trackerSession = {};
+let trackerMayor = loadTracker("Mayor");
+let trackerTotal = loadTracker("Total");
+let trackerSession = {};
 
 // mayor tracker
 if (!trackerMayor.hasOwnProperty('items')) {
