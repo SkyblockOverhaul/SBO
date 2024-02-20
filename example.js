@@ -12,9 +12,17 @@ Gaia Construct:
 Siamese Lynx:
 Minos Hunter:
 `
+export function isActiveForOneSecond() {
+    return entityDeathOccurred;
+}
 
+let entityDeathOccurred = false;
 const DianaMobTracker = new Overlay("dianaMobTracker",["Hub"], [150,150,1],"moveMobCoounter",dianaMobTrackerExample);
 registerWhen(register("entityDeath", () => {
+    entityDeathOccurred = true;
+    setTimeout(() => {
+        entityDeathOccurred = false;
+    }, 1000);
     switch (settings.dianaMobTracker){
         case 1:
             DianaMobTracker.message =
@@ -38,8 +46,9 @@ Minos Hunter: 30
             
     }
 }), () => getWorld() === "Hub" && settings.dianaMobTracker !== 0);
-
-
+registerWhen(register("step", () => {
+    print(isActiveForOneSecond());
+}).setFps(1), () => getWorld() === "Hub" && settings.dianaMobTracker !== 0);
 // registerWhen(register("RenderOverlay", DianaMobTrackerToggle), () => settings.dianaMobTracker);
 
 
