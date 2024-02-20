@@ -33,7 +33,7 @@ registerWhen(register("chat", () => {
 // todo: 
 // trackerMayor reset on new mayor
 // mayor tracker nur reseten wenn neuer mayor diana ist
-// vielleicht tracker für die letzten 5 mayor speichern
+// vielleicht tracker für die letzten 2 mayor speichern
 
 // make pickuplog only works while in no gui open
 // lootchare books erkennen

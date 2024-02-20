@@ -1,7 +1,6 @@
 import settings from "../../settings";
 import { GRAY,  WHITE } from "../../utils/constants";
-import { getClosest } from "../../utils/functions";
-import { getMayor, getPerks } from "../../utils/mayor";
+import { getClosest, getMayor, getPerks } from "../../utils/functions";
 import { delay } from "../../utils/threads";
 import { data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
