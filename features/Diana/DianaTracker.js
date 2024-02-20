@@ -46,7 +46,9 @@ function trackOne(tracker, item, category, type) {
     else {
         tracker[category][item] = 1;
     }
-    saveLoot(tracker, type);
+    if (type !== "Session") {
+        saveLoot(tracker, type);
+    }
 }
 
 // loot tracker
