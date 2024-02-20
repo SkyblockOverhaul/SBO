@@ -43,7 +43,12 @@ import {
     // }
 })
 class Settings {
-
+    constructor() {
+        this.initialize(this);
+        // this.addDependency("Checkbox", "Do action!!!")
+        this.addDependency("Mob View", "Diana Mob Tracker");
+        this.addDependency("Loot View", "Diana Loot Tracker");
+    }
 
     //-----------Diana----------------
     @SwitchProperty({
@@ -87,28 +92,36 @@ class Settings {
     dianaChat = false;
 
     // --- Diana Tracker ---
-    @SelectorProperty({
+    @SwitchProperty({
         name: "Diana Mob Tracker",
         description: "Tracks your Diana Mob kills",
         category: "Trackers",
-        subcategory: "Diana Tracker",
+        subcategory: "Diana Trackers",
+    })
+    dianaMobTracker = false;
+    @SelectorProperty({
+        name: "Mob View",
+        description: "Tracks your Diana Mob kills",
+        category: "Trackers",
+        subcategory: "Diana Trackers",
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
-    dianaMobTracker = 0;
-    // @SelectorProperty({
-    //     name: "Diana Mob Tracker v2",
-    //     description: "Tracks your Diana Mob kills",
-    //     category: "Trackerffff",
-    //     options: ["OFF", "Overall View", "Session View"]
-    // })
-    // mobTracker = 0;
+    dianaMobTrackerView = 0;
     @SwitchProperty({
         name: "Diana Loot Tracker",
         description: "Tracks your Diana loot",
         category: "Trackers",
-        subcategory: "Diana Tracker"
+        subcategory: "Diana Trackers"
     })
     dianaLootTracker = false;
+    @SelectorProperty({
+        name: "Loot View",
+        description: "Tracks your Diana loot",
+        category: "Trackers",
+        subcategory: "Diana Trackers",
+        options: ["OFF", "Overall View", "Event View", "Session View"]
+    })
+    dianaLootTrackerView = 0;
 
     // @TextProperty({
     //     name: 'text',
@@ -154,10 +167,7 @@ class Settings {
     // })
     // percentSlider = 0.0;
 
-    constructor() {
-        this.initialize(this);
-        // this.addDependency("Checkbox", "Do action!!!")
-    }
+
 }
 
 export default new Settings();

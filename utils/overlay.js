@@ -29,8 +29,9 @@ export class Overlay {
      * @param {number[]} loc - An array representing the x, y, and scale of the overlay.
      * @param {string} command - The command name that will open the GUI.
      * @param {string} example - An example text to be displayed as an overlay.
+     * @param {string} [optionalParam] - An optional parameter.
      */
-    constructor(setting, requires, loc, command, example) {
+    constructor(setting, requires, loc, command, example, optionalParam) {
         overlays.push(this);
         // Store the inputs as instance variables.
         this.setting = setting;
@@ -41,6 +42,7 @@ export class Overlay {
         this.example = example;
         this.message = example;
         this.gui = new Gui();
+        this.optionalParam = optionalParam;
         this.setSize();
 
         // Register a command to open the GUI when executed.
@@ -63,7 +65,7 @@ export class Overlay {
                 renderScale(this.loc[2], this.example, this.X, this.Y);
 
                 // GUI Instructions
-            } else if (settings[this.setting] && (this.requires.has(getWorld()) || this.requires.has("all")) && !gui.isOpen()) {
+            } else if (settings[this.setting] && (this.requires.has(getWorld()) || this.requires.has("all")) && !gui.isOpen() && settings[this.optionalParam]) {
                 if (this.requires.has("misc")) {
                     if (Player.getContainer().getName() !== "Paid Chest") return;
                     renderScale(this.loc[2], this.message, this.X, this.Y);
