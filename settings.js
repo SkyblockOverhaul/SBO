@@ -67,13 +67,13 @@ class Settings {
     })
     dianaWarp = false;
     
-    @SwitchProperty({
-        name: "Inquis Detection",
-        description: "Chat massage for Inquis detection.",
-        category: "General",
-        subcategory: "Diana"
-    })
-    inquisDetect = false;
+    // @SwitchProperty({
+    //     name: "Inquis Detection",
+    //     description: "Chat massage for Inquis detection.",
+    //     category: "General",
+    //     subcategory: "Diana"
+    // })
+    // inquisDetect = false;
 
     // --- Griffin Burrow ---
     @SwitchProperty({
@@ -83,13 +83,13 @@ class Settings {
         subcategory: "Griffin Burrow"
     })
     dianaBurrow = false;
-    @SwitchProperty({
-        name: "Burrow Chat Alert",
-        description: "Chat massage for burrow detection.",
-        category: "General",
-        subcategory: "Griffin Burrow"
-    })
-    dianaChat = false;
+    // @SwitchProperty({
+    //     name: "Burrow Chat Alert",
+    //     description: "Chat massage for burrow detection.",
+    //     category: "General",
+    //     subcategory: "Griffin Burrow"
+    // })
+    // dianaChat = false;
 
     // --- Diana Tracker ---
     @SwitchProperty({
@@ -101,7 +101,7 @@ class Settings {
     dianaMobTracker = false;
     @SelectorProperty({
         name: "Mob View",
-        description: "Tracks your Diana Mob kills",
+        description: "Tracks your Diana Mob kills /movemobcounter to move the counter",
         category: "Trackers",
         subcategory: "Diana Trackers",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -116,7 +116,7 @@ class Settings {
     dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
-        description: "Tracks your Diana loot",
+        description: "Tracks your Diana loot /movelootcounter to move the counter",
         category: "Trackers",
         subcategory: "Diana Trackers",
         options: ["OFF", "Overall View", "Event View", "Session View"]
