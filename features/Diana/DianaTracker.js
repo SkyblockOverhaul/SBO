@@ -7,13 +7,8 @@ import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
 
 // todo: 
-// trackerMayor reset on new mayor
-// mayor tracker nur reseten wenn neuer mayor diana ist
-// vielleicht tracker für die letzten 2 mayor speichern
-
-// make pickuplog only works while in no gui open
-// lootchare books erkennen
-// pickuplog updaterate vielleicht anpassen
+// lootshare books erkennen
+// fix checkDataLoaded()
 
 // todo end
 
@@ -95,9 +90,8 @@ function initializeTracker() {
 
 // check if data is loaded and time is set //
 function checkDataLoaded() {
-    return getDateMayorElected() != undefined && Object.keys(trackerTotal).length != 0 && Object.keys(trackerMayor).length != 0;
+    return getDateMayorElected() != undefined && Object.keys(trackerTotal).length != 0;
 }
-
 
 // refresh overlay (items, mobs) //
 function refreshOverlay(tracker, setting, category) {
