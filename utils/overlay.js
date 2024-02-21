@@ -39,6 +39,7 @@ export class Overlay {
         this.loc = loc;
         this.X = this.loc[0] / this.loc[2];
         this.Y = this.loc[1] / this.loc[2];
+        this.S = this.loc[2];
         this.example = example;
         this.message = example;
         this.gui = new Gui();
@@ -90,14 +91,17 @@ export class Overlay {
                     this.loc[2] += 0.05;
                     this.X = this.loc[0] / this.loc[2];
                     this.Y = this.loc[1] / this.loc[2];
+                    this.S = this.loc[2];
                 } else if (keyCode === 12) {  // Decrease Scale (- key)
                     this.loc[2] -= 0.05;
                     this.X = this.loc[0] / this.loc[2];
                     this.Y = this.loc[1] / this.loc[2];
+                    this.S = this.loc[2];
                 } else if (keyCode === 19) {  // Reset Scale (r key)
                     this.loc[2] = 1;
                     this.X = this.loc[0];
                     this.Y = this.loc[1];
+                    this.S = this.loc[2];
                 }
             }
         });

@@ -43,9 +43,36 @@ ${GOLD}${BOLD}Coins: ${WHITE}
 // ${GRAY}${BOLD}Enchanted Iron: 
 // ${GRAY}${BOLD}Enchanted Ancient Claw: 
 // ${GRAY}${BOLD}Ancient Claw: 
+fileLocation = "config/ChatTriggers/modules/SBO/guiSettings.json";
+function loadGuiSettings() {
+    let loadedSettings = {};
+    try {
+        loadedSettings = JSON.parse(FileLib.read(fileLocation)) || {};
+    } catch (e) {
+        loadedSettings = {
+            MobLoc: {
+                "x": 10,
+                "y": 50,
+                "s": 1
+            },
+            LootLoc: {
+                "x": 10,
+                "y": 150,
+                "s": 1
+            }
+        };
+        saveGuiSettings(loadedSettings);
+    }
+    return loadedSettings;
+}
+function saveGuiSettings(guiSettings) {
+    FileLib.write(fileLocation, JSON.stringify(guiSettings));
+}
+guiSettings = loadGuiSettings();
 
-const DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10,50,1],"moveMobCoounter",dianaMobTrackerExample,"dianaMobTracker");
-const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10,150,1],"moveLootCoounter",dianaLootTrackerExample,"dianaLootTracker");
+
+const DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [guiSettings["MobLoc"]["x"], guiSettings["MobLoc"]["y"], guiSettings["MobLoc"]["s"]],"moveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
+const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [guiSettings["LootLoc"]["x"],guiSettings["LootLoc"]["y"],guiSettings["LootLoc"]["s"]],"moveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
 
 
 /**
@@ -53,6 +80,10 @@ const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10,150,1],
  * @param {string} setting 
  */
 export function mobOverlay(mobTracker, setting, percentDict) {
+    guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
+    guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
+    guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
+    saveGuiSettings(guiSettings);
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
@@ -75,6 +106,10 @@ ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
  * @param {string} setting 
  */
 export function itemOverlay(lootTracker, setting, percentDict){
+    guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
+    guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
+    guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
+    saveGuiSettings(guiSettings);
     if (setting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
