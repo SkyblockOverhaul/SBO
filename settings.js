@@ -52,6 +52,7 @@ class Settings {
         this.addDependency('Allinvite','Party Commands')
         this.addDependency('Party Transfer','Party Commands')
         this.addDependency('Promote/Demote','Party Commands')
+        this.addDependency('Ask Carrot','Party Commands')
     }
 
     //-----------Diana----------------
@@ -181,6 +182,14 @@ class Settings {
         subcategory: 'Party Commands',
     })
     MoteCommand = false;
+
+    @SwitchProperty({
+        name: 'Ask Carrot',
+        description: 'Enable !carrot Command',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    carrotCommand = false;
 }
 
 export default new Settings();

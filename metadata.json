@@ -2,10 +2,9 @@
   "name": "SBO",
   "creator": "RolexDE, D4rkswift",
   "description": "SBO is the Diana mod that you’ve been looking for! for more features use our Website: https://skyblockoverhaul.com/",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "entry": "index.js",
   "requires": [
-    "axios",
     "requestV2",
     "Vigilance",
     "PogData"

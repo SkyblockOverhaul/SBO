@@ -1,6 +1,29 @@
 import settings from "../../settings";
 import { getplayername } from "../../utils/functions";
 
+const carrot = [
+    "As I see it, Carrot",
+    "It is Carrot",
+    "It is decidedly Carrot",
+    "Most likely Carrot",
+    "Outlook Carrot",
+    "Signs point to Carrot",
+    "Without a Carrot",
+    "Yes - Carrot",
+    "Carrot - definitely",
+    "You may rely on Carrot",
+    "Ask Carrot later",
+    "Carrot predict now",
+    "Concentrate and ask Carrot ",
+    "Don't count on it - Carrot 2024",
+    "My reply is Carrot",
+    "My sources say Carrot",
+    "Outlook not so Carrot",
+    "Very Carrot",
+    "Carrot",
+];
+
+
 register("chat", (player, message) => {
     switch (message) {
         case "!w":
@@ -39,6 +62,15 @@ register("chat", (player, message) => {
             if (settings.PartyCommands && settings.MoteCommand) {
                 setTimeout(function() {
                     ChatLib.command("p promote " + getplayername(player))
+                },100)
+            }
+            break;
+        case "!8ball":
+        case "!c":
+        case "!carrot":
+            if(settings.carrotCommand){
+                setTimeout(function() {
+                    ChatLib.command("pc " + carrot[Math.floor(Math.random() * carrot.length)]);
                 },100)
             }
             break;
