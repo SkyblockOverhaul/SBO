@@ -94,49 +94,57 @@ export function isDataLoaded() {
 }
 
 function checkDataLoaded() {
+    ChatLib.chat("checkDataLoaded");
     // check if file exists if not create it
-    
-    let tempDict = {};
-    if (!FileLib.exists(fileLocation + "Total.json")) {
-        tempDict = {};
-        tempDict = initializeTracker();
-        FileLib.write(fileLocation + "Total.json", JSON.stringify(tempDict));
-    }
-
-    if (!FileLib.exists(fileLocation + "Mayor.json")) {
-        if (getDateMayorElected() != undefined) {
+    try {
+        let tempDict = {};
+        if (!FileLib.exists(fileLocation + "Total.json")) {
             tempDict = {};
-            tempDict[getDateMayorElected().getFullYear()] = initializeTracker();
-            FileLib.write(fileLocation + "Mayor.json", JSON.stringify(tempDict));
+            tempDict = initializeTracker();
+            FileLib.write(fileLocation + "Total.json", JSON.stringify(tempDict));
+        }
+    
+        if (!FileLib.exists(fileLocation + "Mayor.json")) {
+            if (getDateMayorElected() != undefined) {
+                tempDict = {};
+                tempDict[getDateMayorElected().getFullYear()] = initializeTracker();
+                FileLib.write(fileLocation + "Mayor.json", JSON.stringify(tempDict));
+            }
+        }
+        if (!FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json")) {
+            tempDict = {
+                MobLoc: {
+                    "x": 10,
+                    "y": 50,
+                    "s": 1
+                },
+                LootLoc: {
+                    "x": 10,
+                    "y": 150,
+                    "s": 1
+                }
+            };
+            FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict));
         }
     }
-    if (!FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json")) {
-        tempDict = {
-            MobLoc: {
-                "x": 10,
-                "y": 50,
-                "s": 1
-            },
-            LootLoc: {
-                "x": 10,
-                "y": 150,
-                "s": 1
-            }
-        };
-        FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict));
+    catch (e) {
+        ChatLib.chat("Error: " + e);
     }
+    
 }
 
 let dataLoaded = false;
-registerWhen(register("step", () => {
-    checkDataLoaded();
-    let check1 = FileLib.exists(fileLocation + "Total.json");
-    let check2 = FileLib.exists(fileLocation + "Mayor.json");
-    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
-    if (check1 && check2 && check3) {
-        dataLoaded = true;
+register("step", () => {
+    if (!dataLoaded) {
+        checkDataLoaded();
+        let check1 = FileLib.exists(fileLocation + "Total.json");
+        let check2 = FileLib.exists(fileLocation + "Mayor.json");
+        let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+        if (check1 && check2 && check3) {
+            dataLoaded = true;
+        }
     }
-}).setFps(1), () => !dataLoaded);
+}).setFps(1);
 
 // refresh overlay (items, mobs) //
 function refreshOverlay(tracker, setting, category) {
