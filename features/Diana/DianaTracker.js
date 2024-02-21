@@ -79,13 +79,15 @@ export function getTracker(setting) {
 
 // refresh overlay (items, mobs) //
 function refreshOverlay(tracker, setting, category) {
-    if (setting != 0 ) {
-        percentDict = calcPercent(tracker, category, setting);
-        if (category === "items") {
-            itemOverlay(tracker, setting, percentDict);
-        }
-        else {
-            mobOverlay(tracker, setting, percentDict);
+    if (isDataLoaded()) {
+        if (setting != 0 ) {
+            percentDict = calcPercent(tracker, category, setting);
+            if (category === "items") {
+                itemOverlay(tracker, setting, percentDict);
+            }
+            else {
+                mobOverlay(tracker, setting, percentDict);
+            }
         }
     }
 }
@@ -268,27 +270,21 @@ trackerSession = initializeTracker();
 // refresh overlay //
 let tempSettingLoot = -1;
 registerWhen(register("step", () => {
-    if (isDataLoaded()) {
-        tempSettingLoot = settings.dianaLootTrackerView;
-        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    }
+    tempSettingLoot = settings.dianaLootTrackerView;
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
 }).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView);
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
-    if (isDataLoaded()) {
-        tempSettingMob = settings.dianaMobTrackerView;
-        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-    }
+    tempSettingMob = settings.dianaMobTrackerView;
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
 let firstLoad = false;
 registerWhen(register("step", () => {
-    if (isDataLoaded()) {
-        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-        firstLoad = true;
-    }
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    firstLoad = true;
 }).setFps(1), () => !firstLoad);
 
 
