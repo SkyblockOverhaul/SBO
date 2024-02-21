@@ -11,7 +11,7 @@ registerWhen(register("entityDeath", () => {
     setTimeout(() => {
         state.entityDeathOccurred = false;
     }, 1000);
-}), () => getWorld() === "Hub" && settings.dianaMobTracker);
+}), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
 dianaMobTrackerExample = 
 `${YELLOW}${BOLD}Diana Mob Tracker
