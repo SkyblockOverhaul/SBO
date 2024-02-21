@@ -28,11 +28,11 @@ registerWhen(register("chat", (woah, mob) => {
             trackMob(mob, "mobs", 1);
             break;       
     }
-}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker);
+}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && getDateMayorElected() != undefined);
 
 registerWhen(register("chat", () => {
     trackItem("Minos Inquisitor", "mobs", 1);
-}).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker);
+}).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && getDateMayorElected() != undefined);
 // todo: 
 // trackerMayor reset on new mayor
 // mayor tracker nur reseten wenn neuer mayor diana ist
@@ -56,12 +56,12 @@ registerWhen(register("chat", (drop) => {
             trackItem(drop, "items", 1);
             break;
     }
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && getDateMayorElected() != undefined);
 
 registerWhen(register("chat", (coins) => {
     trackItem("coins", "items", coins);
     ChatLib.chat(coins);
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && getDateMayorElected() != undefined);
 
 registerWhen(register("chat", (drop, mf) => {
     switch (drop) {
@@ -78,7 +78,7 @@ registerWhen(register("chat", (drop, mf) => {
             trackItem(drop, "items", 1);
             break;
     }
-}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
+}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && getDateMayorElected() != undefined);
 
 
 // test command
@@ -110,7 +110,14 @@ function loadTracker(type) {
     try {
         loadedTracker = JSON.parse(FileLib.read(fileLocation + type + ".json")) || {};
     } catch (e) {
-        loadedTracker = {};
+        if (type === "Total")
+        {
+            loadedTracker = {};
+            loadedTracker = initializeTracker();
+        }
+        else {
+            loadedTracker = {};
+        }
     }
     return loadedTracker;
 }
@@ -200,6 +207,8 @@ function initializeTracker() {
     };
     return tempTracker;
 }
+
+
 let tempSettingLoot = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
