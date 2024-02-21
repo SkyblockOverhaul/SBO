@@ -88,7 +88,6 @@ export function getDateString(date) {
     return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
 }
 
-
 export function toTitleCase(str) {
     return str.replace(
       /\w\S*/g,
@@ -98,5 +97,38 @@ export function toTitleCase(str) {
     );
 }
 
+export function readPlayerInventory(type="") {
+    if (type === "hotbar") {
+        var slots = 8;
+    }
+    else {
+        var slots = 39;
+    }
+    playerItems = {}
+    var playerInv = Player.getInventory();
+    var playerInvItems = playerInv.getItems();
+    for (var i in playerInv.getItems()) {
+        if (i <= slots) {
+            if (playerInvItems[i] !== null) {
+                if (playerItems[getSBID(playerInvItems[i])]) {
+                    playerItems[getSBID(playerInvItems[i])] += playerInvItems[i].getStackSize();
+                }
+                else {
+                    playerItems[getSBID(playerInvItems[i])] = playerInvItems[i].getStackSize();
+                }
+            }
+        }
+    }
+    return playerItems;
+}
 
+export function checkItemInHotbar(item) {
+    var hotbarItems = readPlayerInventory("hotbar");
+    for (var i in hotbarItems) {
+        if (item == i) {
+            return true;
+        }
+    }
+    return false;
+}
 

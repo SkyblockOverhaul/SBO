@@ -42,21 +42,19 @@ function checkDataLoaded() {
 }
 
 let dataLoaded = false;
-let firstMessage = true;
-registerWhen(register("step", () => {
-    checkDataLoaded();
-    let check1 = FileLib.exists(trackerFileLocation + "Total.json");
-    let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
-    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
-    let check4 = (getDateMayorElected() !== undefined);
-    if (check1 && check2 && check3 && check4) {
-        dataLoaded = true;
-        if (firstMessage) {
+register("step", () => {
+    if (!dataLoaded) {
+        checkDataLoaded();
+        let check1 = FileLib.exists(trackerFileLocation + "Total.json");
+        let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
+        let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+        let check4 = (getDateMayorElected() !== undefined);
+        if (check1 && check2 && check3 && check4) {
+            dataLoaded = true;
             ChatLib.chat("§6[SBO] §4Module Loaded");
-            firstMessage = false;
         }
     }
-}).setFps(1), () => !dataLoaded);
+}).setFps(1);
 
 register("command", () => {
     ChatLib.chat("§6[SBO] §4Data Loaded: " + dataLoaded);

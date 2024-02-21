@@ -1,27 +1,12 @@
 import settings from "../../settings";
-import { getSBID, isInSkyblock } from '../../utils/functions';
+import { readPlayerInventory, isInSkyblock } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
 import { getWorld } from '../../utils/world';
 import { dianaLootCounter } from '../diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
 
 
-function readPlayerInventory() {
-    playerItems = {}
-    var playerInv = Player.getInventory();
-    var playerInvItems = playerInv.getItems();
-    for (var i in playerInv.getItems()) {
-        if (playerInvItems[i] !== null) {
-            if (playerItems[getSBID(playerInvItems[i])]) {
-                playerItems[getSBID(playerInvItems[i])] += playerInvItems[i].getStackSize();
-            }
-            else {
-                playerItems[getSBID(playerInvItems[i])] = playerInvItems[i].getStackSize();
-            }
-        }
-    }
-    return playerItems;
-}
+
 
 function compareInventories(oldPlayerItems, newPlayerItems) {
     for (var item in newPlayerItems) {
@@ -65,17 +50,8 @@ function pickuplog() {
     }
 }
 
-export function checkItemInHotbar(item) {
-    var hotbar = Player.getHotbar();
-    for (var i in hotbar.getItems()) {
-        if (hotbar.getItems()[i] !== null) {
-            if (getSBID(hotbar.getItems()[i]) === item) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
+
+
 
 registerWhen(register('step', () => {
     if(isDataLoaded()) {

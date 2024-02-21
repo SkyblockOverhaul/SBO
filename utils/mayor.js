@@ -1,7 +1,6 @@
 import { request } from "../../requestV2";
 import { registerWhen } from "./variables";
 import { isInSkyblock } from "./functions";
-
 /**
  * Gets the array of mayor's perks.
  *
@@ -42,10 +41,6 @@ export function getDateMayorElected() {
     return dateMayorElected;
 }
 
-export function checkDiana() {
-    // spate in hotbar missing
-    return getWorld() === "Hub" && getMayor() === "Diana" && getPerks().has("Mythological Ritual");
-}
 
 
 function getYearMayorRequestV2() {

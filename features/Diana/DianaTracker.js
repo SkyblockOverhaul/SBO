@@ -6,8 +6,11 @@ import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
 import { trackerFileLocation, initializeTracker, isDataLoaded } from "../../utils/checkData";
+import { checkDiana } from "../../utils/checkDiana";
 
 // todo: 
+// fix date tracking
+// borrows count 
 
 // todo end
 
@@ -25,23 +28,30 @@ function loadTracker(type) {
 // track items with pickuplog //
 
 export function dianaLootCounter(item, amount) {
+    ChatLib.chat("active" + isActiveForOneSecond());
+    ChatLib.chat("diana: " + checkDiana());
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC", "&5ROTTEN_FLESH"];
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
     var checkBool = true;
     if (isActiveForOneSecond()) {
-        for (var i in countThisIds.values()) {
-            if (item === i) {
-                trackItem(item, "items", amount);
-                checkBool = false;
-            }
-        }
-        if (checkBool) {
-            for (var i in rareDrops.values()) {
-                color = i.slice(0, 2);
-                if (item === i.slice(2)) {
-                    tempString = toTitleCase(item.replace("_", " ").toLowerCase());
-                    ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
+        if (checkDiana()) {
+            for (var i in countThisIds.values()) {
+                if (item === i) {
                     trackItem(item, "items", amount);
+                    checkBool = false;
+                }
+            }
+            if (checkBool) {
+                for (var i in rareDrops.values()) {
+                    color = i.slice(0, 2);
+                    if (item == "MINOS_RELIC") {
+                        Client.Companion.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+                    }
+                    if (item === i.slice(2)) {
+                        tempString = toTitleCase(item.replace("_", " ").toLowerCase());
+                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
+                        trackItem(item, "items", amount);
+                    }
                 }
             }
         }
@@ -86,7 +96,7 @@ function calcPercent(trackerToCalc, type, setting) {
     percentDict = {};
     if(type == "mobs"){
         for (var mob in trackerToCalc["mobs"]) {
-            percentDict[mob] = Math.round((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"]) * 100);
+            percentDict[mob] = parseFloat((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"] * 100).toFixed(2));
         }
         return percentDict;
     }
@@ -94,13 +104,13 @@ function calcPercent(trackerToCalc, type, setting) {
         for (var obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
             switch (obj) {
                 case "Minos Inquisitor":
-                    percentDict["Chimera"] = Math.round((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj]) * 100);
+                    percentDict["Chimera"] = parseFloat((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
                     break;
                 case "Minos Champion":
-                    percentDict["Minos Relic"] = Math.round((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj]) * 100);
+                    percentDict["Minos Relic"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
                     break;
                 case "Minotaur":
-                    percentDict["Daedalus Stick"] = Math.round((trackerToCalc["items"]["Daedalus Stick"] / trackerToCalc["mobs"][obj]) * 100);
+                    percentDict["Daedalus Stick"] = parseFloat((trackerToCalc["items"]["Daedalus Stick"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
                     break;
             }
         }
@@ -195,18 +205,22 @@ registerWhen(register("chat", (coins) => {
 
 registerWhen(register("chat", (drop) => {
     drop = drop.slice(0, 14); // 6 statt 14 für potato und carrot
-    if (isDataLoaded()) {
+    if (isDataLoaded() && checkDiana()) {
         switch (drop) {
             case "Enchanted Book":
+                Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                 trackItem("Chimera", "items", 1);
                 break;
             case "Daedalus Stick":
+                Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                 trackItem(drop, "items", 1);
                 break;
             // case "Potato":
+            //     Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
             //     trackItem(drop, "items", 1);
             //     break;
             // case "Carrot":
+            //     Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
             //     trackItem(drop, "items", 1);
             //     break;
         }
