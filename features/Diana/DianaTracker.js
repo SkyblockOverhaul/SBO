@@ -94,9 +94,9 @@ export function isDataLoaded() {
 }
 
 function checkDataLoaded() {
-    ChatLib.chat("checkDataLoaded");
+    
     // check if file exists if not create it
-    try {
+    
         let tempDict = {};
         if (!FileLib.exists(fileLocation + "Total.json")) {
             tempDict = {};
@@ -126,25 +126,20 @@ function checkDataLoaded() {
             };
             FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict));
         }
-    }
-    catch (e) {
-        ChatLib.chat("Error: " + e);
-    }
     
 }
 
 let dataLoaded = false;
-register("step", () => {
-    if (!dataLoaded) {
-        checkDataLoaded();
-        let check1 = FileLib.exists(fileLocation + "Total.json");
-        let check2 = FileLib.exists(fileLocation + "Mayor.json");
-        let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
-        if (check1 && check2 && check3) {
-            dataLoaded = true;
-        }
+registerWhen(register("step", () => {
+    checkDataLoaded();
+    let check1 = FileLib.exists(fileLocation + "Total.json");
+    let check2 = FileLib.exists(fileLocation + "Mayor.json");
+    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    if (check1 && check2 && check3) {
+        dataLoaded = true;
+        ChatLib.chat("dataLoaded");
     }
-}).setFps(1);
+}).setFps(1), () => !dataLoaded);
 
 // refresh overlay (items, mobs) //
 function refreshOverlay(tracker, setting, category) {
@@ -324,7 +319,7 @@ registerWhen(register("step", () => {
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView  && isDataLoaded());
 
 let firstLoad = false;
-registerWhen(register("step", () => {    
+registerWhen(register("step", () => {    // wird nicht ausgeführt
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
     firstLoad = true;
