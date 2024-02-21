@@ -80,10 +80,13 @@ const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [guiSetting
  * @param {string} setting 
  */
 export function mobOverlay(mobTracker, setting, percentDict) {
-    guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
-    guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
-    guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
-    saveGuiSettings(guiSettings);
+    if( guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S)
+    {
+        guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
+        guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
+        guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
+        saveGuiSettings(guiSettings);
+    }
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
@@ -106,10 +109,13 @@ ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
  * @param {string} setting 
  */
 export function itemOverlay(lootTracker, setting, percentDict){
-    guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
-    guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
-    guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
-    saveGuiSettings(guiSettings);
+    if( guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S)
+    {
+        guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
+        guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
+        guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
+        saveGuiSettings(guiSettings);
+    }
     if (setting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
