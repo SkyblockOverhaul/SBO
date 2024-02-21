@@ -78,8 +78,19 @@ export function mobOverlay(mobTracker, setting, percentDict) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
     if(setting > 0){
+        switch (setting) {
+            case 1:
+                mobTrackerType = "Total";
+                break;
+            case 2:
+                mobTrackerType = "Event";
+                break;
+            case 3:
+                mobTrackerType = "Session";
+                break;
+        };
     DianaMobTracker.message =
-    `${YELLOW}${BOLD}Diana Mob Tracker
+    `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${BOLD}${mobTrackerType}${GRAY})
 ------------------
 ${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
 ${DARK_PURPLE}${BOLD}Minos Champion: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Champion"]} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})
@@ -93,6 +104,8 @@ ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
 }
 
 let lootSettingsLoad = false;
+let mobTrackerType = undefined;
+let lootTrackerType = undefined;
 /**
  * 
  * @param {string} setting 
@@ -117,8 +130,19 @@ export function itemOverlay(lootTracker, setting, percentDict){
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
     if(setting > 0){
+        switch (setting) {
+            case 1:
+                lootTrackerType = "Total";
+                break;
+            case 2:
+                lootTrackerType = "Event";
+                break;
+            case 3:
+                lootTrackerType = "Session";
+                break;
+        };
     DianaLootTracker.message =
-    `${YELLOW}${BOLD}Diana Loot Tracker
+    `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${BOLD}${lootTrackerType}${GRAY})
 -------------------
 ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY})
 ${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${BOLD}${lootTracker["items"]["MINOS_RELIC"]} ${GRAY}(${AQUA}${percentDict["Minos Relic"]}%${GRAY})
