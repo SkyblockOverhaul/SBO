@@ -191,7 +191,7 @@ export function initializeGuiSettings() {
         },
         BobberLoc: {
             "x": 10,
-            "y": 250,
+            "y": 295,
             "s": 1
         }
     };
@@ -211,4 +211,18 @@ export function loadGuiSettings() {
 }
 export function saveGuiSettings(guiSettings) {
     FileLib.write(fileLocation, JSON.stringify(guiSettings));
+}
+
+export function getplayername(player) {
+    let num
+    let name
+    num = player.indexOf(']')
+    if (num == -1) {                // This part is only  ***When I wrote this, god and I knew how it worked, now only he knows.***
+        num = player.indexOf('&7')  // for nons because
+        if (num == -1) {            // it doesnt work
+            num = -2                // without that
+        }                           // #BanNons
+    }
+    name = player.substring(num+2)
+return name
 }

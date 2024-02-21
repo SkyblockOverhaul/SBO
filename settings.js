@@ -23,7 +23,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Trackers'];
+        const categories = ['General','Trackers,','Party Commands'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -48,6 +48,10 @@ class Settings {
         // this.addDependency("Checkbox", "Do action!!!")
         this.addDependency("Mob View", "Diana Mob Tracker");
         this.addDependency("Loot View", "Diana Loot Tracker");
+        this.addDependency('Warp Party','Party Commands')
+        this.addDependency('Allinvite','Party Commands')
+        this.addDependency('Party Transfer','Party Commands')
+        this.addDependency('Promote/Demote','Party Commands')
     }
 
     //-----------Diana----------------
@@ -66,6 +70,13 @@ class Settings {
         subcategory: "Diana"
     })
     dianaWarp = false;
+    @SwitchProperty({
+        name: "Inquis Detection",
+        description: "Chat massage for Inquis Detection.",
+        category: "General",
+        subcategory: "Diana"
+    })
+    inquisDetect = false;
     
     // @SwitchProperty({
     //     name: "Inquis Detection",
@@ -130,8 +141,46 @@ class Settings {
         subcategory: "Bobber Counter"
     })
     bobberCounter = false;
+    //Party Commands
+    @SwitchProperty({
+        name: 'Party Commands',
+        description: 'Enable Party Commands',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    PartyCommands = false;
 
+    @SwitchProperty({
+        name: 'Warp Party',
+        description: '!w, !warp',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    WarpCommand = false;
 
+    @SwitchProperty({
+        name: 'Allinvite',
+        description: '!allinv, !allinvite',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    AllinviteCommand = false;
+
+    @SwitchProperty({
+        name: 'Party Transfer',
+        description: '!transfer [Player] (if no player is defined it transfers the party to the command writer)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    TransferCommand = false;
+
+    @SwitchProperty({
+        name: 'Promote/Demote',
+        description: '!promote/demote [Player] (if no player is defined it pro/demotes the command writer)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    MoteCommand = false;
 }
 
 export default new Settings();
