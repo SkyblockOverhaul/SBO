@@ -3,7 +3,7 @@ import { getSBID, isInSkyblock } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
 import { getWorld } from '../../utils/world';
 import { dianaLootCounter } from '../diana/DianaTracker';
-import { getDateMayorElected } from '../../utils/mayor';
+import { isDataLoaded } from "../../utils/checkData";
 
 
 function readPlayerInventory() {
@@ -78,5 +78,7 @@ export function checkItemInHotbar(item) {
 }
 
 registerWhen(register('step', () => {
-    pickuplog();
-}).setFps(10), () => settings.dianaLootTracker && isInSkyblock() && getWorld() === "Hub" && getDateMayorElected() != undefined);
+    if(isDataLoaded()) {
+        pickuplog();
+    }
+}).setFps(10), () => settings.dianaLootTracker && isInSkyblock() && getWorld() === "Hub");

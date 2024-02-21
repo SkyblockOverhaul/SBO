@@ -61,9 +61,25 @@ export function isInSkyblock() {
 export let state = {
     entityDeathOccurred: false
 }
+
 export function isActiveForOneSecond() {
     return state.entityDeathOccurred;
 }
+
+export function gotLootShare() {
+    return lootShareBool;
+}
+
+let lootShareBool = false;
+register("chat" , (player) => {
+    lootShareBool = true;
+    setTimeout(() => {
+        lootShareBool = false;
+    }, 1000);
+}).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6${player}&r&f!&r");
+// &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
+
+
 register("step", () => {
     inSkyblock = checkIfInSkyblock();
 }).setFps(1);
@@ -71,5 +87,16 @@ register("step", () => {
 export function getDateString(date) {
     return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
 }
+
+
+export function toTitleCase(str) {
+    return str.replace(
+      /\w\S*/g,
+      function(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      }
+    );
+}
+
 
 

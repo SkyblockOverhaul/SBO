@@ -6,7 +6,7 @@ import {mobAnnouncement} from "../../utils/functions";
 import { getWorld } from "../../utils/world";
 let inquis = undefined;
 
-registerWhen(register("chat", (mob) => {
+registerWhen(register("chat", (mob) => { // not used
     if (mob="Minos Inquisitor"){
         ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()))
     }

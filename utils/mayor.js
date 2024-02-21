@@ -1,4 +1,6 @@
 import { request } from "../../requestV2";
+import { registerWhen } from "./variables";
+import { isInSkyblock } from "./functions";
 
 /**
  * Gets the array of mayor's perks.
@@ -130,8 +132,8 @@ register("worldLoad", () => {
     year, mayor = getYearMayorRequestV2();
 });
 
-register("step", () => {
+registerWhen(register("step", () => { 
     scoreboardLines = Scoreboard.getLines();
     skyblockDateString, skyblockDate = convertDate(scoreboardLines[scoreboardLines.length - 3]);
     ChatLib.chat(skyblockDateString);
-}).setFps(1);
+}).setFps(1), () => isInSkyblock());

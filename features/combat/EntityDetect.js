@@ -28,7 +28,7 @@ export function updateEntityList() {
 }
 updateEntityList();
 
-register("tick", () =>{
+register("tick", () =>{ // not used
     entities = [];
     entityList.forEach(entityClass => {
         // Match coloring
