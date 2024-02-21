@@ -204,27 +204,28 @@ let tempSettingLoot = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView);
+}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView && getDateMayorElected() != undefined);
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
+}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView  && getDateMayorElected() != undefined);
 
-refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+let firstLoad = false;
+registerWhen(register("step", () => {    
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    firstLoad = true;
+}).setFps(1), () => getDateMayorElected() != undefined && !firstLoad);
 
 export function trackItem(item, category, amount) {
     trackOne(trackerMayor, item, category, "Mayor", amount);
     trackOne(trackerSession, item, category, "Session", amount);
     trackOne(trackerTotal, item, category, "Total", amount);
-    
-    
 
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-
 }
 
 function refreshOverlay(tracker, setting, category) {
@@ -236,9 +237,6 @@ function refreshOverlay(tracker, setting, category) {
         mobOverlay(tracker, setting, percentDict);
     }
 }
-
-
-
 
 function calcPercent(trackerToCalc, type, setting) {
     if (setting == 2) {
