@@ -122,84 +122,14 @@ class Settings {
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaLootTrackerView = 0;
-
-    //Bobber Counter
+    // Bobber Counter
     @SwitchProperty({
-        name: 'Bobber Counter',
-        description: 'Estimates the number of bobbers cast around you',
-        category: 'General',
-        subcategory: 'Bobber Counter'
+        name: "Bobber Counter",
+        description: "Tracks the number of bobbers near you",
+        category: "Trackers",
+        subcategory: "Bobber Counter"
     })
     bobberCounter = false;
-
-    @ButtonProperty({
-        name: 'Move Bobber Counter HUD',
-        description: 'Click the button to move the Bobber Counter HUD',
-        category: 'General',
-        subcategory: 'Bobber Counter'
-    })
-    openBobberGUI() {
-        ChatLib.command('movebobbercounter', true);
-    }
-
-    @ColorProperty({
-        name: 'Bobber Counter Color',
-        description: 'Pick a Color for the Bobber Counter!',
-        category: 'General',
-        subcategory: 'Bobber Counter'
-    })
-    bobberColor = Color.ORANGE;
-
-    @SwitchProperty({
-        name: 'Chroma Counter',
-        description: 'Counter changes to chroma when the selected or more bobbers are cast',
-        category: 'General',
-        subcategory: 'Bobber Counter'
-    })
-    bobberChroma = false;
-    // @TextProperty({
-    //     name: 'text',
-    //     description: 'Example of text input that does not wrap the text',
-    //     category: 'Tracker',
-    //     subcategory: 'Category',
-    //     placeholder: 'Empty... :(',
-    //     triggerActionOnInitialization: false,
-    // })
-    // textInput = '';
-
-    // @TextProperty({
-    //     name: 'password',
-    //     description: 'Example of text input that uses protected',
-    //     category: 'General',
-    //     subcategory: 'Category',
-    //     protected: true,
-    // })
-    // password = '';
-
-    // @ColorProperty({
-    //     name: 'Color Picker',
-    //     description: 'Pick a color! (hopefully...)',
-    //     category: 'General',
-    //     subcategory: 'Category',
-    // })
-    // myColor = Color.BLUE;
-
-    // @SelectorProperty({
-    //     name: 'Selector',
-    //     description: 'Select an option',
-    //     category: 'General',
-    //     subcategory: 'eeeeee',
-    //     options: ['opt1', 'opty2', 'third option'],
-    // })
-    // myOptions = 0; // Stores index of option
-
-    // @PercentSliderProperty({
-    //     name: 'Percent Slider',
-    //     description: 'Select a percent',
-    //     category: 'General',
-    //     subcategory: 'eeeeee',
-    // })
-    // percentSlider = 0.0;
 
 
 }
