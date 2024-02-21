@@ -5,6 +5,7 @@ import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
+import { isDataLoaded } from "../../utils/checkData";
 
 registerWhen(register("entityDeath", (entity) => {
     var dist = entity.distanceTo(Player.getPlayer());
@@ -60,10 +61,12 @@ let mobSettingsLoad = false;
  */
 export function mobOverlay(mobTracker, setting, percentDict) {
     if (!mobSettingsLoad) {
-        DianaMobTracker.setX(guiSettings["MobLoc"]["x"]);
-        DianaMobTracker.setY(guiSettings["MobLoc"]["y"]);
-        DianaMobTracker.setScale(guiSettings["MobLoc"]["s"]);
-        mobSettingsLoad = true;
+        if(guiSettings != undefined) {
+            DianaMobTracker.setX(guiSettings["MobLoc"]["x"]);
+            DianaMobTracker.setY(guiSettings["MobLoc"]["y"]);
+            DianaMobTracker.setScale(guiSettings["MobLoc"]["s"]);
+            mobSettingsLoad = true;
+        }
     }
     if( guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S)
     {
@@ -97,10 +100,12 @@ let lootSettingsLoad = false;
  */
 export function itemOverlay(lootTracker, setting, percentDict){
     if (!lootSettingsLoad) {
-        DianaLootTracker.setX(guiSettings["LootLoc"]["x"]);
-        DianaLootTracker.setY(guiSettings["LootLoc"]["y"]);
-        DianaLootTracker.setScale(guiSettings["LootLoc"]["s"]);
-        lootSettingsLoad = true;
+        if(guiSettings != undefined) {
+            DianaLootTracker.setX(guiSettings["LootLoc"]["x"]);
+            DianaLootTracker.setY(guiSettings["LootLoc"]["y"]);
+            DianaLootTracker.setScale(guiSettings["LootLoc"]["s"]);
+            lootSettingsLoad = true;
+        }
     }
     if( guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S)
     {

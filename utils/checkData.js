@@ -1,5 +1,5 @@
 import { getDateMayorElected } from "./mayor";
-import { initializeGuiSettings } from "./functions";
+import { initializeGuiSettings, initializeTracker } from "./functions";
 
 // check if data is loaded and time is set //
 export let trackerFileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";

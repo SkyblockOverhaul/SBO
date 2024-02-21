@@ -202,7 +202,7 @@ const fileLocation = "config/ChatTriggers/modules/SBO/guiSettings.json";
 export function loadGuiSettings() {
     let loadedSettings = {};
     try {
-        loadedSettings = JSON.parse(FileLib.read(fileLocation)) || {};
+        loadedSettings = JSON.parse(FileLib.read(fileLocation)) || initializeGuiSettings();
     } catch (e) {
         loadedSettings = initializeGuiSettings();
         saveGuiSettings(loadedSettings);
