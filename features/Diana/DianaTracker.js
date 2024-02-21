@@ -89,9 +89,54 @@ function initializeTracker() {
 }
 
 // check if data is loaded and time is set //
-function checkDataLoaded() {
-    return getDateMayorElected() != undefined && Object.keys(trackerTotal).length != 0;
+export function isDataLoaded() {
+    return dataLoaded;
 }
+
+function checkDataLoaded() {
+    // check if file exists if not create it
+    
+    let tempDict = {};
+    if (!FileLib.exists(fileLocation + "Total.json")) {
+        tempDict = {};
+        tempDict = initializeTracker();
+        FileLib.write(fileLocation + "Total.json", JSON.stringify(tempDict));
+    }
+
+    if (!FileLib.exists(fileLocation + "Mayor.json")) {
+        if (getDateMayorElected() != undefined) {
+            tempDict = {};
+            tempDict[getDateMayorElected().getFullYear()] = initializeTracker();
+            FileLib.write(fileLocation + "Mayor.json", JSON.stringify(tempDict));
+        }
+    }
+    if (!FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json")) {
+        tempDict = {
+            MobLoc: {
+                "x": 10,
+                "y": 50,
+                "s": 1
+            },
+            LootLoc: {
+                "x": 10,
+                "y": 150,
+                "s": 1
+            }
+        };
+        FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict));
+    }
+}
+
+let dataLoaded = false;
+registerWhen(register("step", () => {
+    checkDataLoaded();
+    let check1 = FileLib.exists(fileLocation + "Total.json");
+    let check2 = FileLib.exists(fileLocation + "Mayor.json");
+    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    if (check1 && check2 && check3) {
+        dataLoaded = true;
+    }
+}).setFps(1), () => !dataLoaded);
 
 // refresh overlay (items, mobs) //
 function refreshOverlay(tracker, setting, category) {
@@ -190,7 +235,7 @@ registerWhen(register("chat", (woah, mob) => {
             trackMob(mob, "mobs", 1);
             break;       
     }
-}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && checkDataLoaded());
+}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && isDataLoaded());
 
 
 // track items from chat //
@@ -207,12 +252,12 @@ registerWhen(register("chat", (drop) => {
             trackItem(drop, "items", 1);
             break;
     }
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && checkDataLoaded());
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && isDataLoaded());
 
 registerWhen(register("chat", (coins) => {
     trackItem("coins", "items", coins);
     ChatLib.chat(coins);
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && checkDataLoaded());
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && isDataLoaded());
 
 registerWhen(register("chat", (drop, mf) => {
     switch (drop) {
@@ -229,7 +274,7 @@ registerWhen(register("chat", (drop, mf) => {
             trackItem(drop, "items", 1);
             break;
     }
-}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && checkDataLoaded());
+}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && isDataLoaded());
 
 
 // mayor tracker //
@@ -247,7 +292,7 @@ registerWhen(register("step", () => {
     else {
         ChatLib.chat("No date for mayor election found (undefined)");
     }
-}).setFps(1), () => !trackerBool && checkDataLoaded());
+}).setFps(1), () => !trackerBool && isDataLoaded());
 // total tracker //
 let trackerTotal = loadTracker("Total");
 if (Object.keys(trackerTotal).length == 0) {
@@ -262,20 +307,20 @@ let tempSettingLoot = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView && checkDataLoaded());
+}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView && isDataLoaded());
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView  && checkDataLoaded());
+}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView  && isDataLoaded());
 
 let firstLoad = false;
 registerWhen(register("step", () => {    
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
     firstLoad = true;
-}).setFps(1), () => !firstLoad && checkDataLoaded());
+}).setFps(1), () => !firstLoad && isDataLoaded());
 
 
 // test command
@@ -301,4 +346,4 @@ register('command', () => {
 
 registerWhen(register("chat", () => {
     trackItem("Minos Inquisitor", "mobs", 1);
-}).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && checkDataLoaded());
+}).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && isDataLoaded());
