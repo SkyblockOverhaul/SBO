@@ -1,24 +1,5 @@
 import { request } from "../../requestV2";
 
-
-let mayor = undefined;
-let year = 0;
-let skyblockDate = undefined;
-let skyblockDateString = "";
-let perks = new Set([]);
-let lastMonth = 0;
-let dateMayorElected = undefined;
-let newMayorAtDate = undefined;
-
-register("worldLoad", () => {
-    year, mayor = getYearMayorRequestV2();
-});
-
-register("step", () => {
-    skyblockDateString, skyblockDate = convertDate(Scoreboard.getLines()[7]);
-    ChatLib.chat(skyblockDateString);
-}).setFps(1);
-
 /**
  * Gets the array of mayor's perks.
  *
@@ -133,3 +114,24 @@ function convertDate(dateStr) {
     lastMonth = month;
     return skyblockDateString, skyblockDate;
 }
+
+
+
+let mayor = undefined;
+let year = 0;
+let skyblockDate = undefined;
+let skyblockDateString = "";
+let perks = new Set([]);
+let lastMonth = 0;
+let dateMayorElected = undefined;
+let newMayorAtDate = undefined;
+
+register("worldLoad", () => {
+    year, mayor = getYearMayorRequestV2();
+});
+
+register("step", () => {
+    scoreboardLines = Scoreboard.getLines();
+    skyblockDateString, skyblockDate = convertDate(scoreboardLines[scoreboardLines.length - 3]);
+    ChatLib.chat(skyblockDateString);
+}).setFps(1);
