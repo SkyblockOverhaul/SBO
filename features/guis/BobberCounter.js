@@ -2,6 +2,7 @@ import settings from "../../settings";
 import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
 import { BOLD, GOLD, AQUA} from "../../utils/constants";
+import { registerWhen } from "../../utils/variables";
 
 
 guiSettings = loadGuiSettings();
