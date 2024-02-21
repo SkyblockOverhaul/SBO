@@ -6,12 +6,15 @@ import { Overlay } from "../../utils/Overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 
-registerWhen(register("entityDeath", () => {
-    state.entityDeathOccurred = true;
-    setTimeout(() => {
-        state.entityDeathOccurred = false;
-    }, 1000);
-}), () => getWorld() === "Hub" && settings.dianaMobTracker);
+registerWhen(register("entityDeath", (entity) => {
+    var dist = entity.distanceTo(Player.getPlayer());
+    if (dist < 31 ) {
+        state.entityDeathOccurred = true;
+        setTimeout(() => {
+            state.entityDeathOccurred = false;
+        }, 1000);
+    }
+    }), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
 dianaMobTrackerExample = 
 `${YELLOW}${BOLD}Diana Mob Tracker
