@@ -6,9 +6,6 @@ import { checkItemInHotbar } from "./functions";
 
 export function checkDiana() {
     dianaBool = (getMayor() === "Diana" && getPerks().has("Mythological Ritual"))
-    return getWorld() === "Hub" && checkItemInHotbar("ANCESTRAL_SPADE") && !dianaBool;
+    return getWorld() === "Hub" && checkItemInHotbar("ANCESTRAL_SPADE") && dianaBool;
 }
 
-register("command", () => {
-    ChatLib.chat("is Diana?: " + checkDiana());
-}).setName("sbocheckDiana");

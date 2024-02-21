@@ -1,14 +1,14 @@
 import settings from "../../settings";
 import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
-import { BOLD, GOLD, AQUA} from "../../utils/constants";
+import { BOLD, AQUA, YELLOW} from "../../utils/constants";
 import { registerWhen } from "../../utils/variables";
 
 
 guiSettings = loadGuiSettings();
 
 bobbercounterExample =
-`${GOLD}${BOLD}Bobber:
+`${YELLOW}${BOLD}Bobber:
 `
 let BobberCounter = new Overlay("bobberCounter",["all"], [10, 10, 0],"moveBobberCounter",bobbercounterExample, "bobberCounter");
 
@@ -33,7 +33,7 @@ function bobberOverlay() {
             guiSettings["BobberLoc"]["s"] = BobberCounter.S;
             saveGuiSettings(guiSettings);
         }
-        BobberCounter.message = `${GOLD}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`
+        BobberCounter.message = `${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`
     }
 }
 

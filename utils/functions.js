@@ -66,8 +66,6 @@ export function isActiveForOneSecond() {
     return state.entityDeathOccurred;
 }
 
-
-
 export function getDateString(date) {
     return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
 }
@@ -135,12 +133,7 @@ export function initializeTracker() {
             "ENCHANTED_ANCIENT_CLAW": 0,
             "ANCIENT_CLAW": 0,
             "MINOS_RELIC": 0,
-            "Total Burrows": 0,
-
-            "ROTTEN_FLESH": 0,
-            "WOOD": 0,
-            "Potato": 0,
-            "Carrot": 0
+            "Total Burrows": 0
         },
         mobs: {
             "Minos Inquisitor": 0,

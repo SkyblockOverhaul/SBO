@@ -41,8 +41,10 @@ export function getDateMayorElected() {
     return dateMayorElected;
 }
 
-
-
+let dateMayorElected = undefined;
+let newMayorAtDate = undefined;
+let mayor = undefined;
+let perks = new Set([]);
 function getYearMayorRequestV2() {
     request({
         url: "https://api.hypixel.net/resources/skyblock/election",
@@ -51,14 +53,10 @@ function getYearMayorRequestV2() {
         mayor = response.mayor.name;
         dateMayorElected = convertStringToDate("27.3." + (response.mayor.election.year + 1));
         newMayorAtDate = convertStringToDate("27.3." + (response.mayor.election.year + 2));
-        year = response.current.year;
         perks = new Set([...response.mayor.perks.map(perk => perk.name)]);
     }).catch((error)=>{
         console.error(error);
     });
-
-    return year, mayor;
-
 }
 
 function convertStringToDate(str) {
@@ -67,68 +65,66 @@ function convertStringToDate(str) {
     return date;
 }
 
-
-function convertDate(dateStr) {
-    if (dateStr === undefined || dateStr == "") return "";
-    var seasonToMonth = {
-        'Early Spring': '1',
-        "Spring": '2',
-        "Late Spring": '3',
-        "Early Summer": '4',
-        "Summer": '5',
-        "Late Summer": '6',
-        "Early Autumn": '7',
-        "Autumn": '8',
-        "Late Autumn": '9',
-        "Early Winter": '10',
-        "Winter": '11',
-        "Late Winter": '12'
-    };
-
-    dateStr = dateStr.toString().replace(/[^a-z0-9\s-]/gi, '');
-    var parts = dateStr.split(' ');
-    if (parts.length === 4) {
-        season = parts[1] + ' ' + parts[2];
-        day = parts[3];
-    }
-    else {
-        season = parts[1];
-        day = parts[2];
-    }
-    
-    day = day.replace(/(st|nd|rd|th)$/, '');
-
-    var month = seasonToMonth[season] || '';
-    
-    if (lastMonth == 12 && month == 1) {  // if the last month was December, and the current month is January, then the year has changed
-        year++;
-    }
-    else {
-        year = getYear();
-    }
-    skyblockDateString = day + '.' + month + '.' + year;
-    skyblockDate = convertStringToDate(skyblockDateString);
-    lastMonth = month;
-    return skyblockDateString, skyblockDate;
-}
-
-
-
-let mayor = undefined;
-let year = 0;
 let skyblockDate = undefined;
 let skyblockDateString = "";
-let perks = new Set([]);
-let lastMonth = 0;
-let dateMayorElected = undefined;
-let newMayorAtDate = undefined;
+function calcSkyblockDate() {
+    let monthsInYear = 12;
+    let secondsPerMinute = 0.8333333333333334;
+    let secondsPerMonth = 37200;
+
+    let unix = Math.floor(Date.now() / 1000);
+    let secondsSinceLastLog = unix - 1560276000;
+    let year = 1;
+    let month = 1;
+    let day = 1;
+    let hour = 6;
+    let minute = 0;
+
+    let secondsPerYear = secondsPerMonth * monthsInYear;
+    let secondsPerDay = 1200;
+    let secondsPerHour = 50;
+
+    let yearDiff = Math.floor(secondsSinceLastLog / secondsPerYear);
+    secondsSinceLastLog -= yearDiff * secondsPerYear;
+    year += yearDiff; // the only thing without bounds
+
+    let monthDiff = Math.floor(secondsSinceLastLog / secondsPerMonth) % 13;
+    secondsSinceLastLog -= monthDiff * secondsPerMonth;
+    month = (month + monthDiff) % 13;
+
+    let dayDiff = Math.floor(secondsSinceLastLog / secondsPerDay) % 32;
+    secondsSinceLastLog -= dayDiff * secondsPerDay;
+    day = (day + dayDiff) % 32;
+
+    let hourDiff = Math.floor(secondsSinceLastLog / secondsPerHour) % 24;
+    secondsSinceLastLog -= hourDiff * secondsPerHour;
+    hour = (hour + hourDiff) % 24;
+
+    if (hour < 6) { // hacky fix for the day rolling over at 6am instead of midnight
+        if (day < 31) {
+            day += 1;
+        } else {
+            day = 1;
+            month += 1;
+        }
+    }
+
+    let minuteDiff = Math.floor(secondsSinceLastLog / secondsPerMinute) % 60;
+    secondsSinceLastLog -= minuteDiff * secondsPerMinute;
+    minute = (minute + minuteDiff) % 60;
+
+    minute = (Math.round(minute / 5) * 5) % 60;
+    
+    return day + "." + month + "." + year;
+}
 
 register("worldLoad", () => {
-    year, mayor = getYearMayorRequestV2();
+    dateMayorElected, newMayorAtDate, mayor, perks = getYearMayorRequestV2();
 });
 
 registerWhen(register("step", () => { 
-    scoreboardLines = Scoreboard.getLines();
-    skyblockDateString, skyblockDate = convertDate(scoreboardLines[scoreboardLines.length - 3]);
-    ChatLib.chat(skyblockDateString);
+    skyblockDateString = calcSkyblockDate();
+    skyblockDate = convertStringToDate(skyblockDateString);
+    year = skyblockDate.getFullYear();
+    // ChatLib.chat("Skyblock Date: " + skyblockDateString);
 }).setFps(1), () => isInSkyblock());

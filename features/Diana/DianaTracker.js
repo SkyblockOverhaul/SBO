@@ -9,15 +9,12 @@ import { trackerFileLocation, isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
 // todo: 
-// fix date tracking
+// bei dem tracker gui anzeigen was für ein tracker es ist
 
 // burrow count: fertig vielleicht
 // (1/4) start burrow
 // (2/4), (3/4) treasure burrow or mob burrow
 // (4/4) treasure burrow
-
-// bobbercounter
-// partycommands
 
 // todo end
 
@@ -35,7 +32,7 @@ function loadTracker(type) {
 // track items with pickuplog //
 
 export function dianaLootCounter(item, amount) {
-    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC", "&5ROTTEN_FLESH"];
+    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"];
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
     var checkBool = true;
     if (isActiveForOneSecond()) {
@@ -136,9 +133,8 @@ export function trackItem(item, category, amount) {
 
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
-        if (((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000))) {       
-            ChatLib.chat("new mayor now?: " + ((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000)));
-            setDateMayorElected("27.3." + (getSkyblockDate().getFullYear() + 1));
+        if (getSkyblockDate().getTime() >= getNewMayorAtDate().getTime()) {       
+            setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
             tracker[getDateMayorElected().getFullYear()] = initializeTracker();
         }
         tracker[getDateMayorElected().getFullYear()][category][item] += amount;
@@ -296,29 +292,29 @@ registerWhen(register("step", () => {
 }).setFps(1), () => !firstLoad);
 
 
-// test command
-register('command', () => {
-    trackerSession = getTracker(3);
-    for (var item in trackerSession["items"]) {
-        ChatLib.chat(item + ": " + trackerSession["items"][item]);
-    }
-}).setName("sbots");
-register('command', () => {
-    trackerMayor = getTracker(2);
-    for (var item in trackerMayor["items"]) {
-        ChatLib.chat(item + ": " + trackerMayor["items"][item]);
-    }
-}).setName("sbotm");
+// // test command
+// register('command', () => {
+//     trackerSession = getTracker(3);
+//     for (var item in trackerSession["items"]) {
+//         ChatLib.chat(item + ": " + trackerSession["items"][item]);
+//     }
+// }).setName("sbots");
+// register('command', () => {
+//     trackerMayor = getTracker(2);
+//     for (var item in trackerMayor["items"]) {
+//         ChatLib.chat(item + ": " + trackerMayor["items"][item]);
+//     }
+// }).setName("sbotm");
 
-register('command', () => {
-    trackerTotal = getTracker(1);
-    for (var item in trackerTotal["items"]) {
-        ChatLib.chat(item + ": " + trackerTotal["items"][item]);
-    }
-}).setName("sbott");
+// register('command', () => {
+//     trackerTotal = getTracker(1);
+//     for (var item in trackerTotal["items"]) {
+//         ChatLib.chat(item + ": " + trackerTotal["items"][item]);
+//     }
+// }).setName("sbott");
 
-registerWhen(register("chat", () => {
-    if (isDataLoaded()) {
-        trackItem("Total Burrows", "items", 1);
-    }
-}).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock());
+// registerWhen(register("chat", () => {
+//     if (isDataLoaded()) {
+//         trackItem("Total Burrows", "items", 1);
+//     }
+// }).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock());

@@ -45,9 +45,4 @@ register("step", () => {
     }
 }).setFps(1);
 
-register("command", () => {
-    ChatLib.chat("§6[SBO] §4Data Loaded: " + dataLoaded);
-    ChatLib.chat("§6[SBO] §4Mayor Date: " + getDateMayorElected());
-}).setName("sbocheck");
-
 

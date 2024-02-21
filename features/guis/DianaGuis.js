@@ -5,7 +5,6 @@ import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
-import { isDataLoaded } from "../../utils/checkData";
 
 registerWhen(register("entityDeath", (entity) => {
     var dist = entity.distanceTo(Player.getPlayer());
@@ -92,7 +91,7 @@ ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
 `
     }
 }
-// const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"moveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
+
 let lootSettingsLoad = false;
 /**
  * 
@@ -132,7 +131,6 @@ ${DARK_GREEN}${BOLD}Tiger Plushie: ${AQUA}${BOLD}${lootTracker["items"]["CROCHET
 ${DARK_GREEN}${BOLD}Antique Remedies: ${AQUA}${BOLD}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
 ${GOLD}${BOLD}Coins: ${AQUA}${BOLD}${lootTracker["items"]["coins"]}
 ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows"]}
-${GRAY}${BOLD}Rotten Flesh: ${AQUA}${BOLD}${lootTracker["items"]["ROTTEN_FLESH"]}
 `
     }
 }

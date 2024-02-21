@@ -15,21 +15,21 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
             if (diff > 0 || diff < 0) {
                 if (diff > 0) {
                     dianaLootCounter(item, diff);
-                    ChatLib.chat("+ " + diff + "x " + item);
+                    // ChatLib.chat("+ " + diff + "x " + item);
                 }
                 else {
-                    ChatLib.chat("- " + diff*(-1) + "x " + item);
+                    // ChatLib.chat("- " + diff*(-1) + "x " + item);
                 }
             }
         }
         else {
             dianaLootCounter(item, newPlayerItems[item]);
-            ChatLib.chat("+ " + newPlayerItems[item] + "x " + item);
+            // ChatLib.chat("+ " + newPlayerItems[item] + "x " + item);
         }
     }
     for (var item in oldPlayerItems) {
         if (!newPlayerItems[item]) {
-            ChatLib.chat("- " + oldPlayerItems[item] + "x " + item);
+            // ChatLib.chat("- " + oldPlayerItems[item] + "x " + item);
         }
     }
 }
