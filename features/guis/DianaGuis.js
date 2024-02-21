@@ -47,41 +47,25 @@ ${GOLD}${BOLD}Coins: ${WHITE}
 const DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10,50,1],"moveMobCoounter",dianaMobTrackerExample,"dianaMobTracker");
 const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10,150,1],"moveLootCoounter",dianaLootTrackerExample,"dianaLootTracker");
 
-function calcProcents(tracker, type) {
-    procentDict = {};
-    if(type == "mobs"){
-        for (var mob in tracker["mobs"]) {
-            procentDict[mob] = Math.round((tracker["mobs"][mob] / tracker["mobs"]["TotalMobs"]) * 100);
-        }
-        return procentDict;
-    }
-    else {
-        for (var item in tracker["items"]) {
-            procentDict[item] = Math.round((tracker["items"][item] / tracker["items"]["TotalItems"]) * 100);
-        }
-        return procentDict;
-    }
-}
 
 /**
  * 
  * @param {string} setting 
  */
-export function refreshMobOverlay(mobTracker, setting) {
+export function mobOverlay(mobTracker, setting, percentDict) {
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
-    procentDict = calcProcents(mobTracker)
     if(setting > 0){
     DianaMobTracker.message =
     `${YELLOW}${BOLD}Diana Mob Tracker
 ------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${procentDict["Minos Inquisitor"]}%${GRAY})
-${DARK_PURPLE}${BOLD}Minos Champion: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Champion"]} ${GRAY}(${AQUA}${procentDict["Minos Champion"]}%${GRAY})
-${GOLD}${BOLD}Minotaur: ${AQUA}${BOLD}${mobTracker["mobs"]["Minotaur"]} ${GRAY}(${AQUA}${procentDict["Minotaur"]}%${GRAY})
-${GREEN}${BOLD}Gaia Construct: ${AQUA}${BOLD}${mobTracker["mobs"]["Gaia Construct"]} ${GRAY}(${AQUA}${procentDict["Gaia Construct"]}%${GRAY})
-${GREEN}${BOLD}Siamese Lynx: ${AQUA}${BOLD}${mobTracker["mobs"]["Siamese Lynx"]} ${GRAY}(${AQUA}${procentDict["Siamese Lynx"]}%${GRAY})
-${GREEN}${BOLD}Minos Hunter: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Hunter"]} ${GRAY}(${AQUA}${procentDict["Minos Hunter"]}%${GRAY})
+${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
+${DARK_PURPLE}${BOLD}Minos Champion: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Champion"]} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})
+${GOLD}${BOLD}Minotaur: ${AQUA}${BOLD}${mobTracker["mobs"]["Minotaur"]} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})
+${GREEN}${BOLD}Gaia Construct: ${AQUA}${BOLD}${mobTracker["mobs"]["Gaia Construct"]} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})
+${GREEN}${BOLD}Siamese Lynx: ${AQUA}${BOLD}${mobTracker["mobs"]["Siamese Lynx"]} ${GRAY}(${AQUA}${percentDict["Siamese Lynx"]}%${GRAY})
+${GREEN}${BOLD}Minos Hunter: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Hunter"]} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})
 ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
 `
     }
@@ -90,7 +74,7 @@ ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
  * 
  * @param {string} setting 
  */
-export function refreshItemOverlay(lootTracker, setting){
+export function itemOverlay(lootTracker, setting, percentDict){
     if (setting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
@@ -98,9 +82,9 @@ export function refreshItemOverlay(lootTracker, setting){
     DianaLootTracker.message =
     `${YELLOW}${BOLD}Diana Loot Tracker
 -------------------
-${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]} 
-${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${BOLD}${lootTracker["items"]["MINOS_RELIC"]}
-${GOLD}${BOLD}Daedalus Stick: ${AQUA}${BOLD}${lootTracker["items"]["Daedalus Stick"]}
+${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY})
+${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${BOLD}${lootTracker["items"]["MINOS_RELIC"]} ${GRAY}(${AQUA}${percentDict["Minos Relic"]}%${GRAY})
+${GOLD}${BOLD}Daedalus Stick: ${AQUA}${BOLD}${lootTracker["items"]["Daedalus Stick"]} ${GRAY}(${AQUA}${percentDict["Daedalus Stick"]}%${GRAY})
 ${GOLD}${BOLD}Griffin Feather: ${AQUA}${BOLD}${lootTracker["items"]["Griffin Feather"]}
 ${GOLD}${BOLD}Crown of Greed: ${AQUA}${BOLD}${lootTracker["items"]["Crown of Greed"]}
 ${GOLD}${BOLD}Souvenir: ${AQUA}${BOLD}${lootTracker["items"]["Washed-up Souvenir"]}

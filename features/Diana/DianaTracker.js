@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, getDateString } from '../../utils/functions';
-import { refreshItemOverlay, refreshMobOverlay } from "../guis/DianaGuis";
+import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
 
@@ -203,44 +203,78 @@ function initializeTracker() {
 let tempSettingLoot = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
-    refreshItemOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView);
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
 }).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView);
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
-    refreshMobOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView);
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
-refreshItemOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView);
-refreshMobOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView);
+refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 
 export function trackItem(item, category, amount) {
     trackOne(trackerMayor, item, category, "Mayor", amount);
-    ChatLib.chat("done1");
     trackOne(trackerSession, item, category, "Session", amount);
-    ChatLib.chat("done2");
     trackOne(trackerTotal, item, category, "Total", amount);
-    ChatLib.chat("done3");
     
     
+
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+
+}
+
+function refreshOverlay(tracker, setting, category) {
+    percentDict = calcPercent(tracker, category, setting);
     if (category === "items") {
-        refreshItemOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView);
+        itemOverlay(tracker, setting, percentDict);
     }
-    else if (category === "mobs") {
-        refreshMobOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView);
+    else {
+        mobOverlay(tracker, setting, percentDict);
     }
 }
 
 
 
+
+function calcPercent(trackerToCalc, type, setting) {
+    if (setting == 2) {
+        trackerToCalc = trackerToCalc[getDateMayorElected().getFullYear()];
+    }
+    percentDict = {};
+    if(type == "mobs"){
+        for (var mob in trackerToCalc["mobs"]) {
+            percentDict[mob] = Math.round((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"]) * 100);
+        }
+        return percentDict;
+    }
+    else {
+        for (var obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
+            switch (obj) {
+                case "Minos Inquisitor":
+                    percentDict["Chimera"] = Math.round((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj]) * 100);
+                    break;
+                case "Minos Champion":
+                    percentDict["Minos Relic"] = Math.round((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj]) * 100);
+                    break;
+                case "Minotaur":
+                    percentDict["Daedalus Stick"] = Math.round((trackerToCalc["items"]["Daedalus Stick"] / trackerToCalc["mobs"][obj]) * 100);
+                    break;
+            }
+        }
+        return percentDict;
+    }
+}
+
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
         if (((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000))) {       
             ChatLib.chat("new mayor now?: " + ((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000)));
-            trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
             setDateMayorElected("27.3." + (getSkyblockDate().getFullYear() + 1));
-            tracker.election = getDateMayorElected().getFullYear();
+            tracker[getDateMayorElected().getFullYear()] = initializeTracker();
         }
         tracker[getDateMayorElected().getFullYear()][category][item] += amount;
         if (category === "mobs") {
