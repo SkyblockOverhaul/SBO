@@ -282,9 +282,11 @@ registerWhen(register("step", () => {
 
 let firstLoad = false;
 registerWhen(register("step", () => {
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-    firstLoad = true;
+    if (isDataLoaded()) {
+        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        firstLoad = true;
+    }
 }).setFps(1), () => !firstLoad);
 
 
