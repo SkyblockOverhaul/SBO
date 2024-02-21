@@ -37,7 +37,7 @@ function bobberOverlay() {
     }
 }
 
-register('step', () => {
+registerWhen(register('step', () => {
     bobberCount = World.getAllEntitiesOfType(EntityFishHook).filter(dist => dist.distanceTo(Player.getPlayer()) < 31).length
         bobberOverlay();
-}).setFps(5)
+}).setFps(5), () => settings.bobberCounter);
