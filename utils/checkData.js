@@ -1,5 +1,5 @@
-import { registerWhen } from "./variables";
 import { getDateMayorElected } from "./mayor";
+import { initializeGuiSettings } from "./functions";
 
 // check if data is loaded and time is set //
 export let trackerFileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";
@@ -25,18 +25,7 @@ function checkDataLoaded() {
         }
     }
     if (!FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json")) {
-        tempDict = {
-            MobLoc: {
-                "x": 10,
-                "y": 50,
-                "s": 1
-            },
-            LootLoc: {
-                "x": 10,
-                "y": 150,
-                "s": 1
-            }
-        };
+        tempDict = initializeGuiSettings();
         FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict));
     }
 }
@@ -62,37 +51,3 @@ register("command", () => {
 }).setName("sbocheck");
 
 
-// initialize tracker //
-export function initializeTracker() {
-    tempTracker = {
-        items: {
-            "coins": 0,
-            "Griffin Feather": 0,
-            "Crown of Greed": 0,
-            "Washed-up Souvenir": 0,
-            "Chimera": 0,
-            "Daedalus Stick": 0,
-            "DWARF_TURTLE_SHELMET": 0,
-            "CROCHET_TIGER_PLUSHIE": 0,
-            "ANTIQUE_REMEDIES": 0,
-            "ENCHANTED_ANCIENT_CLAW": 0,
-            "ANCIENT_CLAW": 0,
-            "MINOS_RELIC": 0,
-
-            "ROTTEN_FLESH": 0,
-            "WOOD": 0,
-            "Potato": 0,
-            "Carrot": 0
-        },
-        mobs: {
-            "Minos Inquisitor": 0,
-            "Minos Champion": 0,
-            "Minotaur": 0,
-            "Gaia Construct": 0,
-            "Siamese Lynx": 0,
-            "Minos Hunter": 0,
-            "TotalMobs": 0
-        }
-    };
-    return tempTracker;
-}

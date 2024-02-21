@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { state } from "../../utils/functions";
+import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
@@ -46,31 +46,7 @@ ${GOLD}${BOLD}Coins: ${WHITE}
 // ${GRAY}${BOLD}Enchanted Iron: 
 // ${GRAY}${BOLD}Enchanted Ancient Claw: 
 // ${GRAY}${BOLD}Ancient Claw: 
-fileLocation = "config/ChatTriggers/modules/SBO/guiSettings.json";
-function loadGuiSettings() {
-    let loadedSettings = {};
-    try {
-        loadedSettings = JSON.parse(FileLib.read(fileLocation)) || {};
-    } catch (e) {
-        loadedSettings = {
-            MobLoc: {
-                "x": 10,
-                "y": 50,
-                "s": 1
-            },
-            LootLoc: {
-                "x": 10,
-                "y": 150,
-                "s": 1
-            }
-        };
-        saveGuiSettings(loadedSettings);
-    }
-    return loadedSettings;
-}
-function saveGuiSettings(guiSettings) {
-    FileLib.write(fileLocation, JSON.stringify(guiSettings));
-}
+
 guiSettings = loadGuiSettings();
 
 let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"moveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
@@ -150,6 +126,7 @@ ${DARK_GREEN}${BOLD}Turtle Shelmet: ${AQUA}${BOLD}${lootTracker["items"]["DWARF_
 ${DARK_GREEN}${BOLD}Tiger Plushie: ${AQUA}${BOLD}${lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]}
 ${DARK_GREEN}${BOLD}Antique Remedies: ${AQUA}${BOLD}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
 ${GOLD}${BOLD}Coins: ${AQUA}${BOLD}${lootTracker["items"]["coins"]}
+${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows"]}
 ${GRAY}${BOLD}Rotten Flesh: ${AQUA}${BOLD}${lootTracker["items"]["ROTTEN_FLESH"]}
 `
     }

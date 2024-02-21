@@ -1,16 +1,23 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, initializeTracker } from '../../utils/functions';
 import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
-import { trackerFileLocation, initializeTracker, isDataLoaded } from "../../utils/checkData";
+import { trackerFileLocation, isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
 // todo: 
 // fix date tracking
-// borrows count 
+
+// burrow count: fertig vielleicht
+// (1/4) start burrow
+// (2/4), (3/4) treasure burrow or mob burrow
+// (4/4) treasure burrow
+
+// bobbercounter
+// partycommands
 
 // todo end
 
@@ -28,8 +35,6 @@ function loadTracker(type) {
 // track items with pickuplog //
 
 export function dianaLootCounter(item, amount) {
-    ChatLib.chat("active" + isActiveForOneSecond());
-    ChatLib.chat("diana: " + checkDiana());
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC", "&5ROTTEN_FLESH"];
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
     var checkBool = true;
@@ -152,27 +157,36 @@ function trackOne(tracker, item, category, type, amount) {
     }
 }
 
+// total burrow tracker //
+register("chat", (dug, chain, burrow) => {
+    if (isDataLoaded()) {
+        trackItem("Total Burrows", "items", 1);
+    }
+}).setCriteria("&eYou ${dug} Griffin ${chain}!${burrow}");
+// &eYou finished the Griffin burrow chain!${burrow}
+// &eYou dug out a Griffin Burrow!${burrow}
+
 // mob tracker
 registerWhen(register("chat", (woah, mob) => {
     if (isDataLoaded()) {
         switch (mob) {
             case "Minos Inquisitor":
-                trackMob(mob, "mobs", 1);
+                trackItem(mob, "mobs", 1);
                 break;
             case "Minos Champion":
-                trackMob(mob, "mobs", 1);
+                trackItem(mob, "mobs", 1);
                 break;
             case "Minos Hunter":
-                trackMob(mob, "mobs", 1);
+                trackItem(mob, "mobs", 1);
                 break;
             case "Minotaur":
-                trackMob(mob, "mobs", 1);
+                trackItem(mob, "mobs", 1);
                 break;
             case "Gaia Construct":
-                trackMob(mob, "mobs", 1);
+                trackItem(mob, "mobs", 1);
                 break;
             case "Siamese Lynx":
-                trackMob(mob, "mobs", 1);
+                trackItem(mob, "mobs", 1);
                 break;       
         }
     }
@@ -305,6 +319,6 @@ register('command', () => {
 
 registerWhen(register("chat", () => {
     if (isDataLoaded()) {
-        trackItem("Minos Inquisitor", "mobs", 1);
+        trackItem("Total Burrows", "items", 1);
     }
 }).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock());
