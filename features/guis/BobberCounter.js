@@ -10,7 +10,7 @@ guiSettings = loadGuiSettings();
 bobbercounterExample =
 `${GOLD}${BOLD}Bobber:
 `
-let BobberCounter = new Overlay("bobberCounter",["Hub"], [10, 10, 0],"moveBobberCounter",bobbercounterExample, "bobberCounter");
+let BobberCounter = new Overlay("bobberCounter",["all"], [10, 10, 0],"moveBobberCounter",bobbercounterExample, "bobberCounter");
 
 let bobberCount = 0;
 let loadedBobber = false;
@@ -21,7 +21,6 @@ const EntityFishHook = Java.type("net.minecraft.entity.projectile.EntityFishHook
 function bobberOverlay() {
     if(settings.bobberCounter) {
         if(guiSettings != undefined && !loadedBobber) {
-            ChatLib.chat("bobberOverlay")
             BobberCounter.setX(guiSettings["BobberLoc"]["x"]);
             BobberCounter.setY(guiSettings["BobberLoc"]["y"]);
             BobberCounter.setScale(guiSettings["BobberLoc"]["s"]);
