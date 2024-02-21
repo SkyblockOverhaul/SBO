@@ -9,7 +9,7 @@ import PogObject from "../../PogData";
 // --- PERSISTENT DATA ---
 
 // Initializing a persistent data object using the PogObject class
-export let data = new PogObject("SkyblockOverhaul", {
+export let data = new PogObject("SBO", {
     // Properties with default values for various settings and data
     "tier": 0,
     "whitelist": [],
