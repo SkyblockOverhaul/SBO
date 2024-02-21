@@ -69,22 +69,25 @@ function saveGuiSettings(guiSettings) {
     FileLib.write(fileLocation, JSON.stringify(guiSettings));
 }
 guiSettings = loadGuiSettings();
- 
+
+let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"moveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
+let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"moveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
 
 
-let DianaMobTracker = undefined
+let mobSettingsLoad = false;
 /**
  * 
  * @param {string} setting 
  */
 export function mobOverlay(mobTracker, setting, percentDict) {
-    if (DianaMobTracker == undefined) {
-        ChatLib.chat("Creating Mob Tracker");
-        DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [guiSettings["MobLoc"]["x"], guiSettings["MobLoc"]["y"], guiSettings["MobLoc"]["s"]],"moveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
+    if (!mobSettingsLoad) {
+        DianaMobTracker.setX(guiSettings["MobLoc"]["x"]);
+        DianaMobTracker.setY(guiSettings["MobLoc"]["y"]);
+        DianaMobTracker.setScale(guiSettings["MobLoc"]["s"]);
+        mobSettingsLoad = true;
     }
     if( guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S)
     {
-        ChatLib.chat("Saving Mob Tracker Location");
         guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
         guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
         guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
@@ -108,15 +111,17 @@ ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
     }
 }
 // const DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"moveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
-let DianaLootTracker = undefined
+let lootSettingsLoad = false;
 /**
  * 
  * @param {string} setting 
  */
 export function itemOverlay(lootTracker, setting, percentDict){
-    if (DianaLootTracker == undefined) {
-        ChatLib.chat("Creating Loot Tracker");
-        DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [guiSettings["LootLoc"]["x"], guiSettings["LootLoc"]["y"], guiSettings["LootLoc"]["s"]],"moveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
+    if (!lootSettingsLoad) {
+        DianaLootTracker.setX(guiSettings["LootLoc"]["x"]);
+        DianaLootTracker.setY(guiSettings["LootLoc"]["y"]);
+        DianaLootTracker.setScale(guiSettings["LootLoc"]["s"]);
+        lootSettingsLoad = true;
     }
     if( guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S)
     {

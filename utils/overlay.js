@@ -115,4 +115,19 @@ export class Overlay {
             this.height += line.includes(BOLD) ? 10 * this.loc[2] : 5 * this.loc[2];
         });
     }
+
+    setX(x) {
+        this.X = x;
+        this.loc[0] = x * this.loc[2];
+    }
+
+    setY(y) {
+        this.Y = y;
+        this.loc[1] = y * this.loc[2];
+    }
+
+    setScale(s) {
+        this.S = s;
+        this.loc[2] = s;
+    }
 }
