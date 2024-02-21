@@ -6,33 +6,6 @@ import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
 
-// mob tracker
-registerWhen(register("chat", (woah, mob) => {
-    switch (mob) {
-        case "Minos Inquisitor":
-            trackMob(mob, "mobs", 1);
-            break;
-        case "Minos Champion":
-            trackMob(mob, "mobs", 1);
-            break;
-        case "Minos Hunter":
-            trackMob(mob, "mobs", 1);
-            break;
-        case "Minotaur":
-            trackMob(mob, "mobs", 1);
-            break;
-        case "Gaia Construct":
-            trackMob(mob, "mobs", 1);
-            break;
-        case "Siamese Lynx":
-            trackMob(mob, "mobs", 1);
-            break;       
-    }
-}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && getDateMayorElected() != undefined);
-
-registerWhen(register("chat", () => {
-    trackItem("Minos Inquisitor", "mobs", 1);
-}).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && getDateMayorElected() != undefined);
 // todo: 
 // trackerMayor reset on new mayor
 // mayor tracker nur reseten wenn neuer mayor diana ist
@@ -42,86 +15,21 @@ registerWhen(register("chat", () => {
 // lootchare books erkennen
 // pickuplog updaterate vielleicht anpassen
 
+// todo end
 
-registerWhen(register("chat", (drop) => {
-    drop = drop.removeFormatting();
-    switch (drop) {
-        case "Griffin Feather":
-            trackItem(drop, "items", 1);
-            break;
-        case "Crown of Greed":
-            trackItem(drop, "items", 1);
-            break;
-        case "Washed-up Souvenir":
-            trackItem(drop, "items", 1);
-            break;
-    }
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && getDateMayorElected() != undefined);
-
-registerWhen(register("chat", (coins) => {
-    trackItem("coins", "items", coins);
-    ChatLib.chat(coins);
-}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && getDateMayorElected() != undefined);
-
-registerWhen(register("chat", (drop, mf) => {
-    switch (drop) {
-        case "Enchanted Book":
-            trackItem("Chimera", "items", 1);
-            break;
-        case "Daedalus Stick":
-            trackItem(drop, "items", 1);
-            break;
-        case "Potato":
-            trackItem(drop, "items", 1);
-            break;
-        case "Carrot":
-            trackItem(drop, "items", 1);
-            break;
-    }
-}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && getDateMayorElected() != undefined);
-
-
-// test command
-register('command', () => {
-    trackerSession = getTracker(3);
-    for (var item in trackerSession["items"]) {
-        ChatLib.chat(item + ": " + trackerSession["items"][item]);
-    }
-}).setName("sbots");
-register('command', () => {
-    trackerMayor = getTracker(2);
-    for (var item in trackerMayor["items"]) {
-        ChatLib.chat(item + ": " + trackerMayor["items"][item]);
-    }
-}).setName("sbotm");
-
-register('command', () => {
-    trackerTotal = getTracker(1);
-    for (var item in trackerTotal["items"]) {
-        ChatLib.chat(item + ": " + trackerTotal["items"][item]);
-    }
-}).setName("sbott");
-
-
-// loot tracker
+// load loot tracker from json file //
 fileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";
 function loadTracker(type) {
     let loadedTracker = {};
     try {
         loadedTracker = JSON.parse(FileLib.read(fileLocation + type + ".json")) || {};
     } catch (e) {
-        if (type === "Total")
-        {
-            loadedTracker = {};
-            loadedTracker = initializeTracker();
-        }
-        else {
-            loadedTracker = {};
-        }
+        loadedTracker = {};
     }
     return loadedTracker;
 }
 
+// track items with pickuplog //
 export function dianaLootCounter(item, amount) {
     countThisIds = ["ROTTEN_FLESH", "WOOD", "DWARF_TURTLE_SHELMET", "CROCHET_TIGER_PLUSHIE", "ANTIQUE_REMEDIES", "ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "MINOS_RELIC"]
     if (isActiveForOneSecond()) {
@@ -133,12 +41,14 @@ export function dianaLootCounter(item, amount) {
     }
 }
 
+// save the tracker to json file //
 function saveLoot(tracker, type) {
     FileLib.write(fileLocation + type + ".json", JSON.stringify(tracker));
 }
 
-export function getTracker(type) {
-    switch (type) {
+// get tracker by setting (0: off, 1: total, 2: event, 3: event) //
+export function getTracker(setting) {
+    switch (setting) {
         case 1:
             return trackerTotal;
         case 2:
@@ -148,32 +58,7 @@ export function getTracker(type) {
     }
 }
 
-// mayor tracker
-let trackerMayor = loadTracker("Mayor");
-let trackerBool = false;
-registerWhen(register("step", () => {
-    if (getDateMayorElected() != undefined) {
-        if (!trackerMayor.hasOwnProperty(getDateMayorElected().getFullYear())) {
-        trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
-        }
-        else {
-            trackerBool = true;
-        }
-    }
-    else {
-        ChatLib.chat("No date for mayor election found (undefined)");
-    }
-}).setFps(1), () => getDateMayorElected() != undefined && !trackerBool);
-// total tracker
-let trackerTotal = loadTracker("Total");
-if (Object.keys(trackerTotal).length == 0) {
-    trackerTotal = initializeTracker();
-}
-// session tracker
-let trackerSession = {};
-trackerSession = initializeTracker();
-
-
+// initialize tracker //
 function initializeTracker() {
     tempTracker = {
         items: {
@@ -208,35 +93,13 @@ function initializeTracker() {
     return tempTracker;
 }
 
-
-let tempSettingLoot = -1;
-registerWhen(register("step", () => {
-    tempSettingLoot = settings.dianaLootTrackerView;
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView && getDateMayorElected() != undefined);
-
-let tempSettingMob = -1;
-registerWhen(register("step", () => {
-    tempSettingMob = settings.dianaMobTrackerView;
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView  && getDateMayorElected() != undefined);
-
-let firstLoad = false;
-registerWhen(register("step", () => {    
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-    firstLoad = true;
-}).setFps(1), () => getDateMayorElected() != undefined && !firstLoad);
-
-export function trackItem(item, category, amount) {
-    trackOne(trackerMayor, item, category, "Mayor", amount);
-    trackOne(trackerSession, item, category, "Session", amount);
-    trackOne(trackerTotal, item, category, "Total", amount);
-
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+// check if data is loaded and time is set //
+function checkDataLoaded() {
+    return getDateMayorElected() != undefined && Object.keys(trackerTotal).length != 0 && Object.keys(trackerMayor).length != 0;
 }
 
+
+// refresh overlay (items, mobs) //
 function refreshOverlay(tracker, setting, category) {
     percentDict = calcPercent(tracker, category, setting);
     if (category === "items") {
@@ -247,6 +110,7 @@ function refreshOverlay(tracker, setting, category) {
     }
 }
 
+// calc percent from tracker //
 function calcPercent(trackerToCalc, type, setting) {
     if (setting == 2) {
         trackerToCalc = trackerToCalc[getDateMayorElected().getFullYear()];
@@ -276,6 +140,17 @@ function calcPercent(trackerToCalc, type, setting) {
     }
 }
 
+// track logic //
+export function trackItem(item, category, amount) {
+    trackOne(trackerMayor, item, category, "Mayor", amount);
+    trackOne(trackerSession, item, category, "Session", amount);
+    trackOne(trackerTotal, item, category, "Total", amount);
+
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+}
+
+
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
         if (((getSkyblockDate().getTime() / 1000) > (getNewMayorAtDate().getTime() / 1000))) {       
@@ -299,3 +174,137 @@ function trackOne(tracker, item, category, type, amount) {
     }
 }
 
+// mob tracker
+registerWhen(register("chat", (woah, mob) => {
+    switch (mob) {
+        case "Minos Inquisitor":
+            trackMob(mob, "mobs", 1);
+            break;
+        case "Minos Champion":
+            trackMob(mob, "mobs", 1);
+            break;
+        case "Minos Hunter":
+            trackMob(mob, "mobs", 1);
+            break;
+        case "Minotaur":
+            trackMob(mob, "mobs", 1);
+            break;
+        case "Gaia Construct":
+            trackMob(mob, "mobs", 1);
+            break;
+        case "Siamese Lynx":
+            trackMob(mob, "mobs", 1);
+            break;       
+    }
+}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && checkDataLoaded());
+
+
+// track items from chat //
+registerWhen(register("chat", (drop) => {
+    drop = drop.removeFormatting();
+    switch (drop) {
+        case "Griffin Feather":
+            trackItem(drop, "items", 1);
+            break;
+        case "Crown of Greed":
+            trackItem(drop, "items", 1);
+            break;
+        case "Washed-up Souvenir":
+            trackItem(drop, "items", 1);
+            break;
+    }
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out a ${drop}&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && checkDataLoaded());
+
+registerWhen(register("chat", (coins) => {
+    trackItem("coins", "items", coins);
+    ChatLib.chat(coins);
+}).setCriteria("&r&6&lRARE DROP! &eYou dug out &6${coins} coins&e!"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && checkDataLoaded());
+
+registerWhen(register("chat", (drop, mf) => {
+    switch (drop) {
+        case "Enchanted Book":
+            trackItem("Chimera", "items", 1);
+            break;
+        case "Daedalus Stick":
+            trackItem(drop, "items", 1);
+            break;
+        case "Potato":
+            trackItem(drop, "items", 1);
+            break;
+        case "Carrot":
+            trackItem(drop, "items", 1);
+            break;
+    }
+}).setCriteria("&r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock() && checkDataLoaded());
+
+
+// mayor tracker //
+let trackerMayor = loadTracker("Mayor");
+let trackerBool = false;
+registerWhen(register("step", () => {
+    if (getDateMayorElected() != undefined) {
+        if (!trackerMayor.hasOwnProperty(getDateMayorElected().getFullYear())) {
+        trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
+        }
+        else {
+            trackerBool = true;
+        }
+    }
+    else {
+        ChatLib.chat("No date for mayor election found (undefined)");
+    }
+}).setFps(1), () => !trackerBool && checkDataLoaded());
+// total tracker //
+let trackerTotal = loadTracker("Total");
+if (Object.keys(trackerTotal).length == 0) {
+    trackerTotal = initializeTracker();
+}
+// session tracker //
+let trackerSession = {};
+trackerSession = initializeTracker();
+
+// refresh overlay //
+let tempSettingLoot = -1;
+registerWhen(register("step", () => {
+    tempSettingLoot = settings.dianaLootTrackerView;
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView && checkDataLoaded());
+
+let tempSettingMob = -1;
+registerWhen(register("step", () => {
+    tempSettingMob = settings.dianaMobTrackerView;
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView  && checkDataLoaded());
+
+let firstLoad = false;
+registerWhen(register("step", () => {    
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    firstLoad = true;
+}).setFps(1), () => !firstLoad && checkDataLoaded());
+
+
+// test command
+register('command', () => {
+    trackerSession = getTracker(3);
+    for (var item in trackerSession["items"]) {
+        ChatLib.chat(item + ": " + trackerSession["items"][item]);
+    }
+}).setName("sbots");
+register('command', () => {
+    trackerMayor = getTracker(2);
+    for (var item in trackerMayor["items"]) {
+        ChatLib.chat(item + ": " + trackerMayor["items"][item]);
+    }
+}).setName("sbotm");
+
+register('command', () => {
+    trackerTotal = getTracker(1);
+    for (var item in trackerTotal["items"]) {
+        ChatLib.chat(item + ": " + trackerTotal["items"][item]);
+    }
+}).setName("sbott");
+
+registerWhen(register("chat", () => {
+    trackItem("Minos Inquisitor", "mobs", 1);
+}).setCriteria("&e[NPC] Lumber Jack&f: &r&fA lumberjack always pays his debts!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock() && checkDataLoaded());
