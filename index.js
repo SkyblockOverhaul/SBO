@@ -3,6 +3,7 @@ import Settings from "./settings";
 import "./features/general/pickuplog";
 // import "./features/Diana/DianaMobDetect";
 import "./features/Diana/DianaWaypoints";
+import "./features/guis/BobberCounter";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");

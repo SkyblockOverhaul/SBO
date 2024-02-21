@@ -123,6 +123,40 @@ class Settings {
     })
     dianaLootTrackerView = 0;
 
+    //Bobber Counter
+    @SwitchProperty({
+        name: 'Bobber Counter',
+        description: 'Estimates the number of bobbers cast around you',
+        category: 'General',
+        subcategory: 'Bobber Counter'
+    })
+    bobberCounter = false;
+
+    @ButtonProperty({
+        name: 'Move Bobber Counter HUD',
+        description: 'Click the button to move the Bobber Counter HUD',
+        category: 'General',
+        subcategory: 'Bobber Counter'
+    })
+    openBobberGUI() {
+        ChatLib.command('movebobbercounter', true);
+    }
+
+    @ColorProperty({
+        name: 'Bobber Counter Color',
+        description: 'Pick a Color for the Bobber Counter!',
+        category: 'General',
+        subcategory: 'Bobber Counter'
+    })
+    bobberColor = Color.ORANGE;
+
+    @SwitchProperty({
+        name: 'Chroma Counter',
+        description: 'Counter changes to chroma when the selected or more bobbers are cast',
+        category: 'General',
+        subcategory: 'Bobber Counter'
+    })
+    bobberChroma = false;
     // @TextProperty({
     //     name: 'text',
     //     description: 'Example of text input that does not wrap the text',
