@@ -2,17 +2,16 @@ import settings from "../../settings";
 import { data, registerWhen } from "../../utils/variables";
 import { GOLD, BOLD, WHITE } from "../../utils/constants";
 import {mobAnnouncement} from "../../utils/functions";
-
 import { getWorld } from "../../utils/world";
-let inquis = undefined;
 
-registerWhen(register("chat", (mob) => { // not used
+
+registerWhen(register("chat", (woah) => {
     if (mob="Minos Inquisitor"){
         ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()))
     }
-}).setCriteria("&c${woah}&eYou Dug out &2a ${mob}&e!"), () => getWorld() === "Hub" && settings.inquisDetect);
+}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => getWorld() === "Hub" && settings.inquisDetect);
 
-
+// let inquis = undefined;
 // registerWhen(register("command", () => {
 //     entities = World.getAllEntities();
 //     inquis = entities.find(entity => entity.getName().includes("Minos Inquisitor"));
