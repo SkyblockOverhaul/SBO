@@ -56,28 +56,28 @@ class Settings {
     }
 
     //-----------Diana----------------
+    // @SwitchProperty({
+    //     name: "Diana Waypoint",
+    //     description: "Estimates Diana burrows (particles => ON, /togglemusic => OFF)",
+    //     category: "General",
+    //     subcategory: "Diana",
+    // })
+    // dianaWaypoint = false;
+    // @SwitchProperty({
+    //     name: "Diana Warp",
+    //     description: "change button in controls to warp to closest location to guess.",
+    //     category: "General",
+    //     subcategory: "Diana"
+    // })
+    // dianaWarp = false;
     @SwitchProperty({
-        name: "Diana Waypoint",
-        description: "Estimates Diana burrows (particles => ON, /togglemusic => OFF)",
-        category: "General",
-        subcategory: "Diana",
-    })
-    dianaWaypoint = false;
-
-    @SwitchProperty({
-        name: "Diana Warp",
-        description: "change button in controls to warp to closest location to guess.",
-        category: "General",
-        subcategory: "Diana"
-    })
-    dianaWarp = false;
-    @SwitchProperty({
-        name: "Inquis Detection",
-        description: "Chat massage for Inquis Detection.",
+        name: "Inquis Party Message",
+        description: "Party massage for Inquis Detection (Patcher Format).",
         category: "General",
         subcategory: "Diana"
     })
     inquisDetect = false;
+    
     
     // @SwitchProperty({
     //     name: "Inquis Detection",
@@ -88,13 +88,13 @@ class Settings {
     // inquisDetect = false;
 
     // --- Griffin Burrow ---
-    @SwitchProperty({
-        name: "Burrow Detection",
-        description: "Identifies and generates waypoints for the burrow particles surrounding you.",
-        category: "General",
-        subcategory: "Griffin Burrow"
-    })
-    dianaBurrow = false;
+    // @SwitchProperty({
+    //     name: "Burrow Detection",
+    //     description: "Identifies and generates waypoints for the burrow particles surrounding you.",
+    //     category: "General",
+    //     subcategory: "Griffin Burrow"
+    // })
+    // dianaBurrow = false;
     // @SwitchProperty({
     //     name: "Burrow Chat Alert",
     //     description: "Chat massage for burrow detection.",

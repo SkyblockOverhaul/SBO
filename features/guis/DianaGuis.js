@@ -52,8 +52,8 @@ ${GRAY}${BOLD}Total Burrows: ${WHITE}
 
 guiSettings = loadGuiSettings();
 
-let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"moveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
-let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"moveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
+let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"sbomoveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
+let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"sbomoveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
 
 
 let mobSettingsLoad = false;

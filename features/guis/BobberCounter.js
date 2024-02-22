@@ -10,7 +10,7 @@ guiSettings = loadGuiSettings();
 bobbercounterExample =
 `${YELLOW}${BOLD}Bobber:
 `
-let BobberCounter = new Overlay("bobberCounter",["all"], [10, 10, 0],"moveBobberCounter",bobbercounterExample, "bobberCounter");
+let BobberCounter = new Overlay("bobberCounter",["all"], [10, 10, 0],"sbomoveBobberCounter",bobbercounterExample, "bobberCounter");
 
 let bobberCount = 0;
 let loadedBobber = false;
