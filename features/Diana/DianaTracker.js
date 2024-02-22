@@ -196,6 +196,7 @@ registerWhen(register("chat", (drop) => {
     if (isDataLoaded()) {
         // drop = drop.removeFormatting();
         drop=drop.slice(2);
+        ChatLib.chat(drop);
         switch (drop) {
             case "Griffin Feather":
                 trackItem(drop, "items", 1);
@@ -208,7 +209,7 @@ registerWhen(register("chat", (drop) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r&eYou dug out a &r&9${drop}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
+}).setCriteria("&r&6&lRARE DROP! &r&eYou dug out a &r${drop}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
 
 registerWhen(register("chat", (coins) => {
     if (isDataLoaded()) {
@@ -221,6 +222,7 @@ registerWhen(register("chat", (drop) => {
     drop = drop.slice(0, 14); // 6 statt 14 für potato und carrot
     if (isDataLoaded() && checkDiana()) {
         drop.slice(2);
+        ChatLib.chat(drop);
         switch (drop) {
             case "Enchanted Book":
                 Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
