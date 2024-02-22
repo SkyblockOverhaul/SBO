@@ -56,7 +56,7 @@ register("step", () => {
 
 register("command", () => {
     renderWaypoint(formatted);
-}).setName("sboRenderWaypoints");
+}).setName("sborenderwaypoints");
 
 
 function formatWaypoints(waypoints, r, g, b) {
