@@ -7,6 +7,17 @@ registerWhen(register("chat", (woah) => {
     ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()) + " [Inquisitor] - SBO");
 }).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => getWorld() === "Hub" && settings.inquisDetect);
 
+register("command", () => {
+    let scorboardlines = Scoreboard.getLines().map(line => line.getName().removeFormatting());
+    scorboardlines.forEach(line => {
+        print(line);
+        if(line.includes("⏣")){
+            line = line.replace("⏣", "");
+            ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()) + " " + line + " - SBO");
+        }
+    });
+}).setName("sbodetect");
+
 
 // let inquis = undefined;
 // registerWhen(register("command", () => {
