@@ -63,7 +63,7 @@ export function dianaLootCounter(item, amount) {
 
 // save the tracker to json file //
 function saveLoot(tracker, type) {
-    FileLib.write(trackerFileLocation + type + ".json", JSON.stringify(tracker));
+    FileLib.write(trackerFileLocation + type + ".json", JSON.stringify(tracker, null, 4));
 }
 
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //

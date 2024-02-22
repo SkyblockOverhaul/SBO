@@ -203,7 +203,7 @@ export function loadGuiSettings() {
     return loadedSettings;
 }
 export function saveGuiSettings(guiSettings) {
-    FileLib.write(fileLocation, JSON.stringify(guiSettings));
+    FileLib.write(fileLocation, JSON.stringify(guiSettings, null, 4));
 }
 
 export function getplayername(player) {
