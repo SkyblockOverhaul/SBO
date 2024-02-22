@@ -51,10 +51,19 @@ function pickuplog() {
 }
 
 
+register("worldUnload", () => {
+    console.log("worldUnload");
+    pickuplogBool = true;
+});
 
+register("worldLoad", () => {
+    console.log("worldLoad");
+    pickuplogBool = false;
+});
 
+let pickuplogBool = false;
 registerWhen(register('step', () => {
-    if(isDataLoaded()) {
+    if(isDataLoaded() && !pickuplogBool) {
         pickuplog();
     }
 }).setFps(10), () => settings.dianaLootTracker && isInSkyblock() && getWorld() === "Hub");
