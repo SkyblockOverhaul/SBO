@@ -161,11 +161,17 @@ register("chat", (dug, chain, burrow) => {
         trackItem("Total Burrows", "items", 1);
     }
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r");
+
+register("chat", (burrow) => {
+    if (isDataLoaded()) {
+        trackItem("Total Burrows", "items", 1);
+    }
+}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}");
 // &eYou finished the Griffin burrow chain!${burrow}
 // &eYou dug out a Griffin Burrow!${burrow}
 
 // mob tracker
-registerWhen(register("chat", (woah, arev,mob) => {
+registerWhen(register("chat", (woah, arev, mob) => {
     if (isDataLoaded()) {
         switch (mob) {
             case "Minos Inquisitor":
@@ -194,9 +200,7 @@ registerWhen(register("chat", (woah, arev,mob) => {
 // track items from chat //
 registerWhen(register("chat", (drop) => {
     if (isDataLoaded()) {
-        // drop = drop.removeFormatting();
         drop=drop.slice(2);
-        ChatLib.chat(drop);
         switch (drop) {
             case "Griffin Feather":
                 trackItem(drop, "items", 1);
@@ -213,7 +217,7 @@ registerWhen(register("chat", (drop) => {
 
 registerWhen(register("chat", (coins) => {
     if (isDataLoaded()) {
-        var coins2 =parseInt(coins.replace(",", ""))
+        var coins2 = parseInt(coins.replace(",", ""))
         trackItem("coins", "items", coins2);
     }
 }).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
