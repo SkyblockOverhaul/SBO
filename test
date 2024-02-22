@@ -163,9 +163,10 @@ register("chat", (dug, chain, burrow) => {
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r");
 // &eYou finished the Griffin burrow chain!${burrow}
 // &eYou dug out a Griffin Burrow!${burrow}
+// &r&eYou dug out a Griffin Burrow! &r&7(2/4)&r
 
 // mob tracker
-registerWhen(register("chat", (woah, arev,mob) => {
+registerWhen(register("chat", (woah, mob) => {
     if (isDataLoaded()) {
         switch (mob) {
             case "Minos Inquisitor":
@@ -188,14 +189,14 @@ registerWhen(register("chat", (woah, arev,mob) => {
                 break;       
         }
     }
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock());
+}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker && isInSkyblock());
+//&r&c&l${woah} &r&eYou dug out a &r&2${mob}&r&e!&r
 
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
     if (isDataLoaded()) {
-        // drop = drop.removeFormatting();
-        drop=drop.slice(2);
+    //    drop = drop.removeFormatting();
         switch (drop) {
             case "Griffin Feather":
                 trackItem(drop, "items", 1);
@@ -210,6 +211,8 @@ registerWhen(register("chat", (drop) => {
     }
 }).setCriteria("&r&6&lRARE DROP! &r&eYou dug out a &r&9${drop}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
 
+//&r&6&lRARE DROP! &r&eYou dug out a &r&9${drop}&r&e!&r
+
 registerWhen(register("chat", (coins) => {
     if (isDataLoaded()) {
         var coins2 =parseInt(coins.replace(",", ""))
@@ -217,17 +220,19 @@ registerWhen(register("chat", (coins) => {
     }
 }).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
 
+// &r&6&lWow! &r&eYou dug out &r&610,000 coins&r&e!&r
+
 registerWhen(register("chat", (drop) => {
     drop = drop.slice(0, 14); // 6 statt 14 für potato und carrot
     if (isDataLoaded() && checkDiana()) {
-        drop.slice(2);
+        drop.slice(2)
         switch (drop) {
             case "Enchanted Book":
-                Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
+                Client.Companion.showTitle(`§zCHEEMERA`, "", 0, 22, 7);
                 trackItem("Chimera", "items", 1);
                 break;
             case "Daedalus Stick":
-                Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
+                Client.Companion.showTitle(`&6DEADUL STICK`, "", 0, 22, 7);
                 trackItem(drop, "items", 1);
                 break;
             // case "Potato":
@@ -240,8 +245,9 @@ registerWhen(register("chat", (drop) => {
             //     break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => getWorld() === "Hub" && isInSkyblock() && settings.dianaLootTracker);
-// &r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r
+}).setCriteria("&r&6&lRARE DROP! &r&f${drop}"), () => getWorld() === "Hub" && isInSkyblock() && settings.dianaLootTracker);
+// &r&6&lRARE DROP! &r${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r
+//&r&6&lRARE DROP! &r&6Daedalus Stick &r&b(+&r&b405% &r&b✯ Magic Find&r&b)&r
 
 // mayor tracker //
 let trackerMayor = loadTracker("Mayor");
@@ -294,12 +300,15 @@ registerWhen(register("step", () => {
 
 
 // // test command
-// register('command', () => {
+register('command', () => {
 //     trackerSession = getTracker(3);
 //     for (var item in trackerSession["items"]) {
 //         ChatLib.chat(item + ": " + trackerSession["items"][item]);
 //     }
-// }).setName("sbots");
+//        Client.Companion.showTitle(`§zCHEEMERA`, "", 0, 22, 7);
+//Client.Companion.showTitle(`&6DEADUL STICK`, "", 0, 22, 7);
+    ChatLib.chat(checkDiana())
+}).setName("sbots");
 // register('command', () => {
 //     trackerMayor = getTracker(2);
 //     for (var item in trackerMayor["items"]) {

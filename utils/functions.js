@@ -140,7 +140,7 @@ export function initializeTracker() {
             "Minos Champion": 0,
             "Minotaur": 0,
             "Gaia Construct": 0,
-            "Siamese Lynx": 0,
+            "Siamese Lynxes": 0,
             "Minos Hunter": 0,
             "TotalMobs": 0
         }
