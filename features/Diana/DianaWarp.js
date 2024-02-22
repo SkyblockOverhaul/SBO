@@ -1,10 +1,19 @@
-let closestWarp = getClosestWarp(Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()));
+import { getInqWaypoints } from "./../general/Waypoints";
+
+
+
+
+
 const inquisWarpKey = new KeyBind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 inquisWarpKey.registerKeyPress(() => {
-    print(closestWarp);
-    ChatLib.command(closestWarp);
+    warps = getInqWaypoints();
+    if (warps.length > 0) {
+        getClosestWarp(warps[0][1], warps[0][2], warps[0][3]);
+        ChatLib.command(closestWarp);
+    }
 });
 
+let closestWarp = undefined;
 function getClosestWarp(x,y,z){
     let warps = {
         castle: {x: -250, y: 130, z: 45},
@@ -29,5 +38,4 @@ function getClosestWarp(x,y,z){
         }
     }
     closestWarp = "warp " + closestWarp;
-    return closestWarp;
 }
