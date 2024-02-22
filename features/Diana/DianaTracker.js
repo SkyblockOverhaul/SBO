@@ -50,7 +50,8 @@ export function dianaLootCounter(item, amount) {
                         Client.Companion.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                     }
                     if (item === i.slice(2)) {
-                        tempString = toTitleCase(item.replace("_", " ").toLowerCase());
+                        tempString = item.replace("_", " ").toLowerCase();
+                        tempString = toTitleCase(tempString);
                         ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
                         trackItem(item, "items", amount);
                     }
@@ -246,9 +247,11 @@ registerWhen(register("chat", (drop) => {
     }
 }).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => getWorld() === "Hub" && isInSkyblock() && settings.dianaLootTracker);
 // Party > [MVP++] LHxSeven: &r&6&lRARE DROP! &r&6Daedalus Stick &r&b(+&r&b322% &r&b✯ Magic Find&r&b)&r
+// Party > [MVP++] LHxSeven: &r&6&lRARE DROP! &r&fEnchanted Book&r
+// &r&6&lRARE DROP! &r&fEnchanted Book &r&b(+&r&b348% &r&b✯ Magic Find&r&b)&r
+
 // &r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r
 
-// &r&6&lRARE DROP! &r&fEnchanted Book &r&b(+&r&b348% &r&b✯ Magic Find&r&b)&r
 
 // mayor tracker //
 let trackerMayor = loadTracker("Mayor");
