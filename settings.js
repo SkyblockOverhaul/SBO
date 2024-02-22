@@ -199,6 +199,15 @@ class Settings {
         subcategory: 'Message Hider',
     })
     jacobHider = false;
+
+    // Create waypoint for patcher like cords
+    @SwitchProperty({
+        name: 'Patcher Cords',
+        description: 'Create waypoint for patcher like cords',
+        category: 'General',
+        subcategory: 'Message Hider',
+    })
+    patcherCords = false;
 }
 
 export default new Settings();
