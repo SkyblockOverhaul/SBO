@@ -4,7 +4,7 @@ import { getWorld } from "../../utils/world";
 
 
 registerWhen(register("chat", (woah) => {
-    ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+    ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()) + " [Inquisitor] - SBO");
 }).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => getWorld() === "Hub" && settings.inquisDetect);
 
 
