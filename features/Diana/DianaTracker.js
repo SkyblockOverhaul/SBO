@@ -57,6 +57,8 @@ export function dianaLootCounter(item, amount) {
                     }
                 }
             }
+        }
+    }
     else {
         let tempBool = true;
         for (var i in countThisIds.values()) {
