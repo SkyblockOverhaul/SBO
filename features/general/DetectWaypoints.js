@@ -14,50 +14,44 @@ export function getInqWaypoints() {
     return inqWaypoints 
 };
 
-registerWhen(register("chat", (player, spacing, x, y, z) => {
+registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
     print(z);
     isInq = !z.includes(" ");
     if (isInq) {
+        Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
+        World.playSound("random.orb",1,1);
+        z = z.replace("&r", "");
+        ChatLib.chat("inquis cords: " + x + " . " + y + " . " + z.split(" ")[0]);
+        player = player + "'s " + "Inquisitor";
+        inqWaypoints.push([player, x, y, z]);
+        removeWaypointAfterDelay(inqWaypoints, 60);
+    }
+    else {
         z = z.split(" ")[0];
-    }
-    else {
-        // remove from z all characters that are not numbers
-        z = z.replace(/\D/g, '');
-    }
-    ChatLib.chat("inquis: " + isInq);
-    if (isInq) {
-        ChatLib.chat("inquis cords: " + x + " . " + y + " . " + z);
-        inqWaypoints.push({ x: x, y: y, z: z });
-        removeWaypointAfterDelay(inqWaypoints);
-    }
-    else {
         ChatLib.chat("patcher cords: " + x + " . " + y + " . " + z);
-        patcherWaypoints.push({ x: x, y: y, z: z });
-        removeWaypointAfterDelay(patcherWaypoints);
+        patcherWaypoints.push([player, x, y, z]);
+        removeWaypointAfterDelay(patcherWaypoints, 30);
     }
-}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherCords);
-//sh inq &r&9Party &8> &6ᛃ &b[MVP&f+&b] RolexDE&f: &rx: -28, y: 87, z: -208&r
-// patcher waypoint &r&9Party &8> &6ᛃ &b[MVP&f+&b] RolexDE&f: &rx: -27, y: 87, z: -208 &r
+}).setCriteria("&r&9Party ${trash} ${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherCords);
 
-function removeWaypointAfterDelay(Waypoints) {
+function removeWaypointAfterDelay(Waypoints, seconds) {
     // remove wayspoints older than 30 seconds
     setTimeout(() => {
         ChatLib.chat("Removing old waypoint");
         Waypoints.shift();
-    }, 30000); // 30
+    }, seconds*1000); // 30
 } 
 
 let formatted = [];
 register("step", () => {
     formatted = [];
-    formatWaypoints(patcherWaypoints, 1, 0, 1); // Purple Waypoint
+    formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
 }).setFps(4);
 
-register("command", () => {
+register("renderWorld", () => {
     renderWaypoint(formatted);
-}).setName("sborenderwaypoints");
-
+});
 
 function formatWaypoints(waypoints, r, g, b) {
     if (!waypoints.length) return;
@@ -105,7 +99,7 @@ function renderWaypoint(waypoints) {
         box = waypoint[0];
         beam = waypoint[1];
         rgb = waypoint[2];
-    
+
         RenderLib.drawEspBox(box[1], box[2], box[3], 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
         RenderLib.drawInnerEspBox(box[1], box[2], box[3], 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, true);
