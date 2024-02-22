@@ -223,10 +223,8 @@ registerWhen(register("chat", (coins) => {
 }).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker && isInSkyblock());
 
 registerWhen(register("chat", (drop) => {
-    drop = drop.slice(0, 14); // 6 statt 14 für potato und carrot
     if (isDataLoaded() && checkDiana()) {
-        drop.slice(2);
-        ChatLib.chat(drop);
+        drop = drop.slice(2, 16); // 6 statt 14 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
                 Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
@@ -247,7 +245,10 @@ registerWhen(register("chat", (drop) => {
         }
     }
 }).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => getWorld() === "Hub" && isInSkyblock() && settings.dianaLootTracker);
+// Party > [MVP++] LHxSeven: &r&6&lRARE DROP! &r&6Daedalus Stick &r&b(+&r&b322% &r&b✯ Magic Find&r&b)&r
 // &r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r
+
+// &r&6&lRARE DROP! &r&fEnchanted Book &r&b(+&r&b348% &r&b✯ Magic Find&r&b)&r
 
 // mayor tracker //
 let trackerMayor = loadTracker("Mayor");
