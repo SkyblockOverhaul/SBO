@@ -226,7 +226,6 @@ registerWhen(register("chat", (drop) => {
     drop = drop.slice(0, 14); // 6 statt 14 für potato und carrot
     if (isDataLoaded() && checkDiana()) {
         drop.slice(2);
-        ChatLib.chat(drop);
         switch (drop) {
             case "Enchanted Book":
                 Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
