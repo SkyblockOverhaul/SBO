@@ -190,6 +190,15 @@ class Settings {
         subcategory: 'Party Commands',
     })
     carrotCommand = false;
+
+    // messageHider
+    @SwitchProperty({
+        name: 'Message Hider',
+        description: 'Hide messages from the chat',
+        category: 'General',
+        subcategory: 'Message Hider',
+    })
+    jacobHider = false;
 }
 
 export default new Settings();
