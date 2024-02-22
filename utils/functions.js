@@ -159,8 +159,8 @@ register("chat" , (player) => {
     lootShareBool = true;
     setTimeout(() => {
         lootShareBool = false;
-    }, 1000);
-}).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6${player}&r&f!&r");
+    }, 2000);
+}).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 
 
