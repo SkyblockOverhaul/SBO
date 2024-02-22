@@ -12,7 +12,7 @@ registerWhen(register("entityDeath", (entity) => {
         state.entityDeathOccurred = true;
         setTimeout(() => {
             state.entityDeathOccurred = false;
-        }, 1000);
+        }, 2000);
     }
     }), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
