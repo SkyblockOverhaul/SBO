@@ -10,9 +10,11 @@ registerWhen(register("chat", (woah) => {
 register("command", () => {
     let scorboardlines = Scoreboard.getLines().map(line => line.getName().removeFormatting());
     scorboardlines.forEach(line => {
-        print(line);
         if(line.includes("⏣")){
             line = line.replace("⏣", "");
+            line = line.replace("⚽", "");
+            line = line.trim(2);
+            print(line);
             ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()) + " " + line + " - SBO");
         }
     });
