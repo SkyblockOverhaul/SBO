@@ -57,6 +57,22 @@ export function dianaLootCounter(item, amount) {
                     }
                 }
             }
+            else {
+                let tempBool = True;
+                for (var i in countThisIds.values()) {
+                    if (item === i) {
+                        ChatLib.chat(item + " not counted because no mod died in the last 2 seconds");
+                        tempBool = false;
+                    }
+                }
+                if (tempBool) {
+                    for (var i in rareDrops.values()) {
+                        if (item === i.slice(2)) {
+                            ChatLib.chat(item + " not counted because no mod died in the last 2 seconds");
+                        }
+                    }
+                }
+            }
         }
     }
 }
