@@ -3,7 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
-import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC} from "../../utils/constants";
+import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 
 registerWhen(register("entityDeath", (entity) => {
@@ -33,13 +33,16 @@ dianaLootTrackerExample =
 ${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
 ${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
 ${GOLD}${BOLD}Daedalus Stick: ${WHITE}
-${GOLD}${BOLD}Griffin Feather: ${WHITE}
 ${GOLD}${BOLD}Crown of Greed: ${WHITE}
 ${GOLD}${BOLD}Souvenir: ${WHITE}
 ${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
 ${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
 ${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
+${BLUE}${BOLD}Ancient Claws: ${WHITE}
+${BLUE}${BOLD}Enchanted Ancient Claws: ${WHITE}
+${GOLD}${BOLD}Griffin Feather: ${WHITE}
 ${GOLD}${BOLD}Coins: ${WHITE}
+${GRAY}${BOLD}Total Burrows: ${WHITE}
 `
 
 // ${GRAY}${BOLD}Enchanted Gold: 
@@ -154,6 +157,8 @@ ${DARK_GREEN}${BOLD}Tiger Plushie: ${AQUA}${BOLD}${lootTracker["items"]["CROCHET
 ${DARK_GREEN}${BOLD}Antique Remedies: ${AQUA}${BOLD}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
 ${GOLD}${BOLD}Griffin Feather: ${AQUA}${BOLD}${lootTracker["items"]["Griffin Feather"]}
 ${GOLD}${BOLD}Coins: ${AQUA}${BOLD}${lootTracker["items"]["coins"]}
+${BLUE}${BOLD}Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ANCIENT_CLAW"]}
+${BLUE}${BOLD}Enchanted Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
 ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows"]}
 `
     }
