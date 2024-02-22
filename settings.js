@@ -193,8 +193,8 @@ class Settings {
 
     // messageHider
     @SwitchProperty({
-        name: 'Message Hider',
-        description: 'Hide messages from the chat',
+        name: 'Jacob Message Hider',
+        description: 'Hide messages from Jacob NPC in the chat',
         category: 'General',
         subcategory: 'Message Hider',
     })
