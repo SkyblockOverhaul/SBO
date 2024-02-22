@@ -6,7 +6,7 @@ import "./features/diana/DianaMobDetect";
 import "./features/guis/BobberCounter";
 import "./features/general/PartyCommands";
 import "./features/general/messageHider";
-
+import "./features/general/Waypoints";
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 

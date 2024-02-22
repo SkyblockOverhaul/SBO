@@ -15,7 +15,7 @@ register("command", () => {
             line = line.replace("⚽", "");
             line = line.trim(2);
             print(line);
-            ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()) + " " + line + " - SBO");
+            ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
         }
     });
 }).setName("sbodetect");
