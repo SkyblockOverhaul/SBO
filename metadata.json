@@ -1,7 +1,12 @@
 {
   "name": "SBO",
   "creator": "RolexDE, D4rkswift",
-  "description": "SBO is meta",
-  "version": "0.0.1",
-  "entry": "index.js"
+  "description": "SBO is the ultimate Diana mod for Skyblock lovers! You can also check out our website for other features at skyblockoverhaul.com. And if you want to chat with other SBO users or need help, join our Discord server at discord.com/invite/QvM6b9jsJD.",
+  "version": "0.1.0",
+  "entry": "index.js",
+  "requires": [
+    "requestV2",
+    "Vigilance",
+    "PogData"
+  ]
 }
