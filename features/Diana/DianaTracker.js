@@ -50,7 +50,7 @@ export function dianaLootCounter(item, amount) {
                         Client.Companion.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                     }
                     if (item === i.slice(2)) {
-                        tempString = item.replace("_", " ").toLowerCase();
+                        tempString = item.replace("_", " ").replace("_", " ").toLowerCase();
                         tempString = toTitleCase(tempString);
                         ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
                         trackItem(item, "items", amount);
