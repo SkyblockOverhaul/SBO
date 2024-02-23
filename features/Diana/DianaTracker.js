@@ -129,12 +129,14 @@ function calcPercent(trackerToCalc, type, setting) {
 
 // track logic //
 export function trackItem(item, category, amount) {
-    trackOne(trackerMayor, item, category, "Mayor", amount);
-    trackOne(trackerSession, item, category, "Session", amount);
-    trackOne(trackerTotal, item, category, "Total", amount);
+    if (isDataLoaded()) {
+        trackOne(trackerMayor, item, category, "Mayor", amount);
+        trackOne(trackerSession, item, category, "Session", amount);
+        trackOne(trackerTotal, item, category, "Total", amount);
 
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    }
 }
 
 
