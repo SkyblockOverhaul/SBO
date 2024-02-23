@@ -17,8 +17,8 @@ inquisWarpKey.registerKeyPress(() => {
         warps = getInqWaypoints();
         if (warps.length > 0) {
             getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
-            if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance))) {
-                ChatLib.chat("§6[SBO] §4" + toTitleCase(closestWarp) + " is not unlocked!")
+            if (warpPlayer) {
+                ChatLib.command("warp " + closestWarp);
                 tryWarp = true;
                 setTimeout(() => {
                     tryWarp = false;
@@ -34,15 +34,18 @@ register("chat", () => {
         hubWarps[closestWarp].unlocked = false;
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r");
+
 let closestWarp = undefined;
-let closestPlayerdistance = 0;
+
+let warpPlayer = false;
 let closestDistance = Infinity;
 function getClosestWarp(x,y,z){
-    closestPlayerdistance = Math.sqrt(
+    let closestPlayerdistance = Math.sqrt(
         (Player.getLastX() - x)**2 +
         (Player.getLastY() - y)**2 +
         (Player.getLastZ() - z)**2
     );
+
     for (let warp in hubWarps) {
         if (hubWarps[warp].unlocked){
             let distance = Math.sqrt(
@@ -56,7 +59,10 @@ function getClosestWarp(x,y,z){
             }
         }
     }
-    ChatLib.chat(closestDistance);
-    ChatLib.chat(closestPlayerdistance);
-
+    if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance))) {
+        warpPlayer = true;
+    }
+    else {
+        warpPlayer = false;
+    }
 }
