@@ -15,20 +15,17 @@ export function getInqWaypoints() {
 };
 
 registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
-    print(z);
     isInq = !z.includes(" ");
     if (isInq) {
         Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
         World.playSound("random.orb", 1, 1);
         z = z.replace("&r", "");
-        ChatLib.chat("inquis cords: " + x + " . " + y + " . " + z.split(" ")[0]);
         player = player + "'s " + "Inquisitor";
         inqWaypoints.push([player, x, y, z]);
         removeWaypointAfterDelay(inqWaypoints, 60);
     }
     else {
         z = z.split(" ")[0];
-        ChatLib.chat("patcher cords: " + x + " . " + y + " . " + z);
         patcherWaypoints.push([player, x, y, z]);
         removeWaypointAfterDelay(patcherWaypoints, 30);
     }
@@ -47,7 +44,7 @@ register("step", () => {
     formatted = [];
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
-}).setFps(4);
+}).setFps(1);
 
 register("renderWorld", () => {
     renderWaypoint(formatted);
