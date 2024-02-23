@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { getInqWaypoints } from "./../general/Waypoints";
 import { registerWhen } from "../../utils/variables";
+import { toTitleCase } from '../../utils/functions';
 
 let hubWarps = {
     castle: {x: -250, y: 130, z: 45, unlocked: true},
@@ -17,14 +18,10 @@ inquisWarpKey.registerKeyPress(() => {
         if (warps.length > 0) {
             getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
             if(closestPlayer){
-                ChatLib.command("warp " + closestWarp);
                 tryWarp = true;
                 setTimeout(() => {
                     tryWarp = false;
                 }, 2000);
-            }
-            else{
-                ChatLib.chat("[SBO] You Are Closer then the warp!");
             }
         }
     }
@@ -32,7 +29,7 @@ inquisWarpKey.registerKeyPress(() => {
 
 register("chat", () => {
     if (tryWarp) {
-        ChatLib.chat("§6[SBO] §4" + closestWarp + " is not unlocked!")
+        ChatLib.chat("§6[SBO] §4" + toTitleCase(closestWarp) + " is not unlocked!")
         hubWarps[closestWarp].unlocked = false;
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r");
@@ -57,10 +54,8 @@ function getClosestWarp(x,y,z){
                 closestDistance = distance;
                 closestWarp = warp;
             }
-            ChatLib.chat(warp + " " + distance);
         }
     }
-    ChatLib.chat("Player Distance: " + closestPlayerdistance);
     if (closestPlayerdistance < closestDistance) {
         closestPlayer = true;
     }
