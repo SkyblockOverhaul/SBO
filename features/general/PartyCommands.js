@@ -65,7 +65,6 @@ register("chat", (player, message) => {
                 },100)
             }
             break;
-        case "!8ball":
         case "!c":
         case "!carrot":
             if(settings.carrotCommand){

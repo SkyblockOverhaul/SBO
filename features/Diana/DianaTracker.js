@@ -59,11 +59,27 @@ export function dianaLootCounter(item, amount) {
             }
         }
     }
+    else {
+        let tempBool = true;
+        for (var i in countThisIds.values()) {
+            if (item === i) {
+                ChatLib.chat(item + " not counted because no mod died in the last 2 seconds");
+                tempBool = false;
+            }
+        }
+        if (tempBool) {
+            for (var i in rareDrops.values()) {
+                if (item === i.slice(2)) {
+                    ChatLib.chat(item + " not counted because no mod died in the last 2 seconds");
+                }
+            }
+        }
+    }
 }
 
 // save the tracker to json file //
 function saveLoot(tracker, type) {
-    FileLib.write(trackerFileLocation + type + ".json", JSON.stringify(tracker));
+    FileLib.write(trackerFileLocation + type + ".json", JSON.stringify(tracker, null, 4));
 }
 
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //

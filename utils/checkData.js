@@ -14,19 +14,19 @@ function checkDataLoaded() {
     if (!FileLib.exists(trackerFileLocation + "Total.json")) {
         tempDict = {};
         tempDict = initializeTracker();
-        FileLib.write(trackerFileLocation + "Total.json", JSON.stringify(tempDict));
+        FileLib.write(trackerFileLocation + "Total.json", JSON.stringify(tempDict, null, 4));
     }
 
     if (!FileLib.exists(trackerFileLocation + "Mayor.json")) {
         if (getDateMayorElected() != undefined) {
             tempDict = {};
             tempDict[getDateMayorElected().getFullYear()] = initializeTracker();
-            FileLib.write(trackerFileLocation + "Mayor.json", JSON.stringify(tempDict));
+            FileLib.write(trackerFileLocation + "Mayor.json", JSON.stringify(tempDict, null, 4));
         }
     }
     if (!FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json")) {
         tempDict = initializeGuiSettings();
-        FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict));
+        FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict, null, 4));
     }
 }
 
