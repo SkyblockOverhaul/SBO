@@ -17,7 +17,7 @@ inquisWarpKey.registerKeyPress(() => {
         warps = getInqWaypoints();
         if (warps.length > 0) {
             getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
-            if(closestPlayer){
+            if (closestPlayer) {
                 tryWarp = true;
                 setTimeout(() => {
                     tryWarp = false;
@@ -58,5 +58,8 @@ function getClosestWarp(x,y,z){
     }
     if (closestPlayerdistance < closestDistance) {
         closestPlayer = true;
+    }
+    else {
+        closestPlayer = false;
     }
 }
