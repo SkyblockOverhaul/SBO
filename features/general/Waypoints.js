@@ -1,8 +1,8 @@
-import settings from "../../settings.js";
-import { registerWhen } from "../../utils/variables.js";
+import settings from "../../settings";
+import { registerWhen } from "../../utils/variables";
 
-import RenderLib from "../../../RenderLib/index.js";
-import renderBeaconBeam from "../../../BeaconBeam/index.js";
+import RenderLib from "../../../RenderLib/index";
+import renderBeaconBeam from "../../../BeaconBeam/index";
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
