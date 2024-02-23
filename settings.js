@@ -56,6 +56,8 @@ class Settings {
         this.addDependency('Detect Patcher Cords','Waypoints')
         this.addDependency('Detect Inq Cords','Waypoints')
         this.addDependency('Inq Warp Key','Detect Inq Cords')
+        this.addDependency('Rare Drop Announcer','Diana Loot Tracker')
+        this.addDependency('Loot Screen Announcer','Diana Loot Tracker')
     }
 
     //-----------Diana----------------
@@ -116,7 +118,7 @@ class Settings {
     dianaMobTracker = false;
     @SelectorProperty({
         name: "Mob View",
-        description: "Tracks your Diana Mob kills /movemobcounter to move the counter",
+        description: "Tracks your Diana Mob kills /sbomovemobcounter to move the counter",
         category: "Trackers",
         subcategory: "Diana Trackers",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -131,7 +133,7 @@ class Settings {
     dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
-        description: "Tracks your Diana loot /movelootcounter to move the counter",
+        description: "Tracks your Diana loot /sbomovelootcounter to move the counter",
         category: "Trackers",
         subcategory: "Diana Trackers",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -140,7 +142,7 @@ class Settings {
     // Bobber Counter
     @SwitchProperty({
         name: "Bobber Counter",
-        description: "Tracks the number of bobbers near you",
+        description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
         category: "Trackers",
         subcategory: "Bobber Counter"
     })
@@ -236,14 +238,14 @@ class Settings {
     @SwitchProperty({
         name: 'Rare Drop Announcer',
         description: 'Announce loot in chat',
-        category: 'General',
+        category: 'Trackers',
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerChat = false;
     @SwitchProperty({
         name: 'Loot Screen Announcer',
         description: 'Announce Chimer/Stick/Relic on screen',
-        category: 'General',
+        category: 'Trackers',
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
