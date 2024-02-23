@@ -1,4 +1,6 @@
+import settings from "../../settings";
 import { getInqWaypoints } from "./../general/Waypoints";
+import { registerWhen } from "../../utils/variables";
 
 let hubWarps = {
     castle: {x: -250, y: 130, z: 45, unlocked: true},
@@ -10,14 +12,16 @@ let hubWarps = {
 const inquisWarpKey = new KeyBind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
 inquisWarpKey.registerKeyPress(() => {
-    warps = getInqWaypoints();
-    if (warps.length > 0) {
-        getClosestWarp(warps[0][1], warps[0][2], warps[0][3]);
-        ChatLib.command("warp " + closestWarp);
-        tryWarp = true;
-        setTimeout(() => {
-            tryWarp = false;
-        }, 2000);
+    if (settings.inqWarpKey) {
+        warps = getInqWaypoints();
+        if (warps.length > 0) {
+            getClosestWarp(warps[0][1], warps[0][2], warps[0][3]);
+            ChatLib.command("warp " + closestWarp);
+            tryWarp = true;
+            setTimeout(() => {
+                tryWarp = false;
+            }, 2000);
+        }
     }
 });
 

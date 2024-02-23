@@ -17,19 +17,28 @@ export function getInqWaypoints() {
 registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
     isInq = !z.includes(" ");
     if (isInq) {
-        Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
-        World.playSound("random.orb", 1, 1);
-        z = z.replace("&r", "");
-        player = player + "'s " + "Inquisitor";
-        inqWaypoints.push([player, x, y, z]);
-        removeWaypointAfterDelay(inqWaypoints, 60);
+        if(settings.inqWaypoints) {
+            Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
+            World.playSound("random.orb", 1, 1);
+            z = z.replace("&r", "");
+            player = player + "'s " + "Inquisitor";
+            inqWaypoints.push([player, x, y, z]);
+            removeWaypointAfterDelay(inqWaypoints, 60);
+        }
+        else{
+            z = z.replace("&r", "");
+            patcherWaypoints.push([player, x, y, z]);
+            removeWaypointAfterDelay(patcherWaypoints, 30);
+        }
     }
     else {
-        z = z.split(" ")[0];
-        patcherWaypoints.push([player, x, y, z]);
-        removeWaypointAfterDelay(patcherWaypoints, 30);
+        if(settings.patcherWaypoints) {
+            z = z.split(" ")[0];
+            patcherWaypoints.push([player, x, y, z]);
+            removeWaypointAfterDelay(patcherWaypoints, 30);
+        }
     }
-}).setCriteria("&r&9Party ${trash} ${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherCords);
+}).setCriteria("&r&9Party ${trash} ${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
     // remove wayspoints older than 30 seconds
@@ -39,15 +48,15 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
 } 
 
 let formatted = [];
-register("step", () => {
+registerWhen(register("step", () => {
     formatted = [];
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
-}).setFps(1);
+}).setFps(1), () => settings.waypoints);
 
-register("renderWorld", () => {
+registerWhen(register("renderWorld", () => {
     renderWaypoint(formatted);
-});
+}), () => settings.waypoints);
 
 function formatWaypoints(waypoints, r, g, b) {
     if (!waypoints.length) return;

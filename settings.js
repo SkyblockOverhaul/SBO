@@ -53,6 +53,9 @@ class Settings {
         this.addDependency('Party Transfer','Party Commands')
         this.addDependency('Promote/Demote','Party Commands')
         this.addDependency('Ask Carrot','Party Commands')
+        this.addDependency('Detect Patcher Cords','Waypoints')
+        this.addDependency('Detect Inq Cords','Waypoints')
+        this.addDependency('Inq Warp Key','Detect Inq Cords')
     }
 
     //-----------Diana----------------
@@ -200,14 +203,35 @@ class Settings {
     })
     jacobHider = false;
 
-    // Create waypoint for patcher like cords
+    // Waypoints
     @SwitchProperty({
-        name: 'Patcher Cords',
-        description: 'Create waypoint for patcher like cords',
+        name: 'Waypoints',
+        description: 'Main Toggle Waypoints',
         category: 'General',
-        subcategory: 'Message Hider',
+        subcategory: 'Waypoints',
     })
-    patcherCords = false;
+    waypoints = false;
+    @SwitchProperty({
+        name: 'Detect Patcher Cords',
+        description: 'Create Patcher Waypoints',
+        category: 'General',
+        subcategory: 'Waypoints',
+    })
+    patcherWaypoints = false;
+    @SwitchProperty({
+        name: 'Detect Inq Cords',
+        description: 'Create Inq Waypoints',
+        category: 'General',
+        subcategory: 'Waypoints',
+    })
+    inqWaypoints = false;
+    @SwitchProperty({
+        name: 'Inq Warp Key',
+        description: 'Enable Inq Warp Key, Set your keybind in controls.',
+        category: 'General',
+        subcategory: 'Waypoints',
+    })
+    inqWarpKey = false;
 }
 
 export default new Settings();
