@@ -232,6 +232,21 @@ class Settings {
         subcategory: 'Waypoints',
     })
     inqWarpKey = false;
+    // Loot Announcer
+    @SwitchProperty({
+        name: 'Rare Drop Announcer',
+        description: 'Announce loot in chat',
+        category: 'General',
+        subcategory: 'Loot Announcer',
+    })
+    lootAnnouncer = false;
+    @SwitchProperty({
+        name: 'Loot Screen Announcer',
+        description: 'Announce Chimer/Stick/Relic on screen',
+        category: 'General',
+        subcategory: 'Loot Announcer',
+    })
+    lootScreenAnnouncer = false;
 }
 
 export default new Settings();
