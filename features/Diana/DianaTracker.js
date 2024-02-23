@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, initializeTracker } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
 import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
