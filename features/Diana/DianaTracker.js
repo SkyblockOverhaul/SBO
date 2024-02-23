@@ -47,12 +47,16 @@ export function dianaLootCounter(item, amount) {
                 for (var i in rareDrops.values()) {
                     color = i.slice(0, 2);
                     if (item == "MINOS_RELIC") {
-                        Client.Companion.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+                        if (settings.lootAnnouncerScreen) {
+                            Client.Companion.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+                        }
                     }
                     if (item === i.slice(2)) {
                         tempString = item.replace("_", " ").replace("_", " ").toLowerCase();
                         tempString = toTitleCase(tempString);
-                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
+                        if (settings.lootAnnouncerChat) {
+                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
+                        }
                         trackItem(item, "items", amount);
                     }
                 }
@@ -228,11 +232,15 @@ registerWhen(register("chat", (drop) => {
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
-                Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
+                if (settings.lootAnnouncerScreen) {
+                    Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
+                }
                 trackItem("Chimera", "items", 1);
                 break;
             case "Daedalus Stick":
-                Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
+                if (settings.lootAnnouncerScreen) {
+                    Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
+                }
                 trackItem(drop, "items", 1);
                 break;
             // case "Potato":
