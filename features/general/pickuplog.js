@@ -52,12 +52,10 @@ function pickuplog() {
 
 
 register("worldUnload", () => {
-    console.log("worldUnload");
     pickuplogBool = true;
 });
 
 register("worldLoad", () => {
-    console.log("worldLoad");
     pickuplogBool = false;
 });
 

@@ -59,22 +59,6 @@ export function dianaLootCounter(item, amount) {
             }
         }
     }
-    else {
-        let tempBool = true;
-        for (var i in countThisIds.values()) {
-            if (item === i) {
-                ChatLib.chat(item + " not counted because no mod died in the last 2 seconds");
-                tempBool = false;
-            }
-        }
-        if (tempBool) {
-            for (var i in rareDrops.values()) {
-                if (item === i.slice(2)) {
-                    ChatLib.chat(item + " not counted because no mod died in the last 2 seconds");
-                }
-            }
-        }
-    }
 }
 
 // save the tracker to json file //
@@ -281,9 +265,6 @@ registerWhen(register("step", () => {
             else {
                 trackerBool = true;
             }
-        }
-        else {
-            ChatLib.chat("No date for mayor election found (undefined)");
         }
     }
 }).setFps(1), () => !trackerBool);
