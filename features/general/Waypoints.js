@@ -52,7 +52,7 @@ registerWhen(register("step", () => {
     formatted = [];
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
-}).setFps(1), () => settings.waypoints);
+}).setFps(3), () => settings.waypoints);
 
 registerWhen(register("renderWorld", () => {
     renderWaypoint(formatted);
@@ -68,13 +68,6 @@ function formatWaypoints(waypoints, r, g, b) {
         y = Math.round(waypoint[2]);
         z = Math.round(waypoint[3]);
         distance = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
-
-        // Makes it so waypoint always renders
-        if (distance >= 100) {
-            x = Player.getX() + (x - Player.getX()) * (100 / distance);
-            y = Player.getY() + (y - Player.getY()) * (100 / distance);
-            z = Player.getZ() + (z - Player.getZ()) * (100 / distance);
-        }
 
         // Formats and realins everything
         distance = Math.round(distance) + "m";
