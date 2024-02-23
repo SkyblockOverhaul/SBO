@@ -15,7 +15,7 @@ inquisWarpKey.registerKeyPress(() => {
     warps = getInqWaypoints();
     if (warps.length > 0) {
         getClosestWarp(warps[0][1], warps[0][2], warps[0][3]);
-        ChatLib.command(closestWarp);
+        ChatLib.command("warp" + closestWarp);
         tryWarp = true;
         setTimeout(() => {
             tryWarp = false;
@@ -25,6 +25,7 @@ inquisWarpKey.registerKeyPress(() => {
 
 register("chat", () => {
     if (tryWarp) {
+        ChatLib.chat(closestWarp + " is not unlocked!")
         warps[closestWarp].unlocked = false;
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r");
@@ -47,5 +48,4 @@ function getClosestWarp(x,y,z){
             closestWarp = warp;
         }
     }
-    closestWarp = "warp " + closestWarp;
 }
