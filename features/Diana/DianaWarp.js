@@ -6,7 +6,7 @@ import { toTitleCase } from '../../utils/functions';
 let hubWarps = {
     castle: {x: -250, y: 130, z: 45, unlocked: true},
     da: {x: 92, y: 75, z: 174, unlocked: true},
-    hub: {x: -3, y: 70, z: 70, unlocked: true},
+    hub: {x: -3, y: 70, z: -70, unlocked: true},
     museum: {x: -76, y: 76, z: 81, unlocked: true},
 };
 
@@ -42,7 +42,6 @@ function getClosestWarp(x,y,z){
         (Player.getLastY() - y)**2 +
         (Player.getLastZ() - z)**2
     );
-    closestPlayer = Infinity;
     for (let warp in hubWarps) {
         if (hubWarps[warp].unlocked){
             let distance = Math.sqrt(
@@ -56,6 +55,8 @@ function getClosestWarp(x,y,z){
             }
         }
     }
+    ChatLib.chat("Closest Warp: " + closestPlayerdistance);
+    ChatLib.chat("Closest Distance: " + closestDistance);
     if (closestPlayerdistance < closestDistance) {
         closestPlayer = true;
     }
