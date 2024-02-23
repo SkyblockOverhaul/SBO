@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, initializeTracker } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
 import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
@@ -35,7 +35,7 @@ export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"];
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
     var checkBool = true;
-    if (isActiveForOneSecond()) {
+    if (isActiveForOneSecond() || gotLootShare()) {
         if (checkDiana()) {
             for (var i in countThisIds.values()) {
                 if (item === i) {
