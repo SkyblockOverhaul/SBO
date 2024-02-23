@@ -34,7 +34,7 @@ register("chat", () => {
         hubWarps[closestWarp].unlocked = false;
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r");
-
+// wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
 let closestWarp = undefined;
 
 let warpPlayer = false;
