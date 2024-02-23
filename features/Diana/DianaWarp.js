@@ -21,8 +21,6 @@ function getClosestWarp(x,y,z){
         hub: {x: -3, y: 70, z: 70},
         museum: {x: -76, y: 76, z: 81}
     };
-
-    let closestWarp;
     let closestDistance = Infinity;
     
     for (let warp in warps) {
