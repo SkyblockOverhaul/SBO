@@ -15,7 +15,7 @@ inquisWarpKey.registerKeyPress(() => {
     warps = getInqWaypoints();
     if (warps.length > 0) {
         getClosestWarp(warps[0][1], warps[0][2], warps[0][3]);
-        ChatLib.command("warp" + closestWarp);
+        ChatLib.command("warp " + closestWarp);
         tryWarp = true;
         setTimeout(() => {
             tryWarp = false;
@@ -36,7 +36,7 @@ function getClosestWarp(x,y,z){
     let closestDistance = Infinity;
     
     for (let warp in warps) {
-        if (!warps[warp].unlocked) continue;
+        if (warps[warp].unlocked) continue;
         let distance = Math.sqrt(
             (warps[warp].x - x)**2 +
             (warps[warp].y - y)**2 +
