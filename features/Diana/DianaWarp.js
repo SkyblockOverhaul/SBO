@@ -15,7 +15,7 @@ inquisWarpKey.registerKeyPress(() => {
     if (settings.inqWarpKey) {
         warps = getInqWaypoints();
         if (warps.length > 0) {
-            getClosestWarp(warps[0][1], warps[0][2], warps[0][3]);
+            getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
             if(closestPlayer){
                 ChatLib.command("warp " + closestWarp);
                 tryWarp = true;
