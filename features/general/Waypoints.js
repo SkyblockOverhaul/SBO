@@ -34,7 +34,6 @@ registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
 function removeWaypointAfterDelay(Waypoints, seconds) {
     // remove wayspoints older than 30 seconds
     setTimeout(() => {
-        ChatLib.chat("Removing old waypoint");
         Waypoints.shift();
     }, seconds*1000); // 30
 } 
