@@ -45,7 +45,7 @@ function getClosestWarp(x,y,z){
         (Player.getLastY() - y)**2 +
         (Player.getLastZ() - z)**2
     );
-
+    closestDistance = Infinity;
     for (let warp in hubWarps) {
         if (hubWarps[warp].unlocked){
             let distance = Math.sqrt(
@@ -59,6 +59,12 @@ function getClosestWarp(x,y,z){
             }
         }
     }
+    print(closestWarp);
+    print(closestDistance);
+    print(closestPlayerdistance);
+    print(x);
+    print(y);
+    print(z);
     if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance))) {
         warpPlayer = true;
     }
