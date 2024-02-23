@@ -8,7 +8,7 @@ import { getDateMayorElected } from "../../utils/mayor";
 
 registerWhen(register("entityDeath", (entity) => {
     var dist = entity.distanceTo(Player.getPlayer());
-    if (dist < 31 ) {
+    if (dist < 10 ) {
         state.entityDeathOccurred = true;
         setTimeout(() => {
             state.entityDeathOccurred = false;
