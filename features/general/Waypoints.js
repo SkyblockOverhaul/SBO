@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-
+import { getFinalLocation } from "../diana/DianaGuess";
+import { toTitleCase } from '../../utils/functions';
 import RenderLibV2 from "../../../RenderLibv2";
 import renderBeaconBeam from "../../../BeaconBeam/index";
 
@@ -21,7 +22,7 @@ registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
             Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
             World.playSound("random.orb", 1, 1);
             z = z.replace("&r", "");
-            player = player + "'s " + "Inquisitor";
+            player = player + "'s " + "Inquisitor " + closestWarpString(x, y, z);
             inqWaypoints.push([player, x, y, z]);
             removeWaypointAfterDelay(inqWaypoints, 60);
         }
@@ -56,21 +57,25 @@ registerWhen(register("step", () => {
 }).setFps(3), () => settings.waypoints);
 
 let formattedGuess = [];
+let lastWaypoint = undefined;
+let guessWaypoint = undefined;
+let finalLocation = undefined;
 registerWhen(register("step", () => {
     formattedGuess = [];
-    if (guessWaypoint !== undefined) {
-        formatWaypoints([guessWaypoint], 0, 1, 0);
+    finalLocation = getFinalLocation();
+    if (finalLocation != null && lastWaypoint != finalLocation) {
+        guessWaypoint = [`Guess ${guessWaypointString}`, finalLocation.x, finalLocation.y, finalLocation.z];
+        formatWaypoints([guessWaypoint], 0, 1, 0, "Guess");
+        lastWaypoint = guessWaypoint;
     }
 }).setFps(20), () => settings.dianaBurrowGuess);
 
 registerWhen(register("renderWorld", () => {
+    renderWaypoint(formattedGuess);
     renderWaypoint(formatted);
 }), () => settings.waypoints);
-registerWhen(register("renderWorld", () => {
-    renderWaypoint(formattedGuess);
-}), () => settings.dianaBurrowGuess);
 
-function formatWaypoints(waypoints, r, g, b) {
+function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distance, xSign, zSign = 0;
 
@@ -103,10 +108,10 @@ function formatWaypoints(waypoints, r, g, b) {
            [beacon x, y, z]
            [r, g, b]
         */
-        if (waypoint[0] == "Guess") {
+        if (type == "Guess") {
             formattedGuess.push(wp);
         }
-        else
+        else if (type == "Normal")
         {
             formatted.push(wp);
         }
@@ -129,7 +134,106 @@ function renderWaypoint(waypoints) {
     });
 }
 
-let guessWaypoint = undefined;
-export function createDianaGuess(x, y, z) {
-    guessWaypoint = ["Guess", x, y, z];    
+function closestWarpString(x, y, z) {
+    closestWarp = getClosestWarp(x, y, z);
+    if (closestWarp == "no warp") {
+        closestWarp = "";
+    }
+    else {
+        closestWarp = `(warp ${closestWarp})`;
+    }
+    return closestWarp;
+}
+
+let guessWaypointString = "";
+register("step", () => {
+    if (finalLocation != null) {
+        guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z);
+    }
+}).setFps(2);
+
+let hubWarps = {
+    castle: {x: -250, y: 130, z: 45, unlocked: true},
+    da: {x: 92, y: 75, z: 174, unlocked: true},
+    hub: {x: -3, y: 70, z: -70, unlocked: true},
+    museum: {x: -76, y: 76, z: 81, unlocked: true},
+};
+
+const warpKey = new KeyBind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
+let tryWarpGuess = false;
+warpKey.registerKeyPress(() => {
+    if (settings.dianaBurrowWarp) {
+        getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z);
+        if (warpPlayer) {
+            ChatLib.command("warp " + closestWarp);
+            tryWarpGuess = true;
+            setTimeout(() => {
+                tryWarpGuess = false;
+            }, 2000);
+        }
+    }
+});
+
+const inquisWarpKey = new KeyBind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
+let tryWarpInquis = false;
+inquisWarpKey.registerKeyPress(() => {
+    if (settings.inqWarpKey) {
+        warps = getInqWaypoints();
+        if (warps.length > 0) {
+            getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
+            if (warpPlayer) {
+                ChatLib.command("warp " + closestWarp);
+                tryWarp = true;
+                setTimeout(() => {
+                    tryWarpInquis = false;
+                }, 2000);
+            }
+        }
+    }
+});
+
+registerWhen(register("chat", () => {
+    if (tryWarp) {
+        ChatLib.chat("§6[SBO] §4" + toTitleCase(closestWarp) + " is not unlocked!")
+        hubWarps[closestWarp].unlocked = false;
+    }
+}).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r"), () => settings.inqWarpKey);
+// wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
+let closestWarp = undefined;
+
+let warpPlayer = false;
+let closestDistance = Infinity;
+function getClosestWarp(x, y, z){
+    let closestPlayerdistance = Math.sqrt(
+        (Player.getLastX() - x)**2 +
+        (Player.getLastY() - y)**2 +
+        (Player.getLastZ() - z)**2
+    );
+    closestDistance = Infinity;
+    for (let warp in hubWarps) {
+        if (hubWarps[warp].unlocked){
+            let distance = Math.sqrt(
+                (hubWarps[warp].x - x)**2 +
+                (hubWarps[warp].y - y)**2 +
+                (hubWarps[warp].z - z)**2
+            );
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestWarp = warp;
+            }
+        }
+    }
+    if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance))) {
+        warpPlayer = true;
+    }
+    else {
+        warpPlayer = false;
+    }
+
+    if (warpPlayer) {
+        return closestWarp;
+    }
+    else {
+        return "no warp";
+    }
 }

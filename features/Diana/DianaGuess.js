@@ -1,5 +1,4 @@
 import { checkDiana } from "../../utils/checkDiana";
-import { createDianaGuess } from "../general/Waypoints";
 
 let lastDing = 0;
 let lastDingPitch = 0;
@@ -15,14 +14,9 @@ let dingIndex = 0;
 let dingSlope = [];
 let distance2 = null;
 let finalLocation = null;
-let gY = 0;
 
 export function getFinalLocation() {
     return finalLocation;
-}
-
-export function getFinalLocationHeight() {
-    return gY;
 }
 
 function onWorldChange() {
@@ -38,6 +32,8 @@ function onWorldChange() {
     distance = null;
     dingIndex = 0;
     dingSlope = [];
+    finalLocation = null;
+    gY = 0;
 }
 
 function onPlaySound(pos, name, volume, pitch, categoryName, event) {
@@ -223,18 +219,21 @@ function onReceiveParticle(particle, type, event) {
                     } else {
                         finalLocation = new SboVec(Math.floor(p2.x), 255.0, Math.floor(p2.z));
                     }
-
+                    
+                    gY = 131;
+                    while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 && gY > 73) {
+                        gY--;
+                    }
+                    
+                    finalLocation.y = gY;
 
                     // check if finallocation has nan values
                     if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {
                         print("partical: Soopy finalLocation has nan values");
                     }
                     else {
-                        gY = 131;
-                        while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 &&gY > 73) {
-                            gY--;
-                        }
-                        createDianaGuess(finalLocation.getX(), gY, finalLocation.getZ());
+                        
+                        //createDianaGuess(finalLocation.getX(), gY, finalLocation.getZ());
                     }
                 }
             }
