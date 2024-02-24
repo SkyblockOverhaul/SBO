@@ -5,7 +5,7 @@ import { checkItemInHotbar } from "./functions";
 
 
 export function checkDiana() {
-    dianaBool = (getMayor() === "Diana" && getPerks().has("Mythological Ritual"))
+    dianaBool = (getMayor() === "Diana")
     return getWorld() === "Hub" && checkItemInHotbar("ANCESTRAL_SPADE") && dianaBool;
 }
 

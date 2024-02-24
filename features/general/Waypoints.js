@@ -52,10 +52,20 @@ registerWhen(register("step", () => {
     formatted = [];
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
+
 }).setFps(3), () => settings.waypoints);
+
+let formattedGuess = [];
+register("step", () => {
+    formattedGuess = [];
+    if (guessWaypoint !== undefined) {
+        formatWaypoints([guessWaypoint], 0, 1, 0);
+    }
+}).setFps(20);
 
 registerWhen(register("renderWorld", () => {
     renderWaypoint(formatted);
+    renderWaypoint(formattedGuess);
 }), () => settings.waypoints);
 
 function formatWaypoints(waypoints, r, g, b) {
@@ -85,7 +95,13 @@ function formatWaypoints(waypoints, r, g, b) {
            [beacon x, y, z]
            [r, g, b]
         */
-        formatted.push(wp);
+        if (waypoint[0] == "Guess") {
+            formattedGuess.push(wp);
+        }
+        else
+        {
+            formatted.push(wp);
+        }
     });
 }
 
@@ -103,4 +119,9 @@ function renderWaypoint(waypoints) {
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, true);
         renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
     });
+}
+
+let guessWaypoint = undefined;
+export function createDianaGuess(x, y, z) {
+    guessWaypoint = ["Guess", x, y, z];    
 }
