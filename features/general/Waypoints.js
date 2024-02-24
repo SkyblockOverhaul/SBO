@@ -29,6 +29,12 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
 } 
 
 export function creatBurrowWaypoints(burrowType, x, y, z) {
+    // check if waypoint already exists
+    for (let i = 0; i < burrowWaypoints.length; i++) {
+        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            return;
+        }
+    }
     burrowWaypoints.push([burrowType, x, y, z]);
 }
 
@@ -87,7 +93,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         if (type == "Guess") {
             formattedGuess.push(wp);
         }
-        else if (type == "Normal")
+        else if (type == "Normal" || type == "Burrow")
         {
             formatted.push(wp);
         }
@@ -267,6 +273,5 @@ registerWhen(register("step", () => {
 registerWhen(register("renderWorld", () => {
     renderWaypoint(formattedGuess);
     renderWaypoint(formatted);
-    renderWaypoint(burrowWaypoints);
 }), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
 
