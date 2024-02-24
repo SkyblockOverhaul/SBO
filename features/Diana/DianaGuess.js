@@ -14,10 +14,10 @@ let distance = null;
 let dingIndex = 0;
 let dingSlope = [];
 let distance2 = null;
+let finalLocation = null;
 
 
 function onWorldChange() {
-    print("Soopy onWorldChange");
     lastDing = 0;
     lastDingPitch = 0;
     firstPitch = 0;
@@ -138,10 +138,8 @@ function onReceiveParticle(particle, type, event) {
 
     if (!isEnabled()) return;
     const type = particle.toString();
-    // print("Soopy type is " + type);
     if (!type.startsWith("SparkFX")) return;
-    const particlePos = particle;
-    const currLoc = new SboVec(particlePos.getX(), particlePos.getY(), particlePos.getZ());
+    const currLoc = new SboVec(particle.getX(), particle.getY(), particle.getZ());
 
     let run = false;
 
@@ -169,7 +167,6 @@ function onReceiveParticle(particle, type, event) {
                       (currLoc.getX() - lastLoc.getX()) / (currLoc.getZ() - lastLoc.getZ())
                     );
                   });
-                // print("Soopy slopeThing length is " + slopeThing.length);
                 let [a, b, c] = solveEquasionThing([slopeThing.length - 5, slopeThing.length - 3, slopeThing.length - 1], [slopeThing[slopeThing.length - 5], slopeThing[slopeThing.length - 3], slopeThing[slopeThing.length - 1]]);
 
                 const pr1 = [];
@@ -210,26 +207,26 @@ function onReceiveParticle(particle, type, event) {
                 if (!pr1.length) return;
                 const p1 = pr1[pr1.length - 1];
                 const p2 = pr2[pr2.length - 1];
-                print("Soopy guessPoint is " + guessPoint);
                 if (guessPoint) {
-                    print("Soopy guessPoint is in if " + guessPoint);
-                    const d1 = Math.pow(p1.x - guessPoint.x, 2) * (2 + (p1.z - guessPoint.z));
-                    const d2 = Math.pow(p2.x - guessPoint.x, 2) * (2 + (p2.z - guessPoint.z));
-                    print("done");
-                    print("partical: Soopy d1 is " + d1);
-                    print("partical: Soopy d2 is " + d2);
-                    print("partical: Soopy p1 is " + p1.x + " " + p1.y + " " + p1.z);
-                    print("partical: Soopy p2 is " + p2.x + " " + p2.y + " " + p2.z);
-                    const finalLocation = d1 < d2 ? new SboVec(Math.floor(p1.x), 255.0, Math.floor(p1.z)) : new SboVec(Math.floor(p2.x), 255.0, Math.floor(p2.z));
-                    print("done2");
-                    print("partical: Soopy finalLocation is " + finalLocation.getX() + " " + finalLocation.getY() + " " + finalLocation.getZ());
+                    let d1 = (p1.x - guessPoint.x) ** 2 + (p1.z - guessPoint.z) ** 2;
+                    let d2 = (p2.x - guessPoint.x) ** 2 + (p2.z - guessPoint.z) ** 2;
+                    if (d1 < d2) {
+                        finalLocation = new SboVec(Math.floor(p1.x), 255.0, Math.floor(p1.z));
+                    } else {
+                        finalLocation = new SboVec(Math.floor(p2.x), 255.0, Math.floor(p2.z));
+                    }
+
+
                     // check if finallocation has nan values
                     if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {
                         print("partical: Soopy finalLocation has nan values");
                     }
                     else {
-                        print("partical: fianlLocation is " + finalLocation.getX() + " " + p1.getY() + " " + finalLocation.getZ());
-                        createDianaGuess(finalLocation.getX(), p1.getY(), finalLocation.getZ());
+                        let gY = 131;
+                        while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 &&gY > 73) {
+                            gY--;
+                        }
+                        createDianaGuess(finalLocation.getX(), gY, finalLocation.getZ());
                     }
                 }
             }

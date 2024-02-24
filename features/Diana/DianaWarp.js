@@ -59,12 +59,6 @@ function getClosestWarp(x,y,z){
             }
         }
     }
-    print(closestWarp);
-    print(closestDistance);
-    print(closestPlayerdistance);
-    print(x);
-    print(y);
-    print(z);
     if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance))) {
         warpPlayer = true;
     }
