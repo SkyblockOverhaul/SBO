@@ -329,24 +329,24 @@ class SboVec {
 
 registerWhen(register("worldUnload", () => {
     onWorldChange()
-}), () => settings.dianaGuess);
+}), () => settings.dianaBurrowGuess);
 registerWhen(register("worldLoad", () => {
     onWorldChange()
-}), () => settings.dianaGuess);
+}), () => settings.dianaBurrowGuess);
 registerWhen(register("gameLoad", () => {
     onWorldChange()
-}), () => settings.dianaGuess);
+}), () => settings.dianaBurrowGuess);
 
 registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
     onPlaySound(pos, name, volume, pitch, categoryName, event)
-}), () => settings.dianaGuess);
+}), () => settings.dianaBurrowGuess);
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     onReceiveParticle(particle, type, event)
-}), () => settings.dianaGuess);
+}), () => settings.dianaBurrowGuess);
 
 registerWhen(register("step", () => {
     if (!checkDiana()) {
         onWorldChange();
     }
-}).setFps(1), () => settings.dianaGuess);
+}).setFps(1), () => settings.dianaBurrowGuess);
