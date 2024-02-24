@@ -65,7 +65,7 @@ class Settings {
         name: "Diana Burrow Guess",
         description: "Guess the burrow location",
         category: "General",
-        subcategory: "Diana"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowGuess = false;
     
@@ -73,7 +73,7 @@ class Settings {
         name: "Diana Burrow Detect",
         description: "Detects Diana Burrows",
         category: "General",
-        subcategory: "Diana"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowDetect = false;
 
@@ -81,7 +81,7 @@ class Settings {
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow",
         category: "General",
-        subcategory: "Diana"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowWarp = false;
 
@@ -89,7 +89,7 @@ class Settings {
         name: "Diana Burrow Waypoints",
         description: "Waypoint for Diana Burrows",
         category: "General",
-        subcategory: "Diana"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowWaypoints = false;
 
