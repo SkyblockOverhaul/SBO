@@ -1,15 +1,10 @@
 import settings from "../settings.js";
 
 register("spawnParticle", (particle, type, event) => {
-    
+    burrowDetect(particle);
 });
 
 
-function burrowDetect() {
-    let burrow = getBurrow();
-    if (burrow !== undefined) {
-        let formatted = [];
-        formatWaypoints([burrow], 0, 1, 0);
-        renderWaypoint(formatted);
-    }
+function burrowDetect(particle) {
+    const type = particle.toString();
 }

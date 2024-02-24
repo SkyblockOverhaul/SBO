@@ -81,6 +81,12 @@ function formatWaypoints(waypoints, r, g, b) {
         z = Math.round(waypoint[3]);
         distance = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
 
+        // Makes it so waypoint always renders
+        if (distance >= 230) {
+            x = Player.getX() + (x - Player.getX()) * (230 / distance);
+            z = Player.getZ() + (z - Player.getZ()) * (230 / distance);
+        }
+
         // Formats and realins everything
         distance = Math.round(distance) + "m";
         xSign = x == 0 ? 1 : Math.sign(x);
@@ -116,8 +122,8 @@ function renderWaypoint(waypoints) {
         beam = waypoint[1];
         rgb = waypoint[2];
 
-        RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, false);
-        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, false);
+        RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
+        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, false);
         renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
     });
