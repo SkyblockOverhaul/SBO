@@ -1,5 +1,6 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
+import { getBurrowWaypoints } from "../general/Waypoints";
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     burrowDetect(particle, type);
@@ -13,14 +14,13 @@ function burrowDetect(particle, type) {
     const typename = type.toString();
     switch (typename) {
         case ("CRIT_MAGIC"):
-            print("Start");
-            // einfach x, y, z abfragen für koordianten villeicht methode creatBurrowWaypoints(x, y, z, type)
+            getBurrowWaypoints("Start", x, y, z);
             break;
         case ("CRIT"):
-            print("Mob");
+            getBurrowWaypoints("Mob", x, y, z);
             break;
         case ("FOOTSTEP"):
-            print("Treasure");
+            getBurrowWaypoints("Treasure", x, y, z);
             break;
     }
 }

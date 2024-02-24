@@ -15,31 +15,11 @@ export function getInqWaypoints() {
     return inqWaypoints 
 };
 
-registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
-    isInq = !z.includes(" ");
-    if (isInq) {
-        if(settings.inqWaypoints) {
-            Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
-            World.playSound("random.orb", 1, 1);
-            z = z.replace("&r", "");
-            player = player + "'s " + "Inquisitor " + closestWarpString(x, y, z);
-            inqWaypoints.push([player, x, y, z]);
-            removeWaypointAfterDelay(inqWaypoints, 60);
-        }
-        else{
-            z = z.replace("&r", "");
-            patcherWaypoints.push([player, x, y, z]);
-            removeWaypointAfterDelay(patcherWaypoints, 30);
-        }
-    }
-    else {
-        if(settings.patcherWaypoints) {
-            z = z.split(" ")[0];
-            patcherWaypoints.push([player, x, y, z]);
-            removeWaypointAfterDelay(patcherWaypoints, 30);
-        }
-    }
-}).setCriteria("&r&9Party ${trash} ${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
+let burrowWaypoints = [];
+export function getBurrowWaypoints() {
+    return burrowWaypoints;
+}
+
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
     // remove wayspoints older than 30 seconds
@@ -48,38 +28,34 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
-let formatted = [];
-registerWhen(register("step", () => {
-    formatted = [];
-    formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
-    formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
-
-}).setFps(3), () => settings.waypoints);
-
-let formattedGuess = [];
-let lastWaypoint = undefined;
-let guessWaypoint = undefined;
-let finalLocation = undefined;
-registerWhen(register("step", () => {
-    formattedGuess = [];
-    finalLocation = getFinalLocation();
-    if (finalLocation != null && lastWaypoint != finalLocation) {
-        guessWaypoint = [`Guess ${guessWaypointString}`, finalLocation.x, finalLocation.y, finalLocation.z];
-        formatWaypoints([guessWaypoint], 0, 1, 0, "Guess");
-        lastWaypoint = guessWaypoint;
-    }
-}).setFps(20), () => settings.dianaBurrowGuess);
-
-registerWhen(register("renderWorld", () => {
-    renderWaypoint(formattedGuess);
-    renderWaypoint(formatted);
-}), () => settings.waypoints);
+export function creatBurrowWaypoints(burrowType, x, y, z) {
+    burrowWaypoints.push([burrowType, x, y, z]);
+}
 
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distance, xSign, zSign = 0;
 
     waypoints.forEach((waypoint) => {
+        if (type == "Burrow") {
+            switch (waypoint[0]) {
+                case "Start":
+                    r = 0.5;
+                    g = 1;
+                    b = 0;
+                    break;
+                case "Mob":
+                    r = 1;
+                    g = 0.2;
+                    b = 0.1;
+                    break;
+                case "Treasure":
+                    r = 1;
+                    g = 0.9;
+                    b = 0;
+                    break;
+            }
+        }
         wp = [["", 0, 0, 0], [0, 0, 0], [r, g, b]];
         x = Math.round(waypoint[1]);
         y = Math.round(waypoint[2]);
@@ -146,12 +122,6 @@ function closestWarpString(x, y, z) {
 }
 
 let guessWaypointString = "";
-register("step", () => {
-    if (finalLocation != null) {
-        guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z);
-    }
-}).setFps(2);
-
 let hubWarps = {
     castle: {x: -250, y: 130, z: 45, unlocked: true},
     da: {x: 92, y: 75, z: 174, unlocked: true},
@@ -160,22 +130,21 @@ let hubWarps = {
 };
 
 const warpKey = new KeyBind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
-let tryWarpGuess = false;
+let tryWarp = false;
 warpKey.registerKeyPress(() => {
     if (settings.dianaBurrowWarp) {
         getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z);
         if (warpPlayer) {
             ChatLib.command("warp " + closestWarp);
-            tryWarpGuess = true;
+            tryWarp = true;
             setTimeout(() => {
-                tryWarpGuess = false;
+                tryWarp = false;
             }, 2000);
         }
     }
 });
 
 const inquisWarpKey = new KeyBind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
-let tryWarpInquis = false;
 inquisWarpKey.registerKeyPress(() => {
     if (settings.inqWarpKey) {
         warps = getInqWaypoints();
@@ -185,22 +154,14 @@ inquisWarpKey.registerKeyPress(() => {
                 ChatLib.command("warp " + closestWarp);
                 tryWarp = true;
                 setTimeout(() => {
-                    tryWarpInquis = false;
+                    tryWarp = false;
                 }, 2000);
             }
         }
     }
 });
 
-registerWhen(register("chat", () => {
-    if (tryWarp) {
-        ChatLib.chat("§6[SBO] §4" + toTitleCase(closestWarp) + " is not unlocked!")
-        hubWarps[closestWarp].unlocked = false;
-    }
-}).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r"), () => settings.inqWarpKey);
-// wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
 let closestWarp = undefined;
-
 let warpPlayer = false;
 let closestDistance = Infinity;
 function getClosestWarp(x, y, z){
@@ -237,3 +198,75 @@ function getClosestWarp(x, y, z){
         return "no warp";
     }
 }
+
+registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
+    isInq = !z.includes(" ");
+    if (isInq) {
+        if(settings.inqWaypoints) {
+            Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
+            World.playSound("random.orb", 1, 1);
+            z = z.replace("&r", "");
+            player = player + "'s " + "Inquisitor " + closestWarpString(x, y, z);
+            inqWaypoints.push([player, x, y, z]);
+            removeWaypointAfterDelay(inqWaypoints, 60);
+        }
+        else{
+            z = z.replace("&r", "");
+            patcherWaypoints.push([player, x, y, z]);
+            removeWaypointAfterDelay(patcherWaypoints, 30);
+        }
+    }
+    else {
+        if(settings.patcherWaypoints) {
+            z = z.split(" ")[0];
+            patcherWaypoints.push([player, x, y, z]);
+            removeWaypointAfterDelay(patcherWaypoints, 30);
+        }
+    }
+}).setCriteria("&r&9Party ${trash} ${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
+
+registerWhen(register("chat", () => {
+    if (tryWarp) {
+        ChatLib.chat("§6[SBO] §4" + toTitleCase(closestWarp) + " is not unlocked!")
+        hubWarps[closestWarp].unlocked = false;
+    }
+}).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r"), () => settings.inqWarpKey);
+// wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
+
+registerWhen(register("step", () => { 
+    if (finalLocation != null) {
+        guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z);
+    }
+}).setFps(2), () => settings.dianaBurrowGuess);;
+
+
+let formattedGuess = [];
+let lastWaypoint = undefined;
+let guessWaypoint = undefined;
+let finalLocation = undefined;
+registerWhen(register("step", () => {
+    formattedGuess = [];
+    finalLocation = getFinalLocation();
+    if (finalLocation != null && lastWaypoint != finalLocation) {
+        guessWaypoint = [`Guess ${guessWaypointString}`, finalLocation.x, finalLocation.y, finalLocation.z];
+        formatWaypoints([guessWaypoint], 0, 1, 0, "Guess");
+        lastWaypoint = guessWaypoint;
+    }
+}).setFps(20), () => settings.dianaBurrowGuess);
+
+let formatted = [];
+registerWhen(register("step", () => {
+    formatted = [];
+    formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
+    formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
+    formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" ); // Red Waypoint
+
+}).setFps(3), () => settings.waypoints);
+
+
+registerWhen(register("renderWorld", () => {
+    renderWaypoint(formattedGuess);
+    renderWaypoint(formatted);
+    renderWaypoint(burrowWaypoints);
+}), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
+

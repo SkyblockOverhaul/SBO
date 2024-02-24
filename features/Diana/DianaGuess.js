@@ -1,4 +1,6 @@
+import settings from "../../settings";
 import { checkDiana } from "../../utils/checkDiana";
+import { registerWhen } from "../../utils/variables";
 
 let lastDing = 0;
 let lastDingPitch = 0;
@@ -325,28 +327,26 @@ class SboVec {
 }
 
 
-register("worldUnload", () => {
+registerWhen(register("worldUnload", () => {
     onWorldChange()
-});
-register("worldLoad", () => {
+}), () => settings.dianaGuess);
+registerWhen(register("worldLoad", () => {
     onWorldChange()
-});
-register("gameLoad", () => {
+}), () => settings.dianaGuess);
+registerWhen(register("gameLoad", () => {
     onWorldChange()
-});
+}), () => settings.dianaGuess);
 
-register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
+registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
     onPlaySound(pos, name, volume, pitch, categoryName, event)
-});
+}), () => settings.dianaGuess);
 
-register("spawnParticle", (particle, type, event) => {
+registerWhen(register("spawnParticle", (particle, type, event) => {
     onReceiveParticle(particle, type, event)
-});
+}), () => settings.dianaGuess);
 
-register("step", () => {
+registerWhen(register("step", () => {
     if (!checkDiana()) {
         onWorldChange();
     }
-}).setFps(1);
-
-
+}).setFps(1), () => settings.dianaGuess);
