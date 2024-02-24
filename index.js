@@ -6,8 +6,8 @@ import "./features/diana/DianaMobDetect";
 import "./features/guis/BobberCounter";
 import "./features/general/PartyCommands";
 import "./features/general/messageHider";
-import "./features/diana/DianaWarp";
-import "./features/diana/DianaBurrowDetect";
+import "./features/Diana/DianaWarp";
+import "./features/Diana/DianaBurrowDetect";
 
 
 
