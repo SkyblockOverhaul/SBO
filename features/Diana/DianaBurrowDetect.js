@@ -14,15 +14,13 @@ function burrowDetect(particle, type) {
     switch (typename) {
         case ("CRIT_MAGIC"):
             print("Start");
-            // einfach x, y, z abfragen für koordianten villeicht methode creatStartWaypoitn(x, y, z)
+            // einfach x, y, z abfragen für koordianten villeicht methode creatBurrowWaypoints(x, y, z, type)
             break;
         case ("CRIT"):
             print("Mob");
-            // einfach x, y, z abfragen für koordianten villeicht methode creatMobWaypoitn(x, y, z)
             break;
         case ("FOOTSTEP"):
             print("Treasure");
-            // einfach x, y, z abfragen für koordianten villeicht methode creatTreasureWaypoitn(x, y, z)
             break;
     }
 }
