@@ -8,7 +8,7 @@
     "requestV2",
     "Vigilance",
     "PogData",
-    "RenderLib",
-    "BeaconBeam"
+    "BeaconBeam",
+    "RenderLibV2"
   ]
 }

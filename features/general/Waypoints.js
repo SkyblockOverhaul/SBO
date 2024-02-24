@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 
-import RenderLib from "../../../RenderLib/index";
+import RenderLibV2 from "../../../RenderLibv2";
 import renderBeaconBeam from "../../../BeaconBeam/index";
 
 let patcherWaypoints = [];
@@ -114,9 +114,9 @@ function renderWaypoint(waypoints) {
         beam = waypoint[1];
         rgb = waypoint[2];
 
-        RenderLib.drawEspBox(box[1], box[2], box[3], 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
-        RenderLib.drawInnerEspBox(box[1], box[2], box[3], 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
-        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, true);
+        RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, false);
+        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, false);
+        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, false);
         renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
     });
 }

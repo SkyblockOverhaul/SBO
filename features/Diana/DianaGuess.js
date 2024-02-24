@@ -16,6 +16,9 @@ let dingSlope = [];
 let distance2 = null;
 let finalLocation = null;
 
+export function getFinalLocation() {
+    return finalLocation;
+}
 
 function onWorldChange() {
     lastDing = 0;
