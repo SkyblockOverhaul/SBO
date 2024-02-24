@@ -7,7 +7,6 @@ import "./features/guis/BobberCounter";
 import "./features/general/PartyCommands";
 import "./features/general/messageHider";
 import "./features/diana/DianaWarp";
-import "./features/diana/DianaGuess";
 
 
 

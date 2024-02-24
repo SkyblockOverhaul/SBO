@@ -1,7 +1,9 @@
 import settings from "../../settings";
-import { getInqWaypoints } from "./../general/Waypoints";
+import { getInqWaypoints} from "./../general/Waypoints";
 import { registerWhen } from "../../utils/variables";
 import { toTitleCase } from '../../utils/functions';
+import { getFinalLocation, getFinalLocationHeight } from "../../features/Diana/DianaGuess";
+
 
 let hubWarps = {
     castle: {x: -250, y: 130, z: 45, unlocked: true},
@@ -10,18 +12,36 @@ let hubWarps = {
     museum: {x: -76, y: 76, z: 81, unlocked: true},
 };
 
+const warpKey = new KeyBind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
+let tryWarpGuess = false;
+warpKey.registerKeyPress(() => {
+    if (settings.dianaBurrowWarp) {
+        let finalLocation = getFinalLocation();
+        let height = getFinalLocationHeight();
+        getClosestWarp(finalLocation.getX(), height, finalLocation.getZ());
+        if (warpPlayer) {
+            ChatLib.command("warp " + closestWarp);
+            tryWarpGuess = true;
+            setTimeout(() => {
+                tryWarpGuess = false;
+            }, 2000);
+        }
+    }
+});
+
+
 const inquisWarpKey = new KeyBind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
-let tryWarp = false;
+let tryWarpInquis = false;
 inquisWarpKey.registerKeyPress(() => {
     if (settings.inqWarpKey) {
         warps = getInqWaypoints();
-        if (warps.length > 0) {
-            getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
+        if (finalLocation.length > 0) {
+            getClosestWarp();
             if (warpPlayer) {
                 ChatLib.command("warp " + closestWarp);
                 tryWarp = true;
                 setTimeout(() => {
-                    tryWarp = false;
+                    tryWarpInquis = false;
                 }, 2000);
             }
         }

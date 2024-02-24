@@ -56,17 +56,19 @@ registerWhen(register("step", () => {
 }).setFps(3), () => settings.waypoints);
 
 let formattedGuess = [];
-register("step", () => {
+registerWhen(register("step", () => {
     formattedGuess = [];
     if (guessWaypoint !== undefined) {
         formatWaypoints([guessWaypoint], 0, 1, 0);
     }
-}).setFps(20);
+}).setFps(20), () => settings.dianaBurrowGuess);
 
 registerWhen(register("renderWorld", () => {
     renderWaypoint(formatted);
-    renderWaypoint(formattedGuess);
 }), () => settings.waypoints);
+registerWhen(register("renderWorld", () => {
+    renderWaypoint(formattedGuess);
+}), () => settings.dianaBurrowGuess);
 
 function formatWaypoints(waypoints, r, g, b) {
     if (!waypoints.length) return;

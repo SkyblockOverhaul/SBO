@@ -15,9 +15,14 @@ let dingIndex = 0;
 let dingSlope = [];
 let distance2 = null;
 let finalLocation = null;
+let gY = 0;
 
 export function getFinalLocation() {
     return finalLocation;
+}
+
+export function getFinalLocationHeight() {
+    return gY;
 }
 
 function onWorldChange() {
@@ -225,7 +230,7 @@ function onReceiveParticle(particle, type, event) {
                         print("partical: Soopy finalLocation has nan values");
                     }
                     else {
-                        let gY = 131;
+                        gY = 131;
                         while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 &&gY > 73) {
                             gY--;
                         }

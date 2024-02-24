@@ -58,6 +58,7 @@ class Settings {
         this.addDependency('Inq Warp Key','Detect Inq Cords')
         this.addDependency('Rare Drop Announcer','Diana Loot Tracker')
         this.addDependency('Loot Screen Announcer','Diana Loot Tracker')
+        this.addDependency('Diana Burrow Warp','Diana Burrow Guess')
     }
 
     //-----------Diana----------------
@@ -70,6 +71,14 @@ class Settings {
     dianaBurrowGuess = false;
     
     @SwitchProperty({
+        name: "Diana Burrow Warp",
+        description: "Warp to the closest burrow",
+        category: "General",
+        subcategory: "Diana"
+    })
+    dianaBurrowWarp = false;
+
+    @SwitchProperty({
         name: "Diana Burrow Waypoints",
         description: "Waypoint for Diana Burrows",
         category: "General",
@@ -77,6 +86,7 @@ class Settings {
     })
     dianaBurrowWaypoints = false;
 
+    
     @SwitchProperty({
         name: "Inquis Party Message",
         description: "Party massage for Inquis Detection (Patcher Format).",
