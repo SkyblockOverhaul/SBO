@@ -7,4 +7,5 @@ register("spawnParticle", (particle, type, event) => {
 
 function burrowDetect(particle) {
     const type = particle.toString();
+    print(type);
 }
