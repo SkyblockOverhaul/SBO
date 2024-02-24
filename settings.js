@@ -58,7 +58,6 @@ class Settings {
         this.addDependency('Inq Warp Key','Detect Inq Cords')
         this.addDependency('Rare Drop Announcer','Diana Loot Tracker')
         this.addDependency('Loot Screen Announcer','Diana Loot Tracker')
-        this.addDependency('Diana Burrow Warp','Diana Burrow Guess')
     }
 
     //-----------Diana----------------
@@ -70,6 +69,14 @@ class Settings {
     })
     dianaBurrowGuess = false;
     
+    @SwitchProperty({
+        name: "Diana Burrow Detect",
+        description: "Detects Diana Burrows",
+        category: "General",
+        subcategory: "Diana"
+    })
+    dianaBurrowDetect = false;
+
     @SwitchProperty({
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow",
