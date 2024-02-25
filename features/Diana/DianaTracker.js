@@ -149,7 +149,7 @@ function trackOne(tracker, item, category, type, amount) {
         tracker[getDateMayorElected().getFullYear()][category][item] += amount;
         if (category === "mobs") {
             tracker[getDateMayorElected().getFullYear()]["mobs"]["TotalMobs"] += amount;
-        }
+        } 
     }
     else {
         tracker[category][item] += amount;

@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
-import { toTitleCase } from '../../utils/functions';
+import { toTitleCase, isWorldLoaded } from '../../utils/functions';
 import RenderLibV2 from "../../../RenderLibv2";
 import renderBeaconBeam from "../../../BeaconBeam/index";
 
@@ -62,6 +62,10 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
                     break;
             }
         }
+        if (waypoint[4] == undefined) {
+            waypoint[4] = "";
+        }
+
         wp = [["", 0, 0, 0], [0, 0, 0], [r, g, b]];
         x = Math.round(waypoint[1]);
         y = Math.round(waypoint[2]);
@@ -207,32 +211,34 @@ function getClosestWarp(x, y, z){
 }
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
-    isInq = !z.includes(" ");
-    const bracketIndex = player.indexOf('[') - 2;
-    if (bracketIndex >= 0)
-        player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
-    else
-        player = player.replaceAll('&', '§');
+    if( isWorldLoaded()) {
+        isInq = !z.includes(" ");
+        const bracketIndex = player.indexOf('[') - 2;
+        if (bracketIndex >= 0)
+            player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
+        else
+            player = player.replaceAll('&', '§');
 
-    if (isInq) {
-        if(settings.inqWaypoints) {
-            Client.showTitle(`&r&d&l<&b&l&kO&d&l> &6&lINQUISITOR! &d&l<&b&l&kO&d&l>`, player, 0, 90, 20);
-            World.playSound("random.orb", 1, 1);
-            z = z.replace("&r", "");
-            inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
-            removeWaypointAfterDelay(inqWaypoints, 60);
+        if (isInq) {
+            if(settings.inqWaypoints) {
+                Client.showTitle(`&r&d&l<&b&l&kO&d&l> &6&lINQUISITOR! &d&l<&b&l&kO&d&l>`, player, 0, 90, 20);
+                World.playSound("random.orb", 1, 1);
+                z = z.replace("&r", "");
+                inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
+                removeWaypointAfterDelay(inqWaypoints, 60);
+            }
+            else{
+                z = z.replace("&r", "");
+                patcherWaypoints.push([player, x, y, z, ""]);
+                removeWaypointAfterDelay(patcherWaypoints, 30);
+            }
         }
-        else{
-            z = z.replace("&r", "");
-            patcherWaypoints.push([player, x, y, z, ""]);
-            removeWaypointAfterDelay(patcherWaypoints, 30);
-        }
-    }
-    else {
-        if(settings.patcherWaypoints) {
-            z = z.split(" ")[0];
-            patcherWaypoints.push([player, x, y, z, ""]);
-            removeWaypointAfterDelay(patcherWaypoints, 30);
+        else {
+            if(settings.patcherWaypoints) {
+                z = z.split(" ")[0];
+                patcherWaypoints.push([player, x, y, z, ""]);
+                removeWaypointAfterDelay(patcherWaypoints, 30);
+            }
         }
     }
 }).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
@@ -246,13 +252,21 @@ registerWhen(register("chat", () => {
 // wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
 
 registerWhen(register("step", () => { 
-    if (finalLocation != null) {
-        guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z, player);
+    if (isWorldLoaded() && settings.dianaBurrowWarp) {
+        if (finalLocation != null) {
+            guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z);
+        }
+        // same for inquis waypoints
+        if (settings.inqWaypoints) {
+            inqWaypoints.forEach((waypoint) => {
+                waypoint[4] = closestWarpString(waypoint[1], waypoint[2], waypoint[3]);
+            });
+        }
     }
-    // same for inquis waypoints
-    if (settings.inqWaypoints) {
+    else {
+        guessWaypointString = "";   
         inqWaypoints.forEach((waypoint) => {
-            waypoint[4] = closestWarpString(waypoint[1], waypoint[2], waypoint[3]);
+            waypoint[4] = "";
         });
     }
 }).setFps(2), () => settings.dianaBurrowGuess);;
@@ -266,7 +280,7 @@ registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
     if (finalLocation != null && lastWaypoint != finalLocation) {
-        guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
+        guessWaypoint = [`§aGuess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
         formatWaypoints([guessWaypoint], 0, 1, 0, "Guess");
         lastWaypoint = guessWaypoint;
     }

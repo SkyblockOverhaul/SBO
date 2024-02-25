@@ -1,4 +1,4 @@
-import { getDateMayorElected } from "./mayor";
+import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate } from "./mayor";
 import { initializeGuiSettings, initializeTracker } from "./functions";
 
 // check if data is loaded and time is set //
@@ -30,19 +30,30 @@ function checkDataLoaded() {
     }
 }
 
-let dataLoaded = false;
+
 register("step", () => {
     if (!dataLoaded) {
-        checkDataLoaded();
-        let check1 = FileLib.exists(trackerFileLocation + "Total.json");
-        let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
-        let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
-        let check4 = (getDateMayorElected() !== undefined);
-        if (check1 && check2 && check3 && check4) {
+        if (checkAllCriteria()) {
             dataLoaded = true;
             ChatLib.chat("§6[SBO] §4Module Loaded");
         }
     }
 }).setFps(1);
 
+// register("worldUnload", () => {
+//     dataLoaded = false;
+// });
 
+let dataLoaded = false;
+function checkAllCriteria() {
+    checkDataLoaded();
+    let check1 = FileLib.exists(trackerFileLocation + "Total.json");
+    let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
+    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    let check4 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
+
+    if (check1 && check2 && check3 && check4) {
+        return true;
+    }
+    return false;
+}
