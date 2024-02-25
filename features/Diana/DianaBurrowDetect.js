@@ -1,13 +1,12 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-import { creatBurrowWaypoints } from "../general/Waypoints";
+import { creatBurrowWaypoints, getBurrowWaypoints } from "../general/Waypoints";
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     burrowDetect(particle, type);
     //burrowDetectSoopy(particle, type);
 }), () => settings.dianaBurrowDetect);
 
-export function getBurrow() { return burrows };
 let burrows = [];
 function burrowDetect(particle, type) {
     const particlepos = particle.getPos();
@@ -67,18 +66,45 @@ function getClosest(origin, positions) {
 };
 
 register("step", () => {
-    burrowlist = getBurrow();
-    burrowlist.forEach(([type, x, y, z]) => {
+    burrows.forEach(([type, x, y, z]) => {
         creatBurrowWaypoints(type, x, y, z);
     });
-}).setFps(1);
+}).setFps(10);
 
-// function calculateDistanceQuick(a, b) {
-//     return (
-//         (a[0] - b[0])**2 +
-//         (a[1] - b[1])**2 +
-//         (a[2] - b[2])**2
-//     );
-//   }
+register("HitBlock", () => {
+    block = Player.lookingAt()
+    let [type,x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
+    x = parseInt(x);
+    y = parseInt(y);
+    z = parseInt(z);
+    const surroundingCoordinates = getSurroundingCoordinates(x, y, z);
+    console.log(surroundingCoordinates);
+    // create foreach sourrounding coordinates vurrowwaypoint
+    for (let i = 0; i < surroundingCoordinates.length; i++) {
+        creatBurrowWaypoints("Start", surroundingCoordinates[i][0], surroundingCoordinates[i][1], surroundingCoordinates[i][2]);
+    }
+});
+
+function removeBurrow(x, y, z) {
+    let burrowwaypoints = getBurrowWaypoints();
+    for (let i = 0; i < burrowwaypoints.length; i++) {
+        if (burrowwaypoints[0] == x && burrowwaypoints[1] == y && burrowwaypoints[2] == z) {
+            burrowwaypoints.splice(1);
+        }
+    }
+    burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
+}
+function getSurroundingCoordinates(x, y, z) {
+    const surroundingCoordinates = [];
+    for (let i = x - 1; i <= x + 1; i++) {
+        for (let k = z - 1; k <= z + 1; k++) {
+            surroundingCoordinates.push([i, y+1, k]);
+        }
+    }
+    return surroundingCoordinates;
+}
+
+// Call the function with the desired x, y, z coordinates to remove the burrow
+
 
 
