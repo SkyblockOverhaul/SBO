@@ -78,7 +78,8 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         distance = Math.round(distance) + "m";
         xSign = x == 0 ? 1 : Math.sign(x);
         zSign = z == 0 ? 1 : Math.sign(z);
-        wp[0] = [`${waypoint[0]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
+        // waypoint message
+        wp[0] = [`${waypoint[0]} §7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
 
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
@@ -205,35 +206,40 @@ function getClosestWarp(x, y, z){
     }
 }
 
-registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
+registerWhen(register("chat", (player, spacing, x, y, z) => {
     isInq = !z.includes(" ");
+    const bracketIndex = player.indexOf('[') - 2;
+    if (bracketIndex >= 0)
+        player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
+    else
+        player = player.replaceAll('&', '§');
+
     if (isInq) {
         if(settings.inqWaypoints) {
             Client.showTitle(`&r&d&l<&b&l&kO&d&l> &6&lINQUISITOR! &d&l<&b&l&kO&d&l>`, player, 0, 90, 20);
             World.playSound("random.orb", 1, 1);
             z = z.replace("&r", "");
-            player = player + "'s " + "Inquisitor " + closestWarpString(x, y, z);
-            inqWaypoints.push([player, x, y, z]);
+            inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
             removeWaypointAfterDelay(inqWaypoints, 60);
         }
         else{
             z = z.replace("&r", "");
-            patcherWaypoints.push([player, x, y, z]);
+            patcherWaypoints.push([player, x, y, z, ""]);
             removeWaypointAfterDelay(patcherWaypoints, 30);
         }
     }
     else {
         if(settings.patcherWaypoints) {
             z = z.split(" ")[0];
-            patcherWaypoints.push([player, x, y, z]);
+            patcherWaypoints.push([player, x, y, z, ""]);
             removeWaypointAfterDelay(patcherWaypoints, 30);
         }
     }
-}).setCriteria("&r&9Party ${trash} ${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
+}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
 
 registerWhen(register("chat", () => {
     if (tryWarp) {
-        ChatLib.chat("§6[SBO] §4" + toTitleCase(closestWarp) + " is not unlocked!")
+        ChatLib.chat("§6[SBO] §4Warp " + toTitleCase(closestWarp) + " is not unlocked!")
         hubWarps[closestWarp].unlocked = false;
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r"), () => settings.inqWarpKey);
@@ -241,7 +247,13 @@ registerWhen(register("chat", () => {
 
 registerWhen(register("step", () => { 
     if (finalLocation != null) {
-        guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z);
+        guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z, player);
+    }
+    // same for inquis waypoints
+    if (settings.inqWaypoints) {
+        inqWaypoints.forEach((waypoint) => {
+            waypoint[4] = closestWarpString(waypoint[1], waypoint[2], waypoint[3]);
+        });
     }
 }).setFps(2), () => settings.dianaBurrowGuess);;
 
@@ -254,7 +266,7 @@ registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
     if (finalLocation != null && lastWaypoint != finalLocation) {
-        guessWaypoint = [`Guess ${guessWaypointString}`, finalLocation.x, finalLocation.y, finalLocation.z];
+        guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
         formatWaypoints([guessWaypoint], 0, 1, 0, "Guess");
         lastWaypoint = guessWaypoint;
     }
