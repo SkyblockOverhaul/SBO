@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { creatBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
+import { getWorld } from "../../utils/world";
 
 let burrows = [];
 let burrowshistory = [];
@@ -113,4 +114,10 @@ register("command", () => {
     burrows = [];
     burrowshistory = [];
 }).setName("sboclearburrows"); 
+
+registerWhen(register("chat", () => {
+    setBurrowWaypoints([]);
+    burrows = [];
+    burrowshistory = [];
+}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 
