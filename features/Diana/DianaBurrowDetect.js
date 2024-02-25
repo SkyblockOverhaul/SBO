@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-import { creatBurrowWaypoints, getBurrowWaypoints } from "../general/Waypoints";
+import { creatBurrowWaypoints, removeBurrowWaypoint } from "../general/Waypoints";
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     burrowDetect(particle, type);
@@ -13,17 +13,13 @@ function burrowDetect(particle, type) {
     const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
     const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
     const typename = type.toString();
+    if (Math.abs(particle.getY() % 1) > 0.1) return;
+    if (Math.abs(particle.getX() % 1) < 0.1) return;
+    if (Math.abs(particle.getX() % 1) > 0.9) return;
+    if (Math.abs(particle.getZ() % 1) < 0.1) return;
+    if (Math.abs(particle.getZ() % 1) > 0.9) return;
+
     switch (typename) {
-        // case ("CRIT_MAGIC"):
-        //     calcCoords(particle);
-        //     // creatBurrowWaypoints("Start", x, y, z);
-        //     break;
-        // case ("CRIT"):
-        //     // creatBurrowWaypoints("Mob", x, y, z);
-        //     break;
-        // case ("FOOTSTEP"):
-        //     // creatBurrowWaypoints("Treasure", x, y, z);
-        //     break;
         case ("FOOTSTEP"): // Loads burrow waypoints by footstep
             xyz.unshift("Treasure");
 
@@ -71,38 +67,44 @@ register("step", () => {
     });
 }).setFps(10);
 
-register("HitBlock", () => {
-    block = Player.lookingAt()
-    let [type,x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
-    x = parseInt(x);
-    y = parseInt(y);
-    z = parseInt(z);
-    const surroundingCoordinates = getSurroundingCoordinates(x, y, z);
-    console.log(surroundingCoordinates);
-    // create foreach sourrounding coordinates vurrowwaypoint
-    for (let i = 0; i < surroundingCoordinates.length; i++) {
-        creatBurrowWaypoints("Start", surroundingCoordinates[i][0], surroundingCoordinates[i][1], surroundingCoordinates[i][2]);
-    }
-});
+// register("HitBlock", () => {
+//     block = Player.lookingAt()
+//     let [type, x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
+//     x = parseInt(x);
+//     y = parseInt(y);
+//     z = parseInt(z);
+//     y = y + 1;
+//     if (x < 0) {
+//         x = x - 1;
+//     }
+//     if (z < 0) {
+//         z = z - 1;
+//     }
 
-function removeBurrow(x, y, z) {
-    let burrowwaypoints = getBurrowWaypoints();
-    for (let i = 0; i < burrowwaypoints.length; i++) {
-        if (burrowwaypoints[0] == x && burrowwaypoints[1] == y && burrowwaypoints[2] == z) {
-            burrowwaypoints.splice(1);
-        }
-    }
-    burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
-}
-function getSurroundingCoordinates(x, y, z) {
-    const surroundingCoordinates = [];
-    for (let i = x - 1; i <= x + 1; i++) {
-        for (let k = z - 1; k <= z + 1; k++) {
-            surroundingCoordinates.push([i, y+1, k]);
-        }
-    }
-    return surroundingCoordinates;
-}
+//     ChatLib.chat(`Removing burrow at ${x}, ${y}, ${z}`);
+    
+//     burrows = removeBurrowWaypoint(x, y, z, burrows);
+//     const surroundingCoordinates = getSurroundingCoordinates(x, y, z);
+//     console.log(surroundingCoordinates);
+//     // create foreach sourrounding coordinates vurrowwaypoint
+//     for (let i = 0; i < surroundingCoordinates.length; i++) {
+//         creatBurrowWaypoints(surroundingCoordinates[i][0], surroundingCoordinates[i][1], surroundingCoordinates[i][2], surroundingCoordinates[i][3]);
+//     }
+// });
+
+
+// function getSurroundingCoordinates(x, y, z) {
+//     const surroundingCoordinates = [];
+    
+//     surroundingCoordinates.push([0, x + 1, y, z]);
+//     surroundingCoordinates.push([1, x - 1 , y, z + 1]);
+//     surroundingCoordinates.push([2, x + 2, y, z]);
+//     surroundingCoordinates.push([3, x + 1, y, z - 1]);
+//     surroundingCoordinates.push([4, x, y, z ]);
+
+    
+//     return surroundingCoordinates;
+// }
 
 // Call the function with the desired x, y, z coordinates to remove the burrow
 

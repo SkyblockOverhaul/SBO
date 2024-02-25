@@ -20,6 +20,18 @@ export function getBurrowWaypoints() {
     return burrowWaypoints;
 }
 
+export function removeBurrowWaypoint(x, y, z, burrows) {
+    for (let i = 0; i < burrowWaypoints.length; i++) {
+        print(burrowWaypoints[i][1] + " " + burrowWaypoints[i][2] + " " + burrowWaypoints[i][3]);
+        if (burrowWaypoints[1] == x && burrowWaypoints[2]+1 == y && burrowWaypoints[3] == z) {
+            
+            burrowWaypoints.splice(i, 1);
+        }
+    }
+    burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
+    return burrows;
+}
+
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
     // remove wayspoints older than 30 seconds
@@ -291,7 +303,7 @@ registerWhen(register("step", () => {
     formatted = [];
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
-    formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" ); // Red Waypoint
+    formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" );
 
 }).setFps(3), () => settings.waypoints);
 
