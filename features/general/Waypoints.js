@@ -111,7 +111,7 @@ function renderWaypoint(waypoints) {
 
         RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
-        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, false);
+        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, true);
         renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
     });
 }
@@ -209,7 +209,7 @@ registerWhen(register("chat", (trash, player, spacing, x, y, z) => {
     isInq = !z.includes(" ");
     if (isInq) {
         if(settings.inqWaypoints) {
-            Client.Companion.showTitle(`&6INQUISITOR &dFound!`, "", 0, 90, 35);
+            Client.showTitle(`&r&6&l<&b&l&kO&6&l> INQUISITOR! <&b&l&kO&6&l>`, player, 0, 90, 20);
             World.playSound("random.orb", 1, 1);
             z = z.replace("&r", "");
             player = player + "'s " + "Inquisitor " + closestWarpString(x, y, z);
