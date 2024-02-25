@@ -7,7 +7,7 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
     //burrowDetectSoopy(particle, type);
 }), () => settings.dianaBurrowDetect);
 
-
+export function getBurrow() { return burrows };
 let burrows = [];
 function burrowDetect(particle, type) {
     const particlepos = particle.getPos();
@@ -31,7 +31,6 @@ function burrowDetect(particle, type) {
             closest = getClosest(xyz, burrows);
             if (closest[1] > 3) {
                 burrows.push(xyz);
-                
             }
         
             break;
@@ -41,14 +40,12 @@ function burrowDetect(particle, type) {
             closest = getClosest(xyz, burrows);
             if (closest[1] < 3)
                 closest[0][0] = "Start";
-                creatBurrowWaypoints("Start", x, y, z);
             break;
         case ("CRIT"):
             xyz.unshift("Mob");
             closest = getClosest(xyz, burrows);
             if (closest[1] < 3)
                 closest[0][0] = "Mob";
-                creatBurrowWaypoints("Mob", x, y, z);
             break;
     }
 }
@@ -69,6 +66,12 @@ function getClosest(origin, positions) {
     return [closestPosition, closestDistance];
 };
 
+register("step", () => {
+    burrowlist = getBurrow();
+    burrowlist.forEach(([type, x, y, z]) => {
+        creatBurrowWaypoints(type, x, y, z);
+    });
+}).setFps(1);
 
 // function calculateDistanceQuick(a, b) {
 //     return (
