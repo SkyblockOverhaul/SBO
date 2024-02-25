@@ -163,7 +163,7 @@ function trackOne(tracker, item, category, type, amount) {
 }
 
 // total burrow tracker //
-register("chat", (dug, chain, burrow) => {
+register("chat", (burrow) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
     }

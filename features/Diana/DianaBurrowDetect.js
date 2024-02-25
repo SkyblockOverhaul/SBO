@@ -10,39 +10,42 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
 let burrows = [];
 let burrowshistory = [];
 function burrowDetect(particle, type) {
-    const particlepos = particle.getPos();
-    const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
-    const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
-    const typename = type.toString();
-    if (Math.abs(particle.getY() % 1) > 0.1) return;
-    if (Math.abs(particle.getX() % 1) < 0.1) return;
-    if (Math.abs(particle.getX() % 1) > 0.9) return;
-    if (Math.abs(particle.getZ() % 1) < 0.1) return;
-    if (Math.abs(particle.getZ() % 1) > 0.9) return;
-
-    switch (typename) {
-        case ("FOOTSTEP"): // Loads burrow waypoints by footstep
-            xyz.unshift("Treasure");
-
-            closest = getClosest(xyz, burrows);
-            if (closest[1] > 3) {
-                burrows.push(xyz);
-            }
+    let typename = type.toString();
+    if (typename == "FOOTSTEP" || typename == "CRIT_MAGIC" || typename == "CRIT") {
+        const particlepos = particle.getPos();
+        const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
+        const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
         
-            break;
-        // Determine burrow type
-        case ("CRIT_MAGIC"):
-            xyz.unshift("Start");
-            closest = getClosest(xyz, burrows);
-            if (closest[1] < 3)
-                closest[0][0] = "Start";
-            break;
-        case ("CRIT"):
-            xyz.unshift("Mob");
-            closest = getClosest(xyz, burrows);
-            if (closest[1] < 3)
-                closest[0][0] = "Mob";
-            break;
+        if (Math.abs(particle.getY() % 1) > 0.1) return;
+        if (Math.abs(particle.getX() % 1) < 0.1) return;
+        if (Math.abs(particle.getX() % 1) > 0.9) return;
+        if (Math.abs(particle.getZ() % 1) < 0.1) return;
+        if (Math.abs(particle.getZ() % 1) > 0.9) return;
+
+        switch (typename) {
+            case ("FOOTSTEP"): // Loads burrow waypoints by footstep
+                xyz.unshift("Treasure");
+
+                closest = getClosest(xyz, burrows);
+                if (closest[1] > 3) {
+                    burrows.push(xyz);
+                }
+            
+                break;
+            // Determine burrow type
+            case ("CRIT_MAGIC"):
+                xyz.unshift("Start");
+                closest = getClosest(xyz, burrows);
+                if (closest[1] < 3)
+                    closest[0][0] = "Start";
+                break;
+            case ("CRIT"):
+                xyz.unshift("Mob");
+                closest = getClosest(xyz, burrows);
+                if (closest[1] < 3)
+                    closest[0][0] = "Mob";
+                break;
+        }
     }
 }
 
@@ -83,11 +86,11 @@ function getClosestBurrowToPlayer() {
 
 register("step", () => {
     burrows.forEach(([type, x, y, z]) => {
-        creatBurrowWaypoints(type, x, y, z);
+        creatBurrowWaypoints(type, x, y, z, burrowshistory);
     });
-}).setFps(10);
+}).setFps(4);
 
-register("command", () => {
+function refreshBurrows() {
     let closetburrow = getClosestBurrowToPlayer();
     // wenn closest burow vorhanden in history dann nicht machen
     if (!burrowshistory.some(([type, x, y, z]) => x === closetburrow[1] && y === closetburrow[2] && z === closetburrow[3])) {
@@ -96,13 +99,16 @@ register("command", () => {
     if (burrowshistory.length > 7) {
         burrowshistory.pop();
     }
-    burrowshistory.forEach(([type, x, y, z]) => {
+    burrows = removeBurrowWaypoint(closetburrow[1], closetburrow[2], closetburrow[3], burrows);
+}
 
-        ChatLib.chat(`burrowhistory: ${type} at ${x}, ${y}, ${z}`);
-    });
-    ChatLib.chat(`Closest burrow is ${closetburrow[0]} at ${closetburrow[1]}, ${closetburrow[2]}, ${closetburrow[3]}`);
+register("chat", (burrow) => {
+    refreshBurrows();
+}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r");
 
-}).setName("sboburrowfind");
+register("chat", (burrow) => {
+    refreshBurrows();
+}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}");
 
 // register("HitBlock", () => {
 //     block = Player.lookingAt()

@@ -22,14 +22,16 @@ export function getBurrowWaypoints() {
 
 export function removeBurrowWaypoint(x, y, z, burrows) {
     for (let i = 0; i < burrowWaypoints.length; i++) {
+        print("removing waypoint" + x + " " + y + " " + z);
         print(burrowWaypoints[i][1] + " " + burrowWaypoints[i][2] + " " + burrowWaypoints[i][3]);
-        if (burrowWaypoints[1] == x && burrowWaypoints[2]+1 == y && burrowWaypoints[3] == z) {
-            
+        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            // remove waypoint from array (i) with index
             burrowWaypoints.splice(i, 1);
         }
     }
     burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
-    return burrows;
+
+    return burrows; 
 }
 
 
@@ -40,14 +42,26 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
-export function creatBurrowWaypoints(burrowType, x, y, z) {
-    // check if waypoint already exists
-    for (let i = 0; i < burrowWaypoints.length; i++) {
-        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-            return;
+export function creatBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
+    if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
+        if (burrowWaypoints.length > 0) {
+            for (let i = 0; i < burrowWaypoints.length; i++) {
+                if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+                    if (burrowWaypoints[i][0] == burrowType) {
+                        return;
+                    }
+                    else {
+                        burrowWaypoints[i][0] = burrowType;
+                        return;
+                    }
+                }
+            }
+            burrowWaypoints.push([burrowType, x, y, z]);
+        }
+        else {
+            burrowWaypoints.push([burrowType, x, y, z]);
         }
     }
-    burrowWaypoints.push([burrowType, x, y, z]);
 }
 
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
