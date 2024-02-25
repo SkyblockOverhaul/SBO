@@ -249,7 +249,7 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
 
         if (isInq) {
             if(settings.inqWaypoints) {
-                Client.showTitle(`&r&d&l<&b&l&kO&d&l> &6&lINQUISITOR! &d&l<&b&l&kO&d&l>`, player, 0, 90, 20);
+                Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
                 World.playSound("random.orb", 1, 1);
                 z = z.replace("&r", "");
                 inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
