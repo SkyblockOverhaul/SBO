@@ -25,7 +25,8 @@ const carrot = [
 
 
 register("chat", (player, message) => {
-    switch (message) {
+    message = message.split(" ");
+    switch (message[0]) {
         case "!w":
         case "!warp":
             if(settings.PartyCommands && settings.WarpCommand){
@@ -44,14 +45,27 @@ register("chat", (player, message) => {
             }
             break;
         case "!transfer":
-            if(settings.PartyCommands && settings.TransferCommand){
+            if (settings.PartyCommands && settings.TransferCommand && message[1]){
+                if(settings.PartyCommands && settings.TransferCommand){
+                    setTimeout(function() {
+                        ChatLib.command("p transfer " + message[1])
+                    },100)
+                }
+            }
+            else if(settings.PartyCommands && settings.TransferCommand){
                 setTimeout(function() {
                     ChatLib.command("p transfer " + getplayername(player))
                 },100)
             }
             break;
+
         case "!demote":
-            if (settings.PartyCommands && settings.MoteCommand) {
+            if (settings.PartyCommands && settings.MoteCommand && message[1]) {
+                setTimeout(function() {
+                    ChatLib.command("p demote " + m2)
+                },100)
+                }
+            else if (settings.PartyCommands && settings.MoteCommand) {
                 setTimeout(function() {
                     ChatLib.command("p demote " + getplayername(player))
                 },100)
@@ -59,7 +73,12 @@ register("chat", (player, message) => {
             break;
 
         case "!promote":
-            if (settings.PartyCommands && settings.MoteCommand) {
+            if (settings.PartyCommands && settings.MoteCommand && message[1]) {
+                setTimeout(function() {
+                    ChatLib.command("p promote " + m2)
+                },100)
+            }
+            else if (settings.PartyCommands && settings.MoteCommand) {
                 setTimeout(function() {
                     ChatLib.command("p promote " + getplayername(player))
                 },100)
@@ -75,33 +94,3 @@ register("chat", (player, message) => {
             break;
     }
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")
-
-
-register("chat", (m1, m2) => {
-    switch (m1) {
-        case "!transfer":
-            if(settings.PartyCommands && settings.TransferCommand){
-                setTimeout(function() {
-                    ChatLib.command("p transfer " + m2)
-                },100)
-            }
-            break;
-        case "!promote":
-            if (settings.PartyCommands && settings.MoteCommand) {
-                setTimeout(function() {
-                    ChatLib.command("p promote " + m2)
-                },100)
-            }
-            break;
-
-        case "!demote":
-            if (settings.PartyCommands && settings.MoteCommand) {
-            setTimeout(function() {
-                ChatLib.command("p demote " + m2)
-            },100)
-            }
-                break;
-}
-}).setCriteria("&r&9Party &8> ${player}&f: &r${m1} ${m2}&r")
-
-
