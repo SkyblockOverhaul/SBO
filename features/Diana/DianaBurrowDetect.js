@@ -8,6 +8,7 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
 }), () => settings.dianaBurrowDetect);
 
 let burrows = [];
+let burrowshistory = [];
 function burrowDetect(particle, type) {
     const particlepos = particle.getPos();
     const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
@@ -61,11 +62,47 @@ function getClosest(origin, positions) {
     return [closestPosition, closestDistance];
 };
 
+function getClosestBurrowToPlayer() {
+    let closestDistance = Infinity;
+    let closestBurrow = null;
+    
+
+    burrows.forEach(([type, x, y, z]) => {
+        const distance = Math.sqrt(
+            (Player.getX() - x)**2 +
+            (Player.getY() - y)**2 +
+            (Player.getZ() - z)**2
+        );
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestBurrow = [type, x, y, z];
+        }
+    });
+    return closestBurrow;
+}
+
 register("step", () => {
     burrows.forEach(([type, x, y, z]) => {
         creatBurrowWaypoints(type, x, y, z);
     });
 }).setFps(10);
+
+register("command", () => {
+    let closetburrow = getClosestBurrowToPlayer();
+    // wenn closest burow vorhanden in history dann nicht machen
+    if (!burrowshistory.some(([type, x, y, z]) => x === closetburrow[1] && y === closetburrow[2] && z === closetburrow[3])) {
+        burrowshistory.push(closetburrow);
+    }
+    if (burrowshistory.length > 7) {
+        burrowshistory.pop();
+    }
+    burrowshistory.forEach(([type, x, y, z]) => {
+
+        ChatLib.chat(`burrowhistory: ${type} at ${x}, ${y}, ${z}`);
+    });
+    ChatLib.chat(`Closest burrow is ${closetburrow[0]} at ${closetburrow[1]}, ${closetburrow[2]}, ${closetburrow[3]}`);
+
+}).setName("sboburrowfind");
 
 // register("HitBlock", () => {
 //     block = Player.lookingAt()
