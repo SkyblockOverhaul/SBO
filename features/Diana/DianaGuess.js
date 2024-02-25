@@ -223,11 +223,11 @@ function onReceiveParticle(particle, type, event) {
                     }
                     
                     gY = 131;
-                    while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 && gY > 73) {
+                    while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 && gY > 70) {
                         gY--;
                     }
                     
-                    finalLocation.y = gY;
+                    finalLocation.y = gY + 2;
 
                     // check if finallocation has nan values
                     if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {
