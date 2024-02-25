@@ -97,9 +97,10 @@ function refreshBurrows() {
         burrowshistory.push(closetburrow);
     }
     if (burrowshistory.length > 7) {
-        burrowshistory.pop();
+        // remove oldest burrow
+        burrowshistory.shift();
     }
-    burrows = removeBurrowWaypoint(closetburrow[1], closetburrow[2], closetburrow[3], burrows);
+    burrows = removeBurrowWaypoint(burrowshistory, burrows);
 }
 
 register("chat", (burrow) => {

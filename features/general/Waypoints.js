@@ -20,17 +20,15 @@ export function getBurrowWaypoints() {
     return burrowWaypoints;
 }
 
-export function removeBurrowWaypoint(x, y, z, burrows) {
-    for (let i = 0; i < burrowWaypoints.length; i++) {
-        print("removing waypoint" + x + " " + y + " " + z);
-        print(burrowWaypoints[i][1] + " " + burrowWaypoints[i][2] + " " + burrowWaypoints[i][3]);
-        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-            // remove waypoint from array (i) with index
-            burrowWaypoints.splice(i, 1);
+export function removeBurrowWaypoint(burrowshistory, burrows) {
+    burrowshistory.forEach(([type, x, y, z]) => {
+        for (let i = 0; i < burrowWaypoints.length; i++) {
+            if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+                burrowWaypoints.splice(i, 1);
+            }
         }
-    }
-    burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
-
+        burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
+    });
     return burrows; 
 }
 
