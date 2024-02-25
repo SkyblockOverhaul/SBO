@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-import { creatBurrowWaypoints, removeBurrowWaypoint } from "../general/Waypoints";
+import { creatBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     burrowDetect(particle, type);
@@ -110,6 +110,12 @@ register("chat", (burrow) => {
 register("chat", (burrow) => {
     refreshBurrows();
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}");
+
+register("command", () => {
+    setBurrowWaypoints([]);
+    burrows = [];
+    burrowshistory = [];
+}).setName("sboclearburrows"); 
 
 // register("HitBlock", () => {
 //     block = Player.lookingAt()

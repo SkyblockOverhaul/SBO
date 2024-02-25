@@ -20,6 +20,10 @@ export function getBurrowWaypoints() {
     return burrowWaypoints;
 }
 
+export function setBurrowWaypoints(burrows) {
+    burrowWaypoints = burrows;
+}
+
 export function removeBurrowWaypoint(burrowshistory, burrows) {
     burrowshistory.forEach(([type, x, y, z]) => {
         for (let i = 0; i < burrowWaypoints.length; i++) {
