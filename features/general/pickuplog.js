@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { readPlayerInventory, isInSkyblock } from '../../utils/functions';
+import { readPlayerInventory, isInSkyblock, isWorldLoaded } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
 import { getWorld } from '../../utils/world';
 import { dianaLootCounter } from '../diana/DianaTracker';
@@ -51,17 +51,10 @@ function pickuplog() {
 }
 
 
-register("worldUnload", () => {
-    pickuplogBool = true;
-});
 
-register("worldLoad", () => {
-    pickuplogBool = false;
-});
 
-let pickuplogBool = false;
 registerWhen(register('step', () => {
-    if(isDataLoaded() && !pickuplogBool) {
+    if(isDataLoaded() && isWorldLoaded()) {
         pickuplog();
     }
 }).setFps(10), () => settings.dianaLootTracker && isInSkyblock() && getWorld() === "Hub");

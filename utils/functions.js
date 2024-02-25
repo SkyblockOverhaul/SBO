@@ -82,6 +82,7 @@ export function toTitleCase(str) {
 
 // read player inventory //
 export function readPlayerInventory(type="") {
+    if (!worldLoaded) return {};
     if (type === "hotbar") {
         var slots = 8;
     }
@@ -108,6 +109,7 @@ export function readPlayerInventory(type="") {
 
 // check if item is in hotbar //
 export function checkItemInHotbar(item) {
+    if (!worldLoaded) return false;
     var hotbarItems = readPlayerInventory("hotbar");
     for (var i in hotbarItems) {
         if (item == i) {
@@ -246,3 +248,16 @@ export function getplayername(player) {
     name = player.substring(num+2)
 return name
 }
+
+export function isWorldLoaded() {
+    return worldLoaded;
+}
+
+let worldLoaded = false;
+register("worldUnload", () => {
+    worldLoaded = false;
+});
+
+register("worldLoad", () => {
+    worldLoaded = true;
+});
