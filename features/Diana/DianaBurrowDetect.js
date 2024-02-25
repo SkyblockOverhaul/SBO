@@ -1,10 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { creatBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
-
-registerWhen(register("spawnParticle", (particle, type, event) => {
-    burrowDetect(particle, type);
-}), () => settings.dianaBurrowDetect);
+import { getWorld } from "../../utils/world";
 
 let burrows = [];
 let burrowshistory = [];
@@ -82,13 +79,6 @@ function getClosestBurrowToPlayer() {
     });
     return closestBurrow;
 }
-
-register("step", () => {
-    burrows.forEach(([type, x, y, z]) => {
-        creatBurrowWaypoints(type, x, y, z, burrowshistory);
-    });
-}).setFps(4);
-
 function refreshBurrows() {
     let closetburrow = getClosestBurrowToPlayer();
     // wenn closest burow vorhanden in history dann nicht machen
@@ -101,18 +91,33 @@ function refreshBurrows() {
     }
     burrows = removeBurrowWaypoint(burrowshistory, burrows);
 }
+registerWhen(register("spawnParticle", (particle, type, event) => {
+    burrowDetect(particle, type);
+}), () => settings.dianaBurrowDetect);
 
-register("chat", (burrow) => {
-    refreshBurrows();
-}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r");
+registerWhen(register("step", () => {
+    burrows.forEach(([type, x, y, z]) => {
+        creatBurrowWaypoints(type, x, y, z, burrowshistory);
+    });
+}).setFps(4), () => settings.dianaBurrowWaypoints);
 
-register("chat", (burrow) => {
+registerWhen(register("chat", (burrow) => {
     refreshBurrows();
-}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}");
+}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => settings.dianaBurrowDetect);
+
+registerWhen(register("chat", (burrow) => {
+    refreshBurrows();
+}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 register("command", () => {
     setBurrowWaypoints([]);
     burrows = [];
     burrowshistory = [];
 }).setName("sboclearburrows"); 
+
+registerWhen(register("chat", () => {
+    setBurrowWaypoints([]);
+    burrows = [];
+    burrowshistory = [];
+}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 

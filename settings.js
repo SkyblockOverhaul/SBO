@@ -71,7 +71,7 @@ class Settings {
     
     @SwitchProperty({
         name: "Diana Burrow Detect",
-        description: "Detects Diana Burrows",
+        description: "Detects Diana Burrows | to reset waypoints /sboclearburrows",
         category: "General",
         subcategory: "Diana Burrows"
     })
