@@ -245,6 +245,14 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
+
+    @SwitchProperty({
+        name: 'Mythos HP',
+        description: 'Displays Hp of Mythos Mobs near you',
+        category: 'General',
+        subcategory: 'Diana',
+    })
+    mythosMobHp = false;
 }
 
 export default new Settings();
