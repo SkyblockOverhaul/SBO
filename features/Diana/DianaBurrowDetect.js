@@ -36,9 +36,7 @@ function burrowDetectSoopy(particle, type) {
     let foundCrit = false;
     let foundStep = false;
     let isMob = undefined;
-    if (
-      particle.toString().startsWith("EntityEnchantmentTableParticleFX, ")
-    ) {
+    if (particle.toString().startsWith("EntityEnchantmentTableParticleFX, ")) {
       foundEnchant = true;
     } else if (particle.toString().startsWith("EntityCrit2FX, ")) {
       foundCrit = true;
@@ -65,17 +63,9 @@ function burrowDetectSoopy(particle, type) {
       if (!removed) return;
       burrialData.locations = burrialData.locations.filter((a) => {
         if (!a.clicked) return true;
-        if (
-          calculateDistanceQuick(
-            [a.x, a.y, a.z],
-            [Player.getX(), Player.getY(), Player.getZ()]
-          ) <
-          15 * 15
-        )
-          return true;
-
+        if (calculateDistanceQuick([a.x, a.y, a.z],[Player.getX(), Player.getY(), Player.getZ()]) < 15 * 15)
+        return true;
         burrialData.historicalLocations.unshift(a);
-
         return false;
       });
       if (burrialData.historicalLocations.length > 10)
@@ -89,17 +79,10 @@ function burrowDetectSoopy(particle, type) {
     if (Math.abs(particle.getZ() % 1) < 0.1) return;
     if (Math.abs(particle.getZ() % 1) > 0.9) return;
 
-    let locstr =
-      Math.floor(particle.getX()) +
-      "," +
-      Math.floor(particle.getY() - 1) +
-      "," +
+    let locstr = Math.floor(particle.getX()) + "," +
+      Math.floor(particle.getY() - 1) + "," +
       Math.floor(particle.getZ());
-    let locarr = [
-      Math.floor(particle.getX()),
-      Math.floor(particle.getY() - 1),
-      Math.floor(particle.getZ()),
-    ];
+    let locarr = [Math.floor(particle.getX()), Math.floor(particle.getY() - 1), Math.floor(particle.getZ()),];
 
     let found = false;
 
@@ -147,17 +130,14 @@ function burrowDetectSoopy(particle, type) {
           found = loc;
         }
     });
-    if (
-      !potentialParticleLocs[locstr] ||
-      Date.now() - potentialParticleLocs[locstr].timestamp > 30000
-    )
-      this.potentialParticleLocs[locstr] = {
+    if (!potentialParticleLocs[locstr] || Date.now() - potentialParticleLocs[locstr].timestamp > 30000)
+      potentialParticleLocs[locstr] = {
         enchant: 0,
         crit: 0,
         step: 0,
         isMob: 0,
         timestamp: Date.now(),
-      };
+    };
 
     if (foundEnchant) potentialParticleLocs[locstr].enchant++;
     if (foundCrit) potentialParticleLocs[locstr].crit++;
@@ -167,10 +147,7 @@ function burrowDetectSoopy(particle, type) {
 
     potentialParticleLocs[locstr].timestamp = Date.now();
 
-    if (
-      potentialParticleLocs[locstr].enchant >= 1 &&
-      potentialParticleLocs[locstr].step >= 2
-    ) {
+    if (potentialParticleLocs[locstr].enchant >= 1 && potentialParticleLocs[locstr].step >= 2) {
       if (found) {
         found.type =
           potentialParticleLocs[locstr].isMob >= 1
