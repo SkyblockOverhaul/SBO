@@ -4,7 +4,6 @@ import { creatBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     burrowDetect(particle, type);
-    //burrowDetectSoopy(particle, type);
 }), () => settings.dianaBurrowDetect);
 
 let burrows = [];
@@ -116,47 +115,4 @@ register("command", () => {
     burrows = [];
     burrowshistory = [];
 }).setName("sboclearburrows"); 
-
-// register("HitBlock", () => {
-//     block = Player.lookingAt()
-//     let [type, x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
-//     x = parseInt(x);
-//     y = parseInt(y);
-//     z = parseInt(z);
-//     y = y + 1;
-//     if (x < 0) {
-//         x = x - 1;
-//     }
-//     if (z < 0) {
-//         z = z - 1;
-//     }
-
-//     ChatLib.chat(`Removing burrow at ${x}, ${y}, ${z}`);
-    
-//     burrows = removeBurrowWaypoint(x, y, z, burrows);
-//     const surroundingCoordinates = getSurroundingCoordinates(x, y, z);
-//     console.log(surroundingCoordinates);
-//     // create foreach sourrounding coordinates vurrowwaypoint
-//     for (let i = 0; i < surroundingCoordinates.length; i++) {
-//         creatBurrowWaypoints(surroundingCoordinates[i][0], surroundingCoordinates[i][1], surroundingCoordinates[i][2], surroundingCoordinates[i][3]);
-//     }
-// });
-
-
-// function getSurroundingCoordinates(x, y, z) {
-//     const surroundingCoordinates = [];
-    
-//     surroundingCoordinates.push([0, x + 1, y, z]);
-//     surroundingCoordinates.push([1, x - 1 , y, z + 1]);
-//     surroundingCoordinates.push([2, x + 2, y, z]);
-//     surroundingCoordinates.push([3, x + 1, y, z - 1]);
-//     surroundingCoordinates.push([4, x, y, z ]);
-
-    
-//     return surroundingCoordinates;
-// }
-
-// Call the function with the desired x, y, z coordinates to remove the burrow
-
-
 

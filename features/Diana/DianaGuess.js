@@ -98,7 +98,6 @@ function onPlaySound(pos, name, volume, pitch, categoryName, event) {
     distance2 = Math.E / slope - Math.hypot(firstParticlePoint.getX() - pos.getX(), firstParticlePoint.getY() - pos.getY(), firstParticlePoint.getZ() - pos.getZ());
 
     if (distance2 > 1000) {
-        console.log("Soopy distance2 is " + distance2);
         distance2 = null;
         guessPoint = null;
 
