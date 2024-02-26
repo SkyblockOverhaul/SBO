@@ -111,7 +111,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         xSign = x == 0 ? 1 : Math.sign(x);
         zSign = z == 0 ? 1 : Math.sign(z);
         // waypoint message
-        wp[0] = [`${waypoint[0]} §7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
+        wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
 
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
@@ -155,7 +155,7 @@ function closestWarpString(x, y, z) {
         closestWarp = "";
     }
     else {
-        closestWarp = `(warp ${closestWarp})`;
+        closestWarp = ` (warp ${closestWarp})`;
     }
     return closestWarp;
 }

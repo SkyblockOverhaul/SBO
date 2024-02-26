@@ -31,7 +31,7 @@ registerWhen(register("step", () => {
         names.push(nameTag.getName());
     });
     mythosMobHpOverlay(names);
-}).setFps(10), () => settings.mythosMobHp);
+}).setFps(6), () => settings.mythosMobHp);
         
 //mob.nameTag.getName() step 10
 // if (!Mobs?.map((a) => a.getUUID().toString()).includes(mob.getUUID().toString())) {
