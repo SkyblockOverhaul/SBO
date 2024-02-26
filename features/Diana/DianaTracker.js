@@ -4,7 +4,7 @@ import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
 import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
-import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
+import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { trackerFileLocation, isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -142,7 +142,8 @@ export function trackItem(item, category, amount) {
 
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
-        if (getSkyblockDate().getTime() >= getNewMayorAtDate().getTime()) {       
+        if (getSkyblockDate().getTime() >= getNewMayorAtDate().getTime()) {    
+            setNewMayorBool();   
             setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
             tracker[getDateMayorElected().getFullYear()] = initializeTracker();
         }

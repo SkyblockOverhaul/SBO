@@ -4,6 +4,7 @@ import { getFinalLocation } from "../diana/DianaGuess";
 import { toTitleCase, isWorldLoaded } from '../../utils/functions';
 import RenderLibV2 from "../../../RenderLibv2";
 import renderBeaconBeam from "../../../BeaconBeam/index";
+import { checkDiana } from "../../utils/checkDiana";
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -248,7 +249,7 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
             player = player.replaceAll('&', '§');
 
         if (isInq) {
-            if(settings.inqWaypoints) {
+            if(settings.inqWaypoints && checkDiana()) {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
                 World.playSound("random.orb", 1, 1);
                 z = z.replace("&r", "");

@@ -50,9 +50,6 @@ function pickuplog() {
     }
 }
 
-
-
-
 registerWhen(register('step', () => {
     if(isDataLoaded() && isWorldLoaded()) {
         pickuplog();

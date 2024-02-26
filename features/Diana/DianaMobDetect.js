@@ -2,6 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { mythosMobHpOverlay } from "./../guis/DianaGuis";
+import { checkDiana } from "../../utils/checkDiana";
 
 export function getMobsToDisplay() {
     return names;
@@ -9,7 +10,7 @@ export function getMobsToDisplay() {
 
 registerWhen(register("chat", (woah) => {
     ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
-}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => getWorld() === "Hub" && settings.inquisDetect);
+}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => settings.inquisDetect && checkDiana());
 
 let Mobs = [];
 registerWhen(register("step", () => {
@@ -22,7 +23,7 @@ registerWhen(register("step", () => {
         }
     });
     Mobs = Mobs.filter((e) => !e.getEntity()["field_70128_L"]);
-}).setFps(1), () => settings.mythosMobHp);
+}).setFps(1), () => settings.mythosMobHp && checkDiana());
 
 let names = [];
 registerWhen(register("step", () => {
@@ -31,7 +32,7 @@ registerWhen(register("step", () => {
         names.push(nameTag.getName());
     });
     mythosMobHpOverlay(names);
-}).setFps(6), () => settings.mythosMobHp);
+}).setFps(6), () => settings.mythosMobHp && checkDiana());
         
 //mob.nameTag.getName() step 10
 // if (!Mobs?.map((a) => a.getUUID().toString()).includes(mob.getUUID().toString())) {

@@ -1,4 +1,4 @@
-import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate } from "./mayor";
+import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
 import { initializeGuiSettings, initializeTracker } from "./functions";
 
 // check if data is loaded and time is set //
@@ -51,8 +51,9 @@ function checkAllCriteria() {
     let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
     let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
     let check4 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
+    let check5 = getMayor() !== undefined;
 
-    if (check1 && check2 && check3 && check4) {
+    if (check1 && check2 && check3 && check4 && check5) {
         return true;
     }
     return false;
