@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
-import { toTitleCase, isWorldLoaded } from '../../utils/functions';
+import { toTitleCase, isWorldLoaded, isInSkyblock } from '../../utils/functions';
 import RenderLibV2 from "../../../RenderLibv2";
 import renderBeaconBeam from "../../../BeaconBeam/index";
 import { checkDiana } from "../../utils/checkDiana";
@@ -127,9 +127,11 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         if (type == "Guess") {
             formattedGuess.push(wp);
         }
-        else if (type == "Normal" || type == "Burrow")
-        {
+        else if (type == "Normal") {
             formatted.push(wp);
+        }
+        else if (type == "Burrow") {
+            formattedBurrow.push(wp);
         }
     });
 }
@@ -301,7 +303,7 @@ registerWhen(register("step", () => {
 }).setFps(2), () => settings.dianaBurrowGuess);;
 
 
-let formattedGuess = [];
+
 let lastWaypoint = undefined;
 let guessWaypoint = undefined;
 let finalLocation = undefined;
@@ -316,17 +318,23 @@ registerWhen(register("step", () => {
 }).setFps(20), () => settings.dianaBurrowGuess);
 
 let formatted = [];
+let formattedGuess = [];
+let formattedBurrow = [];
 registerWhen(register("step", () => {
     formatted = [];
+    formattedBurrow = []
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" );
 
-}).setFps(3), () => settings.waypoints);
+}).setFps(3), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
 
 
-registerWhen(register("renderWorld", () => {
-    renderWaypoint(formattedGuess);
+registerWhen(register("renderWorld", () => { 
     renderWaypoint(formatted);
+    if (isInSkyblock()) {
+        renderWaypoint(formattedBurrow);
+        renderWaypoint(formattedGuess);
+    }
 }), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
 
