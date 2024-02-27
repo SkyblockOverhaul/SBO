@@ -96,30 +96,30 @@ function refreshBurrows() {
 }
 
 
-registerWhen(register("HitBlock", () => {
-    if (burrows.length === 0) return;
-    block = Player.lookingAt()
-    let [type, x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
-    x = parseInt(x);
-    y = parseInt(y);
-    z = parseInt(z);
-    y = y + 1;
-    if (x < 0) {
-        x = x - 1;
-    }
-    if (z < 0) {
-        z = z - 1;
-    }
+// registerWhen(register("HitBlock", () => { // mit smoke machen
+//     if (burrows.length === 0) return;
+//     block = Player.lookingAt()
+//     let [type, x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
+//     x = parseInt(x);
+//     y = parseInt(y);
+//     z = parseInt(z);
+//     y = y + 1;
+//     if (x < 0) {
+//         x = x - 1;
+//     }
+//     if (z < 0) {
+//         z = z - 1;
+//     }
 
-    if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
-        burrowshistory.push(closetburrow);
-    }
-    if (burrowshistory.length > 7) {
-        // remove oldest burrow
-        burrowshistory.shift();
-    }
-    burrows = removeBurrowWaypoint(x, y, z, burrows);
-}), () => settings.dianaBurrowDetect && checkDiana());
+//     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
+//         burrowshistory.push(closetburrow);
+//     }
+//     if (burrowshistory.length > 7) {
+//         // remove oldest burrow
+//         burrowshistory.shift();
+//     }
+//     burrows = removeBurrowWaypoint(x, y, z, burrows);
+// }), () => settings.dianaBurrowDetect && checkDiana());
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     burrowDetect(particle, type);
