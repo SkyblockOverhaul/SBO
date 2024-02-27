@@ -41,20 +41,27 @@ export function getDateMayorElected() {
     return dateMayorElected;
 }
 
+export function setNewMayorBool() {
+    newMayor = true;
+}
+
 let dateMayorElected = undefined;
 let newMayorAtDate = undefined;
 let mayor = undefined;
 let perks = new Set([]);
+let mayorApiError = false;
 function getYearMayorRequestV2() {
+    mayor = undefined;
+    perks = new Set([]);
     request({
         url: "https://api.hypixel.net/resources/skyblock/election",
         json: true
     }).then((response)=>{
         mayor = response.mayor.name;
-        dateMayorElected = convertStringToDate("27.3." + (response.mayor.election.year + 1));
-        newMayorAtDate = convertStringToDate("27.3." + (response.mayor.election.year + 2));
         perks = new Set([...response.mayor.perks.map(perk => perk.name)]);
+        mayorApiError = false;
     }).catch((error)=>{
+        mayorApiError = true;
         console.error(error);
     });
 }
@@ -100,7 +107,7 @@ function calcSkyblockDate() {
     secondsSinceLastLog -= hourDiff * secondsPerHour;
     hour = (hour + hourDiff) % 24;
 
-    if (hour < 6) { // hacky fix for the day rolling over at 6am instead of midnight
+    if (hour < 6) { 
         if (day < 31) {
             day += 1;
         } else {
@@ -118,13 +125,33 @@ function calcSkyblockDate() {
     return day + "." + month + "." + year;
 }
 
+let refreshingMayor = false;
+let newMayor = false;
+registerWhen(register("step", () => {
+    if (((mayor === undefined && mayorApiError) || newMayor) && !refreshingMayor) {
+        refreshingMayor = true;
+        getYearMayorRequestV2(); 
+        refreshingMayor = false;
+    }
+}).setFps(1), () => isInSkyblock());
+
 register("worldLoad", () => {
-    dateMayorElected, newMayorAtDate, mayor, perks = getYearMayorRequestV2();
+    getYearMayorRequestV2(); 
 });
 
 registerWhen(register("step", () => { 
     skyblockDateString = calcSkyblockDate();
     skyblockDate = convertStringToDate(skyblockDateString);
+    if (dateMayorElected === undefined) {
+        if (skyblockDate.getDate() < 27 && skyblockDate.getMonth() <= 3) {
+            dateMayorElected = convertStringToDate("27.3." + (skyblockDate.getFullYear() - 1));
+            newMayorAtDate = convertStringToDate("27.3." + skyblockDate.getFullYear());
+        }
+        else if (skyblockDate.getDate() >= 27 && skyblockDate.getMonth() >= 3) {
+            dateMayorElected = convertStringToDate("27.3." + skyblockDate.getFullYear());
+            newMayorAtDate = convertStringToDate("27.3." + (skyblockDate.getFullYear() + 1));
+        }
+    }
     year = skyblockDate.getFullYear();
     // ChatLib.chat("Skyblock Date: " + skyblockDateString);
 }).setFps(1), () => isInSkyblock());

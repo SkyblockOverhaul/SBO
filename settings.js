@@ -61,20 +61,39 @@ class Settings {
     }
 
     //-----------Diana----------------
-    // @SwitchProperty({
-    //     name: "Diana Waypoint",
-    //     description: "Estimates Diana burrows (particles => ON, /togglemusic => OFF)",
-    //     category: "General",
-    //     subcategory: "Diana",
-    // })
-    // dianaWaypoint = false;
-    // @SwitchProperty({
-    //     name: "Diana Warp",
-    //     description: "change button in controls to warp to closest location to guess.",
-    //     category: "General",
-    //     subcategory: "Diana"
-    // })
-    // dianaWarp = false;
+    @SwitchProperty({
+        name: "Diana Burrow Guess",
+        description: "Guess the burrow location",
+        category: "General",
+        subcategory: "Diana Burrows"
+    })
+    dianaBurrowGuess = false;
+    
+    @SwitchProperty({
+        name: "Diana Burrow Detect",
+        description: "Detects Diana Burrows | to reset waypoints /sboclearburrows",
+        category: "General",
+        subcategory: "Diana Burrows"
+    })
+    dianaBurrowDetect = false;
+
+    @SwitchProperty({
+        name: "Diana Burrow Warp",
+        description: "Warp to the closest burrow",
+        category: "General",
+        subcategory: "Diana Burrows"
+    })
+    dianaBurrowWarp = false;
+
+    @SwitchProperty({
+        name: "Diana Burrow Waypoints",
+        description: "Waypoint for Diana Burrows",
+        category: "General",
+        subcategory: "Diana Burrows"
+    })
+    dianaBurrowWaypoints = false;
+
+    
     @SwitchProperty({
         name: "Inquis Party Message",
         description: "Party massage for Inquis Detection (Patcher Format).",
@@ -83,30 +102,7 @@ class Settings {
     })
     inquisDetect = false;
     
-    
-    // @SwitchProperty({
-    //     name: "Inquis Detection",
-    //     description: "Chat massage for Inquis detection.",
-    //     category: "General",
-    //     subcategory: "Diana"
-    // })
-    // inquisDetect = false;
 
-    // --- Griffin Burrow ---
-    // @SwitchProperty({
-    //     name: "Burrow Detection",
-    //     description: "Identifies and generates waypoints for the burrow particles surrounding you.",
-    //     category: "General",
-    //     subcategory: "Griffin Burrow"
-    // })
-    // dianaBurrow = false;
-    // @SwitchProperty({
-    //     name: "Burrow Chat Alert",
-    //     description: "Chat massage for burrow detection.",
-    //     category: "General",
-    //     subcategory: "Griffin Burrow"
-    // })
-    // dianaChat = false;
 
     // --- Diana Tracker ---
     @SwitchProperty({
@@ -249,6 +245,14 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
+
+    @SwitchProperty({
+        name: 'Mythos HP',
+        description: 'Displays Hp of Mythos Mobs near you',
+        category: 'General',
+        subcategory: 'Diana',
+    })
+    mythosMobHp = false;
 }
 
 export default new Settings();

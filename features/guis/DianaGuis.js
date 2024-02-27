@@ -70,8 +70,7 @@ export function mobOverlay(mobTracker, setting, percentDict) {
             mobSettingsLoad = true;
         }
     }
-    if( guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S)
-    {
+    if (guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S) {
         guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
         guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
         guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
@@ -122,8 +121,7 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
             lootSettingsLoad = true;
         }
     }
-    if( guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S)
-    {
+    if (guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S) {
         guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
         guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
         guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
@@ -195,3 +193,35 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
 // ${GRAY}${BOLD}Enchanted Iron: ${GRAY}${lootTracker["items"]["ENCHANTED_IRON"]}
 // ${GRAY}${BOLD}Enchanted Ancient Claw: ${GRAY}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
 // ${GRAY}${BOLD}Ancient Claw: ${GRAY}${lootTracker["items"]["ANCIENT_CLAW"]}
+
+mythonsMobHpExample = 
+`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`
+
+let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythonsMobHpExample,"mythosMobHp");
+
+let mythosMobHpSettingsLoad = false;
+export function mythosMobHpOverlay(mobNamesWithHp) {
+    if (!mythosMobHpSettingsLoad) {
+        if(guiSettings != undefined) {
+            MythosMobHp.setX(guiSettings["MythosHpLoc"]["x"]);
+            MythosMobHp.setY(guiSettings["MythosHpLoc"]["y"]);
+            MythosMobHp.setScale(guiSettings["MythosHpLoc"]["s"]);
+            mythosMobHpSettingsLoad = true;
+        }
+    }
+    if (guiSettings["MythosHpLoc"]["x"] != MythosMobHp.X || guiSettings["MythosHpLoc"]["y"] != MythosMobHp.Y || guiSettings["MythosHpLoc"]["s"] != MythosMobHp.S) {
+        guiSettings["MythosHpLoc"]["x"] = MythosMobHp.X;
+        guiSettings["MythosHpLoc"]["y"] = MythosMobHp.Y;
+        guiSettings["MythosHpLoc"]["s"] = MythosMobHp.S;
+        saveGuiSettings(guiSettings);
+    }
+    if (mobNamesWithHp.length > 0) {
+        MythosMobHp.message = "";
+        mobNamesWithHp.forEach((mob) => {
+            MythosMobHp.message += `${mob}\n`;
+        });
+    }
+    else {
+        MythosMobHp.message = "";
+    }
+}

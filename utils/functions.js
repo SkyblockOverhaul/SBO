@@ -82,6 +82,7 @@ export function toTitleCase(str) {
 
 // read player inventory //
 export function readPlayerInventory(type="") {
+    if (!worldLoaded) return {};
     if (type === "hotbar") {
         var slots = 8;
     }
@@ -108,6 +109,7 @@ export function readPlayerInventory(type="") {
 
 // check if item is in hotbar //
 export function checkItemInHotbar(item) {
+    if (!worldLoaded) return false;
     var hotbarItems = readPlayerInventory("hotbar");
     for (var i in hotbarItems) {
         if (item == i) {
@@ -186,6 +188,11 @@ export function initializeGuiSettings() {
             "x": 10,
             "y": 295,
             "s": 1
+        },
+        MythosHpLoc: {
+            "x": 375,
+            "y": 12,
+            "s": 1
         }
     };
     return tempDict;
@@ -196,14 +203,36 @@ export function loadGuiSettings() {
     let loadedSettings = {};
     try {
         loadedSettings = JSON.parse(FileLib.read(fileLocation)) || initializeGuiSettings();
-    } catch (e) {
+        loadedSettings = checkSettings(loadedSettings);
+    } 
+    catch (e) {
         loadedSettings = initializeGuiSettings();
         saveGuiSettings(loadedSettings);
     }
     return loadedSettings;
 }
+
+function checkSettings(loadedSettings) {
+    // check if all Properties are present if not set this property to default
+    let defaultSettings = initializeGuiSettings();
+    if (!loadedSettings.hasOwnProperty("MobLoc")) {
+        loadedSettings["MobLoc"] = defaultSettings["MobLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("LootLoc")) {
+        loadedSettings["LootLoc"] = defaultSettings["LootLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("BobberLoc")) {
+        loadedSettings["BobberLoc"] = defaultSettings["BobberLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("MythosHpLoc")) {
+        loadedSettings["MythosHpLoc"] = defaultSettings["MythosHpLoc"];
+    }
+    return loadedSettings;
+}
+
+
 export function saveGuiSettings(guiSettings) {
-    FileLib.write(fileLocation, JSON.stringify(guiSettings, null, 4));
+        FileLib.write(fileLocation, JSON.stringify(guiSettings, null, 4));
 }
 
 export function getplayername(player) {
@@ -219,3 +248,16 @@ export function getplayername(player) {
     name = player.substring(num+2)
 return name
 }
+
+export function isWorldLoaded() {
+    return worldLoaded;
+}
+
+let worldLoaded = false;
+register("worldUnload", () => {
+    worldLoaded = false;
+});
+
+register("worldLoad", () => {
+    worldLoaded = true;
+});

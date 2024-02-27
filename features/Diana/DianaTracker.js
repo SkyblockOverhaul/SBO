@@ -4,7 +4,7 @@ import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
 import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
-import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected } from "../../utils/mayor";
+import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { trackerFileLocation, isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -129,25 +129,28 @@ function calcPercent(trackerToCalc, type, setting) {
 
 // track logic //
 export function trackItem(item, category, amount) {
-    trackOne(trackerMayor, item, category, "Mayor", amount);
-    trackOne(trackerSession, item, category, "Session", amount);
-    trackOne(trackerTotal, item, category, "Total", amount);
+    if (isDataLoaded()) {
+        trackOne(trackerMayor, item, category, "Mayor", amount);
+        trackOne(trackerSession, item, category, "Session", amount);
+        trackOne(trackerTotal, item, category, "Total", amount);
 
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    }
 }
 
 
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
-        if (getSkyblockDate().getTime() >= getNewMayorAtDate().getTime()) {       
+        if (getSkyblockDate().getTime() >= getNewMayorAtDate().getTime()) {    
+            setNewMayorBool();   
             setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
             tracker[getDateMayorElected().getFullYear()] = initializeTracker();
         }
         tracker[getDateMayorElected().getFullYear()][category][item] += amount;
         if (category === "mobs") {
             tracker[getDateMayorElected().getFullYear()]["mobs"]["TotalMobs"] += amount;
-        }
+        } 
     }
     else {
         tracker[category][item] += amount;
@@ -161,7 +164,7 @@ function trackOne(tracker, item, category, type, amount) {
 }
 
 // total burrow tracker //
-register("chat", (dug, chain, burrow) => {
+register("chat", (burrow) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
     }
