@@ -226,7 +226,7 @@ function onReceiveParticle(particle, type, event) {
                         gY--;
                     }
                     
-                    finalLocation.y = gY + 2;
+                    finalLocation.y = gY + 3;
 
                     // check if finallocation has nan values
                     if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {

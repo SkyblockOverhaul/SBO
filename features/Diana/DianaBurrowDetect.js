@@ -82,7 +82,7 @@ function getClosestBurrowToPlayer() {
 function refreshBurrows() {
     let closetburrow = getClosestBurrowToPlayer();
     // wenn closest burow vorhanden in history dann nicht machen
-    if (closetburrow.length > 0) {
+    if (closetburrow !== null) {
         if (!burrowshistory.some(([type, x, y, z]) => x === closetburrow[1] && y === closetburrow[2] && z === closetburrow[3])) {
             burrowshistory.push(closetburrow);
         }
