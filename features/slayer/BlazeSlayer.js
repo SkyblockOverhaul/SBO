@@ -84,6 +84,8 @@ function updateEffectTime() {
 }
 
 function calcDuration(baseDuration) {
+    // remove all characters that are not numbers
+    settings.parrotLevel = settings.parrotLevel.replace(/\D/g, '');
     let parrotLevel = parseInt(settings.parrotLevel);
     if (parrotLevel > 100) {
         parrotLevel = 100;
