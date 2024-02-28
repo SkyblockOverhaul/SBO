@@ -2,6 +2,7 @@ import settings from "../../settings";
 import { effectsOverlay } from "../guis/DianaGuis";
 import { data, registerWhen } from "../../utils/variables";
 import { isInSkyblock } from "../../utils/functions";
+import { getWorld } from "../../utils/world";
 
 
 let effects = [];
@@ -45,6 +46,7 @@ register("chat", () => {
 
 let first = true;
 registerWhen(register("step", () => {
+    print(getWorld());
     if (first) {
         first = false;
         effects = data.effects;
@@ -59,11 +61,11 @@ registerWhen(register("step", () => {
 
 let loggedOff = true;
 function checkLogOff() {
-    if (Server.getName() == "" && !loggedOff) {
+    if ((Server.getName() == "" || !isInSkyblock()) && !loggedOff) {
         print("Logged off!");
         loggedOff = true;
     }
-    else if (Server.getName() != "" && loggedOff) {
+    else if ((Server.getName() != "" || isInSkyblock()) && loggedOff) {
         print("Logged on!");
         data.effects.forEach(e => {
             e.timeStamp = Date.now();
@@ -73,7 +75,7 @@ function checkLogOff() {
 }
 
 function updateEffectTime() {
-    if (!loggedOff) {
+    if (!loggedOff && isInSkyblock()) {
         effects.forEach(e => {
             e.duration = e.duration - (Date.now() - e.timeStamp)/1000;
             e.timeStamp = Date.now();
