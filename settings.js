@@ -253,6 +253,23 @@ class Settings {
         subcategory: 'Diana',
     })
     mythosMobHp = false;
+
+    @SwitchProperty({
+        name: 'Effects For Blaze',
+        description: 'Displays Effects for Blaze Slayer',
+        category: 'General'
+    })
+    effectsGui = false;
+
+    // setting wo man zahl eingeben kann
+    @TextProperty({
+        name: "Parrot Level",
+        description: "Enter Parrot Level for Effect duration (0 = off/no Parrot)",
+        category: "General",
+    })
+    parrotLevel = "0";
+
+
 }
 
 export default new Settings();

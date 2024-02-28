@@ -10,25 +10,8 @@ import PogObject from "../../PogData";
 
 // Initializing a persistent data object using the PogObject class
 export let data = new PogObject("SBO", {
-    // Properties with default values for various settings and data
-    "tier": 0,
-    "whitelist": [],
-    "blacklist": [],
-    "blocklist": [],
-    // An array of default warp locations
-    "warplist": ["hub", "da", "castle", "museum"],
-    "moblist": [],
-    "emotelist": {},
-    "files": [],
-    "y": 0,
-    // Properties related to timing and split data
-    "splits": {
-        "last": [0, 0, 0, 0, 0],
-        "best": [999, 999, 999, 999, 9999],
-        "worst": [0, 0, 0, 0, 0],
-    },
-    // Properties related to tracker session data
-}, "SboConstants.json");
+    "effects": []
+}, "SboData.json");
 
 
 

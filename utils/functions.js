@@ -193,6 +193,11 @@ export function initializeGuiSettings() {
             "x": 375,
             "y": 12,
             "s": 1
+        },
+        EffectsLoc: {
+            "x": 10,
+            "y": 200,
+            "s": 1
         }
     };
     return tempDict;
@@ -226,6 +231,9 @@ function checkSettings(loadedSettings) {
     }
     if (!loadedSettings.hasOwnProperty("MythosHpLoc")) {
         loadedSettings["MythosHpLoc"] = defaultSettings["MythosHpLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("EffectsLoc")) {
+        loadedSettings["EffectsLoc"] = defaultSettings["EffectsLoc"];
     }
     return loadedSettings;
 }

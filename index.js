@@ -8,6 +8,7 @@ import "./features/general/PartyCommands";
 import "./features/general/messageHider";
 import "./features/general/Waypoints";
 import "./features/diana/DianaBurrowDetect";
+import "./features/slayer/BlazeSlayer";
 
 
 

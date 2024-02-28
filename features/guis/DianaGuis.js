@@ -225,3 +225,54 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
         MythosMobHp.message = "";
     }
 }
+
+
+let effectsGuiExample = 
+`${YELLOW}${BOLD}Active Effects
+-------------------
+${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`
+
+let EffectsGui = new Overlay("effectsGui",["Hub"], [10, 10, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
+
+let effectsSettingsLoad = false;
+export function effectsOverlay(effects) {
+    if (!effectsSettingsLoad) {
+        if(guiSettings != undefined) {
+            EffectsGui.setX(guiSettings["EffectsLoc"]["x"]);
+            EffectsGui.setY(guiSettings["EffectsLoc"]["y"]);
+            EffectsGui.setScale(guiSettings["EffectsLoc"]["s"]);
+            effectsSettingsLoad = true;
+        }
+    }
+    if (guiSettings["EffectsLoc"]["x"] != EffectsGui.X || guiSettings["EffectsLoc"]["y"] != EffectsGui.Y || guiSettings["EffectsLoc"]["s"] != EffectsGui.S) {
+        guiSettings["EffectsLoc"]["x"] = EffectsGui.X;
+        guiSettings["EffectsLoc"]["y"] = EffectsGui.Y;
+        guiSettings["EffectsLoc"]["s"] = EffectsGui.S;
+        saveGuiSettings(guiSettings);
+    }
+    if (effects.length > 0) {
+        EffectsGui.message = `${YELLOW}${BOLD}Active Effects
+---------------
+`;
+        // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
+        effects.forEach((effect) => {
+            let duration = effect.duration;
+            let durationMessage = "";
+            if (duration > 3600) {
+                durationMessage = `${Math.floor(duration/3600)}h `;
+                duration = duration % 3600;
+            }
+            if (duration > 60) {
+                durationMessage += `${Math.floor(duration/60)}m `;
+                duration = duration % 60;
+            }
+            if (duration > 0) {
+                durationMessage += `${Math.floor(duration)}s`;
+            }
+            EffectsGui.message += `${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}\n`;
+        });
+    }
+    else {
+        EffectsGui.message = "";
+    }
+}
