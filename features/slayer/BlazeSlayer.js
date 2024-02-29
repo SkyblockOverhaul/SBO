@@ -56,7 +56,7 @@ registerWhen(register("step", () => {
     // remove all effects with duration <= 0
     effects = effects.filter(e => e.duration > 0);
     effectsOverlay(data.effects);
-}).setFps(1), () => settings.effectsGui && isInSkyblock());
+}).setFps(1), () => settings.effectsGui);
 
 let loggedOff = true;
 function checkLogOff() {
@@ -98,6 +98,8 @@ function calcDuration(baseDuration) {
     return baseDuration*(1 + settings.parrotLevel*0.004)
 }
 
-
+register("worldUnload", () => {
+    loggedOff = true;
+})
 
 
