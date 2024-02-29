@@ -1,5 +1,6 @@
 import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
 import { initializeGuiSettings, initializeTracker } from "./functions";
+import { registerWhen } from "./variables";
 
 // check if data is loaded and time is set //
 export let trackerFileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";
@@ -52,9 +53,17 @@ function checkAllCriteria() {
     let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
     let check4 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check5 = getMayor() !== undefined;
-
     if (check1 && check2 && check3 && check4 && check5) {
         return true;
     }
     return false;
 }
+
+register("command", () => {
+    let check1 = FileLib.exists(trackerFileLocation + "Total.json");
+    let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
+    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    let check4 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
+    let check5 = getMayor() !== undefined;
+    print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5);
+}).setName("sbocheck");
