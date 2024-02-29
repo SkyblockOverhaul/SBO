@@ -63,9 +63,6 @@ function checkLogOff() {
     if ((Server.getName() == "" || !isInSkyblock()) && !loggedOff) {
         // print("Logged off!");
         loggedOff = true;
-        effects.forEach(e => {
-            e.duration += 5;
-        });
     }
     else if ((Server.getName() != "" || isInSkyblock()) && loggedOff) {
         // print("Logged on!");
