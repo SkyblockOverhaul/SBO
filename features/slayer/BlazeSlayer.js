@@ -46,7 +46,6 @@ register("chat", () => {
 
 let first = true;
 registerWhen(register("step", () => {
-    print(getWorld());
     if (first) {
         first = false;
         effects = data.effects;
@@ -62,11 +61,14 @@ registerWhen(register("step", () => {
 let loggedOff = true;
 function checkLogOff() {
     if ((Server.getName() == "" || !isInSkyblock()) && !loggedOff) {
-        print("Logged off!");
+        // print("Logged off!");
         loggedOff = true;
+        effects.forEach(e => {
+            e.duration += 5;
+        });
     }
     else if ((Server.getName() != "" || isInSkyblock()) && loggedOff) {
-        print("Logged on!");
+        // print("Logged on!");
         data.effects.forEach(e => {
             e.timeStamp = Date.now();
         });
@@ -75,7 +77,7 @@ function checkLogOff() {
 }
 
 function updateEffectTime() {
-    if (!loggedOff && isInSkyblock()) {
+    if (!loggedOff) {
         effects.forEach(e => {
             e.duration = e.duration - (Date.now() - e.timeStamp)/1000;
             e.timeStamp = Date.now();
@@ -95,5 +97,7 @@ function calcDuration(baseDuration) {
     }
     return baseDuration*(1 + settings.parrotLevel*0.004)
 }
+
+
 
 
