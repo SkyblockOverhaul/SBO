@@ -286,6 +286,7 @@ register("step", () => {
     if (playerHasSpade() && (DianaMobTracker.S == 0 || DianaLootTracker.S == 0)) {
         DianaMobTracker.setLoc(guiSettings["MobLoc"]["x"], guiSettings["MobLoc"]["y"], guiSettings["MobLoc"]["s"]);
         DianaLootTracker.setLoc(guiSettings["LootLoc"]["x"], guiSettings["LootLoc"]["y"], guiSettings["LootLoc"]["s"]);
+        dontSaveSettings = false;
     }
     else if (!playerHasSpade() && (DianaMobTracker.S != 0 || DianaLootTracker.S != 0)) {
         DianaMobTracker.setScale(0);
