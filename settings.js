@@ -257,7 +257,7 @@ class Settings {
 
 
 
-    // noch in settings einfelgen
+    // noch in settings einflegen
     @SwitchProperty({
         name: 'Effects For Blaze',
         description: 'Displays Effects for Blaze Slayer',

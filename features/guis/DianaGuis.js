@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../utils/functions";
-import { Overlay } from "../../utils/Overlay";
+import { Overlay } from "../../utils/overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 
@@ -56,6 +56,7 @@ let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"sb
 let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"sbomoveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
 
 
+
 let mobSettingsLoad = false;
 /**
  * 
@@ -71,12 +72,10 @@ export function mobOverlay(mobTracker, setting, percentDict) {
         }
     }
     if (guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S) {
-        if (!dontSaveSettings) {
-            guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
-            guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
-            guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
-            saveGuiSettings(guiSettings);
-        }
+        guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
+        guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
+        guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
+        saveGuiSettings(guiSettings);
     }
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
@@ -124,12 +123,10 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
         }
     }
     if (guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S) {
-        if (!dontSaveSettings) {
-            guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
-            guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
-            guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
-            saveGuiSettings(guiSettings);
-        }
+        guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
+        guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
+        guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
+        saveGuiSettings(guiSettings);
     }
     if (lootViewSetting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
@@ -281,18 +278,14 @@ export function effectsOverlay(effects) {
     }
 }
 
-let dontSaveSettings = false;
 register("step", () => {
-    if (playerHasSpade() && (DianaMobTracker.S == 0 || DianaLootTracker.S == 0)) {
-        DianaMobTracker.setLoc(guiSettings["MobLoc"]["x"], guiSettings["MobLoc"]["y"], guiSettings["MobLoc"]["s"]);
-        DianaLootTracker.setLoc(guiSettings["LootLoc"]["x"], guiSettings["LootLoc"]["y"], guiSettings["LootLoc"]["s"]);
-        dontSaveSettings = false;
+    if (playerHasSpade()) {
+        DianaMobTracker.setRenderGuiBool(true);
+        DianaLootTracker.setRenderGuiBool(true);
     }
-    else if (!playerHasSpade() && (DianaMobTracker.S != 0 || DianaLootTracker.S != 0)) {
-        DianaMobTracker.setScale(0);
-        DianaLootTracker.setScale(0);
-        dontSaveSettings = true;
+    else if (!playerHasSpade()) {
+        DianaMobTracker.setRenderGuiBool(false);
+        DianaLootTracker.setRenderGuiBool(false);
     }
-
 }).setFps(1);
 
