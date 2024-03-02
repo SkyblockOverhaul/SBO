@@ -130,4 +130,10 @@ export class Overlay {
         this.S = s;
         this.loc[2] = s;
     }
+
+    setLoc(x, y, s) {
+        this.setX(x);
+        this.setY(y);
+        this.setScale(s);
+    }
 }

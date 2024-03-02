@@ -1,3 +1,6 @@
+import settings from "../settings";
+import { registerWhen } from "./variables";
+
 export function getClosest(origin, positions) {
     let closestPosition = positions.length > 0 ? positions[0] : [0, 0, 0];
     let closestDistance = 999;
@@ -118,6 +121,15 @@ export function checkItemInHotbar(item) {
     }
     return false;
 }
+
+export function playerHasSpade() {
+    return spadeBool;
+}
+
+let spadeBool = false;
+registerWhen(register("step", () => {
+    spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
+}).setFps(1), () => settings.dianaLootTracker || settings.dianaMobTracker);
 
 // initialize tracker //
 export function initializeTracker() {

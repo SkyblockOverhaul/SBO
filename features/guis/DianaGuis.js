@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
+import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../utils/functions";
 import { Overlay } from "../../utils/Overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
@@ -71,10 +71,12 @@ export function mobOverlay(mobTracker, setting, percentDict) {
         }
     }
     if (guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S) {
-        guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
-        guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
-        guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
-        saveGuiSettings(guiSettings);
+        if (!dontSaveSettings) {
+            guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
+            guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
+            guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
+            saveGuiSettings(guiSettings);
+        }
     }
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
@@ -122,10 +124,12 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
         }
     }
     if (guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S) {
-        guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
-        guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
-        guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
-        saveGuiSettings(guiSettings);
+        if (!dontSaveSettings) {
+            guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
+            guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
+            guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
+            saveGuiSettings(guiSettings);
+        }
     }
     if (lootViewSetting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
@@ -197,7 +201,7 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
 mythonsMobHpExample = 
 `&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`
 
-let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythonsMobHpExample,"mythosMobHp");
+let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 0],"sbomoveMythosHp",mythonsMobHpExample,"mythosMobHp");
 
 let mythosMobHpSettingsLoad = false;
 export function mythosMobHpOverlay(mobNamesWithHp) {
@@ -276,3 +280,18 @@ export function effectsOverlay(effects) {
         EffectsGui.message = "";
     }
 }
+
+let dontSaveSettings = false;
+register("step", () => {
+    if (playerHasSpade() && (DianaMobTracker.S == 0 || DianaLootTracker.S == 0)) {
+        DianaMobTracker.setLoc(guiSettings["MobLoc"]["x"], guiSettings["MobLoc"]["y"], guiSettings["MobLoc"]["s"]);
+        DianaLootTracker.setLoc(guiSettings["LootLoc"]["x"], guiSettings["LootLoc"]["y"], guiSettings["LootLoc"]["s"]);
+    }
+    else if (!playerHasSpade() && (DianaMobTracker.S != 0 || DianaLootTracker.S != 0)) {
+        DianaMobTracker.setScale(0);
+        DianaLootTracker.setScale(0);
+        dontSaveSettings = true;
+    }
+
+}).setFps(1);
+
