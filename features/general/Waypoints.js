@@ -255,20 +255,27 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
                 World.playSound("random.orb", 1, 1);
                 z = z.replace("&r", "");
-                inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
-                removeWaypointAfterDelay(inqWaypoints, 60);
+                // check if waypoint is from player
+                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
+                    inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
+                    removeWaypointAfterDelay(inqWaypoints, 60);
+                }
             }
             else{
                 z = z.replace("&r", "");
-                patcherWaypoints.push([player, x, y, z, ""]);
-                removeWaypointAfterDelay(patcherWaypoints, 30);
+                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+                    patcherWaypoints.push([player, x, y, z, ""]);
+                    removeWaypointAfterDelay(patcherWaypoints, 30);
+                }
             }
         }
         else {
             if(settings.patcherWaypoints) {
                 z = z.split(" ")[0];
-                patcherWaypoints.push([player, x, y, z, ""]);
-                removeWaypointAfterDelay(patcherWaypoints, 30);
+                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+                    patcherWaypoints.push([player, x, y, z, ""]);
+                    removeWaypointAfterDelay(patcherWaypoints, 30);
+                }
             }
         }
     }

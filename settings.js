@@ -254,6 +254,10 @@ class Settings {
     })
     mythosMobHp = false;
 
+
+
+
+    // noch in settings einfelgen
     @SwitchProperty({
         name: 'Effects For Blaze',
         description: 'Displays Effects for Blaze Slayer',
@@ -269,6 +273,14 @@ class Settings {
     })
     parrotLevel = "0";
 
+    @SelectorProperty({
+        name: "hide Own Waypoints",
+        description: "Hide your own Patcher/inq Waypoints",
+        category: "General",
+        subcategory: "Waypoints",
+        options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
+    })
+    hideOwnWaypoints = 0;
 
 }
 
