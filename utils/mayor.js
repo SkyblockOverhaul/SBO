@@ -149,6 +149,11 @@ register("step", () => {
                         perks = new Set(["Mythological Ritual"]);
                     }
                 }
+                else {
+                    // error with api
+                    mayor = "Diana";
+                    perks = new Set(["Mythological Ritual"]);
+                }
                 setTimeout(() => {
                     refreshingMayor = false;
                 }, 5000);
