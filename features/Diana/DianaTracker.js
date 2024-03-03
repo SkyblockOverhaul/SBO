@@ -5,7 +5,7 @@ import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../.
 import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
-import { trackerFileLocation, isDataLoaded } from "../../utils/checkData";
+import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, getTrackerSession } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
 // todo: 
@@ -18,21 +18,10 @@ import { checkDiana } from "../../utils/checkDiana";
 
 // todo end
 
-// load loot tracker from json file //
-function loadTracker(type) {
-    let loadedTracker = {};
-    try {
-        loadedTracker = JSON.parse(FileLib.read(trackerFileLocation + type + ".json")) || {};
-    } catch (e) {
-        loadedTracker = {};
-    }
-    return loadedTracker;
-}
 
 // track items with pickuplog //
-
 export function dianaLootCounter(item, amount) {
-    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"];
+    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC", "&5ROTTEN_FLESH"];
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
     var checkBool = true;
     if (isActiveForOneSecond() || gotLootShare()) {
@@ -71,6 +60,9 @@ function saveLoot(tracker, type) {
 }
 
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //
+let trackerTotal = {};
+let trackerMayor = {};
+let trackerSession = {};
 export function getTracker(setting) {
     switch (setting) {
         case 1:
@@ -79,6 +71,20 @@ export function getTracker(setting) {
             return trackerMayor;
         case 3:
             return trackerSession;
+    }
+}
+
+export function setTracker(setting, tracker) {
+    switch (setting) {
+        case 1:
+            trackerTotal = tracker;
+            break;
+        case 2:
+            trackerMayor = tracker;
+            break;
+        case 3:
+            trackerSession = tracker;
+            break;
     }
 }
 
@@ -268,32 +274,6 @@ registerWhen(register("chat", (drop) => {
 // &r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r
 
 
-// mayor tracker //
-let trackerMayor = loadTracker("Mayor");
-let trackerBool = false;
-registerWhen(register("step", () => {
-    if (isDataLoaded()) {
-        if (getDateMayorElected() != undefined) {
-            if (!trackerMayor.hasOwnProperty(getDateMayorElected().getFullYear())) {
-            trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
-            }
-            else {
-                trackerBool = true;
-            }
-        }
-    }
-}).setFps(1), () => !trackerBool);
-// total tracker //
-let trackerTotal = loadTracker("Total");
-if (Object.keys(trackerTotal).length == 0) {
-    trackerTotal = initializeTracker();
-}
-// session tracker //
-let trackerSession = loadTracker("Session");
-if (Object.keys(trackerSession).length == 0) {
-    trackerSession = initializeTracker();
-}
-
 // refresh overlay //
 let tempSettingLoot = -1;
 registerWhen(register("step", () => {
@@ -308,13 +288,22 @@ registerWhen(register("step", () => {
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
 let firstLoad = false;
+let trackerBool = false;
 registerWhen(register("step", () => {
-    if (isDataLoaded()) {
+    if (!trackerBool) {
+        if (isDataLoaded()) {
+            trackerTotal = getTrackerTotal();
+            trackerMayor = getTrackerMayor();
+            trackerSession = getTrackerSession();
+            trackerBool = true;
+        }
+    }
+    else {
         refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
         refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
         firstLoad = true;
     }
-}).setFps(1), () => !firstLoad);
+}).setFps(20), () => !firstLoad);
 
 
 // // test command
