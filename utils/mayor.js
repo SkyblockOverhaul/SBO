@@ -1,5 +1,6 @@
 import { request } from "../../requestV2";
 import { isInSkyblock } from "./functions";
+
 /**
  * Gets the array of mayor's perks.
  *
@@ -49,6 +50,7 @@ let newMayorAtDate = undefined;
 let mayor = undefined;
 let perks = new Set([]);
 let mayorApiError = false;
+let apiLastUpdated = undefined;
 function getYearMayorRequestV2() {
     mayor = undefined;
     perks = new Set([]);
@@ -57,6 +59,7 @@ function getYearMayorRequestV2() {
         json: true
     }).then((response)=>{
         mayor = response.mayor.name;
+        apiLastUpdated = response.lastUpdated;
         perks = new Set([...response.mayor.perks.map(perk => perk.name)]);
         mayorApiError = false;
     }).catch((error)=>{
@@ -73,12 +76,12 @@ function convertStringToDate(str) {
 
 let skyblockDate = undefined;
 let skyblockDateString = "";
-function calcSkyblockDate() {
+function calcSkyblockDate(date) {
     let monthsInYear = 12;
     let secondsPerMinute = 0.8333333333333334;
     let secondsPerMonth = 37200;
 
-    let unix = Math.floor(Date.now() / 1000);
+    let unix = Math.floor(date / 1000);
     let secondsSinceLastLog = unix - 1560276000;
     let year = 1;
     let month = 1;
@@ -126,23 +129,38 @@ function calcSkyblockDate() {
 
 let refreshingMayor = false;
 let newMayor = false;
+let outDatedApi = false;
+// get mayor from api
 register("step", () => {
     if (isInSkyblock()) {
-        if (((mayor === undefined && mayorApiError) || newMayor) && !refreshingMayor) {
-            refreshingMayor = true;
-            getYearMayorRequestV2(); 
-            refreshingMayor = false;
+        if (skyblockDate != undefined) {
+            if ((mayor === undefined || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
+                refreshingMayor = true;
+                getYearMayorRequestV2(); 
+                newMayor = false;
+                // check if mayor is not old mayor
+                if (apiLastUpdated != undefined) {
+                    if (convertStringToDate(calcSkyblockDate(apiLastUpdated*1000)) >= skyblockDate) {
+                        outDatedApi = false;
+                    }
+                    else {
+                        outDatedApi = true;
+                        mayor = "Diana";
+                        perks = new Set(["Mythological Ritual"]);
+                    }
+                }
+                setTimeout(() => {
+                    refreshingMayor = false;
+                }, 5000);
+            }
         }
     }
 }).setFps(1);
 
-register("worldLoad", () => {
-    getYearMayorRequestV2(); 
-});
-
+// date tracking
 register("step", () => { 
     if  (isInSkyblock()) {
-        skyblockDateString = calcSkyblockDate();
+        skyblockDateString = calcSkyblockDate(Date.now());
         skyblockDate = convertStringToDate(skyblockDateString);
         if (dateMayorElected === undefined) {
             let compareDate = convertStringToDate("27.3." + skyblockDate.getFullYear());
@@ -158,4 +176,3 @@ register("step", () => {
         year = skyblockDate.getFullYear();
     }
 }).setFps(1);
-

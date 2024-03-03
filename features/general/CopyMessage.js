@@ -1,6 +1,4 @@
 
-// ChatLib.command(`ct copy ${finalText}`, true);
-
 register("chat", (rest) => {
     let finalText = "RARE DROP! " + rest.removeFormatting();
     ChatLib.command(`ct copy ${finalText}`, true);
