@@ -139,10 +139,9 @@ export function trackItem(item, category, amount) {
     }
 }
 
-
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
-        if (getSkyblockDate().getTime() >= getNewMayorAtDate().getTime()) {    
+        if (getSkyblockDate() >= getNewMayorAtDate()) {    
             setNewMayorBool();   
             setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
             tracker[getDateMayorElected().getFullYear()] = initializeTracker();
@@ -158,10 +157,15 @@ function trackOne(tracker, item, category, type, amount) {
             tracker["mobs"]["TotalMobs"] += amount;
         }
     }
-    if (type !== "Session") {
-        saveLoot(tracker, type);
-    }
+    saveLoot(tracker, type);
 }
+
+// command to reset session tracker
+register("command", () => {
+    trackerSession = initializeTracker();
+    saveLoot(trackerSession, "Session");
+}).setName("sboresetsession");
+    
 
 // total burrow tracker //
 register("chat", (burrow) => {
@@ -285,8 +289,10 @@ if (Object.keys(trackerTotal).length == 0) {
     trackerTotal = initializeTracker();
 }
 // session tracker //
-let trackerSession = {};
-trackerSession = initializeTracker();
+let trackerSession = loadTracker("Session");
+if (Object.keys(trackerSession).length == 0) {
+    trackerSession = initializeTracker();
+}
 
 // refresh overlay //
 let tempSettingLoot = -1;

@@ -25,6 +25,13 @@ function checkDataLoaded() {
             FileLib.write(trackerFileLocation + "Mayor.json", JSON.stringify(tempDict, null, 4));
         }
     }
+
+    if (!FileLib.exists(trackerFileLocation + "Session.json")) {
+        tempDict = {};
+        tempDict = initializeTracker();
+        FileLib.write(trackerFileLocation + "Session.json", JSON.stringify(tempDict, null, 4));
+    }
+
     if (!FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json")) {
         tempDict = initializeGuiSettings();
         FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict, null, 4));
@@ -50,10 +57,11 @@ function checkAllCriteria() {
     checkDataLoaded();
     let check1 = FileLib.exists(trackerFileLocation + "Total.json");
     let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
-    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
-    let check4 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
-    let check5 = getMayor() !== undefined;
-    if (check1 && check2 && check3 && check4 && check5) {
+    let check3 = FileLib.exists(trackerFileLocation + "Session.json");
+    let check4 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
+    let check6 = getMayor() !== undefined;
+    if (check1 && check2 && check3 && check4 && check5 && check6) {
         return true;
     }
     return false;
@@ -62,8 +70,9 @@ function checkAllCriteria() {
 register("command", () => {
     let check1 = FileLib.exists(trackerFileLocation + "Total.json");
     let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
-    let check3 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
-    let check4 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
-    let check5 = getMayor() !== undefined;
-    print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5);
+    let check3 = FileLib.exists(trackerFileLocation + "Session.json");
+    let check4 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
+    let check6 = getMayor() !== undefined;
+    print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5 + " check6: " + check6);
 }).setName("sbocheck");

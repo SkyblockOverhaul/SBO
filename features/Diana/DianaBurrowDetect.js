@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-import { creatBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
+import { createBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -127,7 +127,7 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
 
 registerWhen(register("step", () => {
     burrows.forEach(([type, x, y, z]) => {
-        creatBurrowWaypoints(type, x, y, z, burrowshistory);
+        createBurrowWaypoints(type, x, y, z, burrowshistory);
     });
 }).setFps(4), () => settings.dianaBurrowWaypoints);
 
@@ -140,15 +140,22 @@ registerWhen(register("chat", (burrow) => {
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 register("command", () => {
-    setBurrowWaypoints([]);
-    burrows = [];
-    burrowshistory = [];
+    resetBurrows();
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
 }).setName("sboclearburrows"); 
 
 registerWhen(register("chat", () => {
+    resetBurrows();
+}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
+
+function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = [];
     burrowshistory = [];
-}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
+}
 
+registerWhen(register("step", () => {
+    if (!checkDiana()) {
+        refreshBurrows();
+    }
+}).setFps(1), () => settings.dianaBurrowDetect);

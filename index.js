@@ -9,7 +9,7 @@ import "./features/general/messageHider";
 import "./features/general/Waypoints";
 import "./features/diana/DianaBurrowDetect";
 import "./features/slayer/BlazeSlayer";
-
+import "./features/general/CopyMessage";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");

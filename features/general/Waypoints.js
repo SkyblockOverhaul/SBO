@@ -45,7 +45,7 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
-export function creatBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
+export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
         if (burrowWaypoints.length > 0) {
             for (let i = 0; i < burrowWaypoints.length; i++) {

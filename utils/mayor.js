@@ -145,16 +145,17 @@ register("step", () => {
         skyblockDateString = calcSkyblockDate();
         skyblockDate = convertStringToDate(skyblockDateString);
         if (dateMayorElected === undefined) {
-            if (skyblockDate.getDate() < 27 && skyblockDate.getMonth() <= 3) {
+            let compareDate = convertStringToDate("27.3." + skyblockDate.getFullYear());
+            if (compareDate > skyblockDate) {
                 dateMayorElected = convertStringToDate("27.3." + (skyblockDate.getFullYear() - 1));
                 newMayorAtDate = convertStringToDate("27.3." + skyblockDate.getFullYear());
             }
-            else if (skyblockDate.getDate() >= 27 && skyblockDate.getMonth() >= 3) {
+            else {
                 dateMayorElected = convertStringToDate("27.3." + skyblockDate.getFullYear());
                 newMayorAtDate = convertStringToDate("27.3." + (skyblockDate.getFullYear() + 1));
             }
         }
         year = skyblockDate.getFullYear();
-        // ChatLib.chat("Skyblock Date: " + skyblockDateString);
     }
 }).setFps(1);
+
