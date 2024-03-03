@@ -46,6 +46,11 @@ export function dianaLootCounter(item, amount) {
                         if (settings.lootAnnouncerChat) {
                             ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
                         }
+                        if (settings.copyRareDrop) {
+                            let finalText = "RARE DROP! " + tempString;
+                            ChatLib.command(`ct copy ${finalText}`, true);
+                            ChatLib.chat("§6[SBO] §eCopied Rare Drop Message!§r");
+                        }
                         trackItem(item, "items", amount);
                     }
                 }

@@ -281,7 +281,12 @@ class Settings {
         options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
     })
     hideOwnWaypoints = 0;
-
+    @SwitchProperty({
+        name: 'Copy Rare Drop',
+        description: 'Copy Rare Drop Message to clipboard',
+        category: 'General',
+    })
+    copyRareDrop = false;
 }
 
 export default new Settings();
