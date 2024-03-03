@@ -21,7 +21,7 @@ import { checkDiana } from "../../utils/checkDiana";
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
-    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC", "&5ROTTEN_FLESH"];
+    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC",]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
     var checkBool = true;
     if (isActiveForOneSecond() || gotLootShare()) {

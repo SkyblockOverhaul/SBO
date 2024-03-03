@@ -147,8 +147,7 @@ export function initializeTracker() {
             "ENCHANTED_ANCIENT_CLAW": 0,
             "ANCIENT_CLAW": 0,
             "MINOS_RELIC": 0,
-            "Total Burrows": 0,
-            "ROTTEN_FLESH": 0
+            "Total Burrows": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
