@@ -265,7 +265,6 @@ class Settings {
     })
     effectsGui = false;
 
-    // setting wo man zahl eingeben kann
     @TextProperty({
         name: "Parrot Level",
         description: "Enter Parrot Level for Effect duration (0 = off/no Parrot)",
@@ -287,6 +286,17 @@ class Settings {
         category: 'General',
     })
     copyRareDrop = false;
+
+    @ButtonProperty({
+        name: "Reset Session Tracker",
+        description: "Resets the Session Tracker for Mobs and Items (/sboresetsession)",
+        category: "Tracker",
+    })
+    resetTrackerSession() {
+       ChatLib.command("sboresetsession", true);
+    }
 }
 
 export default new Settings();
+
+//  java.awt.Desktop.getDesktop().browse(new java.net.URI("url"));

@@ -135,12 +135,13 @@ register("step", () => {
     if (isInSkyblock()) {
         if (skyblockDate != undefined) {
             if ((mayor === undefined || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
+                ChatLib.chat("&cRefreshing mayor"); 
                 refreshingMayor = true;
                 getYearMayorRequestV2(); 
                 newMayor = false;
                 // check if mayor is not old mayor
                 if (apiLastUpdated != undefined) {
-                    if (convertStringToDate(calcSkyblockDate(apiLastUpdated*1000)) >= skyblockDate) {
+                    if (convertStringToDate(calcSkyblockDate(apiLastUpdated*1000)) >= dateMayorElected) { 
                         outDatedApi = false;
                     }
                     else {
