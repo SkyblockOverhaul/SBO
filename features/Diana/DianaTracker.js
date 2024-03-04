@@ -295,18 +295,20 @@ registerWhen(register("step", () => {
 let firstLoad = false;
 let trackerBool = false;
 registerWhen(register("step", () => {
-    if (!trackerBool) {
-        if (isDataLoaded()) {
-            trackerTotal = getTrackerTotal();
-            trackerMayor = getTrackerMayor();
-            trackerSession = getTrackerSession();
-            trackerBool = true;
+    if (isInSkyblock()) {
+        if (!trackerBool) {
+            if (isDataLoaded()) {
+                trackerTotal = getTrackerTotal();
+                trackerMayor = getTrackerMayor();
+                trackerSession = getTrackerSession();
+                trackerBool = true;
+            }
         }
-    }
-    else {
-        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-        firstLoad = true;
+        else {
+            refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+            refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+            firstLoad = true;
+        }
     }
 }).setFps(20), () => !firstLoad);
 

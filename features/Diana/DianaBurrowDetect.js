@@ -122,6 +122,14 @@ function refreshBurrows() {
 // }), () => settings.dianaBurrowDetect && checkDiana());
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
+    if (type == "SMOKE") {
+        ChatLib.chat("SMOKE");
+        const particlepos = particle.getPos();
+        const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
+        const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
+        ChatLib.chat("raw: " + x + " " + y + " " + z);
+        ChatLib.chat("rounded: " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z));
+    }
     burrowDetect(particle, type);
 }), () => settings.dianaBurrowDetect);
 

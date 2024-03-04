@@ -7,8 +7,7 @@ import { getWorld } from "../../utils/world";
 
 let effects = [];
 register("chat", () => {
-    // baseDuration ist eigentlich 300s aber das ist erstmal provisorisch
-    ChatLib.chat("Buff received!");
+    // ChatLib.chat("Buff received!");
     let baseDuration = 1800;
     if (effects.some(e => e.name === "Wisp's Water")) {
         let wisp = effects.find(e => e.name === "Wisp's Water");
