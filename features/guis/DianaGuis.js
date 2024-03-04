@@ -137,7 +137,6 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
 }
 
 function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
-    let lootTrackerType = "";
     switch (lootViewSetting) {
         case 1:
             lootTrackerType = "Total";
@@ -198,7 +197,7 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
 mythonsMobHpExample = 
 `&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`
 
-let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 0],"sbomoveMythosHp",mythonsMobHpExample,"mythosMobHp");
+let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythonsMobHpExample,"mythosMobHp");
 
 let mythosMobHpSettingsLoad = false;
 export function mythosMobHpOverlay(mobNamesWithHp) {

@@ -37,7 +37,7 @@ export function dianaLootCounter(item, amount) {
                     color = i.slice(0, 2);
                     if (item == "MINOS_RELIC") {
                         if (settings.lootAnnouncerScreen) {
-                            Client.Companion.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+                            Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
                     }
                     if (item === i.slice(2)) {

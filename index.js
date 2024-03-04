@@ -17,6 +17,8 @@ register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAli
 
 
 register("command", () => {
-    Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "RolexDE", 0, 90, 20);
+    // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);
+    Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+    ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &5Minos Relic!");
     World.playSound("random.orb", 1, 1);
 }).setName("sboinq");

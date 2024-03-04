@@ -240,7 +240,7 @@ class Settings {
     lootAnnouncerChat = false;
     @SwitchProperty({
         name: 'Loot Screen Announcer',
-        description: 'Announce Chimer/Stick/Relic on screen',
+        description: 'Announce Chimera/Stick/Relic on screen',
         category: 'Trackers',
         subcategory: 'Loot Announcer',
     })
