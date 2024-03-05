@@ -202,8 +202,8 @@ export function initializeGuiSettings() {
             "s": 1
         },
         MythosHpLoc: {
-            "x": 375,
-            "y": 12,
+            "x": 400,
+            "y": 50,
             "s": 1
         },
         EffectsLoc: {
@@ -215,11 +215,10 @@ export function initializeGuiSettings() {
     return tempDict;
 }
 
-const fileLocation = "config/ChatTriggers/modules/SBO/guiSettings.json";
 export function loadGuiSettings() {
     let loadedSettings = {};
     try {
-        loadedSettings = JSON.parse(FileLib.read(fileLocation)) || initializeGuiSettings();
+        loadedSettings = JSON.parse(FileLib.read("SBO", "guiSettings.json")) || initializeGuiSettings();
         loadedSettings = checkSettings(loadedSettings);
     } 
     catch (e) {
@@ -252,7 +251,7 @@ function checkSettings(loadedSettings) {
 
 
 export function saveGuiSettings(guiSettings) {
-        FileLib.write(fileLocation, JSON.stringify(guiSettings, null, 4));
+        FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
 }
 
 export function getplayername(player) {
