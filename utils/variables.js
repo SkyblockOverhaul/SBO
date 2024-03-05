@@ -49,7 +49,7 @@ export function setRegisters() {
 delay(() => setRegisters(), 1000);
 
 /**
- * Marks that the VolcAddons GUI has been opened.
+ * Marks that the SBO GUI has been opened.
  */
 export function opened() {
     openVA = true;
@@ -61,57 +61,9 @@ register("guiClosed", (event) => {
         setRegisters()
 });
 
-// Variable to store the pause state
-let paused = false;
-
-/**
- * Returns the current paused state.
- *
- * @returns {boolean} - The current paused state.
- */
-export function getPaused() {
-    return paused;
-}
 
 
 
-// MVP+/++ Check
-let isMVP = false;
-
-/**
- * Returns whether the player is MVP+ or MVP++ based on chat messages.
- *
- * @returns {boolean} - Whether the player is MVP+ or MVP++.
- */
-export function getMVP() {
-    return isMVP;
-}
-
-// Event handler for chat messages to check MVP status
-register("chat", (player) => {
-    if (player == Player.getName()) {
-        isMVP = true;
-    }
-}).setCriteria(">>> [MVP++] ${player} joined the lobby! <<<");
-
-// Stats tracking class
-export class Stat {
-    constructor() {
-        // Initializing properties for tracking statistics
-        this.reset();
-    }
-
-    // Method to reset stat properties
-    reset() {
-        this.start = 0.00; // Starting Amount
-        this.now = 0.00; // Current Amount
-        this.gain = 0.00; // Current - Starting Amount
-        this.next = 0.00; // Next Level
-        this.time = 0.00; // Time passed
-        this.rate = 0.00; // Amount/hr
-        this.since = 600; // Time since last Amount earn
-    }
-}
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
