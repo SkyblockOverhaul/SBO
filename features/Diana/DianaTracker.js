@@ -51,7 +51,9 @@ export function dianaLootCounter(item, amount) {
                             ChatLib.command(`ct copy ${finalText}`, true);
                             ChatLib.chat("§6[SBO] §eCopied Rare Drop Message!§r");
                         }
-                        trackItem(item, "items", amount);
+                        if (settings.dianaLootTracker) {
+                            trackItem(item, "items", amount);
+                        }
                     }
                 }
             }

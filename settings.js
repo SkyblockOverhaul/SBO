@@ -53,8 +53,6 @@ class Settings {
         this.addDependency('Promote/Demote','Party Commands')
         this.addDependency('Ask Carrot','Party Commands')
         this.addDependency('Inq Warp Key','Detect Inq Cords')
-        this.addDependency('Rare Drop Announcer','Diana Loot Tracker')
-        this.addDependency('Loot Screen Announcer','Diana Loot Tracker')
     }
 
     //-----------Diana----------------
@@ -65,6 +63,14 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowGuess = false;
+
+    @SwitchProperty({
+        name: "Diana Burrow Warp",
+        description: "Warp to the closest burrow",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    dianaBurrowWarp = false;
     
     @SwitchProperty({
         name: "Diana Burrow Detect",
@@ -74,23 +80,6 @@ class Settings {
     })
     dianaBurrowDetect = false;
 
-    @SwitchProperty({
-        name: "Diana Burrow Warp",
-        description: "Warp to the closest burrow",
-        category: "Diana",
-        subcategory: "Diana Burrows"
-    })
-    dianaBurrowWarp = false;
-
-    @SwitchProperty({
-        name: "Diana Burrow Waypoints",
-        description: "Waypoint for Diana Burrows",
-        category: "Diana",
-        subcategory: "Diana Burrows"
-    })
-    dianaBurrowWaypoints = false;
-
-    
     @SwitchProperty({
         name: "Inquis Party Message",
         description: "Party massage for Inquis Detection (Patcher Format).",
@@ -137,7 +126,6 @@ class Settings {
         name: "Bobber Counter",
         description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
         category: "General",
-        subcategory: "Bobber Counter",
     })
     bobberCounter = false;
     //Party Commands
@@ -290,6 +278,16 @@ class Settings {
     }
 }
 
+SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
+if(SboData.hasOwnProperty("version") == false) {
+    SboData["version"] = "0.0.0";
+}
+let newVersion = "0.1.3"; // change this to the new version for config.toml reset
+if (SboData.version != newVersion) {
+    FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
+    SboData.version = newVersion;
+    FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
+}
 export default new Settings();
 
 //  java.awt.Desktop.getDesktop().browse(new java.net.URI("url"));

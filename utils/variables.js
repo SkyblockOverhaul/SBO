@@ -10,7 +10,8 @@ import PogObject from "../../PogData";
 
 // Initializing a persistent data object using the PogObject class
 export let data = new PogObject("SBO", {
-    "effects": []
+    "effects": [],
+    "version": "0.1.2"
 }, "SboData.json");
 
 

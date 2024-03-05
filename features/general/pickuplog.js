@@ -55,5 +55,5 @@ registerWhen(register('step', () => {
     if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && checkDiana()) {
         pickuplog();
     }
-}).setFps(10), () => settings.dianaLootTracker);
+}).setFps(10), () => settings.dianaLootTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
 

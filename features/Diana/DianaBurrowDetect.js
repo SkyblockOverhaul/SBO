@@ -137,7 +137,7 @@ registerWhen(register("step", () => {
     burrows.forEach(([type, x, y, z]) => {
         createBurrowWaypoints(type, x, y, z, burrowshistory);
     });
-}).setFps(4), () => settings.dianaBurrowWaypoints);
+}).setFps(4), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (burrow) => {
     refreshBurrows();
