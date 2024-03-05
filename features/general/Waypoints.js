@@ -279,7 +279,7 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
             }
         }
     }
-}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
+}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherWaypoints || settings.inqWaypoints);
 
 registerWhen(register("chat", () => {
     if (tryWarp) {
@@ -334,7 +334,7 @@ registerWhen(register("step", () => {
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" );
 
-}).setFps(3), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
+}).setFps(3), () => settings.dianaBurrowDetect || settings.dianaBurrowGuess);
 
 
 registerWhen(register("renderWorld", () => { 
@@ -343,5 +343,5 @@ registerWhen(register("renderWorld", () => {
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
     }
-}), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
+}), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess);
 
