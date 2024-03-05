@@ -226,7 +226,10 @@ function getClosestWarp(x, y, z){
             }
         }
     }
-    if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance))) {
+    settings.warpDiff = settings.warpDiff.replace(/\D/g, '');
+    let warpDiff = parseInt(settings.warpDiff);
+
+    if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff)) {
         warpPlayer = true;
     }
     else {

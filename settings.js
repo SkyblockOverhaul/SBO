@@ -53,6 +53,7 @@ class Settings {
         this.addDependency('Promote/Demote','Party Commands')
         this.addDependency('Ask Carrot','Party Commands')
         this.addDependency('Inq Warp Key','Detect Inq Cords')
+        this.addDependency('Warp Block Difference', 'Diana Burrow Warp')
     }
 
     //-----------Diana----------------
@@ -71,6 +72,14 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowWarp = false;
+
+    @TextProperty({
+        name: "Warp Block Difference",
+        description: "Set the block difference for the warp",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    warpDiff = "10";
     
     @SwitchProperty({
         name: "Diana Burrow Detect",
