@@ -23,17 +23,16 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer','Party Commands'];
+        const categories = ['General','Diana','Slayer','Party Commands','Quality of Life'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
     // getSubcategoryComparator: () => (a, b) => {
     //     // These function examples will sort the subcategories by the order in the array, so eeeeeee
     //     // will be above Category.
-    //     const subcategories = ["eeeeee", "Category"];
+    //     const subcategories = ['Burrows', 'Tracker', 'Waypoints', 'Loot Announcer', 'Bobber Counter', 'Other', 'Party Commands'];
 
-    //     return subcategories.indexOf(a.getValue()[0].attributesExt.subcategory) -
-    //         subcategories.indexOf(b.getValue()[0].attributesExt.subcategory);
+    //     return subcategories.indexOf(a.name) - subcategories.indexOf(b.name);
     // },
     // getPropertyComparator: () => (a, b) => {
     //     // And this will put the properties in the order we want them to appear.
@@ -63,7 +62,7 @@ class Settings {
         name: "Diana Burrow Guess",
         description: "Guess the burrow location",
         category: "Diana",
-        subcategory: "Burrows"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowGuess = false;
     
@@ -71,7 +70,7 @@ class Settings {
         name: "Diana Burrow Detect",
         description: "Detects Diana Burrows | to reset waypoints /sboclearburrows",
         category: "Diana",
-        subcategory: "Burrows"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowDetect = false;
 
@@ -79,7 +78,7 @@ class Settings {
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow",
         category: "Diana",
-        subcategory: "Burrows"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowWarp = false;
 
@@ -87,7 +86,7 @@ class Settings {
         name: "Diana Burrow Waypoints",
         description: "Waypoint for Diana Burrows",
         category: "Diana",
-        subcategory: "Burrows"
+        subcategory: "Diana Burrows"
     })
     dianaBurrowWaypoints = false;
 
@@ -107,14 +106,14 @@ class Settings {
         name: "Diana Mob Tracker",
         description: "Tracks your Diana Mob kills",
         category: "Diana",
-        subcategory: "Tracker",
+        subcategory: "Diana Tracker",
     })
     dianaMobTracker = false;
     @SelectorProperty({
         name: "Mob View",
         description: "Tracks your Diana Mob kills /sbomovemobcounter to move the counter",
         category: "Diana",
-        subcategory: "Tracker",
+        subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaMobTrackerView = 0;
@@ -122,14 +121,14 @@ class Settings {
         name: "Diana Loot Tracker",
         description: "Tracks your Diana loot",
         category: "Diana",
-        subcategory: "Tracker",
+        subcategory: "Diana Tracker",
     })
     dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
         description: "Tracks your Diana loot /sbomovelootcounter to move the counter",
         category: "Diana",
-        subcategory: "Tracker",
+        subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaLootTrackerView = 0;
@@ -138,7 +137,7 @@ class Settings {
         name: "Bobber Counter",
         description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
         category: "General",
-        subcategory: "Bobber Counter"
+        subcategory: "Bobber Counter",
     })
     bobberCounter = false;
     //Party Commands
@@ -194,7 +193,7 @@ class Settings {
     @SwitchProperty({
         name: 'Jacob Message Hider',
         description: 'Hide messages from Jacob NPC in the chat',
-        category: 'General',
+        category: 'Quality of Life',
     })
     jacobHider = false;
 
@@ -210,14 +209,14 @@ class Settings {
         name: 'Detect Inq Cords',
         description: 'Create Inq Waypoints',
         category: 'Diana',
-        subcategory: 'Waypoints',
+        subcategory: 'Diana Waypoints',
     })
     inqWaypoints = false;
     @SwitchProperty({
         name: 'Inq Warp Key',
         description: 'Enable Inq Warp Key, Set your keybind in controls.',
         category: 'Diana',
-        subcategory: 'Waypoints',
+        subcategory: 'Diana Waypoints',
     })
     inqWarpKey = false;
     // Loot Announcer
@@ -275,15 +274,16 @@ class Settings {
     @SwitchProperty({
         name: 'Copy Rare Drop',
         description: 'Copy Rare Drop Message to clipboard',
-        category: 'General',
+        category: 'Quality of Life',
     })
     copyRareDrop = false;
 
     @ButtonProperty({
         name: "Reset Session Tracker",
         description: "Resets the Session Tracker for Mobs and Items (/sboresetsession)",
+        placeholder: "Reset Session",
         category: "Diana",
-        subcategory: "Tracker",
+        subcategory: "Diana Tracker",
     })
     resetTrackerSession() {
        ChatLib.command("sboresetsession", true);
