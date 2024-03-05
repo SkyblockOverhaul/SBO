@@ -135,12 +135,12 @@ function checkAllCriteria() {
     return false;
 }
 
-register("command", () => {
-    let check1 = FileLib.exists("SBO", trackerFileLocation  + "Total.json");
-    let check2 = FileLib.exists("SBO", trackerFileLocation  + "Mayor.json");
-    let check3 = FileLib.exists("SBO", trackerFileLocation  + "Session.json");
-    let check4 = FileLib.exists("SBO", "guiSettings.json");
-    let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
-    let check6 = getMayor() !== undefined;
-    print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5 + " check6: " + check6);
-}).setName("sbocheck");
+// register("command", () => {
+//     let check1 = FileLib.exists("SBO", trackerFileLocation  + "Total.json");
+//     let check2 = FileLib.exists("SBO", trackerFileLocation  + "Mayor.json");
+//     let check3 = FileLib.exists("SBO", trackerFileLocation  + "Session.json");
+//     let check4 = FileLib.exists("SBO", "guiSettings.json");
+//     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
+//     let check6 = getMayor() !== undefined;
+//     print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5 + " check6: " + check6);
+// }).setName("sbocheck");
