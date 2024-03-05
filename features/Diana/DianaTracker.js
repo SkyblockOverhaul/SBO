@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
-import { itemOverlay, mobOverlay } from "../guis/DianaGuis";
+import { itemOverlay, mobOverlay, mythosMobHpOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, getTrackerSession } from "../../utils/checkData";
@@ -61,7 +61,7 @@ export function dianaLootCounter(item, amount) {
 
 // save the tracker to json file //
 function saveLoot(tracker, type) {
-    FileLib.write(trackerFileLocation + type + ".json", JSON.stringify(tracker, null, 4));
+    FileLib.write("SBO", trackerFileLocation  + type + ".json", JSON.stringify(tracker, null, 4));
 }
 
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //
@@ -307,6 +307,7 @@ registerWhen(register("step", () => {
         else {
             refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
             refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+            mythosMobHpOverlay([]);
             firstLoad = true;
         }
     }

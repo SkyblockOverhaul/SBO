@@ -232,7 +232,7 @@ let effectsGuiExample =
 -------------------
 ${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`
 
-let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [10, 10, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
+let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [400, 50, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
 
 let effectsSettingsLoad = false;
 export function effectsOverlay(effects) {

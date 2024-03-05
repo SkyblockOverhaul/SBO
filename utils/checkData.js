@@ -2,7 +2,7 @@ import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } fro
 import { initializeGuiSettings, initializeTracker } from "./functions";
 
 // check if data is loaded and time is set //
-export let trackerFileLocation = "config/ChatTriggers/modules/SBO/dianaTracker";
+export let trackerFileLocation  = "./dianaTracker";
 
 export function isDataLoaded() {
     return dataLoaded;
@@ -25,9 +25,9 @@ let trackerTotal = {};
 let trackerMayor = {};
 let trackerSession = {};
 function checkDataLoaded() {
-    if (!FileLib.exists(trackerFileLocation + "Total.json")) {
+    if (!FileLib.exists("SBO", trackerFileLocation  + "Total.json")) {
         trackerTotal = initializeTracker();
-        FileLib.write(trackerFileLocation + "Total.json", JSON.stringify(trackerTotal, null, 4));
+        FileLib.write("SBO", trackerFileLocation  + "Total.json", JSON.stringify(trackerTotal, null, 4));
     }
     else {
         if (Object.keys(trackerTotal).length == 0) {
@@ -35,10 +35,10 @@ function checkDataLoaded() {
         }
     }
 
-    if (!FileLib.exists(trackerFileLocation + "Mayor.json")) {
+    if (!FileLib.exists("SBO", trackerFileLocation  + "Mayor.json")) {
         if (getDateMayorElected() != undefined) {
             trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
-            FileLib.write(trackerFileLocation + "Mayor.json", JSON.stringify(trackerMayor, null, 4));
+            FileLib.write("SBO", trackerFileLocation  + "Mayor.json", JSON.stringify(trackerMayor, null, 4));
         }
     }
     else {
@@ -74,14 +74,14 @@ function checkDataLoaded() {
                 if (!trackerMayor.hasOwnProperty(getDateMayorElected().getFullYear())) {
                     trackerMayor[getDateMayorElected().getFullYear()] = initializeTracker();
                 }
-                FileLib.write(trackerFileLocation + "Mayor.json", JSON.stringify(trackerMayor, null, 4));
+                FileLib.write("SBO", trackerFileLocation  + "Mayor.json", JSON.stringify(trackerMayor, null, 4));
             }
         }
     }
 
-    if (!FileLib.exists(trackerFileLocation + "Session.json")) {
+    if (!FileLib.exists("SBO", trackerFileLocation  + "Session.json")) {
         trackerSession = initializeTracker();
-        FileLib.write(trackerFileLocation + "Session.json", JSON.stringify(trackerSession, null, 4));
+        FileLib.write("SBO", trackerFileLocation  + "Session.json", JSON.stringify(trackerSession, null, 4));
     }
     else {
         if (Object.keys(trackerSession).length == 0) {
@@ -89,9 +89,9 @@ function checkDataLoaded() {
         }
     }
 
-    if (!FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json")) {
+    if (!FileLib.exists("SBO", "guiSettings.json")) {
         let tempDict = initializeGuiSettings();
-        FileLib.write("config/ChatTriggers/modules/SBO/guiSettings.json", JSON.stringify(tempDict, null, 4));
+        FileLib.write("SBO", "guiSettings.json", JSON.stringify(tempDict, null, 4));
     }
 }
 
@@ -110,7 +110,7 @@ register("step", () => {
 function loadTracker(type) {
     let loadedTracker = {};
     try {
-        loadedTracker = JSON.parse(FileLib.read(trackerFileLocation + type + ".json")) || {};
+        loadedTracker = JSON.parse(FileLib.read("SBO", trackerFileLocation  + type + ".json")) || {};
     } catch (e) {
         loadedTracker = {};
     }
@@ -122,10 +122,10 @@ let dataLoaded = false;
 
 function checkAllCriteria() {
     checkDataLoaded();
-    let check1 = FileLib.exists(trackerFileLocation + "Total.json");
-    let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
-    let check3 = FileLib.exists(trackerFileLocation + "Session.json");
-    let check4 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    let check1 = FileLib.exists("SBO", trackerFileLocation  + "Total.json");
+    let check2 = FileLib.exists("SBO", trackerFileLocation  + "Mayor.json");
+    let check3 = FileLib.exists("SBO", trackerFileLocation  + "Session.json");
+    let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;
     let check7 = ((Object.keys(trackerMayor).length != 0) && (Object.keys(trackerTotal).length != 0) && (Object.keys(trackerSession).length != 0));
@@ -136,10 +136,10 @@ function checkAllCriteria() {
 }
 
 register("command", () => {
-    let check1 = FileLib.exists(trackerFileLocation + "Total.json");
-    let check2 = FileLib.exists(trackerFileLocation + "Mayor.json");
-    let check3 = FileLib.exists(trackerFileLocation + "Session.json");
-    let check4 = FileLib.exists("config/ChatTriggers/modules/SBO/guiSettings.json");
+    let check1 = FileLib.exists("SBO", trackerFileLocation  + "Total.json");
+    let check2 = FileLib.exists("SBO", trackerFileLocation  + "Mayor.json");
+    let check3 = FileLib.exists("SBO", trackerFileLocation  + "Session.json");
+    let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;
     print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5 + " check6: " + check6);
