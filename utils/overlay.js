@@ -45,6 +45,7 @@ export class Overlay {
         this.gui = new Gui();
         this.optionalParam = optionalParam;
         this.setSize();
+        this.RenderGuiBool = true;
 
         // Register a command to open the GUI when executed.
         register("command", () => {
@@ -54,6 +55,7 @@ export class Overlay {
         // Register a render function to display the overlay and GUI instructions.
         // The overlay is shown when the GUI is open or in requires specified in 'requires' array.'
         registerWhen(register(this.requires.has("misc") ? "postGuiRender" : "renderOverlay", () => {
+            if (!this.RenderGuiBool) return;
             if (this.gui.isOpen()) {
                 // Coords and scale
                 renderScale(
@@ -116,6 +118,10 @@ export class Overlay {
         });
     }
 
+    setRenderGuiBool(bool) {
+        this.RenderGuiBool = bool;
+    }
+
     setX(x) {
         this.X = x;
         this.loc[0] = x * this.loc[2];
@@ -129,5 +135,11 @@ export class Overlay {
     setScale(s) {
         this.S = s;
         this.loc[2] = s;
+    }
+
+    setLoc(x, y, s) {
+        this.setX(x);
+        this.setY(y);
+        this.setScale(s);
     }
 }

@@ -1,3 +1,6 @@
+import settings from "../settings";
+import { registerWhen } from "./variables";
+
 export function getClosest(origin, positions) {
     let closestPosition = positions.length > 0 ? positions[0] : [0, 0, 0];
     let closestDistance = 999;
@@ -119,6 +122,15 @@ export function checkItemInHotbar(item) {
     return false;
 }
 
+export function playerHasSpade() {
+    return spadeBool;
+}
+
+let spadeBool = false;
+registerWhen(register("step", () => {
+    spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
+}).setFps(1), () => settings.dianaLootTracker || settings.dianaMobTracker);
+
 // initialize tracker //
 export function initializeTracker() {
     tempTracker = {
@@ -190,19 +202,23 @@ export function initializeGuiSettings() {
             "s": 1
         },
         MythosHpLoc: {
-            "x": 375,
-            "y": 12,
+            "x": 400,
+            "y": 50,
+            "s": 1
+        },
+        EffectsLoc: {
+            "x": 10,
+            "y": 200,
             "s": 1
         }
     };
     return tempDict;
 }
 
-const fileLocation = "config/ChatTriggers/modules/SBO/guiSettings.json";
 export function loadGuiSettings() {
     let loadedSettings = {};
     try {
-        loadedSettings = JSON.parse(FileLib.read(fileLocation)) || initializeGuiSettings();
+        loadedSettings = JSON.parse(FileLib.read("SBO", "guiSettings.json")) || initializeGuiSettings();
         loadedSettings = checkSettings(loadedSettings);
     } 
     catch (e) {
@@ -227,12 +243,15 @@ function checkSettings(loadedSettings) {
     if (!loadedSettings.hasOwnProperty("MythosHpLoc")) {
         loadedSettings["MythosHpLoc"] = defaultSettings["MythosHpLoc"];
     }
+    if (!loadedSettings.hasOwnProperty("EffectsLoc")) {
+        loadedSettings["EffectsLoc"] = defaultSettings["EffectsLoc"];
+    }
     return loadedSettings;
 }
 
 
 export function saveGuiSettings(guiSettings) {
-        FileLib.write(fileLocation, JSON.stringify(guiSettings, null, 4));
+        FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
 }
 
 export function getplayername(player) {

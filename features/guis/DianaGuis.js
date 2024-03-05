@@ -1,8 +1,8 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
-import { Overlay } from "../../utils/Overlay";
+import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../utils/functions";
+import { Overlay } from "../../utils/overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 
@@ -54,6 +54,7 @@ guiSettings = loadGuiSettings();
 
 let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"sbomoveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
 let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"sbomoveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
+
 
 
 let mobSettingsLoad = false;
@@ -136,7 +137,6 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
 }
 
 function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
-    let lootTrackerType = "";
     switch (lootViewSetting) {
         case 1:
             lootTrackerType = "Total";
@@ -225,3 +225,66 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
         MythosMobHp.message = "";
     }
 }
+
+
+let effectsGuiExample = 
+`${YELLOW}${BOLD}Active Effects
+-------------------
+${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`
+
+let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [400, 50, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
+
+let effectsSettingsLoad = false;
+export function effectsOverlay(effects) {
+    if (!effectsSettingsLoad) {
+        if(guiSettings != undefined) {
+            EffectsGui.setX(guiSettings["EffectsLoc"]["x"]);
+            EffectsGui.setY(guiSettings["EffectsLoc"]["y"]);
+            EffectsGui.setScale(guiSettings["EffectsLoc"]["s"]);
+            effectsSettingsLoad = true;
+        }
+    }
+    if (guiSettings["EffectsLoc"]["x"] != EffectsGui.X || guiSettings["EffectsLoc"]["y"] != EffectsGui.Y || guiSettings["EffectsLoc"]["s"] != EffectsGui.S) {
+        guiSettings["EffectsLoc"]["x"] = EffectsGui.X;
+        guiSettings["EffectsLoc"]["y"] = EffectsGui.Y;
+        guiSettings["EffectsLoc"]["s"] = EffectsGui.S;
+        saveGuiSettings(guiSettings);
+    }
+    if (effects.length > 0) {
+        EffectsGui.message = `${YELLOW}${BOLD}Active Effects
+---------------
+`;
+        // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
+        effects.forEach((effect) => {
+            let duration = effect.duration;
+            let durationMessage = "";
+            if (duration > 3600) {
+                durationMessage = `${Math.floor(duration/3600)}h `;
+                duration = duration % 3600;
+            }
+            if (duration > 60) {
+                durationMessage += `${Math.floor(duration/60)}m `;
+                duration = duration % 60;
+            }
+            if (duration > 0) {
+                durationMessage += `${Math.floor(duration)}s`;
+            }
+            EffectsGui.message += `${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}\n`;
+        });
+    }
+    else {
+        EffectsGui.message = "";
+    }
+}
+
+register("step", () => {
+    if (playerHasSpade()) {
+        DianaMobTracker.setRenderGuiBool(true);
+        DianaLootTracker.setRenderGuiBool(true);
+    }
+    else if (!playerHasSpade()) {
+        DianaMobTracker.setRenderGuiBool(false);
+        DianaLootTracker.setRenderGuiBool(false);
+    }
+}).setFps(1);
+

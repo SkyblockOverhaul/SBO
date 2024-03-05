@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-import { creatBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
+import { createBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -96,40 +96,48 @@ function refreshBurrows() {
 }
 
 
-registerWhen(register("HitBlock", () => {
-    if (burrows.length === 0) return;
-    block = Player.lookingAt()
-    let [type, x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
-    x = parseInt(x);
-    y = parseInt(y);
-    z = parseInt(z);
-    y = y + 1;
-    if (x < 0) {
-        x = x - 1;
-    }
-    if (z < 0) {
-        z = z - 1;
-    }
+// registerWhen(register("HitBlock", () => { // mit smoke machen
+//     if (burrows.length === 0) return;
+//     block = Player.lookingAt()
+//     let [type, x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
+//     x = parseInt(x);
+//     y = parseInt(y);
+//     z = parseInt(z);
+//     y = y + 1;
+//     if (x < 0) {
+//         x = x - 1;
+//     }
+//     if (z < 0) {
+//         z = z - 1;
+//     }
 
-    if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
-        burrowshistory.push(closetburrow);
-    }
-    if (burrowshistory.length > 7) {
-        // remove oldest burrow
-        burrowshistory.shift();
-    }
-    burrows = removeBurrowWaypoint(x, y, z, burrows);
-}), () => settings.dianaBurrowDetect && checkDiana());
+//     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
+//         burrowshistory.push(closetburrow);
+//     }
+//     if (burrowshistory.length > 7) {
+//         // remove oldest burrow
+//         burrowshistory.shift();
+//     }
+//     burrows = removeBurrowWaypoint(x, y, z, burrows);
+// }), () => settings.dianaBurrowDetect && checkDiana());
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
+    if (type == "SMOKE") {
+        // ChatLib.chat("SMOKE");
+        const particlepos = particle.getPos();
+        const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
+        const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
+        // ChatLib.chat("raw: " + x + " " + y + " " + z);
+        // ChatLib.chat("rounded: " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z));
+    }
     burrowDetect(particle, type);
 }), () => settings.dianaBurrowDetect);
 
 registerWhen(register("step", () => {
     burrows.forEach(([type, x, y, z]) => {
-        creatBurrowWaypoints(type, x, y, z, burrowshistory);
+        createBurrowWaypoints(type, x, y, z, burrowshistory);
     });
-}).setFps(4), () => settings.dianaBurrowWaypoints);
+}).setFps(4), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (burrow) => {
     refreshBurrows();
@@ -140,15 +148,22 @@ registerWhen(register("chat", (burrow) => {
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 register("command", () => {
-    setBurrowWaypoints([]);
-    burrows = [];
-    burrowshistory = [];
+    resetBurrows();
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
 }).setName("sboclearburrows"); 
 
 registerWhen(register("chat", () => {
+    resetBurrows();
+}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
+
+function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = [];
     burrowshistory = [];
-}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
+}
 
+registerWhen(register("step", () => {
+    if (!checkDiana()) {
+        refreshBurrows();
+    }
+}).setFps(1), () => settings.dianaBurrowDetect);

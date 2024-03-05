@@ -8,14 +8,28 @@ import "./features/general/PartyCommands";
 import "./features/general/messageHider";
 import "./features/general/Waypoints";
 import "./features/diana/DianaBurrowDetect";
-
+import "./features/slayer/BlazeSlayer";
+import "./features/general/CopyMessage";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 
 
 
-register("command", () => {
-    Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "RolexDE", 0, 90, 20);
-    World.playSound("random.orb", 1, 1);
-}).setName("sboinq");
+// register("command", () => {
+//     // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);
+//     Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+//     ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &5Minos Relic!");
+//     setTimeout(function() {
+//         World.playSound("random.levelup", 1, 1.0);
+//     }, 0);
+//     setTimeout(function() {
+//         World.playSound("random.levelup", 1, 1.2);
+//     }, 50);
+//     setTimeout(function() {
+//         World.playSound("random.levelup", 1, 1.4);
+//     }, 100);
+//     setTimeout(function() {
+//         World.playSound("random.levelup", 1, 1.6);
+//     }, 150);
+// }).setName("sboinq");

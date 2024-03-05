@@ -9,30 +9,36 @@ export function getMobsToDisplay() {
 }
 
 registerWhen(register("chat", (woah) => {
-    ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
-}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => settings.inquisDetect && checkDiana());
+    if (checkDiana()) {
+        ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+    }
+}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => settings.inquisDetect);
 
 let Mobs = [];
 registerWhen(register("step", () => {
-    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((mob) => {
-        let name = mob.getName();
-        if (Mobs.filter((e) => e.getUUID() === mob.getUUID()).length === 0) {
-            if ((name.includes("Exalted") || name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0")) {
-                Mobs.push(mob);
+    if (checkDiana()) {
+        World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((mob) => {
+            let name = mob.getName();
+            if (Mobs.filter((e) => e.getUUID() === mob.getUUID()).length === 0) {
+                if ((name.includes("Exalted") || name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0")) {
+                    Mobs.push(mob);
+                }
             }
-        }
-    });
-    Mobs = Mobs.filter((e) => !e.getEntity()["field_70128_L"]);
-}).setFps(1), () => settings.mythosMobHp && checkDiana());
+        });
+        Mobs = Mobs.filter((e) => !e.getEntity()["field_70128_L"]);
+    }
+}).setFps(1), () => settings.mythosMobHp);
 
 let names = [];
 registerWhen(register("step", () => {
-    names = [];
-    Mobs.forEach((nameTag) => {
-        names.push(nameTag.getName());
-    });
-    mythosMobHpOverlay(names);
-}).setFps(6), () => settings.mythosMobHp && checkDiana());
+    if (checkDiana()) {
+        names = [];
+        Mobs.forEach((nameTag) => {
+            names.push(nameTag.getName());
+        });
+        mythosMobHpOverlay(names);
+    }
+}).setFps(6), () => settings.mythosMobHp);
         
 //mob.nameTag.getName() step 10
 // if (!Mobs?.map((a) => a.getUUID().toString()).includes(mob.getUUID().toString())) {

@@ -45,7 +45,7 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
-export function creatBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
+export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
         if (burrowWaypoints.length > 0) {
             for (let i = 0; i < burrowWaypoints.length; i++) {
@@ -226,7 +226,10 @@ function getClosestWarp(x, y, z){
             }
         }
     }
-    if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance))) {
+    settings.warpDiff = settings.warpDiff.replace(/\D/g, '');
+    let warpDiff = parseInt(settings.warpDiff);
+
+    if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff)) {
         warpPlayer = true;
     }
     else {
@@ -255,24 +258,31 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
                 World.playSound("random.orb", 1, 1);
                 z = z.replace("&r", "");
-                inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
-                removeWaypointAfterDelay(inqWaypoints, 60);
+                // check if waypoint is from player
+                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
+                    inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
+                    removeWaypointAfterDelay(inqWaypoints, 60);
+                }
             }
             else{
                 z = z.replace("&r", "");
-                patcherWaypoints.push([player, x, y, z, ""]);
-                removeWaypointAfterDelay(patcherWaypoints, 30);
+                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+                    patcherWaypoints.push([player, x, y, z, ""]);
+                    removeWaypointAfterDelay(patcherWaypoints, 30);
+                }
             }
         }
         else {
             if(settings.patcherWaypoints) {
                 z = z.split(" ")[0];
-                patcherWaypoints.push([player, x, y, z, ""]);
-                removeWaypointAfterDelay(patcherWaypoints, 30);
+                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+                    patcherWaypoints.push([player, x, y, z, ""]);
+                    removeWaypointAfterDelay(patcherWaypoints, 30);
+                }
             }
         }
     }
-}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => (settings.patcherWaypoints || settings.inqWaypoints) && settings.waypoints);
+}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherWaypoints || settings.inqWaypoints);
 
 registerWhen(register("chat", () => {
     if (tryWarp) {
@@ -327,7 +337,7 @@ registerWhen(register("step", () => {
     formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" );
 
-}).setFps(3), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
+}).setFps(3), () => settings.dianaBurrowDetect || settings.dianaBurrowGuess);
 
 
 registerWhen(register("renderWorld", () => { 
@@ -336,5 +346,5 @@ registerWhen(register("renderWorld", () => {
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
     }
-}), () => settings.waypoints || settings.dianaBurrowDetect || settings.dianaBurrowGuess);
+}), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess);
 

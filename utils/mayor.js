@@ -1,6 +1,6 @@
 import { request } from "../../requestV2";
-import { registerWhen } from "./variables";
 import { isInSkyblock } from "./functions";
+
 /**
  * Gets the array of mayor's perks.
  *
@@ -50,6 +50,7 @@ let newMayorAtDate = undefined;
 let mayor = undefined;
 let perks = new Set([]);
 let mayorApiError = false;
+let apiLastUpdated = undefined;
 function getYearMayorRequestV2() {
     mayor = undefined;
     perks = new Set([]);
@@ -58,6 +59,7 @@ function getYearMayorRequestV2() {
         json: true
     }).then((response)=>{
         mayor = response.mayor.name;
+        apiLastUpdated = response.lastUpdated;
         perks = new Set([...response.mayor.perks.map(perk => perk.name)]);
         mayorApiError = false;
     }).catch((error)=>{
@@ -74,12 +76,12 @@ function convertStringToDate(str) {
 
 let skyblockDate = undefined;
 let skyblockDateString = "";
-function calcSkyblockDate() {
+function calcSkyblockDate(date) {
     let monthsInYear = 12;
     let secondsPerMinute = 0.8333333333333334;
     let secondsPerMonth = 37200;
 
-    let unix = Math.floor(Date.now() / 1000);
+    let unix = Math.floor(date / 1000);
     let secondsSinceLastLog = unix - 1560276000;
     let year = 1;
     let month = 1;
@@ -127,31 +129,56 @@ function calcSkyblockDate() {
 
 let refreshingMayor = false;
 let newMayor = false;
-registerWhen(register("step", () => {
-    if (((mayor === undefined && mayorApiError) || newMayor) && !refreshingMayor) {
-        refreshingMayor = true;
-        getYearMayorRequestV2(); 
-        refreshingMayor = false;
-    }
-}).setFps(1), () => isInSkyblock());
-
-register("worldLoad", () => {
-    getYearMayorRequestV2(); 
-});
-
-registerWhen(register("step", () => { 
-    skyblockDateString = calcSkyblockDate();
-    skyblockDate = convertStringToDate(skyblockDateString);
-    if (dateMayorElected === undefined) {
-        if (skyblockDate.getDate() < 27 && skyblockDate.getMonth() <= 3) {
-            dateMayorElected = convertStringToDate("27.3." + (skyblockDate.getFullYear() - 1));
-            newMayorAtDate = convertStringToDate("27.3." + skyblockDate.getFullYear());
+let outDatedApi = false;
+// get mayor from api
+register("step", () => {
+    if (isInSkyblock()) {
+        if (skyblockDate != undefined) {
+            if ((mayor === undefined || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
+                // ChatLib.chat("&cRefreshing mayor"); 
+                refreshingMayor = true;
+                getYearMayorRequestV2(); 
+                newMayor = false;
+                // check if mayor is not old mayor
+                if (apiLastUpdated != undefined) {
+                    if (convertStringToDate(calcSkyblockDate(apiLastUpdated*1000)) >= dateMayorElected) { 
+                        outDatedApi = false;
+                    }
+                    else {
+                        outDatedApi = true;
+                        mayor = "Diana";
+                        perks = new Set(["Mythological Ritual"]);
+                    }
+                }
+                else {
+                    // error with api
+                    mayor = "Diana";
+                    perks = new Set(["Mythological Ritual"]);
+                }
+                setTimeout(() => {
+                    refreshingMayor = false;
+                }, 5000);
+            }
         }
-        else if (skyblockDate.getDate() >= 27 && skyblockDate.getMonth() >= 3) {
-            dateMayorElected = convertStringToDate("27.3." + skyblockDate.getFullYear());
-            newMayorAtDate = convertStringToDate("27.3." + (skyblockDate.getFullYear() + 1));
-        }
     }
-    year = skyblockDate.getFullYear();
-    // ChatLib.chat("Skyblock Date: " + skyblockDateString);
-}).setFps(1), () => isInSkyblock());
+}).setFps(1);
+
+// date tracking
+register("step", () => { 
+    if  (isInSkyblock()) {
+        skyblockDateString = calcSkyblockDate(Date.now());
+        skyblockDate = convertStringToDate(skyblockDateString);
+        if (dateMayorElected === undefined) {
+            let compareDate = convertStringToDate("27.3." + skyblockDate.getFullYear());
+            if (compareDate > skyblockDate) {
+                dateMayorElected = convertStringToDate("27.3." + (skyblockDate.getFullYear() - 1));
+                newMayorAtDate = convertStringToDate("27.3." + skyblockDate.getFullYear());
+            }
+            else {
+                dateMayorElected = convertStringToDate("27.3." + skyblockDate.getFullYear());
+                newMayorAtDate = convertStringToDate("27.3." + (skyblockDate.getFullYear() + 1));
+            }
+        }
+        year = skyblockDate.getFullYear();
+    }
+}).setFps(1);

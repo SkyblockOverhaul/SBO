@@ -23,17 +23,16 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Trackers,','Party Commands'];
+        const categories = ['General','Diana','Slayer','Party Commands','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
     // getSubcategoryComparator: () => (a, b) => {
     //     // These function examples will sort the subcategories by the order in the array, so eeeeeee
     //     // will be above Category.
-    //     const subcategories = ["eeeeee", "Category"];
+    //     const subcategories = ['Burrows', 'Tracker', 'Waypoints', 'Loot Announcer', 'Bobber Counter', 'Other', 'Party Commands'];
 
-    //     return subcategories.indexOf(a.getValue()[0].attributesExt.subcategory) -
-    //         subcategories.indexOf(b.getValue()[0].attributesExt.subcategory);
+    //     return subcategories.indexOf(a.name) - subcategories.indexOf(b.name);
     // },
     // getPropertyComparator: () => (a, b) => {
     //     // And this will put the properties in the order we want them to appear.
@@ -53,52 +52,47 @@ class Settings {
         this.addDependency('Party Transfer','Party Commands')
         this.addDependency('Promote/Demote','Party Commands')
         this.addDependency('Ask Carrot','Party Commands')
-        this.addDependency('Detect Patcher Cords','Waypoints')
-        this.addDependency('Detect Inq Cords','Waypoints')
         this.addDependency('Inq Warp Key','Detect Inq Cords')
-        this.addDependency('Rare Drop Announcer','Diana Loot Tracker')
-        this.addDependency('Loot Screen Announcer','Diana Loot Tracker')
     }
 
     //-----------Diana----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
         description: "Guess the burrow location",
-        category: "General",
+        category: "Diana",
         subcategory: "Diana Burrows"
     })
     dianaBurrowGuess = false;
+
+    @SwitchProperty({
+        name: "Diana Burrow Warp",
+        description: "Warp to the closest burrow",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    dianaBurrowWarp = false;
+
+    @TextProperty({
+        name: "Warp Block Difference",
+        description: "Increase it to set the diffrence when player warps (inq/burrow warp)",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    warpDiff = "10";
     
     @SwitchProperty({
         name: "Diana Burrow Detect",
-        description: "Detects Diana Burrows | to reset waypoints /sboclearburrows",
-        category: "General",
+        description: "Detects diana burrows | to reset waypoints /sboclearburrows",
+        category: "Diana",
         subcategory: "Diana Burrows"
     })
     dianaBurrowDetect = false;
 
     @SwitchProperty({
-        name: "Diana Burrow Warp",
-        description: "Warp to the closest burrow",
-        category: "General",
-        subcategory: "Diana Burrows"
-    })
-    dianaBurrowWarp = false;
-
-    @SwitchProperty({
-        name: "Diana Burrow Waypoints",
-        description: "Waypoint for Diana Burrows",
-        category: "General",
-        subcategory: "Diana Burrows"
-    })
-    dianaBurrowWaypoints = false;
-
-    
-    @SwitchProperty({
         name: "Inquis Party Message",
-        description: "Party massage for Inquis Detection (Patcher Format).",
-        category: "General",
-        subcategory: "Diana"
+        description: "Party massage for inquisitor detection (patcher format).",
+        category: "Diana",
+        subcategory: "Other",
     })
     inquisDetect = false;
     
@@ -107,31 +101,31 @@ class Settings {
     // --- Diana Tracker ---
     @SwitchProperty({
         name: "Diana Mob Tracker",
-        description: "Tracks your Diana Mob kills",
-        category: "Trackers",
-        subcategory: "Diana Trackers",
+        description: "Tracks your diana mob kills",
+        category: "Diana",
+        subcategory: "Diana Tracker",
     })
     dianaMobTracker = false;
     @SelectorProperty({
         name: "Mob View",
-        description: "Tracks your Diana Mob kills /sbomovemobcounter to move the counter",
-        category: "Trackers",
-        subcategory: "Diana Trackers",
+        description: "Tracks your diana mob kills /sbomovemobcounter to move the counter",
+        category: "Diana",
+        subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaMobTrackerView = 0;
     @SwitchProperty({
         name: "Diana Loot Tracker",
-        description: "Tracks your Diana loot",
-        category: "Trackers",
-        subcategory: "Diana Trackers"
+        description: "Tracks your diana loot",
+        category: "Diana",
+        subcategory: "Diana Tracker",
     })
     dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
-        description: "Tracks your Diana loot /sbomovelootcounter to move the counter",
-        category: "Trackers",
-        subcategory: "Diana Trackers",
+        description: "Tracks your diana loot /sbomovelootcounter to move the counter",
+        category: "Diana",
+        subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaLootTrackerView = 0;
@@ -139,14 +133,13 @@ class Settings {
     @SwitchProperty({
         name: "Bobber Counter",
         description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
-        category: "Trackers",
-        subcategory: "Bobber Counter"
+        category: "General",
     })
     bobberCounter = false;
     //Party Commands
     @SwitchProperty({
         name: 'Party Commands',
-        description: 'Enable Party Commands',
+        description: 'Enable party commands',
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
@@ -195,64 +188,175 @@ class Settings {
     // messageHider
     @SwitchProperty({
         name: 'Jacob Message Hider',
-        description: 'Hide messages from Jacob NPC in the chat',
-        category: 'General',
-        subcategory: 'Message Hider',
+        description: 'Hide messages from jacob NPC in the chat',
+        category: 'Quality of Life',
     })
     jacobHider = false;
 
     // Waypoints
     @SwitchProperty({
-        name: 'Waypoints',
-        description: 'Main Toggle Waypoints',
-        category: 'General',
-        subcategory: 'Waypoints',
-    })
-    waypoints = false;
-    @SwitchProperty({
         name: 'Detect Patcher Cords',
-        description: 'Create Patcher Waypoints',
+        description: 'Create patcher waypoints',
         category: 'General',
         subcategory: 'Waypoints',
     })
     patcherWaypoints = false;
     @SwitchProperty({
         name: 'Detect Inq Cords',
-        description: 'Create Inq Waypoints',
-        category: 'General',
-        subcategory: 'Waypoints',
+        description: 'Create inquisitor waypoints',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
     })
     inqWaypoints = false;
     @SwitchProperty({
         name: 'Inq Warp Key',
-        description: 'Enable Inq Warp Key, Set your keybind in controls.',
-        category: 'General',
-        subcategory: 'Waypoints',
+        description: 'Enable inquisitor warp key, set your keybind in controls.',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
     })
     inqWarpKey = false;
     // Loot Announcer
     @SwitchProperty({
         name: 'Rare Drop Announcer',
         description: 'Announce loot in chat',
-        category: 'Trackers',
+        category: 'Diana',
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerChat = false;
     @SwitchProperty({
         name: 'Loot Screen Announcer',
-        description: 'Announce Chimer/Stick/Relic on screen',
-        category: 'Trackers',
+        description: 'Announce chimera/stick/relic on screen',
+        category: 'Diana',
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
 
     @SwitchProperty({
         name: 'Mythos HP',
-        description: 'Displays Hp of Mythos Mobs near you',
-        category: 'General',
-        subcategory: 'Diana',
+        description: 'Displays HP of mythological mobs near you',
+        category: 'Diana',
+        subcategory: "Other",
     })
     mythosMobHp = false;
+
+
+
+
+    // noch in settings einflegen
+    @SwitchProperty({
+        name: 'Effects For Blaze',
+        description: 'Displays effects for blaze slayer',
+        category: 'Slayer',
+        subcategory: 'Blaze',
+    })
+    effectsGui = false;
+
+    @TextProperty({
+        name: "Parrot Level",
+        description: "Enter parrot level for effect duration (0 = off/no parrot)",
+        category: "Slayer",
+        subcategory: 'Blaze',
+    })
+    parrotLevel = "0";
+
+    @SelectorProperty({
+        name: "hide Own Waypoints",
+        description: "Hide your own patcher/inquisitor waypoints",
+        category: "General",
+        subcategory: "Waypoints",
+        options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
+    })
+    hideOwnWaypoints = 0;
+    @SwitchProperty({
+        name: 'Copy Rare Drop',
+        description: 'Copy rare drop message to clipboard',
+        category: 'Quality of Life',
+    })
+    copyRareDrop = false;
+
+    @ButtonProperty({
+        name: "Reset Session Tracker",
+        description: "Resets the session tracker for mobs and items (/sboresetsession)",
+        placeholder: "Reset Session",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+    })
+    resetTrackerSession() {
+       ChatLib.command("sboresetsession", true);
+    }
+
+    @ButtonProperty({
+        name: "Discord",
+        description: "Open Tickets for help/bug reports",
+        placeholder: "Click me",
+        category: "Credits/Infos",
+        subcategory: "Infos",
+    })
+    openDiscord() {
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://discord.gg/QvM6b9jsJD"));
+    }
+    @ButtonProperty({
+        name: "Github",
+        description: "View our progress on github",
+        placeholder: "Click me",
+        category: "Credits/Infos",
+        subcategory: "Infos",
+    })
+    openGithub() {
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://github.com/SkyblockOverhaul/SBO"));
+    }
+    @ButtonProperty({
+        name: "Patreon",
+        description: "Support our development ☕",
+        placeholder: "Click me",
+        category: "Credits/Infos",
+        subcategory: "Infos",
+    })
+    openPatreon() {
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.patreon.com/Skyblock_Overhaul"));
+    }
+    @ButtonProperty({
+        name: "Website",
+        description: "Explore our website for tracking Magic Find upgrades and Attribute upgrades",
+        placeholder: "Click me",
+        category: "Credits/Infos",
+        subcategory: "Infos",
+    })
+    openWebsite() {
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://skyblockoverhaul.com/"));
+    }
+    @ButtonProperty({
+        name: "SoopyV2",
+        description: "(Diana guess, Mob HP)",
+        placeholder: "Click me",
+        category: "Credits/Infos",
+        subcategory: "Credits",
+    })
+    openSoopyV2() {
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/SoopyV2"));
+    }
+    @ButtonProperty({
+        name: "VolcAddons",
+        description: "(Burrow detect, Render waypoints and some utils)",
+        placeholder: "Click me",
+        category: "Credits/Infos",
+        subcategory: "Credits",
+    })
+    openVolcAddons() {
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/VolcAddons"));
+    }
 }
 
+SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
+if(SboData.hasOwnProperty("version") == false) {
+    SboData["version"] = "0.0.0";
+}
+let newVersion = "0.1.3"; // change this to the new version for config.toml reset
+if (SboData.version != newVersion) {
+    FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
+    SboData.version = newVersion;
+    FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
+}
 export default new Settings();
+
+//  java.awt.Desktop.getDesktop().browse(new java.net.URI("url"));
