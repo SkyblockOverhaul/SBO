@@ -15,7 +15,8 @@ import "./features/general/QOL";
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 
-
+// Title fix
+Client.showTitle("", "", 0, 40, 20);
 
 // register("command", () => {
 //     // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);
