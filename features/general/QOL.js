@@ -18,8 +18,7 @@ registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, even
     }
 }), () => getWorld() === "Crystal Hollows" && settings.findDragonNest);
 
-
-registerWhen(register("worldUnload", () => {
+register("worldUnload", () => {
     setNestedWaypoints([]);
     found = false;
-}), () => settings.findDragonNest);
+});
