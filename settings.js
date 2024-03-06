@@ -126,7 +126,7 @@ class Settings {
     resetTrackerSession() {
        ChatLib.command("sboresetsession", true);
     }
-    
+
     // --- Diana Waypoints ---
     @SwitchProperty({
         name: 'Detect Inq Cords',
@@ -243,8 +243,8 @@ class Settings {
     })
     copyRareDrop = false;
     @SwitchProperty({
-        name: 'Find Dragon Nest',
-        description: 'Find dragon nest in crystal hollows (requires hostile mob sounds enabled)',
+        name: 'Find Dragon Lair',
+        description: "Find Dragon's Lair in crystal hollows (requires hostile mob sounds enabled)",
         category: 'Quality of Life',
     })
     findDragonNest = false;
