@@ -10,6 +10,7 @@ import "./features/general/Waypoints";
 import "./features/diana/DianaBurrowDetect";
 import "./features/slayer/BlazeSlayer";
 import "./features/general/CopyMessage";
+import "./features/general/QOL";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
@@ -33,3 +34,4 @@ register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAli
 //         World.playSound("random.levelup", 1, 1.6);
 //     }, 150);
 // }).setName("sboinq");
+

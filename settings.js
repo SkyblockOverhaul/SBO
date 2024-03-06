@@ -55,7 +55,7 @@ class Settings {
         this.addDependency('Inq Warp Key','Detect Inq Cords')
     }
 
-    //-----------Diana----------------
+    //-----------Diana Burrows----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
         description: "Guess the burrow location",
@@ -63,7 +63,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowGuess = false;
-
     @SwitchProperty({
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow",
@@ -71,7 +70,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowWarp = false;
-
     @TextProperty({
         name: "Warp Block Difference",
         description: "Increase it to set the diffrence when player warps (inq/burrow warp)",
@@ -79,7 +77,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     warpDiff = "10";
-    
     @SwitchProperty({
         name: "Diana Burrow Detect",
         description: "Detects diana burrows | to reset waypoints /sboclearburrows",
@@ -87,16 +84,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowDetect = false;
-
-    @SwitchProperty({
-        name: "Inquis Party Message",
-        description: "Party massage for inquisitor detection (patcher format).",
-        category: "Diana",
-        subcategory: "Other",
-    })
-    inquisDetect = false;
-    
-
 
     // --- Diana Tracker ---
     @SwitchProperty({
@@ -129,78 +116,18 @@ class Settings {
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaLootTrackerView = 0;
-    // Bobber Counter
-    @SwitchProperty({
-        name: "Bobber Counter",
-        description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
-        category: "General",
+    @ButtonProperty({
+        name: "Reset Session Tracker",
+        description: "Resets the session tracker for mobs and items (/sboresetsession)",
+        placeholder: "Reset Session",
+        category: "Diana",
+        subcategory: "Diana Tracker",
     })
-    bobberCounter = false;
-    //Party Commands
-    @SwitchProperty({
-        name: 'Party Commands',
-        description: 'Enable party commands',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    PartyCommands = false;
-
-    @SwitchProperty({
-        name: 'Warp Party',
-        description: '!w, !warp',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    WarpCommand = false;
-
-    @SwitchProperty({
-        name: 'Allinvite',
-        description: '!allinv, !allinvite',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    AllinviteCommand = false;
-
-    @SwitchProperty({
-        name: 'Party Transfer',
-        description: '!transfer [Player] (if no player is defined it transfers the party to the command writer)',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    TransferCommand = false;
-
-    @SwitchProperty({
-        name: 'Promote/Demote',
-        description: '!promote/demote [Player] (if no player is defined it pro/demotes the command writer)',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    MoteCommand = false;
-
-    @SwitchProperty({
-        name: 'Ask Carrot',
-        description: 'Enable !carrot Command',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    carrotCommand = false;
-
-    // messageHider
-    @SwitchProperty({
-        name: 'Jacob Message Hider',
-        description: 'Hide messages from jacob NPC in the chat',
-        category: 'Quality of Life',
-    })
-    jacobHider = false;
-
-    // Waypoints
-    @SwitchProperty({
-        name: 'Detect Patcher Cords',
-        description: 'Create patcher waypoints',
-        category: 'General',
-        subcategory: 'Waypoints',
-    })
-    patcherWaypoints = false;
+    resetTrackerSession() {
+       ChatLib.command("sboresetsession", true);
+    }
+    
+    // --- Diana Waypoints ---
     @SwitchProperty({
         name: 'Detect Inq Cords',
         description: 'Create inquisitor waypoints',
@@ -215,6 +142,67 @@ class Settings {
         subcategory: 'Diana Waypoints',
     })
     inqWarpKey = false;
+
+    // --- Diana Other ---
+    @SwitchProperty({
+        name: 'Mythos HP',
+        description: 'Displays HP of mythological mobs near you',
+        category: 'Diana',
+        subcategory: "Other",
+    })
+    mythosMobHp = false;
+    @SwitchProperty({
+        name: "Inquis Party Message",
+        description: "Party massage for inquisitor detection (patcher format).",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    inquisDetect = false;
+
+    //Party Commands
+    @SwitchProperty({
+        name: 'Party Commands',
+        description: 'Enable party commands',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    PartyCommands = false;
+    @SwitchProperty({
+        name: 'Warp Party',
+        description: '!w, !warp',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    WarpCommand = false;
+    @SwitchProperty({
+        name: 'Allinvite',
+        description: '!allinv, !allinvite',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    AllinviteCommand = false;
+    @SwitchProperty({
+        name: 'Party Transfer',
+        description: '!transfer [Player] (if no player is defined it transfers the party to the command writer)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    TransferCommand = false;
+    @SwitchProperty({
+        name: 'Promote/Demote',
+        description: '!promote/demote [Player] (if no player is defined it pro/demotes the command writer)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    MoteCommand = false;
+    @SwitchProperty({
+        name: 'Ask Carrot',
+        description: 'Enable !carrot Command',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    carrotCommand = false;
+
     // Loot Announcer
     @SwitchProperty({
         name: 'Rare Drop Announcer',
@@ -231,18 +219,7 @@ class Settings {
     })
     lootAnnouncerScreen = false;
 
-    @SwitchProperty({
-        name: 'Mythos HP',
-        description: 'Displays HP of mythological mobs near you',
-        category: 'Diana',
-        subcategory: "Other",
-    })
-    mythosMobHp = false;
-
-
-
-
-    // noch in settings einflegen
+    // Slayer
     @SwitchProperty({
         name: 'Effects For Blaze',
         description: 'Displays effects for blaze slayer',
@@ -250,7 +227,6 @@ class Settings {
         subcategory: 'Blaze',
     })
     effectsGui = false;
-
     @TextProperty({
         name: "Parrot Level",
         description: "Enter parrot level for effect duration (0 = off/no parrot)",
@@ -258,7 +234,36 @@ class Settings {
         subcategory: 'Blaze',
     })
     parrotLevel = "0";
+    
+    // Quality of Life
+    @SwitchProperty({
+        name: 'Copy Rare Drop',
+        description: 'Copy rare drop message to clipboard',
+        category: 'Quality of Life',
+    })
+    copyRareDrop = false;
+    @SwitchProperty({
+        name: 'Find Dragon Nest',
+        description: 'Find dragon nest in crystal hollows (requires hostile mob sounds enabled)',
+        category: 'Quality of Life',
+    })
+    findDragonNest = false;
+    @SwitchProperty({
+        name: 'Jacob Message Hider',
+        description: 'Hide messages from jacob NPC in the chat',
+        category: 'Quality of Life',
+    })
+    jacobHider = false;
 
+    // General
+    // General Waypoints
+    @SwitchProperty({
+        name: 'Detect Patcher Cords',
+        description: 'Create patcher waypoints',
+        category: 'General',
+        subcategory: 'Waypoints',
+    })
+    patcherWaypoints = false;
     @SelectorProperty({
         name: "hide Own Waypoints",
         description: "Hide your own patcher/inquisitor waypoints",
@@ -267,24 +272,16 @@ class Settings {
         options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
     })
     hideOwnWaypoints = 0;
+
+    // General other
     @SwitchProperty({
-        name: 'Copy Rare Drop',
-        description: 'Copy rare drop message to clipboard',
-        category: 'Quality of Life',
+        name: "Bobber Counter",
+        description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
+        category: "General",
     })
-    copyRareDrop = false;
+    bobberCounter = false;
 
-    @ButtonProperty({
-        name: "Reset Session Tracker",
-        description: "Resets the session tracker for mobs and items (/sboresetsession)",
-        placeholder: "Reset Session",
-        category: "Diana",
-        subcategory: "Diana Tracker",
-    })
-    resetTrackerSession() {
-       ChatLib.command("sboresetsession", true);
-    }
-
+    // credits/infos
     @ButtonProperty({
         name: "Discord",
         description: "Open Tickets for help/bug reports",

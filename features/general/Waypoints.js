@@ -25,6 +25,19 @@ export function setBurrowWaypoints(burrows) {
     burrowWaypoints = burrows;
 }
 
+export function setNestedWaypoints(nest) {
+    nestWaypoints = nest;
+}
+
+let nestWaypoints = [];
+export function createNestWayoint(x, y, z) {
+    if (!nestWaypoints.some(([nx, ny, nz]) => nx === x && ny === y && nz === z)) {
+        nestWaypoints.push(["§6Dragon Nest", x, y, z]);
+    }
+}
+
+    
+
 export function removeBurrowWaypoint(burrowshistory, burrows) {
     burrowshistory.forEach(([type, x, y, z]) => {
         for (let i = 0; i < burrowWaypoints.length; i++) {
@@ -333,18 +346,19 @@ let formattedBurrow = [];
 registerWhen(register("step", () => {
     formatted = [];
     formattedBurrow = []
-    formatWaypoints(patcherWaypoints, 0, 0.2, 1); // Purple Waypoint
-    formatWaypoints(inqWaypoints, 1, 0.84, 0); // Gold Waypoint
+    formatWaypoints(patcherWaypoints, 0, 0.2, 1); 
+    formatWaypoints(inqWaypoints, 1, 0.84, 0); 
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" );
+    formatWaypoints(nestWaypoints, 1, 0.84, 0);
 
-}).setFps(3), () => settings.dianaBurrowDetect || settings.dianaBurrowGuess);
+}).setFps(3), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 
 registerWhen(register("renderWorld", () => { 
-    renderWaypoint(formatted);
     if (isInSkyblock()) {
+        renderWaypoint(formatted);
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
     }
-}), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess);
+}), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
