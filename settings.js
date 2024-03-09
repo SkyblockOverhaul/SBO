@@ -238,7 +238,7 @@ class Settings {
     // Quality of Life
     @SwitchProperty({
         name: 'Copy Rare Drop',
-        description: 'Copy rare drop message to clipboard',
+        description: 'Copy rare drop Message to clipboard',
         category: 'Quality of Life',
     })
     copyRareDrop = false;
@@ -250,7 +250,7 @@ class Settings {
     findDragonNest = false;
     @SwitchProperty({
         name: 'Jacob Message Hider',
-        description: 'Hide messages from jacob NPC in the chat',
+        description: 'Hide Messages from jacob NPC in the chat',
         category: 'Quality of Life',
     })
     jacobHider = false;
@@ -285,7 +285,7 @@ class Settings {
     @ButtonProperty({
         name: "Discord",
         description: "Open Tickets for help/bug reports",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -295,7 +295,7 @@ class Settings {
     @ButtonProperty({
         name: "Github",
         description: "View our progress on github",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -305,7 +305,7 @@ class Settings {
     @ButtonProperty({
         name: "Patreon",
         description: "Support our development ☕",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -315,7 +315,7 @@ class Settings {
     @ButtonProperty({
         name: "Website",
         description: "Explore our website for tracking Magic Find upgrades and Attribute upgrades",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -325,7 +325,7 @@ class Settings {
     @ButtonProperty({
         name: "SoopyV2",
         description: "(Diana guess, Mob HP)",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })
@@ -335,7 +335,7 @@ class Settings {
     @ButtonProperty({
         name: "VolcAddons",
         description: "(Burrow detect, Render waypoints and some utils)",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })
