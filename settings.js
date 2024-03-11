@@ -23,7 +23,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungon','Party Commands','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -47,12 +47,14 @@ class Settings {
         // this.addDependency("Checkbox", "Do action!!!")
         this.addDependency("Mob View", "Diana Mob Tracker");
         this.addDependency("Loot View", "Diana Loot Tracker");
-        this.addDependency('Warp Party','Party Commands')
-        this.addDependency('Allinvite','Party Commands')
-        this.addDependency('Party Transfer','Party Commands')
-        this.addDependency('Promote/Demote','Party Commands')
-        this.addDependency('Ask Carrot','Party Commands')
-        this.addDependency('Inq Warp Key','Detect Inq Cords')
+        this.addDependency('Warp Party','Party Commands');
+        this.addDependency('Allinvite','Party Commands');
+        this.addDependency('Party Transfer','Party Commands');
+        this.addDependency('Promote/Demote','Party Commands');
+        this.addDependency('Ask Carrot','Party Commands');
+        this.addDependency('Inq Warp Key','Detect Inq Cords');
+        this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
+        this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
         this.addDependency('Blaze View','Blaze Tracker')
     }
 
@@ -159,6 +161,21 @@ class Settings {
         subcategory: "Other",
     })
     inquisDetect = false;
+    // Loot Announcer
+    @SwitchProperty({
+        name: 'Rare Drop Announcer',
+        description: 'Announce loot in chat',
+        category: 'Diana',
+        subcategory: 'Loot Announcer',
+    })
+    lootAnnouncerChat = false;
+    @SwitchProperty({
+        name: 'Loot Screen Announcer',
+        description: 'Announce chimera/stick/relic on screen',
+        category: 'Diana',
+        subcategory: 'Loot Announcer',
+    })
+    lootAnnouncerScreen = false;
 
     //Party Commands
     @SwitchProperty({
@@ -204,22 +221,6 @@ class Settings {
     })
     carrotCommand = false;
 
-    // Loot Announcer
-    @SwitchProperty({
-        name: 'Rare Drop Announcer',
-        description: 'Announce loot in chat',
-        category: 'Diana',
-        subcategory: 'Loot Announcer',
-    })
-    lootAnnouncerChat = false;
-    @SwitchProperty({
-        name: 'Loot Screen Announcer',
-        description: 'Announce chimera/stick/relic on screen',
-        category: 'Diana',
-        subcategory: 'Loot Announcer',
-    })
-    lootAnnouncerScreen = false;
-
     // Slayer
     @SwitchProperty({
         name: 'Effects For Blaze',
@@ -235,33 +236,11 @@ class Settings {
         subcategory: 'Blaze',
     })
     parrotLevel = "0";
-    @SwitchProperty({
-        name: 'Slayer Drop Detect',
-        description: 'Detect slayer drops',
-        category: 'Slayer',
-        subcategory: 'Slayer Drop Detect',
-    })
-    slayerDropDetect = false;
-    @SwitchProperty({
-        name: "Blaze Tracker",
-        description: "Tracks your Blaze loot",
-        category: "Slayer",
-        subcategory: "Blaze Tracker",
-    })
-    blazeLootTracker = false;
-    @SelectorProperty({
-        name: "Blaze View",
-        description: "/sbomoveblazecounter to move the counter",
-        category: "Slayer",
-        subcategory: "Blaze Tracker",
-        options: ["OFF", "Overall View", "Event View", "Session View"]
-    })
-    blazeLootTrackerView = 0;
     
     // Quality of Life
     @SwitchProperty({
         name: 'Copy Rare Drop',
-        description: 'Copy rare drop message to clipboard',
+        description: 'Copy rare drop Message to clipboard',
         category: 'Quality of Life',
     })
     copyRareDrop = false;
@@ -273,7 +252,7 @@ class Settings {
     findDragonNest = false;
     @SwitchProperty({
         name: 'Jacob Message Hider',
-        description: 'Hide messages from jacob NPC in the chat',
+        description: 'Hide Messages from jacob NPC in the chat',
         category: 'Quality of Life',
     })
     jacobHider = false;
@@ -308,7 +287,7 @@ class Settings {
     @ButtonProperty({
         name: "Discord",
         description: "Open Tickets for help/bug reports",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -318,7 +297,7 @@ class Settings {
     @ButtonProperty({
         name: "Github",
         description: "View our progress on github",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -328,7 +307,7 @@ class Settings {
     @ButtonProperty({
         name: "Patreon",
         description: "Support our development ☕",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -338,7 +317,7 @@ class Settings {
     @ButtonProperty({
         name: "Website",
         description: "Explore our website for tracking Magic Find upgrades and Attribute upgrades",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -348,7 +327,7 @@ class Settings {
     @ButtonProperty({
         name: "SoopyV2",
         description: "(Diana guess, Mob HP)",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })
@@ -358,7 +337,7 @@ class Settings {
     @ButtonProperty({
         name: "VolcAddons",
         description: "(Burrow detect, Render waypoints and some utils)",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })

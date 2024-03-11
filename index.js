@@ -12,7 +12,7 @@ import "./features/slayer/BlazeSlayer";
 import "./features/general/CopyMessage";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
-
+import "./features/dungon/recognizeRareRoom";
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 
 // Title bug fix

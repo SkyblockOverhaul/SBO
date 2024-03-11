@@ -31,9 +31,7 @@ export function setNestedWaypoints(nest) {
 
 let nestWaypoints = [];
 export function createNestWayoint(x, y, z) {
-    if (!nestWaypoints.some(([nx, ny, nz]) => nx === x && ny === y && nz === z)) {
-        nestWaypoints.push(["§6Dragon Nest", x, y, z]);
-    }
+    nestWaypoints.push(["§6Dragon Nest", x, y, z]);
 }
 
     
