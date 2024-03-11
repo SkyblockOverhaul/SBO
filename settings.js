@@ -23,7 +23,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungon','Party Commands','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -47,12 +47,14 @@ class Settings {
         // this.addDependency("Checkbox", "Do action!!!")
         this.addDependency("Mob View", "Diana Mob Tracker");
         this.addDependency("Loot View", "Diana Loot Tracker");
-        this.addDependency('Warp Party','Party Commands')
-        this.addDependency('Allinvite','Party Commands')
-        this.addDependency('Party Transfer','Party Commands')
-        this.addDependency('Promote/Demote','Party Commands')
-        this.addDependency('Ask Carrot','Party Commands')
-        this.addDependency('Inq Warp Key','Detect Inq Cords')
+        this.addDependency('Warp Party','Party Commands');
+        this.addDependency('Allinvite','Party Commands');
+        this.addDependency('Party Transfer','Party Commands');
+        this.addDependency('Promote/Demote','Party Commands');
+        this.addDependency('Ask Carrot','Party Commands');
+        this.addDependency('Inq Warp Key','Detect Inq Cords');
+        this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
+        this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
     }
 
     //-----------Diana Burrows----------------
@@ -158,6 +160,21 @@ class Settings {
         subcategory: "Other",
     })
     inquisDetect = false;
+    // Loot Announcer
+    @SwitchProperty({
+        name: 'Rare Drop Announcer',
+        description: 'Announce loot in chat',
+        category: 'Diana',
+        subcategory: 'Loot Announcer',
+    })
+    lootAnnouncerChat = false;
+    @SwitchProperty({
+        name: 'Loot Screen Announcer',
+        description: 'Announce chimera/stick/relic on screen',
+        category: 'Diana',
+        subcategory: 'Loot Announcer',
+    })
+    lootAnnouncerScreen = false;
 
     //Party Commands
     @SwitchProperty({
@@ -203,22 +220,6 @@ class Settings {
     })
     carrotCommand = false;
 
-    // Loot Announcer
-    @SwitchProperty({
-        name: 'Rare Drop Announcer',
-        description: 'Announce loot in chat',
-        category: 'Diana',
-        subcategory: 'Loot Announcer',
-    })
-    lootAnnouncerChat = false;
-    @SwitchProperty({
-        name: 'Loot Screen Announcer',
-        description: 'Announce chimera/stick/relic on screen',
-        category: 'Diana',
-        subcategory: 'Loot Announcer',
-    })
-    lootAnnouncerScreen = false;
-
     // Slayer
     @SwitchProperty({
         name: 'Effects For Blaze',
@@ -234,7 +235,37 @@ class Settings {
         subcategory: 'Blaze',
     })
     parrotLevel = "0";
+    @SwitchProperty({
+        name: 'Slayer Drop Detect',
+        description: 'Detect slayer drops',
+        category: 'Slayer',
+        subcategory: 'Slayer Drop Detect',
+    })
+    slayerDropDetect = false;
     
+    // Dungeon
+    @SwitchProperty({
+        name: 'Recognize Rare Room',
+        description: 'Recognize rare rooms in dungeons (like Trinity etc.)',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    recognizeRareRoom = false;
+    @SwitchProperty({
+        name: 'Notify Party About Rare Room',
+        description: "Notify's your party about the rare room you found",
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    notifyPartyRareRoom = false;
+    @SwitchProperty({
+        name: 'Announce Rare Room on Screen',
+        description: 'Announce the rare room you found on screen',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    announceRareRoomScreen = false;
+
     // Quality of Life
     @SwitchProperty({
         name: 'Copy Rare Drop',

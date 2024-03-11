@@ -11,6 +11,7 @@ import "./features/diana/DianaBurrowDetect";
 import "./features/slayer/BlazeSlayer";
 import "./features/general/CopyMessage";
 import "./features/general/QOL";
+import "./features/dungon/recognizeRareRoom";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
