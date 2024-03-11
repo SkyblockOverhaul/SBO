@@ -176,28 +176,6 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
-    // Dungeon
-    @SwitchProperty({
-        name: 'Recognize Rare Room',
-        description: 'Recognize rare rooms in dungeons (like Trinity etc.)',
-        category: 'Dungeon',
-        subcategory: 'Quality of Life',
-    })
-    recognizeRareRoom = false;
-    @SwitchProperty({
-        name: 'Notify Party About Rare Room',
-        description: "Notify's your party about the rare room you found",
-        category: 'Dungeon',
-        subcategory: 'Quality of Life',
-    })
-    notifyPartyRareRoom = false;
-    @SwitchProperty({
-        name: 'Announce Rare Room on Screen',
-        description: 'Announce the rare room you found on screen',
-        category: 'Dungeon',
-        subcategory: 'Quality of Life',
-    })
-    announceRareRoomScreen = false;
     //Party Commands
     @SwitchProperty({
         name: 'Party Commands',
@@ -279,7 +257,28 @@ class Settings {
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     blazeLootTrackerView = 0;
-    
+    // Dungeon
+    @SwitchProperty({
+        name: 'Recognize Rare Room',
+        description: 'Recognize rare rooms in dungeons (like Trinity etc.)',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    recognizeRareRoom = false;
+    @SwitchProperty({
+        name: 'Notify Party About Rare Room',
+        description: "Notify's your party about the rare room you found",
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    notifyPartyRareRoom = false;
+    @SwitchProperty({
+        name: 'Announce Rare Room on Screen',
+        description: 'Announce the rare room you found on screen',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    announceRareRoomScreen = false;
     // Quality of Life
     @SwitchProperty({
         name: 'Copy Rare Drop',
