@@ -229,7 +229,7 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
 
 let effectsGuiExample = 
 `${YELLOW}${BOLD}Active Effects
--------------------
+--------------
 ${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`
 
 let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [400, 50, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
@@ -252,7 +252,7 @@ export function effectsOverlay(effects) {
     }
     if (effects.length > 0) {
         EffectsGui.message = `${YELLOW}${BOLD}Active Effects
----------------
+--------------
 `;
         // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
         effects.forEach((effect) => {

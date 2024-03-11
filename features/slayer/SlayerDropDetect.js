@@ -5,9 +5,7 @@ import { isInSkyblock } from '../../utils/functions';
 
 let dropArray = undefined;
 
-export function getDropArray() {
-    return dropArray;
-}
+
 
 registerWhen(register("chat", (trash, type, drop) => {
     if (isDataLoaded() && isInSkyblock()) {
