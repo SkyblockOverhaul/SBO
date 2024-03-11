@@ -53,6 +53,7 @@ class Settings {
         this.addDependency('Promote/Demote','Party Commands')
         this.addDependency('Ask Carrot','Party Commands')
         this.addDependency('Inq Warp Key','Detect Inq Cords')
+        this.addDependency('Blaze View','Blaze Tracker')
     }
 
     //-----------Diana Burrows----------------
@@ -234,6 +235,28 @@ class Settings {
         subcategory: 'Blaze',
     })
     parrotLevel = "0";
+    @SwitchProperty({
+        name: 'Slayer Drop Detect',
+        description: 'Detect slayer drops',
+        category: 'Slayer',
+        subcategory: 'Slayer Drop Detect',
+    })
+    slayerDropDetect = false;
+    @SwitchProperty({
+        name: "Blaze Tracker",
+        description: "Tracks your Blaze loot",
+        category: "Slayer",
+        subcategory: "Blaze Tracker",
+    })
+    blazeLootTracker = false;
+    @SelectorProperty({
+        name: "Blaze View",
+        description: "/sbomoveblazecounter to move the counter",
+        category: "Slayer",
+        subcategory: "Blaze Tracker",
+        options: ["OFF", "Overall View", "Event View", "Session View"]
+    })
+    blazeLootTrackerView = 0;
     
     // Quality of Life
     @SwitchProperty({
