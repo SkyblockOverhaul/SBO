@@ -23,7 +23,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer', 'Dungon','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungeon','Party Commands','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -176,7 +176,28 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
-
+    // Dungeon
+    @SwitchProperty({
+        name: 'Recognize Rare Room',
+        description: 'Recognize rare rooms in dungeons (like Trinity etc.)',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    recognizeRareRoom = false;
+    @SwitchProperty({
+        name: 'Notify Party About Rare Room',
+        description: "Notify's your party about the rare room you found",
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    notifyPartyRareRoom = false;
+    @SwitchProperty({
+        name: 'Announce Rare Room on Screen',
+        description: 'Announce the rare room you found on screen',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    announceRareRoomScreen = false;
     //Party Commands
     @SwitchProperty({
         name: 'Party Commands',
@@ -236,6 +257,28 @@ class Settings {
         subcategory: 'Blaze',
     })
     parrotLevel = "0";
+    @SwitchProperty({
+        name: 'Slayer Drop Detect',
+        description: 'Detect slayer drops',
+        category: 'Slayer',
+        subcategory: 'Slayer Drop Detect',
+    })
+    slayerDropDetect = false;
+    @SwitchProperty({
+        name: "Blaze Tracker",
+        description: "Tracks your Blaze loot",
+        category: "Slayer",
+        subcategory: "Blaze Tracker",
+    })
+    blazeLootTracker = false;
+    @SelectorProperty({
+        name: "Blaze View",
+        description: "/sbomoveblazecounter to move the counter",
+        category: "Slayer",
+        subcategory: "Blaze Tracker",
+        options: ["OFF", "Overall View", "Event View", "Session View"]
+    })
+    blazeLootTrackerView = 0;
     
     // Quality of Life
     @SwitchProperty({
