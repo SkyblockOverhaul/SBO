@@ -5,7 +5,7 @@ import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../u
 import { Overlay } from "../../utils/overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
-import { dianaLootTrackerExample, dianaMobTrackerExample, mythonsMobHpExample, effectsGuiExample } from "../../utils/guiExamples";
+import { dianaLootTrackerExample, dianaMobTrackerExample, mythosMobHpExample, effectsGuiExample } from "../../utils/guiExamples";
 
 registerWhen(register("entityDeath", (entity) => {
     var dist = entity.distanceTo(Player.getPlayer());
@@ -170,7 +170,7 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
 
 
 
-let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythonsMobHpExample,"mythosMobHp");
+let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythosMobHpExample,"mythosMobHp");
 
 let mythosMobHpSettingsLoad = false;
 export function mythosMobHpOverlay(mobNamesWithHp) {
