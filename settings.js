@@ -392,7 +392,7 @@ SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.jso
 if (sboData == null) {
     SboData = {
         "effects": [],
-        "version": "0.1.3"
+        "version": "0.1.4"
     };
 }
 if(!SboData.hasOwnProperty("version")) {
