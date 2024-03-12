@@ -387,13 +387,12 @@ class Settings {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/VolcAddons"));
     }
 }
-
-SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
-if (sboData == null) {
-    SboData = {
-        "effects": [],
-        "version": "0.1.4"
-    };
+let SboData = {
+    "effects": [],
+    "version": "0.1.3"
+};
+if (FileLib.exists("./config/ChatTriggers/modules/SBO/SboData.json")) {
+    SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
 }
 if(!SboData.hasOwnProperty("version")) {
     SboData["version"] = "0.0.0";
