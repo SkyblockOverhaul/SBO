@@ -10,6 +10,8 @@ export function getWorld() { return world }; // Exported function to get the cur
 let tier = 0; // Variable to store the current tier (used for Kuudra and Dungeons)
 export function getTier() { return tier }; // Exported function to get the current tier
 let noFind = 0; // Counter to prevent infinite loops when trying to find the world
+let zone = "None"; // Variable to store the current zone
+export function getZone() { return zone }; // Exported function to get the current zone
 
 // Function to find the current zone (e.g., Hub, Dungeon, Kuudra)
 export function findZone() {
@@ -24,21 +26,27 @@ function findWorld() {
     // Infinite loop prevention
     if (noFind === 10) return;
     noFind++;
-
     // Get world from tab list
     world = TabList.getNames().find(tab => tab.includes("Area"));
     if (world === undefined) {
         // If the world is not found, try again after a delay
-        delay(() => findWorld(), 1000);
+        zone = findZone();
+        if (zone.includes("Catac")) {
+            world = "Catacombs";
+            setRegisters();
+            setPlayer();
+        }
+        else {
+            delay(() => findWorld(), 1000);
+        }
     } else {
         // Get world formatted
         world = world.removeFormatting();
         world = world.substring(world.indexOf(': ') + 2);
-
+        zone = findZone();
         // Get tier (for Kuudra and Dungeons)
         if (world === "Kuudra") {
             delay(() => {
-                const zone = findZone();
                 tier = parseInt(zone.charAt(zone.length - 2));
             }, 1000);
         }

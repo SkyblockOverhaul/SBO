@@ -210,6 +210,11 @@ export function initializeGuiSettings() {
             "x": 10,
             "y": 200,
             "s": 1
+        },
+        BlazeLoc: {
+            "x": 10,
+            "y": 10,
+            "s": 1
         }
     };
     return tempDict;
@@ -245,6 +250,9 @@ function checkSettings(loadedSettings) {
     }
     if (!loadedSettings.hasOwnProperty("EffectsLoc")) {
         loadedSettings["EffectsLoc"] = defaultSettings["EffectsLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("BlazeLoc")) {
+        loadedSettings["BlazeLoc"] = defaultSettings["BlazeLoc"];
     }
     return loadedSettings;
 }

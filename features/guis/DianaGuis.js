@@ -5,6 +5,7 @@ import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../u
 import { Overlay } from "../../utils/overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
+import { dianaLootTrackerExample, dianaMobTrackerExample, mythosMobHpExample, effectsGuiExample } from "../../utils/guiExamples";
 
 registerWhen(register("entityDeath", (entity) => {
     var dist = entity.distanceTo(Player.getPlayer());
@@ -16,34 +17,7 @@ registerWhen(register("entityDeath", (entity) => {
     }
     }), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
-dianaMobTrackerExample = 
-`${YELLOW}${BOLD}Diana Mob Tracker
-------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
-${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
-${GOLD}${BOLD}Minotaur: ${WHITE}
-${GREEN}${BOLD}Gaia Construct: ${WHITE}
-${GREEN}${BOLD}Siamese Lynx: ${WHITE}
-${GREEN}${BOLD}Minos Hunter: ${WHITE}
-${GRAY}${BOLD}Total Mobs: ${WHITE}
-`
-dianaLootTrackerExample = 
-`${YELLOW}${BOLD}Diana Loot Tracker
--------------------
-${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
-${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
-${GOLD}${BOLD}Daedalus Stick: ${WHITE}
-${GOLD}${BOLD}Crown of Greed: ${WHITE}
-${GOLD}${BOLD}Souvenir: ${WHITE}
-${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
-${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
-${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
-${BLUE}${BOLD}Ancient Claws: ${WHITE}
-${BLUE}${BOLD}Enchanted Ancient Claws: ${WHITE}
-${GOLD}${BOLD}Griffin Feather: ${WHITE}
-${GOLD}${BOLD}Coins: ${WHITE}
-${GRAY}${BOLD}Total Burrows: ${WHITE}
-`
+
 
 // ${GRAY}${BOLD}Enchanted Gold: 
 // ${GRAY}${BOLD}Enchanted Iron: 
@@ -194,10 +168,9 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
 // ${GRAY}${BOLD}Enchanted Ancient Claw: ${GRAY}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
 // ${GRAY}${BOLD}Ancient Claw: ${GRAY}${lootTracker["items"]["ANCIENT_CLAW"]}
 
-mythonsMobHpExample = 
-`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`
 
-let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythonsMobHpExample,"mythosMobHp");
+
+let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythosMobHpExample,"mythosMobHp");
 
 let mythosMobHpSettingsLoad = false;
 export function mythosMobHpOverlay(mobNamesWithHp) {
@@ -227,11 +200,6 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
 }
 
 
-let effectsGuiExample = 
-`${YELLOW}${BOLD}Active Effects
--------------------
-${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`
-
 let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [400, 50, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
 
 let effectsSettingsLoad = false;
@@ -252,7 +220,7 @@ export function effectsOverlay(effects) {
     }
     if (effects.length > 0) {
         EffectsGui.message = `${YELLOW}${BOLD}Active Effects
----------------
+--------------
 `;
         // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
         effects.forEach((effect) => {

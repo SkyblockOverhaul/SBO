@@ -23,7 +23,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungeon','Party Commands','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -47,15 +47,18 @@ class Settings {
         // this.addDependency("Checkbox", "Do action!!!")
         this.addDependency("Mob View", "Diana Mob Tracker");
         this.addDependency("Loot View", "Diana Loot Tracker");
-        this.addDependency('Warp Party','Party Commands')
-        this.addDependency('Allinvite','Party Commands')
-        this.addDependency('Party Transfer','Party Commands')
-        this.addDependency('Promote/Demote','Party Commands')
-        this.addDependency('Ask Carrot','Party Commands')
-        this.addDependency('Inq Warp Key','Detect Inq Cords')
+        this.addDependency('Warp Party','Party Commands');
+        this.addDependency('Allinvite','Party Commands');
+        this.addDependency('Party Transfer','Party Commands');
+        this.addDependency('Promote/Demote','Party Commands');
+        this.addDependency('Ask Carrot','Party Commands');
+        this.addDependency('Inq Warp Key','Detect Inq Cords');
+        this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
+        this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
+        this.addDependency('Blaze View','Blaze Tracker')
     }
 
-    //-----------Diana----------------
+    //-----------Diana Burrows----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
         description: "Guess the burrow location",
@@ -63,7 +66,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowGuess = false;
-
     @SwitchProperty({
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow",
@@ -71,7 +73,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowWarp = false;
-
     @TextProperty({
         name: "Warp Block Difference",
         description: "Increase it to set the diffrence when player warps (inq/burrow warp)",
@@ -79,7 +80,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     warpDiff = "10";
-    
     @SwitchProperty({
         name: "Diana Burrow Detect",
         description: "Detects diana burrows | to reset waypoints /sboclearburrows",
@@ -87,16 +87,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowDetect = false;
-
-    @SwitchProperty({
-        name: "Inquis Party Message",
-        description: "Party massage for inquisitor detection (patcher format).",
-        category: "Diana",
-        subcategory: "Other",
-    })
-    inquisDetect = false;
-    
-
 
     // --- Diana Tracker ---
     @SwitchProperty({
@@ -129,78 +119,18 @@ class Settings {
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaLootTrackerView = 0;
-    // Bobber Counter
-    @SwitchProperty({
-        name: "Bobber Counter",
-        description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
-        category: "General",
+    @ButtonProperty({
+        name: "Reset Session Tracker",
+        description: "Resets the session tracker for mobs and items (/sboresetsession)",
+        placeholder: "Reset Session",
+        category: "Diana",
+        subcategory: "Diana Tracker",
     })
-    bobberCounter = false;
-    //Party Commands
-    @SwitchProperty({
-        name: 'Party Commands',
-        description: 'Enable party commands',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    PartyCommands = false;
+    resetTrackerSession() {
+       ChatLib.command("sboresetsession", true);
+    }
 
-    @SwitchProperty({
-        name: 'Warp Party',
-        description: '!w, !warp',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    WarpCommand = false;
-
-    @SwitchProperty({
-        name: 'Allinvite',
-        description: '!allinv, !allinvite',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    AllinviteCommand = false;
-
-    @SwitchProperty({
-        name: 'Party Transfer',
-        description: '!transfer [Player] (if no player is defined it transfers the party to the command writer)',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    TransferCommand = false;
-
-    @SwitchProperty({
-        name: 'Promote/Demote',
-        description: '!promote/demote [Player] (if no player is defined it pro/demotes the command writer)',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    MoteCommand = false;
-
-    @SwitchProperty({
-        name: 'Ask Carrot',
-        description: 'Enable !carrot Command',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    carrotCommand = false;
-
-    // messageHider
-    @SwitchProperty({
-        name: 'Jacob Message Hider',
-        description: 'Hide messages from jacob NPC in the chat',
-        category: 'Quality of Life',
-    })
-    jacobHider = false;
-
-    // Waypoints
-    @SwitchProperty({
-        name: 'Detect Patcher Cords',
-        description: 'Create patcher waypoints',
-        category: 'General',
-        subcategory: 'Waypoints',
-    })
-    patcherWaypoints = false;
+    // --- Diana Waypoints ---
     @SwitchProperty({
         name: 'Detect Inq Cords',
         description: 'Create inquisitor waypoints',
@@ -215,6 +145,22 @@ class Settings {
         subcategory: 'Diana Waypoints',
     })
     inqWarpKey = false;
+
+    // --- Diana Other ---
+    @SwitchProperty({
+        name: 'Mythos HP',
+        description: 'Displays HP of mythological mobs near you',
+        category: 'Diana',
+        subcategory: "Other",
+    })
+    mythosMobHp = false;
+    @SwitchProperty({
+        name: "Inquis Party Message",
+        description: "Party massage for inquisitor detection (patcher format).",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    inquisDetect = false;
     // Loot Announcer
     @SwitchProperty({
         name: 'Rare Drop Announcer',
@@ -230,19 +176,51 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
-
+    //Party Commands
     @SwitchProperty({
-        name: 'Mythos HP',
-        description: 'Displays HP of mythological mobs near you',
-        category: 'Diana',
-        subcategory: "Other",
+        name: 'Party Commands',
+        description: 'Enable party commands',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
     })
-    mythosMobHp = false;
+    PartyCommands = false;
+    @SwitchProperty({
+        name: 'Warp Party',
+        description: '!w, !warp',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    WarpCommand = false;
+    @SwitchProperty({
+        name: 'Allinvite',
+        description: '!allinv, !allinvite',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    AllinviteCommand = false;
+    @SwitchProperty({
+        name: 'Party Transfer',
+        description: '!transfer [Player] (if no player is defined it transfers the party to the command writer)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    TransferCommand = false;
+    @SwitchProperty({
+        name: 'Promote/Demote',
+        description: '!promote/demote [Player] (if no player is defined it pro/demotes the command writer)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    MoteCommand = false;
+    @SwitchProperty({
+        name: 'Ask Carrot',
+        description: 'Enable !carrot Command',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    carrotCommand = false;
 
-
-
-
-    // noch in settings einflegen
+    // Slayer
     @SwitchProperty({
         name: 'Effects For Blaze',
         description: 'Displays effects for blaze slayer',
@@ -250,7 +228,6 @@ class Settings {
         subcategory: 'Blaze',
     })
     effectsGui = false;
-
     @TextProperty({
         name: "Parrot Level",
         description: "Enter parrot level for effect duration (0 = off/no parrot)",
@@ -258,7 +235,79 @@ class Settings {
         subcategory: 'Blaze',
     })
     parrotLevel = "0";
+    @SwitchProperty({
+        name: 'Slayer Drop Detect',
+        description: 'Detect slayer drops',
+        category: 'Slayer',
+        subcategory: 'Slayer Drop Detect',
+    })
+    slayerDropDetect = false;
+    @SwitchProperty({
+        name: "Blaze Tracker",
+        description: "Tracks your Blaze loot",
+        category: "Slayer",
+        subcategory: "Blaze Tracker",
+    })
+    blazeLootTracker = false;
+    @SelectorProperty({
+        name: "Blaze View",
+        description: "/sbomoveblazecounter to move the counter",
+        category: "Slayer",
+        subcategory: "Blaze Tracker",
+        options: ["OFF", "Overall View", "Event View", "Session View"]
+    })
+    blazeLootTrackerView = 0;
+    // Dungeon
+    @SwitchProperty({
+        name: 'Recognize Rare Room',
+        description: 'Recognize rare rooms in dungeons (like Trinity etc.)',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    recognizeRareRoom = false;
+    @SwitchProperty({
+        name: 'Notify Party About Rare Room',
+        description: "Notify's your party about the rare room you found",
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    notifyPartyRareRoom = false;
+    @SwitchProperty({
+        name: 'Announce Rare Room on Screen',
+        description: 'Announce the rare room you found on screen',
+        category: 'Dungeon',
+        subcategory: 'Quality of Life',
+    })
+    announceRareRoomScreen = false;
+    // Quality of Life
+    @SwitchProperty({
+        name: 'Copy Rare Drop',
+        description: 'Copy rare drop Message to clipboard',
+        category: 'Quality of Life',
+    })
+    copyRareDrop = false;
+    @SwitchProperty({
+        name: 'Find Dragon Lair',
+        description: "Find Dragon's Lair in crystal hollows (requires hostile mob sounds enabled)",
+        category: 'Quality of Life',
+    })
+    findDragonNest = false;
+    @SwitchProperty({
+        name: 'Jacob Message Hider',
+        description: 'Hide Messages from jacob NPC in the chat',
+        category: 'Quality of Life',
+    })
+    jacobHider = false;
 
+    // General
+    // General Waypoints
+    @SwitchProperty({
+        name: 'Detect Patcher Cords',
+        description: 'Create patcher waypoints',
+        category: 'General',
+        subcategory: 'Waypoints',
+    })
+    patcherWaypoints = false;
     @SelectorProperty({
         name: "hide Own Waypoints",
         description: "Hide your own patcher/inquisitor waypoints",
@@ -267,28 +316,20 @@ class Settings {
         options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
     })
     hideOwnWaypoints = 0;
+
+    // General other
     @SwitchProperty({
-        name: 'Copy Rare Drop',
-        description: 'Copy rare drop message to clipboard',
-        category: 'Quality of Life',
+        name: "Bobber Counter",
+        description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
+        category: "General",
     })
-    copyRareDrop = false;
+    bobberCounter = false;
 
-    @ButtonProperty({
-        name: "Reset Session Tracker",
-        description: "Resets the session tracker for mobs and items (/sboresetsession)",
-        placeholder: "Reset Session",
-        category: "Diana",
-        subcategory: "Diana Tracker",
-    })
-    resetTrackerSession() {
-       ChatLib.command("sboresetsession", true);
-    }
-
+    // credits/infos
     @ButtonProperty({
         name: "Discord",
         description: "Open Tickets for help/bug reports",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -298,7 +339,7 @@ class Settings {
     @ButtonProperty({
         name: "Github",
         description: "View our progress on github",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -308,7 +349,7 @@ class Settings {
     @ButtonProperty({
         name: "Patreon",
         description: "Support our development ☕",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -318,7 +359,7 @@ class Settings {
     @ButtonProperty({
         name: "Website",
         description: "Explore our website for tracking Magic Find upgrades and Attribute upgrades",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Infos",
     })
@@ -328,7 +369,7 @@ class Settings {
     @ButtonProperty({
         name: "SoopyV2",
         description: "(Diana guess, Mob HP)",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })
@@ -338,7 +379,7 @@ class Settings {
     @ButtonProperty({
         name: "VolcAddons",
         description: "(Burrow detect, Render waypoints and some utils)",
-        placeholder: "Click me",
+        placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })
@@ -348,7 +389,13 @@ class Settings {
 }
 
 SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
-if(SboData.hasOwnProperty("version") == false) {
+if (sboData == null) {
+    SboData = {
+        "effects": [],
+        "version": "0.1.3"
+    };
+}
+if(!SboData.hasOwnProperty("version")) {
     SboData["version"] = "0.0.0";
 }
 let newVersion = "0.1.3"; // change this to the new version for config.toml reset
