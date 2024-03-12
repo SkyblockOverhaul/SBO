@@ -12,8 +12,7 @@ const rareRooms = {
     "318,-60": "Lava Pool",
     "174,-60": "Lava Skull",
     "210,-60": "Mini Rail Track",
-    "138,-60": "Hanging Vines",
-    "138,30": "test"
+    "138,-60": "Hanging Vines"
 }
 let scoreBoardId = undefined;
 let rareRoomFound = false;
@@ -62,8 +61,3 @@ function foundRoom(room, isSolo) {
 register("worldLoad", () => {
     rareRoomFound = false;
 });
-
-register("command", () => {
-    rareRoomFound = false;
-}).setName("sboresetrare");
-
