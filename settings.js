@@ -389,7 +389,13 @@ class Settings {
 }
 
 SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
-if(SboData.hasOwnProperty("version") == false) {
+if (sboData == null) {
+    SboData = {
+        "effects": [],
+        "version": "0.1.3"
+    };
+}
+if(!SboData.hasOwnProperty("version")) {
     SboData["version"] = "0.0.0";
 }
 let newVersion = "0.1.3"; // change this to the new version for config.toml reset
