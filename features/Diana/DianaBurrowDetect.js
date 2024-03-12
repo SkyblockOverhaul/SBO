@@ -11,7 +11,6 @@ function burrowDetect(particle, type) {
     if (typename == "FOOTSTEP" || typename == "CRIT_MAGIC" || typename == "CRIT") {
         const particlepos = particle.getPos();
         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
-        const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
         
         if (Math.abs(particle.getY() % 1) > 0.1) return;
         if (Math.abs(particle.getX() % 1) < 0.1) return;
