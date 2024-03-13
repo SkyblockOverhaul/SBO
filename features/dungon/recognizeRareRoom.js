@@ -12,27 +12,27 @@ const rareRooms = {
     "318,-60": "Lava Pool",
     "174,-60": "Lava Skull",
     "210,-60": "Mini Rail Track",
-    "138,-60": "Hanging Vines"
+    "138,-60": "Hanging Vines",
+    "714,-96": "Zodd", // kein rare room aber id merken
 }
-let scoreBoardId = undefined;
-let scoreBoardLines = undefined;
-let scoreBoardLastLine
 let rareRoomFound = false;
 registerWhen(register("step", () => {
-    scoreBoardLines = Scoreboard.getLines();
-    scoreBoardLastLine = scoreBoardLines[scoreBoardLines.length - 1].toString().split(" ");
-    scoreBoardId = scoreBoardLastLine[scoreBoardLastLine.length - 1].toString();
-    let isSolo = scoreBoardLines[2].toString().includes("Solo");
-    if (rareRooms.hasOwnProperty(scoreBoardId)) {
-        if (rareRooms[scoreBoardId]) {
-            foundRoom(rareRooms[scoreBoardId], isSolo);
-            rareRoomFound = true;
+    let scoreBoardLines = Scoreboard.getLines();
+    if (scoreBoardLines != null || scoreBoardLines != undefined) {
+        let scoreBoardLastLine = scoreBoardLines[scoreBoardLines.length - 1].toString().split(" ");
+        let scoreBoardId = scoreBoardLastLine[scoreBoardLastLine.length - 1].toString();
+        let isSolo = scoreBoardLines[2].toString().includes("Solo");
+        if (rareRooms.hasOwnProperty(scoreBoardId)) {
+            if (rareRooms[scoreBoardId]) {
+                foundRoom(rareRooms[scoreBoardId], isSolo);
+                rareRoomFound = true;
+            }
         }
-    }
-    else {
-        if (scoreBoardId.split(",")[1] == -60 && scoreBoardId.split(",")[0] != -60) {
-            foundRoom("Unknown", isSolo);
-            rareRoomFound = true;
+        else {
+            if (scoreBoardId.split(",")[1] == -60 && scoreBoardId.split(",")[0] != -60) {
+                foundRoom("Unknown", isSolo);
+                rareRoomFound = true;
+            }
         }
     }
 }).setFps(1), () => getWorld() == "Catacombs" && settings.recognizeRareRoom);
