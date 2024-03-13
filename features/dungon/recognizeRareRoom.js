@@ -15,6 +15,8 @@ const rareRooms = {
     "138,-60": "Hanging Vines"
 }
 let scoreBoardId = undefined;
+let scoreBoardLines = undefined;
+let scoreBoardLastLine
 let rareRoomFound = false;
 registerWhen(register("step", () => {
     scoreBoardLines = Scoreboard.getLines();
