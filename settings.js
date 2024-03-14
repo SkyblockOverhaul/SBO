@@ -298,6 +298,12 @@ class Settings {
         category: 'Quality of Life',
     })
     jacobHider = false;
+    @SwitchProperty({
+        name: 'Alpha Check',
+        description: 'Check if the alpha server is open (max Slots >= 100)',
+        category: 'Quality of Life',
+    })
+    alphaCheck = false;
 
     // General
     // General Waypoints

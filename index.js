@@ -13,6 +13,8 @@ import "./features/general/CopyMessage";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import "./features/dungon/recognizeRareRoom";
+import "./features/general/alphaCheck";
+
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 
 // Title bug fix
@@ -38,4 +40,3 @@ register("worldLoad", () => {
 //         World.playSound("random.levelup", 1, 1.6);
 //     }, 150);
 // }).setName("sboinq");
-
