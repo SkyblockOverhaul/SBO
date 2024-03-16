@@ -12,7 +12,7 @@ import "./features/slayer/BlazeSlayer";
 import "./features/general/CopyMessage";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
-import "./features/dungon/recognizeRareRoom";
+import "./features/dungeon/recognizeRareRoom";
 import "./features/general/alphaCheck";
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
