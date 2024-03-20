@@ -18,7 +18,7 @@ const rareRooms = {
 let rareRoomFound = false;
 registerWhen(register("step", () => {
     let scoreBoardLines = Scoreboard.getLines();
-    if (scoreBoardLines != null || scoreBoardLines != undefined) {
+    if (scoreBoardLines != undefined) {
         let scoreBoardLastLine = scoreBoardLines[scoreBoardLines.length - 1].toString().split(" ");
         let scoreBoardId = scoreBoardLastLine[scoreBoardLastLine.length - 1].toString();
         let isSolo = scoreBoardLines[2].toString().includes("Solo");
@@ -65,16 +65,4 @@ register("worldLoad", () => {
 });
 
 
-// org.mozilla.javascript.EcmaError: ReferenceError: "scoreBoardId" is not defined. (file:/C:/Users/felix/AppData/Roaming/.minecraft/config/ChatTriggers/modules/SBO/features/dungeon/recognizeRareRoom.js#43)
-// 	at org.mozilla.javascript.ScriptRuntime.constructError(ScriptRuntime.java:4642)
-// 	at org.mozilla.javascript.ScriptRuntime.constructError(ScriptRuntime.java:4622)
-// 	at org.mozilla.javascript.ScriptRuntime.notFoundError(ScriptRuntime.java:4701)
-// 	at org.mozilla.javascript.ScriptRuntime.name(ScriptRuntime.java:2308)
-// 	at SBO_features_dungeon_recognizeRareRoom_js_144._c_foundRoom_3(SBO/features/dungeon/recognizeRareRoom.js:43)
-// 	at SBO_features_dungeon_recognizeRareRoom_js_144._c_anonymous_1(SBO/features/dungeon/recognizeRareRoom.js:27)
-// 	at SBO_features_dungeon_recognizeRareRoom_js_144.call(SBO/features/dungeon/recognizeRareRoom.js)
-// 	at org.mozilla.javascript.ContextFactory.doTopCall(ContextFactory.java:342)
-// 	at org.mozilla.javascript.ScriptRuntime.doTopCall(ScriptRuntime.java:3951)
-// 	at SBO_features_dungeon_recognizeRareRoom_js_144.call(SBO/features/dungeon/recognizeRareRoom.js)
-// 	at org.mozilla.javascript.ArrowFunction.call(ArrowFunction.java:40)
-// 	at com.chattriggers.ctjs.engine.langs.js.JSLoader.trigger(JSLoader.kt:298)
+
