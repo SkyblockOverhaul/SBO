@@ -1,12 +1,12 @@
 
 register("chat", (player, message, event) =>{
     // cancel original message
-    // cancel(event);
+    cancel(event);
     // send new guildbot message
     if (!player.includes(" ")) {
         player = player.removeFormatting();
         ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
-        print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
+        // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
     }
     else {
         print("contains space");
