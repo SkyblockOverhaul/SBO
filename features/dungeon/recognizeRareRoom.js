@@ -19,19 +19,21 @@ let rareRoomFound = false;
 registerWhen(register("step", () => {
     let scoreBoardLines = Scoreboard.getLines();
     if (scoreBoardLines != undefined) {
-        let scoreBoardLastLine = scoreBoardLines[scoreBoardLines.length - 1].toString().split(" ");
-        let scoreBoardId = scoreBoardLastLine[scoreBoardLastLine.length - 1].toString();
-        let isSolo = scoreBoardLines[2].toString().includes("Solo");
-        if (rareRooms.hasOwnProperty(scoreBoardId)) {
-            if (rareRooms[scoreBoardId]) {
-                foundRoom(rareRooms[scoreBoardId], isSolo, scoreBoardId);
-                rareRoomFound = true;
+        if (scoreBoardLines[scoreBoardLines.length - 1] != undefined) {
+            let scoreBoardLastLine = scoreBoardLines[scoreBoardLines.length - 1].toString().split(" ");
+            let scoreBoardId = scoreBoardLastLine[scoreBoardLastLine.length - 1].toString();
+            let isSolo = scoreBoardLines[2].toString().includes("Solo");
+            if (rareRooms.hasOwnProperty(scoreBoardId)) {
+                if (rareRooms[scoreBoardId]) {
+                    foundRoom(rareRooms[scoreBoardId], isSolo, scoreBoardId);
+                    rareRoomFound = true;wa
+                }
             }
-        }
-        else {
-            if (scoreBoardId.split(",")[1] == -60 && scoreBoardId.split(",")[0] != -60) {
-                foundRoom("Unknown", isSolo, scoreBoardId);
-                rareRoomFound = true;
+            else {
+                if (scoreBoardId.split(",")[1] == -60 && scoreBoardId.split(",")[0] != -60) {
+                    foundRoom("Unknown", isSolo, scoreBoardId);
+                    rareRoomFound = true;
+                }
             }
         }
     }
@@ -66,3 +68,18 @@ register("worldLoad", () => {
 
 
 
+// org.mozilla.javascript.EcmaError: TypeError: Cannot call method "toString" of undefined (file:/C:/Users/felix/AppData/Roaming/.minecraft/config/ChatTriggers/modules/SBO/features/dungeon/recognizeRareRoom.js#22)
+// 	at org.mozilla.javascript.ScriptRuntime.constructError(ScriptRuntime.java:4642)
+// 	at org.mozilla.javascript.ScriptRuntime.constructError(ScriptRuntime.java:4622)
+// 	at org.mozilla.javascript.ScriptRuntime.typeError(ScriptRuntime.java:4651)
+// 	at org.mozilla.javascript.ScriptRuntime.typeError2(ScriptRuntime.java:4666)
+// 	at org.mozilla.javascript.ScriptRuntime.undefCallError(ScriptRuntime.java:4684)
+// 	at org.mozilla.javascript.ScriptRuntime.getPropFunctionAndThis(ScriptRuntime.java:2864)
+// 	at org.mozilla.javascript.optimizer.OptRuntime.callProp0(OptRuntime.java:90)
+// 	at SBO_features_dungeon_recognizeRareRoom_js_1216._c_anonymous_1(SBO/features/dungeon/recognizeRareRoom.js:22)
+// 	at SBO_features_dungeon_recognizeRareRoom_js_1216.call(SBO/features/dungeon/recognizeRareRoom.js)
+// 	at org.mozilla.javascript.ContextFactory.doTopCall(ContextFactory.java:342)
+// 	at org.mozilla.javascript.ScriptRuntime.doTopCall(ScriptRuntime.java:3951)
+// 	at SBO_features_dungeon_recognizeRareRoom_js_1216.call(SBO/features/dungeon/recognizeRareRoom.js)
+// 	at org.mozilla.javascript.ArrowFunction.call(ArrowFunction.java:40)
+// 	at com.chattriggers.ctjs.engine.langs.js.JSLoader.trigger(JSLoader.kt:298)

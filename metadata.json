@@ -9,6 +9,7 @@
     "Vigilance",
     "PogData",
     "BeaconBeam",
-    "RenderLibV2"
+    "RenderLibV2",
+    "axios"
   ]
 }

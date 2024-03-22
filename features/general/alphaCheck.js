@@ -13,7 +13,7 @@ registerWhen(register("step", () => { // vielleicht verwerfen weil dicsord ping 
             alphaSlots = parseInt(response.data.players.max);
             alphaPlayers = parseInt(response.data.players.online);
             if (alphaSlots != undefined) {
-                if (alphaSlots >= 100) {
+                if (alphaSlots >= 50) {
                     if (notify) {
                         ChatLib.chat("§6[SBO] §eAlpha server is maybe open! current: &b" + alphaPlayers +"/" + alphaSlots);
                         ChatLib.chat("§6[SBO] §eto toggle notifications use §b/sbonotifyalpha",);

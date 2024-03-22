@@ -14,6 +14,7 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import "./features/dungeon/recognizeRareRoom";
 import "./features/general/alphaCheck";
+import "./features/general/FormatGuildBot";
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 
