@@ -1,6 +1,51 @@
 import settings from "../settings";
 import { registerWhen } from "./variables";
 
+// geklaut von coleweight for drawline
+if(!GlStateManager) {
+    var GL11=Java.type("org.lwjgl.opengl.GL11")
+    var GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
+}
+export function trace (x, y, z, red, green, blue, alpha, lineWidth = 1){
+    if (x >= 0) {
+        x = parseFloat(x) + 0.5;
+    } else {
+        x = parseFloat(x) - 0.5;
+    }
+    if (z >= 0)
+    {
+        z = parseFloat(z) + 0.5;
+    } else {
+        z = parseFloat(z) - 0.5;
+    }
+    if(Player.isSneaking())
+        drawLine(Player.getRenderX(), Player.getRenderY() + 1.54, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
+    else
+        drawLine(Player.getRenderX(), Player.getRenderY() + 1.62, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
+}
+
+function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth = 1)
+{
+    GL11.glBlendFunc(770,771)
+    GL11.glEnable(GL11.GL_BLEND)
+    GL11.glLineWidth(lineWidth)
+    GL11.glDisable(GL11.GL_TEXTURE_2D)
+    GL11.glDisable(GL11.GL_DEPTH_TEST)
+    GL11.glDepthMask(false)
+    GlStateManager.func_179094_E()
+
+    Tessellator.begin(GL11.GL_LINE_STRIP).colorize(red, green, blue, alpha)
+    Tessellator.pos(x1, y1, z1).tex(0, 0)
+    Tessellator.pos(x2, y2, z2).tex(0, 0)
+    Tessellator.draw()
+
+    GlStateManager.func_179121_F()
+    GL11.glEnable(GL11.GL_TEXTURE_2D)
+    GL11.glEnable(GL11.GL_DEPTH_TEST)
+    GL11.glDepthMask(true)
+    GL11.glDisable(GL11.GL_BLEND)
+}
+
 export function getClosest(origin, positions) {
     let closestPosition = positions.length > 0 ? positions[0] : [0, 0, 0];
     let closestDistance = 999;

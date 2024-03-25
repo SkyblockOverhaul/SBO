@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
-import { toTitleCase, isWorldLoaded, isInSkyblock } from '../../utils/functions';
+import { toTitleCase, isWorldLoaded, isInSkyblock, trace } from '../../utils/functions';
 import RenderLibV2 from "../../../RenderLibv2";
 import renderBeaconBeam from "../../../BeaconBeam/index";
 import { checkDiana } from "../../utils/checkDiana";
@@ -357,6 +357,13 @@ registerWhen(register("renderWorld", () => {
         renderWaypoint(formatted);
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
+        if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
+            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 2);
+        }
+        if (inqWaypoints.length > 0 && settings.inqLine) {
+            trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 2);
+        }
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
+
 

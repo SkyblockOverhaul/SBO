@@ -145,7 +145,21 @@ class Settings {
         subcategory: 'Diana Waypoints',
     })
     inqWarpKey = false;
-
+    // --- Diana lines ---
+    @SwitchProperty({
+        name: 'Inquis Line',
+        description: 'Draws lines for Inquisitor',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+    })
+    inqLine = false;
+    @SwitchProperty({
+        name: 'Guess Line',
+        description: 'Draws lines for Guess',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+    })
+    guessLine = false;
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
