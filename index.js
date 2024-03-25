@@ -14,7 +14,6 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import "./features/dungeon/recognizeRareRoom";
 import "./features/general/alphaCheck";
-import "./features/general/FormatGuildBot";
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 
@@ -34,7 +33,21 @@ register("chat", (message, event) => {
     if (message.includes("Blue Goblin Egg")) {
         Client.showTitle("&3Blue Goblin Egg", "&eCarrot", 0, 40, 20);
     }
-}
+}).setCriteria("&r&aYou received ${message}");
+
+register("chat", (player, message, event) =>{
+    // cancel original message
+    // send new guildbot message
+    if (!player.includes(" ")) {
+        cancel(event);
+        player = player.removeFormatting();
+        ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
+        // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
+    }
+}).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}:${message}").setContains()
+
+// &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rSuccesfully invited kenchika to the party!&r
+// &r&2Guild > &b[MVP&2+&b] MasterNR &3[320]&f: &rnice&r
 
 
 // register("command", () => {
