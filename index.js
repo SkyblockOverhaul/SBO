@@ -23,6 +23,19 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
+register("chat", (message, event) => {
+    message = message.removeFormatting();
+    if (!message.includes("Powder") && !message.includes("Refelctor") && !message.includes("Blue Goblin Egg") && !message.includes("Heart")) {
+        cancel(event);
+    }
+    if (message.includes("Refelctor")) {
+        Client.showTitle("&9Robotron Reflector", "&eCarrot", 0, 40, 20);
+    }
+    if (message.includes("Blue Goblin Egg")) {
+        Client.showTitle("&3Blue Goblin Egg", "&eCarrot", 0, 40, 20);
+    }
+}
+
 
 // register("command", () => {
 //     // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);
