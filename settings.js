@@ -160,6 +160,13 @@ class Settings {
         subcategory: 'Diana Waypoint Lines',
     })
     guessLine = false;
+    @SwitchProperty({
+        name: 'Burrow Line',
+        description: 'Draws lines for burrows',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+    })
+    burrowLine = false;
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
