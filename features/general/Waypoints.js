@@ -358,18 +358,22 @@ registerWhen(register("renderWorld", () => {
         renderWaypoint(formatted);
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
-        if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
-            let closestBurrow = getClosestBurrow(burrowWaypoints);
-            trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
-        }
-        if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
-            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
-        }
-        if (inqWaypoints.length > 0 && settings.inqLine) {
-            trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
-        }
+        renderBurrowLines();
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
+
+function renderBurrowLines(){
+    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
+        let closestBurrow = getClosestBurrow(burrowWaypoints);
+        trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
+    }
+    if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
+        trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
+    }
+    if (inqWaypoints.length > 0 && settings.inqLine) {
+        trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
+    }
+}
 
 function getClosestBurrow(burrows) {
     let closestDistance = Infinity;
