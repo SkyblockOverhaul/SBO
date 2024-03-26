@@ -351,8 +351,6 @@ registerWhen(register("step", () => {
 
 }).setFps(3), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
-
-let checkBurrowLine = false;
 registerWhen(register("renderWorld", () => { 
     if (isInSkyblock()) {
         renderWaypoint(formatted);
@@ -362,13 +360,15 @@ registerWhen(register("renderWorld", () => {
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
+let guessRemoved = false;
 function renderBurrowLines(){
-    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
+    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0 && guessRemoved) {
         let closestBurrow = getClosestBurrow(burrowWaypoints);
         trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
     }
     if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
         trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
+        guessRemoved = checkGuessRemove(guessWaypoint);
     }
     if (inqWaypoints.length > 0 && settings.inqLine) {
         trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
@@ -378,7 +378,6 @@ function renderBurrowLines(){
 function getClosestBurrow(burrows) {
     let closestDistance = Infinity;
     let closestBurrow = null;
-
     burrows.forEach(([type, x, y, z]) => {
         if (type == "Start") {
             r = 0.5;
@@ -406,5 +405,17 @@ function getClosestBurrow(burrows) {
         }
     });
     return closestBurrow;
+}
+
+function checkGuessRemove(guess){
+    const distance = Math.sqrt(
+    (Player.getX() - guess[1]) +
+    (Player.getY() - guess[2]) +
+    (Player.getZ() - guess[3])
+    );
+    if (distance < 20) {
+        return true;
+    }
+    return false;
 }
 
