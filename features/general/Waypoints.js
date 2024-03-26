@@ -367,7 +367,7 @@ function renderBurrowLines(){
         trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
     }
     if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
-        guessLineRemoved = checkGuessRemove(guessWaypoint);
+        guessLineRemoved = checkGuessLineRemove(guessWaypoint);
         if (!guessLineRemoved) {
             trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
         }
@@ -409,7 +409,7 @@ function getClosestBurrow(burrows) {
     return closestBurrow;
 }
 
-function checkGuessRemove(guess){
+function checkGuessLineRemove(guess){
     const distance = Math.sqrt(
     (Player.getX() - guess[1]) +
     (Player.getY() - guess[2]) +
