@@ -360,15 +360,15 @@ registerWhen(register("renderWorld", () => {
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
-let guessRemoved = false;
+let guessLineRemoved = false;
 function renderBurrowLines(){
-    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0 && guessRemoved) {
+    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0 && guessLineRemoved) {
         let closestBurrow = getClosestBurrow(burrowWaypoints);
         trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
     }
     if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
-        guessRemoved = checkGuessRemove(guessWaypoint);
-        if (!guessRemoved) {
+        guessLineRemoved = checkGuessRemove(guessWaypoint);
+        if (!guessLineRemoved) {
             trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
         }
     }
