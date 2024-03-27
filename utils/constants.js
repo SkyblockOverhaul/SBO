@@ -29,7 +29,7 @@ export const ITALIC = '&o';
 export const RESET = '&r';
 export const attributeShorts = {
     'mana_pool': 'MP',
-    'mana_regenaration': 'MR',
+    'mana_regeneration': 'MR',
     'dominance': 'DO',
     'veteran': 'VE',
     'vitality': 'VI',
@@ -43,4 +43,5 @@ export const attributeShorts = {
     'blazing_resistance': 'BL',
     'ender_resistance': 'ER',
     'undead_resistance': 'UR',
+    'experience': 'EP',
 }

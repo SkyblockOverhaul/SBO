@@ -20,6 +20,7 @@ import "./features/general/alphaCheck";
 import { request } from "../requestV2";
 import { toTitleCase } from "./utils/functions";
 import { Overlay } from "./utils/overlay";
+import { attributeShorts } from "./utils/constants";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
@@ -192,7 +193,7 @@ register("guiOpened", () => {
                     itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
                     if (!allowedItemIds.includes(itemId)) return;
                     let displayName = toTitleCase(itemId.replace("_", " "));
-                    tempString += `&r&6${displayName}`; 
+                    tempString += `&r&6${displayName}\n(`; 
                 }
 
                 let price = getPrice(itemId, name, lvl);
@@ -201,14 +202,8 @@ register("guiOpened", () => {
                     if (price >= highestPrice) {
                         highestPrice = price;
                     }
-                    if (price >= 1000000) {
-                        price = (price / 1000000).toFixed(2) + "M";
-                    }
-                    else if (price >= 1000) {
-                        price = (price / 1000).toFixed(2) + "K";
-                    }
                     
-                    tempString += `&r&7${name} &r&7(${price} coins)`;
+                    tempString += `&r&7${attributeShorts[name]} &r&7${formatPrice(price)} `;
                     
                 }
                 else {
@@ -227,12 +222,24 @@ register("guiOpened", () => {
                     // }
                 }
             }
-            overlayString += `${highestPrice}${tempString}\n`;
+            if (highestPrice != 0) {
+                overlayString += `&e${formatPrice(highestPrice)}&r ${tempString})\n`;
+            }
         });
         overlay.message = overlayString;
         overlay.setRenderGuiBool(true);
     }, 100);
 });
+
+function formatPrice(price) {
+    if (price >= 1000000) {
+        return (price / 1000000).toFixed(2) + "M";
+    }
+    else if (price >= 1000) {
+        return (price / 1000).toFixed(2) + "K";
+    }
+    return price;
+}
 
 function getPrice(itemId, attribute, lvl) {
     if (kuudraItems[itemId.split("_")[1]][attribute + "_" + lvl] != undefined) {
