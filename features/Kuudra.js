@@ -151,7 +151,7 @@ function readContainerItems() {
         highestPrice = 0;
         
         for (let name in attributeDict) {
-            itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id").replace("HOT_", "").replace("BURNING_", "").replace("FIERY_", "").replace("INFERNAL_","");
+            itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
             if (!allowedItemIds.includes(itemId)) return;
             let lvl = attributeDict[name];
             if (name == "mending") {
