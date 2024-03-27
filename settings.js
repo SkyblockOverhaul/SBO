@@ -58,7 +58,12 @@ class Settings {
         this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
         this.addDependency('Blaze View','Blaze Tracker');
         this.addDependency('Max Displayed Items','Attribute value Overlay')
-        this.addDependency('Monitor Setting','Attribute value Overlay');
+        this.addDependency('Display Attribute in Overlay','Attribute value Overlay');
+        this.addDependency('Bazaar Setting','Attribute value Overlay');
+        this.addDependency('Key Price','Attribute value Overlay');
+        this.addDependency('Use Kuudra Pet Perk','Attribute value Overlay');
+        this.addDependency('Kuudra Pet Rarity','Use Kuudra Pet Perk');
+        this.addDependency('Kuudra Pet Level','Use Kuudra Pet Perk');
     }
 
     //-----------Diana Burrows----------------
@@ -364,12 +369,46 @@ class Settings {
     })
     maxDisplayedItems = 15;
     @SelectorProperty({
-        name: 'Monitor Setting',
-        description: 'Monitor setting for the overlay',
+        name: 'Display Attribute in Overlay',
+        description: 'Select if attributes are displayed in one ore two lines',
         category: 'Kuudra',
-        options: ['24 inch','27 inch'],
+        options: ['one line','two lines'],
     })
-    monitorSetting = 0;
+    lineSetting = 0;
+    @SelectorProperty({
+        name: 'Bazaar Setting',
+        description: 'Bazaar setting for instasell/sell offer',
+        category: 'Kuudra',
+        options: ['Instasell','Sell Offer'],
+    })
+    bazaarSetting = 0;
+    @SelectorProperty({
+        name: 'Key Price',
+        description: 'Use instabuy/buy offer for materials',
+        category: 'Kuudra',
+        options: ['Instabuy','Buy Offer'],
+    })
+    keySetting = 0;
+    @SwitchProperty({
+        name: 'Use Kuudra Pet Perk',
+        description: 'Use the kuudra pet perk for essence calculation',
+        category: 'Kuudra',
+    })
+    kuudraPetPerk = false;
+    @SelectorProperty({
+        name: 'Kuudra Pet Rarity',
+        description: 'Set the rarity of your pet for essence perk',
+        category: 'Kuudra',
+        options: ['Legendary','Epic','Rare','Uncommon','Common'],
+    })
+    kuudraPet = 0;
+    @TextProperty({
+        name: 'Kuudra Pet Level',
+        description: 'Set the level of your pet for essence perk',
+        category: 'Kuudra',
+    })
+    kuudraPetLevel = "100";
+
 
     // General other
     @SwitchProperty({

@@ -26,6 +26,10 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
+register("chat", (event) => {
+    Client.showTitle("&l&9!!!!!WORM!!!!!!", "&eKILL!!!", 0, 90, 20);
+}).setCriteria("&r&7&oYou hear the sound of something approaching...&r");
+
 register("chat", (message, event) => {
     message = message.removeFormatting();
     if (!message.includes("Powder") && !message.includes("Refelctor") && !message.includes("Blue Goblin Egg") && !message.includes("Heart")) {
