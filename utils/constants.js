@@ -27,4 +27,20 @@ export const STRIKETHROUGH = '&m';
 export const UNDERLINE = '&n';
 export const ITALIC = '&o';
 export const RESET = '&r';
-
+export const attributeShorts = {
+    'mana_pool': 'MP',
+    'mana_regenaration': 'MR',
+    'dominance': 'DO',
+    'veteran': 'VE',
+    'vitality': 'VI',
+    'magic_find': 'MF',
+    'breeze': 'BR',
+    'life_regeneration': 'LR',
+    'lifeline': 'LL',
+    'speed': 'SP',
+    'fortitude': 'FO',
+    'arachno_resistance': 'AR',
+    'blazing_resistance': 'BL',
+    'ender_resistance': 'ER',
+    'undead_resistance': 'UR',
+}
