@@ -195,12 +195,12 @@ function refreshOverlay(totalValue) {
     });
 
     let overlayString = "";
-    let counter = 0;
+    let counter = 1;
     chestItems.forEach((item) => {
-        counter++;
         if (counter <= settings.maxDisplayedItems) {
             overlayString += item.string;
         }
+        counter++;
     });
     if (counter > settings.maxDisplayedItems) {
         overlayString += `&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
