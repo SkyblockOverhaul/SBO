@@ -161,82 +161,99 @@ chestItem = {
     att2Value: 0,
 }
 
-class ItemString {
-    constructor(string, price) {
+class KuudraItem {
+    constructor(string, price, index) {
+        this.index = index
         this.string = string;
         this.price = price;
     }
 }
 
 
+register("guiMouseClick", (x, y, button, gui) => {
+    setTimeout(() => {
+        readContainerItems();
+    }, 200);
+});
+
+let chestItems = [];
 register("guiOpened", () => {
     setTimeout(() => {
-        if (kuudraItems == undefined) return;
-        const container = Player.getContainer();
-        if (container == null) return;
-        if (container.getName() == "container") return;
-        ChatLib.chat("&r&6[SBO] &r&6&lGUI OPENED! " + container.getName());
-        const items = container.getItems();
-        if (items.length == 0) return;
-        let itemStrings = [];
-        let highestPrice = 0;
-        let tempString = "";
-        items.forEach((item, index) => {
-            if (item == null) return;
-            if (container.getName() != "container") {
-                if (index >= items.length - 36) return;
-            }
-            attributeDict = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").toObject();
-            if (attributeDict == null) return;
-
-            let first = true;
-            highestPrice = 0;
-            
-            for (let name in attributeDict) {
-                itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
-                if (!allowedItemIds.includes(itemId)) return;
-                let lvl = attributeDict[name];
-                if (name == "mending") {
-                    name = "vitality";
-                }
-                let price = getPrice(itemId, name, lvl);
-                if (price >= highestPrice) {
-                    highestPrice = price;
-                }
-                
-                if (first) {
-                    first = false;
-                    let displayName = toTitleCase(itemId.replace("_", " "));
-                    chestItem.name = displayName;
-                    chestItem.att1Name = attributeShorts[name]+ " " + lvl;
-                    chestItem.att1Value = price;
-                }
-                else {
-                    chestItem.att2Name = attributeShorts[name] + " " + lvl;
-                    chestItem.att2Value = price;
-                    chestItem.value = highestPrice;
-                }     
-            }
-            if (highestPrice != 0) {
-                tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r\n`
-                tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
-                itemStrings.push(new ItemString(tempString, highestPrice));
-            }
-        });
-        // sort itemStrings by price
-        itemStrings.sort((a, b) => {
-            return b.price - a.price;
-        });
-
-        let overlayString = "";
-        itemStrings.forEach((itemString) => {
-            overlayString += itemString.string;
-        });
-
-        overlay.message = overlayString;
-        overlay.setRenderGuiBool(true);
+        readContainerItems();
     }, 100);
 });
+
+function readContainerItems() {
+    chestItems = [];
+    if (kuudraItems == undefined) return;
+    const container = Player.getContainer();
+    if (container == null) return;
+    if (container.getName() == "container") return;
+    // ChatLib.chat("&r&6[SBO] &r&6&lGUI OPENED! " + container.getName());
+    const items = container.getItems();
+    if (items.length == 0) return;
+    
+    let highestPrice = 0;
+    let tempString = "";
+    items.forEach((item, index) => {
+        if (item == null) return;
+        if (container.getName() != "container") {
+            if (index >= items.length - 36) return;
+        }
+        attributeDict = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").toObject();
+        if (attributeDict == null) return;
+
+        let first = true;
+        highestPrice = 0;
+        
+        for (let name in attributeDict) {
+            itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
+            if (!allowedItemIds.includes(itemId)) return;
+            let lvl = attributeDict[name];
+            if (name == "mending") {
+                name = "vitality";
+            }
+            let price = getPrice(itemId, name, lvl);
+            if (price >= highestPrice) {
+                highestPrice = price;
+            }
+            
+            if (first) {
+                first = false;
+                let displayName = toTitleCase(itemId.replace("_", " "));
+                chestItem.name = displayName;
+                chestItem.att1Name = attributeShorts[name]+ " " + lvl;
+                chestItem.att1Value = price;
+            }
+            else {
+                chestItem.att2Name = attributeShorts[name] + " " + lvl;
+                chestItem.att2Value = price;
+                chestItem.value = highestPrice;
+            }     
+        }
+        if (highestPrice != 0) {
+            tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r\n`
+            tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
+            chestItems.push(new KuudraItem(tempString, highestPrice));
+        }
+    });
+    refreshOverlay();
+}
+
+function refreshOverlay() {
+    // sort itemStrings by price
+    chestItems.sort((a, b) => {
+        return b.price - a.price;
+    });
+
+    let overlayString = "";
+    chestItems.forEach((item) => {
+        overlayString += item.string;
+    });
+
+    overlay.message = overlayString;
+    overlay.setRenderGuiBool(true);
+}
 
 function formatPrice(price) {
     if (price >= 1000000) {
