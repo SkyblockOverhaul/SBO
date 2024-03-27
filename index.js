@@ -87,7 +87,7 @@ register("chat", (player, message, event) =>{
 
 let lastUpdate = 0;
 let updateing = false;
-let kuudraItems = {};
+let kuudraItems = undefined;
 register("step", () => {
     // update every 5 minutes
     if (updateing) return;
@@ -152,23 +152,33 @@ register("guiClosed", () => {
     overlay.setRenderGuiBool(false);
 });
 
-let shorts = {
-    blazing_resistance: "BR",
-    breeze: "BR",
-    life_regeneration: "LR",
-    magic_find: "MF",
-    vitality: "VI"
+chestItem = {
+    name: "",
+    value: 0,
+    att1Name: "",
+    att1Value: 0,
+    att2Name: "",
+    att2Value: 0,
 }
+
+class ItemString {
+    constructor(string, price) {
+        this.string = string;
+        this.price = price;
+    }
+}
+
 
 register("guiOpened", () => {
     setTimeout(() => {
+        if (kuudraItems == undefined) return;
         const container = Player.getContainer();
         if (container == null) return;
         if (container.getName() == "container") return;
         ChatLib.chat("&r&6[SBO] &r&6&lGUI OPENED! " + container.getName());
         const items = container.getItems();
         if (items.length == 0) return;
-        let overlayString = "";
+        let itemStrings = [];
         let highestPrice = 0;
         let tempString = "";
         items.forEach((item, index) => {
@@ -178,54 +188,51 @@ register("guiOpened", () => {
             }
             attributeDict = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").toObject();
             if (attributeDict == null) return;
+
             let first = true;
-            tempString = "";
             highestPrice = 0;
+            
             for (let name in attributeDict) {
+                itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
+                if (!allowedItemIds.includes(itemId)) return;
                 let lvl = attributeDict[name];
-                
                 if (name == "mending") {
                     name = "vitality";
                 }
-
+                let price = getPrice(itemId, name, lvl);
+                if (price >= highestPrice) {
+                    highestPrice = price;
+                }
+                
                 if (first) {
                     first = false;
-                    itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
-                    if (!allowedItemIds.includes(itemId)) return;
                     let displayName = toTitleCase(itemId.replace("_", " "));
-                    tempString += `&r&6${displayName}\n(`; 
-                }
-
-                let price = getPrice(itemId, name, lvl);
-                if (container.getName() != "container") {
-                    // console.log("attribute: " + name + " " + lvl + " price: " + price);
-                    if (price >= highestPrice) {
-                        highestPrice = price;
-                    }
-                    
-                    tempString += `&r&7${attributeShorts[name]} &r&7${formatPrice(price)} `;
-                    
+                    chestItem.name = displayName;
+                    chestItem.att1Name = attributeShorts[name]+ " " + lvl;
+                    chestItem.att1Value = price;
                 }
                 else {
-                    // // edit item lore with price behind the attribute
-                    // let lore = item.getLore();
-                    // // only edit the attribute lore line 
-                    // let newLore = [];
-                    // for (let i = 0; i < lore.length - 4; i++) {
-                    //     newLore.push(lore[i]);
-                    //     if (lore[i].includes(toTitleCase(name.replace("_", " ")))) {
-                    //         newLore.push(lore[i] + " &r&7(" + price + " coins)");
-                    //         print(lore[i] + " &r&7(" + price + " coins)");
-                    //     }
-
-                    // item.setLore(newLore);
-                    // }
-                }
+                    chestItem.att2Name = attributeShorts[name] + " " + lvl;
+                    chestItem.att2Value = price;
+                    chestItem.value = highestPrice;
+                }     
             }
             if (highestPrice != 0) {
-                overlayString += `&e${formatPrice(highestPrice)}&r ${tempString})\n`;
+                tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r\n`
+                tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
+                itemStrings.push(new ItemString(tempString, highestPrice));
             }
         });
+        // sort itemStrings by price
+        itemStrings.sort((a, b) => {
+            return b.price - a.price;
+        });
+
+        let overlayString = "";
+        itemStrings.forEach((itemString) => {
+            overlayString += itemString.string;
+        });
+
         overlay.message = overlayString;
         overlay.setRenderGuiBool(true);
     }, 100);
@@ -241,7 +248,7 @@ function formatPrice(price) {
     return price;
 }
 
-function getPrice(itemId, attribute, lvl) {
+function getAttributePrice(itemId, attribute, lvl) {
     if (kuudraItems[itemId.split("_")[1]][attribute + "_" + lvl] != undefined) {
         return kuudraItems[itemId.split("_")[1]][attribute + "_" + lvl].price;
     }
@@ -254,6 +261,21 @@ function getPrice(itemId, attribute, lvl) {
             }
         }
         console.log("attribute: " + attribute + " " + lvl + " price: not found");
+        return 0;
+    }
+}
+
+function getPrice(itemId, attribute, lvl) {
+    if (lvl <= 5) {
+       return getAttributePrice(itemId, attribute, lvl);
+    }
+    else {
+        // calc price from lvl 5 up to lvl
+        let price = getAttributePrice(itemId, attribute, 5)
+        for (let i = 5; i < lvl; i++) {
+            price *= 2;
+        }
+        return price;
     }
 }
 
