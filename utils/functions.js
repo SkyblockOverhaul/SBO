@@ -304,6 +304,9 @@ function checkSettings(loadedSettings) {
     if (!loadedSettings.hasOwnProperty("BlazeLoc")) {
         loadedSettings["BlazeLoc"] = defaultSettings["BlazeLoc"];
     }
+    if (!loadedSettings.hasOwnProperty("KuudraValueLoc")) {
+        loadedSettings["KuudraValueLoc"] = defaultSettings["KuudraValueLoc"];
+    }
     return loadedSettings;
 }
 
