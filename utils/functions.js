@@ -260,7 +260,12 @@ export function initializeGuiSettings() {
             "x": 10,
             "y": 10,
             "s": 1
-        }
+        },
+        KuudraValueLoc: {
+            "x": 10,
+            "y": 10,
+            "s": 1
+        },
     };
     return tempDict;
 }
