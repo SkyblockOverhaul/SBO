@@ -27,6 +27,9 @@ export const STRIKETHROUGH = '&m';
 export const UNDERLINE = '&n';
 export const ITALIC = '&o';
 export const RESET = '&r';
+
+
+
 export const attributeShorts = {
     'mana_pool': 'MP',
     'mana_regeneration': 'MR',

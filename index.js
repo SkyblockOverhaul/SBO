@@ -21,6 +21,8 @@ import { request } from "../requestV2";
 import { toTitleCase } from "./utils/functions";
 import { Overlay } from "./utils/overlay";
 import { attributeShorts } from "./utils/constants";
+import settings from "./settings";
+import { registerWhen } from "./utils/variables";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
@@ -170,18 +172,18 @@ class KuudraItem {
 }
 
 
-register("guiMouseClick", (x, y, button, gui) => {
+registerWhen(register("guiMouseClick", (x, y, button, gui) => {
     setTimeout(() => {
         readContainerItems();
     }, 200);
-});
+}), () => settings.attributeValueOverlay);
 
 let chestItems = [];
-register("guiOpened", () => {
+registerWhen(register("guiOpened", () => {
     setTimeout(() => {
         readContainerItems();
     }, 100);
-});
+}), () => settings.attributeValueOverlay);
 
 function readContainerItems() {
     chestItems = [];
@@ -234,7 +236,10 @@ function readContainerItems() {
         }
         if (highestPrice != 0) {
             totalValue += highestPrice;
-            tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r\n`
+            tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r`
+            if (settings.monitorSetting == 0) {
+                tempString += `\n`
+            }
             tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
             chestItems.push(new KuudraItem(tempString, highestPrice));
         }
@@ -252,10 +257,13 @@ function refreshOverlay(totalValue) {
     let counter = 0;
     chestItems.forEach((item) => {
         counter++;
-        if (counter < 6) {
+        if (counter <= settings.maxDisplayedItems) {
             overlayString += item.string;
         }
     });
+    if (counter > settings.maxDisplayedItems) {
+        overlayString += `&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
+    }
     if (totalValue > 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
     }
