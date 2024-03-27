@@ -351,19 +351,73 @@ registerWhen(register("step", () => {
 
 }).setFps(3), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
-
 registerWhen(register("renderWorld", () => { 
     if (isInSkyblock()) {
         renderWaypoint(formatted);
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
-        if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
-            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 2);
-        }
-        if (inqWaypoints.length > 0 && settings.inqLine) {
-            trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 2);
-        }
+        renderBurrowLines();
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
+let guessLineRemoved = false;
+function renderBurrowLines(){
+    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0 && guessLineRemoved) {
+        let closestBurrow = getClosestBurrow(burrowWaypoints);
+        trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
+    }
+    if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
+        guessLineRemoved = checkGuessLineRemove(guessWaypoint);
+        if (!guessLineRemoved) {
+            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
+        }
+    }
+    if (inqWaypoints.length > 0 && settings.inqLine) {
+        trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
+    }
+}
+
+function getClosestBurrow(burrows) {
+    let closestDistance = Infinity;
+    let closestBurrow = null;
+    burrows.forEach(([type, x, y, z]) => {
+        if (type == "Start") {
+            r = 0.5;
+            g = 1;
+            b = 0;
+        }
+        else if (type == "Mob") {
+            r = 1;
+            g = 0.2;
+            b = 0.1;
+        }
+        else if (type == "Treasure") {
+            r = 1;
+            g = 0.9;
+            b = 0;
+        }
+        const distance = Math.sqrt(
+            (Player.getX() - x)**2 +
+            (Player.getY() - y)**2 +
+            (Player.getZ() - z)**2
+        );
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestBurrow = [type, x, y, z, r, g, b];
+        }
+    });
+    return closestBurrow;
+}
+
+function checkGuessLineRemove(guess){
+    const distance = Math.sqrt(
+    (Player.getX() - guess[1]) +
+    (Player.getY() - guess[2]) +
+    (Player.getZ() - guess[3])
+    );
+    if (distance < 20) {
+        return true;
+    }
+    return false;
+}
 
