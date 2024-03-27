@@ -140,12 +140,11 @@ let allowedItemIds = [
     "MOLTEN_BRACELET",
     "MOLTEN_CLOAK",];
 
-let overlayStringExample = `&r&6Terror Chestplate
-&r&7Blazing Resistance &r&7(150.00K coins)
-&r&7Breeze &r&7(2.49M coins)
-&r&6Crimson Chestplate
-&r&7Life Regeneration &r&7(1.90M coins)
-&r&7Magic Find &r&7(4.00M coins)`;
+let overlayStringExample = `&r&62.49M &r&eTerror Chestplate&r
+&r&b(BL 5/BR 4 - &r&6100.00K/2.49M&b)
+&r&62.50M &r&eTerror Boots&r
+&r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
+&r&eTotal Value: &r&64.99M coins`;
 
 let overlay = new Overlay("attributeValueOverlay", ["all", "misc"], [10, 10, 1], "sbomoveValueOverlay", overlayStringExample, "attributeValueOverlay");
 overlay.setRenderGuiBool(false);
@@ -236,11 +235,12 @@ function readContainerItems() {
         }
         if (highestPrice != 0) {
             totalValue += highestPrice;
-            tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r`
+            tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r `
             if (settings.monitorSetting == 0) {
                 tempString += `\n`
             }
             tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
+            print(tempString);
             chestItems.push(new KuudraItem(tempString, highestPrice));
         }
     });
@@ -266,6 +266,7 @@ function refreshOverlay(totalValue) {
     }
     if (totalValue > 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
+        print(`&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`);
     }
     overlay.message = overlayString;
     overlay.setRenderGuiBool(true);
