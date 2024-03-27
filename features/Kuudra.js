@@ -182,7 +182,6 @@ function readContainerItems() {
                 tempString += `\n`
             }
             tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
-            print(tempString);
             chestItems.push(new KuudraItem(tempString, highestPrice));
         }
     });
@@ -208,7 +207,6 @@ function refreshOverlay(totalValue) {
     }
     if (totalValue > 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
-        print(`&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`);
     }
     kuudraValueOverlay.message = overlayString;
     kuudraValueOverlay.setRenderGuiBool(true);
