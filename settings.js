@@ -7,6 +7,7 @@ import {
     @SelectorProperty,
     @SwitchProperty,
     @TextProperty,
+    @SliderProperty,
     @Vigilant,
 } from 'Vigilance';
 
@@ -23,7 +24,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer', 'Dungeon','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Party Commands','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -55,7 +56,9 @@ class Settings {
         this.addDependency('Inq Warp Key','Detect Inq Cords');
         this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
         this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
-        this.addDependency('Blaze View','Blaze Tracker')
+        this.addDependency('Blaze View','Blaze Tracker');
+        this.addDependency('Max Displayed Items','Attribute value Overlay')
+        this.addDependency('Monitor Setting','Attribute value Overlay');
     }
 
     //-----------Diana Burrows----------------
@@ -343,6 +346,30 @@ class Settings {
         options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
     })
     hideOwnWaypoints = 0;
+
+    // Kuudra
+    // ---ProfitHud---
+    @SwitchProperty({
+        name: 'Attribute value Overlay',
+        description: 'Displays value of attributes. /sbomoveValueOverlay to move the overlay',
+        category: 'Kuudra',
+    })
+    attributeValueOverlay = false;
+    @SliderProperty({
+        name: 'Max Displayed Items',
+        description: 'Max amount of items displayed in the overlay',
+        category: 'Kuudra',
+        min: 1,
+        max: 20
+    })
+    maxDisplayedItems = 15;
+    @SelectorProperty({
+        name: 'Monitor Setting',
+        description: 'Monitor setting for the overlay',
+        category: 'Kuudra',
+        options: ['24 inch','27 inch'],
+    })
+    monitorSetting = 0;
 
     // General other
     @SwitchProperty({

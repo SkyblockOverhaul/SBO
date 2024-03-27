@@ -145,7 +145,7 @@ let overlayStringExample = `&r&6Terror Chestplate
 &r&7Life Regeneration &r&7(1.90M coins)
 &r&7Magic Find &r&7(4.00M coins)`;
 
-let overlay = new Overlay("bobberCounter", ["all", "misc"], [10, 10, 1], "sbomoveItemOverlay", overlayStringExample, "bobberCounter");
+let overlay = new Overlay("attributeValueOverlay", ["all", "misc"], [10, 10, 1], "sbomoveValueOverlay", overlayStringExample, "attributeValueOverlay");
 overlay.setRenderGuiBool(false);
 
 register("guiClosed", () => {
