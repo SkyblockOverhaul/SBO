@@ -372,7 +372,7 @@ class Settings {
         name: 'Display Attribute in Overlay',
         description: 'Select if attributes are displayed in one ore two lines',
         category: 'Kuudra',
-        options: ['one line','two lines'],
+        options: ['two lines','one line'],
     })
     lineSetting = 0;
     @SelectorProperty({
