@@ -69,11 +69,7 @@ export class Overlay {
 
                 // GUI Instructions
             } else if (settings[this.setting] && (this.requires.has(getWorld()) || this.requires.has("all")) && !gui.isOpen() && settings[this.optionalParam]) {
-                if (this.requires.has("misc")) {
-                    if (Player.getContainer().getName() !== "Paid Chest") return;
-                    renderScale(this.loc[2], this.message, this.X, this.Y);
-                } else  // Draw HUD
-                    renderScale(this.loc[2], this.message, this.X, this.Y);
+                renderScale(this.loc[2], this.message, this.X, this.Y);
             }
         }), () => true);
 
