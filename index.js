@@ -195,6 +195,7 @@ function readContainerItems() {
     
     let highestPrice = 0;
     let tempString = "";
+    let totalValue = 0;
     items.forEach((item, index) => {
         if (item == null) return;
         if (container.getName() != "container") {
@@ -207,7 +208,7 @@ function readContainerItems() {
         highestPrice = 0;
         
         for (let name in attributeDict) {
-            itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
+            itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id").replace("HOT_", "").replace("BURNING_", "").replace("FIERY_", "").replace("INFERNAL_","");
             if (!allowedItemIds.includes(itemId)) return;
             let lvl = attributeDict[name];
             if (name == "mending") {
@@ -232,25 +233,32 @@ function readContainerItems() {
             }     
         }
         if (highestPrice != 0) {
+            totalValue += highestPrice;
             tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r\n`
             tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
             chestItems.push(new KuudraItem(tempString, highestPrice));
         }
     });
-    refreshOverlay();
+    refreshOverlay(totalValue);
 }
 
-function refreshOverlay() {
+function refreshOverlay(totalValue) {
     // sort itemStrings by price
     chestItems.sort((a, b) => {
         return b.price - a.price;
     });
 
     let overlayString = "";
+    let counter = 0;
     chestItems.forEach((item) => {
-        overlayString += item.string;
+        counter++;
+        if (counter < 6) {
+            overlayString += item.string;
+        }
     });
-
+    if (totalValue > 0) {
+        overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
+    }
     overlay.message = overlayString;
     overlay.setRenderGuiBool(true);
 }
