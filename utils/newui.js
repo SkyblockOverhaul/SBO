@@ -37,7 +37,7 @@ let testGUISelected = getTestGUISelected();
 register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
 
 register('renderOverlay', () => {
-    checkForSetting(getTestUI(), settings.bobberCounter, overlayStatus);
+    checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus);
     guiMover();
     renderWindow.draw()
 });
