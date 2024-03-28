@@ -119,10 +119,10 @@ function guiMover() {
 function drawExamples(){
     switch(settings.lineSetting){
         case 0:
-            exampleMessage(overlayExamples["kuudraExampleTwo"], getkuudraValueOverlay());
+            exampleMessage(overlayExamples["kuudraExampleOne"], getkuudraValueOverlay());
             break;
         case 1:
-            exampleMessage(overlayExamples["kuudraExampleOne"], getkuudraValueOverlay());
+            exampleMessage(overlayExamples["kuudraExampleTwo"], getkuudraValueOverlay());
             break;
     }
 }
