@@ -63,7 +63,7 @@ class Settings {
         this.addDependency('Key Price','Attribute value Overlay');
         this.addDependency('Use Kuudra Pet Perk','Attribute value Overlay');
         this.addDependency('Kuudra Pet Rarity','Use Kuudra Pet Perk');
-        this.addDependency('Kuudra Pet Level','Use Kuudra Pet Perk');
+        this.addDependency('Kuudra Pet Level','Use Kuudra Pet Perk'); //use kuudra pet perk weg stattdessen none bei kuudra pet rarity
     }
 
     //-----------Diana Burrows----------------

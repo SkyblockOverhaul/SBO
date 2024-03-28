@@ -18,13 +18,15 @@ import {
     UIRoundedRectangle,
     Window
 } from "../../Elementa";
+import settings from "./../settings";
+
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
 const Color = Java.type("java.awt.Color");
-this.gui.registerClicked((x,y,b) => this.window.mouseClick(x,y,b));
-this.gui.registerMouseDragged((x, y, b) => this.window.mouseDrag(x, y, b));
-this.gui.registerMouseReleased((x, y, b) => this.window.mouseRelease(x,y,b));
+this.gui.registerClicked((x,y,b) => this.renderWindow.mouseClick(x,y,b));
+this.gui.registerMouseDragged((x, y, b) => this.renderWindow.mouseDrag(x, y, b));
+this.gui.registerMouseReleased(() => this.renderWindow.mouseRelease());
 
 let testGUISelected = false;
 
@@ -64,9 +66,6 @@ testText.onMouseEnter((comp) => {
 testText.onMouseLeave((comp) => {
     testText.setText("Hello, World!");
 });
-
-
-renderWindow.addChildren(testBlock);
 testText.setX(new CenterConstraint());
 testText.setY(new CenterConstraint());
 testBlock.addChild(testText)
@@ -104,7 +103,6 @@ mainUIContainer.onMouseDrag((comp, mx, my) => {
 })
 mainUIContainer.addChild(new UIText("Settings").setX(new CenterConstraint()).setY((5).pixels()))
 
-renderWindow.addChild(mainUIContainer);
 
 
 function guiMover() {
@@ -121,11 +119,18 @@ function guiMover() {
     }
 }
 register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
+let overlayStatus = {
+    mainUIContainer: false,
+    testBlock: false
+};
+
 register('renderOverlay', () => {
+    checkForSetting(mainUIContainer, settings.attributeValueOverlay, overlayStatus);
+    checkForSetting(testBlock, settings.bobberCounter, overlayStatus);
     guiMover();
     renderWindow.draw()
 });
-//zweiwindows für beidefälle
+//zwei windows für beide fälle
 // register('postGuiRender', () => {
 //     postWindow.draw()
 // });
@@ -133,6 +138,17 @@ register('renderOverlay', () => {
 register('worldUnload', () => {
     closeEditing();
 });
+
+function checkForSetting(overlay, setting, statusObject){
+    if(setting && !statusObject[overlay]){
+        renderWindow.addChild(overlay);
+        statusObject[overlay] = true;
+    }
+    if(!setting && statusObject[overlay]){
+        renderWindow.removeChild(overlay);
+        statusObject[overlay] = false;
+    }
+}
 
 function closeEditing(){
     testGUISelected = false;
