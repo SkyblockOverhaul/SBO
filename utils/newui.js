@@ -26,6 +26,9 @@ const postWindow = new Window()
 this.gui.registerClicked((x,y,b) => this.renderWindow.mouseClick(x,y,b));
 this.gui.registerMouseDragged((x, y, b) => this.renderWindow.mouseDrag(x, y, b));
 this.gui.registerMouseReleased(() => this.renderWindow.mouseRelease());
+this.gui.registerClicked((x,y,b) => this.postWindow.mouseClick(x,y,b));
+this.gui.registerMouseDragged((x, y, b) => this.postWindow.mouseDrag(x, y, b));
+this.gui.registerMouseReleased(() => this.postWindow.mouseRelease());
 
 let overlayStatus = {
     mainUIContainer: false,
@@ -33,31 +36,40 @@ let overlayStatus = {
 };
 
 let testGUISelected = getTestGUISelected();
-
 register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
 
 register('renderOverlay', () => {
-    checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus);
+    // checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus, "render");
     guiMover();
     renderWindow.draw()
+});
+//zwei windows für beide fälle
+register('postGuiRender', () => {
+    checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus, "post");
+    postWindow.draw()
 });
 register('worldUnload', () => {
     closeEditing();
 });
-//zwei windows für beide fälle
-// register('postGuiRender', () => {
-//     postWindow.draw()
-// });
 
-function checkForSetting(overlay, setting, statusObject){
+function checkForSetting(overlay, setting, statusObject, type){
     if(!overlay) return;
     if(setting && !statusObject[overlay]){
-        //print overlay
-        renderWindow.addChild(overlay);
+        if(type === "render") {
+            renderWindow.addChild(overlay);
+        }
+        else if(type === "post"){
+            postWindow.addChild(overlay);
+        }
         statusObject[overlay] = true;
     }
     if(!setting && statusObject[overlay]){
-        renderWindow.removeChild(overlay);
+        if(type === "render") {
+            renderWindow.removeChild(overlay);
+        }
+        else if(type === "post"){
+            postWindow.removeChild(overlay);
+        }
         statusObject[overlay] = false;
     }
 }
@@ -66,11 +78,14 @@ function closeEditing(){
     testGUISelected = false;
     gui.close();
 }
-
+let firstDraw = false;
 function guiMover() {
     if (gui.isOpen()) {
         //Methode um examples zu setten hier hin
-        // postWindow.draw();
+        if (firstDraw === false) {
+            postWindow.draw();
+            firstDraw = true;
+        }
         Renderer.drawRect(
             Renderer.color(0, 0, 0, 70),
             0,
@@ -78,6 +93,9 @@ function guiMover() {
             Renderer.screen.getWidth(),
             Renderer.screen.getHeight()
         );
+    }
+    if (!gui.isOpen()) {
+        firstDraw = false;
     }
 }
 
