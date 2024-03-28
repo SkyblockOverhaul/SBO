@@ -83,6 +83,7 @@ registerWhen(register("step", () => {
     loadOverlay();
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
+        print("updating kuudra items with api");
         updateing = true;
         lastUpdate = Date.now();
         updateKuudraItems()
@@ -386,7 +387,7 @@ function refreshOverlay(totalValue) {
     if (totalValue != 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
     }
-
+    testOverlay.clearChildren();
     let kuudraText = new UIWrappedText(overlayString);
     kuudraText.setX(new SiblingConstraint());
     kuudraText.setY(new SiblingConstraint());
