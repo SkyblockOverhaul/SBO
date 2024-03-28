@@ -114,14 +114,17 @@ let footprint = [{x:0,y:0},{x:2,y:0},{x:4,y:0},{x:0,y:1},{x:2,y:1},{x:4,y:1},{x:
 let allFigures = [anker, tusk, pyrmaide, helix, clubbed, ugly, footprint];
 
 let allFossilCoords = [];
+let anzahlPositions = 0;
 let counter = {}
 let slotToHighlight = 0;
 function resetCoords() {
     allFossilCoords = [];
     counter = {};
     slotToHighlight = 0;
+    anzahlPositions = 0;
     for (let figur of allFigures) {
         calculatePositions(figur, mapSize).forEach(pos => {
+            anzahlPositions++;
             pos.forEach(p => {
                 allFossilCoords.push(p);
                 // print("Fossil at: " + p.x + " " + p.y);
@@ -145,19 +148,10 @@ function resetCoords() {
         }
     }
     print("Index with most fossils: " + slotToHighlight + " with " + max + " fossils");
+    print("Anzahl Positionen: " + anzahlPositions);
 }
 resetCoords();
 
-let guiOpenedCounter = 0;
-register("guiOpened", () => {
-    setTimeout(() => {
-        guiOpenedCounter++;
-    }, 300);
-});
-
-register("guiClosed", () => {
-    guiOpenedCounter = 0;
-});
 
 
 let fossilFoundAt = [];
@@ -169,7 +163,6 @@ register("guiMouseClick", () => {
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
-    if (guiOpenedCounter < 2) return;
     setTimeout(() => {
         let item = container.getStackInSlot(index);
         if (item == null) {
