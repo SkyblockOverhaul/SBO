@@ -1,15 +1,15 @@
 import {
+    SiblingConstraint,
+    FillConstraint,
+    CenterConstraint,
+    SubtractiveConstraint,
     AdditiveConstraint,
     animate,
     Animations,
-    CenterConstraint,
     ChildBasedMaxSizeConstraint,
     ChildBasedSizeConstraint,
     ConstantColorConstraint,
-    FillConstraint,
     ScissorEffect,
-    SiblingConstraint,
-    SubtractiveConstraint,
     UIBlock,
     UIContainer,
     UIMultilineTextInput,
@@ -19,11 +19,12 @@ import {
     Window
 } from "../../Elementa";
 const gui = new Gui();
-const window = new Window()
+const renderWindow = new Window()
+const postWindow = new Window()
 const Color = Java.type("java.awt.Color");
 this.gui.registerClicked((x,y,b) => this.window.mouseClick(x,y,b));
 this.gui.registerMouseDragged((x, y, b) => this.window.mouseDrag(x, y, b));
-this.gui.registerMouseReleased((x, y, b) => this.window.mouseRelease());
+this.gui.registerMouseReleased((x, y, b) => this.window.mouseRelease(x,y,b));
 
 let testGUISelected = false;
 
@@ -65,7 +66,7 @@ testText.onMouseLeave((comp) => {
 });
 
 
-window.addChildren(testBlock);
+renderWindow.addChildren(testBlock);
 testText.setX(new CenterConstraint());
 testText.setY(new CenterConstraint());
 testBlock.addChild(testText)
@@ -103,12 +104,13 @@ mainUIContainer.onMouseDrag((comp, mx, my) => {
 })
 mainUIContainer.addChild(new UIText("Settings").setX(new CenterConstraint()).setY((5).pixels()))
 
-window.addChild(mainUIContainer);
+renderWindow.addChild(mainUIContainer);
 
 
 function guiMover() {
     if (gui.isOpen()) {
-        window.draw();
+        //Methode um examples zu setten hier hin
+        // postWindow.draw();
         Renderer.drawRect(
             Renderer.color(0, 0, 0, 70),
             0,
@@ -121,8 +123,12 @@ function guiMover() {
 register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
 register('renderOverlay', () => {
     guiMover();
-    window.draw()
+    renderWindow.draw()
 });
+//zweiwindows für beidefälle
+// register('postGuiRender', () => {
+//     postWindow.draw()
+// });
 
 register('worldUnload', () => {
     closeEditing();
