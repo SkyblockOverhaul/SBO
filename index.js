@@ -86,3 +86,112 @@ register("chat", (player, message, event) =>{
 //     }, 150);
 // }).setName("sboinq");
 
+function rotateFigure(figure) {
+    let minX = Math.min(...figure.map(p => p.x));
+    let minY = Math.min(...figure.map(p => p.y));
+    return figure.map(p => ({x: p.y - minY, y: minX - p.x}));
+}
+
+function calculatePositions(figure, mapSize) {
+    let positions = [];
+    let rotations = [figure, rotateFigure(figure)];
+
+    for (let rotation of rotations) {
+        let figureWidth = Math.max(...rotation.map(p => p.x)) - Math.min(...rotation.map(p => p.x));
+        let figureHeight = Math.max(...rotation.map(p => p.y)) - Math.min(...rotation.map(p => p.y));
+
+        for (let x = 0; x <= mapSize.x - figureWidth; x++) {
+            for (let y = 0; y <= mapSize.y - figureHeight; y++) {
+                let newPosition = rotation.map(p => ({x: p.x + x, y: p.y + y}));
+                positions.push(newPosition);
+            }
+        }
+    }
+
+    return positions;
+}
+
+let figure = [{x:0,y:1},{x:1,y:2},{x:2,y:3},{x:3,y:3},{x:3,y:2},{x:3,y:1},{x:3,y:0},{x:4,y:3},{x:5,y:2},{x:6,y:1}];
+let mapSize = {x: 8, y: 5};
+
+
+positionen = calculatePositions(figure, mapSize);
+print("Anzahl Positionen: " + positionen.length);
+let renderSlots = [];
+
+indexDict = {
+    "00": 0,
+    "10": 1,
+    "20": 2,
+    "30": 3,
+    "40": 4,
+    "50": 5,
+    "60": 6,
+    "70": 7,
+    "80": 8,
+    "01": 9,
+    "11": 10,
+    "21": 11,
+    "31": 12,
+    "41": 13,
+    "51": 14,
+    "61": 15,
+    "71": 16,
+    "81": 17,
+    "02": 18,
+    "12": 19,
+    "22": 20,
+    "32": 21,
+    "42": 22,
+    "52": 23,
+    "62": 24,
+    "72": 25,
+    "82": 26,
+    "03": 27,
+    "13": 28,
+    "23": 29,
+    "33": 30,
+    "43": 31,
+    "53": 32,
+    "63": 33,
+    "73": 34,
+    "83": 35,
+    "04": 36,   
+    "14": 37,
+    "24": 38,
+    "34": 39,
+    "44": 40,
+    "54": 41,
+    "64": 42,
+    "74": 43,
+    "84": 44,
+    "05": 45,
+    "15": 46,
+    "25": 47,
+    "35": 48,
+    "45": 49,
+    "55": 50,
+    "65": 51,
+    "75": 52,
+    "85": 53
+};
+
+// for (let position of positionen) {
+    renderSlots = [];
+    for (let p of figure) {
+        let index = indexDict[`${p.x}${p.y}`];
+        const x = index % 9;
+        const y = Math.floor(index / 9);
+        const renderX = Renderer.screen.getWidth() / 2 + ((x - 4) * 18);
+        const renderY = (Renderer.screen.getHeight() + 10) / 2 + ((y - Player.getOpenedInventory().getSize() / 18) * 18);
+        renderSlots.push({x: renderX, y: renderY});
+        print(p.x + " " + p.y);
+    }
+// }
+
+register("postGuiRender", (gui) => {
+    for (let slot of renderSlots) {
+        Renderer.translate(0, 0, 260);
+        Renderer.drawRect(Renderer.color(0, 255, 127, 150), slot.x-9, slot.y-9, 17, 17);
+    }
+});

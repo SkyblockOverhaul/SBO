@@ -24,6 +24,7 @@ import {
     UIText,
     UIWrappedText,
     UIRoundedRectangle,
+    OutlineEffect,
 } from "../../Elementa";
 
 export function getkuudraValueOverlay(){
@@ -39,7 +40,6 @@ let testGUISelected = false;
 const Color = Java.type("java.awt.Color");
 const dragOffset = { x: 0, y: 0 };
 let testOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-testOverlay.setWidth(new AdditiveConstraint(new ChildBasedSizeConstraint(), new PixelConstraint(2)));
 testOverlay.setHeight(new AdditiveConstraint(new ChildBasedSizeConstraint(), new PixelConstraint(2)));
 testOverlay.onMouseClick((comp, event) => {
     testGUISelected = true;
@@ -166,7 +166,6 @@ function updateKuudraItems() {
 }
 
 chestItem = {
-    index: 0,
     name: "",
     value: 0,
     att1Name: "",
@@ -176,9 +175,13 @@ chestItem = {
 }
 
 class ItemString {
-    constructor(string, price) {
+    constructor(string, price, index, attributeItem) {
         this.string = string;
         this.price = price;
+        this.index = index;
+        this.attributeItem = attributeItem;
+        this.indexOfObj = undefined
+        
     }
 }
 let tier = 0;
@@ -246,7 +249,7 @@ function readContainerItems() {
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() == "container") return;
-    // ChatLib.chat("&r&6[SBO] &r&6&lGUI OPENED! " + container.getName());
+    // ChatLib.chat("&6[SBO] &6&lGUI OPENED! " + container.getName());
     const items = container.getItems();
     if (items.length == 0) return;
     
@@ -257,16 +260,16 @@ function readContainerItems() {
     if (container.getName() == "Paid Chest") {
         let keyPrice = getKeyPrice(tier);
         totalValue -= keyPrice;
-        tempString = `&r&c-${formatPrice(keyPrice)} &r&eTier ${tier} Key&r\n`;
-        chestItems.push(new ItemString(tempString, -keyPrice));
+        tempString = `&c-${formatPrice(keyPrice)} &eTier ${tier} Key\n`;
+        chestItems.push(new ItemString(tempString, -keyPrice, false));
 
         let essence = container.getStackInSlot(14).getNBT().toObject().tag.display.Name;
         essence = parseInt(essence.slice(essence.indexOf('x') + 1))
         
         essenceValue = getEsseceValue(essence);
         totalValue += essenceValue
-        tempString = `&r&6${formatPrice(essenceValue)} &r&eCrimson Essence&r\n`;
-        chestItems.push(new ItemString(tempString, essenceValue));
+        tempString = `&6${formatPrice(essenceValue)} &eCrimson Essence\n`;
+        chestItems.push(new ItemString(tempString, essenceValue, false));
     }
 
     items.forEach((item, index) => {
@@ -301,7 +304,6 @@ function readContainerItems() {
                 if (first) {
                     first = false;
                     let displayName = toTitleCase(itemId.replaceAll("_", " "));
-                    chestItems.index = index;
                     chestItem.name = displayName;
                     chestItem.att1Name = attributeShorts[name]+ " " + lvl;
                     chestItem.att1Value = price;
@@ -314,12 +316,12 @@ function readContainerItems() {
             }
             if (highestPrice != 0) {
                 totalValue += highestPrice;
-                tempString = `&r&6${formatPrice(highestPrice)} &r&e${chestItem.name}&r `
+                tempString = `&6${formatPrice(highestPrice)} &e${chestItem.name} `
                 if (settings.lineSetting == 0) {
                     tempString += `\n`
                 }
-                tempString += `&r&b(${chestItem.att1Name}/${chestItem.att2Name} - &r&6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
-                chestItems.push(new ItemString(tempString, highestPrice));
+                tempString += `&b(${chestItem.att1Name}/${chestItem.att2Name} - &6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
+                chestItems.push(new ItemString(tempString, highestPrice, index, true));
             }
         }
         else if (bazaarIds.includes(itemId)) {
@@ -328,16 +330,16 @@ function readContainerItems() {
             if (price == 0) return;
             totalValue += price;
             let displayName = toTitleCase(itemId.replaceAll("_", " ").replace("ULTIMATE", "").replace("ENCHANTMENT", ""));
-            tempString = `&r&6${formatPrice(price)} &r&e${displayName}&r\n`;
-            chestItems.push(new ItemString(tempString, price));
+            tempString = `&6${formatPrice(price)} &e${displayName}\n`;
+            chestItems.push(new ItemString(tempString, price, index, false));
         }
         else if (ahIds.includes(itemId)) {
             // auction house item
             let price = getAhPrice(itemId);
             totalValue += price;
             let displayName = toTitleCase(itemId.replaceAll("_", " "));
-            tempString = `&r&6${formatPrice(price)} &r&e${displayName}&r\n`;
-            chestItems.push(new ItemString(tempString, price));
+            tempString = `&6${formatPrice(price)} &e${displayName}\n`;
+            chestItems.push(new ItemString(tempString, price, index, false));
         }
         else if (itemId == "ATTRIBUTE_SHARD") {
             attributeDict = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").toObject();
@@ -347,15 +349,15 @@ function readContainerItems() {
                 name = "vitality";
             }
             if (!settings.attributeShards && container.getName() == "Paid Chest") {
-                tempString = `&r&60 &r&e${toTitleCase(name.replaceAll("_", " "))} Shard ${attributeDict[Object.keys(attributeDict)[0]]}&r\n`;
-                chestItems.push(new ItemString(tempString, 0));
+                tempString = `&60 &e${toTitleCase(name.replaceAll("_", " "))} Shard ${attributeDict[Object.keys(attributeDict)[0]]}\n`;
+                chestItems.push(new ItemString(tempString, 0, index));
             }
             else {
                 let price = getAttributePrice("ATTRIBUTE_SHARD", name, attributeDict[Object.keys(attributeDict)[0]]);
                 let displayName = toTitleCase(name.replaceAll("_", " ")) + " Shard";
                 totalValue += price;
-                tempString = `&r&6${formatPrice(price)} &r&e${displayName} ${attributeDict[Object.keys(attributeDict)[0]]}&r\n`;
-                chestItems.push(new ItemString(tempString, price));
+                tempString = `&6${formatPrice(price)} &e${displayName} ${attributeDict[Object.keys(attributeDict)[0]]}\n`;
+                chestItems.push(new ItemString(tempString, price, index));
             }
         }
 
@@ -369,6 +371,8 @@ register("guiClosed", () => {
     testOverlay.clearChildren();
 });
 
+
+
 function refreshOverlay(totalValue) {
     // sort itemStrings by price
     chestItems.sort((a, b) => {
@@ -379,42 +383,53 @@ function refreshOverlay(totalValue) {
     let counter = 1;
     let tempObj = undefined;
     let pixel = 0;
-    let pixelIncrement = 0;
-    if (settings.lineSetting == 0) {
-        pixelIncrement = 18;
-    }
-    else {
-        pixelIncrement = 9;
-    }
+    let pixelIncrementOne = 9;
+    let pixelIncrementTwo = 18;
+
     chestItems.forEach((item) => {
         if (counter <= settings.maxDisplayedItems) {
-            tempObj = new UIWrappedText(item.string);
-            tempObj.setX((0).pixels());
-            tempObj.setY((pixel).pixel());
-            tempObj.onMouseLeave((comp) => {
+            // tempObj = ;
+            guiStrings.push(new UIWrappedText(item.string));
+            item.indexOfObj = guiStrings.length-1;
+            guiStrings[item.indexOfObj].setX((0).pixels());
+            guiStrings[item.indexOfObj].setY((pixel).pixel());
+            guiStrings[item.indexOfObj].onMouseLeave((comp) => {
+                guiStrings[item.indexOfObj].setText(item.string);
+            });
+            guiStrings[item.indexOfObj].onMouseEnter((comp) => {
+                guiStrings[item.indexOfObj].effects;
                 print(item.index);
             });
-            guiStrings.push(tempObj);
-            overlayString += item.string;
+            // guiStrings.push(tempObj);
+            if (settings.lineSetting == 0) {
+                if (item.attributeItem) {
+                    pixel += pixelIncrementTwo;
+                }
+                else {
+                    pixel += pixelIncrementOne;
+                }
+            }
+            else {
+                pixel += pixelIncrementOne;
+            }
         }
         counter++;
-        pixel += pixelIncrement;
     });
     if (counter > settings.maxDisplayedItems) {
-        overlayString += `&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
-        tempObj = new UIWrappedText(`&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
+        overlayString += `&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
+        tempObj = new UIWrappedText(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
         tempObj.setX((0).pixels());
         tempObj.setY((pixel).pixel());
         guiStrings.push(tempObj);
-        pixel += pixelIncrement;
+        pixel += pixelIncrementOne;
     }
     if (totalValue != 0) {
-        overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
-        tempObj = new UIWrappedText(`&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`);
+        overlayString += `&eTotal Value: &6${formatPrice(totalValue)} coins`;
+        tempObj = new UIWrappedText(`&eTotal Value: &6${formatPrice(totalValue)} coins`);
         tempObj.setX((0).pixels());
         tempObj.setY((pixel).pixel());
         guiStrings.push(tempObj);
-        pixel += pixelIncrement;
+        pixel += pixelIncrementOne;
     }
     testOverlay.clearChildren();
     // let kuudraText = new UIWrappedText(overlayString);
