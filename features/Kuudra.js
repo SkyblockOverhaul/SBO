@@ -1,8 +1,7 @@
 import { getWorld } from "../utils/world";
 import { request } from "../../requestV2";
 import { toTitleCase } from "./../utils/functions";
-import { Overlay } from "./../utils/overlay";
-import { attributeShorts } from "./../utils/constants";
+import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
 import { loadGuiSettings, saveGuiSettings } from "./../utils/functions";
@@ -67,32 +66,11 @@ testOverlay.onMouseDrag((comp, mx, my) => {
     saveGuiSettings(guiSettings);
 });
 
-
-let loadKuudraOverlay = false;
-
-
 function loadOverlay(){
     if(guiSettings != undefined && !loadedtestOverlay) {
         testOverlay.setX((guiSettings["KuudraValueLoc"]["x"]).pixels());
         testOverlay.setY((guiSettings["KuudraValueLoc"]["y"]).pixels());
         loadedtestOverlay = true;
-    }
-}
-function kuudraOverlay() {
-    if (settings.attributeValueOverlay) {
-        if(guiSettings != undefined && !loadKuudraOverlay) {
-            kuudraValueOverlay.setX(guiSettings["KuudraValueLoc"]["x"]);
-            kuudraValueOverlay.setY(guiSettings["KuudraValueLoc"]["y"]);
-            kuudraValueOverlay.setScale(guiSettings["KuudraValueLoc"]["s"]);
-            loadKuudraOverlay = true;
-        }
-        if( guiSettings["KuudraValueLoc"]["x"] != kuudraValueOverlay.X || guiSettings["KuudraValueLoc"]["y"] != kuudraValueOverlay.Y || guiSettings["KuudraValueLoc"]["s"] != kuudraValueOverlay.S)
-        {
-            guiSettings["KuudraValueLoc"]["x"] = kuudraValueOverlay.X;
-            guiSettings["KuudraValueLoc"]["y"] = kuudraValueOverlay.Y;
-            guiSettings["KuudraValueLoc"]["s"] = kuudraValueOverlay.S;
-            saveGuiSettings(guiSettings);
-        }
     }
 }
 
@@ -103,7 +81,6 @@ let bazaarItems = undefined;
 registerWhen(register("step", () => {
     // update every 5 minutes
     loadOverlay();
-    // kuudraOverlay();
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
         updateing = true;
@@ -116,54 +93,8 @@ registerWhen(register("step", () => {
 }).setFps(1), () => settings.attributeValueOverlay);
 
 // to do:
-// loot table (price erkennen)
-// auction house items:
-// Enrager ignore attribute
-// Burning Kuudra Core
-// Aurora Staff ignore attribute
-// Hollow Wand ignore attribute
-// Tentacle Dye
-// all shards
-// Wheel Of Fate
-
 // bazaar items: 
 // Kuudra Teeth (tabasco II)  32
-
-// tier erkennen (siehe volc)
-
-bazaarIds = [
-    "MANDRAA", 
-    "KUUDRA_MANDIBLE", 
-    "ENCHANTMENT_STRONG_MANA_1",
-    "ENCHANTMENT_STRONG_MANA_2",
-    "ENCHANTMENT_STRONG_MANA_3",
-    "ENCHANTMENT_STRONG_MANA_4",
-    "ENCHANTMENT_STRONG_MANA_5",
-    "ENCHANTMENT_FEROCIOUS_MANA_1",
-    "ENCHANTMENT_FEROCIOUS_MANA_2",
-    "ENCHANTMENT_FEROCIOUS_MANA_3",
-    "ENCHANTMENT_FEROCIOUS_MANA_4",
-    "ENCHANTMENT_FEROCIOUS_MANA_5",
-    "ENCHANTMENT_HARDENED_MANA_1",  
-    "ENCHANTMENT_HARDENED_MANA_2",  
-    "ENCHANTMENT_HARDENED_MANA_3",
-    "ENCHANTMENT_HARDENED_MANA_4",
-    "ENCHANTMENT_HARDENED_MANA_5",
-    "ENCHANTMENT_MANA_VAMPIRE_1",
-    "ENCHANTMENT_MANA_VAMPIRE_2",
-    "ENCHANTMENT_MANA_VAMPIRE_3",
-    "ENCHANTMENT_MANA_VAMPIRE_4",
-    "ENCHANTMENT_MANA_VAMPIRE_5",
-    "ESSENCE_CRIMSON",
-    "ENCHANTMENT_ULTIMATE_INFERNO_1",
-    "ENCHANTMENT_ULTIMATE_FATAL_TEMPO_1",
-    "ENCHANTMENT_TABASCO_2",
-    "CHILI_PEPPER",
-    "ENCHANTED_MYCELIUM",
-    "ENCHANTED_RED_SAND",
-]
-
-ahIds = ["ENRAGER", "RUNIC_STAFF", "HOLLOW_WAND", "WHEEL_OF_FATE", "BURNING_KUUDRA_CORE", "TENTACLE_DYE"]
 
 function getKeyPrice(tier) {
     let value = 0;
@@ -232,45 +163,6 @@ function updateKuudraItems() {
         console.error(error);
     });
 }
-
-let allowedItemIds = [
-    "CRIMSON_HELMET",
-    "CRIMSON_CHESTPLATE",
-    "CRIMSON_LEGGINGS",
-    "CRIMSON_BOOTS",
-    "AURORA_HElMET",
-    "AURORA_CHESTPLATE",
-    "AURORA_LEGGINGS",
-    "AURORA_BOOTS",
-    "HOLLOW_HELMET",
-    "HOLLOW_CHESTPLATE",
-    "HOLLOW_LEGGINGS",
-    "HOLLOW_BOOTS",
-    "TERROR_HELMET",
-    "TERROR_CHESTPLATE",
-    "TERROR_LEGGINGS",
-    "TERROR_BOOTS",
-    "FERVOR_HELMET",
-    "FERVOR_CHESTPLATE",
-    "FERVOR_LEGGINGS",
-    "FERVOR_BOOTS",
-    "MOLTEN_NECKLACE",
-    "MOLTEN_BELT",
-    "MOLTEN_BRACELET",
-    "MOLTEN_CLOAK",];
-
-let overlayStringExample = `&r&62.49M &r&eTerror Chestplate&r
-&r&b(BL 5/BR 4 - &r&6100.00K/2.49M&b)
-&r&62.50M &r&eTerror Boots&r
-&r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
-&r&eTotal Value: &r&64.99M coins`;
-
-let kuudraValueOverlay = new Overlay("attributeValueOverlay", ["all", "misc"], [10, 10, 0], "sbomoveValueOverlay", overlayStringExample, "attributeValueOverlay");
-kuudraValueOverlay.setRenderGuiBool(false);
-
-register("guiClosed", () => {
-    kuudraValueOverlay.setRenderGuiBool(false);
-});
 
 chestItem = {
     name: "",
@@ -499,9 +391,6 @@ function refreshOverlay(totalValue) {
     kuudraText.setX(new SiblingConstraint());
     kuudraText.setY(new SiblingConstraint());
     testOverlay.addChild(kuudraText);
-
-    // kuudraValueOverlay.message = overlayString;
-    // kuudraValueOverlay.setRenderGuiBool(true);
 }
 
 function formatPrice(price) {
