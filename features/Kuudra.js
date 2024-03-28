@@ -33,12 +33,12 @@ export function getkuudraValueOverlay(){
 export function getkuudraValueOverlaySelected(){
     return kuudraValueOverlaySelected;
 }
+let guiSettings = loadGuiSettings();
+let loadedtestOverlay = false;
 let kuudraValueOverlaySelected = false;
 const Color = Java.type("java.awt.Color");
 const dragOffset = { x: 0, y: 0 };
 let testOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-testOverlay.setX((5).pixels()); // gsafte pos laden
-testOverlay.setY((5).pixels()); // gsafte pos laden
 testOverlay.setWidth(new AdditiveConstraint(new ChildBasedSizeConstraint(), new PixelConstraint(2)));
 testOverlay.setHeight(new AdditiveConstraint(new ChildBasedSizeConstraint(), new PixelConstraint(2)));
 testOverlay.onMouseClick((comp, event) => {
@@ -61,14 +61,22 @@ testOverlay.onMouseDrag((comp, mx, my) => {
     const newY = testOverlay.getTop() + dy;
     testOverlay.setX(newX.pixels());
     testOverlay.setY(newY.pixels());
+    guiSettings["KuudraValueLoc"]["x"] = newX;
+    guiSettings["KuudraValueLoc"]["y"] = newY;
+    saveGuiSettings(guiSettings);
 });
 
 
-let guiSettings = loadGuiSettings();
 let loadKuudraOverlay = false;
 
 
-
+function loadOverlay(){
+    if(guiSettings != undefined && !loadedtestOverlay) {
+        testOverlay.setX((guiSettings["KuudraValueLoc"]["x"]).pixels());
+        testOverlay.setY((guiSettings["KuudraValueLoc"]["y"]).pixels());
+        loadedtestOverlay = true;
+    }
+}
 function kuudraOverlay() {
     if (settings.attributeValueOverlay) {
         if(guiSettings != undefined && !loadKuudraOverlay) {
@@ -93,7 +101,8 @@ let kuudraItems = undefined;
 let bazaarItems = undefined;
 registerWhen(register("step", () => {
     // update every 5 minutes
-    kuudraOverlay();
+    loadOverlay();
+    // kuudraOverlay();
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
         updateing = true;

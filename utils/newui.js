@@ -14,6 +14,7 @@ import {
     UIContainer,
     UIMultilineTextInput,
     UIText,
+    UIWrappedText,
     WindowScreen,
     UIRoundedRectangle,
     Window
@@ -35,6 +36,16 @@ this.gui.registerMouseReleased(() => this.postWindow.mouseRelease());
 let overlayStatus = {
     mainUIContainer: false,
     testBlock: false
+};
+let postOverlayExample = {
+    kuudraExampleOne: `&r&62.49M &r&eTerror Chestplate&r
+&r&b(BL 5/BR 4 - &r&6100.00K/2.49M&b)
+&r&62.50M &r&eTerror Boots&r
+&r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
+&r&eTotal Value: &r&64.99M coins`,
+kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100.00K/600.00K&b)
+&r&62.50M &r&eTerror Boots&r &r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
+&r&eTotal Value: &r&63.1M coins`
 };
 
 let testGUISelected = getkuudraValueOverlaySelected();
@@ -85,6 +96,7 @@ function guiMover() {
     if (gui.isOpen()) {
         //Methode um examples zu setten hier hin
         if (firstDraw === false) {
+            exampleMessage(postOverlayExample["kuudraExampleTwo"], getkuudraValueOverlay());
             postWindow.draw();
             firstDraw = true;
         }
@@ -99,6 +111,10 @@ function guiMover() {
     if (!gui.isOpen()) {
         firstDraw = false;
     }
+}
+
+function exampleMessage(example, overlay){
+    overlay.addChild(new UIWrappedText(example).setX(new SiblingConstraint()).setY(new SiblingConstraint()));
 }
 
 // const Color = Java.type("java.awt.Color");
