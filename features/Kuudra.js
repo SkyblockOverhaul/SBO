@@ -453,6 +453,7 @@ function refreshOverlay(totalValue) {
     // sort itemStrings by price
     let kuudraText = undefined;
     testOverlay.clearChildren();
+    
     chestItems.sort((a, b) => {
         return b.price - a.price;
     });
