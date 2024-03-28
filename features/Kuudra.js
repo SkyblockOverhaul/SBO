@@ -1,4 +1,4 @@
-
+import { getWorld } from "../utils/world";
 import { request } from "../../requestV2";
 import { toTitleCase } from "./../utils/functions";
 import { Overlay } from "./../utils/overlay";
@@ -48,6 +48,7 @@ register("step", () => {
     }
 }).setFps(1);
 
+// to do:
 // loot table (price erkennen)
 // auction house items:
 // Enrager ignore attribute
@@ -59,16 +60,7 @@ register("step", () => {
 // Wheel Of Fate
 
 // bazaar items: 
-// Crimson Essence (kuudrapet auslesen (mehr essencen durch perk)) 
 // Kuudra Teeth (tabasco II)  32
-
-// redsand and mycelium  
-// avg key price tier 1 - 5 
-// tier 1: 200k 2
-// tier 2: 400k 6
-// tier 3: 750k 20
-// tier 4: 1.5m 60
-// tier 5: 3m 120
 
 // tier erkennen (siehe volc)
 
@@ -105,6 +97,7 @@ bazaarIds = [
 ]
 
 function getKeyPrice(tier) {
+    let value = 0;
     let avgMaterialPrice = 0;
     if (settings.keySetting == 0) {
         // buy offer
@@ -114,25 +107,38 @@ function getKeyPrice(tier) {
         // insta buy
         avgMaterialPrice = (bazaarItems.products["ENCHANTED_RED_SAND"].quick_status.buyPrice + bazaarItems.products["ENCHANTED_MYCELIUM"].quick_status.buyPrice)/2;
     }
-    
+    print("tier: " + tier);
+    print("avgMaterialPrice: " + avgMaterialPrice);
+    // default value is 0 cases 1-5
     switch(tier) {
         case 1:
-            return 200000 + avgMaterialPrice * 2;
+            value = 200000 + avgMaterialPrice * 2;
+            break;
         case 2:
-            return 400000 + avgMaterialPrice * 6;
+            value = 400000 + avgMaterialPrice * 6;
+            break;
         case 3:
-            return 750000 + avgMaterialPrice * 20;
+            value = 750000 + avgMaterialPrice * 20;
+            break;
         case 4:
-            return 1500000 + avgMaterialPrice * 60;
+            value = 1500000 + avgMaterialPrice * 60;
+            break;
         case 5:
-            return 3000000 + avgMaterialPrice * 120;
+            value = 3000000 + avgMaterialPrice * 120;
+            break;
+        default:
+            value = 0;
+            break;
     }
+    print("value: " + value);
+    return value;
 }
 
 function getBazaarPrice(itemId) {
     if (bazaarItems == undefined) return 0;
     if (bazaarItems.success == false) return 0;
     let product = bazaarItems.products[itemId];
+    if (product == undefined) return 0;
     if (settings.bazaarSetting == 0) {
         return product.quick_status.sellPrice;
     }
@@ -215,8 +221,23 @@ class ItemString {
         this.price = price;
     }
 }
-
-
+let tier = 0;
+let cooldown = false;
+registerWhen(register("step", () => {
+    if (!cooldown) {
+        cooldown = true;
+        let scoreBoardLines = Scoreboard.getLines();
+        if (scoreBoardLines != undefined) {
+            if (scoreBoardLines[scoreBoardLines.length - 4] != undefined) {
+                let tierString = `${scoreBoardLines[scoreBoardLines.length - 4]}`;
+                tier = parseInt(tierString.slice(-2, -1));
+            }
+        }
+        setTimeout(() => {
+            cooldown = false;
+        }, 30000);
+    }
+}).setFps(1), () => getWorld() == "Kuudra" && settings.recognizeRareRoom);
 
 registerWhen(register("guiMouseClick", (x, y, button, gui) => {
     setTimeout(() => {
@@ -230,6 +251,38 @@ registerWhen(register("guiOpened", () => {
         readContainerItems();
     }, 100);
 }), () => settings.attributeValueOverlay);
+
+function getEsseceValue(essence) {
+    let essenceValue = 0;
+    let essencensMultiplicator = 1;
+    if (settings.kuudraPetPerk == true) {
+        // settings.kuudraPetLevel = settings.kuudraPetLevel.replace(/\D/g, '');
+        let kuudraPetLevel = parseInt(settings.kuudraPetLevel);
+        if (kuudraPetLevel > 100) {
+            kuudraPetLevel = 100;
+        }
+        else if (kuudraPetLevel < 0) {
+            kuudraPetLevel = 0;
+        }
+        settings.kuudraPetLevel = kuudraPetLevel;
+
+        if (settings.kuudraPet == 0 || settings.kuudraPet == 1) {
+            essencensMultiplicator += kuudraPetLevel * 0.002;
+        }
+        else if (settings.kuudraPet == 2 || settings.kuudraPet == 3) {
+            essencensMultiplicator += kuudraPetLevel * 0.0015;
+        }
+        else if (settings.kuudraPet == 4) {
+            essencensMultiplicator += kuudraPetLevel * 0.001;
+        }
+    }
+    print("essencensMultiplicator: " + essencensMultiplicator);
+    print("essence: " + essence);
+
+    essenceValue = Math.floor(essence * essencensMultiplicator) * getBazaarPrice("ESSENCE_CRIMSON");
+    print("essenceValue: " + essenceValue);
+    return essenceValue;
+}
 
 function readContainerItems() {
     chestItems = [];
@@ -246,11 +299,18 @@ function readContainerItems() {
     let totalValue = 0;
     let essenceValue = 0;
     if (container.getName() == "Paid Chest") {
-        let tier = 5;
         let keyPrice = getKeyPrice(tier);
         totalValue -= keyPrice;
         tempString = `&r&c-${formatPrice(keyPrice)} &r&eTier ${tier} Key&r\n`;
         chestItems.push(new ItemString(tempString, -keyPrice));
+
+        let essence = container.getStackInSlot(14).getNBT().toObject().tag.display.Name;
+        essence = parseInt(essence.slice(essence.indexOf('x') + 1))
+        
+        essenceValue = getEsseceValue(essence);
+        totalValue += essenceValue
+        tempString = `&r&6${formatPrice(essenceValue)} &r&eCrimson Essence&r\n`;
+        chestItems.push(new ItemString(tempString, essenceValue));
     }
 
     items.forEach((item, index) => {
@@ -263,36 +323,6 @@ function readContainerItems() {
             let enchants = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments").toObject();
             itemId = ("ENCHANTMENT_" + Object.keys(enchants)[0] + "_" + enchants[Object.keys(enchants)[0]]).toUpperCase();
         } 
-
-        if (itemId == "ESSENCE_CRIMSON" && container.getName() == "Paid Chest") {
-            let essencensMultiplicator = 1;
-            if (settings.kuudraPetPerk == true) {
-                settings.kuudraPetLevel = settings.kuudraPetLevel.replace(/\D/g, '');
-                let kuudraPetLevel = parseInt(settings.kuudraPetLevel);
-                if (kuudraPetLevel > 100) {
-                    kuudraPetLevel = 100;
-                }
-                else if (kuudraPetLevel < 0) {
-                    kuudraPetLevel = 0;
-                }
-                settings.kuudraPetLevel = kuudraPetLevel;
-
-                if (settings.kuudraPet == 0 || settings.kuudraPet == 1) {
-                    essencensMultiplicator += kuudraPetLevel * 0.2;
-                }
-                else if (settings.kuudraPet == 2 || settings.kuudraPet == 3) {
-                    essencensMultiplicator += kuudraPetLevel * 0.15;
-                }
-                else if (settings.kuudraPet == 4) {
-                    essencensMultiplicator += kuudraPetLevel * 0.1;
-                }
-            }
-            
-            essenceValue = Math.floor(item.getNBT().toObject().tag.display.Name * essencensMultiplicator) * getBazaarPrice(itemId);
-            totalValue += essenceValue;
-            tempString = `&r&6${formatPrice(essenceValue)} &r&eCrimson Essence&r\n`;
-            chestItems.push(new ItemString(tempString, essenceValue));
-        }
 
         if (allowedItemIds.includes(itemId)) {
             // kuudra item
@@ -368,7 +398,7 @@ function refreshOverlay(totalValue) {
     if (counter > settings.maxDisplayedItems) {
         overlayString += `&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
     }
-    if (totalValue > 0) {
+    if (totalValue != 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
     }
     kuudraValueOverlay.message = overlayString;
