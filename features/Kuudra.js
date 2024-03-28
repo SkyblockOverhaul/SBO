@@ -6,6 +6,63 @@ import { attributeShorts } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
 import { loadGuiSettings, saveGuiSettings } from "./../utils/functions";
+import {
+    SiblingConstraint,
+    FillConstraint,
+    CenterConstraint,
+    SubtractiveConstraint,
+    AdditiveConstraint,
+    PixelConstraint,
+    animate,
+    Animations,
+    ChildBasedMaxSizeConstraint,
+    ChildBasedSizeConstraint,
+    ConstantColorConstraint,
+    ScissorEffect,
+    UIBlock,
+    UIContainer,
+    UIMultilineTextInput,
+    UIText,
+    UIWrappedText,
+    UIRoundedRectangle,
+} from "../../Elementa";
+
+export function getkuudraValueOverlay(){
+    return testOverlay;
+}
+export function getkuudraValueOverlaySelected(){
+    return kuudraValueOverlaySelected;
+}
+let kuudraValueOverlaySelected = false;
+const Color = Java.type("java.awt.Color");
+const dragOffset = { x: 0, y: 0 };
+let testOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+testOverlay.setX((5).pixels()); // gsafte pos laden
+testOverlay.setY((5).pixels()); // gsafte pos laden
+testOverlay.setWidth(new AdditiveConstraint(new ChildBasedSizeConstraint(), new PixelConstraint(2)));
+testOverlay.setHeight(new AdditiveConstraint(new ChildBasedSizeConstraint(), new PixelConstraint(2)));
+testOverlay.onMouseClick((comp, event) => {
+    testGUISelected = true;
+    dragOffset.x = event.absoluteX;
+    dragOffset.y = event.absoluteY;
+});
+testOverlay.onMouseRelease(() => {
+    testGUISelected = false;
+});
+testOverlay.onMouseDrag((comp, mx, my) => {
+    if (!testGUISelected) return;
+    const absoluteX = mx + comp.getLeft();
+    const absoluteY = my + comp.getTop();
+    const dx = absoluteX - dragOffset.x;
+    const dy = absoluteY - dragOffset.y;
+    dragOffset.x = absoluteX;
+    dragOffset.y = absoluteY;
+    const newX = testOverlay.getLeft() + dx;
+    const newY = testOverlay.getTop() + dy;
+    testOverlay.setX(newX.pixels());
+    testOverlay.setY(newY.pixels());
+});
+
 
 let guiSettings = loadGuiSettings();
 let loadKuudraOverlay = false;
@@ -392,9 +449,10 @@ function readContainerItems() {
     });
     refreshOverlay(totalValue);
 }
-
 function refreshOverlay(totalValue) {
     // sort itemStrings by price
+    let kuudraText = undefined;
+    testOverlay.clearChildren();
     chestItems.sort((a, b) => {
         return b.price - a.price;
     });
@@ -413,6 +471,13 @@ function refreshOverlay(totalValue) {
     if (totalValue != 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
     }
+
+
+    kuudraText = new UIWrappedText(overlayString);
+    kuudraText.setX(new SiblingConstraint());
+    kuudraText.setY(new SiblingConstraint());
+    testOverlay.addChild(kuudraText);
+
     kuudraValueOverlay.message = overlayString;
     kuudraValueOverlay.setRenderGuiBool(true);
 }

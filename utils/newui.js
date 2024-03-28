@@ -19,7 +19,8 @@ import {
     Window
 } from "../../Elementa";
 import settings from "./../settings";
-import { getTestUI, getTestGUISelected } from "../features/teste";
+// import { getTestUI, getTestGUISelected } from "../features/teste";
+import { getkuudraValueOverlay, getkuudraValueOverlaySelected} from "../features/kuudra";
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
@@ -35,7 +36,7 @@ let overlayStatus = {
     testBlock: false
 };
 
-let testGUISelected = getTestGUISelected();
+let testGUISelected = getkuudraValueOverlaySelected();
 register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
 
 register('renderOverlay', () => {
@@ -45,7 +46,7 @@ register('renderOverlay', () => {
 });
 //zwei windows für beide fälle
 register('postGuiRender', () => {
-    checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus, "post");
+    // checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, overlayStatus, "post");
     postWindow.draw()
 });
 register('worldUnload', () => {
