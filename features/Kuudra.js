@@ -107,8 +107,6 @@ function getKeyPrice(tier) {
         // insta buy
         avgMaterialPrice = (bazaarItems.products["ENCHANTED_RED_SAND"].quick_status.buyPrice + bazaarItems.products["ENCHANTED_MYCELIUM"].quick_status.buyPrice)/2;
     }
-    print("tier: " + tier);
-    print("avgMaterialPrice: " + avgMaterialPrice);
     // default value is 0 cases 1-5
     switch(tier) {
         case 1:
@@ -130,7 +128,6 @@ function getKeyPrice(tier) {
             value = 0;
             break;
     }
-    print("value: " + value);
     return value;
 }
 
@@ -276,11 +273,7 @@ function getEsseceValue(essence) {
             essencensMultiplicator += kuudraPetLevel * 0.001;
         }
     }
-    print("essencensMultiplicator: " + essencensMultiplicator);
-    print("essence: " + essence);
-
     essenceValue = Math.floor(essence * essencensMultiplicator) * getBazaarPrice("ESSENCE_CRIMSON");
-    print("essenceValue: " + essenceValue);
     return essenceValue;
 }
 
