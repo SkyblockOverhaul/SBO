@@ -36,6 +36,7 @@ export function getkuudraValueOverlaySelected(){
 let guiSettings = loadGuiSettings();
 let loadedtestOverlay = false;
 let kuudraValueOverlaySelected = false;
+let testGUISelected = false;
 const Color = Java.type("java.awt.Color");
 const dragOffset = { x: 0, y: 0 };
 let testOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
