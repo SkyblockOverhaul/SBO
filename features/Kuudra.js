@@ -372,26 +372,43 @@ function refreshOverlay(totalValue) {
     chestItems.sort((a, b) => {
         return b.price - a.price;
     });
-
+    let guiStrings = [];
     let overlayString = "";
     let counter = 1;
+    let tempObj = undefined;
     chestItems.forEach((item) => {
         if (counter <= settings.maxDisplayedItems) {
+            tempObj = new UIWrappedText(item.string);
+            tempObj.setX((0).pixels());
+            tempObj.setY(new SiblingConstraint());
+            guiStrings.push(tempObj);
             overlayString += item.string;
         }
         counter++;
     });
     if (counter > settings.maxDisplayedItems) {
         overlayString += `&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
+        tempObj = new UIWrappedText(`&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
+        tempObj.setX((0).pixels());
+        tempObj.setY(new SiblingConstraint());
+        guiStrings.push(tempObj);
+        
     }
     if (totalValue != 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
+        tempObj = new UIWrappedText(`&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`);
+        tempObj.setX((0).pixels());
+        tempObj.setY(new SiblingConstraint());
+        guiStrings.push(tempObj);
     }
     testOverlay.clearChildren();
-    let kuudraText = new UIWrappedText(overlayString);
-    kuudraText.setX(new SiblingConstraint());
-    kuudraText.setY(new SiblingConstraint());
-    testOverlay.addChild(kuudraText);
+    // let kuudraText = new UIWrappedText(overlayString);
+    // kuudraText.setX(new SiblingConstraint());
+    // kuudraText.setY(new SiblingConstraint());
+    for (let i = 0; i < guiStrings.length; i++) {
+        testOverlay.addChild(guiStrings[i]);
+    }
+    // testOverlay.addChild(kuudraText);
 }
 
 function formatPrice(price) {
