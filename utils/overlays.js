@@ -99,14 +99,7 @@ let firstDraw = false;
 function guiMover() {
     if (gui.isOpen()) {
         if (firstDraw === false) {
-            switch(settings.lineSetting){
-                case 0:
-                    exampleMessage(overlayExamples["kuudraExampleTwo"], getkuudraValueOverlay());
-                    break;
-                case 1:
-                    exampleMessage(overlayExamples["kuudraExampleOne"], getkuudraValueOverlay());
-                    break;
-            }
+            drawExamples();
             postWindow.draw();
             firstDraw = true;
         }
@@ -120,6 +113,17 @@ function guiMover() {
     }
     if (!gui.isOpen()) {
         firstDraw = false;
+    }
+}
+
+function drawExamples(){
+    switch(settings.lineSetting){
+        case 0:
+            exampleMessage(overlayExamples["kuudraExampleTwo"], getkuudraValueOverlay());
+            break;
+        case 1:
+            exampleMessage(overlayExamples["kuudraExampleOne"], getkuudraValueOverlay());
+            break;
     }
 }
 
