@@ -19,6 +19,7 @@ import {
     Window
 } from "../../Elementa";
 import settings from "./../settings";
+// siehe https://github.com/EssentialGG/Elementa für mehr infos
 // import { getTestUI, getTestGUISelected } from "../features/teste";
 import { getkuudraValueOverlay, getkuudraValueOverlaySelected} from "../features/kuudra";
 const gui = new Gui();
