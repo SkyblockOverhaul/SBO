@@ -20,6 +20,7 @@ import {
 } from "../../Elementa";
 const gui = new Gui();
 const renderWindow = new Window()
+const postWindow = new Window()
 const Color = Java.type("java.awt.Color");
 this.gui.registerClicked((x,y,b) => this.window.mouseClick(x,y,b));
 this.gui.registerMouseDragged((x, y, b) => this.window.mouseDrag(x, y, b));
