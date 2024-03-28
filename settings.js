@@ -61,9 +61,8 @@ class Settings {
         this.addDependency('Display Attribute in Overlay','Attribute value Overlay');
         this.addDependency('Bazaar Setting','Attribute value Overlay');
         this.addDependency('Key Price','Attribute value Overlay');
-        this.addDependency('Use Kuudra Pet Perk','Attribute value Overlay');
-        this.addDependency('Kuudra Pet Rarity','Use Kuudra Pet Perk');
-        this.addDependency('Kuudra Pet Level','Use Kuudra Pet Perk'); //use kuudra pet perk weg stattdessen none bei kuudra pet rarity
+        this.addDependency('Kuudra Pet Rarity','Attribute value Overlay');
+        this.addDependency('Kuudra Pet Level','Attribute value Overlay'); //use kuudra pet perk weg stattdessen none bei kuudra pet rarity
     }
 
     //-----------Diana Burrows----------------
@@ -389,17 +388,11 @@ class Settings {
         options: ['Instabuy','Buy Offer'],
     })
     keySetting = 0;
-    @SwitchProperty({
-        name: 'Use Kuudra Pet Perk',
-        description: 'Use the kuudra pet perk for essence calculation',
-        category: 'Kuudra',
-    })
-    kuudraPetPerk = false;
     @SelectorProperty({
         name: 'Kuudra Pet Rarity',
         description: 'Set the rarity of your pet for essence perk',
         category: 'Kuudra',
-        options: ['Legendary','Epic','Rare','Uncommon','Common'],
+        options: ['Legendary','Epic','Rare','Uncommon','Common','None'],
     })
     kuudraPet = 0;
     @TextProperty({
