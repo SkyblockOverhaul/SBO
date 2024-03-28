@@ -62,7 +62,8 @@ class Settings {
         this.addDependency('Bazaar Setting','Attribute value Overlay');
         this.addDependency('Key Price','Attribute value Overlay');
         this.addDependency('Kuudra Pet Rarity','Attribute value Overlay');
-        this.addDependency('Kuudra Pet Level','Attribute value Overlay'); //use kuudra pet perk weg stattdessen none bei kuudra pet rarity
+        this.addDependency('Kuudra Pet Level','Attribute value Overlay');
+        this.addDependency('Attribute Shards for Chest Profit','Attribute value Overlay');
     }
 
     //-----------Diana Burrows----------------
@@ -401,6 +402,12 @@ class Settings {
         category: 'Kuudra',
     })
     kuudraPetLevel = "100";
+    @SwitchProperty({
+        name: 'Attribute Shards for Chest Profit',
+        description: 'Use attribute shards for chest profit calculation',
+        category: 'Kuudra',
+    })
+    attributeShards = false;
 
 
     // General other

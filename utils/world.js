@@ -62,3 +62,63 @@ register("worldLoad", () => {
     noFind = 0; // Resetting the counter when the world loads
     findWorld(); // Finding the current world and its features
 });
+
+
+function getAttributePrice(itemId, attribute, lvl) {
+    let tier5Shard = false;
+    let valueModifier = 1;
+    if (itemId != "ATTRIBUTE_SHARD") {
+        itemId = itemId.split("_")[1]
+    }
+    else {
+        if (attribute != "magic_find") {
+            valueModifier = 0.8;
+        }
+    }
+
+
+    if (kuudraItems[itemId] != undefined) {
+        if (itemId == "ATTRIBUTE_SHARD" && lvl >= 4) {
+            if (attribute == "magic_find") {
+                lvl = 4;
+            }
+            else {
+                lvl = 3;
+                tier5Shard = true;
+            }
+        }
+        else {
+            tier5Shard = false;
+        }
+            
+        if (kuudraItems[itemId][attribute + "_" + lvl] != undefined) {
+            if (tier5Shard) {
+                return (kuudraItems[itemId][attribute + "_" + lvl].price * 2) * valueModifier;
+            }
+            return (kuudraItems[itemId][attribute + "_" + lvl].price) * valueModifier;
+        }
+        else {
+            let counter = 0;
+            for (let i = lvl; i > 0; i--) {
+                counter++;
+                if (kuudraItems[itemId][attribute + "_" + i] != undefined) {
+                    print("attribute: " + attribute + " " + i + " price: " + kuudraItems[itemId][attribute + "_" + i].price);
+                    if (tier5Shard) {
+                        return (kuudraItems[itemId][attribute + "_" + i].price * (2**counter) * 2) * valueModifier;
+                    }
+                    return (kuudraItems[itemId][attribute + "_" + i].price * (2**counter)) * valueModifier;
+                }
+                else {
+                    console.log("attribute: " + attribute + " " + i + " price: not found");
+                
+                }
+            }
+            console.log("attribute: " + attribute + " " + lvl + " price: not found");
+            return 0;
+        }
+    }
+    else {
+        console.log("itemId: " + itemId + " price: not found");
+        return 0;
+    }
+}
