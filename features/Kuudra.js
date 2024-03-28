@@ -239,14 +239,14 @@ registerWhen(register("step", () => {
 registerWhen(register("guiMouseClick", (x, y, button, gui) => {
     setTimeout(() => {
         readContainerItems();
-    }, 200);
+    }, 400);
 }), () => settings.attributeValueOverlay);
 
 let chestItems = [];
 registerWhen(register("guiOpened", () => {
     setTimeout(() => {
         readContainerItems();
-    }, 100);
+    }, 400);
 }), () => settings.attributeValueOverlay);
 
 function getEsseceValue(essence) {
