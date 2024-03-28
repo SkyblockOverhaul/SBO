@@ -166,6 +166,7 @@ function updateKuudraItems() {
 }
 
 chestItem = {
+    index: 0,
     name: "",
     value: 0,
     att1Name: "",
@@ -300,6 +301,7 @@ function readContainerItems() {
                 if (first) {
                     first = false;
                     let displayName = toTitleCase(itemId.replaceAll("_", " "));
+                    chestItems.index = index;
                     chestItem.name = displayName;
                     chestItem.att1Name = attributeShorts[name]+ " " + lvl;
                     chestItem.att1Value = price;
@@ -376,30 +378,43 @@ function refreshOverlay(totalValue) {
     let overlayString = "";
     let counter = 1;
     let tempObj = undefined;
+    let pixel = 0;
+    let pixelIncrement = 0;
+    if (settings.lineSetting == 0) {
+        pixelIncrement = 18;
+    }
+    else {
+        pixelIncrement = 9;
+    }
     chestItems.forEach((item) => {
         if (counter <= settings.maxDisplayedItems) {
             tempObj = new UIWrappedText(item.string);
             tempObj.setX((0).pixels());
-            tempObj.setY(new SiblingConstraint());
+            tempObj.setY((pixel).pixel());
+            tempObj.onMouseLeave((comp) => {
+                print(item.index);
+            });
             guiStrings.push(tempObj);
             overlayString += item.string;
         }
         counter++;
+        pixel += pixelIncrement;
     });
     if (counter > settings.maxDisplayedItems) {
         overlayString += `&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
         tempObj = new UIWrappedText(`&r&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
         tempObj.setX((0).pixels());
-        tempObj.setY(new SiblingConstraint());
+        tempObj.setY((pixel).pixel());
         guiStrings.push(tempObj);
-        
+        pixel += pixelIncrement;
     }
     if (totalValue != 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
         tempObj = new UIWrappedText(`&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`);
         tempObj.setX((0).pixels());
-        tempObj.setY(new SiblingConstraint());
+        tempObj.setY((pixel).pixel());
         guiStrings.push(tempObj);
+        pixel += pixelIncrement;
     }
     testOverlay.clearChildren();
     // let kuudraText = new UIWrappedText(overlayString);

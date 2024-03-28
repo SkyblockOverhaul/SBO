@@ -370,7 +370,7 @@ class Settings {
     maxDisplayedItems = 15;
     @SelectorProperty({
         name: 'Display Attribute in Overlay',
-        description: 'Select if attributes are displayed in one ore two lines',
+        description: 'Select if attributes are displayed in one or two lines',
         category: 'Kuudra',
         options: ['two lines','one line'],
     })
