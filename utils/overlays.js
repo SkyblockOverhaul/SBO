@@ -37,7 +37,7 @@ let overlayStatus = {
     mainUIContainer: false,
     testBlock: false
 };
-let postOverlayExample = {
+let overlayExamples = {
     kuudraExampleOne: `&r&62.49M &r&eTerror Chestplate&r
 &r&b(BL 5/BR 4 - &r&6100.00K/2.49M&b)
 &r&62.50M &r&eTerror Boots&r
@@ -47,7 +47,7 @@ kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100
 &r&62.50M &r&eTerror Boots&r &r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
 &r&eTotal Value: &r&63.1M coins`
 };
-let testGUISelected = getkuudraValueOverlaySelected();
+let kuudraValueOverlaySelected = getkuudraValueOverlaySelected();
 
 
 register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
@@ -91,15 +91,22 @@ function checkForSetting(overlay, setting, statusObject, type){
 }
 
 function closeEditing(){
-    testGUISelected = false;
+    kuudraValueOverlaySelected = false;
     gui.close();
 }
-let firstDraw = false;
 
+let firstDraw = false;
 function guiMover() {
     if (gui.isOpen()) {
         if (firstDraw === false) {
-            exampleMessage(postOverlayExample["kuudraExampleTwo"], getkuudraValueOverlay());
+            switch(settings.lineSetting){
+                case 0:
+                    exampleMessage(overlayExamples["kuudraExampleTwo"], getkuudraValueOverlay());
+                    break;
+                case 1:
+                    exampleMessage(overlayExamples["kuudraExampleOne"], getkuudraValueOverlay());
+                    break;
+            }
             postWindow.draw();
             firstDraw = true;
         }
