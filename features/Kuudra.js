@@ -248,7 +248,7 @@ let chestItems = [];
 registerWhen(register("guiOpened", () => {
     setTimeout(() => {
         readContainerItems();
-    }, 400);
+    }, 300);
 }), () => settings.attributeValueOverlay);
 
 function getEsseceValue(essence) {
