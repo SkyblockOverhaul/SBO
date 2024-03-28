@@ -339,6 +339,7 @@ function getEsseceValue(essence) {
 function readContainerItems() {
     chestItems = [];
     if (kuudraItems == undefined) return;
+    refreshOverlay(0);
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() == "container") return;
@@ -452,8 +453,11 @@ function readContainerItems() {
 function refreshOverlay(totalValue) {
     // sort itemStrings by price
     let kuudraText = undefined;
-    testOverlay.clearChildren();
-    
+    if (totalValue == 0) {
+        testOverlay.clearChildren();
+        return;
+    }
+
     chestItems.sort((a, b) => {
         return b.price - a.price;
     });
@@ -472,7 +476,6 @@ function refreshOverlay(totalValue) {
     if (totalValue != 0) {
         overlayString += `&r&eTotal Value: &r&6${formatPrice(totalValue)} coins`;
     }
-
 
     kuudraText = new UIWrappedText(overlayString);
     kuudraText.setX(new SiblingConstraint());
