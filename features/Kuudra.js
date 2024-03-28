@@ -34,7 +34,7 @@ let lastUpdate = 0;
 let updateing = false;
 let kuudraItems = undefined;
 let bazaarItems = undefined;
-register("step", () => {
+registerWhen(register("step", () => {
     // update every 5 minutes
     kuudraOverlay();
     if (updateing) return;
@@ -46,7 +46,7 @@ register("step", () => {
             updateing = false;
         }, 300000);
     }
-}).setFps(1);
+}).setFps(1), () => settings.attributeValueOverlay);
 
 // to do:
 // loot table (price erkennen)
@@ -95,6 +95,8 @@ bazaarIds = [
     "ENCHANTED_MYCELIUM",
     "ENCHANTED_RED_SAND",
 ]
+
+ahIds = ["ENRAGER", "RUNIC_STAFF", "HOLLOW_WAND", "WHEEL_OF_FATE", "BURNING_KUUDRA_CORE", "TENTACLE_DYE"]
 
 function getKeyPrice(tier) {
     let value = 0;
@@ -367,6 +369,23 @@ function readContainerItems() {
             tempString = `&r&6${formatPrice(price)} &r&e${displayName}&r\n`;
             chestItems.push(new ItemString(tempString, price));
         }
+        else if (ahIds.includes(itemId)) {
+            // auction house item
+            let price = getAhPrice(itemId);
+            totalValue += price;
+            let displayName = toTitleCase(itemId.replaceAll("_", " "));
+            tempString = `&r&6${formatPrice(price)} &r&e${displayName}&r\n`;
+            chestItems.push(new ItemString(tempString, price));
+        }
+        else if (itemId == "ATTRIBUTE_SHARD") {
+            attributeDict = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").toObject();
+            if (attributeDict == null) return;
+            let price = getAttributePrice("ATTRIBUTE_SHARD", Object.keys(attributeDict)[0], attributeDict[Object.keys(attributeDict)[0]]);
+            let displayName = toTitleCase(Object.keys(attributeDict)[0].replaceAll("_", " ")) + " Shard";
+            totalValue += price;
+            tempString = `&r&6${formatPrice(price)} &r&e${displayName}&r\n`;
+            chestItems.push(new ItemString(tempString, price));
+        }
 
 
         
@@ -399,33 +418,76 @@ function refreshOverlay(totalValue) {
 }
 
 function formatPrice(price) {
-    if (price >= 1000000) {
+    if (price >= 1000000000) {
+        return (price / 1000000000).toFixed(2) + "B";
+    }
+    else if (price >= 1000000) {
         return (price / 1000000).toFixed(2) + "M";
     }
     else if (price >= 1000) {
         return (price / 1000).toFixed(2) + "K";
     }
-    else if (price >= 1000000000) {
-        return (price / 1000000000).toFixed(2) + "B";
-    }
     return price;
 }
 
 function getAttributePrice(itemId, attribute, lvl) {
-    if (kuudraItems[itemId.split("_")[1]][attribute + "_" + lvl] != undefined) {
-        return kuudraItems[itemId.split("_")[1]][attribute + "_" + lvl].price;
+    let tier5Shard = false;
+    let valueModifier = 1;
+    if (itemId != "ATTRIBUTE_SHARD") {
+        itemId = itemId.split("_")[1]
     }
     else {
-        let counter = 0;
-        for (let i = lvl; i > 0; i--) {
-            counter++;
-            if (kuudraItems[itemId.split("_")[1]][attribute + "_" + i] != undefined) {
-                return kuudraItems[itemId.split("_")[1]][attribute + "_" + i].price * (2**counter);
-            }
+        valueModifier = 0.8;
+    }
+
+    if (attribute == "mending") {
+        attribute = "vitality";
+    }
+
+    if (kuudraItems[itemId] != undefined) {
+        if (itemId == "ATTRIBUTE_SHARD" && lvl > 4) {
+            lvl = 4;
+            tier5Shard = true;
         }
-        console.log("attribute: " + attribute + " " + lvl + " price: not found");
+        else {
+            tier5Shard = false;
+        }
+            
+        if (kuudraItems[itemId][attribute + "_" + lvl] != undefined) {
+            if (tier5Shard) {
+                return (kuudraItems[itemId][attribute + "_" + lvl].price * 2) * valueModifier;
+            }
+            return (kuudraItems[itemId][attribute + "_" + lvl].price) * valueModifier;
+        }
+        else {
+            let counter = 0;
+            for (let i = lvl; i > 0; i--) {
+                counter++;
+                if (kuudraItems[itemId][attribute + "_" + i] != undefined) {
+                    if (tier5Shard) {
+                        return (kuudraItems[itemId][attribute + "_" + i].price * (2**counter) * 2) * valueModifier;
+                    }
+                    return (kuudraItems[itemId][attribute + "_" + i].price * (2**counter)) * valueModifier;
+                }
+            }
+            console.log("attribute: " + attribute + " " + lvl + " price: not found");
+            return 0;
+        }
+    }
+    else {
+        console.log("itemId: " + itemId + " price: not found");
         return 0;
     }
+}
+
+function getAhPrice(itemId) {
+    if (kuudraItems["OTHER"][itemId] != undefined) {
+        return kuudraItems["OTHER"][itemId].price;
+    }
+    else {
+        console.log("itemId: " + itemId + " price: not found");
+        return 0;
+    }    
 }
 
 function getPrice(itemId, attribute, lvl) {
