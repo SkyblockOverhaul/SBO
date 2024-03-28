@@ -19,9 +19,9 @@ import {
     Window
 } from "../../Elementa";
 import settings from "./../settings";
-// siehe https://github.com/EssentialGG/Elementa für mehr infos
+// siehe https://github.com/EssentialGG/Elementa für mehr 
 // import { getTestUI, getTestGUISelected } from "../features/teste";
-import { getkuudraValueOverlay, getkuudraValueOverlaySelected} from "../features/kuudra";
+import { getkuudraValueOverlay, getkuudraValueOverlaySelected} from "../features/Kuudra";
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
@@ -47,7 +47,7 @@ register('renderOverlay', () => {
 });
 //zwei windows für beide fälle
 register('postGuiRender', () => {
-    // checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, overlayStatus, "post");
+    checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, overlayStatus, "post");
     postWindow.draw()
 });
 register('worldUnload', () => {
