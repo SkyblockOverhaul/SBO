@@ -18,6 +18,8 @@ import "./features/dungeon/recognizeRareRoom";
 import "./features/general/alphaCheck";
 import "./utils/overlays";
 
+import { indexDict, indexDictReverse } from "./utils/constants";
+
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
@@ -86,112 +88,148 @@ register("chat", (player, message, event) =>{
 //     }, 150);
 // }).setName("sboinq");
 
-function rotateFigure(figure) {
-    let minX = Math.min(...figure.map(p => p.x));
-    let minY = Math.min(...figure.map(p => p.y));
-    return figure.map(p => ({x: p.y - minY, y: minX - p.x}));
-}
-
 function calculatePositions(figure, mapSize) {
     let positions = [];
-    let rotations = [figure, rotateFigure(figure)];
+    let figureWidth = Math.max(...figure.map(p => p.x)) - Math.min(...figure.map(p => p.x));
+    let figureHeight = Math.max(...figure.map(p => p.y)) - Math.min(...figure.map(p => p.y));
 
-    for (let rotation of rotations) {
-        let figureWidth = Math.max(...rotation.map(p => p.x)) - Math.min(...rotation.map(p => p.x));
-        let figureHeight = Math.max(...rotation.map(p => p.y)) - Math.min(...rotation.map(p => p.y));
-
-        for (let x = 0; x <= mapSize.x - figureWidth; x++) {
-            for (let y = 0; y <= mapSize.y - figureHeight; y++) {
-                let newPosition = rotation.map(p => ({x: p.x + x, y: p.y + y}));
-                positions.push(newPosition);
-            }
+    for (let x = 0; x <= mapSize.x - figureWidth; x++) {
+        for (let y = 0; y <= mapSize.y - figureHeight; y++) {
+            let newPosition = figure.map(p => ({x: p.x + x, y: p.y + y}));
+            positions.push(newPosition);
         }
     }
 
     return positions;
 }
 
-let figure = [{x:0,y:1},{x:1,y:2},{x:2,y:3},{x:3,y:3},{x:3,y:2},{x:3,y:1},{x:3,y:0},{x:4,y:3},{x:5,y:2},{x:6,y:1}];
 let mapSize = {x: 8, y: 5};
+let anker = [{x:0,y:1},{x:1,y:2},{x:2,y:3},{x:3,y:3},{x:3,y:2},{x:3,y:1},{x:3,y:0},{x:4,y:3},{x:5,y:2},{x:6,y:1}];
+let tusk = [{x:2,y:0},{x:1,y:1},{x:3,y:1},{x:0,y:2},{x:1,y:3},{x:2,y:4},{x:3,y:4},{x:4,y:4}];
+let pyrmaide = [{x:0,y:0},{x:0,y:1},{x:1,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2},{x:0,y:3},{x:1,y:3},{x:2,y:3},{x:0,y:4},{x:1,y:4},{x:0,y:5}];
+let helix = [{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:3,y:0},{x:4,y:0},{x:0,y:1},{x:4,y:1},{x:0,y:2},{x:2,y:2},{x:4,y:2},{x:0,y:3},{x:2,y:3},{x:3,y:3},{x:4,y:3}];
+let clubbed = [{x:6,y:0},{x:7,y:0},{x:1,y:1},{x:6,y:1},{x:7,y:1},{x:0,y:2},{x:5,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:4,y:3}];
+let ugly = [{x:1,y:0},{x:0,y:1},{x:1,y:1},{x:2,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:0,y:3},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:0,y:4},{x:1,y:4},{x:2,y:4},{x:1,y:5}];
+let footprint = [{x:0,y:0},{x:2,y:0},{x:4,y:0},{x:0,y:1},{x:2,y:1},{x:4,y:1},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:2,y:4}];
+let allFigures = [anker, tusk, pyrmaide, helix, clubbed, ugly, footprint];
 
-
-positionen = calculatePositions(figure, mapSize);
-print("Anzahl Positionen: " + positionen.length);
-let renderSlots = [];
-
-indexDict = {
-    "00": 0,
-    "10": 1,
-    "20": 2,
-    "30": 3,
-    "40": 4,
-    "50": 5,
-    "60": 6,
-    "70": 7,
-    "80": 8,
-    "01": 9,
-    "11": 10,
-    "21": 11,
-    "31": 12,
-    "41": 13,
-    "51": 14,
-    "61": 15,
-    "71": 16,
-    "81": 17,
-    "02": 18,
-    "12": 19,
-    "22": 20,
-    "32": 21,
-    "42": 22,
-    "52": 23,
-    "62": 24,
-    "72": 25,
-    "82": 26,
-    "03": 27,
-    "13": 28,
-    "23": 29,
-    "33": 30,
-    "43": 31,
-    "53": 32,
-    "63": 33,
-    "73": 34,
-    "83": 35,
-    "04": 36,   
-    "14": 37,
-    "24": 38,
-    "34": 39,
-    "44": 40,
-    "54": 41,
-    "64": 42,
-    "74": 43,
-    "84": 44,
-    "05": 45,
-    "15": 46,
-    "25": 47,
-    "35": 48,
-    "45": 49,
-    "55": 50,
-    "65": 51,
-    "75": 52,
-    "85": 53
-};
-
-// for (let position of positionen) {
-    renderSlots = [];
-    for (let p of figure) {
-        let index = indexDict[`${p.x}${p.y}`];
-        const x = index % 9;
-        const y = Math.floor(index / 9);
-        const renderX = Renderer.screen.getWidth() / 2 + ((x - 4) * 18);
-        const renderY = (Renderer.screen.getHeight() + 10) / 2 + ((y - Player.getOpenedInventory().getSize() / 18) * 18);
-        renderSlots.push({x: renderX, y: renderY});
-        print(p.x + " " + p.y);
+let allFossilCoords = [];
+let counter = {}
+let slotToHighlight = 0;
+function resetCoords() {
+    allFossilCoords = [];
+    counter = {};
+    slotToHighlight = 0;
+    for (let figur of allFigures) {
+        calculatePositions(figur, mapSize).forEach(pos => {
+            pos.forEach(p => {
+                allFossilCoords.push(p);
+                // print("Fossil at: " + p.x + " " + p.y);
+                let index = indexDict[`${p.x}${p.y}`];
+                if (counter.hasOwnProperty(index)) {
+                    counter[index]++;
+                }
+                else {
+                    counter[index] = 1;
+                }
+            });
+        });
     }
-// }
+    
+    // print index with most fossils
+    let max = 0;
+    for (let key in counter) {
+        if (counter[key] > max) {
+            max = counter[key];
+            slotToHighlight = key;
+        }
+    }
+    print("Index with most fossils: " + slotToHighlight + " with " + max + " fossils");
+}
+resetCoords();
 
-register("postGuiRender", (gui) => {
-    for (let slot of renderSlots) {
-        Renderer.translate(0, 0, 260);
-        Renderer.drawRect(Renderer.color(0, 255, 127, 150), slot.x-9, slot.y-9, 17, 17);
+let guiOpenedCounter = 0;
+register("guiOpened", () => {
+    setTimeout(() => {
+        guiOpenedCounter++;
+    }, 300);
+});
+
+register("guiClosed", () => {
+    guiOpenedCounter = 0;
+});
+
+
+let fossilFoundAt = [];
+let noFossilAt = [];
+register("guiMouseClick", () => {
+    let slot = Client.currentGui.getSlotUnderMouse()
+    if (slot == null) return;
+    let index = slot.getIndex();
+    const container = Player.getContainer();
+    if (container == null) return;
+    if (container.getName() != "Fossil Excavator") return; 
+    if (guiOpenedCounter < 2) return;
+    setTimeout(() => {
+        let item = container.getStackInSlot(index);
+        if (item == null) {
+            let xy = indexDictReverse[index];
+            noFossilAt.push({x: xy[0], y: xy[1]});
+            print("No Fossil at: " + xy[0] + " " + xy[1]);
+            return;
+        };
+        if (item.getName() == "§6Fossil") {
+            let xy = indexDictReverse[index];
+            fossilFoundAt.push({x: xy[0], y: xy[1]});
+            print("Fossil at: " + xy[0] + " " + xy[1]);
+        }
+        else {
+            let xy = indexDictReverse[index];
+            noFossilAt.push({x: xy[0], y: xy[1]});
+            print("No Fossil at: " + xy[0] + " " + xy[1]);
+        }
+    }, 1000);
+});
+
+register("renderSlot", (slot) => {
+    const container = Player.getContainer();
+    if (container == null) return;
+    if (container == undefined) return;
+    if (container.getName() == "Fossil Excavator") {
+        let item = slot.getItem();
+        if (item == null) return;
+        if (item.getName() != "§6Dirt") return;
+        if (slot.getIndex() == slotToHighlight) {
+            let x = slot.getDisplayX() + 5;
+            let y = slot.getDisplayY();
+            drawOutlinedString("§6Dirt", x, y, 0.5, 500)
+        }
+        
     }
 });
+
+function drawOutlinedString(text,x1,y1,scale,z) {
+    let outlineString = "&0" + ChatLib.removeFormatting(text)
+    let x = x1/scale
+    let y = y1/scale
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x + 1, y)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x - 1, y)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y + 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y - 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(text, x, y)
+}
