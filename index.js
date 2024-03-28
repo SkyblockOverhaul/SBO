@@ -88,6 +88,9 @@ register("chat", (player, message, event) =>{
 //     }, 150);
 // }).setName("sboinq");
 
+let foundBool = false;
+let fossilFoundAt = [];
+let noFossilAt = [];
 function calculatePositions(figure, mapSize) {
     let positions = [];
     let figureWidth = Math.max(...figure.map(p => p.x)) - Math.min(...figure.map(p => p.x));
@@ -96,12 +99,20 @@ function calculatePositions(figure, mapSize) {
     for (let x = 0; x <= mapSize.x - figureWidth; x++) {
         for (let y = 0; y <= mapSize.y - figureHeight; y++) {
             let newPosition = figure.map(p => ({x: p.x + x, y: p.y + y}));
-            positions.push(newPosition);
+            // check if position is not in noFossilAt
+            if (!newPosition.some(p => noFossilAt.includes(indexDict[`${p.x}${p.y}`]))) {
+                positions.push(newPosition);
+            }
+            // check if position is in fossilFoundAt
+            if (newPosition.some(p => fossilFoundAt.includes(indexDict[`${p.x}${p.y}`]))) {
+                positions.push(newPosition);
+            }
         }
     }
 
     return positions;
 }
+
 
 let mapSize = {x: 8, y: 5};
 let anker = [{x:0,y:1},{x:1,y:2},{x:2,y:3},{x:3,y:3},{x:3,y:2},{x:3,y:1},{x:3,y:0},{x:4,y:3},{x:5,y:2},{x:6,y:1}];
@@ -113,31 +124,61 @@ let ugly = [{x:1,y:0},{x:0,y:1},{x:1,y:1},{x:2,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2
 let footprint = [{x:0,y:0},{x:2,y:0},{x:4,y:0},{x:0,y:1},{x:2,y:1},{x:4,y:1},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:2,y:4}];
 let allFigures = [anker, tusk, pyrmaide, helix, clubbed, ugly, footprint];
 
-let allFossilCoords = [];
-let anzahlPositions = 0;
-let counter = {}
 let slotToHighlight = 0;
-function resetCoords() {
+
+register("chat", () => {
+    fossilFoundAt = [];
+    noFossilAt = [];
     allFossilCoords = [];
     counter = {};
-    slotToHighlight = 0;
     anzahlPositions = 0;
+    tempList = [];
+}).setCriteria("&r&cYou didn't find anything. Maybe next time!&r");
+
+register("chat", () => {
+    fossilFoundAt = [];
+    noFossilAt = [];
+    allFossilCoords = [];
+    counter = {};
+    anzahlPositions = 0;
+    tempList = [];
+}).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
+
+let allFossilCoords = [];
+let counter = {};
+let anzahlPositions = 0;
+let tempList = [];
+function calcNewCoords() {
+    allFossilCoords = [];
+    counter = {};
+    anzahlPositions = 0;
+    tempList = [];
+    slotToHighlight = 0;
     for (let figur of allFigures) {
-        calculatePositions(figur, mapSize).forEach(pos => {
+        tempList = calculatePositions(figur, mapSize);
+        for (let pos of tempList) {
             anzahlPositions++;
-            pos.forEach(p => {
+            for (let p of pos) {
                 allFossilCoords.push(p);
                 // print("Fossil at: " + p.x + " " + p.y);
                 let index = indexDict[`${p.x}${p.y}`];
-                if (counter.hasOwnProperty(index)) {
-                    counter[index]++;
+                if (!fossilFoundAt.includes(index)) {
+                    if (counter.hasOwnProperty(index)) {
+                        counter[index]++;
+                    }
+                    else {
+                        counter[index] = 1;
+                    }
                 }
-                else {
-                    counter[index] = 1;
-                }
-            });
-        });
-    }
+            };
+        };
+    };
+    print("TempList: " + tempList.length)
+    print("NoFossilAt: " + noFossilAt.length)
+    print("AllFossilCoords: " + allFossilCoords.length)
+    print("figure: " + allFigures.length)
+        
+    
     
     // print index with most fossils
     let max = 0;
@@ -150,36 +191,49 @@ function resetCoords() {
     print("Index with most fossils: " + slotToHighlight + " with " + max + " fossils");
     print("Anzahl Positionen: " + anzahlPositions);
 }
-resetCoords();
+calcNewCoords()
 
 
-
-let fossilFoundAt = [];
-let noFossilAt = [];
+let firstClick = true;
+let coordsAdded = [];
 register("guiMouseClick", () => {
     let slot = Client.currentGui.getSlotUnderMouse()
     if (slot == null) return;
     let index = slot.getIndex();
+    if (index > 53) return;
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
     setTimeout(() => {
-        let item = container.getStackInSlot(index);
-        if (item == null) {
-            let xy = indexDictReverse[index];
-            noFossilAt.push({x: xy[0], y: xy[1]});
-            print("No Fossil at: " + xy[0] + " " + xy[1]);
-            return;
-        };
-        if (item.getName() == "§6Fossil") {
-            let xy = indexDictReverse[index];
-            fossilFoundAt.push({x: xy[0], y: xy[1]});
-            print("Fossil at: " + xy[0] + " " + xy[1]);
+        if (!firstClick) {
+            let item = container.getStackInSlot(index);
+            if (item == null) {
+                let xy = indexDictReverse[index];
+                if (!coordsAdded.includes(index)) {
+                    noFossilAt.push(index);
+                    coordsAdded.push(index);
+                    print("No Fossil at: " + index);
+                };
+            }
+            else {
+                if (item.getName() == "§6Fossil") {
+                    let xy = indexDictReverse[index];
+                    fossilFoundAt.push(index);
+                    print("Fossil at: " + index);
+                }
+                else {
+                    let xy = indexDictReverse[index];
+                    if (!coordsAdded.includes(index)) {
+                        noFossilAt.push(index);
+                        coordsAdded.push(index);
+                        print("No Fossil at: " + index);
+                    };
+                }
+            }
+            calcNewCoords()
         }
         else {
-            let xy = indexDictReverse[index];
-            noFossilAt.push({x: xy[0], y: xy[1]});
-            print("No Fossil at: " + xy[0] + " " + xy[1]);
+            firstClick = false;
         }
     }, 1000);
 });
