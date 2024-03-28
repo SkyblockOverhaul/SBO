@@ -16,7 +16,7 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import "./features/dungeon/recognizeRareRoom";
 import "./features/general/alphaCheck";
-import "./utils/newui";
+import "./utils/overlays";
 
 
 

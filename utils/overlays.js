@@ -19,7 +19,7 @@ import {
     UIRoundedRectangle,
     Window
 } from "../../Elementa";
-import settings from "./../settings";
+import settings from "../settings";
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 // import { getTestUI, getTestGUISelected } from "../features/teste";
 import { getkuudraValueOverlay, getkuudraValueOverlaySelected} from "../features/Kuudra";
