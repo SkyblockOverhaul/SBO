@@ -91,7 +91,7 @@ register("chat", (player, message, event) =>{
 // todo
 // alle anderen figuren einbauen
 // slots besser highlighten
-// fossilMustBe geht nicht
+// fossilMustBe geht nicht (vielleicht doch testen wenn alle figuren eingebaute sind)
 
 
 
