@@ -128,6 +128,9 @@ function calculatePositions(figure, mapSize) {
 
 
 let mapSize = {x: 8, y: 5};
+let clubbed1 = [{x:6,y:0},{x:7,y:0},{x:1,y:1},{x:6,y:1},{x:7,y:1},{x:0,y:2},{x:5,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:4,y:3}];
+// clubbed2 is rotated 180 degrees from clubbed1
+let clubbed2 = [{x:0,y:3},{x:5,y:3},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:6,y:1},{x:7,y:1},{x:1,y:0},{x:6,y:0},{x:7,y:0}];
 let anker1 = [{x:0,y:1},{x:1,y:2},{x:2,y:3},{x:3,y:3},{x:3,y:2},{x:3,y:1},{x:3,y:0},{x:4,y:3},{x:5,y:2},{x:6,y:1}];
 // anker2 is rotated 180 degrees              geht 100%
 let anker2 = [{x:6,y:3},{x:5,y:2},{x:4,y:1},{x:3,y:1},{x:3,y:2},{x:3,y:3},{x:3,y:4},{x:2,y:1},{x:1,y:2},{x:0,y:3}];
@@ -152,27 +155,26 @@ let helix2 = [{x:4,y:0},{x:4,y:1},{x:4,y:2},{x:4,y:3},{x:4,y:4},{x:3,y:0},{x:3,y
 let helix3 = [{x:4,y:4},{x:3,y:4},{x:2,y:4},{x:1,y:4},{x:0,y:4},{x:4,y:3},{x:0,y:3},{x:4,y:2},{x:2,y:2},{x:0,y:2},{x:4,y:1},{x:2,y:1},{x:1,y:1},{x:0,y:1}];
 // helix4 is rotated 270 degrees from helix1
 let helix4 = [{x:0,y:4},{x:0,y:3},{x:0,y:2},{x:0,y:1},{x:0,y:0},{x:1,y:4},{x:1,y:0},{x:2,y:4},{x:2,y:2},{x:2,y:0},{x:3,y:4},{x:3,y:2},{x:3,y:1},{x:3,y:0}];
-let clubbed1 = [{x:6,y:0},{x:7,y:0},{x:1,y:1},{x:6,y:1},{x:7,y:1},{x:0,y:2},{x:5,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:4,y:3}];
-// clubbed2 is rotated 180 degrees from clubbed1
-let clubbed2 = [{x:0,y:3},{x:5,y:3},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:6,y:1},{x:7,y:1},{x:1,y:0},{x:6,y:0},{x:7,y:0}];
+
 let ugly1 = [{x:1,y:0},{x:0,y:1},{x:1,y:1},{x:2,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:0,y:3},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:0,y:4},{x:1,y:4},{x:2,y:4},{x:1,y:5}];
-// ugly2 is rotated 90 degrees from ugly1
-let ugly2 = [{x:1,y:5},{x:2,y:4},{x:2,y:5},{x:2,y:3},{x:3,y:4},{x:3,y:3},{x:3,y:2},{x:3,y:1},{x:4,y:4},{x:4,y:3},{x:4,y:2},{x:4,y:1},{x:5,y:4},{x:5,y:3},{x:5,y:2},{x:0,y:3}];
-// ugly3 is rotated 180 degrees from ugly1
-let ugly3 = [{x:5,y:4},{x:4,y:5},{x:5,y:5},{x:3,y:5},{x:4,y:4},{x:3,y:4},{x:2,y:4},{x:1,y:4},{x:4,y:3},{x:3,y:3},{x:2,y:3},{x:1,y:3},{x:4,y:2},{x:3,y:2},{x:2,y:2},{x:3,y:1}];
-// ugly4 is rotated 270 degrees from ugly1
-let ugly4 = [{x:4,y:1},{x:3,y:2},{x:3,y:1},{x:3,y:3},{x:2,y:2},{x:2,y:3},{x:2,y:4},{x:2,y:5},{x:1,y:2},{x:1,y:3},{x:1,y:4},{x:1,y:5},{x:0,y:2},{x:0,y:3},{x:0,y:4},{x:5,y:3}];
+
+
 let footprint1 = [{x:0,y:0},{x:2,y:0},{x:4,y:0},{x:0,y:1},{x:2,y:1},{x:4,y:1},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:2,y:4}];
-// footprint2 is rotated 90 degrees from footprint1
-let footprint2 = [{x:2,y:4},{x:2,y:3},{x:2,y:2},{x:3,y:4},{x:3,y:3},{x:3,y:2},{x:4,y:3},{x:4,y:2},{x:4,y:1},{x:5,y:3},{x:5,y:2},{x:5,y:1},{x:6,y:2}];
-// footprint3 is rotated 180 degrees from footprint1
-let footprint3 = [{x:6,y:2},{x:5,y:1},{x:4,y:0},{x:5,y:2},{x:4,y:1},{x:3,y:0},{x:3,y:2},{x:2,y:1},{x:1,y:0},{x:2,y:2},{x:1,y:1},{x:0,y:0},{x:2,y:3}];
-// footprint4 is rotated 270 degrees from footprint1
-let footprint4 = [{x:4,y:2},{x:4,y:3},{x:4,y:4},{x:3,y:2},{x:3,y:3},{x:3,y:4},{x:2,y:3},{x:2,y:4},{x:2,y:5},{x:1,y:3},{x:1,y:4},{x:1,y:5},{x:0,y:4}];
-
-let allFigures = [anker1, anker2, tusk1, tusk2, tusk3, tusk4, pyrmaide1, pyrmaide2, pyrmaide3, pyrmaide4, helix1, helix2, helix3, helix4, clubbed1, clubbed2, ugly1, ugly2, ugly3, ugly4, footprint1, footprint2, footprint3, footprint4];
 
 
+
+
+
+let allFigures = [clubbed1, clubbed2, anker1, anker2, tusk1, tusk2, tusk3, tusk4, pyrmaide1, pyrmaide2, pyrmaide3, pyrmaide4, helix1, helix2, helix3, helix4, ugly1, footprint1];
+
+// check every figure if can fit in the map
+for (let figur of allFigures) {
+    for (let pos in figur) {
+        if (figur[pos].x > mapSize.x || figur[pos].y > mapSize.y) {
+            print("Figure too big: " + figur);
+        }
+    }
+}
 
 register("chat", () => {
     print("Excavation complete")
