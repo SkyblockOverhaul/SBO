@@ -88,93 +88,117 @@ register("chat", (player, message, event) =>{
 //     }, 150);
 // }).setName("sboinq");
 
+// map size
+
+// all figures
+const clubbed1 = [{ 'x': 6, 'y': 0 }, { 'x': 7, 'y': 0 }, { 'x': 1, 'y': 1 }, { 'x': 6, 'y': 1 }, { 'x': 7, 'y': 1 }, { 'x': 0, 'y': 2 }, { 'x': 5, 'y': 2 }, { 'x': 1, 'y': 3 }, { 'x': 2, 'y': 3 }, { 'x': 3, 'y': 3 }, { 'x': 4, 'y': 3 }];
+const anker1 = [{ 'x': 0, 'y': 1 }, { 'x': 1, 'y': 2 }, { 'x': 2, 'y': 3 }, { 'x': 3, 'y': 3 }, { 'x': 3, 'y': 2 }, { 'x': 3, 'y': 1 }, { 'x': 3, 'y': 0 }, { 'x': 4, 'y': 3 }, { 'x': 5, 'y': 2 }, { 'x': 6, 'y': 1 }];
+const tusk1 = [{ 'x': 2, 'y': 0 }, { 'x': 1, 'y': 1 }, { 'x': 3, 'y': 1 }, { 'x': 0, 'y': 2 }, { 'x': 1, 'y': 3 }, { 'x': 2, 'y': 4 }, { 'x': 3, 'y': 4 }, { 'x': 4, 'y': 4 }];
+const pyramid1 = [{ 'x': 0, 'y': 0 }, { 'x': 0, 'y': 1 }, { 'x': 1, 'y': 1 }, { 'x': 0, 'y': 2 }, { 'x': 1, 'y': 2 }, { 'x': 2, 'y': 2 }, { 'x': 0, 'y': 3 }, { 'x': 1, 'y': 3 }, { 'x': 2, 'y': 3 }, { 'x': 0, 'y': 4 }, { 'x': 1, 'y': 4 }, { 'x': 0, 'y': 5 }];
+const helix1 = [{ 'x': 0, 'y': 0 }, { 'x': 1, 'y': 0 }, { 'x': 2, 'y': 0 }, { 'x': 3, 'y': 0 }, { 'x': 4, 'y': 0 }, { 'x': 0, 'y': 1 }, { 'x': 4, 'y': 1 }, { 'x': 0, 'y': 2 }, { 'x': 2, 'y': 2 }, { 'x': 4, 'y': 2 }, { 'x': 0, 'y': 3 }, { 'x': 2, 'y': 3 }, { 'x': 3, 'y': 3 }, { 'x': 4, 'y': 3 }];
+
+
+// // let clubbed2 = [{x:0,y:3},{x:5,y:3},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:6,y:1},{x:7,y:1},{x:1,y:0},{x:6,y:0},{x:7,y:0}];
+// // anker2 is rotated 180 degrees              
+// let anker2 = [{x:6,y:3},{x:5,y:2},{x:4,y:1},{x:3,y:1},{x:3,y:2},{x:3,y:3},{x:3,y:4},{x:2,y:1},{x:1,y:2},{x:0,y:3}];
+// // tusk2 is rotated 90 degrees from tusk1   
+// let tusk2 = [{x:0,y:2},{x:1,y:1},{x:1,y:3},{x:2,y:0},{x:3,y:1},{x:4,y:2},{x:4,y:3},{x:4,y:4}];
+// // tusk3 is rotated 180 degrees from tusk1  
+// let tusk3 = [{x:2,y:4},{x:3,y:3},{x:1,y:3},{x:4,y:2},{x:3,y:1},{x:2,y:0},{x:1,y:0},{x:0,y:0}];
+// // tusk4 is rotated 270 degrees from tusk1 
+// let tusk4 = [{x:4,y:2},{x:3,y:3},{x:3,y:1},{x:2,y:4},{x:1,y:3},{x:0,y:2},{x:0,y:1},{x:0,y:0}];
+// // // pyrmaide2 is rotated 90 degrees from pyrmaide1
+// // let pyrmaide2 = [{x:0,y:5},{x:1,y:4},{x:1,y:5},{x:2,y:3},{x:2,y:4},{x:2,y:5},{x:3,y:2},{x:3,y:3},{x:3,y:4},{x:3,y:5},{x:4,y:1},{x:4,y:2}];
+// // // pyrmaide3 is rotated 180 degrees from pyrmaide1
+// // let pyrmaide3 = [{x:4,y:1},{x:3,y:2},{x:4,y:2},{x:2,y:3},{x:3,y:3},{x:4,y:3},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:0,y:5},{x:1,y:5},{x:2,y:5}];
+// // // pyrmaide4 is rotated 270 degrees from pyrmaide1
+// // let pyrmaide4 = [{x:4,y:5},{x:3,y:4},{x:3,y:5},{x:2,y:2},{x:2,y:3},{x:2,y:4},{x:1,y:1},{x:1,y:2},{x:1,y:3},{x:1,y:4},{x:0,y:0},{x:0,y:1}];
+// // // helix2 is rotated 90 degrees from helix1
+// // let helix2 = [{x:4,y:0},{x:4,y:1},{x:4,y:2},{x:4,y:3},{x:4,y:4},{x:3,y:0},{x:3,y:4},{x:2,y:0},{x:2,y:2},{x:2,y:4},{x:1,y:0},{x:1,y:2},{x:1,y:3},{x:1,y:4}];
+// // // helix3 is rotated 180 degrees from helix1
+// // let helix3 = [{x:4,y:4},{x:3,y:4},{x:2,y:4},{x:1,y:4},{x:0,y:4},{x:4,y:3},{x:0,y:3},{x:4,y:2},{x:2,y:2},{x:0,y:2},{x:4,y:1},{x:2,y:1},{x:1,y:1},{x:0,y:1}];
+// // // helix4 is rotated 270 degrees from helix1
+// // let helix4 = [{x:0,y:4},{x:0,y:3},{x:0,y:2},{x:0,y:1},{x:0,y:0},{x:1,y:4},{x:1,y:0},{x:2,y:4},{x:2,y:2},{x:2,y:0},{x:3,y:4},{x:3,y:2},{x:3,y:1},{x:3,y:0}];
+
+// all figures in a list
+const allFigures = [clubbed1, anker1, tusk1, pyramid1, helix1];
+
+function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
+    const validLocations = [];
+    for (const location of locations) {
+        let valid = true;
+        for (const point of location) {
+            if (fossilCantBeAt.some(p => p.x === point.x && p.y === point.y)) {
+                valid = false;
+                break;
+            }
+        }
+        if (valid) {
+            for (const point of fossilMustBeAt) {
+                if (!location.some(p => p.x === point.x && p.y === point.y)) {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+        if (valid) {
+            validLocations.push(location);
+        }
+    }
+    return validLocations;
+}
+
+// calculate all possible locations of a figure in the map (must fit in the map and not overlap with the map borders but can overlap with other figures)
 let fossilFoundAt = [];
 let noFossilAt = [];
-function calculatePositions(figure, mapSize) {
-    let foundBool = false;
-    let positions = [];
-    let figureWidth = Math.max(...figure.map(p => p.x)) - Math.min(...figure.map(p => p.x));
-    let figureHeight = Math.max(...figure.map(p => p.y)) - Math.min(...figure.map(p => p.y));
-
-    for (let x = 0; x <= mapSize.x - figureWidth; x++) {
-        for (let y = 0; y <= mapSize.y - figureHeight; y++) {
-            let newPosition = figure.map(p => ({x: p.x + x, y: p.y + y}));
-            // check if position is not in noFossilAt
-            if (!newPosition.some(p => noFossilAt.includes(indexDict[`${p.x}${p.y}`]))) {
-                positions.push(newPosition);
+const mapSize = { 'x': 9, 'y': 6 };
+function calculateLocations(figure) {
+    const locations = [];
+    for (let x = 0; x < mapSize.x; x++) {
+        for (let y = 0; y < mapSize.y; y++) {
+            const location = [];
+            for (const point of figure) {
+                const newPoint = { 'x': point.x + x, 'y': point.y + y };
+                if (newPoint.x < mapSize.x && newPoint.y < mapSize.y) {
+                    location.push(newPoint);
+                } else {
+                    location.length = 0;
+                    break;
+                }
+            }
+            if (location.length > 0) {
+                locations.push(location);
             }
         }
     }
-
-    // check if one of the positions is in fossilFoundAt
-    if (fossilFoundAt.length > 0) {
-        for (let pos of positions) {
-            if (pos.some(p => fossilFoundAt.includes(indexDict[`${p.x}${p.y}`]))) {
-                foundBool = true;
+    const validLocations = checkIfLocationsAreValid(locations, fossilFoundAt, noFossilAt);
+    // print original figure and all possible locations in the map (empty as "." and filled as "X")
+    console.log("Original figure:");
+    for (let y = 0; y < mapSize.y; y++) {
+        let row = "";
+        for (let x = 0; x < mapSize.x; x++) {
+            row += figure.some(p => p.x === x && p.y === y) ? "X" : ".";
+        }
+        console.log(row);
+    }
+    console.log("Possible locations:");
+    for (const location of validLocations) {
+        for (let y = 0; y < mapSize.y; y++) {
+            let row = "";
+            for (let x = 0; x < mapSize.x; x++) {
+                row += location.some(p => p.x === x && p.y === y) ? "X" : ".";
             }
+            console.log(row);
         }
+        print(" ");
     }
-    else {
-        foundBool = true;
-    }
-
-    if (foundBool) {
-        return positions;
-    }
-    else {
-        return [];
-    }
+    return validLocations;
 }
 
-
-let mapSize = {x: 8, y: 5};
-let clubbed1 = [{x:6,y:0},{x:7,y:0},{x:1,y:1},{x:6,y:1},{x:7,y:1},{x:0,y:2},{x:5,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:4,y:3}];
-// clubbed2 is rotated 180 degrees from clubbed1
-let clubbed2 = [{x:0,y:3},{x:5,y:3},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:6,y:1},{x:7,y:1},{x:1,y:0},{x:6,y:0},{x:7,y:0}];
-let anker1 = [{x:0,y:1},{x:1,y:2},{x:2,y:3},{x:3,y:3},{x:3,y:2},{x:3,y:1},{x:3,y:0},{x:4,y:3},{x:5,y:2},{x:6,y:1}];
-// anker2 is rotated 180 degrees              geht 100%
-let anker2 = [{x:6,y:3},{x:5,y:2},{x:4,y:1},{x:3,y:1},{x:3,y:2},{x:3,y:3},{x:3,y:4},{x:2,y:1},{x:1,y:2},{x:0,y:3}];
-let tusk1 = [{x:2,y:0},{x:1,y:1},{x:3,y:1},{x:0,y:2},{x:1,y:3},{x:2,y:4},{x:3,y:4},{x:4,y:4}];
-// tusk2 is rotated 90 degrees from tusk1    geht 100%
-let tusk2 = [{x:0,y:2},{x:1,y:1},{x:1,y:3},{x:2,y:0},{x:3,y:1},{x:4,y:2},{x:4,y:3},{x:4,y:4}];
-// tusk3 is rotated 180 degrees from tusk1  geht 100%
-let tusk3 = [{x:2,y:4},{x:3,y:3},{x:1,y:3},{x:4,y:2},{x:3,y:1},{x:2,y:0},{x:1,y:0},{x:0,y:0}];
-// tusk4 is rotated 270 degrees from tusk1 geht 100%
-let tusk4 = [{x:4,y:2},{x:3,y:3},{x:3,y:1},{x:2,y:4},{x:1,y:3},{x:0,y:2},{x:0,y:1},{x:0,y:0}];
-let pyrmaide1 = [{x:0,y:0},{x:0,y:1},{x:1,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2},{x:0,y:3},{x:1,y:3},{x:2,y:3},{x:0,y:4},{x:1,y:4},{x:0,y:5}];
-// pyrmaide2 is rotated 90 degrees from pyrmaide1
-let pyrmaide2 = [{x:0,y:5},{x:1,y:4},{x:1,y:5},{x:2,y:3},{x:2,y:4},{x:2,y:5},{x:3,y:2},{x:3,y:3},{x:3,y:4},{x:3,y:5},{x:4,y:1},{x:4,y:2}];
-// pyrmaide3 is rotated 180 degrees from pyrmaide1
-let pyrmaide3 = [{x:4,y:1},{x:3,y:2},{x:4,y:2},{x:2,y:3},{x:3,y:3},{x:4,y:3},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:0,y:5},{x:1,y:5},{x:2,y:5}];
-// pyrmaide4 is rotated 270 degrees from pyrmaide1
-let pyrmaide4 = [{x:4,y:5},{x:3,y:4},{x:3,y:5},{x:2,y:2},{x:2,y:3},{x:2,y:4},{x:1,y:1},{x:1,y:2},{x:1,y:3},{x:1,y:4},{x:0,y:0},{x:0,y:1}];
-let helix1 = [{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:3,y:0},{x:4,y:0},{x:0,y:1},{x:4,y:1},{x:0,y:2},{x:2,y:2},{x:4,y:2},{x:0,y:3},{x:2,y:3},{x:3,y:3},{x:4,y:3}];
-// helix2 is rotated 90 degrees from helix1
-let helix2 = [{x:4,y:0},{x:4,y:1},{x:4,y:2},{x:4,y:3},{x:4,y:4},{x:3,y:0},{x:3,y:4},{x:2,y:0},{x:2,y:2},{x:2,y:4},{x:1,y:0},{x:1,y:2},{x:1,y:3},{x:1,y:4}];
-// helix3 is rotated 180 degrees from helix1
-let helix3 = [{x:4,y:4},{x:3,y:4},{x:2,y:4},{x:1,y:4},{x:0,y:4},{x:4,y:3},{x:0,y:3},{x:4,y:2},{x:2,y:2},{x:0,y:2},{x:4,y:1},{x:2,y:1},{x:1,y:1},{x:0,y:1}];
-// helix4 is rotated 270 degrees from helix1
-let helix4 = [{x:0,y:4},{x:0,y:3},{x:0,y:2},{x:0,y:1},{x:0,y:0},{x:1,y:4},{x:1,y:0},{x:2,y:4},{x:2,y:2},{x:2,y:0},{x:3,y:4},{x:3,y:2},{x:3,y:1},{x:3,y:0}];
-
-let ugly1 = [{x:1,y:0},{x:0,y:1},{x:1,y:1},{x:2,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:0,y:3},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:0,y:4},{x:1,y:4},{x:2,y:4},{x:1,y:5}];
-
-
-let footprint1 = [{x:0,y:0},{x:2,y:0},{x:4,y:0},{x:0,y:1},{x:2,y:1},{x:4,y:1},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:2,y:4}];
-
-
-
-
-
-let allFigures = [clubbed1, clubbed2, anker1, anker2, tusk1, tusk2, tusk3, tusk4, pyrmaide1, pyrmaide2, pyrmaide3, pyrmaide4, helix1, helix2, helix3, helix4, ugly1, footprint1];
-
-// check every figure if can fit in the map
-for (let figur of allFigures) {
-    for (let pos in figur) {
-        if (figur[pos].x > mapSize.x || figur[pos].y > mapSize.y) {
-            print("Figure too big: " + figur);
-        }
-    }
-}
+// first load
+// for (const figure of allFigures) {
+//     calculateLocations(figure);
+// }
 
 register("chat", () => {
     print("Excavation complete")
@@ -202,13 +226,16 @@ function calcNewCoords() {
     let tempList = [];
     slotToHighlight = 0;
     for (let figur of allFigures) {
-        tempList = calculatePositions(figur, mapSize);
+        tempList = calculateLocations(figur, mapSize);
         for (let pos of tempList) {
             anzahlPositions++;
             for (let p of pos) {
                 allFossilCoords.push(p);
                 // print("Fossil at: " + p.x + " " + p.y);
                 let index = indexDict[`${p.x}${p.y}`];
+                if (index == undefined) {
+                    print("Index undefined: " + p.x + " " + p.y);
+                }
                 if (!fossilFoundAt.includes(index) && !noFossilAt.includes(index)) {
                     if (counter.hasOwnProperty(index)) {
                         counter[index]++;
@@ -228,6 +255,10 @@ function calcNewCoords() {
     
     
     // print index with most fossils
+    // print complete counter
+    for (let key in counter) {
+        print("Index: " + key + " Fossils: " + counter[key]);
+    }
     let max = 0;
     for (let key in counter) {
         if (counter[key] > max) {
@@ -239,7 +270,6 @@ function calcNewCoords() {
     print("Anzahl Positionen: " + anzahlPositions);
 }
 calcNewCoords()
-
 
 let firstClick = true;
 let coordsAdded = [];
