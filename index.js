@@ -88,10 +88,10 @@ register("chat", (player, message, event) =>{
 //     }, 150);
 // }).setName("sboinq");
 
-let foundBool = false;
 let fossilFoundAt = [];
 let noFossilAt = [];
 function calculatePositions(figure, mapSize) {
+    let foundBool = false;
     let positions = [];
     let figureWidth = Math.max(...figure.map(p => p.x)) - Math.min(...figure.map(p => p.x));
     let figureHeight = Math.max(...figure.map(p => p.y)) - Math.min(...figure.map(p => p.y));
@@ -103,14 +103,27 @@ function calculatePositions(figure, mapSize) {
             if (!newPosition.some(p => noFossilAt.includes(indexDict[`${p.x}${p.y}`]))) {
                 positions.push(newPosition);
             }
-            // check if position is in fossilFoundAt
-            if (newPosition.some(p => fossilFoundAt.includes(indexDict[`${p.x}${p.y}`]))) {
-                positions.push(newPosition);
-            }
         }
     }
 
-    return positions;
+    // check if one of the positions is in fossilFoundAt
+    if (fossilFoundAt.length > 0) {
+        for (let pos of positions) {
+            if (pos.some(p => fossilFoundAt.includes(indexDict[`${p.x}${p.y}`]))) {
+                foundBool = true;
+            }
+        }
+    }
+    else {
+        foundBool = true;
+    }
+
+    if (foundBool) {
+        return positions;
+    }
+    else {
+        return [];
+    }
 }
 
 
@@ -124,35 +137,32 @@ let ugly = [{x:1,y:0},{x:0,y:1},{x:1,y:1},{x:2,y:1},{x:0,y:2},{x:1,y:2},{x:2,y:2
 let footprint = [{x:0,y:0},{x:2,y:0},{x:4,y:0},{x:0,y:1},{x:2,y:1},{x:4,y:1},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:1,y:3},{x:2,y:3},{x:3,y:3},{x:2,y:4}];
 let allFigures = [anker, tusk, pyrmaide, helix, clubbed, ugly, footprint];
 
-let slotToHighlight = 0;
+
 
 register("chat", () => {
+    print("Excavation complete")
     fossilFoundAt = [];
     noFossilAt = [];
-    allFossilCoords = [];
-    counter = {};
-    anzahlPositions = 0;
-    tempList = [];
+    coordsAdded = [];
+    firstClick = true;
+    calcNewCoords()
 }).setCriteria("&r&cYou didn't find anything. Maybe next time!&r");
 
 register("chat", () => {
+    print("Excavation complete")
     fossilFoundAt = [];
     noFossilAt = [];
-    allFossilCoords = [];
-    counter = {};
-    anzahlPositions = 0;
-    tempList = [];
+    coordsAdded = [];
+    firstClick = true;
+    calcNewCoords()
 }).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
 
-let allFossilCoords = [];
-let counter = {};
-let anzahlPositions = 0;
-let tempList = [];
+let slotToHighlight = 0;
 function calcNewCoords() {
-    allFossilCoords = [];
-    counter = {};
-    anzahlPositions = 0;
-    tempList = [];
+    let allFossilCoords = [];
+    let counter = {};
+    let anzahlPositions = 0;
+    let tempList = [];
     slotToHighlight = 0;
     for (let figur of allFigures) {
         tempList = calculatePositions(figur, mapSize);
@@ -162,7 +172,7 @@ function calcNewCoords() {
                 allFossilCoords.push(p);
                 // print("Fossil at: " + p.x + " " + p.y);
                 let index = indexDict[`${p.x}${p.y}`];
-                if (!fossilFoundAt.includes(index)) {
+                if (!fossilFoundAt.includes(index) && !noFossilAt.includes(index)) {
                     if (counter.hasOwnProperty(index)) {
                         counter[index]++;
                     }
@@ -233,9 +243,10 @@ register("guiMouseClick", () => {
             calcNewCoords()
         }
         else {
+            print("First Click")
             firstClick = false;
         }
-    }, 1000);
+    }, 300);
 });
 
 register("renderSlot", (slot) => {
@@ -245,13 +256,13 @@ register("renderSlot", (slot) => {
     if (container.getName() == "Fossil Excavator") {
         let item = slot.getItem();
         if (item == null) return;
-        if (item.getName() != "§6Dirt") return;
-        if (slot.getIndex() == slotToHighlight) {
-            let x = slot.getDisplayX() + 5;
-            let y = slot.getDisplayY();
-            drawOutlinedString("§6Dirt", x, y, 0.5, 500)
-        }
-        
+        if (item.getName() == "§6Dirt" || item.getName() == "§6Fossil") {
+            if (slot.getIndex() == slotToHighlight) {
+                let x = slot.getDisplayX() + 5;
+                let y = slot.getDisplayY();
+                drawOutlinedString("§6Dirt", x, y, 0.5, 500)
+            }
+        };
     }
 });
 
