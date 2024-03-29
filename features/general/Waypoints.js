@@ -254,7 +254,7 @@ function getClosestWarp(x, y, z){
         return "no warp";
     }
 }
-
+let inqLineRemove = false;
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if( isWorldLoaded()) {
         isInq = !z.includes(" ");
@@ -266,6 +266,7 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
 
         if (isInq) {
             if(settings.inqWaypoints && checkDiana()) {
+                inqLineRemove = false;
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
                 World.playSound("random.orb", 1, 1);
                 z = z.replace("&r", "");
@@ -360,19 +361,16 @@ registerWhen(register("renderWorld", () => {
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
-let guessLineRemoved = false;
+
+
 function renderBurrowLines(){
-    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0 && guessLineRemoved) {
+    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0 && !inqLineRemove) {
         let closestBurrow = getClosestBurrow(burrowWaypoints);
         trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
     }
-    if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
-        guessLineRemoved = checkGuessLineRemove(guessWaypoint);
-        if (!guessLineRemoved) {
-            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
-        }
-    }
-    if (inqWaypoints.length > 0 && settings.inqLine) {
+    if (inqWaypoints.length > 0 && settings.inqLine && !inqLineRemove) {
+        inqLineRemove = checInqLineRemove(inqWaypoints);
+        print(inqWaypoints[inqWaypoints.length - 1][1] + " " + inqWaypoints[inqWaypoints.length - 1][2] + " " + inqWaypoints[inqWaypoints.length - 1][3]);
         trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
     }
 }
@@ -409,15 +407,14 @@ function getClosestBurrow(burrows) {
     return closestBurrow;
 }
 
-function checkGuessLineRemove(guess){
+function checInqLineRemove(guess){
     const distance = Math.sqrt(
-    (Player.getX() - guess[1]) +
-    (Player.getY() - guess[2]) +
-    (Player.getZ() - guess[3])
+    (Player.getX() - guess[guess.length - 1][1]) +
+    (Player.getY() - guess[guess.length - 1][2]) +
+    (Player.getZ() - guess[guess.length - 1][3])
     );
-    if (distance < 20) {
+    if (distance < 5) {
         return true;
     }
     return false;
 }
-
