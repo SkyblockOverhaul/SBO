@@ -40,7 +40,6 @@ let testGUISelected = false;
 const Color = Java.type("java.awt.Color");
 const dragOffset = { x: 0, y: 0 };
 let testOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-testOverlay.setHeight(new AdditiveConstraint(new ChildBasedSizeConstraint(), new PixelConstraint(2)));
 testOverlay.onMouseClick((comp, event) => {
     testGUISelected = true;
     dragOffset.x = event.absoluteX;
@@ -398,7 +397,8 @@ function refreshOverlay(totalValue) {
             });
             guiStrings[item.indexOfObj].onMouseEnter((comp) => {
                 guiStrings[item.indexOfObj].effects;
-                print(item.index);
+                guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
+                // print(item.index);
             });
             // guiStrings.push(tempObj);
             if (settings.lineSetting == 0) {

@@ -91,7 +91,8 @@ register("chat", (player, message, event) =>{
 // todo
 // alle anderen figuren einbauen
 // slots besser highlighten
-// fossilMustBe geht nicht (vielleicht doch testen wenn alle figuren eingebaute sind)
+// fossilMustBe geht nicht
+// hits und miss besser auslesen
 
 
 
@@ -374,9 +375,9 @@ register("renderSlot", (slot) => {
         if (item == null) return;
         if (item.getName() == "§6Dirt" || item.getName() == "§6Fossil") {
             if (slot.getIndex() == slotToHighlight) {
-                let x = slot.getDisplayX() + 5;
-                let y = slot.getDisplayY();
-                drawOutlinedString("§6Dirt", x, y, 0.5, 500)
+                let x = slot.getDisplayX() + 1.7;
+                let y = slot.getDisplayY() - 3.6;
+                drawOutlinedString("x", x, y, 2.5, 500)
             }
         };
     }
