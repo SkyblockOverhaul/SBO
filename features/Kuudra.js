@@ -370,6 +370,7 @@ function readContainerItems() {
 }
 
 register("guiClosed", () => {
+    indexToHighlight = -1;
     kuudraOverlay.clearChildren();
 });
 function drawOutlinedString(text,x1,y1,scale,z) {
@@ -377,34 +378,36 @@ function drawOutlinedString(text,x1,y1,scale,z) {
     let x = x1/scale
     let y = y1/scale
 
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x + 1, y)
+    // Renderer.translate(0,0,z)
+    // Renderer.scale(scale,scale)
+    // Renderer.drawString(outlineString, x + 1, y)
+
+    // Renderer.translate(0,0,z)
+    // Renderer.scale(scale,scale)
+    // Renderer.drawString(outlineString, x - 1, y)
+
+    // Renderer.translate(0,0,z)
+    // Renderer.scale(scale,scale)
+    // Renderer.drawString(outlineString, x, y + 1)
+
+    // Renderer.translate(0,0,z)
+    // Renderer.scale(scale,scale)
+    // Renderer.drawString(outlineString, x, y - 1)
 
     Renderer.translate(0,0,z)
     Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x - 1, y)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x, y + 1)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x, y - 1)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(text, x, y)
+    Renderer.drawRect(Renderer.color(0, 0, 0, 70), x, y, 16, 16);
+    // Renderer.drawString(text, x, y)
 }
 
-let indexToHighlight = 0;
+let indexToHighlight = -1;
 register("renderSlot", (slot) => {
-    if (indexToHighlight != 0) {
+    if (indexToHighlight != -1) {
         if (slot.getIndex() == indexToHighlight) {
-            let x = slot.getDisplayX() + 1.7;
-            let y = slot.getDisplayY() - 3.6;
-            drawOutlinedString("hier", x, y, 1, 500);
+            let x = slot.getDisplayX();
+            let y = slot.getDisplayY();
+            // print("rendering highlight" + x + " " + y);
+            drawOutlinedString("&e[]", x, y, 2.5, 500);
         }
     }
 });
@@ -446,6 +449,7 @@ function refreshOverlay(totalValue) {
             guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
 
             guiStrings[item.indexOfObj].onMouseLeave((comp) => {
+                indexToHighlight = -1;
                 maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
                 guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
                 guiStrings[item.indexOfObj].setText(item.string);
@@ -455,7 +459,9 @@ function refreshOverlay(totalValue) {
                 guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
                 guiStrings[item.indexOfObj].effects;
                 guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
-                // print(item.index);
+                setTimeout(() => {
+                    indexToHighlight = item.index;
+                }, 30);
             });
             // guiStrings.push(tempObj);
             pixel += tempPixel;
