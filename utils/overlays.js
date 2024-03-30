@@ -21,7 +21,7 @@ import {
 } from "../../Elementa";
 import settings from "../settings";
 import { getkuudraValueOverlay, getkuudraValueOverlaySelected } from "../features/Kuudra";
-import { fossilOverlay } from "../features/general/fossilSolver";
+import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolver";
 
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 
@@ -35,7 +35,6 @@ this.gui.registerClicked((x,y,b) => this.postWindow.mouseClick(x,y,b));
 this.gui.registerMouseDragged((x, y, b) => this.postWindow.mouseDrag(x, y, b));
 this.gui.registerMouseReleased(() => this.postWindow.mouseRelease());
 let overlayStatus = {
-    mainUIContainer: false,
     kuudraOverlay: false,
     fossilOverlay: false,
 };
@@ -47,7 +46,8 @@ let overlayExamples = {
 &r&eTotal Value: &r&64.99M coins`,
 kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100.00K/600.00K&b)
 &r&62.50M &r&eTerror Boots&r &r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
-&r&eTotal Value: &r&63.1M coins`
+&r&eTotal Value: &r&63.1M coins`,
+fossilExample: `&r&bFossil Solver&r`
 };
 let kuudraValueOverlaySelected = getkuudraValueOverlaySelected();
 
@@ -95,6 +95,7 @@ function checkForSetting(overlay, setting, statusObject, type){
 
 function closeEditing(){
     kuudraValueOverlaySelected = false;
+    fossilGUISelected = false;
     gui.close();
 }
 
@@ -131,5 +132,12 @@ function drawExamples(){
 }
 
 function exampleMessage(example, overlay){
-    overlay.addChild(new UIWrappedText(example).setX(new SiblingConstraint()).setY(new SiblingConstraint()));
+    let exampleMSG = new UIWrappedText(example)
+    exampleMSG.setX(new SiblingConstraint())
+    exampleMSG.setY(new SiblingConstraint())
+    maxStringWidth = example.split("\n").reduce((a, b) => a.length > b.length ? a : b).length
+    print(maxStringWidth);
+    print(example)
+    exampleMSG.setWidth((maxStringWidth * 4.5).pixels());
+    overlay.addChild(exampleMSG);
 }
