@@ -5,7 +5,7 @@ import { playerHasSpade } from "./functions";
 
 
 export function checkDiana() {
-    dianaBool = (getMayor() === "Diana" && getPerks().has("Mythological Ritual"));
-    return getWorld() === "Hub" && playerHasSpade() && dianaBool;
+    dianaBool = (getMayor() === "Diana" && getPerks().has("Mythological Ritual") && playerHasSpade());
+    return getWorld() === "Hub" && dianaBool;
 }
 
