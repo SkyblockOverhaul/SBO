@@ -459,7 +459,7 @@ register("renderSlot", (slot) => {
                 let x = slot.getDisplayX() 
                 let y = slot.getDisplayY() 
                 // drawOutlinedString("x", x+ 1.7, y- 3.6, 2.5, 500)
-                drawRect(x, y, 2.5, 200, Renderer.color(255, 5, 5, 200));
+                drawRect(x, y, 2.5, 200);
             }
         };
     }

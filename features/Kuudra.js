@@ -382,7 +382,7 @@ register("renderSlot", (slot) => {
             let x = slot.getDisplayX();
             let y = slot.getDisplayY();
             // print("rendering highlight" + x + " " + y);
-            drawRect(x, y, 2.5, 200, Renderer.color(255, 5, 5, 200));
+            drawRect(x, y, 2.5, 200);
         }
     }
 });
