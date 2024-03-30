@@ -104,11 +104,10 @@ function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
         if (valid) {
             if (fossilProcent != 0) {
                 // cut off the decimal places after 1 digit behind the comma
-                if (Math.floor((100/locations.length)*10) != fossilProcent) {
-                    print("locations length: " + locations.length);
-                    print("Fossil procent to match: " + Math.floor((100/locations.length)*10)/10);
+                if (Math.floor((100/location.length)*10) != fossilProcent && Math.floor((100/location.length)*10) != fossilProcent - 1 && Math.floor((100/location.length)*10) != fossilProcent + 1) {
+                    print("locations length: " + location.length);
+                    print("Fossil procent to match: " + Math.floor((100/location.length)*10));
                     print("Fossil real procent: " + fossilProcent);
-
                     valid = false;
                 }
             }
@@ -174,9 +173,13 @@ function calculateLocations(figure) {
             for (let x = 0; x < mapSize.x; x++) {
                 row += location.some(p => p.x === x && p.y === y) ? "X" : ".";
             }
-            // console.log(row);
+            // if (locations.length == 6) {
+            //     console.log(row);
+            // }
         }
-        // print(" ");
+        // if (locations.length == 6) {
+        //     print(" ");
+        // }
     }
 
     return locations;
