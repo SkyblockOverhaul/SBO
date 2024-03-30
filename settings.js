@@ -64,8 +64,14 @@ class Settings {
         this.addDependency('Kuudra Pet Rarity','Attribute value Overlay');
         this.addDependency('Kuudra Pet Level','Attribute value Overlay');
         this.addDependency('Attribute Shards for Chest Profit','Attribute value Overlay');
-    }
-
+    } 
+    @ColorProperty({
+        name: "Color Picker",
+        description: "Pick a color! (hopefully...)",
+        category: "General",
+        subcategory: "Category"
+    })
+    myColor = Color.BLUE;
     //-----------Diana Burrows----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
