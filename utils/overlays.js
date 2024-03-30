@@ -61,7 +61,7 @@ register('renderOverlay', () => {
 });
 
 register('postGuiRender', () => {
-    checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, overlayStatus, "post");
+    checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, overlayStatus, "post", "kuudraOverlay");
     checkForSetting(fossilOverlay, settings.fossilOverlay, overlayStatus, "post");
     postWindow.draw()
 });
@@ -71,9 +71,9 @@ register('worldUnload', () => {
 });
 
 
-function checkForSetting(overlay, setting, statusObject, type){
+function checkForSetting(overlay, setting, statusObject, type, name){
     if(!overlay) return;
-    if(setting && !statusObject[overlay]){
+    if(setting && !statusObject[name]){
         if(type === "render") {
             renderWindow.addChild(overlay);
         }
@@ -82,14 +82,14 @@ function checkForSetting(overlay, setting, statusObject, type){
         }
         statusObject[overlay] = true;
     }
-    if(!setting && statusObject[overlay]){
+    if(!setting && statusObject[name]){
         if(type === "render") {
             renderWindow.removeChild(overlay);
         }
         else if(type === "post"){
             postWindow.removeChild(overlay);
         }
-        statusObject[overlay] = false;
+        statusObject[name] = false;
     }
 }
 
@@ -128,6 +128,9 @@ function drawExamples(){
         case 1:
             exampleMessage(overlayExamples["kuudraExampleTwo"], getkuudraValueOverlay());
             break;
+    }
+    if(settings.fossilOverlay){
+        exampleMessage(overlayExamples["fossilExample"], fossilOverlay);
     }
 }
 
