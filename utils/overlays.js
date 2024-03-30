@@ -20,7 +20,8 @@ import {
     Window
 } from "../../Elementa";
 import settings from "../settings";
-import { getkuudraValueOverlay, getkuudraValueOverlaySelected} from "../features/Kuudra";
+import { getkuudraValueOverlay, getkuudraValueOverlaySelected } from "../features/Kuudra";
+import { fossilOverlay } from "../features/general/fossilSolver";
 
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 
@@ -35,7 +36,8 @@ this.gui.registerMouseDragged((x, y, b) => this.postWindow.mouseDrag(x, y, b));
 this.gui.registerMouseReleased(() => this.postWindow.mouseRelease());
 let overlayStatus = {
     mainUIContainer: false,
-    testBlock: false
+    kuudraOverlay: false,
+    fossilOverlay: false,
 };
 let overlayExamples = {
     kuudraExampleOne: `&r&62.49M &r&eTerror Chestplate&r
@@ -60,6 +62,7 @@ register('renderOverlay', () => {
 
 register('postGuiRender', () => {
     checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, overlayStatus, "post");
+    checkForSetting(fossilOverlay, settings.fossilOverlay, overlayStatus, "post");
     postWindow.draw()
 });
 

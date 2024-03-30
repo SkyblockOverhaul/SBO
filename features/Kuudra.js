@@ -25,10 +25,11 @@ import {
     UIWrappedText,
     UIRoundedRectangle,
     OutlineEffect,
+    ChildBasedRangeConstraint
 } from "../../Elementa";
 
 export function getkuudraValueOverlay(){
-    return testOverlay;
+    return kuudraOverlay;
 }
 export function getkuudraValueOverlaySelected(){
     return kuudraValueOverlaySelected;
@@ -39,16 +40,18 @@ let kuudraValueOverlaySelected = false;
 let testGUISelected = false;
 const Color = Java.type("java.awt.Color");
 const dragOffset = { x: 0, y: 0 };
-let testOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-testOverlay.onMouseClick((comp, event) => {
+let kuudraOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+kuudraOverlay.setWidth(new ChildBasedRangeConstraint());
+kuudraOverlay.setHeight(new ChildBasedRangeConstraint());
+kuudraOverlay.onMouseClick((comp, event) => {
     testGUISelected = true;
     dragOffset.x = event.absoluteX;
     dragOffset.y = event.absoluteY;
 });
-testOverlay.onMouseRelease(() => {
+kuudraOverlay.onMouseRelease(() => {
     testGUISelected = false;
 });
-testOverlay.onMouseDrag((comp, mx, my) => {
+kuudraOverlay.onMouseDrag((comp, mx, my) => {
     if (!testGUISelected) return;
     const absoluteX = mx + comp.getLeft();
     const absoluteY = my + comp.getTop();
@@ -56,10 +59,10 @@ testOverlay.onMouseDrag((comp, mx, my) => {
     const dy = absoluteY - dragOffset.y;
     dragOffset.x = absoluteX;
     dragOffset.y = absoluteY;
-    const newX = testOverlay.getLeft() + dx;
-    const newY = testOverlay.getTop() + dy;
-    testOverlay.setX(newX.pixels());
-    testOverlay.setY(newY.pixels());
+    const newX = kuudraOverlay.getLeft() + dx;
+    const newY = kuudraOverlay.getTop() + dy;
+    kuudraOverlay.setX(newX.pixels());
+    kuudraOverlay.setY(newY.pixels());
     guiSettings["KuudraValueLoc"]["x"] = newX;
     guiSettings["KuudraValueLoc"]["y"] = newY;
     saveGuiSettings(guiSettings);
@@ -67,8 +70,8 @@ testOverlay.onMouseDrag((comp, mx, my) => {
 
 function loadOverlay(){
     if(guiSettings != undefined && !loadedtestOverlay) {
-        testOverlay.setX((guiSettings["KuudraValueLoc"]["x"]).pixels());
-        testOverlay.setY((guiSettings["KuudraValueLoc"]["y"]).pixels());
+        kuudraOverlay.setX((guiSettings["KuudraValueLoc"]["x"]).pixels());
+        kuudraOverlay.setY((guiSettings["KuudraValueLoc"]["y"]).pixels());
         loadedtestOverlay = true;
     }
 }
@@ -367,10 +370,44 @@ function readContainerItems() {
 }
 
 register("guiClosed", () => {
-    testOverlay.clearChildren();
+    kuudraOverlay.clearChildren();
 });
+function drawOutlinedString(text,x1,y1,scale,z) {
+    let outlineString = "&0" + ChatLib.removeFormatting(text)
+    let x = x1/scale
+    let y = y1/scale
 
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x + 1, y)
 
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x - 1, y)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y + 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y - 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(text, x, y)
+}
+
+let indexToHighlight = 0;
+register("renderSlot", (slot) => {
+    if (indexToHighlight != 0) {
+        if (slot.getIndex() == indexToHighlight) {
+            let x = slot.getDisplayX() + 1.7;
+            let y = slot.getDisplayY() - 3.6;
+            drawOutlinedString("hier", x, y, 1, 500);
+        }
+    }
+});
 
 function refreshOverlay(totalValue) {
     // sort itemStrings by price
@@ -384,34 +421,44 @@ function refreshOverlay(totalValue) {
     let pixel = 0;
     let pixelIncrementOne = 9;
     let pixelIncrementTwo = 18;
-
+    let tempPixel = 0;
+    let maxStringWidth = 0;
     chestItems.forEach((item) => {
+        if (settings.lineSetting == 0) {
+            if (item.attributeItem) {
+                tempPixel = pixelIncrementTwo;
+            }
+            else {
+                tempPixel = pixelIncrementOne;
+            }
+        }
+        else {
+            tempPixel = pixelIncrementOne;
+        }
         if (counter <= settings.maxDisplayedItems) {
             // tempObj = ;
             guiStrings.push(new UIWrappedText(item.string));
             item.indexOfObj = guiStrings.length-1;
             guiStrings[item.indexOfObj].setX((0).pixels());
-            guiStrings[item.indexOfObj].setY((pixel).pixel());
+            guiStrings[item.indexOfObj].setY((pixel).pixels());
+            maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+            guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
+            guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
+
             guiStrings[item.indexOfObj].onMouseLeave((comp) => {
+                maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+                guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
                 guiStrings[item.indexOfObj].setText(item.string);
             });
             guiStrings[item.indexOfObj].onMouseEnter((comp) => {
+                maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+                guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
                 guiStrings[item.indexOfObj].effects;
                 guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
                 // print(item.index);
             });
             // guiStrings.push(tempObj);
-            if (settings.lineSetting == 0) {
-                if (item.attributeItem) {
-                    pixel += pixelIncrementTwo;
-                }
-                else {
-                    pixel += pixelIncrementOne;
-                }
-            }
-            else {
-                pixel += pixelIncrementOne;
-            }
+            pixel += tempPixel;
         }
         counter++;
     });
@@ -431,12 +478,12 @@ function refreshOverlay(totalValue) {
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
-    testOverlay.clearChildren();
+    kuudraOverlay.clearChildren();
     // let kuudraText = new UIWrappedText(overlayString);
     // kuudraText.setX(new SiblingConstraint());
     // kuudraText.setY(new SiblingConstraint());
     for (let i = 0; i < guiStrings.length; i++) {
-        testOverlay.addChild(guiStrings[i]);
+        kuudraOverlay.addChild(guiStrings[i]);
     }
     // testOverlay.addChild(kuudraText);
 }
@@ -446,10 +493,10 @@ function formatPrice(price) {
         return (price / 1000000000).toFixed(2) + "B";
     }
     else if (price >= 1000000) {
-        return (price / 1000000).toFixed(2) + "M";
+        return (price / 1000000).toFixed(2) + "M";  
     }
     else if (price >= 1000) {
-        return (price / 1000).toFixed(2) + "K";
+        return Math.floor(price / 1000) + "K";
     }
     return price;
 }

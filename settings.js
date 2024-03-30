@@ -479,6 +479,14 @@ class Settings {
     openVolcAddons() {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/VolcAddons"));
     }
+
+    // test
+    @SwitchProperty({
+        name: "Fossil Overlay",
+        description: "Enable the fossil overlay",
+        category: "Test",
+    })
+    fossilOverlay = false;
 }
 let SboData = {
     "effects": [],
