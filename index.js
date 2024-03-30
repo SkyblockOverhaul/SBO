@@ -90,7 +90,7 @@ register("chat", (player, message, event) =>{
 
 // todo
 // hits und miss besser auslesen
-
+let fossilProcent = 0;
 function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
     const validLocations = [];
     for (const location of locations) {
@@ -99,6 +99,18 @@ function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
             if (fossilCantBeAt.some(p => p.x === point.x && p.y === point.y)) {
                 valid = false;
                 break;
+            }
+        }
+        if (valid) {
+            if (fossilProcent != 0) {
+                // cut off the decimal places after 1 digit behind the comma
+                if (Math.floor((100/locations.length)*10) != fossilProcent) {
+                    print("locations length: " + locations.length);
+                    print("Fossil procent to match: " + Math.floor((100/locations.length)*10)/10);
+                    print("Fossil real procent: " + fossilProcent);
+
+                    valid = false;
+                }
             }
         }
         if (valid) {
@@ -199,6 +211,7 @@ register("chat", () => {
     noFossilAt = [];
     noFossilAtIndex = [];
     coordsAdded = [];
+    fossilProcent = 0;
     calcNewCoords()
 }).setCriteria("&r&cYou didn't find anything. Maybe next time!&r");
 
@@ -209,6 +222,7 @@ register("chat", () => {
     noFossilAt = [];
     noFossilAtIndex = [];
     coordsAdded = [];
+    fossilProcent = 0;
     calcNewCoords()
 }).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
 
@@ -321,6 +335,7 @@ calcNewCoords()
 // guiClick new
 let isInExcavatorGui = false;
 let check2 = false;
+
 register("step", () => {
     let check1 = false;
     const container = Player.getContainer();
@@ -343,15 +358,21 @@ register("step", () => {
                 let xy = indexDictReverse[index];
                 noFossilAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
                 noFossilAtIndex.push(index);
-                print("No Fossil at: " + index);
+                // print("No Fossil at: " + index);
                 check1 = true;
                 check2 = true;
-                calcNewCoords()
             }
         }
         else {
             if (item.getName() == "§6Fossil") {
                 if (!fossilFoundAtIndex.includes(index)) {
+                    if (fossilProcent == 0) {
+                        print("Fossil procents: " + item.getLore()[6]);
+                        // Fossil procents: §5§o§7Fossil Excavation Progress: §c7.7%
+                        let procentString = item.getLore()[6];
+                        fossilProcent = parseInt(procentString.substring(procentString.indexOf("§c") + 2, procentString.indexOf("%")).replace(",", ""));
+                        print("Fossil procents: " + fossilProcent);
+                    }
                     if (noFossilAtIndex.includes(index)) {
                         // remove from noFossilAt and from noFossilAtIndex
                         let indexToRemove = noFossilAtIndex.indexOf(index);
@@ -361,11 +382,11 @@ register("step", () => {
                     let xy = indexDictReverse[index];
                     fossilFoundAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
                     fossilFoundAtIndex.push(index); 
-                    print("Fossil at: " + index);
+                    // print("Fossil at: " + index);
                     check1 = true;
                     check2 = true;
-                    calcNewCoords()
                 }
+                // fossilProcent = item.getLore()[4]
             }
             else {
                 if (item.getName() != "§6Dirt") {
@@ -373,10 +394,9 @@ register("step", () => {
                         let xy = indexDictReverse[index];
                         noFossilAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
                         noFossilAtIndex.push(index);
-                        print("No Fossil at: " + index);
+                        // print("No Fossil at: " + index);
                         check1 = true;
                         check2 = true;
-                        calcNewCoords()
                     }
                 }
             }
@@ -392,7 +412,6 @@ register("step", () => {
             noFossilAtIndex.splice(indexToRemove, 1);
             check1 = true;
             check2 = true;
-            calcNewCoords()
         }
     });
     fossilFoundAtIndex.forEach((index) => {
@@ -405,12 +424,12 @@ register("step", () => {
             fossilFoundAtIndex.splice(indexToRemove, 1);
             check1 = true;
             check2 = true;
-            calcNewCoords()
         }
     });
     if (!check1) {
         if (check2) {
             check2 = false;
+            print("calc new coords")
             calcNewCoords()
         }
     }
