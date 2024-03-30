@@ -339,7 +339,6 @@ calcNewCoords()
 let isInExcavatorGui = false;
 let check2 = false;
 
-let stringHasPoint = false;
 register("step", () => {
     let check1 = false;
     const container = Player.getContainer();
@@ -374,12 +373,8 @@ register("step", () => {
                         print("Fossil procents: " + item.getLore()[6]);
                         // Fossil procents: §5§o§7Fossil Excavation Progress: §c7.7%
                         let procentString = item.getLore()[6];
-                        // check if procentString has a point
-                        if (procentString.includes(".")) {
-                            stringHasPoint = true;
-                        }
                         fossilProcent = parseInt(procentString.substring(procentString.indexOf("§c") + 2, procentString.indexOf("%")).replace(".", ""));
-                        if (!stringHasPoint) {
+                        if (fossilProcent == 10) {
                             fossilProcent *= 10;
                         }
                         print("Fossil procents: " + fossilProcent);
