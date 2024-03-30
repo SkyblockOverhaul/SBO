@@ -227,8 +227,10 @@ export const indexDictReverse = {
 };
 
 // all figures
-const clubbed1 = [{'x': 6, 'y': 0}, {'x': 7, 'y': 0}, {'x': 1, 'y': 1}, {'x': 6, 'y': 1}, {'x': 7, 'y': 1}, {'x': 0, 'y': 2}, {'x': 5, 'y': 2}, {'x': 1, 'y': 3}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 4, 'y': 3}];
-const clubbed2 = [{'x': 1, 'y': 3}, {'x': 0, 'y': 3}, {'x': 6, 'y': 2}, {'x': 1, 'y': 2}, {'x': 0, 'y': 2}, {'x': 7, 'y': 1}, {'x': 2, 'y': 1}, {'x': 6, 'y': 0}, {'x': 5, 'y': 0}, {'x': 4, 'y': 0}, {'x': 3, 'y': 0}]
+const clubbed1 = [{'x': 6, 'y': 0}, {'x': 7, 'y': 0}, {'x': 1, 'y': 1}, {'x': 6, 'y': 1}, {'x': 7, 'y': 1}, {'x': 0, 'y': 2}, {'x': 5, 'y': 2}, {'x': 1, 'y': 3}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 4, 'y': 3}]
+const clubbed2 = [{'x': 1, 'y': 0}, {'x': 2, 'y': 0}, {'x': 3, 'y': 0}, {'x': 4, 'y': 0}, {'x': 0, 'y': 1}, {'x': 5, 'y': 1}, {'x': 1, 'y': 2}, {'x': 6, 'y': 2}, {'x': 7, 'y': 2}, {'x': 6, 'y': 3}, {'x': 7, 'y': 3}]
+const clubbed3 = [{'x': 1, 'y': 3}, {'x': 0, 'y': 3}, {'x': 6, 'y': 2}, {'x': 1, 'y': 2}, {'x': 0, 'y': 2}, {'x': 7, 'y': 1}, {'x': 2, 'y': 1}, {'x': 6, 'y': 0}, {'x': 5, 'y': 0}, {'x': 4, 'y': 0}, {'x': 3, 'y': 0}]
+const clubbed4 = [{'x': 6, 'y': 3}, {'x': 5, 'y': 3}, {'x': 4, 'y': 3}, {'x': 3, 'y': 3}, {'x': 7, 'y': 2}, {'x': 2, 'y': 2}, {'x': 6, 'y': 1}, {'x': 1, 'y': 1}, {'x': 0, 'y': 1}, {'x': 1, 'y': 0}, {'x': 0, 'y': 0}]
 
 const anker1 = [{'x': 0, 'y': 1}, {'x': 1, 'y': 2}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 3, 'y': 2}, {'x': 3, 'y': 1}, {'x': 3, 'y': 0}, {'x': 4, 'y': 3}, {'x': 5, 'y': 2}, {'x': 6, 'y': 1}];
 const anker2 = [{'x': 6, 'y': 2}, {'x': 5, 'y': 1}, {'x': 4, 'y': 0}, {'x': 3, 'y': 0}, {'x': 3, 'y': 1}, {'x': 3, 'y': 2}, {'x': 3, 'y': 3}, {'x': 2, 'y': 0}, {'x': 1, 'y': 1}, {'x': 0, 'y': 2}];
@@ -262,9 +264,11 @@ const claw1 = [{"x": 1, "y": 0}, {"x": 0, "y": 1}, {"x": 1, "y": 1}, {"x": 2, "y
 const claw2 = [{'x': 4, 'y': 0}, {'x': 2, 'y': 1}, {'x': 3, 'y': 1}, {'x': 4, 'y': 1}, {'x': 5, 'y': 1}, {'x': 1, 'y': 2}, {'x': 3, 'y': 2}, {'x': 4, 'y': 2}, {'x': 0, 'y': 3}, {'x': 2, 'y': 3}, {'x': 4, 'y': 3}, {'x': 1, 'y': 4}, {'x': 3, 'y': 4}]
 const claw3 = [{'x': 1, 'y': 0}, {'x': 3, 'y': 0}, {'x': 0, 'y': 1}, {'x': 2, 'y': 1}, {'x': 4, 'y': 1}, {'x': 1, 'y': 2}, {'x': 3, 'y': 2}, {'x': 4, 'y': 2}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 4, 'y': 3}, {'x': 5, 'y': 3}, {'x': 4, 'y': 4}]
 const claw4 = [{'x': 1, 'y': 4}, {'x': 3, 'y': 3}, {'x': 2, 'y': 3}, {'x': 1, 'y': 3}, {'x': 0, 'y': 3}, {'x': 4, 'y': 2}, {'x': 2, 'y': 2}, {'x': 1, 'y': 2}, {'x': 5, 'y': 1}, {'x': 3, 'y': 1}, {'x': 1, 'y': 1}, {'x': 4, 'y': 0}, {'x': 2, 'y': 0}]
+
+const bugged = [{'x': 3, 'y': 0}, {'x': 4, 'y': 0}, {'x': 5, 'y': 0}, {'x': 1, 'y': 1}, {'x': 0, 'y': 2}, {'x': 1, 'y': 3}, {'x': 3, 'y': 3}, {'x': 1, 'y': 4}]
 // mssing figures
 // claw1, claw2, claw3, claw4
 
 
 // all figures in a list
-export const allFigures = [clubbed1, clubbed2, anker1, anker2, spine1, spine2, spine3, spine4, ugly1, ugly2, ugly3, ugly4, tusk1, tusk2, tusk3, tusk4, helix1, helix2, helix3, helix4, footprint1, footprint2, footprint3, footprint4, claw1, claw2, claw3, claw4];
+export const allFigures = [bugged, clubbed1, clubbed2, clubbed3, clubbed4, anker1, anker2, spine1, spine2, spine3, spine4, ugly1, ugly2, ugly3, ugly4, tusk1, tusk2, tusk3, tusk4, helix1, helix2, helix3, helix4, footprint1, footprint2, footprint3, footprint4, claw1, claw2, claw3, claw4];

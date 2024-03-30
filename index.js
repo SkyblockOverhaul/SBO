@@ -318,10 +318,11 @@ function calcNewCoords() {
 }
 calcNewCoords()
 
-let coordsAdded = [];
 // guiClick new
 let isInExcavatorGui = false;
+let check2 = false;
 register("step", () => {
+    let check1 = false;
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
@@ -343,6 +344,8 @@ register("step", () => {
                 noFossilAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
                 noFossilAtIndex.push(index);
                 print("No Fossil at: " + index);
+                check1 = true;
+                check2 = true;
                 calcNewCoords()
             }
         }
@@ -359,6 +362,8 @@ register("step", () => {
                     fossilFoundAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
                     fossilFoundAtIndex.push(index); 
                     print("Fossil at: " + index);
+                    check1 = true;
+                    check2 = true;
                     calcNewCoords()
                 }
             }
@@ -369,6 +374,8 @@ register("step", () => {
                         noFossilAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
                         noFossilAtIndex.push(index);
                         print("No Fossil at: " + index);
+                        check1 = true;
+                        check2 = true;
                         calcNewCoords()
                     }
                 }
@@ -383,6 +390,8 @@ register("step", () => {
             let indexToRemove = noFossilAtIndex.indexOf(index);
             noFossilAt.splice(indexToRemove, 1);
             noFossilAtIndex.splice(indexToRemove, 1);
+            check1 = true;
+            check2 = true;
             calcNewCoords()
         }
     });
@@ -394,9 +403,17 @@ register("step", () => {
             let indexToRemove = fossilFoundAtIndex.indexOf(index);
             fossilFoundAt.splice(indexToRemove, 1);
             fossilFoundAtIndex.splice(indexToRemove, 1);
+            check1 = true;
+            check2 = true;
             calcNewCoords()
         }
     });
+    if (!check1) {
+        if (check2) {
+            check2 = false;
+            calcNewCoords()
+        }
+    }
 }).setFps(20);
 
 
