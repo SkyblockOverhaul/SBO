@@ -315,6 +315,41 @@ export function saveGuiSettings(guiSettings) {
         FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
 }
 
+export function drawRect(x1,y1,scale,z, color) {
+    let x = x1/scale
+    let y = y1/scale
+
+    Renderer.translate(0, 0, z)
+    Renderer.scale(scale,scale)
+    Renderer.drawRect(color, x, y, 6.5, 6.5);
+}
+
+export function drawOutlinedString(text,x1,y1,scale,z) {
+    let outlineString = "&0" + ChatLib.removeFormatting(text)
+    let x = x1/scale
+    let y = y1/scale
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x + 1, y)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x - 1, y)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y + 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y - 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(text, x, y)
+}
+
 export function getplayername(player) {
     let num
     let name
@@ -341,3 +376,4 @@ register("worldUnload", () => {
 register("worldLoad", () => {
     worldLoaded = true;
 });
+

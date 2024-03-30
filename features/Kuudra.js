@@ -1,6 +1,6 @@
 import { getWorld } from "../utils/world";
 import { request } from "../../requestV2";
-import { toTitleCase } from "./../utils/functions";
+import { toTitleCase, drawRect } from "./../utils/functions";
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
@@ -373,32 +373,7 @@ register("guiClosed", () => {
     indexToHighlight = -1;
     kuudraOverlay.clearChildren();
 });
-function drawOutlinedString(text,x1,y1,scale,z) {
-    let outlineString = "&0" + ChatLib.removeFormatting(text)
-    let x = x1/scale
-    let y = y1/scale
 
-    // Renderer.translate(0,0,z)
-    // Renderer.scale(scale,scale)
-    // Renderer.drawString(outlineString, x + 1, y)
-
-    // Renderer.translate(0,0,z)
-    // Renderer.scale(scale,scale)
-    // Renderer.drawString(outlineString, x - 1, y)
-
-    // Renderer.translate(0,0,z)
-    // Renderer.scale(scale,scale)
-    // Renderer.drawString(outlineString, x, y + 1)
-
-    // Renderer.translate(0,0,z)
-    // Renderer.scale(scale,scale)
-    // Renderer.drawString(outlineString, x, y - 1)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawRect(Renderer.color(0, 0, 0, 70), x, y, 16, 16);
-    // Renderer.drawString(text, x, y)
-}
 
 let indexToHighlight = -1;
 register("renderSlot", (slot) => {
@@ -407,7 +382,7 @@ register("renderSlot", (slot) => {
             let x = slot.getDisplayX();
             let y = slot.getDisplayY();
             // print("rendering highlight" + x + " " + y);
-            drawOutlinedString("&e[]", x, y, 2.5, 500);
+            drawRect(x, y, 2.5, 200, Renderer.color(255, 5, 5, 200));
         }
     }
 });

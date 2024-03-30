@@ -1,4 +1,4 @@
-
+import { drawOutlinedString, drawRect } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import {
     UIBlock,
@@ -11,7 +11,7 @@ const Color = Java.type("java.awt.Color");
 
 export let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
 // 8 y: 18
-let fossilGUISelected = false;
+export let fossilGUISelected = false;
 let fossilNameUI = new UIText("Fossil: Unknown");
 fossilNameUI.setX((8).pixels());
 fossilNameUI.setY((18).pixels());
@@ -456,36 +456,12 @@ register("renderSlot", (slot) => {
                 //     tempObj.setX()
                 //     fossilOverlay.addChild()
                 // }
-                let x = slot.getDisplayX() + 1.7;
-                let y = slot.getDisplayY() - 3.6;
-                drawOutlinedString("x", x, y, 2.5, 500)
+                let x = slot.getDisplayX() 
+                let y = slot.getDisplayY() 
+                // drawOutlinedString("x", x+ 1.7, y- 3.6, 2.5, 500)
+                drawRect(x, y, 2.5, 200, Renderer.color(255, 5, 5, 200));
             }
         };
     }
 });
 
-function drawOutlinedString(text,x1,y1,scale,z) {
-    let outlineString = "&0" + ChatLib.removeFormatting(text)
-    let x = x1/scale
-    let y = y1/scale
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x + 1, y)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x - 1, y)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x, y + 1)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(outlineString, x, y - 1)
-
-    Renderer.translate(0,0,z)
-    Renderer.scale(scale,scale)
-    Renderer.drawString(text, x, y)
-}
