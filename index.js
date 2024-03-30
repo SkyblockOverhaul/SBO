@@ -370,7 +370,7 @@ register("step", () => {
                         print("Fossil procents: " + item.getLore()[6]);
                         // Fossil procents: §5§o§7Fossil Excavation Progress: §c7.7%
                         let procentString = item.getLore()[6];
-                        fossilProcent = parseInt(procentString.substring(procentString.indexOf("§c") + 2, procentString.indexOf("%")).replace(",", ""));
+                        fossilProcent = parseInt(procentString.substring(procentString.indexOf("§c") + 2, procentString.indexOf("%")).replace(".", ""));
                         print("Fossil procents: " + fossilProcent);
                     }
                     if (noFossilAtIndex.includes(index)) {
