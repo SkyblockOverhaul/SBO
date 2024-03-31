@@ -260,7 +260,7 @@ function getClosestWarp(x, y, z){
 register("chat" , (player) => {
     // remove each waypoint from inqWaypoints that contains player
     print(player)
-    inqWaypoints = inqWaypoints.filter(([p, _, _, _, _]) => !p.includes(player.removeFrmating()));
+    inqWaypoints = inqWaypoints.filter(([p, _, _, _, _]) => !p.includes(player.removeFormatting()));
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 
