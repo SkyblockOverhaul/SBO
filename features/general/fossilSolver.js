@@ -389,7 +389,9 @@ register("step", () => {
             check1 = false;
             setTimeout(() => {
                 check1 = true;
-                calcNewCoords()
+                if (anzahlPositions > 1) {
+                    calcNewCoords()
+                }
             }, 200);
         }
     }
@@ -451,6 +453,9 @@ register("renderSlot", (slot) => {
             //     drawOutlinedString("x", x, y, 2.5, 500)
             // }
             if (slotsToHighlight.includes(slot.getIndex())) {
+                // dont render the x if the fossil is already found
+                if (fossilFoundAtIndex.includes(slot.getIndex())) return;
+                
                 // if (fossilFoundName != "") {
                 //     let tempObj = new UIText("Fossil: " + validLocations[0].name)
                 //     tempObj.setX()
