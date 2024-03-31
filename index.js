@@ -87,3 +87,93 @@ register("chat", (player, message, event) =>{
 //    }, 150);
 // }).setName("sboinq");
 
+// register("guiOpened", () => {
+//     const container = Player.getContainer();
+//     if (container !== null) {
+//         const rawFish = 0.5;   
+//         const rawSalmon = 0.7;
+//         const clownfish = 2.0;
+//         const pufferfish = 1.0;
+//         const prismarineShard = 0.5;
+//         const prismarineCrystals = 0.5;
+//         const sponge = 0.5;
+//         // echanted version 
+//         const enchantedPrismarineShard = 40; //
+//         const enchantedPrismarineCrystals = 40; //
+//         const enchantedSponge = 20; //
+//         const enchantedClownfish = 320; //
+//         const enchantedPufferfish = 160; //
+//         const enchantedRawFish = 80; 
+//         const enchantedRawSalmon = 112;
+
+//         const cookedFish = 12800;
+//         const cookedSalmon = 17920;
+//         const wetSponge = 25600;
+
+//         let totalRawExp = 0;
+//         let items = container.getItems();
+//         items.forEach((item, index) => {
+//             if (item === null) return;
+//             if (index > 53) return;
+//             let name = item.getName();
+//             let count = item.getStackSize();
+//             if (name.includes("Raw Fish")) {
+//                 totalRawExp += count * rawFish;
+//             }
+//             else if (name.includes("Raw Salmon")) {
+//                 totalRawExp += count * rawSalmon;
+//             }
+//             else if (name.includes("Clownfish")) {
+//                 totalRawExp += count * clownfish;
+//             }
+//             else if (name.includes("Pufferfish")) {
+//                 totalRawExp += count * pufferfish;
+//             }
+//             else if (name.includes("Prismarine Shard")) {
+//                 totalRawExp += count * prismarineShard;
+//             }
+//             else if (name.includes("Prismarine Crystals")) {
+//                 totalRawExp += count * prismarineCrystals;
+//             }
+//             else if (name.includes("Sponge")) {
+//                 totalRawExp += count * sponge;
+//             }
+//             else if (name.includes("Enchanted Prismarine Shard")) {
+//                 totalRawExp += count * enchantedPrismarineShard;
+//             }
+//             else if (name.includes("Enchanted Prismarine Crystals")) {
+//                 totalRawExp += count * enchantedPrismarineCrystals;
+//             }
+//             else if (name.includes("Enchanted Sponge")) {
+//                 totalRawExp += count * enchantedSponge;
+//             }
+//             else if (name.includes("Enchanted Clownfish")) {
+//                 totalRawExp += count * enchantedClownfish;
+//             }
+//             else if (name.includes("Enchanted Pufferfish")) {
+//                 totalRawExp += count * enchantedPufferfish;
+//             }
+//             else if (name.includes("Enchanted Raw Fish")) {
+//                 totalRawExp += count * enchantedRawFish;
+//             }
+//             else if (name.includes("Enchanted Raw Salmon")) {
+//                 totalRawExp += count * enchantedRawSalmon;
+//             }
+//             else if (name.includes("Cooked Fish")) {
+//                 totalRawExp += count * cookedFish;
+//             }
+//             else if (name.includes("Cooked Salmon")) {
+//                 totalRawExp += count * cookedSalmon;
+//             }
+//             else if (name.includes("Wet Sponge")) {
+//                 totalRawExp += count * wetSponge;
+//             }
+//             else {
+//                 print(`&r&cUnknown Item: &e${name}`);
+//             }
+            
+//         });
+//         print(`&r&6Total Raw Exp: &e${totalRawExp}`);
+
+//     }
+// })

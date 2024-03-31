@@ -163,15 +163,17 @@ function renderWaypoint(waypoints) {
     });
 }
 
+let warpString = "";
 function closestWarpString(x, y, z) {
     closestWarp = getClosestWarp(x, y, z);
     if (closestWarp == "no warp") {
         closestWarp = "";
+        warpString = "";
     }
     else {
-        closestWarp = ` (warp ${closestWarp})`;
+        warpString = ` (warp ${closestWarp})`;
     }
-    return closestWarp;
+    return warpString;
 }
 
 let guessWaypointString = "";
@@ -254,6 +256,22 @@ function getClosestWarp(x, y, z){
         return "no warp";
     }
 }
+// check if player got loot share //
+register("chat" , (player) => {
+    // remove each waypoint from inqWaypoints that contains player
+    inqWaypoints = inqWaypoints.filter(([p, _, _, _, _]) => p != player);
+}).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
+// &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
+
+// check waypoint
+register("step", () => {
+    if (isWorldLoaded()) {
+        // remvoe each waypoint from inqWaypoints if it is older than 60 seconds
+        inqWaypoints = inqWaypoints.filter(([_, _, _, _, _, time]) => Date.now() - time < 60000);
+        // remove each waypoint from patcherWaypoints if it is older than 30 seconds
+        // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
+    }
+}).setFps(1);
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if( isWorldLoaded()) {
@@ -271,8 +289,8 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 z = z.replace("&r", "");
                 // check if waypoint is from player
                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
-                    inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
-                    removeWaypointAfterDelay(inqWaypoints, 60);
+                    inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
+                    // removeWaypointAfterDelay(inqWaypoints, 60);
                 }
             }
             else{
