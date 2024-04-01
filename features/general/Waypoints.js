@@ -380,9 +380,11 @@ registerWhen(register("renderWorld", () => {
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 // let guessLineRemoved = false;
+let burrowDistance = 0;
 function renderBurrowLines(){
     if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
         let closestBurrow = getClosestBurrow(burrowWaypoints);
+        if (burrowDistance > 60) return;
         trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
     }
     // if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
@@ -425,6 +427,7 @@ function getClosestBurrow(burrows) {
             closestBurrow = [type, x, y, z, r, g, b];
         }
     });
+    burrowDistance = closestDistance;
     return closestBurrow;
 }
 
