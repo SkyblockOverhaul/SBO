@@ -389,13 +389,11 @@ register("step", () => {
             check1 = false;
             setTimeout(() => {
                 check1 = true;
-                if (anzahlPositions > 1) {
-                    calcNewCoords()
-                }
+                calcNewCoords()
             }, 200);
         }
     }
-}).setFps(20);
+}).setFps(10);
 
 
 // // guiClick old

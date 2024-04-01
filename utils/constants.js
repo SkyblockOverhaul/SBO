@@ -270,10 +270,10 @@ const claw2 = {'name': "claw",'coords': [{'x': 4, 'y': 0}, {'x': 2, 'y': 1}, {'x
 const claw3 = {'name': "claw",'coords': [{'x': 1, 'y': 0}, {'x': 3, 'y': 0}, {'x': 0, 'y': 1}, {'x': 2, 'y': 1}, {'x': 4, 'y': 1}, {'x': 1, 'y': 2}, {'x': 3, 'y': 2}, {'x': 4, 'y': 2}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 4, 'y': 3}, {'x': 5, 'y': 3}, {'x': 4, 'y': 4}]}
 const claw4 = {'name': "claw",'coords': [{'x': 1, 'y': 4}, {'x': 3, 'y': 3}, {'x': 2, 'y': 3}, {'x': 1, 'y': 3}, {'x': 0, 'y': 3}, {'x': 4, 'y': 2}, {'x': 2, 'y': 2}, {'x': 1, 'y': 2}, {'x': 5, 'y': 1}, {'x': 3, 'y': 1}, {'x': 1, 'y': 1}, {'x': 4, 'y': 0}, {'x': 2, 'y': 0}]}
 
-const bugged = {'name': "bugged",'coords': [{'x': 3, 'y': 0}, {'x': 4, 'y': 0}, {'x': 5, 'y': 0}, {'x': 1, 'y': 1}, {'x': 0, 'y': 2}, {'x': 1, 'y': 3}, {'x': 3, 'y': 3}, {'x': 1, 'y': 4}]}
+// const bugged = {'name': "bugged",'coords': [{'x': 3, 'y': 0}, {'x': 4, 'y': 0}, {'x': 5, 'y': 0}, {'x': 1, 'y': 1}, {'x': 0, 'y': 2}, {'x': 1, 'y': 3}, {'x': 3, 'y': 3}, {'x': 1, 'y': 4}]}
 // mssing figures
 // claw1mirrowed, claw2mirrowed, claw3mirrowed, claw4mirrowed, tusk1mirrowed, tusk2mirrowed, tusk3mirrowed, tusk4mirrowed 
 
 
 // all figures in a list
-export const allFigures = [bugged, clubbed1, clubbed2, clubbed3, clubbed4, webbed, webbed2, spine1, spine2, spine3, spine4, ugly1, ugly2, ugly3, ugly4, tusk1, tusk2, tusk3, tusk4, helix1, helix2, helix3, helix4, footprint1, footprint2, footprint3, footprint4, claw1, claw2, claw3, claw4, helixMirrored1, helixMirrored2, helixMirrored3, helixMirrored4];
+export const allFigures = [clubbed1, clubbed2, clubbed3, clubbed4, webbed, webbed2, spine1, spine2, spine3, spine4, ugly1, ugly2, ugly3, ugly4, tusk1, tusk2, tusk3, tusk4, helix1, helix2, helix3, helix4, footprint1, footprint2, footprint3, footprint4, claw1, claw2, claw3, claw4, helixMirrored1, helixMirrored2, helixMirrored3, helixMirrored4];

@@ -19,7 +19,8 @@ import "./features/general/alphaCheck";
 import "./utils/overlays";
 
 
-
+// &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
+// You have joined [MVP++] Tricksyz's party!
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
 
@@ -59,7 +60,7 @@ register("chat", (player, message, event) =>{
         let split = player.split(" ");
         let player1 = split[0];
         let player2 = split[3];
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
+        ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r:" + message);
         // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
     }
 }).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}:${message}").setContains()
