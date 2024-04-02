@@ -1,19 +1,19 @@
-if (this.showingWaypoints && this.loadFromParticles.getValue()) {
+function calcBurrowWaypoint(particle, type, event) {
     let foundEnchant = false;
     let foundCrit = false;
     let foundStep = false;
     let isMob = undefined;
 
     if (particle.toString().startsWith("EntityEnchantmentTableParticleFX, ")) {
-      foundEnchant = true;
+    foundEnchant = true;
     } 
     else if (particle.toString().startsWith("EntityCrit2FX, ")) {
-      foundCrit = true;
+    foundCrit = true;
 
-      isMob = particle.getUnderlyingEntity().func_70534_d() > 0.5;
+    isMob = particle.getUnderlyingEntity().func_70534_d() > 0.5;
     } 
     else if (particle.toString().startsWith("EntityFootStepFX, ")) {
-      foundStep = true;
+    foundStep = true;
     } 
     else if (particle.toString().startsWith("EntityCritFX, ")) {
         let locstr = Math.floor(particle.getX()) + "," + Math.floor(particle.getY() - 1) + "," + Math.floor(particle.getZ());
@@ -154,6 +154,38 @@ if (this.showingWaypoints && this.loadFromParticles.getValue()) {
                 ? 0 : 2, tier: -1, chain: -1, fromApi: false,
         });
 
-    // World.playSound("note.pling", 100, 2);
+        // World.playSound("note.pling", 100, 2);
+        // print cords of found location
+        print("Found location: " + locarr[0] + ", " + locarr[1] + ", " + locarr[2]);
     }
 }
+
+function calculateDistance(p1,p2){
+    var a=p2[0]-p1[0];
+    var b=p2[1]-p1[1];
+    var c=p2[2]-p1[2];
+    
+    let ret=Math.hypot(a,b,c);
+    
+    if(ret<0){
+        ret*=-1;
+    }
+    return ret;
+}
+
+function calculateDistanceQuick(p1,p2){
+    var a=p2[0]-p1[0];
+    var b=p2[1]-p1[1];
+    var c=p2[2]-p1[2];
+    
+    let ret=a*a+b*b+c*c;
+    
+    if(ret<0){
+        ret*=-1;
+    }
+    return ret;
+}
+
+register("spawnParticle", (particle, type, event) => {
+    calcBurrowWaypoint(particle, type, event)
+})

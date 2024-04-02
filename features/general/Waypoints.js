@@ -187,7 +187,7 @@ let hubWarps = {
 const warpKey = new KeyBind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
 warpKey.registerKeyPress(() => {
-    if (settings.dianaBurrowWarp) {
+    if (settings.dianaBurrowWarp && finalLocation != null) {
         getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z);
         if (warpPlayer) {
             ChatLib.command("warp " + closestWarp);
@@ -259,7 +259,6 @@ function getClosestWarp(x, y, z){
 // check if player got loot share //
 register("chat" , (player) => {
     // remove each waypoint from inqWaypoints that contains player
-    print(player)
     inqWaypoints = inqWaypoints.filter(([p, _, _, _, _]) => !p.includes(player.removeFormatting()));
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
@@ -267,16 +266,20 @@ register("chat" , (player) => {
 // check waypoint
 register("step", () => {
     if (isWorldLoaded()) {
-        // remvoe each waypoint from inqWaypoints if it is older than 60 seconds
-        inqWaypoints = inqWaypoints.filter(([_, _, _, _, _, time]) => Date.now() - time < 60000);
-        // remove each waypoint from patcherWaypoints if it is older than 30 seconds
+        // remvoe each waypoint thats older than 45 seconds
+        inqWaypoints = inqWaypoints.filter(([_, _, _, _, _, time]) => Date.now() - time < 45000);
         // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
     }
 }).setFps(1);
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if( isWorldLoaded()) {
-        isInq = !z.includes(" ");
+        if (checkDiana()) {
+            isInq = true;
+        }
+        else {
+            isInq = !z.includes(" ");
+        }
         const bracketIndex = player.indexOf('[') - 2;
         if (bracketIndex >= 0)
             player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
