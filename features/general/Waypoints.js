@@ -273,7 +273,7 @@ register("step", () => {
 }).setFps(1);
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
-    if( isWorldLoaded()) {
+    if (isWorldLoaded()) {
         if (checkDiana()) {
             isInq = true;
         }

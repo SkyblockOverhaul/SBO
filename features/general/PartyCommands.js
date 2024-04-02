@@ -79,5 +79,13 @@ register("chat", (player, message) => {
                 },100)
             }
             break;
+        case "!time":
+            if(settings.timeCommand){
+                setTimeout(function() {
+                    
+                    ChatLib.command("pc " + new Date().toLocaleTimeString().split(" ")[0]);
+                },100)
+            }
+            break;
     }
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")

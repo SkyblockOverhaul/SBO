@@ -9,12 +9,6 @@ import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, ge
 import { checkDiana } from "../../utils/checkDiana";
 
 // todo: 
-// bei dem tracker gui anzeigen was für ein tracker es ist
-
-// burrow count: fertig vielleicht
-// (1/4) start burrow
-// (2/4), (3/4) treasure burrow or mob burrow
-// (4/4) treasure burrow
 
 // todo end
 

@@ -254,6 +254,14 @@ class Settings {
         subcategory: 'Party Commands',
     })
     carrotCommand = false;
+    @SwitchProperty({
+        name: 'Time Check',
+        description: 'Sends your Time in party chat (!time)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    timeCommand = false;
+
 
     // Slayer
     @SwitchProperty({
