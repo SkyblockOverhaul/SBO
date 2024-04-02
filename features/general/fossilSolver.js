@@ -110,13 +110,13 @@ function calculateLocations(figure) {
     // kann nicht ausgeklammert werden weil es sonst nicht funktioniert (wegen den globalen variablen)
     // print original figure and all possible locations in the map (empty as "." and filled as "X")
     // console.log("Original figure:");
-    for (let y = 0; y < mapSize.y; y++) {
-        let row = "";
-        for (let x = 0; x < mapSize.x; x++) {
-            row += figure.coords.some(p => p.x === x && p.y === y) ? "X" : ".";
-        }
-        // console.log(row);
-    }
+    // for (let y = 0; y < mapSize.y; y++) {
+    //     let row = "";
+    //     for (let x = 0; x < mapSize.x; x++) {
+    //         row += figure.coords.some(p => p.x === x && p.y === y) ? "X" : ".";
+    //     }
+    //     // console.log(row);
+    // }
     // console.log("Possible locations:");
     for (const location of tempList) {
         for (let y = 0; y < mapSize.y; y++) {
@@ -159,7 +159,7 @@ function calculateLocations(figure) {
 // }
 
 register("chat", () => {
-    print("Excavation complete")
+    // print("Excavation complete")
     fossilFoundAt = [];
     fossilFoundAtIndex = [];
     noFossilAt = [];
@@ -171,7 +171,7 @@ register("chat", () => {
 }).setCriteria("&r&cYou didn't find anything. Maybe next time!&r");
 
 register("chat", () => {
-    print("Excavation complete")
+    // print("Excavation complete")
     fossilFoundAt = [];
     fossilFoundAtIndex = [];
     noFossilAt = [];
@@ -223,34 +223,34 @@ function calcNewCoords() {
 
 
 
-    print("FossilMustBeAt: " + fossilFoundAt.length)
-    print("FossilCantBeAt: " + noFossilAt.length)
-    console.log("Figure must be at:");
-    let tempString = "";
-    for (let y = 0; y < mapSize['y']; y++) {
-        for (let x = 0; x < mapSize['x']; x++) {
-            if (fossilFoundAt.some(coord => coord.x === x && coord.y === y)) {
-                tempString += "O";
-            } else {
-                tempString += ".";
-            }
-        }
-        tempString += " \n";
-    }
-    print("TempString: \n" + tempString);
-    tempString = "";
-    console.log("Figure can't be at:");
-    for (let y = 0; y < mapSize['y']; y++) {
-        for (let x = 0; x < mapSize['x']; x++) {
-            if (noFossilAt.some(coord => coord.x === x && coord.y === y)) {
-                tempString += "X";
-            } else {
-                tempString += ".";
-            }
-        }
-        tempString += " \n";
-    }
-    print("TempString: \n" + tempString);
+    // print("FossilMustBeAt: " + fossilFoundAt.length)
+    // print("FossilCantBeAt: " + noFossilAt.length)
+    // console.log("Figure must be at:");
+    // let tempString = "";
+    // for (let y = 0; y < mapSize['y']; y++) {
+    //     for (let x = 0; x < mapSize['x']; x++) {
+    //         if (fossilFoundAt.some(coord => coord.x === x && coord.y === y)) {
+    //             tempString += "O";
+    //         } else {
+    //             tempString += ".";
+    //         }
+    //     }
+    //     tempString += " \n";
+    // }
+    // // print("TempString: \n" + tempString);
+    // tempString = "";
+    // console.log("Figure can't be at:");
+    // for (let y = 0; y < mapSize['y']; y++) {
+    //     for (let x = 0; x < mapSize['x']; x++) {
+    //         if (noFossilAt.some(coord => coord.x === x && coord.y === y)) {
+    //             tempString += "X";
+    //         } else {
+    //             tempString += ".";
+    //         }
+    //     }
+    //     tempString += " \n";
+    // }
+    // print("TempString: \n" + tempString);
 
     // print index with most fossils
     // print complete counter
@@ -269,7 +269,7 @@ function calcNewCoords() {
         slotsToHighlight.push(slotToHighlight);
     }
 
-    print("Anzahl Positionen: " + anzahlPositions);
+    // print("Anzahl Positionen: " + anzahlPositions);
     if (fossilFoundAt.length > 0) {
         if (anzahlPositions == 1) {
             // print all indexes of the only possible figure
@@ -278,17 +278,17 @@ function calcNewCoords() {
                     slotsToHighlight.push(parseInt(key));
                 }
             }
-            print("Only one possible figure");
-            print("name: " + validLocations[0].name);
+            // print("Only one possible figure");
+            // print("name: " + validLocations[0].name);
             fossilNameUI.setText("Fossil: " + validLocations[0].name);
         }
         else {
-            print("Multiple possible figures");
+            // print("Multiple possible figures");
             fossilNameUI.setText("Fossil: Unknown");
         }
     }
     else {
-        print("No fossil found yet");
+        // print("No fossil found yet");
         fossilNameUI.setText("Fossil: Unknown");
     }
 }
@@ -327,17 +327,15 @@ register("step", () => {
             if (item.getName() == "§6Fossil") {
                 if (!fossilFoundAtIndex.includes(index)) {
                     if (fossilProcent == 0) {
-                        print("Fossil procents: " + item.getLore()[6]);
-                        // Fossil procents: §5§o§7Fossil Excavation Progress: §c7.7%
+                        // print("Fossil procents: " + item.getLore()[6]);
                         let procentString = item.getLore()[6];
                         fossilProcent = parseInt(procentString.substring(procentString.indexOf("§c") + 2, procentString.indexOf("%")).replace(".", ""));
                         if (fossilProcent == 10) {
                             fossilProcent *= 10;
                         }
-                        print("Fossil procents: " + fossilProcent);
+                        // print("Fossil procents: " + fossilProcent);
                     }
                     if (noFossilAtIndex.includes(index)) {
-                        // remove from noFossilAt and from noFossilAtIndex
                         let indexToRemove = noFossilAtIndex.indexOf(index);
                         noFossilAt.splice(indexToRemove, 1);
                         noFossilAtIndex.splice(indexToRemove, 1);
@@ -366,7 +364,6 @@ register("step", () => {
         let itemAtIndex = items[index];
         if (itemAtIndex == null) return;
         if (itemAtIndex.getName() == "§6Fossil" || itemAtIndex.getName() == "§6Dirt") {
-            // remove from noFossilAt and from noFossilAtIndex
             let indexToRemove = noFossilAtIndex.indexOf(index);
             noFossilAt.splice(indexToRemove, 1);
             noFossilAtIndex.splice(indexToRemove, 1);
@@ -377,7 +374,6 @@ register("step", () => {
         let itemAtIndex = items[index];
         if (itemAtIndex == null) return;
         if (itemAtIndex.getName() != "§6Fossil") {
-            // remove from fossilFoundAt and from fossilFoundAtIndex
             let indexToRemove = fossilFoundAtIndex.indexOf(index);
             fossilFoundAt.splice(indexToRemove, 1);
             fossilFoundAtIndex.splice(indexToRemove, 1);
@@ -396,46 +392,6 @@ register("step", () => {
 }).setFps(10);
 
 
-// // guiClick old
-// register("guiMouseClick", () => {
-//     let slot = Client.currentGui.getSlotUnderMouse()
-//     if (slot == null) return;
-//     let index = slot.getIndex();
-//     if (index > 53) return;
-//     const container = Player.getContainer();
-//     if (container == null) return;
-//     if (container.getName() != "Fossil Excavator") return; 
-//     let item = container.getStackInSlot(index);
-//     if (item == null) return;
-//     if (item.getName() == "§6Dirt") {
-//         setTimeout(() => {
-//             item = container.getStackInSlot(index);
-//             if (item == null) {
-//                 let xy = indexDictReverse[index];
-//                 noFossilAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
-//                 noFossilAtIndex.push(index);
-//                 print("No Fossil at: " + index);
-//             }
-//             else {
-//                 if (item.getName() == "§6Fossil") {
-//                     let xy = indexDictReverse[index];
-//                     fossilFoundAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
-//                     fossilFoundAtIndex.push(index); 
-//                     print("Fossil at: " + index);
-//                 }
-//                 else {
-//                     if (item.getName() != "§6Dirt") {
-//                         let xy = indexDictReverse[index];
-//                         noFossilAt.push({'x': parseInt(xy[0]), 'y': parseInt(xy[1]) });
-//                         noFossilAtIndex.push(index);
-//                         print("No Fossil at: " + index);
-//                     }
-//                 }
-//             }
-//             calcNewCoords()
-//         }, 300);
-//     }
-// });
 
 register("renderSlot", (slot) => {
     const container = Player.getContainer();
@@ -445,23 +401,12 @@ register("renderSlot", (slot) => {
         let item = slot.getItem();
         if (item == null) return;
         if (item.getName() == "§6Dirt" || item.getName() == "§6Fossil") {
-            // if (slot.getIndex() == slotToHighlight) {
-            //     let x = slot.getDisplayX() + 1.7;
-            //     let y = slot.getDisplayY() - 3.6;
-            //     drawOutlinedString("x", x, y, 2.5, 500)
-            // }
+
             if (slotsToHighlight.includes(slot.getIndex())) {
-                // dont render the x if the fossil is already found
                 if (fossilFoundAtIndex.includes(slot.getIndex())) return;
-                
-                // if (fossilFoundName != "") {
-                //     let tempObj = new UIText("Fossil: " + validLocations[0].name)
-                //     tempObj.setX()
-                //     fossilOverlay.addChild()
-                // }
+
                 let x = slot.getDisplayX() 
                 let y = slot.getDisplayY() 
-                // drawOutlinedString("x", x+ 1.7, y- 3.6, 2.5, 500)
                 drawRect(x, y, 2.5, 200);
             }
         };
