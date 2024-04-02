@@ -85,7 +85,7 @@ registerWhen(register("step", () => {
     loadOverlay();
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
-        print("updating kuudra items with api");
+        // print("updating kuudra items with api");
         updateing = true;
         lastUpdate = Date.now();
         updateKuudraItems()
@@ -420,18 +420,18 @@ function refreshOverlay(totalValue) {
             guiStrings[item.indexOfObj].setX((0).pixels());
             guiStrings[item.indexOfObj].setY((pixel).pixels());
             maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-            guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
+            guiStrings[item.indexOfObj].setWidth((maxStringWidth * 5).pixels());
             guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
 
             guiStrings[item.indexOfObj].onMouseLeave((comp) => {
                 indexToHighlight = -1;
                 maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-                guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
+                guiStrings[item.indexOfObj].setWidth((maxStringWidth * 5).pixels());
                 guiStrings[item.indexOfObj].setText(item.string);
             });
             guiStrings[item.indexOfObj].onMouseEnter((comp) => {
                 maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-                guiStrings[item.indexOfObj].setWidth((maxStringWidth * 4.6).pixels());
+                guiStrings[item.indexOfObj].setWidth((maxStringWidth * 5).pixels());
                 guiStrings[item.indexOfObj].effects;
                 guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
                 setTimeout(() => {

@@ -10,13 +10,16 @@ import "./features/general/Waypoints";
 import "./features/diana/DianaBurrowDetect";
 import "./features/slayer/BlazeSlayer";
 import "./features/general/CopyMessage";
+import "./utils/overlays";
+import "./features/diana/BurrowWaypointTest";
 
 // in sbo addons packen
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import "./features/dungeon/recognizeRareRoom";
 import "./features/general/alphaCheck";
-import "./utils/overlays";
+
+
 
 
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
