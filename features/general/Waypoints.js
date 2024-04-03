@@ -274,12 +274,12 @@ register("step", () => {
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if (isWorldLoaded()) {
-        if (checkDiana()) {
-            isInq = true;
-        }
-        else {
+        // if (checkDiana()) {
+            // isInq = true;
+        // }
+        // else {
             isInq = !z.includes(" ");
-        }
+        // }
         const bracketIndex = player.indexOf('[') - 2;
         if (bracketIndex >= 0)
             player = player.replaceAll('&', '§').substring(bracketIndex, player.length);

@@ -11,7 +11,7 @@ import "./features/diana/DianaBurrowDetect";
 import "./features/slayer/BlazeSlayer";
 import "./features/general/CopyMessage";
 import "./utils/overlays";
-import "./features/diana/BurrowWaypointTest";
+// import "./features/diana/BurrowWaypointTest";
 
 // in sbo addons packen
 import "./features/general/QOL";
