@@ -372,6 +372,8 @@ function readContainerItems() {
 register("guiClosed", () => {
     indexToHighlight = -1;
     kuudraOverlay.clearChildren();
+    chestItems = [];
+    guiStrings = [];
 });
 
 
@@ -387,12 +389,29 @@ register("renderSlot", (slot) => {
     }
 });
 
+let guiStrings = [];
+register("step", () => {
+    let tempBool = false;
+    if (guiStrings.length == 0) return;
+    chestItems.forEach((item) => {
+        if (guiStrings[item.indexOfObj] == undefined) return;
+        if (guiStrings[item.indexOfObj].isHovered()) {
+            tempBool = true;
+            indexToHighlight = item.index;
+        }
+    })
+    if (!tempBool) {
+        indexToHighlight = -1;
+    }
+}).setFps(20);
+
+
 function refreshOverlay(totalValue) {
     // sort itemStrings by price
     chestItems.sort((a, b) => {
         return b.price - a.price;
     });
-    let guiStrings = [];
+    guiStrings = [];
     let overlayString = "";
     let counter = 1;
     let tempObj = undefined;
@@ -424,7 +443,6 @@ function refreshOverlay(totalValue) {
             guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
 
             guiStrings[item.indexOfObj].onMouseLeave((comp) => {
-                indexToHighlight = -1;
                 maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
                 guiStrings[item.indexOfObj].setWidth((maxStringWidth * 5).pixels());
                 guiStrings[item.indexOfObj].setText(item.string);
@@ -434,10 +452,10 @@ function refreshOverlay(totalValue) {
                 guiStrings[item.indexOfObj].setWidth((maxStringWidth * 5).pixels());
                 guiStrings[item.indexOfObj].effects;
                 guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
-                setTimeout(() => {
-                    indexToHighlight = item.index;
-                }, 30);
             });
+            // check if gui object is hovered
+            
+
             // guiStrings.push(tempObj);
             pixel += tempPixel;
         }
