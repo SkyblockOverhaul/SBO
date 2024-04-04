@@ -2,11 +2,9 @@ import settings from "../../settings";
 import { effectsOverlay } from "../guis/DianaGuis";
 import { data, registerWhen } from "../../utils/variables";
 import { isInSkyblock } from "../../utils/functions";
-import { getWorld } from "../../utils/world";
-
 
 let effects = [];
-register("chat", () => {
+registerWhen(register("chat", () => {
     // ChatLib.chat("Buff received!");
     let baseDuration = 1800;
     if (effects.some(e => e.name === "Wisp's Water")) {
@@ -23,9 +21,9 @@ register("chat", () => {
             loggedOff: false,
         });
     }
-}).setCriteria("&a&lBUFF! &fYou splashed yourself with &r&bWisp's Ice-Flavored Water I&r&f! Press TAB or type /effects to view your active effects!&r");
+}).setCriteria("&a&lBUFF! &fYou splashed yourself with &r&bWisp's Ice-Flavored Water I&r&f! Press TAB or type /effects to view your active effects!&r"), () => settings.effectsGui);;
 
-register("chat", () => {
+registerWhen(register("chat", () => {
     let baseDuration = 3600;
     if (effects.some(e => e.name === "Gummy Bear")) {
         let gummy = effects.find(e => e.name === "Gummy Bear");
@@ -41,7 +39,7 @@ register("chat", () => {
             loggedOff: false
         });
     }
-}).setCriteria("&r&aYou ate a &r&aRe-heated Gummy Polar Bear&r&a!&r");
+}).setCriteria("&r&aYou ate a &r&aRe-heated Gummy Polar Bear&r&a!&r"), () => settings.effectsGui);;
 
 let first = true;
 registerWhen(register("step", () => {
