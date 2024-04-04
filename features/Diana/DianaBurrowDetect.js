@@ -109,7 +109,7 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
     }
     burrowDetect(particle, type);
 
-}), () => settings.dianaBurrowDetect);
+}), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
 registerWhen(register("step", () => {
     burrows.forEach(([type, x, y, z]) => {
