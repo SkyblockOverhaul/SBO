@@ -48,6 +48,13 @@ export function removeBurrowWaypoint(burrowshistory, burrows) {
     return burrows; 
 }
 
+export function removeBurrowWaypointBySmoke(x, y, z) {
+    for (let i = 0; i < burrowWaypoints.length; i++) {
+        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            burrowWaypoints.splice(i, 1);
+        }
+    }
+}
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
     // remove wayspoints older than 30 seconds
