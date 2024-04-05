@@ -34,10 +34,6 @@ this.gui.registerMouseReleased(() => this.renderWindow.mouseRelease());
 this.gui.registerClicked((x,y,b) => this.postWindow.mouseClick(x,y,b));
 this.gui.registerMouseDragged((x, y, b) => this.postWindow.mouseDrag(x, y, b));
 this.gui.registerMouseReleased(() => this.postWindow.mouseRelease());
-let overlayStatus = {
-    kuudraOverlay: false,
-    fossilOverlay: false,
-};
 let overlayExamples = {
     kuudraExampleOne: `&r&62.49M &r&eTerror Chestplate&r
 &r&b(BL 5/BR 4 - &r&6100.00K/2.49M&b)
@@ -61,8 +57,8 @@ register('renderOverlay', () => {
 });
 
 register('postGuiRender', () => {
-    checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, overlayStatus, "post");
-    checkForSetting(fossilOverlay, settings.fossilOverlay, overlayStatus, "post");
+    checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, "post");
+    checkForSetting(fossilOverlay, settings.fossilOverlay, "post");
     postWindow.draw()
 });
 
@@ -71,25 +67,23 @@ register('worldUnload', () => {
 });
 
 
-function checkForSetting(overlay, setting, statusObject, type){
+function checkForSetting(overlay, setting, type){
     if(!overlay) return;
-    if(setting && !statusObject[overlay]){
-        if(type === "render") {
+    if(setting){
+        if(type === "render" && !renderWindow.children.includes(overlay)) {
             renderWindow.addChild(overlay);
         }
-        else if(type === "post"){
+        else if(type === "post" && !postWindow.children.includes(overlay)){
             postWindow.addChild(overlay);
         }
-        statusObject[overlay] = true;
     }
-    if(!setting && statusObject[overlay]){
-        if(type === "render") {
+    if(!setting){
+        if(type === "render" && renderWindow.children.includes(overlay)) {
             renderWindow.removeChild(overlay);
         }
-        else if(type === "post"){
+        else if(type === "post" && postWindow.children.includes(overlay)){
             postWindow.removeChild(overlay);
         }
-        statusObject[overlay] = false;
     }
 }
 
