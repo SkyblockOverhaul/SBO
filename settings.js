@@ -24,7 +24,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Mining','Party Commands','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -494,11 +494,17 @@ class Settings {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/VolcAddons"));
     }
 
-    // test
+    // Mining
+    @SwitchProperty({
+        name: "Fossil Solver",
+        description: "Enables the fossil solver",
+        category: "Mining",
+    })
+    fossilSolver = false;
     @SwitchProperty({
         name: "Fossil Overlay",
-        description: "Enable the fossil overlay",
-        category: "Test",
+        description: "Tells you the fossil you excavate",
+        category: "Mining",
     })
     fossilOverlay = false;
 }

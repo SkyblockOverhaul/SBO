@@ -418,9 +418,9 @@ registerWhen(register("step", () => {
     loadOverlay();
 }).setFps(1), () => settings.fossilOverlay);
 
-register("guiClosed", () => {
+registerWhen(register("guiClosed", () => {
     fossilOverlay.clearChildren();
-});
+}), () => settings.fossilOverlay);
 
 register("renderSlot", (slot) => {
     const container = Player.getContainer();
