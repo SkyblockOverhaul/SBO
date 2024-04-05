@@ -14,11 +14,12 @@ function burrowDetect(particle, type) {
         let xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
         // print("xyzcheck x: " + xyzcheck[0] + " y: " + xyzcheck[1] + " z: " + xyzcheck[2])
         // print("particlepos x: " + particlepos.getX() + " y: " + particlepos.getY() + " z: " + particlepos.getZ())
-        // if (particlepos.getZ() == 0) {
-        //     xyz[2] = Math.floor(particle.getZ());
-        // }
-        // print("after correction x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2])
-        print("block pos " + BlockPos(particle.getX(), particle.getY(), particle.getZ()))
+        if (particlepos.getZ() == 0) {
+            xyz[2] = Math.floor(particle.getZ());
+        }
+        print("after correction x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2])
+        // let blockpos = new BlockPos(particle.getX(), particle.getY(), particle.getZ());
+        // print("block pos " + blockpos.getX() + " " + blockpos.getY() + " " + blockpos.getZ())
         if (Math.abs(particle.getY() % 1) > 0.1) return;
         if (Math.abs(particle.getX() % 1) < 0.1) return;
         if (Math.abs(particle.getX() % 1) > 0.9) return;

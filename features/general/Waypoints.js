@@ -136,6 +136,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
         wp[1] = [x + xSign, y - 1, z + zSign];
+        print("x: " + x + " y: " + y + " z: " + z + " distance: " + distance + " xSign: " + xSign + " zSign: " + zSign)
 
         /* Return Matrix
            [message, x, y ,z]
