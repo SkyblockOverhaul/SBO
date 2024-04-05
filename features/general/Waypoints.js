@@ -63,7 +63,7 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
-export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
+export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzcheck) {
     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
         if (burrowWaypoints.length > 0) {
             for (let i = 0; i < burrowWaypoints.length; i++) {
@@ -77,10 +77,10 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
                     }
                 }
             }
-            burrowWaypoints.push([burrowType, x, y, z]);
+            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
         }
         else {
-            burrowWaypoints.push([burrowType, x, y, z]);
+            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
         }
     }
 }
@@ -118,15 +118,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         x = Math.round(waypoint[1]);
         y = Math.round(waypoint[2]);
         z = Math.round(waypoint[3]);
-        let blockpos = new BlockPos(x, y, z);
-        print("x: " + x + " y: " + y + " z: " + z)
-        print("block pos " + blockpos.getX() + " " + blockpos.getY() + " " + blockpos.getZ())
-        // if (x < 0) {
-        //     x = x- 1;
-        // }
-        // if (z < 0) {
-        //     z = z- 1;
-        // }
+
         distance = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
 
         // Makes it so waypoint always renders
@@ -137,50 +129,32 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
 
         // Formats and realins everything
         distance = Math.round(distance) + "m";
-        xSign = x == 0 ? 1 : Math.sign(x);
-        zSign = z == 0 ? 1 : Math.sign(z);
-        print("xSign: " + xSign + " zSign: " + zSign)
-        // waypoint message
-        if (xSign == -1 && zSign == 1) {
-            if (x == -1) {
-                x = x +1;
+        if (type == "Burrow") {
+            if (waypoint[5][0] > 0) {
+                xSign = 1;
             }
-            if (z == 1) {
-                z = z -1;
+            else if (waypoint[5][0] < 0) {
+                xSign = -1;
             }
-        }
-        else if (xSign == -1 && zSign == -1) {
-            if (z == -1) {
-                z = z +1;
+            if (waypoint[5][2] > 0) {
+                zSign = 1;
             }
-            if (x == -1) {
-                x = x +1;
+            else if (waypoint[5][2] < 0) {
+                zSign = -1;
             }
         }
-        else if (xSign == 1 && zSign == -1) {
-            if (x == 1) {
-                x = x -1;
-            }
-            if (z == -1) {
-                z = z +1;
-            }
-        }
-        else if (xSign == 1 && zSign == 1) {
-            if (z == 1) {
-                z = z -1;
-            }
-            if (x == 1) {
-                x = x -1;
-            }
+        else {
+            xSign = x == 0 ? 1 : Math.sign(x);
+            zSign = z == 0 ? 1 : Math.sign(z);
         }
 
+
+
         wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
-        
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
         wp[1] = [x + xSign, y - 1, z + zSign];
-        // print("x: " + x + " y: " + y + " z: " + z + " distance: " + distance + " xSign: " + xSign + " zSign: " + zSign)
         
         /* Return Matrix
            [message, x, y ,z]
@@ -406,7 +380,7 @@ registerWhen(register("step", () => {
     formattedBurrow = []
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); 
     formatWaypoints(inqWaypoints, 1, 0.84, 0); 
-    formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" );
+    formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
     formatWaypoints(nestWaypoints, 1, 0.84, 0);
 
 }).setFps(3), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);

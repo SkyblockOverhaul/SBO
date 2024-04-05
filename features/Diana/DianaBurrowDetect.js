@@ -10,16 +10,11 @@ function burrowDetect(particle, type) {
     let typename = type.toString();
     if (typename == "FOOTSTEP" || typename == "CRIT_MAGIC" || typename == "CRIT") {
         const particlepos = particle.getPos();
-        let xyzcheck = [Math.floor(particle.getX()), Math.floor(particle.getY()), Math.floor(particle.getZ())];
-        let xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
-        // print("xyzcheck x: " + xyzcheck[0] + " y: " + xyzcheck[1] + " z: " + xyzcheck[2])
-        // print("particlepos x: " + particlepos.getX() + " y: " + particlepos.getY() + " z: " + particlepos.getZ())
-        if (particlepos.getZ() == 0) {
-            xyz[2] = Math.floor(particle.getZ());
-        }
-        // print("after correction x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2])
-        // let blockpos = new BlockPos(particle.getX(), particle.getY(), particle.getZ());
-        // print("block pos " + blockpos.getX() + " " + blockpos.getY() + " " + blockpos.getZ())
+        let xyzcheck = [particle.getX(), particle.getY(), particle.getZ()];
+        let xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ(), xyzcheck];
+        // if (particlepos.getZ() == 0) {
+        //     xyz[2] = Math.floor(particle.getZ());
+        // }
         if (Math.abs(particle.getY() % 1) > 0.1) return;
         if (Math.abs(particle.getX() % 1) < 0.1) return;
         if (Math.abs(particle.getX() % 1) > 0.9) return;
@@ -121,9 +116,8 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
 }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
 registerWhen(register("step", () => {
-    burrows.forEach(([type, x, y, z]) => {
-        print("burrow x: " + x + " y: " + y + " z: " + z)
-        createBurrowWaypoints(type, x, y, z, burrowshistory);
+    burrows.forEach(([type, x, y, z, xyzcheck]) => {
+        createBurrowWaypoints(type, x, y, z, burrowshistory, xyzcheck);
     });
 }).setFps(4), () => settings.dianaBurrowDetect);
 
@@ -155,3 +149,4 @@ registerWhen(register("step", () => {
         resetBurrows();
     }
 }).setFps(1), () => settings.dianaBurrowDetect);
+

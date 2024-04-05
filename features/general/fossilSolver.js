@@ -7,6 +7,7 @@ import {
     ChildBasedRangeConstraint
 } from "../../../Elementa";
 import settings from "../../settings";
+import { getWorld } from "../../utils/world";
 const Color = Java.type("java.awt.Color");
 
 // todo
@@ -298,17 +299,13 @@ function calcNewCoords() {
                     slotsToHighlight.push(parseInt(key));
                 }
             }
-            // print("Only one possible figure");
-            // print("name: " + validLocations[0].name);
             fossilNameUI.setText("Fossil: " + validLocations[0].name);
         }
         else {
-            // print("Multiple possible figures");
             fossilNameUI.setText("Fossil: Unknown");
         }
     }
     else {
-        // print("No fossil found yet");
         fossilNameUI.setText("Fossil: Unknown");
     }
 }
@@ -317,7 +314,7 @@ calcNewCoords()
 // guiClick new
 let isInExcavatorGui = false;
 let check1 = true;
-register("step", () => {
+registerWhen(register("step", () => {
     let check2 = false;
     const container = Player.getContainer();
     if (container == null) return;
@@ -412,17 +409,17 @@ register("step", () => {
             }, 200);
         }
     }
-}).setFps(10);
+}).setFps(10), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 registerWhen(register("step", () => {
     loadOverlay();
-}).setFps(1), () => settings.fossilOverlay);
+}).setFps(1), () => settings.fossilOverlay && settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 registerWhen(register("guiClosed", () => {
     fossilOverlay.clearChildren();
-}), () => settings.fossilOverlay);
+}), () => settings.fossilOverlay && settings.fossilSolver && getWorld() == "Dwarven Mines");
 
-register("renderSlot", (slot) => {
+registerWhen(register("renderSlot", (slot) => {
     const container = Player.getContainer();
     if (container == null) return;
     if (container == undefined) return;
@@ -440,4 +437,4 @@ register("renderSlot", (slot) => {
             }
         };
     }
-});
+}), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
