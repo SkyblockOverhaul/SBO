@@ -28,31 +28,25 @@ import {
     ChildBasedRangeConstraint
 } from "../../Elementa";
 
-export function getkuudraValueOverlay(){
-    return kuudraOverlay;
-}
-export function getkuudraValueOverlaySelected(){
-    return kuudraValueOverlaySelected;
-}
 let guiSettings = loadGuiSettings();
-let loadedtestOverlay = false;
-let kuudraValueOverlaySelected = false;
-let testGUISelected = false;
+let loadedKuudraOverlay = false;
 const Color = Java.type("java.awt.Color");
+export let kuudraValueOverlaySelected = false;
+export let kuudraOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
 const dragOffset = { x: 0, y: 0 };
-let kuudraOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+
 kuudraOverlay.setWidth(new ChildBasedRangeConstraint());
 kuudraOverlay.setHeight(new ChildBasedRangeConstraint());
 kuudraOverlay.onMouseClick((comp, event) => {
-    testGUISelected = true;
+    kuudraValueOverlaySelected = true;
     dragOffset.x = event.absoluteX;
     dragOffset.y = event.absoluteY;
 });
 kuudraOverlay.onMouseRelease(() => {
-    testGUISelected = false;
+    kuudraValueOverlaySelected = false;
 });
 kuudraOverlay.onMouseDrag((comp, mx, my) => {
-    if (!testGUISelected) return;
+    if (!kuudraValueOverlaySelected) return;
     const absoluteX = mx + comp.getLeft();
     const absoluteY = my + comp.getTop();
     const dx = absoluteX - dragOffset.x;
@@ -69,10 +63,10 @@ kuudraOverlay.onMouseDrag((comp, mx, my) => {
 });
 
 function loadOverlay(){
-    if(guiSettings != undefined && !loadedtestOverlay) {
+    if(guiSettings != undefined && !loadedKuudraOverlay) {
         kuudraOverlay.setX((guiSettings["KuudraValueLoc"]["x"]).pixels());
         kuudraOverlay.setY((guiSettings["KuudraValueLoc"]["y"]).pixels());
-        loadedtestOverlay = true;
+        loadedKuudraOverlay = true;
     }
 }
 

@@ -17,10 +17,11 @@ import {
     UIWrappedText,
     WindowScreen,
     UIRoundedRectangle,
+    ChildBasedRangeConstraint,
     Window
 } from "../../Elementa";
 import settings from "../settings";
-import { getkuudraValueOverlay, getkuudraValueOverlaySelected } from "../features/Kuudra";
+import { kuudraValueOverlaySelected, kuudraOverlay } from "../features/Kuudra";
 import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolver";
 
 // siehe https://github.com/EssentialGG/Elementa für mehr 
@@ -45,7 +46,6 @@ kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100
 &r&eTotal Value: &r&63.1M coins`,
 fossilExample: `&r&bFossil Solver&r`
 };
-let kuudraValueOverlaySelected = getkuudraValueOverlaySelected();
 
 
 register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
@@ -57,7 +57,7 @@ register('renderOverlay', () => {
 });
 
 register('postGuiRender', () => {
-    checkForSetting(getkuudraValueOverlay(), settings.attributeValueOverlay, "post");
+    checkForSetting(kuudraOverlay, settings.attributeValueOverlay, "post");
     checkForSetting(fossilOverlay, settings.fossilOverlay, "post");
     postWindow.draw()
 });
@@ -117,18 +117,24 @@ function guiMover() {
 function drawExamples(){
     switch(settings.lineSetting){
         case 0:
-            exampleMessage(overlayExamples["kuudraExampleOne"], getkuudraValueOverlay());
+            exampleMessage(overlayExamples["kuudraExampleOne"], kuudraOverlay);
             break;
         case 1:
-            exampleMessage(overlayExamples["kuudraExampleTwo"], getkuudraValueOverlay());
+            exampleMessage(overlayExamples["kuudraExampleTwo"], kuudraOverlay);
             break;
+    }
+    if(settings.fossilOverlay){
+        exampleMessage(overlayExamples["fossilExample"], fossilOverlay);
     }
 }
 
 function exampleMessage(example, overlay){
     let exampleMSG = new UIWrappedText(example)
+    overlay.clearChildren();
     exampleMSG.setX(new SiblingConstraint())
     exampleMSG.setY(new SiblingConstraint())
+    overlay.setWidth(new ChildBasedRangeConstraint());
+    overlay.setHeight(new ChildBasedRangeConstraint());
     maxStringWidth = example.split("\n").reduce((a, b) => a.length > b.length ? a : b).length
     print(maxStringWidth);
     print(example)

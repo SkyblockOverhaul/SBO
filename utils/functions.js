@@ -266,6 +266,11 @@ export function initializeGuiSettings() {
             "y": 10,
             "s": 1
         },
+        fossilLoc: {
+            "x": 551,
+            "y": 203,
+            "s": 1
+        },
     };
     return tempDict;
 }
@@ -306,6 +311,9 @@ function checkSettings(loadedSettings) {
     }
     if (!loadedSettings.hasOwnProperty("KuudraValueLoc")) {
         loadedSettings["KuudraValueLoc"] = defaultSettings["KuudraValueLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("fossilLoc")) {
+        loadedSettings["fossilLoc"] = defaultSettings["fossilLoc"];
     }
     return loadedSettings;
 }

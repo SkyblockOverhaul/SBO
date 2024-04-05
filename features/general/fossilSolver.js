@@ -1,9 +1,12 @@
-import { drawOutlinedString, drawRect } from "./../../utils/functions";
+import { drawRect, loadGuiSettings, saveGuiSettings } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
+import { registerWhen } from "./../../utils/variables";
 import {
     UIBlock,
     UIText,
+    ChildBasedRangeConstraint
 } from "../../../Elementa";
+import settings from "../../settings";
 const Color = Java.type("java.awt.Color");
 
 // todo
@@ -12,12 +15,18 @@ const Color = Java.type("java.awt.Color");
 export let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
 // 8 y: 18
 export let fossilGUISelected = false;
+let guiSettings = loadGuiSettings();
+let loadedFossilOverlay = false;
 let fossilNameUI = new UIText("Fossil: Unknown");
+const dragOffset = { x: 0, y: 0 };
+
 fossilNameUI.setX((8).pixels());
 fossilNameUI.setY((18).pixels());
-fossilOverlay.addChild(fossilNameUI);
+fossilOverlay.setWidth(new ChildBasedRangeConstraint());
+fossilOverlay.setHeight(new ChildBasedRangeConstraint());
 fossilOverlay.onMouseClick((comp, event) => {
     fossilGUISelected = true;
+    print("FossilGUISelected: " + fossilGUISelected);
     dragOffset.x = event.absoluteX;
     dragOffset.y = event.absoluteY;
 });
@@ -36,9 +45,20 @@ fossilOverlay.onMouseDrag((comp, mx, my) => {
     const newY = fossilOverlay.getTop() + dy;
     fossilOverlay.setX(newX.pixels());
     fossilOverlay.setY(newY.pixels());
+    guiSettings["fossilLoc"]["x"] = newX;
+    guiSettings["fossilLoc"]["y"] = newY;
+    saveGuiSettings(guiSettings);
 });
 
+function loadOverlay(){
+    if(guiSettings != undefined && !loadedFossilOverlay) {
+        fossilOverlay.setX((guiSettings["fossilLoc"]["x"]).pixels());
+        fossilOverlay.setY((guiSettings["fossilLoc"]["y"]).pixels());
+        loadedFossilOverlay = true;
+    }
+}
 let fossilProcent = 0;
+
 function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
     const validLocations = [];
     for (const location of locations) {
@@ -302,6 +322,9 @@ register("step", () => {
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
+    if(!fossilOverlay.children.includes(fossilNameUI)) {
+        fossilOverlay.addChild(fossilNameUI);
+    }
     isInExcavatorGui = false;
     const items = container.getItems();
     for (let i = 0; i < items.length; i++) {
@@ -391,7 +414,13 @@ register("step", () => {
     }
 }).setFps(10);
 
+registerWhen(register("step", () => {
+    loadOverlay();
+}).setFps(1), () => settings.fossilOverlay);
 
+register("guiClosed", () => {
+    fossilOverlay.clearChildren();
+});
 
 register("renderSlot", (slot) => {
     const container = Player.getContainer();
