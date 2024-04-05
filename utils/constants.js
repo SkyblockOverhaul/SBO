@@ -275,10 +275,10 @@ const claw2 = {'name': "claw",'coords': [{'x': 4, 'y': 0}, {'x': 2, 'y': 1}, {'x
 const claw3 = {'name': "claw",'coords': [{'x': 1, 'y': 0}, {'x': 3, 'y': 0}, {'x': 0, 'y': 1}, {'x': 2, 'y': 1}, {'x': 4, 'y': 1}, {'x': 1, 'y': 2}, {'x': 3, 'y': 2}, {'x': 4, 'y': 2}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 4, 'y': 3}, {'x': 5, 'y': 3}, {'x': 4, 'y': 4}]}
 const claw4 = {'name': "claw",'coords': [{'x': 1, 'y': 4}, {'x': 3, 'y': 3}, {'x': 2, 'y': 3}, {'x': 1, 'y': 3}, {'x': 0, 'y': 3}, {'x': 4, 'y': 2}, {'x': 2, 'y': 2}, {'x': 1, 'y': 2}, {'x': 5, 'y': 1}, {'x': 3, 'y': 1}, {'x': 1, 'y': 1}, {'x': 4, 'y': 0}, {'x': 2, 'y': 0}]}
 
-const clawMirrored1 = {'name': "clawMirrored",'coords': [{'x': 2, 'y': 0}, {'x': 4, 'y': 0}, {'x': 1, 'y': 1}, {'x': 3, 'y': 1}, {'x': 5, 'y': 1}, {'x': 1, 'y': 2}, {'x': 2, 'y': 2}, {'x': 4, 'y': 2}, {'x': 0, 'y': 3}, {'x': 1, 'y': 3}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 1, 'y': 4}]}
-const clawMirrored2 = {'name': "clawMirrored",'coords': [{'x': 1, 'y': 0}, {'x': 0, 'y': 1}, {'x': 1, 'y': 1}, {'x': 2, 'y': 1}, {'x': 3, 'y': 1}, {'x': 1, 'y': 2}, {'x': 2, 'y': 2}, {'x': 4, 'y': 2}, {'x': 1, 'y': 3}, {'x': 3, 'y': 3}, {'x': 2, 'y': 4}, {'x': 4, 'y': 4}, {'x': 5, 'y': 3}]}
-const clawMirrored3 = {'name': "clawMirrored",'coords': [{'x': 3, 'y': 4}, {'x': 1, 'y': 4}, {'x': 4, 'y': 3}, {'x': 2, 'y': 3}, {'x': 0, 'y': 3}, {'x': 4, 'y': 2}, {'x': 3, 'y': 2}, {'x': 1, 'y': 2}, {'x': 5, 'y': 1}, {'x': 4, 'y': 1}, {'x': 3, 'y': 1}, {'x': 2, 'y': 1}, {'x': 4, 'y': 0}]}
-const clawMirrored4 = {'name': "clawMirrored",'coords': [{'x': 4, 'y': 4}, {'x': 5, 'y': 3}, {'x': 4, 'y': 3}, {'x': 3, 'y': 3}, {'x': 2, 'y': 3}, {'x': 4, 'y': 2}, {'x': 3, 'y': 2}, {'x': 1, 'y': 2}, {'x': 4, 'y': 1}, {'x': 2, 'y': 1}, {'x': 3, 'y': 0}, {'x': 1, 'y': 0}, {'x': 0, 'y': 1}]}
+// const clawMirrored1 = {'name': "clawMirrored",'coords': [{'x': 2, 'y': 0}, {'x': 4, 'y': 0}, {'x': 1, 'y': 1}, {'x': 3, 'y': 1}, {'x': 5, 'y': 1}, {'x': 1, 'y': 2}, {'x': 2, 'y': 2}, {'x': 4, 'y': 2}, {'x': 0, 'y': 3}, {'x': 1, 'y': 3}, {'x': 2, 'y': 3}, {'x': 3, 'y': 3}, {'x': 1, 'y': 4}]}
+// const clawMirrored2 = {'name': "clawMirrored",'coords': [{'x': 1, 'y': 0}, {'x': 0, 'y': 1}, {'x': 1, 'y': 1}, {'x': 2, 'y': 1}, {'x': 3, 'y': 1}, {'x': 1, 'y': 2}, {'x': 2, 'y': 2}, {'x': 4, 'y': 2}, {'x': 1, 'y': 3}, {'x': 3, 'y': 3}, {'x': 2, 'y': 4}, {'x': 4, 'y': 4}, {'x': 5, 'y': 3}]}
+// const clawMirrored3 = {'name': "clawMirrored",'coords': [{'x': 3, 'y': 4}, {'x': 1, 'y': 4}, {'x': 4, 'y': 3}, {'x': 2, 'y': 3}, {'x': 0, 'y': 3}, {'x': 4, 'y': 2}, {'x': 3, 'y': 2}, {'x': 1, 'y': 2}, {'x': 5, 'y': 1}, {'x': 4, 'y': 1}, {'x': 3, 'y': 1}, {'x': 2, 'y': 1}, {'x': 4, 'y': 0}]}
+// const clawMirrored4 = {'name': "clawMirrored",'coords': [{'x': 4, 'y': 4}, {'x': 5, 'y': 3}, {'x': 4, 'y': 3}, {'x': 3, 'y': 3}, {'x': 2, 'y': 3}, {'x': 4, 'y': 2}, {'x': 3, 'y': 2}, {'x': 1, 'y': 2}, {'x': 4, 'y': 1}, {'x': 2, 'y': 1}, {'x': 3, 'y': 0}, {'x': 1, 'y': 0}, {'x': 0, 'y': 1}]}
 
 // const bugged = {'name': "bugged",'coords': [{'x': 3, 'y': 0}, {'x': 4, 'y': 0}, {'x': 5, 'y': 0}, {'x': 1, 'y': 1}, {'x': 0, 'y': 2}, {'x': 1, 'y': 3}, {'x': 3, 'y': 3}, {'x': 1, 'y': 4}]}
 // mssing figures
@@ -297,5 +297,5 @@ export const allFigures = [
     claw1, claw2, claw3, claw4, 
     helixMirrored1, helixMirrored2, helixMirrored3, helixMirrored4, 
     tuskMirrored1, tuskMirrored2, tuskMirrored3, tuskMirrored4,
-    clawMirrored1, clawMirrored2, clawMirrored3, clawMirrored4,
+    // clawMirrored1, clawMirrored2, clawMirrored3, clawMirrored4,
 ];

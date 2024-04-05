@@ -4,6 +4,7 @@ import { registerWhen } from "./../../utils/variables";
 import {
     UIBlock,
     UIText,
+    UIWrappedText,
     ChildBasedRangeConstraint
 } from "../../../Elementa";
 import settings from "../../settings";
@@ -19,10 +20,11 @@ export let fossilGUISelected = false;
 let guiSettings = loadGuiSettings();
 let loadedFossilOverlay = false;
 let fossilNameUI = new UIText("Fossil: Unknown");
+let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
 const dragOffset = { x: 0, y: 0 };
 
-fossilNameUI.setX((8).pixels());
-fossilNameUI.setY((18).pixels());
+fossilNameUI.setY((0).pixels());
+fossilPossibleNames.setY((10).pixels());
 fossilOverlay.setWidth(new ChildBasedRangeConstraint());
 fossilOverlay.setHeight(new ChildBasedRangeConstraint());
 fossilOverlay.onMouseClick((comp, event) => {
@@ -219,10 +221,15 @@ function calcNewCoords() {
     let validLocations = [];
     anzahlPositions = 0;
     slotsToHighlight = [];
+    let possibleFossils = [];
     // print("allPossibleLocations: " + allPossibleLocations.length)
     for (let pos of allPossibleLocations) {
         tempList = checkIfLocationsAreValid(pos, fossilFoundAt, noFossilAt);
         for (let pos of tempList) {
+            // check if figure name is already in possibleFossils
+            if (!possibleFossils.includes(pos.name)) {
+                possibleFossils.push(pos.name);
+            }
             validLocations.push(pos);
             anzahlPositions++;
             for (let p of pos.coords) {
@@ -289,6 +296,8 @@ function calcNewCoords() {
         slotsToHighlight.push(slotToHighlight);
     }
 
+    // print each possible figure
+
     // print("Anzahl Positionen: " + anzahlPositions);
     if (fossilFoundAt.length > 0) {
         if (anzahlPositions == 1) {
@@ -300,9 +309,19 @@ function calcNewCoords() {
             }
             fossilNameUI.setText("Fossil: " + validLocations[0].name);
         }
+
+        if (possibleFossils.length == 1) {
+            fossilNameUI.setText("Fossil: " + possibleFossils[0]);
+        }
         else {
             fossilNameUI.setText("Fossil: Unknown");
         }
+        let tempStringNames = "Possible Fossils: \n";
+        possibleFossils.forEach((fossil) => {
+            tempStringNames += fossil + " \n";
+        });
+        fossilPossibleNames.setText(tempStringNames);
+    
     }
     else {
         fossilNameUI.setText("Fossil: Unknown");
@@ -319,8 +338,11 @@ registerWhen(register("step", () => {
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
-    if(!fossilOverlay.children.includes(fossilNameUI)) {
+    if (!fossilOverlay.children.includes(fossilNameUI)) {
         fossilOverlay.addChild(fossilNameUI);
+    }
+    if (!fossilOverlay.children.includes(fossilPossibleNames)) {
+        fossilOverlay.addChild(fossilPossibleNames);
     }
     isInExcavatorGui = false;
     const items = container.getItems();
