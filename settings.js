@@ -214,6 +214,13 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
+    @SwitchProperty({
+        name: 'Always Diana',
+        description: 'Its always Diana, no need to check for mayor, perks or spade',
+        category: 'Diana',
+        subcategory: "Other",
+    })
+    alwaysDiana = false;
     //Party Commands
     @SwitchProperty({
         name: 'Party Commands',
