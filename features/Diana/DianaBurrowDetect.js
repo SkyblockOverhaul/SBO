@@ -138,6 +138,10 @@ registerWhen(register("chat", () => {
     resetBurrows();
 }).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 
+registerWhen(register("worldUnload", () => {
+    resetBurrows();
+}), () => settings.dianaBurrowDetect);
+
 function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = [];
