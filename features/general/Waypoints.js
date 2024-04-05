@@ -431,8 +431,9 @@ function renderWaypoint(waypoints) {
         box = waypoint[0];
         beam = waypoint[1];
         rgb = waypoint[2];
+        
 
-        if (box[4] <= 10 && box[0].includes("Guess")) return;
+        if (box[4] <= settings.guessRemoveDistance && box[0].includes("Guess") && settings.removeGuess) return;
         RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
