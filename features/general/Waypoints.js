@@ -88,12 +88,7 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distance, xSign, zSign = 0;
-    if (x < 0) {
-        x = x- 1;
-    }
-    if (z < 0) {
-        z = z- 1;
-    }
+    
 
     waypoints.forEach((waypoint) => {
         if (type == "Burrow") {
@@ -123,6 +118,12 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         x = Math.round(waypoint[1]);
         y = Math.round(waypoint[2]);
         z = Math.round(waypoint[3]);
+        if (x < 0) {
+            x = x- 1;
+        }
+        if (z < 0) {
+            z = z- 1;
+        }
         distance = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
 
         // Makes it so waypoint always renders
