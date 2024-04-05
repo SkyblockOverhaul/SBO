@@ -267,8 +267,8 @@ export function initializeGuiSettings() {
             "s": 1
         },
         fossilLoc: {
-            "x": 561,
-            "y": 195,
+            "x": 275,
+            "y": 185,
             "s": 1
         },
     };
@@ -326,8 +326,8 @@ export function saveGuiSettings(guiSettings) {
 export function drawRect(x1,y1,scale,z) {
     let x = x1/scale
     let y = y1/scale
-    // settings.myColor: java.awt.Color[r=19,g=145,b=224]
-    let color = Renderer.color(settings.myColor.getRed(), settings.myColor.getGreen(), settings.myColor.getBlue(), 200)
+    // settings.slotColor: java.awt.Color[r=19,g=145,b=224]
+    let color = Renderer.color(settings.slotColor.getRed(), settings.slotColor.getGreen(), settings.slotColor.getBlue(), 200)
     Renderer.translate(0, 0, z)
     Renderer.scale(scale,scale)
     Renderer.drawRect(color, x, y, 6.5, 6.5);

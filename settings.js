@@ -24,7 +24,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Mining','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Mining','Party Commands','Customization','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -65,13 +65,6 @@ class Settings {
         this.addDependency('Kuudra Pet Level','Attribute value Overlay');
         this.addDependency('Attribute Shards for Chest Profit','Attribute value Overlay');
     } 
-    @ColorProperty({
-        name: "Color Picker",
-        description: "Pick a color! (hopefully...)",
-        category: "General",
-        subcategory: "Category"
-    })
-    myColor = Color.BLUE;
     //-----------Diana Burrows----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
@@ -444,6 +437,43 @@ class Settings {
         category: "General",
     })
     bobberCounter = false;
+
+    // Color Settings
+    @ColorProperty({
+        name: "Start Burrow Color",
+        description: "Pick a color for start burrows",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    startBurrow = new Color(0.333,1,0.333);
+    @ColorProperty({
+        name: "Mob Burrow Color",
+        description: "Pick a color for mob burrows",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    mobColor = new Color(1,0.333,0.333);
+    @ColorProperty({
+        name: "Treasure Burrow Color",
+        description: "Pick a color for treasure burrows",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    treasureColor = new Color(1,0.667,0);
+    @ColorProperty({
+        name: "Guess Color",
+        description: "Pick a color for your guess",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    guessColor = new Color(1,1,1);
+    @ColorProperty({
+        name: "Slot highlighting Color",
+        description: "Pick a color for slot highlighting",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    slotColor = Color.RED;
 
     // credits/infos
     @ButtonProperty({
