@@ -19,11 +19,9 @@ export let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
 export let fossilGUISelected = false;
 let guiSettings = loadGuiSettings();
 let loadedFossilOverlay = false;
-let fossilNameUI = new UIText("Fossil: Unknown");
 let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
 const dragOffset = { x: 0, y: 0 };
 
-fossilNameUI.setY((0).pixels());
 fossilPossibleNames.setY((10).pixels());
 fossilOverlay.setWidth(new ChildBasedRangeConstraint());
 fossilOverlay.setHeight(new ChildBasedRangeConstraint());
@@ -285,17 +283,34 @@ function calcNewCoords() {
     //     print("Index: " + key + " Fossils: " + counter[key]);
     // }
     let max = 0;
-    let slotToHighlight = 0;
-    if (anzahlPositions > 1) {
+    let slotToHighlight = -1;
+    if (anzahlPositions >= 1) {
         for (let key in counter) {
-            if (counter[key] > max) {
-                max = counter[key];
-                slotToHighlight = parseInt(key);
+            if (counter[key] > 0) {
+                if (counter[key] > max) {
+                    max = counter[key];
+                    slotToHighlight = parseInt(key);
+                }
             }
         }
-        slotsToHighlight.push(slotToHighlight);
+        if (slotToHighlight != -1) {
+            slotsToHighlight.push(slotToHighlight);
+        }
     }
 
+    if (possibleFossils.length > 1) {
+        let tempStringNames = "Possible Fossils: \n";
+            possibleFossils.forEach((fossil) => {
+                tempStringNames += fossil + " \n";
+            });
+        fossilPossibleNames.setText(tempStringNames);
+    }
+    else if (possibleFossils.length == 1) {
+        fossilPossibleNames.setText("Fossil: " + possibleFossils[0]);
+    }
+    else {
+        fossilPossibleNames.setText("Fossil: No Fossil");
+    }
     // print each possible figure
 
     // print("Anzahl Positionen: " + anzahlPositions);
@@ -307,24 +322,7 @@ function calcNewCoords() {
                     slotsToHighlight.push(parseInt(key));
                 }
             }
-            fossilNameUI.setText("Fossil: " + validLocations[0].name);
         }
-
-        if (possibleFossils.length == 1) {
-            fossilNameUI.setText("Fossil: " + possibleFossils[0]);
-        }
-        else {
-            fossilNameUI.setText("Fossil: Unknown");
-        }
-        let tempStringNames = "Possible Fossils: \n";
-        possibleFossils.forEach((fossil) => {
-            tempStringNames += fossil + " \n";
-        });
-        fossilPossibleNames.setText(tempStringNames);
-    
-    }
-    else {
-        fossilNameUI.setText("Fossil: Unknown");
     }
 }
 calcNewCoords()
@@ -338,9 +336,6 @@ registerWhen(register("step", () => {
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
-    if (!fossilOverlay.children.includes(fossilNameUI)) {
-        fossilOverlay.addChild(fossilNameUI);
-    }
     if (!fossilOverlay.children.includes(fossilPossibleNames)) {
         fossilOverlay.addChild(fossilPossibleNames);
     }
