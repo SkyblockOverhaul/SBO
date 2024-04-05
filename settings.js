@@ -58,7 +58,7 @@ class Settings {
         this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
         this.addDependency('Blaze View','Blaze Tracker');
         this.addDependency('Max Displayed Items','Attribute value Overlay')
-        this.addDependency('Display Attribute in Overlay','Attribute value Overlay');
+        this.addDependency('Select Displayed Lines','Attribute value Overlay');
         this.addDependency('Bazaar Setting','Attribute value Overlay');
         this.addDependency('Key Price','Attribute value Overlay');
         this.addDependency('Kuudra Pet Rarity','Attribute value Overlay');
@@ -370,7 +370,7 @@ class Settings {
     // ---ProfitHud---
     @SwitchProperty({
         name: 'Attribute value Overlay',
-        description: 'Displays value of attributes. /sbomoveValueOverlay to move the overlay',
+        description: 'Displays value of attributes. /sboguis to move the overlay',
         category: 'Kuudra',
     })
     attributeValueOverlay = false;
@@ -383,7 +383,7 @@ class Settings {
     })
     maxDisplayedItems = 15;
     @SelectorProperty({
-        name: 'Display Attribute in Overlay',
+        name: 'Select Displayed Lines',
         description: 'Select if attributes are displayed in one or two lines',
         category: 'Kuudra',
         options: ['two lines','one line'],
@@ -423,6 +423,19 @@ class Settings {
     })
     attributeShards = false;
 
+    // Mining
+    @SwitchProperty({
+        name: "Fossil Solver",
+        description: "Enables the fossil solver /sboguis to move the overlay",
+        category: "Mining",
+    })
+    fossilSolver = false;
+    @SwitchProperty({
+        name: "Fossil Overlay",
+        description: "Tells you the fossil you excavate",
+        category: "Mining",
+    })
+    fossilOverlay = false;
 
     // General other
     @SwitchProperty({
@@ -493,20 +506,6 @@ class Settings {
     openVolcAddons() {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/VolcAddons"));
     }
-
-    // Mining
-    @SwitchProperty({
-        name: "Fossil Solver",
-        description: "Enables the fossil solver",
-        category: "Mining",
-    })
-    fossilSolver = false;
-    @SwitchProperty({
-        name: "Fossil Overlay",
-        description: "Tells you the fossil you excavate",
-        category: "Mining",
-    })
-    fossilOverlay = false;
 }
 let SboData = {
     "effects": [],

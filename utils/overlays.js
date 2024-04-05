@@ -48,7 +48,7 @@ fossilExample: `Fossil: Unknown `
 };
 
 
-register("command", () => GuiHandler.openGui(gui)).setName("testnewhud");
+register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases("sbomoveguis");
 
 register('renderOverlay', () => {
     // checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus, "render");
