@@ -88,6 +88,12 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distance, xSign, zSign = 0;
+    if (x < 0) {
+        x = x- 1;
+    }
+    if (z < 0) {
+        z = z- 1;
+    }
 
     waypoints.forEach((waypoint) => {
         if (type == "Burrow") {
@@ -131,13 +137,13 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         zSign = z == 0 ? 1 : Math.sign(z);
         // waypoint message
         wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
-
+        
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
         wp[1] = [x + xSign, y - 1, z + zSign];
-        print("x: " + x + " y: " + y + " z: " + z + " distance: " + distance + " xSign: " + xSign + " zSign: " + zSign)
-
+        // print("x: " + x + " y: " + y + " z: " + z + " distance: " + distance + " xSign: " + xSign + " zSign: " + zSign)
+        
         /* Return Matrix
            [message, x, y ,z]
            [beacon x, y, z]
@@ -156,20 +162,6 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
 }
 
 
-function renderWaypoint(waypoints) {
-    if (!waypoints.length) return;
-
-    waypoints.forEach((waypoint) => {
-        box = waypoint[0];
-        beam = waypoint[1];
-        rgb = waypoint[2];
-
-        RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
-        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
-        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, true);
-        renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
-    });
-}
 
 let warpString = "";
 function closestWarpString(x, y, z) {
@@ -452,3 +444,129 @@ function getClosestBurrow(burrows) {
 //     return false;
 // }
 
+function renderWaypoint(waypoints) {
+    if (!waypoints.length) return;
+
+    waypoints.forEach((waypoint) => {
+        box = waypoint[0];
+        beam = waypoint[1];
+        rgb = waypoint[2];
+
+
+        RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
+        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
+        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, true);
+        renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
+        // drawCoolWaypoint(box[1], box[2], box[3], rgb[0], rgb[1], rgb[2], {name: box[0], showDist: true, phase: true, renderBeacon: true, alpha: 0.6, drawBox: true, nameColor: "a", includeVerticalDistance: true});
+    });
+}
+
+
+export function drawCoolWaypoint(x, y, z, r, g, b, {name = "", showDist = name != "", phase = true, renderBeacon = true, alpha = 0.6, drawBox = true, nameColor = "a", includeVerticalDistance = true})
+{
+    let distToPlayerSq = (x-Player.getRenderX())**2 + (y-(Player.getRenderY()+Player.getPlayer()["func_70047_e"]()))**2 + (z-Player.getRenderZ())**2
+    let distanceText = includeVerticalDistance ? Math.hypot(x-Player.getRenderX(), y-(Player.getRenderY() +
+        Player.getPlayer()["func_70047_e"]()), z-Player.getRenderZ()) :
+        Math.hypot(x-Player.getRenderX(), z-Player.getRenderZ())
+    //let alpha=Math.min(1,Math.max(0,1-(distToPlayerSq-10000)/12500))
+
+    if(drawBox)
+        drawEspBox(x,y,z+1,r,g,b, alpha, phase)
+
+    if(name||showDist){
+        let distToPlayer=Math.sqrt(distToPlayerSq)
+
+        let distRender=Math.min(distToPlayer,50)
+
+        let loc5=[Player.getRenderX()+(x+0.5-Player.getRenderX())/(distToPlayer/distRender),Player.getRenderY()+Player.getPlayer()["func_70047_e"]()+(y+2+20*distToPlayer/300-(Player.getRenderY()+Player.getPlayer()["func_70047_e"]()))/(distToPlayer/distRender),Player.getRenderZ()+(z+0.5-Player.getRenderZ())/(distToPlayer/distRender)]
+        let loc6=[Player.getRenderX()+(x+0.5-Player.getRenderX())/(distToPlayer/distRender),Player.getRenderY()+Player.getPlayer()["func_70047_e"]()+(y+2+20*distToPlayer/300-10*distToPlayer/300-(Player.getRenderY()+Player.getPlayer()["func_70047_e"]()))/(distToPlayer/distRender),Player.getRenderZ()+(z+0.5-Player.getRenderZ())/(distToPlayer/distRender)]
+
+        if(name != "") Tessellator.drawString("\xA7"+nameColor+name,loc5[0],loc5[1],loc5[2],0,true,distRender/300,false)
+        if(showDist) Tessellator.drawString("\xA7b("+Math.round(distanceText)+"m)",name?loc6[0]:loc5[0],name?loc6[1]:loc5[1],name?loc6[2]:loc5[2],0,false,distRender/300,false)
+    }
+}
+
+export function drawEspBox (x, y, z, red, green, blue, alpha, phase = true) // thanks to renderlib, don't need the whole module so I'm not adding it.
+{
+    Tessellator.pushMatrix()
+    GL11.glLineWidth(2.0)
+    GlStateManager.func_179129_p() // disableCullFace
+    GlStateManager.func_179147_l() // enableBlend
+    GlStateManager.func_179112_b(770, 771) // blendFunc
+    GlStateManager.func_179132_a(false) // depthMask
+    GlStateManager.func_179090_x() // disableTexture2D
+
+    if(phase)
+        GlStateManager.func_179097_i() // disableDepth
+
+    const locations = [
+        //    x, y, z    x, y, z
+        [
+            [0, 0, 0],
+            [1, 0, 0],
+        ],
+        [
+            [0, 0, 0],
+            [0, 0, 1],
+        ],
+        [
+            [1, 0, 1],
+            [1, 0, 0],
+        ],
+        [
+            [1, 0, 1],
+            [0, 0, 1],
+        ],
+
+        [
+            [0, 1, 0],
+            [1, 1, 0],
+        ],
+        [
+            [0, 1, 0],
+            [0, 1, 1],
+        ],
+        [
+            [1, 1, 1],
+            [1, 1, 0],
+        ],
+        [
+            [1, 1, 1],
+            [0, 1, 1],
+        ],
+
+        [
+            [0, 0, 0],
+            [0, 1, 0],
+        ],
+        [
+            [1, 0, 0],
+            [1, 1, 0],
+        ],
+        [
+            [0, 0, 1],
+            [0, 1, 1],
+        ],
+        [
+            [1, 0, 1],
+            [1, 1, 1],
+        ],
+    ]
+
+    locations.forEach((loc) => {
+        Tessellator.begin(3).colorize(red, green, blue, alpha)
+        Tessellator.pos(x + loc[0][0] - 1 / 2, y + loc[0][1], z + loc[0][2] - 1 / 2).tex(0, 0)
+        Tessellator.pos(x + loc[1][0] - 1 / 2, y + loc[1][1], z + loc[1][2] - 1 / 2).tex(0, 0)
+        Tessellator.draw()
+    })
+
+    GlStateManager.func_179089_o() // enableCull
+    GlStateManager.func_179084_k() // disableBlend
+    GlStateManager.func_179132_a(true) // depthMask
+    GlStateManager.func_179098_w() // enableTexture2D
+
+    if(phase)
+        GlStateManager.func_179126_j() // enableDepth
+
+    Tessellator.popMatrix()
+}

@@ -17,7 +17,7 @@ function burrowDetect(particle, type) {
         if (particlepos.getZ() == 0) {
             xyz[2] = Math.floor(particle.getZ());
         }
-        print("after correction x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2])
+        // print("after correction x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2])
         // let blockpos = new BlockPos(particle.getX(), particle.getY(), particle.getZ());
         // print("block pos " + blockpos.getX() + " " + blockpos.getY() + " " + blockpos.getZ())
         if (Math.abs(particle.getY() % 1) > 0.1) return;
@@ -26,12 +26,6 @@ function burrowDetect(particle, type) {
         if (Math.abs(particle.getZ() % 1) < 0.1) return;
         if (Math.abs(particle.getZ() % 1) > 0.9) return;
 
-        // if (xyz[0] < 0) {
-        //     xyz[0] = xyz[0]- 1;
-        // }
-        // if (xyz[2] < 0) {
-        //     xyz[2] = xyz[2]- 1;
-        // }
 
         switch (typename) {
             case ("FOOTSTEP"): // Loads burrow waypoints by footstep
