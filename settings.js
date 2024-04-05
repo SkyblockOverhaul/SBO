@@ -159,7 +159,7 @@ class Settings {
         category: 'Diana',
         subcategory: 'Diana Waypoints',
     })
-    guessRemove = false;
+    removeGuess = false;
     @SliderProperty({
         name: 'Distance for Remove',
         description: 'Input distacne for guess removal',
@@ -168,7 +168,7 @@ class Settings {
         min: 1,
         max: 30
     })
-    guessRemoveDistance = 10;
+    removeGuessDistance = 10;
     // --- Diana lines ---
     @SwitchProperty({
         name: 'Inquis Line',

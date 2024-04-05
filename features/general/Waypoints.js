@@ -431,15 +431,17 @@ function renderWaypoint(waypoints) {
         box = waypoint[0];
         beam = waypoint[1];
         rgb = waypoint[2];
-        
-
-        if (box[4] <= settings.guessRemoveDistance && box[0].includes("Guess") && settings.removeGuess) return;
+        let removeAtDistance = 10;
+        if (box[4] <= settings.removeGuessDistance && box[0].includes("Guess") && settings.removeGuess) return;
+        if (!settings.removeGuess && box[0].includes("Guess")) {
+            removeAtDistance = 0;
+        }
         RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
 
-        if (box[4] >= 10) {
+        if (box[4] >= removeAtDistance) {
             renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
         }
     });
