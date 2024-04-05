@@ -64,6 +64,7 @@ class Settings {
         this.addDependency('Kuudra Pet Rarity','Attribute value Overlay');
         this.addDependency('Kuudra Pet Level','Attribute value Overlay');
         this.addDependency('Attribute Shards for Chest Profit','Attribute value Overlay');
+        this.addDependency('Distance for Remove','Remove Guess');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -152,6 +153,22 @@ class Settings {
         subcategory: 'Diana Waypoints',
     })
     inqWarpKey = false;
+    @SwitchProperty({
+        name: 'Remove Guess',
+        description: 'Removes guess when getting close to it',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+    })
+    guessRemove = false;
+    @SliderProperty({
+        name: 'Distance for Remove',
+        description: 'Input distacne for guess removal',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+        min: 1,
+        max: 30
+    })
+    guessRemoveDistance = 10;
     // --- Diana lines ---
     @SwitchProperty({
         name: 'Inquis Line',
