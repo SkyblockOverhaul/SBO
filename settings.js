@@ -161,13 +161,6 @@ class Settings {
     })
     inqLine = false;
     @SwitchProperty({
-        name: 'Guess Line',
-        description: 'Draws lines for Guess',
-        category: 'Diana',
-        subcategory: 'Diana Waypoint Lines',
-    })
-    guessLine = false;
-    @SwitchProperty({
         name: 'Burrow Line',
         description: 'Draws lines for burrows',
         category: 'Diana',

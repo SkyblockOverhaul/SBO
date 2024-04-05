@@ -402,12 +402,6 @@ function renderBurrowLines(){
         if (burrowDistance > 60) return;
         trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
     }
-    // if(guessWaypoint != undefined && inqWaypoints.length == 0 && settings.guessLine) {
-    //     guessLineRemoved = checkGuessLineRemove(guessWaypoint);
-    //     if (!guessLineRemoved) {
-    //         trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], 0, 1, 0, 1);
-    //     }
-    // }
     if (inqWaypoints.length > 0 && settings.inqLine) {
         trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
     }
@@ -418,9 +412,9 @@ function getClosestBurrow(formattedBurrow) {
     let closestBurrow = null;
     formattedBurrow.forEach((waypoint) => {
         const distance = Math.sqrt(
-            (Player.getX() - x)**2 +
-            (Player.getY() - y)**2 +
-            (Player.getZ() - z)**2
+            (Player.getX() - waypoint[0][1])**2 +
+            (Player.getY() - waypoint[0][2])**2 +
+            (Player.getZ() - waypoint[0][3])**2
         );
         if (distance < closestDistance) {
             closestDistance = distance;
@@ -429,18 +423,6 @@ function getClosestBurrow(formattedBurrow) {
     });
     return [closestBurrow, closestDistance];
 }
-
-// function checkGuessLineRemove(guess){
-//     const distance = Math.sqrt(
-//     (Player.getX() - guess[1]) +
-//     (Player.getY() - guess[2]) +
-//     (Player.getZ() - guess[3])
-//     );
-//     if (distance < 20) {
-//         return true;
-//     }
-//     return false;
-// }
 
 function renderWaypoint(waypoints) {
     if (!waypoints.length) return;
@@ -456,7 +438,6 @@ function renderWaypoint(waypoints) {
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
         renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
-        // drawCoolWaypoint(box[1], box[2], box[3], rgb[0], rgb[1], rgb[2], {name: box[0], showDist: true, phase: true, renderBeacon: true, alpha: 0.6, drawBox: true, nameColor: "a", includeVerticalDistance: true});
     });
 }
 
