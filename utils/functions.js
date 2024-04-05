@@ -267,7 +267,7 @@ export function initializeGuiSettings() {
             "s": 1
         },
         fossilLoc: {
-            "x": 551,
+            "x": 561,
             "y": 203,
             "s": 1
         },
