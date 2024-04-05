@@ -1,6 +1,40 @@
 import settings from "../settings";
 import { registerWhen } from "./variables";
 
+// geklaut von coleweight for drawline
+if(!GlStateManager) {
+    var GL11=Java.type("org.lwjgl.opengl.GL11")
+    var GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
+}
+export function trace (x, y, z, red, green, blue, alpha, lineWidth = 1){
+    if(Player.isSneaking())
+        drawLine(Player.getRenderX(), Player.getRenderY() + 1.54, Player.getRenderZ(), x, y + 1, z, red, green, blue, alpha, lineWidth)
+    else
+        drawLine(Player.getRenderX(), Player.getRenderY() + 1.62, Player.getRenderZ(), x, y + 1, z, red, green, blue, alpha, lineWidth)
+}
+
+function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth = 1)
+{
+    GL11.glBlendFunc(770,771)
+    GL11.glEnable(GL11.GL_BLEND)
+    GL11.glLineWidth(lineWidth)
+    GL11.glDisable(GL11.GL_TEXTURE_2D)
+    GL11.glDisable(GL11.GL_DEPTH_TEST)
+    GL11.glDepthMask(false)
+    GlStateManager.func_179094_E()
+
+    Tessellator.begin(GL11.GL_LINE_STRIP).colorize(red, green, blue, alpha)
+    Tessellator.pos(x1, y1, z1).tex(0, 0)
+    Tessellator.pos(x2, y2, z2).tex(0, 0)
+    Tessellator.draw()
+
+    GlStateManager.func_179121_F()
+    GL11.glEnable(GL11.GL_TEXTURE_2D)
+    GL11.glEnable(GL11.GL_DEPTH_TEST)
+    GL11.glDepthMask(true)
+    GL11.glDisable(GL11.GL_BLEND)
+}
+
 export function getClosest(origin, positions) {
     let closestPosition = positions.length > 0 ? positions[0] : [0, 0, 0];
     let closestDistance = 999;
@@ -215,7 +249,17 @@ export function initializeGuiSettings() {
             "x": 10,
             "y": 10,
             "s": 1
-        }
+        },
+        KuudraValueLoc: {
+            "x": 10,
+            "y": 10,
+            "s": 1
+        },
+        fossilLoc: {
+            "x": 275,
+            "y": 185,
+            "s": 1
+        },
     };
     return tempDict;
 }
@@ -254,12 +298,54 @@ function checkSettings(loadedSettings) {
     if (!loadedSettings.hasOwnProperty("BlazeLoc")) {
         loadedSettings["BlazeLoc"] = defaultSettings["BlazeLoc"];
     }
+    if (!loadedSettings.hasOwnProperty("KuudraValueLoc")) {
+        loadedSettings["KuudraValueLoc"] = defaultSettings["KuudraValueLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("fossilLoc")) {
+        loadedSettings["fossilLoc"] = defaultSettings["fossilLoc"];
+    }
     return loadedSettings;
 }
 
 
 export function saveGuiSettings(guiSettings) {
         FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
+}
+
+export function drawRect(x1,y1,scale,z) {
+    let x = x1/scale
+    let y = y1/scale
+    // settings.slotColor: java.awt.Color[r=19,g=145,b=224]
+    let color = Renderer.color(settings.slotColor.getRed(), settings.slotColor.getGreen(), settings.slotColor.getBlue(), 200)
+    Renderer.translate(0, 0, z)
+    Renderer.scale(scale,scale)
+    Renderer.drawRect(color, x, y, 6.5, 6.5);
+}
+
+export function drawOutlinedString(text,x1,y1,scale,z) {
+    let outlineString = "&0" + ChatLib.removeFormatting(text)
+    let x = x1/scale
+    let y = y1/scale
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x + 1, y)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x - 1, y)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y + 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(outlineString, x, y - 1)
+
+    Renderer.translate(0,0,z)
+    Renderer.scale(scale,scale)
+    Renderer.drawString(text, x, y)
 }
 
 export function getplayername(player) {
@@ -288,3 +374,4 @@ register("worldUnload", () => {
 register("worldLoad", () => {
     worldLoaded = true;
 });
+

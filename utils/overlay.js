@@ -54,8 +54,7 @@ export class Overlay {
 
         // Register a render function to display the overlay and GUI instructions.
         // The overlay is shown when the GUI is open or in requires specified in 'requires' array.'
-        registerWhen(register(this.requires.has("misc") ? "postGuiRender" : "renderOverlay", () => {
-            if (!this.RenderGuiBool) return;
+        registerWhen(register("renderOverlay", () => {
             if (this.gui.isOpen()) {
                 // Coords and scale
                 renderScale(
@@ -69,13 +68,22 @@ export class Overlay {
 
                 // GUI Instructions
             } else if (settings[this.setting] && (this.requires.has(getWorld()) || this.requires.has("all")) && !gui.isOpen() && settings[this.optionalParam]) {
-                if (this.requires.has("misc")) {
-                    if (Player.getContainer().getName() !== "Paid Chest") return;
+                if (!this.RenderGuiBool) return;
+                if (!this.requires.has("misc")) {
                     renderScale(this.loc[2], this.message, this.X, this.Y);
-                } else  // Draw HUD
-                    renderScale(this.loc[2], this.message, this.X, this.Y);
+                }
             }
         }), () => true);
+
+        registerWhen(register("postGuiRender", () => {
+            if (!this.RenderGuiBool) return;
+            if (this.requires.has("misc")) {
+                if (settings[this.setting] && (this.requires.has(getWorld()) || this.requires.has("all")) && !gui.isOpen() && settings[this.optionalParam]) {
+                    renderScale(this.loc[2], this.message, this.X, this.Y);
+                }
+            }
+        }), () => true);
+
 
         register("dragged", (dx, dy, x, y) => {
             if (this.gui.isOpen()) {

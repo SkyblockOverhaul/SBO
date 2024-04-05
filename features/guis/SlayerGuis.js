@@ -32,7 +32,7 @@ function blazeLootTrackerOverlay(lootTracker) {
     if (settings.blazeLootTrackerView == 2) {
         // lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
-    if(settings.blazeLootTrackerView > 0){
+    if (settings.blazeLootTrackerView > 0) {
         switch (settings.blazeLootTrackerView) {
             case 1:
                 blazeTrackerType = "Total";
@@ -52,8 +52,7 @@ function blazeLootTrackerOverlay(lootTracker) {
 
 registerWhen(register("step", () => {
     blazeLootTrackerOverlay();
-}
-).setFps(5), () => settings.blazeLootTracker);
+}).setFps(1), () => settings.blazeLootTracker);
 
 
 

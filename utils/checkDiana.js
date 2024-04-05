@@ -1,11 +1,13 @@
 import { getMayor, getPerks } from "./mayor";
 import { getWorld } from './world';
 import { playerHasSpade } from "./functions";
+import settings from "../settings";
 
 
 
 export function checkDiana() {
-    dianaBool = (getMayor() === "Diana" && getPerks().has("Mythological Ritual"));
-    return getWorld() === "Hub" && playerHasSpade() && dianaBool;
+    if (settings.alwaysDiana) return true;
+    dianaBool = ((getMayor() === "Diana" && getPerks().has("Mythological Ritual") || getMayor() === "Jerry") && playerHasSpade());
+    return getWorld() === "Hub" && dianaBool;
 }
 

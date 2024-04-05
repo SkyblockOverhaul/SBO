@@ -9,12 +9,6 @@ import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, ge
 import { checkDiana } from "../../utils/checkDiana";
 
 // todo: 
-// bei dem tracker gui anzeigen was für ein tracker es ist
-
-// burrow count: fertig vielleicht
-// (1/4) start burrow
-// (2/4), (3/4) treasure burrow or mob burrow
-// (4/4) treasure burrow
 
 // todo end
 
@@ -43,13 +37,13 @@ export function dianaLootCounter(item, amount) {
                     if (item === i.slice(2)) {
                         tempString = item.replace("_", " ").replace("_", " ").toLowerCase();
                         tempString = toTitleCase(tempString);
-                        if (settings.lootAnnouncerChat) {
-                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
-                        }
                         if (settings.copyRareDrop) {
-                            let finalText = "RARE DROP! " + tempString;
+                            let finalText = "[SBO] RARE DROP! " + tempString;
                             ChatLib.command(`ct copy ${finalText}`, true);
                             ChatLib.chat("§6[SBO] §eCopied Rare Drop Message!§r");
+                        }
+                        if (settings.lootAnnouncerChat) {
+                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
                         }
                         if (settings.dianaLootTracker) {
                             trackItem(item, "items", amount);
@@ -200,20 +194,10 @@ registerWhen(register("chat", (woah, arev, mob) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
-                trackItem(mob, "mobs", 1);
-                break;
             case "Minos Champion":
-                trackItem(mob, "mobs", 1);
-                break;
             case "Minos Hunter":
-                trackItem(mob, "mobs", 1);
-                break;
             case "Minotaur":
-                trackItem(mob, "mobs", 1);
-                break;
             case "Gaia Construct":
-                trackItem(mob, "mobs", 1);
-                break;
             case "Siamese Lynxes":
                 trackItem(mob, "mobs", 1);
                 break;       
@@ -228,11 +212,7 @@ registerWhen(register("chat", (drop) => {
         drop=drop.slice(2);
         switch (drop) {
             case "Griffin Feather":
-                trackItem(drop, "items", 1);
-                break;
             case "Crown of Greed":
-                trackItem(drop, "items", 1);
-                break;
             case "Washed-up Souvenir":
                 trackItem(drop, "items", 1);
                 break;
@@ -313,7 +293,7 @@ register("step", () => {
             firstLoad = true;
         }
     }
-}).setFps(2);
+}).setFps(1);
 
 
 // // test command

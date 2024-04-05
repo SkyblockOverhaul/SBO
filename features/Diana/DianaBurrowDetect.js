@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-import { createBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints } from "../general/Waypoints";
+import { createBurrowWaypoints, removeBurrowWaypoint, setBurrowWaypoints, removeBurrowWaypointBySmoke } from "../general/Waypoints";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -10,13 +10,17 @@ function burrowDetect(particle, type) {
     let typename = type.toString();
     if (typename == "FOOTSTEP" || typename == "CRIT_MAGIC" || typename == "CRIT") {
         const particlepos = particle.getPos();
-        const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
-        
+        let xyzcheck = [particle.getX(), particle.getY(), particle.getZ()];
+        let xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ(), xyzcheck];
+        // if (particlepos.getZ() == 0) {
+        //     xyz[2] = Math.floor(particle.getZ());
+        // }
         if (Math.abs(particle.getY() % 1) > 0.1) return;
         if (Math.abs(particle.getX() % 1) < 0.1) return;
         if (Math.abs(particle.getX() % 1) > 0.9) return;
         if (Math.abs(particle.getZ() % 1) < 0.1) return;
         if (Math.abs(particle.getZ() % 1) > 0.9) return;
+
 
         switch (typename) {
             case ("FOOTSTEP"): // Loads burrow waypoints by footstep
@@ -83,58 +87,37 @@ function refreshBurrows() {
     let closetburrow = getClosestBurrowToPlayer();
     // wenn closest burow vorhanden in history dann nicht machen
     if (closetburrow !== null) {
-        if (!burrowshistory.some(([type, x, y, z]) => x === closetburrow[1] && y === closetburrow[2] && z === closetburrow[3])) {
-            burrowshistory.push(closetburrow);
-        }
-        if (burrowshistory.length > 7) {
-            // remove oldest burrow
-            burrowshistory.shift();
-        }
-        burrows = removeBurrowWaypoint(burrowshistory, burrows);
+        // if (!burrowshistory.some(([type, x, y, z]) => x === closetburrow[1] && y === closetburrow[2] && z === closetburrow[3])) {
+        //     burrowshistory.push(closetburrow);
+        // }
+        // if (burrowshistory.length > 7) {
+        //     // remove oldest burrow
+        //     burrowshistory.shift();
+        // }
+        burrows = removeBurrowWaypoint(closetburrow, burrows);
     }
 }
 
+function removeBurrowBySmoke(x, y, z) {
+    removeBurrowWaypointBySmoke(x, y, z);
+    burrows = burrows.filter(([type, xb, yb, zb]) => xb !== x && yb !== y && zb !== z);
+}
 
-// registerWhen(register("HitBlock", () => { // mit smoke machen
-//     if (burrows.length === 0) return;
-//     block = Player.lookingAt()
-//     let [type, x, y, z] = block.toString().replace("x=","").replace("y=","").replace("z=","").replace("}","").split(",");
-//     x = parseInt(x);
-//     y = parseInt(y);
-//     z = parseInt(z);
-//     y = y + 1;
-//     if (x < 0) {
-//         x = x - 1;
-//     }
-//     if (z < 0) {
-//         z = z - 1;
-//     }
-
-//     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
-//         burrowshistory.push(closetburrow);
-//     }
-//     if (burrowshistory.length > 7) {
-//         // remove oldest burrow
-//         burrowshistory.shift();
-//     }
-//     burrows = removeBurrowWaypoint(x, y, z, burrows);
-// }), () => settings.dianaBurrowDetect && checkDiana());
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
-    if (type == "SMOKE") {
-        // ChatLib.chat("SMOKE");
+    if (type.toString() == "SMOKE_LARGE") {
         const particlepos = particle.getPos();
         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
         const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
-        // ChatLib.chat("raw: " + x + " " + y + " " + z);
-        // ChatLib.chat("rounded: " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z));
+        removeBurrowBySmoke(x, y, z);
     }
     burrowDetect(particle, type);
-}), () => settings.dianaBurrowDetect);
+
+}), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
 registerWhen(register("step", () => {
-    burrows.forEach(([type, x, y, z]) => {
-        createBurrowWaypoints(type, x, y, z, burrowshistory);
+    burrows.forEach(([type, x, y, z, xyzcheck]) => {
+        createBurrowWaypoints(type, x, y, z, burrowshistory, xyzcheck);
     });
 }).setFps(4), () => settings.dianaBurrowDetect);
 
@@ -155,6 +138,10 @@ registerWhen(register("chat", () => {
     resetBurrows();
 }).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 
+registerWhen(register("worldUnload", () => {
+    resetBurrows();
+}), () => settings.dianaBurrowDetect);
+
 function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = [];
@@ -163,6 +150,6 @@ function resetBurrows() {
 
 registerWhen(register("step", () => {
     if (!checkDiana()) {
-        refreshBurrows();
+        resetBurrows();
     }
 }).setFps(1), () => settings.dianaBurrowDetect);

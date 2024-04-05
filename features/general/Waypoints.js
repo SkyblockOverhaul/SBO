@@ -1,10 +1,12 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
-import { toTitleCase, isWorldLoaded, isInSkyblock } from '../../utils/functions';
+import { toTitleCase, isWorldLoaded, isInSkyblock, trace } from '../../utils/functions';
 import RenderLibV2 from "../../../RenderLibv2";
 import renderBeaconBeam from "../../../BeaconBeam/index";
 import { checkDiana } from "../../utils/checkDiana";
+
+import { Color } from '../../../Vigilance';
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -36,18 +38,25 @@ export function createNestWayoint(x, y, z) {
 
     
 
-export function removeBurrowWaypoint(burrowshistory, burrows) {
-    burrowshistory.forEach(([type, x, y, z]) => {
-        for (let i = 0; i < burrowWaypoints.length; i++) {
-            if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-                burrowWaypoints.splice(i, 1);
-            }
+export function removeBurrowWaypoint(closetburrow, burrows) {
+    
+    for (let i = 0; i < burrowWaypoints.length; i++) {
+        if (burrowWaypoints[i][1] == closetburrow[1] && burrowWaypoints[i][2] == closetburrow[2] && burrowWaypoints[i][3] == closetburrow[3]) {
+            burrowWaypoints.splice(i, 1);
         }
-        burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
-    });
+    }
+    burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
+
     return burrows; 
 }
 
+export function removeBurrowWaypointBySmoke(x, y, z) {
+    for (let i = 0; i < burrowWaypoints.length; i++) {
+        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            burrowWaypoints.splice(i, 1);
+        }
+    }
+}
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
     // remove wayspoints older than 30 seconds
@@ -56,7 +65,7 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
-export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
+export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzcheck) {
     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
         if (burrowWaypoints.length > 0) {
             for (let i = 0; i < burrowWaypoints.length; i++) {
@@ -70,35 +79,35 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory) {
                     }
                 }
             }
-            burrowWaypoints.push([burrowType, x, y, z]);
+            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
         }
         else {
-            burrowWaypoints.push([burrowType, x, y, z]);
+            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
         }
     }
 }
 
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
-    let x, y, z, distance, xSign, zSign = 0;
+    let x, y, z, distanceRaw, xSign, zSign = 0;
 
     waypoints.forEach((waypoint) => {
         if (type == "Burrow") {
             switch (waypoint[0]) {
                 case "Start":
-                    r = 0.5;
-                    g = 1;
-                    b = 0;
+                    r = settings.startColor.getRed()/255;
+                    g = settings.startColor.getGreen()/255;
+                    b = settings.startColor.getBlue()/255;
                     break;
                 case "Mob":
-                    r = 1;
-                    g = 0.2;
-                    b = 0.1;
+                    r = settings.mobColor.getRed()/255;
+                    g = settings.mobColor.getGreen()/255;
+                    b = settings.mobColor.getBlue()/255;
                     break;
                 case "Treasure":
-                    r = 1;
-                    g = 0.9;
-                    b = 0;
+                    r = settings.treasureColor.getRed()/255;
+                    g = settings.treasureColor.getGreen()/255;
+                    b = settings.treasureColor.getBlue()/255;
                     break;
             }
         }
@@ -110,26 +119,44 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         x = Math.round(waypoint[1]);
         y = Math.round(waypoint[2]);
         z = Math.round(waypoint[3]);
-        distance = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
+
+        distanceRaw = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
 
         // Makes it so waypoint always renders
-        if (distance >= 230) {
-            x = Player.getX() + (x - Player.getX()) * (230 / distance);
-            z = Player.getZ() + (z - Player.getZ()) * (230 / distance);
+        if (distanceRaw >= 230) {
+            x = Player.getX() + (x - Player.getX()) * (230 / distanceRaw);
+            z = Player.getZ() + (z - Player.getZ()) * (230 / distanceRaw);
         }
 
         // Formats and realins everything
-        distance = Math.round(distance) + "m";
-        xSign = x == 0 ? 1 : Math.sign(x);
-        zSign = z == 0 ? 1 : Math.sign(z);
-        // waypoint message
-        wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
+        distance = Math.round(distanceRaw) + "m";
+        if (type == "Burrow") {
+            if (waypoint[5][0] > 0) {
+                xSign = 1;
+            }
+            else if (waypoint[5][0] < 0) {
+                xSign = -1;
+            }
+            if (waypoint[5][2] > 0) {
+                zSign = 1;
+            }
+            else if (waypoint[5][2] < 0) {
+                zSign = -1;
+            }
+        }
+        else {
+            xSign = x == 0 ? 1 : Math.sign(x);
+            zSign = z == 0 ? 1 : Math.sign(z);
+        }
 
+
+
+        wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw];
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
         wp[1] = [x + xSign, y - 1, z + zSign];
-
+        
         /* Return Matrix
            [message, x, y ,z]
            [beacon x, y, z]
@@ -148,30 +175,18 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
 }
 
 
-function renderWaypoint(waypoints) {
-    if (!waypoints.length) return;
 
-    waypoints.forEach((waypoint) => {
-        box = waypoint[0];
-        beam = waypoint[1];
-        rgb = waypoint[2];
-
-        RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
-        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
-        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], 0xffffff, true);
-        renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
-    });
-}
-
+let warpString = "";
 function closestWarpString(x, y, z) {
     closestWarp = getClosestWarp(x, y, z);
     if (closestWarp == "no warp") {
         closestWarp = "";
+        warpString = "";
     }
     else {
-        closestWarp = ` (warp ${closestWarp})`;
+        warpString = ` (warp ${closestWarp})`;
     }
-    return closestWarp;
+    return warpString;
 }
 
 let guessWaypointString = "";
@@ -185,7 +200,7 @@ let hubWarps = {
 const warpKey = new KeyBind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
 warpKey.registerKeyPress(() => {
-    if (settings.dianaBurrowWarp) {
+    if (settings.dianaBurrowWarp && finalLocation != null) {
         getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z);
         if (warpPlayer) {
             ChatLib.command("warp " + closestWarp);
@@ -254,10 +269,30 @@ function getClosestWarp(x, y, z){
         return "no warp";
     }
 }
+// check if player got loot share //
+register("chat" , (player) => {
+    // remove each waypoint from inqWaypoints that contains player
+    inqWaypoints = inqWaypoints.filter(([p, _, _, _, _]) => !p.includes(player.removeFormatting()));
+}).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
+// &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
+
+// check waypoint
+register("step", () => {
+    if (isWorldLoaded()) {
+        // remvoe each waypoint thats older than 45 seconds
+        inqWaypoints = inqWaypoints.filter(([_, _, _, _, _, time]) => Date.now() - time < 45000);
+        // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
+    }
+}).setFps(1);
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
-    if( isWorldLoaded()) {
-        isInq = !z.includes(" ");
+    if (isWorldLoaded()) {
+        // if (checkDiana()) {
+            // isInq = true;
+        // }
+        // else {
+            isInq = !z.includes(" ");
+        // }
         const bracketIndex = player.indexOf('[') - 2;
         if (bracketIndex >= 0)
             player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
@@ -271,8 +306,8 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 z = z.replace("&r", "");
                 // check if waypoint is from player
                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
-                    inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z)]);
-                    removeWaypointAfterDelay(inqWaypoints, 60);
+                    inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
+                    // removeWaypointAfterDelay(inqWaypoints, 60);
                 }
             }
             else{
@@ -332,8 +367,8 @@ registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
     if (finalLocation != null && lastWaypoint != finalLocation) {
-        guessWaypoint = [`§aGuess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
-        formatWaypoints([guessWaypoint], 0, 1, 0, "Guess");
+        guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
+        formatWaypoints([guessWaypoint], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, "Guess");
         lastWaypoint = guessWaypoint;
     }
 }).setFps(20), () => settings.dianaBurrowGuess);
@@ -346,17 +381,87 @@ registerWhen(register("step", () => {
     formattedBurrow = []
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); 
     formatWaypoints(inqWaypoints, 1, 0.84, 0); 
-    formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow" );
+    formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
     formatWaypoints(nestWaypoints, 1, 0.84, 0);
 
-}).setFps(3), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
-
+}).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 registerWhen(register("renderWorld", () => { 
     if (isInSkyblock()) {
         renderWaypoint(formatted);
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
+        renderBurrowLines();
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
+
+// let guessLineRemoved = false;
+function renderBurrowLines(){
+    if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
+        let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
+        if (burrowDistance > 60) return;
+        trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
+    }
+    if (inqWaypoints.length > 0 && settings.inqLine) {
+        trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
+    }
+}
+
+function getClosestBurrow(formattedBurrow) {
+    let closestDistance = Infinity;
+    let closestBurrow = null;
+    formattedBurrow.forEach((waypoint) => {
+        const distance = Math.sqrt(
+            (Player.getX() - waypoint[0][1])**2 +
+            (Player.getY() - waypoint[0][2])**2 +
+            (Player.getZ() - waypoint[0][3])**2
+        );
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestBurrow = ["type", waypoint[0][1], waypoint[0][2], waypoint[0][3], waypoint[2][0], waypoint[2][1], waypoint[2][2]];
+        }
+    });
+    return [closestBurrow, closestDistance];
+}
+
+function renderWaypoint(waypoints) {
+    if (!waypoints.length) return;
+
+    waypoints.forEach((waypoint) => {
+        box = waypoint[0];
+        beam = waypoint[1];
+        rgb = waypoint[2];
+        let removeAtDistance = 10;
+        if (box[4] <= settings.removeGuessDistance && box[0].includes("Guess") && settings.removeGuess) return;
+        if (!settings.removeGuess && box[0].includes("Guess")) {
+            removeAtDistance = 0;
+        }
+        RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
+        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
+        let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
+        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
+
+        if (box[4] >= removeAtDistance) {
+            renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
+        }
+    });
+}
+
+function javaColorToHex(javaColor) {
+    // Extract RGB components
+    var red = javaColor.getRed();
+    var green = javaColor.getGreen();
+    var blue = javaColor.getBlue();
+
+    // Convert RGB to hexadecimal
+    var hex = "0x" + componentToHex(red) + componentToHex(green) + componentToHex(blue);
+
+    return hex;
+}
+
+// Helper function to convert a single color component to hexadecimal
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
 

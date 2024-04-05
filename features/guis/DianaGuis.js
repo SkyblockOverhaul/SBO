@@ -15,7 +15,7 @@ registerWhen(register("entityDeath", (entity) => {
             state.entityDeathOccurred = false;
         }, 2000);
     }
-    }), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
 
 
@@ -54,7 +54,7 @@ export function mobOverlay(mobTracker, setting, percentDict) {
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
-    if(setting > 0){
+    if (setting > 0) {
         switch (setting) {
             case 1:
                 mobTrackerType = "Total";
@@ -105,7 +105,7 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
     if (lootViewSetting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
-    if(lootViewSetting > 0){
+    if (lootViewSetting > 0) {
         DianaLootTracker.message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
     }
 }
@@ -175,7 +175,7 @@ let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosH
 let mythosMobHpSettingsLoad = false;
 export function mythosMobHpOverlay(mobNamesWithHp) {
     if (!mythosMobHpSettingsLoad) {
-        if(guiSettings != undefined) {
+        if (guiSettings != undefined) {
             MythosMobHp.setX(guiSettings["MythosHpLoc"]["x"]);
             MythosMobHp.setY(guiSettings["MythosHpLoc"]["y"]);
             MythosMobHp.setScale(guiSettings["MythosHpLoc"]["s"]);
@@ -205,7 +205,7 @@ let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [400, 50, 1],"sbomov
 let effectsSettingsLoad = false;
 export function effectsOverlay(effects) {
     if (!effectsSettingsLoad) {
-        if(guiSettings != undefined) {
+        if (guiSettings != undefined) {
             EffectsGui.setX(guiSettings["EffectsLoc"]["x"]);
             EffectsGui.setY(guiSettings["EffectsLoc"]["y"]);
             EffectsGui.setScale(guiSettings["EffectsLoc"]["s"]);

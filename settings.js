@@ -7,6 +7,7 @@ import {
     @SelectorProperty,
     @SwitchProperty,
     @TextProperty,
+    @SliderProperty,
     @Vigilant,
 } from 'Vigilance';
 
@@ -23,7 +24,7 @@ import {
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer', 'Dungeon','Party Commands','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Mining','Party Commands','Customization','Quality of Life','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -55,9 +56,16 @@ class Settings {
         this.addDependency('Inq Warp Key','Detect Inq Cords');
         this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
         this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
-        this.addDependency('Blaze View','Blaze Tracker')
-    }
-
+        // this.addDependency('Blaze View','Blaze Tracker');
+        this.addDependency('Max Displayed Items','Attribute value Overlay')
+        this.addDependency('Select Displayed Lines','Attribute value Overlay');
+        this.addDependency('Bazaar Setting','Attribute value Overlay');
+        this.addDependency('Key Price','Attribute value Overlay');
+        this.addDependency('Kuudra Pet Rarity','Attribute value Overlay');
+        this.addDependency('Kuudra Pet Level','Attribute value Overlay');
+        this.addDependency('Attribute Shards for Chest Profit','Attribute value Overlay');
+        this.addDependency('Distance for Remove','Remove Guess');
+    } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
@@ -145,7 +153,37 @@ class Settings {
         subcategory: 'Diana Waypoints',
     })
     inqWarpKey = false;
-
+    @SwitchProperty({
+        name: 'Remove Guess',
+        description: 'Removes guess when getting close to it',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+    })
+    removeGuess = false;
+    @SliderProperty({
+        name: 'Distance for Remove',
+        description: 'Input distacne for guess removal',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+        min: 1,
+        max: 30
+    })
+    removeGuessDistance = 10;
+    // --- Diana lines ---
+    @SwitchProperty({
+        name: 'Inquis Line',
+        description: 'Draws lines for Inquisitor',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+    })
+    inqLine = false;
+    @SwitchProperty({
+        name: 'Burrow Line',
+        description: 'Draws lines for burrows',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+    })
+    burrowLine = false;
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
@@ -176,6 +214,13 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
+    @SwitchProperty({
+        name: 'Always Diana',
+        description: 'Its always Diana, no need to check for mayor, perks or spade',
+        category: 'Diana',
+        subcategory: "Other",
+    })
+    alwaysDiana = false;
     //Party Commands
     @SwitchProperty({
         name: 'Party Commands',
@@ -219,6 +264,14 @@ class Settings {
         subcategory: 'Party Commands',
     })
     carrotCommand = false;
+    @SwitchProperty({
+        name: 'Time Check',
+        description: 'Sends your Time in party chat (!time)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    timeCommand = false;
+
 
     // Slayer
     @SwitchProperty({
@@ -235,28 +288,28 @@ class Settings {
         subcategory: 'Blaze',
     })
     parrotLevel = "0";
-    @SwitchProperty({
-        name: 'Slayer Drop Detect',
-        description: 'Detect slayer drops',
-        category: 'Slayer',
-        subcategory: 'Slayer Drop Detect',
-    })
-    slayerDropDetect = false;
-    @SwitchProperty({
-        name: "Blaze Tracker",
-        description: "Tracks your Blaze loot",
-        category: "Slayer",
-        subcategory: "Blaze Tracker",
-    })
-    blazeLootTracker = false;
-    @SelectorProperty({
-        name: "Blaze View",
-        description: "/sbomoveblazecounter to move the counter",
-        category: "Slayer",
-        subcategory: "Blaze Tracker",
-        options: ["OFF", "Overall View", "Event View", "Session View"]
-    })
-    blazeLootTrackerView = 0;
+    // @SwitchProperty({
+    //     name: 'Slayer Drop Detect',
+    //     description: 'Detect slayer drops',
+    //     category: 'Slayer',
+    //     subcategory: 'Slayer Drop Detect',
+    // })
+    // slayerDropDetect = false;
+    // @SwitchProperty({
+    //     name: "Blaze Tracker",
+    //     description: "Tracks your Blaze loot",
+    //     category: "Slayer",
+    //     subcategory: "Blaze Tracker",
+    // })
+    // blazeLootTracker = false;
+    // @SelectorProperty({
+    //     name: "Blaze View",
+    //     description: "/sbomoveblazecounter to move the counter",
+    //     category: "Slayer",
+    //     subcategory: "Blaze Tracker",
+    //     options: ["OFF", "Overall View", "Event View", "Session View"]
+    // })
+    // blazeLootTrackerView = 0;
     // Dungeon
     @SwitchProperty({
         name: 'Recognize Rare Room',
@@ -298,6 +351,12 @@ class Settings {
         category: 'Quality of Life',
     })
     jacobHider = false;
+    @SwitchProperty({
+        name: 'Alpha Check',
+        description: 'Check if the alpha server is open (max Slots >= 100)',
+        category: 'Quality of Life',
+    })
+    alphaCheck = false;
 
     // General
     // General Waypoints
@@ -317,6 +376,77 @@ class Settings {
     })
     hideOwnWaypoints = 0;
 
+    // Kuudra
+    // ---ProfitHud---
+    @SwitchProperty({
+        name: 'Attribute value Overlay',
+        description: 'Displays value of attributes. /sboguis to move the overlay',
+        category: 'Kuudra',
+    })
+    attributeValueOverlay = false;
+    @SliderProperty({
+        name: 'Max Displayed Items',
+        description: 'Max amount of items displayed in the overlay',
+        category: 'Kuudra',
+        min: 1,
+        max: 20
+    })
+    maxDisplayedItems = 15;
+    @SelectorProperty({
+        name: 'Select Displayed Lines',
+        description: 'Select if attributes are displayed in one or two lines',
+        category: 'Kuudra',
+        options: ['two lines','one line'],
+    })
+    lineSetting = 0;
+    @SelectorProperty({
+        name: 'Bazaar Setting',
+        description: 'Bazaar setting for instasell/sell offer',
+        category: 'Kuudra',
+        options: ['Instasell','Sell Offer'],
+    })
+    bazaarSetting = 0;
+    @SelectorProperty({
+        name: 'Key Price',
+        description: 'Use instabuy/buy offer for materials',
+        category: 'Kuudra',
+        options: ['Instabuy','Buy Offer'],
+    })
+    keySetting = 0;
+    @SelectorProperty({
+        name: 'Kuudra Pet Rarity',
+        description: 'Set the rarity of your pet for essence perk',
+        category: 'Kuudra',
+        options: ['Legendary','Epic','Rare','Uncommon','Common','None'],
+    })
+    kuudraPet = 0;
+    @TextProperty({
+        name: 'Kuudra Pet Level',
+        description: 'Set the level of your pet for essence perk',
+        category: 'Kuudra',
+    })
+    kuudraPetLevel = "100";
+    @SwitchProperty({
+        name: 'Attribute Shards for Chest Profit',
+        description: 'Use attribute shards for chest profit calculation',
+        category: 'Kuudra',
+    })
+    attributeShards = false;
+
+    // Mining
+    @SwitchProperty({
+        name: "Fossil Solver",
+        description: "Enables the fossil solver /sboguis to move the overlay",
+        category: "Mining",
+    })
+    fossilSolver = false;
+    @SwitchProperty({
+        name: "Fossil Overlay",
+        description: "Tells you the fossil you excavate",
+        category: "Mining",
+    })
+    fossilOverlay = false;
+
     // General other
     @SwitchProperty({
         name: "Bobber Counter",
@@ -324,6 +454,43 @@ class Settings {
         category: "General",
     })
     bobberCounter = false;
+
+    // Color Settings
+    @ColorProperty({
+        name: "Start Burrow Color",
+        description: "Pick a color for start burrows",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    startColor = new Color(0.333,1,0.333);
+    @ColorProperty({
+        name: "Mob Burrow Color",
+        description: "Pick a color for mob burrows",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    mobColor = new Color(1,0.333,0.333);
+    @ColorProperty({
+        name: "Treasure Burrow Color",
+        description: "Pick a color for treasure burrows",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    treasureColor = new Color(1,0.667,0);
+    @ColorProperty({
+        name: "Guess Color",
+        description: "Pick a color for your guess",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    guessColor = new Color(1,1,1);
+    @ColorProperty({
+        name: "Slot highlighting Color",
+        description: "Pick a color for slot highlighting",
+        category: "Customization",
+        subcategory: "Category"
+    })
+    slotColor = Color.RED;
 
     // credits/infos
     @ButtonProperty({

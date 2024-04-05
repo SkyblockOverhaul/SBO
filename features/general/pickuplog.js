@@ -1,12 +1,9 @@
 import settings from "../../settings";
 import { readPlayerInventory, isInSkyblock, isWorldLoaded } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
-import { getWorld } from '../../utils/world';
 import { dianaLootCounter } from '../diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
-
-
 
 
 function compareInventories(oldPlayerItems, newPlayerItems) {

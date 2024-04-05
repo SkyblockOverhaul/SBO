@@ -58,29 +58,16 @@ register("chat", (player, message) => {
                 },100)
             }
             break;
-
         case "!demote":
+        case "!promote":
             if (settings.PartyCommands && settings.MoteCommand && message[1]) {
                 setTimeout(function() {
-                    ChatLib.command("p demote " + m2)
+                    ChatLib.command("p " + message[0].slice(1) + " " + message[1])
                 },100)
                 }
             else if (settings.PartyCommands && settings.MoteCommand) {
                 setTimeout(function() {
-                    ChatLib.command("p demote " + getplayername(player))
-                },100)
-            }
-            break;
-
-        case "!promote":
-            if (settings.PartyCommands && settings.MoteCommand && message[1]) {
-                setTimeout(function() {
-                    ChatLib.command("p promote " + m2)
-                },100)
-            }
-            else if (settings.PartyCommands && settings.MoteCommand) {
-                setTimeout(function() {
-                    ChatLib.command("p promote " + getplayername(player))
+                    ChatLib.command("p " + message[0].slice(1) + " " + getplayername(player))
                 },100)
             }
             break;
@@ -89,6 +76,13 @@ register("chat", (player, message) => {
             if(settings.carrotCommand){
                 setTimeout(function() {
                     ChatLib.command("pc " + carrot[Math.floor(Math.random() * carrot.length)]);
+                },100)
+            }
+            break;
+        case "!time":
+            if(settings.timeCommand){
+                setTimeout(function() {
+                    ChatLib.command("pc " + new Date().toLocaleTimeString().split(" ")[0]);
                 },100)
             }
             break;
