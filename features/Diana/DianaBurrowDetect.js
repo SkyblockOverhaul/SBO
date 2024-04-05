@@ -10,13 +10,27 @@ function burrowDetect(particle, type) {
     let typename = type.toString();
     if (typename == "FOOTSTEP" || typename == "CRIT_MAGIC" || typename == "CRIT") {
         const particlepos = particle.getPos();
-        const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
-        
+        let xyzcheck = [Math.floor(particle.getX()), Math.floor(particle.getY()), Math.floor(particle.getZ())];
+        let xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
+        // print("xyzcheck x: " + xyzcheck[0] + " y: " + xyzcheck[1] + " z: " + xyzcheck[2])
+        // print("particlepos x: " + particlepos.getX() + " y: " + particlepos.getY() + " z: " + particlepos.getZ())
+        // if (particlepos.getZ() == 0) {
+        //     xyz[2] = Math.floor(particle.getZ());
+        // }
+        // print("after correction x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2])
+        print("block pos " + BlockPos(particle.getX(), particle.gety(), particle.getZ()))
         if (Math.abs(particle.getY() % 1) > 0.1) return;
         if (Math.abs(particle.getX() % 1) < 0.1) return;
         if (Math.abs(particle.getX() % 1) > 0.9) return;
         if (Math.abs(particle.getZ() % 1) < 0.1) return;
         if (Math.abs(particle.getZ() % 1) > 0.9) return;
+
+        // if (xyz[0] < 0) {
+        //     xyz[0] = xyz[0]- 1;
+        // }
+        // if (xyz[2] < 0) {
+        //     xyz[2] = xyz[2]- 1;
+        // }
 
         switch (typename) {
             case ("FOOTSTEP"): // Loads burrow waypoints by footstep
@@ -113,6 +127,7 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
 
 registerWhen(register("step", () => {
     burrows.forEach(([type, x, y, z]) => {
+        print("burrow x: " + x + " y: " + y + " z: " + z)
         createBurrowWaypoints(type, x, y, z, burrowshistory);
     });
 }).setFps(4), () => settings.dianaBurrowDetect);

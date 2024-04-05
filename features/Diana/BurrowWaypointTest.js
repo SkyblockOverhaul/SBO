@@ -5,15 +5,15 @@ function calcBurrowWaypoint(particle, type, event) {
     let isMob = undefined;
 
     if (particle.toString().startsWith("EntityEnchantmentTableParticleFX, ")) {
-    foundEnchant = true;
+        foundEnchant = true;
     } 
     else if (particle.toString().startsWith("EntityCrit2FX, ")) {
-    foundCrit = true;
+        foundCrit = true;
 
-    isMob = particle.getUnderlyingEntity().func_70534_d() > 0.5;
+        isMob = particle.getUnderlyingEntity().func_70534_d() > 0.5;
     } 
     else if (particle.toString().startsWith("EntityFootStepFX, ")) {
-    foundStep = true;
+        foundStep = true;
     } 
     else if (particle.toString().startsWith("EntityCritFX, ")) {
         let locstr = Math.floor(particle.getX()) + "," + Math.floor(particle.getY() - 1) + "," + Math.floor(particle.getZ());
@@ -21,20 +21,14 @@ function calcBurrowWaypoint(particle, type, event) {
         let removed = false;
         this.burrialData.locations.filter((loc, i) => {
             if (!loc.clicked && loc.x + "," + loc.y + "," + loc.z === locstr) {
-            loc.clicked = true;
-            removed = true;
+                loc.clicked = true;
+                removed = true;
             }
         });
         if (!removed) return;
         this.burrialData.locations = this.burrialData.locations.filter((a) => {
             if (!a.clicked) return true;
-            if (
-            calculateDistanceQuick(
-                [a.x, a.y, a.z],
-                [Player.getX(), Player.getY(), Player.getZ()]
-            ) <
-            15 * 15
-            )
+            if (calculateDistanceQuick([a.x, a.y, a.z], [Player.getX(), Player.getY(), Player.getZ()]) < 15 * 15)
             return true;
 
             this.burrialData.historicalLocations.unshift(a);
@@ -70,43 +64,44 @@ function calcBurrowWaypoint(particle, type, event) {
     let found = false;
 
     this.burrialData.locations.forEach((loc) => {
-    if (loc.x + "," + loc.y + "," + loc.z === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x + 1 + "," + loc.y + "," + loc.z === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x + 1 + "," + (loc.y + 1) + "," + loc.z === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x + 1 + "," + (loc.y - 1) + "," + loc.z === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x - 1 + "," + (loc.y + 1) + "," + loc.z === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x - 1 + "," + (loc.y - 1) + "," + loc.z === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x - 1 + "," + loc.y + "," + loc.z === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x + "," + loc.y + "," + (loc.z + 1) === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
-    if (loc.x + "," + loc.y + "," + (loc.z - 1) === locstr) {
-        found = loc;
-        loc.lastPing = Date.now();
-    }
+        if (loc.x + "," + loc.y + "," + loc.z === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x + 1 + "," + loc.y + "," + loc.z === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x + 1 + "," + (loc.y + 1) + "," + loc.z === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x + 1 + "," + (loc.y - 1) + "," + loc.z === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x - 1 + "," + (loc.y + 1) + "," + loc.z === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x - 1 + "," + (loc.y - 1) + "," + loc.z === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x - 1 + "," + loc.y + "," + loc.z === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x + "," + loc.y + "," + (loc.z + 1) === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
+        if (loc.x + "," + loc.y + "," + (loc.z - 1) === locstr) {
+            found = loc;
+            loc.lastPing = Date.now();
+        }
     });
+    
     if (this.burrialData.historicalLocations) {
         this.burrialData.historicalLocations.forEach((loc) => {
             if (loc.x + "," + loc.y + "," + loc.z === locstr) {
