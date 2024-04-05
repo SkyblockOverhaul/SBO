@@ -145,23 +145,35 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             if (x == -1) {
                 x = x +1;
             }
+            if (z == 1) {
+                z = z -1;
+            }
         }
         else if (xSign == -1 && zSign == -1) {
             if (z == -1) {
                 z = z +1;
+            }
+            if (x == -1) {
+                x = x +1;
             }
         }
         else if (xSign == 1 && zSign == -1) {
             if (x == 1) {
                 x = x -1;
             }
+            if (z == -1) {
+                z = z +1;
+            }
         }
         else if (xSign == 1 && zSign == 1) {
             if (z == 1) {
                 z = z -1;
             }
+            if (x == 1) {
+                x = x -1;
+            }
         }
-        
+
         wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
         
         // Aligns the beam correctly based on which quadrant it is in
