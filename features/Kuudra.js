@@ -532,7 +532,7 @@ function getAttributePrice(itemId, attribute, lvl) {
             for (let i = lvl; i > 0; i--) {
                 counter++;
                 if (kuudraItems[itemId][attribute + "_" + i] != undefined) {
-                    print("attribute: " + attribute + " " + i + " price: " + kuudraItems[itemId][attribute + "_" + i].price);
+                    // print("attribute: " + attribute + " " + i + " price: " + kuudraItems[itemId][attribute + "_" + i].price);
                     if (tier5Shard) {
                         return (kuudraItems[itemId][attribute + "_" + i].price * (2**counter) * 2) * valueModifier;
                     }

@@ -27,7 +27,6 @@ fossilOverlay.setWidth(new ChildBasedRangeConstraint());
 fossilOverlay.setHeight(new ChildBasedRangeConstraint());
 fossilOverlay.onMouseClick((comp, event) => {
     fossilGUISelected = true;
-    print("FossilGUISelected: " + fossilGUISelected);
     dragOffset.x = event.absoluteX;
     dragOffset.y = event.absoluteY;
 });
@@ -315,6 +314,7 @@ calcNewCoords()
 let isInExcavatorGui = false;
 let check1 = true;
 registerWhen(register("step", () => {
+    if (middleBool) return;
     let check2 = false;
     const container = Player.getContainer();
     if (container == null) return;
@@ -438,3 +438,12 @@ registerWhen(register("renderSlot", (slot) => {
         };
     }
 }), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
+
+let middleBool = false;
+register("guiMouseClick", () => {
+    if (middleBool) return;
+    middleBool = true;
+    setTimeout(() => {
+        middleBool = false;
+    }, 50);
+})
