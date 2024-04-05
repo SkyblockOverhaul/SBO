@@ -18,7 +18,7 @@ function burrowDetect(particle, type) {
         //     xyz[2] = Math.floor(particle.getZ());
         // }
         // print("after correction x: " + xyz[0] + " y: " + xyz[1] + " z: " + xyz[2])
-        print("block pos " + BlockPos(particle.getX(), particle.gety(), particle.getZ()))
+        print("block pos " + BlockPos(particle.getX(), particle.getY(), particle.getZ()))
         if (Math.abs(particle.getY() % 1) > 0.1) return;
         if (Math.abs(particle.getX() % 1) < 0.1) return;
         if (Math.abs(particle.getX() % 1) > 0.9) return;
