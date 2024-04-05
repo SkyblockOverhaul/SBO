@@ -118,12 +118,15 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         x = Math.round(waypoint[1]);
         y = Math.round(waypoint[2]);
         z = Math.round(waypoint[3]);
-        if (x < 0) {
-            x = x- 1;
-        }
-        if (z < 0) {
-            z = z- 1;
-        }
+        let blockpos = new BlockPos(x, y, z);
+        print("x: " + x + " y: " + y + " z: " + z)
+        print("block pos " + blockpos.getX() + " " + blockpos.getY() + " " + blockpos.getZ())
+        // if (x < 0) {
+        //     x = x- 1;
+        // }
+        // if (z < 0) {
+        //     z = z- 1;
+        // }
         distance = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
 
         // Makes it so waypoint always renders
@@ -136,7 +139,29 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         distance = Math.round(distance) + "m";
         xSign = x == 0 ? 1 : Math.sign(x);
         zSign = z == 0 ? 1 : Math.sign(z);
+        print("xSign: " + xSign + " zSign: " + zSign)
         // waypoint message
+        if (xSign == -1 && zSign == 1) {
+            if (x == -1) {
+                x = x +1;
+            }
+        }
+        else if (xSign == -1 && zSign == -1) {
+            if (z == -1) {
+                z = z +1;
+            }
+        }
+        else if (xSign == 1 && zSign == -1) {
+            if (x == 1) {
+                x = x -1;
+            }
+        }
+        else if (xSign == 1 && zSign == 1) {
+            if (z == 1) {
+                z = z -1;
+            }
+        }
+        
         wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
         
         // Aligns the beam correctly based on which quadrant it is in
@@ -293,14 +318,14 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 World.playSound("random.orb", 1, 1);
                 z = z.replace("&r", "");
                 // check if waypoint is from player
-                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
+                if (!(player.includes("D4rkSwift") && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
                     // removeWaypointAfterDelay(inqWaypoints, 60);
                 }
             }
             else{
                 z = z.replace("&r", "");
-                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+                if (!(player.includes("D4rkSwift") && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
                     patcherWaypoints.push([player, x, y, z, ""]);
                     removeWaypointAfterDelay(patcherWaypoints, 30);
                 }
@@ -309,7 +334,7 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
         else {
             if(settings.patcherWaypoints) {
                 z = z.split(" ")[0];
-                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+                if (!(player.includes("D4rkSwift") && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
                     patcherWaypoints.push([player, x, y, z, ""]);
                     removeWaypointAfterDelay(patcherWaypoints, 30);
                 }
