@@ -38,15 +38,15 @@ export function createNestWayoint(x, y, z) {
 
     
 
-export function removeBurrowWaypoint(burrowshistory, burrows) {
-    burrowshistory.forEach(([type, x, y, z]) => {
-        for (let i = 0; i < burrowWaypoints.length; i++) {
-            if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-                burrowWaypoints.splice(i, 1);
-            }
+export function removeBurrowWaypoint(closetburrow, burrows) {
+    
+    for (let i = 0; i < burrowWaypoints.length; i++) {
+        if (burrowWaypoints[i][1] == closetburrow[1] && burrowWaypoints[i][2] == closetburrow[2] && burrowWaypoints[i][3] == closetburrow[3]) {
+            burrowWaypoints.splice(i, 1);
         }
-        burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z);
-    });
+    }
+    burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
+
     return burrows; 
 }
 
@@ -89,7 +89,7 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzch
 
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
-    let x, y, z, distance, xSign, zSign = 0;
+    let x, y, z, distanceRaw, xSign, zSign = 0;
 
     waypoints.forEach((waypoint) => {
         if (type == "Burrow") {
@@ -120,16 +120,16 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         y = Math.round(waypoint[2]);
         z = Math.round(waypoint[3]);
 
-        distance = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
+        distanceRaw = Math.hypot(Player.getX() - x, Player.getY() - y, Player.getZ() - z);
 
         // Makes it so waypoint always renders
-        if (distance >= 230) {
-            x = Player.getX() + (x - Player.getX()) * (230 / distance);
-            z = Player.getZ() + (z - Player.getZ()) * (230 / distance);
+        if (distanceRaw >= 230) {
+            x = Player.getX() + (x - Player.getX()) * (230 / distanceRaw);
+            z = Player.getZ() + (z - Player.getZ()) * (230 / distanceRaw);
         }
 
         // Formats and realins everything
-        distance = Math.round(distance) + "m";
+        distance = Math.round(distanceRaw) + "m";
         if (type == "Burrow") {
             if (waypoint[5][0] > 0) {
                 xSign = 1;
@@ -151,7 +151,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
 
 
 
-        wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign];
+        wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw];
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
@@ -384,7 +384,7 @@ registerWhen(register("step", () => {
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
     formatWaypoints(nestWaypoints, 1, 0.84, 0);
 
-}).setFps(3), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
+}).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 registerWhen(register("renderWorld", () => { 
     if (isInSkyblock()) {
@@ -432,12 +432,15 @@ function renderWaypoint(waypoints) {
         beam = waypoint[1];
         rgb = waypoint[2];
 
-
+        if (box[4] <= 10 && box[0].includes("Guess")) return;
         RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 0.25, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
-        renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
+
+        if (box[4] >= 10) {
+            renderBeaconBeam(beam[0], beam[1], beam[2], rgb[0], rgb[1], rgb[2], 0.5, false);
+        }
     });
 }
 
