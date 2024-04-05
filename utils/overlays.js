@@ -44,7 +44,7 @@ let overlayExamples = {
 kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100.00K/600.00K&b)
 &r&62.50M &r&eTerror Boots&r &r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
 &r&eTotal Value: &r&63.1M coins`,
-fossilExample: `&r&bFossil Solver&r`
+fossilExample: `Fossil: Unknown `
 };
 
 
@@ -117,27 +117,27 @@ function guiMover() {
 function drawExamples(){
     switch(settings.lineSetting){
         case 0:
-            exampleMessage(overlayExamples["kuudraExampleOne"], kuudraOverlay);
+            exampleMessage(overlayExamples["kuudraExampleOne"], kuudraOverlay, true);
             break;
         case 1:
-            exampleMessage(overlayExamples["kuudraExampleTwo"], kuudraOverlay);
+            exampleMessage(overlayExamples["kuudraExampleTwo"], kuudraOverlay, true);
             break;
     }
     if(settings.fossilOverlay){
-        exampleMessage(overlayExamples["fossilExample"], fossilOverlay);
+        exampleMessage(overlayExamples["fossilExample"], fossilOverlay, false);
     }
 }
 
-function exampleMessage(example, overlay){
+function exampleMessage(example, overlay, split){
     let exampleMSG = new UIWrappedText(example)
     overlay.clearChildren();
     exampleMSG.setX(new SiblingConstraint())
     exampleMSG.setY(new SiblingConstraint())
+    if(split){
+        maxStringWidth = example.split("\n").reduce((a, b) => a.length > b.length ? a : b).length
+        exampleMSG.setWidth((maxStringWidth * 4.5).pixels());
+    }
+    overlay.addChild(exampleMSG);
     overlay.setWidth(new ChildBasedRangeConstraint());
     overlay.setHeight(new ChildBasedRangeConstraint());
-    maxStringWidth = example.split("\n").reduce((a, b) => a.length > b.length ? a : b).length
-    print(maxStringWidth);
-    print(example)
-    exampleMSG.setWidth((maxStringWidth * 4.5).pixels());
-    overlay.addChild(exampleMSG);
 }
