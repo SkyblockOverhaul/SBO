@@ -445,7 +445,7 @@ class Settings {
         category: "Customization",
         subcategory: "Category"
     })
-    startBurrow = new Color(0.333,1,0.333);
+    startColor = new Color(0.333,1,0.333);
     @ColorProperty({
         name: "Mob Burrow Color",
         description: "Pick a color for mob burrows",
