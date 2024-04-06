@@ -266,7 +266,7 @@ class Settings {
     carrotCommand = false;
     @SwitchProperty({
         name: 'Time Check',
-        description: 'Sends your Time in party chat (!time)',
+        description: 'Sends your time in party chat (!time)',
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
@@ -478,7 +478,7 @@ class Settings {
     })
     guessColor = new Color(1,1,1);
     @ColorProperty({
-        name: "Slot highlighting Color",
+        name: "Slot Highlighting Color",
         description: "Pick a color for slot highlighting",
         category: "Customization",
         subcategory: "Category"

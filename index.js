@@ -22,3 +22,4 @@ register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAli
 register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
+
