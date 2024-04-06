@@ -55,16 +55,16 @@ class Settings {
         this.addDependency('Ask Carrot','Party Commands');
         this.addDependency('Inq Warp Key','Detect Inq Cords');
         this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
-        this.addDependency('Announce Rare Room on Screen','Recognize Rare Room');
+        this.addDependency('Announce Rare Room On Screen','Recognize Rare Room');
         // this.addDependency('Blaze View','Blaze Tracker');
-        this.addDependency('Max Displayed Items','Attribute value Overlay')
-        this.addDependency('Select Displayed Lines','Attribute value Overlay');
-        this.addDependency('Bazaar Setting','Attribute value Overlay');
-        this.addDependency('Key Price','Attribute value Overlay');
-        this.addDependency('Kuudra Pet Rarity','Attribute value Overlay');
-        this.addDependency('Kuudra Pet Level','Attribute value Overlay');
-        this.addDependency('Attribute Shards for Chest Profit','Attribute value Overlay');
-        this.addDependency('Distance for Remove','Remove Guess');
+        this.addDependency('Max Displayed Items','Attribute Value Overlay')
+        this.addDependency('Select Displayed Lines','Attribute Value Overlay');
+        this.addDependency('Bazaar Setting','Attribute Value Overlay');
+        this.addDependency('Key Price','Attribute Value Overlay');
+        this.addDependency('Kuudra Pet Rarity','Attribute Value Overlay');
+        this.addDependency('Kuudra Pet Level','Attribute Value Overlay');
+        this.addDependency('Attribute Shards For Chest Profit','Attribute Value Overlay');
+        this.addDependency('Distance For Remove','Remove Guess');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -129,7 +129,7 @@ class Settings {
     dianaLootTrackerView = 0;
     @ButtonProperty({
         name: "Reset Session Tracker",
-        description: "Resets the session tracker for mobs and items (/sboresetsession)",
+        description: "Resets the session tracker For mobs and items (/sboresetsession)",
         placeholder: "Reset Session",
         category: "Diana",
         subcategory: "Diana Tracker",
@@ -161,7 +161,7 @@ class Settings {
     })
     removeGuess = false;
     @SliderProperty({
-        name: 'Distance for Remove',
+        name: 'Distance For Remove',
         description: 'Input distacne for guess removal',
         category: 'Diana',
         subcategory: 'Diana Waypoints',
@@ -326,7 +326,7 @@ class Settings {
     })
     notifyPartyRareRoom = false;
     @SwitchProperty({
-        name: 'Announce Rare Room on Screen',
+        name: 'Announce Rare Room On Screen',
         description: 'Announce the rare room you found on screen',
         category: 'Dungeon',
         subcategory: 'Quality of Life',
@@ -351,13 +351,6 @@ class Settings {
         category: 'Quality of Life',
     })
     jacobHider = false;
-    @SwitchProperty({
-        name: 'Alpha Check',
-        description: 'Check if the alpha server is open (max Slots >= 100)',
-        category: 'Quality of Life',
-    })
-    alphaCheck = false;
-
     // General
     // General Waypoints
     @SwitchProperty({
@@ -368,7 +361,7 @@ class Settings {
     })
     patcherWaypoints = false;
     @SelectorProperty({
-        name: "hide Own Waypoints",
+        name: "Hide Own Waypoints",
         description: "Hide your own patcher/inquisitor waypoints",
         category: "General",
         subcategory: "Waypoints",
@@ -379,8 +372,8 @@ class Settings {
     // Kuudra
     // ---ProfitHud---
     @SwitchProperty({
-        name: 'Attribute value Overlay',
-        description: 'Displays value of attributes. /sboguis to move the overlay',
+        name: 'Attribute Value Overlay',
+        description: 'Displays value of attributes in chests and profit for kuudra chest. /sboguis to move the overlay',
         category: 'Kuudra',
     })
     attributeValueOverlay = false;
@@ -427,7 +420,7 @@ class Settings {
     })
     kuudraPetLevel = "100";
     @SwitchProperty({
-        name: 'Attribute Shards for Chest Profit',
+        name: 'Attribute Shards For Chest Profit',
         description: 'Use attribute shards for chest profit calculation',
         category: 'Kuudra',
     })
