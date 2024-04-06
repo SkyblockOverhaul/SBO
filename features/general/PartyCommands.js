@@ -82,7 +82,7 @@ register("chat", (player, message) => {
         case "!time":
             if(settings.timeCommand){
                 setTimeout(function() {
-                    ChatLib.command("pc " + new Date().toLocaleTimeString().split(" ")[0]);
+                    ChatLib.command("pc " + new Date().toLocaleTimeString());
                 },100)
             }
             break;

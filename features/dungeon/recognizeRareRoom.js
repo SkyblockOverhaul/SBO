@@ -13,7 +13,6 @@ const rareRooms = {
     "174,-60": "Lava Skull",
     "210,-60": "Mini Rail Track",
     "138,-60": "Hanging Vines",
-    "714,-96": "Zodd", // kein rare room aber id merken
 }
 let rareRoomFound = false;
 registerWhen(register("step", () => {
