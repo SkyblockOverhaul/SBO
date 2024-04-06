@@ -432,9 +432,9 @@ registerWhen(register("step", () => {
     loadOverlay();
 }).setFps(1), () => settings.fossilOverlay && settings.fossilSolver && getWorld() == "Dwarven Mines");
 
-registerWhen(register("guiClosed", () => {
+register("guiClosed", () => {
     fossilOverlay.clearChildren();
-}), () => settings.fossilOverlay && settings.fossilSolver && getWorld() == "Dwarven Mines");
+})
 
 registerWhen(register("renderSlot", (slot) => {
     const container = Player.getContainer();
