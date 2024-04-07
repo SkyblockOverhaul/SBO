@@ -105,6 +105,7 @@ function removeBurrowBySmoke(x, y, z) {
 
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
+    if (!checkDiana()) return;
     if (type.toString() == "SMOKE_LARGE") {
         const particlepos = particle.getPos();
         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
