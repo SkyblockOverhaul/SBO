@@ -6,8 +6,7 @@ import settings from "../settings";
 
 
 export function checkDiana() {
-    if (settings.alwaysDiana) return true;
-    dianaBool = ((getMayor() === "Diana" && getPerks().has("Mythological Ritual") || getMayor() === "Jerry") && playerHasSpade());
+    dianaBool = (settings.alwaysDiana && ((getMayor() === "Diana" && getPerks().has("Mythological Ritual") || getMayor() === "Jerry") && playerHasSpade()));
     return getWorld() === "Hub" && dianaBool;
 }
 

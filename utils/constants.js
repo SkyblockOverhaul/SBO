@@ -88,7 +88,7 @@ export const allowedItemIds = [
     "CRIMSON_CHESTPLATE",
     "CRIMSON_LEGGINGS",
     "CRIMSON_BOOTS",
-    "AURORA_HElMET",
+    "AURORA_HELMET",
     "AURORA_CHESTPLATE",
     "AURORA_LEGGINGS",
     "AURORA_BOOTS",
