@@ -333,6 +333,10 @@ function readContainerItems() {
             // auction house item
             let price = getAhPrice(itemId);
             totalValue += price;
+            if (itemId == "RUNIC_STAFF") {
+                itemId = "AURORA_STAFF";
+            }
+
             let displayName = toTitleCase(itemId.replaceAll("_", " "));
             tempString = `&6${formatPrice(price)} &e${displayName}\n`;
             chestItems.push(new ItemString(tempString, price, index, false));
