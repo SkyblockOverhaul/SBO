@@ -86,19 +86,6 @@ function getClosestBurrowToPlayer() {
     });
     return closestBurrow;
 }
-function refreshBurrows() {
-    let closetburrow = getClosestBurrowToPlayer();
-    // wenn closest burow vorhanden in history dann nicht machen
-    if (closetburrow !== null) {
-        burrows = removeBurrowWaypoint(closetburrow, burrows);
-    }
-}
-
-function removeBurrowBySmoke(x, y, z) {
-    removeBurrowWaypointBySmoke(x, y, z);
-    burrows = burrows.filter(([type, xb, yb, zb]) => xb !== x && yb !== y && zb !== z);
-}
-
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
     if (!checkDiana()) return;
