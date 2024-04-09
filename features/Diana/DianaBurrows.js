@@ -86,8 +86,21 @@ function getClosestBurrowToPlayer() {
     });
     return closestBurrow;
 }
+function refreshBurrows() {
+    let closetburrow = getClosestBurrowToPlayer();
+    // wenn closest burow vorhanden in history dann nicht machen
+    if (closetburrow !== null) {
+        burrows = removeBurrowWaypoint(closetburrow, burrows);
+    }
+}
 
-registerWhen(register("spawnParticle", (particle, type, event) => {
+function removeBurrowBySmoke(x, y, z) {
+    removeBurrowWaypointBySmoke(x, y, z);
+    burrows = burrows.filter(([type, xb, yb, zb]) => xb !== x && yb !== y && zb !== z);
+}
+
+
+register("spawnParticle", (particle, type, event) => {
     if (!checkDiana()) return;
     if (type.toString() == "SMOKE_LARGE") {
         const particlepos = particle.getPos();
@@ -97,37 +110,37 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
     }
     burrowDetect(particle, type);
 
-}), () => settings.dianaBurrowDetect && getWorld() == "Hub");
+})
 
-registerWhen(register("step", () => {
+register("step", () => {
     burrows.forEach(([type, x, y, z, xyzcheck]) => {
         createBurrowWaypoints(type, x, y, z, burrowshistory, xyzcheck);
     });
-}).setFps(4), () => settings.dianaBurrowDetect);
+}).setFps(4);
 
-registerWhen(register("chat", (burrow) => {
+register("chat", (burrow) => {
     refreshBurrows();
-}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => settings.dianaBurrowDetect);
+}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r")
 
-registerWhen(register("chat", (burrow) => {
+register("chat", (burrow) => {
     refreshBurrows();
-}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
+}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}")
 
 register("command", () => {
     resetBurrows();
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
 }).setName("sboclearburrows"); 
 
-registerWhen(register("chat", () => {
+register("chat", () => {
     resetBurrows();
-}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
+}).setCriteria(" ☠ You ${died}.")
 
-registerWhen(register("worldUnload", () => {
+register("worldUnload", () => {
     resetBurrows();
-}), () => settings.dianaBurrowDetect);
+})
 
-registerWhen(register("step", () => {
+register("step", () => {
     if (!checkDiana()) {
         resetBurrows();
     }
-}).setFps(1), () => settings.dianaBurrowDetect);
+}).setFps(1)
