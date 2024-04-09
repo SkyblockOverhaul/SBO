@@ -50,7 +50,7 @@ register("chat", (player, message, event) =>{
     if (!player.includes(" ")) {
         cancel(event);
         player = player.removeFormatting();
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
+        ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
         // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
     }
     else if (player.includes("replying to")) {
@@ -58,10 +58,10 @@ register("chat", (player, message, event) =>{
         let split = player.split(" ");
         let player1 = split[0];
         let player2 = split[3];
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r:" + message);
+        ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
         // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
     }
-}).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}:${message}").setContains()
+}).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}: ${message}").setContains()
 // geht
 // &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rSuccesfully invited kenchika to the party!&r
 // &r&2Guild > &b[MVP&2+&b] MasterNR &3[320]&f: &rnice&r
