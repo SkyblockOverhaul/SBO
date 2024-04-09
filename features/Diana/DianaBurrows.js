@@ -100,7 +100,7 @@ function removeBurrowBySmoke(x, y, z) {
 }
 
 
-register("spawnParticle", (particle, type, event) => {
+registerWhen(register("spawnParticle", (particle, type, event) => {
     if (!checkDiana()) return;
     if (type.toString() == "SMOKE_LARGE") {
         const particlepos = particle.getPos();
@@ -110,37 +110,37 @@ register("spawnParticle", (particle, type, event) => {
     }
     burrowDetect(particle, type);
 
-})
+}), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
-register("step", () => {
+registerWhen(register("step", () => {
     burrows.forEach(([type, x, y, z, xyzcheck]) => {
         createBurrowWaypoints(type, x, y, z, burrowshistory, xyzcheck);
     });
-}).setFps(4);
+}).setFps(4), () => settings.dianaBurrowDetect);
 
-register("chat", (burrow) => {
+registerWhen(register("chat", (burrow) => {
     refreshBurrows();
-}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r")
+}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => settings.dianaBurrowDetect);
 
-register("chat", (burrow) => {
+registerWhen(register("chat", (burrow) => {
     refreshBurrows();
-}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}")
+}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 register("command", () => {
     resetBurrows();
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
 }).setName("sboclearburrows"); 
 
-register("chat", () => {
+registerWhen(register("chat", () => {
     resetBurrows();
-}).setCriteria(" ☠ You ${died}.")
+}).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 
-register("worldUnload", () => {
+registerWhen(register("worldUnload", () => {
     resetBurrows();
-})
+}), () => settings.dianaBurrowDetect);
 
-register("step", () => {
+registerWhen(register("step", () => {
     if (!checkDiana()) {
         resetBurrows();
     }
-}).setFps(1)
+}).setFps(1), () => settings.dianaBurrowDetect);
