@@ -12,9 +12,6 @@ function burrowDetect(particle, type) {
         const particlepos = particle.getPos();
         let xyzcheck = [particle.getX(), particle.getY(), particle.getZ()];
         let xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ(), xyzcheck];
-        // if (particlepos.getZ() == 0) {
-        //     xyz[2] = Math.floor(particle.getZ());
-        // }
         if (Math.abs(particle.getY() % 1) > 0.1) return;
         if (Math.abs(particle.getX() % 1) < 0.1) return;
         if (Math.abs(particle.getX() % 1) > 0.9) return;
@@ -47,6 +44,12 @@ function burrowDetect(particle, type) {
                 break;
         }
     }
+}
+
+function resetBurrows() {
+    setBurrowWaypoints([]);
+    burrows = [];
+    burrowshistory = [];
 }
 
 function getClosest(origin, positions) {
@@ -87,13 +90,6 @@ function refreshBurrows() {
     let closetburrow = getClosestBurrowToPlayer();
     // wenn closest burow vorhanden in history dann nicht machen
     if (closetburrow !== null) {
-        // if (!burrowshistory.some(([type, x, y, z]) => x === closetburrow[1] && y === closetburrow[2] && z === closetburrow[3])) {
-        //     burrowshistory.push(closetburrow);
-        // }
-        // if (burrowshistory.length > 7) {
-        //     // remove oldest burrow
-        //     burrowshistory.shift();
-        // }
         burrows = removeBurrowWaypoint(closetburrow, burrows);
     }
 }
@@ -105,6 +101,7 @@ function removeBurrowBySmoke(x, y, z) {
 
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
+    if (!checkDiana()) return;
     if (type.toString() == "SMOKE_LARGE") {
         const particlepos = particle.getPos();
         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
@@ -141,12 +138,6 @@ registerWhen(register("chat", () => {
 registerWhen(register("worldUnload", () => {
     resetBurrows();
 }), () => settings.dianaBurrowDetect);
-
-function resetBurrows() {
-    setBurrowWaypoints([]);
-    burrows = [];
-    burrowshistory = [];
-}
 
 registerWhen(register("step", () => {
     if (!checkDiana()) {
