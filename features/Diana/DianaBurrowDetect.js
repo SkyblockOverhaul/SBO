@@ -46,6 +46,12 @@ function burrowDetect(particle, type) {
     }
 }
 
+function resetBurrows() {
+    setBurrowWaypoints([]);
+    burrows = [];
+    burrowshistory = [];
+}
+
 function getClosest(origin, positions) {
     let closestPosition = positions.length > 0 ? positions[0] : [0, 0, 0];
     let closestDistance = 999;
@@ -132,12 +138,6 @@ registerWhen(register("chat", () => {
 registerWhen(register("worldUnload", () => {
     resetBurrows();
 }), () => settings.dianaBurrowDetect);
-
-function resetBurrows() {
-    setBurrowWaypoints([]);
-    burrows = [];
-    burrowshistory = [];
-}
 
 registerWhen(register("step", () => {
     if (!checkDiana()) {
