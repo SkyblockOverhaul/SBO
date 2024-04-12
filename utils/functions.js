@@ -359,7 +359,7 @@ export function getplayername(player) {
         }                           // #BanNons
     }
     name = player.substring(num+2)
-    name = name.replaceAll(/[^a-zA-Z0-9_]/g, '')
+    name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '')
 return name
 }
 
