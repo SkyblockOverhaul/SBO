@@ -29,14 +29,13 @@ register("worldLoad", () => {
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!
 
-register("chat", (trash, player) => {
+register("chat", (trash) => {
     // create waypoint
-    if (player.includes(Player.getName())) {
-        // Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ());
-        createWorldWaypoint("§eExit", Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()), 3, 252, 244);
-        // ChatLib.chat("you entered the mineshaft");
-    }
-}).setCriteria("${trash} &r&7&r&b${player} &r&7entered the mineshaft&r&7!&r");
+    // Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ());
+    createWorldWaypoint("§eExit", Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()), 3, 252, 244);
+    // ChatLib.chat("you entered the mineshaft");
+
+}).setCriteria("${trash} &r&7entered the mineshaft&r&7!&r");
 // &r&b ⛏ &r&7&r&bRolexDE &r&7entered the mineshaft&r&7!&r
 
 register("chat", () => {
