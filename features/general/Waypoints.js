@@ -40,7 +40,6 @@ export function createNestWayoint(x, y, z) {
 let worldWaypoints = [];
 export function createWorldWaypoint(name, x, y, z, r, g, b) {
     // check if x y z are already in worldWaypoints
-    print(`&r&cWaypoint: &e${name} &r&cadded to worldWaypoints`)
     worldWaypoints.push([name, x, y, z, "", r, g, b]);
 }
     
