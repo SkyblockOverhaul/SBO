@@ -360,6 +360,8 @@ export function getplayername(player) {
     }
     name = player.substring(num+2)
     name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '')
+    ChatLib.chat(name)
+    print("#"+name+"#")
 return name
 }
 
