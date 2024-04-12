@@ -44,6 +44,7 @@ register("chat", (player, message) => {
                 },100)
             }
             break;
+        case "!ptme":
         case "!transfer":
             if (settings.PartyCommands && settings.TransferCommand && message[1]){
                 if(settings.PartyCommands && settings.TransferCommand){

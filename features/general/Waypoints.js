@@ -472,19 +472,19 @@ function renderWaypoint(waypoints) {
 
 function javaColorToHex(javaColor) {
     // Extract RGB components
-    var red = javaColor.getRed();
-    var green = javaColor.getGreen();
-    var blue = javaColor.getBlue();
+    let red = javaColor.getRed();
+    let green = javaColor.getGreen();
+    let blue = javaColor.getBlue();
 
     // Convert RGB to hexadecimal
-    var hex = "0x" + componentToHex(red) + componentToHex(green) + componentToHex(blue);
+    let hex = "0x" + componentToHex(red) + componentToHex(green) + componentToHex(blue);
 
     return hex;
 }
 
 // Helper function to convert a single color component to hexadecimal
 function componentToHex(c) {
-    var hex = c.toString(16);
+    let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
 

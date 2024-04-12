@@ -7,7 +7,7 @@ import { checkDiana } from "../../utils/checkDiana";
 
 
 function compareInventories(oldPlayerItems, newPlayerItems) {
-    for (var item in newPlayerItems) {
+    for (let item in newPlayerItems) {
         if (oldPlayerItems[item]) {
             diff = newPlayerItems[item] - oldPlayerItems[item];
             if (diff > 0 || diff < 0) {
@@ -25,7 +25,7 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
             // ChatLib.chat("+ " + newPlayerItems[item] + "x " + item);
         }
     }
-    for (var item in oldPlayerItems) {
+    for (let item in oldPlayerItems) {
         if (!newPlayerItems[item]) {
             // ChatLib.chat("- " + oldPlayerItems[item] + "x " + item);
         }

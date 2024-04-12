@@ -8,7 +8,7 @@ import { getDateMayorElected } from "../../utils/mayor";
 import { dianaLootTrackerExample, dianaMobTrackerExample, mythosMobHpExample, effectsGuiExample } from "../../utils/guiExamples";
 
 registerWhen(register("entityDeath", (entity) => {
-    var dist = entity.distanceTo(Player.getPlayer());
+    let dist = entity.distanceTo(Player.getPlayer());
     if (dist < 10 ) {
         state.entityDeathOccurred = true;
         setTimeout(() => {
