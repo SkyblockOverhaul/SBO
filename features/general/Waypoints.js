@@ -1,10 +1,10 @@
+import renderBeaconBeam from "../../../BeaconBeam/index";
+import RenderLibV2 from "../../../RenderLibv2";
 import settings from "../../settings";
+import { checkDiana } from "../../utils/checkDiana";
+import { isInSkyblock, isWorldLoaded, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
-import { toTitleCase, isWorldLoaded, isInSkyblock, trace } from '../../utils/functions';
-import RenderLibV2 from "../../../RenderLibv2";
-import renderBeaconBeam from "../../../BeaconBeam/index";
-import { checkDiana } from "../../utils/checkDiana";
 
 import { Color } from '../../../Vigilance';
 
@@ -36,7 +36,18 @@ export function createNestWayoint(x, y, z) {
     nestWaypoints.push(["§6Dragon Nest", x, y, z]);
 }
 
+
+let worldWaypoints = [];
+export function createWorldWaypoint(name, x, y, z, r, g, b) {
+    // check if x y z are already in worldWaypoints
+    if (worldWaypoints.some(([_, wx, wy, wz]) => wx === x && wy === y && wz === z)) return;
+    worldWaypoints.push([name, x, y, z, r, g, b]);
+}
     
+register("worldLoad", () => {
+    worldWaypoints = [];
+})
+
 
 export function removeBurrowWaypoint(closetburrow, burrows) {
     
@@ -111,6 +122,12 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
                     break;
             }
         }
+        else if (type == "world") {
+            r = waypoint[4]/255;
+            g = waypoint[5]/255;
+            b = waypoint[6]/255;
+        }
+
         if (waypoint[4] == undefined) {
             waypoint[4] = "";
         }
@@ -383,7 +400,7 @@ registerWhen(register("step", () => {
     formatWaypoints(inqWaypoints, 1, 0.84, 0); 
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
     formatWaypoints(nestWaypoints, 1, 0.84, 0);
-
+    formatWaypoints(worldWaypoints, 0, 0, 0, "world");
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 registerWhen(register("renderWorld", () => { 
