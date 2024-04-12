@@ -41,10 +41,11 @@ let worldWaypoints = [];
 export function createWorldWaypoint(name, x, y, z, r, g, b) {
     // check if x y z are already in worldWaypoints
     if (worldWaypoints.some(([_, wx, wy, wz]) => wx === x && wy === y && wz === z)) return;
+    print(`&r&cWaypoint: &e${name} &r&cadded to worldWaypoints`)
     worldWaypoints.push([name, x, y, z, r, g, b]);
 }
     
-register("worldLoad", () => {
+register("worldUnload", () => {
     worldWaypoints = [];
 })
 

@@ -119,12 +119,13 @@ export function toTitleCase(str) {
 
 // read player inventory //
 export function readPlayerInventory(type="") {
+    let slots = 0;
     if (!worldLoaded) return {};
     if (type === "hotbar") {
-        let slots = 8;
+        slots = 8;
     }
     else {
-        let slots = 39;
+        slots = 39;
     }
     playerItems = {}
     let playerInv = Player.getInventory();
