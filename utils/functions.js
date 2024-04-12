@@ -358,10 +358,8 @@ export function getplayername(player) {
             num = -2                // without that
         }                           // #BanNons
     }
-    name = player.substring(num+2)
+    name = player.substring(num+2).removeFormatting()
     name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '')
-    ChatLib.chat(name)
-    print("#"+name+"#")
 return name
 }
 
