@@ -30,13 +30,10 @@ register("worldLoad", () => {
 // You have joined [MVP++] Tricksyz's party!
 
 register("chat", (trash) => {
-    // create waypoint
-    // Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ());
+
     createWorldWaypoint("§eExit", Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()), 3, 252, 244);
-    // ChatLib.chat("you entered the mineshaft");
 
 }).setCriteria("${trash} &r&7entered the mineshaft&r&7!&r");
-// &r&b ⛏ &r&7&r&bRolexDE &r&7entered the mineshaft&r&7!&r
 
 register("chat", () => {
     Client.showTitle("&l&9!!!!! MINESHEFT !!!!!!", "&ego in and warp!!!", 0, 90, 20);

@@ -41,7 +41,7 @@ let worldWaypoints = [];
 export function createWorldWaypoint(name, x, y, z, r, g, b) {
     // check if x y z are already in worldWaypoints
     print(`&r&cWaypoint: &e${name} &r&cadded to worldWaypoints`)
-    worldWaypoints.push([name, x, y, z, r, g, b]);
+    worldWaypoints.push([name, x, y, z, "", r, g, b]);
 }
     
 register("worldUnload", () => {
@@ -123,9 +123,9 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             }
         }
         else if (type == "world") {
-            r = waypoint[4]/255;
-            g = waypoint[5]/255;
-            b = waypoint[6]/255;
+            r = waypoint[5]/255;
+            g = waypoint[6]/255;
+            b = waypoint[7]/255;
         }
 
         if (waypoint[4] == undefined) {
@@ -182,7 +182,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         if (type == "Guess") {
             formattedGuess.push(wp);
         }
-        else if (type == "Normal") {
+        else if (type == "Normal" || type == "world") {
             formatted.push(wp);
         }
         else if (type == "Burrow") {
