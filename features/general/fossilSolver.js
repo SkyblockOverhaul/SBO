@@ -17,7 +17,7 @@ const Color = Java.type("java.awt.Color");
 export let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
 // 8 y: 18
 export let fossilGUISelected = false;
-let guiSettings = loadGuiSettings();
+let fossilGuiSettings = loadGuiSettings();
 let loadedFossilOverlay = false;
 let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
 const dragOffset = { x: 0, y: 0 };
@@ -35,6 +35,7 @@ fossilOverlay.onMouseRelease(() => {
 });
 fossilOverlay.onMouseDrag((comp, mx, my) => {
     if (!fossilGUISelected) return;
+    fossilGuiSettings = loadGuiSettings();
     const absoluteX = mx + comp.getLeft();
     const absoluteY = my + comp.getTop();
     const dx = absoluteX - dragOffset.x;
@@ -45,20 +46,20 @@ fossilOverlay.onMouseDrag((comp, mx, my) => {
     const newY = fossilOverlay.getTop() + dy;
     fossilOverlay.setX(newX.pixels());
     fossilOverlay.setY(newY.pixels());
-    guiSettings["fossilLoc"]["x"] = newX;
-    guiSettings["fossilLoc"]["y"] = newY;
-    saveGuiSettings(guiSettings);
+    fossilGuiSettings["fossilLoc"]["x"] = newX;
+    fossilGuiSettings["fossilLoc"]["y"] = newY;
+    saveGuiSettings(fossilGuiSettings);
 });
 
 function loadOverlay(){
-    if(guiSettings != undefined && !loadedFossilOverlay) {
-        fossilOverlay.setX((guiSettings["fossilLoc"]["x"]).pixels());
-        fossilOverlay.setY((guiSettings["fossilLoc"]["y"]).pixels());
+    if(fossilGuiSettings != undefined && !loadedFossilOverlay) {
+        fossilOverlay.setX((fossilGuiSettings["fossilLoc"]["x"]).pixels());
+        fossilOverlay.setY((fossilGuiSettings["fossilLoc"]["y"]).pixels());
         loadedFossilOverlay = true;
     }
 }
+loadOverlay();
 let fossilProcent = 0;
-
 function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
     const validLocations = [];
     for (const location of locations) {
@@ -428,9 +429,6 @@ registerWhen(register("step", () => {
     }
 }).setFps(10), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
-registerWhen(register("step", () => {
-    loadOverlay();
-}).setFps(1), () => settings.fossilOverlay && settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 register("guiClosed", () => {
     fossilOverlay.clearChildren();

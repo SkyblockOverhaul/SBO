@@ -28,7 +28,7 @@ import {
     ChildBasedRangeConstraint
 } from "../../Elementa";
 
-let guiSettings = loadGuiSettings();
+let kuudraGuiSettings = loadGuiSettings();
 let loadedKuudraOverlay = false;
 const Color = Java.type("java.awt.Color");
 export let kuudraValueOverlaySelected = false;
@@ -47,6 +47,7 @@ kuudraOverlay.onMouseRelease(() => {
 });
 kuudraOverlay.onMouseDrag((comp, mx, my) => {
     if (!kuudraValueOverlaySelected) return;
+    kuudraGuiSettings = loadGuiSettings();
     const absoluteX = mx + comp.getLeft();
     const absoluteY = my + comp.getTop();
     const dx = absoluteX - dragOffset.x;
@@ -57,26 +58,25 @@ kuudraOverlay.onMouseDrag((comp, mx, my) => {
     const newY = kuudraOverlay.getTop() + dy;
     kuudraOverlay.setX(newX.pixels());
     kuudraOverlay.setY(newY.pixels());
-    guiSettings["KuudraValueLoc"]["x"] = newX;
-    guiSettings["KuudraValueLoc"]["y"] = newY;
-    saveGuiSettings(guiSettings);
+    kuudraGuiSettings["KuudraValueLoc"]["x"] = newX;
+    kuudraGuiSettings["KuudraValueLoc"]["y"] = newY;
+    saveGuiSettings(kuudraGuiSettings);
 });
 
 function loadOverlay(){
-    if(guiSettings != undefined && !loadedKuudraOverlay) {
-        kuudraOverlay.setX((guiSettings["KuudraValueLoc"]["x"]).pixels());
-        kuudraOverlay.setY((guiSettings["KuudraValueLoc"]["y"]).pixels());
+    if(kuudraGuiSettings != undefined && !loadedKuudraOverlay) {
+        kuudraOverlay.setX((kuudraGuiSettings["KuudraValueLoc"]["x"]).pixels());
+        kuudraOverlay.setY((kuudraGuiSettings["KuudraValueLoc"]["y"]).pixels());
         loadedKuudraOverlay = true;
     }
 }
-
+loadOverlay();
 let lastUpdate = 0;
 let updateing = false;
 let kuudraItems = undefined;
 let bazaarItems = undefined;
 registerWhen(register("step", () => {
     // update every 5 minutes
-    loadOverlay();
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
         // print("updating kuudra items with api");

@@ -20,21 +20,29 @@ import {
     ChildBasedRangeConstraint,
     Window
 } from "../../Elementa";
+import { BOLD, AQUA, YELLOW} from "../utils/constants";
 import settings from "../settings";
 import { kuudraValueOverlaySelected, kuudraOverlay } from "../features/Kuudra";
 import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolver";
+import { bobberOverlaySelected, bobberOverlay } from "../features/guis/BobberCounter";
 
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
-this.gui.registerClicked((x,y,b) => this.renderWindow.mouseClick(x,y,b));
-this.gui.registerMouseDragged((x, y, b) => this.renderWindow.mouseDrag(x, y, b));
-this.gui.registerMouseReleased(() => this.renderWindow.mouseRelease());
-this.gui.registerClicked((x,y,b) => this.postWindow.mouseClick(x,y,b));
-this.gui.registerMouseDragged((x, y, b) => this.postWindow.mouseDrag(x, y, b));
-this.gui.registerMouseReleased(() => this.postWindow.mouseRelease());
+this.gui.registerClicked((x,y,b) => {
+    this.renderWindow.mouseClick(x,y,b);
+    this.postWindow.mouseClick(x,y,b);
+});
+this.gui.registerMouseDragged((x, y, b) => {
+    this.renderWindow.mouseDrag(x, y, b);
+    this.postWindow.mouseDrag(x, y, b);
+});
+this.gui.registerMouseReleased(() => {
+    this.renderWindow.mouseRelease();
+    this.postWindow.mouseRelease();
+});
 let overlayExamples = {
     kuudraExampleOne: `&r&62.49M &r&eTerror Chestplate&r
 &r&b(BL 5/BR 4 - &r&6100.00K/2.49M&b)
@@ -44,14 +52,15 @@ let overlayExamples = {
 kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100.00K/600.00K&b)
 &r&62.50M &r&eTerror Boots&r &r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
 &r&eTotal Value: &r&63.1M coins`,
-fossilExample: `Fossil: Unknown `
+fossilExample: `Fossil: Unknown `,
+bobbercounterExample:`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}0`,
 };
 
 
 register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases("sbomoveguis");
 
 register('renderOverlay', () => {
-    // checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus, "render");
+    checkForSetting(bobberOverlay, settings.bobberCounter, "render");
     guiMover();
     renderWindow.draw()
 });
@@ -90,6 +99,7 @@ function checkForSetting(overlay, setting, type){
 function closeEditing(){
     kuudraValueOverlaySelected = false;
     fossilGUISelected = false;
+    bobberOverlaySelected = false;
     gui.close();
 }
 
@@ -125,6 +135,9 @@ function drawExamples(){
     }
     if(settings.fossilOverlay){
         exampleMessage(overlayExamples["fossilExample"], fossilOverlay, false);
+    }
+    if(settings.bobberCounter){
+        exampleMessage(overlayExamples["bobbercounterExample"], bobberOverlay, false);
     }
 }
 
