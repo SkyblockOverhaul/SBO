@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { createNestWayoint, createWorldWaypoint, setNestedWaypoints } from "./Waypoints";
+import { createWorldWaypoint } from "./Waypoints";
 
 
 // register dragon wings for golden dragon nest
@@ -18,7 +18,10 @@ registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, even
     }
 }), () => getWorld() === "Crystal Hollows" && settings.findDragonNest);
 
-register("worldUnload", () => {
-    setNestedWaypoints([]);
-    found = false;
-});
+registerWhen(register("chat", (trash) => {
+    if (trash.includes(Player.getName())) {
+        setTimeout(function() {
+            createWorldWaypoint("§eExit", Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()), 3, 252, 244);
+        }, 50);
+    }
+}).setCriteria("${trash} &r&7entered the mineshaft&r&7!&r"), () => settings.exitWaypoint);
