@@ -27,11 +27,6 @@ register("worldLoad", () => {
 
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!
-
-register("chat", () => {
-    Client.showTitle("&l&9!!!!! MINESHEFT !!!!!!", "&ego in and warp!!!", 0, 90, 20);
-}).setCriteria("&r&5&lWOW! &r&aYou found a &r&bGlacite Mineshaft &r&aportal!&r");
-
 register("chat", (event) => {
     Client.showTitle("&l&9!!!!!WORM!!!!!!", "&eKILL!!!", 0, 90, 20);
 }).setCriteria("&r&7&oYou hear the sound of something approaching...&r");
