@@ -6,7 +6,6 @@ import "./features/general/PartyCommands";
 import "./features/general/Waypoints";
 import "./features/general/messageHider";
 import "./features/general/pickuplog";
-import "./features/guis/BobberCounter";
 import "./features/slayer/BlazeSlayer";
 import Settings from "./settings";
 import "./utils/overlays";
