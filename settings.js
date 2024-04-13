@@ -276,7 +276,7 @@ class Settings {
     // Slayer
     @SwitchProperty({
         name: 'Effects For Blaze',
-        description: 'Displays effects for blaze slayer',
+        description: 'Displays effects for blaze slayer. /sboguis to move the overlay',
         category: 'Slayer',
         subcategory: 'Blaze',
     })
@@ -456,7 +456,7 @@ class Settings {
     // General other
     @SwitchProperty({
         name: "Bobber Counter",
-        description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
+        description: "Tracks the number of bobbers near you /sboguis to move the counter",
         category: "General",
     })
     bobberCounter = false;
