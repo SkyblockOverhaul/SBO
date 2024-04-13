@@ -5,7 +5,7 @@ import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../u
 import { Overlay } from "../../utils/overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
-import { dianaLootTrackerExample, dianaMobTrackerExample, mythosMobHpExample, effectsGuiExample } from "../../utils/guiExamples";
+import { dianaLootTrackerExample, dianaMobTrackerExample, mythosMobHpExample } from "../../utils/guiExamples";
 
 registerWhen(register("entityDeath", (entity) => {
     let dist = entity.distanceTo(Player.getPlayer());
@@ -196,52 +196,6 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
     }
     else {
         MythosMobHp.message = "";
-    }
-}
-
-
-let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [400, 50, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
-
-let effectsSettingsLoad = false;
-export function effectsOverlay(effects) {
-    if (!effectsSettingsLoad) {
-        if (guiSettings != undefined) {
-            EffectsGui.setX(guiSettings["EffectsLoc"]["x"]);
-            EffectsGui.setY(guiSettings["EffectsLoc"]["y"]);
-            EffectsGui.setScale(guiSettings["EffectsLoc"]["s"]);
-            effectsSettingsLoad = true;
-        }
-    }
-    if (guiSettings["EffectsLoc"]["x"] != EffectsGui.X || guiSettings["EffectsLoc"]["y"] != EffectsGui.Y || guiSettings["EffectsLoc"]["s"] != EffectsGui.S) {
-        guiSettings["EffectsLoc"]["x"] = EffectsGui.X;
-        guiSettings["EffectsLoc"]["y"] = EffectsGui.Y;
-        guiSettings["EffectsLoc"]["s"] = EffectsGui.S;
-        saveGuiSettings(guiSettings);
-    }
-    if (effects.length > 0) {
-        EffectsGui.message = `${YELLOW}${BOLD}Active Effects
---------------
-`;
-        // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
-        effects.forEach((effect) => {
-            let duration = effect.duration;
-            let durationMessage = "";
-            if (duration > 3600) {
-                durationMessage = `${Math.floor(duration/3600)}h `;
-                duration = duration % 3600;
-            }
-            if (duration > 60) {
-                durationMessage += `${Math.floor(duration/60)}m `;
-                duration = duration % 60;
-            }
-            if (duration > 0) {
-                durationMessage += `${Math.floor(duration)}s`;
-            }
-            EffectsGui.message += `${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}\n`;
-        });
-    }
-    else {
-        EffectsGui.message = "";
     }
 }
 

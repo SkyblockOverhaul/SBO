@@ -19,7 +19,6 @@ bobberOverlay.setWidth(new ChildBasedRangeConstraint());
 bobberOverlay.setHeight(new ChildBasedRangeConstraint());
 bobberOverlay.onMouseClick((comp, event) => {
     bobberOverlaySelected = true;
-    print("Bobber overlay selected");
     dragOffset.x = event.absoluteX;
     dragOffset.y = event.absoluteY;
 });
@@ -48,8 +47,7 @@ bobberOverlay.onMouseDrag((comp, mx, my) => {
 
 let bobberCount = 0;
 let bobberText = new UIWrappedText(`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`);
-bobberText.setWidth((51).pixels())
-bobberText.setHeight((9).pixels())
+bobberText.setHeight((10).pixels())
 bobberOverlay.addChild(bobberText);
 const EntityFishHook = Java.type("net.minecraft.entity.projectile.EntityFishHook");
 
@@ -61,7 +59,12 @@ function loadBobberOverlay() {
     }
 }
 loadBobberOverlay();
+
 registerWhen(register('step', () => {
     bobberCount = World.getAllEntitiesOfType(EntityFishHook).filter(dist => dist.distanceTo(Player.getPlayer()) < 31).length
+    if(!bobberOverlay.children.includes(bobberText)) {
+        bobberOverlay.clearChildren();
+        bobberOverlay.addChild(bobberText);
+    }
     bobberText.setText(`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`);
 }).setFps(1), () => settings.bobberCounter);

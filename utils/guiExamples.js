@@ -56,8 +56,3 @@ ${GRAY}${BOLD}Total Burrows: ${WHITE}
 `
 export let mythosMobHpExample = 
 `&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`
-
-export let effectsGuiExample = 
-`${YELLOW}${BOLD}Active Effects
---------------
-${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`

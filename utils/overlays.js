@@ -20,11 +20,12 @@ import {
     ChildBasedRangeConstraint,
     Window
 } from "../../Elementa";
-import { BOLD, AQUA, YELLOW} from "../utils/constants";
+import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE } from "../utils/constants";
 import settings from "../settings";
 import { kuudraValueOverlaySelected, kuudraOverlay } from "../features/Kuudra";
 import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolver";
 import { bobberOverlaySelected, bobberOverlay } from "../features/guis/BobberCounter";
+import { effectsOverlaySelected, effectsOverlay } from "../features/slayer/BlazeSlayer";
 
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 
@@ -54,6 +55,10 @@ kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100
 &r&eTotal Value: &r&63.1M coins`,
 fossilExample: `Fossil: Unknown `,
 bobbercounterExample:`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}0`,
+effectsGuiExample:
+`${YELLOW}${BOLD}Active Effects
+--------------
+${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`,
 };
 
 
@@ -61,6 +66,7 @@ register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases
 
 register('renderOverlay', () => {
     checkForSetting(bobberOverlay, settings.bobberCounter, "render");
+    checkForSetting(effectsOverlay, settings.effectsGui, "render");
     guiMover();
     renderWindow.draw()
 });
@@ -100,6 +106,7 @@ function closeEditing(){
     kuudraValueOverlaySelected = false;
     fossilGUISelected = false;
     bobberOverlaySelected = false;
+    effectsOverlaySelected = false;
     gui.close();
 }
 
@@ -138,6 +145,9 @@ function drawExamples(){
     }
     if(settings.bobberCounter){
         exampleMessage(overlayExamples["bobbercounterExample"], bobberOverlay, false);
+    }
+    if(settings.effectsGui){
+        exampleMessage(overlayExamples["effectsGuiExample"], effectsOverlay, true);
     }
 }
 
