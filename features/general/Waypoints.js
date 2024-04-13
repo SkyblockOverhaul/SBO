@@ -5,7 +5,6 @@ import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
-
 import { Color } from '../../../Vigilance';
 
 let patcherWaypoints = [];
@@ -27,19 +26,10 @@ export function setBurrowWaypoints(burrows) {
     burrowWaypoints = burrows;
 }
 
-export function setNestedWaypoints(nest) {
-    nestWaypoints = nest;
-}
-
-let nestWaypoints = [];
-export function createNestWayoint(x, y, z) {
-    nestWaypoints.push(["§6Dragon Nest", x, y, z]);
-}
-
-
 let worldWaypoints = [];
 export function createWorldWaypoint(name, x, y, z, r, g, b) {
     // check if x y z are already in worldWaypoints
+    if (worldWaypoints.some(([_, wx, wy, wz]) => wx === x && wy === y && wz === z)) return;
     worldWaypoints.push([name, x, y, z, "", r, g, b]);
 }
     
@@ -398,7 +388,6 @@ registerWhen(register("step", () => {
     formatWaypoints(patcherWaypoints, 0, 0.2, 1); 
     formatWaypoints(inqWaypoints, 1, 0.84, 0); 
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
-    formatWaypoints(nestWaypoints, 1, 0.84, 0);
     formatWaypoints(worldWaypoints, 0, 0, 0, "world");
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 

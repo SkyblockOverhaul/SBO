@@ -29,14 +29,6 @@ register("worldLoad", () => {
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!
 
-register("chat", (trash) => {
-    if (trash.includes(Player.getName())) {
-        setTimeout(function() {
-            createWorldWaypoint("§eExit", Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()), 3, 252, 244);
-        }, 100);
-    }
-}).setCriteria("${trash} &r&7entered the mineshaft&r&7!&r");
-
 register("chat", () => {
     Client.showTitle("&l&9!!!!! MINESHEFT !!!!!!", "&ego in and warp!!!", 0, 90, 20);
 }).setCriteria("&r&5&lWOW! &r&aYou found a &r&bGlacite Mineshaft &r&aportal!&r");

@@ -439,6 +439,12 @@ class Settings {
         category: "Mining",
     })
     fossilOverlay = false;
+    @SwitchProperty({
+        name: "Create Exit Waypoint",
+        description: "Creates a waypoint for the exit of the mineshaft",
+        category: "Mining",
+    })
+    exitWaypoint = false;
 
     // General other
     @SwitchProperty({
