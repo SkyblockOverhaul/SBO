@@ -85,7 +85,6 @@ function refreshEffectOverlay(effects) {
             message += `${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}\n`;
         });
         effectsText.setHeight((height).pixels());
-        print(message);
         effectsText.setText(message);
     }
     else {
