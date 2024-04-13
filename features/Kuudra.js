@@ -6,25 +6,8 @@ import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
 import { loadGuiSettings, saveGuiSettings } from "./../utils/functions";
 import {
-    SiblingConstraint,
-    FillConstraint,
-    CenterConstraint,
-    SubtractiveConstraint,
-    AdditiveConstraint,
-    PixelConstraint,
-    animate,
-    Animations,
-    ChildBasedMaxSizeConstraint,
-    ChildBasedSizeConstraint,
-    ConstantColorConstraint,
-    ScissorEffect,
     UIBlock,
-    UIContainer,
-    UIMultilineTextInput,
-    UIText,
     UIWrappedText,
-    UIRoundedRectangle,
-    OutlineEffect,
     ChildBasedRangeConstraint
 } from "../../Elementa";
 
@@ -321,6 +304,7 @@ function readContainerItems() {
             }
         }
         else if (bazaarIds.includes(itemId)) {
+            if (itemId == "ENCHANTED_MYCELIUM" || itemId == "ENCHANTED_RED_SAND") return;
             // bazaar item
             let price = getBazaarPrice(itemId);
             if (price == 0) return;
