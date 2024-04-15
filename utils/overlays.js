@@ -22,48 +22,47 @@ import {
 } from "../../Elementa";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE } from "../utils/constants";
 import settings from "../settings";
-import { kuudraValueOverlaySelected, kuudraOverlay } from "../features/Kuudra";
-import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolver";
-import { bobberOverlaySelected, bobberOverlay } from "../features/guis/BobberCounter";
-import { effectsOverlaySelected, effectsOverlay } from "../features/slayer/BlazeSlayer";
 
 //alle imports als export functions (setter) definieren
 
-// export function setOverlay(overlay, selected, name){
-//     switch(name){
-//         case "kuudra":
-//             kuudraOverlay = overlay;
-//             kuudraValueOverlaySelected = selected;
-//             break;
-//         case "fossil":
-//             fossilOverlay = overlay;
-//             fossilGUISelected = selected;
-//             break;
-//         case "bobber":
-//             bobberOverlay = overlay;
-//             bobberOverlaySelected = selected;
-//             break;
-//         case "effects":
-//             effectsOverlay = overlay;
-//             effectsOverlaySelected = selected;
-//             break;
-//         case "dianaMobTracker":
-//             dianaMobTracker = overlay;
-//             dianaMobTrackerSelected = selected;
-//             break;
-//         case "dianaLootTracker":
-//             dianaLootTracker = overlay;
-//             dianaLootTrackerSelected = selected;
-//             break;
-//         case "mythosMobHp":
-//             mythosMobHp = overlay;
-//             mythosMobHpSelected = selected;
-//             break;
-//     }
-// }
-
+export function setOverlay(overlay, selected, name){
+    switch(name){
+        case "kuudraOverlay":
+            kuudraOverlay = overlay;
+            kuudraValueOverlaySelected = selected;
+            break;
+        case "fossilOverlay":
+            fossilOverlay = overlay;
+            fossilGUISelected = selected;
+            break;
+        case "bobberOverlay":
+            bobberOverlay = overlay;
+            bobberOverlaySelected = selected;
+            break;
+        case "effectsOverlay":
+            effectsOverlay = overlay;
+            effectsOverlaySelected = selected;
+            break;
+        case "dianaMobTracker":
+            dianaMobTracker = overlay;
+            dianaMobTrackerSelected = selected;
+            break;
+        case "dianaLootTracker":
+            dianaLootTracker = overlay;
+            dianaLootTrackerSelected = selected;
+            break;
+        case "mythosMobHpOverlay":
+            mythosHpOverlay = overlay;
+            mythosMobHpSelected = selected;
+            break;
+    }
+}
 // siehe https://github.com/EssentialGG/Elementa für mehr 
+export function getGuiOpen(){
+    return guiOpen;
+}
 
+let guiOpen = false;
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
@@ -94,6 +93,8 @@ effectsGuiExample:
 `${YELLOW}${BOLD}Active Effects
 --------------
 ${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`,
+mythosMobHpExample:
+`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`,
 };
 
 
@@ -102,6 +103,7 @@ register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases
 register('renderOverlay', () => {
     checkForSetting(bobberOverlay, settings.bobberCounter, "render");
     checkForSetting(effectsOverlay, settings.effectsGui, "render");
+    checkForSetting(mythosHpOverlay, settings.mythosMobHp, "render");
     guiMover();
     renderWindow.draw()
 });
@@ -142,12 +144,15 @@ function closeEditing(){
     fossilGUISelected = false;
     bobberOverlaySelected = false;
     effectsOverlaySelected = false;
+    mythosMobHpSelected = false;
     gui.close();
 }
-
+let clearState = false;
 let firstDraw = false;
 function guiMover() {
     if (gui.isOpen()) {
+        guiOpen = true;
+        clearState = false;
         if (firstDraw === false) {
             drawExamples();
             postWindow.draw();
@@ -162,7 +167,12 @@ function guiMover() {
         );
     }
     if (!gui.isOpen()) {
+        if (clearState === false && guiOpen) {
+            clearExamples();
+            clearState = true;
+        }
         firstDraw = false;
+        guiOpen = false;
     }
 }
 
@@ -184,6 +194,9 @@ function drawExamples(){
     if(settings.effectsGui){
         exampleMessage(overlayExamples["effectsGuiExample"], effectsOverlay, true);
     }
+    if(settings.mythosMobHp){
+        exampleMessage(overlayExamples["mythosMobHpExample"], mythosHpOverlay, false);
+    }
 }
 
 function exampleMessage(example, overlay, split){
@@ -198,4 +211,12 @@ function exampleMessage(example, overlay, split){
     overlay.addChild(exampleMSG);
     overlay.setWidth(new ChildBasedRangeConstraint());
     overlay.setHeight(new ChildBasedRangeConstraint());
+}
+
+function clearExamples(){
+    kuudraOverlay.clearChildren();
+    fossilOverlay.clearChildren();
+    bobberOverlay.clearChildren();
+    effectsOverlay.clearChildren();
+    mythosHpOverlay.clearChildren();
 }

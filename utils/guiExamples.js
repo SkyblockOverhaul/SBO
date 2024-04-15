@@ -54,5 +54,3 @@ ${GOLD}${BOLD}Griffin Feather: ${WHITE}
 ${GOLD}${BOLD}Coins: ${WHITE}
 ${GRAY}${BOLD}Total Burrows: ${WHITE}
 `
-export let mythosMobHpExample = 
-`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`
