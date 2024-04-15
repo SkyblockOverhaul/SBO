@@ -187,7 +187,7 @@ class Settings {
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
-        description: 'Displays HP of mythological mobs near you',
+        description: 'Displays HP of mythological mobs near you. /sboguis to move it',
         category: 'Diana',
         subcategory: "Other",
     })
