@@ -151,8 +151,7 @@ register('worldUnload', () => {
 
 function checkForSetting(overlay, setting, type, setting2, diana){
     if(!overlay) return;
-    if(setting){
-        if(setting2 === 0 && diana) return;
+    if(setting || (setting2 > 0 && diana)){
         if(type === "render" && !renderWindow.children.includes(overlay)) {
             renderWindow.addChild(overlay);
         }
@@ -160,7 +159,7 @@ function checkForSetting(overlay, setting, type, setting2, diana){
             postWindow.addChild(overlay);
         }
     }
-    if(!setting){
+    if(!setting || (setting2 === 0 && diana)){
         if(type === "render" && renderWindow.children.includes(overlay)) {
             renderWindow.removeChild(overlay);
         }

@@ -16,7 +16,7 @@ import { getGuiOpen } from "../../utils/overlays";
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
-    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC", "&5ROTTEN_FLESH"]; //  "&5ROTTEN_FLESH"
+    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
     let checkBool = true;
     if (isActiveForOneSecond() || gotLootShare()) {
@@ -279,9 +279,9 @@ let firstLoad = false;
 let trackerBool = false;
 let tempGuiBool = false;
 register("step", () => {
-    // if (getGuiOpen() && !tempGuiBool){
-    //     tempGuiBool = true;
-    // }
+    if (getGuiOpen() && !tempGuiBool){
+        tempGuiBool = true;
+    }
     if (isInSkyblock() && !firstLoad) {
         if (!trackerBool) {
             if (isDataLoaded()) {
@@ -298,11 +298,10 @@ register("step", () => {
             firstLoad = true;
         }
     }
-    // if (tempGuiBool && !getGuiOpen()) {
-    //     print("gui closed");
-    //     firstLoad = false;
-    //     tempGuiBool = false;
-    // }
+    if (tempGuiBool && !getGuiOpen()) {
+        firstLoad = false;
+        tempGuiBool = false;
+    }
 }).setFps(1);
 
 
