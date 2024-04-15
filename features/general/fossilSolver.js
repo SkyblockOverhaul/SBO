@@ -1,12 +1,8 @@
 import { drawRect, loadGuiSettings, saveGuiSettings } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
-import {
-    UIBlock,
-    UIText,
-    UIWrappedText,
-    ChildBasedRangeConstraint
-} from "../../../Elementa";
+import { setOverlay } from "../../utils/overlays";
+import { UIBlock, UIText, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 const Color = Java.type("java.awt.Color");
@@ -14,9 +10,10 @@ const Color = Java.type("java.awt.Color");
 // todo
 // overlay
 
-export let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
 // 8 y: 18
-export let fossilGUISelected = false;
+let fossilGUISelected = false;
+setOverlay(fossilOverlay, fossilGUISelected, "fossilOverlay");
 let fossilGuiSettings = loadGuiSettings();
 let loadedFossilOverlay = false;
 let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");

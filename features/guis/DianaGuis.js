@@ -2,10 +2,10 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../utils/functions";
-import { Overlay } from "../../utils/overlay";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
-import { dianaLootTrackerExample, dianaMobTrackerExample, mythosMobHpExample } from "../../utils/guiExamples";
+import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
+import { setOverlay, getGuiOpen } from "../../utils/overlays";
 
 registerWhen(register("entityDeath", (entity) => {
     let dist = entity.distanceTo(Player.getPlayer());
@@ -24,33 +24,110 @@ registerWhen(register("entityDeath", (entity) => {
 // ${GRAY}${BOLD}Enchanted Ancient Claw: 
 // ${GRAY}${BOLD}Ancient Claw: 
 
-guiSettings = loadGuiSettings();
+let guiSettings = loadGuiSettings();
+const Color = Java.type("java.awt.Color");
 
-let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"sbomoveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
-let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"sbomoveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
+// let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"sbomoveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
+// let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"sbomoveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
+let dianaMobTrackerSelected = false;
+let dianaLootTrackerSelected = false;
+let dianaMobOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+let dianaLootOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+setOverlay(dianaMobOverlay, dianaMobTrackerSelected, "dianaMobTracker");
+setOverlay(dianaLootOverlay, dianaLootTrackerSelected, "dianaLootTracker");
+const dianaMobOffset = {x: 0, y: 0};
+const dianaLootOffset = {x: 0, y: 0};
+
+dianaMobOverlay.setWidth(new ChildBasedRangeConstraint());
+dianaMobOverlay.setHeight(new ChildBasedRangeConstraint());
+dianaMobOverlay.onMouseClick((comp, event) => {
+    dianaMobTrackerSelected = true;
+    dianaMobOffset.x = event.absoluteX;
+    dianaMobOffset.y = event.absoluteY;
+});
+
+dianaMobOverlay.onMouseRelease(() => {
+    dianaMobTrackerSelected = false;
+});
+
+dianaMobOverlay.onMouseDrag((comp, mx, my) => {
+    if(!dianaMobTrackerSelected) return;
+    guiSettings = loadGuiSettings();
+    const absoluteX = mx + comp.getLeft()
+    const absoluteY = my + comp.getTop()
+    const dx = absoluteX - dianaMobOffset.x;
+    const dy = absoluteY - dianaMobOffset.y;
+    dianaMobOffset.x = absoluteX;
+    dianaMobOffset.y = absoluteY;
+    const newX = dianaMobOverlay.getLeft() + dx;
+    const newY = dianaMobOverlay.getTop() + dy;
+    dianaMobOverlay.setX(newX.pixels());
+    dianaMobOverlay.setY(newY.pixels());
+    guiSettings["MobLoc"]["x"] = newX;
+    guiSettings["MobLoc"]["y"] = newY;
+    saveGuiSettings(guiSettings);
+});
+
+dianaLootOverlay.setWidth(new ChildBasedRangeConstraint());
+dianaLootOverlay.setHeight(new ChildBasedRangeConstraint());
+dianaLootOverlay.onMouseClick((comp, event) => {
+    dianaLootTrackerSelected = true;
+    dianaLootOffset.x = event.absoluteX;
+    dianaLootOffset.y = event.absoluteY;
+});
+
+dianaLootOverlay.onMouseRelease(() => {
+    dianaLootTrackerSelected = false;
+});
+
+dianaLootOverlay.onMouseDrag((comp, mx, my) => {
+    if(!dianaLootTrackerSelected) return;
+    guiSettings = loadGuiSettings();
+    const absoluteX = mx + comp.getLeft()
+    const absoluteY = my + comp.getTop()
+    const dx = absoluteX - dianaLootOffset.x;
+    const dy = absoluteY - dianaLootOffset.y;
+    dianaLootOffset.x = absoluteX;
+    dianaLootOffset.y = absoluteY;
+    const newX = dianaLootOverlay.getLeft() + dx;
+    const newY = dianaLootOverlay.getTop() + dy;
+    dianaLootOverlay.setX(newX.pixels());
+    dianaLootOverlay.setY(newY.pixels());
+    guiSettings["LootLoc"]["x"] = newX;
+    guiSettings["LootLoc"]["y"] = newY;
+    saveGuiSettings(guiSettings);
+});
+
+function loadDianaMobTracker() {
+    if(guiSettings != undefined) {
+        dianaMobOverlay.setX((guiSettings["MobLoc"]["x"]).pixels());
+        dianaMobOverlay.setY((guiSettings["MobLoc"]["y"]).pixels());
+    }
+}
+function loadDianaLootTracker() {
+    if(guiSettings != undefined) {
+        dianaLootOverlay.setX((guiSettings["LootLoc"]["x"]).pixels());
+        dianaLootOverlay.setY((guiSettings["LootLoc"]["y"]).pixels());
+    }
+}
+loadDianaMobTracker();
+loadDianaLootTracker();
+
+let dianaMobTrackerText = new UIWrappedText("");
+let dianaLootTrackerText = new UIWrappedText("");
 
 
-
-let mobSettingsLoad = false;
 /**
  * 
  * @param {string} setting 
  */
 export function mobOverlay(mobTracker, setting, percentDict) {
-    if (!mobSettingsLoad) {
-        if(guiSettings != undefined) {
-            DianaMobTracker.setX(guiSettings["MobLoc"]["x"]);
-            DianaMobTracker.setY(guiSettings["MobLoc"]["y"]);
-            DianaMobTracker.setScale(guiSettings["MobLoc"]["s"]);
-            mobSettingsLoad = true;
-        }
+    if(getGuiOpen()) return;
+    if (!dianaMobOverlay.children.includes(dianaMobTrackerText)) {
+        dianaMobOverlay.clearChildren();
+        dianaMobOverlay.addChild(dianaMobTrackerText);
     }
-    if (guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S) {
-        guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
-        guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
-        guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
-        saveGuiSettings(guiSettings);
-    }
+    let message = "";
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
@@ -66,7 +143,7 @@ export function mobOverlay(mobTracker, setting, percentDict) {
                 mobTrackerType = "Session";
                 break;
         };
-    DianaMobTracker.message =
+    message =
     `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${BOLD}${mobTrackerType}${GRAY})
 ------------------
 ${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
@@ -78,9 +155,8 @@ ${GREEN}${BOLD}Minos Hunter: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Hunter"]}
 ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
 `
     }
+    dianaMobTrackerText.setText(message);
 }
-
-let lootSettingsLoad = false;
 let mobTrackerType = undefined;
 let lootTrackerType = undefined;
 /**
@@ -88,26 +164,19 @@ let lootTrackerType = undefined;
  * @param {string} setting 
  */
 export function itemOverlay(lootTracker, lootViewSetting, percentDict){
-    if (!lootSettingsLoad) {
-        if(guiSettings != undefined) {
-            DianaLootTracker.setX(guiSettings["LootLoc"]["x"]);
-            DianaLootTracker.setY(guiSettings["LootLoc"]["y"]);
-            DianaLootTracker.setScale(guiSettings["LootLoc"]["s"]);
-            lootSettingsLoad = true;
-        }
+    if(getGuiOpen()) return;
+    if (!dianaLootOverlay.children.includes(dianaLootTrackerText)) {
+        dianaLootOverlay.clearChildren();
+        dianaLootOverlay.addChild(dianaLootTrackerText);
     }
-    if (guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S) {
-        guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
-        guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
-        guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
-        saveGuiSettings(guiSettings);
-    }
+    let message = "";
     if (lootViewSetting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
     if (lootViewSetting > 0) {
-        DianaLootTracker.message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
+        message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
     }
+    dianaLootTrackerText.setText(message);
 }
 
 function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
@@ -159,6 +228,7 @@ ${GOLD}${BOLD}Griffin Feather: ${AQUA}${BOLD}${lootTracker["items"]["Griffin Fea
     lootMessage += `${BLUE}${BOLD}Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ANCIENT_CLAW"]}
 ${BLUE}${BOLD}Enchanted Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
 ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows"]}
+${GRAY}${BOLD}ROTTEN_FLESH: ${AQUA}${BOLD}${lootTracker["items"]["ROTTEN_FLESH"]}
 `
     return lootMessage;
 }
@@ -170,43 +240,82 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
 
 
 
-let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythosMobHpExample,"mythosMobHp");
+// let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythosMobHpExample,"mythosMobHp");
 
-let mythosMobHpSettingsLoad = false;
+let loadedMythosHp = false;
+let mythosHpOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+let mythosHpSelected = false;
+setOverlay(mythosHpOverlay, mythosHpSelected, "mythosMobHpOverlay");
+const mythoHpOffset = {x: 0, y: 0};
+
+mythosHpOverlay.setWidth(new ChildBasedRangeConstraint());
+mythosHpOverlay.setHeight(new ChildBasedRangeConstraint());
+mythosHpOverlay.onMouseClick((comp, event) => {
+    mythosHpSelected = true;
+    mythoHpOffset.x = event.absoluteX;
+    mythoHpOffset.y = event.absoluteY;
+});
+
+mythosHpOverlay.onMouseRelease(() => {
+    mythosHpSelected = false;
+});
+
+mythosHpOverlay.onMouseDrag((comp, mx, my) => {
+    if(!mythosHpSelected) return;
+    guiSettings = loadGuiSettings();
+    const absoluteX = mx + comp.getLeft()
+    const absoluteY = my + comp.getTop()
+    const dx = absoluteX - mythoHpOffset.x;
+    const dy = absoluteY - mythoHpOffset.y;
+    mythoHpOffset.x = absoluteX;
+    mythoHpOffset.y = absoluteY;
+    const newX = mythosHpOverlay.getLeft() + dx;
+    const newY = mythosHpOverlay.getTop() + dy;
+    mythosHpOverlay.setX(newX.pixels());
+    mythosHpOverlay.setY(newY.pixels());
+    guiSettings["MythosHpLoc"]["x"] = newX;
+    guiSettings["MythosHpLoc"]["y"] = newY;
+    saveGuiSettings(guiSettings);
+});
+
+let mythosMobHpText = new UIWrappedText("");
+// mythosHpOverlay.addChild(mythosMobHpText);
+
+function loadMythosHpOverlay() {
+    if(guiSettings != undefined && !loadedMythosHp) {
+        mythosHpOverlay.setX((guiSettings["MythosHpLoc"]["x"]).pixels());
+        mythosHpOverlay.setY((guiSettings["MythosHpLoc"]["y"]).pixels());
+        loadedMythosHp = true;
+    }
+}
+loadMythosHpOverlay();
+
 export function mythosMobHpOverlay(mobNamesWithHp) {
-    if (!mythosMobHpSettingsLoad) {
-        if (guiSettings != undefined) {
-            MythosMobHp.setX(guiSettings["MythosHpLoc"]["x"]);
-            MythosMobHp.setY(guiSettings["MythosHpLoc"]["y"]);
-            MythosMobHp.setScale(guiSettings["MythosHpLoc"]["s"]);
-            mythosMobHpSettingsLoad = true;
-        }
+    if(getGuiOpen()) return
+    if(!mythosHpOverlay.children.includes(mythosMobHpText)) {
+        mythosHpOverlay.clearChildren();
+        mythosHpOverlay.addChild(mythosMobHpText);
     }
-    if (guiSettings["MythosHpLoc"]["x"] != MythosMobHp.X || guiSettings["MythosHpLoc"]["y"] != MythosMobHp.Y || guiSettings["MythosHpLoc"]["s"] != MythosMobHp.S) {
-        guiSettings["MythosHpLoc"]["x"] = MythosMobHp.X;
-        guiSettings["MythosHpLoc"]["y"] = MythosMobHp.Y;
-        guiSettings["MythosHpLoc"]["s"] = MythosMobHp.S;
-        saveGuiSettings(guiSettings);
-    }
+    let message = "";
     if (mobNamesWithHp.length > 0) {
-        MythosMobHp.message = "";
+        message = "";
         mobNamesWithHp.forEach((mob) => {
-            MythosMobHp.message += `${mob}\n`;
+            message += `${mob}\n`;
         });
     }
     else {
-        MythosMobHp.message = "";
+        message = "";
     }
+    mythosMobHpText.setText(message);
 }
 
-register("step", () => {
-    if (playerHasSpade()) {
-        DianaMobTracker.setRenderGuiBool(true);
-        DianaLootTracker.setRenderGuiBool(true);
-    }
-    else if (!playerHasSpade()) {
-        DianaMobTracker.setRenderGuiBool(false);
-        DianaLootTracker.setRenderGuiBool(false);
-    }
-}).setFps(1);
-
+// register("step", () => {
+//     if (playerHasSpade()) {
+//         DianaMobTracker.setRenderGuiBool(true);
+//         DianaLootTracker.setRenderGuiBool(true);
+//     }
+//     else if (!playerHasSpade()) {
+//         DianaMobTracker.setRenderGuiBool(false);
+//         DianaLootTracker.setRenderGuiBool(false);
+//     }
+// }).setFps(1);

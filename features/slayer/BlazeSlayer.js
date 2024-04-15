@@ -4,14 +4,16 @@ import { isInSkyblock } from "../../utils/functions";
 import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
 import { YELLOW, BOLD, WHITE, AQUA,} from "../../utils/constants";
+import { setOverlay, getGuiOpen } from "../../utils/overlays";
 
 
 
 let guiSettings = loadGuiSettings();
 let loadedEffects = false;
 const Color = Java.type("java.awt.Color");
-export let effectsOverlaySelected = false;
-export let effectsOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+let effectsOverlaySelected = false;
+let effectsOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+setOverlay(effectsOverlay, effectsOverlaySelected, "effectsOverlay");
 const dragOffset = {x: 0, y: 0};
 
 effectsOverlay.setWidth(new ChildBasedRangeConstraint());
@@ -55,6 +57,7 @@ loadEffectsOverlay();
 
 let effectsText = new UIWrappedText("Active Effects");
 function refreshEffectOverlay(effects) {
+    if (getGuiOpen()) return;
     let pixelIncrementOne = 15;
     let height = 10;
     if(!effectsOverlay.children.includes(effectsText)) {

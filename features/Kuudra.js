@@ -5,17 +5,15 @@ import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/co
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
 import { loadGuiSettings, saveGuiSettings } from "./../utils/functions";
-import {
-    UIBlock,
-    UIWrappedText,
-    ChildBasedRangeConstraint
-} from "../../Elementa";
+import { setOverlay } from "./../utils/overlays";
+import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../Elementa";
 
 let kuudraGuiSettings = loadGuiSettings();
 let loadedKuudraOverlay = false;
 const Color = Java.type("java.awt.Color");
-export let kuudraValueOverlaySelected = false;
-export let kuudraOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+let kuudraValueOverlaySelected = false;
+let kuudraOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+setOverlay(kuudraOverlay, kuudraValueOverlaySelected, "kuudraOverlay");
 const dragOffset = { x: 0, y: 0 };
 
 kuudraOverlay.setWidth(new ChildBasedRangeConstraint());

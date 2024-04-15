@@ -22,13 +22,47 @@ import {
 } from "../../Elementa";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE } from "../utils/constants";
 import settings from "../settings";
-import { kuudraValueOverlaySelected, kuudraOverlay } from "../features/Kuudra";
-import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolver";
-import { bobberOverlaySelected, bobberOverlay } from "../features/guis/BobberCounter";
-import { effectsOverlaySelected, effectsOverlay } from "../features/slayer/BlazeSlayer";
 
+//alle imports als export functions (setter) definieren
+
+export function setOverlay(overlay, selected, name){
+    switch(name){
+        case "kuudraOverlay":
+            kuudraOverlay = overlay;
+            kuudraValueOverlaySelected = selected;
+            break;
+        case "fossilOverlay":
+            fossilOverlay = overlay;
+            fossilGUISelected = selected;
+            break;
+        case "bobberOverlay":
+            bobberOverlay = overlay;
+            bobberOverlaySelected = selected;
+            break;
+        case "effectsOverlay":
+            effectsOverlay = overlay;
+            effectsOverlaySelected = selected;
+            break;
+        case "dianaMobTracker":
+            dianaMobTracker = overlay;
+            dianaMobTrackerSelected = selected;
+            break;
+        case "dianaLootTracker":
+            dianaLootTracker = overlay;
+            dianaLootTrackerSelected = selected;
+            break;
+        case "mythosMobHpOverlay":
+            mythosHpOverlay = overlay;
+            mythosMobHpSelected = selected;
+            break;
+    }
+}
 // siehe https://github.com/EssentialGG/Elementa für mehr 
+export function getGuiOpen(){
+    return guiOpen;
+}
 
+let guiOpen = false;
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
@@ -59,21 +93,54 @@ effectsGuiExample:
 `${YELLOW}${BOLD}Active Effects
 --------------
 ${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`,
+mythosMobHpExample:
+`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`,
+dianaMobTrackerExample:
+`${YELLOW}${BOLD}Diana Mob Tracker
+------------------
+${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
+${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
+${GOLD}${BOLD}Minotaur: ${WHITE}
+${GREEN}${BOLD}Gaia Construct: ${WHITE}
+${GREEN}${BOLD}Siamese Lynx: ${WHITE}
+${GREEN}${BOLD}Minos Hunter: ${WHITE}
+${GRAY}${BOLD}Total Mobs: ${WHITE}
+`,
+dianaLootTrackerExample: 
+`${YELLOW}${BOLD}Diana Loot Tracker
+-------------------
+${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
+${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
+${GOLD}${BOLD}Daedalus Stick: ${WHITE}
+${GOLD}${BOLD}Crown of Greed: ${WHITE}
+${GOLD}${BOLD}Souvenir: ${WHITE}
+${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
+${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
+${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
+${BLUE}${BOLD}Ancient Claws: ${WHITE}
+${BLUE}${BOLD}Enchanted Ancient Claws: ${WHITE}
+${GOLD}${BOLD}Griffin Feather: ${WHITE}
+${GOLD}${BOLD}Coins: ${WHITE}
+${GRAY}${BOLD}Total Burrows: ${WHITE}
+`,
 };
 
 
 register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases("sbomoveguis");
 
 register('renderOverlay', () => {
-    checkForSetting(bobberOverlay, settings.bobberCounter, "render");
-    checkForSetting(effectsOverlay, settings.effectsGui, "render");
+    checkForSetting(bobberOverlay, settings.bobberCounter, "render", 0, false);
+    checkForSetting(effectsOverlay, settings.effectsGui, "render", 0, false);
+    checkForSetting(dianaMobTracker, settings.dianaMobTracker, "render", settings.dianaMobTrackerView, true);
+    checkForSetting(dianaLootTracker, settings.dianaLootTracker, "render", settings.dianaLootTrackerView, true);
+    checkForSetting(mythosHpOverlay, settings.mythosMobHp, "render", 0, false);
     guiMover();
     renderWindow.draw()
 });
 
 register('postGuiRender', () => {
-    checkForSetting(kuudraOverlay, settings.attributeValueOverlay, "post");
-    checkForSetting(fossilOverlay, settings.fossilOverlay, "post");
+    checkForSetting(kuudraOverlay, settings.attributeValueOverlay, "post", 0, false);
+    checkForSetting(fossilOverlay, settings.fossilOverlay, "post", 0, false);
     postWindow.draw()
 });
 
@@ -82,9 +149,10 @@ register('worldUnload', () => {
 });
 
 
-function checkForSetting(overlay, setting, type){
+function checkForSetting(overlay, setting, type, setting2, diana){
     if(!overlay) return;
     if(setting){
+        if(setting2 === 0 && diana) return;
         if(type === "render" && !renderWindow.children.includes(overlay)) {
             renderWindow.addChild(overlay);
         }
@@ -107,12 +175,17 @@ function closeEditing(){
     fossilGUISelected = false;
     bobberOverlaySelected = false;
     effectsOverlaySelected = false;
+    dianaMobTrackerSelected = false;
+    dianaLootTrackerSelected = false;
+    mythosMobHpSelected = false;
     gui.close();
 }
-
+let clearState = false;
 let firstDraw = false;
 function guiMover() {
     if (gui.isOpen()) {
+        guiOpen = true;
+        clearState = false;
         if (firstDraw === false) {
             drawExamples();
             postWindow.draw();
@@ -127,7 +200,12 @@ function guiMover() {
         );
     }
     if (!gui.isOpen()) {
+        if (clearState === false && guiOpen) {
+            clearExamples();
+            clearState = true;
+        }
         firstDraw = false;
+        guiOpen = false;
     }
 }
 
@@ -149,6 +227,15 @@ function drawExamples(){
     if(settings.effectsGui){
         exampleMessage(overlayExamples["effectsGuiExample"], effectsOverlay, true);
     }
+    if(settings.mythosMobHp){
+        exampleMessage(overlayExamples["mythosMobHpExample"], mythosHpOverlay, false);
+    }
+    if(settings.dianaMobTracker){
+        exampleMessage(overlayExamples["dianaMobTrackerExample"], dianaMobTracker, true);
+    }
+    if(settings.dianaLootTracker){
+        exampleMessage(overlayExamples["dianaLootTrackerExample"], dianaLootTracker, true);
+    }
 }
 
 function exampleMessage(example, overlay, split){
@@ -163,4 +250,14 @@ function exampleMessage(example, overlay, split){
     overlay.addChild(exampleMSG);
     overlay.setWidth(new ChildBasedRangeConstraint());
     overlay.setHeight(new ChildBasedRangeConstraint());
+}
+
+function clearExamples(){
+    kuudraOverlay.clearChildren();
+    fossilOverlay.clearChildren();
+    bobberOverlay.clearChildren();
+    effectsOverlay.clearChildren();
+    mythosHpOverlay.clearChildren();
+    dianaMobTracker.clearChildren();
+    dianaLootTracker.clearChildren();
 }

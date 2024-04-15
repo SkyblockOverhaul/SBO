@@ -8,6 +8,10 @@ import "./features/general/messageHider";
 import "./features/general/pickuplog";
 import Settings from "./settings";
 import "./utils/overlays";
+import "./features/Kuudra";
+import "./features/general/fossilSolver";
+import "./features/guis/BobberCounter";
+import "./features/slayer/BlazeSlayer";
 
 // in sbo addons packen
 import "./features/dungeon/recognizeRareRoom";

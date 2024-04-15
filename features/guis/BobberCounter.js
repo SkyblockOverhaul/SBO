@@ -2,17 +2,15 @@ import settings from "../../settings";
 import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { BOLD, AQUA, YELLOW} from "../../utils/constants";
 import { registerWhen } from "../../utils/variables";
-import {
-    UIBlock,
-    UIWrappedText,
-    ChildBasedRangeConstraint
-} from "../../../Elementa";
+import { setOverlay, getGuiOpen } from "../../utils/overlays";
+import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
 
 let bobberGuiSettings = loadGuiSettings();
 let loadedBobber = false;
 const Color = Java.type("java.awt.Color");
-export let bobberOverlaySelected = false;
-export let bobberOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+let bobberOverlaySelected = false;
+let bobberOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+setOverlay(bobberOverlay, bobberOverlaySelected, "bobberOverlay");
 const dragOffset = {x: 0, y: 0};
 
 bobberOverlay.setWidth(new ChildBasedRangeConstraint());
@@ -62,6 +60,7 @@ loadBobberOverlay();
 
 registerWhen(register('step', () => {
     bobberCount = World.getAllEntitiesOfType(EntityFishHook).filter(dist => dist.distanceTo(Player.getPlayer()) < 31).length
+    if(getGuiOpen()) return;
     if(!bobberOverlay.children.includes(bobberText)) {
         bobberOverlay.clearChildren();
         bobberOverlay.addChild(bobberText);
