@@ -17,9 +17,11 @@ registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, even
     }
 }), () => getWorld() === "Crystal Hollows" && settings.findDragonNest);
 
-registerWhen(register("chat", (trash) => {
-    checkIfInMineshaft()    
-}).setCriteria("${trash} &r&7entered the mineshaft&r&7!&r"), () => settings.exitWaypoint);
+registerWhen(register("chat", (player) => {
+    if (player.includes(Player.getName())) {
+        checkIfInMineshaft()    
+    }
+}).setCriteria("${player} &r&7entered the mineshaft&r&7!&r"), () => settings.exitWaypoint);
 
 function checkIfInMineshaft() {
     if (getWorld() === "Mineshaft") {
@@ -32,15 +34,11 @@ function checkIfInMineshaft() {
     }
 }
 
-// registerWhen(register("chat", (trash, player, dings) => {
-//     print(player);
-//     if (player.includes(Player.getName())) {
-//         setTimeout(function() {
-
-//             createWorldWaypoint("§eExit", Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()), 3, 252, 244);
-//         }, 100);
-//     }
-// }).setCriteria("${trash} ${player} &r&eentered &r&aGlacite Mineshafts${dings}"), () => settings.exitWaypoint);
+registerWhen(register("chat", (player, dings) => {
+    if (player.includes(Player.getName())) {
+        checkIfInMineshaft();
+    }
+}).setCriteria("${player} &r&eentered &r&aGlacite Mineshafts${dings}"), () => settings.exitWaypoint);
 
 registerWhen(register("chat", () => {
     Client.showTitle("&l&9MINESHEFT!", "", 0, 90, 20);
