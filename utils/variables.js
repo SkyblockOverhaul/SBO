@@ -53,8 +53,9 @@ export function opened() {
 
 // Event handler for GUI settings close.
 register("guiClosed", (event) => {
-    if (event.toString().includes("vigilance"))
+    if (event.toString().includes("vigilance") || event.toString().includes("JSGui")) {
         setRegisters()
+    }
 });
 
 

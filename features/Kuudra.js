@@ -431,7 +431,7 @@ function refreshOverlay(totalValue) {
             guiStrings[item.indexOfObj].onMouseEnter((comp) => {
                 maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
                 guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-                guiStrings[item.indexOfObj].effects;
+                // guiStrings[item.indexOfObj].effects;
                 guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
             });
             // check if gui object is hovered

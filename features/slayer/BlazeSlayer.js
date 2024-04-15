@@ -5,6 +5,7 @@ import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
 import { YELLOW, BOLD, WHITE, AQUA,} from "../../utils/constants";
 import { setOverlay, getGuiOpen } from "../../utils/overlays";
+import { getWorld } from "../../utils/world";
 
 
 
@@ -147,7 +148,7 @@ registerWhen(register("step", () => {
     // remove all effects with duration <= 0
     effects = effects.filter(e => e.duration > 0);
     refreshEffectOverlay(data.effects);
-}).setFps(1), () => settings.effectsGui);
+}).setFps(1), () => settings.effectsGui && getWorld() == "Crimson Isle");
 
 let loggedOff = true;
 function checkLogOff() {
