@@ -27,6 +27,8 @@ import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolv
 import { bobberOverlaySelected, bobberOverlay } from "../features/guis/BobberCounter";
 import { effectsOverlaySelected, effectsOverlay } from "../features/slayer/BlazeSlayer";
 
+//alle imports als export functions (setter) definieren
+
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 
 const gui = new Gui();
