@@ -29,19 +29,35 @@ import { effectsOverlaySelected, effectsOverlay } from "../features/slayer/Blaze
 
 //alle imports als export functions (setter) definieren
 
-// export function setOverlay(overlay, name){
+// export function setOverlay(overlay, selected, name){
 //     switch(name){
 //         case "kuudra":
 //             kuudraOverlay = overlay;
+//             kuudraValueOverlaySelected = selected;
 //             break;
 //         case "fossil":
 //             fossilOverlay = overlay;
+//             fossilGUISelected = selected;
 //             break;
 //         case "bobber":
 //             bobberOverlay = overlay;
+//             bobberOverlaySelected = selected;
 //             break;
 //         case "effects":
 //             effectsOverlay = overlay;
+//             effectsOverlaySelected = selected;
+//             break;
+//         case "dianaMobTracker":
+//             dianaMobTracker = overlay;
+//             dianaMobTrackerSelected = selected;
+//             break;
+//         case "dianaLootTracker":
+//             dianaLootTracker = overlay;
+//             dianaLootTrackerSelected = selected;
+//             break;
+//         case "mythosMobHp":
+//             mythosMobHp = overlay;
+//             mythosMobHpSelected = selected;
 //             break;
 //     }
 // }
