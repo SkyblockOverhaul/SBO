@@ -294,9 +294,16 @@ function calcNewCoords() {
                 }
             }
         }
-        if (slotToHighlight != -1) {
-            slotsToHighlight.push(slotToHighlight);
+        // all slots with the most fossils
+        for (let key in counter) {
+            if (counter[key] == max) {
+                slotsToHighlight.push(parseInt(key));
+            }
         }
+        // only highlight the first slot with the most fossils
+        // if (slotToHighlight != -1) {
+        //     slotsToHighlight.push(slotToHighlight);
+        // }
     }
 
     if (possibleFossils.length > 1) {

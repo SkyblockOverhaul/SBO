@@ -300,6 +300,9 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
             isInq = !z.includes(" ");
         // }
         const bracketIndex = player.indexOf('[') - 2;
+        const channel = player.substring(0, bracketIndex);
+        // channel.includes("Guild") || channel.includes("Party") || channel.includes("Co-op")
+        if (channel.includes("Guild")) return;
         if (bracketIndex >= 0)
             player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
         else
