@@ -200,12 +200,11 @@ register("step", () => {
 register('renderOverlay', () => {
     overLays.forEach(overlay => {
         checkForSetting(overlay.overlay, overlay.setting, overlay.type, 0, false);
-        bobberOverlay = overlay.overlay;
     });
     // checkForSetting(bobberOverlay, settings.bobberCounter, "render", 0, false);
     checkForSetting(effectsOverlay, settings.effectsGui, "render", 0, false);
-    checkForSetting(dianaMobTracker, settings.dianaMobTracker, "render", settings.dianaMobTrackerView, true);
-    checkForSetting(dianaLootTracker, settings.dianaLootTracker, "render", settings.dianaLootTrackerView, true);
+    // checkForSetting(dianaMobTracker, settings.dianaMobTracker, "render", settings.dianaMobTrackerView, true);
+    // checkForSetting(dianaLootTracker, settings.dianaLootTracker, "render", settings.dianaLootTrackerView, true);
     checkForSetting(mythosHpOverlay, settings.mythosMobHp, "render", 0, false);
     guiMover();
     renderWindow.draw()
@@ -263,6 +262,7 @@ function guiMover() {
         clearState = false;
         if (firstDraw === false) {
             drawExamples();
+            drawExamplesNew()
             postWindow.draw();
             firstDraw = true;
         }
@@ -289,6 +289,12 @@ function guiMover() {
     }
 }
 
+function drawExamplesNew() {
+    overLays.forEach(overlay => {
+        exampleMessage(overlay.example, overlay.overlay, false);
+    });
+}
+
 function drawExamples(){
     switch(settings.lineSetting){
         case 0:
@@ -301,21 +307,21 @@ function drawExamples(){
     if(settings.fossilOverlay){
         exampleMessage(overlayExamples["fossilExample"], fossilOverlay, false);
     }
-    if(settings.bobberCounter){
-        exampleMessage(overlayExamples["bobbercounterExample"], bobberOverlay, false);
-    }
+    // if(settings.bobberCounter){
+    //     exampleMessage(overlayExamples["bobbercounterExample"], bobberOverlay, false);
+    // }
     if(settings.effectsGui){
         exampleMessage(overlayExamples["effectsGuiExample"], effectsOverlay, true);
     }
     if(settings.mythosMobHp){
         exampleMessage(overlayExamples["mythosMobHpExample"], mythosHpOverlay, false);
     }
-    if(settings.dianaMobTracker){
-        exampleMessage(overlayExamples["dianaMobTrackerExample"], dianaMobTracker, true);
-    }
-    if(settings.dianaLootTracker){
-        exampleMessage(overlayExamples["dianaLootTrackerExample"], dianaLootTracker, true);
-    }
+    // if(settings.dianaMobTracker){
+    //     exampleMessage(overlayExamples["dianaMobTrackerExample"], dianaMobTracker, true);
+    // }
+    // if(settings.dianaLootTracker){
+    //     exampleMessage(overlayExamples["dianaLootTrackerExample"], dianaLootTracker, true);
+    // }
 }
 
 function exampleMessage(example, overlay, split){
@@ -335,9 +341,12 @@ function exampleMessage(example, overlay, split){
 function clearExamples(){
     kuudraOverlay.clearChildren();
     fossilOverlay.clearChildren();
-    bobberOverlay.clearChildren();
+    // bobberOverlay.clearChildren();
     effectsOverlay.clearChildren();
     mythosHpOverlay.clearChildren();
-    dianaMobTracker.clearChildren();
-    dianaLootTracker.clearChildren();
+    // dianaMobTracker.clearChildren();
+    // dianaLootTracker.clearChildren();
+    overLays.forEach(overlay => {
+        overlay.overlay.clearChildren();
+    });
 }

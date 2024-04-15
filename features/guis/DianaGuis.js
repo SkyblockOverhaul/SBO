@@ -5,7 +5,7 @@ import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
-import { setOverlay, getGuiOpen } from "../../utils/overlays";
+import { setOverlay, getGuiOpen, newOverlay } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
 
 registerWhen(register("entityDeath", (entity) => {
@@ -32,72 +32,105 @@ const Color = Java.type("java.awt.Color");
 // let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"sbomoveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
 let dianaMobTrackerSelected = false;
 let dianaLootTrackerSelected = false;
-let dianaMobOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-let dianaLootOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-setOverlay(dianaMobOverlay, dianaMobTrackerSelected, "dianaMobTracker");
-setOverlay(dianaLootOverlay, dianaLootTrackerSelected, "dianaLootTracker");
-const dianaMobOffset = {x: 0, y: 0};
-const dianaLootOffset = {x: 0, y: 0};
+// let dianaMobOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+// let dianaLootOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+// newOverlay("bobberOverlay", settings.bobberCounter, bobberExample, "render", "BobberLoc").overlay;
 
-dianaMobOverlay.setWidth(new ChildBasedRangeConstraint());
-dianaMobOverlay.setHeight(new ChildBasedRangeConstraint());
-dianaMobOverlay.onMouseClick((comp, event) => {
-    dianaMobTrackerSelected = true;
-    dianaMobOffset.x = event.absoluteX;
-    dianaMobOffset.y = event.absoluteY;
-});
+let dianaMobTrackerExample = `${YELLOW}${BOLD}Diana Mob Tracker
+------------------
+${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
+${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
+${GOLD}${BOLD}Minotaur: ${WHITE}
+${GREEN}${BOLD}Gaia Construct: ${WHITE}
+${GREEN}${BOLD}Siamese Lynx: ${WHITE}
+${GREEN}${BOLD}Minos Hunter: ${WHITE}
+${GRAY}${BOLD}Total Mobs: ${WHITE}
+`;
+let dianaLootTrackerExample = `${YELLOW}${BOLD}Diana Loot Tracker
+-------------------
+${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
+${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
+${GOLD}${BOLD}Daedalus Stick: ${WHITE}
+${GOLD}${BOLD}Crown of Greed: ${WHITE}
+${GOLD}${BOLD}Souvenir: ${WHITE}
+${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
+${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
+${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
+${BLUE}${BOLD}Ancient Claws: ${WHITE}
+${BLUE}${BOLD}Enchanted Ancient Claws: ${WHITE}
+${GOLD}${BOLD}Griffin Feather: ${WHITE}
+${GOLD}${BOLD}Coins: ${WHITE}
+${GRAY}${BOLD}Total Burrows: ${WHITE}
+`;
 
-dianaMobOverlay.onMouseRelease(() => {
-    dianaMobTrackerSelected = false;
-});
+let dianaMobOverlay = newOverlay("dianaMobTracker", settings.dianaMobTracker, dianaMobTrackerExample, "render", "MobLoc").overlay;
+let dianaLootOverlay = newOverlay("dianaLootTracker", settings.dianaLootTracker, dianaLootTrackerExample, "render", "LootLoc").overlay;
 
-dianaMobOverlay.onMouseDrag((comp, mx, my) => {
-    if(!dianaMobTrackerSelected) return;
-    guiSettings = loadGuiSettings();
-    const absoluteX = mx + comp.getLeft()
-    const absoluteY = my + comp.getTop()
-    const dx = absoluteX - dianaMobOffset.x;
-    const dy = absoluteY - dianaMobOffset.y;
-    dianaMobOffset.x = absoluteX;
-    dianaMobOffset.y = absoluteY;
-    const newX = dianaMobOverlay.getLeft() + dx;
-    const newY = dianaMobOverlay.getTop() + dy;
-    dianaMobOverlay.setX(newX.pixels());
-    dianaMobOverlay.setY(newY.pixels());
-    guiSettings["MobLoc"]["x"] = newX;
-    guiSettings["MobLoc"]["y"] = newY;
-    saveGuiSettings(guiSettings);
-});
 
-dianaLootOverlay.setWidth(new ChildBasedRangeConstraint());
-dianaLootOverlay.setHeight(new ChildBasedRangeConstraint());
-dianaLootOverlay.onMouseClick((comp, event) => {
-    dianaLootTrackerSelected = true;
-    dianaLootOffset.x = event.absoluteX;
-    dianaLootOffset.y = event.absoluteY;
-});
+// setOverlay(dianaMobOverlay, dianaMobTrackerSelected, "dianaMobTracker");
+// setOverlay(dianaLootOverlay, dianaLootTrackerSelected, "dianaLootTracker");
+// const dianaMobOffset = {x: 0, y: 0};
+// const dianaLootOffset = {x: 0, y: 0};
 
-dianaLootOverlay.onMouseRelease(() => {
-    dianaLootTrackerSelected = false;
-});
+// dianaMobOverlay.setWidth(new ChildBasedRangeConstraint());
+// dianaMobOverlay.setHeight(new ChildBasedRangeConstraint());
+// dianaMobOverlay.onMouseClick((comp, event) => {
+//     dianaMobTrackerSelected = true;
+//     dianaMobOffset.x = event.absoluteX;
+//     dianaMobOffset.y = event.absoluteY;
+// });
 
-dianaLootOverlay.onMouseDrag((comp, mx, my) => {
-    if(!dianaLootTrackerSelected) return;
-    guiSettings = loadGuiSettings();
-    const absoluteX = mx + comp.getLeft()
-    const absoluteY = my + comp.getTop()
-    const dx = absoluteX - dianaLootOffset.x;
-    const dy = absoluteY - dianaLootOffset.y;
-    dianaLootOffset.x = absoluteX;
-    dianaLootOffset.y = absoluteY;
-    const newX = dianaLootOverlay.getLeft() + dx;
-    const newY = dianaLootOverlay.getTop() + dy;
-    dianaLootOverlay.setX(newX.pixels());
-    dianaLootOverlay.setY(newY.pixels());
-    guiSettings["LootLoc"]["x"] = newX;
-    guiSettings["LootLoc"]["y"] = newY;
-    saveGuiSettings(guiSettings);
-});
+// dianaMobOverlay.onMouseRelease(() => {
+//     dianaMobTrackerSelected = false;
+// });
+
+// dianaMobOverlay.onMouseDrag((comp, mx, my) => {
+//     if(!dianaMobTrackerSelected) return;
+//     guiSettings = loadGuiSettings();
+//     const absoluteX = mx + comp.getLeft()
+//     const absoluteY = my + comp.getTop()
+//     const dx = absoluteX - dianaMobOffset.x;
+//     const dy = absoluteY - dianaMobOffset.y;
+//     dianaMobOffset.x = absoluteX;
+//     dianaMobOffset.y = absoluteY;
+//     const newX = dianaMobOverlay.getLeft() + dx;
+//     const newY = dianaMobOverlay.getTop() + dy;
+//     dianaMobOverlay.setX(newX.pixels());
+//     dianaMobOverlay.setY(newY.pixels());
+//     guiSettings["MobLoc"]["x"] = newX;
+//     guiSettings["MobLoc"]["y"] = newY;
+//     saveGuiSettings(guiSettings);
+// });
+
+// dianaLootOverlay.setWidth(new ChildBasedRangeConstraint());
+// dianaLootOverlay.setHeight(new ChildBasedRangeConstraint());
+// dianaLootOverlay.onMouseClick((comp, event) => {
+//     dianaLootTrackerSelected = true;
+//     dianaLootOffset.x = event.absoluteX;
+//     dianaLootOffset.y = event.absoluteY;
+// });
+
+// dianaLootOverlay.onMouseRelease(() => {
+//     dianaLootTrackerSelected = false;
+// });
+
+// dianaLootOverlay.onMouseDrag((comp, mx, my) => {
+//     if(!dianaLootTrackerSelected) return;
+//     guiSettings = loadGuiSettings();
+//     const absoluteX = mx + comp.getLeft()
+//     const absoluteY = my + comp.getTop()
+//     const dx = absoluteX - dianaLootOffset.x;
+//     const dy = absoluteY - dianaLootOffset.y;
+//     dianaLootOffset.x = absoluteX;
+//     dianaLootOffset.y = absoluteY;
+//     const newX = dianaLootOverlay.getLeft() + dx;
+//     const newY = dianaLootOverlay.getTop() + dy;
+//     dianaLootOverlay.setX(newX.pixels());
+//     dianaLootOverlay.setY(newY.pixels());
+//     guiSettings["LootLoc"]["x"] = newX;
+//     guiSettings["LootLoc"]["y"] = newY;
+//     saveGuiSettings(guiSettings);
+// });
 
 function loadDianaMobTracker() {
     if(guiSettings != undefined) {
