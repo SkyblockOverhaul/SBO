@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { BOLD, AQUA, YELLOW} from "../../utils/constants";
 import { registerWhen } from "../../utils/variables";
-import { setOverlay } from "../../utils/overlays";
+import { setOverlay, getGuiOpen } from "../../utils/overlays";
 import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
 
 let bobberGuiSettings = loadGuiSettings();
@@ -60,6 +60,7 @@ loadBobberOverlay();
 
 registerWhen(register('step', () => {
     bobberCount = World.getAllEntitiesOfType(EntityFishHook).filter(dist => dist.distanceTo(Player.getPlayer()) < 31).length
+    if(getGuiOpen()) return;
     if(!bobberOverlay.children.includes(bobberText)) {
         bobberOverlay.clearChildren();
         bobberOverlay.addChild(bobberText);
