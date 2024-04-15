@@ -150,7 +150,7 @@ function onReceiveParticle(particle, type, event) {
 
     // test if this makes it better
     // count++;
-    // if (count < 3) return;
+    // if (count < 1) return;
     // count = 0;
     if (lastSoundPoint != null) {
         run = (Math.abs(currLoc.getX() - lastSoundPoint.x) < 2 && Math.abs(currLoc.getY() - lastSoundPoint.y) < 0.5 && Math.abs(currLoc.getZ() - lastSoundPoint.z) < 2);

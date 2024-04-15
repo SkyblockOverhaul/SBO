@@ -1,50 +1,15 @@
 import settings from "../../settings";
-import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
+import { loadGuiSettings } from "../../utils/functions";
 import { BOLD, AQUA, YELLOW} from "../../utils/constants";
 import { registerWhen } from "../../utils/variables";
-import { setOverlay, getGuiOpen, newOverlay } from "../../utils/overlays";
-import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
+import { getGuiOpen, newOverlay } from "../../utils/overlays";
+import { UIWrappedText } from "../../../Elementa";
 
 let bobberGuiSettings = loadGuiSettings();
 let loadedBobber = false;
-const Color = Java.type("java.awt.Color");
-let bobberOverlaySelected = false;
-// let bobberOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-// (name, setting, example, type) 
-let bobberExample = `${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}0`;
-let bobberOverlay = newOverlay("bobberOverlay", settings.bobberCounter, bobberExample, "render", "BobberLoc").overlay;
-// setOverlay(bobberOverlay, bobberOverlaySelected, "bobberOverlay");
-const dragOffset = {x: 0, y: 0};
+let bobberOverlayObj = newOverlay("bobberOverlay", settings.bobberCounter, "bobbercounterExample", "render", "BobberLoc");
+let bobberOverlay = bobberOverlayObj.overlay;
 
-// bobberOverlay.setWidth(new ChildBasedRangeConstraint());
-// bobberOverlay.setHeight(new ChildBasedRangeConstraint());
-// bobberOverlay.onMouseClick((comp, event) => {
-//     bobberOverlaySelected = true;
-//     dragOffset.x = event.absoluteX;
-//     dragOffset.y = event.absoluteY;
-// });
-
-// bobberOverlay.onMouseRelease(() => {
-//     bobberOverlaySelected = false;
-// });
-
-// bobberOverlay.onMouseDrag((comp, mx, my) => {
-//     if(!bobberOverlaySelected) return;
-//     bobberGuiSettings = loadGuiSettings();
-//     const absoluteX = mx + comp.getLeft()
-//     const absoluteY = my + comp.getTop()
-//     const dx = absoluteX - dragOffset.x;
-//     const dy = absoluteY - dragOffset.y;
-//     dragOffset.x = absoluteX;
-//     dragOffset.y = absoluteY;
-//     const newX = bobberOverlay.getLeft() + dx;
-//     const newY = bobberOverlay.getTop() + dy;
-//     bobberOverlay.setX(newX.pixels());
-//     bobberOverlay.setY(newY.pixels());
-//     bobberGuiSettings["BobberLoc"]["x"] = newX;
-//     bobberGuiSettings["BobberLoc"]["y"] = newY;
-//     saveGuiSettings(bobberGuiSettings);
-// });
 
 let bobberCount = 0;
 let bobberText = new UIWrappedText(`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`);

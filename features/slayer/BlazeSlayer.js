@@ -1,51 +1,16 @@
 import settings from "../../settings";
 import { data, registerWhen } from "../../utils/variables";
 import { isInSkyblock } from "../../utils/functions";
-import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
-import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
+import { loadGuiSettings } from "../../utils/functions";
+import { UIWrappedText } from "../../../Elementa";
 import { YELLOW, BOLD, WHITE, AQUA,} from "../../utils/constants";
-import { setOverlay, getGuiOpen } from "../../utils/overlays";
+import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { getWorld } from "../../utils/world";
-
-
 
 let guiSettings = loadGuiSettings();
 let loadedEffects = false;
-const Color = Java.type("java.awt.Color");
-let effectsOverlaySelected = false;
-let effectsOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-setOverlay(effectsOverlay, effectsOverlaySelected, "effectsOverlay");
-const dragOffset = {x: 0, y: 0};
-
-effectsOverlay.setWidth(new ChildBasedRangeConstraint());
-effectsOverlay.setHeight(new ChildBasedRangeConstraint());
-effectsOverlay.onMouseClick((comp, event) => {
-    effectsOverlaySelected = true;
-    dragOffset.x = event.absoluteX;
-    dragOffset.y = event.absoluteY;
-});
-
-effectsOverlay.onMouseRelease(() => {
-    effectsOverlaySelected = false;
-});
-
-effectsOverlay.onMouseDrag((comp, mx, my) => {
-    if(!effectsOverlaySelected) return;
-    guiSettings = loadGuiSettings();
-    const absoluteX = mx + comp.getLeft()
-    const absoluteY = my + comp.getTop()
-    const dx = absoluteX - dragOffset.x;
-    const dy = absoluteY - dragOffset.y;
-    dragOffset.x = absoluteX;
-    dragOffset.y = absoluteY;
-    const newX = effectsOverlay.getLeft() + dx;
-    const newY = effectsOverlay.getTop() + dy;
-    effectsOverlay.setX(newX.pixels());
-    effectsOverlay.setY(newY.pixels());
-    guiSettings["EffectsLoc"]["x"] = newX;
-    guiSettings["EffectsLoc"]["y"] = newY;
-    saveGuiSettings(guiSettings);
-});
+let effectsOverlayObj = newOverlay("effectsOverlay", settings.effectsGui, "effectsGuiExample", "render", "EffectsLoc")
+let effectsOverlay = effectsOverlayObj.overlay;
 
 function loadEffectsOverlay() {
     if(guiSettings != undefined && !loadedEffects) {

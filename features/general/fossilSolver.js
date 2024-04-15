@@ -1,52 +1,20 @@
-import { drawRect, loadGuiSettings, saveGuiSettings } from "./../../utils/functions";
+import { drawRect, loadGuiSettings } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
-import { setOverlay } from "../../utils/overlays";
-import { UIBlock, UIText, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
+import { newOverlay } from "../../utils/overlays";
+import { UIWrappedText } from "../../../Elementa";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
-const Color = Java.type("java.awt.Color");
 
-// todo
-// overlay
+let fossilOverlayObj = newOverlay("fossilSolver", settings.fossilSolver, "fossilExample", "post", "fossilLoc");
+let fossilOverlay = fossilOverlayObj.overlay
 
-let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-// 8 y: 18
-let fossilGUISelected = false;
-setOverlay(fossilOverlay, fossilGUISelected, "fossilOverlay");
 let fossilGuiSettings = loadGuiSettings();
 let loadedFossilOverlay = false;
 let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
-const dragOffset = { x: 0, y: 0 };
 
 fossilPossibleNames.setY((10).pixels());
-fossilOverlay.setWidth(new ChildBasedRangeConstraint());
-fossilOverlay.setHeight(new ChildBasedRangeConstraint());
-fossilOverlay.onMouseClick((comp, event) => {
-    fossilGUISelected = true;
-    dragOffset.x = event.absoluteX;
-    dragOffset.y = event.absoluteY;
-});
-fossilOverlay.onMouseRelease(() => {
-    fossilGUISelected = false;
-});
-fossilOverlay.onMouseDrag((comp, mx, my) => {
-    if (!fossilGUISelected) return;
-    fossilGuiSettings = loadGuiSettings();
-    const absoluteX = mx + comp.getLeft();
-    const absoluteY = my + comp.getTop();
-    const dx = absoluteX - dragOffset.x;
-    const dy = absoluteY - dragOffset.y;
-    dragOffset.x = absoluteX;
-    dragOffset.y = absoluteY;
-    const newX = fossilOverlay.getLeft() + dx;
-    const newY = fossilOverlay.getTop() + dy;
-    fossilOverlay.setX(newX.pixels());
-    fossilOverlay.setY(newY.pixels());
-    fossilGuiSettings["fossilLoc"]["x"] = newX;
-    fossilGuiSettings["fossilLoc"]["y"] = newY;
-    saveGuiSettings(fossilGuiSettings);
-});
+
 
 function loadOverlay(){
     if(fossilGuiSettings != undefined && !loadedFossilOverlay) {

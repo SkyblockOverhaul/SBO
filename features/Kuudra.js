@@ -4,45 +4,14 @@ import { toTitleCase, drawRect } from "./../utils/functions";
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
-import { loadGuiSettings, saveGuiSettings } from "./../utils/functions";
-import { setOverlay } from "./../utils/overlays";
-import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../Elementa";
+import { loadGuiSettings } from "./../utils/functions";
+import { newOverlay } from "./../utils/overlays";
+import { UIWrappedText } from "../../Elementa";
 
 let kuudraGuiSettings = loadGuiSettings();
 let loadedKuudraOverlay = false;
-const Color = Java.type("java.awt.Color");
-let kuudraValueOverlaySelected = false;
-let kuudraOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-setOverlay(kuudraOverlay, kuudraValueOverlaySelected, "kuudraOverlay");
-const dragOffset = { x: 0, y: 0 };
-
-kuudraOverlay.setWidth(new ChildBasedRangeConstraint());
-kuudraOverlay.setHeight(new ChildBasedRangeConstraint());
-kuudraOverlay.onMouseClick((comp, event) => {
-    kuudraValueOverlaySelected = true;
-    dragOffset.x = event.absoluteX;
-    dragOffset.y = event.absoluteY;
-});
-kuudraOverlay.onMouseRelease(() => {
-    kuudraValueOverlaySelected = false;
-});
-kuudraOverlay.onMouseDrag((comp, mx, my) => {
-    if (!kuudraValueOverlaySelected) return;
-    kuudraGuiSettings = loadGuiSettings();
-    const absoluteX = mx + comp.getLeft();
-    const absoluteY = my + comp.getTop();
-    const dx = absoluteX - dragOffset.x;
-    const dy = absoluteY - dragOffset.y;
-    dragOffset.x = absoluteX;
-    dragOffset.y = absoluteY;
-    const newX = kuudraOverlay.getLeft() + dx;
-    const newY = kuudraOverlay.getTop() + dy;
-    kuudraOverlay.setX(newX.pixels());
-    kuudraOverlay.setY(newY.pixels());
-    kuudraGuiSettings["KuudraValueLoc"]["x"] = newX;
-    kuudraGuiSettings["KuudraValueLoc"]["y"] = newY;
-    saveGuiSettings(kuudraGuiSettings);
-});
+let kuudraOverlayObj = newOverlay("kuudraOverlay", settings.attributeValueOverlay, "kuudraExample", "post", "KuudraValueLoc");
+let kuudraOverlay = kuudraOverlayObj.overlay
 
 function loadOverlay(){
     if(kuudraGuiSettings != undefined && !loadedKuudraOverlay) {
@@ -229,7 +198,7 @@ function readContainerItems() {
     // ChatLib.chat("&6[SBO] &6&lGUI OPENED! " + container.getName());
     const items = container.getItems();
     if (items.length == 0) return;
-    
+    kuudraOverlayObj.renderGui = true;
     let highestPrice = 0;
     let tempString = "";
     let totalValue = 0;
@@ -349,28 +318,28 @@ function readContainerItems() {
     refreshOverlay(totalValue);
 }
 
-register("guiClosed", () => {
+registerWhen(register("guiClosed", () => {
     indexToHighlight = -1;
     kuudraOverlay.clearChildren();
+    kuudraOverlayObj.renderGui = false;
     chestItems = [];
     guiStrings = [];
-});
+}), () => settings.attributeValueOverlay);
 
 
 let indexToHighlight = -1;
-register("renderSlot", (slot) => {
+registerWhen(register("renderSlot", (slot) => {
     if (indexToHighlight != -1) {
         if (slot.getIndex() == indexToHighlight) {
             let x = slot.getDisplayX();
             let y = slot.getDisplayY();
-            // print("rendering highlight" + x + " " + y);
             drawRect(x, y, 2.5, 200);
         }
     }
-});
+}), () => settings.attributeValueOverlay);
 
 let guiStrings = [];
-register("step", () => {
+registerWhen(register("step", () => {
     let tempBool = false;
     if (guiStrings.length == 0) return;
     chestItems.forEach((item) => {
@@ -383,7 +352,7 @@ register("step", () => {
     if (!tempBool) {
         indexToHighlight = -1;
     }
-}).setFps(20);
+}).setFps(20), () => settings.attributeValueOverlay);
 
 
 function refreshOverlay(totalValue) {
