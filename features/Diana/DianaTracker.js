@@ -7,7 +7,7 @@ import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, getTrackerSession } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
-import { getGuiOpen } from "../../utils/overlays";
+import { getGuiOpen, getRefreshOverlays } from "../../utils/overlays";
 
 // todo: 
 
@@ -279,7 +279,7 @@ let firstLoad = false;
 let trackerBool = false;
 let tempGuiBool = false;
 register("step", () => {
-    if (getGuiOpen() && !tempGuiBool){
+    if (getRefreshOverlays() && !tempGuiBool){
         tempGuiBool = true;
     }
     if (isInSkyblock() && !firstLoad) {
@@ -298,7 +298,7 @@ register("step", () => {
             firstLoad = true;
         }
     }
-    if (tempGuiBool && !getGuiOpen()) {
+    if (tempGuiBool && !getRefreshOverlays()) {
         firstLoad = false;
         tempGuiBool = false;
     }

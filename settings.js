@@ -106,7 +106,7 @@ class Settings {
     dianaMobTracker = false;
     @SelectorProperty({
         name: "Mob View",
-        description: "Tracks your diana mob kills /sbomovemobcounter to move the counter",
+        description: "Tracks your diana mob kills /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -121,7 +121,7 @@ class Settings {
     dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
-        description: "Tracks your diana loot /sbomovelootcounter to move the counter",
+        description: "Tracks your diana loot /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]

@@ -57,6 +57,18 @@ export function setOverlay(overlay, selected, name){
             break;
     }
 }
+
+export function getOverlays(){
+    return {
+        kuudraOverlay: kuudraOverlay,
+        fossilOverlay: fossilOverlay,
+        bobberOverlay: bobberOverlay,
+        effectsOverlay: effectsOverlay,
+        dianaMobTracker: dianaMobTracker,
+        dianaLootTracker: dianaLootTracker,
+        mythosHpOverlay: mythosHpOverlay
+    }
+}
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 export function getGuiOpen(){
     return guiOpen;
@@ -181,6 +193,9 @@ function closeEditing(){
 }
 let clearState = false;
 let firstDraw = false;
+let refreshOverlays = false;
+export function getRefreshOverlays() { return refreshOverlays; }
+let refreshOverlaysTimeout;
 function guiMover() {
     if (gui.isOpen()) {
         guiOpen = true;
@@ -201,7 +216,12 @@ function guiMover() {
     if (!gui.isOpen()) {
         if (clearState === false && guiOpen) {
             clearExamples();
+            refreshOverlays = true;
             clearState = true;
+            if (refreshOverlaysTimeout) clearTimeout(refreshOverlaysTimeout);
+            refreshOverlaysTimeout = setTimeout(() => {
+                refreshOverlays = false;
+            }, 1000);
         }
         firstDraw = false;
         guiOpen = false;

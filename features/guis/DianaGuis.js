@@ -308,13 +308,13 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
     mythosMobHpText.setText(message);
 }
 
-// register("step", () => {
-//     if (playerHasSpade()) {
-//         DianaMobTracker.setRenderGuiBool(true);
-//         DianaLootTracker.setRenderGuiBool(true);
-//     }
-//     else if (!playerHasSpade()) {
-//         DianaMobTracker.setRenderGuiBool(false);
-//         DianaLootTracker.setRenderGuiBool(false);
-//     }
-// }).setFps(1);
+registerWhen(register("step", () => {
+    if (playerHasSpade()) {
+        dianaMobTrackerText.setTextScale((1).pixels());
+        dianaLootTrackerText.setTextScale((1).pixels());
+    }
+    else if (!playerHasSpade()) {
+        dianaMobTrackerText.setTextScale((0).pixels());
+        dianaLootTrackerText.setTextScale((0).pixels());
+    }
+}).setFps(1), () => settings.dianaMobTracker || settings.dianaLootTracker);
