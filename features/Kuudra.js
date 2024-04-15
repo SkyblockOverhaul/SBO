@@ -4,23 +4,13 @@ import { toTitleCase, drawRect } from "./../utils/functions";
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
-import { loadGuiSettings } from "./../utils/functions";
 import { newOverlay } from "./../utils/overlays";
 import { UIWrappedText } from "../../Elementa";
 
-let kuudraGuiSettings = loadGuiSettings();
-let loadedKuudraOverlay = false;
 let kuudraOverlayObj = newOverlay("kuudraOverlay", settings.attributeValueOverlay, "kuudraExample", "post", "KuudraValueLoc");
 let kuudraOverlay = kuudraOverlayObj.overlay
 
-function loadOverlay(){
-    if(kuudraGuiSettings != undefined && !loadedKuudraOverlay) {
-        kuudraOverlay.setX((kuudraGuiSettings["KuudraValueLoc"]["x"]).pixels());
-        kuudraOverlay.setY((kuudraGuiSettings["KuudraValueLoc"]["y"]).pixels());
-        loadedKuudraOverlay = true;
-    }
-}
-loadOverlay();
+
 let lastUpdate = 0;
 let updateing = false;
 let kuudraItems = undefined;

@@ -1,28 +1,20 @@
 import settings from "../../settings";
 import { data, registerWhen } from "../../utils/variables";
 import { isInSkyblock } from "../../utils/functions";
-import { loadGuiSettings } from "../../utils/functions";
 import { UIWrappedText } from "../../../Elementa";
 import { YELLOW, BOLD, WHITE, AQUA,} from "../../utils/constants";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { getWorld } from "../../utils/world";
 
-let guiSettings = loadGuiSettings();
-let loadedEffects = false;
 let effectsOverlayObj = newOverlay("effectsOverlay", settings.effectsGui, "effectsGuiExample", "render", "EffectsLoc")
 let effectsOverlay = effectsOverlayObj.overlay;
 
-function loadEffectsOverlay() {
-    if(guiSettings != undefined && !loadedEffects) {
-        effectsOverlay.setX((guiSettings["EffectsLoc"]["x"]).pixels());
-        effectsOverlay.setY((guiSettings["EffectsLoc"]["y"]).pixels());
-        loadedEffects = true;
-    }
-}
-loadEffectsOverlay();
-
 let effectsText = new UIWrappedText("Active Effects");
 function refreshEffectOverlay(effects) {
+    if (getWorld() != "Crimson Isle") {
+        effectsOverlayObj.renderGui = false;
+        return;
+    }
     if (getGuiOpen()) return;
     let pixelIncrementOne = 15;
     let height = 10;
@@ -113,7 +105,7 @@ registerWhen(register("step", () => {
     // remove all effects with duration <= 0
     effects = effects.filter(e => e.duration > 0);
     refreshEffectOverlay(data.effects);
-}).setFps(1), () => settings.effectsGui && getWorld() == "Crimson Isle");
+}).setFps(1), () => settings.effectsGui);
 
 let loggedOff = true;
 function checkLogOff() {

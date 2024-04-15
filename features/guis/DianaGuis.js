@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { state, loadGuiSettings, playerHasSpade } from "../../utils/functions";
+import { state, playerHasSpade } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 import { UIWrappedText } from "../../../Elementa";
@@ -18,33 +18,15 @@ registerWhen(register("entityDeath", (entity) => {
     }
 }), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
-
-let guiSettings = loadGuiSettings();
-
 let dianaMobOverlayObj = newOverlay("dianaMobTracker", settings.dianaMobTracker, "dianaMobTrackerExample", "render", "MobLoc");
 let dianaMobOverlay = dianaMobOverlayObj.overlay;
 
 let dianaLootOverlayObj = newOverlay("dianaLootTracker", settings.dianaLootTracker, "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
 
-function loadDianaMobTracker() {
-    if(guiSettings != undefined) {
-        dianaMobOverlay.setX((guiSettings["MobLoc"]["x"]).pixels());
-        dianaMobOverlay.setY((guiSettings["MobLoc"]["y"]).pixels());
-    }
-}
-function loadDianaLootTracker() {
-    if(guiSettings != undefined) {
-        dianaLootOverlay.setX((guiSettings["LootLoc"]["x"]).pixels());
-        dianaLootOverlay.setY((guiSettings["LootLoc"]["y"]).pixels());
-    }
-}
-loadDianaMobTracker();
-loadDianaLootTracker();
 
 let dianaMobTrackerText = new UIWrappedText("");
 let dianaLootTrackerText = new UIWrappedText("");
-
 
 /**
  * 
@@ -161,23 +143,19 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
     return lootMessage;
 }
 
-let loadedMythosHp = false;
 let mythosHpOverlayObj = newOverlay("mythosMobHp", settings.mythosMobHp, "mythosMobHpExample", "render", "MythosHpLoc");
 let mythosHpOverlay = mythosHpOverlayObj.overlay
 
-
 let mythosMobHpText = new UIWrappedText("");
 
-function loadMythosHpOverlay() {
-    if(guiSettings != undefined && !loadedMythosHp) {
-        mythosHpOverlay.setX((guiSettings["MythosHpLoc"]["x"]).pixels());
-        mythosHpOverlay.setY((guiSettings["MythosHpLoc"]["y"]).pixels());
-        loadedMythosHp = true;
-    }
-}
-loadMythosHpOverlay();
-
 export function mythosMobHpOverlay(mobNamesWithHp) {
+    // if (!renderGui) {
+    //     mythosHpOverlayObj.renderGui = false;
+    //     return;
+    // }
+    // else {
+    //     mythosHpOverlayObj.renderGui = true;
+    // }
     if(getGuiOpen()) return
     if(!mythosHpOverlay.children.includes(mythosMobHpText)) {
         mythosHpOverlay.clearChildren();

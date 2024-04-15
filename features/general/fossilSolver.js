@@ -1,4 +1,4 @@
-import { drawRect, loadGuiSettings } from "./../../utils/functions";
+import { drawRect } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
 import { newOverlay } from "../../utils/overlays";
@@ -8,22 +8,10 @@ import { getWorld } from "../../utils/world";
 
 let fossilOverlayObj = newOverlay("fossilSolver", settings.fossilSolver, "fossilExample", "post", "fossilLoc");
 let fossilOverlay = fossilOverlayObj.overlay
-
-let fossilGuiSettings = loadGuiSettings();
-let loadedFossilOverlay = false;
 let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
 
 fossilPossibleNames.setY((10).pixels());
 
-
-function loadOverlay(){
-    if(fossilGuiSettings != undefined && !loadedFossilOverlay) {
-        fossilOverlay.setX((fossilGuiSettings["fossilLoc"]["x"]).pixels());
-        fossilOverlay.setY((fossilGuiSettings["fossilLoc"]["y"]).pixels());
-        loadedFossilOverlay = true;
-    }
-}
-loadOverlay();
 let fossilProcent = 0;
 function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
     const validLocations = [];

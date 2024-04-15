@@ -25,9 +25,18 @@ import { loadGuiSettings, saveGuiSettings } from "../utils/functions";
 import { overlayExamples } from "../utils/guiExamples";
 
 const dragOffset = {x: 0, y: 0};
-//alle imports als export functions (setter) definieren
+
 const Color = Java.type("java.awt.Color");
 let guiSettings = loadGuiSettings();
+
+function loadOverlay(overlay, locName) {
+    if (guiSettings != undefined) {
+        overlay.setX((guiSettings[locName]["x"]).pixels());
+        overlay.setY((guiSettings[locName]["y"]).pixels());
+    }
+}
+
+
 class elementaOverlay {
     constructor(name, setting, example, type, locName) {
         this.name = name;
@@ -67,6 +76,8 @@ class elementaOverlay {
             guiSettings[this.locName]["y"] = newY;
             saveGuiSettings(guiSettings);
         });
+
+        loadOverlay(this.overlay, this.locName);
     }
 }
 
@@ -98,7 +109,9 @@ this.gui.registerMouseReleased(() => {
     this.postWindow.mouseRelease();
 });
 
-register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases("sbomoveguis");
+register("command", () => { 
+    GuiHandler.openGui(gui)
+}).setName("sboguis").setAliases("sbomoveguis");
 
 register('renderOverlay', () => {
     overLays.forEach(overlay => {
@@ -119,7 +132,7 @@ register('worldUnload', () => {
 
 function checkForSetting(overlay, setting, type, setting2, diana, renderBool){
     if(!overlay) return;
-    if (renderBool) {
+    if (renderBool || type == "post") {
         if(setting || (setting2 > 0 && diana)){
             if(type === "render" && !renderWindow.children.includes(overlay)) {
                 renderWindow.addChild(overlay);

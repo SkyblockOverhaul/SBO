@@ -30,7 +30,7 @@ function checkIfInMineshaft() {
         }, 100);
     }
     else {
-        setTimeout(checkIfInMineshaft, 1000);
+        setTimeout(checkIfInMineshaft, 500);
     }
 }
 

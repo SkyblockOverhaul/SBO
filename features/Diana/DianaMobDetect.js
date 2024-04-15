@@ -36,6 +36,13 @@ registerWhen(register("step", () => {
         Mobs.forEach((nameTag) => {
             names.push(nameTag.getName());
         });
+        // let render = false;
+        // if (names.length > 0) {
+        //     render = true;
+        // }
+        // else {
+        //     render = false;
+        // }
         mythosMobHpOverlay(names);
     }
 }).setFps(6), () => settings.mythosMobHp && getWorld() === "Hub");
