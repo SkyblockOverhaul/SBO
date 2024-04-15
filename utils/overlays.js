@@ -29,6 +29,23 @@ import { effectsOverlaySelected, effectsOverlay } from "../features/slayer/Blaze
 
 //alle imports als export functions (setter) definieren
 
+// export function setOverlay(overlay, name){
+//     switch(name){
+//         case "kuudra":
+//             kuudraOverlay = overlay;
+//             break;
+//         case "fossil":
+//             fossilOverlay = overlay;
+//             break;
+//         case "bobber":
+//             bobberOverlay = overlay;
+//             break;
+//         case "effects":
+//             effectsOverlay = overlay;
+//             break;
+//     }
+// }
+
 // siehe https://github.com/EssentialGG/Elementa für mehr 
 
 const gui = new Gui();
