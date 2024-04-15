@@ -228,7 +228,6 @@ ${GOLD}${BOLD}Griffin Feather: ${AQUA}${BOLD}${lootTracker["items"]["Griffin Fea
     lootMessage += `${BLUE}${BOLD}Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ANCIENT_CLAW"]}
 ${BLUE}${BOLD}Enchanted Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
 ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows"]}
-${GRAY}${BOLD}ROTTEN_FLESH: ${AQUA}${BOLD}${lootTracker["items"]["ROTTEN_FLESH"]}
 `
     return lootMessage;
 }
