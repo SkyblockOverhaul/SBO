@@ -1,11 +1,12 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../utils/functions";
+import { state, loadGuiSettings, saveGuiSettings } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 import { UIBlock, UIWrappedText, ChildBasedRangeConstraint } from "../../../Elementa";
 import { setOverlay, getGuiOpen } from "../../utils/overlays";
+import { checkDiana } from "../../utils/checkDiana";
 
 registerWhen(register("entityDeath", (entity) => {
     let dist = entity.distanceTo(Player.getPlayer());
@@ -309,11 +310,11 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
 }
 
 registerWhen(register("step", () => {
-    if (playerHasSpade()) {
+    if (checkDiana()) {
         dianaMobTrackerText.setTextScale((1).pixels());
         dianaLootTrackerText.setTextScale((1).pixels());
     }
-    else if (!playerHasSpade()) {
+    else if (!checkDiana()) {
         dianaMobTrackerText.setTextScale((0).pixels());
         dianaLootTrackerText.setTextScale((0).pixels());
     }

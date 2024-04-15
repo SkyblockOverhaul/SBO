@@ -22,8 +22,61 @@ import {
 } from "../../Elementa";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE } from "../utils/constants";
 import settings from "../settings";
+import { loadGuiSettings, saveGuiSettings } from "../utils/functions";
 
+const dragOffset = {x: 0, y: 0};
 //alle imports als export functions (setter) definieren
+const Color = Java.type("java.awt.Color");
+let guiSettings = loadGuiSettings();
+class elementaOverlay {
+    constructor(name, setting, example, type, locName) {
+        this.name = name;
+        this.setting = setting;
+        this.example = example;
+        this.type = type;
+        this.locName = locName;
+        this.renderGui = true;
+        this.selected = false;
+        this.overlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+        this.overlay.setWidth(new ChildBasedRangeConstraint());
+        this.overlay.setHeight(new ChildBasedRangeConstraint());
+
+        this.overlay.onMouseClick((comp, event) => {
+            this.selected = true;
+            dragOffset.x = event.absoluteX;
+            dragOffset.y = event.absoluteY;
+        });
+
+        this.overlay.onMouseRelease(() => {
+            this.selected = false;
+        }); 
+
+        this.overlay.onMouseDrag((comp, mx, my) => {
+            if(!this.selected) return;
+            const absoluteX = mx + comp.getLeft()
+            const absoluteY = my + comp.getTop()
+            const dx = absoluteX - dragOffset.x;
+            const dy = absoluteY - dragOffset.y;
+            dragOffset.x = absoluteX;
+            dragOffset.y = absoluteY;
+            const newX = this.overlay.getLeft() + dx;
+            const newY = this.overlay.getTop() + dy;
+            this.overlay.setX(newX.pixels());
+            this.overlay.setY(newY.pixels());
+            guiSettings[this.locName]["x"] = newX;
+            guiSettings[this.locName]["y"] = newY;
+            saveGuiSettings(guiSettings);
+        });
+    }
+}
+
+let overLays = [];
+export function newOverlay(name, setting, example, type, locName) {
+    let overlay = new elementaOverlay(name, setting, example, type, locName);
+    overLays.push(overlay);
+    return overlay;
+}
+
 
 export function setOverlay(overlay, selected, name){
     switch(name){
@@ -140,8 +193,16 @@ ${GRAY}${BOLD}Total Burrows: ${WHITE}
 
 register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases("sbomoveguis");
 
+register("step", () => {
+    
+}).setFps(20);
+
 register('renderOverlay', () => {
-    checkForSetting(bobberOverlay, settings.bobberCounter, "render", 0, false);
+    overLays.forEach(overlay => {
+        checkForSetting(overlay.overlay, overlay.setting, overlay.type, 0, false);
+        bobberOverlay = overlay.overlay;
+    });
+    // checkForSetting(bobberOverlay, settings.bobberCounter, "render", 0, false);
     checkForSetting(effectsOverlay, settings.effectsGui, "render", 0, false);
     checkForSetting(dianaMobTracker, settings.dianaMobTracker, "render", settings.dianaMobTrackerView, true);
     checkForSetting(dianaLootTracker, settings.dianaLootTracker, "render", settings.dianaLootTrackerView, true);
