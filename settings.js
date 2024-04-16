@@ -430,13 +430,13 @@ class Settings {
     // Mining
     @SwitchProperty({
         name: "Fossil Solver",
-        description: "Enables the fossil solver /sboguis to move the overlay",
+        description: "Enables the fossil solver",
         category: "Mining",
     })
     fossilSolver = false;
     @SwitchProperty({
         name: "Fossil Overlay",
-        description: "Tells you the fossil you excavate",
+        description: "Tells you the fossil you excavate /sboguis to move the overlay",
         category: "Mining",
     })
     fossilOverlay = false;
