@@ -454,7 +454,7 @@ class Settings {
     exitWaypoint = false;
     @SwitchProperty({
         name: "Mineshaft Announcer",
-        description: "Announces the mineshaft in on screen",
+        description: "Announces the mineshaft on your screen",
         category: "Mining",
     })
     mineshaftAnnouncer = false;
