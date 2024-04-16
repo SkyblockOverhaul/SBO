@@ -65,6 +65,7 @@ class Settings {
         this.addDependency('Kuudra Pet Level','Attribute Value Overlay');
         this.addDependency('Attribute Shards For Chest Profit','Attribute Value Overlay');
         this.addDependency('Distance For Remove','Remove Guess');
+        this.addDependency('Highlight All Possible Fossils','Fossil Solver');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -439,6 +440,12 @@ class Settings {
         category: "Mining",
     })
     fossilOverlay = false;
+    @SwitchProperty({
+        name: "Highlight All Possible Fossils",
+        description: "Highlights all potential fossil locations with equal probability (if this is off only one location will be highlighted)",
+        category: "Mining",
+    })
+    highlightAllSlots = false;
     @SwitchProperty({
         name: "Create Exit Waypoint",
         description: "Creates a waypoint for the exit of the mineshaft",
