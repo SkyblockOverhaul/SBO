@@ -11,7 +11,9 @@ import PogObject from "../../PogData";
 // Initializing a persistent data object using the PogObject class
 export let data = new PogObject("SBO", {
     "effects": [],
-    "version": "0.1.3"
+    "resetVersion": "0.1.3",
+    "changelogVersion": "0.0.0",
+    "downloadMsg": false
 }, "SboData.json");
 
 // --- TRIGGER CONTROL ---

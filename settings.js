@@ -10,6 +10,7 @@ import {
     @SliderProperty,
     @Vigilant,
 } from 'Vigilance';
+import { data } from './utils/variables';
 
 // The only parameter that is required is the first, which should be the Module name.
 // The other 2 parameters are optional.
@@ -448,7 +449,7 @@ class Settings {
     highlightAllSlots = false;
     @SwitchProperty({
         name: "Create Exit Waypoint",
-        description: "Creates a waypoint for the exit of the mineshaft",
+        description: "Creates a waypoint at the exit of the mineshaft",
         category: "Mining",
     })
     exitWaypoint = false;
@@ -567,21 +568,22 @@ class Settings {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/VolcAddons"));
     }
 }
-let SboData = {
-    "effects": [],
-    "version": "0.1.3"
-};
-if (FileLib.exists("./config/ChatTriggers/modules/SBO/SboData.json")) {
-    SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
-}
-if(!SboData.hasOwnProperty("version")) {
-    SboData["version"] = "0.0.0";
-}
-let newVersion = "0.1.3"; // change this to the new version for config.toml reset
-if (SboData.version != newVersion) {
+// let SboData = {
+//     "effects": [],
+//     "version": "0.1.3"
+// };
+// if (FileLib.exists("./config/ChatTriggers/modules/SBO/SboData.json")) {
+//     SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
+// }
+// if(!SboData.hasOwnProperty("version")) {
+//     SboData["version"] = "0.0.0";
+// }
+let newResetVersion = "0.1.3"; // change this to the new version for config.toml reset
+if (data.resetVersion != newResetVersion) {
     FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
-    SboData.version = newVersion;
-    FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
+    data.resetVersion = newResetVersion;
+    data.save();
+    // FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
 }
 export default new Settings();
 

@@ -16,7 +16,7 @@ import "./features/slayer/BlazeSlayer";
 // in sbo addons packen
 import "./features/dungeon/recognizeRareRoom";
 import "./features/general/QOL";
-import { createWorldWaypoint } from "./features/general/Waypoints";
+import { data } from "./utils/variables";
 import "./features/guis/SlayerGuis";
 
 
@@ -27,6 +27,48 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
+// dowload msg beispiel
+const newVersion = "0.1.6"
+const downloadMsg = register("step", () => {
+    if (!World.isLoaded()) return
+    if (data.downloadMsg) {
+        downloadMsg.unregister()
+        return
+    }
+    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    // ChatLib.chat(`&aThanks for importing &6 SBO`)
+    // ChatLib.chat(`&7> &ayou can open the settings with /sbo`)
+    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
+
+    data.downloadMsg = true
+    // data.changelogVersion = newVersion
+    data.save()
+    
+    downloadMsg.unregister()
+}).setFps(1)
+
+// changelog beispiel
+const changeLog = register("step", () => {
+    if (!World.isLoaded()) return
+    if (data.changelogVersion === newVersion) { 
+        changeLog.unregister()
+        return
+    }
+    ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
+    ChatLib.chat(`&aChangelog:`)
+    ChatLib.chat(`&7> &aAdded exit waypoint for mineshafts`)
+    ChatLib.chat(`&7> &aAdded alias for !transfer (!ptme)`)
+    ChatLib.chat(`&7> &aAdded command to move all guis (/sboguis)`)
+    ChatLib.chat(`&7> &aSmall fossil solver update`)
+    ChatLib.chat(`&7> &aFixed bug with party commands not working`)
+    ChatLib.chat(`&7> &aSome other small bug fixes`)
+    ChatLib.chat(ChatLib.getChatBreak("&b-"))
+
+    data.changelogVersion = newVersion
+    data.save()
+    changeLog.unregister()
+}).setFps(1)
 
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!
