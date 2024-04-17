@@ -28,7 +28,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.1.6"
+const newVersion = "0.1.6" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsg = register("step", () => {
     if (!World.isLoaded()) return
     if (data.downloadMsg) {
