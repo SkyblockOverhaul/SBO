@@ -10,7 +10,7 @@ import {
     @SliderProperty,
     @Vigilant,
 } from 'Vigilance';
-import { data } from './utils/variables';
+import { data, resetVersion } from './utils/variables';
 
 // The only parameter that is required is the first, which should be the Module name.
 // The other 2 parameters are optional.
@@ -584,7 +584,7 @@ class Settings {
 // if(!SboData.hasOwnProperty("version")) {
 //     SboData["version"] = "0.0.0";
 // }
-let newResetVersion = "0.1.3"; // change this to the new version for config.toml reset
+let newResetVersion = resetVersion; // change this to the new version for config.toml reset
 if (data.resetVersion != newResetVersion) {
     FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
     data.resetVersion = newResetVersion;

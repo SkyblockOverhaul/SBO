@@ -9,9 +9,12 @@ import PogObject from "../../PogData";
 // --- PERSISTENT DATA ---
 
 // Initializing a persistent data object using the PogObject class
+
+
+export const resetVersion = "0.1.3";
 export let data = new PogObject("SBO", {
     "effects": [],
-    "resetVersion": "0.1.3",
+    "resetVersion": resetVersion,
     "changelogVersion": "0.0.0",
     "downloadMsg": false
 }, "SboData.json");
