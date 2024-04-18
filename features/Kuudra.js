@@ -7,7 +7,7 @@ import { registerWhen } from "./../utils/variables";
 import { newOverlay } from "./../utils/overlays";
 import { UIWrappedText } from "../../Elementa";
 
-let kuudraOverlayObj = newOverlay("kuudraOverlay", settings.attributeValueOverlay, "kuudraExample", "post", "KuudraValueLoc");
+let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuudraExample", "post", "KuudraValueLoc");
 let kuudraOverlay = kuudraOverlayObj.overlay
 
 

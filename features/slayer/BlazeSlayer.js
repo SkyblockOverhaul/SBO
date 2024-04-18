@@ -6,7 +6,7 @@ import { YELLOW, BOLD, WHITE, AQUA,} from "../../utils/constants";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { getWorld } from "../../utils/world";
 
-let effectsOverlayObj = newOverlay("effectsOverlay", settings.effectsGui, "effectsGuiExample", "render", "EffectsLoc")
+let effectsOverlayObj = newOverlay("effectsOverlay", "effectsGui", "effectsGuiExample", "render", "EffectsLoc")
 let effectsOverlay = effectsOverlayObj.overlay;
 
 let effectsText = new UIWrappedText("Active Effects");

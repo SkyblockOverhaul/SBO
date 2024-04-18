@@ -4,7 +4,7 @@ import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { UIWrappedText } from "../../../Elementa";
 import { YELLOW, BOLD, AQUA } from "../../utils/constants";
 
-let legionOverlayObj = newOverlay("legionOverlay", settings.legionCounter, "legioncounterExample", "render", "LegionLoc");
+let legionOverlayObj = newOverlay("legionOverlay", "legionCounter", "legioncounterExample", "render", "LegionLoc");
 let legionOverlay = legionOverlayObj.overlay;
 
 let legionText = new UIWrappedText(`${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`);
