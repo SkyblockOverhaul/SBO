@@ -4,7 +4,7 @@ import { registerWhen } from "../../utils/variables";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { UIWrappedText } from "../../../Elementa";
 
-let bobberOverlayObj = newOverlay("bobberOverlay", settings.bobberCounter, "bobbercounterExample", "render", "BobberLoc");
+let bobberOverlayObj = newOverlay("bobberOverlay", "bobberCounter", "bobbercounterExample", "render", "BobberLoc");
 let bobberOverlay = bobberOverlayObj.overlay;
 
 let bobberCount = 0;

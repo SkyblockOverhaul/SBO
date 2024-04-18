@@ -117,14 +117,14 @@ register('renderOverlay', () => {
     overLays.forEach(overlay => {
         switch(overlay.name){
             case "dianaMobTracker":
-                checkForSetting(overlay.overlay, overlay.setting, overlay.type, settings.dianaMobTrackerView, true, overlay.renderGui);
+                checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, settings.dianaMobTrackerView, true, overlay.renderGui);
                 break;
             case "dianaLootTracker":
                 print(settings.dianaLootTrackerView + " " + overlay.setting)
-                checkForSetting(overlay.overlay, overlay.setting, overlay.type, settings.dianaLootTrackerView, true, overlay.renderGui);
+                checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, settings.dianaLootTrackerView, true, overlay.renderGui);
                 break;
             default:
-                checkForSetting(overlay.overlay, overlay.setting, overlay.type, 0, false, overlay.renderGui);
+                checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, 0, false, overlay.renderGui);
                 break;
         }
     });
