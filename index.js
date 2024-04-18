@@ -30,10 +30,10 @@ register("worldLoad", () => {
 
 // dowload msg beispiel
 const newVersion = "0.1.6" // hier neue version eintragen wenn changelog angezeigt werden soll
-const downloadMsg = register("step", () => {
+const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (data.downloadMsg) {
-        downloadMsg.unregister()
+        downloadMsgReg.unregister()
         return
     }
     // ChatLib.chat(ChatLib.getChatBreak("&b-"))
@@ -45,14 +45,14 @@ const downloadMsg = register("step", () => {
     // data.changelogVersion = newVersion
     data.save()
     
-    downloadMsg.unregister()
+    downloadMsgReg.unregister()
 }).setFps(1)
 
 // changelog beispiel
-const changeLog = register("step", () => {
+const changeLogReg = register("step", () => {
     if (!World.isLoaded()) return
     if (data.changelogVersion === newVersion) { 
-        changeLog.unregister()
+        changeLogReg.unregister()
         return
     }
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
@@ -68,46 +68,46 @@ const changeLog = register("step", () => {
 
     data.changelogVersion = newVersion
     data.save()
-    changeLog.unregister()
+    changeLogReg.unregister()
 }).setFps(1)
 
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!
-register("chat", (event) => {
-    Client.showTitle("&l&9!!!!!WORM!!!!!!", "&eKILL!!!", 0, 90, 20);
-}).setCriteria("&r&7&oYou hear the sound of something approaching...&r");
+// register("chat", (event) => {
+//     Client.showTitle("&l&9!!!!!WORM!!!!!!", "&eKILL!!!", 0, 90, 20);
+// }).setCriteria("&r&7&oYou hear the sound of something approaching...&r");
 
-register("chat", (message, event) => {
-    message = message.removeFormatting();
-    if (!message.includes("Powder") && !message.includes("Refelctor") && !message.includes("Blue Goblin Egg") && !message.includes("Heart")) {
-        cancel(event);
-    }
-    if (message.includes("Refelctor")) {
-        Client.showTitle("&9Robotron Reflector", "&eCarrot", 0, 40, 20);
-    }
-    if (message.includes("Blue Goblin Egg")) {
-        Client.showTitle("&3Blue Goblin Egg", "&eCarrot", 0, 40, 20);
-    }
-}).setCriteria("&r&aYou received ${message}");
+// register("chat", (message, event) => {
+//     message = message.removeFormatting();
+//     if (!message.includes("Powder") && !message.includes("Refelctor") && !message.includes("Blue Goblin Egg") && !message.includes("Heart")) {
+//         cancel(event);
+//     }
+//     if (message.includes("Refelctor")) {
+//         Client.showTitle("&9Robotron Reflector", "&eCarrot", 0, 40, 20);
+//     }
+//     if (message.includes("Blue Goblin Egg")) {
+//         Client.showTitle("&3Blue Goblin Egg", "&eCarrot", 0, 40, 20);
+//     }
+// }).setCriteria("&r&aYou received ${message}");
 
-register("chat", (player, message, event) =>{
-    // cancel original message
-    // send new guildbot message
-    if (!player.includes(" ")) {
-        cancel(event);
-        player = player.removeFormatting();
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
-        // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
-    }
-    else if (player.includes("replying to")) {
-        cancel(event);
-        let split = player.split(" ");
-        let player1 = split[0];
-        let player2 = split[3];
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
-        // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
-    }
-}).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}: ${message}").setContains()
+// register("chat", (player, message, event) =>{
+//     // cancel original message
+//     // send new guildbot message
+//     if (!player.includes(" ")) {
+//         cancel(event);
+//         player = player.removeFormatting();
+//         ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
+//         // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
+//     }
+//     else if (player.includes("replying to")) {
+//         cancel(event);
+//         let split = player.split(" ");
+//         let player1 = split[0];
+//         let player2 = split[3];
+//         ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
+//         // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
+//     }
+// }).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}: ${message}").setContains()
 // geht
 // &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rSuccesfully invited kenchika to the party!&r
 // &r&2Guild > &b[MVP&2+&b] MasterNR &3[320]&f: &rnice&r
