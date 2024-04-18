@@ -584,7 +584,7 @@ class Settings {
 // if(!SboData.hasOwnProperty("version")) {
 //     SboData["version"] = "0.0.0";
 // }
-let newResetVersion = resetVersion; // change this to the new version for config.toml reset
+let newResetVersion = resetVersion; 
 if (data.resetVersion != newResetVersion) {
     FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
     data.resetVersion = newResetVersion;

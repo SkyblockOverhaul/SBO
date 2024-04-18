@@ -11,7 +11,7 @@ import PogObject from "../../PogData";
 // Initializing a persistent data object using the PogObject class
 
 
-export const resetVersion = "0.1.3";
+export const resetVersion = "0.1.3"; // change this to the new version for config.toml reset
 export let data = new PogObject("SBO", {
     "effects": [],
     "resetVersion": resetVersion,
