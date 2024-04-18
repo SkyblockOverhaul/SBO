@@ -261,6 +261,11 @@ export function initializeGuiSettings() {
             "y": 185,
             "s": 1
         },
+        LegionLoc: {
+            "x": 10,
+            "y": 310,
+            "s": 1
+        }
     };
     return tempDict;
 }
@@ -304,6 +309,9 @@ function checkSettings(loadedSettings) {
     }
     if (!loadedSettings.hasOwnProperty("fossilLoc")) {
         loadedSettings["fossilLoc"] = defaultSettings["fossilLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("LegionLoc")) {
+        loadedSettings["LegionLoc"] = defaultSettings["LegionLoc"];
     }
     return loadedSettings;
 }

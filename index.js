@@ -12,6 +12,7 @@ import "./features/Kuudra";
 import "./features/general/fossilSolver";
 import "./features/guis/BobberCounter";
 import "./features/slayer/BlazeSlayer";
+import "./features/guis/LegionCounter";
 
 // in sbo addons packen
 import "./features/dungeon/recognizeRareRoom";

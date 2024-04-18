@@ -71,4 +71,5 @@ ${GOLD}${BOLD}Griffin Feather: ${WHITE}
 ${GOLD}${BOLD}Coins: ${WHITE}
 ${GRAY}${BOLD}Total Burrows: ${WHITE}
 `,
+legioncounterExample: `${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`,
 };

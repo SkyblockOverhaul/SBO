@@ -460,6 +460,12 @@ class Settings {
         category: "General",
     })
     bobberCounter = false;
+    @SwitchProperty({
+        name: "Legion Counter",
+        description: "Tracks the players near you for legion buff /sboguis to move the counter",
+        category: "General",
+    })
+    legionCounter = false;
 
     // Color Settings
     @ColorProperty({

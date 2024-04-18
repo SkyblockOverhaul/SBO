@@ -115,7 +115,18 @@ register("command", () => {
 
 register('renderOverlay', () => {
     overLays.forEach(overlay => {
-        checkForSetting(overlay.overlay, overlay.setting, overlay.type, 0, false, overlay.renderGui);
+        switch(overlay.name){
+            case "dianaMobTracker":
+                checkForSetting(overlay.overlay, overlay.setting, overlay.type, settings.dianaMobTrackerView, true, overlay.renderGui);
+                break;
+            case "dianaLootTracker":
+                print(settings.dianaLootTrackerView + " " + overlay.setting)
+                checkForSetting(overlay.overlay, overlay.setting, overlay.type, settings.dianaLootTrackerView, true, overlay.renderGui);
+                break;
+            default:
+                checkForSetting(overlay.overlay, overlay.setting, overlay.type, 0, false, overlay.renderGui);
+                break;
+        }
     });
     guiMover();
     renderWindow.draw()
