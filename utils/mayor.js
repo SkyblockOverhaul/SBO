@@ -69,8 +69,8 @@ function getYearMayorRequestV2() {
 }
 
 function convertStringToDate(str) {
-    var parts = str.split(".");
-    var date = new Date(parts[2], parts[1] - 1, parts[0]);
+    let parts = str.split(".");
+    let date = new Date(parts[2], parts[1] - 1, parts[0]);
     return date;
 }
 

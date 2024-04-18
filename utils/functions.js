@@ -3,8 +3,8 @@ import { registerWhen } from "./variables";
 
 // geklaut von coleweight for drawline
 if(!GlStateManager) {
-    var GL11=Java.type("org.lwjgl.opengl.GL11")
-    var GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
+    let GL11=Java.type("org.lwjgl.opengl.GL11")
+    let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
 }
 export function trace (x, y, z, red, green, blue, alpha, lineWidth = 1){
     if(Player.isSneaking())
@@ -119,17 +119,18 @@ export function toTitleCase(str) {
 
 // read player inventory //
 export function readPlayerInventory(type="") {
+    let slots = 0;
     if (!worldLoaded) return {};
     if (type === "hotbar") {
-        var slots = 8;
+        slots = 8;
     }
     else {
-        var slots = 39;
+        slots = 39;
     }
     playerItems = {}
-    var playerInv = Player.getInventory();
-    var playerInvItems = playerInv.getItems();
-    for (var i in playerInv.getItems()) {
+    let playerInv = Player.getInventory();
+    let playerInvItems = playerInv.getItems();
+    for (let i in playerInv.getItems()) {
         if (i <= slots) {
             if (playerInvItems[i] !== null) {
                 if (playerItems[getSBID(playerInvItems[i])]) {
@@ -147,8 +148,8 @@ export function readPlayerInventory(type="") {
 // check if item is in hotbar //
 export function checkItemInHotbar(item) {
     if (!worldLoaded) return false;
-    var hotbarItems = readPlayerInventory("hotbar");
-    for (var i in hotbarItems) {
+    let hotbarItems = readPlayerInventory("hotbar");
+    for (let i in hotbarItems) {
         if (item == i) {
             return true;
         }
@@ -260,6 +261,11 @@ export function initializeGuiSettings() {
             "y": 185,
             "s": 1
         },
+        LegionLoc: {
+            "x": 10,
+            "y": 310,
+            "s": 1
+        }
     };
     return tempDict;
 }
@@ -303,6 +309,9 @@ function checkSettings(loadedSettings) {
     }
     if (!loadedSettings.hasOwnProperty("fossilLoc")) {
         loadedSettings["fossilLoc"] = defaultSettings["fossilLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("LegionLoc")) {
+        loadedSettings["LegionLoc"] = defaultSettings["LegionLoc"];
     }
     return loadedSettings;
 }
@@ -358,7 +367,8 @@ export function getplayername(player) {
             num = -2                // without that
         }                           // #BanNons
     }
-    name = player.substring(num+2)
+    name = player.substring(num+2).removeFormatting()
+    name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '')
 return name
 }
 

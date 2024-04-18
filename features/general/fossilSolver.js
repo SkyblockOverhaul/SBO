@@ -1,64 +1,18 @@
-import { drawRect, loadGuiSettings, saveGuiSettings } from "./../../utils/functions";
+import { drawRect } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
-import {
-    UIBlock,
-    UIText,
-    UIWrappedText,
-    ChildBasedRangeConstraint
-} from "../../../Elementa";
+import { newOverlay } from "../../utils/overlays";
+import { UIWrappedText } from "../../../Elementa";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
-const Color = Java.type("java.awt.Color");
 
-// todo
-// overlay
-
-export let fossilOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-// 8 y: 18
-export let fossilGUISelected = false;
-let guiSettings = loadGuiSettings();
-let loadedFossilOverlay = false;
+let fossilOverlayObj = newOverlay("fossilSolver", "fossilOverlay", "fossilExample", "post", "fossilLoc");
+let fossilOverlay = fossilOverlayObj.overlay
 let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
-const dragOffset = { x: 0, y: 0 };
 
 fossilPossibleNames.setY((10).pixels());
-fossilOverlay.setWidth(new ChildBasedRangeConstraint());
-fossilOverlay.setHeight(new ChildBasedRangeConstraint());
-fossilOverlay.onMouseClick((comp, event) => {
-    fossilGUISelected = true;
-    dragOffset.x = event.absoluteX;
-    dragOffset.y = event.absoluteY;
-});
-fossilOverlay.onMouseRelease(() => {
-    fossilGUISelected = false;
-});
-fossilOverlay.onMouseDrag((comp, mx, my) => {
-    if (!fossilGUISelected) return;
-    const absoluteX = mx + comp.getLeft();
-    const absoluteY = my + comp.getTop();
-    const dx = absoluteX - dragOffset.x;
-    const dy = absoluteY - dragOffset.y;
-    dragOffset.x = absoluteX;
-    dragOffset.y = absoluteY;
-    const newX = fossilOverlay.getLeft() + dx;
-    const newY = fossilOverlay.getTop() + dy;
-    fossilOverlay.setX(newX.pixels());
-    fossilOverlay.setY(newY.pixels());
-    guiSettings["fossilLoc"]["x"] = newX;
-    guiSettings["fossilLoc"]["y"] = newY;
-    saveGuiSettings(guiSettings);
-});
 
-function loadOverlay(){
-    if(guiSettings != undefined && !loadedFossilOverlay) {
-        fossilOverlay.setX((guiSettings["fossilLoc"]["x"]).pixels());
-        fossilOverlay.setY((guiSettings["fossilLoc"]["y"]).pixels());
-        loadedFossilOverlay = true;
-    }
-}
 let fossilProcent = 0;
-
 function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
     const validLocations = [];
     for (const location of locations) {
@@ -293,8 +247,19 @@ function calcNewCoords() {
                 }
             }
         }
-        if (slotToHighlight != -1) {
-            slotsToHighlight.push(slotToHighlight);
+        // all slots with the most fossils
+        if (settings.highlightAllSlots) {
+            for (let key in counter) {
+                if (counter[key] == max) {
+                    slotsToHighlight.push(parseInt(key));
+                }
+            }
+        }
+        else {
+            // only highlight the first slot with the most fossils
+            if (slotToHighlight != -1) {
+                slotsToHighlight.push(slotToHighlight);
+            }
         }
     }
 
@@ -428,9 +393,6 @@ registerWhen(register("step", () => {
     }
 }).setFps(10), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
-registerWhen(register("step", () => {
-    loadOverlay();
-}).setFps(1), () => settings.fossilOverlay && settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 register("guiClosed", () => {
     fossilOverlay.clearChildren();

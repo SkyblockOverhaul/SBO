@@ -139,8 +139,8 @@ function solveEquasionThing(x, y) {
     return [a, b, c];
   }
 
+let count = 0;
 function onReceiveParticle(particle, type, event) {
-
     if (!isEnabled()) return;
     const type = particle.toString();
     if (!type.startsWith("SparkFX")) return;
@@ -148,7 +148,10 @@ function onReceiveParticle(particle, type, event) {
 
     let run = false;
 
-
+    // test if this makes it better
+    // count++;
+    // if (count < 1) return;
+    // count = 0;
     if (lastSoundPoint != null) {
         run = (Math.abs(currLoc.getX() - lastSoundPoint.x) < 2 && Math.abs(currLoc.getY() - lastSoundPoint.y) < 0.5 && Math.abs(currLoc.getZ() - lastSoundPoint.z) < 2);
     }

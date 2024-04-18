@@ -10,6 +10,7 @@ import {
     @SliderProperty,
     @Vigilant,
 } from 'Vigilance';
+import { data, resetVersion } from './utils/variables';
 
 // The only parameter that is required is the first, which should be the Module name.
 // The other 2 parameters are optional.
@@ -65,6 +66,7 @@ class Settings {
         this.addDependency('Kuudra Pet Level','Attribute Value Overlay');
         this.addDependency('Attribute Shards For Chest Profit','Attribute Value Overlay');
         this.addDependency('Distance For Remove','Remove Guess');
+        this.addDependency('Highlight All Possible Fossils','Fossil Solver');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -106,7 +108,7 @@ class Settings {
     dianaMobTracker = false;
     @SelectorProperty({
         name: "Mob View",
-        description: "Tracks your diana mob kills /sbomovemobcounter to move the counter",
+        description: "Tracks your diana mob kills /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -121,7 +123,7 @@ class Settings {
     dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
-        description: "Tracks your diana loot /sbomovelootcounter to move the counter",
+        description: "Tracks your diana loot /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -187,7 +189,7 @@ class Settings {
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
-        description: 'Displays HP of mythological mobs near you',
+        description: 'Displays HP of mythological mobs near you. /sboguis to move it',
         category: 'Diana',
         subcategory: "Other",
     })
@@ -276,7 +278,7 @@ class Settings {
     // Slayer
     @SwitchProperty({
         name: 'Effects For Blaze',
-        description: 'Displays effects for blaze slayer',
+        description: 'Displays effects for blaze slayer. /sboguis to move the overlay',
         category: 'Slayer',
         subcategory: 'Blaze',
     })
@@ -429,24 +431,49 @@ class Settings {
     // Mining
     @SwitchProperty({
         name: "Fossil Solver",
-        description: "Enables the fossil solver /sboguis to move the overlay",
+        description: "Enables the fossil solver",
         category: "Mining",
     })
     fossilSolver = false;
     @SwitchProperty({
         name: "Fossil Overlay",
-        description: "Tells you the fossil you excavate",
+        description: "Tells you the fossil you excavate /sboguis to move the overlay",
         category: "Mining",
     })
     fossilOverlay = false;
+    @SwitchProperty({
+        name: "Highlight All Possible Fossils",
+        description: "Highlights all potential fossil locations with equal probability (if this is off only one location will be highlighted)",
+        category: "Mining",
+    })
+    highlightAllSlots = false;
+    @SwitchProperty({
+        name: "Create Exit Waypoint",
+        description: "Creates a waypoint at the exit of the mineshaft",
+        category: "Mining",
+    })
+    exitWaypoint = false;
+    @SwitchProperty({
+        name: "Mineshaft Announcer",
+        description: "Announces the mineshaft on your screen",
+        category: "Mining",
+    })
+    mineshaftAnnouncer = false;
+
 
     // General other
     @SwitchProperty({
         name: "Bobber Counter",
-        description: "Tracks the number of bobbers near you /sbomovebobbercounter to move the counter",
+        description: "Tracks the number of bobbers near you /sboguis to move the counter",
         category: "General",
     })
     bobberCounter = false;
+    @SwitchProperty({
+        name: "Legion Counter",
+        description: "Tracks the players near you for legion buff /sboguis to move the counter",
+        category: "General",
+    })
+    legionCounter = false;
 
     // Color Settings
     @ColorProperty({
@@ -547,21 +574,22 @@ class Settings {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/VolcAddons"));
     }
 }
-let SboData = {
-    "effects": [],
-    "version": "0.1.3"
-};
-if (FileLib.exists("./config/ChatTriggers/modules/SBO/SboData.json")) {
-    SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
-}
-if(!SboData.hasOwnProperty("version")) {
-    SboData["version"] = "0.0.0";
-}
-let newVersion = "0.1.3"; // change this to the new version for config.toml reset
-if (SboData.version != newVersion) {
+// let SboData = {
+//     "effects": [],
+//     "version": "0.1.3"
+// };
+// if (FileLib.exists("./config/ChatTriggers/modules/SBO/SboData.json")) {
+//     SboData = JSON.parse(FileLib.read("./config/ChatTriggers/modules/SBO/SboData.json"));
+// }
+// if(!SboData.hasOwnProperty("version")) {
+//     SboData["version"] = "0.0.0";
+// }
+let newResetVersion = resetVersion; 
+if (data.resetVersion != newResetVersion) {
     FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
-    SboData.version = newVersion;
-    FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
+    data.resetVersion = newResetVersion;
+    data.save();
+    // FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
 }
 export default new Settings();
 

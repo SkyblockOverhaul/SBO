@@ -9,9 +9,14 @@ import PogObject from "../../PogData";
 // --- PERSISTENT DATA ---
 
 // Initializing a persistent data object using the PogObject class
+
+
+export const resetVersion = "0.1.3"; // change this to the new version for config.toml reset
 export let data = new PogObject("SBO", {
     "effects": [],
-    "version": "0.1.3"
+    "resetVersion": resetVersion,
+    "changelogVersion": "0.0.0",
+    "downloadMsg": false
 }, "SboData.json");
 
 // --- TRIGGER CONTROL ---
@@ -53,8 +58,10 @@ export function opened() {
 
 // Event handler for GUI settings close.
 register("guiClosed", (event) => {
-    if (event.toString().includes("vigilance"))
+    // || event.toString().includes("JSGui")
+    if (event.toString().includes("vigilance")) {
         setRegisters()
+    }
 });
 
 

@@ -1,14 +1,15 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { state, loadGuiSettings, saveGuiSettings, playerHasSpade } from "../../utils/functions";
-import { Overlay } from "../../utils/overlay";
+import { state, playerHasSpade } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
-import { dianaLootTrackerExample, dianaMobTrackerExample, mythosMobHpExample, effectsGuiExample } from "../../utils/guiExamples";
+import { UIWrappedText } from "../../../Elementa";
+import { getGuiOpen, newOverlay } from "../../utils/overlays";
+import { checkDiana } from "../../utils/checkDiana";
 
 registerWhen(register("entityDeath", (entity) => {
-    var dist = entity.distanceTo(Player.getPlayer());
+    let dist = entity.distanceTo(Player.getPlayer());
     if (dist < 10 ) {
         state.entityDeathOccurred = true;
         setTimeout(() => {
@@ -17,40 +18,27 @@ registerWhen(register("entityDeath", (entity) => {
     }
 }), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
+let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaMobTracker", "dianaMobTrackerExample", "render", "MobLoc");
+let dianaMobOverlay = dianaMobOverlayObj.overlay;
+
+let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaLootTracker", "dianaLootTrackerExample", "render", "LootLoc");
+let dianaLootOverlay = dianaLootOverlayObj.overlay;
 
 
-// ${GRAY}${BOLD}Enchanted Gold: 
-// ${GRAY}${BOLD}Enchanted Iron: 
-// ${GRAY}${BOLD}Enchanted Ancient Claw: 
-// ${GRAY}${BOLD}Ancient Claw: 
+let dianaMobTrackerText = new UIWrappedText("");
+let dianaLootTrackerText = new UIWrappedText("");
 
-guiSettings = loadGuiSettings();
-
-let DianaMobTracker = new Overlay("dianaMobTrackerView",["Hub"], [10, 10, 0],"sbomoveMobCounter",dianaMobTrackerExample,"dianaMobTracker");
-let DianaLootTracker = new Overlay("dianaLootTrackerView",["Hub"], [10, 10, 0],"sbomoveLootCounter",dianaLootTrackerExample,"dianaLootTracker");
-
-
-
-let mobSettingsLoad = false;
 /**
  * 
  * @param {string} setting 
  */
 export function mobOverlay(mobTracker, setting, percentDict) {
-    if (!mobSettingsLoad) {
-        if(guiSettings != undefined) {
-            DianaMobTracker.setX(guiSettings["MobLoc"]["x"]);
-            DianaMobTracker.setY(guiSettings["MobLoc"]["y"]);
-            DianaMobTracker.setScale(guiSettings["MobLoc"]["s"]);
-            mobSettingsLoad = true;
-        }
+    if(getGuiOpen()) return;
+    if (!dianaMobOverlay.children.includes(dianaMobTrackerText)) {
+        dianaMobOverlay.clearChildren();
+        dianaMobOverlay.addChild(dianaMobTrackerText);
     }
-    if (guiSettings["MobLoc"]["x"] != DianaMobTracker.X || guiSettings["MobLoc"]["y"] != DianaMobTracker.Y || guiSettings["MobLoc"]["s"] != DianaMobTracker.S) {
-        guiSettings["MobLoc"]["x"] = DianaMobTracker.X;
-        guiSettings["MobLoc"]["y"] = DianaMobTracker.Y;
-        guiSettings["MobLoc"]["s"] = DianaMobTracker.S;
-        saveGuiSettings(guiSettings);
-    }
+    let message = "";
     if (setting == 2) {
         mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
     }
@@ -66,7 +54,7 @@ export function mobOverlay(mobTracker, setting, percentDict) {
                 mobTrackerType = "Session";
                 break;
         };
-    DianaMobTracker.message =
+    message =
     `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${BOLD}${mobTrackerType}${GRAY})
 ------------------
 ${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
@@ -78,9 +66,8 @@ ${GREEN}${BOLD}Minos Hunter: ${AQUA}${BOLD}${mobTracker["mobs"]["Minos Hunter"]}
 ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
 `
     }
+    dianaMobTrackerText.setText(message);
 }
-
-let lootSettingsLoad = false;
 let mobTrackerType = undefined;
 let lootTrackerType = undefined;
 /**
@@ -88,26 +75,19 @@ let lootTrackerType = undefined;
  * @param {string} setting 
  */
 export function itemOverlay(lootTracker, lootViewSetting, percentDict){
-    if (!lootSettingsLoad) {
-        if(guiSettings != undefined) {
-            DianaLootTracker.setX(guiSettings["LootLoc"]["x"]);
-            DianaLootTracker.setY(guiSettings["LootLoc"]["y"]);
-            DianaLootTracker.setScale(guiSettings["LootLoc"]["s"]);
-            lootSettingsLoad = true;
-        }
+    if(getGuiOpen()) return;
+    if (!dianaLootOverlay.children.includes(dianaLootTrackerText)) {
+        dianaLootOverlay.clearChildren();
+        dianaLootOverlay.addChild(dianaLootTrackerText);
     }
-    if (guiSettings["LootLoc"]["x"] != DianaLootTracker.X || guiSettings["LootLoc"]["y"] != DianaLootTracker.Y || guiSettings["LootLoc"]["s"] != DianaLootTracker.S) {
-        guiSettings["LootLoc"]["x"] = DianaLootTracker.X;
-        guiSettings["LootLoc"]["y"] = DianaLootTracker.Y;
-        guiSettings["LootLoc"]["s"] = DianaLootTracker.S;
-        saveGuiSettings(guiSettings);
-    }
+    let message = "";
     if (lootViewSetting == 2) {
         lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
     }
     if (lootViewSetting > 0) {
-        DianaLootTracker.message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
+        message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
     }
+    dianaLootTrackerText.setText(message);
 }
 
 function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
@@ -163,96 +143,44 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
     return lootMessage;
 }
 
-// ${GRAY}${BOLD}Enchanted Gold: ${GRAY}${lootTracker["items"]["ENCHANTED_GOLD"]}
-// ${GRAY}${BOLD}Enchanted Iron: ${GRAY}${lootTracker["items"]["ENCHANTED_IRON"]}
-// ${GRAY}${BOLD}Enchanted Ancient Claw: ${GRAY}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
-// ${GRAY}${BOLD}Ancient Claw: ${GRAY}${lootTracker["items"]["ANCIENT_CLAW"]}
+let mythosHpOverlayObj = newOverlay("mythosMobHp", "mythosMobHp", "mythosMobHpExample", "render", "MythosHpLoc");
+let mythosHpOverlay = mythosHpOverlayObj.overlay
 
+let mythosMobHpText = new UIWrappedText("");
 
-
-let MythosMobHp = new Overlay("mythosMobHp",["Hub"], [10, 10, 1],"sbomoveMythosHp",mythosMobHpExample,"mythosMobHp");
-
-let mythosMobHpSettingsLoad = false;
 export function mythosMobHpOverlay(mobNamesWithHp) {
-    if (!mythosMobHpSettingsLoad) {
-        if (guiSettings != undefined) {
-            MythosMobHp.setX(guiSettings["MythosHpLoc"]["x"]);
-            MythosMobHp.setY(guiSettings["MythosHpLoc"]["y"]);
-            MythosMobHp.setScale(guiSettings["MythosHpLoc"]["s"]);
-            mythosMobHpSettingsLoad = true;
-        }
+    // if (!renderGui) {
+    //     mythosHpOverlayObj.renderGui = false;
+    //     return;
+    // }
+    // else {
+    //     mythosHpOverlayObj.renderGui = true;
+    // }
+    if(getGuiOpen()) return
+    if(!mythosHpOverlay.children.includes(mythosMobHpText)) {
+        mythosHpOverlay.clearChildren();
+        mythosHpOverlay.addChild(mythosMobHpText);
     }
-    if (guiSettings["MythosHpLoc"]["x"] != MythosMobHp.X || guiSettings["MythosHpLoc"]["y"] != MythosMobHp.Y || guiSettings["MythosHpLoc"]["s"] != MythosMobHp.S) {
-        guiSettings["MythosHpLoc"]["x"] = MythosMobHp.X;
-        guiSettings["MythosHpLoc"]["y"] = MythosMobHp.Y;
-        guiSettings["MythosHpLoc"]["s"] = MythosMobHp.S;
-        saveGuiSettings(guiSettings);
-    }
+    let message = "";
     if (mobNamesWithHp.length > 0) {
-        MythosMobHp.message = "";
+        message = "";
         mobNamesWithHp.forEach((mob) => {
-            MythosMobHp.message += `${mob}\n`;
+            message += `${mob}\n`;
         });
     }
     else {
-        MythosMobHp.message = "";
+        message = "";
     }
+    mythosMobHpText.setText(message);
 }
 
-
-let EffectsGui = new Overlay("effectsGui",["Crimson Isle"], [400, 50, 1],"sbomoveEffects",effectsGuiExample,"effectsGui");
-
-let effectsSettingsLoad = false;
-export function effectsOverlay(effects) {
-    if (!effectsSettingsLoad) {
-        if (guiSettings != undefined) {
-            EffectsGui.setX(guiSettings["EffectsLoc"]["x"]);
-            EffectsGui.setY(guiSettings["EffectsLoc"]["y"]);
-            EffectsGui.setScale(guiSettings["EffectsLoc"]["s"]);
-            effectsSettingsLoad = true;
-        }
-    }
-    if (guiSettings["EffectsLoc"]["x"] != EffectsGui.X || guiSettings["EffectsLoc"]["y"] != EffectsGui.Y || guiSettings["EffectsLoc"]["s"] != EffectsGui.S) {
-        guiSettings["EffectsLoc"]["x"] = EffectsGui.X;
-        guiSettings["EffectsLoc"]["y"] = EffectsGui.Y;
-        guiSettings["EffectsLoc"]["s"] = EffectsGui.S;
-        saveGuiSettings(guiSettings);
-    }
-    if (effects.length > 0) {
-        EffectsGui.message = `${YELLOW}${BOLD}Active Effects
---------------
-`;
-        // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
-        effects.forEach((effect) => {
-            let duration = effect.duration;
-            let durationMessage = "";
-            if (duration > 3600) {
-                durationMessage = `${Math.floor(duration/3600)}h `;
-                duration = duration % 3600;
-            }
-            if (duration > 60) {
-                durationMessage += `${Math.floor(duration/60)}m `;
-                duration = duration % 60;
-            }
-            if (duration > 0) {
-                durationMessage += `${Math.floor(duration)}s`;
-            }
-            EffectsGui.message += `${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}\n`;
-        });
+registerWhen(register("step", () => {
+    if (playerHasSpade() || checkDiana()) {
+        dianaMobOverlayObj.renderGui = true;
+        dianaLootOverlayObj.renderGui = true;
     }
     else {
-        EffectsGui.message = "";
+        dianaMobOverlayObj.renderGui = false;
+        dianaLootOverlayObj.renderGui = false;
     }
-}
-
-register("step", () => {
-    if (playerHasSpade()) {
-        DianaMobTracker.setRenderGuiBool(true);
-        DianaLootTracker.setRenderGuiBool(true);
-    }
-    else if (!playerHasSpade()) {
-        DianaMobTracker.setRenderGuiBool(false);
-        DianaLootTracker.setRenderGuiBool(false);
-    }
-}).setFps(1);
-
+}).setFps(1), () => settings.dianaMobTracker || settings.dianaLootTracker);

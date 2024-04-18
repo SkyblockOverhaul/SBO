@@ -1,43 +1,24 @@
 import settings from "../../settings";
-import { loadGuiSettings, saveGuiSettings } from "../../utils/functions";
-import { Overlay } from "../../utils/Overlay";
 import { BOLD, AQUA, YELLOW} from "../../utils/constants";
 import { registerWhen } from "../../utils/variables";
+import { getGuiOpen, newOverlay } from "../../utils/overlays";
+import { UIWrappedText } from "../../../Elementa";
 
-
-guiSettings = loadGuiSettings();
-
-bobbercounterExample =
-`${YELLOW}${BOLD}Bobber:
-`
-let BobberCounter = new Overlay("bobberCounter",["all"], [10, 10, 0],"sbomoveBobberCounter",bobbercounterExample, "bobberCounter");
+let bobberOverlayObj = newOverlay("bobberOverlay", "bobberCounter", "bobbercounterExample", "render", "BobberLoc");
+let bobberOverlay = bobberOverlayObj.overlay;
 
 let bobberCount = 0;
-let loadedBobber = false;
-
-
-const EntityFishHook = Java.type("net.minecraft.entity.projectile.EntityFishHook")
-
-function bobberOverlay() {
-    if(settings.bobberCounter) {
-        if(guiSettings != undefined && !loadedBobber) {
-            BobberCounter.setX(guiSettings["BobberLoc"]["x"]);
-            BobberCounter.setY(guiSettings["BobberLoc"]["y"]);
-            BobberCounter.setScale(guiSettings["BobberLoc"]["s"]);
-            loadedBobber = true;
-        }
-        if( guiSettings["BobberLoc"]["x"] != BobberCounter.X || guiSettings["BobberLoc"]["y"] != BobberCounter.Y || guiSettings["BobberLoc"]["s"] != BobberCounter.S)
-        {
-            guiSettings["BobberLoc"]["x"] = BobberCounter.X;
-            guiSettings["BobberLoc"]["y"] = BobberCounter.Y;
-            guiSettings["BobberLoc"]["s"] = BobberCounter.S;
-            saveGuiSettings(guiSettings);
-        }
-        BobberCounter.message = `${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`
-    }
-}
+let bobberText = new UIWrappedText(`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`);
+bobberText.setHeight((10).pixels())
+bobberOverlay.addChild(bobberText);
+const EntityFishHook = Java.type("net.minecraft.entity.projectile.EntityFishHook");
 
 registerWhen(register('step', () => {
     bobberCount = World.getAllEntitiesOfType(EntityFishHook).filter(dist => dist.distanceTo(Player.getPlayer()) < 31).length
-        bobberOverlay();
+    if(getGuiOpen()) return;
+    if(!bobberOverlay.children.includes(bobberText)) {
+        bobberOverlay.clearChildren();
+        bobberOverlay.addChild(bobberText);
+    }
+    bobberText.setText(`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`);
 }).setFps(1), () => settings.bobberCounter);

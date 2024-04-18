@@ -21,44 +21,117 @@ import {
     Window
 } from "../../Elementa";
 import settings from "../settings";
-import { kuudraValueOverlaySelected, kuudraOverlay } from "../features/Kuudra";
-import { fossilOverlay, fossilGUISelected } from "../features/general/fossilSolver";
+import { loadGuiSettings, saveGuiSettings } from "../utils/functions";
+import { overlayExamples } from "../utils/guiExamples";
 
-// siehe https://github.com/EssentialGG/Elementa für mehr 
+const dragOffset = {x: 0, y: 0};
 
+const Color = Java.type("java.awt.Color");
+let guiSettings = loadGuiSettings();
+
+function loadOverlay(overlay, locName) {
+    if (guiSettings != undefined) {
+        overlay.setX((guiSettings[locName]["x"]).pixels());
+        overlay.setY((guiSettings[locName]["y"]).pixels());
+    }
+}
+
+
+class elementaOverlay {
+    constructor(name, setting, example, type, locName) {
+        this.name = name;
+        this.setting = setting;
+        this.example = example;
+        this.type = type;
+        this.locName = locName;
+        this.renderGui = true;
+        this.selected = false;
+        this.overlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
+        this.overlay.setWidth(new ChildBasedRangeConstraint());
+        this.overlay.setHeight(new ChildBasedRangeConstraint());
+
+        this.overlay.onMouseClick((comp, event) => {
+            this.selected = true;
+            dragOffset.x = event.absoluteX;
+            dragOffset.y = event.absoluteY;
+        });
+
+        this.overlay.onMouseRelease(() => {
+            this.selected = false;
+        }); 
+
+        this.overlay.onMouseDrag((comp, mx, my) => {
+            if(!this.selected) return;
+            const absoluteX = mx + comp.getLeft()
+            const absoluteY = my + comp.getTop()
+            const dx = absoluteX - dragOffset.x;
+            const dy = absoluteY - dragOffset.y;
+            dragOffset.x = absoluteX;
+            dragOffset.y = absoluteY;
+            const newX = this.overlay.getLeft() + dx;
+            const newY = this.overlay.getTop() + dy;
+            this.overlay.setX(newX.pixels());
+            this.overlay.setY(newY.pixels());
+            guiSettings[this.locName]["x"] = newX;
+            guiSettings[this.locName]["y"] = newY;
+            saveGuiSettings(guiSettings);
+        });
+
+        loadOverlay(this.overlay, this.locName);
+    }
+}
+
+let overLays = [];
+export function newOverlay(name, setting, example, type, locName) {
+    let overlay = new elementaOverlay(name, setting, example, type, locName);
+    overLays.push(overlay);
+    return overlay;
+}
+
+export function getGuiOpen(){
+    return guiOpen;
+}
+
+let guiOpen = false;
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
-this.gui.registerClicked((x,y,b) => this.renderWindow.mouseClick(x,y,b));
-this.gui.registerMouseDragged((x, y, b) => this.renderWindow.mouseDrag(x, y, b));
-this.gui.registerMouseReleased(() => this.renderWindow.mouseRelease());
-this.gui.registerClicked((x,y,b) => this.postWindow.mouseClick(x,y,b));
-this.gui.registerMouseDragged((x, y, b) => this.postWindow.mouseDrag(x, y, b));
-this.gui.registerMouseReleased(() => this.postWindow.mouseRelease());
-let overlayExamples = {
-    kuudraExampleOne: `&r&62.49M &r&eTerror Chestplate&r
-&r&b(BL 5/BR 4 - &r&6100.00K/2.49M&b)
-&r&62.50M &r&eTerror Boots&r
-&r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
-&r&eTotal Value: &r&64.99M coins`,
-kuudraExampleTwo: `&r&6600.00K &r&eCrimson Chestplate&r &r&b(BL 5/BR 4 - &r&6100.00K/600.00K&b)
-&r&62.50M &r&eTerror Boots&r &r&b(ER 5/DO 4 - &r&61.48M/2.50M&b)
-&r&eTotal Value: &r&63.1M coins`,
-fossilExample: `Fossil: Unknown `
-};
+this.gui.registerClicked((x,y,b) => {
+    this.renderWindow.mouseClick(x,y,b);
+    this.postWindow.mouseClick(x,y,b);
+});
+this.gui.registerMouseDragged((x, y, b) => {
+    this.renderWindow.mouseDrag(x, y, b);
+    this.postWindow.mouseDrag(x, y, b);
+});
+this.gui.registerMouseReleased(() => {
+    this.renderWindow.mouseRelease();
+    this.postWindow.mouseRelease();
+});
 
-
-register("command", () => GuiHandler.openGui(gui)).setName("sboguis").setAliases("sbomoveguis");
+register("command", () => { 
+    GuiHandler.openGui(gui)
+}).setName("sboguis").setAliases("sbomoveguis");
 
 register('renderOverlay', () => {
-    // checkForSetting(getTestUI(), settings.attributeValueOverlay, overlayStatus, "render");
+    overLays.forEach(overlay => {
+        switch(overlay.name){
+            case "dianaMobTracker":
+                checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, settings.dianaMobTrackerView, true, overlay.renderGui);
+                break;
+            case "dianaLootTracker":
+                checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, settings.dianaLootTrackerView, true, overlay.renderGui);
+                break;
+            default:
+                checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, 0, false, overlay.renderGui);
+                break;
+        }
+    });
     guiMover();
     renderWindow.draw()
 });
 
 register('postGuiRender', () => {
-    checkForSetting(kuudraOverlay, settings.attributeValueOverlay, "post");
-    checkForSetting(fossilOverlay, settings.fossilOverlay, "post");
     postWindow.draw()
 });
 
@@ -67,17 +140,27 @@ register('worldUnload', () => {
 });
 
 
-function checkForSetting(overlay, setting, type){
+function checkForSetting(overlay, setting, type, setting2, diana, renderBool){
     if(!overlay) return;
-    if(setting){
-        if(type === "render" && !renderWindow.children.includes(overlay)) {
-            renderWindow.addChild(overlay);
+    if (renderBool || type == "post") {
+        if(setting || (setting2 > 0 && diana)){
+            if(type === "render" && !renderWindow.children.includes(overlay)) {
+                renderWindow.addChild(overlay);
+            }
+            else if(type === "post" && !postWindow.children.includes(overlay)){
+                postWindow.addChild(overlay);
+            }
         }
-        else if(type === "post" && !postWindow.children.includes(overlay)){
-            postWindow.addChild(overlay);
+        if(!setting || (setting2 === 0 && diana)){
+            if(type === "render" && renderWindow.children.includes(overlay)) {
+                renderWindow.removeChild(overlay);
+            }
+            else if(type === "post" && postWindow.children.includes(overlay)){
+                postWindow.removeChild(overlay);
+            }
         }
     }
-    if(!setting){
+    else {
         if(type === "render" && renderWindow.children.includes(overlay)) {
             renderWindow.removeChild(overlay);
         }
@@ -88,16 +171,23 @@ function checkForSetting(overlay, setting, type){
 }
 
 function closeEditing(){
-    kuudraValueOverlaySelected = false;
-    fossilGUISelected = false;
+    overLays.forEach(overlay => {
+        overlay.selected = false;
+    });
     gui.close();
 }
 
+let clearState = false;
 let firstDraw = false;
+let refreshOverlays = false;
+export function getRefreshOverlays() { return refreshOverlays; }
+let refreshOverlaysTimeout;
 function guiMover() {
     if (gui.isOpen()) {
+        guiOpen = true;
+        clearState = false;
         if (firstDraw === false) {
-            drawExamples();
+            drawExamples()
             postWindow.draw();
             firstDraw = true;
         }
@@ -110,34 +200,52 @@ function guiMover() {
         );
     }
     if (!gui.isOpen()) {
+        if (clearState === false && guiOpen) {
+            clearExamples();
+            refreshOverlays = true;
+            clearState = true;
+            if (refreshOverlaysTimeout) clearTimeout(refreshOverlaysTimeout);
+            refreshOverlaysTimeout = setTimeout(() => {
+                refreshOverlays = false;
+            }, 1000);
+        }
         firstDraw = false;
+        guiOpen = false;
     }
 }
 
-function drawExamples(){
-    switch(settings.lineSetting){
-        case 0:
-            exampleMessage(overlayExamples["kuudraExampleOne"], kuudraOverlay, true);
-            break;
-        case 1:
-            exampleMessage(overlayExamples["kuudraExampleTwo"], kuudraOverlay, true);
-            break;
-    }
-    if(settings.fossilOverlay){
-        exampleMessage(overlayExamples["fossilExample"], fossilOverlay, false);
-    }
+function drawExamples() {
+    overLays.forEach(overlay => {
+        if (overlay.name == "kuudraOverlay") {
+            let example = overlay.example
+            if (settings.lineSetting == 0) {
+                example += "Two"
+            }
+            else {
+                example += "One"
+            }
+            exampleMessage(overlayExamples[example], overlay.overlay);
+        }
+        else {
+            exampleMessage(overlayExamples[overlay.example], overlay.overlay);
+        }
+    });
 }
 
-function exampleMessage(example, overlay, split){
+function exampleMessage(example, overlay){
     let exampleMSG = new UIWrappedText(example)
     overlay.clearChildren();
     exampleMSG.setX(new SiblingConstraint())
     exampleMSG.setY(new SiblingConstraint())
-    if(split){
-        maxStringWidth = example.split("\n").reduce((a, b) => a.length > b.length ? a : b).length
-        exampleMSG.setWidth((maxStringWidth * 4.5).pixels());
-    }
+    maxStringWidth = example.split("\n").reduce((a, b) => a.length > b.length ? a : b).length
+    exampleMSG.setWidth((maxStringWidth * 5.3).pixels());
     overlay.addChild(exampleMSG);
     overlay.setWidth(new ChildBasedRangeConstraint());
     overlay.setHeight(new ChildBasedRangeConstraint());
+}
+
+function clearExamples(){
+    overLays.forEach(overlay => {
+        overlay.overlay.clearChildren();
+    });
 }

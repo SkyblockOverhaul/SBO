@@ -7,6 +7,7 @@ import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, getTrackerSession } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
+import { getGuiOpen, getRefreshOverlays } from "../../utils/overlays";
 
 // todo: 
 
@@ -15,19 +16,19 @@ import { checkDiana } from "../../utils/checkDiana";
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
-    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC",]; //  "&5ROTTEN_FLESH"
+    let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW"]
-    var checkBool = true;
+    let checkBool = true;
     if (isActiveForOneSecond() || gotLootShare()) {
         if (checkDiana()) {
-            for (var i in countThisIds.values()) {
+            for (let i in countThisIds.values()) {
                 if (item === i) {
                     trackItem(item, "items", amount);
                     checkBool = false;
                 }
             }
             if (checkBool) {
-                for (var i in rareDrops.values()) {
+                for (let i in rareDrops.values()) {
                     color = i.slice(0, 2);
                     if (item == "MINOS_RELIC") {
                         if (settings.lootAnnouncerScreen) {
@@ -111,13 +112,13 @@ function calcPercent(trackerToCalc, type, setting) {
     }
     percentDict = {};
     if(type == "mobs"){
-        for (var mob in trackerToCalc["mobs"]) {
+        for (let mob in trackerToCalc["mobs"]) {
             percentDict[mob] = parseFloat((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"] * 100).toFixed(2));
         }
         return percentDict;
     }
     else {
-        for (var obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
+        for (let obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
             switch (obj) {
                 case "Minos Inquisitor":
                     percentDict["Chimera"] = parseFloat((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
@@ -222,7 +223,7 @@ registerWhen(register("chat", (drop) => {
 
 registerWhen(register("chat", (coins) => {
     if (isDataLoaded() && isInSkyblock()) {
-        var coins2 = parseInt(coins.replace(",", ""))
+        let coins2 = parseInt(coins.replace(",", ""))
         trackItem("coins", "items", coins2);
     }
 }).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker);
@@ -276,7 +277,11 @@ registerWhen(register("step", () => {
 
 let firstLoad = false;
 let trackerBool = false;
+let tempGuiBool = false;
 register("step", () => {
+    if (getRefreshOverlays() && !tempGuiBool){
+        tempGuiBool = true;
+    }
     if (isInSkyblock() && !firstLoad) {
         if (!trackerBool) {
             if (isDataLoaded()) {
@@ -293,26 +298,30 @@ register("step", () => {
             firstLoad = true;
         }
     }
+    if (tempGuiBool && !getRefreshOverlays()) {
+        firstLoad = false;
+        tempGuiBool = false;
+    }
 }).setFps(1);
 
 
 // // test command
 // register('command', () => {
 //     trackerSession = getTracker(3);
-//     for (var item in trackerSession["items"]) {
+//     for (let item in trackerSession["items"]) {
 //         ChatLib.chat(item + ": " + trackerSession["items"][item]);
 //     }
 // }).setName("sbots");
 // register('command', () => {
 //     trackerMayor = getTracker(2);
-//     for (var item in trackerMayor["items"]) {
+//     for (let item in trackerMayor["items"]) {
 //         ChatLib.chat(item + ": " + trackerMayor["items"][item]);
 //     }
 // }).setName("sbotm");
 
 // register('command', () => {
 //     trackerTotal = getTracker(1);
-//     for (var item in trackerTotal["items"]) {
+//     for (let item in trackerTotal["items"]) {
 //         ChatLib.chat(item + ": " + trackerTotal["items"][item]);
 //     }
 // }).setName("sbott");

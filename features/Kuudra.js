@@ -4,71 +4,12 @@ import { toTitleCase, drawRect } from "./../utils/functions";
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
-import { loadGuiSettings, saveGuiSettings } from "./../utils/functions";
-import {
-    SiblingConstraint,
-    FillConstraint,
-    CenterConstraint,
-    SubtractiveConstraint,
-    AdditiveConstraint,
-    PixelConstraint,
-    animate,
-    Animations,
-    ChildBasedMaxSizeConstraint,
-    ChildBasedSizeConstraint,
-    ConstantColorConstraint,
-    ScissorEffect,
-    UIBlock,
-    UIContainer,
-    UIMultilineTextInput,
-    UIText,
-    UIWrappedText,
-    UIRoundedRectangle,
-    OutlineEffect,
-    ChildBasedRangeConstraint
-} from "../../Elementa";
+import { newOverlay } from "./../utils/overlays";
+import { UIWrappedText } from "../../Elementa";
 
-let guiSettings = loadGuiSettings();
-let loadedKuudraOverlay = false;
-const Color = Java.type("java.awt.Color");
-export let kuudraValueOverlaySelected = false;
-export let kuudraOverlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-const dragOffset = { x: 0, y: 0 };
+let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuudraExample", "post", "KuudraValueLoc");
+let kuudraOverlay = kuudraOverlayObj.overlay
 
-kuudraOverlay.setWidth(new ChildBasedRangeConstraint());
-kuudraOverlay.setHeight(new ChildBasedRangeConstraint());
-kuudraOverlay.onMouseClick((comp, event) => {
-    kuudraValueOverlaySelected = true;
-    dragOffset.x = event.absoluteX;
-    dragOffset.y = event.absoluteY;
-});
-kuudraOverlay.onMouseRelease(() => {
-    kuudraValueOverlaySelected = false;
-});
-kuudraOverlay.onMouseDrag((comp, mx, my) => {
-    if (!kuudraValueOverlaySelected) return;
-    const absoluteX = mx + comp.getLeft();
-    const absoluteY = my + comp.getTop();
-    const dx = absoluteX - dragOffset.x;
-    const dy = absoluteY - dragOffset.y;
-    dragOffset.x = absoluteX;
-    dragOffset.y = absoluteY;
-    const newX = kuudraOverlay.getLeft() + dx;
-    const newY = kuudraOverlay.getTop() + dy;
-    kuudraOverlay.setX(newX.pixels());
-    kuudraOverlay.setY(newY.pixels());
-    guiSettings["KuudraValueLoc"]["x"] = newX;
-    guiSettings["KuudraValueLoc"]["y"] = newY;
-    saveGuiSettings(guiSettings);
-});
-
-function loadOverlay(){
-    if(guiSettings != undefined && !loadedKuudraOverlay) {
-        kuudraOverlay.setX((guiSettings["KuudraValueLoc"]["x"]).pixels());
-        kuudraOverlay.setY((guiSettings["KuudraValueLoc"]["y"]).pixels());
-        loadedKuudraOverlay = true;
-    }
-}
 
 let lastUpdate = 0;
 let updateing = false;
@@ -76,7 +17,6 @@ let kuudraItems = undefined;
 let bazaarItems = undefined;
 registerWhen(register("step", () => {
     // update every 5 minutes
-    loadOverlay();
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
         // print("updating kuudra items with api");
@@ -248,7 +188,7 @@ function readContainerItems() {
     // ChatLib.chat("&6[SBO] &6&lGUI OPENED! " + container.getName());
     const items = container.getItems();
     if (items.length == 0) return;
-    
+    kuudraOverlayObj.renderGui = true;
     let highestPrice = 0;
     let tempString = "";
     let totalValue = 0;
@@ -321,6 +261,7 @@ function readContainerItems() {
             }
         }
         else if (bazaarIds.includes(itemId)) {
+            if (itemId == "ENCHANTED_MYCELIUM" || itemId == "ENCHANTED_RED_SAND") return;
             // bazaar item
             let price = getBazaarPrice(itemId);
             if (price == 0) return;
@@ -367,28 +308,28 @@ function readContainerItems() {
     refreshOverlay(totalValue);
 }
 
-register("guiClosed", () => {
+registerWhen(register("guiClosed", () => {
     indexToHighlight = -1;
     kuudraOverlay.clearChildren();
+    kuudraOverlayObj.renderGui = false;
     chestItems = [];
     guiStrings = [];
-});
+}), () => settings.attributeValueOverlay);
 
 
 let indexToHighlight = -1;
-register("renderSlot", (slot) => {
+registerWhen(register("renderSlot", (slot) => {
     if (indexToHighlight != -1) {
         if (slot.getIndex() == indexToHighlight) {
             let x = slot.getDisplayX();
             let y = slot.getDisplayY();
-            // print("rendering highlight" + x + " " + y);
             drawRect(x, y, 2.5, 200);
         }
     }
-});
+}), () => settings.attributeValueOverlay);
 
 let guiStrings = [];
-register("step", () => {
+registerWhen(register("step", () => {
     let tempBool = false;
     if (guiStrings.length == 0) return;
     chestItems.forEach((item) => {
@@ -401,7 +342,7 @@ register("step", () => {
     if (!tempBool) {
         indexToHighlight = -1;
     }
-}).setFps(20);
+}).setFps(20), () => settings.attributeValueOverlay);
 
 
 function refreshOverlay(totalValue) {
@@ -449,7 +390,7 @@ function refreshOverlay(totalValue) {
             guiStrings[item.indexOfObj].onMouseEnter((comp) => {
                 maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
                 guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-                guiStrings[item.indexOfObj].effects;
+                // guiStrings[item.indexOfObj].effects;
                 guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
             });
             // check if gui object is hovered

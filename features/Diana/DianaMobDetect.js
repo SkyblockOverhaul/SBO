@@ -27,7 +27,7 @@ registerWhen(register("step", () => {
         });
         Mobs = Mobs.filter((e) => !e.getEntity()["field_70128_L"]);
     }
-}).setFps(1), () => settings.mythosMobHp);
+}).setFps(1), () => settings.mythosMobHp && getWorld() === "Hub");
 
 let names = [];
 registerWhen(register("step", () => {
@@ -36,9 +36,16 @@ registerWhen(register("step", () => {
         Mobs.forEach((nameTag) => {
             names.push(nameTag.getName());
         });
+        // let render = false;
+        // if (names.length > 0) {
+        //     render = true;
+        // }
+        // else {
+        //     render = false;
+        // }
         mythosMobHpOverlay(names);
     }
-}).setFps(6), () => settings.mythosMobHp);
+}).setFps(6), () => settings.mythosMobHp && getWorld() === "Hub");
         
 //mob.nameTag.getName() step 10
 // if (!Mobs?.map((a) => a.getUUID().toString()).includes(mob.getUUID().toString())) {

@@ -1,7 +1,59 @@
 import settings from "../../settings";
-import { effectsOverlay } from "../guis/DianaGuis";
 import { data, registerWhen } from "../../utils/variables";
 import { isInSkyblock } from "../../utils/functions";
+import { UIWrappedText } from "../../../Elementa";
+import { YELLOW, BOLD, WHITE, AQUA,} from "../../utils/constants";
+import { getGuiOpen, newOverlay } from "../../utils/overlays";
+import { getWorld } from "../../utils/world";
+
+let effectsOverlayObj = newOverlay("effectsOverlay", "effectsGui", "effectsGuiExample", "render", "EffectsLoc")
+let effectsOverlay = effectsOverlayObj.overlay;
+
+let effectsText = new UIWrappedText("Active Effects");
+function refreshEffectOverlay(effects) {
+    if (getWorld() != "Crimson Isle") {
+        effectsOverlayObj.renderGui = false;
+        return;
+    }
+    if (getGuiOpen()) return;
+    let pixelIncrementOne = 15;
+    let height = 10;
+    if(!effectsOverlay.children.includes(effectsText)) {
+        effectsOverlay.clearChildren();
+        effectsOverlay.addChild(effectsText);
+    }
+    let message = "";
+    if (effects.length > 0) {
+        message = `${YELLOW}${BOLD}Active Effects
+--------------
+`;
+        // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
+        effects.forEach((effect) => {
+            height += pixelIncrementOne;
+            let duration = effect.duration;
+            let durationMessage = "";
+            if (duration > 3600) {
+                durationMessage = `${Math.floor(duration/3600)}h `;
+                duration = duration % 3600;
+            }
+            if (duration > 60) {
+                durationMessage += `${Math.floor(duration/60)}m `;
+                duration = duration % 60;
+            }
+            if (duration > 0) {
+                durationMessage += `${Math.floor(duration)}s`;
+            }
+            message += `${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}\n`;
+        });
+        effectsText.setHeight((height).pixels());
+        effectsText.setText(message);
+    }
+    else {
+        effectsText.setHeight((height).pixels());
+        effectsText.setText(` `);
+    }
+}
+
 
 let effects = [];
 registerWhen(register("chat", () => {
@@ -52,7 +104,7 @@ registerWhen(register("step", () => {
     data.effects = effects;
     // remove all effects with duration <= 0
     effects = effects.filter(e => e.duration > 0);
-    effectsOverlay(data.effects);
+    refreshEffectOverlay(data.effects);
 }).setFps(1), () => settings.effectsGui);
 
 let loggedOff = true;
