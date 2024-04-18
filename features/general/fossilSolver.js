@@ -6,7 +6,7 @@ import { UIWrappedText } from "../../../Elementa";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 
-let fossilOverlayObj = newOverlay("fossilSolver", settings.fossilSolver, "fossilExample", "post", "fossilLoc");
+let fossilOverlayObj = newOverlay("fossilSolver", "fossilOverlay", "fossilExample", "post", "fossilLoc");
 let fossilOverlay = fossilOverlayObj.overlay
 let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
 

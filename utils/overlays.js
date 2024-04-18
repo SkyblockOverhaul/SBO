@@ -120,7 +120,6 @@ register('renderOverlay', () => {
                 checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, settings.dianaMobTrackerView, true, overlay.renderGui);
                 break;
             case "dianaLootTracker":
-                print(settings.dianaLootTrackerView + " " + overlay.setting)
                 checkForSetting(overlay.overlay, settings[overlay.setting], overlay.type, settings.dianaLootTrackerView, true, overlay.renderGui);
                 break;
             default:

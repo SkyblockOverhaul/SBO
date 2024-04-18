@@ -18,10 +18,10 @@ registerWhen(register("entityDeath", (entity) => {
     }
 }), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
-let dianaMobOverlayObj = newOverlay("dianaMobTracker", settings.dianaMobTracker, "dianaMobTrackerExample", "render", "MobLoc");
+let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaMobTracker", "dianaMobTrackerExample", "render", "MobLoc");
 let dianaMobOverlay = dianaMobOverlayObj.overlay;
 
-let dianaLootOverlayObj = newOverlay("dianaLootTracker", settings.dianaLootTracker, "dianaLootTrackerExample", "render", "LootLoc");
+let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaLootTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
 
 
@@ -143,7 +143,7 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows
     return lootMessage;
 }
 
-let mythosHpOverlayObj = newOverlay("mythosMobHp", settings.mythosMobHp, "mythosMobHpExample", "render", "MythosHpLoc");
+let mythosHpOverlayObj = newOverlay("mythosMobHp", "mythosMobHp", "mythosMobHpExample", "render", "MythosHpLoc");
 let mythosHpOverlay = mythosHpOverlayObj.overlay
 
 let mythosMobHpText = new UIWrappedText("");
