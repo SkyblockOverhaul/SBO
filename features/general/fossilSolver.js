@@ -295,7 +295,7 @@ calcNewCoords()
 // guiClick new
 let isInExcavatorGui = false;
 let check1 = true;
-registerWhen(register("step", () => {
+registerWhen(register("tick", () => {
     if (middleBool) return;
     let check2 = false;
     const container = Player.getContainer();
@@ -391,7 +391,7 @@ registerWhen(register("step", () => {
             }, 200);
         }
     }
-}).setFps(10), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
+}), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 
 register("guiClosed", () => {
