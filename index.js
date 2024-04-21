@@ -90,6 +90,10 @@ const changeLogReg = register("step", () => {
 //     }
 // }).setCriteria("&r&aYou received ${message}");
 
+register("chat", () => {
+    Client.showTitle("&6SPEED", "", 0, 40, 20);
+}).setCriteria("&r&a&r&6Mining Speed Boost &r&ais now available!&r");
+
 register("chat", (player, message, event) =>{
     // cancel original message
     // send new guildbot message

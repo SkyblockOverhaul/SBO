@@ -292,7 +292,10 @@ function calcNewCoords() {
 }
 calcNewCoords()
 
-// guiClick new
+// Player.getPlayer().field_71071_by.func_70445_o()
+// field_71071_by is inventory field from EntityPlayer
+// func_70445_o is getItemStack from InventoryPlayer (returns itemstack held by mouse)
+// use new Item() on it if you want it to be a ct item
 let isInExcavatorGui = false;
 let check1 = true;
 registerWhen(register("tick", () => {
@@ -314,6 +317,7 @@ registerWhen(register("tick", () => {
         }
     }
     if (!isInExcavatorGui) return;
+    if (Player.getPlayer().field_71071_by.func_70445_o() != null) return;
     items.forEach((item, index) => {
         if (index > 53) return;
         if (item == null) {
@@ -323,6 +327,8 @@ registerWhen(register("tick", () => {
                 noFossilAtIndex.push(index);
                 // print("No Fossil at: " + index);
                 check2 = true;
+                calcNewCoords()
+
             }
         }
         else {
@@ -347,6 +353,8 @@ registerWhen(register("tick", () => {
                     fossilFoundAtIndex.push(index); 
                     // print("Fossil at: " + index);
                     check2 = true;
+                    calcNewCoords()
+
                 }
             }
             else {
@@ -357,6 +365,8 @@ registerWhen(register("tick", () => {
                         noFossilAtIndex.push(index);
                         // print("No Fossil at: " + index);
                         check2 = true;
+                        calcNewCoords()
+
                     }
                 }
             }
@@ -370,6 +380,8 @@ registerWhen(register("tick", () => {
             noFossilAt.splice(indexToRemove, 1);
             noFossilAtIndex.splice(indexToRemove, 1);
             check2 = true;
+            calcNewCoords()
+
         }
     });
     fossilFoundAtIndex.forEach((index) => {
@@ -380,18 +392,29 @@ registerWhen(register("tick", () => {
             fossilFoundAt.splice(indexToRemove, 1);
             fossilFoundAtIndex.splice(indexToRemove, 1);
             check2 = true;
+            calcNewCoords()
+
+            
         }
     });
-    if (check2) {
-        if (check1) {
-            check1 = false;
-            setTimeout(() => {
-                check1 = true;
-                calcNewCoords()
-            }, 200);
-        }
-    }
+    // calcNewCoords()
+    // if (check2) {
+    //     if (check1) {
+    //         check1 = false;
+    //         setTimeout(() => {
+    //             check1 = true;
+    //         }, 100);
+    //     }
+    // }
 }), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
+
+// registerWhen(register("step", () => {
+//     if (middleBool) return;
+//     const container = Player.getContainer();
+//     if (container == null) return;
+//     if (container.getName() != "Fossil Excavator") return;
+//     calcNewCoords()
+// }).setFps(5), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 
 register("guiClosed", () => {
