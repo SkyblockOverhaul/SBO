@@ -317,7 +317,7 @@ registerWhen(register("tick", () => {
         }
     }
     if (!isInExcavatorGui) return;
-    if (Player.getPlayer().field_71071_by.func_70445_o() != null) return;
+    if (Player.getPlayer().field_71071_by.func_70445_o() != null) return; // checks if the player held an item with the mouse (in this case a glass pane)
     items.forEach((item, index) => {
         if (index > 53) return;
         if (item == null) {
