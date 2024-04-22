@@ -36,13 +36,13 @@ const downloadMsgReg = register("step", () => {
         downloadMsgReg.unregister()
         return
     }
-    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
-    // ChatLib.chat(`&aThanks for importing &6 SBO`)
-    // ChatLib.chat(`&7> &ayou can open the settings with /sbo`)
-    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    ChatLib.chat(`&aThanks for importing &6 SBO`)
+    ChatLib.chat(`&7> &ayou can open the settings with /sbo`)
+    ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.downloadMsg = true
-    // data.changelogVersion = newVersion
+    data.changelogVersion = newVersion
     data.save()
     
     downloadMsgReg.unregister()
