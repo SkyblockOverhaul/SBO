@@ -131,7 +131,7 @@ function calculateLocations(figure) {
 // for (const figure of allFigures) {
 //     calculateLocations(figure);
 // }
-
+let clickedSlot = -1;  
 register("chat", () => {
     // print("Excavation complete")
     fossilFoundAt = [];
@@ -317,7 +317,7 @@ registerWhen(register("tick", () => {
         }
     }
     if (!isInExcavatorGui) return;
-    if (Player.getPlayer().field_71071_by.func_70445_o() != null) return; // checks if the player held an item with the mouse 
+    if ((Player.getPlayer().field_71071_by.func_70445_o() != null && container.getStackInSlot(clickedSlot) != null)) return; // checks if the player held an item with the mouse (can be faster by checking if the clicked slot is not empty)
     items.forEach((item, index) => {
         if (index > 53) return;
         if (item == null) {
@@ -442,7 +442,10 @@ registerWhen(register("renderSlot", (slot) => {
 }), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 let middleBool = false;
-register("guiMouseClick", () => {
+ 
+// gui?.getSlotUnderMouse()?.field_75222_d
+register("guiMouseClick", (gui) => {
+    clickedSlot = gui.getSlotUnderMouse().field_75222_d;
     if (middleBool) return;
     middleBool = true;
     setTimeout(() => {
