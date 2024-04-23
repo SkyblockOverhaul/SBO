@@ -141,6 +141,7 @@ register("chat", () => {
     coordsAdded = [];
     fossilProcent = 0;
     check1 = true;
+    clickedSlot = -1;
     calcNewCoords()
 }).setCriteria("&r&cYou didn't find anything. Maybe next time!&r");
 
@@ -153,6 +154,7 @@ register("chat", () => {
     coordsAdded = [];
     fossilProcent = 0;
     check1 = true;
+    clickedSlot = -1;
     calcNewCoords()
 }).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
 
@@ -298,6 +300,7 @@ calcNewCoords()
 // use new Item() on it if you want it to be a ct item
 let isInExcavatorGui = false;
 let check1 = true;
+let nullSlotClicked = false;
 registerWhen(register("tick", () => {
     if (middleBool) return;
     let check2 = false;
@@ -317,7 +320,12 @@ registerWhen(register("tick", () => {
         }
     }
     if (!isInExcavatorGui) return;
-    if ((Player.getPlayer().field_71071_by.func_70445_o() != null && container.getStackInSlot(clickedSlot) != null)) return; // checks if the player held an item with the mouse (can be faster by checking if the clicked slot is not empty)
+    if (clickedSlot != -1 && clickedSlot != undefined) {
+        if ((Player.getPlayer().field_71071_by.func_70445_o() != null && (container.getStackInSlot(clickedSlot) == null && !nullSlotClicked))) {
+            return;
+        }
+    } 
+
     items.forEach((item, index) => {
         if (index > 53) return;
         if (item == null) {
@@ -397,6 +405,7 @@ registerWhen(register("tick", () => {
             
         }
     });
+    nullSlotClicked = false;
     // calcNewCoords()
     // if (check2) {
     //     if (check1) {
@@ -416,6 +425,14 @@ registerWhen(register("tick", () => {
 //     calcNewCoords()
 // }).setFps(5), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
+
+register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
+    // print all info about the sound
+    // print("Sound: " + name + " Volume: " + volume + " Pitch: " + pitch + " Category: " + categoryName + " Event: " + event);
+    if (name == "dig.gravel" && volume == 1 && pitch == 2) {
+        nullSlotClicked = true;
+    }
+})
 
 register("guiClosed", () => {
     fossilOverlay.clearChildren();
@@ -444,8 +461,9 @@ registerWhen(register("renderSlot", (slot) => {
 let middleBool = false;
  
 // gui?.getSlotUnderMouse()?.field_75222_d
-register("guiMouseClick", (gui) => {
-    clickedSlot = gui.getSlotUnderMouse().field_75222_d;
+register("guiMouseClick", (_, __, ___, gui) => {
+    if (!isInExcavatorGui) return;
+    clickedSlot = gui?.getSlotUnderMouse()?.field_75222_d;
     if (middleBool) return;
     middleBool = true;
     setTimeout(() => {
