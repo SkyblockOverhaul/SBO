@@ -45,6 +45,6 @@ registerWhen(register("chat", (player, dings) => {
     }
 }).setCriteria("${player} &r&eentered &r&aGlacite Mineshafts${dings}"), () => settings.exitWaypoint);
 
-registerWhen(register("chat", () => {
-    Client.showTitle("&l&9MINESHEFT!", "", 0, 90, 20);
-}).setCriteria("&r&5&lWOW! &r&aYou found a &r&bGlacite Mineshaft &r&aportal!&r"), () => settings.mineshaftAnnouncer);
+// registerWhen(register("chat", () => {
+//     Client.showTitle("&l&9MINESHEFT!", "", 0, 90, 20);
+// }).setCriteria("&r&5&lWOW! &r&aYou found a &r&bGlacite Mineshaft &r&aportal!&r"), () => settings.mineshaftAnnouncer);
