@@ -134,19 +134,15 @@ function calculateLocations(figure) {
 let clickedSlot = -1;  
 register("chat", () => {
     // print("Excavation complete")
-    fossilFoundAt = [];
-    fossilFoundAtIndex = [];
-    noFossilAt = [];
-    noFossilAtIndex = [];
-    coordsAdded = [];
-    fossilProcent = 0;
-    check1 = true;
-    clickedSlot = -1;
-    calcNewCoords()
+    reset();
 }).setCriteria("&r&cYou didn't find anything. Maybe next time!&r");
 
 register("chat", () => {
     // print("Excavation complete")
+    reset();
+}).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
+
+function reset() {
     fossilFoundAt = [];
     fossilFoundAtIndex = [];
     noFossilAt = [];
@@ -156,7 +152,8 @@ register("chat", () => {
     check1 = true;
     clickedSlot = -1;
     calcNewCoords()
-}).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
+
+}
 
 let allPossibleLocations = [];
 // create all possible locations for all figures

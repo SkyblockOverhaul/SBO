@@ -23,14 +23,19 @@ registerWhen(register("chat", (player) => {
     }
 }).setCriteria("${player} &r&7entered the mineshaft&r&7!&r"), () => settings.exitWaypoint);
 
+let timeout = 0;
 function checkIfInMineshaft() {
     if (getWorld() === "Mineshaft") {
+        timeout = 0;
         setTimeout(function() {
             createWorldWaypoint("§eExit", Math.round(Player.getLastX()), Math.round(Player.getLastY()), Math.round(Player.getLastZ()), 3, 252, 244);
         }, 100);
     }
     else {
-        setTimeout(checkIfInMineshaft, 500);
+        timeout++;
+        if (timeout < 15) {
+            setTimeout(checkIfInMineshaft, 500);
+        }
     }
 }
 
