@@ -1,7 +1,7 @@
 {
   "name": "SBO",
   "creator": "RolexDE, D4rkswift",
-  "description": "SBO is the ultimate Diana mod for Diana Nons!",
+  "description": "SBO is the ultimate diana mod for diana nons!",
   "version": "0.1.7",
   "entry": "index.js",
   "requires": [
