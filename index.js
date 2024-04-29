@@ -19,6 +19,7 @@ import "./features/dungeon/recognizeRareRoom";
 import "./features/general/QOL";
 import { data } from "./utils/variables";
 import "./features/guis/SlayerGuis";
+import { createWorldWaypoint } from "./features/general/Waypoints";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
@@ -66,6 +67,78 @@ const changeLogReg = register("step", () => {
     data.save()
     changeLogReg.unregister()
 }).setFps(1)
+
+
+// let eggs = []
+// register("spawnParticle", (particle, type, event) => {
+//     if (type.toString() == "CRIT_MAGIC" || type.toString() == "CRIT" || type.toString() == "REDSTONE") {
+//         if (eggs.length > 3) {
+//             eggs.shift();
+//         }
+//         const particlepos = particle.getPos();
+//         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
+//         const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
+//         // check if coords are already in eggs also check for eggs that no eggs are 3 blocks away
+//         if (eggs.some(egg => egg.x === x && egg.y === y && egg.z === z)) {
+//             return;
+//         }
+//         if (eggs.some(egg => Math.abs(egg.x - x) <= 3 && Math.abs(egg.y - y) <= 3 && Math.abs(egg.z - z) <= 3)) {
+//             return;
+//         }
+//         // check if coords are already in found eggs or 3 blocks away
+//         if (foundEggs.some(egg => egg.x === x && egg.y === y && egg.z === z)) {
+//             return;
+//         }
+//         if (foundEggs.some(egg => Math.abs(egg.x - x) <= 3 && Math.abs(egg.y - y) <= 3 && Math.abs(egg.z - z) <= 3)) {
+//             return;
+//         }
+//         // eggs.push({"x": x, "y": y, "z": z});
+
+//     }
+//     // if (type.toString() != "CRIT_MAGIC" && type.toString() != "CRIT" && type.toString() != "REDSTONE" && type.toString() != "SNOWBALL" && type.toString() !== "SPELL_MOB" && type.toString() !== "DRIP_WATER") {
+//     //     ChatLib.chat(type.toString());
+//     // }
+// })
+
+// let foundEggs = []
+// register("chat", () => {
+//     // remove egg nearst to player
+//     if (foundEggs.length > 3) {
+//         foundEggs.shift();
+//     }
+//     ChatLib.chat(`found egg`);
+//     const player = Player.getPos();
+//     let closestDistance = Infinity;
+//     let closestEgg = null;
+//     eggs.forEach(egg => {
+//         const distance = Math.sqrt(
+//             (player.x - egg.x)**2 +
+//             (player.y - egg.y)**2 +
+//             (player.z - egg.z)**2
+//         );
+//         if (distance < closestDistance) {
+//             closestDistance = distance;
+//             closestEgg = egg;
+//         }
+//     });
+//     if (closestEgg !== null) {
+//         eggs = eggs.filter(egg => egg !== closestEgg);
+//         ChatLib.chat(`found egg at ${closestEgg.x} ${closestEgg.y} ${closestEgg.z}`);
+//         foundEggs.push(closestEgg);
+//     }
+// }).setCriteria("${color}HOPPITY'S HUNT &r&dYou found a ${type} Egg ${loc}")
+// // &r&d&lHOPPITY'S HUNT &r&dYou found a &r&6Chocolate Breakfast Egg &r&dbehind the Gold Forger&r&d!&r
+// // &r&d&lHOPPITY'S HUNT &r&dYou found a &r&9Chocolate Lunch Egg &r&din front of the Iron Forger&r&d!&r
+// // &r&d&lHOPPITY'S HUNT &r&dYou found a &r&aChocolate Dinner Egg &r&dnear Rusty&r&d!&r
+
+
+// register("step", () => {
+//     // print each egg
+//     print(`&r&6Eggs: &e${eggs.length}`);
+//     eggs.forEach(egg => {
+//         createWorldWaypoint("Egg", egg.x, egg.y, egg.z, 0, 255, 0);
+//     })
+// }).setFps(1);
 
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!

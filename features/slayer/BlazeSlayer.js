@@ -15,6 +15,9 @@ function refreshEffectOverlay(effects) {
         effectsOverlayObj.renderGui = false;
         return;
     }
+    else {
+        effectsOverlayObj.renderGui = true;
+    }
     if (getGuiOpen()) return;
     let pixelIncrementOne = 15;
     let height = 10;
@@ -74,7 +77,7 @@ registerWhen(register("chat", () => {
         });
     }
 }).setCriteria("&a&lBUFF! &fYou splashed yourself with &r&bWisp's Ice-Flavored Water I&r&f! Press TAB or type /effects to view your active effects!&r"), () => settings.effectsGui);;
-
+// &a&lPotion Effect! &r&bWisp's Ice-Flavored Water I&r
 registerWhen(register("chat", () => {
     let baseDuration = 3600;
     if (effects.some(e => e.name === "Gummy Bear")) {

@@ -129,7 +129,8 @@ function checkAllCriteria() {
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;
     let check7 = ((Object.keys(trackerMayor).length != 0) && (Object.keys(trackerTotal).length != 0) && (Object.keys(trackerSession).length != 0));
-    if (check1 && check2 && check3 && check4 && check5 && check6 && check7) {
+    let check8 = (trackerTotal !== undefined && trackerMayor !== undefined && trackerSession !== undefined);
+    if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8) {
         return true;
     }
     return false;

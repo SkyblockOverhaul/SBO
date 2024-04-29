@@ -13,6 +13,7 @@ const rareRooms = {
     "174,-60": "Lava Skull",
     "210,-60": "Mini Rail Track",
     "138,-60": "Hanging Vines",
+    "570, -312": "Carpets" // m6 rare room
 }
 let rareRoomFound = false;
 registerWhen(register("step", () => {
