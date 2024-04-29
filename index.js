@@ -61,6 +61,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
     ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
+    ChatLib.chat(`&7> &aFixed bug with Blaze Slayer Effects`)
+    ChatLib.chat(`&7> &aSome minor bug fixes`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
