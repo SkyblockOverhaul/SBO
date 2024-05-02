@@ -165,29 +165,6 @@ register("chat", () => {
     Client.showTitle("&6SPEED", "", 0, 40, 20);
 }).setCriteria("&r&a&r&6Mining Speed Boost &r&ais now available!&r");
 
-register("chat", (player, message, event) =>{
-    // cancel original message
-    // send new guildbot message
-    if (!player.includes(" ")) {
-        cancel(event);
-        player = player.removeFormatting();
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
-        // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
-    }
-    else if (player.includes("replying to")) {
-        cancel(event);
-        let split = player.split(" ");
-        let player1 = split[0];
-        let player2 = split[3];
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
-        // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
-    }
-}).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}: ${message}").setContains()
-// geht
-// &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rSuccesfully invited kenchika to the party!&r
-// &r&2Guild > &b[MVP&2+&b] MasterNR &3[320]&f: &rnice&r
-// testen
-// &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rWiggleSnakey replying to dtAxl: WWDYM&r 
 
 // register("command", () => {
 //     // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);

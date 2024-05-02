@@ -336,6 +336,12 @@ class Settings {
     announceRareRoomScreen = false;
     // Quality of Life
     @SwitchProperty({
+        name: 'Formated Bridge Bot',
+        description: 'Format bridge bot messages (that are like this "Guild > birgeBot: player: message")',
+        category: 'Quality of Life',
+    })
+    formatBridgeBot = false;
+    @SwitchProperty({
         name: 'Copy Rare Drop',
         description: 'Copy rare drop Message to clipboard',
         category: 'Quality of Life',
