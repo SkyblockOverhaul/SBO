@@ -72,7 +72,7 @@ registerWhen(register("chat", (botName, player, message, event) =>{
         let split = player.split(" ");
         let player1 = split[0];
         let player2 = split[3];
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
+        ChatLib.chat("&r&2Guild > &b[Bridge] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
         // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
     }
 }).setCriteria("&r&2Guild > ${botName}: ${player}: ${message}"), () => settings.formatBridgeBot);
