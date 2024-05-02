@@ -1,25 +1,24 @@
 /// <reference types="../CTAutocomplete" />
 import "./features/Diana/DianaBurrows";
+import "./features/Kuudra";
 import "./features/diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
 import "./features/general/Waypoints";
+import "./features/general/fossilSolver";
 import "./features/general/messageHider";
 import "./features/general/pickuplog";
+import "./features/guis/BobberCounter";
+import "./features/guis/LegionCounter";
+import "./features/slayer/BlazeSlayer";
 import Settings from "./settings";
 import "./utils/overlays";
-import "./features/Kuudra";
-import "./features/general/fossilSolver";
-import "./features/guis/BobberCounter";
-import "./features/slayer/BlazeSlayer";
-import "./features/guis/LegionCounter";
 
 // in sbo addons packen
 import "./features/dungeon/recognizeRareRoom";
 import "./features/general/QOL";
-import { data } from "./utils/variables";
 import "./features/guis/SlayerGuis";
-import { createWorldWaypoint } from "./features/general/Waypoints";
+import { data } from "./utils/variables";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
@@ -160,11 +159,6 @@ const changeLogReg = register("step", () => {
 //         Client.showTitle("&3Blue Goblin Egg", "&eCarrot", 0, 40, 20);
 //     }
 // }).setCriteria("&r&aYou received ${message}");
-
-register("chat", () => {
-    Client.showTitle("&6SPEED", "", 0, 40, 20);
-}).setCriteria("&r&a&r&6Mining Speed Boost &r&ais now available!&r");
-
 
 // register("command", () => {
 //     // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);
