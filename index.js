@@ -19,6 +19,7 @@ import "./features/dungeon/recognizeRareRoom";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import { data } from "./utils/variables";
+import { isDataLoaded } from "./utils/checkData";
 
 
 register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
@@ -32,6 +33,7 @@ register("worldLoad", () => {
 const newVersion = "0.1.7" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
+    if (!isDataLoaded()) return
     if (data.downloadMsg) {
         downloadMsgReg.unregister()
         return
@@ -51,6 +53,7 @@ const downloadMsgReg = register("step", () => {
 // changelog beispiel
 const changeLogReg = register("step", () => {
     if (!World.isLoaded()) return
+    if (!isDataLoaded()) return
     if (data.changelogVersion === newVersion) { 
         changeLogReg.unregister()
         return
