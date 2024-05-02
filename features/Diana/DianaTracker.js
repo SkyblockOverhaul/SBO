@@ -95,6 +95,8 @@ function refreshOverlay(tracker, setting, category) {
     if (isDataLoaded()) {
         if (setting != 0 ) {
             percentDict = calcPercent(tracker, category, setting);
+            if (percentDict == undefined) return;
+            if (tracker == undefined) return;
             if (category === "items") {
                 itemOverlay(tracker, setting, percentDict);
             }
@@ -110,6 +112,7 @@ function calcPercent(trackerToCalc, type, setting) {
     if (setting == 2) {
         trackerToCalc = trackerToCalc[getDateMayorElected().getFullYear()];
     }
+    if (trackerToCalc == undefined) return;
     percentDict = {};
     if(type == "mobs"){
         for (let mob in trackerToCalc["mobs"]) {

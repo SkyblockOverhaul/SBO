@@ -341,6 +341,12 @@ class Settings {
         category: 'Quality of Life',
     })
     formatBridgeBot = false;
+    @TextProperty({
+        name: 'Bridge Bot Name',
+        description: 'Set the name of the bridge bot',
+        category: 'Quality of Life',
+    })
+    bridgeBotName = "";
     @SwitchProperty({
         name: 'Copy Rare Drop',
         description: 'Copy rare drop Message to clipboard',

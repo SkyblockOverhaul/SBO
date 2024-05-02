@@ -54,26 +54,27 @@ registerWhen(register("chat", (botName, player, message, event) =>{
     // cancel original message
     // send new guildbot message
     botName = botName.removeFormatting();
-    if (botName.includes("[")) {
-        const bracketIndex = player.indexOf('[') - 2;
-        botName = botName.substring(bracketIndex, player.length);
+    if (botName.includes("]")) {
+        botName = botName.split("] ")[1];
     }
     if (botName.includes(" ")) {
-        botName = botNames.split(" ")[0];
+        botName = botName.split(" ")[0];
     }
-    if (!player.includes(" ")) {
-        cancel(event);
-        player = player.removeFormatting();
-        ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
-        // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
-    }
-    else if (player.includes("replying to")) {
-        cancel(event);
-        let split = player.split(" ");
-        let player1 = split[0];
-        let player2 = split[3];
-        ChatLib.chat("&r&2Guild > &b[Bridge] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
-        // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
+    if (settings.bridgeBotName.toLowerCase() == botName.toLowerCase()) {
+        if (!player.includes(" ")) {
+            cancel(event);
+            player = player.removeFormatting();
+            ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
+            // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
+        }
+        else if (player.includes("replying to")) {
+            cancel(event);
+            let split = player.split(" ");
+            let player1 = split[0];
+            let player2 = split[3];
+            ChatLib.chat("&r&2Guild > &b[Bridge] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
+            // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
+        }
     }
 }).setCriteria("&r&2Guild > ${botName}: ${player}: ${message}"), () => settings.formatBridgeBot);
 // old &r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}: ${message}
