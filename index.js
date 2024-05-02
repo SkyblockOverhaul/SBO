@@ -61,6 +61,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
     ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
     ChatLib.chat(`&7> &aFixed bug with Blaze Slayer Effects`)
+    ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
     ChatLib.chat(`&7> &aSome minor bug fixes`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
