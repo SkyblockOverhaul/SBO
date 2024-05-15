@@ -64,7 +64,7 @@ registerWhen(register("chat", (botName, player, message, event) =>{
         if (!player.includes(" ")) {
             cancel(event);
             player = player.removeFormatting();
-            ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
+            ChatLib.chat("&r&2Guild > &b[Bridge] &b" + player + "&r: " + message);
             // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
         }
         else if (player.includes("replying to")) {

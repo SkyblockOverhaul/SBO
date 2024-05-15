@@ -13,6 +13,7 @@ import "./features/guis/LegionCounter";
 import "./features/slayer/BlazeSlayer";
 import Settings from "./settings";
 import "./utils/overlays";
+import "./features/Diana/PartyFinder";
 
 // in sbo addons packen
 import "./features/dungeon/recognizeRareRoom";
@@ -145,8 +146,6 @@ const changeLogReg = register("step", () => {
 //     })
 // }).setFps(1);
 
-// &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
-// You have joined [MVP++] Tricksyz's party!
 // register("chat", (event) => {
 //     Client.showTitle("&l&9!!!!!WORM!!!!!!", "&eKILL!!!", 0, 90, 20);
 // }).setCriteria("&r&7&oYou hear the sound of something approaching...&r");
