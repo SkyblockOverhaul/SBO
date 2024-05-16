@@ -77,6 +77,12 @@ export function mobAnnouncement(chat,mob,x,y,z){
     ChatLib.command(`pc x: ${x} y: ${y} z: ${z} | ${mob} found at ${area}!`);
 }
 
+
+let partyMembers = [];
+export function getPartyMembers() {
+    return partyMembers;
+}
+
 export function getSBID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("id") || null;
 }
@@ -385,3 +391,47 @@ register("worldLoad", () => {
     worldLoaded = true;
 });
 
+
+// party detection
+// partyleader
+register("chat", (party) => {
+    partyMembers = [];
+    party = party.removeFormatting().replaceAll("'s", "");
+    // ChatLib.chat("party: " + party);
+    party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
+    partyMembers.push(party)
+}).setCriteria("&eYou have joined ${party} &r&eparty!&r");
+
+// rest of party
+register("chat", (party) => {
+    party = party.removeFormatting()
+    // ChatLib.chat("party: " + party);
+    party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
+    // string to list names are separated by commas and extent partyMembers list with new names
+    partyMembers = partyMembers.concat(party.split(","))
+}).setCriteria("&eYou'll be partying with: ${party}");
+// &b[MVP&r&c+&r&b] Sanctuary4Life &r&ejoined the party.&r
+// &7NachoAnnihilator &r&ejoined the party.&r
+
+
+register("chat", (type, player) => {
+    player = player.removeFormatting()
+    if (player.split("●").length > 0) {
+        player = player.split("●")
+        for (let i = 0; i < player.length; i++) {
+            player[i] = getplayername(player[i])
+            partyMembers.push(player[i]) 
+        }
+    }
+    else {
+        player = getplayername(player)
+        partyMembers.push(player)
+    }
+}).setCriteria("&eParty ${type}: ${player}");
+
+register("chat", (count) => {
+    partyMembers = [];
+}).setCriteria("&r&aParty members ${count}");
+
+// &eParty Leader: &r&7RonixDE &r&a●&r
+// &eParty Members: &r&7EpsonGHG&r&a ● &r&b[MVP&r&f+&r&b]
