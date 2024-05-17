@@ -24,9 +24,22 @@ let dianaMobOverlay = dianaMobOverlayObj.overlay;
 let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaLootTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
 
+// let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStats", "dianaStatsExample", "render", "StatsLoc");
+// let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
+
 
 let dianaMobTrackerText = new UIWrappedText("");
 let dianaLootTrackerText = new UIWrappedText("");
+// let dianaStatsText = new UIWrappedText("");
+
+
+// export function statsOverlay(mobTracker, lootTracker, percentDict) {
+//     if(getGuiOpen()) return;
+//     if (!dianaStatsOverlay.children.includes(dianaStatsText)) {
+//         dianaStatsOverlay.clearChildren();
+//         dianaStatsOverlay.addChild(dianaStatsText);
+//     }
+// }
 
 /**
  * 
