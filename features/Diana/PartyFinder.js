@@ -1,17 +1,23 @@
 import { request } from "../../../requestV2";
+import { getPartyMembers } from "../../utils/functions";
 
 // let api = "https://api.skyblockoverhaul.com";
-let api = "http://127.0.0.1:8000";
+let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
-    print(party)
+    // remove empty strings from partylist (idk why this works but it does)
+    party = party.filter(Boolean);
+    // remove user from partylist
+    party = party.filter((name) => name != Player.getName());
+    // list to string with comma separated
+    party = party.join(",");
+    // remove duplicates
+    party = [...new Set(party.split(","))].join(",");
     request({
         url: api + "/partyInfo?party=" + party,
         json: true
     }).then((response)=> {
-        print("test")
         printPartyInfo(response.PartyInfo)
-        print("test2")
     }).catch((error)=> {
         console.error(error);
     });
@@ -86,41 +92,36 @@ register("command", () => {
 }).setName("sbopf");
 
 register("chat", (party) => {
-    removeFromQueue();
+    // removeFromQueue();
+    // print partymembers
+    setTimeout(() => {
+        // send clickable message to execute command
+        new TextComponent("&6[SBO] &eClick to check party members").setClick("run_command", "/sbocheckp").setHover("show_text", "/sbocheckp").chat();
+    }, 100);
 }).setCriteria("&eYou have joined ${party} &r&eparty!&r");
-
-register("chat", (party) => {
-    party = party.removeFormatting().replaceAll("'s", "");
-    ChatLib.chat("party: " + party);
-    party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
-    partyinfo = getPartyInfo(party);
-    for (let i = 0; i < partyinfo.length; i++) {
-        ChatLib.chat("name: " + partyinfo[i].name + " sb lvl: " + partyinfo[i].sbLvl + " eman9 " + partyinfo[i].eman9 + " kills: " + partyinfo[i].mythosKills + " legi pet: " + partyinfo[i].legPet);
-    }
-}).setCriteria("&eYou have joined ${party} &r&eparty!&r");
-
-register("chat", (party) => {
-    party = party.removeFormatting()
-    ChatLib.chat("party: " + party);
-    party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
-    partyinfo = getPartyInfo(party);
-    for (let i = 0; i < partyinfo.length; i++) {
-        ChatLib.chat("name: " + partyinfo[i].name + " sb lvl: " + partyinfo[i].sbLvl + " eman9 " + partyinfo[i].eman9 + " kills: " + partyinfo[i].mythosKills + " legi pet: " + partyinfo[i].legPet);
-    }
-}).setCriteria("&eYou'll be partying with: ${party}");
 
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!
 
 register("command", () => {
-    party = "&r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r";
-    party = party.removeFormatting();
-    party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
-    getPartyInfo(party);
-}).setName("sbopfparty");
+    try {
+        ChatLib.chat("&6[SBO] &eChecking party members...");
+        let party = getPartyMembers();
+        if (party.length == 0) {
+            ChatLib.chat("&6[SBO] &eNo party members found. try /pl and /sbocheckp again if your in a party.");
+            return;
+        }
+        getPartyInfo(party);
+    } catch (error) {
+        ChatLib.chat("&6[SBO] &eUnexpected error occurred while checking party members. Please try /pl and /sbocheckp again.");
+        console.error(error);
+    }
+}).setName("sbocheckp");
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
-        ChatLib.chat("name: " + partyinfo[i].name + " sb lvl: " + partyinfo[i].sbLvl + " eman9 " + partyinfo[i].eman9 + " kills: " + partyinfo[i].mythosKills + " legi pet: " + partyinfo[i].legPet);
+        // if (partyinfo[i].legPet) { // to remove alts from the list
+            ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&6✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills);
+        // }
     }
 }
