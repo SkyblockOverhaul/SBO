@@ -425,6 +425,14 @@ register("chat", (player) => {
     partyMembers = partyMembers.filter(e => e !== player)
 }).setCriteria("${player} &r&eleft the party.&r");
 
+// &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
+// player left party version 2
+register("chat", (leader, player) => {
+    player = player.removeFormatting()
+    player = getplayername(player)
+    partyMembers = partyMembers.filter(e => e !== player)
+}).setCriteria("&eThe party was transferred to ${leader} &r&ebecause ${player} &r&eleft");
+
 // you left party
 register("chat", () => {
     partyMembers = [];
@@ -445,7 +453,7 @@ register("chat", (type, player) => {
         partyMembers.push(player)
     }
 }).setCriteria("&eParty ${type}: ${player}");
-// &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
+
 register("chat", (count) => {
     partyMembers = [];
 }).setCriteria("&r&aParty members ${count}");
