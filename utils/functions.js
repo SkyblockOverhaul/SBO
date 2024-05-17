@@ -410,10 +410,27 @@ register("chat", (party) => {
     // string to list names are separated by commas and extent partyMembers list with new names
     partyMembers = partyMembers.concat(party.split(","))
 }).setCriteria("&eYou'll be partying with: ${party}");
-// &b[MVP&r&c+&r&b] Sanctuary4Life &r&ejoined the party.&r
-// &7NachoAnnihilator &r&ejoined the party.&r
 
+// player joined party
+register("chat", (player) => {
+    player = player.removeFormatting()
+    player = getplayername(player)
+    partyMembers.push(player)
+}).setCriteria("${player} &r&ejoined the party.&r"));
 
+// player left party
+register("chat", (player) => {
+    player = player.removeFormatting()
+    player = getplayername(player)
+    partyMembers = partyMembers.filter(e => e !== player)
+}).setCriteria("${player} &r&eleft the party.&r");
+
+// you left party
+register("chat", () => {
+    partyMembers = [];
+}).setCriteria("&eYou left the party.&r");
+
+// get party members from party list
 register("chat", (type, player) => {
     player = player.removeFormatting()
     if (player.split("●").length > 0) {
@@ -428,10 +445,7 @@ register("chat", (type, player) => {
         partyMembers.push(player)
     }
 }).setCriteria("&eParty ${type}: ${player}");
-
+// &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
 register("chat", (count) => {
     partyMembers = [];
 }).setCriteria("&r&aParty members ${count}");
-
-// &eParty Leader: &r&7RonixDE &r&a●&r
-// &eParty Members: &r&7EpsonGHG&r&a ● &r&b[MVP&r&f+&r&b]

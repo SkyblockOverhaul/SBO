@@ -11,14 +11,13 @@ function getPartyInfo(party) {
     party = party.filter((name) => name != Player.getName());
     // list to string with comma separated
     party = party.join(",");
-    // print("#"+party+"#");
+    // remove duplicates
+    party = [...new Set(party.split(","))].join(",");
     request({
         url: api + "/partyInfo?party=" + party,
         json: true
     }).then((response)=> {
-        print("test")
         printPartyInfo(response.PartyInfo)
-        print("test2")
     }).catch((error)=> {
         console.error(error);
     });
