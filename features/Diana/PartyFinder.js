@@ -1,7 +1,6 @@
 import { request } from "../../../requestV2";
 import { getPartyMembers } from "../../utils/functions";
 
-// let api = "https://api.skyblockoverhaul.com";
 let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
@@ -9,10 +8,8 @@ function getPartyInfo(party) {
     party = party.filter(Boolean);
     // remove user from partylist
     party = party.filter((name) => name != Player.getName());
-    // list to string with comma separated
-    party = party.join(",");
-    // remove duplicates
-    party = [...new Set(party.split(","))].join(",");
+    // remove duplicates 
+    party = [...new Set(party)].join(",");
     request({
         url: api + "/partyInfo?party=" + party,
         json: true
@@ -103,25 +100,32 @@ register("chat", (party) => {
 // &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
 // You have joined [MVP++] Tricksyz's party!
 
+let lastUsed = 0;
 register("command", () => {
-    try {
-        ChatLib.chat("&6[SBO] &eChecking party members...");
-        let party = getPartyMembers();
-        if (party.length == 0) {
-            ChatLib.chat("&6[SBO] &eNo party members found. try /pl and /sbocheckp again if your in a party.");
-            return;
+    if (Date.now() - lastUsed > 180000 || lastUsed == 0) { // 3 minutes
+        lastUsed = Date.now();
+        try {
+            ChatLib.chat("&6[SBO] &eChecking party members...");
+            let party = getPartyMembers();
+            if (party.length == 0) {
+                ChatLib.chat("&6[SBO] &eNo party members found. try /pl and /sbocheckp again if your in a party.");
+                return;
+            }
+            getPartyInfo(party);
+        } catch (error) {
+            ChatLib.chat("&6[SBO] &eUnexpected error occurred while checking party members. Please try /pl and /sbocheckp again.");
+            console.error(error);
         }
-        getPartyInfo(party);
-    } catch (error) {
-        ChatLib.chat("&6[SBO] &eUnexpected error occurred while checking party members. Please try /pl and /sbocheckp again.");
-        console.error(error);
     }
-}).setName("sbocheckp");
+    else {
+        ChatLib.chat("&6[SBO] &ePlease wait 3 minutes before checking party members again.");
+    }
+}).setName("sbopcheckp");
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
-        // if (partyinfo[i].legPet) { // to remove alts from the list
-            ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&6✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills);
-        // }
+        if (partyinfo[i].legPet) { // to remove alts from the list
+            ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&4✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills);
+        }
     }
 }

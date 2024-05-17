@@ -416,7 +416,7 @@ register("chat", (player) => {
     player = player.removeFormatting()
     player = getplayername(player)
     partyMembers.push(player)
-}).setCriteria("${player} &r&ejoined the party.&r"));
+}).setCriteria("${player} &r&ejoined the party.&r");
 
 // player left party
 register("chat", (player) => {
