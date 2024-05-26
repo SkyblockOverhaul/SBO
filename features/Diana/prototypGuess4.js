@@ -120,24 +120,63 @@ function onPlaySound(pos, name, volume, pitch, categoryName, event) {
 }
 
 function solveEquasionThing(x, y) {
+    // Check if the input arrays have exactly 3 elements
+    if (x.length !== 3 || y.length !== 3) {
+        throw new Error("Input arrays must have exactly 3 elements.");
+    }
 
-    let a =
-      (-y[0] * x[1] * x[0] -
-        y[1] * x[1] * x[2] +
-        y[1] * x[1] * x[0] +
-        x[1] * x[2] * y[2] +
-        x[0] * x[2] * y[0] -
-        x[0] * x[2] * y[2]) /
-      (x[1] * y[0] -
-        x[1] * y[2] +
-        x[0] * y[2] -
-        y[0] * x[2] +
-        y[1] * x[2] -
-        y[1] * x[0]);
-    let b = ((y[0] - y[1]) * (x[0] + a) * (x[1] + a)) / (x[1] - x[0]);
-    let c = y[0] - b / (x[0] + a);
+    const [x0, x1, x2] = x;
+    const [y0, y1, y2] = y;
+
+    const a = (-y0 * x1 * x0 - y1 * x1 * x2 + y1 * x1 * x0 + x1 * x2 * y2 + x0 * x2 * y0 - x0 * x2 * y2) /
+        (x1 * y0 - x1 * y2 + x0 * y2 - y0 * x2 + y1 * x2 - y1 * x0);
+
+    const b = ((y0 - y1) * (x0 + a) * (x1 + a)) / (x1 - x0);
+
+    const c = y0 - b / (x0 + a);
+
     return [a, b, c];
-  }
+}
+
+// maybe use this instead of the above function to solve the equation
+// function solveEquasionThing(x, y) {
+//     // Check if the input arrays have exactly 3 elements
+//     if (x.length !== 3 || y.length !== 3) {
+//         throw new Error("Input arrays must have exactly 3 elements.");
+//     }
+
+//     // Initialize coefficients
+//     let a = 0, b = 0, c = 0;
+
+//     // Compute sums and products
+//     let sumX = x.reduce((acc, val) => acc + val, 0);
+//     let sumY = y.reduce((acc, val) => acc + val, 0);
+//     let sumXSquared = x.reduce((acc, val) => acc + val * val, 0);
+//     let sumXY = 0;
+//     let sumXcubed = 0;
+//     let sumXSquaredY = 0;
+
+//     for (let i = 0; i < x.length; i++) {
+//         sumXY += x[i] * y[i];
+//         sumXcubed += x[i] * x[i] * x[i];
+//         sumXSquaredY += x[i] * x[i] * y[i];
+//     }
+
+//     // Compute denominator of 'a'
+//     let denominatorA = (x.length * sumXSquared) - (sumX * sumX);
+
+//     // Avoid division by zero
+//     if (denominatorA === 0) {
+//         throw new Error("Denominator 'a' is zero.");
+//     }
+
+//     // Compute coefficients
+//     a = ((x.length * sumXY) - (sumX * sumY)) / denominatorA;
+//     b = ((sumXSquared * sumY) - (sumX * sumXY)) / denominatorA;
+//     c = ((sumXSquared * sumXY) - (sumX * sumXSquaredY)) / denominatorA;
+
+//     return [a, b, c];
+// }
 
 function onReceiveParticle(particle, type, event) {
     if (!isEnabled()) return;
@@ -271,6 +310,53 @@ function isEnabled() {
 }
 
 
+// class SboVec {
+//     constructor(x, y, z) {
+//         this.x = x;
+//         this.y = y;
+//         this.z = z;
+//     }
+
+//     distance(other) {
+//         const dx = other.x - this.x;
+//         const dy = other.y - this.y;
+//         const dz = other.z - this.z;
+//         return Math.sqrt(dx * dx + dy * dy + dz * dz);
+//     }
+
+//     add(other) {
+//         return new SboVec(this.x + other.x, this.y + other.y, this.z + other.z);
+//     }
+
+//     subtract(other) {
+//         return new SboVec(this.x - other.x, this.y - other.y, this.z - other.z);
+//     }
+
+//     multiply(d) {
+//         return new SboVec(this.x * d, this.y * d, this.z * d);
+//     }
+
+//     clone() {
+//         return new SboVec(this.x, this.y, this.z);
+//     }
+
+//     equals(other) {
+//         return this.x === other.x && this.y === other.y && this.z === other.z;
+//     }
+
+//     getX() {
+//         return this.x;
+//     }
+
+//     getY() {
+//         return this.y;
+//     }
+
+//     getZ() {
+//         return this.z;
+//     }
+// }
+
 class SboVec {
     constructor(x, y, z) {
         this.x = x;
@@ -285,16 +371,16 @@ class SboVec {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    add(other) {
-        return new SboVec(this.x + other.x, this.y + other.y, this.z + other.z);
-    }
-
     subtract(other) {
         return new SboVec(this.x - other.x, this.y - other.y, this.z - other.z);
     }
 
-    multiply(d) {
-        return new SboVec(this.x * d, this.y * d, this.z * d);
+    scale(factor) {
+        return new SboVec(this.x * factor, this.y * factor, this.z * factor);
+    }
+
+    add(other) {
+        return new SboVec(this.x + other.x, this.y + other.y, this.z + other.z);
     }
 
     clone() {
@@ -317,6 +403,7 @@ class SboVec {
         return this.z;
     }
 }
+
 
 
 registerWhen(register("worldUnload", () => {
