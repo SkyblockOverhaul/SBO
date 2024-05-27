@@ -519,7 +519,7 @@ class Settings {
 
     // Debug
     @SwitchProperty({
-        name: 'Always Diana',
+        name: 'Always Diana Mayor',
         description: 'Its always Diana, no need to check for mayor, perks or spade',
         category: 'Debug',
     })
