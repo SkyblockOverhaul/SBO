@@ -123,7 +123,7 @@ register("command", () => {
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
         if (partyinfo[i].legPet) { // to remove all player without legendary griffin pet
-            ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&4✓" : "&a✗") + "&e | l5 Daxe: " + (partyinfo[i].looting5daxe ? "&4✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills + );
+            ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&4✓" : "&a✗") + "&e | l5 Daxe: " + (partyinfo[i].looting5daxe ? "&4✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills);
         }
     }
 }
