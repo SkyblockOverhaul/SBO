@@ -23,6 +23,8 @@ import {
 import settings from "../settings";
 import { loadGuiSettings, saveGuiSettings } from "../utils/functions";
 import { overlayExamples } from "../utils/guiExamples";
+import { isInSkyblock } from '../utils/functions';
+
 
 const dragOffset = {x: 0, y: 0};
 
@@ -114,6 +116,7 @@ register("command", () => {
 }).setName("sboguis").setAliases("sbomoveguis");
 
 register('renderOverlay', () => {
+    if(!isInSkyblock()) return;
     overLays.forEach(overlay => {
         switch(overlay.name){
             case "dianaMobTracker":
@@ -132,6 +135,7 @@ register('renderOverlay', () => {
 });
 
 register('postGuiRender', () => {
+    if(!isInSkyblock()) return;
     postWindow.draw()
 });
 

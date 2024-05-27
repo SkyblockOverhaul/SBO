@@ -91,7 +91,8 @@ export function getSBUUID(item) {
 }
 
 export function checkIfInSkyblock() {
-    return Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK");
+    inSkyblockBool = (settings.alwaysInSkyblock || Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK"));
+    return inSkyblockBool;
 }
 
 // returns if in skyblock //

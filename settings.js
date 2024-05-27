@@ -25,7 +25,7 @@ import { data, resetVersion } from './utils/variables';
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Mining','Party Commands','Customization','Quality of Life','Credits/Infos'];
+        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Mining','Party Commands','Customization','Quality of Life','Debug','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -216,13 +216,6 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
-    @SwitchProperty({
-        name: 'Always Diana',
-        description: 'Its always Diana, no need to check for mayor, perks or spade',
-        category: 'Diana',
-        subcategory: "Other",
-    })
-    alwaysDiana = false;
     //Party Commands
     @SwitchProperty({
         name: 'Party Commands',
@@ -523,6 +516,20 @@ class Settings {
         subcategory: "Category"
     })
     slotColor = Color.RED;
+
+    // Debug
+    @SwitchProperty({
+        name: 'Always Diana',
+        description: 'Its always Diana, no need to check for mayor, perks or spade',
+        category: 'Debug',
+    })
+    itsAlwaysDiana = false;
+    @SwitchProperty({
+        name: 'Always in Skyblock',
+        description: 'you are always in skblock, just for trolls and debug',
+        category: 'Debug',
+    })
+    alwaysInSkyblock = false;
 
     // credits/infos
     @ButtonProperty({
