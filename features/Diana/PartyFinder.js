@@ -118,7 +118,7 @@ register("command", () => {
     else {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
     }
-}).setName("sbopcheckp");
+}).setName("sbocheckp");
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
