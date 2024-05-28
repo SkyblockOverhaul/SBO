@@ -15,6 +15,7 @@ import {
     UIMultilineTextInput,
     UIText,
     UIWrappedText,
+    ScaledTextConstraint,
     WindowScreen,
     UIRoundedRectangle,
     ChildBasedRangeConstraint,
@@ -48,9 +49,10 @@ class elementaOverlay {
         this.locName = locName;
         this.renderGui = true;
         this.selected = false;
+        this.scale = parseFloat(guiSettings[locName]["s"]);
         this.overlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
-        this.overlay.setWidth(new ChildBasedRangeConstraint());
-        this.overlay.setHeight(new ChildBasedRangeConstraint());
+        this.overlay.setWidth(new ChildBasedSizeConstraint());
+        this.overlay.setHeight(new ChildBasedSizeConstraint());
 
         this.overlay.onMouseClick((comp, event) => {
             this.selected = true;
@@ -74,8 +76,28 @@ class elementaOverlay {
             const newY = this.overlay.getTop() + dy;
             this.overlay.setX(newX.pixels());
             this.overlay.setY(newY.pixels());
-            guiSettings[this.locName]["x"] = newX;
+            guiSettings[this.locName]["x"] = newX
             guiSettings[this.locName]["y"] = newY;
+            saveGuiSettings(guiSettings);
+        });
+        this.overlay.onMouseScroll((comp, x, y) => {
+            delta = x.delta; // -1 = scrolled down, 1 = scrolled up
+            scale = parseFloat(guiSettings[this.locName]["s"]);
+            this.scale = scale;
+            switch(delta){
+                case -1:
+                    if(this.scale <= 0.1) return;
+                    this.scale -= 0.1;
+                    break;
+                case 1:
+                    if(this.scale >= 1.0) return;
+                    this.scale += 0.1;
+                    break;
+            }
+            roundedScale = this.scale.toFixed(1);
+            guiSettings[this.locName]["s"] = roundedScale;
+            clearExamples();
+            drawExamples();
             saveGuiSettings(guiSettings);
         });
 
@@ -110,6 +132,10 @@ this.gui.registerMouseReleased(() => {
     this.renderWindow.mouseRelease();
     this.postWindow.mouseRelease();
 });
+this.gui.registerScrolled((mouseX, mouseY, scrollDirection) => {
+    this.renderWindow.mouseScroll(scrollDirection);
+    this.postWindow.mouseScroll(scrollDirection);
+});
 
 register("command", () => { 
     GuiHandler.openGui(gui)
@@ -142,6 +168,7 @@ register('postGuiRender', () => {
 register('worldUnload', () => {
     closeEditing();
 });
+
 
 
 function checkForSetting(overlay, setting, type, setting2, diana, renderBool){
@@ -219,30 +246,31 @@ function guiMover() {
 }
 
 function drawExamples() {
-    overLays.forEach(overlay => {
-        if (overlay.name == "kuudraOverlay") {
-            let example = overlay.example
+    overLays.forEach(gui => {
+        if (gui.name == "kuudraOverlay") {
+            let example = gui.example
             if (settings.lineSetting == 0) {
                 example += "Two"
             }
             else {
                 example += "One"
             }
-            exampleMessage(overlayExamples[example], overlay.overlay);
+            exampleMessage(overlayExamples[example], gui.overlay, gui.scale);
         }
         else {
-            exampleMessage(overlayExamples[overlay.example], overlay.overlay);
+            exampleMessage(overlayExamples[gui.example], gui.overlay, gui.scale);
         }
     });
 }
 
-function exampleMessage(example, overlay){
+function exampleMessage(example, overlay, scale){
     let exampleMSG = new UIWrappedText(example)
     overlay.clearChildren();
     exampleMSG.setX(new SiblingConstraint())
     exampleMSG.setY(new SiblingConstraint())
     maxStringWidth = example.split("\n").reduce((a, b) => a.length > b.length ? a : b).length
     exampleMSG.setWidth((maxStringWidth * 5.3).pixels());
+    exampleMSG.setTextScale((scale).pixels());
     overlay.addChild(exampleMSG);
     overlay.setWidth(new ChildBasedRangeConstraint());
     overlay.setHeight(new ChildBasedRangeConstraint());

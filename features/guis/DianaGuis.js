@@ -80,6 +80,7 @@ ${GRAY}${BOLD}Total Mobs: ${AQUA}${BOLD}${mobTracker["mobs"]["TotalMobs"]}
 `
     }
     dianaMobTrackerText.setText(message);
+    dianaMobTrackerText.setTextScale((dianaMobOverlayObj.scale).pixels());
 }
 let mobTrackerType = undefined;
 let lootTrackerType = undefined;
@@ -91,7 +92,7 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
     if(getGuiOpen()) return;
     if (!dianaLootOverlay.children.includes(dianaLootTrackerText)) {
         dianaLootOverlay.clearChildren();
-        dianaLootOverlay.addChild(dianaLootTrackerText);
+        dianaLootOverlay.addChild(dianaLootTrackerText);    
     }
     let message = "";
     if (lootViewSetting == 2) {
@@ -101,6 +102,7 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
         message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
     }
     dianaLootTrackerText.setText(message);
+    dianaLootTrackerText.setTextScale((dianaLootOverlayObj.scale).pixels());
 }
 
 function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
@@ -185,6 +187,7 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
         message = "";
     }
     mythosMobHpText.setText(message);
+    mythosMobHpText.setTextScale((mythosHpOverlayObj.scale).pixels());
 }
 
 registerWhen(register("step", () => {
