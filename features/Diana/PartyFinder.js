@@ -10,15 +10,34 @@ function getPartyInfo(party) {
     party = party.filter(Boolean);
     // remove user from partylist
     party = party.filter((name) => name != Player.getName());
-    request({
-        url: api + "/partyInfo?party=" + party,
-        json: true
-    }).then((response)=> {
-        printPartyInfo(response.PartyInfo)
+
+    // send for each player one reqeust to the api and only send the next request if the previous one is finished
+    let promises = [];
+    for (let i = 0; i < party.length; i++) {
+        promises.push(request({
+            url: api + "/partyInfo?party=" + party[i],
+            json: true
+        }));
+    }
+    Promise.all(promises).then((responses)=> {
+        for (let i = 0; i < responses.length; i++) {
+            printPartyInfo(responses[i].PartyInfo);
+        }
     }).catch((error)=> {
         console.error(error);
+        ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + party[i]); 
     });
+    
 }
+// old for the complete party at once
+// request({
+//     url: api + "/partyInfo?party=" + party,
+//     json: true
+// }).then((response)=> {
+//     printPartyInfo(response.PartyInfo)
+// }).catch((error)=> {
+//     console.error(error);
+// });
 
 // function queueAsPlayer() {
 //     // Queue as a player
