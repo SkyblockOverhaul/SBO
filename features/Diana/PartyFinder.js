@@ -130,7 +130,7 @@ register("command", () => {
             }
             getPartyInfo(party);
         } catch (error) {
-            ChatLib.chat("&6[SBO] &eUnexpected error occurred while checking party members. Please try /pl and /sbocheckp again.");
+            ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party members. Please try /pl and /sbocheckp again.");
             console.error(error);
         }
     }
@@ -141,8 +141,8 @@ register("command", () => {
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
-        if (partyinfo[i].legPet) { // to remove all player without legendary griffin pet
-            ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&4✓" : "&a✗") + "&e | l5 Daxe: " + (partyinfo[i].looting5daxe ? "&4✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills);
-        }
+        // if (partyinfo[i].legPet) { // to remove all player without legendary griffin pet
+        ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&4✓" : "&a✗") + "&e | l5 Daxe: " + (partyinfo[i].looting5daxe ? "&4✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills);
+        // }
     }
 }
