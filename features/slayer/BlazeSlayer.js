@@ -50,10 +50,12 @@ function refreshEffectOverlay(effects) {
         });
         effectsText.setHeight((height).pixels());
         effectsText.setText(message);
+        effectsText.setTextScale((effectsOverlayObj.scale).pixels());
     }
     else {
         effectsText.setHeight((height).pixels());
         effectsText.setText(` `);
+        effectsText.setTextScale((effectsOverlayObj.scale).pixels());
     }
 }
 

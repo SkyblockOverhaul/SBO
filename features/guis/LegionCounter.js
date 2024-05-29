@@ -35,6 +35,7 @@ function refreshLegionOverlay() {
         legionOverlay.addChild(legionText);
     }
     legionText.setText(`${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}${getLegionCount()}`);
+    legionText.setTextScale((legionOverlayObj.scale).pixels());
 }
 
 registerWhen(register("step", () => {

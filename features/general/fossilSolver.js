@@ -203,12 +203,15 @@ function calcNewCoords() {
                 tempStringNames += fossil + " \n";
             });
         fossilPossibleNames.setText(tempStringNames);
+        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
     }
     else if (possibleFossils.length == 1) {
         fossilPossibleNames.setText("Fossil: " + possibleFossils[0]);
+        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
     }
     else {
         fossilPossibleNames.setText("Fossil: No Fossil");
+        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
     }
 
     if (fossilFoundAt.length > 0) {

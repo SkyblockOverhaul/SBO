@@ -406,6 +406,7 @@ function refreshOverlay(totalValue) {
         tempObj = new UIWrappedText(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
         tempObj.setX((0).pixels());
         tempObj.setY((pixel).pixel());
+        tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
@@ -414,6 +415,7 @@ function refreshOverlay(totalValue) {
         tempObj = new UIWrappedText(`&eTotal Value: &6${formatPrice(totalValue)} coins`);
         tempObj.setX((0).pixels());
         tempObj.setY((pixel).pixel());
+        tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
