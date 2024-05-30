@@ -88,7 +88,7 @@ HypixelModAPI.setLogging(true);
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     // print all keys of partyInfo
 
-    for (const key in partyInfo) {
+    for (const key in Object.keys(partyInfo)) {
         print(`player:${key}`);
     }
 })
