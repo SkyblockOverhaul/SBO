@@ -491,6 +491,22 @@ register("chat", (count) => {
     partyMembers = [];
 }).setCriteria("&r&aParty members ${count}");
 
+function setInterval(func, delay) {
+    var thread = new java.lang.Thread(new java.lang.Runnable({
+        run: function() {
+            while (true) {
+                func();
+                java.lang.Thread.sleep(delay);
+            }
+        }
+    }));
+    thread.start();
+    return thread;
+}
+
+function clearInterval(thread) {
+    thread.stop();
+}
 
 // experimental
 HypixelModAPI.on("partyInfo", (partyInfo) => {

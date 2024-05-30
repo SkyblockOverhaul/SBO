@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { getPartyBool, getPartyMembers, getplayername } from "../../utils/functions";
+import { getPartyBool, getPartyMembers, getplayername, setInterval, clearInterval } from "../../utils/functions";
 
 let api = "https://api.skyblockoverhaul.com";
 
