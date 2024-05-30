@@ -151,12 +151,7 @@ register("command", () => {
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
         // if (partyinfo[i].legPet) { // to remove all player without legendary griffin pet
-        if (partyinfo[i].warnings.length == 0) {
             ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&e&r&9│ &r&eLvL&r&f: &r&6" + partyinfo[i].sbLvl + "&r&e&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&e&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&e &r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
-        }
-        else {
-            ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&e&r&9│ &r&eWarnings&r&f: &r&4" + partyinfo[i].warnings.join(", "));
-        }
         // }
     }
 }
@@ -167,6 +162,7 @@ register("command", (args1, ...args) => {
         ChatLib.chat("&6[SBO] &ePlease provide a player name to check.");
         return;
     }
+    ChatLib.chat("&6[SBO] &eChecking Player: " + playerName);
     request({
         url: api + "/partyInfo?party=" + playerName,
         json: true
