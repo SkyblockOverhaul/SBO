@@ -11,6 +11,7 @@
     "BeaconBeam",
     "RenderLibV2",
     "axios",
-    "Elementa"
+    "Elementa",
+    "HypixelModAPI"
   ]
 }
