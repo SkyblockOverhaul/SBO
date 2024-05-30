@@ -87,10 +87,10 @@ HypixelModAPI.setLogging(true);
 
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     // print all keys of partyInfo
+    Object.keys(partyInfo).forEach(key => {
+        print(key);
+    })
 
-    for (const key in Object.keys(partyInfo)) {
-        print(`player:${key}`);
-    }
 })
 
 register("command", () => {
