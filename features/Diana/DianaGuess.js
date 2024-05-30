@@ -227,7 +227,7 @@ function onReceiveParticle(particle, type, event) {
 
                     // check if finallocation has nan values
                     if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {
-                        print("partical: Soopy finalLocation has nan values");
+                        print("partical: SBO finalLocation has nan values");
                     }
                     else {
                         

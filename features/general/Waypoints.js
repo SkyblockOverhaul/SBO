@@ -38,15 +38,15 @@ register("worldUnload", () => {
 })
 
 
-export function removeBurrowWaypoint(closetburrow, burrows) {
-    
-    for (let i = 0; i < burrowWaypoints.length; i++) {
-        if (burrowWaypoints[i][1] == closetburrow[1] && burrowWaypoints[i][2] == closetburrow[2] && burrowWaypoints[i][3] == closetburrow[3]) {
-            burrowWaypoints.splice(i, 1);
+export function removeBurrowWaypoint(burrowshistory, burrows) {
+    burrowshistory.forEach(([type, x, y, z]) => {
+        for (let i = 0; i < burrowWaypoints.length; i++) {
+            if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+                burrowWaypoints.splice(i, 1);
+            }
         }
-    }
-    burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
-
+        burrows = burrows.filter(([_, bx, by, bz]) => bx !== x || by !== y || bz !== z );
+    });
     return burrows; 
 }
 
@@ -314,8 +314,12 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 World.playSound("random.orb", 1, 1);
                 z = z.replace("&r", "");
                 // check if waypoint is from player
+                
                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
+                    print("x:", inqWaypoints[inqWaypoints.length - 1][1]);
+                    print("y:", (inqWaypoints[inqWaypoints.length - 1][2] + 1));
+                    print("z:", inqWaypoints[inqWaypoints.length - 1][3]);
                     // removeWaypointAfterDelay(inqWaypoints, 60);
                 }
             }
@@ -408,10 +412,10 @@ function renderBurrowLines(){
     if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
         if (burrowDistance > 60) return;
-        trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
+        trace(closestBurrow[1], closestBurrow[2] + 1, closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1, "burrow");
     }
     if (inqWaypoints.length > 0 && settings.inqLine) {
-        trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
+        trace(inqWaypoints[inqWaypoints.length - 1][1], parseInt(inqWaypoints[inqWaypoints.length - 1][2]), inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1, "inq");
     }
 }
 
