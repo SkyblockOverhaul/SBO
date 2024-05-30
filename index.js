@@ -85,9 +85,10 @@ import { HypixelModAPI } from "./../HypixelModAPI";
 HypixelModAPI.setLogging(true);
 
 
-HypixelModAPI.on("playerinfo", (playerinfo) => {
-    //playerinfo is a json print it to see what it contains
-    print(playerinfo)
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    //partyInfo is a json print it to see what it contains
+    print("partyInfo: " + JSON.stringify(partyInfo))
+    print(partyInfo)
 })
 
 register("command", () => {
