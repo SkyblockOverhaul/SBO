@@ -4,13 +4,23 @@ import { getPartyMembers } from "../../utils/functions";
 let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
-    // remove duplicates 
-    party = [...new Set(party)].join(",");
-    // remove empty strings from partylist (idk why this works but it does)
-    party = party.filter(Boolean);
-    // remove user from partylist
-    party = party.filter((name) => name != Player.getName());
-
+    // // remove empty strings from partylist (idk why this works but it does)
+    // party = party.filter(Boolean);
+    // // remove user from partylist
+    // party = party.filter((name) => name != Player.getName());
+    // // remove duplicates 
+    // party = [...new Set(party)].join(",");
+    // // if last char of party is a comma remove it
+    // if (party.charAt(party.length - 1) == ",") {
+    //     party = party.slice(0, -1);
+    // }
+    let playerName = Player.getName();
+    // Filter out empty strings, the current user, and duplicates, then join into a string
+    party = [...new Set(party.filter(name => name && name != playerName))].join(",").replaceAll(" ", "").replaceAll(",,", ",");
+    if (party.charAt(party.length - 1) == ",") {
+        party = party.slice(0, -1);
+    }
+    
     // send for each player one reqeust to the api and only send the next request if the previous one is finished
     let promises = [];
     for (let i = 0; i < party.length; i++) {
@@ -27,7 +37,6 @@ function getPartyInfo(party) {
         console.error(error);
         ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + party[i]); 
     });
-    
 }
 // old for the complete party at once
 // request({
@@ -142,7 +151,29 @@ register("command", () => {
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
         // if (partyinfo[i].legPet) { // to remove all player without legendary griffin pet
-        ChatLib.chat("&6[SBO] &eName: " + partyinfo[i].name + " | LvL: " + partyinfo[i].sbLvl + " | Eman9: " + (partyinfo[i].eman9 ? "&4✓" : "&a✗") + "&e | l5 Daxe: " + (partyinfo[i].looting5daxe ? "&4✓" : "&a✗") + "&e | Kills: " + partyinfo[i].mythosKills);
+        if (partyinfo[i].warnings.length == 0) {
+            ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&e&r&9│ &r&eLvL&r&f: &r&6" + partyinfo[i].sbLvl + "&r&e&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&e&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&e &r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
+        }
+        else {
+            ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&e&r&9│ &r&eWarnings&r&f: &r&4" + partyinfo[i].warnings.join(", "));
+        }
         // }
     }
 }
+
+register("command", (args1, ...args) => {
+    let playerName = args1;
+    if (!playerName) {
+        ChatLib.chat("&6[SBO] &ePlease provide a player name to check.");
+        return;
+    }
+    request({
+        url: api + "/partyInfo?party=" + playerName,
+        json: true
+    }).then((response)=> {
+        printPartyInfo(response.PartyInfo)
+    }).catch((error)=> {
+        console.error(error);
+        ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + playerName); 
+    });
+}).setName("sbocheck");

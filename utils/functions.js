@@ -424,7 +424,14 @@ register("chat", (player) => {
     player = player.removeFormatting()
     player = getplayername(player)
     partyMembers = partyMembers.filter(e => e !== player)
-}).setCriteria("${player} &r&eleft the party.&r");
+}).setCriteria("${player} &r&ehas left the party.&r");
+
+// &b[MVP&r&3+&r&b] hiddeeee &r&ehas been removed from the party.&r
+register("chat", (player) => {
+    player = player.removeFormatting()
+    player = getplayername(player)
+    partyMembers = partyMembers.filter(e => e !== player)
+}).setCriteria("${player} &r&ehas been removed from the party.&r");
 
 // &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
 // player left party version 2
