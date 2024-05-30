@@ -41,12 +41,12 @@ function getPartyInfo(party) {
 
 function getPartyInfoByUuids(party) {
     request({
-        url: api + "/partyInfoByUuids?party=" + party.join(","),
+        url: api + "/partyInfoByUuids?party=" + party.join(",").replaceAll("-", ""),
         json: true
     }).then((response)=> {
         printPartyInfo(response.PartyInfo)
     }).catch((error)=> {
-        console.error(error);
+        console.error(JSON.stringify(error));
     });
 }
 
