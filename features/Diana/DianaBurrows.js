@@ -93,7 +93,7 @@ function refreshBurrows() {
         if (!burrowshistory.some(([type, x, y, z]) => x === closetburrow[1] && y === closetburrow[2] && z === closetburrow[3])) {
             burrowshistory.push(closetburrow);
         }
-        if (burrowshistory.length > 7) {
+        if (burrowshistory.length > 3) {
             // remove oldest burrow
             burrowshistory.shift();
         }
