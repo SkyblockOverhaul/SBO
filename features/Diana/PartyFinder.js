@@ -162,16 +162,18 @@ register("command", () => {
 
 register("command", () => {
     // loop until partyBool is true with a delay of 10ms
+    ChatLib.chat("&6[SBO] &eChecking party members...");
     let interval = setInterval(() => {
+        print("Checking partyBool");
         partyBool = getPartyBool();
         if (partyBool) {
             clearInterval(interval);
-            ChatLib.chat("&6[SBO] &eChecking party members...");
             let party = getPartyInfoByUuids();
             if (party.length == 0) {
                 ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
                 return;
             }
+            print("send api request to get party info by uuids")
             getPartyInfoByUuids(party);
         }
     }, 10);

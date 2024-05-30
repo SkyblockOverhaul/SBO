@@ -491,7 +491,7 @@ register("chat", (count) => {
     partyMembers = [];
 }).setCriteria("&r&aParty members ${count}");
 
-function setInterval(func, delay) {
+export function setInterval(func, delay) {
     var thread = new java.lang.Thread(new java.lang.Runnable({
         run: function() {
             while (true) {
@@ -504,7 +504,7 @@ function setInterval(func, delay) {
     return thread;
 }
 
-function clearInterval(thread) {
+export function clearInterval(thread) {
     thread.stop();
 }
 
@@ -514,10 +514,12 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         partyMembersUuids.push(key);
     })
     partyBool = true;
+    print("party info received");
 })
 
 export function sendPartyRequest() {
     partyMembersUuids = [];
     partyBool = false;
     HypixelModAPI.requestPartyInfo();
+    print("requesting party info");
 }
