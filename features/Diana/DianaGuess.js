@@ -219,7 +219,12 @@ function onReceiveParticle(particle, type, event) {
                     }
                     
                     gY = 131;
-                    while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 && gY > 70) {
+                    while (gY > 70) {
+                        let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());
+                        let blockType = block.getType().getID();
+                        if (blockType === 2 || blockType === 3 || blockType === 12 || blockType === 13) {
+                            break; // Stop the loop if the block type is 2 (grass)
+                        }
                         gY--;
                     }
                     
