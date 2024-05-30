@@ -80,6 +80,17 @@ const changeLogReg = register("step", () => {
 }).setFps(1)
 
 
+import { HypixelModAPI } from "./../HypixelModAPI";
+
+HypixelModAPI.setLogging(true);
+
+HypixelModAPI.playerinfo()
+
+HypixelModAPI.on("playerinfo", (playerinfo) => {
+    //playerinfo is a json print it to see what it contains
+    print(playerinfo)
+})
+
 // register("step", () => {
 //     // print each egg
 //     print(`&r&6Eggs: &e${eggs.length}`);
