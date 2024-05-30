@@ -222,7 +222,7 @@ function onReceiveParticle(particle, type, event) {
                     while (gY > 70) {
                         let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());
                         let blockType = block.getType().getID();
-                        if (blockType === 2 || blockType === 3 || blockType === 12 || blockType === 13) {
+                        if (blockType === 2 || blockType === 3) {
                             break;
                         }
                         gY--;
