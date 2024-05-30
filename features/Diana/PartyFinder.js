@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { getPartyBool, getPartyMembers, getplayername, setInterval, clearInterval } from "../../utils/functions";
+import { getPartyBool, getPartyMembers, getplayername, setInterval, clearInterval, sendPartyRequest } from "../../utils/functions";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -163,8 +163,8 @@ register("command", () => {
 register("command", () => {
     // loop until partyBool is true with a delay of 10ms
     ChatLib.chat("&6[SBO] &eChecking party members...");
+    sendPartyRequest();
     let interval = setInterval(() => {
-        print("Checking partyBool");
         partyBool = getPartyBool();
         if (partyBool) {
             clearInterval(interval);
