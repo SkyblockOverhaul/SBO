@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { getPartyMembers } from "../../utils/functions";
+import { getPartyMembers, getplayername } from "../../utils/functions";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -156,8 +156,20 @@ function printPartyInfo(partyinfo) {
     }
 }
 
-register("command", (args1, ...args) => {
-    let playerName = args1;
+function printCheckedPlayer(playerinfo) {
+    // send clickable message to execute command to invite the checked player
+    playerinfo = playerinfo[0];
+    new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
+    "&r&e&r&9│ &r&eLvL&r&f: &r&6" + playerinfo.sbLvl + 
+    "&r&e&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&e&r&9│ &r&el5 Daxe&r&f: " + 
+    (playerinfo.looting5daxe ? "&a✓" : "&4✗") + 
+    "&e &r&9│ &r&eKills&r&f: &r&6" + 
+    (playerinfo.mythosKills / 1000).toFixed(2) + "k")
+    .setClick("run_command", "/p " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name).chat();
+}
+
+function checkPlayer(player) {
+    let playerName = player;
     if (!playerName) {
         ChatLib.chat("&6[SBO] &ePlease provide a player name to check.");
         return;
@@ -167,9 +179,22 @@ register("command", (args1, ...args) => {
         url: api + "/partyInfo?party=" + playerName,
         json: true
     }).then((response)=> {
-        printPartyInfo(response.PartyInfo)
+        printCheckedPlayer(response.PartyInfo)
     }).catch((error)=> {
         console.error(error);
         ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + playerName); 
     });
+}
+
+register("command", (args1, ...args) => {
+    checkPlayer(args1);
 }).setName("sbocheck");
+
+register("chat", (player) => {
+    setTimeout(() => {
+        // send clickable message to execute command
+        player = player.removeFormatting()
+        player = getplayername(player)
+        new TextComponent("&6[SBO] &eClick to check player").setClick("run_command", "/sbocheck " + player).setHover("show_text", "/sbocheck " + player).chat();
+    }, 50);
+}).setCriteria("&dFrom ${player}&r&7: &r&d&lBoop!&r");

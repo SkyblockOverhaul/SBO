@@ -40,7 +40,7 @@ const downloadMsgReg = register("step", () => {
         return
     }
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
-    ChatLib.chat(`&aThanks for importing &6 SBO`)
+    ChatLib.chat(`&aThanks for importing &6SBO`)
     ChatLib.chat(`&7> &ayou can open the settings with /sbo`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
@@ -64,9 +64,14 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
     ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
-    ChatLib.chat(`&7> &aFixed bug with Blaze Slayer Effects`)
     ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
-    ChatLib.chat(`&7> &aSome minor bug fixes`)
+    ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp)`)
+    ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>)`)
+
+    ChatLib.chat(`&7> &aFixed bug with Diana Burrows Detection`)
+    ChatLib.chat(`&7> &aFixed the inquisitor line always pointing up`)
+    ChatLib.chat(`&7> &aFixed bug with Blaze Slayer Effects`)
+    ChatLib.chat(`&7> &aSome other minor bug fixes`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
