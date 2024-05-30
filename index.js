@@ -86,9 +86,11 @@ HypixelModAPI.setLogging(true);
 
 
 HypixelModAPI.on("partyInfo", (partyInfo) => {
-    //partyInfo is a json print it to see what it contains
-    print("partyInfo: " + JSON.stringify(partyInfo))
-    print(partyInfo)
+    // print all keys of partyInfo
+
+    for (const key in partyInfo) {
+        print(`player:${key}`);
+    }
 })
 
 register("command", () => {
