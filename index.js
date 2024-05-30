@@ -84,13 +84,14 @@ import { HypixelModAPI } from "./../HypixelModAPI";
 
 HypixelModAPI.setLogging(true);
 
-HypixelModAPI.playerinfo()
+
+HypixelModAPI.on("playerinfo", (playerinfo) => {
+    //playerinfo is a json print it to see what it contains
+    print(playerinfo)
+})
 
 register("command", () => {
-    HypixelModAPI.on("playerinfo", (playerinfo) => {
-        //playerinfo is a json print it to see what it contains
-        print(playerinfo)
-    })
+    HypixelModAPI.requestPartyInfo()
 }).setName("sbotest");
 
 // register("step", () => {
