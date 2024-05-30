@@ -6,7 +6,21 @@ if(!GlStateManager) {
     let GL11=Java.type("org.lwjgl.opengl.GL11")
     let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
 }
-export function trace (x, y, z, red, green, blue, alpha, lineWidth = 1){
+export function trace (x, y, z, red, green, blue, alpha, type, lineWidth = 1){
+    if (type === "inq")
+    {
+        if (x >= 0) {
+            x = parseFloat(x) + 0.5;
+        } else {
+            x = parseFloat(x) - 0.5;
+        }
+        if (z >= 0)
+        {
+            z = parseFloat(z) + 0.5;
+        } else {
+            z = parseFloat(z) - 0.5;
+        }
+    }
     if(Player.isSneaking())
         drawLine(Player.getRenderX(), Player.getRenderY() + 1.54, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
     else
