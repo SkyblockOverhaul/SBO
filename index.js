@@ -79,24 +79,6 @@ const changeLogReg = register("step", () => {
     changeLogReg.unregister()
 }).setFps(1)
 
-
-import { HypixelModAPI } from "./../HypixelModAPI";
-
-HypixelModAPI.setLogging(true);
-
-
-HypixelModAPI.on("partyInfo", (partyInfo) => {
-    // print all keys of partyInfo
-    Object.keys(partyInfo).forEach(key => {
-        print(key);
-    })
-
-})
-
-register("command", () => {
-    HypixelModAPI.requestPartyInfo()
-}).setName("sbotest");
-
 // register("step", () => {
 //     // print each egg
 //     print(`&r&6Eggs: &e${eggs.length}`);

@@ -1,5 +1,6 @@
 import settings from "../settings";
 import { registerWhen } from "./variables";
+import { HypixelModAPI } from "./../../HypixelModAPI";
 
 // geklaut von coleweight for drawline
 if(!GlStateManager) {
@@ -95,6 +96,16 @@ export function mobAnnouncement(chat,mob,x,y,z){
 let partyMembers = [];
 export function getPartyMembers() {
     return partyMembers;
+}
+
+let partyMembersUuids = [];
+export function getPartyMembersUuids() {
+    return partyMembersUuids;
+}
+
+let partyBool = false;
+export function getPartyBool() {
+    return partyBool;
 }
 
 export function getSBID(item) {
@@ -479,3 +490,18 @@ register("chat", (type, player) => {
 register("chat", (count) => {
     partyMembers = [];
 }).setCriteria("&r&aParty members ${count}");
+
+
+// experimental
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    Object.keys(partyInfo).forEach(key => {
+        partyMembersUuids.push(key);
+    })
+    partyBool = true;
+})
+
+export function sendPartyRequest() {
+    partyMembersUuids = [];
+    partyBool = false;
+    HypixelModAPI.requestPartyInfo();
+}

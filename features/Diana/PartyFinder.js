@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { getPartyMembers, getplayername } from "../../utils/functions";
+import { getPartyBool, getPartyMembers, getplayername } from "../../utils/functions";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -38,6 +38,18 @@ function getPartyInfo(party) {
         ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + party[i]); 
     });
 }
+
+function getPartyInfoByUuids(party) {
+    request({
+        url: api + "/partyInfoByUuids?party=" + party.join(","),
+        json: true
+    }).then((response)=> {
+        printPartyInfo(response.PartyInfo)
+    }).catch((error)=> {
+        console.error(error);
+    });
+}
+
 // old for the complete party at once
 // request({
 //     url: api + "/partyInfo?party=" + party,
@@ -147,6 +159,23 @@ register("command", () => {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
     }
 }).setName("sbocheckp");
+
+register("command", () => {
+    // loop until partyBool is true with a delay of 10ms
+    let interval = setInterval(() => {
+        partyBool = getPartyBool();
+        if (partyBool) {
+            clearInterval(interval);
+            ChatLib.chat("&6[SBO] &eChecking party members...");
+            let party = getPartyInfoByUuids();
+            if (party.length == 0) {
+                ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
+                return;
+            }
+            getPartyInfoByUuids(party);
+        }
+    }, 10);
+}).setName("sbocheckpuuid");
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
