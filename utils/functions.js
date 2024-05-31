@@ -420,76 +420,76 @@ register("worldLoad", () => {
 
 // party detection
 // partyleader
-register("chat", (party) => {
-    partyMembers = [];
-    party = party.removeFormatting().replaceAll("'s", "");
-    // ChatLib.chat("party: " + party);
-    party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
-    partyMembers.push(party)
-}).setCriteria("&eYou have joined ${party} &r&eparty!&r");
+// register("chat", (party) => {
+//     partyMembers = [];
+//     party = party.removeFormatting().replaceAll("'s", "");
+//     // ChatLib.chat("party: " + party);
+//     party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
+//     partyMembers.push(party)
+// }).setCriteria("&eYou have joined ${party} &r&eparty!&r");
 
-// rest of party
-register("chat", (party) => {
-    party = party.removeFormatting()
-    // ChatLib.chat("party: " + party);
-    party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
-    // string to list names are separated by commas and extent partyMembers list with new names
-    partyMembers = partyMembers.concat(party.split(","))
-}).setCriteria("&eYou'll be partying with: ${party}");
+// // rest of party
+// register("chat", (party) => {
+//     party = party.removeFormatting()
+//     // ChatLib.chat("party: " + party);
+//     party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
+//     // string to list names are separated by commas and extent partyMembers list with new names
+//     partyMembers = partyMembers.concat(party.split(","))
+// }).setCriteria("&eYou'll be partying with: ${party}");
 
-// player joined party
-register("chat", (player) => {
-    player = player.removeFormatting()
-    player = getplayername(player)
-    partyMembers.push(player)
-}).setCriteria("${player} &r&ejoined the party.&r");
+// // player joined party
+// register("chat", (player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers.push(player)
+// }).setCriteria("${player} &r&ejoined the party.&r");
 
-// player left party
-register("chat", (player) => {
-    player = player.removeFormatting()
-    player = getplayername(player)
-    partyMembers = partyMembers.filter(e => e !== player)
-}).setCriteria("${player} &r&ehas left the party.&r");
+// // player left party
+// register("chat", (player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers = partyMembers.filter(e => e !== player)
+// }).setCriteria("${player} &r&ehas left the party.&r");
 
-// &b[MVP&r&3+&r&b] hiddeeee &r&ehas been removed from the party.&r
-register("chat", (player) => {
-    player = player.removeFormatting()
-    player = getplayername(player)
-    partyMembers = partyMembers.filter(e => e !== player)
-}).setCriteria("${player} &r&ehas been removed from the party.&r");
+// // &b[MVP&r&3+&r&b] hiddeeee &r&ehas been removed from the party.&r
+// register("chat", (player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers = partyMembers.filter(e => e !== player)
+// }).setCriteria("${player} &r&ehas been removed from the party.&r");
 
-// &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
-// player left party version 2
-register("chat", (leader, player) => {
-    player = player.removeFormatting()
-    player = getplayername(player)
-    partyMembers = partyMembers.filter(e => e !== player)
-}).setCriteria("&eThe party was transferred to ${leader} &r&ebecause ${player} &r&eleft");
+// // &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
+// // player left party version 2
+// register("chat", (leader, player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers = partyMembers.filter(e => e !== player)
+// }).setCriteria("&eThe party was transferred to ${leader} &r&ebecause ${player} &r&eleft");
 
-// you left party
-register("chat", () => {
-    partyMembers = [];
-}).setCriteria("&eYou left the party.&r");
+// // you left party
+// register("chat", () => {
+//     partyMembers = [];
+// }).setCriteria("&eYou left the party.&r");
 
-// get party members from party list
-register("chat", (type, player) => {
-    player = player.removeFormatting()
-    if (player.split("●").length > 0) {
-        player = player.split("●")
-        for (let i = 0; i < player.length; i++) {
-            player[i] = getplayername(player[i])
-            partyMembers.push(player[i]) 
-        }
-    }
-    else {
-        player = getplayername(player)
-        partyMembers.push(player)
-    }
-}).setCriteria("&eParty ${type}: ${player}");
+// // get party members from party list
+// register("chat", (type, player) => {
+//     player = player.removeFormatting()
+//     if (player.split("●").length > 0) {
+//         player = player.split("●")
+//         for (let i = 0; i < player.length; i++) {
+//             player[i] = getplayername(player[i])
+//             partyMembers.push(player[i]) 
+//         }
+//     }
+//     else {
+//         player = getplayername(player)
+//         partyMembers.push(player)
+//     }
+// }).setCriteria("&eParty ${type}: ${player}");
 
-register("chat", (count) => {
-    partyMembers = [];
-}).setCriteria("&r&aParty members ${count}");
+// register("chat", (count) => {
+//     partyMembers = [];
+// }).setCriteria("&r&aParty members ${count}");
 
 // add time to life of 5 sek
 export function setInterval(func, delay, ttl) {
