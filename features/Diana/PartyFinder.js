@@ -40,7 +40,7 @@ register("command", () => {
                 getPartyInfo(party);
                 clearInterval(interval);
             }
-        }, 100);
+        }, 100, 5000);
     }
     else {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");

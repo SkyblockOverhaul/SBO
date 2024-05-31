@@ -491,10 +491,16 @@ register("chat", (count) => {
     partyMembers = [];
 }).setCriteria("&r&aParty members ${count}");
 
-export function setInterval(func, delay) {
+// add time to life of 5 sek
+export function setInterval(func, delay, ttl) {
+    var startTime = java.lang.System.currentTimeMillis();
     var thread = new java.lang.Thread(new java.lang.Runnable({
         run: function() {
             while (true) {
+                if (java.lang.System.currentTimeMillis() - startTime > ttl) {
+                    thread.stop();
+                    break;
+                }
                 func();
                 java.lang.Thread.sleep(delay);
             }
