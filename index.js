@@ -86,6 +86,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
     ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp) (alias /sbocp)`)
     ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>) (alias /sboc <player>)`)
+    ChatLib.chat(`&7> &aAdded command to get help with commands (/sbo help)`)
 
     ChatLib.chat(`&7> &aFixed bug with Diana Burrows Detection`)
     ChatLib.chat(`&7> &aFixed the inquisitor line always pointing up`)
