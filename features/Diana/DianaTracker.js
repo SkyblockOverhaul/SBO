@@ -10,7 +10,11 @@ import { checkDiana } from "../../utils/checkDiana";
 import { getGuiOpen, getRefreshOverlays } from "../../utils/overlays";
 
 // todo: 
-
+// Mobs since last inquisitor (use only total tracker)
+// inquisitor since last chimera (use only total tracker)
+// minos chams since last minos relic (use only total tracker)
+// minutaurs since last daedalus stick (use only total tracker)
+// track chim and ls chim seperately
 // todo end
 
 
@@ -239,7 +243,12 @@ registerWhen(register("chat", (drop) => {
                 if (settings.lootAnnouncerScreen) {
                     Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                 }
-                trackItem("Chimera", "items", 1);
+                if (gotLootShare()) {
+                    trackItem("Chimera", "items", 1); // ls chim
+                }
+                else {
+                    trackItem("Chimera", "items", 1);
+                }
                 break;
             case "Daedalus Stick":
                 if (settings.lootAnnouncerScreen) {
