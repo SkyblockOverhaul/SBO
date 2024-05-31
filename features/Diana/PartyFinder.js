@@ -45,7 +45,7 @@ register("command", () => {
     else {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
     }
-}).setName("sbocheckp");
+}).setName("sbocheckp").setAliases("sbocp");;
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
@@ -87,7 +87,7 @@ function checkPlayer(player) {
 
 register("command", (args1, ...args) => {
     checkPlayer(args1);
-}).setName("sbocheck");
+}).setName("sbocheck").setAliases("sboc");;
 
 register("chat", (player) => {
     setTimeout(() => {
