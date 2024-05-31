@@ -136,7 +136,7 @@ registerWhen(register("chat", (burrow) => {
 register("command", () => {
     resetBurrows();
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
-}).setName("sboclearburrows"); 
+}).setName("sboclearburrows").setAliases("sbocb"); 
 
 registerWhen(register("chat", () => {
     resetBurrows();

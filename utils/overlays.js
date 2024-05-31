@@ -139,7 +139,7 @@ this.gui.registerScrolled((mouseX, mouseY, scrollDirection) => {
 
 register("command", () => { 
     GuiHandler.openGui(gui)
-}).setName("sboguis").setAliases("sbomoveguis");
+}).setName("sboguis").setAliases("sbomoveguis"); 
 
 register('renderOverlay', () => {
     if(!isInSkyblock()) return;

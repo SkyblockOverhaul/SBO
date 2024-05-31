@@ -23,7 +23,26 @@ import { data } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 
 
-register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
+register("command", (args1, ...args) => {
+    if (args1 == undefined) {
+        Settings.openGUI()
+    } else {
+        switch (args1.toLowerCase()) { 
+            case "help":
+                ChatLib.chat("&6[SBO] &eCommands:")
+                ChatLib.chat("&7> &a/sbo &7- &eOpen the settings")
+                ChatLib.chat("&7> &a/sbo help &7- &eShow this message")
+                ChatLib.chat("&7> &a/sboguis &7- &eOpen the GUIs and move them around (alias /sbomoveguis)")
+                ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (alias /sbocb)")
+                ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (alias /sboc <player>)")
+                ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
+                break;
+            default:
+                ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
+                break;
+        }
+    }
+}).setName("skyblockoverhaul").setAliases("sbo");
 
 // Title bug fix
 register("worldLoad", () => {
@@ -65,8 +84,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
     ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
     ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
-    ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp)`)
-    ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>)`)
+    ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp) (alias /sbocp)`)
+    ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>) (alias /sboc <player>)`)
 
     ChatLib.chat(`&7> &aFixed bug with Diana Burrows Detection`)
     ChatLib.chat(`&7> &aFixed the inquisitor line always pointing up`)
