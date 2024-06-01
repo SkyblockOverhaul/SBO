@@ -78,7 +78,7 @@ class Settings {
     dianaBurrowGuess = false;
     @SwitchProperty({
         name: "Diana Burrow Warp",
-        description: "Warp to the closest burrow",
+        description: "Warp to the closest burrow. set your keybind in controls",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
@@ -108,7 +108,7 @@ class Settings {
     dianaMobTracker = false;
     @SelectorProperty({
         name: "Mob View",
-        description: "Tracks your diana mob kills /sboguis to move the counter",
+        description: "Shows your diana mob kills /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -123,7 +123,7 @@ class Settings {
     dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
-        description: "Tracks your diana loot /sboguis to move the counter",
+        description: "Shows your diana loot /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Overall View", "Event View", "Session View"]
@@ -186,6 +186,22 @@ class Settings {
         subcategory: 'Diana Waypoint Lines',
     })
     burrowLine = false;
+    @SwitchProperty({
+        name: 'Guess Line',
+        description: 'Draws line for guess',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+    })
+    guessLine = false;
+    @SliderProperty({
+        name: 'Line Width',
+        description: 'Set the width of the lines',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+        min: 1,
+        max: 10
+    })
+    burrowLineWidth = 5;
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
