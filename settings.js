@@ -174,21 +174,21 @@ class Settings {
     // --- Diana lines ---
     @SwitchProperty({
         name: 'Inquis Line',
-        description: 'Draws lines for Inquisitor',
+        description: 'Draws lines for Inquisitor, Disable View Bobbing in controls if its buggy',
         category: 'Diana',
         subcategory: 'Diana Waypoint Lines',
     })
     inqLine = false;
     @SwitchProperty({
         name: 'Burrow Line',
-        description: 'Draws lines for burrows',
+        description: 'Draws lines for burrows, Disable View Bobbing in controls if its buggy',
         category: 'Diana',
         subcategory: 'Diana Waypoint Lines',
     })
     burrowLine = false;
     @SwitchProperty({
         name: 'Guess Line',
-        description: 'Draws line for guess',
+        description: 'Draws line for guess, Disable View Bobbing in controls if its buggy',
         category: 'Diana',
         subcategory: 'Diana Waypoint Lines',
     })
@@ -201,7 +201,7 @@ class Settings {
         min: 1,
         max: 10
     })
-    burrowLineWidth = 5;
+    burrowLineWidth = 1;
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
@@ -217,6 +217,14 @@ class Settings {
         subcategory: "Other",
     })
     inquisDetect = false;
+    @SelectorProperty({
+        name: "Add Warps",
+        description: "Adds warp points for burrow warp",
+        category: "Diana",
+        subcategory: "Other",
+        options: ["None", "Wizard", "Crypt", "Both"]
+    })
+    dianaAddWarps = 0;
     // Loot Announcer
     @SwitchProperty({
         name: 'Rare Drop Announcer',
