@@ -7,7 +7,7 @@ if(!GlStateManager) {
     let GL11=Java.type("org.lwjgl.opengl.GL11")
     let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
 }
-export function trace (x, y, z, red, green, blue, alpha, type, lineWidth = 1){
+export function trace (x, y, z, red, green, blue, alpha, type, lineWidth){
     if (type === "inq")
     {
         if (x >= 0) {
@@ -28,7 +28,7 @@ export function trace (x, y, z, red, green, blue, alpha, type, lineWidth = 1){
         drawLine(Player.getRenderX(), Player.getRenderY() + 1.62, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
 }
 
-function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth = 1)
+function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth)
 {
     GL11.glBlendFunc(770,771)
     GL11.glEnable(GL11.GL_BLEND)

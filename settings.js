@@ -186,6 +186,15 @@ class Settings {
         subcategory: 'Diana Waypoint Lines',
     })
     burrowLine = false;
+    @SliderProperty({
+        name: 'Line Width',
+        description: 'Set the width of the lines',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+        min: 1,
+        max: 10
+    })
+    burrowLineWidth = 5;
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
