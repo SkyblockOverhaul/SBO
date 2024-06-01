@@ -4,6 +4,7 @@ import { getPartyBool, getPartyMembers, getplayername, setInterval, clearInterva
 let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
+    party = party.filter(uuid => uuid != Player.getUUID());
     request({
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
