@@ -10,7 +10,7 @@ import { checkDiana } from "../../utils/checkDiana";
 
 registerWhen(register("entityDeath", (entity) => {
     let dist = entity.distanceTo(Player.getPlayer());
-    if (dist < 10 ) {
+    if (dist < 30 ) {
         state.entityDeathOccurred = true;
         setTimeout(() => {
             state.entityDeathOccurred = false;

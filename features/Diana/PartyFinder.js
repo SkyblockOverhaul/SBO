@@ -25,6 +25,7 @@ register("chat", (party) => {
 let lastUsed = 0;
 register("command", () => {
     if (Date.now() - lastUsed > 60000 || lastUsed == 0) { // 1 minutes
+        lastUsed = Date.now();
         ChatLib.chat("&6[SBO] &eChecking party members...");
         sendPartyRequest();
         let interval = setInterval(() => {
