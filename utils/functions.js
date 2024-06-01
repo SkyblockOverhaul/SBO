@@ -8,7 +8,7 @@ if(!GlStateManager) {
     let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
 }
 export function trace (x, y, z, red, green, blue, alpha, type, lineWidth){
-    if (type === "inq")
+    if (type === "calc")
     {
         if (x >= 0) {
             x = parseFloat(x) + 0.5;

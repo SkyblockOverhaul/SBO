@@ -186,6 +186,13 @@ class Settings {
         subcategory: 'Diana Waypoint Lines',
     })
     burrowLine = false;
+    @SwitchProperty({
+        name: 'Guess Line',
+        description: 'Draws line for guess',
+        category: 'Diana',
+        subcategory: 'Diana Waypoint Lines',
+    })
+    guessLine = false;
     @SliderProperty({
         name: 'Line Width',
         description: 'Set the width of the lines',
