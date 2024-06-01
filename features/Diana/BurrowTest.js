@@ -36,44 +36,44 @@ class ParticleType {
 
 const ParticleTypes = {
     EMPTY: new ParticleType(packet =>
-        packet.func_179749_a().toString() === 'CRIT_MAGIC' &&
-        packet.func_149222_k() === 4 &&
-        packet.func_149227_j() === 0.01 &&
-        packet.func_149221_g() === 0.5 &&
-        packet.func_149224_h() === 0.1 &&
-        packet.func_149223_i() === 0.5
+        packet.func_179749_a().toString() == "CRIT_MAGIC" &&
+        parseInt(packet.func_149222_k()) == 4 &&
+        parseFloat(packet.func_149227_j()).toFixed(2) == 0.01 &&
+        parseFloat(packet.func_149221_g()).toFixed(1) == 0.5 &&
+        parseFloat(packet.func_149224_h()).toFixed(1) == 0.1 &&
+        parseFloat(packet.func_149223_i()).toFixed(1) == 0.5
     ),
     MOB: new ParticleType(packet =>
-        packet.func_179749_a().toString() === 'CRIT' &&
-        packet.func_149222_k() === 3 &&
-        packet.func_149227_j() === 0.01 &&
-        packet.func_149221_g() === 0.5 &&
-        packet.func_149224_h() === 0.1 &&
-        packet.func_149223_i() === 0.5
+        packet.func_179749_a().toString() == "CRIT" &&
+        parseInt(packet.func_149222_k()) == 3 &&
+        parseFloat(packet.func_149227_j()).toFixed(2) == 0.01 &&
+        parseFloat(packet.func_149221_g()).toFixed(2) == 0.5 &&
+        parseFloat(packet.func_149224_h()).toFixed(1) == 0.1 &&
+        parseFloat(packet.func_149223_i()).toFixed(2) == 0.5
     ),
     TREASURE: new ParticleType(packet =>
-        packet.func_179749_a().toString() === 'DRIP_LAVA' &&
-        packet.func_149222_k() === 2 &&
-        packet.func_149227_j() === 0.01 &&
-        packet.func_149221_g() === 0.35 &&
-        packet.func_149224_h() === 0.1 &&
-        packet.func_149223_i() === 0.35
+        packet.func_179749_a().toString() == "DRIP_LAVA" &&
+        parseInt(packet.func_149222_k()) == 2 &&
+        parseFloat(packet.func_149227_j()).toFixed(2) == 0.01 &&
+        parseFloat(packet.func_149221_g()).toFixed(2) == 0.35 &&
+        parseFloat(packet.func_149224_h()).toFixed(1) == 0.1 &&
+        parseFloat(packet.func_149223_i()).toFixed(2) == 0.35
     ),
     FOOTSTEP: new ParticleType(packet =>
-        packet.func_179749_a().toString() === 'FOOTSTEP' &&
-        packet.func_149222_k() === 1 &&
-        packet.func_149227_j() === 0.0 &&
-        packet.func_149221_g() === 0.05 &&
-        packet.func_149224_h() === 0.0 &&
-        packet.func_149223_i() === 0.05
+        packet.func_179749_a().toString() == "FOOTSTEP" &&
+        parseInt(packet.func_149222_k()) == 1 &&
+        parseInt(packet.func_149227_j()) == 0 &&
+        parseFloat(packet.func_149221_g().toFixed(2)) == 0.05 &&
+        parseInt(packet.func_149224_h()) == 0 &&
+        parseFloat(packet.func_149223_i().toFixed(2)) == 0.05
     ),
     ENCHANT: new ParticleType(packet =>
-        packet.func_179749_a().toString() === 'ENCHANTMENT_TABLE' &&
-        packet.func_149222_k() === 5 &&
-        packet.func_149227_j() === 0.05 &&
-        packet.func_149221_g() === 0.5 &&
-        packet.func_149224_h() === 0.4 &&
-        packet.func_149223_i() === 0.5
+        packet.func_179749_a().toString() == "ENCHANTMENT_TABLE" &&
+        parseInt(packet.func_149222_k()) == 5 &&
+        parseFloat(packet.func_149227_j()).toFixed(2) == 0.05 &&
+        parseFloat(packet.func_149221_g()).toFixed(1) == 0.5 &&
+        parseFloat(packet.func_149224_h()).toFixed(1) == 0.4 &&
+        parseFloat(packet.func_149223_i()).toFixed(1) == 0.5
     ),
 };
 
@@ -119,32 +119,17 @@ class Burrow extends Diggable {
     }
 }
 
-let printCount = 0;
-const printLimit = 1;
-
-function printLimited(message) {
-    if (printCount < printLimit) {
-        print(message);
-        printCount++;
-    }
-}
-
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
     if (typename != "FOOTSTEP" && typename != "CRIT_MAGIC" && typename != "CRIT" && typename != "DRIP_LAVA" && typename != "ENCHANTMENT_TABLE") return;
     const particleType = getParticleType(packet);
+    // print("particleType: " + particleType);
     if (!particleType) return;
-    print("particleType: " + particleType);
-    packet.forEach((particle) => {
-        print("pType: " + particle);
-    });
-    if (!particleType) return;
-    const pos = particle.getPos();
-    const blockPos = new BlockPos(pos.getX(), pos.getY(), pos.getZ()).down();
-    print(blockPos);    
-    if (burrowshistory.contains(blockPos)) return;
-    let burrow = burrows.get(blockPos) || new Burrow(blockPos, false, false, -1);
-    switch (type) {
+    // print("particleType: " + particleType);
+    const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
+    if (burrowshistory.contains(pos)) return;
+    let burrow = burrows.get(pos) || new Burrow(pos.x, pos.y, pos.z, false, false, -1);
+    switch (particleType) {
         case ParticleType.FOOTSTEP:
             burrow.hasFootstep = true;
             break;
@@ -152,6 +137,7 @@ function burrowDetect(packet) {
             burrow.hasEnchant = true;
             break;
         case ParticleType.EMPTY:
+            print("Empty");
             burrow.type = 0;
             break;
         case ParticleType.MOB:
@@ -161,10 +147,7 @@ function burrowDetect(packet) {
             burrow.type = 2;
             break;
     }
-    print(burrow);
-    print(burrow.type);
     burrows.set(blockPos, burrow);
-    
 }
 
 
@@ -235,8 +218,9 @@ register("command", () => {
 
 register("command", () => {
     // test command print all burrows to console
-    burrows.forEach((burrow) => {
-        console.log(burrow);
+    burrows.forEach((burrow, pos) => {
+        console.log(pos); // Position der Höhle
+        console.log(burrow.type); // Details zur Höhle
     });
 }).setName("printburrows")
 
@@ -246,10 +230,13 @@ register("command", () => {
 register("packetReceived", (packet) => {
 
   // func is getting particle type
-    burrowDetect(packet)
-    if(packet.func_179749_a().toString() == "FOOTSTEP") {    
-        printLimited("xoffset/zoffset: " + packet.func_149221_g().toFixed(2) + " " + packet.func_149223_i().toFixed(2) + "\n" + "yOffset: "+  packet.func_149224_h() + "\n" + "speed: " + packet.func_149227_j() + "\n" + "count: " + 	packet.func_149222_k())
-    }
-
-
+  if (packet.func_179749_a().toString() == "CRIT_MAGIC") {
+    // print("Packet type: " + packet.func_179749_a().toString());
+    // print("Packet count: " + parseInt(packet.func_149222_k()));
+    // print("Packet speed: " + parseFloat(packet.func_149227_j()).toFixed(2));
+    // print("Packet xOffset: " + parseFloat(packet.func_149221_g()).toFixed(1));
+    // print("Packet yOffset: " + parseFloat(packet.func_149224_h()).toFixed(1));
+    // print("Packet zOffset: " + parseFloat(packet.func_149223_i()).toFixed(1));
+  }
+  burrowDetect(packet)
 }).setFilteredClass(S2APacketParticles);
