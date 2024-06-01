@@ -38,10 +38,9 @@ const ParticleType = Object.freeze({
     getParticleType(packet) {
 
         for (const type in ParticleType) {
-            print(ParticleType[type](packet))
-            // if (ParticleType[type](packet)) {
-            //     return type;
-            // }
+            if (ParticleType[type](packet)) {
+                return type;
+            }
         }
         return null;
     }
