@@ -28,23 +28,66 @@ class EvictingQueue {
 }
 const EnumParticleTypes = net.minecraft.util.EnumParticleTypes
 const S2APacketParticles = net.minecraft.network.play.server.S2APacketParticles
-const ParticleType = Object.freeze({
-    EMPTY: packet => packet.func_179749_a().toString() === EnumParticleTypes.CRIT_MAGIC && packet.func_149222_k() === 4 && packet.func_149227_j() === 0.01 && packet.func_149221_g() === 0.5 && packet.func_149224_h() === 0.1 && packet.func_149223_i() === 0.5,
-    MOB: packet => packet.func_179749_a().toString() === EnumParticleTypes.CRIT && packet.func_149222_k() === 3 && packet.func_149227_j() === 0.01 && packet.func_149221_g() === 0.5 && packet.func_149224_h() === 0.1 && packet.func_149223_i() === 0.5,
-    TREASURE: packet => packet.func_179749_a().toString() === EnumParticleTypes.DRIP_LAVA && packet.func_149222_k() === 2 && packet.func_149227_j() === 0.01 && packet.func_149221_g() === 0.35 && packet.func_149224_h() === 0.1 && packet.func_149223_i() === 0.35,
-    FOOTSTEP: packet => packet.func_179749_a().toString() === EnumParticleTypes.FOOTSTEP && packet.func_149222_k() === 1 && packet.func_149227_j() === 0.0 && packet.func_149221_g() === 0.05 && packet.func_149224_h() === 0.0 && packet.func_149223_i() === 0.05,
-    ENCHANT: packet => packet.func_179749_a().toString() === EnumParticleTypes.ENCHANTMENT_TABLE && packet.func_149222_k() === 5 && packet.func_149227_j() === 0.05 && packet.func_149221_g() === 0.5 && packet.func_149224_h() === 0.4 && packet.func_149223_i() === 0.5,
-
-    getParticleType(packet) {
-
-        for (const type in ParticleType) {
-            if (ParticleType[type](packet)) {
-                return type;
-            }
-        }
-        return null;
+class ParticleType {
+    constructor(typeCheck) {
+        this.check = typeCheck;
     }
-});
+}
+
+const ParticleTypes = {
+    EMPTY: new ParticleType(packet =>
+        packet.type === 'CRIT_MAGIC' &&
+        packet.func_149222_k() === 4 &&
+        packet.func_149227_j() === 0.01 &&
+        packet.func_149221_g() === 0.5 &&
+        packet.func_149224_h() === 0.1 &&
+        packet.func_149223_i() === 0.5
+    ),
+    MOB: new ParticleType(packet =>
+        packet.type === 'CRIT' &&
+        packet.func_149222_k() === 3 &&
+        packet.func_149227_j() === 0.01 &&
+        packet.func_149221_g() === 0.5 &&
+        packet.func_149224_h() === 0.1 &&
+        packet.func_149223_i() === 0.5
+    ),
+    TREASURE: new ParticleType(packet =>
+        packet.type === 'DRIP_LAVA' &&
+        packet.func_149222_k() === 2 &&
+        packet.func_149227_j() === 0.01 &&
+        packet.func_149221_g() === 0.35 &&
+        packet.func_149224_h() === 0.1 &&
+        packet.func_149223_i() === 0.35
+    ),
+    FOOTSTEP: new ParticleType(packet =>
+        packet.type === 'FOOTSTEP' &&
+        packet.func_149222_k() === 1 &&
+        packet.func_149227_j() === 0.0 &&
+        packet.func_149221_g() === 0.05 &&
+        packet.func_149224_h() === 0.0 &&
+        packet.func_149223_i() === 0.05
+    ),
+    ENCHANT: new ParticleType(packet =>
+        packet.type === 'ENCHANTMENT_TABLE' &&
+        packet.func_149222_k() === 5 &&
+        packet.func_149227_j() === 0.05 &&
+        packet.func_149221_g() === 0.5 &&
+        packet.func_149224_h() === 0.4 &&
+        packet.func_149223_i() === 0.5
+    ),
+};
+
+function getParticleType(packet) {
+    if (!packet.isLongDistance) return null;
+
+    for (let key in ParticleTypes) {
+        if (ParticleTypes[key].check(packet)) {
+            return key;
+        }
+    }
+    return null;
+}
+
 
 class Diggable {
     constructor(x, y, z, type) {
@@ -91,7 +134,9 @@ function printLimited(message) {
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
     if (typename != "FOOTSTEP" && typename != "CRIT_MAGIC" && typename != "CRIT" && typename != "DRIP_LAVA" && typename != "ENCHANTMENT_TABLE") return;
-    const particleType = ParticleType.getParticleType(packet);
+    const particleType = getParticleType(packet);
+    
+    printLimited("particleType: " + particleType);
     packet.forEach((particle) => {
         printLimited("pType: " + particle);
     });
@@ -203,9 +248,8 @@ register("command", () => {
 register("packetReceived", (packet) => {
 
   // func is getting particle type
-    if (packet.func_179749_a().toString() == "DRIP_LAVA"){
-        burrowDetect(packet)
-        // printLimited("xoffset/zoffset: " + packet.func_149221_g() + " " + packet.func_149223_i()+ "\n" + "yOffset: "+  packet.func_149224_h() + "\n" + "speed: " + packet.func_149227_j() + "\n" + "count: " + 	packet.func_149222_k())
-    }
+    burrowDetect(packet)
+    // printLimited("xoffset/zoffset: " + packet.func_149221_g() + " " + packet.func_149223_i()+ "\n" + "yOffset: "+  packet.func_149224_h() + "\n" + "speed: " + packet.func_149227_j() + "\n" + "count: " + 	packet.func_149222_k())
+
 
 }).setFilteredClass(S2APacketParticles);
