@@ -118,6 +118,11 @@ class Burrow extends Diggable {
         return new Burrow(vec3.x, vec3.y, vec3.z, hasFootstep, hasEnchant, type);
     }
 }
+let burrows = new Map();
+let burrowshistory = new EvictingQueue(5);
+let lastDugBurrow = null;
+
+
 
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
@@ -127,8 +132,18 @@ function burrowDetect(packet) {
     if (!particleType) return;
     // print("particleType: " + particleType);
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
+    const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
     if (burrowshistory.contains(pos)) return;
-    let burrow = burrows.get(pos) || new Burrow(pos.x, pos.y, pos.z, false, false, -1);
+    
+    let burrow = burrows.get(pos);
+
+    if (!burrow) {
+        // If there's no burrow at the same position, create a new one
+        burrow = new Burrow(pos.x, pos.y, pos.z, null);
+        // Add the new burrow to the map
+        burrows.set(posstring, burrow);
+    }
+
     switch (particleType) {
         case "FOOTSTEP":
             burrow.hasFootstep = true;
@@ -146,7 +161,7 @@ function burrowDetect(packet) {
             burrow.type = 2;
             break;
     }
-    burrows.set(blockPos, burrow);
+    burrows.set(posstring, burrow);
 }
 
 
@@ -154,10 +169,6 @@ function removeBurrowBySmoke(x, y, z) {
     // removeBurrowWaypointBySmoke(x, y, z);
     burrows = burrows.filter(([type, xb, yb, zb]) => xb !== x && yb !== y && zb !== z);
 }
-
-let burrows = new Map();
-let burrowshistory = new EvictingQueue(5);
-let lastDugBurrow = null;
 
 
 function resetBurrows() {
