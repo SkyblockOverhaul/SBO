@@ -130,20 +130,19 @@ function burrowDetect(packet) {
     if (burrowshistory.contains(pos)) return;
     let burrow = burrows.get(pos) || new Burrow(pos.x, pos.y, pos.z, false, false, -1);
     switch (particleType) {
-        case ParticleType.FOOTSTEP:
+        case "FOOTSTEP":
             burrow.hasFootstep = true;
             break;
-        case ParticleType.ENCHANT:
+        case "ENCHANT":
             burrow.hasEnchant = true;
             break;
-        case ParticleType.EMPTY:
-            print("Empty");
+        case "EMPTY":
             burrow.type = 0;
             break;
-        case ParticleType.MOB:
+        case "MOB":
             burrow.type = 1;
             break;
-        case ParticleType.TREASURE:
+        case "TREASURE":
             burrow.type = 2;
             break;
     }
