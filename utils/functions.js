@@ -194,9 +194,9 @@ export function playerHasSpade() {
 }
 
 let spadeBool = false;
-registerWhen(register("step", () => {
+register("step", () => {
     spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
-}).setFps(1), () => settings.dianaLootTracker || settings.dianaMobTracker);
+}).setFps(1)
 
 // initialize tracker //
 export function initializeTracker() {

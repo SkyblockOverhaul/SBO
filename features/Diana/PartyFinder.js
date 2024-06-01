@@ -4,6 +4,7 @@ import { getPartyBool, getPartyMembers, getplayername, setInterval, clearInterva
 let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
+    party = party.filter(uuid => uuid != Player.getUUID());
     request({
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
@@ -25,6 +26,7 @@ register("chat", (party) => {
 let lastUsed = 0;
 register("command", () => {
     if (Date.now() - lastUsed > 60000 || lastUsed == 0) { // 1 minutes
+        lastUsed = Date.now();
         ChatLib.chat("&6[SBO] &eChecking party members...");
         sendPartyRequest();
         let interval = setInterval(() => {
