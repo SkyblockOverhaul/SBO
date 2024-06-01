@@ -92,12 +92,6 @@ export function mobAnnouncement(chat,mob,x,y,z){
     ChatLib.command(`pc x: ${x} y: ${y} z: ${z} | ${mob} found at ${area}!`);
 }
 
-
-let partyMembers = [];
-export function getPartyMembers() {
-    return partyMembers;
-}
-
 let partyMembersUuids = [];
 export function getPartyMembersUuids() {
     return partyMembersUuids;
@@ -514,18 +508,15 @@ export function clearInterval(thread) {
     thread.stop();
 }
 
-// experimental
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     Object.keys(partyInfo).forEach(key => {
         partyMembersUuids.push(key);
     })
     partyBool = true;
-    print("party info received");
 })
 
 export function sendPartyRequest() {
     partyMembersUuids = [];
     partyBool = false;
     HypixelModAPI.requestPartyInfo();
-    print("requesting party info");
 }

@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { getPartyBool, getPartyMembers, getplayername, setInterval, clearInterval, sendPartyRequest, getPartyMembersUuids } from "../../utils/functions";
+import { getPartyBool, getplayername, setInterval, clearInterval, sendPartyRequest, getPartyMembersUuids } from "../../utils/functions";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -30,15 +30,12 @@ register("command", () => {
         ChatLib.chat("&6[SBO] &eChecking party members...");
         sendPartyRequest();
         let interval = setInterval(() => {
-            partyBool = getPartyBool();
-            print(partyBool);
-            if (partyBool) {
+            if (getPartyBool()) {
                 let party = getPartyMembersUuids();
                 if (party.length == 0) {
                     ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
                     return;
                 }
-                print("send api request to get party info by uuids")
                 getPartyInfo(party);
                 clearInterval(interval);
             }
