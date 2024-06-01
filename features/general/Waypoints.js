@@ -416,16 +416,16 @@ function renderBurrowLines(){
     if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
         if (burrowDistance > 60) return;
-        trace(closestBurrow[1], closestBurrow[2] + 1, closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1, "", parseInt(settings.burrowLineWidth));
+        trace(closestBurrow[1], closestBurrow[2] + 1, closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 0.7, "", parseInt(settings.burrowLineWidth));
     }
     if (inqWaypoints.length > 0 && settings.inqLine) {
-        trace(inqWaypoints[inqWaypoints.length - 1][1], parseInt(inqWaypoints[inqWaypoints.length - 1][2]), inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1, "calc", parseInt(settings.burrowLineWidth));
+        trace(inqWaypoints[inqWaypoints.length - 1][1], parseInt(inqWaypoints[inqWaypoints.length - 1][2]), inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 0.7, "calc", parseInt(settings.burrowLineWidth));
     }
     if (guessWaypoint != undefined && settings.guessLine && inqWaypoints.length == 0) {
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
         if (guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) <= 10) return;
         if (burrowDistance <= 60) return;
-        trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 1, "calc", parseInt(settings.burrowLineWidth));
+        trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "calc", parseInt(settings.burrowLineWidth));
     }
 }
 

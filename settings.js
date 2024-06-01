@@ -174,21 +174,21 @@ class Settings {
     // --- Diana lines ---
     @SwitchProperty({
         name: 'Inquis Line',
-        description: 'Draws lines for Inquisitor',
+        description: 'Draws lines for Inquisitor, Disable View Bobbing in controls if its buggy',
         category: 'Diana',
         subcategory: 'Diana Waypoint Lines',
     })
     inqLine = false;
     @SwitchProperty({
         name: 'Burrow Line',
-        description: 'Draws lines for burrows',
+        description: 'Draws lines for burrows, Disable View Bobbing in controls if its buggy',
         category: 'Diana',
         subcategory: 'Diana Waypoint Lines',
     })
     burrowLine = false;
     @SwitchProperty({
         name: 'Guess Line',
-        description: 'Draws line for guess',
+        description: 'Draws line for guess, Disable View Bobbing in controls if its buggy',
         category: 'Diana',
         subcategory: 'Diana Waypoint Lines',
     })
