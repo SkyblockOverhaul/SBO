@@ -201,7 +201,7 @@ class Settings {
         min: 1,
         max: 10
     })
-    burrowLineWidth = 5;
+    burrowLineWidth = 1;
     // --- Diana Other ---
     @SwitchProperty({
         name: 'Mythos HP',
