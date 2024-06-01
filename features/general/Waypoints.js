@@ -203,8 +203,6 @@ let hubWarps = {
     da: {x: 92, y: 75, z: 174, unlocked: true},
     hub: {x: -3, y: 70, z: -70, unlocked: true},
     museum: {x: -76, y: 76, z: 81, unlocked: true},
-    // wizard: {x: 42, y: 122, z: 69, unlocked: true},
-    // crypt: {x: -161, y: 61, z: -99, unlocked: true},
 };
 
 const warpKey = new KeyBind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
@@ -249,6 +247,26 @@ function getClosestWarp(x, y, z){
         (Player.getLastZ() - z)**2
     );
     closestDistance = Infinity;
+
+    switch (settings.dianaAddWarps) {
+        case 0:
+            delete hubWarps.wizard;
+            delete hubWarps.crypt;
+            break;
+        case 1:
+            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true}
+            delete hubWarps.crypt;
+            break;
+        case 2:
+            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true}
+            delete hubWarps.wizard;
+            break;
+        case 3:
+            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true}
+            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true}
+            break;
+    }
+
     for (let warp in hubWarps) {
         if (hubWarps[warp].unlocked){
             let distance = Math.sqrt(
@@ -422,10 +440,10 @@ function renderBurrowLines(){
     if (inqWaypoints.length > 0 && settings.inqLine) {
         trace(inqWaypoints[inqWaypoints.length - 1][1], parseInt(inqWaypoints[inqWaypoints.length - 1][2]), inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 0.7, "calc", parseInt(settings.burrowLineWidth));
     }
-    if (guessWaypoint != undefined && settings.guessLine && inqWaypoints.length == 0) {
+    if (guessWaypoint != null && settings.guessLine && inqWaypoints.length == 0) {
+        if(getFinalLocation() === null) return;
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
-        if (guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) <= 10) return;
-        if (burrowDistance > 60){
+        if (burrowDistance > 60 && guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) > 10){
             trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "calc", parseInt(settings.burrowLineWidth));
         }
     }

@@ -217,6 +217,14 @@ class Settings {
         subcategory: "Other",
     })
     inquisDetect = false;
+    @SelectorProperty({
+        name: "Add Warps",
+        description: "Adds warp points for burrow warp",
+        category: "Diana",
+        subcategory: "Other",
+        options: ["None", "Wizard", "Crypt", "Both"]
+    })
+    dianaAddWarps = 0;
     // Loot Announcer
     @SwitchProperty({
         name: 'Rare Drop Announcer',
