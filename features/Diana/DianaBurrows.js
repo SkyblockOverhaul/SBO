@@ -161,9 +161,8 @@ function burrowDetect(packet) {
     }
 }
 
-let removedBurrow = null;
 function removeBurrowBySmoke(x, y, z) {
-    removedBurrow = removeBurrowWaypointBySmoke(x, y, z);
+    let removedBurrow = removeBurrowWaypointBySmoke(x, y, z);
     // print("x" + x + " y: " + (y-1) + " z: " + z)
     const posstring = x + " " + (y - 1) + " " + z;
     // remove burrow from burrows
@@ -180,7 +179,7 @@ function refreshBurrows() {
     if(digPos == null) return;
     result = removeBurrowWaypoint(digPos, burrows);
     burrows = result.burrows;
-    removedBurrow = result.removedBurrow;
+    let removedBurrow = result.removedBurrow;
     if (removedBurrow != null) {
         burrowshistory.add(removedBurrow);
         // print("Burrow removed: " + removedBurrow);
