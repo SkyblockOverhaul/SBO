@@ -179,6 +179,8 @@ function trackOne(tracker, item, category, type, amount) {
 register("command", () => {
     trackerSession = initializeTracker();
     saveLoot(trackerSession, "Session");
+    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setName("sboresetsession");
     
 
@@ -243,7 +245,7 @@ registerWhen(register("chat", (drop) => {
                 if (settings.lootAnnouncerScreen) {
                     Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                 }
-                new Sound({ source: "yippie.ogg" }).setVolume(2).play()
+                new Sound({ source: "YIPPEE.ogg" }).setVolume(2).play()
                 if (gotLootShare()) {
                     trackItem("Chimera", "items", 1); // ls chim
                 }
