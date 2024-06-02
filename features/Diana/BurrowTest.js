@@ -136,7 +136,7 @@ function burrowDetect(packet) {
     if (burrowshistory.contains(pos)) return;
     
     if (!burrows[posstring]) {
-        burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }];
+        burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
     }
 
     switch (particleType) {
@@ -196,12 +196,9 @@ function getClosestBurrowToPlayer() {
 
 
 
-function refreshBurrows() {
-    let closetburrow = getClosestBurrowToPlayer();
-    // wenn closest burow vorhanden in history dann nicht machen
-    if (closetburrow !== null) {
-        burrows = removeBurrowWaypoint(closetburrow, burrows);
-    }
+function refreshBurrows(pos) {
+    if(pos == null) return;
+    burrows = removeBurrowWaypoint(pos, burrows);
 }
 
 function resetBurrows() {
@@ -211,11 +208,13 @@ function resetBurrows() {
 }
 
 registerWhen(register("chat", (burrow) => {
-    refreshBurrows();
+    pos = getDigPos()
+    refreshBurrows(pos);
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (burrow) => {
-    refreshBurrows();
+    pos = getDigPos()
+    refreshBurrows(pos);
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (died) => {
@@ -254,7 +253,7 @@ register("step", () => {
     for (let key in burrows) {
         // print each burrow with cords and type
         // print("x: " + burrows[key][1].x + " y: " + burrows[key][1].y + " z: " + burrows[key][1].z + " type: " + burrows[key][0].type);
-        createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], []);
+        createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
     }
 }).setFps(4);
 
@@ -271,3 +270,25 @@ register("packetReceived", (packet) => {
 
     burrowDetect(packet)
 }).setFilteredClass(S2APacketParticles);
+const C07PacketPlayerDigging = net.minecraft.network.play.client.C07PacketPlayerDigging
+let digPos = null;
+let digAction = null;
+var regex = /x=(\d+), y=(\d+), z=(\d+)/;
+register("packetSent", (packet, event) => {
+    let action = packet.func_180762_c()
+    let pos = packet.func_179715_a()
+    // print("Action: " + action + " Pos: " + pos)
+    if(action == C07PacketPlayerDigging.Action.START_DESTROY_BLOCK) {
+        var match = pos.toString().match(regex);
+        // var x = parseInt(match[1]);
+        // var y = parseInt(match[2]);
+        // var z = parseInt(match[3]);
+        digPos = match
+        digAction = action
+    }
+    
+}).setFilteredClass(C07PacketPlayerDigging);
+
+function getDigPos(){
+    return digPos
+}
