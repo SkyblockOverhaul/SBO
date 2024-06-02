@@ -40,16 +40,9 @@ register("worldUnload", () => {
 
 export function removeBurrowWaypoint(pos, burrows) {
     let x = pos.getX();
-    let y = pos.getY() +3;
+    let y = pos.getY();
     let z = pos.getZ();
 
-    if (pos.getX() < 0) {
-        x = x+ 1;
-    }
-    if (pos.getZ() < 0) {
-        z = z + 1;
-    }
-    
     for (let i = 0; i < burrowWaypoints.length; i++) {
         if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
             burrowWaypoints.splice(i, 1);
