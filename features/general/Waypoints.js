@@ -70,24 +70,25 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
+function numberToBurrowType(number) {
+    switch (number) {
+        case 0:
+            return "Start";
+        case 1:
+            return "Mob";
+        case 2:
+            return "Treasure";
+    }
+}
+
 export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzcheck) {
     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
         if (burrowWaypoints.length > 0) {
-            for (let i = 0; i < burrowWaypoints.length; i++) {
-                if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-                    if (burrowWaypoints[i][0] == burrowType) {
-                        return;
-                    }
-                    else {
-                        burrowWaypoints[i][0] = burrowType;
-                        return;
-                    }
-                }
-            }
-            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
+            if (burrowWaypoints.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) return; 
+            burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
         }
         else {
-            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
+            burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
         }
     }
 }
@@ -100,6 +101,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         if (type == "Burrow") {
             switch (waypoint[0]) {
                 case "Start":
+                    waypoint[0] = "Start";
                     r = settings.startColor.getRed()/255;
                     g = settings.startColor.getGreen()/255;
                     b = settings.startColor.getBlue()/255;
@@ -141,7 +143,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
 
         // Formats and realins everything
         distance = Math.round(distanceRaw) + "m";
-        if (type == "Burroww") {
+        if (type == "Burrow") {
             if (waypoint[5][0] > 0) {
                 xSign = 1;
             }
@@ -159,7 +161,6 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             xSign = x == 0 ? 1 : Math.sign(x);
             zSign = z == 0 ? 1 : Math.sign(z);
         }
-
 
 
         wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw];
