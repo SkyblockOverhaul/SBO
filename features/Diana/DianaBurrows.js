@@ -173,6 +173,7 @@ function removeBurrowBySmoke(x, y, z) {
 }
 
 function resetBurrows() {
+    setBurrowWaypoints([]);
     burrows = {};
     burrowshistory.clear();
     lastDugBurrow = null;
@@ -189,11 +190,7 @@ function refreshBurrows() {
     }
 }
 
-function resetBurrows() {
-    setBurrowWaypoints([]);
-    burrows = {};
-    // burrowshistory = [];
-}
+
 
 registerWhen(register("chat", (burrow) => {
     refreshBurrows();
