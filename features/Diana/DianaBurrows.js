@@ -168,12 +168,7 @@ function removeBurrowBySmoke(x, y, z) {
     const posstring = x + " " + (y - 1) + " " + z;
     // remove burrow from burrows
     delete burrows[posstring];
-    if(removedBurrow != null) {
-        burrowshistory.add(removedBurrow);
-        // print("Burrow removed Smoke: " + removedBurrow);
-    }
 }
-
 function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = {};
