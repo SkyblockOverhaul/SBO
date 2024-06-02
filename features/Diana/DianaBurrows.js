@@ -128,13 +128,15 @@ let burrowshistory = new EvictingQueue(5);
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
     if (typename != "FOOTSTEP" && typename != "CRIT_MAGIC" && typename != "CRIT" && typename != "DRIP_LAVA" && typename != "ENCHANTMENT_TABLE") return;
+    // print("Particle: " + typename);
     const particleType = getParticleType(packet);
-    // print("particleType: " + particleType);
+    // print("Particle Type: " + particleType);
     if (!particleType) return;
-    // print("particleType: " + particleType);
+    // print("Went trhorugh: ");
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
     if (burrowshistory.contains(posstring)) return;
+    // print("posstring: " + posstring);
     
     if (!burrows[posstring]) {
         burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
@@ -168,6 +170,7 @@ function removeBurrowBySmoke(x, y, z) {
     delete burrows[posstring];
     if(removedBurrow != null) {
         burrowshistory.add(removedBurrow);
+        // print("Burrow removed Smoke: " + removedBurrow);
     }
 }
 
@@ -185,6 +188,7 @@ function refreshBurrows() {
     removedBurrow = result.removedBurrow;
     if (removedBurrow != null) {
         burrowshistory.add(removedBurrow);
+        // print("Burrow removed: " + removedBurrow);
     }
 }
 
@@ -209,6 +213,7 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
         const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
         // print("x: " + x + " y: " + y + " z: " + z);
+        // print("Smoke: " + x + " " + y + " " + z);
         removeBurrowBySmoke(x, y, z);
     }
 }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
