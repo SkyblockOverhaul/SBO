@@ -161,7 +161,8 @@ function burrowDetect(packet) {
 
 function removeBurrowBySmoke(x, y, z) {
     removeBurrowWaypointBySmoke(x, y, z);
-    const posstring = x + " " + y + " " + z;
+    // print("x" + x + " y: " + (y-1) + " z: " + z)
+    const posstring = x + " " + (y - 1) + " " + z;
     // remove burrow from burrows
     delete burrows[posstring];
 }
@@ -227,6 +228,7 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
         const particlepos = particle.getPos();
         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
         const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
+        // print("x: " + x + " y: " + y + " z: " + z);
         removeBurrowBySmoke(x, y, z);
     }
 }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
