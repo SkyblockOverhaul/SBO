@@ -29,6 +29,8 @@ class EvictingQueue {
 }
 const EnumParticleTypes = net.minecraft.util.EnumParticleTypes
 const S2APacketParticles = net.minecraft.network.play.server.S2APacketParticles
+
+
 class ParticleType {
     constructor(typeCheck) {
         this.check = typeCheck;
@@ -195,10 +197,10 @@ function getClosestBurrowToPlayer() {
 }
 
 
-
-function refreshBurrows(pos) {
-    if(pos == null) return;
-    burrows = removeBurrowWaypoint(pos, burrows);
+let digPos = null;
+function refreshBurrows() {
+    if(digPos == null) return;
+    burrows = removeBurrowWaypoint(digPos, burrows);
 }
 
 function resetBurrows() {
@@ -208,13 +210,11 @@ function resetBurrows() {
 }
 
 registerWhen(register("chat", (burrow) => {
-    pos = getDigPos()
-    refreshBurrows(pos);
+    refreshBurrows();
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (burrow) => {
-    pos = getDigPos()
-    refreshBurrows(pos);
+    refreshBurrows();
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (died) => {
@@ -253,6 +253,7 @@ register("step", () => {
     for (let key in burrows) {
         // print each burrow with cords and type
         // print("x: " + burrows[key][1].x + " y: " + burrows[key][1].y + " z: " + burrows[key][1].z + " type: " + burrows[key][0].type);
+        if (burrows[key][0].type == undefined) return;
         createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
     }
 }).setFps(4);
@@ -270,25 +271,18 @@ register("packetReceived", (packet) => {
 
     burrowDetect(packet)
 }).setFilteredClass(S2APacketParticles);
+
 const C07PacketPlayerDigging = net.minecraft.network.play.client.C07PacketPlayerDigging
-let digPos = null;
-let digAction = null;
-var regex = /x=(\d+), y=(\d+), z=(\d+)/;
+
 register("packetSent", (packet, event) => {
     let action = packet.func_180762_c()
-    let pos = packet.func_179715_a()
+    let pos = new BlockPos(packet.func_179715_a()).down()
     // print("Action: " + action + " Pos: " + pos)
     if(action == C07PacketPlayerDigging.Action.START_DESTROY_BLOCK) {
-        var match = pos.toString().match(regex);
         // var x = parseInt(match[1]);
         // var y = parseInt(match[2]);
         // var z = parseInt(match[3]);
-        digPos = match
-        digAction = action
+        digPos = pos.down();
     }
     
 }).setFilteredClass(C07PacketPlayerDigging);
-
-function getDigPos(){
-    return digPos
-}
