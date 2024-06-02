@@ -135,7 +135,7 @@ function burrowDetect(packet) {
     // print("particleType: " + particleType);
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
-    if (burrowshistory.contains(pos)) return;
+    if (burrowshistory.contains(posstring)) return;
     
     if (!burrows[posstring]) {
         burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
@@ -160,15 +160,17 @@ function burrowDetect(packet) {
     }
 }
 
-
+let removedBurrow = null;
 function removeBurrowBySmoke(x, y, z) {
-    removeBurrowWaypointBySmoke(x, y, z);
+    removedBurrow = removeBurrowWaypointBySmoke(x, y, z);
     // print("x" + x + " y: " + (y-1) + " z: " + z)
     const posstring = x + " " + (y - 1) + " " + z;
     // remove burrow from burrows
     delete burrows[posstring];
+    if(removedBurrow != null) {
+        burrowshistory.add(removedBurrow);
+    }
 }
-
 
 function resetBurrows() {
     burrows = {};
@@ -176,31 +178,15 @@ function resetBurrows() {
     lastDugBurrow = null;
 }
 
-
-function getClosestBurrowToPlayer() {
-    let closestDistance = Infinity;
-    let closestBurrow = null;
-
-    for (let key in burrows) {
-        const burrow = burrows[key][1];
-        const distance = Math.sqrt(
-            (Player.getX() - burrow.x)**2 +
-            (Player.getY() - burrow.y)**2 +
-            (Player.getZ() - burrow.z)**2
-        );
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closestBurrow = burrow;
-        }
-    }
-    return closestBurrow;
-}
-
-
 let digPos = null;
 function refreshBurrows() {
     if(digPos == null) return;
-    burrows = removeBurrowWaypoint(digPos, burrows);
+    result = removeBurrowWaypoint(digPos, burrows);
+    burrows = result.burrows;
+    removedBurrow = result.removedBurrow;
+    if (removedBurrow != null) {
+        burrowshistory.add(removedBurrow);
+    }
 }
 
 function resetBurrows() {
@@ -273,6 +259,7 @@ register("packetReceived", (packet) => {
 }).setFilteredClass(S2APacketParticles);
 
 const C07PacketPlayerDigging = net.minecraft.network.play.client.C07PacketPlayerDigging
+const C08PacketPlayerBlockPlacement = net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 
 register("packetSent", (packet, event) => {
     let action = packet.func_180762_c()
@@ -295,3 +282,11 @@ register("packetSent", (packet, event) => {
     }
     
 }).setFilteredClass(C07PacketPlayerDigging);
+
+
+
+// register("packetSent", (packet, event) => {
+//   // do stuff
+//   let action = packet.func_180762_c()
+//   print("Action: " + action)
+// }).setPacketClass(C08PacketPlayerBlockPlacement)

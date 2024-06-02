@@ -42,25 +42,30 @@ export function removeBurrowWaypoint(pos, burrows) {
     let x = pos.getX();
     let y = pos.getY();
     let z = pos.getZ();
+    let removedBurrowstring = null;
 
     for (let i = 0; i < burrowWaypoints.length; i++) {
         if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            removedBurrowstring = x + " " + (y - 1) + " " + z; 
             burrowWaypoints.splice(i, 1);
         }
     }
     // burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
     const posstring = `${x} ${y-1} ${z}`;
     delete burrows[posstring];
-    return burrows; 
+    return {burrows: burrows, removedBurrow: removedBurrowstring};
 }
 
 
 export function removeBurrowWaypointBySmoke(x, y, z) {
+    let removedBurrowstring = null;
     for (let i = 0; i < burrowWaypoints.length; i++) {
         if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            removedBurrowstring = x + " " + (y - 1) + " " + z;
             burrowWaypoints.splice(i, 1);
         }
     }
+    return removedBurrowstring;
 }
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
@@ -343,9 +348,9 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 
                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
-                    print("x:", inqWaypoints[inqWaypoints.length - 1][1]);
-                    print("y:", (inqWaypoints[inqWaypoints.length - 1][2] + 1));
-                    print("z:", inqWaypoints[inqWaypoints.length - 1][3]);
+                    // print("x:", inqWaypoints[inqWaypoints.length - 1][1]);
+                    // print("y:", (inqWaypoints[inqWaypoints.length - 1][2] + 1));
+                    // print("z:", inqWaypoints[inqWaypoints.length - 1][3]);
                     // removeWaypointAfterDelay(inqWaypoints, 60);
                 }
             }
