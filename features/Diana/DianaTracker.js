@@ -243,6 +243,7 @@ registerWhen(register("chat", (drop) => {
                 if (settings.lootAnnouncerScreen) {
                     Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                 }
+                new Sound({ source: "yippie.ogg" }).setVolume(1).play()
                 if (gotLootShare()) {
                     trackItem("Chimera", "items", 1); // ls chim
                 }
