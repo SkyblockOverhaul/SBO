@@ -46,8 +46,11 @@ export function removeBurrowWaypoint(closetburrow, burrows) {
 
         }
     }
-    burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
-
+    // burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
+    const posstring = closetburrow[1] + " " + closetburrow[2] + " " + closetburrow[3];
+    if (burrows[posstring]) {
+        burrows.delete(posstring);
+    }
     return burrows; 
 }
 
@@ -138,7 +141,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
 
         // Formats and realins everything
         distance = Math.round(distanceRaw) + "m";
-        if (type == "Burrow") {
+        if (type == "Burroww") {
             if (waypoint[5][0] > 0) {
                 xSign = 1;
             }
