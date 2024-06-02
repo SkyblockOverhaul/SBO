@@ -2,6 +2,7 @@ import { registerWhen } from "../../utils/variables";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
+import { printDev } from "../../utils/functions";
 import { createBurrowWaypoints, removeBurrowWaypoint, removeBurrowWaypointBySmoke, setBurrowWaypoints } from "../general/Waypoints";
 
 
@@ -130,13 +131,13 @@ function burrowDetect(packet) {
     if (typename != "FOOTSTEP" && typename != "CRIT_MAGIC" && typename != "CRIT" && typename != "DRIP_LAVA" && typename != "ENCHANTMENT_TABLE") return;
     // print("Particle: " + typename);
     const particleType = getParticleType(packet);
-    // print("Particle Type: " + particleType);
+    printDev("Particle Type: " + particleType);
     if (!particleType) return;
-    // print("Went trhorugh: ");
+    printDev("Went trhorugh: ");
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
     if (burrowshistory.contains(posstring)) return;
-    // print("posstring: " + posstring);
+    printDev("posstring: " + posstring);
     
     if (!burrows[posstring]) {
         burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];

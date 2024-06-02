@@ -383,6 +383,12 @@ export function drawOutlinedString(text,x1,y1,scale,z) {
     Renderer.drawString(text, x, y)
 }
 
+let printBool = false;
+export function printDev(msg) {
+    if(!printBool) return;
+    return print("[DEV]: " + msg);
+}
+
 export function getplayername(player) {
     let num
     let name
@@ -410,6 +416,10 @@ register("worldUnload", () => {
 register("worldLoad", () => {
     worldLoaded = true;
 });
+
+register("command", () => {
+    printBool = !printBool;
+}).setName("sbodev")
 
 
 // party detection
