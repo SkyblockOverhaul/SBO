@@ -38,19 +38,16 @@ register("worldUnload", () => {
 })
 
 
-export function removeBurrowWaypoint(closetburrow, burrows) {
-    
+export function removeBurrowWaypoint(pos, burrows) {
+    print("x: " + pos[1] + " y: " + pos[2] + " z: " + pos[3])
     for (let i = 0; i < burrowWaypoints.length; i++) {
-        if (burrowWaypoints[i][1] == closetburrow[1] && burrowWaypoints[i][2] == closetburrow[2] && burrowWaypoints[i][3] == closetburrow[3]) {
+        if (burrowWaypoints[i][1] == pos[1] && burrowWaypoints[i][2] == pos[2] && burrowWaypoints[i][3] == pos[3]) {
             burrowWaypoints.splice(i, 1);
-
         }
     }
     // burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
-    const posstring = closetburrow[1] + " " + closetburrow[2] + " " + closetburrow[3];
-    if (burrows[posstring]) {
-        burrows.delete(posstring);
-    }
+    const posstring = pos[1] + " " + pos[2] + " " + pos[3];
+    delete burrows[posstring];
     return burrows; 
 }
 
