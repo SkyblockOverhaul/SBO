@@ -169,6 +169,7 @@ function removeBurrowBySmoke(x, y, z) {
     // remove burrow from burrows
     delete burrows[posstring];
 }
+
 function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = {};
@@ -198,20 +199,20 @@ registerWhen(register("chat", (burrow) => {
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (died) => {
-    refreshBurrows();
+    resetBurrows();
 }).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 
-registerWhen(register("spawnParticle", (particle, type, event) => {
-    if (!checkDiana()) return;
-    if (type.toString() == "SMOKE_LARGE") {
-        const particlepos = particle.getPos();
-        const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
-        const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
-        // print("x: " + x + " y: " + y + " z: " + z);
-        // print("Smoke: " + x + " " + y + " " + z);
-        removeBurrowBySmoke(x, y, z);
-    }
-}), () => settings.dianaBurrowDetect && getWorld() == "Hub");
+// registerWhen(register("spawnParticle", (particle, type, event) => {
+//     if (!checkDiana()) return;
+//     if (type.toString() == "SMOKE_LARGE") {
+//         const particlepos = particle.getPos();
+//         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
+//         const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
+//         // print("x: " + x + " y: " + y + " z: " + z);
+//         print("smoke large at: " + x + " " + y + " " + z);
+//         removeBurrowBySmoke(x, y, z);
+//     }
+// }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
 registerWhen(register("worldUnload", () => {
     resetBurrows();
@@ -237,16 +238,38 @@ register("step", () => {
 // registerWhen(register("packetReceived", (packet)=> {
 //     burrowDetect(packet)
 // }).setFilteredClass(net.minecraft.network.play.server.S2APacketParticles), () => settings.dianaBurrowDetect && getWorld() == "Hub");
-register("packetReceived", (packet) => {
-    // print("Packet type: " + packet.func_179749_a().toString());
-    // print("Packet count: " + parseInt(packet.func_149222_k()));
-    // print("Packet speed: " + parseFloat(packet.func_149227_j()).toFixed(2));
-    // print("Packet xOffset: " + parseFloat(packet.func_149221_g()).toFixed(1));
-    // print("Packet yOffset: " + parseFloat(packet.func_149224_h()).toFixed(1));
-    // print("Packet zOffset: " + parseFloat(packet.func_149223_i()).toFixed(1));
-
-    burrowDetect(packet)
-}).setFilteredClass(S2APacketParticles);
+registerWhen(register("packetReceived", (packet) => {
+    packettype = packet.func_179749_a().toString()
+    if(packettype == "SMOKE_LARGE"){
+        packetSpeed = parseFloat(packet.func_149227_j()).toFixed(2)
+        if(packetSpeed == 0.01){
+            pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
+            x = pos.getX();
+            y = pos.getY();
+            z = pos.getZ();
+            if (!checkDiana()) return;
+            removeBurrowBySmoke(x, (parseInt(y) + 1), z);
+        }
+        // packetcount = parseInt(packet.func_149222_k())
+        // packetXOffset = parseFloat(packet.func_149221_g()).toFixed(1)
+        // packetYOffset = parseFloat(packet.func_149224_h()).toFixed(1)
+        // packetZOffset = parseFloat(packet.func_149223_i()).toFixed(1)
+        // pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
+        // x = pos.getX();
+        // y = pos.getY();
+        // z = pos.getZ();
+        // print("Packet type: " + packettype)
+        // print("Packet count: " + packetcount)
+        // print("Packet speed: " + packetSpeed)
+        // print("Packet X Offset: " + packetXOffset)
+        // print("Packet Y Offset: " + packetYOffset)
+        // print("Packet Z Offset: " + packetZOffset)
+        // print("X: " + x)
+        // print("Y: " + y)
+        // print("Z: " + z)
+    }
+    burrowDetect(packet)    
+}).setFilteredClass(S2APacketParticles), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
 const C07PacketPlayerDigging = net.minecraft.network.play.client.C07PacketPlayerDigging
 const C08PacketPlayerBlockPlacement = net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
