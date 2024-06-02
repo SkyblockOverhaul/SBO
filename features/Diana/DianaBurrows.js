@@ -124,7 +124,6 @@ class Burrow extends Diggable {
 
 let burrows = {};
 let burrowshistory = new EvictingQueue(5);
-let lastDugBurrow = null;
 
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
@@ -176,7 +175,6 @@ function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = {};
     burrowshistory.clear();
-    lastDugBurrow = null;
 }
 
 let digPos = null;
@@ -219,11 +217,6 @@ registerWhen(register("worldUnload", () => {
     resetBurrows();
 }), () => settings.dianaBurrowDetect);
 
-registerWhen(register("step", () => {
-    if (!checkDiana()) {
-        // resetBurrows();
-    }
-}).setFps(1), () => settings.dianaBurrowDetect);
 
 register("command", () => {
     resetBurrows();
@@ -279,11 +272,3 @@ register("packetSent", (packet, event) => {
     }
     
 }).setFilteredClass(C07PacketPlayerDigging);
-
-
-
-// register("packetSent", (packet, event) => {
-//   // do stuff
-//   let action = packet.func_180762_c()
-//   print("Action: " + action)
-// }).setPacketClass(C08PacketPlayerBlockPlacement)
