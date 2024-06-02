@@ -337,7 +337,8 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
         if (isInq) {
             if(settings.inqWaypoints && checkDiana()) {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
-                World.playSound("random.orb", 1, 1);
+                // World.playSound("random.orb", 1, 1);
+                new Sound({ source: "Amongus-Emergency-Meeting.ogg" }).setVolume(1).play()
                 z = z.replace("&r", "");
                 // check if waypoint is from player
                 
@@ -525,3 +526,9 @@ function componentToHex(c) {
     return hex.length == 1 ? "0" + hex : hex;
 }
 
+
+
+register("command", () => {
+    new Sound({ source: "yippie.ogg" }).setVolume(1).play()
+    // World.playSound("random.orb", 1, 1);
+}).setName("sboinq2");   
