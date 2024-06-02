@@ -530,10 +530,3 @@ function componentToHex(c) {
     let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
-
-
-
-register("command", () => {
-    new Sound({ source: "yippie.ogg" }).setVolume(1).play()
-    // World.playSound("random.orb", 1, 1);
-}).setName("sboinq2");   
