@@ -131,15 +131,13 @@ function burrowDetect(packet) {
     if (typename != "FOOTSTEP" && typename != "CRIT_MAGIC" && typename != "CRIT" && typename != "DRIP_LAVA" && typename != "ENCHANTMENT_TABLE") return;
     // print("Particle: " + typename);
     const particleType = getParticleType(packet);
-    printDev("Particle Type: " + particleType);
     if (!particleType) return;
-    printDev("Went trhorugh: ");
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
     if (burrowshistory.contains(posstring)) return;
-    printDev("posstring: " + posstring);
     
     if (!burrows[posstring]) {
+        printDev("Creating String");
         burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
     }
 
