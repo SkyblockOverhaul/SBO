@@ -124,7 +124,7 @@ class Burrow extends Diggable {
 }
 
 let burrows = {};
-let burrowshistory = new EvictingQueue(5);
+let burrowshistory = new EvictingQueue(2);
 
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
@@ -132,9 +132,11 @@ function burrowDetect(packet) {
     // print("Particle: " + typename);
     const particleType = getParticleType(packet);
     if (!particleType) return;
+    printDev("Went thourhg particylType check");
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
     if (burrowshistory.contains(posstring)) return;
+    printDev("Went thourhg history check");
     
     if (!burrows[posstring]) {
         printDev("Creating String");
