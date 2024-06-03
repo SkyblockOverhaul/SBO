@@ -174,10 +174,10 @@ function resetBurrows() {
     burrowshistory.clear();
 }
 
-let digPos = null;
+let removePos = null;
 function refreshBurrows() {
-    if(digPos == null) return;
-    result = removeBurrowWaypoint(digPos, burrows);
+    if(removePos == null) return;
+    result = removeBurrowWaypoint(removePos, burrows);
     burrows = result.burrows;
     let removedBurrow = result.removedBurrow;
     if (removedBurrow != null) {
@@ -255,10 +255,9 @@ registerWhen(register("packetReceived", (packet) => {
         // packetXOffset = parseFloat(packet.func_149221_g()).toFixed(1)
         // packetYOffset = parseFloat(packet.func_149224_h()).toFixed(1)
         // packetZOffset = parseFloat(packet.func_149223_i()).toFixed(1)
-        // pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
-        // x = pos.getX();
-        // y = pos.getY();
-        // z = pos.getZ();
+        // const { x, y, z } = (pos => ({ x: pos.getX(), y: pos.getY(), z: pos.getZ() }))(
+        //     new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down()
+        // );
         // print("Packet type: " + packettype)
         // print("Packet count: " + packetcount)
         // print("Packet speed: " + packetSpeed)
@@ -273,9 +272,8 @@ registerWhen(register("packetReceived", (packet) => {
 }).setFilteredClass(S2APacketParticles), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
 const C07PacketPlayerDigging = net.minecraft.network.play.client.C07PacketPlayerDigging
-const C08PacketPlayerBlockPlacement = net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 
-register("packetSent", (packet, event) => {
+registerWhen(register("packetSent", (packet, event) => {
     let action = packet.func_180762_c()
     let pos = new BlockPos(packet.func_179715_a()).down()
     // print("Action: " + action + " Pos: " + pos)
@@ -283,7 +281,7 @@ register("packetSent", (packet, event) => {
         let x = pos.getX();
         let y = pos.getY() +2;
         let z = pos.getZ();
-    
+
         if (pos.getX() < 0) {
             x = x+ 1;
         }
@@ -291,8 +289,26 @@ register("packetSent", (packet, event) => {
             z = z + 1;
         }
         if (burrows[x + " " + (y-1) + " " + z]) {
-            digPos =  new BlockPos(x, y, z);
+            removePos = new BlockPos(x, y, z);
         }   
     }
     
-}).setFilteredClass(C07PacketPlayerDigging);
+}).setFilteredClass(C07PacketPlayerDigging), () => settings.dianaBurrowDetect && getWorld() == "Hub");
+
+registerWhen(register("playerInteract", (action, pos) => {
+    if(action.toString() == "RIGHT_CLICK_BLOCK") {
+        let x = pos.getX();
+        let y = pos.getY();
+        let z = pos.getZ();
+
+        if (pos.getX() < 0) {
+            x = x+ 1;
+        }
+        if (pos.getZ() < 0) {
+            z = z + 1;
+        }
+        if (burrows[x + " " + y + " " + z]) {
+            removePos = new BlockPos(x, (parseInt(y) + 1), z);
+        }   
+    }
+}), () => settings.dianaBurrowDetect && getWorld() == "Hub");
