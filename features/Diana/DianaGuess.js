@@ -345,6 +345,8 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
 registerWhen(register("step", () => {
     if (!checkDiana()) {
         onWorldChange();
+    }
+    else {
         GetNewY();
     }
 }).setFps(1), () => settings.dianaBurrowGuess);
