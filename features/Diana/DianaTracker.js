@@ -8,6 +8,7 @@ import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorEl
 import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, getTrackerSession } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 import { getGuiOpen, getRefreshOverlays } from "../../utils/overlays";
+import { playerHasSpade } from "../../utils/functions";
 
 // todo: 
 // Mobs since last inquisitor (use only total tracker)
@@ -219,9 +220,9 @@ register("chat", (event) => {
 
 // --for spade spam
 //&r&cThis ability is on cooldown for 3s.&r
-registerWhen(register("chat", (event) => {
+registerWhen(register("chat", (time, event) => {
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&cThis ability is on cooldown for 3s.&r"), () => getWorld() === "Hub");
+}).setCriteria("&r&cThis ability is on cooldown for ${time}"), () => getWorld() === "Hub" && playerHasSpade());
 
 
 // mob tracker
