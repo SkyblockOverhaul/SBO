@@ -154,9 +154,6 @@ export function trackItem(item, category, amount) {
     if (isDataLoaded()) {
         if (category === "mobs") {
             data.mobsSinceInq += 1;
-            if (item === "Minos Inquisitor") {              
-                data.inqsSinceChim += 1;
-            }
         }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
@@ -217,12 +214,19 @@ registerWhen(register("chat", (woah, arev, mob) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
+                data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
-                data.mobsSinceInq = 0;
+                data.mobsSinceInq = 0;        
                 break;
             case "Minos Champion":
-            case "Minos Hunter":
+                data.champsSinceRelic += 1;
+                trackItem(mob, "mobs", 1);
+                break;
             case "Minotaur":
+                data.minotaursSinceStick += 1;
+                trackItem(mob, "mobs", 1);
+                break;
+            case "Minos Hunter":
             case "Gaia Construct":
             case "Siamese Lynxes":
                 trackItem(mob, "mobs", 1);
