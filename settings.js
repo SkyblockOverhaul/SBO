@@ -67,6 +67,7 @@ class Settings {
         this.addDependency('Attribute Shards For Chest Profit','Attribute Value Overlay');
         this.addDependency('Distance For Remove','Remove Guess');
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
+        this.addDependency('Stats Massage','Diana Stats');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -131,11 +132,18 @@ class Settings {
     dianaLootTrackerView = 0;
     @SwitchProperty({
         name: "Diana Stats",
-        description: "Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, Minotaurs since Stick, Champions since Relic",
+        description: "Shows stats like Mobs since Inquisitor, Inquisitors since Chimera",
         category: "Diana",
         subcategory: "Diana Tracker",
     })
     dianaStatsTracker = false;
+    @SwitchProperty({
+        name: "Stats Massage",
+        description: "Sends the chat Massage with stat: [SBO] Took 120 Mobs to get a Inquis!",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+    })
+    sendSinceMassage = false;
     @ButtonProperty({
         name: "Reset Session Tracker",
         description: "Resets the session tracker For mobs and items (/sboresetsession)",
