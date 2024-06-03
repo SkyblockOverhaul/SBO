@@ -42,7 +42,7 @@ export function dianaLootCounter(item, amount) {
                 for (let i in rareDrops.values()) {
                     color = i.slice(0, 2);
                     if (item == "MINOS_RELIC") {
-                        champsSinceRelicMSG = new TextComponent(`&c[SBO] &r&eTook ${data.champsSinceRelic} Champions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "click to copy").chat();
+                        champsSinceRelicMSG = new TextComponent(`&6[SBO] &r&eTook ${data.champsSinceRelic} Champions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "click to copy").chat();
                         if(settings.sendSinceMassage) champsSinceRelicMSG;
                         data.champsSinceRelic = 0;
                         if (settings.lootAnnouncerScreen) {
@@ -234,7 +234,7 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
             case "Minos Inquisitor":
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
-                mobsSinceInqMSG = new TextComponent(`&c[SBO] &r&eTook ${data.mobsSinceInq} Mobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "click to copy").chat();
+                mobsSinceInqMSG = new TextComponent(`&6[SBO] &r&eTook ${data.mobsSinceInq} Mobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "click to copy").chat();
                 if(settings.sendSinceMassage) mobsSinceInqMSG;
                 data.mobsSinceInq = 0;        
                 break;
@@ -292,13 +292,13 @@ registerWhen(register("chat", (drop) => {
                 }
                 else {
                     trackItem("Chimera", "items", 1);
-                    inqsSinceChimMSG = new TextComponent(`&c[SBO] &r&eTook ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] &Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "click to copy").chat();
+                    inqsSinceChimMSG = new TextComponent(`&6[SBO] &r&eTook ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] &Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "click to copy").chat();
                     if(settings.sendSinceMassage) inqsSinceChimMSG;
                     data.inqsSinceChim = 0;
                 }
                 break;
             case "Daedalus Stick":
-                minotaursSinceStickMSG = new TextComponent(`&c[SBO] &r&eTook ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] &Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "click to copy").chat();
+                minotaursSinceStickMSG = new TextComponent(`&6[SBO] &r&eTook ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] &Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "click to copy").chat();
                 if(settings.sendSinceMassage) minotaursSinceStickMSG;
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
