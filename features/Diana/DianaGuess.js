@@ -345,12 +345,22 @@ registerWhen(register("spawnParticle", (particle, type, event) => {
 registerWhen(register("step", () => {
     if (!checkDiana()) {
         onWorldChange();
+        GetNewY();
     }
 }).setFps(1), () => settings.dianaBurrowGuess);
 
-register("command", () => {
 
-
-    // print(finalLocation.x + " " + finalLocation.y + " " + finalLocation.z);
-    print(World.getWorld().func_175668_a(new (Java.type('net.minecraft.util.BlockPos'))(finalLocation.x, finalLocation.y, finalLocation.z), false));
-}).setName("sboTestChunk")
+function GetNewY(){
+    if(!finalLocation) return;
+    if(World.getWorld().func_175668_a(new (Java.type('net.minecraft.util.BlockPos'))(finalLocation.x, finalLocation.y, finalLocation.z), false)){
+        gY = 131;
+        while (gY > 70) {
+            let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());
+            let blockType = block.getType().getID();
+            if (blockType === 2 || blockType === 3) {
+                break;
+            }
+            gY--;
+        }
+    }
+}
