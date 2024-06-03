@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { registerWhen } from "../../utils/variables";
+import { data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay } from "../guis/DianaGuis";
@@ -18,6 +18,12 @@ import { getGuiOpen, getRefreshOverlays } from "../../utils/overlays";
 // todo end
 
 
+// data :     
+// "mobsSinceInq": 0,
+// "inqsSinceChim": 0,
+// "minotaursSinceStick": 0,
+// "champsSinceRelic": 0,
+
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
@@ -35,6 +41,7 @@ export function dianaLootCounter(item, amount) {
                 for (let i in rareDrops.values()) {
                     color = i.slice(0, 2);
                     if (item == "MINOS_RELIC") {
+                        data.champsSinceRelic = 0;
                         if (settings.lootAnnouncerScreen) {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
@@ -145,6 +152,12 @@ function calcPercent(trackerToCalc, type, setting) {
 // track logic //
 export function trackItem(item, category, amount) {
     if (isDataLoaded()) {
+        if (category === "mobs") {
+            data.mobsSinceInq += 1;
+            if (item === "Minos Inquisitor") {              
+                data.inqsSinceChim += 1;
+            }
+        }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
         trackOne(trackerTotal, item, category, "Total", amount);
@@ -204,6 +217,9 @@ registerWhen(register("chat", (woah, arev, mob) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
+                trackItem(mob, "mobs", 1);
+                data.mobsSinceInq = 0;
+                break;
             case "Minos Champion":
             case "Minos Hunter":
             case "Minotaur":
@@ -251,9 +267,11 @@ registerWhen(register("chat", (drop) => {
                 }
                 else {
                     trackItem("Chimera", "items", 1);
+                    data.inqsSinceChim = 0;
                 }
                 break;
             case "Daedalus Stick":
+                data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
                     Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                 }

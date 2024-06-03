@@ -14,7 +14,11 @@ export let data = new PogObject("SBO", {
     "effects": [],
     "resetVersion": resetVersion,
     "changelogVersion": "0.0.0",
-    "downloadMsg": false
+    "downloadMsg": false,
+    "mobsSinceInq": 0,
+    "inqsSinceChim": 0,
+    "minotaursSinceStick": 0,
+    "champsSinceRelic": 0,
 }, "SboData.json");
 
 // --- TRIGGER CONTROL ---
