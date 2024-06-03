@@ -45,31 +45,29 @@ ${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`,
 `&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`,
     dianaMobTrackerExample:
 `${YELLOW}${BOLD}Diana Mob Tracker
-------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
-${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
-${GOLD}${BOLD}Minotaur: ${WHITE}
-${GREEN}${BOLD}Gaia Construct: ${WHITE}
-${GREEN}${BOLD}Siamese Lynx: ${WHITE}
-${GREEN}${BOLD}Minos Hunter: ${WHITE}
-${GRAY}${BOLD}Total Mobs: ${WHITE}
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
+${GRAY}- ${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Minotaur: ${WHITE}
+${GRAY}- ${GREEN}${BOLD}Gaia Construct: ${WHITE}
+${GRAY}- ${GREEN}${BOLD}Siamese Lynx: ${WHITE}
+${GRAY}- ${GREEN}${BOLD}Minos Hunter: ${WHITE}
+${GRAY}- ${GRAY}${BOLD}Total Mobs: ${WHITE}
 `,
     dianaLootTrackerExample: 
 `${YELLOW}${BOLD}Diana Loot Tracker
--------------------
-${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
-${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
-${GOLD}${BOLD}Daedalus Stick: ${WHITE}
-${GOLD}${BOLD}Crown of Greed: ${WHITE}
-${GOLD}${BOLD}Souvenir: ${WHITE}
-${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
-${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
-${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
-${BLUE}${BOLD}Ancient Claws: ${WHITE}
-${BLUE}${BOLD}Enchanted Ancient Claws: ${WHITE}
-${GOLD}${BOLD}Griffin Feather: ${WHITE}
-${GOLD}${BOLD}Coins: ${WHITE}
-${GRAY}${BOLD}Total Burrows: ${WHITE}
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
+${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Crown of Greed: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Souvenir: ${WHITE}
+${GRAY}- ${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
+${GRAY}- ${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
+${GRAY}- ${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Griffin Feather: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Coins: ${WHITE}
+${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${WHITE}
+${GRAY}- ${BLUE}${BOLD}Enchanted Claws: ${WHITE}
+${GRAY}- ${GRAY}${BOLD}Total Burrows: ${WHITE}
 `,
 legioncounterExample: `${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`,
 };
