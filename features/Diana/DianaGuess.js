@@ -362,5 +362,6 @@ function GetNewY(){
             }
             gY--;
         }
+        finalLocation.y = gY + 3;
     }
 }
