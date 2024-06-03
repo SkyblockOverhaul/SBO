@@ -197,7 +197,7 @@ registerWhen(register("chat", (burrow) => {
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => settings.dianaBurrowDetect);
 
 registerWhen(register("chat", (died) => {
-    resetBurrows();
+    refreshBurrows();
 }).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 
 // registerWhen(register("spawnParticle", (particle, type, event) => {
