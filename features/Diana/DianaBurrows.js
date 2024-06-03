@@ -230,8 +230,10 @@ register("step", () => {
     for (let key in burrows) {
         // print each burrow with cords and type
         // print("x: " + burrows[key][1].x + " y: " + burrows[key][1].y + " z: " + burrows[key][1].z + " type: " + burrows[key][0].type);
-        if (burrows[key][0].type == undefined) return;
-        createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
+        if (burrows[key][0].type != undefined){
+            createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
+        } // hängt sich hier auzf manchmal
+        printDev("Creating Burrow")
     }
 }).setFps(4);
 
