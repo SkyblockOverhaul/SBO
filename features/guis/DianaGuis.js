@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { registerWhen } from "../../utils/variables";
+import { registerWhen, data } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { state, playerHasSpade } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
@@ -24,22 +24,29 @@ let dianaMobOverlay = dianaMobOverlayObj.overlay;
 let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaLootTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
 
-// let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStats", "dianaStatsExample", "render", "StatsLoc");
-// let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
+let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
+let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
 
 
 let dianaMobTrackerText = new UIWrappedText("");
 let dianaLootTrackerText = new UIWrappedText("");
-// let dianaStatsText = new UIWrappedText("");
+let dianaStatsText = new UIWrappedText("");
 
-
-// export function statsOverlay(mobTracker, lootTracker, percentDict) {
-//     if(getGuiOpen()) return;
-//     if (!dianaStatsOverlay.children.includes(dianaStatsText)) {
-//         dianaStatsOverlay.clearChildren();
-//         dianaStatsOverlay.addChild(dianaStatsText);
-//     }
-// }
+export function statsOverlay() {
+    if(getGuiOpen()) return;
+    if (!dianaStatsOverlay.children.includes(dianaStatsText)) {
+        dianaStatsOverlay.clearChildren();
+        dianaStatsOverlay.addChild(dianaStatsText);
+    }
+    let message = `${YELLOW}${BOLD}Diana Stats
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Mobs since Inquisitor: ${AQUA}${BOLD}${data.mobsSinceInq}
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Inquisitors since Chimera: ${AQUA}${BOLD}${data.inqsSinceChim}
+${GRAY}- ${GOLD}${BOLD}Minotaurs since Stick: ${AQUA}${BOLD}${data.minotaursSinceStick}
+${GRAY}- ${DARK_PURPLE}${BOLD}Champions since Relic: ${AQUA}${BOLD}${data.champsSinceRelic}
+`
+    dianaStatsText.setText(message);
+    dianaStatsText.setTextScale((dianaStatsOverlayObj.scale).pixels());
+}
 
 /**
  * 
@@ -192,9 +199,11 @@ registerWhen(register("step", () => {
     if (playerHasSpade() || checkDiana()) {
         dianaMobOverlayObj.renderGui = true;
         dianaLootOverlayObj.renderGui = true;
+        dianaStatsOverlayObj.renderGui = true;
     }
     else {
         dianaMobOverlayObj.renderGui = false;
         dianaLootOverlayObj.renderGui = false;
+        dianaStatsOverlayObj.renderGui = false;
     }
-}).setFps(1), () => settings.dianaMobTracker || settings.dianaLootTracker);
+}).setFps(1), () => settings.dianaMobTracker || settings.dianaLootTracker || settings.dianaStatsTracker);

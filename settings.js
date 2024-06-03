@@ -129,6 +129,13 @@ class Settings {
         options: ["OFF", "Overall View", "Event View", "Session View"]
     })
     dianaLootTrackerView = 0;
+    @SwitchProperty({
+        name: "Diana Stats",
+        description: "Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, Minotaurs since Stick, Champions since Relic",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+    })
+    dianaStatsTracker = false;
     @ButtonProperty({
         name: "Reset Session Tracker",
         description: "Resets the session tracker For mobs and items (/sboresetsession)",

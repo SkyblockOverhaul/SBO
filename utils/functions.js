@@ -291,6 +291,11 @@ export function initializeGuiSettings() {
             "x": 10,
             "y": 310,
             "s": 1
+        },
+        StatsLoc: {
+            "x": 10,
+            "y": 260,
+            "s": 1
         }
     };
     return tempDict;
@@ -338,6 +343,9 @@ function checkSettings(loadedSettings) {
     }
     if (!loadedSettings.hasOwnProperty("LegionLoc")) {
         loadedSettings["LegionLoc"] = defaultSettings["LegionLoc"];
+    }
+    if (!loadedSettings.hasOwnProperty("StatsLoc")) {
+        loadedSettings["StatsLoc"] = defaultSettings["StatsLoc"];
     }
     return loadedSettings;
 }

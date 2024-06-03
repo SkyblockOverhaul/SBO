@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
-import { itemOverlay, mobOverlay, mythosMobHpOverlay } from "../guis/DianaGuis";
+import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, getTrackerSession } from "../../utils/checkData";
@@ -161,6 +161,7 @@ export function trackItem(item, category, amount) {
 
         refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
         refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        statsOverlay();
     }
 }
 
@@ -304,6 +305,7 @@ let tempSettingLoot = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+
 }).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView);
 
 let tempSettingMob = -1;
@@ -311,6 +313,13 @@ registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
+
+const loadStatsOverlay = register("step", () => {
+    if(settings.dianaStatsTracker){
+        statsOverlay();
+        loadStatsOverlay.unregister();
+    }
+}).setFps(1)
 
 let firstLoad = false;
 let trackerBool = false;
@@ -331,6 +340,7 @@ register("step", () => {
         else {
             refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
             refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+            statsOverlay();
             mythosMobHpOverlay([]);
             firstLoad = true;
         }
