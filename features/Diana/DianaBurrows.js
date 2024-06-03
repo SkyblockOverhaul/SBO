@@ -255,10 +255,9 @@ registerWhen(register("packetReceived", (packet) => {
         // packetXOffset = parseFloat(packet.func_149221_g()).toFixed(1)
         // packetYOffset = parseFloat(packet.func_149224_h()).toFixed(1)
         // packetZOffset = parseFloat(packet.func_149223_i()).toFixed(1)
-        // pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
-        // x = pos.getX();
-        // y = pos.getY();
-        // z = pos.getZ();
+        // const { x, y, z } = (pos => ({ x: pos.getX(), y: pos.getY(), z: pos.getZ() }))(
+        //     new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down()
+        // );
         // print("Packet type: " + packettype)
         // print("Packet count: " + packetcount)
         // print("Packet speed: " + packetSpeed)
