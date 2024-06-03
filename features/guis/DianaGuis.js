@@ -38,11 +38,11 @@ export function statsOverlay() {
         dianaStatsOverlay.clearChildren();
         dianaStatsOverlay.addChild(dianaStatsText);
     }
-    let message = `${YELLOW}${BOLD}Diana Stats
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Mobs since Inquisitor: ${AQUA}${BOLD}${data.mobsSinceInq}
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Inquisitors since Chimera: ${AQUA}${BOLD}${data.inqsSinceChim}
-${GRAY}- ${GOLD}${BOLD}Minotaurs since Stick: ${AQUA}${BOLD}${data.minotaursSinceStick}
-${GRAY}- ${DARK_PURPLE}${BOLD}Champions since Relic: ${AQUA}${BOLD}${data.champsSinceRelic}
+    let message = `${YELLOW}${BOLD}Diana Stats Tracker
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Mobs since Inq: ${AQUA}${BOLD}${data.mobsSinceInq}
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Inqs since Chimera: ${AQUA}${BOLD}${data.inqsSinceChim}
+${GRAY}- ${GOLD}${BOLD}Minos since Stick: ${AQUA}${BOLD}${data.minotaursSinceStick}
+${GRAY}- ${DARK_PURPLE}${BOLD}Champs since Relic: ${AQUA}${BOLD}${data.champsSinceRelic}
 `
     dianaStatsText.setText(message);
     dianaStatsText.setTextScale((dianaStatsOverlayObj.scale).pixels());

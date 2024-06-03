@@ -70,10 +70,10 @@ ${GRAY}- ${BLUE}${BOLD}Enchanted Claws: ${WHITE}
 ${GRAY}- ${GRAY}${BOLD}Total Burrows: ${WHITE}
 `,
 legioncounterExample: `${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`,
-dianaStatsExample: `${YELLOW}${BOLD}Diana Stats
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Mobs since Inquisitor:
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Inquisitors since Chimera:
-${GRAY}- ${GOLD}${BOLD}Minotaurs since Stick:
-${GRAY}- ${DARK_PURPLE}${BOLD}Champions since Relic:
+dianaStatsExample: `${YELLOW}${BOLD}Diana Stats Tracker
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Mobs since Inq:
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Inqs since Chimera:
+${GRAY}- ${GOLD}${BOLD}Minos since Stick:
+${GRAY}- ${DARK_PURPLE}${BOLD}Champs since Relic:
 `,
 };
