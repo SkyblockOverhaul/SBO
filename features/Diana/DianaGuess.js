@@ -347,3 +347,10 @@ registerWhen(register("step", () => {
         onWorldChange();
     }
 }).setFps(1), () => settings.dianaBurrowGuess);
+
+register("command", () => {
+
+
+    // print(finalLocation.x + " " + finalLocation.y + " " + finalLocation.z);
+    print(World.getWorld().func_175668_a(new (Java.type('net.minecraft.util.BlockPos'))(finalLocation.x, finalLocation.y, finalLocation.z), false));
+}).setName("sboTestChunk")
