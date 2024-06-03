@@ -196,22 +196,36 @@ register("command", () => {
     
 
 // total burrow tracker //
-register("chat", (burrow) => {
+register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
     }
+    if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r");
 
-register("chat", (burrow) => {
+register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
     }
+    if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}");
 // &eYou finished the Griffin burrow chain!${burrow}
 // &eYou dug out a Griffin Burrow!${burrow}
 
+// &r&eFollow the arrows to find the &r&6treasure&r&e!&r
+register("chat", (event) => {
+    if (settings.cleanDianaChat) cancel(event);
+}).setCriteria("&r&eFollow the arrows to find the &r&6treasure&r&e!&r");
+
+// --for spade spam
+//&r&cThis ability is on cooldown for 3s.&r
+registerWhen(register("chat", (event) => {
+    if (settings.cleanDianaChat) cancel(event);
+}).setCriteria("&r&cThis ability is on cooldown for 3s.&r"), () => getWorld() === "Hub");
+
+
 // mob tracker
-registerWhen(register("chat", (woah, arev, mob) => {
+registerWhen(register("chat", (woah, arev, mob, event) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
@@ -234,6 +248,7 @@ registerWhen(register("chat", (woah, arev, mob) => {
                 break;       
         }
     }
+    if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker);
 
 

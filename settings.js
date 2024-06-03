@@ -389,6 +389,18 @@ class Settings {
         category: 'Quality of Life',
     })
     jacobHider = false;
+    @SwitchProperty({
+        name: 'Clean Diana Chat',
+        description: 'Hides all spammy diana massages',
+        category: 'Quality of Life',
+    })
+    cleanDianaChat = false;
+    @SwitchProperty({
+        name: 'Hide AutoPet Messages',
+        description: 'Hides all autopet massages',
+        category: 'Quality of Life',
+    })
+    hideAutoPetMSG = false;
     // General
     // General Waypoints
     @SwitchProperty({

@@ -83,3 +83,10 @@ registerWhen(register("chat", (botName, player, message, event) =>{
 // &r&2Guild > &b[MVP&2+&b] MasterNR &3[320]&f: &rnice&r
 // testen
 // &r&2Guild > birgeBot: player: message
+
+register("chat", (pet, event) => {
+    if (settings.hideAutoPetMSG) cancel(event);
+}).setCriteria("&cAutopet &eequipped your ${pet}&a&lVIEW RULE&r");
+
+// &cAutopet &eequipped your &7[Lvl 100] &6Griffin&d ✦&e! &a&lVIEW RULE&r
+
