@@ -635,7 +635,7 @@ class Settings {
     }
     @ButtonProperty({
         name: "VolcAddons",
-        description: "(Burrow detect, Render waypoints and some utils)",
+        description: "(Render waypoints and some utils)",
         placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
