@@ -304,6 +304,13 @@ class Settings {
         subcategory: 'Party Commands',
     })
     timeCommand = false;
+    @SwitchProperty({
+        name: 'Check Tps',
+        description: 'Sends the server tps in party chat (!tps)',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    tpsCommand = false;
 
 
     // Slayer
