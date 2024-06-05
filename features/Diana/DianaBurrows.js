@@ -314,3 +314,9 @@ registerWhen(register("playerInteract", (action, pos) => {
         }   
     }
 }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
+
+// const C09PacketHeldItemChange = net.minecraft.network.play.client.C09PacketHeldItemChange
+
+// register("packetSent", (packet) => {
+//     print(packet.func_149614_c().toString())
+// }).setFilteredClass(C09PacketHeldItemChange);
