@@ -25,7 +25,7 @@ import { data, resetVersion } from './utils/variables';
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer', 'Dungeon','Kuudra','Mining','Party Commands','Customization','Quality of Life','Debug','Credits/Infos'];
+        const categories = ['General','Diana','Slayer','Kuudra','Mining','Party Commands','Customization','Quality of Life','Debug','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -55,8 +55,8 @@ class Settings {
         this.addDependency('Promote/Demote','Party Commands');
         this.addDependency('Ask Carrot','Party Commands');
         this.addDependency('Inq Warp Key','Detect Inq Cords');
-        this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
-        this.addDependency('Announce Rare Room On Screen','Recognize Rare Room');
+        // this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
+        // this.addDependency('Announce Rare Room On Screen','Recognize Rare Room');
         // this.addDependency('Blaze View','Blaze Tracker');
         this.addDependency('Max Displayed Items','Attribute Value Overlay')
         this.addDependency('Select Displayed Lines','Attribute Value Overlay');
