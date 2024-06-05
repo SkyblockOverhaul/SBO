@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare, getAllowedToTrackSacks } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
@@ -42,8 +42,9 @@ export function dianaLootCounter(item, amount) {
                 for (let i in rareDrops.values()) {
                     color = i.slice(0, 2);
                     if (item == "MINOS_RELIC") {
-                        champsSinceRelicMSG = new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
-                        if(settings.sendSinceMassage) champsSinceRelicMSG;
+                        if(settings.sendSinceMassage) {
+                            new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
+                        }
                         data.champsSinceRelic = 0;
                         if (settings.lootAnnouncerScreen) {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
@@ -65,6 +66,18 @@ export function dianaLootCounter(item, amount) {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+export function trackLootWithSacks(ammount, item) {
+    let countThisIds = ["Enchanted Gold", "Enchanted Iron"] // , "Rotten Flesh"
+    if (getAllowedToTrackSacks()) {
+        for (let i in countThisIds.values()) {
+            if (item == i) {
+                print("item: " + item + " ammount: " + ammount);
+                trackItem(item.replaceAll(" ", "_").toUpperCase(), "items", parseInt(ammount));
             }
         }
     }
@@ -138,7 +151,15 @@ function calcPercent(trackerToCalc, type, setting) {
         for (let obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
             switch (obj) {
                 case "Minos Inquisitor":
-                    percentDict["Chimera"] = parseFloat((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
+                    let totalChimera = 0;
+                    if (trackerToCalc["items"]["Chimera"] != undefined) {
+                        totalChimera += trackerToCalc["items"]["Chimera"];
+                    }
+                    if (trackerToCalc["items"]["ChimeraLs"] != undefined) {
+                        totalChimera += trackerToCalc["items"]["ChimeraLs"];
+                    }
+                    
+                    percentDict["Chimera"] = parseFloat((totalChimera / trackerToCalc["mobs"][obj] * 100).toFixed(2));
                     break;
                 case "Minos Champion":
                     percentDict["Minos Relic"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
@@ -175,7 +196,14 @@ function trackOne(tracker, item, category, type, amount) {
             setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
             tracker[getDateMayorElected().getFullYear()] = initializeTracker();
         }
-        tracker[getDateMayorElected().getFullYear()][category][item] += amount;
+
+        if (tracker[getDateMayorElected().getFullYear()][category][item] == undefined) {
+            tracker[getDateMayorElected().getFullYear()][category][item] = amount;
+        }
+        else {
+            tracker[getDateMayorElected().getFullYear()][category][item] += amount;
+        }
+
         if (category === "mobs") {
             tracker[getDateMayorElected().getFullYear()]["mobs"]["TotalMobs"] += amount;
         } 
@@ -183,7 +211,12 @@ function trackOne(tracker, item, category, type, amount) {
     else {
         tracker[category][item] += amount;
         if (category === "mobs") {
-            tracker["mobs"]["TotalMobs"] += amount;
+            if (tracker["mobs"]["TotalMobs"] == undefined) {
+                tracker["mobs"]["TotalMobs"] = amount;
+            }
+            else {
+                tracker["mobs"]["TotalMobs"] += amount;
+            }
         }
     }
     saveLoot(tracker, type);
@@ -199,19 +232,19 @@ register("command", () => {
     
 
 // total burrow tracker //
-register("chat", (burrow, event) => {
+registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r");
+}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
-register("chat", (burrow, event) => {
+registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}");
+}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => getWorld() === "Hub" && settings.dianaLootTracker);
 // &eYou finished the Griffin burrow chain!${burrow}
 // &eYou dug out a Griffin Burrow!${burrow}
 
@@ -234,8 +267,9 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
             case "Minos Inquisitor":
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
-                mobsSinceInqMSG = new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "&eClick To Copy").chat();
-                if(settings.sendSinceMassage) mobsSinceInqMSG;
+                if(settings.sendSinceMassage) {
+                    new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                }
                 data.mobsSinceInq = 0;        
                 break;
             case "Minos Champion":
@@ -288,18 +322,20 @@ registerWhen(register("chat", (drop) => {
                 }
                 new Sound({ source: "YIPPEE.ogg" }).setVolume(2).play()
                 if (gotLootShare()) {
-                    trackItem("Chimera", "items", 1); // ls chim
+                    trackItem("ChimeraLs", "items", 1); // ls chim
                 }
                 else {
                     trackItem("Chimera", "items", 1);
-                    inqsSinceChimMSG = new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
-                    if(settings.sendSinceMassage) inqsSinceChimMSG;
+                    if(settings.sendSinceMassage) {
+                        new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
+                    }
                     data.inqsSinceChim = 0;
                 }
                 break;
             case "Daedalus Stick":
-                minotaursSinceStickMSG = new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
-                if(settings.sendSinceMassage) minotaursSinceStickMSG;
+                if(settings.sendSinceMassage) {
+                    new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
+                }
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
                     Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);

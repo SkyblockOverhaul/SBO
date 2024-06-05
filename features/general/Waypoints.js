@@ -324,12 +324,12 @@ register("step", () => {
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if (isWorldLoaded()) {
-        // if (checkDiana()) {
-            // isInq = true;
-        // }
-        // else {
+        if (checkDiana()) {
+            isInq = true;
+        }
+        else {
             isInq = !z.includes(" ");
-        // }
+        }
         const bracketIndex = player.indexOf('[') - 2;
         const channel = player.substring(0, bracketIndex);
         // channel.includes("Guild") || channel.includes("Party") || channel.includes("Co-op")

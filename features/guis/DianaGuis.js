@@ -1,22 +1,13 @@
 import settings from "../../settings";
 import { registerWhen, data } from "../../utils/variables";
-import { getWorld } from "../../utils/world";
-import { state, playerHasSpade } from "../../utils/functions";
+import { playerHasSpade } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { getDateMayorElected } from "../../utils/mayor";
 import { UIWrappedText } from "../../../Elementa";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
 
-registerWhen(register("entityDeath", (entity) => {
-    let dist = entity.distanceTo(Player.getPlayer());
-    if (dist < 30 ) {
-        state.entityDeathOccurred = true;
-        setTimeout(() => {
-            state.entityDeathOccurred = false;
-        }, 2000);
-    }
-}), () => getWorld() === "Hub" && settings.dianaLootTracker);
+
 
 let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaMobTracker", "dianaMobTrackerExample", "render", "MobLoc");
 let dianaMobOverlay = dianaMobOverlayObj.overlay;
@@ -123,10 +114,18 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
             lootTrackerType = "Session";
             break;
     };
+    let totalChimera = 0;
+    if (lootTracker["items"]["Chimera"] != undefined) {
+        totalChimera += lootTracker["items"]["Chimera"];
+    }
+    if (lootTracker["items"]["ChimeraLs"] != undefined) {
+        totalChimera += lootTracker["items"]["ChimeraLs"];
+    }
+    
     let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${BOLD}${lootTrackerType}${GRAY})
 `;
     if (mobSetting) {
-        lootMessage += `${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY})
+        lootMessage += `${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${totalChimera} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY})
 ${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${BOLD}${lootTracker["items"]["MINOS_RELIC"]} ${GRAY}(${AQUA}${percentDict["Minos Relic"]}%${GRAY})
 ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${AQUA}${BOLD}${lootTracker["items"]["Daedalus Stick"]} ${GRAY}(${AQUA}${percentDict["Daedalus Stick"]}%${GRAY})
 `

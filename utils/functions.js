@@ -1,6 +1,7 @@
 import settings from "../settings";
 import { registerWhen } from "./variables";
 import { HypixelModAPI } from "./../../HypixelModAPI";
+import { getWorld } from "./world";
 
 // geklaut von coleweight for drawline
 if(!GlStateManager) {
@@ -120,7 +121,7 @@ export function isInSkyblock() {
     return inSkyblock;
 }
 
-export let state = {
+let state = {
     entityDeathOccurred: false
 }
 
@@ -128,6 +129,32 @@ export let state = {
 export function isActiveForOneSecond() {
     return state.entityDeathOccurred;
 }
+
+let allowedToTrackSacks = false;
+export function getAllowedToTrackSacks() {
+    return allowedToTrackSacks;
+}
+
+registerWhen(register("guiOpened", () => {
+    setTimeout(() => {
+        if (Player.getContainer() != undefined) {
+            if (Player.getContainer().getName() == "Sack of Sacks") {
+                allowedToTrackSacks = false;
+            }
+        }
+    }, 300);
+}), () => settings.dianaLootTracker);
+
+registerWhen(register("entityDeath", (entity) => {
+    let dist = entity.distanceTo(Player.getPlayer());
+    if (dist < 30 ) {
+        allowedToTrackSacks = true;
+        state.entityDeathOccurred = true;
+        setTimeout(() => {
+            state.entityDeathOccurred = false;
+        }, 2000);
+    }
+}), () => getWorld() === "Hub" && settings.dianaLootTracker);
 
 export function getDateString(date) {
     return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
@@ -201,6 +228,7 @@ export function initializeTracker() {
             "Crown of Greed": 0,
             "Washed-up Souvenir": 0,
             "Chimera": 0,
+            "ChimeraLs": 0,
             "Daedalus Stick": 0,
             "DWARF_TURTLE_SHELMET": 0,
             "CROCHET_TIGER_PLUSHIE": 0,
@@ -208,6 +236,8 @@ export function initializeTracker() {
             "ENCHANTED_ANCIENT_CLAW": 0,
             "ANCIENT_CLAW": 0,
             "MINOS_RELIC": 0,
+            "ENCHANTED_GOLD": 0,
+            "ENCHANTED_IRON": 0,
             "Total Burrows": 0
         },
         mobs: {
@@ -237,7 +267,6 @@ register("chat" , (player) => {
     }, 2000);
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
-
 
 // check if in skyblock //
 register("step", () => {
