@@ -1,5 +1,4 @@
 /// <reference types="../CTAutocomplete" />
-// import "./features/Diana/DianaBurrows";
 import "./features/Diana/DianaBurrows";
 import "./features/Kuudra";
 import "./features/diana/DianaMobDetect";
@@ -15,9 +14,6 @@ import "./features/slayer/BlazeSlayer";
 import Settings from "./settings";
 import "./utils/overlays";
 import "./features/Diana/PartyFinder";
-
-// in sbo addons packen
-import "./features/dungeon/recognizeRareRoom";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import { data } from "./utils/variables";
@@ -84,6 +80,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
     ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
+    ChatLib.chat(`&7> &aRemoved Rare Room Detection (hypixel removed room ids)`)
     ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
     ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp) (alias /sbocp)`)
     ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>) (alias /sboc <player>)`)
