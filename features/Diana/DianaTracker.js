@@ -254,7 +254,7 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaMobTracker);
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaMobTracker || settings.dianaStatsTracker));
 
 
 // track items from chat //
@@ -316,7 +316,7 @@ registerWhen(register("chat", (drop) => {
             //     break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaLootTracker);
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaLootTracker || settings.dianaStatsTracker);
 // Party > [MVP++] LHxSeven: &r&6&lRARE DROP! &r&6Daedalus Stick &r&b(+&r&b322% &r&b✯ Magic Find&r&b)&r
 // Party > [MVP++] LHxSeven: &r&6&lRARE DROP! &r&fEnchanted Book&r
 // &r&6&lRARE DROP! &r&fEnchanted Book &r&b(+&r&b348% &r&b✯ Magic Find&r&b)&r
@@ -338,12 +338,6 @@ registerWhen(register("step", () => {
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
-const loadStatsOverlay = register("step", () => {
-    if(settings.dianaStatsTracker){
-        statsOverlay();
-        loadStatsOverlay.unregister();
-    }
-}).setFps(1)
 
 let firstLoad = false;
 let trackerBool = false;
@@ -377,14 +371,14 @@ register("step", () => {
 
 
 // // test command
-register('command', () => {
+// register('command', () => {
     // trackerSession = getTracker(3);
     // for (let item in trackerSession["items"]) {
     //     ChatLib.chat(item + ": " + trackerSession["items"][item]);
     // }
-    mobsSinceInqMSG = new TextComponent(`&6[SBO] &r&eTook ${data.mobsSinceInq} Mobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] &r&eTook ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "click to copy").chat();
-    if(settings.sendSinceMassage) mobsSinceInqMSG;
-}).setName("sbots");
+//     mobsSinceInqMSG = new TextComponent(`&6[SBO] &r&eTook ${data.mobsSinceInq} Mobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] &r&eTook ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "click to copy").chat();
+//     if(settings.sendSinceMassage) mobsSinceInqMSG;
+// }).setName("sbots");
 // register('command', () => {
 //     trackerMayor = getTracker(2);
 //     for (let item in trackerMayor["items"]) {

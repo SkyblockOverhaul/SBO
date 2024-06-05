@@ -67,7 +67,6 @@ class Settings {
         this.addDependency('Attribute Shards For Chest Profit','Attribute Value Overlay');
         this.addDependency('Distance For Remove','Remove Guess');
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
-        this.addDependency('Stats Massage','Diana Stats');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
