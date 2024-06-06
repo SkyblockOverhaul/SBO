@@ -116,7 +116,7 @@ class Settings {
     dianaMobTrackerView = 0;
     @SwitchProperty({
         name: "Diana Loot Tracker",
-        description: "Tracks your diana loot",
+        description: "Tracks your diana loot (you need to have Settings -> Personal -> Chat -> Sacks Notifications enabled for Gold and Iron to work)",
         category: "Diana",
         subcategory: "Diana Tracker",
     })
@@ -422,6 +422,12 @@ class Settings {
         category: 'Quality of Life',
     })
     hideAutoPetMSG = false;
+    @SwitchProperty({
+        name: 'Hide Sacks Message',
+        description: 'Hides all sacks massages',
+        category: 'Quality of Life',
+    })
+    hideSackMessage = false;
     // General
     // General Waypoints
     @SwitchProperty({

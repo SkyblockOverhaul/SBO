@@ -68,7 +68,7 @@ register("chat", (ammount, time, event) => {
     message = new Message(event)
     messageParts = message.getMessageParts();
     // hide message
-    cancel(event);
+    if (settings.hideSackMessage) cancel(event);
     messageParts.forEach(part => {
         if (part.getText() == "§e items§r") {
             let regex = /\+([\d,]+) ([^\(]+)/g;
