@@ -27,7 +27,7 @@ const carrot = [
 
 register("chat", (player, message) => {
     message = message.split(" ");
-    switch (message[0]) {
+    switch (message[0].toLowerCase()) {
         case "!w":
         case "!warp":
             if(settings.PartyCommands && settings.WarpCommand){
