@@ -163,6 +163,13 @@ class Settings {
     })
     inqWaypoints = false;
     @SwitchProperty({
+        name: 'All Waypoints Are Inqs',
+        description: 'all the waypoints are inquisitor waypoints in hub',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+    })
+    allWaypointsAreInqs = false;
+    @SwitchProperty({
         name: 'Inq Warp Key',
         description: 'Enable inquisitor warp key, set your keybind in controls.',
         category: 'Diana',

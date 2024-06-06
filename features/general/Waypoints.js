@@ -326,7 +326,7 @@ register("step", () => {
 
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if (isWorldLoaded()) {
-        if (checkDiana()) {
+        if (checkDiana() && settings.allWaypointsAreInqs) {
             isInq = true;
         }
         else {
