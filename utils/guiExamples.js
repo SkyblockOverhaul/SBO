@@ -56,17 +56,21 @@ ${GRAY}- ${GRAY}${BOLD}Total Mobs: ${WHITE}
     dianaLootTrackerExample: 
 `${YELLOW}${BOLD}Diana Loot Tracker
 ${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${GRAY}[${AQUA}LS${GRAY}] 
+${GRAY}= ${LIGHT_PURPLE}${BOLD}Total Chimera: 
 ${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
 ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${WHITE}
 ${GRAY}- ${GOLD}${BOLD}Crown of Greed: ${WHITE}
 ${GRAY}- ${GOLD}${BOLD}Souvenir: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Griffin Feather: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Coins: ${WHITE}
 ${GRAY}- ${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
 ${GRAY}- ${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
 ${GRAY}- ${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
-${GRAY}- ${GOLD}${BOLD}Griffin Feather: ${WHITE}
-${GRAY}- ${GOLD}${BOLD}Coins: ${WHITE}
 ${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${WHITE}
 ${GRAY}- ${BLUE}${BOLD}Enchanted Claws: ${WHITE}
+${GRAY}- ${BLUE}${BOLD}Enchanted Gold: 
+${GRAY}- ${BLUE}${BOLD}Enchanted Iron: 
 ${GRAY}- ${GRAY}${BOLD}Total Burrows: ${WHITE}
 `,
 legioncounterExample: `${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`,

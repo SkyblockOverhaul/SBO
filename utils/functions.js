@@ -277,13 +277,13 @@ register("step", () => {
 export function initializeGuiSettings() {
     let tempDict = {
         MobLoc: {
-            "x": 10,
-            "y": 50,
+            "x": 15,
+            "y": 22,
             "s": 1
         },
         LootLoc: {
-            "x": 10,
-            "y": 150,
+            "x": 15,
+            "y": 112,
             "s": 1
         },
         BobberLoc: {
@@ -322,8 +322,8 @@ export function initializeGuiSettings() {
             "s": 1
         },
         StatsLoc: {
-            "x": 10,
-            "y": 260,
+            "x": 15,
+            "y": 290,
             "s": 1
         }
     };
