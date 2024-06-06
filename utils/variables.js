@@ -106,7 +106,6 @@ if (!data.trackerMigration) {
         try {
             oldMayorTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerMayor.json")) || {};
         } catch (e) {
-            print(e);
             oldMayorTracker = {};
         }
         // for each key in old tracker
@@ -130,7 +129,6 @@ if (!data.trackerMigration) {
         try {
             oldTotalTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerTotal.json")) || {};
         } catch (e) {
-            print(e);
             oldTotalTracker = {};
         }
         FileLib.delete("SBO", "dianaTrackerTotal.json");
@@ -141,7 +139,6 @@ if (!data.trackerMigration) {
         try {
             oldSessionTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerSession.json")) || {};
         } catch (e) {
-            print(e);
             oldSessionTracker = {};
         }
         FileLib.delete("SBO", "dianaTrackerSession.json");
@@ -251,7 +248,6 @@ if (!data.trackerMigration) {
     }
     if (Object.keys(oldTotalTracker).length != 0) {
         for (let key in oldTotalTracker.items) {
-            print(key + " " + oldTotalTracker.items[key]);
             dianaTrackerTotal.items[key] = oldTotalTracker.items[key];
         }
         for (let key in oldTotalTracker.mobs) {

@@ -504,7 +504,6 @@ export function playCustomSound(sound, volume) {
     if (sound != "") {
         if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
         if (FileLib.exists(Config.modulesFolder.replace("modules", "images") + `/${sound}.ogg`)) {
-            print("sound volume:", settings.inqVolume);
             new Sound({ source: new java.lang.String(sound + ".ogg") }).setVolume(volume/100).play()
         }
         else {
