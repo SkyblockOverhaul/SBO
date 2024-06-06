@@ -573,6 +573,121 @@ class Settings {
         subcategory: "Category"
     })
     slotColor = Color.RED;
+    // sound settings
+    @ButtonProperty({
+        name: "Open Sound Folder",
+        description: 'Custom sounds go in here (sound must be a .ogg) (do "/ct load" after adding sounds else they wont work)',
+        category: "Customization",
+        subcategory: "Sound"
+    })
+    openSoundFolder() {
+        java.awt.Desktop.getDesktop().open(new java.io.File(Config.modulesFolder + "/SBO/assets"));
+    }
+
+    @TextProperty({
+        name: "Inquisitor Spawn Sound",
+        description: "Set the sound for inquisitor spawn (enter filename)",
+        category: "Customization",
+        subcategory: "Sound"
+    })
+    inqSound = "expOrb";
+    @SliderProperty({
+        name: "Inquisitor Spawn Volume",
+        description: "Set the volume for inquisitor spawn sound",
+        category: "Customization",
+        subcategory: "Sound",
+        min: 0,
+        max: 100
+    })
+    inqVolume = 50;
+
+    @TextProperty({
+        name: "Burrow Spawn Sound",
+        description: "Set the sound for burrow spawn (enter filename)",
+        category: "Customization",
+        subcategory: "Sound"
+    })
+    burrowSound = "";
+    @SliderProperty({
+        name: "Burrow Spawn Volume",
+        description: "Set the volume for burrow spawn sound",
+        category: "Customization",
+        subcategory: "Sound",
+        min: 0,
+        max: 100
+    })
+    burrowVolume = 50;
+
+    @TextProperty({
+        name: "Chimera Drop Sound",
+        description: "Set the sound for chimera drop (enter filename)",
+        category: "Customization",
+        subcategory: "Sound"
+    })
+    chimSound = "";
+    @SliderProperty({
+        name: "Chimera Drop Volume",
+        description: "Set the volume for chimera drop sound",
+        category: "Customization",
+        subcategory: "Sound",
+        min: 0,
+        max: 100
+    })
+    chimVolume = 50;
+
+    @TextProperty({
+        name: "Relic Drop Sound",
+        description: "Set the sound for relic drop (enter filename)",
+        category: "Customization",
+        subcategory: "Sound"
+    })
+    relicSound = "";
+    @SliderProperty({
+        name: "Relic Drop Volume",
+        description: "Set the volume for relic drop sound",
+        category: "Customization",
+        subcategory: "Sound",
+        min: 0,
+        max: 100
+    })
+    relicVolume = 50;
+
+    @TextProperty({
+        name: "Daedalus Stick Drop Sound",
+        description: "Set the sound for stick drop (enter filename)",
+        category: "Customization",
+        subcategory: "Sound"
+    })
+    stickSound = "";
+    @SliderProperty({
+        name: "Daedalus Stick Drop Volume",
+        description: "Set the volume for stick drop sound",
+        category: "Customization",
+        subcategory: "Sound",
+        min: 0,
+        max: 100
+    })
+    stickVolume = 50;
+
+    @TextProperty({
+        name: "Shelmet, Plushie and Remedies Drop Sound",
+        description: "Set the sound for Shelmet, Plushie and Remedis (enter filename)",
+        category: "Customization",
+        subcategory: "Sound"
+    })
+    sprSound = "";
+    @SliderProperty({
+        name: "Shelmet, Plushie and Remedies Drop Volume",
+        description: "Set the volume for Shelmet, Plushie and Remedis sound",
+        category: "Customization",
+        subcategory: "Sound",
+        min: 0,
+        max: 100
+    })
+    sprVolume = 50;
+
+
+
 
     // Debug
     @SwitchProperty({

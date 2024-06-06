@@ -1,3 +1,6 @@
+import settings from "../settings";
+import { registerWhen } from "./variables";
+
 let totalTps = 0;
 let count = 0;
 
@@ -38,12 +41,12 @@ let prevTime = 0;
 let averageTps = 20.0;
 let tps = 20.0;
 
-register("worldLoad", () => {
+registerWhen(register("worldLoad", () => {
     prevTime = 0;
     averageTps = 20.0;
-});
+}), () => settings.tpsCommand);
 
-register("packetReceived", (packet) => {
+registerWhen(register("packetReceived", (packet) => {
     if (!(packet instanceof S03PacketTimeUpdate)) return;
 
     tps = 20000 / (Date.now() - prevTime + 1);
@@ -56,7 +59,7 @@ register("packetReceived", (packet) => {
     }
 
     prevTime = Date.now();
-});
+}), () => settings.tpsCommand);
 
 export function getAverageTps() {
     return averageTps;
