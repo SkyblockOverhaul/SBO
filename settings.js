@@ -542,35 +542,35 @@ class Settings {
         name: "Start Burrow Color",
         description: "Pick a color for start burrows",
         category: "Customization",
-        subcategory: "Category"
+        subcategory: "Colors"
     })
     startColor = new Color(0.333,1,0.333);
     @ColorProperty({
         name: "Mob Burrow Color",
         description: "Pick a color for mob burrows",
         category: "Customization",
-        subcategory: "Category"
+        subcategory: "Colors"
     })
     mobColor = new Color(1,0.333,0.333);
     @ColorProperty({
         name: "Treasure Burrow Color",
         description: "Pick a color for treasure burrows",
         category: "Customization",
-        subcategory: "Category"
+        subcategory: "Colors"
     })
     treasureColor = new Color(1,0.667,0);
     @ColorProperty({
         name: "Guess Color",
         description: "Pick a color for your guess",
         category: "Customization",
-        subcategory: "Category"
+        subcategory: "Colors"
     })
     guessColor = new Color(1,1,1);
     @ColorProperty({
         name: "Slot Highlighting Color",
         description: "Pick a color for slot highlighting",
         category: "Customization",
-        subcategory: "Category"
+        subcategory: "Colors"
     })
     slotColor = Color.RED;
     // sound settings
@@ -578,24 +578,23 @@ class Settings {
         name: "Open Sound Folder",
         description: 'Custom sounds go in here (sound must be a .ogg) (do "/ct load" after adding sounds else they wont work)',
         category: "Customization",
-        subcategory: "Sound"
+        subcategory: "Sound Config"
     })
     openSoundFolder() {
         java.awt.Desktop.getDesktop().open(new java.io.File(Config.modulesFolder + "/SBO/assets"));
     }
-
     @TextProperty({
         name: "Inquisitor Spawn Sound",
         description: "Set the sound for inquisitor spawn (enter filename)",
         category: "Customization",
-        subcategory: "Sound"
+        subcategory: "Sound Settings"
     })
     inqSound = "expOrb";
     @SliderProperty({
         name: "Inquisitor Spawn Volume",
         description: "Set the volume for inquisitor spawn sound",
         category: "Customization",
-        subcategory: "Sound",
+        subcategory: "Sound Settings",
         min: 0,
         max: 100
     })
@@ -605,14 +604,14 @@ class Settings {
         name: "Burrow Spawn Sound",
         description: "Set the sound for burrow spawn (enter filename)",
         category: "Customization",
-        subcategory: "Sound"
+        subcategory: "Sound Settings"
     })
     burrowSound = "";
     @SliderProperty({
         name: "Burrow Spawn Volume",
         description: "Set the volume for burrow spawn sound",
         category: "Customization",
-        subcategory: "Sound",
+        subcategory: "Sound Settings",
         min: 0,
         max: 100
     })
@@ -622,14 +621,14 @@ class Settings {
         name: "Chimera Drop Sound",
         description: "Set the sound for chimera drop (enter filename)",
         category: "Customization",
-        subcategory: "Sound"
+        subcategory: "Sound Settings"
     })
     chimSound = "";
     @SliderProperty({
         name: "Chimera Drop Volume",
         description: "Set the volume for chimera drop sound",
         category: "Customization",
-        subcategory: "Sound",
+        subcategory: "Sound Settings",
         min: 0,
         max: 100
     })
@@ -639,14 +638,14 @@ class Settings {
         name: "Relic Drop Sound",
         description: "Set the sound for relic drop (enter filename)",
         category: "Customization",
-        subcategory: "Sound"
+        subcategory: "Sound Settings"
     })
     relicSound = "";
     @SliderProperty({
         name: "Relic Drop Volume",
         description: "Set the volume for relic drop sound",
         category: "Customization",
-        subcategory: "Sound",
+        subcategory: "Sound Settings",
         min: 0,
         max: 100
     })
@@ -656,14 +655,14 @@ class Settings {
         name: "Daedalus Stick Drop Sound",
         description: "Set the sound for stick drop (enter filename)",
         category: "Customization",
-        subcategory: "Sound"
+        subcategory: "Sound Settings"
     })
     stickSound = "";
     @SliderProperty({
         name: "Daedalus Stick Drop Volume",
         description: "Set the volume for stick drop sound",
         category: "Customization",
-        subcategory: "Sound",
+        subcategory: "Sound Settings",
         min: 0,
         max: 100
     })
@@ -673,14 +672,14 @@ class Settings {
         name: "Shelmet, Plushie and Remedies Drop Sound",
         description: "Set the sound for Shelmet, Plushie and Remedis (enter filename)",
         category: "Customization",
-        subcategory: "Sound"
+        subcategory: "Sound Settings"
     })
     sprSound = "";
     @SliderProperty({
         name: "Shelmet, Plushie and Remedies Drop Volume",
         description: "Set the volume for Shelmet, Plushie and Remedis sound",
         category: "Customization",
-        subcategory: "Sound",
+        subcategory: "Sound Settings",
         min: 0,
         max: 100
     })
