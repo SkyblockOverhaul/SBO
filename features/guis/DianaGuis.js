@@ -127,7 +127,7 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
     if (mobSetting) {
         lootMessage += `${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY})
 ${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["ChimeraLs"]} ${GRAY}[${AQUA}LS${GRAY}] 
-${GRAY}= ${LIGHT_PURPLE}${BOLD}Total Chimera: ${AQUA}${BOLD}${totalChimera}
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Total Chimera: ${AQUA}${BOLD}${totalChimera}
 ${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${BOLD}${lootTracker["items"]["MINOS_RELIC"]} ${GRAY}(${AQUA}${percentDict["Minos Relic"]}%${GRAY})
 ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${AQUA}${BOLD}${lootTracker["items"]["Daedalus Stick"]} ${GRAY}(${AQUA}${percentDict["Daedalus Stick"]}%${GRAY})
 `
@@ -157,8 +157,20 @@ ${GRAY}- ${GOLD}${BOLD}Griffin Feather: ${AQUA}${BOLD}${lootTracker["items"]["Gr
     lootMessage += `${GRAY}- ${DARK_GREEN}${BOLD}Turtle Shelmet: ${AQUA}${BOLD}${lootTracker["items"]["DWARF_TURTLE_SHELMET"]}
 ${GRAY}- ${DARK_GREEN}${BOLD}Tiger Plushie: ${AQUA}${BOLD}${lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]}
 ${GRAY}- ${DARK_GREEN}${BOLD}Antique Remedies: ${AQUA}${BOLD}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
-${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ANCIENT_CLAW"]}
-${GRAY}- ${BLUE}${BOLD}Enchanted Claws: ${AQUA}${BOLD}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
+`
+    if (lootTracker["items"]["ANCIENT_CLAW"] > 1000000) {
+    lootMessage += `${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${AQUA}${BOLD}${Math.round((lootTracker["items"]["ANCIENT_CLAW"]/1000000).toFixed(2))}M
+`
+    }
+    else if (lootTracker["items"]["ANCIENT_CLAW"] > 1000) {
+        lootMessage += `${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${AQUA}${BOLD}${Math.round((lootTracker["items"]["ANCIENT_CLAW"]/1000).toFixed(2))}K
+`
+    }
+    else {
+        lootMessage += `${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${AQUA}${BOLD}${lootTracker["items"]["ANCIENT_CLAW"]}
+`
+    }
+    lootMessage += `${GRAY}- ${BLUE}${BOLD}Enchanted Claws: ${AQUA}${BOLD}${lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]}
 ${GRAY}- ${BLUE}${BOLD}Enchanted Gold: ${AQUA}${BOLD}${lootTracker["items"]["ENCHANTED_GOLD"]}
 ${GRAY}- ${BLUE}${BOLD}Enchanted Iron: ${AQUA}${BOLD}${lootTracker["items"]["ENCHANTED_IRON"]}
 ${GRAY}- ${GRAY}${BOLD}Total Burrows: ${AQUA}${BOLD}${lootTracker["items"]["Total Burrows"]}
