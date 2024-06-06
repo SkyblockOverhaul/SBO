@@ -164,7 +164,7 @@ class Settings {
     inqWaypoints = false;
     @SwitchProperty({
         name: 'All Waypoints Are Inqs',
-        description: 'all the waypoints are inquisitor waypoints in hub',
+        description: 'all the waypoints are inquisitor waypoints in hub during diana',
         category: 'Diana',
         subcategory: 'Diana Waypoints',
     })
