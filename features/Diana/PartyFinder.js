@@ -97,6 +97,18 @@ register("chat", (player) => {
     }, 50);
 }).setCriteria("&dFrom ${player}&r&7: &r&d&lBoop!&r");
 
+
+// register("command", () => {
+//     const playernames = TabList.getNames();
+//     for (let i = 0; i < playernames.length; i++) {
+//         print(playernames[i]);
+//     }
+// }).setName("sbogetplayers");
+
+// ).setTabCompletions((args) => {
+//     return TabList.getNames();
+// }
+
 // old code 
 
 // old party checker

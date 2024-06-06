@@ -64,7 +64,7 @@ registerWhen(register('step', () => {
 
 
 // sack detection
-register("chat", (ammount, time, event) => {
+register("chat", (ammount, s, time, event) => {
     message = new Message(event)
     messageParts = message.getMessageParts();
     // hide message
@@ -86,4 +86,4 @@ register("chat", (ammount, time, event) => {
             });
         }
     });
-}).setCriteria("&6[Sacks] ${ammount} items&r&e.&r&8 ${time}");
+}).setCriteria("&6[Sacks] ${ammount} item${s}&r&e.&r&8 ${time}");
