@@ -38,7 +38,7 @@ export function dianaLootCounter(item, amount) {
                         if (settings.lootAnnouncerScreen) {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
-                        playCustomSound(settings.relicSound, settings.relicSoundVolume);
+                        playCustomSound(settings.relicSound, settings.relicVolume);
                     }
                     if (item === i.slice(2)) {
                         tempString = item.replace("_", " ").replace("_", " ").toLowerCase();
@@ -52,7 +52,7 @@ export function dianaLootCounter(item, amount) {
                             ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
                         }
                         if (item != "MINOS_RELIC") {
-                            playCustomSound(settings.sprSound, settings.sprSoundVolume);
+                            playCustomSound(settings.sprSound, settings.sprVolume);
                         }
                         if (settings.dianaLootTracker) {
                             trackItem(item, "items", amount);
@@ -69,7 +69,6 @@ export function trackLootWithSacks(ammount, item) {
     if (getAllowedToTrackSacks()) {
         for (let i in countThisIds.values()) {
             if (item == i) {
-                print("item: " + item + " ammount: " + ammount);
                 trackItem(item.replaceAll(" ", "_").toUpperCase(), "items", parseInt(ammount));
             }
         }
@@ -264,7 +263,7 @@ registerWhen(register("chat", (drop) => {
                     Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                 }
 
-                playCustomSound(settings.chimSound, settings.chimSoundVolume);
+                playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare()) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                 }
@@ -285,7 +284,7 @@ registerWhen(register("chat", (drop) => {
                     Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                 }
 
-                playCustomSound(settings.stickSound, settings.stickSoundVolume);
+                playCustomSound(settings.stickSound, settings.stickVolume);
                 trackItem(drop, "items", 1);
                 break;
         }
