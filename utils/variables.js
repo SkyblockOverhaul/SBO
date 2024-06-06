@@ -63,14 +63,25 @@ register("guiClosed", (event) => {
     // || event.toString().includes("JSGui")
     if (event.toString().includes("vigilance")) {
         setRegisters()
+        // check sounds
+        checkSound(settings.inqSound);
+        checkSound(settings.chimSound);
+        checkSound(settings.stickSound);
+        checkSound(settings.relicSound);
+        checkSound(settings.sprSound);
     }
 });
-
-
-
-
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
     data.save();
 });
+
+function checkSound(sound) {
+    if (sound != "") {
+        if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
+        if (!FileLib.fileExists(`./${sound}.ogg`)) {
+            ChatLib.chat(`&6[SBO] &cSound file not found (${sound})! (if the filename is correct, make sure to reload ct by "/ct load")`);
+        }
+    }
+}

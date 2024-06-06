@@ -532,6 +532,19 @@ register("command", () => {
 //     partyMembers = [];
 // }).setCriteria("&r&aParty members ${count}");
 
+export function playCustomSound(sound, volume) {
+    if (sound != "") {
+        if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
+        if (FileLib.fileExists(`./${sound}.ogg`)) {
+            print("sound volume:", settings.inqVolume);
+            new Sound({ source: new java.lang.String(sound + ".ogg") }).setVolume(volume/100).play()
+        }
+        else {
+            ChatLib.chat(`&6[SBO] &cSound file not found! (if the filename is correct, make sure to reload ct by "/ct load")`);
+        }
+    }
+}
+
 // add time to life of 5 sek
 export function setInterval(func, delay, ttl) {
     var startTime = java.lang.System.currentTimeMillis();
