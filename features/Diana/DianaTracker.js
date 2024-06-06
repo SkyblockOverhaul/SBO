@@ -119,15 +119,7 @@ function calcPercent(trackerToCalc, type, setting) {
         for (let obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
             switch (obj) {
                 case "Minos Inquisitor":
-                    let totalChimera = 0;
-                    if (trackerToCalc["items"]["Chimera"] != undefined) {
-                        totalChimera += trackerToCalc["items"]["Chimera"];
-                    }
-                    if (trackerToCalc["items"]["ChimeraLs"] != undefined) {
-                        totalChimera += trackerToCalc["items"]["ChimeraLs"];
-                    }
-                    
-                    percentDict["Chimera"] = parseFloat((totalChimera / trackerToCalc["mobs"][obj] * 100).toFixed(2));
+                    percentDict["Chimera"] = parseFloat((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
                     break;
                 case "Minos Champion":
                     percentDict["Minos Relic"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
