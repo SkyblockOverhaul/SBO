@@ -83,13 +83,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowWarp = false;
-    @TextProperty({
-        name: "Warp Block Difference",
-        description: "Increase it to set the diffrence when player warps (inq/burrow warp)",
-        category: "Diana",
-        subcategory: "Diana Burrows"
-    })
-    warpDiff = "10";
     @SwitchProperty({
         name: "Diana Burrow Detect",
         description: "Detects diana burrows | to reset waypoints /sboclearburrows",
@@ -97,6 +90,13 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowDetect = false;
+    @TextProperty({
+        name: "Warp Block Difference",
+        description: "Increase it to set the diffrence when player warps (inq/burrow warp)",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    warpDiff = "10";
 
     // --- Diana Tracker ---
     @SwitchProperty({
