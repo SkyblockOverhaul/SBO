@@ -91,8 +91,10 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzch
         if (burrowWaypoints.length > 0) {
             if (burrowWaypoints.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) return; 
             burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
+            playCustomSound(settings.burrowSound, settings.burrowVolume);   
         }
         else {
+            playCustomSound(settings.burrowSound, settings.burrowVolume);
             burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
         }
     }
@@ -342,9 +344,7 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
         if (isInq) {
             if(settings.inqWaypoints && checkDiana()) {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
-                if (settings.inqSound != "") {
-                    new Sound({ source: `./${settings.inqSound}.ogg` }).setVolume((settings.inqVolume/100).toFixed(2)).play()
-                }
+                playCustomSound(settings.inqSound, settings.inqVolume);
                 z = z.replace("&r", "");
                 // check if waypoint is from player
                 
@@ -534,7 +534,27 @@ function componentToHex(c) {
 
 
 
-register("command", () => {
-    playCustomSound(settings.inqSound, settings.inqVolume);
-}).setName("sboinq2");   
+register("command", (args1, ...args) => {
+    ChatLib.chat("&6[SBO] &eplaying test sound for " + args1)
+    switch (args1) {
+        case "inqSound":
+            playCustomSound(settings.inqSound, settings.inqVolume);
+            break;
+        case "burrowSound":
+            playCustomSound(settings.burrowSound, settings.burrowVolume);
+            break;
+        case "chimSound":
+            playCustomSound(settings.chimSound, settings.chimVolume);
+            break;
+        case "sprSound":
+            playCustomSound(settings.sprSound, settings.sprVolume);
+            break;
+        case "stickSound":
+            playCustomSound(settings.stickSound, settings.stickVolume);
+            break;
+        case "relicSound":
+            playCustomSound(settings.relicSound, settings.relicVolume);
+            break;
+    }
+}).setName("sbotest");   
 

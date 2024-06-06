@@ -1,29 +1,18 @@
 import settings from "../../settings";
 import { data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare, getAllowedToTrackSacks } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
-import { trackerFileLocation, isDataLoaded, getTrackerTotal, getTrackerMayor, getTrackerSession } from "../../utils/checkData";
+import { isDataLoaded } from "../../utils/checkData";
+import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { getGuiOpen, getRefreshOverlays } from "../../utils/overlays";
+import { getRefreshOverlays } from "../../utils/overlays";
 import { playerHasSpade } from "../../utils/functions";
 
 // todo: 
-// Mobs since last inquisitor (use only total tracker)
-// inquisitor since last chimera (use only total tracker)
-// minos chams since last minos relic (use only total tracker)
-// minutaurs since last daedalus stick (use only total tracker)
-// track chim and ls chim seperately
 // todo end
-
-
-// data :     
-// "mobsSinceInq": 0,
-// "inqsSinceChim": 0,
-// "minotaursSinceStick": 0,
-// "champsSinceRelic": 0,
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
@@ -49,6 +38,7 @@ export function dianaLootCounter(item, amount) {
                         if (settings.lootAnnouncerScreen) {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
+                        playCustomSound(settings.relicSound, settings.relicSoundVolume);
                     }
                     if (item === i.slice(2)) {
                         tempString = item.replace("_", " ").replace("_", " ").toLowerCase();
@@ -60,6 +50,9 @@ export function dianaLootCounter(item, amount) {
                         }
                         if (settings.lootAnnouncerChat) {
                             ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
+                        }
+                        if (item != "MINOS_RELIC") {
+                            playCustomSound(settings.sprSound, settings.sprSoundVolume);
                         }
                         if (settings.dianaLootTracker) {
                             trackItem(item, "items", amount);
@@ -83,15 +76,7 @@ export function trackLootWithSacks(ammount, item) {
     }
 }
 
-// save the tracker to json file //
-function saveLoot(tracker, type) {
-    FileLib.write("SBO", trackerFileLocation  + type + ".json", JSON.stringify(tracker, null, 4));
-}
-
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //
-let trackerTotal = {};
-let trackerMayor = {};
-let trackerSession = {};
 export function getTracker(setting) {
     switch (setting) {
         case 1:
@@ -100,20 +85,6 @@ export function getTracker(setting) {
             return trackerMayor;
         case 3:
             return trackerSession;
-    }
-}
-
-export function setTracker(setting, tracker) {
-    switch (setting) {
-        case 1:
-            trackerTotal = tracker;
-            break;
-        case 2:
-            trackerMayor = tracker;
-            break;
-        case 3:
-            trackerSession = tracker;
-            break;
     }
 }
 
@@ -136,9 +107,6 @@ function refreshOverlay(tracker, setting, category) {
 
 // calc percent from tracker //
 function calcPercent(trackerToCalc, type, setting) {
-    if (setting == 2) {
-        trackerToCalc = trackerToCalc[getDateMayorElected().getFullYear()];
-    }
     if (trackerToCalc == undefined) return;
     percentDict = {};
     if(type == "mobs"){
@@ -190,42 +158,35 @@ export function trackItem(item, category, amount) {
 }
 
 function trackOne(tracker, item, category, type, amount) {
-    if (type == "Mayor") {
-        if (getSkyblockDate() >= getNewMayorAtDate()) {    
-            setNewMayorBool();   
-            setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
-            tracker[getDateMayorElected().getFullYear()] = initializeTracker();
-        }
+    // if (type == "Mayor") {
+    //     if (getSkyblockDate() >= getNewMayorAtDate()) {    
+    //         setNewMayorBool();   
+    //         setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
+    //         tracker[getDateMayorElected().getFullYear()] = initializeTracker();
+    //     }
 
-        if (tracker[getDateMayorElected().getFullYear()][category][item] == undefined) {
-            tracker[getDateMayorElected().getFullYear()][category][item] = amount;
-        }
-        else {
-            tracker[getDateMayorElected().getFullYear()][category][item] += amount;
-        }
+    //     if (tracker[getDateMayorElected().getFullYear()][category][item] == undefined) {
+    //         tracker[getDateMayorElected().getFullYear()][category][item] = amount;
+    //     }
+    //     else {
+    //         tracker[getDateMayorElected().getFullYear()][category][item] += amount;
+    //     }
 
-        if (category === "mobs") {
-            tracker[getDateMayorElected().getFullYear()]["mobs"]["TotalMobs"] += amount;
-        } 
+    //     if (category === "mobs") {
+    //         tracker[getDateMayorElected().getFullYear()]["mobs"]["TotalMobs"] += amount;
+    //     } 
+    // }
+    tracker[category][item] += amount;
+    if (category === "mobs") {
+        tracker["mobs"]["TotalMobs"] += amount;
     }
-    else {
-        tracker[category][item] += amount;
-        if (category === "mobs") {
-            if (tracker["mobs"]["TotalMobs"] == undefined) {
-                tracker["mobs"]["TotalMobs"] = amount;
-            }
-            else {
-                tracker["mobs"]["TotalMobs"] += amount;
-            }
-        }
-    }
-    saveLoot(tracker, type);
+    tracker.save();
 }
 
 // command to reset session tracker
 register("command", () => {
     trackerSession = initializeTracker();
-    saveLoot(trackerSession, "Session");
+    trackerSession.save();
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setName("sboresetsession");
@@ -245,16 +206,12 @@ registerWhen(register("chat", (burrow, event) => {
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => getWorld() === "Hub" && settings.dianaLootTracker);
-// &eYou finished the Griffin burrow chain!${burrow}
-// &eYou dug out a Griffin Burrow!${burrow}
 
-// &r&eFollow the arrows to find the &r&6treasure&r&e!&r
 register("chat", (event) => {
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eFollow the arrows to find the &r&6treasure&r&e!&r");
 
 // --for spade spam
-//&r&cThis ability is on cooldown for 3s.&r
 registerWhen(register("chat", (time, event) => {
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&cThis ability is on cooldown for ${time}"), () => getWorld() === "Hub" && playerHasSpade());
@@ -320,7 +277,8 @@ registerWhen(register("chat", (drop) => {
                 if (settings.lootAnnouncerScreen) {
                     Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                 }
-                new Sound({ source: "YIPPEE.ogg" }).setVolume(2).play()
+
+                playCustomSound(settings.chimSound, settings.chimSoundVolume);
                 if (gotLootShare()) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                 }
@@ -340,25 +298,13 @@ registerWhen(register("chat", (drop) => {
                 if (settings.lootAnnouncerScreen) {
                     Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                 }
+
+                playCustomSound(settings.stickSound, settings.stickSoundVolume);
                 trackItem(drop, "items", 1);
                 break;
-            // case "Potato":
-            //     Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
-            //     trackItem(drop, "items", 1);
-            //     break;
-            // case "Carrot":
-            //     Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
-            //     trackItem(drop, "items", 1);
-            //     break;
         }
     }
 }).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaLootTracker || settings.dianaStatsTracker);
-// Party > [MVP++] LHxSeven: &r&6&lRARE DROP! &r&6Daedalus Stick &r&b(+&r&b322% &r&b✯ Magic Find&r&b)&r
-// Party > [MVP++] LHxSeven: &r&6&lRARE DROP! &r&fEnchanted Book&r
-// &r&6&lRARE DROP! &r&fEnchanted Book &r&b(+&r&b348% &r&b✯ Magic Find&r&b)&r
-
-// &r&6&lRARE DROP! &r&f${drop} &r&b(+&r&b${mf}% &r&b✯ Magic Find&r&b)&r
-
 
 // refresh overlay //
 let tempSettingLoot = -1;
@@ -374,30 +320,18 @@ registerWhen(register("step", () => {
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
-
 let firstLoad = false;
-let trackerBool = false;
 let tempGuiBool = false;
 register("step", () => {
     if (getRefreshOverlays() && !tempGuiBool){
         tempGuiBool = true;
     }
-    if (isInSkyblock() && !firstLoad) {
-        if (!trackerBool) {
-            if (isDataLoaded()) {
-                trackerTotal = getTrackerTotal();
-                trackerMayor = getTrackerMayor();
-                trackerSession = getTrackerSession();
-                trackerBool = true;
-            }
-        }
-        else {
-            refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-            refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-            statsOverlay();
-            mythosMobHpOverlay([]);
-            firstLoad = true;
-        }
+    if (isInSkyblock() && !firstLoad && isDataLoaded()) {
+        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
+        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        statsOverlay();
+        mythosMobHpOverlay([]);
+        firstLoad = true;
     }
     if (tempGuiBool && !getRefreshOverlays()) {
         firstLoad = false;

@@ -535,7 +535,7 @@ register("command", () => {
 export function playCustomSound(sound, volume) {
     if (sound != "") {
         if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
-        if (FileLib.fileExists(`./${sound}.ogg`)) {
+        if (FileLib.exists(Config.modulesFolder.replace("modules", "images") + `/${sound}.ogg`)) {
             print("sound volume:", settings.inqVolume);
             new Sound({ source: new java.lang.String(sound + ".ogg") }).setVolume(volume/100).play()
         }
@@ -547,8 +547,8 @@ export function playCustomSound(sound, volume) {
 
 // add time to life of 5 sek
 export function setInterval(func, delay, ttl) {
-    var startTime = java.lang.System.currentTimeMillis();
-    var thread = new java.lang.Thread(new java.lang.Runnable({
+    let startTime = java.lang.System.currentTimeMillis();
+    let thread = new java.lang.Thread(new java.lang.Runnable({
         run: function() {
             while (true) {
                 if (java.lang.System.currentTimeMillis() - startTime > ttl) {

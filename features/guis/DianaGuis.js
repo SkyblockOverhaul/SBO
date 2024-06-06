@@ -2,7 +2,6 @@ import settings from "../../settings";
 import { registerWhen, data } from "../../utils/variables";
 import { playerHasSpade } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
-import { getDateMayorElected } from "../../utils/mayor";
 import { UIWrappedText } from "../../../Elementa";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
@@ -50,9 +49,6 @@ export function mobOverlay(mobTracker, setting, percentDict) {
         dianaMobOverlay.addChild(dianaMobTrackerText);
     }
     let message = "";
-    if (setting == 2) {
-        mobTracker = mobTracker[getDateMayorElected().getFullYear()] 
-    }
     if (setting > 0) {
         switch (setting) {
             case 1:
@@ -92,9 +88,6 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
         dianaLootOverlay.addChild(dianaLootTrackerText);    
     }
     let message = "";
-    if (lootViewSetting == 2) {
-        lootTracker = lootTracker[getDateMayorElected().getFullYear()] 
-    }
     if (lootViewSetting > 0) {
         message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
     }

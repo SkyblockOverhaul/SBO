@@ -19,7 +19,127 @@ export let data = new PogObject("SBO", {
     "inqsSinceChim": 0,
     "minotaursSinceStick": 0,
     "champsSinceRelic": 0,
+    "trackerMigration": false,
 }, "SboData.json");
+
+export let dianaTrackerTotal = new PogObject("SBO", {
+    items: {
+        "coins": 0,
+        "Griffin Feather": 0,
+        "Crown of Greed": 0,
+        "Washed-up Souvenir": 0,
+        "Chimera": 0,
+        "ChimeraLs": 0,
+        "Daedalus Stick": 0,
+        "DWARF_TURTLE_SHELMET": 0,
+        "CROCHET_TIGER_PLUSHIE": 0,
+        "ANTIQUE_REMEDIES": 0,
+        "ENCHANTED_ANCIENT_CLAW": 0,
+        "ANCIENT_CLAW": 0,
+        "MINOS_RELIC": 0,
+        "ENCHANTED_GOLD": 0,
+        "ENCHANTED_IRON": 0,
+        "Total Burrows": 0
+    },
+    mobs: {
+        "Minos Inquisitor": 0,
+        "Minos Champion": 0,
+        "Minotaur": 0,
+        "Gaia Construct": 0,
+        "Siamese Lynxes": 0,
+        "Minos Hunter": 0,
+        "TotalMobs": 0
+    }
+}, "dianaTrackerTotal.json");
+
+export let dianaTrackerSession = new PogObject("SBO", {
+    items: {
+        "coins": 0,
+        "Griffin Feather": 0,
+        "Crown of Greed": 0,
+        "Washed-up Souvenir": 0,
+        "Chimera": 0,
+        "ChimeraLs": 0,
+        "Daedalus Stick": 0,
+        "DWARF_TURTLE_SHELMET": 0,
+        "CROCHET_TIGER_PLUSHIE": 0,
+        "ANTIQUE_REMEDIES": 0,
+        "ENCHANTED_ANCIENT_CLAW": 0,
+        "ANCIENT_CLAW": 0,
+        "MINOS_RELIC": 0,
+        "ENCHANTED_GOLD": 0,
+        "ENCHANTED_IRON": 0,
+        "Total Burrows": 0
+    },
+    mobs: {
+        "Minos Inquisitor": 0,
+        "Minos Champion": 0,
+        "Minotaur": 0,
+        "Gaia Construct": 0,
+        "Siamese Lynxes": 0,
+        "Minos Hunter": 0,
+        "TotalMobs": 0
+    }
+}, "dianaTrackerSession.json");
+
+export let pastDianaEvents = new PogObject("SBO", {
+    "events": []
+}, "pastDianaEvents.json");
+
+if (!data.trackerMigration) {
+    data.trackerMigration = true;
+    if (FileLib.exists("SBO", "dianaTrackerMayor.json")) {
+        // load old mayor tracker
+        let oldTracker = {};
+        try {
+            oldTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerMayor.json")) || {};
+        } catch (e) {
+            oldTracker = {};
+        }
+        // for each key in old tracker
+        for (let key in oldTracker) {
+            pastDianaEvents.events.push({
+                year: key,
+                items: oldTracker[key].items,
+                mobs: oldTracker[key].mobs
+            });
+        }
+        FileLib.delete("SBO", "dianaTrackerMayor.json");
+    }
+    pastDianaEvents.save();
+}
+
+export let dianaTrackerMayor = new PogObject("SBO", {
+    year: 0,
+    items: {
+        "coins": 0,
+        "Griffin Feather": 0,
+        "Crown of Greed": 0,
+        "Washed-up Souvenir": 0,
+        "Chimera": 0,
+        "ChimeraLs": 0,
+        "Daedalus Stick": 0,
+        "DWARF_TURTLE_SHELMET": 0,
+        "CROCHET_TIGER_PLUSHIE": 0,
+        "ANTIQUE_REMEDIES": 0,
+        "ENCHANTED_ANCIENT_CLAW": 0,
+        "ANCIENT_CLAW": 0,
+        "MINOS_RELIC": 0,
+        "ENCHANTED_GOLD": 0,
+        "ENCHANTED_IRON": 0,
+        "Total Burrows": 0
+    },
+    mobs: {
+        "Minos Inquisitor": 0,
+        "Minos Champion": 0,
+        "Minotaur": 0,
+        "Gaia Construct": 0,
+        "Siamese Lynxes": 0,
+        "Minos Hunter": 0,
+        "TotalMobs": 0
+    }
+}, "dianaTrackerMayor.json");
+
 
 // --- TRIGGER CONTROL ---
 
@@ -63,25 +183,14 @@ register("guiClosed", (event) => {
     // || event.toString().includes("JSGui")
     if (event.toString().includes("vigilance")) {
         setRegisters()
-        // check sounds
-        checkSound(settings.inqSound);
-        checkSound(settings.chimSound);
-        checkSound(settings.stickSound);
-        checkSound(settings.relicSound);
-        checkSound(settings.sprSound);
     }
 });
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
     data.save();
+    dianaTrackerTotal.save();
+    dianaTrackerSession.save();
+    dianaTrackerMayor.save();
 });
 
-function checkSound(sound) {
-    if (sound != "") {
-        if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
-        if (!FileLib.fileExists(`./${sound}.ogg`)) {
-            ChatLib.chat(`&6[SBO] &cSound file not found (${sound})! (if the filename is correct, make sure to reload ct by "/ct load")`);
-        }
-    }
-}

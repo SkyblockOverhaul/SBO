@@ -599,7 +599,7 @@ class Settings {
         min: 0,
         max: 100
     })
-    inqVolume = 50;
+    inqVolume = 100;
 
     @TextProperty({
         name: "Burrow Spawn Sound",
@@ -675,7 +675,7 @@ class Settings {
         category: "Customization",
         subcategory: "Sound"
     })
-    sprSound = "";
+    sprSound = "mfsound";
     @SliderProperty({
         name: "Shelmet, Plushie and Remedies Drop Volume",
         description: "Set the volume for Shelmet, Plushie and Remedis sound",
