@@ -55,9 +55,7 @@ ${GRAY}- ${GRAY}${BOLD}Total Mobs: ${WHITE}
 `,
     dianaLootTrackerExample: 
 `${YELLOW}${BOLD}Diana Loot Tracker
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${GRAY}[${AQUA}LS${GRAY}] 
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Total Chimera: 
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: [${AQUA}LS${GRAY}: ]
 ${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
 ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${WHITE}
 ${GRAY}- ${GOLD}${BOLD}Crown of Greed: ${WHITE}
