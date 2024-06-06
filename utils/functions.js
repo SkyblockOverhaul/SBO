@@ -219,39 +219,7 @@ register("step", () => {
     spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
 }).setFps(1)
 
-// initialize tracker //
-export function initializeTracker() {
-    tempTracker = {
-        items: {
-            "coins": 0,
-            "Griffin Feather": 0,
-            "Crown of Greed": 0,
-            "Washed-up Souvenir": 0,
-            "Chimera": 0,
-            "ChimeraLs": 0,
-            "Daedalus Stick": 0,
-            "DWARF_TURTLE_SHELMET": 0,
-            "CROCHET_TIGER_PLUSHIE": 0,
-            "ANTIQUE_REMEDIES": 0,
-            "ENCHANTED_ANCIENT_CLAW": 0,
-            "ANCIENT_CLAW": 0,
-            "MINOS_RELIC": 0,
-            "ENCHANTED_GOLD": 0,
-            "ENCHANTED_IRON": 0,
-            "Total Burrows": 0
-        },
-        mobs: {
-            "Minos Inquisitor": 0,
-            "Minos Champion": 0,
-            "Minotaur": 0,
-            "Gaia Construct": 0,
-            "Siamese Lynxes": 0,
-            "Minos Hunter": 0,
-            "TotalMobs": 0
-        }
-    };
-    return tempTracker;
-}
+
 
 // return 1sec long true if player got loot share //
 export function gotLootShare() {

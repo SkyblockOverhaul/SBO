@@ -1,5 +1,4 @@
 import { request } from "../../requestV2";
-import { isInSkyblock } from "./functions";
 
 /**
  * Gets the array of mayor's perks.
@@ -132,7 +131,7 @@ let newMayor = false;
 let outDatedApi = false;
 // get mayor from api
 register("step", () => {
-    if (isInSkyblock()) {
+    if (Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK")) {
         if (skyblockDate != undefined) {
             if ((mayor === undefined || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
                 // ChatLib.chat("&cRefreshing mayor"); 
@@ -165,7 +164,7 @@ register("step", () => {
 
 // date tracking
 register("step", () => { 
-    if  (isInSkyblock()) {
+    if  (Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK")) {
         skyblockDateString = calcSkyblockDate(Date.now());
         skyblockDate = convertStringToDate(skyblockDateString);
         if (dateMayorElected === undefined) {

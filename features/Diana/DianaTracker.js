@@ -1,12 +1,12 @@
 import settings from "../../settings";
-import { data, registerWhen } from "../../utils/variables";
+import { data, pastDianaEvents, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, initializeTracker, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { isDataLoaded } from "../../utils/checkData";
-import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "../../utils/variables";
+import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTrackerMayor, initializeTracker } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
 import { getRefreshOverlays } from "../../utils/overlays";
 import { playerHasSpade } from "../../utils/functions";
@@ -158,24 +158,19 @@ export function trackItem(item, category, amount) {
 }
 
 function trackOne(tracker, item, category, type, amount) {
-    // if (type == "Mayor") {
-    //     if (getSkyblockDate() >= getNewMayorAtDate()) {    
-    //         setNewMayorBool();   
-    //         setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
-    //         tracker[getDateMayorElected().getFullYear()] = initializeTracker();
-    //     }
+    if (type == "Mayor") {
+        if (getSkyblockDate() >= getNewMayorAtDate()) {    
+            setNewMayorBool();   
+            setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
+            pastDianaEvents["events"].push(tracker);
+            let newTracker = initializeTrackerMayor();
+            for (let key in newTracker) {
+                tracker[key] = newTracker[key];
+            }
 
-    //     if (tracker[getDateMayorElected().getFullYear()][category][item] == undefined) {
-    //         tracker[getDateMayorElected().getFullYear()][category][item] = amount;
-    //     }
-    //     else {
-    //         tracker[getDateMayorElected().getFullYear()][category][item] += amount;
-    //     }
-
-    //     if (category === "mobs") {
-    //         tracker[getDateMayorElected().getFullYear()]["mobs"]["TotalMobs"] += amount;
-    //     } 
-    // }
+            tracker.save();
+        }
+    }
     tracker[category][item] += amount;
     if (category === "mobs") {
         tracker["mobs"]["TotalMobs"] += amount;
@@ -191,7 +186,6 @@ register("command", () => {
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
 }).setName("sboresetsession");
     
-
 // total burrow tracker //
 registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
@@ -323,7 +317,7 @@ registerWhen(register("step", () => {
 let firstLoad = false;
 let tempGuiBool = false;
 register("step", () => {
-    if (getRefreshOverlays() && !tempGuiBool){
+    if (getRefreshOverlays() && !tempGuiBool) {
         tempGuiBool = true;
     }
     if (isInSkyblock() && !firstLoad && isDataLoaded()) {

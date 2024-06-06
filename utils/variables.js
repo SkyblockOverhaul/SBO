@@ -1,9 +1,78 @@
 
 // Importing constants and utility functions from other files
 import { delay } from "./threads";
-
+import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "./mayor";
 // Importing the PogObject class from another file named "PogData"
 import PogObject from "../../PogData";
+
+
+// initialize tracker //
+export function initializeTracker() {
+    tempTracker = {
+        items: {
+            "coins": 0,
+            "Griffin Feather": 0,
+            "Crown of Greed": 0,
+            "Washed-up Souvenir": 0,
+            "Chimera": 0,
+            "ChimeraLs": 0,
+            "Daedalus Stick": 0,
+            "DWARF_TURTLE_SHELMET": 0,
+            "CROCHET_TIGER_PLUSHIE": 0,
+            "ANTIQUE_REMEDIES": 0,
+            "ENCHANTED_ANCIENT_CLAW": 0,
+            "ANCIENT_CLAW": 0,
+            "MINOS_RELIC": 0,
+            "ENCHANTED_GOLD": 0,
+            "ENCHANTED_IRON": 0,
+            "Total Burrows": 0
+        },
+        mobs: {
+            "Minos Inquisitor": 0,
+            "Minos Champion": 0,
+            "Minotaur": 0,
+            "Gaia Construct": 0,
+            "Siamese Lynxes": 0,
+            "Minos Hunter": 0,
+            "TotalMobs": 0
+        }
+    };
+    return tempTracker;
+}
+
+export function initializeTrackerMayor() {
+    tempTracker = {
+        year: getDateMayorElected().getFullYear(),
+        items: {
+            "coins": 0,
+            "Griffin Feather": 0,
+            "Crown of Greed": 0,
+            "Washed-up Souvenir": 0,
+            "Chimera": 0,
+            "ChimeraLs": 0,
+            "Daedalus Stick": 0,
+            "DWARF_TURTLE_SHELMET": 0,
+            "CROCHET_TIGER_PLUSHIE": 0,
+            "ANTIQUE_REMEDIES": 0,
+            "ENCHANTED_ANCIENT_CLAW": 0,
+            "ANCIENT_CLAW": 0,
+            "MINOS_RELIC": 0,
+            "ENCHANTED_GOLD": 0,
+            "ENCHANTED_IRON": 0,
+            "Total Burrows": 0
+        },
+        mobs: {
+            "Minos Inquisitor": 0,
+            "Minos Champion": 0,
+            "Minotaur": 0,
+            "Gaia Construct": 0,
+            "Siamese Lynxes": 0,
+            "Minos Hunter": 0,
+            "TotalMobs": 0
+        }
+    };
+    return tempTracker;
+}
 
 
 // --- PERSISTENT DATA ---
@@ -21,6 +90,63 @@ export let data = new PogObject("SBO", {
     "champsSinceRelic": 0,
     "trackerMigration": false,
 }, "SboData.json");
+
+export let pastDianaEvents = new PogObject("SBO", {
+    "events": []
+}, "pastDianaEvents.json");
+
+
+let oldMayorTracker = {};
+let oldTotalTracker = {};
+let oldSessionTracker = {};
+if (!data.trackerMigration) {
+    if (FileLib.exists("SBO", "dianaTrackerMayor.json")) {
+        // load old mayor tracker
+        let tempTracker = {};
+        try {
+            oldMayorTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerMayor.json")) || {};
+        } catch (e) {
+            print(e);
+            oldMayorTracker = {};
+        }
+        // for each key in old tracker
+        for (let key in oldMayorTracker) {
+            pastDianaEvents.events.push({
+                year: key,
+                items: oldMayorTracker[key].items,
+                mobs: oldMayorTracker[key].mobs
+            });
+            if (key === Object.keys(oldMayorTracker)[Object.keys(oldMayorTracker).length - 1]) {
+                tempTracker = oldMayorTracker[key];
+            }
+        }
+        oldMayorTracker = tempTracker;
+        FileLib.delete("SBO", "dianaTrackerMayor.json");
+        pastDianaEvents.save();
+    }
+
+    if (FileLib.exists("SBO", "dianaTrackerTotal.json")) {
+        // load old total tracker
+        try {
+            oldTotalTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerTotal.json")) || {};
+        } catch (e) {
+            print(e);
+            oldTotalTracker = {};
+        }
+        FileLib.delete("SBO", "dianaTrackerTotal.json");
+    }
+
+    if (FileLib.exists("SBO", "dianaTrackerSession.json")) {
+        // load old session tracker
+        try {
+            oldSessionTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerSession.json")) || {};
+        } catch (e) {
+            print(e);
+            oldSessionTracker = {};
+        }
+        FileLib.delete("SBO", "dianaTrackerSession.json");
+    }
+}
 
 export let dianaTrackerTotal = new PogObject("SBO", {
     items: {
@@ -82,33 +208,6 @@ export let dianaTrackerSession = new PogObject("SBO", {
     }
 }, "dianaTrackerSession.json");
 
-export let pastDianaEvents = new PogObject("SBO", {
-    "events": []
-}, "pastDianaEvents.json");
-
-if (!data.trackerMigration) {
-    data.trackerMigration = true;
-    if (FileLib.exists("SBO", "dianaTrackerMayor.json")) {
-        // load old mayor tracker
-        let oldTracker = {};
-        try {
-            oldTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerMayor.json")) || {};
-        } catch (e) {
-            oldTracker = {};
-        }
-        // for each key in old tracker
-        for (let key in oldTracker) {
-            pastDianaEvents.events.push({
-                year: key,
-                items: oldTracker[key].items,
-                mobs: oldTracker[key].mobs
-            });
-        }
-        FileLib.delete("SBO", "dianaTrackerMayor.json");
-    }
-    pastDianaEvents.save();
-}
-
 export let dianaTrackerMayor = new PogObject("SBO", {
     year: 0,
     items: {
@@ -140,6 +239,39 @@ export let dianaTrackerMayor = new PogObject("SBO", {
     }
 }, "dianaTrackerMayor.json");
 
+if (!data.trackerMigration) {
+    // check if old tracker exists and is not empty
+    if (Object.keys(oldMayorTracker).length != 0) {
+        for (let key in oldMayorTracker.items) {
+            dianaTrackerMayor.items[key] = oldMayorTracker.items[key];
+        }
+        for (let key in oldMayorTracker.mobs) {
+            dianaTrackerMayor.mobs[key] = oldMayorTracker.mobs[key];
+        }
+    }
+    if (Object.keys(oldTotalTracker).length != 0) {
+        for (let key in oldTotalTracker.items) {
+            print(key + " " + oldTotalTracker.items[key]);
+            dianaTrackerTotal.items[key] = oldTotalTracker.items[key];
+        }
+        for (let key in oldTotalTracker.mobs) {
+            dianaTrackerTotal.mobs[key] = oldTotalTracker.mobs[key];
+        }
+    }
+    if (Object.keys(oldSessionTracker).length != 0) {
+        for (let key in oldSessionTracker.items) {
+            dianaTrackerSession.items[key] = oldSessionTracker.items[key];
+        }
+        for (let key in oldSessionTracker.mobs) {
+            dianaTrackerSession.mobs[key] = oldSessionTracker.mobs[key];
+        }
+    }   
+    data.trackerMigration = true;
+    data.save();
+    dianaTrackerTotal.save();
+    dianaTrackerSession.save();
+    dianaTrackerMayor.save();
+}
 
 // --- TRIGGER CONTROL ---
 
@@ -193,4 +325,6 @@ register("gameUnload", () => {
     dianaTrackerSession.save();
     dianaTrackerMayor.save();
 });
+
+
 
