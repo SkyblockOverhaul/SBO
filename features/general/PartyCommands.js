@@ -26,7 +26,7 @@ const carrot = [
 
 
 register("chat", (player, message) => {
-    message = message.split(" ");
+    message = message.split(" ").toLowerCase();
     switch (message[0]) {
         case "!w":
         case "!warp":
