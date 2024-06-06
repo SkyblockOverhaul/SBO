@@ -239,7 +239,7 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaMobTracker || settings.dianaStatsTracker));
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaMobTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
 
 
 // track items from chat //
@@ -298,7 +298,7 @@ registerWhen(register("chat", (drop) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaLootTracker || settings.dianaStatsTracker);
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaLootTracker || (settings.dianaStatsTracker || settings.sendSinceMassage));
 
 // refresh overlay //
 let tempSettingLoot = -1;
