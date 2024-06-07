@@ -10,9 +10,14 @@ export function getMobsToDisplay() {
 
 registerWhen(register("chat", (woah) => {
     if (checkDiana()) {
-        ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+        if(settings.inquisDetect){
+            ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+        }
+        if(settings.announceKill !== ""){
+            ChatLib.command("pc " + settings.announceKill);
+        }
     }
-}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => settings.inquisDetect);
+}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => settings.inquisDetect || settings.announceKill);
 
 let Mobs = [];
 registerWhen(register("step", () => {

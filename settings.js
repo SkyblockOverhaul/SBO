@@ -238,6 +238,13 @@ class Settings {
         subcategory: "Other",
     })
     inquisDetect = false;
+    @TextProperty({
+        name: "Send Text On Inq Spawn",
+        description: "Send a text on inq spawn",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    announceKill = "";
     @SelectorProperty({
         name: "Add Warps",
         description: "Adds warp points for burrow warp",
