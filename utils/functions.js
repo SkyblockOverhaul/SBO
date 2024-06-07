@@ -580,7 +580,7 @@ registerWhen(register("step", () => {
             updateing = false;
         }, 300000);
     }
-}).setFps(1), () => settings.attributeValueOverlay);
+}).setFps(1), () => settings.attributeValueOverlay || settings.dianaLootTracker);
 
 
 function updateItemValues() {
