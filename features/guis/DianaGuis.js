@@ -124,7 +124,7 @@ ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${AQUA}${BOLD}${lootTracker["items"]["Dae
 `
     }
     else {
-        lootMessage += `${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY}) [${AQUA}LS${GRAY}: ${AQUA}${BOLD}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
+        lootMessage += `${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${BOLD}${lootTracker["items"]["Chimera"]} ${GRAY}[${AQUA}LS${GRAY}: ${AQUA}${BOLD}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
 ${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${BOLD}${lootTracker["items"]["MINOS_RELIC"]}
 ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${AQUA}${BOLD}${lootTracker["items"]["Daedalus Stick"]}
 `
