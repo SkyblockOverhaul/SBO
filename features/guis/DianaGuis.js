@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, data } from "../../utils/variables";
-import { playerHasSpade, getBazaarPriceDiana, formatNumber } from "../../utils/functions";
+import { playerHasSpade, getBazaarPriceDiana, formatNumber, getDianaAhPrice } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { UIWrappedText } from "../../../Elementa";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
@@ -159,6 +159,12 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${lootTracker["items"]["Total Burrows"]}
     totalValue += getBazaarPriceDiana("ENCHANTED_ANCIENT_CLAW") * lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"];
     totalValue += getBazaarPriceDiana("ENCHANTED_GOLD") * lootTracker["items"]["ENCHANTED_GOLD"];
     totalValue += getBazaarPriceDiana("ENCHANTED_IRON") * lootTracker["items"]["ENCHANTED_IRON"];
+    totalValue += getDianaAhPrice("DWARF_TURTLE_SHELMET") * lootTracker["items"]["DWARF_TURTLE_SHELMET"];
+    totalValue += getDianaAhPrice("CROCHET_TIGER_PLUSHIE") * lootTracker["items"]["CROCHET_TIGER_PLUSHIE"];
+    totalValue += getDianaAhPrice("ANTIQUE_REMEDIES") * lootTracker["items"]["ANTIQUE_REMEDIES"];
+    totalValue += getDianaAhPrice("MINOS_RELIC") * lootTracker["items"]["MINOS_RELIC"];
+    totalValue += getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"];
+    totalValue += getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"];
     totalValue += lootTracker["items"]["coins"];
     lootMessage += `${GOLD}${BOLD}Total Profit: ${GOLD}${formatNumber(totalValue)}
 `

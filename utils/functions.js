@@ -633,17 +633,11 @@ export function getBazaarPriceDiana(itemId) {
 export function getDianaAhPrice(itemId) {
     if (dianaItems == undefined) return 0;
     if (dianaItems[itemId] == undefined) return 0;
-    return dianaItems[itemId].price;
-}
-
-function getAhPrice(itemId) {
-    if (kuudraItems["OTHER"][itemId] != undefined) {
-        return kuudraItems["OTHER"][itemId].price;
+    if (itemId == "CROWN_OF_GREED") {
+        if (dianaItems[itemId].price < 1000000) return 1000000;
+        return dianaItems[itemId].price;
     }
-    else {
-        console.log("itemId: " + itemId + " price: not found");
-        return 0;
-    }    
+    return dianaItems[itemId].price;
 }
 
 export function formatNumber(number) {

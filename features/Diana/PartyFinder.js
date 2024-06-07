@@ -5,14 +5,21 @@ let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
     party = party.filter(uuid => uuid != Player.getUUID());
-    request({
-        url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
-        json: true
-    }).then((response)=> {
-        printPartyInfo(response.PartyInfo)
-    }).catch((error)=> {
-        console.error(JSON.stringify(error));
+    let sequence = Promise.resolve();
+
+    party.forEach(member => {
+        sequence = sequence.then(() => {
+            return request({
+                url: api + "/partyInfoByUuids?uuids=" + member.replaceAll("-", ""),
+                json: true
+            }).then(response => {
+                printPartyInfo(response.PartyInfo);
+            }).catch(error => {
+                console.error(JSON.stringify(error));
+            });
+        });
     });
+    
 }
 
 // message to check party when joining a party
@@ -132,43 +139,6 @@ register("chat", (player) => {
 //         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
 //     }
 // }).setName("sbocheckp");
-
-// old for the complete party at once
-// request({
-//     url: api + "/partyInfo?party=" + party,
-//     json: true
-// }).then((response)=> {
-//     printPartyInfo(response.PartyInfo)
-// }).catch((error)=> {
-//     console.error(error);
-// });
-
-// function getPartyInfo(party) {
-//     let playerName = Player.getName();
-//     // Filter out empty strings, the current user, and duplicates, then join into a string
-//     party = [...new Set(party.filter(name => name && name != playerName))].join(",").replaceAll(" ", "").replaceAll(",,", ",");
-//     if (party.charAt(party.length - 1) == ",") {
-//         party = party.slice(0, -1);
-//     }
-    
-//     // send for each player one reqeust to the api and only send the next request if the previous one is finished
-//     let promises = [];
-//     for (let i = 0; i < party.length; i++) {
-//         promises.push(request({
-//             url: api + "/partyInfo?party=" + party[i],
-//             json: true
-//         }));
-//     }
-//     Promise.all(promises).then((responses)=> {
-//         for (let i = 0; i < responses.length; i++) {
-//             printPartyInfo(responses[i].PartyInfo);
-//         }
-//     }).catch((error)=> {
-//         console.error(error);
-//         ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + party[i]); 
-//     });
-// }
-
 
 /// partyfinde test code
 // function queueAsPlayer() {
