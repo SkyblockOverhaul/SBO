@@ -153,6 +153,14 @@ class Settings {
     resetTrackerSession() {
        ChatLib.command("sboresetsession", true);
     }
+    @SelectorProperty({
+        name: "Bazaar Setting",
+        description: "Select if you want to use instasell or sell offer for bazaar",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+        options: ['Instasell','Sell Offer'],
+    })
+    bazaarSettingDiana = 1;
 
     // --- Diana Waypoints ---
     @SwitchProperty({
@@ -246,6 +254,7 @@ class Settings {
         options: ["None", "Wizard", "Crypt", "Both"]
     })
     dianaAddWarps = 0;
+
     // Loot Announcer
     @SwitchProperty({
         name: 'Rare Drop Announcer',
@@ -528,13 +537,6 @@ class Settings {
         category: "Mining",
     })
     exitWaypoint = false;
-    @SwitchProperty({
-        name: "Mineshaft Announcer",
-        description: "Announces the mineshaft on your screen",
-        category: "Mining",
-    })
-    mineshaftAnnouncer = false;
-
 
     // General other
     @SwitchProperty({

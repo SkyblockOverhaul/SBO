@@ -2,6 +2,7 @@ import settings from "../settings";
 import { registerWhen } from "./variables";
 import { HypixelModAPI } from "./../../HypixelModAPI";
 import { getWorld } from "./world";
+import { request } from "../../requestV2";
 
 // geklaut von coleweight for drawline
 if(!GlStateManager) {
@@ -546,4 +547,92 @@ export function sendPartyRequest() {
     partyMembersUuids = [];
     partyBool = false;
     HypixelModAPI.requestPartyInfo();
+}
+
+let lastUpdate = 0;
+let updateing = false;
+let kuudraItems = undefined;
+let bazaarItems = undefined;
+
+export function getKuudraItems() {
+    return kuudraItems;
+}
+
+export function getBazaarItems() {
+    return bazaarItems;
+}
+
+
+registerWhen(register("step", () => {
+    // update every 5 minutes
+    if (updateing) return;
+    if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
+        // print("updating kuudra items with api");
+        updateing = true;
+        lastUpdate = Date.now();
+        updateItemValues()
+        setTimeout(() => {
+            updateing = false;
+        }, 300000);
+    }
+}).setFps(1), () => settings.attributeValueOverlay);
+
+
+function updateItemValues() {
+    request({
+        url: "https://api.skyblockoverhaul.com/kuudraItems",
+        json: true
+    }).then((response)=>{
+        kuudraItems = response;
+    }).catch((error)=>{
+        console.error(error);
+    });
+
+    request({
+        url: "https://api.hypixel.net/skyblock/bazaar?product",
+        json: true
+    }).then((response)=>{
+        bazaarItems = response;
+    }).catch((error)=>{
+        console.error(error);
+    });
+}
+
+export function getBazaarPriceKuudra(itemId) {
+    if (bazaarItems == undefined) return 0;
+    if (bazaarItems.success == false) return 0;
+    let product = bazaarItems.products[itemId];
+    if (product == undefined) return 0;
+    if (settings.bazaarSetting == 0) {
+        return product.quick_status.sellPrice;
+    }
+    else {
+        return product.quick_status.buyPrice;
+    }
+}
+
+export function getBazaarPriceDiana(itemId) {
+    if (bazaarItems == undefined) return 0;
+    if (bazaarItems.success == false) return 0;
+    let product = bazaarItems.products[itemId];
+    if (product == undefined) return 0;
+    if (settings.bazaarSettingDiana == 0) {
+        return product.quick_status.sellPrice;
+    }
+    else {
+        return product.quick_status.buyPrice;
+    }
+}
+
+export function formatNumber(number) {
+    if (number >= 1000000000) {
+        return (number / 1000000000).toFixed(2) + "B";
+    }
+    else if (number >= 1000000) {
+        return (number / 1000000).toFixed(1) + "M";  
+    }
+    else if (number >= 1000) {
+        return (number / 1000).toFixed(1) + "k";
+    }
+    return number;
 }

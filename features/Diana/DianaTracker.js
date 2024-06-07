@@ -293,11 +293,13 @@ registerWhen(register("chat", (drop) => {
 
 // refresh overlay //
 let tempSettingLoot = -1;
+let tempSettingBazzar = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
+    tempSettingBazzar = settings.bazaarSettingDiana
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
 
-}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView);
+}).setFps(1), () => settings.dianaLootTracker && (tempSettingLoot !== settings.dianaLootTrackerView || tempSettingBazzar !== settings.bazaarSettingDiana));
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {

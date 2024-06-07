@@ -1,7 +1,7 @@
 
 // Importing constants and utility functions from other files
 import { delay } from "./threads";
-import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "./mayor";
+import { getDateMayorElected } from "./mayor";
 // Importing the PogObject class from another file named "PogData"
 import PogObject from "../../PogData";
 
@@ -321,6 +321,3 @@ register("gameUnload", () => {
     dianaTrackerSession.save();
     dianaTrackerMayor.save();
 });
-
-
-
