@@ -155,7 +155,7 @@ class Settings {
     }
     @SelectorProperty({
         name: "Bazaar Setting",
-        description: "Select if you want to use instasell or sell offer for bazaar",
+        description: "Bazaar setting to set the price for loot",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ['Instasell','Sell Offer'],
@@ -487,7 +487,7 @@ class Settings {
     lineSetting = 0;
     @SelectorProperty({
         name: 'Bazaar Setting',
-        description: 'Bazaar setting to set the price for loot',
+        description: 'Bazaar setting for instasell/sell offer',
         category: 'Kuudra',
         options: ['Instasell','Sell Offer'],
     })
