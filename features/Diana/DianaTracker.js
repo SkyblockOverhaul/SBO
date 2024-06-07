@@ -171,7 +171,10 @@ function trackOne(tracker, item, category, type, amount) {
 
 // command to reset session tracker
 register("command", () => {
-    trackerSession = initializeTracker();
+    let tempTracker = initializeTracker();
+    for (let key in tempTracker) {
+        trackerSession[key] = tempTracker[key];
+    }
     trackerSession.save();
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
