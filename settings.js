@@ -487,7 +487,7 @@ class Settings {
     lineSetting = 0;
     @SelectorProperty({
         name: 'Bazaar Setting',
-        description: 'Bazaar setting for instasell/sell offer',
+        description: 'Bazaar setting to set the price for loot',
         category: 'Kuudra',
         options: ['Instasell','Sell Offer'],
     })
