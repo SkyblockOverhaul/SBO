@@ -28,7 +28,7 @@ export function statsOverlay() {
         dianaStatsOverlay.clearChildren();
         dianaStatsOverlay.addChild(dianaStatsText);
     }
-    let message = `${YELLOW}Diana Stats Tracker
+    let message = `${YELLOW}${BOLD}Diana Stats Tracker
 ${GRAY}- ${LIGHT_PURPLE}Mobs since Inq: ${AQUA}${data.mobsSinceInq}
 ${GRAY}- ${LIGHT_PURPLE}Inqs since Chimera: ${AQUA}${data.inqsSinceChim}
 ${GRAY}- ${GOLD}Minos since Stick: ${AQUA}${data.minotaursSinceStick}
@@ -62,7 +62,7 @@ export function mobOverlay(mobTracker, setting, percentDict) {
                 break;
         };
     message =
-    `${YELLOW}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})
+    `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})
 ${GRAY}- ${LIGHT_PURPLE}Minos Inquisitor: ${AQUA}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
 ${GRAY}- ${DARK_PURPLE}Minos Champion: ${AQUA}${mobTracker["mobs"]["Minos Champion"]} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})
 ${GRAY}- ${GOLD}Minotaur: ${AQUA}${mobTracker["mobs"]["Minotaur"]} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})
@@ -118,7 +118,7 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
         totalChimera += lootTracker["items"]["ChimeraLs"];
     }
     
-    let lootMessage = `${YELLOW}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
+    let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
 `;
     if (mobSetting) {
         lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * totalChimera)} ${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY}) [${AQUA}LS${GRAY}: ${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
