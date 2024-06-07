@@ -171,7 +171,10 @@ function trackOne(tracker, item, category, type, amount) {
 
 // command to reset session tracker
 register("command", () => {
-    trackerSession = initializeTracker();
+    let tempTracker = initializeTracker();
+    for (let key in tempTracker) {
+        trackerSession[key] = tempTracker[key];
+    }
     trackerSession.save();
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
@@ -293,11 +296,13 @@ registerWhen(register("chat", (drop) => {
 
 // refresh overlay //
 let tempSettingLoot = -1;
+let tempSettingBazzar = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
+    tempSettingBazzar = settings.bazaarSettingDiana
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
 
-}).setFps(1), () => settings.dianaLootTracker && tempSettingLoot !== settings.dianaLootTrackerView);
+}).setFps(1), () => settings.dianaLootTracker && (tempSettingLoot !== settings.dianaLootTrackerView || tempSettingBazzar !== settings.bazaarSettingDiana));
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
