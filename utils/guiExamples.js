@@ -55,21 +55,22 @@ ${GRAY}- ${GRAY}${BOLD}Total Mobs: ${WHITE}
 `,
     dianaLootTrackerExample: 
 `${YELLOW}${BOLD}Diana Loot Tracker
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: [${AQUA}LS${GRAY}: ]
-${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
-${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${WHITE}
-${GRAY}- ${GOLD}${BOLD}Crown of Greed: ${WHITE}
-${GRAY}- ${GOLD}${BOLD}Souvenir: ${WHITE}
-${GRAY}- ${GOLD}${BOLD}Griffin Feather: ${WHITE}
-${GRAY}- ${GOLD}${BOLD}Coins: ${WHITE}
-${GRAY}- ${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
-${GRAY}- ${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
-${GRAY}- ${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
-${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${WHITE}
-${GRAY}- ${BLUE}${BOLD}Enchanted Claws: ${WHITE}
-${GRAY}- ${BLUE}${BOLD}Enchanted Gold: 
-${GRAY}- ${BLUE}${BOLD}Enchanted Iron: 
-${GRAY}- ${GRAY}${BOLD}Total Burrows: ${WHITE}
+${GOLD}0 ${GRAY}| ${LIGHT_PURPLE}${BOLD}Chimera: ${GRAY}[${AQUA}LS${GRAY}: ]
+${GOLD}0 ${GRAY}| ${DARK_PURPLE}${BOLD}Minos Relic:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Daedalus Stick:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Crown of Greed:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Souvenir:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Griffin Feather:
+${GOLD}0 ${GRAY}| ${DARK_GREEN}${BOLD}Turtle Shelmet:
+${GOLD}0 ${GRAY}| ${DARK_GREEN}${BOLD}Tiger Plushie:
+${GOLD}0 ${GRAY}| ${DARK_GREEN}${BOLD}Antique Remedies:
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Ancient Claws:
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Enchanted Claws: 
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Enchanted Gold: 
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Enchanted Iron: 
+${GRAY}${BOLD}Total Burrows:
+${GOLD}${BOLD}Coins:
+${GOLD}${BOLD}Total Profit:
 `,
 legioncounterExample: `${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`,
 dianaStatsExample: `${YELLOW}${BOLD}Diana Stats Tracker
