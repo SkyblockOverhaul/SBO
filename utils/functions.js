@@ -552,10 +552,15 @@ export function sendPartyRequest() {
 let lastUpdate = 0;
 let updateing = false;
 let kuudraItems = undefined;
+let dianaItems = undefined;
 let bazaarItems = undefined;
 
 export function getKuudraItems() {
     return kuudraItems;
+}
+
+export function getDianaItems() {
+    return dianaItems;
 }
 
 export function getBazaarItems() {
@@ -580,10 +585,11 @@ registerWhen(register("step", () => {
 
 function updateItemValues() {
     request({
-        url: "https://api.skyblockoverhaul.com/kuudraItems",
+        url: "https://api.skyblockoverhaul.com/ahItems",
         json: true
     }).then((response)=>{
-        kuudraItems = response;
+        kuudraItems = response[0];
+        dianaItems = response[1];
     }).catch((error)=>{
         console.error(error);
     });
@@ -624,12 +630,28 @@ export function getBazaarPriceDiana(itemId) {
     }
 }
 
+export function getDianaAhPrice(itemId) {
+    if (dianaItems == undefined) return 0;
+    if (dianaItems[itemId] == undefined) return 0;
+    return dianaItems[itemId].price;
+}
+
+function getAhPrice(itemId) {
+    if (kuudraItems["OTHER"][itemId] != undefined) {
+        return kuudraItems["OTHER"][itemId].price;
+    }
+    else {
+        console.log("itemId: " + itemId + " price: not found");
+        return 0;
+    }    
+}
+
 export function formatNumber(number) {
     if (number >= 1000000000) {
-        return (number / 1000000000).toFixed(2) + "B";
+        return (number / 1000000000).toFixed(2) + "b";
     }
     else if (number >= 1000000) {
-        return (number / 1000000).toFixed(1) + "M";  
+        return (number / 1000000).toFixed(1) + "m";  
     }
     else if (number >= 1000) {
         return (number / 1000).toFixed(1) + "k";
