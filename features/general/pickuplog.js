@@ -87,9 +87,3 @@ register("chat", (ammount, trash, time, event) => {
         }
     });
 }).setCriteria("&6[Sacks] ${ammount} item${trash} ${time}");
-// not get counted
-// &6[Sacks] &r&a+9&r&e items&r&e, &r&c-16&r&e items&r&e.&r&8 (Last 8s.)&r
-// &6[Sacks] &r&c-64&r&e items&r&e.&r&8 (Last 5s.)&r
-// &6[Sacks] &r&c-1&r&e item&r&e.&r&8 (Last 5s.)&r
-// &6[Sacks] &r&a+1&r&e item&r&e.&r&8 (Last 5s.)&r
-// &6[Sacks] &r&a+64&r&e items&r&e.&r&8 (Last 5s.)&r

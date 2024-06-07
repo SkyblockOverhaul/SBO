@@ -111,7 +111,7 @@ class Settings {
         description: "Shows your diana mob kills /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
-        options: ["OFF", "Overall View", "Event View", "Session View"]
+        options: ["OFF", "Total", "Event", "Session"]
     })
     dianaMobTrackerView = 0;
     @SwitchProperty({
@@ -126,7 +126,7 @@ class Settings {
         description: "Shows your diana loot /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
-        options: ["OFF", "Overall View", "Event View", "Session View"]
+        options: ["OFF", "Total", "Event", "Session"]
     })
     dianaLootTrackerView = 0;
     @SwitchProperty({
