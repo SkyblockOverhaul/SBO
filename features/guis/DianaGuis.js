@@ -28,11 +28,11 @@ export function statsOverlay() {
         dianaStatsOverlay.clearChildren();
         dianaStatsOverlay.addChild(dianaStatsText);
     }
-    let message = `${YELLOW}${BOLD}Diana Stats Tracker
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Mobs since Inq: ${AQUA}${data.mobsSinceInq}
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Inqs since Chimera: ${AQUA}${data.inqsSinceChim}
-${GRAY}- ${GOLD}${BOLD}Minos since Stick: ${AQUA}${data.minotaursSinceStick}
-${GRAY}- ${DARK_PURPLE}${BOLD}Champs since Relic: ${AQUA}${data.champsSinceRelic}
+    let message = `${YELLOW}Diana Stats Tracker
+${GRAY}- ${LIGHT_PURPLE}Mobs since Inq: ${AQUA}${data.mobsSinceInq}
+${GRAY}- ${LIGHT_PURPLE}Inqs since Chimera: ${AQUA}${data.inqsSinceChim}
+${GRAY}- ${GOLD}Minos since Stick: ${AQUA}${data.minotaursSinceStick}
+${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${data.champsSinceRelic}
 `
     dianaStatsText.setText(message);
     dianaStatsText.setTextScale((dianaStatsOverlayObj.scale).pixels());
@@ -62,14 +62,14 @@ export function mobOverlay(mobTracker, setting, percentDict) {
                 break;
         };
     message =
-    `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})
-${GRAY}- ${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${AQUA}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
-${GRAY}- ${DARK_PURPLE}${BOLD}Minos Champion: ${AQUA}${mobTracker["mobs"]["Minos Champion"]} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})
-${GRAY}- ${GOLD}${BOLD}Minotaur: ${AQUA}${mobTracker["mobs"]["Minotaur"]} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})
-${GRAY}- ${GREEN}${BOLD}Gaia Construct: ${AQUA}${mobTracker["mobs"]["Gaia Construct"]} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})
-${GRAY}- ${GREEN}${BOLD}Siamese Lynx: ${AQUA}${mobTracker["mobs"]["Siamese Lynxes"]} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})
-${GRAY}- ${GREEN}${BOLD}Minos Hunter: ${AQUA}${mobTracker["mobs"]["Minos Hunter"]} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})
-${GRAY}- ${GRAY}${BOLD}Total Mobs: ${AQUA}${mobTracker["mobs"]["TotalMobs"]}
+    `${YELLOW}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})
+${GRAY}- ${LIGHT_PURPLE}Minos Inquisitor: ${AQUA}${mobTracker["mobs"]["Minos Inquisitor"]} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
+${GRAY}- ${DARK_PURPLE}Minos Champion: ${AQUA}${mobTracker["mobs"]["Minos Champion"]} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})
+${GRAY}- ${GOLD}Minotaur: ${AQUA}${mobTracker["mobs"]["Minotaur"]} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})
+${GRAY}- ${GREEN}Gaia Construct: ${AQUA}${mobTracker["mobs"]["Gaia Construct"]} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})
+${GRAY}- ${GREEN}Siamese Lynx: ${AQUA}${mobTracker["mobs"]["Siamese Lynxes"]} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})
+${GRAY}- ${GREEN}Minos Hunter: ${AQUA}${mobTracker["mobs"]["Minos Hunter"]} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})
+${GRAY}- ${GRAY}Total Mobs: ${AQUA}${mobTracker["mobs"]["TotalMobs"]}
 `
     }
     dianaMobTrackerText.setText(message);
@@ -118,38 +118,37 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
         totalChimera += lootTracker["items"]["ChimeraLs"];
     }
     
-    let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
+    let lootMessage = `${YELLOW}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
 `;
     if (mobSetting) {
-        lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * totalChimera)} ${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY}) [${AQUA}LS${GRAY}: ${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
-${GOLD}1b ${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${lootTracker["items"]["MINOS_RELIC"]} ${GRAY}(${AQUA}${percentDict["Minos Relic"]}%${GRAY})
-${GOLD}${formatNumber(getBazaarPriceDiana("DAEDALUS_STICK") * lootTracker["items"]["Daedalus Stick"])} ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${AQUA}${lootTracker["items"]["Daedalus Stick"]} ${GRAY}(${AQUA}${percentDict["Daedalus Stick"]}%${GRAY})
+        lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * totalChimera)} ${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY}) [${AQUA}LS${GRAY}: ${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
+${GOLD}${formatNumber(getDianaAhPrice("MINOS_RELIC") * lootTracker["items"]["MINOS_RELIC"])} ${GRAY}- ${DARK_PURPLE}Minos Relic: ${AQUA}${lootTracker["items"]["MINOS_RELIC"]} ${GRAY}(${AQUA}${percentDict["Minos Relic"]}%${GRAY})
+${GOLD}${formatNumber(getBazaarPriceDiana("DAEDALUS_STICK") * lootTracker["items"]["Daedalus Stick"])} ${GRAY}- ${GOLD}Daedalus Stick: ${AQUA}${lootTracker["items"]["Daedalus Stick"]} ${GRAY}(${AQUA}${percentDict["Daedalus Stick"]}%${GRAY})
 `
     }
     else {
-        lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * totalChimera)} ${GRAY}- ${LIGHT_PURPLE}${BOLD}Chimera: ${AQUA}${lootTracker["items"]["Chimera"]} [${AQUA}LS${GRAY}: ${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
-${GOLD}1b ${GRAY}- ${DARK_PURPLE}${BOLD}Minos Relic: ${AQUA}${lootTracker["items"]["MINOS_RELIC"]}
-${GOLD}${formatNumber(getBazaarPriceDiana("DAEDALUS_STICK") * lootTracker["items"]["Daedalus Stick"])} ${GRAY}- ${GOLD}${BOLD}Daedalus Stick: ${AQUA}${lootTracker["items"]["Daedalus Stick"]}
+        lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * totalChimera)} ${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${lootTracker["items"]["Chimera"]} [${AQUA}LS${GRAY}: ${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
+${GOLD}${formatNumber(getDianaAhPrice("MINOS_RELIC") * lootTracker["items"]["MINOS_RELIC"])} ${GRAY}- ${DARK_PURPLE}Minos Relic: ${AQUA}${lootTracker["items"]["MINOS_RELIC"]}
+${GOLD}${formatNumber(getBazaarPriceDiana("DAEDALUS_STICK") * lootTracker["items"]["Daedalus Stick"])} ${GRAY}- ${GOLD}Daedalus Stick: ${AQUA}${lootTracker["items"]["Daedalus Stick"]}
 `
     }
-    lootMessage += `${GOLD}20m ${GRAY}- ${GOLD}${BOLD}Crown of Greed: ${AQUA}${lootTracker["items"]["Crown of Greed"]} 
-${GOLD}20m ${GRAY}- ${GOLD}${BOLD}Souvenir: ${AQUA}${lootTracker["items"]["Washed-up Souvenir"]}
-${GOLD}${formatNumber(getBazaarPriceDiana("GRIFFIN_FEATHER") * lootTracker["items"]["Griffin Feather"])} ${GRAY}- ${GOLD}${BOLD}Griffin Feather: ${AQUA}${formatNumber(lootTracker["items"]["Griffin Feather"])}
+    lootMessage += `${GOLD}${formatNumber(getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"])} ${GRAY}- ${GOLD}Crown of Greed: ${AQUA}${lootTracker["items"]["Crown of Greed"]} 
+${GOLD}${formatNumber(getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"])} ${GRAY}- ${GOLD}Souvenir: ${AQUA}${lootTracker["items"]["Washed-up Souvenir"]}
+${GOLD}${formatNumber(getBazaarPriceDiana("GRIFFIN_FEATHER") * lootTracker["items"]["Griffin Feather"])} ${GRAY}- ${GOLD}Griffin Feather: ${AQUA}${formatNumber(lootTracker["items"]["Griffin Feather"])}
 `
-    lootMessage += `${GOLD}${(formatNumber(lootTracker["items"]["coins"]))} ${GRAY}- ${GOLD}${BOLD}Coins
-`
-    lootMessage += `${GOLD}90m ${GRAY}- ${DARK_GREEN}${BOLD}Turtle Shelmet: ${AQUA}${lootTracker["items"]["DWARF_TURTLE_SHELMET"]}
-${GOLD}90m ${GRAY}- ${DARK_GREEN}${BOLD}Tiger Plushie: ${AQUA}${lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]}
-${GOLD}60m ${GRAY}- ${DARK_GREEN}${BOLD}Antique Remedies: ${AQUA}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
+    lootMessage += `${GOLD}${formatNumber(getDianaAhPrice("DWARF_TURTLE_SHELMET") * lootTracker["items"]["DWARF_TURTLE_SHELMET"])} ${GRAY}- ${DARK_GREEN}Turtle Shelmet: ${AQUA}${lootTracker["items"]["DWARF_TURTLE_SHELMET"]}
+${GOLD}${formatNumber(getDianaAhPrice("CROCHET_TIGER_PLUSHIE") * lootTracker["items"]["CROCHET_TIGER_PLUSHIE"])} ${GRAY}- ${DARK_GREEN}Tiger Plushie: ${AQUA}${lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]}
+${GOLD}${formatNumber(getDianaAhPrice("ANTIQUE_REMEDIES") * lootTracker["items"]["ANTIQUE_REMEDIES"])} ${GRAY}- ${DARK_GREEN}Antique Remedies: ${AQUA}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
 `
 
-    lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ANCIENT_CLAW") * lootTracker["items"]["ANCIENT_CLAW"])} ${GRAY}- ${BLUE}${BOLD}Ancient Claws: ${AQUA}${formatNumber(lootTracker["items"]["ANCIENT_CLAW"])}
+    lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ANCIENT_CLAW") * lootTracker["items"]["ANCIENT_CLAW"])} ${GRAY}- ${BLUE}Ancient Claws: ${AQUA}${formatNumber(lootTracker["items"]["ANCIENT_CLAW"])}
 `
 
-    lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTED_ANCIENT_CLAW") * lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"])} ${GRAY}- ${BLUE}${BOLD}Enchanted Claws: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"])}
-${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTED_GOLD") * lootTracker["items"]["ENCHANTED_GOLD"])} ${GRAY}- ${BLUE}${BOLD}Enchanted Gold: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_GOLD"])}
-${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTED_IRON") * lootTracker["items"]["ENCHANTED_IRON"])} ${GRAY}- ${BLUE}${BOLD}Enchanted Iron: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_IRON"])} 
-${GRAY}${BOLD}Total Burrows: ${AQUA}${lootTracker["items"]["Total Burrows"]}
+    lootMessage += `${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTED_ANCIENT_CLAW") * lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"])} ${GRAY}- ${BLUE}Enchanted Claws: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"])}
+${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTED_GOLD") * lootTracker["items"]["ENCHANTED_GOLD"])} ${GRAY}- ${BLUE}Enchanted Gold: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_GOLD"])}
+${GOLD}${formatNumber(getBazaarPriceDiana("ENCHANTED_IRON") * lootTracker["items"]["ENCHANTED_IRON"])} ${GRAY}- ${BLUE}Enchanted Iron: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_IRON"])} 
+${GRAY}Total Burrows: ${AQUA}${lootTracker["items"]["Total Burrows"]}
+${GOLD}Coins: ${GOLD}${formatNumber(lootTracker["items"]["coins"])}
 `
     let totalValue = 0;
     totalValue += getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * totalChimera;
@@ -166,7 +165,7 @@ ${GRAY}${BOLD}Total Burrows: ${AQUA}${lootTracker["items"]["Total Burrows"]}
     totalValue += getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"];
     totalValue += getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"];
     totalValue += lootTracker["items"]["coins"];
-    lootMessage += `${GOLD}${BOLD}Total Profit: ${GOLD}${formatNumber(totalValue)}
+    lootMessage += `${GOLD}Total Profit: ${GOLD}${formatNumber(totalValue)}
 `
 
     return lootMessage;
