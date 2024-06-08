@@ -5,13 +5,12 @@ let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
     party = party.filter(uuid => uuid != Player.getUUID());
-    print(party.join(",").repplaceAll("-", ""));
     request({
-        url: api + "/partyInfoByUuids?uuids=" + party.join(",").repplaceAll("-", ""),
+        url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
-    }).then(response => {
-        printPartyInfo(response.PartyInfo);
-    }).catch(error => {
+    }).then((response)=> {
+        printPartyInfo(response.PartyInfo)
+    }).catch((error)=> {
         console.error(JSON.stringify(error));
     });
 }
@@ -31,14 +30,12 @@ register("command", () => {
         ChatLib.chat("&6[SBO] &eChecking party members...");
         sendPartyRequest();
         let interval = setInterval(() => {
-            print("checking party");
             if (getPartyBool()) {
                 let party = getPartyMembersUuids();
                 if (party.length == 0) {
                     ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
                     return;
                 }
-                print("party members: " + party.join(",").repplaceAll("-", ""));
                 getPartyInfo(party);
                 clearInterval(interval);
             }
