@@ -60,7 +60,7 @@ class Settings {
         // this.addDependency('Blaze View','Blaze Tracker');
         this.addDependency('Max Displayed Items','Attribute Value Overlay')
         this.addDependency('Select Displayed Lines','Attribute Value Overlay');
-        this.addDependency('Bazaar Setting','Attribute Value Overlay');
+        this.addDependency('Bazaar Setting Kuudra','Attribute Value Overlay');
         this.addDependency('Key Price','Attribute Value Overlay');
         this.addDependency('Kuudra Pet Rarity','Attribute Value Overlay');
         this.addDependency('Kuudra Pet Level','Attribute Value Overlay');
@@ -154,7 +154,7 @@ class Settings {
        ChatLib.command("sboresetsession", true);
     }
     @SelectorProperty({
-        name: "Bazaar Setting",
+        name: "Bazaar Setting Diana",
         description: "Bazaar setting to set the price for loot",
         category: "Diana",
         subcategory: "Diana Tracker",
@@ -486,7 +486,7 @@ class Settings {
     })
     lineSetting = 0;
     @SelectorProperty({
-        name: 'Bazaar Setting',
+        name: 'Bazaar Setting Kuudra',
         description: 'Bazaar setting for instasell/sell offer',
         category: 'Kuudra',
         options: ['Instasell','Sell Offer'],
