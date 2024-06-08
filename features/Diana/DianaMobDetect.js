@@ -14,7 +14,9 @@ registerWhen(register("chat", (woah) => {
             ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
         }
         if(settings.announceKill !== ""){
-            ChatLib.command("pc " + settings.announceKill);
+            setTimeout(function() 
+                {ChatLib.command("pc " + settings.announceKill);
+            }, 5000);
         }
     }
 }).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => settings.inquisDetect || settings.announceKill);
