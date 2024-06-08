@@ -52,14 +52,14 @@ registerWhen(register('step', () => {
     if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && checkDiana()) {
         pickuplog();
     }
-}).setFps(10), () => settings.dianaLootTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
+}).setFps(10), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
 // const S30PacketWindowItems = net.minecraft.network.play.server.S30PacketWindowItems;
 // registerWhen(register("packetReceived", (packet) => {
 //     print("packet received");
 //     if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && checkDiana()) {
 //         pickuplog();
 //     }
-// }).setFilteredClass(S30PacketWindowItems), () => settings.dianaLootTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
+// }).setFilteredClass(S30PacketWindowItems), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
 
 
 

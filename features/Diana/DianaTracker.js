@@ -54,7 +54,7 @@ export function dianaLootCounter(item, amount) {
                         if (item != "MINOS_RELIC") {
                             playCustomSound(settings.sprSound, settings.sprVolume);
                         }
-                        if (settings.dianaLootTracker) {
+                        if (settings.dianaTracker) {
                             trackItem(item, "items", amount);
                         }
                     }
@@ -186,14 +186,14 @@ registerWhen(register("chat", (burrow, event) => {
         trackItem("Total Burrows", "items", 1);
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => getWorld() === "Hub" && settings.dianaTracker);
 
 registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => getWorld() === "Hub" && settings.dianaTracker);
 
 register("chat", (event) => {
     if (settings.cleanDianaChat) cancel(event);
@@ -233,7 +233,7 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaMobTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
 
 
 // track items from chat //
@@ -248,14 +248,14 @@ registerWhen(register("chat", (drop) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r&eYou dug out a &r${drop}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}).setCriteria("&r&6&lRARE DROP! &r&eYou dug out a &r${drop}&r&e!&r"), () => getWorld() === "Hub" && settings.dianaTracker);
 
 registerWhen(register("chat", (coins) => {
     if (isDataLoaded() && isInSkyblock()) {
         let coins2 = parseInt(coins.replace(",", ""))
         trackItem("coins", "items", coins2);
     }
-}).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaTracker);
 
 registerWhen(register("chat", (drop) => {
     if (isDataLoaded() && checkDiana() && isInSkyblock()) {
@@ -292,7 +292,7 @@ registerWhen(register("chat", (drop) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaLootTracker || (settings.dianaStatsTracker || settings.sendSinceMassage));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage));
 
 // refresh overlay //
 let tempSettingLoot = -1;
@@ -302,13 +302,13 @@ registerWhen(register("step", () => {
     tempSettingBazzar = settings.bazaarSettingDiana
     refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
 
-}).setFps(1), () => settings.dianaLootTracker && (tempSettingLoot !== settings.dianaLootTrackerView || tempSettingBazzar !== settings.bazaarSettingDiana));
+}).setFps(1), () => settings.dianaTracker && (tempSettingLoot !== settings.dianaLootTrackerView || tempSettingBazzar !== settings.bazaarSettingDiana));
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
     refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
-}).setFps(1), () => settings.dianaMobTracker && tempSettingMob !== settings.dianaMobTrackerView);
+}).setFps(1), () => settings.dianaTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
 let firstLoad = false;
 let tempGuiBool = false;

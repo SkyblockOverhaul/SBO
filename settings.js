@@ -47,8 +47,8 @@ class Settings {
     constructor() {
         this.initialize(this);
         // this.addDependency("Checkbox", "Do action!!!")
-        this.addDependency("Mob View", "Diana Mob Tracker");
-        this.addDependency("Loot View", "Diana Loot Tracker");
+        this.addDependency("Mob View", "Diana Tracker");
+        this.addDependency("Loot View", "Diana Tracker");
         this.addDependency('Warp Party','Party Commands');
         this.addDependency('Allinvite','Party Commands');
         this.addDependency('Party Transfer','Party Commands');
@@ -99,13 +99,21 @@ class Settings {
     warpDiff = "10";
 
     // --- Diana Tracker ---
+    // @SwitchProperty({
+    //     name: "Diana Mob Tracker",
+    //     description: "Tracks your diana mob kills",
+    //     category: "Diana",
+    //     subcategory: "Diana Tracker",
+    // })
+    // dianaMobTracker = false;
+
     @SwitchProperty({
-        name: "Diana Mob Tracker",
-        description: "Tracks your diana mob kills",
+        name: "Diana Tracker",
+        description: "Tracks your diana loot and mob kills (you need to have Settings -> Personal -> Chat -> Sacks Notifications enabled for Gold and Iron to work)",
         category: "Diana",
         subcategory: "Diana Tracker",
     })
-    dianaMobTracker = false;
+    dianaTracker = false;
     @SelectorProperty({
         name: "Mob View",
         description: "Shows your diana mob kills /sboguis to move the counter",
@@ -114,13 +122,6 @@ class Settings {
         options: ["OFF", "Total", "Event", "Session"]
     })
     dianaMobTrackerView = 0;
-    @SwitchProperty({
-        name: "Diana Loot Tracker",
-        description: "Tracks your diana loot (you need to have Settings -> Personal -> Chat -> Sacks Notifications enabled for Gold and Iron to work)",
-        category: "Diana",
-        subcategory: "Diana Tracker",
-    })
-    dianaLootTracker = false;
     @SelectorProperty({
         name: "Loot View",
         description: "Shows your diana loot /sboguis to move the counter",
@@ -337,20 +338,20 @@ class Settings {
 
 
     // Slayer
-    // @SwitchProperty({
-    //     name: 'Effects For Blaze',
-    //     description: 'Displays effects for blaze slayer. /sboguis to move the overlay',
-    //     category: 'Slayer',
-    //     subcategory: 'Blaze',
-    // })
-    // effectsGui = false;
-    // @TextProperty({
-    //     name: "Parrot Level",
-    //     description: "Enter parrot level for effect duration (0 = off/no parrot)",
-    //     category: "Slayer",
-    //     subcategory: 'Blaze',
-    // })
-    // parrotLevel = "0";
+    @SwitchProperty({
+        name: 'Effects For Blaze',
+        description: 'Displays effects for blaze slayer. /sboguis to move the overlay',
+        category: 'Quality of Life',
+        subcategory: 'Blaze',
+    })
+    effectsGui = false;
+    @TextProperty({
+        name: "Parrot Level",
+        description: "Enter parrot level for effect duration (0 = off/no parrot)",
+        category: "Quality of Life",
+        subcategory: 'Blaze',
+    })
+    parrotLevel = "0";
     // @SwitchProperty({
     //     name: 'Slayer Drop Detect',
     //     description: 'Detect slayer drops',

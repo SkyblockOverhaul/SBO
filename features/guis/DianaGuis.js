@@ -8,10 +8,10 @@ import { checkDiana } from "../../utils/checkDiana";
 
 
 
-let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaMobTracker", "dianaMobTrackerExample", "render", "MobLoc");
+let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaTracker", "dianaMobTrackerExample", "render", "MobLoc");
 let dianaMobOverlay = dianaMobOverlayObj.overlay;
 
-let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaLootTracker", "dianaLootTrackerExample", "render", "LootLoc");
+let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
 
 let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
@@ -88,7 +88,7 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
     }
     let message = "";
     if (lootViewSetting > 0) {
-        message = getLootMessage(lootTracker, lootViewSetting, settings.dianaMobTracker, percentDict);
+        message = getLootMessage(lootTracker, lootViewSetting, settings.dianaTracker, percentDict);
     }
     dianaLootTrackerText.setText(message);
     dianaLootTrackerText.setTextScale((dianaLootOverlayObj.scale).pixels());
@@ -215,4 +215,4 @@ registerWhen(register("step", () => {
         dianaLootOverlayObj.renderGui = false;
         dianaStatsOverlayObj.renderGui = false;
     }
-}).setFps(1), () => settings.dianaMobTracker || settings.dianaLootTracker || settings.dianaStatsTracker);
+}).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker);

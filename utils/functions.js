@@ -144,7 +144,7 @@ registerWhen(register("guiOpened", () => {
             }
         }
     }, 300);
-}), () => settings.dianaLootTracker);
+}), () => settings.dianaTracker);
 
 registerWhen(register("entityDeath", (entity) => {
     let dist = entity.distanceTo(Player.getPlayer());
@@ -155,7 +155,7 @@ registerWhen(register("entityDeath", (entity) => {
             state.entityDeathOccurred = false;
         }, 2000);
     }
-}), () => getWorld() === "Hub" && settings.dianaLootTracker);
+}), () => getWorld() === "Hub" && settings.dianaTracker);
 
 export function getDateString(date) {
     return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
@@ -580,7 +580,7 @@ registerWhen(register("step", () => {
             updateing = false;
         }, 300000);
     }
-}).setFps(1), () => settings.attributeValueOverlay || settings.dianaLootTracker);
+}).setFps(1), () => settings.attributeValueOverlay || settings.dianaTracker);
 
 
 function updateItemValues() {
