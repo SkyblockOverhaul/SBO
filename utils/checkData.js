@@ -39,8 +39,6 @@ function checkAllCriteria() {
     let check6 = getMayor() !== undefined;
     if (settings.attributeValueOverlay) {
         check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
-        print("checkdata bazaarItems: " + getBazaarItems() + " kuudraItems: " + getKuudraItems());
-
     }
     let check8 = (trackerTotal !== undefined && trackerMayor !== undefined && trackerSession !== undefined);
     if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8) {
