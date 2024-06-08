@@ -337,20 +337,20 @@ class Settings {
 
 
     // Slayer
-    @SwitchProperty({
-        name: 'Effects For Blaze',
-        description: 'Displays effects for blaze slayer. /sboguis to move the overlay',
-        category: 'Slayer',
-        subcategory: 'Blaze',
-    })
-    effectsGui = false;
-    @TextProperty({
-        name: "Parrot Level",
-        description: "Enter parrot level for effect duration (0 = off/no parrot)",
-        category: "Slayer",
-        subcategory: 'Blaze',
-    })
-    parrotLevel = "0";
+    // @SwitchProperty({
+    //     name: 'Effects For Blaze',
+    //     description: 'Displays effects for blaze slayer. /sboguis to move the overlay',
+    //     category: 'Slayer',
+    //     subcategory: 'Blaze',
+    // })
+    // effectsGui = false;
+    // @TextProperty({
+    //     name: "Parrot Level",
+    //     description: "Enter parrot level for effect duration (0 = off/no parrot)",
+    //     category: "Slayer",
+    //     subcategory: 'Blaze',
+    // })
+    // parrotLevel = "0";
     // @SwitchProperty({
     //     name: 'Slayer Drop Detect',
     //     description: 'Detect slayer drops',

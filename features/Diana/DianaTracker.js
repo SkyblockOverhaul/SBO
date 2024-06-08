@@ -31,7 +31,7 @@ export function dianaLootCounter(item, amount) {
                 for (let i in rareDrops.values()) {
                     color = i.slice(0, 2);
                     if (item == "MINOS_RELIC") {
-                        if(settings.sendSinceMassage) {
+                        if(settings.sendSinceMassage && data.champsSinceRelic > 0) {
                             new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
                         }
                         data.champsSinceRelic = 0;
