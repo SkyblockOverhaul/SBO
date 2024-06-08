@@ -5,21 +5,15 @@ let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
     party = party.filter(uuid => uuid != Player.getUUID());
-    let sequence = Promise.resolve();
-
-    party.forEach(member => {
-        sequence = sequence.then(() => {
-            return request({
-                url: api + "/partyInfoByUuids?uuids=" + member.replaceAll("-", ""),
-                json: true
-            }).then(response => {
-                printPartyInfo(response.PartyInfo);
-            }).catch(error => {
-                console.error(JSON.stringify(error));
-            });
-        });
+    print(party.join(",").repplaceAll("-", ""));
+    request({
+        url: api + "/partyInfoByUuids?uuids=" + party.join(",").repplaceAll("-", ""),
+        json: true
+    }).then(response => {
+        printPartyInfo(response.PartyInfo);
+    }).catch(error => {
+        console.error(JSON.stringify(error));
     });
-    
 }
 
 // message to check party when joining a party
@@ -37,16 +31,18 @@ register("command", () => {
         ChatLib.chat("&6[SBO] &eChecking party members...");
         sendPartyRequest();
         let interval = setInterval(() => {
+            print("checking party");
             if (getPartyBool()) {
                 let party = getPartyMembersUuids();
                 if (party.length == 0) {
                     ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
                     return;
                 }
+                print("party members: " + party.join(",").repplaceAll("-", ""));
                 getPartyInfo(party);
                 clearInterval(interval);
             }
-        }, 100, 5000);
+        }, 100, 50000);
     }
     else {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
