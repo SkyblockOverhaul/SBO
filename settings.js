@@ -114,7 +114,7 @@ class Settings {
         category: "Diana",
         subcategory: "Diana Tracker",
     })
-    dianaTracker = false;
+    dianaTracker = true;
     @SelectorProperty({
         name: "Mob View",
         description: "Shows your diana mob kills /sboguis to move the counter",
