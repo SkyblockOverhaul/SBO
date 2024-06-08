@@ -248,7 +248,7 @@ class Settings {
     inquisDetect = false;
     @TextProperty({
         name: "Send Text On Inq Spawn",
-        description: "Send a text on inq spawn",
+        description: "Sends a text on inq spawn 5 seconds after spawn",
         category: "Diana",
         subcategory: "Other",
     })
