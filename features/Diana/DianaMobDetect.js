@@ -32,12 +32,16 @@ registerWhen(register("step", () => {
                 if ((name.includes("Exalted") || name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0")) {
                     Mobs.push(mob);
                 }
+                
+            }
+            if (inqs.filter((e) => e.getUUID() === mob.getUUID()).length === 0) {
                 if (name.includes("Inquisitor")) {
                     inqs.push(mob);
                 }
             }
         });
         Mobs = Mobs.filter((e) => !e.getEntity()["field_70128_L"]);
+        inqs = inqs.filter((e) => !e.getEntity()["field_70128_L"]);
     }
 }).setFps(1), () => settings.mythosMobHp || settings.inqHighlight && getWorld() === "Hub");
 
