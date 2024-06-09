@@ -28,18 +28,18 @@ export function dianaLootCounter(item, amount) {
                 }
             }
             if (checkBool) {
+                if (item == "MINOS_RELIC") {
+                    if(settings.sendSinceMassage) {
+                        new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
+                    }
+                    data.champsSinceRelic = 0;
+                    if (settings.lootAnnouncerScreen) {
+                        Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+                    }
+                    playCustomSound(settings.relicSound, settings.relicVolume);
+                }
                 for (let i in rareDrops.values()) {
                     color = i.slice(0, 2);
-                    if (item == "MINOS_RELIC") {
-                        if(settings.sendSinceMassage && data.champsSinceRelic > 0) {
-                            new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
-                        }
-                        data.champsSinceRelic = 0;
-                        if (settings.lootAnnouncerScreen) {
-                            Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
-                        }
-                        playCustomSound(settings.relicSound, settings.relicVolume);
-                    }
                     if (item === i.slice(2)) {
                         tempString = item.replace("_", " ").replace("_", " ").toLowerCase();
                         tempString = toTitleCase(tempString);
