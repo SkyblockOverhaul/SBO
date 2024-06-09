@@ -31,9 +31,9 @@ let dataLoaded = false;
 function checkAllCriteria() {
     checkDataLoaded();
     let check7 = true;
-    let check1 = FileLib.exists("SBOTracker", trackerFileLocation  + "Total.json");
-    let check2 = FileLib.exists("SBOTracker", trackerFileLocation  + "Mayor.json");
-    let check3 = FileLib.exists("SBOTracker", trackerFileLocation  + "Session.json");
+    let check1 = FileLib.exists("../SBOTracker", trackerFileLocation  + "Total.json");
+    let check2 = FileLib.exists("../SBOTracker", trackerFileLocation  + "Mayor.json");
+    let check3 = FileLib.exists("../SBOTracker", trackerFileLocation  + "Session.json");
     let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;

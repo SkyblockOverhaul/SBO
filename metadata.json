@@ -12,7 +12,6 @@
     "RenderLibV2",
     "axios",
     "Elementa",
-    "HypixelModAPI",
-    "SBOTracker"
+    "HypixelModAPI"
   ]
 }

@@ -91,17 +91,7 @@ export let data = new PogObject("SBO", {
     "trackerMigration": false,
 }, "SboData.json");
 
-let trackerMetadata = new PogObject("SBOTracker", {
-    "name": "SBOTracker",
-    "creator": "RolexDE, D4rkswift",
-    "description": "Dont delete this module, if you dont want to lose your tracker data!",
-    "version": "1.0.0",
-    "entry": "",
-    "requires": [],
-}, "metadata.json");
-trackerMetadata.save();
-
-export let pastDianaEvents = new PogObject("SBOTracker", {
+export let pastDianaEvents = new PogObject("../SBOTracker", {
     "events": []
 }, "pastDianaEvents.json");
 
@@ -161,7 +151,7 @@ if (!data.trackerMigration) {
     }
 }
 
-export let dianaTrackerTotal = new PogObject("SBOTracker", {
+export let dianaTrackerTotal = new PogObject("../SBOTracker", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -191,7 +181,7 @@ export let dianaTrackerTotal = new PogObject("SBOTracker", {
     }
 }, "dianaTrackerTotal.json");
 
-export let dianaTrackerSession = new PogObject("SBOTracker", {
+export let dianaTrackerSession = new PogObject("../SBOTracker", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -221,7 +211,7 @@ export let dianaTrackerSession = new PogObject("SBOTracker", {
     }
 }, "dianaTrackerSession.json");
 
-export let dianaTrackerMayor = new PogObject("SBOTracker", {
+export let dianaTrackerMayor = new PogObject("../SBOTracker", {
     year: 0,
     items: {
         "coins": 0,
@@ -284,6 +274,7 @@ data.save();
 dianaTrackerTotal.save();
 dianaTrackerSession.save();
 dianaTrackerMayor.save();
+pastDianaEvents.save();
 
 // --- TRIGGER CONTROL ---
 
@@ -336,4 +327,5 @@ register("gameUnload", () => {
     dianaTrackerTotal.save();
     dianaTrackerSession.save();
     dianaTrackerMayor.save();
+    pastDianaEvents.save();
 });
