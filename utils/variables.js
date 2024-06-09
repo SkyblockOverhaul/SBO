@@ -77,6 +77,12 @@ export function initializeTrackerMayor() {
 
 // --- PERSISTENT DATA ---
 
+// check if ../SBOTracker exists and create if not
+if (!FileLib.exists("../SBOTracker")) {
+    FileLib.mkdir("../SBOTracker");
+}
+
+
 // Initializing a persistent data object using the PogObject class
 export const resetVersion = "0.1.3"; // change this to the new version for config.toml reset
 export let data = new PogObject("SBO", {
