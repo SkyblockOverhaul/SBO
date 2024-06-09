@@ -6,6 +6,7 @@ import { isInSkyblock, isWorldLoaded, playCustomSound, toTitleCase, trace } from
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
 import { Color } from '../../../Vigilance';
+import { inqHighlightRegister } from "../Diana/DianaInqHighlight";
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -316,8 +317,9 @@ register("chat" , (player) => {
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 
 // check waypoint
+let highlighInquis = false;
 register("step", () => {
-    if (inqWaypoints.length > 0 && settings.inqHighlight){ 
+    if (highlighInquis && settings.inqHighlight){ 
         inqHighlightRegister.register(); 
     }
     else { 
@@ -329,7 +331,6 @@ register("step", () => {
         // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
     }
 }).setFps(1);
-
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if (isWorldLoaded()) {
         if (checkDiana() && settings.allWaypointsAreInqs) {
@@ -348,6 +349,12 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
             player = player.replaceAll('&', '§');
 
         if (isInq) {
+            if(settings.inqHighlight && checkDiana()) {
+                highlighInquis = true;
+                setTimeout(() => {
+                    highlighInquis = false;
+                }, 60000);
+            }
             if(settings.inqWaypoints && checkDiana()) {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
                 playCustomSound(settings.inqSound, settings.inqVolume);
@@ -465,28 +472,6 @@ function renderBurrowLines(){
         }
     }
 }
-
-const inqHighlightRegister = register("renderWorld", () => {
-    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((mob) => {
-        let name = mob.getName();
-        if (name.includes("Inquisitor")) {
-            red = settings.inqColor.getRed() / 255;
-            green = settings.inqColor.getGreen() / 255;
-            blue = settings.inqColor.getBlue() / 255;
-            alpha = settings.inqColor.getAlpha() / 255;
-            RenderLibV2.drawEspBoxV2(mob.x, mob.y - 2.05, mob.z, 1, 2, 1, red, green, blue, alpha, false)   
-        }
-        // for testing purposes
-        // if (name.includes("Zombie")) {
-        //     red = settings.inqColor.getRed() / 255;
-        //     green = settings.inqColor.getGreen() / 255;
-        //     blue = settings.inqColor.getBlue() / 255;
-        //     alpha = settings.inqColor.getAlpha() / 255;
-        //     RenderLibV2.drawEspBoxV2(mob.x, mob.y - 2.05, mob.z, 1, 2, 1, red, green, blue, alpha, false)   
-        // }
-    });
-});
-
 
 function guessDistance(x,y,z){
     return Math.sqrt(
