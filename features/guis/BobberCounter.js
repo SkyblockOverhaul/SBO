@@ -21,4 +21,5 @@ registerWhen(register('step', () => {
         bobberOverlay.addChild(bobberText);
     }
     bobberText.setText(`${YELLOW}${BOLD}Bobber: ${AQUA}${BOLD}${bobberCount}`);
+    bobberText.setTextScale((bobberOverlayObj.scale).pixels());
 }).setFps(1), () => settings.bobberCounter);

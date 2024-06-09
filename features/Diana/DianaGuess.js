@@ -139,7 +139,6 @@ function solveEquasionThing(x, y) {
     return [a, b, c];
   }
 
-let count = 0;
 function onReceiveParticle(particle, type, event) {
     if (!isEnabled()) return;
     const type = particle.toString();
@@ -147,11 +146,6 @@ function onReceiveParticle(particle, type, event) {
     const currLoc = new SboVec(particle.getX(), particle.getY(), particle.getZ());
 
     let run = false;
-
-    // test if this makes it better
-    // count++;
-    // if (count < 1) return;
-    // count = 0;
     if (lastSoundPoint != null) {
         run = (Math.abs(currLoc.getX() - lastSoundPoint.x) < 2 && Math.abs(currLoc.getY() - lastSoundPoint.y) < 0.5 && Math.abs(currLoc.getZ() - lastSoundPoint.z) < 2);
     }
@@ -225,7 +219,12 @@ function onReceiveParticle(particle, type, event) {
                     }
                     
                     gY = 131;
-                    while (World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ()).getType().getID() !== 2 && gY > 70) {
+                    while (gY > 70) {
+                        let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());
+                        let blockType = block.getType().getID();
+                        if (blockType === 2 || blockType === 3) {
+                            break;
+                        }
                         gY--;
                     }
                     
@@ -233,7 +232,7 @@ function onReceiveParticle(particle, type, event) {
 
                     // check if finallocation has nan values
                     if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {
-                        print("partical: Soopy finalLocation has nan values");
+                        print("partical: SBO finalLocation has nan values");
                     }
                     else {
                         
@@ -311,10 +310,6 @@ class SboVec {
         return this.x === other.x && this.y === other.y && this.z === other.z;
     }
 
-    round(decimals) {
-        return new SboVec(Math.round(this.x * decimals) / decimals, Math.round(this.y * decimals) / decimals, Math.round(this.z * decimals) / decimals);
-    }
-
     getX() {
         return this.x;
     }
@@ -351,4 +346,24 @@ registerWhen(register("step", () => {
     if (!checkDiana()) {
         onWorldChange();
     }
+    else {
+        GetNewY();
+    }
 }).setFps(1), () => settings.dianaBurrowGuess);
+
+
+function GetNewY(){
+    if(!finalLocation) return;
+    if(World.getWorld().func_175668_a(new (Java.type('net.minecraft.util.BlockPos'))(finalLocation.x, finalLocation.y, finalLocation.z), false)){
+        gY = 131;
+        while (gY > 70) {
+            let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());
+            let blockType = block.getType().getID();
+            if (blockType === 2 || blockType === 3) {
+                break;
+            }
+            gY--;
+        }
+        finalLocation.y = gY + 3;
+    }
+}

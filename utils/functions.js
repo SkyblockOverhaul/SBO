@@ -1,19 +1,36 @@
 import settings from "../settings";
 import { registerWhen } from "./variables";
+import { HypixelModAPI } from "./../../HypixelModAPI";
+import { getWorld } from "./world";
+import { request } from "../../requestV2";
 
 // geklaut von coleweight for drawline
 if(!GlStateManager) {
     let GL11=Java.type("org.lwjgl.opengl.GL11")
     let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
 }
-export function trace (x, y, z, red, green, blue, alpha, lineWidth = 1){
+export function trace (x, y, z, red, green, blue, alpha, type, lineWidth){
+    if (type === "calc")
+    {
+        if (x >= 0) {
+            x = parseFloat(x) + 0.5;
+        } else {
+            x = parseFloat(x) - 0.5;
+        }
+        if (z >= 0)
+        {
+            z = parseFloat(z) + 0.5;
+        } else {
+            z = parseFloat(z) - 0.5;
+        }
+    }
     if(Player.isSneaking())
-        drawLine(Player.getRenderX(), Player.getRenderY() + 1.54, Player.getRenderZ(), x, y + 1, z, red, green, blue, alpha, lineWidth)
+        drawLine(Player.getRenderX(), Player.getRenderY() + 1.54, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
     else
-        drawLine(Player.getRenderX(), Player.getRenderY() + 1.62, Player.getRenderZ(), x, y + 1, z, red, green, blue, alpha, lineWidth)
+        drawLine(Player.getRenderX(), Player.getRenderY() + 1.62, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
 }
 
-function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth = 1)
+function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth)
 {
     GL11.glBlendFunc(770,771)
     GL11.glEnable(GL11.GL_BLEND)
@@ -77,6 +94,16 @@ export function mobAnnouncement(chat,mob,x,y,z){
     ChatLib.command(`pc x: ${x} y: ${y} z: ${z} | ${mob} found at ${area}!`);
 }
 
+let partyMembersUuids = [];
+export function getPartyMembersUuids() {
+    return partyMembersUuids;
+}
+
+let partyBool = false;
+export function getPartyBool() {
+    return partyBool;
+}
+
 export function getSBID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("id") || null;
 }
@@ -85,7 +112,8 @@ export function getSBUUID(item) {
 }
 
 export function checkIfInSkyblock() {
-    return Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK");
+    inSkyblockBool = (settings.alwaysInSkyblock || Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK"));
+    return inSkyblockBool;
 }
 
 // returns if in skyblock //
@@ -94,7 +122,7 @@ export function isInSkyblock() {
     return inSkyblock;
 }
 
-export let state = {
+let state = {
     entityDeathOccurred: false
 }
 
@@ -102,6 +130,32 @@ export let state = {
 export function isActiveForOneSecond() {
     return state.entityDeathOccurred;
 }
+
+let allowedToTrackSacks = false;
+export function getAllowedToTrackSacks() {
+    return allowedToTrackSacks;
+}
+
+registerWhen(register("guiOpened", () => {
+    setTimeout(() => {
+        if (Player.getContainer() != undefined) {
+            if (Player.getContainer().getName() == "Sack of Sacks") {
+                allowedToTrackSacks = false;
+            }
+        }
+    }, 300);
+}), () => settings.dianaTracker);
+
+registerWhen(register("entityDeath", (entity) => {
+    let dist = entity.distanceTo(Player.getPlayer());
+    if (dist < 30 ) {
+        allowedToTrackSacks = true;
+        state.entityDeathOccurred = true;
+        setTimeout(() => {
+            state.entityDeathOccurred = false;
+        }, 2000);
+    }
+}), () => getWorld() === "Hub" && settings.dianaTracker);
 
 export function getDateString(date) {
     return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
@@ -162,40 +216,11 @@ export function playerHasSpade() {
 }
 
 let spadeBool = false;
-registerWhen(register("step", () => {
+register("step", () => {
     spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
-}).setFps(1), () => settings.dianaLootTracker || settings.dianaMobTracker);
+}).setFps(1)
 
-// initialize tracker //
-export function initializeTracker() {
-    tempTracker = {
-        items: {
-            "coins": 0,
-            "Griffin Feather": 0,
-            "Crown of Greed": 0,
-            "Washed-up Souvenir": 0,
-            "Chimera": 0,
-            "Daedalus Stick": 0,
-            "DWARF_TURTLE_SHELMET": 0,
-            "CROCHET_TIGER_PLUSHIE": 0,
-            "ANTIQUE_REMEDIES": 0,
-            "ENCHANTED_ANCIENT_CLAW": 0,
-            "ANCIENT_CLAW": 0,
-            "MINOS_RELIC": 0,
-            "Total Burrows": 0
-        },
-        mobs: {
-            "Minos Inquisitor": 0,
-            "Minos Champion": 0,
-            "Minotaur": 0,
-            "Gaia Construct": 0,
-            "Siamese Lynxes": 0,
-            "Minos Hunter": 0,
-            "TotalMobs": 0
-        }
-    };
-    return tempTracker;
-}
+
 
 // return 1sec long true if player got loot share //
 export function gotLootShare() {
@@ -212,7 +237,6 @@ register("chat" , (player) => {
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 
-
 // check if in skyblock //
 register("step", () => {
     inSkyblock = checkIfInSkyblock();
@@ -222,13 +246,13 @@ register("step", () => {
 export function initializeGuiSettings() {
     let tempDict = {
         MobLoc: {
-            "x": 10,
-            "y": 50,
+            "x": 15,
+            "y": 22,
             "s": 1
         },
         LootLoc: {
-            "x": 10,
-            "y": 150,
+            "x": 15,
+            "y": 112,
             "s": 1
         },
         BobberLoc: {
@@ -264,6 +288,11 @@ export function initializeGuiSettings() {
         LegionLoc: {
             "x": 10,
             "y": 310,
+            "s": 1
+        },
+        StatsLoc: {
+            "x": 15,
+            "y": 290,
             "s": 1
         }
     };
@@ -313,6 +342,9 @@ function checkSettings(loadedSettings) {
     if (!loadedSettings.hasOwnProperty("LegionLoc")) {
         loadedSettings["LegionLoc"] = defaultSettings["LegionLoc"];
     }
+    if (!loadedSettings.hasOwnProperty("StatsLoc")) {
+        loadedSettings["StatsLoc"] = defaultSettings["StatsLoc"];
+    }
     return loadedSettings;
 }
 
@@ -357,6 +389,12 @@ export function drawOutlinedString(text,x1,y1,scale,z) {
     Renderer.drawString(text, x, y)
 }
 
+let printBool = false;
+export function printDev(msg) {
+    if(!printBool) return;
+    return print("[DEV]: " + msg);
+}
+
 export function getplayername(player) {
     let num
     let name
@@ -385,3 +423,232 @@ register("worldLoad", () => {
     worldLoaded = true;
 });
 
+register("command", () => {
+    printBool = !printBool;
+}).setName("sbodev")
+
+
+// party detection
+// partyleader
+// register("chat", (party) => {
+//     partyMembers = [];
+//     party = party.removeFormatting().replaceAll("'s", "");
+//     // ChatLib.chat("party: " + party);
+//     party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
+//     partyMembers.push(party)
+// }).setCriteria("&eYou have joined ${party} &r&eparty!&r");
+
+// // rest of party
+// register("chat", (party) => {
+//     party = party.removeFormatting()
+//     // ChatLib.chat("party: " + party);
+//     party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
+//     // string to list names are separated by commas and extent partyMembers list with new names
+//     partyMembers = partyMembers.concat(party.split(","))
+// }).setCriteria("&eYou'll be partying with: ${party}");
+
+// // player joined party
+// register("chat", (player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers.push(player)
+// }).setCriteria("${player} &r&ejoined the party.&r");
+
+// // player left party
+// register("chat", (player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers = partyMembers.filter(e => e !== player)
+// }).setCriteria("${player} &r&ehas left the party.&r");
+
+// // &b[MVP&r&3+&r&b] hiddeeee &r&ehas been removed from the party.&r
+// register("chat", (player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers = partyMembers.filter(e => e !== player)
+// }).setCriteria("${player} &r&ehas been removed from the party.&r");
+
+// // &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
+// // player left party version 2
+// register("chat", (leader, player) => {
+//     player = player.removeFormatting()
+//     player = getplayername(player)
+//     partyMembers = partyMembers.filter(e => e !== player)
+// }).setCriteria("&eThe party was transferred to ${leader} &r&ebecause ${player} &r&eleft");
+
+// // you left party
+// register("chat", () => {
+//     partyMembers = [];
+// }).setCriteria("&eYou left the party.&r");
+
+// // get party members from party list
+// register("chat", (type, player) => {
+//     player = player.removeFormatting()
+//     if (player.split("●").length > 0) {
+//         player = player.split("●")
+//         for (let i = 0; i < player.length; i++) {
+//             player[i] = getplayername(player[i])
+//             partyMembers.push(player[i]) 
+//         }
+//     }
+//     else {
+//         player = getplayername(player)
+//         partyMembers.push(player)
+//     }
+// }).setCriteria("&eParty ${type}: ${player}");
+
+// register("chat", (count) => {
+//     partyMembers = [];
+// }).setCriteria("&r&aParty members ${count}");
+
+export function playCustomSound(sound, volume) {
+    if (sound != "") {
+        if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
+        if (FileLib.exists(Config.modulesFolder.replace("modules", "images") + `/${sound}.ogg`)) {
+            new Sound({ source: new java.lang.String(sound + ".ogg") }).setVolume(volume/100).play()
+        }
+        else {
+            ChatLib.chat(`&6[SBO] &cSound file not found! (if the filename is correct, make sure to reload ct by "/ct load")`);
+        }
+    }
+}
+
+// add time to life of 5 sek
+export function setInterval(func, delay, ttl) {
+    let startTime = java.lang.System.currentTimeMillis();
+    let thread = new java.lang.Thread(new java.lang.Runnable({
+        run: function() {
+            while (true) {
+                if (java.lang.System.currentTimeMillis() - startTime > ttl) {
+                    thread.stop();
+                    break;
+                }
+                func();
+                java.lang.Thread.sleep(delay);
+            }
+        }
+    }));
+    thread.start();
+    return thread;
+}
+
+export function clearInterval(thread) {
+    thread.stop();
+}
+
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    Object.keys(partyInfo).forEach(key => {
+        partyMembersUuids.push(key);
+    })
+    partyBool = true;
+})
+
+export function sendPartyRequest() {
+    partyMembersUuids = [];
+    partyBool = false;
+    HypixelModAPI.requestPartyInfo();
+}
+
+let lastUpdate = 0;
+let updateing = false;
+let kuudraItems = undefined;
+let dianaItems = undefined;
+let bazaarItems = undefined;
+
+export function getKuudraItems() {
+    return kuudraItems;
+}
+
+export function getDianaItems() {
+    return dianaItems;
+}
+
+export function getBazaarItems() {
+    return bazaarItems;
+}
+
+
+registerWhen(register("step", () => {
+    // update every 5 minutes
+    if (updateing) return;
+    if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
+        // print("updating kuudra items with api");
+        updateing = true;
+        lastUpdate = Date.now();
+        updateItemValues()
+        setTimeout(() => {
+            updateing = false;
+        }, 300000);
+    }
+}).setFps(1), () => settings.attributeValueOverlay || settings.dianaTracker);
+
+
+function updateItemValues() {
+    request({
+        url: "https://api.skyblockoverhaul.com/ahItems",
+        json: true
+    }).then((response)=>{
+        kuudraItems = response[0];
+        dianaItems = response[1];
+    }).catch((error)=>{
+        console.error(error);
+    });
+
+    request({
+        url: "https://api.hypixel.net/skyblock/bazaar?product",
+        json: true
+    }).then((response)=>{
+        bazaarItems = response;
+    }).catch((error)=>{
+        console.error(error);
+    });
+}
+
+export function getBazaarPriceKuudra(itemId) {
+    if (bazaarItems == undefined) return 0;
+    if (bazaarItems.success == false) return 0;
+    let product = bazaarItems.products[itemId];
+    if (product == undefined) return 0;
+    if (settings.bazaarSetting == 0) {
+        return product.quick_status.sellPrice;
+    }
+    else {
+        return product.quick_status.buyPrice;
+    }
+}
+
+export function getBazaarPriceDiana(itemId) {
+    if (bazaarItems == undefined) return 0;
+    if (bazaarItems.success == false) return 0;
+    let product = bazaarItems.products[itemId];
+    if (product == undefined) return 0;
+    if (settings.bazaarSettingDiana == 0) {
+        return product.quick_status.sellPrice;
+    }
+    else {
+        return product.quick_status.buyPrice;
+    }
+}
+
+export function getDianaAhPrice(itemId) {
+    if (dianaItems == undefined) return 0;
+    if (dianaItems[itemId] == undefined) return 0;
+    if (itemId == "CROWN_OF_GREED") {
+        if (dianaItems[itemId].price < 1000000) return 1000000;
+        return dianaItems[itemId].price;
+    }
+    return dianaItems[itemId].price;
+}
+
+export function formatNumber(number) {
+    if (number >= 1000000000) {
+        return (number / 1000000000).toFixed(2) + "b";
+    }
+    else if (number >= 1000000) {
+        return (number / 1000000).toFixed(1) + "m";  
+    }
+    else if (number >= 1000) {
+        return (number / 1000).toFixed(1) + "k";
+    }
+    return number;
+}

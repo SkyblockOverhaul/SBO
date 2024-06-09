@@ -1,8 +1,8 @@
 {
   "name": "SBO",
   "creator": "RolexDE, D4rkswift",
-  "description": "SBO is the ultimate Diana mod for Diana Nons!",
-  "version": "0.1.6",
+  "description": "SBO is the ultimate diana mod for diana nons!",
+  "version": "0.1.7",
   "entry": "index.js",
   "requires": [
     "requestV2",
@@ -11,6 +11,7 @@
     "BeaconBeam",
     "RenderLibV2",
     "axios",
-    "Elementa"
+    "Elementa",
+    "HypixelModAPI"
   ]
 }

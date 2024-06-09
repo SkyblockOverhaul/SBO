@@ -1,27 +1,45 @@
 /// <reference types="../CTAutocomplete" />
 import "./features/Diana/DianaBurrows";
+import "./features/Kuudra";
 import "./features/diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
 import "./features/general/Waypoints";
+import "./features/general/fossilSolver";
 import "./features/general/messageHider";
 import "./features/general/pickuplog";
+import "./features/guis/BobberCounter";
+import "./features/guis/LegionCounter";
+// import "./features/slayer/BlazeSlayer";
 import Settings from "./settings";
 import "./utils/overlays";
-import "./features/Kuudra";
-import "./features/general/fossilSolver";
-import "./features/guis/BobberCounter";
-import "./features/slayer/BlazeSlayer";
-import "./features/guis/LegionCounter";
-
-// in sbo addons packen
-import "./features/dungeon/recognizeRareRoom";
+import "./features/Diana/PartyFinder";
 import "./features/general/QOL";
-import { data } from "./utils/variables";
 import "./features/guis/SlayerGuis";
+import { data } from "./utils/variables";
+import { isDataLoaded } from "./utils/checkData";
 
 
-register("command", () => Settings.openGUI()).setName("skyblockoverhaul").setAliases("sbo");
+register("command", (args1, ...args) => {
+    if (args1 == undefined) {
+        Settings.openGUI()
+    } else {
+        switch (args1.toLowerCase()) { 
+            case "help":
+                ChatLib.chat("&6[SBO] &eCommands:")
+                ChatLib.chat("&7> &a/sbo &7- &eOpen the settings")
+                ChatLib.chat("&7> &a/sbo help &7- &eShow this message")
+                ChatLib.chat("&7> &a/sboguis &7- &eOpen the GUIs and move them around (alias /sbomoveguis)")
+                ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (alias /sbocb)")
+                ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (alias /sboc <player>)")
+                ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
+                break;
+            default:
+                ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
+                break;
+        }
+    }
+}).setName("skyblockoverhaul").setAliases("sbo");
 
 // Title bug fix
 register("worldLoad", () => {
@@ -29,20 +47,21 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.1.6" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.1.7" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
+    if (!isDataLoaded()) return
     if (data.downloadMsg) {
         downloadMsgReg.unregister()
         return
     }
-    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
-    // ChatLib.chat(`&aThanks for importing &6 SBO`)
-    // ChatLib.chat(`&7> &ayou can open the settings with /sbo`)
-    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    ChatLib.chat(`&aThanks for importing &6SBO`)
+    ChatLib.chat(`&7> &ayou can open the settings with /sbo`)
+    ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.downloadMsg = true
-    // data.changelogVersion = newVersion
+    data.changelogVersion = newVersion
     data.save()
     
     downloadMsgReg.unregister()
@@ -51,6 +70,7 @@ const downloadMsgReg = register("step", () => {
 // changelog beispiel
 const changeLogReg = register("step", () => {
     if (!World.isLoaded()) return
+    if (!isDataLoaded()) return
     if (data.changelogVersion === newVersion) { 
         changeLogReg.unregister()
         return
@@ -58,12 +78,18 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aAdded exit waypoint for mineshafts`)
-    ChatLib.chat(`&7> &aAdded alias for !transfer (!ptme)`)
-    ChatLib.chat(`&7> &aAdded command to move all guis (/sboguis)`)
-    ChatLib.chat(`&7> &aSmall fossil solver update`)
-    ChatLib.chat(`&7> &aFixed bug with party commands not working`)
-    ChatLib.chat(`&7> &aSome other small bug fixes`)
+    ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
+    ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
+    ChatLib.chat(`&7> &aRemoved Rare Room Detection (hypixel removed room ids)`)
+    ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
+    ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp) (alias /sbocp)`)
+    ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>) (alias /sboc <player>)`)
+    ChatLib.chat(`&7> &aAdded command to get help with commands (/sbo help)`)
+
+    ChatLib.chat(`&7> &aFixed bug with Diana Burrows Detection`)
+    ChatLib.chat(`&7> &aFixed the inquisitor line always pointing up`)
+    ChatLib.chat(`&7> &aFixed bug with Blaze Slayer Effects`)
+    ChatLib.chat(`&7> &aSome other minor bug fixes`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
@@ -71,8 +97,14 @@ const changeLogReg = register("step", () => {
     changeLogReg.unregister()
 }).setFps(1)
 
-// &eYou'll be partying with: &r&b[MVP&r&c+&r&b] vxnp&r&e, &r&b[MVP&r&0+&r&b] saltyarcher&r&e, &r&6[MVP&r&2++&r&6] Boi_&r&e, &r&b[MVP&r&2+&r&b] rigis&r
-// You have joined [MVP++] Tricksyz's party!
+// register("step", () => {
+//     // print each egg
+//     print(`&r&6Eggs: &e${eggs.length}`);
+//     eggs.forEach(egg => {
+//         createWorldWaypoint("Egg", egg.x, egg.y, egg.z, 0, 255, 0);
+//     })
+// }).setFps(1);
+
 // register("chat", (event) => {
 //     Client.showTitle("&l&9!!!!!WORM!!!!!!", "&eKILL!!!", 0, 90, 20);
 // }).setCriteria("&r&7&oYou hear the sound of something approaching...&r");
@@ -90,135 +122,22 @@ const changeLogReg = register("step", () => {
 //     }
 // }).setCriteria("&r&aYou received ${message}");
 
-// register("chat", (player, message, event) =>{
-//     // cancel original message
-//     // send new guildbot message
-//     if (!player.includes(" ")) {
-//         cancel(event);
-//         player = player.removeFormatting();
-//         ChatLib.chat("&r&2Guild > &b[DC] &b" + player + "&r: " + message);
-//         // print("&r&2Guild > &b[DC] &b" + player + "&r:" + message);
-//     }
-//     else if (player.includes("replying to")) {
-//         cancel(event);
-//         let split = player.split(" ");
-//         let player1 = split[0];
-//         let player2 = split[3];
-//         ChatLib.chat("&r&2Guild > &b[DC] &b" + player1.removeFormatting() + " &3replying to &b" + player2 + "&r: " + message);
-//         // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
-//     }
-// }).setCriteria("&r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}: ${message}").setContains()
-// geht
-// &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rSuccesfully invited kenchika to the party!&r
-// &r&2Guild > &b[MVP&2+&b] MasterNR &3[320]&f: &rnice&r
-// testen
-// &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rWiggleSnakey replying to dtAxl: WWDYM&r 
-
 // register("command", () => {
 //     // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);
-//     Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
-//     ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &5Minos Relic!");
-//     setTimeout(function() {
-//         World.playSound("random.levelup", 1, 1.0);
-//    }, 0);
-//     setTimeout(function() {
-//         World.playSound("random.levelup", 1, 1.2);
-//    }, 50);
-//     setTimeout(function() {
-//         World.playSound("random.levelup", 1, 1.4);
-//    }, 100);
-//     setTimeout(function() {
-//         World.playSound("random.levelup", 1, 1.6);
-//    }, 150);
+// //     Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+// //     ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &5Minos Relic!");
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.0);
+// //    }, 0);
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.2);
+// //    }, 50);
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.4);
+// //    }, 100);
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.6);
+// //    }, 150);
 // }).setName("sboinq");
 
-// register("guiOpened", () => {
-//     const container = Player.getContainer();
-//     if (container !== null) {
-//         const rawFish = 0.5;   
-//         const rawSalmon = 0.7;
-//         const clownfish = 2.0;
-//         const pufferfish = 1.0;
-//         const prismarineShard = 0.5;
-//         const prismarineCrystals = 0.5;
-//         const sponge = 0.5;
-//         // echanted version 
-//         const enchantedPrismarineShard = 40; //
-//         const enchantedPrismarineCrystals = 40; //
-//         const enchantedSponge = 20; //
-//         const enchantedClownfish = 320; //
-//         const enchantedPufferfish = 160; //
-//         const enchantedRawFish = 80; 
-//         const enchantedRawSalmon = 112;
 
-//         const cookedFish = 12800;
-//         const cookedSalmon = 17920;
-//         const wetSponge = 25600;
-
-//         let totalRawExp = 0;
-//         let items = container.getItems();
-//         items.forEach((item, index) => {
-//             if (item === null) return;
-//             if (index > 53) return;
-//             let name = item.getName();
-//             let count = item.getStackSize();
-//             if (name.includes("Raw Fish")) {
-//                 totalRawExp += count * rawFish;
-//             }
-//             else if (name.includes("Raw Salmon")) {
-//                 totalRawExp += count * rawSalmon;
-//             }
-//             else if (name.includes("Clownfish")) {
-//                 totalRawExp += count * clownfish;
-//             }
-//             else if (name.includes("Pufferfish")) {
-//                 totalRawExp += count * pufferfish;
-//             }
-//             else if (name.includes("Prismarine Shard")) {
-//                 totalRawExp += count * prismarineShard;
-//             }
-//             else if (name.includes("Prismarine Crystals")) {
-//                 totalRawExp += count * prismarineCrystals;
-//             }
-//             else if (name.includes("Sponge")) {
-//                 totalRawExp += count * sponge;
-//             }
-//             else if (name.includes("Enchanted Prismarine Shard")) {
-//                 totalRawExp += count * enchantedPrismarineShard;
-//             }
-//             else if (name.includes("Enchanted Prismarine Crystals")) {
-//                 totalRawExp += count * enchantedPrismarineCrystals;
-//             }
-//             else if (name.includes("Enchanted Sponge")) {
-//                 totalRawExp += count * enchantedSponge;
-//             }
-//             else if (name.includes("Enchanted Clownfish")) {
-//                 totalRawExp += count * enchantedClownfish;
-//             }
-//             else if (name.includes("Enchanted Pufferfish")) {
-//                 totalRawExp += count * enchantedPufferfish;
-//             }
-//             else if (name.includes("Enchanted Raw Fish")) {
-//                 totalRawExp += count * enchantedRawFish;
-//             }
-//             else if (name.includes("Enchanted Raw Salmon")) {
-//                 totalRawExp += count * enchantedRawSalmon;
-//             }
-//             else if (name.includes("Cooked Fish")) {
-//                 totalRawExp += count * cookedFish;
-//             }
-//             else if (name.includes("Cooked Salmon")) {
-//                 totalRawExp += count * cookedSalmon;
-//             }
-//             else if (name.includes("Wet Sponge")) {
-//                 totalRawExp += count * wetSponge;
-//             }
-//             else {
-//                 print(`&r&cUnknown Item: &e${name}`);
-//             }
-            
-//         });
-//         print(`&r&6Total Raw Exp: &e${totalRawExp}`);
-
-//     }
-// })

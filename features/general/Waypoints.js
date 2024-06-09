@@ -2,10 +2,11 @@ import renderBeaconBeam from "../../../BeaconBeam/index";
 import RenderLibV2 from "../../../RenderLibv2";
 import settings from "../../settings";
 import { checkDiana } from "../../utils/checkDiana";
-import { isInSkyblock, isWorldLoaded, toTitleCase, trace } from '../../utils/functions';
+import { isInSkyblock, isWorldLoaded, playCustomSound, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
 import { Color } from '../../../Vigilance';
+import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -38,24 +39,34 @@ register("worldUnload", () => {
 })
 
 
-export function removeBurrowWaypoint(closetburrow, burrows) {
-    
-    for (let i = 0; i < burrowWaypoints.length; i++) {
-        if (burrowWaypoints[i][1] == closetburrow[1] && burrowWaypoints[i][2] == closetburrow[2] && burrowWaypoints[i][3] == closetburrow[3]) {
-            burrowWaypoints.splice(i, 1);
-        }
-    }
-    burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
+export function removeBurrowWaypoint(pos, burrows) {
+    let x = pos.getX();
+    let y = pos.getY();
+    let z = pos.getZ();
+    let removedBurrowstring = null;
 
-    return burrows; 
-}
-
-export function removeBurrowWaypointBySmoke(x, y, z) {
     for (let i = 0; i < burrowWaypoints.length; i++) {
         if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            removedBurrowstring = x + " " + (y - 1) + " " + z; 
             burrowWaypoints.splice(i, 1);
         }
     }
+    // burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
+    const posstring = `${x} ${y-1} ${z}`;
+    delete burrows[posstring];
+    return {burrows: burrows, removedBurrow: removedBurrowstring};
+}
+
+
+export function removeBurrowWaypointBySmoke(x, y, z) {
+    let removedBurrowstring = null;
+    for (let i = 0; i < burrowWaypoints.length; i++) {
+        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
+            removedBurrowstring = x + " " + (y - 1) + " " + z;
+            burrowWaypoints.splice(i, 1);
+        }
+    }
+    return removedBurrowstring;
 }
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
@@ -65,24 +76,27 @@ function removeWaypointAfterDelay(Waypoints, seconds) {
     }, seconds*1000); // 30
 } 
 
+function numberToBurrowType(number) {
+    switch (number) {
+        case 0:
+            return "Start";
+        case 1:
+            return "Mob";
+        case 2:
+            return "Treasure";
+    }
+}
+
 export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzcheck) {
     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
         if (burrowWaypoints.length > 0) {
-            for (let i = 0; i < burrowWaypoints.length; i++) {
-                if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-                    if (burrowWaypoints[i][0] == burrowType) {
-                        return;
-                    }
-                    else {
-                        burrowWaypoints[i][0] = burrowType;
-                        return;
-                    }
-                }
-            }
-            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
+            if (burrowWaypoints.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) return; 
+            burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
+            playCustomSound(settings.burrowSound, settings.burrowVolume);   
         }
         else {
-            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
+            playCustomSound(settings.burrowSound, settings.burrowVolume);
+            burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
         }
     }
 }
@@ -95,6 +109,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         if (type == "Burrow") {
             switch (waypoint[0]) {
                 case "Start":
+                    waypoint[0] = "Start";
                     r = settings.startColor.getRed()/255;
                     g = settings.startColor.getGreen()/255;
                     b = settings.startColor.getBlue()/255;
@@ -154,7 +169,6 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             xSign = x == 0 ? 1 : Math.sign(x);
             zSign = z == 0 ? 1 : Math.sign(z);
         }
-
 
 
         wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw];
@@ -245,6 +259,26 @@ function getClosestWarp(x, y, z){
         (Player.getLastZ() - z)**2
     );
     closestDistance = Infinity;
+
+    switch (settings.dianaAddWarps) {
+        case 0:
+            delete hubWarps.wizard;
+            delete hubWarps.crypt;
+            break;
+        case 1:
+            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true}
+            delete hubWarps.crypt;
+            break;
+        case 2:
+            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true}
+            delete hubWarps.wizard;
+            break;
+        case 3:
+            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true}
+            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true}
+            break;
+    }
+
     for (let warp in hubWarps) {
         if (hubWarps[warp].unlocked){
             let distance = Math.sqrt(
@@ -283,22 +317,28 @@ register("chat" , (player) => {
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 
 // check waypoint
+let highlighInquis = false;
 register("step", () => {
+    if (highlighInquis && settings.inqHighlight){ 
+        inqHighlightRegister.register(); 
+    }
+    else { 
+        inqHighlightRegister.unregister(); 
+    }
     if (isWorldLoaded()) {
         // remvoe each waypoint thats older than 45 seconds
         inqWaypoints = inqWaypoints.filter(([_, _, _, _, _, time]) => Date.now() - time < 45000);
         // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
     }
 }).setFps(1);
-
 registerWhen(register("chat", (player, spacing, x, y, z) => {
     if (isWorldLoaded()) {
-        // if (checkDiana()) {
-            // isInq = true;
-        // }
-        // else {
+        if (checkDiana() && settings.allWaypointsAreInqs) {
+            isInq = true;
+        }
+        else {
             isInq = !z.includes(" ");
-        // }
+        }
         const bracketIndex = player.indexOf('[') - 2;
         const channel = player.substring(0, bracketIndex);
         // channel.includes("Guild") || channel.includes("Party") || channel.includes("Co-op")
@@ -309,14 +349,20 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
             player = player.replaceAll('&', '§');
 
         if (isInq) {
+            if(settings.inqHighlight && checkDiana()) {
+                highlighInquis = true;
+                setTimeout(() => {
+                    highlighInquis = false;
+                }, 80000); // 80 seconds so it only unregisters after inq is 100% dead cause it despawns after 75 secs
+            }
             if(settings.inqWaypoints && checkDiana()) {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
-                World.playSound("random.orb", 1, 1);
+                playCustomSound(settings.inqSound, settings.inqVolume);
                 z = z.replace("&r", "");
                 // check if waypoint is from player
+                
                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
-                    // removeWaypointAfterDelay(inqWaypoints, 60);
                 }
             }
             else{
@@ -407,12 +453,28 @@ registerWhen(register("renderWorld", () => {
 function renderBurrowLines(){
     if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
-        if (burrowDistance > 60) return;
-        trace(closestBurrow[1], closestBurrow[2], closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 1);
+        if (burrowDistance < 60){
+            trace(closestBurrow[1], closestBurrow[2] + 1, closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 0.7, "", parseInt(settings.burrowLineWidth));
+        }
     }
     if (inqWaypoints.length > 0 && settings.inqLine) {
-        trace(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 1);
+        trace(inqWaypoints[inqWaypoints.length - 1][1], parseInt(inqWaypoints[inqWaypoints.length - 1][2]), inqWaypoints[inqWaypoints.length - 1][3], 1, 0.84, 0, 0.7, "calc", parseInt(settings.burrowLineWidth));
     }
+    if (guessWaypoint != null && settings.guessLine && inqWaypoints.length == 0) {
+        if(getFinalLocation() === null) return;
+        let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
+        if (burrowDistance > 60 && guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) > parseInt(settings.removeGuessDistance)){
+            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "calc", parseInt(settings.burrowLineWidth));
+        }
+    }
+}
+
+function guessDistance(x,y,z){
+    return Math.sqrt(
+        (Player.getX() - x)**2 +
+        (Player.getY() - y)**2 +
+        (Player.getZ() - z)**2
+    );
 }
 
 function getClosestBurrow(formattedBurrow) {
@@ -449,11 +511,6 @@ function renderWaypoint(waypoints) {
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], alpha/2, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
-        
-        // // scale alpha between 0 and 0.6 based on distance use only box[4] for distance at distance 0 alpha = 0 at distance 60 alpha = 0.6
-        // alpha = Math.min(0.6, box[4] * 0.025);
-        
-
 
         if (box[4] >= removeAtDistance) {
             renderBeaconBeam(beam[0], beam[1]+1, beam[2], rgb[0], rgb[1], rgb[2], alpha, false);
@@ -478,4 +535,30 @@ function componentToHex(c) {
     let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
+
+
+
+register("command", (args1, ...args) => {
+    ChatLib.chat("&6[SBO] &eplaying test sound for " + args1)
+    switch (args1) {
+        case "inqSound":
+            playCustomSound(settings.inqSound, settings.inqVolume);
+            break;
+        case "burrowSound":
+            playCustomSound(settings.burrowSound, settings.burrowVolume);
+            break;
+        case "chimSound":
+            playCustomSound(settings.chimSound, settings.chimVolume);
+            break;
+        case "sprSound":
+            playCustomSound(settings.sprSound, settings.sprVolume);
+            break;
+        case "stickSound":
+            playCustomSound(settings.stickSound, settings.stickVolume);
+            break;
+        case "relicSound":
+            playCustomSound(settings.relicSound, settings.relicVolume);
+            break;
+    }
+}).setName("sbotest");   
 

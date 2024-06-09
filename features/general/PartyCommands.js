@@ -1,5 +1,6 @@
 import settings from "../../settings";
 import { getplayername } from "../../utils/functions";
+import { tpsCommand } from "../../utils/tps";
 
 const carrot = [
     "As I see it, Carrot",
@@ -26,7 +27,7 @@ const carrot = [
 
 register("chat", (player, message) => {
     message = message.split(" ");
-    switch (message[0]) {
+    switch (message[0].toLowerCase()) {
         case "!w":
         case "!warp":
             if(settings.PartyCommands && settings.WarpCommand){
@@ -81,11 +82,19 @@ register("chat", (player, message) => {
             }
             break;
         case "!time":
-            if(settings.timeCommand){
+            if (settings.timeCommand) {
                 setTimeout(function() {
                     ChatLib.command("pc " + new Date().toLocaleTimeString());
-                },100)
+                }, 100)
             }
             break;
+        case "!tps":
+            if (settings.tpsCommand) {
+                setTimeout(function() {
+                    tpsCommand(player)
+                }, 50)
+            }
+            break
+
     }
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")

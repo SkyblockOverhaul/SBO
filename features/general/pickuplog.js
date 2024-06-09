@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { readPlayerInventory, isInSkyblock, isWorldLoaded } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
-import { dianaLootCounter } from '../diana/DianaTracker';
+import { dianaLootCounter, trackLootWithSacks } from '../diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -52,5 +52,38 @@ registerWhen(register('step', () => {
     if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && checkDiana()) {
         pickuplog();
     }
-}).setFps(10), () => settings.dianaLootTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
+}).setFps(10), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
+// const S30PacketWindowItems = net.minecraft.network.play.server.S30PacketWindowItems;
+// registerWhen(register("packetReceived", (packet) => {
+//     print("packet received");
+//     if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && checkDiana()) {
+//         pickuplog();
+//     }
+// }).setFilteredClass(S30PacketWindowItems), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
 
+
+
+// sack detection
+register("chat", (ammount, trash, time, event) => {
+    message = new Message(event)
+    messageParts = message.getMessageParts();
+    // hide message
+    if (settings.hideSackMessage) cancel(event);
+    messageParts.forEach(part => {
+        if (part.getText() == "§e items§r") {
+            let regex = /\+([\d,]+) ([^\(]+)/g;
+            let match;
+            let items = [];
+
+            while ((match = regex.exec(part.getHoverValue().removeFormatting())) !== null) {
+                let amount = match[1];
+                let item = match[2].trim().replace(",", "");
+                items.push({amount: amount, item: item});
+            }
+            items.forEach(item => {
+                // print("item: " + item.item + " ammount: " + item.amount);
+                trackLootWithSacks(item.amount, item.item);
+            });
+        }
+    });
+}).setCriteria("&6[Sacks] ${ammount} item${trash} ${time}");

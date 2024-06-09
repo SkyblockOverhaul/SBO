@@ -45,31 +45,38 @@ ${AQUA}${BOLD}Wisp's Water: ${WHITE}2520s`,
 `&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`,
     dianaMobTrackerExample:
 `${YELLOW}${BOLD}Diana Mob Tracker
-------------------
-${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
-${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
-${GOLD}${BOLD}Minotaur: ${WHITE}
-${GREEN}${BOLD}Gaia Construct: ${WHITE}
-${GREEN}${BOLD}Siamese Lynx: ${WHITE}
-${GREEN}${BOLD}Minos Hunter: ${WHITE}
-${GRAY}${BOLD}Total Mobs: ${WHITE}
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Minos Inquisitor: ${WHITE}
+${GRAY}- ${DARK_PURPLE}${BOLD}Minos Champion: ${WHITE}
+${GRAY}- ${GOLD}${BOLD}Minotaur: ${WHITE}
+${GRAY}- ${GREEN}${BOLD}Gaia Construct: ${WHITE}
+${GRAY}- ${GREEN}${BOLD}Siamese Lynx: ${WHITE}
+${GRAY}- ${GREEN}${BOLD}Minos Hunter: ${WHITE}
+${GRAY}- ${GRAY}${BOLD}Total Mobs: ${WHITE}
 `,
     dianaLootTrackerExample: 
 `${YELLOW}${BOLD}Diana Loot Tracker
--------------------
-${LIGHT_PURPLE}${BOLD}Chimera: ${WHITE}
-${DARK_PURPLE}${BOLD}Minos Relic: ${WHITE}
-${GOLD}${BOLD}Daedalus Stick: ${WHITE}
-${GOLD}${BOLD}Crown of Greed: ${WHITE}
-${GOLD}${BOLD}Souvenir: ${WHITE}
-${DARK_GREEN}${BOLD}Turtle Shelmet: ${WHITE}
-${DARK_GREEN}${BOLD}Tiger Plushie: ${WHITE}
-${DARK_GREEN}${BOLD}Antique Remedies: ${WHITE}
-${BLUE}${BOLD}Ancient Claws: ${WHITE}
-${BLUE}${BOLD}Enchanted Ancient Claws: ${WHITE}
-${GOLD}${BOLD}Griffin Feather: ${WHITE}
-${GOLD}${BOLD}Coins: ${WHITE}
-${GRAY}${BOLD}Total Burrows: ${WHITE}
+${GOLD}0 ${GRAY}| ${LIGHT_PURPLE}${BOLD}Chimera: ${GRAY}[${AQUA}LS${GRAY}: ]
+${GOLD}0 ${GRAY}| ${DARK_PURPLE}${BOLD}Minos Relic:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Daedalus Stick:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Crown of Greed:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Souvenir:
+${GOLD}0 ${GRAY}| ${GOLD}${BOLD}Griffin Feather:
+${GOLD}0 ${GRAY}| ${DARK_GREEN}${BOLD}Turtle Shelmet:
+${GOLD}0 ${GRAY}| ${DARK_GREEN}${BOLD}Tiger Plushie:
+${GOLD}0 ${GRAY}| ${DARK_GREEN}${BOLD}Antique Remedies:
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Ancient Claws:
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Enchanted Claws: 
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Enchanted Gold: 
+${GOLD}0 ${GRAY}| ${BLUE}${BOLD}Enchanted Iron: 
+${GRAY}${BOLD}Total Burrows:
+${GOLD}${BOLD}Coins:
+${GOLD}${BOLD}Total Profit:
 `,
 legioncounterExample: `${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`,
+dianaStatsExample: `${YELLOW}${BOLD}Diana Stats Tracker
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Mobs since Inq:
+${GRAY}- ${LIGHT_PURPLE}${BOLD}Inqs since Chimera:
+${GRAY}- ${GOLD}${BOLD}Minos since Stick:
+${GRAY}- ${DARK_PURPLE}${BOLD}Champs since Relic:
+`,
 };

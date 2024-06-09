@@ -25,11 +25,7 @@ function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
         }
         if (valid) {
             if (fossilProcent != 0) {
-                // cut off the decimal places after 1 digit behind the comma
                 if (Math.floor((100/location.coords.length)*10) != fossilProcent && Math.floor((100/location.coords.length)*10) != fossilProcent - 1 && Math.floor((100/location.coords.length)*10) != fossilProcent + 1) {
-                    // print("locations length: " + location.coords.length);
-                    // print("Fossil procent to match: " + Math.floor((100/location.coords.length)*10));
-                    // print("Fossil real procent: " + fossilProcent);
                     valid = false;
                 }
             }
@@ -81,7 +77,7 @@ function calculateLocations(figure) {
     }
     
 
-    // kann nicht ausgeklammert werden weil es sonst nicht funktioniert (wegen den globalen variablen)
+    // kann nicht ausgeklammert werden weil es sonst nicht funktioniert (ka warum)
     // print original figure and all possible locations in the map (empty as "." and filled as "X")
     // console.log("Original figure:");
     // for (let y = 0; y < mapSize.y; y++) {
@@ -110,42 +106,19 @@ function calculateLocations(figure) {
     return locations;
 }
 
-// test code
-// function printRemovedFigure(figure) {
-//     tempString = "";
-//     console.log("Figure can't be at:");
-//     for (let y = 0; y < mapSize['y']; y++) {
-//         for (let x = 0; x < mapSize['x']; x++) {
-//             if (figure.some(coord => coord.x === x && coord.y === y)) {
-//                 tempString += "X";
-//             } else {
-//                 tempString += ".";
-//             }
-//         }
-//         tempString += " \n";
-//     }
-//     print("TempString: \n" + tempString);
-// }
 
-// first load
-// for (const figure of allFigures) {
-//     calculateLocations(figure);
-// }
-
+let clickedSlot = -1;  
 register("chat", () => {
     // print("Excavation complete")
-    fossilFoundAt = [];
-    fossilFoundAtIndex = [];
-    noFossilAt = [];
-    noFossilAtIndex = [];
-    coordsAdded = [];
-    fossilProcent = 0;
-    check1 = true;
-    calcNewCoords()
+    reset();
 }).setCriteria("&r&cYou didn't find anything. Maybe next time!&r");
 
 register("chat", () => {
     // print("Excavation complete")
+    reset();
+}).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
+
+function reset() {
     fossilFoundAt = [];
     fossilFoundAtIndex = [];
     noFossilAt = [];
@@ -153,8 +126,10 @@ register("chat", () => {
     coordsAdded = [];
     fossilProcent = 0;
     check1 = true;
+    clickedSlot = -1;
     calcNewCoords()
-}).setCriteria("&r  &r&6&lEXCAVATION COMPLETE &r");
+
+}
 
 let allPossibleLocations = [];
 // create all possible locations for all figures
@@ -167,26 +142,21 @@ let fossilFoundAtIndex = [];
 let noFossilAtIndex = [];
 let anzahlPositions = 0;
 function calcNewCoords() {
-    // let allFossilCoords = [];
     let tempList = [];
     let counter = {};
     let validLocations = [];
     anzahlPositions = 0;
     slotsToHighlight = [];
     let possibleFossils = [];
-    // print("allPossibleLocations: " + allPossibleLocations.length)
     for (let pos of allPossibleLocations) {
         tempList = checkIfLocationsAreValid(pos, fossilFoundAt, noFossilAt);
         for (let pos of tempList) {
-            // check if figure name is already in possibleFossils
             if (!possibleFossils.includes(pos.name)) {
                 possibleFossils.push(pos.name);
             }
             validLocations.push(pos);
             anzahlPositions++;
             for (let p of pos.coords) {
-                // allFossilCoords.push(p);
-                // print("Fossil at: " + p.x + " " + p.y);
                 let index = indexDict[`${p.x}${p.y}`];
                 if (!fossilFoundAtIndex.includes(index) && !noFossilAtIndex.includes(index)) {
                     if (counter.hasOwnProperty(index)) {
@@ -200,42 +170,6 @@ function calcNewCoords() {
         }
     };
 
-
-
-    // print("FossilMustBeAt: " + fossilFoundAt.length)
-    // print("FossilCantBeAt: " + noFossilAt.length)
-    // console.log("Figure must be at:");
-    // let tempString = "";
-    // for (let y = 0; y < mapSize['y']; y++) {
-    //     for (let x = 0; x < mapSize['x']; x++) {
-    //         if (fossilFoundAt.some(coord => coord.x === x && coord.y === y)) {
-    //             tempString += "O";
-    //         } else {
-    //             tempString += ".";
-    //         }
-    //     }
-    //     tempString += " \n";
-    // }
-    // // print("TempString: \n" + tempString);
-    // tempString = "";
-    // console.log("Figure can't be at:");
-    // for (let y = 0; y < mapSize['y']; y++) {
-    //     for (let x = 0; x < mapSize['x']; x++) {
-    //         if (noFossilAt.some(coord => coord.x === x && coord.y === y)) {
-    //             tempString += "X";
-    //         } else {
-    //             tempString += ".";
-    //         }
-    //     }
-    //     tempString += " \n";
-    // }
-    // print("TempString: \n" + tempString);
-
-    // print index with most fossils
-    // print complete counter
-    // for (let key in counter) {
-    //     print("Index: " + key + " Fossils: " + counter[key]);
-    // }
     let max = 0;
     let slotToHighlight = -1;
     if (anzahlPositions >= 1) {
@@ -269,16 +203,17 @@ function calcNewCoords() {
                 tempStringNames += fossil + " \n";
             });
         fossilPossibleNames.setText(tempStringNames);
+        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
     }
     else if (possibleFossils.length == 1) {
         fossilPossibleNames.setText("Fossil: " + possibleFossils[0]);
+        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
     }
     else {
         fossilPossibleNames.setText("Fossil: No Fossil");
+        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
     }
-    // print each possible figure
 
-    // print("Anzahl Positionen: " + anzahlPositions);
     if (fossilFoundAt.length > 0) {
         if (anzahlPositions == 1) {
             // print all indexes of the only possible figure
@@ -292,10 +227,14 @@ function calcNewCoords() {
 }
 calcNewCoords()
 
-// guiClick new
+// Player.getPlayer().field_71071_by.func_70445_o()
+// field_71071_by is inventory field from EntityPlayer
+// func_70445_o is getItemStack from InventoryPlayer (returns itemstack held by mouse)
+// use new Item() on it if you want it to be a ct item
 let isInExcavatorGui = false;
 let check1 = true;
-registerWhen(register("step", () => {
+let nullSlotClicked = false;
+registerWhen(register("tick", () => {
     if (middleBool) return;
     let check2 = false;
     const container = Player.getContainer();
@@ -314,6 +253,12 @@ registerWhen(register("step", () => {
         }
     }
     if (!isInExcavatorGui) return;
+    if (clickedSlot != -1 && clickedSlot != undefined) {
+        if ((Player.getPlayer().field_71071_by.func_70445_o() != null && (container.getStackInSlot(clickedSlot) == null && !nullSlotClicked))) {
+            return;
+        }
+    } 
+
     items.forEach((item, index) => {
         if (index > 53) return;
         if (item == null) {
@@ -323,19 +268,19 @@ registerWhen(register("step", () => {
                 noFossilAtIndex.push(index);
                 // print("No Fossil at: " + index);
                 check2 = true;
+                calcNewCoords()
+
             }
         }
         else {
             if (item.getName() == "§6Fossil") {
                 if (!fossilFoundAtIndex.includes(index)) {
                     if (fossilProcent == 0) {
-                        // print("Fossil procents: " + item.getLore()[6]);
                         let procentString = item.getLore()[6];
                         fossilProcent = parseInt(procentString.substring(procentString.indexOf("§c") + 2, procentString.indexOf("%")).replace(".", ""));
                         if (fossilProcent == 10) {
                             fossilProcent *= 10;
                         }
-                        // print("Fossil procents: " + fossilProcent);
                     }
                     if (noFossilAtIndex.includes(index)) {
                         let indexToRemove = noFossilAtIndex.indexOf(index);
@@ -347,6 +292,8 @@ registerWhen(register("step", () => {
                     fossilFoundAtIndex.push(index); 
                     // print("Fossil at: " + index);
                     check2 = true;
+                    calcNewCoords()
+
                 }
             }
             else {
@@ -357,6 +304,8 @@ registerWhen(register("step", () => {
                         noFossilAtIndex.push(index);
                         // print("No Fossil at: " + index);
                         check2 = true;
+                        calcNewCoords()
+
                     }
                 }
             }
@@ -370,6 +319,8 @@ registerWhen(register("step", () => {
             noFossilAt.splice(indexToRemove, 1);
             noFossilAtIndex.splice(indexToRemove, 1);
             check2 = true;
+            calcNewCoords()
+
         }
     });
     fossilFoundAtIndex.forEach((index) => {
@@ -380,19 +331,28 @@ registerWhen(register("step", () => {
             fossilFoundAt.splice(indexToRemove, 1);
             fossilFoundAtIndex.splice(indexToRemove, 1);
             check2 = true;
+            calcNewCoords()
+
+            
         }
     });
-    if (check2) {
-        if (check1) {
-            check1 = false;
-            setTimeout(() => {
-                check1 = true;
-                calcNewCoords()
-            }, 200);
-        }
-    }
-}).setFps(10), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
+    nullSlotClicked = false;
+    // calcNewCoords()
+    // if (check2) {
+    //     if (check1) {
+    //         check1 = false;
+    //         setTimeout(() => {
+    //             check1 = true;
+    //         }, 100);
+    //     }
+    // }
+}), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
+register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
+    if (name == "dig.gravel" && volume == 1 && pitch == 2) {
+        nullSlotClicked = true;
+    }
+})
 
 register("guiClosed", () => {
     fossilOverlay.clearChildren();
@@ -419,7 +379,10 @@ registerWhen(register("renderSlot", (slot) => {
 }), () => settings.fossilSolver && getWorld() == "Dwarven Mines");
 
 let middleBool = false;
-register("guiMouseClick", () => {
+ 
+register("guiMouseClick", (_, __, ___, gui) => {
+    if (!isInExcavatorGui) return;
+    clickedSlot = gui?.getSlotUnderMouse()?.field_75222_d;
     if (middleBool) return;
     middleBool = true;
     setTimeout(() => {

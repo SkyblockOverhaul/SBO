@@ -1,6 +1,5 @@
 import { getWorld } from "../utils/world";
-import { request } from "../../requestV2";
-import { toTitleCase, drawRect } from "./../utils/functions";
+import { toTitleCase, drawRect, getKuudraItems, getBazaarItems, getBazaarPriceKuudra, formatNumber } from "./../utils/functions";
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
@@ -11,27 +10,8 @@ let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuu
 let kuudraOverlay = kuudraOverlayObj.overlay
 
 
-let lastUpdate = 0;
-let updateing = false;
 let kuudraItems = undefined;
-let bazaarItems = undefined;
-registerWhen(register("step", () => {
-    // update every 5 minutes
-    if (updateing) return;
-    if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
-        // print("updating kuudra items with api");
-        updateing = true;
-        lastUpdate = Date.now();
-        updateKuudraItems()
-        setTimeout(() => {
-            updateing = false;
-        }, 300000);
-    }
-}).setFps(1), () => settings.attributeValueOverlay);
-
-// to do:
-// bazaar items: 
-// Kuudra Teeth (tabasco II)  32
+let bazaarItems = undefined;    
 
 function getKeyPrice(tier) {
     let value = 0;
@@ -68,40 +48,7 @@ function getKeyPrice(tier) {
     return value;
 }
 
-function getBazaarPrice(itemId) {
-    if (bazaarItems == undefined) return 0;
-    if (bazaarItems.success == false) return 0;
-    let product = bazaarItems.products[itemId];
-    if (product == undefined) return 0;
-    if (settings.bazaarSetting == 0) {
-        return product.quick_status.sellPrice;
-    }
-    else {
-        return product.quick_status.buyPrice;
-    }
-}
-
-function updateKuudraItems() {
-    request({
-        url: "https://api.skyblockoverhaul.com/kuudraItems",
-        json: true
-    }).then((response)=>{
-        kuudraItems = response;
-    }).catch((error)=>{
-        console.error(error);
-    });
-
-    request({
-        url: "https://api.hypixel.net/skyblock/bazaar?product",
-        json: true
-    }).then((response)=>{
-        bazaarItems = response;
-    }).catch((error)=>{
-        console.error(error);
-    });
-}
-
-chestItem = {
+let chestItem = {
     name: "",
     value: 0,
     att1Name: "",
@@ -136,7 +83,7 @@ registerWhen(register("step", () => {
             cooldown = false;
         }, 30000);
     }
-}).setFps(1), () => getWorld() == "Kuudra" && settings.recognizeRareRoom);
+}).setFps(1), () => getWorld() == "Kuudra" && settings.attributeValueOverlay);
 
 registerWhen(register("guiMouseClick", (x, y, button, gui) => {
     setTimeout(() => {
@@ -175,13 +122,16 @@ function getEsseceValue(essence) {
             essencensMultiplicator += kuudraPetLevel * 0.001;
         }
     }
-    essenceValue = Math.floor(essence * essencensMultiplicator) * getBazaarPrice("ESSENCE_CRIMSON");
+    essenceValue = Math.floor(essence * essencensMultiplicator) * getBazaarPriceKuudra("ESSENCE_CRIMSON");
     return essenceValue;
 }
 
 function readContainerItems() {
     chestItems = [];
+    kuudraItems = getKuudraItems();
+    bazaarItems = getBazaarItems();
     if (kuudraItems == undefined) return;
+    if (bazaarItems == undefined) return;   
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() == "container") return;
@@ -196,7 +146,7 @@ function readContainerItems() {
     if (container.getName() == "Paid Chest") {
         let keyPrice = getKeyPrice(tier);
         totalValue -= keyPrice;
-        tempString = `&c-${formatPrice(keyPrice)} &eTier ${tier} Key\n`;
+        tempString = `&c-${formatNumber(keyPrice)} &eTier ${tier} Key\n`;
         chestItems.push(new ItemString(tempString, -keyPrice, false));
 
         let essence = container.getStackInSlot(14).getNBT().toObject().tag.display.Name;
@@ -204,7 +154,7 @@ function readContainerItems() {
         
         essenceValue = getEsseceValue(essence);
         totalValue += essenceValue
-        tempString = `&6${formatPrice(essenceValue)} &eCrimson Essence\n`;
+        tempString = `&6${formatNumber(essenceValue)} &eCrimson Essence\n`;
         chestItems.push(new ItemString(tempString, essenceValue, false));
     }
 
@@ -252,22 +202,22 @@ function readContainerItems() {
             }
             if (highestPrice != 0) {
                 totalValue += highestPrice;
-                tempString = `&6${formatPrice(highestPrice)} &e${chestItem.name} `
+                tempString = `&6${formatNumber(highestPrice)} &e${chestItem.name} `
                 if (settings.lineSetting == 0) {
                     tempString += `\n`
                 }
-                tempString += `&b(${chestItem.att1Name}/${chestItem.att2Name} - &6${formatPrice(chestItem.att1Value)}/${formatPrice(chestItem.att2Value)}&b)\n`;
+                tempString += `&b(${chestItem.att1Name}/${chestItem.att2Name} - &6${formatNumber(chestItem.att1Value)}/${formatNumber(chestItem.att2Value)}&b)\n`;
                 chestItems.push(new ItemString(tempString, highestPrice, index, true));
             }
         }
         else if (bazaarIds.includes(itemId)) {
             if (itemId == "ENCHANTED_MYCELIUM" || itemId == "ENCHANTED_RED_SAND") return;
             // bazaar item
-            let price = getBazaarPrice(itemId);
+            let price = getBazaarPriceKuudra(itemId);
             if (price == 0) return;
             totalValue += price;
             let displayName = toTitleCase(itemId.replaceAll("_", " ").replace("ULTIMATE", "").replace("ENCHANTMENT", ""));
-            tempString = `&6${formatPrice(price)} &e${displayName}\n`;
+            tempString = `&6${formatNumber(price)} &e${displayName}\n`;
             chestItems.push(new ItemString(tempString, price, index, false));
         }
         else if (ahIds.includes(itemId)) {
@@ -279,7 +229,7 @@ function readContainerItems() {
             }
 
             let displayName = toTitleCase(itemId.replaceAll("_", " "));
-            tempString = `&6${formatPrice(price)} &e${displayName}\n`;
+            tempString = `&6${formatNumber(price)} &e${displayName}\n`;
             chestItems.push(new ItemString(tempString, price, index, false));
         }
         else if (itemId == "ATTRIBUTE_SHARD") {
@@ -297,7 +247,7 @@ function readContainerItems() {
                 let price = getAttributePrice("ATTRIBUTE_SHARD", name, attributeDict[Object.keys(attributeDict)[0]]);
                 let displayName = toTitleCase(name.replaceAll("_", " ")) + " Shard";
                 totalValue += price;
-                tempString = `&6${formatPrice(price)} &e${displayName} ${attributeDict[Object.keys(attributeDict)[0]]}\n`;
+                tempString = `&6${formatNumber(price)} &e${displayName} ${attributeDict[Object.keys(attributeDict)[0]]}\n`;
                 chestItems.push(new ItemString(tempString, price, index));
             }
         }
@@ -406,14 +356,16 @@ function refreshOverlay(totalValue) {
         tempObj = new UIWrappedText(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
         tempObj.setX((0).pixels());
         tempObj.setY((pixel).pixel());
+        tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
     if (totalValue != 0) {
-        overlayString += `&eTotal Value: &6${formatPrice(totalValue)} coins`;
-        tempObj = new UIWrappedText(`&eTotal Value: &6${formatPrice(totalValue)} coins`);
+        overlayString += `&eTotal Value: &6${formatNumber(totalValue)} coins`;
+        tempObj = new UIWrappedText(`&eTotal Value: &6${formatNumber(totalValue)} coins`);
         tempObj.setX((0).pixels());
         tempObj.setY((pixel).pixel());
+        tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
@@ -425,19 +377,6 @@ function refreshOverlay(totalValue) {
         kuudraOverlay.addChild(guiStrings[i]);
     }
     // testOverlay.addChild(kuudraText);
-}
-
-function formatPrice(price) {
-    if (price >= 1000000000) {
-        return (price / 1000000000).toFixed(2) + "B";
-    }
-    else if (price >= 1000000) {
-        return (price / 1000000).toFixed(2) + "M";  
-    }
-    else if (price >= 1000) {
-        return Math.floor(price / 1000) + "K";
-    }
-    return price;
 }
 
 function getAttributePrice(itemId, attribute, lvl) {
