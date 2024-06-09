@@ -68,6 +68,7 @@ class Settings {
         this.addDependency('Distance For Remove','Remove Guess');
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
+        this.addDependency('Inquis Color','Highlight Inquis');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -255,6 +256,20 @@ class Settings {
         subcategory: "Other",
     })
     announceKill = "";
+    @SwitchProperty({
+        name: "Highlight Inquis",
+        description: "Highlights inquisitor.",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    inqHighlight = false;
+    @ColorProperty({
+        name: "Inquis Color",
+        description: "Pick a color for your Inquis Highlighter",
+        category: "Diana",
+        subcategory: "Other"
+    })
+    inqColor = new Color(0,0.9,1,1);
     @SelectorProperty({
         name: "Add Warps",
         description: "Adds warp points for burrow warp",

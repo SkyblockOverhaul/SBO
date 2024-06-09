@@ -317,6 +317,12 @@ register("chat" , (player) => {
 
 // check waypoint
 register("step", () => {
+    if (inqWaypoints.length > 0 && settings.inqHighlight){ 
+        inqHighlightRegister.register(); 
+    }
+    else { 
+        inqHighlightRegister.unregister(); 
+    }
     if (isWorldLoaded()) {
         // remvoe each waypoint thats older than 45 seconds
         inqWaypoints = inqWaypoints.filter(([_, _, _, _, _, time]) => Date.now() - time < 45000);
@@ -459,6 +465,28 @@ function renderBurrowLines(){
         }
     }
 }
+
+const inqHighlightRegister = register("renderWorld", () => {
+    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((mob) => {
+        let name = mob.getName();
+        if (name.includes("Inquisitor")) {
+            red = settings.inqColor.getRed() / 255;
+            green = settings.inqColor.getGreen() / 255;
+            blue = settings.inqColor.getBlue() / 255;
+            alpha = settings.inqColor.getAlpha() / 255;
+            RenderLibV2.drawEspBoxV2(mob.x, mob.y - 2.05, mob.z, 1, 2, 1, red, green, blue, alpha, false)   
+        }
+        // for testing purposes
+        // if (name.includes("Zombie")) {
+        //     red = settings.inqColor.getRed() / 255;
+        //     green = settings.inqColor.getGreen() / 255;
+        //     blue = settings.inqColor.getBlue() / 255;
+        //     alpha = settings.inqColor.getAlpha() / 255;
+        //     RenderLibV2.drawEspBoxV2(mob.x, mob.y - 2.05, mob.z, 1, 2, 1, red, green, blue, alpha, false)   
+        // }
+    });
+});
+
 
 function guessDistance(x,y,z){
     return Math.sqrt(
