@@ -34,14 +34,9 @@ registerWhen(register("step", () => {
                 }
                 
             }
-            if (inqs.filter((e) => e.getUUID() === mob.getUUID()).length === 0) {
-                if (name.includes("Inquisitor")) {
-                    inqs.push(mob);
-                }
-            }
         });
         Mobs = Mobs.filter((e) => !e.getEntity()["field_70128_L"]);
-        inqs = inqs.filter((e) => !e.getEntity()["field_70128_L"]);
+        inqs = Mobs.filter((mob) => mob.getName().includes("Inquisitor"));
     }
 }).setFps(1), () => settings.mythosMobHp || settings.inqHighlight && getWorld() === "Hub");
 
@@ -65,6 +60,7 @@ export const inqHighlightRegister = register("renderWorld", () => {
         RenderLibV2.drawEspBoxV2(mob.x, mob.y - 2.05, mob.z, 1, 2, 1, red, green, blue, alpha, false)   
     });
 });
+inqHighlightRegister.unregister();
 
 //mob.nameTag.getName() step 10
 // if (!Mobs?.map((a) => a.getUUID().toString()).includes(mob.getUUID().toString())) {

@@ -91,7 +91,17 @@ export let data = new PogObject("SBO", {
     "trackerMigration": false,
 }, "SboData.json");
 
-export let pastDianaEvents = new PogObject("SBO", {
+let trackerMetadata = new PogObject("SBOTracker", {
+    "name": "SBOTracker",
+    "creator": "RolexDE, D4rkswift",
+    "description": "Dont delete this module, if you dont want to lose your tracker data!",
+    "version": "1.0.0",
+    "entry": "",
+    "requires": [],
+}, "metadata.json");
+trackerMetadata.save();
+
+export let pastDianaEvents = new PogObject("SBOTracker", {
     "events": []
 }, "pastDianaEvents.json");
 
@@ -100,52 +110,58 @@ let oldMayorTracker = {};
 let oldTotalTracker = {};
 let oldSessionTracker = {};
 if (!data.trackerMigration) {
-    if (FileLib.exists("SBO", "dianaTrackerMayor.json")) {
-        // load old mayor tracker
-        let tempTracker = {};
-        try {
-            oldMayorTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerMayor.json")) || {};
-        } catch (e) {
-            oldMayorTracker = {};
-        }
-        // for each key in old tracker
-        for (let key in oldMayorTracker) {
-            pastDianaEvents.events.push({
-                year: key,
-                items: oldMayorTracker[key].items,
-                mobs: oldMayorTracker[key].mobs
-            });
-            if (key === Object.keys(oldMayorTracker)[Object.keys(oldMayorTracker).length - 1]) {
-                tempTracker = oldMayorTracker[key];
+    if (!FileLib.exists("SBO", "dianaTrackerMayor.json") && !FileLib.exists("SBO", "dianaTrackerTotal.json") && !FileLib.exists("SBO", "dianaTrackerSession.json")) {
+        data.trackerMigration = true;
+        data.save();
+    }
+    else {
+        if (FileLib.exists("SBO", "dianaTrackerMayor.json")) {
+            // load old mayor tracker
+            let tempTracker = {};
+            try {
+                oldMayorTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerMayor.json")) || {};
+            } catch (e) {
+                oldMayorTracker = {};
             }
+            // for each key in old tracker
+            for (let key in oldMayorTracker) {
+                pastDianaEvents.events.push({
+                    year: key,
+                    items: oldMayorTracker[key].items,
+                    mobs: oldMayorTracker[key].mobs
+                });
+                if (key === Object.keys(oldMayorTracker)[Object.keys(oldMayorTracker).length - 1]) {
+                    tempTracker = oldMayorTracker[key];
+                }
+            }
+            oldMayorTracker = tempTracker;
+            FileLib.delete("SBO", "dianaTrackerMayor.json");
+            pastDianaEvents.save();
         }
-        oldMayorTracker = tempTracker;
-        FileLib.delete("SBO", "dianaTrackerMayor.json");
-        pastDianaEvents.save();
-    }
 
-    if (FileLib.exists("SBO", "dianaTrackerTotal.json")) {
-        // load old total tracker
-        try {
-            oldTotalTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerTotal.json")) || {};
-        } catch (e) {
-            oldTotalTracker = {};
+        if (FileLib.exists("SBO", "dianaTrackerTotal.json")) {
+            // load old total tracker
+            try {
+                oldTotalTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerTotal.json")) || {};
+            } catch (e) {
+                oldTotalTracker = {};
+            }
+            FileLib.delete("SBO", "dianaTrackerTotal.json");
         }
-        FileLib.delete("SBO", "dianaTrackerTotal.json");
-    }
 
-    if (FileLib.exists("SBO", "dianaTrackerSession.json")) {
-        // load old session tracker
-        try {
-            oldSessionTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerSession.json")) || {};
-        } catch (e) {
-            oldSessionTracker = {};
+        if (FileLib.exists("SBO", "dianaTrackerSession.json")) {
+            // load old session tracker
+            try {
+                oldSessionTracker = JSON.parse(FileLib.read("SBO", "dianaTrackerSession.json")) || {};
+            } catch (e) {
+                oldSessionTracker = {};
+            }
+            FileLib.delete("SBO", "dianaTrackerSession.json");
         }
-        FileLib.delete("SBO", "dianaTrackerSession.json");
     }
 }
 
-export let dianaTrackerTotal = new PogObject("SBO", {
+export let dianaTrackerTotal = new PogObject("SBOTracker", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -175,7 +191,7 @@ export let dianaTrackerTotal = new PogObject("SBO", {
     }
 }, "dianaTrackerTotal.json");
 
-export let dianaTrackerSession = new PogObject("SBO", {
+export let dianaTrackerSession = new PogObject("SBOTracker", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -205,7 +221,7 @@ export let dianaTrackerSession = new PogObject("SBO", {
     }
 }, "dianaTrackerSession.json");
 
-export let dianaTrackerMayor = new PogObject("SBO", {
+export let dianaTrackerMayor = new PogObject("SBOTracker", {
     year: 0,
     items: {
         "coins": 0,
@@ -263,11 +279,11 @@ if (!data.trackerMigration) {
         }
     }   
     data.trackerMigration = true;
-    data.save();
-    dianaTrackerTotal.save();
-    dianaTrackerSession.save();
-    dianaTrackerMayor.save();
 }
+data.save();
+dianaTrackerTotal.save();
+dianaTrackerSession.save();
+dianaTrackerMayor.save();
 
 // --- TRIGGER CONTROL ---
 
