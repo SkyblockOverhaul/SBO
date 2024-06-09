@@ -6,7 +6,7 @@ import { isInSkyblock, isWorldLoaded, playCustomSound, toTitleCase, trace } from
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../diana/DianaGuess";
 import { Color } from '../../../Vigilance';
-import { inqHighlightRegister } from "../Diana/DianaInqHighlight";
+import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -363,10 +363,6 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 
                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
-                    // print("x:", inqWaypoints[inqWaypoints.length - 1][1]);
-                    // print("y:", (inqWaypoints[inqWaypoints.length - 1][2] + 1));
-                    // print("z:", inqWaypoints[inqWaypoints.length - 1][3]);
-                    // removeWaypointAfterDelay(inqWaypoints, 60);
                 }
             }
             else{
@@ -515,11 +511,6 @@ function renderWaypoint(waypoints) {
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], alpha/2, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
         Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
-        
-        // // scale alpha between 0 and 0.6 based on distance use only box[4] for distance at distance 0 alpha = 0 at distance 60 alpha = 0.6
-        // alpha = Math.min(0.6, box[4] * 0.025);
-        
-
 
         if (box[4] >= removeAtDistance) {
             renderBeaconBeam(beam[0], beam[1]+1, beam[2], rgb[0], rgb[1], rgb[2], alpha, false);
