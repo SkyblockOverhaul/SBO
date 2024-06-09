@@ -353,7 +353,7 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 highlighInquis = true;
                 setTimeout(() => {
                     highlighInquis = false;
-                }, 60000);
+                }, 80000); // 80 seconds so it only unregisters after inq is 100% dead cause it despawns after 75 secs
             }
             if(settings.inqWaypoints && checkDiana()) {
                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
