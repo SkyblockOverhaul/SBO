@@ -77,12 +77,6 @@ export function initializeTrackerMayor() {
 
 // --- PERSISTENT DATA ---
 
-// check if ../SBOTracker exists and create if not
-if (!FileLib.exists("../SBOTracker")) {
-    FileLib.mkdir("../SBOTracker");
-}
-
-
 // Initializing a persistent data object using the PogObject class
 export const resetVersion = "0.1.3"; // change this to the new version for config.toml reset
 export let data = new PogObject("SBO", {
@@ -97,7 +91,7 @@ export let data = new PogObject("SBO", {
     "trackerMigration": false,
 }, "SboData.json");
 
-export let pastDianaEvents = new PogObject("../SBOTracker", {
+export let pastDianaEvents = new PogObject("../../../config", {
     "events": []
 }, "pastDianaEvents.json");
 
@@ -157,7 +151,7 @@ if (!data.trackerMigration) {
     }
 }
 
-export let dianaTrackerTotal = new PogObject("../SBOTracker", {
+export let dianaTrackerTotal = new PogObject("../../../config", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -187,7 +181,7 @@ export let dianaTrackerTotal = new PogObject("../SBOTracker", {
     }
 }, "dianaTrackerTotal.json");
 
-export let dianaTrackerSession = new PogObject("../SBOTracker", {
+export let dianaTrackerSession = new PogObject("../../../config", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -217,7 +211,7 @@ export let dianaTrackerSession = new PogObject("../SBOTracker", {
     }
 }, "dianaTrackerSession.json");
 
-export let dianaTrackerMayor = new PogObject("../SBOTracker", {
+export let dianaTrackerMayor = new PogObject("../../../config", {
     year: 0,
     items: {
         "coins": 0,
