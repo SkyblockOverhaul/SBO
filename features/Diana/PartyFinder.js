@@ -1,5 +1,6 @@
 import { request } from "../../../requestV2";
 import { getPartyBool, getplayername, setInterval, clearInterval, sendPartyRequest, getPartyMembersUuids } from "../../utils/functions";
+import { HypixelModAPI } from "./../../../HypixelModAPI";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -23,23 +24,39 @@ register("chat", (party) => {
 }).setCriteria("&eYou have joined ${party} &r&eparty!&r");
 
 // command to check party members
+let checkPartyBool = false;
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    if (!checkPartyBool) return;
+    checkPartyBool = false;
+    let party = [];
+    Object.keys(partyInfo).forEach(key => {
+        party.push(key);
+    })
+    if (party.length == 0) {
+        ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
+        return;
+    }
+    getPartyInfo(party);
+})
+
 let lastUsed = 0;
 register("command", () => {
     if (Date.now() - lastUsed > 60000 || lastUsed == 0) { // 1 minutes
+        checkPartyBool = true;
         lastUsed = Date.now();
         ChatLib.chat("&6[SBO] &eChecking party members...");
         sendPartyRequest();
-        let interval = setInterval(() => {
-            if (getPartyBool()) {
-                let party = getPartyMembersUuids();
-                if (party.length == 0) {
-                    ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
-                    return;
-                }
-                getPartyInfo(party);
-                clearInterval(interval);
-            }
-        }, 100, 50000);
+        // let interval = setInterval(() => {
+        //     if (getPartyBool()) {
+        //         let party = getPartyMembersUuids();
+        //         if (party.length == 0) {
+        //             ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
+        //             return;
+        //         }
+        //         getPartyInfo(party);
+        //         clearInterval(interval);
+        //     }
+        // }, 100, 50000);
     }
     else {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
