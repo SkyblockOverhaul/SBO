@@ -150,7 +150,7 @@ export function trackItem(item, category, amount) {
 
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
-        if (getSkyblockDate() >= getNewMayorAtDate()) {    
+        if (tracker.year < getDateMayorElected().getFullYear()) {    
             setNewMayorBool();   
             setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
             pastDianaEvents["events"].push(tracker);
@@ -160,6 +160,7 @@ function trackOne(tracker, item, category, type, amount) {
             }
 
             tracker.save();
+            pastDianaEvents.save();
         }
     }
     tracker[category][item] += amount;

@@ -99,11 +99,6 @@ export function getPartyMembersUuids() {
     return partyMembersUuids;
 }
 
-let partyBool = false;
-export function getPartyBool() {
-    return partyBool;
-}
-
 export function getSBID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("id") || null;
 }
@@ -514,38 +509,36 @@ export function playCustomSound(sound, volume) {
 }
 
 // add time to life of 5 sek
-export function setInterval(func, delay, ttl) {
-    let startTime = java.lang.System.currentTimeMillis();
-    let thread = new java.lang.Thread(new java.lang.Runnable({
-        run: function() {
-            while (true) {
-                if (java.lang.System.currentTimeMillis() - startTime > ttl) {
-                    thread.stop();
-                    break;
-                }
-                func();
-                java.lang.Thread.sleep(delay);
-            }
-        }
-    }));
-    thread.start();
-    return thread;
-}
+// export function setInterval(func, delay, ttl) {
+//     let startTime = java.lang.System.currentTimeMillis();
+//     let thread = new java.lang.Thread(new java.lang.Runnable({
+//         run: function() {
+//             while (true) {
+//                 if (java.lang.System.currentTimeMillis() - startTime > ttl) {
+//                     thread.stop();
+//                     break;
+//                 }
+//                 func();
+//                 java.lang.Thread.sleep(delay);
+//             }
+//         }
+//     }));
+//     thread.start();
+//     return thread;
+// }
 
-export function clearInterval(thread) {
-    thread.stop();
-}
+// export function clearInterval(thread) {
+//     thread.stop();
+// }
 
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     Object.keys(partyInfo).forEach(key => {
         partyMembersUuids.push(key);
     })
-    partyBool = true;
 })
 
 export function sendPartyRequest() {
     partyMembersUuids = [];
-    partyBool = false;
     HypixelModAPI.requestPartyInfo();
 }
 
