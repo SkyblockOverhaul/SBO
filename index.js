@@ -71,6 +71,7 @@ const downloadMsgReg = register("step", () => {
 const changeLogReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
+    if (!data.downloadMsg) return
     if (data.changelogVersion === newVersion) { 
         changeLogReg.unregister()
         return

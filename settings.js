@@ -11,13 +11,16 @@ import {
     @Vigilant,
 } from 'Vigilance';
 import { data, resetVersion } from './utils/variables';
+import FileUtilities from "../FileUtilities/main";
+
+
+let customSounds = ["none"];
 
 // The only parameter that is required is the first, which should be the Module name.
 // The other 2 parameters are optional.
 // The 2nd parameter is the title of the settings window, seen in the top left above the
 // category list.
 // The 3rd parameter is an object that determines the sorting order of the categories.
-
 @Vigilant('SBO', 'SkyblockOverhaul', {
     getCategoryComparator: () => (a, b) => {
         // By default, categories, subcategories, and properties are sorted alphabetically.
@@ -43,6 +46,7 @@ import { data, resetVersion } from './utils/variables';
     //     return names.indexOf(a.attributesExt.name) - names.indexOf(b.attributesExt.name);
     // }
 })
+
 class Settings {
     constructor() {
         this.initialize(this);
@@ -724,7 +728,14 @@ class Settings {
     })
     sprVolume = 50;
 
-
+    @SelectorProperty({
+        name: "Custom Sound",
+        description: "Select a custom sound for a specific item",
+        category: "Customization",
+        subcategory: "Sound Settings",
+        options: customSounds
+    })
+    customSound = 0;
 
 
     // Debug
@@ -820,6 +831,24 @@ if (data.resetVersion != newResetVersion) {
     data.save();
     // FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
 }
+
+// push all ogg filenames from Config.modulesFolder.replace("modules", "images") to customSounds
+FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/").forEach(file => {
+    if (file.endsWith(".ogg")) {
+        
+        // push only file name without extension split at \
+        let filename = file.split("\\").pop();
+        customSounds.push(filename.replace(".ogg", ""));
+    }
+});
+// let soundFiles = FileLib.getUrlContent(Config.modulesFolder.replace("modules", "images"));
+// print(soundFiles);
+// for (let i = 0; i < soundFiles.length; i++) {
+//     if (soundFiles[i].endsWith(".ogg")) {
+//         customSounds.push(soundFiles[i].replace(".ogg", ""));
+//     }
+// }
+
 export default new Settings();
 
 //  java.awt.Desktop.getDesktop().browse(new java.net.URI("url"));
