@@ -239,59 +239,18 @@ register("step", () => {
 
 
 export function initializeGuiSettings() {
-    let tempDict = {
-        MobLoc: {
-            "x": 15,
-            "y": 22,
-            "s": 1
-        },
-        LootLoc: {
-            "x": 15,
-            "y": 112,
-            "s": 1
-        },
-        BobberLoc: {
-            "x": 10,
-            "y": 295,
-            "s": 1
-        },
-        MythosHpLoc: {
-            "x": 400,
-            "y": 50,
-            "s": 1
-        },
-        EffectsLoc: {
-            "x": 10,
-            "y": 200,
-            "s": 1
-        },
-        BlazeLoc: {
-            "x": 10,
-            "y": 10,
-            "s": 1
-        },
-        KuudraValueLoc: {
-            "x": 10,
-            "y": 10,
-            "s": 1
-        },
-        fossilLoc: {
-            "x": 275,
-            "y": 185,
-            "s": 1
-        },
-        LegionLoc: {
-            "x": 10,
-            "y": 310,
-            "s": 1
-        },
-        StatsLoc: {
-            "x": 15,
-            "y": 290,
-            "s": 1
-        }
+    return {
+        MobLoc: { "x": 15, "y": 22, "s": 1 },
+        LootLoc: { "x": 15, "y": 112, "s": 1 },
+        BobberLoc: { "x": 10, "y": 295, "s": 1 },
+        MythosHpLoc: { "x": 400, "y": 50, "s": 1 },
+        EffectsLoc: { "x": 10, "y": 200, "s": 1 },
+        BlazeLoc: { "x": 10, "y": 10, "s": 1 },
+        KuudraValueLoc: { "x": 10, "y": 10, "s": 1 },
+        fossilLoc: { "x": 275, "y": 185, "s": 1 },
+        LegionLoc: { "x": 10, "y": 310, "s": 1 },
+        StatsLoc: { "x": 15, "y": 290, "s": 1 }
     };
-    return tempDict;
 }
 
 export function loadGuiSettings() {
@@ -308,40 +267,54 @@ export function loadGuiSettings() {
 }
 
 function checkSettings(loadedSettings) {
-    // check if all Properties are present if not set this property to default
-    let defaultSettings = initializeGuiSettings();
-    if (!loadedSettings.hasOwnProperty("MobLoc")) {
-        loadedSettings["MobLoc"] = defaultSettings["MobLoc"];
+    // Get the default settings
+    const defaultSettings = initializeGuiSettings();
+
+    // Loop through default settings and ensure loaded settings have all properties
+    for (let key in defaultSettings) {
+        if (!loadedSettings.hasOwnProperty(key)) {
+            loadedSettings[key] = defaultSettings[key];
+        }
     }
-    if (!loadedSettings.hasOwnProperty("LootLoc")) {
-        loadedSettings["LootLoc"] = defaultSettings["LootLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("BobberLoc")) {
-        loadedSettings["BobberLoc"] = defaultSettings["BobberLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("MythosHpLoc")) {
-        loadedSettings["MythosHpLoc"] = defaultSettings["MythosHpLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("EffectsLoc")) {
-        loadedSettings["EffectsLoc"] = defaultSettings["EffectsLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("BlazeLoc")) {
-        loadedSettings["BlazeLoc"] = defaultSettings["BlazeLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("KuudraValueLoc")) {
-        loadedSettings["KuudraValueLoc"] = defaultSettings["KuudraValueLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("fossilLoc")) {
-        loadedSettings["fossilLoc"] = defaultSettings["fossilLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("LegionLoc")) {
-        loadedSettings["LegionLoc"] = defaultSettings["LegionLoc"];
-    }
-    if (!loadedSettings.hasOwnProperty("StatsLoc")) {
-        loadedSettings["StatsLoc"] = defaultSettings["StatsLoc"];
-    }
+    
     return loadedSettings;
 }
+
+// function checkSettings(loadedSettings) {
+//     // check if all Properties are present if not set this property to default
+//     let defaultSettings = initializeGuiSettings();
+//     if (!loadedSettings.hasOwnProperty("MobLoc")) {
+//         loadedSettings["MobLoc"] = defaultSettings["MobLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("LootLoc")) {
+//         loadedSettings["LootLoc"] = defaultSettings["LootLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("BobberLoc")) {
+//         loadedSettings["BobberLoc"] = defaultSettings["BobberLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("MythosHpLoc")) {
+//         loadedSettings["MythosHpLoc"] = defaultSettings["MythosHpLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("EffectsLoc")) {
+//         loadedSettings["EffectsLoc"] = defaultSettings["EffectsLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("BlazeLoc")) {
+//         loadedSettings["BlazeLoc"] = defaultSettings["BlazeLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("KuudraValueLoc")) {
+//         loadedSettings["KuudraValueLoc"] = defaultSettings["KuudraValueLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("fossilLoc")) {
+//         loadedSettings["fossilLoc"] = defaultSettings["fossilLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("LegionLoc")) {
+//         loadedSettings["LegionLoc"] = defaultSettings["LegionLoc"];
+//     }
+//     if (!loadedSettings.hasOwnProperty("StatsLoc")) {
+//         loadedSettings["StatsLoc"] = defaultSettings["StatsLoc"];
+//     }
+//     return loadedSettings;
+// }
 
 
 export function saveGuiSettings(guiSettings) {
