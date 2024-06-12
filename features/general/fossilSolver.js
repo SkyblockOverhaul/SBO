@@ -389,3 +389,9 @@ register("guiMouseClick", (_, __, ___, gui) => {
         middleBool = false;
     }, 50);
 })
+
+
+//Mining Speedboost Title
+registerWhen(register("chat", () => {
+    Client.showTitle("&6Mining Speed Boost!", "", 0, 40, 20);
+}).setCriteria("&r&a&r&6Mining Speed Boost &r&ais now available!&r"), () => settings.mineSpeedBoost && getWorld() == ("Dwarven Mines" || "Crystal Hollows"));

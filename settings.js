@@ -565,6 +565,12 @@ class Settings {
         category: "Mining",
     })
     exitWaypoint = false;
+    @SwitchProperty({
+        name: "Speed Boost Title",
+        description: "Shows a title when you get a speed boost",
+        category: "Mining",
+    })
+    mineSpeedBoost = false;
 
     // General other
     @SwitchProperty({
