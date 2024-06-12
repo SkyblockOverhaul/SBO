@@ -119,8 +119,13 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
     let crownPrice = formatNumber(getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"])
     let souvenirPrice = formatNumber(getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"])
 
-    function getMessagePart(price, color, itemName, itemAmount, percent = ``) {
-        return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY})\n`
+    function getMessagePart(price, color, itemName, itemAmount, percent = '') {
+        if (percent === ''){
+            return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount}\n`
+        }
+        else{
+            return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY})\n`
+        }
     }
     
     let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})

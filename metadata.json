@@ -12,6 +12,7 @@
     "RenderLibV2",
     "axios",
     "Elementa",
-    "HypixelModAPI"
+    "HypixelModAPI",
+    "FileUtilities"
   ]
 }
