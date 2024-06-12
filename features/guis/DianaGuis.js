@@ -119,37 +119,26 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
     let crownPrice = formatNumber(getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"])
     let souvenirPrice = formatNumber(getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"])
 
+    function getMessagePart(price, color, itemName, itemAmount, percent = ``) {
+        return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY})\n`
+    }
     
     let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
 `;
-    if (mobSetting) {
-        lootMessage += `${GOLD}${chimeraPrice} ${GRAY}| ${LIGHT_PURPLE}Chimera: ${AQUA}${lootTracker["items"]["Chimera"]} ${GRAY}(${AQUA}${percentDict["Chimera"]}%${GRAY}) [${AQUA}LS${GRAY}: ${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
-${GOLD}${relicPrice} ${GRAY}| ${DARK_PURPLE}Minos Relic: ${AQUA}${lootTracker["items"]["MINOS_RELIC"]} ${GRAY}(${AQUA}${percentDict["Minos Relic"]}%${GRAY})
-${GOLD}${daedalusPrice} ${GRAY}| ${GOLD}Daedalus Stick: ${AQUA}${lootTracker["items"]["Daedalus Stick"]} ${GRAY}(${AQUA}${percentDict["Daedalus Stick"]}%${GRAY})
-`
-    }
-    else {
-        lootMessage += `${GOLD}${chimeraPrice} ${GRAY}| ${LIGHT_PURPLE}Chimera: ${AQUA}${lootTracker["items"]["Chimera"]} [${AQUA}LS${GRAY}: ${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]
-${GOLD}${relicPrice} ${GRAY}| ${DARK_PURPLE}Minos Relic: ${AQUA}${lootTracker["items"]["MINOS_RELIC"]}
-${GOLD}${daedalusPrice} ${GRAY}| ${GOLD}Daedalus Stick: ${AQUA}${lootTracker["items"]["Daedalus Stick"]}
-`
-    }
-    lootMessage += `${GOLD}${crownPrice} ${GRAY}| ${GOLD}Crown of Greed: ${AQUA}${lootTracker["items"]["Crown of Greed"]} 
-${GOLD}${souvenirPrice} ${GRAY}| ${GOLD}Souvenir: ${AQUA}${lootTracker["items"]["Washed-up Souvenir"]}
-${GOLD}${griffinPrice} ${GRAY}| ${GOLD}Griffin Feather: ${AQUA}${formatNumber(lootTracker["items"]["Griffin Feather"])}
-`
-    lootMessage += `${GOLD}${dwarfPrice} ${GRAY}| ${DARK_GREEN}Turtle Shelmet: ${AQUA}${lootTracker["items"]["DWARF_TURTLE_SHELMET"]}
-${GOLD}${tigerPrice} ${GRAY}| ${DARK_GREEN}Tiger Plushie: ${AQUA}${lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]}
-${GOLD}${antiquePrice} ${GRAY}| ${DARK_GREEN}Antique Remedies: ${AQUA}${lootTracker["items"]["ANTIQUE_REMEDIES"]}
-`
-
-    lootMessage += `${GOLD}${clawPrice} ${GRAY}| ${BLUE}Ancient Claws: ${AQUA}${formatNumber(lootTracker["items"]["ANCIENT_CLAW"])}
-`
-
-    lootMessage += `${GOLD}${echClawPrice} ${GRAY}| ${BLUE}Enchanted Claws: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"])}
-${GOLD}${goldPrice} ${GRAY}| ${BLUE}Enchanted Gold: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_GOLD"])}
-${GOLD}${ironPrice} ${GRAY}| ${BLUE}Enchanted Iron: ${AQUA}${formatNumber(lootTracker["items"]["ENCHANTED_IRON"])} 
-${GRAY}Total Burrows: ${AQUA}${lootTracker["items"]["Total Burrows"]}
+    lootMessage += getMessagePart(chimeraPrice, LIGHT_PURPLE, "Chimera", lootTracker["items"]["Chimera"], percentDict["Chimera"]);
+    lootMessage += getMessagePart(relicPrice, DARK_PURPLE, "Minos Relic", lootTracker["items"]["MINOS_RELIC"], percentDict["Minos Relic"]);
+    lootMessage += getMessagePart(daedalusPrice, GOLD, "Daedalus Stick", lootTracker["items"]["Daedalus Stick"], percentDict["Daedalus Stick"]);
+    lootMessage += getMessagePart(crownPrice, GOLD, "Crown of Greed", lootTracker["items"]["Crown of Greed"]);
+    lootMessage += getMessagePart(souvenirPrice, GOLD, "Souvenir", lootTracker["items"]["Washed-up Souvenir"]);
+    lootMessage += getMessagePart(griffinPrice, GOLD, "Griffin Feather", lootTracker["items"]["Griffin Feather"]);
+    lootMessage += getMessagePart(dwarfPrice, DARK_GREEN, "Turtle Shelmet", lootTracker["items"]["DWARF_TURTLE_SHELMET"]);
+    lootMessage += getMessagePart(tigerPrice, DARK_GREEN, "Tiger Plushie", lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]);
+    lootMessage += getMessagePart(antiquePrice, DARK_GREEN, "Antique Remedies", lootTracker["items"]["ANTIQUE_REMEDIES"]);
+    lootMessage += getMessagePart(clawPrice, BLUE, "Ancient Claws", lootTracker["items"]["ANCIENT_CLAW"]);
+    lootMessage += getMessagePart(echClawPrice, BLUE, "Enchanted Claws", lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]);
+    lootMessage += getMessagePart(goldPrice, BLUE, "Enchanted Gold", lootTracker["items"]["ENCHANTED_GOLD"]);
+    lootMessage += getMessagePart(ironPrice, BLUE, "Enchanted Iron", lootTracker["items"]["ENCHANTED_IRON"]);
+    lootMessage += `${GRAY}Total Burrows: ${AQUA}${lootTracker["items"]["Total Burrows"]}
 ${GOLD}Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}
 `
     let totalValue = 0;
@@ -167,8 +156,8 @@ ${GOLD}Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}
     totalValue += getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"];
     totalValue += getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"];
     totalValue += lootTracker["items"]["coins"];
-    lootMessage += `${GOLD}Total Profit: ${AQUA}${formatNumber(totalValue)}
-`
+    lootMessage += `${GOLD}Total Profit: ${AQUA}${formatNumber(totalValue)}`
+
     return lootMessage;
 }
 
