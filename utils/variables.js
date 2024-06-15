@@ -276,6 +276,23 @@ dianaTrackerSession.save();
 dianaTrackerMayor.save();
 pastDianaEvents.save();
 
+export function checkMayorTracker() {
+    if (dianaTrackerMayor.year < getDateMayorElected().getFullYear()) {  
+        let tempTracker = initializeTrackerMayor();
+        for (let key in dianaTrackerMayor) {
+            tempTracker[key] = dianaTrackerMayor[key];
+        }
+        pastDianaEvents["events"].push(tempTracker);
+        let newTracker = initializeTrackerMayor();
+        for (let key in newTracker) {
+            dianaTrackerMayor[key] = newTracker[key];
+        }
+        dianaTrackerMayor.save();
+        pastDianaEvents.save();
+    }
+}
+
+
 // --- TRIGGER CONTROL ---
 
 // An array to store registered triggers and their dependencies
