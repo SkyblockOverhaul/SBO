@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { data, pastDianaEvents, registerWhen } from "../../utils/variables";
+import { checkMayorTracker, data, pastDianaEvents, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
@@ -150,18 +150,7 @@ export function trackItem(item, category, amount) {
 
 function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
-        if (tracker.year < getDateMayorElected().getFullYear()) {    
-            setNewMayorBool();   
-            setDateMayorElected("27.3." + (getSkyblockDate().getFullYear()));       
-            pastDianaEvents["events"].push(tracker);
-            let newTracker = initializeTrackerMayor();
-            for (let key in newTracker) {
-                tracker[key] = newTracker[key];
-            }
-
-            tracker.save();
-            pastDianaEvents.save();
-        }
+        checkMayorTracker();
     }
     tracker[category][item] += amount;
     if (category === "mobs") {
