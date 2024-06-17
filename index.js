@@ -98,6 +98,21 @@ const changeLogReg = register("step", () => {
     changeLogReg.unregister()
 }).setFps(1)
 
+
+register("step", () => {
+    getPurse()
+}).setFps(1)
+
+function getPurse() {
+    let scoreboard = Scoreboard.getLines()
+    scoreboard.forEach(line => {
+        line = line.getName().removeFormatting()
+        if (line.includes("Purse")){
+            print(line);
+        }
+    })        
+}
+
 // register("step", () => {
 //     // print each egg
 //     print(`&r&6Eggs: &e${eggs.length}`);
