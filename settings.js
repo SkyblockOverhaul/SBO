@@ -73,6 +73,7 @@ class Settings {
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
         this.addDependency('Inquis Color','Highlight Inquis');
+        this.addDependency('Four-Eyed Fish','Diana Tracker');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
