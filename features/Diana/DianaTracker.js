@@ -75,15 +75,14 @@ export function trackLootWithSacks(ammount, item) {
     }
 }
 
-let forbiddenCoins = [2000]
-
+let forbiddenCoins = [1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
 export function trackScavengerCoins(coins) {
-    // if (mobDeath2SecsTrue()) {
-        if (!(coins in forbiddenCoins)) {
+    if (mobDeath2SecsTrue()) {
+        if (!forbiddenCoins.includes(coins) && coins < 60000) {
             trackItem("scavengerCoins", "items", coins);
             trackItem("coins", "items", coins);
         }
-    // }
+    }
 }
 
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //
