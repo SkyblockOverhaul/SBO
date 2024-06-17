@@ -1,8 +1,8 @@
-import settings from "../settings";
-import { registerWhen } from "./variables";
-import { HypixelModAPI } from "./../../HypixelModAPI";
-import { getWorld } from "./world";
 import { request } from "../../requestV2";
+import settings from "../settings";
+import { HypixelModAPI } from "./../../HypixelModAPI";
+import { registerWhen } from "./variables";
+import { getWorld } from "./world";
 
 // geklaut von coleweight for drawline
 if(!GlStateManager) {
@@ -617,4 +617,21 @@ export function formatNumber(number) {
         return (number / 1000).toFixed(1) + "k";
     }
     return number;
+}
+
+export function getPurse() {
+    let purse = 0;
+    let scoreBoardLines = Scoreboard.getLines();
+    if (scoreBoardLines != undefined) {
+        for (let i = 0; i < scoreBoardLines.length; i++) {
+            if (scoreBoardLines[i].includes("purse")) {
+                purse = scoreBoardLines[i].split(": ")[1];
+                break;
+            }
+        }
+        return purse
+    }
+    else {
+        return -1
+    }
 }
