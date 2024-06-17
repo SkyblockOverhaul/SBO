@@ -143,10 +143,11 @@ registerWhen(register("guiOpened", () => {
 
 let dianaMobNames = ["Inquisitor", "Minotaur", "Gaia", "Lynx", "Champion", "Hunter"];
 
-registerWhen(register("entityDeath", (entity) => {
+registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er real enitiy names mint wie ZOMBIE, Iron Golem etc
     let dist = entity.distanceTo(Player.getPlayer());
-    entity = entity.getName();
-    if (entity.includes(dianaMobNames)) {
+    entityName = entity.getName();
+    if (entityName.includes(dianaMobNames)) {
+        print(entityName);
         if (dist < 30 ) {
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
