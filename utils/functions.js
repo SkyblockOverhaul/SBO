@@ -141,14 +141,13 @@ registerWhen(register("guiOpened", () => {
     }, 300);
 }), () => settings.dianaTracker);
 
-let dianaMobNames = ["Inquisitor", "Minotaur", "Gaia", "Lynx", "Champion", "Hunter"];
+let dianaMobNames = ["Minos Inquisitor", "Minotaur", "Iron Golem", "Ocelot", "Minos Champion", "Zombie"];
 
 registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er real enitiy names mint wie ZOMBIE, Iron Golem etc
     let dist = entity.distanceTo(Player.getPlayer());
-    entityName = entity.getName();
-    if (entityName.includes(dianaMobNames)) {
-        print(entityName);
-        if (dist < 30 ) {
+    entityName = entity.getName().toString();
+    if (dianaMobNames.includes(entityName)) {
+        if (dist < 20 ) {
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             setTimeout(() => {
