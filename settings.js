@@ -137,6 +137,13 @@ class Settings {
     })
     dianaLootTrackerView = 0;
     @SwitchProperty({
+        name: "Four-Eyed Fish",
+        description: "Set if you have a Four-Eyed Fish on your griffin pet",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+    })
+    fourEyedFish = false;
+    @SwitchProperty({
         name: "Diana Stats",
         description: "Shows stats like Mobs since Inquisitor, Inquisitors since Chimera",
         category: "Diana",

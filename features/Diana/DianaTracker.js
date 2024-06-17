@@ -184,6 +184,17 @@ register("command", () => {
 registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
+        burrow = burrow.removeFormatting();
+        if (settings.fourEyedFish) {
+            if (burrow == "(2/4)" || burrow == "(3/4)") {
+                trackItem("coins", "items", 4000);
+                trackItem("fishCoins", "items", 4000);
+            }
+            else {
+                trackItem("coins", "items", 2000);
+                trackItem("fishCoins", "items", 2000);
+            }
+        }
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => getWorld() === "Hub" && settings.dianaTracker);
@@ -191,6 +202,10 @@ registerWhen(register("chat", (burrow, event) => {
 registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
+        if (settings.fourEyedFish) {
+            trackItem("coins", "items", 2000);
+            trackItem("fishCoins", "items", 2000);
+        }
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => getWorld() === "Hub" && settings.dianaTracker);
