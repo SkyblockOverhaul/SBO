@@ -36,8 +36,6 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
     
     if (diff > 0) {
         trackScavengerCoins(diff);
-        print("new purse: " + newPurse + " old purse: " + oldPurse);
-        ChatLib.chat("Purse diff: " + diff); 
     }
 }
 
