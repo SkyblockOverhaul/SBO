@@ -162,9 +162,20 @@ function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
         checkMayorTracker();
     }
-    tracker[category][item] += amount;
+    if (tracker[category][item] != null) {
+        tracker[category][item] += amount;
+    }
+    else {
+        tracker[category][item] = amount;
+    }
+
     if (category === "mobs") {
-        tracker["mobs"]["TotalMobs"] += amount;
+        if (tracker["mobs"]["TotalMobs"] != null) {
+            tracker["mobs"]["TotalMobs"] += amount;
+        }
+        else {
+            tracker["mobs"]["TotalMobs"] = amount;
+        }
     }
     tracker.save();
 }
