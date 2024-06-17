@@ -98,6 +98,10 @@ register("chat", (player, message) => {
             break
         case "!chim":
         case "!chimera":
+        case "!chims":
+        case "!chimeras":
+        case "!book":
+        case "!books":
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"])

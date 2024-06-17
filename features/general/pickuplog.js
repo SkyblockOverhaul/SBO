@@ -34,7 +34,7 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
     // compare purse
     diff = newPurse - oldPurse;
     if (diff > 0) {
-        ChatLib.chat("Purse diff: " + diff); 
+        // ChatLib.chat("Purse diff: " + diff); 
     }
 }
 

@@ -619,28 +619,48 @@ export function formatNumber(number) {
     return number;
 }
 
+
 export function getPurse() {
     let purse = 0;
-    let scoreBoardLines = Scoreboard.getLines();
-    
-    if (scoreBoardLines != undefined) {
-        for (let i = 0; i < scoreBoardLines.length; i++) {
-            let line = scoreBoardLines[i];
-            // print(line);
-            
-            // Check if line is a string and not null or undefined
-            if (typeof line === 'string' && line.includes("Purse")) {
+    let scoreboard = Scoreboard.getLines()
+    if (scoreboard != undefined) {
+        scoreboard.forEach(line => {
+            line = line.getName().removeFormatting()
+            if (line.includes("Purse")) {
                 let parts = line.split(": ");
-                // print(line);
-                if (parts.length > 1) {
-                    // print(parts[1]);
-                    purse = parts[1];
-                }
-                break;
+                parts[1] = parts[1].replace(/[^0-9,]/g, '').replace(",", "");
+                purse = parts[1];  
+                return parseInt(purse); 
             }
-        }
-        return purse;
-    } else {
-        return -1;
+        })      
     }
+    return -1;
+    
 }
+
+
+// export function getPurse() {
+//     let purse = 0;
+//     let scoreBoardLines = Scoreboard.getLines();
+    
+//     if (scoreBoardLines != undefined) {
+//         for (let i = 0; i < scoreBoardLines.length; i++) {
+//             let line = scoreBoardLines[i];
+//             // print(line);
+            
+//             // Check if line is a string and not null or undefined
+//             if (typeof line === 'string' && line.includes("Purse")) {
+//                 let parts = line.split(": ");
+//                 // print(line);
+//                 if (parts.length > 1) {
+//                     // print(parts[1]);
+//                     purse = parts[1];
+//                 }
+//                 break;
+//             }
+//         }
+//         return purse;
+//     } else {
+//         return -1;
+//     }
+// }w
