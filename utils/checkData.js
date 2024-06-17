@@ -1,6 +1,6 @@
 import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
 import { initializeGuiSettings, getKuudraItems, getBazaarItems } from "./functions";
-import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
+import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
 import settings from "../settings";
 
 // check if data is loaded and time is set //
@@ -41,7 +41,12 @@ function checkAllCriteria() {
         check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
     }
     let check8 = (trackerTotal !== undefined && trackerMayor !== undefined && trackerSession !== undefined);
-    if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8) {
+    let check9 = false;
+    if (check8 && check5) {
+        check9 = true;
+        checkMayorTracker();
+    }
+    if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9) {
         return true;
     }
     return false;

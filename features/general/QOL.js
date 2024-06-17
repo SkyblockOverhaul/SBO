@@ -90,3 +90,11 @@ register("chat", (pet, event) => {
 
 // &cAutopet &eequipped your &7[Lvl 100] &6Griffin&d ✦&e! &a&lVIEW RULE&r
 
+register("chat", (player, command) => {
+    command = command.removeFormatting().toLowerCase();
+    if (command == "!inv") {
+        player = player.removeFormatting()
+        player = getplayername(player)
+        new TextComponent("&6[SBO] &eClick to inv player").setClick("run_command", "/p invite " + player).setHover("show_text", "/p invite " + player).chat();
+    }
+}).setCriteria("&dFrom ${player}&r&7: ${command}");
