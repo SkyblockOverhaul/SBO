@@ -622,16 +622,25 @@ export function formatNumber(number) {
 export function getPurse() {
     let purse = 0;
     let scoreBoardLines = Scoreboard.getLines();
+    
     if (scoreBoardLines != undefined) {
         for (let i = 0; i < scoreBoardLines.length; i++) {
-            if (scoreBoardLines[i].includes("purse")) {
-                purse = scoreBoardLines[i].split(": ")[1];
+            let line = scoreBoardLines[i];
+            // print(line);
+            
+            // Check if line is a string and not null or undefined
+            if (typeof line === 'string' && line.includes("Purse")) {
+                let parts = line.split(": ");
+                // print(line);
+                if (parts.length > 1) {
+                    // print(parts[1]);
+                    purse = parts[1];
+                }
                 break;
             }
         }
-        return purse
-    }
-    else {
-        return -1
+        return purse;
+    } else {
+        return -1;
     }
 }

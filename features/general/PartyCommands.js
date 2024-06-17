@@ -100,7 +100,7 @@ register("chat", (player, message) => {
         case "!chimera":
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Chimera: " + dianaTrackerMayor.chimera)
+                    ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"])
                 }, 50)
             }
             break
@@ -109,7 +109,7 @@ register("chat", (player, message) => {
         case "!inquisitor":
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Inquisitor: " + dianaTrackerMayor.inquisitor)
+                    ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"])
                 }, 50)
             }
             break
@@ -117,7 +117,7 @@ register("chat", (player, message) => {
         case "!burrow":
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Burrows: " + dianaTrackerMayor.burrows)
+                    ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"])
                 }, 50)
             }
             break
@@ -125,7 +125,7 @@ register("chat", (player, message) => {
         case "!relics":
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Relics: " + dianaTrackerMayor.relics)
+                    ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"])
                 }, 50)
             }
             break
@@ -133,7 +133,7 @@ register("chat", (player, message) => {
         case "!sticks":
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Sticks: " + dianaTrackerMayor.sticks)
+                    ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"])
                 }, 50)
             }
             break
@@ -141,7 +141,7 @@ register("chat", (player, message) => {
         case "!mobs":
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Mobs: " + dianaTrackerMayor.mobs)
+                    ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
                 }, 50)
             }
             break

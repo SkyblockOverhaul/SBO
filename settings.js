@@ -465,6 +465,12 @@ class Settings {
         category: 'Quality of Life',
     })
     hideSackMessage = false;
+    @SwitchProperty({
+        name: 'Clickable Messages To Invite a Player',
+        description: 'Click on a message to invite a player to your party when he sends you a "!inv" per msg',
+        category: 'Quality of Life',
+    })
+    clickableInvite = false;
     // General
     // General Waypoints
     @SwitchProperty({

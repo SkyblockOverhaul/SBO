@@ -1,4 +1,5 @@
 import settings from "../../settings";
+import { getplayername } from "../../utils/functions";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { createWorldWaypoint } from "./Waypoints";
@@ -84,17 +85,21 @@ registerWhen(register("chat", (botName, player, message, event) =>{
 // testen
 // &r&2Guild > birgeBot: player: message
 
-register("chat", (pet, event) => {
-    if (settings.hideAutoPetMSG) cancel(event);
-}).setCriteria("&cAutopet &eequipped your ${pet}&a&lVIEW RULE&r");
+registerWhen(register("chat", (pet, event) => {
+    cancel(event);
+}).setCriteria("&cAutopet &eequipped your ${pet}&a&lVIEW RULE&r"), () => settings.hideAutoPetMSG);
 
 // &cAutopet &eequipped your &7[Lvl 100] &6Griffin&d ✦&e! &a&lVIEW RULE&r
 
-register("chat", (player, command) => {
-    command = command.removeFormatting().toLowerCase();
+registerWhen(register("chat", (player, command) => {
+    command = command.removeFormatting().toLowerCase().replace(" ", "");
+    print(command);
     if (command == "!inv") {
         player = player.removeFormatting()
         player = getplayername(player)
-        new TextComponent("&6[SBO] &eClick to inv player").setClick("run_command", "/p invite " + player).setHover("show_text", "/p invite " + player).chat();
+        setTimeout(function() {
+            new TextComponent("&6[SBO] &eClick to inv player").setClick("run_command", "/p invite " + player).setHover("show_text", "/p invite " + player).chat();
+        }, 50);
     }
-}).setCriteria("&dFrom ${player}&r&7: ${command}");
+}).setCriteria("&dFrom ${player}&r&7: ${command}"), () => settings.clickableInvite);
+// &dFrom &r&b[MVP&r&a+&r&b] LeWhiteCore&r&7: &r&7!inv&r
