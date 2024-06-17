@@ -621,22 +621,21 @@ export function formatNumber(number) {
 
 
 export function getPurse() {
-    let purse = 0;
-    let scoreboard = Scoreboard.getLines()
+    let scoreboard = Scoreboard.getLines();
     if (scoreboard != undefined) {
-        scoreboard.forEach(line => {
-            line = line.getName().removeFormatting()
+        for (let line of scoreboard) {
+            line = line.getName().removeFormatting();
             if (line.includes("Purse")) {
                 let parts = line.split(": ");
-                parts[1] = parts[1].replace(/[^0-9,]/g, '').replace(",", "");
-                purse = parts[1];  
-                return parseInt(purse); 
+                parts[1] = parts[1].replace(/[^0-9,]/g, '').replaceAll(",", "");
+                let purse = parseInt(parts[1]);
+                return purse; 
             }
-        })      
+        }      
     }
     return -1;
-    
 }
+
 
 
 // export function getPurse() {
