@@ -141,14 +141,19 @@ registerWhen(register("guiOpened", () => {
     }, 300);
 }), () => settings.dianaTracker);
 
+let dianaMobNames = ["Inquisitor", "Minotaur", "Gaia", "Lynx", "Champion", "Hunter"];
+
 registerWhen(register("entityDeath", (entity) => {
     let dist = entity.distanceTo(Player.getPlayer());
-    if (dist < 30 ) {
-        allowedToTrackSacks = true;
-        state.entityDeathOccurred = true;
-        setTimeout(() => {
-            state.entityDeathOccurred = false;
-        }, 2000);
+    entity = entity.getName();
+    if (entity.includes(dianaMobNames)) {
+        if (dist < 30 ) {
+            allowedToTrackSacks = true;
+            state.entityDeathOccurred = true;
+            setTimeout(() => {
+                state.entityDeathOccurred = false;
+            }, 2000);
+        }
     }
 }), () => getWorld() === "Hub" && settings.dianaTracker);
 
