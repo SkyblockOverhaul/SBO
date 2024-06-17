@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { readPlayerInventory, isInSkyblock, isWorldLoaded, getPurse } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
-import { dianaLootCounter, trackLootWithSacks } from '../Diana/DianaTracker';
+import { dianaLootCounter, trackLootWithSacks, trackScavengerCoins } from '../Diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -33,14 +33,17 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
     }
     // compare purse
     diff = newPurse - oldPurse;
+    
     if (diff > 0) {
-        // ChatLib.chat("Purse diff: " + diff); 
+        trackScavengerCoins(diff);
+        print("new purse: " + newPurse + " old purse: " + oldPurse);
+        ChatLib.chat("Purse diff: " + diff); 
     }
 }
 
 oldPlayerItems = {};
 function pickuplog() {
-    if (oldPlayerItems.length === 0) {
+    if (Object.keys(oldPlayerItems).length == 0) {
         oldPurse = getPurse();
         oldPlayerItems = readPlayerInventory();
         // ChatLib.chat("old inventory read");

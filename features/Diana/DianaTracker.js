@@ -3,7 +3,7 @@ import { checkMayorTracker, data, pastDianaEvents, registerWhen } from "../../ut
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
-import { isActiveForOneSecond } from "../../utils/functions";
+import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTrackerMayor, initializeTracker } from "../../utils/variables";
@@ -19,7 +19,7 @@ export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
     let checkBool = true;
-    if (isActiveForOneSecond() || gotLootShare()) {
+    if (mobDeath2SecsTrue() || gotLootShare()) {
         if (checkDiana()) {
             for (let i in countThisIds.values()) {
                 if (item === i) {
@@ -73,6 +73,17 @@ export function trackLootWithSacks(ammount, item) {
             }
         }
     }
+}
+
+let forbiddenCoins = [2000]
+
+export function trackScavengerCoins(coins) {
+    // if (mobDeath2SecsTrue()) {
+        if (!(coins in forbiddenCoins)) {
+            trackItem("scavengerCoins", "items", coins);
+            trackItem("coins", "items", coins);
+        }
+    // }
 }
 
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //

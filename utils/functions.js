@@ -627,6 +627,7 @@ export function getPurse() {
             line = line.getName().removeFormatting();
             if (line.includes("Purse")) {
                 let parts = line.split(": ");
+                parts[1] = parts[1].split(" ")[0];
                 parts[1] = parts[1].replace(/[^0-9,]/g, '').replaceAll(",", "");
                 let purse = parseInt(parts[1]);
                 return purse; 
