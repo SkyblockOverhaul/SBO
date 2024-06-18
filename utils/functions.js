@@ -147,7 +147,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
     if (dianaMobNames.includes(entityName)) {
-        if (dist < 20 ) {
+        if (dist < 30 ) {
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             setTimeout(() => {
