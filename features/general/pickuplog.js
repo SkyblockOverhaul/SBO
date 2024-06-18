@@ -1,11 +1,12 @@
 import settings from "../../settings";
-import { readPlayerInventory, isInSkyblock, isWorldLoaded } from '../../utils/functions';
+import { readPlayerInventory, isInSkyblock, isWorldLoaded, getPurse } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
-import { dianaLootCounter, trackLootWithSacks } from '../diana/DianaTracker';
+import { dianaLootCounter, trackLootWithSacks, trackScavengerCoins } from '../Diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
 
-
+let newPurse = 0;
+let oldPurse = 0;
 function compareInventories(oldPlayerItems, newPlayerItems) {
     for (let item in newPlayerItems) {
         if (oldPlayerItems[item]) {
@@ -30,20 +31,29 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
             // ChatLib.chat("- " + oldPlayerItems[item] + "x " + item);
         }
     }
+    // compare purse
+    diff = newPurse - oldPurse;
+    
+    if (diff > 0) {
+        trackScavengerCoins(diff);
+    }
 }
 
 oldPlayerItems = {};
 function pickuplog() {
-    if (oldPlayerItems.length === 0) {
+    if (Object.keys(oldPlayerItems).length == 0) {
+        oldPurse = getPurse();
         oldPlayerItems = readPlayerInventory();
         // ChatLib.chat("old inventory read");
     }
     else {
         // ChatLib.chat("comparing inventories");
         newPlayerItems = readPlayerInventory();
+        newPurse = getPurse();
         if (newPlayerItems["SKYBLOCK_MENU"]) {
             compareInventories(oldPlayerItems, newPlayerItems);
             oldPlayerItems = readPlayerInventory();
+            oldPurse = getPurse();
         }
     }
 }

@@ -1,8 +1,8 @@
-import settings from "../settings";
-import { registerWhen } from "./variables";
-import { HypixelModAPI } from "./../../HypixelModAPI";
-import { getWorld } from "./world";
 import { request } from "../../requestV2";
+import settings from "../settings";
+import { HypixelModAPI } from "./../../HypixelModAPI";
+import { registerWhen } from "./variables";
+import { getWorld } from "./world";
 
 // geklaut von coleweight for drawline
 if(!GlStateManager) {
@@ -141,14 +141,19 @@ registerWhen(register("guiOpened", () => {
     }, 300);
 }), () => settings.dianaTracker);
 
-registerWhen(register("entityDeath", (entity) => {
+let dianaMobNames = ["Minos Inquisitor", "Minotaur", "Iron Golem", "Ocelot", "Minos Champion", "Zombie"];
+
+registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er real enitiy names mint wie ZOMBIE, Iron Golem etc
     let dist = entity.distanceTo(Player.getPlayer());
-    if (dist < 30 ) {
-        allowedToTrackSacks = true;
-        state.entityDeathOccurred = true;
-        setTimeout(() => {
-            state.entityDeathOccurred = false;
-        }, 2000);
+    entityName = entity.getName().toString();
+    if (dianaMobNames.includes(entityName)) {
+        if (dist < 30 ) {
+            allowedToTrackSacks = true;
+            state.entityDeathOccurred = true;
+            setTimeout(() => {
+                state.entityDeathOccurred = false;
+            }, 2000);
+        }
     }
 }), () => getWorld() === "Hub" && settings.dianaTracker);
 
@@ -616,5 +621,51 @@ export function formatNumber(number) {
     else if (number >= 1000) {
         return (number / 1000).toFixed(1) + "k";
     }
-    return number;
+    return number.toFixed(0);
 }
+
+
+export function getPurse() {
+    let scoreboard = Scoreboard.getLines();
+    if (scoreboard != undefined) {
+        for (let line of scoreboard) {
+            line = line.getName().removeFormatting();
+            if (line.includes("Purse")) {
+                let parts = line.split(": ");
+                parts[1] = parts[1].split(" ")[0];
+                parts[1] = parts[1].replace(/[^0-9,]/g, '').replaceAll(",", "");
+                let purse = parseInt(parts[1]);
+                return purse; 
+            }
+        }      
+    }
+    return -1;
+}
+
+
+
+// export function getPurse() {
+//     let purse = 0;
+//     let scoreBoardLines = Scoreboard.getLines();
+    
+//     if (scoreBoardLines != undefined) {
+//         for (let i = 0; i < scoreBoardLines.length; i++) {
+//             let line = scoreBoardLines[i];
+//             // print(line);
+            
+//             // Check if line is a string and not null or undefined
+//             if (typeof line === 'string' && line.includes("Purse")) {
+//                 let parts = line.split(": ");
+//                 // print(line);
+//                 if (parts.length > 1) {
+//                     // print(parts[1]);
+//                     purse = parts[1];
+//                 }
+//                 break;
+//             }
+//         }
+//         return purse;
+//     } else {
+//         return -1;
+//     }
+// }w

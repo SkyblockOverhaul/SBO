@@ -98,6 +98,7 @@ const changeLogReg = register("step", () => {
     changeLogReg.unregister()
 }).setFps(1)
 
+
 // register("step", () => {
 //     // print each egg
 //     print(`&r&6Eggs: &e${eggs.length}`);

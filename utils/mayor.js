@@ -134,7 +134,7 @@ register("step", () => {
     if (Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK")) {
         if (skyblockDate != undefined) {
             if ((mayor === undefined || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
-                ChatLib.chat("&cRefreshing mayor"); 
+                // ChatLib.chat("&cRefreshing mayor"); 
                 refreshingMayor = true;
                 getYearMayorRequestV2(); 
                 newMayor = false;

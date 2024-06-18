@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { getplayername } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
+import { data, dianaTrackerMayor } from "../../utils/variables";
 
 const carrot = [
     "As I see it, Carrot",
@@ -95,6 +96,67 @@ register("chat", (player, message) => {
                 }, 50)
             }
             break
+        case "!chim":
+        case "!chimera":
+        case "!chims":
+        case "!chimeras":
+        case "!book":
+        case "!books":
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"])
+                }, 50)
+            }
+            break
+        case "!inq":
+        case "!inqs":
+        case "!inquisitor":
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"])
+                }, 50)
+            }
+            break
+        case "!burrows":
+        case "!burrow":
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"])
+                }, 50)
+            }
+            break
+        case "!relic":
+        case "!relics":
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"])
+                }, 50)
+            }
+            break
+        case "!stick":
+        case "!sticks":
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"])
+                }, 50)
+            }
+            break
+        case "!mob":
+        case "!mobs":
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
+                }, 50)
+            }
+            break
+        case "!since":
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
+                }, 50)
+            }
+            break
+
 
     }
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")

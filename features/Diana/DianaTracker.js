@@ -3,7 +3,7 @@ import { checkMayorTracker, data, pastDianaEvents, registerWhen } from "../../ut
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
-import { isActiveForOneSecond } from "../../utils/functions";
+import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTrackerMayor, initializeTracker } from "../../utils/variables";
@@ -19,7 +19,7 @@ export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
     let checkBool = true;
-    if (isActiveForOneSecond() || gotLootShare()) {
+    if (mobDeath2SecsTrue() || gotLootShare()) {
         if (checkDiana()) {
             for (let i in countThisIds.values()) {
                 if (item === i) {
@@ -71,6 +71,16 @@ export function trackLootWithSacks(ammount, item) {
             if (item == i) {
                 trackItem(item.replaceAll(" ", "_").toUpperCase(), "items", parseInt(ammount));
             }
+        }
+    }
+}
+
+let forbiddenCoins = [1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
+export function trackScavengerCoins(coins) {
+    if (mobDeath2SecsTrue()) {
+        if (!forbiddenCoins.includes(coins) && coins < 60000) {
+            trackItem("scavengerCoins", "items", coins);
+            trackItem("coins", "items", coins);
         }
     }
 }
@@ -152,9 +162,20 @@ function trackOne(tracker, item, category, type, amount) {
     if (type == "Mayor") {
         checkMayorTracker();
     }
-    tracker[category][item] += amount;
+    if (tracker[category][item] != null) {
+        tracker[category][item] += amount;
+    }
+    else {
+        tracker[category][item] = amount;
+    }
+
     if (category === "mobs") {
-        tracker["mobs"]["TotalMobs"] += amount;
+        if (tracker["mobs"]["TotalMobs"] != null) {
+            tracker["mobs"]["TotalMobs"] += amount;
+        }
+        else {
+            tracker["mobs"]["TotalMobs"] = amount;
+        }
     }
     tracker.save();
 }
@@ -174,6 +195,17 @@ register("command", () => {
 registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
+        burrow = burrow.removeFormatting();
+        if (settings.fourEyedFish) {
+            if (burrow == "(2/4)" || burrow == "(3/4)") {
+                trackItem("coins", "items", 4000);
+                trackItem("fishCoins", "items", 4000);
+            }
+            else {
+                trackItem("coins", "items", 2000);
+                trackItem("fishCoins", "items", 2000);
+            }
+        }
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => getWorld() === "Hub" && settings.dianaTracker);
@@ -181,6 +213,10 @@ registerWhen(register("chat", (burrow, event) => {
 registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
         trackItem("Total Burrows", "items", 1);
+        if (settings.fourEyedFish) {
+            trackItem("coins", "items", 2000);
+            trackItem("fishCoins", "items", 2000);
+        }
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&eYou finished the Griffin burrow chain!${burrow}"), () => getWorld() === "Hub" && settings.dianaTracker);

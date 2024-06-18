@@ -10,11 +10,11 @@ import {
     @SliderProperty,
     @Vigilant,
 } from 'Vigilance';
-import { data, resetVersion } from './utils/variables';
-import FileUtilities from "../FileUtilities/main";
+// import { data, resetVersion } from './utils/variables';
+// import FileUtilities from "../FileUtilities/main";
 
 
-let customSounds = ["none"];
+// let customSounds = ["none"];
 
 // The only parameter that is required is the first, which should be the Module name.
 // The other 2 parameters are optional.
@@ -73,6 +73,7 @@ class Settings {
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
         this.addDependency('Inquis Color','Highlight Inquis');
+        this.addDependency('Four-Eyed Fish','Diana Tracker');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -136,6 +137,13 @@ class Settings {
         options: ["OFF", "Total", "Event", "Session"]
     })
     dianaLootTrackerView = 0;
+    @SwitchProperty({
+        name: "Four-Eyed Fish",
+        description: "Set if you have a Four-Eyed Fish on your griffin pet",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+    })
+    fourEyedFish = false;
     @SwitchProperty({
         name: "Diana Stats",
         description: "Shows stats like Mobs since Inquisitor, Inquisitors since Chimera",
@@ -465,6 +473,12 @@ class Settings {
         category: 'Quality of Life',
     })
     hideSackMessage = false;
+    @SwitchProperty({
+        name: 'Clickable Messages To Invite a Player',
+        description: 'Click on a message to invite a player to your party when he sends you a "!inv" per msg',
+        category: 'Quality of Life',
+    })
+    clickableInvite = false;
     // General
     // General Waypoints
     @SwitchProperty({
@@ -734,14 +748,14 @@ class Settings {
     })
     sprVolume = 50;
 
-    @SelectorProperty({
-        name: "Custom Sound",
-        description: "Select a custom sound for a specific item",
-        category: "Customization",
-        subcategory: "Sound Settings",
-        options: customSounds
-    })
-    customSound = 0;
+    // @SelectorProperty({
+    //     name: "Custom Sound",
+    //     description: "Select a custom sound for a specific item",
+    //     category: "Customization",
+    //     subcategory: "Sound Settings",
+    //     options: customSounds
+    // })
+    // customSound = 0;
 
 
     // Debug
@@ -830,23 +844,23 @@ class Settings {
 // if(!SboData.hasOwnProperty("version")) {
 //     SboData["version"] = "0.0.0";
 // }
-let newResetVersion = resetVersion; 
-if (data.resetVersion != newResetVersion) {
-    FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
-    data.resetVersion = newResetVersion;
-    data.save();
-    // FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
-}
+// let newResetVersion = resetVersion; 
+// if (data.resetVersion != newResetVersion) {
+//     FileLib.deleteDirectory("./config/ChatTriggers/modules/SBO/config.toml");
+//     data.resetVersion = newResetVersion;
+//     data.save();
+//     // FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
+// }
 
-// push all ogg filenames from Config.modulesFolder.replace("modules", "images") to customSounds
-FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/").forEach(file => {
-    if (file.endsWith(".ogg")) {
+// // push all ogg filenames from Config.modulesFolder.replace("modules", "images") to customSounds
+// FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/").forEach(file => {
+//     if (file.endsWith(".ogg")) {
         
-        // push only file name without extension split at \
-        let filename = file.split("\\").pop();
-        customSounds.push(filename.replace(".ogg", ""));
-    }
-});
+//         // push only file name without extension split at \
+//         let filename = file.split("\\").pop();
+//         customSounds.push(filename.replace(".ogg", ""));
+//     }
+// });
 // let soundFiles = FileLib.getUrlContent(Config.modulesFolder.replace("modules", "images"));
 // print(soundFiles);
 // for (let i = 0; i < soundFiles.length; i++) {

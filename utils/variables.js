@@ -25,7 +25,9 @@ export function initializeTracker() {
             "MINOS_RELIC": 0,
             "ENCHANTED_GOLD": 0,
             "ENCHANTED_IRON": 0,
-            "Total Burrows": 0
+            "Total Burrows": 0,
+            "scavengerCoins": 0,
+            "fishCoins": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -59,7 +61,9 @@ export function initializeTrackerMayor() {
             "MINOS_RELIC": 0,
             "ENCHANTED_GOLD": 0,
             "ENCHANTED_IRON": 0,
-            "Total Burrows": 0
+            "Total Burrows": 0,
+            "scavengerCoins": 0,
+            "fishCoins": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -168,7 +172,9 @@ export let dianaTrackerTotal = new PogObject("../../../config", {
         "MINOS_RELIC": 0,
         "ENCHANTED_GOLD": 0,
         "ENCHANTED_IRON": 0,
-        "Total Burrows": 0
+        "Total Burrows": 0,
+        "scavengerCoins": 0,
+        "fishCoins": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -198,7 +204,9 @@ export let dianaTrackerSession = new PogObject("../../../config", {
         "MINOS_RELIC": 0,
         "ENCHANTED_GOLD": 0,
         "ENCHANTED_IRON": 0,
-        "Total Burrows": 0
+        "Total Burrows": 0,
+        "scavengerCoins": 0,
+        "fishCoins": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -229,7 +237,9 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
         "MINOS_RELIC": 0,
         "ENCHANTED_GOLD": 0,
         "ENCHANTED_IRON": 0,
-        "Total Burrows": 0
+        "Total Burrows": 0,
+        "scavengerCoins": 0,
+        "fishCoins": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
