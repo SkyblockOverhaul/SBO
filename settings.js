@@ -363,6 +363,55 @@ class Settings {
         subcategory: 'Party Commands',
     })
     tpsCommand = false;
+    @SwitchProperty({
+        name: 'Chimera Count',
+        description: 'Sends the chimera count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    chimeraCount = false;
+    @SwitchProperty({
+        name: 'Inquisitor Count',
+        description: 'Sends the inquisitor count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    inquisitorCount = false;
+    @SwitchProperty({
+        name: 'Relic Count',
+        description: 'Sends the relic count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    relicCount = false;
+    @SwitchProperty({
+        name: 'Stick Count',
+        description: 'Sends the stick count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    stickCount = false;
+    @SwitchProperty({
+        name: 'Since Count',
+        description: 'Sends mobs since inq in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    sinceCount = false;
+    @SwitchProperty({
+        name: 'Burrow Count',
+        description: 'Sends total burrows in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    burrowCount = false;
+    @SwitchProperty({
+        name: 'Mob Count',
+        description: 'Sends total mobs in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    mobCount = false;
 
 
     // Slayer
