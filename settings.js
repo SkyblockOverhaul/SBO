@@ -74,6 +74,14 @@ class Settings {
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
         this.addDependency('Inquis Color','Highlight Inquis');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
+        this.addDependency('Chimera Count','Diana Party Commands');
+        this.addDependency('Inquisitor Count','Diana Party Commands');
+        this.addDependency('Relic Count','Diana Party Commands');
+        this.addDependency('Stick Count','Diana Party Commands');
+        this.addDependency('Since Count','Diana Party Commands');
+        this.addDependency('Burrow Count','Diana Party Commands');
+        this.addDependency('Mob Count','Diana Party Commands');
+
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -363,6 +371,14 @@ class Settings {
         subcategory: 'Party Commands',
     })
     tpsCommand = false;
+    //--Diana Party Commands--
+    @SwitchProperty({
+        name: 'Diana Party Commands',
+        description: 'Enable diana party commands',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    dianaPartyCommands = false;
     @SwitchProperty({
         name: 'Chimera Count',
         description: 'Sends the chimera count in party chat',

@@ -102,6 +102,7 @@ register("chat", (player, message) => {
         case "!chimeras":
         case "!book":
         case "!books":
+            if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker && settings.chimeraCount) {
                 setTimeout(function() {
                     ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"])
@@ -111,6 +112,7 @@ register("chat", (player, message) => {
         case "!inq":
         case "!inqs":
         case "!inquisitor":
+            if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker && settings.inquisitorCount) {
                 setTimeout(function() {
                     ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"])
@@ -119,6 +121,7 @@ register("chat", (player, message) => {
             break
         case "!burrows":
         case "!burrow":
+            if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker && settings.burrowCount) {
                 setTimeout(function() {
                     ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"])
@@ -127,6 +130,7 @@ register("chat", (player, message) => {
             break
         case "!relic":
         case "!relics":
+            if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker && settings.relicCount) {
                 setTimeout(function() {
                     ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"])
@@ -135,6 +139,7 @@ register("chat", (player, message) => {
             break
         case "!stick":
         case "!sticks":
+            if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker && settings.stickCount) {
                 setTimeout(function() {
                     ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"])
@@ -143,6 +148,7 @@ register("chat", (player, message) => {
             break
         case "!mob":
         case "!mobs":
+            if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker && settings.mobCount) {
                 setTimeout(function() {
                     ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
@@ -150,6 +156,7 @@ register("chat", (player, message) => {
             }
             break
         case "!since":
+            if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker && settings.sinceCount) {
                 setTimeout(function() {
                     ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
