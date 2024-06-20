@@ -222,10 +222,12 @@ registerWhen(register("step", () => {
         dianaMobOverlayObj.renderGui = true;
         dianaLootOverlayObj.renderGui = true;
         dianaStatsOverlayObj.renderGui = true;
+        dianaAvgMagicFindOverlayObj.renderGui = true;
     }
     else {
         dianaMobOverlayObj.renderGui = false;
         dianaLootOverlayObj.renderGui = false;
         dianaStatsOverlayObj.renderGui = false;
+        dianaAvgMagicFindOverlayObj.renderGui = false;
     }
-}).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker);
+}).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind);
