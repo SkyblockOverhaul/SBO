@@ -300,14 +300,16 @@ registerWhen(register("chat", (drop) => {
                 else {
                     if(settings.dianaAvgMagicFind){
                         let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
-                        let chimMf = parseInt((magicFindMatch ? magicFindMatch[2] + '%' : null).toString().replace("%", ""));
-                        if(data.last10ChimMagicFind.length >= 10){
-                            data.last10ChimMagicFind.shift();
+                        let chimMf = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
+                        if(chimMf > 0){
+                            if(data.last10ChimMagicFind.length >= 10){
+                                data.last10ChimMagicFind.shift();
+                            }
+                            data.last10ChimMagicFind.push(chimMf);
+                        
+                            let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
+                            data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
                         }
-                        data.last10ChimMagicFind.push(chimMf);
-                    
-                        let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
-                        data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
                     }
                     
                     trackItem("Chimera", "items", 1);
@@ -320,14 +322,16 @@ registerWhen(register("chat", (drop) => {
             case "Daedalus Stick":
                 if(settings.dianaAvgMagicFind){
                     let magicFindMatch2 = drop.match(/\+(&r&b)?(\d+)%/);
-                    let stickMf = parseInt((magicFindMatch2 ? magicFindMatch2[2] + '%' : null).toString().replace("%", ""));
-                    if(data.last10StickMagicFind.length >= 10){
-                        data.last10StickMagicFind.shift();
+                    let stickMf = parseInt((magicFindMatch2 ? magicFindMatch2[2] : 0));
+                    if(stickMf > 0){
+                        if(data.last10StickMagicFind.length >= 10){
+                            data.last10StickMagicFind.shift();
+                        }
+                        data.last10StickMagicFind.push(stickMf);
+                    
+                        let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
+                        data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
                     }
-                    data.last10StickMagicFind.push(stickMf);
-                
-                    let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
-                    data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
                 }
 
                 if(settings.sendSinceMassage) {
