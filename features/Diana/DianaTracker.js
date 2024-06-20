@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { checkMayorTracker, data, pastDianaEvents, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
-import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay } from "../guis/DianaGuis";
+import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { isDataLoaded } from "../../utils/checkData";
@@ -155,6 +155,7 @@ export function trackItem(item, category, amount) {
         refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
         refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
         statsOverlay();
+        avgMagicFindOverlay();
     }
 }
 
@@ -297,6 +298,18 @@ registerWhen(register("chat", (drop) => {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                 }
                 else {
+                    if(settings.dianaAvgMagicFind){
+                        let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
+                        let chimMf = parseInt((magicFindMatch ? magicFindMatch[2] + '%' : null).toString().replace("%", ""));
+                        if(data.last10ChimMagicFind.length >= 10){
+                            data.last10ChimMagicFind.shift();
+                        }
+                        data.last10ChimMagicFind.push(chimMf);
+                    
+                        let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
+                        data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
+                    }
+                    
                     trackItem("Chimera", "items", 1);
                     if(settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
@@ -305,6 +318,18 @@ registerWhen(register("chat", (drop) => {
                 }
                 break;
             case "Daedalus Stick":
+                if(settings.dianaAvgMagicFind){
+                    let magicFindMatch2 = drop.match(/\+(&r&b)?(\d+)%/);
+                    let stickMf = parseInt((magicFindMatch2 ? magicFindMatch2[2] + '%' : null).toString().replace("%", ""));
+                    if(data.last10StickMagicFind.length >= 10){
+                        data.last10StickMagicFind.shift();
+                    }
+                    data.last10StickMagicFind.push(stickMf);
+                
+                    let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
+                    data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
+                }
+
                 if(settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
@@ -318,7 +343,7 @@ registerWhen(register("chat", (drop) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind));
 
 // refresh overlay //
 let tempSettingLoot = -1;
@@ -346,6 +371,7 @@ register("step", () => {
         refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
         refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
         statsOverlay();
+        avgMagicFindOverlay();
         mythosMobHpOverlay([]);
         firstLoad = true;
     }

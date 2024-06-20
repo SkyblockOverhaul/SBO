@@ -79,4 +79,8 @@ ${GRAY}- ${LIGHT_PURPLE}${BOLD}Inqs since Chimera:
 ${GRAY}- ${GOLD}${BOLD}Minos since Stick:
 ${GRAY}- ${DARK_PURPLE}${BOLD}Champs since Relic:
 `,
+dianaAvgMagicFindExample: `${YELLOW}${BOLD}Diana Magic Find ${GRAY}(${YELLOW}${BOLD}Avg${GRAY})
+${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}346%
+${GRAY}- ${GOLD}Sticks: ${AQUA}323%
+`,
 };

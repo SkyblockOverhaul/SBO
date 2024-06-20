@@ -93,6 +93,10 @@ export let data = new PogObject("SBO", {
     "minotaursSinceStick": 0,
     "champsSinceRelic": 0,
     "trackerMigration": false,
+    "avgChimMagicFind": 0,
+    "avgStickMagicFind": 0,
+    "last10ChimMagicFind": [],
+    "last10StickMagicFind": [],
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {

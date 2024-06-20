@@ -98,6 +98,17 @@ const changeLogReg = register("step", () => {
     changeLogReg.unregister()
 }).setFps(1)
 
+// register("chat", (drop) => {
+//     let magicFindMatch2 = drop.match(/\+(&r&b)?(\d+)%/);
+//     let stickMf = parseInt((magicFindMatch2 ? magicFindMatch2[2] + '%' : null).toString().replace("%", ""));
+//     if(data.last10StickMagicFind.length >= 10){
+//         data.last10StickMagicFind.shift();
+//     }
+//     data.last10StickMagicFind.push(stickMf);
+
+//     let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
+//     data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
+// }).setCriteria("&r&6&lRARE DROP! ${drop}");
 
 // register("step", () => {
 //     // print each egg

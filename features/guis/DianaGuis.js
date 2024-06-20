@@ -17,10 +17,29 @@ let dianaLootOverlay = dianaLootOverlayObj.overlay;
 let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
 let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
 
+let dianaAvgMagicFindOverlayObj = newOverlay("dianaAvgMagicFind", "dianaAvgMagicFind", "dianaAvgMagicFindExample", "render", "AvgMagicFindLoc");
+let dianaAvgMagicFindOverlay = dianaAvgMagicFindOverlayObj.overlay;
+
 
 let dianaMobTrackerText = new UIWrappedText("");
 let dianaLootTrackerText = new UIWrappedText("");
 let dianaStatsText = new UIWrappedText("");
+let dianaAvgMagicFindText = new UIWrappedText("");
+
+export function avgMagicFindOverlay() {
+    if(getGuiOpen()) return;
+    if (!dianaAvgMagicFindOverlay.children.includes(dianaAvgMagicFindText)) {
+        dianaAvgMagicFindOverlay.clearChildren();
+        dianaAvgMagicFindOverlay.addChild(dianaAvgMagicFindText);
+    }
+    let message = `${YELLOW}${BOLD}Diana Magic Find ${GRAY}(${YELLOW}${BOLD}Avg${GRAY})
+${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${data.avgChimMagicFind}%
+${GRAY}- ${GOLD}Sticks: ${AQUA}${data.avgStickMagicFind}%
+    `
+
+    dianaAvgMagicFindText.setText(message);
+    dianaAvgMagicFindText.setTextScale((dianaAvgMagicFindOverlayObj.scale).pixels());
+}
 
 export function statsOverlay() {
     if(getGuiOpen()) return;
@@ -119,18 +138,22 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
     let crownPrice = formatNumber(getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"])
     let souvenirPrice = formatNumber(getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"])
 
-    function getMessagePart(price, color, itemName, itemAmount, percent = '') {
+    function getMessagePart(price, color, itemName, itemAmount, percent = '', type = "") {
         if (percent === ''){
             return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount}\n`
         }
-        else{
+        else if (type === "chim") {
+            return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]\n`
+        }
+        else {
             return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY})\n`
         }
+
     }
     
     let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
 `;
-    lootMessage += getMessagePart(chimeraPrice, LIGHT_PURPLE, "Chimera", lootTracker["items"]["Chimera"], percentDict["Chimera"]);
+    lootMessage += getMessagePart(chimeraPrice, LIGHT_PURPLE, "Chimera", lootTracker["items"]["Chimera"], percentDict["Chimera"], "chim");
     lootMessage += getMessagePart(relicPrice, DARK_PURPLE, "Minos Relic", lootTracker["items"]["MINOS_RELIC"], percentDict["Minos Relic"]);
     lootMessage += getMessagePart(daedalusPrice, GOLD, "Daedalus Stick", lootTracker["items"]["Daedalus Stick"], percentDict["Daedalus Stick"]);
     lootMessage += getMessagePart(crownPrice, GOLD, "Crown of Greed", lootTracker["items"]["Crown of Greed"]);
@@ -203,10 +226,12 @@ registerWhen(register("step", () => {
         dianaMobOverlayObj.renderGui = true;
         dianaLootOverlayObj.renderGui = true;
         dianaStatsOverlayObj.renderGui = true;
+        dianaAvgMagicFindOverlayObj.renderGui = true;
     }
     else {
         dianaMobOverlayObj.renderGui = false;
         dianaLootOverlayObj.renderGui = false;
         dianaStatsOverlayObj.renderGui = false;
+        dianaAvgMagicFindOverlayObj.renderGui = false;
     }
-}).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker);
+}).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind);

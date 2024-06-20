@@ -74,6 +74,14 @@ class Settings {
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
         this.addDependency('Inquis Color','Highlight Inquis');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
+        this.addDependency('Chimera Count','Diana Party Commands');
+        this.addDependency('Inquisitor Count','Diana Party Commands');
+        this.addDependency('Relic Count','Diana Party Commands');
+        this.addDependency('Stick Count','Diana Party Commands');
+        this.addDependency('Since Count','Diana Party Commands');
+        this.addDependency('Burrow Count','Diana Party Commands');
+        this.addDependency('Mob Count','Diana Party Commands');
+
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -152,12 +160,19 @@ class Settings {
     })
     dianaStatsTracker = false;
     @SwitchProperty({
-        name: "Stats Massage",
-        description: "Sends the chat Massage with stat: [SBO] Took 120 Mobs to get a Inquis!",
+        name: "Stats Message",
+        description: "Sends the chat Message with stat: [SBO] Took 120 Mobs to get a Inquis!",
         category: "Diana",
         subcategory: "Diana Tracker",
     })
     sendSinceMassage = false;
+    @SwitchProperty({
+        name: "Avg Magic Find Tracker",
+        description: "Shows your avg magic find for sticks and chimeras",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+    })
+    dianaAvgMagicFind = false;
     @ButtonProperty({
         name: "Reset Session Tracker",
         description: "Resets the session tracker For mobs and items (/sboresetsession)",
@@ -208,7 +223,7 @@ class Settings {
     removeGuess = false;
     @SliderProperty({
         name: 'Distance For Remove',
-        description: 'Input distacne for guess removal',
+        description: 'Input distance for guess removal',
         category: 'Diana',
         subcategory: 'Diana Waypoints',
         min: 1,
@@ -256,7 +271,7 @@ class Settings {
     mythosMobHp = false;
     @SwitchProperty({
         name: "Inquis Party Message",
-        description: "Party massage for inquisitor detection (patcher format).",
+        description: "Party message for inquisitor detection (patcher format).",
         category: "Diana",
         subcategory: "Other",
     })
@@ -363,6 +378,63 @@ class Settings {
         subcategory: 'Party Commands',
     })
     tpsCommand = false;
+    //--Diana Party Commands--
+    @SwitchProperty({
+        name: 'Diana Party Commands',
+        description: 'Enable diana party commands',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    dianaPartyCommands = false;
+    @SwitchProperty({
+        name: 'Chimera Count',
+        description: 'Sends the chimera count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    chimeraCount = false;
+    @SwitchProperty({
+        name: 'Inquisitor Count',
+        description: 'Sends the inquisitor count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    inquisitorCount = false;
+    @SwitchProperty({
+        name: 'Relic Count',
+        description: 'Sends the relic count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    relicCount = false;
+    @SwitchProperty({
+        name: 'Stick Count',
+        description: 'Sends the stick count in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    stickCount = false;
+    @SwitchProperty({
+        name: 'Since Count',
+        description: 'Sends mobs since inq in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    sinceCount = false;
+    @SwitchProperty({
+        name: 'Burrow Count',
+        description: 'Sends total burrows in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    burrowCount = false;
+    @SwitchProperty({
+        name: 'Mob Count',
+        description: 'Sends total mobs in party chat',
+        category: 'Party Commands',
+        subcategory: 'Party Commands',
+    })
+    mobCount = false;
 
 
     // Slayer
@@ -457,19 +529,19 @@ class Settings {
     jacobHider = false;
     @SwitchProperty({
         name: 'Clean Diana Chat',
-        description: 'Hides all spammy diana massages',
+        description: 'Hides all spammy diana messages',
         category: 'Quality of Life',
     })
     cleanDianaChat = false;
     @SwitchProperty({
         name: 'Hide AutoPet Messages',
-        description: 'Hides all autopet massages',
+        description: 'Hides all autopet messages',
         category: 'Quality of Life',
     })
     hideAutoPetMSG = false;
     @SwitchProperty({
         name: 'Hide Sacks Message',
-        description: 'Hides all sacks massages',
+        description: 'Hides all sacks messages',
         category: 'Quality of Life',
     })
     hideSackMessage = false;

@@ -2,7 +2,7 @@
   "name": "SBO",
   "creator": "RolexDE, D4rkswift",
   "description": "SBO is the ultimate diana mod for diana nons!",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "entry": "index.js",
   "requires": [
     "requestV2",
