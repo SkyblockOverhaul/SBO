@@ -93,7 +93,6 @@ registerWhen(register("chat", (pet, event) => {
 
 registerWhen(register("chat", (player, command) => {
     command = command.removeFormatting().toLowerCase().replace(" ", "");
-    print(command);
     if (command == "!inv" || command == "!invite") {
         player = player.removeFormatting()
         player = getplayername(player)
