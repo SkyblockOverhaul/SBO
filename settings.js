@@ -168,7 +168,7 @@ class Settings {
     sendSinceMassage = false;
     @SwitchProperty({
         name: "Avg Magic Find Tracker",
-        description: "Shows your avg magic find for sticks and chimeras (Beta)",
+        description: "Shows your avg magic find for sticks and chimeras",
         category: "Diana",
         subcategory: "Diana Tracker",
     })
