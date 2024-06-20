@@ -138,18 +138,22 @@ function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
     let crownPrice = formatNumber(getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"])
     let souvenirPrice = formatNumber(getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"])
 
-    function getMessagePart(price, color, itemName, itemAmount, percent = '') {
+    function getMessagePart(price, color, itemName, itemAmount, percent = '', type = "") {
         if (percent === ''){
             return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount}\n`
         }
-        else{
+        else if (type === "chim") {
+            return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]\n`
+        }
+        else {
             return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY})\n`
         }
+
     }
     
     let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
 `;
-    lootMessage += getMessagePart(chimeraPrice, LIGHT_PURPLE, "Chimera", lootTracker["items"]["Chimera"], percentDict["Chimera"]);
+    lootMessage += getMessagePart(chimeraPrice, LIGHT_PURPLE, "Chimera", lootTracker["items"]["Chimera"], percentDict["Chimera"], "chim");
     lootMessage += getMessagePart(relicPrice, DARK_PURPLE, "Minos Relic", lootTracker["items"]["MINOS_RELIC"], percentDict["Minos Relic"]);
     lootMessage += getMessagePart(daedalusPrice, GOLD, "Daedalus Stick", lootTracker["items"]["Daedalus Stick"], percentDict["Daedalus Stick"]);
     lootMessage += getMessagePart(crownPrice, GOLD, "Crown of Greed", lootTracker["items"]["Crown of Greed"]);

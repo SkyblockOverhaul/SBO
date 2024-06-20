@@ -160,8 +160,8 @@ class Settings {
     })
     dianaStatsTracker = false;
     @SwitchProperty({
-        name: "Stats Massage",
-        description: "Sends the chat Massage with stat: [SBO] Took 120 Mobs to get a Inquis!",
+        name: "Stats Message",
+        description: "Sends the chat Message with stat: [SBO] Took 120 Mobs to get a Inquis!",
         category: "Diana",
         subcategory: "Diana Tracker",
     })
@@ -223,7 +223,7 @@ class Settings {
     removeGuess = false;
     @SliderProperty({
         name: 'Distance For Remove',
-        description: 'Input distacne for guess removal',
+        description: 'Input distance for guess removal',
         category: 'Diana',
         subcategory: 'Diana Waypoints',
         min: 1,
@@ -271,7 +271,7 @@ class Settings {
     mythosMobHp = false;
     @SwitchProperty({
         name: "Inquis Party Message",
-        description: "Party massage for inquisitor detection (patcher format).",
+        description: "Party message for inquisitor detection (patcher format).",
         category: "Diana",
         subcategory: "Other",
     })
@@ -529,19 +529,19 @@ class Settings {
     jacobHider = false;
     @SwitchProperty({
         name: 'Clean Diana Chat',
-        description: 'Hides all spammy diana massages',
+        description: 'Hides all spammy diana messages',
         category: 'Quality of Life',
     })
     cleanDianaChat = false;
     @SwitchProperty({
         name: 'Hide AutoPet Messages',
-        description: 'Hides all autopet massages',
+        description: 'Hides all autopet messages',
         category: 'Quality of Life',
     })
     hideAutoPetMSG = false;
     @SwitchProperty({
         name: 'Hide Sacks Message',
-        description: 'Hides all sacks massages',
+        description: 'Hides all sacks messages',
         category: 'Quality of Life',
     })
     hideSackMessage = false;
