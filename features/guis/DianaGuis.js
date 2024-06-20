@@ -17,10 +17,29 @@ let dianaLootOverlay = dianaLootOverlayObj.overlay;
 let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
 let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
 
+let dianaAvgMagicFindOverlayObj = newOverlay("dianaAvgMagicFind", "dianaAvgMagicFind", "dianaAvgMagicFindExample", "render", "AvgMagicFindLoc");
+let dianaAvgMagicFindOverlay = dianaAvgMagicFindOverlayObj.overlay;
+
 
 let dianaMobTrackerText = new UIWrappedText("");
 let dianaLootTrackerText = new UIWrappedText("");
 let dianaStatsText = new UIWrappedText("");
+let dianaAvgMagicFindText = new UIWrappedText("");
+
+export function avgMagicFindOverlay() {
+    if(getGuiOpen()) return;
+    if (!dianaAvgMagicFindOverlay.children.includes(dianaAvgMagicFindText)) {
+        dianaAvgMagicFindOverlay.clearChildren();
+        dianaAvgMagicFindOverlay.addChild(dianaAvgMagicFindText);
+    }
+    let message = `${YELLOW}${BOLD}Diana Magic Find ${GRAY}(${YELLOW}${BOLD}Avg${GRAY})
+${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${data.avgChimMagicFind}%
+${GRAY}- ${GOLD}Sticks: ${AQUA}${data.avgStickMagicFind}%
+    `
+
+    dianaAvgMagicFindText.setText(message);
+    dianaAvgMagicFindText.setTextScale((dianaAvgMagicFindOverlayObj.scale).pixels());
+}
 
 export function statsOverlay() {
     if(getGuiOpen()) return;

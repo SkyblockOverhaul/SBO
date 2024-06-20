@@ -254,7 +254,8 @@ export function initializeGuiSettings() {
         KuudraValueLoc: { "x": 10, "y": 10, "s": 1 },
         fossilLoc: { "x": 275, "y": 185, "s": 1 },
         LegionLoc: { "x": 10, "y": 310, "s": 1 },
-        StatsLoc: { "x": 15, "y": 290, "s": 1 }
+        StatsLoc: { "x": 15, "y": 290, "s": 1 },
+        AvgMagicFindLoc: { "x": 15, "y": 350, "s": 1 },
     };
 }
 

@@ -166,6 +166,13 @@ class Settings {
         subcategory: "Diana Tracker",
     })
     sendSinceMassage = false;
+    @SwitchProperty({
+        name: "Avg Magic Find Tracker",
+        description: "Shows your avg magic find for sticks and chimeras (Beta)",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+    })
+    dianaAvgMagicFind = false;
     @ButtonProperty({
         name: "Reset Session Tracker",
         description: "Resets the session tracker For mobs and items (/sboresetsession)",
