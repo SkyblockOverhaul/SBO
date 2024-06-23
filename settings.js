@@ -74,13 +74,6 @@ class Settings {
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
         this.addDependency('Inquis Color','Highlight Inquis');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
-        this.addDependency('Chimera Count','Diana Party Commands');
-        this.addDependency('Inquisitor Count','Diana Party Commands');
-        this.addDependency('Relic Count','Diana Party Commands');
-        this.addDependency('Stick Count','Diana Party Commands');
-        this.addDependency('Since Count','Diana Party Commands');
-        this.addDependency('Burrow Count','Diana Party Commands');
-        this.addDependency('Mob Count','Diana Party Commands');
 
     } 
     //-----------Diana Burrows----------------
@@ -381,61 +374,11 @@ class Settings {
     //--Diana Party Commands--
     @SwitchProperty({
         name: 'Diana Party Commands',
-        description: 'Enable diana party commands',
+        description: 'Enable diana party commands (!chim, !inq, !relic, !stick, !since, !burrow, !mob)',
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
     dianaPartyCommands = false;
-    @SwitchProperty({
-        name: 'Chimera Count',
-        description: 'Sends the chimera count in party chat',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    chimeraCount = false;
-    @SwitchProperty({
-        name: 'Inquisitor Count',
-        description: 'Sends the inquisitor count in party chat',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    inquisitorCount = false;
-    @SwitchProperty({
-        name: 'Relic Count',
-        description: 'Sends the relic count in party chat',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    relicCount = false;
-    @SwitchProperty({
-        name: 'Stick Count',
-        description: 'Sends the stick count in party chat',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    stickCount = false;
-    @SwitchProperty({
-        name: 'Since Count',
-        description: 'Sends mobs since inq in party chat',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    sinceCount = false;
-    @SwitchProperty({
-        name: 'Burrow Count',
-        description: 'Sends total burrows in party chat',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    burrowCount = false;
-    @SwitchProperty({
-        name: 'Mob Count',
-        description: 'Sends total mobs in party chat',
-        category: 'Party Commands',
-        subcategory: 'Party Commands',
-    })
-    mobCount = false;
-
 
     // Slayer
     @SwitchProperty({

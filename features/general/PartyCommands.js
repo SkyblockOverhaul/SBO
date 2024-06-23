@@ -103,7 +103,7 @@ register("chat", (player, message) => {
         case "!book":
         case "!books":
             if(!settings.dianaPartyCommands) break;
-            if (settings.dianaTracker && settings.chimeraCount) {
+            if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"])
                 }, 50)
@@ -113,7 +113,7 @@ register("chat", (player, message) => {
         case "!inqs":
         case "!inquisitor":
             if(!settings.dianaPartyCommands) break;
-            if (settings.dianaTracker && settings.inquisitorCount) {
+            if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"])
                 }, 50)
@@ -122,7 +122,7 @@ register("chat", (player, message) => {
         case "!burrows":
         case "!burrow":
             if(!settings.dianaPartyCommands) break;
-            if (settings.dianaTracker && settings.burrowCount) {
+            if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"])
                 }, 50)
@@ -131,7 +131,7 @@ register("chat", (player, message) => {
         case "!relic":
         case "!relics":
             if(!settings.dianaPartyCommands) break;
-            if (settings.dianaTracker && settings.relicCount) {
+            if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"])
                 }, 50)
@@ -140,7 +140,7 @@ register("chat", (player, message) => {
         case "!stick":
         case "!sticks":
             if(!settings.dianaPartyCommands) break;
-            if (settings.dianaTracker && settings.stickCount) {
+            if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"])
                 }, 50)
@@ -149,7 +149,7 @@ register("chat", (player, message) => {
         case "!mob":
         case "!mobs":
             if(!settings.dianaPartyCommands) break;
-            if (settings.dianaTracker && settings.mobCount) {
+            if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
                 }, 50)
@@ -157,7 +157,7 @@ register("chat", (player, message) => {
             break
         case "!since":
             if(!settings.dianaPartyCommands) break;
-            if (settings.dianaTracker && settings.sinceCount) {
+            if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
                 }, 50)

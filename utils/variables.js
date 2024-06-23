@@ -36,7 +36,8 @@ export function initializeTracker() {
             "Gaia Construct": 0,
             "Siamese Lynxes": 0,
             "Minos Hunter": 0,
-            "TotalMobs": 0
+            "TotalMobs": 0,
+            "Minos Inquisitor Ls": 0
         }
     };
     return tempTracker;
@@ -72,7 +73,8 @@ export function initializeTrackerMayor() {
             "Gaia Construct": 0,
             "Siamese Lynxes": 0,
             "Minos Hunter": 0,
-            "TotalMobs": 0
+            "TotalMobs": 0,
+            "Minos Inquisitor Ls": 0
         }
     };
     return tempTracker;
@@ -187,7 +189,8 @@ export let dianaTrackerTotal = new PogObject("../../../config", {
         "Gaia Construct": 0,
         "Siamese Lynxes": 0,
         "Minos Hunter": 0,
-        "TotalMobs": 0
+        "TotalMobs": 0,
+        "Minos Inquisitor Ls": 0
     }
 }, "dianaTrackerTotal.json");
 
@@ -219,7 +222,8 @@ export let dianaTrackerSession = new PogObject("../../../config", {
         "Gaia Construct": 0,
         "Siamese Lynxes": 0,
         "Minos Hunter": 0,
-        "TotalMobs": 0
+        "TotalMobs": 0,
+        "Minos Inquisitor Ls": 0
     }
 }, "dianaTrackerSession.json");
 
@@ -252,7 +256,8 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
         "Gaia Construct": 0,
         "Siamese Lynxes": 0,
         "Minos Hunter": 0,
-        "TotalMobs": 0
+        "TotalMobs": 0,
+        "Minos Inquisitor Ls": 0
     }
 }, "dianaTrackerMayor.json");
 

@@ -15,6 +15,8 @@ import { playerHasSpade } from "../../utils/functions";
 // todo end
 
 // track items with pickuplog //
+inqClaws = [48, 96, 144];
+
 export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
@@ -23,6 +25,11 @@ export function dianaLootCounter(item, amount) {
         if (checkDiana()) {
             for (let i in countThisIds.values()) {
                 if (item === i) {
+                    if (item == "ANCIENT_CLAW") {
+                        if (inqClaws.includes(amount) && gotLootShare()) {
+                            trackItem("Minos Inquisitor Ls", "mobs", 1); // ls inq
+                        }
+                    }
                     trackItem(item, "items", amount);
                     checkBool = false;
                 }
