@@ -1,12 +1,11 @@
 import settings from "../../settings";
-import { checkMayorTracker, data, pastDianaEvents, registerWhen } from "../../utils/variables";
+import { checkMayorTracker, data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
-import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { isDataLoaded } from "../../utils/checkData";
-import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTrackerMayor, initializeTracker } from "../../utils/variables";
+import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
 import { getRefreshOverlays } from "../../utils/overlays";
 import { playerHasSpade } from "../../utils/functions";
@@ -175,7 +174,7 @@ function trackOne(tracker, item, category, type, amount) {
         tracker[category][item] = amount;
     }
 
-    if (category === "mobs") {
+    if (category === "mobs"  && item != "Minos Inquisitor Ls") {
         if (tracker["mobs"]["TotalMobs"] != null) {
             tracker["mobs"]["TotalMobs"] += amount;
         }
