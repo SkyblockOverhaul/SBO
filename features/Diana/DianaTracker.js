@@ -12,6 +12,8 @@ import { playerHasSpade } from "../../utils/functions";
 
 // todo: 
 // todo end
+let lastMob = "";
+let lastMobDrobs = [];
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
@@ -149,9 +151,34 @@ function calcPercent(trackerToCalc, type, setting) {
 // track logic //
 export function trackItem(item, category, amount) {
     if (isDataLoaded()) {
-        if (category === "mobs") {
+        if (lastMob == item && item != "Minos Inquisitor Ls") {
+            if (item == "Minos Inquisitor") {
+                ChatLib.chat("&6[SBO] &r&cb2b Inquisitor!")
+            };
+            // ChatLib.chat("&6[SBO] &r&cYou killed the same mob twice in a row!");
+        }
+        // if item in lastMobDrobs
+        if (lastMobDrobs.includes(item) && item != "Minos Inquisitor Ls") {
+            if (item == "Chimera") {
+                ChatLib.chat("&6[SBO] &r&cb2b Chimera!")
+            };
+            if (item == "Daedalus Stick") {
+                ChatLib.chat("&6[SBO] &r&cb2b Stick!")
+            }
+            if (item == "Minos Relic") {
+                ChatLib.chat("&6[SBO] &r&cb2b Relic!")
+            }
+            if (item == "Chimera Ls") {
+                ChatLib.chat("&6[SBO] &r&cb2b Chimera Ls!")
+            }
+            // ChatLib.chat("&6[SBO] &r&cYou dropped the same item twice in a row!");
+        }
+        if (category === "mobs" && item != "Minos Inquisitor Ls") {
+            lastMob = item;
+            lastMobDrobs = [];
             data.mobsSinceInq += 1;
         }
+        if (category === "items") lastMobDrobs.push(item);
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
         trackOne(trackerTotal, item, category, "Total", amount);
