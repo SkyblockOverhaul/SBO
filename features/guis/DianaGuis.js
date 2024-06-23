@@ -50,8 +50,8 @@ export function statsOverlay() {
     let message = `${YELLOW}${BOLD}Diana Stats Tracker
 ${GRAY}- ${LIGHT_PURPLE}Mobs since Inq: ${AQUA}${data.mobsSinceInq}
 ${GRAY}- ${LIGHT_PURPLE}Inqs since Chimera: ${AQUA}${data.inqsSinceChim}
-${GRAY}- ${GOLD}Minos since Stick: ${AQUA}${data.minotaursSinceStick}
-${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${data.champsSinceRelic}
+${GRAY}- ${GOLD}Minos since Stick: ${AQUA}${formatNumberCommas(data.minotaursSinceStick)}
+${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.champsSinceRelic)}
 `
     dianaStatsText.setText(message);
     dianaStatsText.setTextScale((dianaStatsOverlayObj.scale).pixels());
@@ -78,12 +78,12 @@ export function mobOverlay(mobTracker, setting, percentDict) {
 function getMobMassage(mobTracker, setting, percentDict) {
     const mobTrackerType = ["Total", "Event", "Session"][setting - 1];
     let mobMessage = `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})\n`
-    mobMessage += `${GRAY}- ${LIGHT_PURPLE}Minos Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor Ls"])}${GRAY}]\n`
-    mobMessage += `${GRAY}- ${DARK_PURPLE}Minos Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})\n`
+    mobMessage += `${GRAY}- ${LIGHT_PURPLE}Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor Ls"])}${GRAY}]\n`
+    mobMessage += `${GRAY}- ${DARK_PURPLE}Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})\n`
     mobMessage += `${GRAY}- ${GOLD}Minotaur: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minotaur"])} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})\n`
     mobMessage += `${GRAY}- ${GREEN}Gaia Construct: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Gaia Construct"])} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})\n`
     mobMessage += `${GRAY}- ${GREEN}Siamese Lynx: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Siamese Lynxes"])} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})\n`
-    mobMessage += `${GRAY}- ${GREEN}Minos Hunter: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Hunter"])} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})\n`
+    mobMessage += `${GRAY}- ${GREEN}Hunter: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Hunter"])} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})\n`
     mobMessage += `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`
     return mobMessage;
 }
@@ -159,9 +159,8 @@ function getLootMessage(lootTracker, lootViewSetting, percentDict) {
     lootMessage += getMessagePart(formatNumber(echClawPrice), BLUE, "Enchanted Claws", formatNumberCommas(lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]));
     lootMessage += getMessagePart(formatNumber(goldPrice), BLUE, "Enchanted Gold", formatNumber(lootTracker["items"]["ENCHANTED_GOLD"]));
     lootMessage += getMessagePart(formatNumber(ironPrice), BLUE, "Enchanted Iron", formatNumber(lootTracker["items"]["ENCHANTED_IRON"]));
-    lootMessage += `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}
-${GOLD}Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}
-`
+        lootMessage += `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}\n`
+    lootMessage += `${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}\n`
     let totalValue = 0;
     totalValue = relicPrice + chimeraPrice + daedalusPrice + griffinPrice + dwarfPrice + tigerPrice + antiquePrice + crownPrice + souvenirPrice + clawPrice + echClawPrice + goldPrice + ironPrice + lootTracker["items"]["coins"];
     lootMessage += `${YELLOW}Total Profit: ${AQUA}${formatNumber(totalValue)}`
