@@ -18,6 +18,7 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import { data } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
+import { printDev } from "./utils/functions";
 
 
 register("command", (args1, ...args) => {
@@ -97,6 +98,14 @@ const changeLogReg = register("step", () => {
     data.save()
     changeLogReg.unregister()
 }).setFps(1)
+
+register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
+    printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
+})
+// dojo sounds:
+// [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
+// [DEV]: Sound: mob.zombie.woodbreak | Volume: 1.5 | Pitch: 1 | Category: MOBS
+
 
 // register("chat", (drop) => {
 //     let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);

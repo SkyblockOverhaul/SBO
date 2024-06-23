@@ -1,12 +1,11 @@
 import settings from "../../settings";
-import { checkMayorTracker, data, pastDianaEvents, registerWhen } from "../../utils/variables";
+import { checkMayorTracker, data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
-import { getSkyblockDate, getNewMayorAtDate, getDateMayorElected, setDateMayorElected, setNewMayorBool } from "../../utils/mayor";
 import { isDataLoaded } from "../../utils/checkData";
-import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTrackerMayor, initializeTracker } from "../../utils/variables";
+import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
 import { getRefreshOverlays } from "../../utils/overlays";
 import { playerHasSpade } from "../../utils/functions";
@@ -23,6 +22,11 @@ export function dianaLootCounter(item, amount) {
         if (checkDiana()) {
             for (let i in countThisIds.values()) {
                 if (item === i) {
+                    if (item == "ANCIENT_CLAW") {
+                        if ([48, 96, 144].includes(parseInt(amount)) && gotLootShare()) {
+                            trackItem("Minos Inquisitor Ls", "mobs", 1); // ls inq
+                        }
+                    }
                     trackItem(item, "items", amount);
                     checkBool = false;
                 }
@@ -170,7 +174,7 @@ function trackOne(tracker, item, category, type, amount) {
         tracker[category][item] = amount;
     }
 
-    if (category === "mobs") {
+    if (category === "mobs"  && item != "Minos Inquisitor Ls") {
         if (tracker["mobs"]["TotalMobs"] != null) {
             tracker["mobs"]["TotalMobs"] += amount;
         }
@@ -284,8 +288,10 @@ registerWhen(register("chat", (coins) => {
     }
 }).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaTracker);
 
-registerWhen(register("chat", (drop) => {
+registerWhen(register("chat", (drop, event) => {
     if (isDataLoaded() && checkDiana() && isInSkyblock()) {
+        let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
+        let magicFind = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
@@ -299,17 +305,19 @@ registerWhen(register("chat", (drop) => {
                 }
                 else {
                     if(settings.dianaAvgMagicFind){
-                        let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
-                        let chimMf = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
-                        if(chimMf > 0){
+                        if(magicFind > 0){
                             if(data.last10ChimMagicFind.length >= 10){
                                 data.last10ChimMagicFind.shift();
                             }
-                            data.last10ChimMagicFind.push(chimMf);
+                            data.last10ChimMagicFind.push(magicFind);
                         
                             let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
                             data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
                         }
+                    }
+                    if(settings.replaceChimMessage) {
+                        cancel(event)
+                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
                     }
                     
                     trackItem("Chimera", "items", 1);
@@ -321,13 +329,11 @@ registerWhen(register("chat", (drop) => {
                 break;
             case "Daedalus Stick":
                 if(settings.dianaAvgMagicFind){
-                    let magicFindMatch2 = drop.match(/\+(&r&b)?(\d+)%/);
-                    let stickMf = parseInt((magicFindMatch2 ? magicFindMatch2[2] : 0));
-                    if(stickMf > 0){
+                    if(magicFind > 0){
                         if(data.last10StickMagicFind.length >= 10){
                             data.last10StickMagicFind.shift();
                         }
-                        data.last10StickMagicFind.push(stickMf);
+                        data.last10StickMagicFind.push(magicFind);
                     
                         let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
                         data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);

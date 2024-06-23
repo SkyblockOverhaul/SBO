@@ -613,6 +613,7 @@ export function getDianaAhPrice(itemId) {
 }
 
 export function formatNumber(number) {
+    if(number == undefined) return 0;
     if (number >= 1000000000) {
         return (number / 1000000000).toFixed(2) + "b";
     }
@@ -625,6 +626,11 @@ export function formatNumber(number) {
     return number.toFixed(0);
 }
 
+export function formatNumberCommas(number) {
+    // add commas to number 1000000 -> 1,000,000
+    if(number == undefined) return 0;
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 export function getPurse() {
     let scoreboard = Scoreboard.getLines();
