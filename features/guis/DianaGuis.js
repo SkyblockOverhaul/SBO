@@ -69,32 +69,24 @@ export function mobOverlay(mobTracker, setting, percentDict) {
     }
     let message = "";
     if (setting > 0) {
-        switch (setting) {
-            case 1:
-                mobTrackerType = "Total";
-                break;
-            case 2:
-                mobTrackerType = "Event";
-                break;
-            case 3:
-                mobTrackerType = "Session";
-                break;
-        };
-    message =
-    `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})
-${GRAY}- ${LIGHT_PURPLE}Minos Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY})
-${GRAY}- ${DARK_PURPLE}Minos Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})
-${GRAY}- ${GOLD}Minotaur: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minotaur"])} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})
-${GRAY}- ${GREEN}Gaia Construct: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Gaia Construct"])} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})
-${GRAY}- ${GREEN}Siamese Lynx: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Siamese Lynxes"])} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})
-${GRAY}- ${GREEN}Minos Hunter: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Hunter"])} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})
-${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}
-`
+        message = getMobMassage(mobTracker, setting, percentDict);
     }
     dianaMobTrackerText.setText(message);
     dianaMobTrackerText.setTextScale((dianaMobOverlayObj.scale).pixels());
 }
-let mobTrackerType = undefined;
+
+function getMobMassage(mobTracker, setting, percentDict) {
+    const mobTrackerType = ["Total", "Event", "Session"][setting - 1];
+    let mobMessage = `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})\n`
+    mobMessage += `${GRAY}- ${LIGHT_PURPLE}Minos Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor Ls"])}${GRAY}]\n`
+    mobMessage += `${GRAY}- ${DARK_PURPLE}Minos Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})\n`
+    mobMessage += `${GRAY}- ${GOLD}Minotaur: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minotaur"])} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})\n`
+    mobMessage += `${GRAY}- ${GREEN}Gaia Construct: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Gaia Construct"])} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})\n`
+    mobMessage += `${GRAY}- ${GREEN}Siamese Lynx: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Siamese Lynxes"])} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})\n`
+    mobMessage += `${GRAY}- ${GREEN}Minos Hunter: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Hunter"])} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})\n`
+    mobMessage += `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`
+    return mobMessage;
+}
 /**
  * 
  * @param {string} setting 
@@ -107,7 +99,7 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
     }
     let message = "";
     if (lootViewSetting > 0) {
-        message = getLootMessage(lootTracker, lootViewSetting, settings.dianaTracker, percentDict);
+        message = getLootMessage(lootTracker, lootViewSetting, percentDict);
     }
     dianaLootTrackerText.setText(message);
     dianaLootTrackerText.setTextScale((dianaLootOverlayObj.scale).pixels());
@@ -117,7 +109,7 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
 // .quick_status.sellPrice -> buyorder / instasell
 
 
-function getLootMessage(lootTracker, lootViewSetting, mobSetting, percentDict) {
+function getLootMessage(lootTracker, lootViewSetting, percentDict) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
     let totalChimera = 0;
     for (let key of ["Chimera", "ChimeraLs"]) {
