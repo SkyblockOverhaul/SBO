@@ -353,7 +353,7 @@ registerWhen(register("chat", (drop, event) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.replaceChimMessage));
 
 // refresh overlay //
 let tempSettingLoot = -1;
