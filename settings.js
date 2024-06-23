@@ -300,7 +300,7 @@ class Settings {
     dianaAddWarps = 0;
     @SwitchProperty({
         name: "Chim Message",
-        description: 'Replaces the standard chimera message with a proper Chimera Message [SBO] RARE DROP! Chimera! (+411% ✯ Magic Find)',
+        description: 'Replaces the standard chimera message with a proper Chimera Message: [SBO] RARE DROP! Chimera! (+411 ✯ Magic Find)',
         category: "Diana",
         subcategory: "Other",
     })
