@@ -301,7 +301,25 @@ export function checkMayorTracker() {
         for (let key in dianaTrackerMayor) {
             tempTracker[key] = dianaTrackerMayor[key];
         }
-        pastDianaEvents["events"].push(tempTracker);
+        if (dianaTrackerMayor.year != 0) {
+            // check if all keys have the value 0
+            let allZero = true;
+            for (let key in tempTracker.items) {
+                if (tempTracker.items[key] != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+            for (let key in tempTracker.mobs) {
+                if (tempTracker.mobs[key] != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+            if (!allZero) {
+                pastDianaEvents["events"].push(tempTracker);
+            }
+        }
         let newTracker = initializeTrackerMayor();
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
