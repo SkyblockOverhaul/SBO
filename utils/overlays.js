@@ -165,22 +165,30 @@ register('renderOverlay', () => {
     guiMover();
     renderWindow.draw()
 });
+let invRenderBool = false;
+const inventoryRender = register("guiRender", () => {
+    renderWindow.draw()
+    invRenderBool = true;
+    print("rendering")
+});
+inventoryRender.unregister();
+register('guiClosed', (gui) => {
+    gui = gui.toString();
+    if(gui.includes("Inventory")) {
+        inventoryRender.unregister();
+        invRenderBool = false;
+        print("unregistering")
+    }
+});
+register('guiOpened', () => {
+    setTimeout(() => {
+        let openedgui = Client.currentGui.get().toString();
+        if(openedgui.includes("Inventory")) {
+            inventoryRender.register();
+        }
+    }, 100);
+});
 
-// const inventoryRender = register("guiRender", () => {
-//     renderWindow.draw()
-// });
-// inventoryRender.unregister();
-
-// register('guiClosed', (gui) => {
-//     gui = gui.toString();
-//     if(gui.includes("Inventory")) inventoryRender.unregister();
-// });
-// register('guiRender', (gui) => {
-//     gui = gui.toString();
-//     if(!gui.includes("640")) return;
-//     inventoryRender.register();
-//     print(gui)
-// });
 
 register('postGuiRender', () => {
     if(!isInSkyblock()) return;
