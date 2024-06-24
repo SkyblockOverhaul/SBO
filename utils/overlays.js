@@ -32,10 +32,12 @@ const dragOffset = {x: 0, y: 0};
 const Color = Java.type("java.awt.Color");
 let guiSettings = loadGuiSettings();
 
-function loadOverlay(overlay, locName) {
+function loadOverlay(overlay, locName, obj) {
     if (guiSettings != undefined) {
         overlay.setX((guiSettings[locName]["x"]).pixels());
         overlay.setY((guiSettings[locName]["y"]).pixels());
+        obj.X = guiSettings[locName]["x"];
+        obj.Y = guiSettings[locName]["y"];
     }
 }
 
@@ -53,6 +55,8 @@ class elementaOverlay {
         this.overlay = new UIBlock(new Color(0.2, 0.2, 0.2, 0));
         this.overlay.setWidth(new ChildBasedSizeConstraint());
         this.overlay.setHeight(new ChildBasedSizeConstraint());
+        this.X = 0;
+        this.Y = 0;
 
         this.overlay.onMouseClick((comp, event) => {
             this.selected = true;
@@ -78,6 +82,8 @@ class elementaOverlay {
             this.overlay.setY(newY.pixels());
             guiSettings[this.locName]["x"] = newX
             guiSettings[this.locName]["y"] = newY;
+            this.X = newX;
+            this.Y = newY;
             saveGuiSettings(guiSettings);
         });
         this.overlay.onMouseScroll((comp, x, y) => {
@@ -101,7 +107,7 @@ class elementaOverlay {
             saveGuiSettings(guiSettings);
         });
 
-        loadOverlay(this.overlay, this.locName);
+        loadOverlay(this.overlay, this.locName, this);
     }
 }
 

@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { registerWhen, data } from "../../utils/variables";
+import { registerWhen, data, setRegisters } from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
 import { UIWrappedText } from "../../../Elementa";
@@ -13,6 +13,21 @@ let dianaMobOverlay = dianaMobOverlayObj.overlay;
 
 let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
+let lootChangeButton = new UIWrappedText("Toggle View");
+lootChangeButton.setX((0).pixels()).setY((0).pixels()).onMouseClick(() => {
+    print("Clicked");   
+    settings.lootViewSetting += 1;
+    if (settings.lootViewSetting > 3) {
+        settings.lootViewSetting = 0;
+    }
+})
+lootChangeButton.onMouseLeave((comp) => {
+    lootChangeButton.setText("Toggle View");
+});
+lootChangeButton.onMouseEnter((comp) => {
+    lootChangeButton.setText("Toggle View2");
+});
+dianaLootOverlay.addChild(lootChangeButton);
 
 let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
 let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
@@ -23,6 +38,7 @@ let dianaAvgMagicFindOverlay = dianaAvgMagicFindOverlayObj.overlay;
 
 let dianaMobTrackerText = new UIWrappedText("");
 let dianaLootTrackerText = new UIWrappedText("");
+dianaLootTrackerText.setY((9).pixels());
 let dianaStatsText = new UIWrappedText("");
 let dianaAvgMagicFindText = new UIWrappedText("");
 
@@ -95,7 +111,8 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
     if(getGuiOpen()) return;
     if (!dianaLootOverlay.children.includes(dianaLootTrackerText)) {
         dianaLootOverlay.clearChildren();
-        dianaLootOverlay.addChild(dianaLootTrackerText);    
+        dianaLootOverlay.addChild(dianaLootTrackerText);   
+        dianaLootOverlay.addChild(lootChangeButton); 
     }
     let message = "";
     if (lootViewSetting > 0) {
@@ -214,3 +231,26 @@ registerWhen(register("step", () => {
         dianaAvgMagicFindOverlayObj.renderGui = false;
     }
 }).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind);
+
+// button
+// oben links 41 | Y: 146
+// unten links 41 | Y: 156
+// oben rechts 102 | Y: 146
+// unten rechts 102 | Y: 156
+register("guiMouseClick" , (x, y, button, gui) => {
+    gui = gui.toString();
+    if (gui.includes("GuiChat") || gui.includes("GuiInventory")) {
+        print(`Mouse Click: X: ${x} | Y: ${y} | Button: ${button} | GUI: ${gui}`)
+        // if x and y are in the lootChangeButton then change the lootViewSetting
+        print(dianaLootOverlayObj.X)
+        print(dianaLootOverlayObj.Y)
+        if (x >= dianaLootOverlayObj.X && x <= dianaLootOverlayObj.X + 61 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
+            print("Clicked");
+            settings.dianaLootTrackerView += 1;
+            if (settings.dianaLootTrackerView > 3) {
+                settings.dianaLootTrackerView = 1;
+            }
+            setRegisters(); // anders machen ist zu verzögert
+        }
+    }
+})

@@ -13,7 +13,10 @@ import { playerHasSpade } from "../../utils/functions";
 // todo: 
 // todo end
 let lastMob = "";
-let lastMobDrobs = [];
+let lastInqDroped = false;
+let lastInqLsDroped = false;
+let lastChampDroped = false;
+let lastMinotaurDroped = false;
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
@@ -158,27 +161,29 @@ export function trackItem(item, category, amount) {
             // ChatLib.chat("&6[SBO] &r&cYou killed the same mob twice in a row!");
         }
         // if item in lastMobDrobs
-        if (lastMobDrobs.includes(item) && item != "Minos Inquisitor Ls") {
-            if (item == "Chimera") {
-                ChatLib.chat("&6[SBO] &r&cb2b Chimera!")
-            };
-            if (item == "Daedalus Stick") {
-                ChatLib.chat("&6[SBO] &r&cb2b Stick!")
-            }
-            if (item == "Minos Relic") {
-                ChatLib.chat("&6[SBO] &r&cb2b Relic!")
-            }
-            if (item == "Chimera Ls") {
-                ChatLib.chat("&6[SBO] &r&cb2b Chimera Ls!")
-            }
-            // ChatLib.chat("&6[SBO] &r&cYou dropped the same item twice in a row!");
-        }
+        
         if (category === "mobs" && item != "Minos Inquisitor Ls") {
             lastMob = item;
-            lastMobDrobs = [];
+            if (item == "Minos Inquisitor") {
+                lastInqDrops = [];
+            }
+            else if (item == "Minos Champion") {
+                lastChampDrops = [];
+            }
+            else if (item == "Minotaur") {
+                lastMinotaurDrops = [];
+            }
             data.mobsSinceInq += 1;
         }
-        if (category === "items") lastMobDrobs.push(item);
+        if (item == "Minos Inquisitor Ls") {
+            lastInqDroped = false;
+        }
+        if (category === "items") {
+            if (item == "Chimera") lastInqDroped = true;
+            if (item == "ChimeraLs") lastInqLsDroped = true;
+            if (item == "Minos Relic") lastChampDroped = true;
+            if (item == "Daedalus Stick") lastMinotaurDroped = true;
+        }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
         trackOne(trackerTotal, item, category, "Total", amount);
