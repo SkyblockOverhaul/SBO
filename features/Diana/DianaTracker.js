@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, getTracker } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -95,16 +95,7 @@ export function trackScavengerCoins(coins) {
 }
 
 // get tracker by setting (0: default, 1: total, 2: event, 3: event) //
-export function getTracker(setting) {
-    switch (setting) {
-        case 1:
-            return trackerTotal;
-        case 2:
-            return trackerMayor;
-        case 3:
-            return trackerSession;
-    }
-}
+
 
 // refresh overlay (items, mobs) //
 function refreshOverlay(tracker, setting, category) {
@@ -120,34 +111,6 @@ function refreshOverlay(tracker, setting, category) {
                 mobOverlay(tracker, setting, percentDict);
             }
         }
-    }
-}
-
-// calc percent from tracker //
-function calcPercent(trackerToCalc, type, setting) {
-    if (trackerToCalc == undefined) return;
-    percentDict = {};
-    if(type == "mobs"){
-        for (let mob in trackerToCalc["mobs"]) {
-            percentDict[mob] = parseFloat((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"] * 100).toFixed(2));
-        }
-        return percentDict;
-    }
-    else {
-        for (let obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
-            switch (obj) {
-                case "Minos Inquisitor":
-                    percentDict["Chimera"] = parseFloat((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
-                    break;
-                case "Minos Champion":
-                    percentDict["Minos Relic"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
-                    break;
-                case "Minotaur":
-                    percentDict["Daedalus Stick"] = parseFloat((trackerToCalc["items"]["Daedalus Stick"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
-                    break;
-            }
-        }
-        return percentDict;
     }
 }
 
@@ -188,8 +151,8 @@ export function trackItem(item, category, amount) {
         trackOne(trackerSession, item, category, "Session", amount);
         trackOne(trackerTotal, item, category, "Total", amount);
 
-        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        itemOverlay();
+        mobOverlay();
         statsOverlay();
         avgMagicFindOverlay();
     }
@@ -224,8 +187,8 @@ register("command", () => {
         trackerSession[key] = tempTracker[key];
     }
     trackerSession.save();
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    itemOverlay();
+    mobOverlay();
 }).setName("sboresetsession");
     
 // total burrow tracker //
@@ -393,14 +356,13 @@ let tempSettingBazzar = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
     tempSettingBazzar = settings.bazaarSettingDiana
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-
+    itemOverlay();
 }).setFps(1), () => settings.dianaTracker && (tempSettingLoot !== settings.dianaLootTrackerView || tempSettingBazzar !== settings.bazaarSettingDiana));
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    mobOverlay();
 }).setFps(1), () => settings.dianaTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
 let firstLoad = false;
@@ -410,8 +372,8 @@ register("step", () => {
         tempGuiBool = true;
     }
     if (isInSkyblock() && !firstLoad && isDataLoaded()) {
-        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        itemOverlay();
+        mobOverlay();
         statsOverlay();
         avgMagicFindOverlay();
         mythosMobHpOverlay([]);

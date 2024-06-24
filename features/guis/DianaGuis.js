@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, data, setRegisters } from "../../utils/variables";
-import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas } from "../../utils/functions";
+import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { UIWrappedText } from "../../../Elementa";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
@@ -10,19 +10,26 @@ import { checkDiana } from "../../utils/checkDiana";
 
 let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaTracker", "dianaMobTrackerExample", "render", "MobLoc");
 let dianaMobOverlay = dianaMobOverlayObj.overlay;
+let mobChangeButton = new UIWrappedText(`${YELLOW}Click To Change View`);
+mobChangeButton.setX((0).pixels()).setY((0).pixels())
+mobChangeButton.onMouseLeave((comp) => {
+    mobChangeButton.setText(`${YELLOW}Click To Change View`);
+});
+mobChangeButton.onMouseEnter((comp) => {
+    mobChangeButton.setText(`${YELLOW}${UNDERLINE}Click To Change View`);
+});
+
 
 let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
 let lootChangeButton = new UIWrappedText(`${YELLOW}Click To Change View`);
-lootChangeButton.setX((0).pixels()).setY((0).pixels()).onMouseClick(() => {
-})
+lootChangeButton.setX((0).pixels()).setY((0).pixels())
 lootChangeButton.onMouseLeave((comp) => {
     lootChangeButton.setText(`${YELLOW}Click To Change View`);
 });
 lootChangeButton.onMouseEnter((comp) => {
     lootChangeButton.setText(`${YELLOW}${UNDERLINE}Click To Change View`);
 });
-dianaLootOverlay.addChild(lootChangeButton);
 
 let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
 let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
@@ -31,9 +38,8 @@ let dianaAvgMagicFindOverlayObj = newOverlay("dianaAvgMagicFind", "dianaAvgMagic
 let dianaAvgMagicFindOverlay = dianaAvgMagicFindOverlayObj.overlay;
 
 
-let dianaMobTrackerText = new UIWrappedText("");
-let dianaLootTrackerText = new UIWrappedText("");
-dianaLootTrackerText.setY((9).pixels());
+let dianaMobTrackerText = new UIWrappedText("").setY((10).pixels());
+let dianaLootTrackerText = new UIWrappedText("").setY((10).pixels());
 let dianaStatsText = new UIWrappedText("");
 let dianaAvgMagicFindText = new UIWrappedText("");
 
@@ -72,22 +78,25 @@ ${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.cham
  * 
  * @param {string} setting 
  */
-export function mobOverlay(mobTracker, setting, percentDict) {
+export function mobOverlay() {
     if(getGuiOpen()) return;
     if (!dianaMobOverlay.children.includes(dianaMobTrackerText)) {
         dianaMobOverlay.clearChildren();
         dianaMobOverlay.addChild(dianaMobTrackerText);
+        dianaMobOverlay.addChild(mobChangeButton);
     }
     let message = "";
-    if (setting > 0) {
-        message = getMobMassage(mobTracker, setting, percentDict);
+    if (settings.dianaMobTrackerView > 0) {
+        message = getMobMassage(settings.dianaMobTrackerView);
     }
     dianaMobTrackerText.setText(message);
     dianaMobTrackerText.setTextScale((dianaMobOverlayObj.scale).pixels());
 }
 
-function getMobMassage(mobTracker, setting, percentDict) {
+function getMobMassage(setting) {
     const mobTrackerType = ["Total", "Event", "Session"][setting - 1];
+    let mobTracker = getTracker(setting);
+    let percentDict = calcPercent(mobTracker, "mobs");
     let mobMessage = `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})\n`
     mobMessage += `${GRAY}- ${LIGHT_PURPLE}Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor Ls"])}${GRAY}]\n`
     mobMessage += `${GRAY}- ${DARK_PURPLE}Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})\n`
@@ -102,7 +111,7 @@ function getMobMassage(mobTracker, setting, percentDict) {
  * 
  * @param {string} setting 
  */
-export function itemOverlay(lootTracker, lootViewSetting, percentDict){
+export function itemOverlay() {
     if(getGuiOpen()) return;
     if (!dianaLootOverlay.children.includes(dianaLootTrackerText)) {
         dianaLootOverlay.clearChildren();
@@ -110,8 +119,8 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
         dianaLootOverlay.addChild(lootChangeButton); 
     }
     let message = "";
-    if (lootViewSetting > 0) {
-        message = getLootMessage(lootTracker, lootViewSetting, percentDict);
+    if (settings.dianaLootTrackerView > 0) {
+        message = getLootMessage(settings.dianaLootTrackerView);
     }
     dianaLootTrackerText.setText(message);
     dianaLootTrackerText.setTextScale((dianaLootOverlayObj.scale).pixels());
@@ -121,8 +130,10 @@ export function itemOverlay(lootTracker, lootViewSetting, percentDict){
 // .quick_status.sellPrice -> buyorder / instasell
 
 
-function getLootMessage(lootTracker, lootViewSetting, percentDict) {
+function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
+    let lootTracker = getTracker(settings.dianaLootTrackerView);
+    let percentDict = calcPercent(lootTracker, "loot");
     let totalChimera = 0;
     for (let key of ["Chimera", "ChimeraLs"]) {
         if (lootTracker.items[key] !== undefined) {
@@ -227,11 +238,6 @@ registerWhen(register("step", () => {
     }
 }).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind);
 
-// button
-// oben links 41 | Y: 146
-// unten links 41 | Y: 156
-// oben rechts 102 | Y: 146
-// unten rechts 102 | Y: 156
 register("guiMouseClick" , (x, y, button, gui) => {
     gui = gui.toString();
     if (gui.includes("GuiChat") || gui.includes("GuiInventory")) {
@@ -245,7 +251,15 @@ register("guiMouseClick" , (x, y, button, gui) => {
             if (settings.dianaLootTrackerView > 3) {
                 settings.dianaLootTrackerView = 1;
             }
-            setRegisters(); // anders machen ist zu verzögert
+            itemOverlay();
+        }
+        if (x >= dianaMobOverlayObj.X && x <= dianaMobOverlayObj.X + 100 && y >= dianaMobOverlayObj.Y && y <= dianaMobOverlayObj.Y + 10) {
+            print("Clicked");
+            settings.dianaMobTrackerView += 1;
+            if (settings.dianaMobTrackerView > 3) {
+                settings.dianaMobTrackerView = 1;
+            }
+            mobOverlay();
         }
     }
 })

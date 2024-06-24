@@ -1,7 +1,7 @@
 import { request } from "../../requestV2";
 import settings from "../settings";
 import { HypixelModAPI } from "./../../HypixelModAPI";
-import { registerWhen } from "./variables";
+import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
 import { getWorld } from "./world";
 
 // geklaut von coleweight for drawline
@@ -649,7 +649,44 @@ export function getPurse() {
     return -1;
 }
 
+// calc percent from tracker //
+export function calcPercent(trackerToCalc, type) {
+    if (trackerToCalc == undefined) return;
+    percentDict = {};
+    if(type == "mobs"){
+        for (let mob in trackerToCalc["mobs"]) {
+            percentDict[mob] = parseFloat((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"] * 100).toFixed(2));
+        }
+        return percentDict;
+    }
+    else {
+        for (let obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
+            switch (obj) {
+                case "Minos Inquisitor":
+                    percentDict["Chimera"] = parseFloat((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
+                    break;
+                case "Minos Champion":
+                    percentDict["Minos Relic"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
+                    break;
+                case "Minotaur":
+                    percentDict["Daedalus Stick"] = parseFloat((trackerToCalc["items"]["Daedalus Stick"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
+                    break;
+            }
+        }
+        return percentDict;
+    }
+}
 
+export function getTracker(setting) {
+    switch (setting) {
+        case 1:
+            return trackerTotal;
+        case 2:
+            return trackerMayor;
+        case 3:
+            return trackerSession;
+    }
+}
 
 // export function getPurse() {
 //     let purse = 0;
