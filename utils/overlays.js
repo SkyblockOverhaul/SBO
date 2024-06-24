@@ -19,7 +19,8 @@ import {
     WindowScreen,
     UIRoundedRectangle,
     ChildBasedRangeConstraint,
-    Window
+    Window,
+    RelativeConstraint
 } from "../../Elementa";
 import settings from "../settings";
 import { loadGuiSettings, saveGuiSettings } from "../utils/functions";
@@ -174,6 +175,63 @@ register('renderOverlay', () => {
     guiMover();
     renderWindow.draw()
 });
+
+
+
+let mobChangeButton = new UIWrappedText(`&eChange View`);
+mobChangeButton.setX((0).pixels()).setY((0).pixels())
+mobChangeButton.onMouseLeave((comp) => {
+    mobChangeButton.setText(`&eChange View`);
+    mobChangeButton.setWidth(((mobChangeButton.getText().length) * 4.7).pixels())
+});
+mobChangeButton.onMouseEnter((comp) => {
+    mobChangeButton.setText(`&e&nChange View`);
+    mobChangeButton.setWidth(((mobChangeButton.getText().length-2) * 4.7).pixels())
+});
+let lootChangeButton = new UIWrappedText(`&eChange View`);
+lootChangeButton.setX((0).pixels()).setY((0).pixels())
+lootChangeButton.onMouseLeave((comp) => {
+    lootChangeButton.setText(`&eChange View`);
+    lootChangeButton.setWidth(((lootChangeButton.getText().length) * 4.7).pixels())
+});
+lootChangeButton.onMouseEnter((comp) => {
+    lootChangeButton.setText(`&e&nChange View`);
+    lootChangeButton.setWidth(((lootChangeButton.getText().length-2) * 4.7).pixels())
+});
+
+let sellChangeButton = new UIWrappedText(`&eInstasell`);
+sellChangeButton.setX((68).pixels()).setY((0).pixels())
+function setSellText(type = "") {
+    if (type == "hover") {
+        if (settings.bazaarSettingDiana == 0) {
+            sellChangeButton.setText(`&e&nInstasell`);
+        }
+        else {
+            sellChangeButton.setText(`&e&nSell Offer`);
+        }
+        sellChangeButton.setWidth(((sellChangeButton.getText().length-2) * 4.3).pixels())
+    }
+    else {
+        if (settings.bazaarSettingDiana == 0) {
+            sellChangeButton.setText(`&eInstasell`);
+        }
+        else {
+            sellChangeButton.setText(`&eSell Offer`);
+        }
+        sellChangeButton.setWidth((sellChangeButton.getText().length * 4.3).pixels())
+    }
+    // set the text width to the max width of the text
+   
+}
+
+setSellText();
+sellChangeButton.onMouseLeave((comp) => {
+    setSellText();
+});
+sellChangeButton.onMouseEnter((comp) => {
+    setSellText("hover");
+});
+
 const inventoryRender = register("guiRender", () => {
     inventoryWindow.draw()
 });
@@ -182,6 +240,19 @@ register('guiClosed', (gui) => {
     gui = gui.toString();
     if(gui.includes("Inventory")) {
         inventoryRender.unregister();
+        overLays.forEach(overlay => {
+            // remove the buttons from the inventory gui
+            if(overlay.name == "dianaMobTracker"){
+                overlay.overlay.removeChild(mobChangeButton);
+            }
+            if(overlay.name == "dianaLootTracker"){
+                overlay.overlay.removeChild(lootChangeButton);
+                overlay.overlay.removeChild(sellChangeButton);
+            }
+        });
+    }
+    if (gui.includes("vigilance")) {
+        setSellText();
     }
 });
 register('guiOpened', () => {
@@ -189,6 +260,19 @@ register('guiOpened', () => {
         let openedgui = Client.currentGui.get().toString();
         if(openedgui.includes("Inventory")) {
             inventoryRender.register();
+            overLays.forEach(overlay => {
+                if(overlay.name == "dianaMobTracker"){
+                    if(settings.dianaMobTrackerView){
+                        overlay.overlay.addChild(mobChangeButton);
+                    }
+                }
+                if(overlay.name == "dianaLootTracker"){
+                    if(settings.dianaLootTrackerView){
+                        overlay.overlay.addChild(lootChangeButton);
+                        overlay.overlay.addChild(sellChangeButton);
+                    }
+                }
+            });
         }
     }, 100);
 });

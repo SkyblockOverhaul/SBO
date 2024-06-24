@@ -10,26 +10,9 @@ import { checkDiana } from "../../utils/checkDiana";
 
 let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaTracker", "dianaMobTrackerExample", "inventory", "MobLoc");
 let dianaMobOverlay = dianaMobOverlayObj.overlay;
-let mobChangeButton = new UIWrappedText(`${YELLOW}Click To Change View`);
-mobChangeButton.setX((0).pixels()).setY((0).pixels())
-mobChangeButton.onMouseLeave((comp) => {
-    mobChangeButton.setText(`${YELLOW}Click To Change View`);
-});
-mobChangeButton.onMouseEnter((comp) => {
-    mobChangeButton.setText(`${YELLOW}${UNDERLINE}Click To Change View`);
-});
-
 
 let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "inventory", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
-let lootChangeButton = new UIWrappedText(`${YELLOW}Click To Change View`);
-lootChangeButton.setX((0).pixels()).setY((0).pixels())
-lootChangeButton.onMouseLeave((comp) => {
-    lootChangeButton.setText(`${YELLOW}Click To Change View`);
-});
-lootChangeButton.onMouseEnter((comp) => {
-    lootChangeButton.setText(`${YELLOW}${UNDERLINE}Click To Change View`);
-});
 
 let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
 let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
@@ -83,7 +66,6 @@ export function mobOverlay() {
     if (!dianaMobOverlay.children.includes(dianaMobTrackerText)) {
         dianaMobOverlay.clearChildren();
         dianaMobOverlay.addChild(dianaMobTrackerText);
-        dianaMobOverlay.addChild(mobChangeButton);
     }
     let message = "";
     if (settings.dianaMobTrackerView > 0) {
@@ -116,7 +98,6 @@ export function itemOverlay() {
     if (!dianaLootOverlay.children.includes(dianaLootTrackerText)) {
         dianaLootOverlay.clearChildren();
         dianaLootOverlay.addChild(dianaLootTrackerText);   
-        dianaLootOverlay.addChild(lootChangeButton); 
     }
     let message = "";
     if (settings.dianaLootTrackerView > 0) {
@@ -240,21 +221,19 @@ registerWhen(register("step", () => {
 
 register("guiMouseClick" , (x, y, button, gui) => {
     gui = gui.toString();
-    if (gui.includes("GuiChat") || gui.includes("GuiInventory")) {
+    if (gui.includes("GuiInventory")) {
         print(`Mouse Click: X: ${x} | Y: ${y} | Button: ${button} | GUI: ${gui}`)
-        // if x and y are in the lootChangeButton then change the lootViewSetting
-        print(dianaLootOverlayObj.X)
-        print(dianaLootOverlayObj.Y)
-        if (x >= dianaLootOverlayObj.X && x <= dianaLootOverlayObj.X + 100 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
-            print("Clicked");
+        // // if x and y are in the lootChangeButton then change the lootViewSetting
+        // print(dianaLootOverlayObj.X)
+        // print(dianaLootOverlayObj.Y)
+        if (x >= dianaLootOverlayObj.X && x <= dianaLootOverlayObj.X + 60 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
             settings.dianaLootTrackerView += 1;
             if (settings.dianaLootTrackerView > 3) {
                 settings.dianaLootTrackerView = 1;
             }
             itemOverlay();
         }
-        if (x >= dianaMobOverlayObj.X && x <= dianaMobOverlayObj.X + 100 && y >= dianaMobOverlayObj.Y && y <= dianaMobOverlayObj.Y + 10) {
-            print("Clicked");
+        if (x >= dianaMobOverlayObj.X && x <= dianaMobOverlayObj.X + 60 && y >= dianaMobOverlayObj.Y && y <= dianaMobOverlayObj.Y + 10) {
             settings.dianaMobTrackerView += 1;
             if (settings.dianaMobTrackerView > 3) {
                 settings.dianaMobTrackerView = 1;
