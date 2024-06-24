@@ -3,7 +3,7 @@ import { registerWhen, data, setRegisters } from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { UIWrappedText } from "../../../Elementa";
-import { getGuiOpen, newOverlay } from "../../utils/overlays";
+import { getGuiOpen, newOverlay, setSellText } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
 
 
@@ -239,6 +239,14 @@ register("guiMouseClick" , (x, y, button, gui) => {
                 settings.dianaMobTrackerView = 1;
             }
             mobOverlay();
+        }
+        if (x >= dianaLootOverlayObj.X +70 && x <= dianaLootOverlayObj.X + 110 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
+            settings.bazaarSettingDiana += 1;
+            if (settings.bazaarSettingDiana > 1) {
+                settings.bazaarSettingDiana = 0;
+            }
+            setSellText();
+            itemOverlay();
         }
     }
 })

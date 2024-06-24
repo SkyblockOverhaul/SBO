@@ -201,7 +201,7 @@ lootChangeButton.onMouseEnter((comp) => {
 
 let sellChangeButton = new UIWrappedText(`&eInstasell`);
 sellChangeButton.setX((68).pixels()).setY((0).pixels())
-function setSellText(type = "") {
+export function setSellText(type = "") {
     if (type == "hover") {
         if (settings.bazaarSettingDiana == 0) {
             sellChangeButton.setText(`&e&nInstasell`);
