@@ -222,7 +222,7 @@ registerWhen(register("step", () => {
 register("guiMouseClick" , (x, y, button, gui) => {
     gui = gui.toString();
     if (gui.includes("GuiInventory")) {
-        print(`Mouse Click: X: ${x} | Y: ${y} | Button: ${button} | GUI: ${gui}`)
+        // print(`Mouse Click: X: ${x} | Y: ${y} | Button: ${button} | GUI: ${gui}`)
         // // if x and y are in the lootChangeButton then change the lootViewSetting
         // print(dianaLootOverlayObj.X)
         // print(dianaLootOverlayObj.Y)

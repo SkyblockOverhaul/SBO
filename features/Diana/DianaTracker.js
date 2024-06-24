@@ -127,26 +127,26 @@ export function trackItem(item, category, amount) {
         
         if (category === "mobs" && item != "Minos Inquisitor Ls") {
             lastMob = item;
-            if (item == "Minos Inquisitor") {
-                lastInqDrops = [];
-            }
-            else if (item == "Minos Champion") {
-                lastChampDrops = [];
-            }
-            else if (item == "Minotaur") {
-                lastMinotaurDrops = [];
-            }
+            // if (item == "Minos Inquisitor") {
+            //     lastInqDroped = false;
+            // }
+            // else if (item == "Minos Champion") {
+            //     lastChampDroped = false;
+            // }
+            // else if (item == "Minotaur") {
+            //     lastMinotaurDroped = false;
+            // }
             data.mobsSinceInq += 1;
         }
-        if (item == "Minos Inquisitor Ls") {
-            lastInqDroped = false;
-        }
-        if (category === "items") {
-            if (item == "Chimera") lastInqDroped = true;
-            if (item == "ChimeraLs") lastInqLsDroped = true;
-            if (item == "Minos Relic") lastChampDroped = true;
-            if (item == "Daedalus Stick") lastMinotaurDroped = true;
-        }
+        // if (item == "Minos Inquisitor Ls") {
+        //     lastInqDroped = false;
+        // }
+        // if (category === "items") {
+        //     if (item == "Chimera") lastInqDroped = true;
+        //     if (item == "ChimeraLs") lastInqLsDroped = true;
+        //     if (item == "Minos Relic") lastChampDroped = true;
+        //     if (item == "Daedalus Stick") lastMinotaurDroped = true;
+        // }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
         trackOne(trackerTotal, item, category, "Total", amount);
