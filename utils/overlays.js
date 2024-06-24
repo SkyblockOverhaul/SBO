@@ -152,8 +152,7 @@ register("command", () => {
     GuiHandler.openGui(gui)
 }).setName("sboguis").setAliases("sbomoveguis"); 
 
-register('renderOverlay', () => {
-    if(!isInSkyblock()) return;
+register("tick", () => {
     overLays.forEach(overlay => {
         switch(overlay.name){
             case "dianaMobTracker":
@@ -167,6 +166,11 @@ register('renderOverlay', () => {
                 break;
         }
     });
+});
+
+
+register('renderOverlay', () => {
+    if(!isInSkyblock()) return;
     guiMover();
     renderWindow.draw()
 });
