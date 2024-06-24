@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen, data, setRegisters } from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas } from "../../utils/functions";
-import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE} from "../../utils/constants";
+import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { UIWrappedText } from "../../../Elementa";
 import { getGuiOpen, newOverlay } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
@@ -13,19 +13,14 @@ let dianaMobOverlay = dianaMobOverlayObj.overlay;
 
 let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
-let lootChangeButton = new UIWrappedText("Toggle View");
+let lootChangeButton = new UIWrappedText(`${YELLOW}Click To Change View`);
 lootChangeButton.setX((0).pixels()).setY((0).pixels()).onMouseClick(() => {
-    print("Clicked");   
-    settings.lootViewSetting += 1;
-    if (settings.lootViewSetting > 3) {
-        settings.lootViewSetting = 0;
-    }
 })
 lootChangeButton.onMouseLeave((comp) => {
-    lootChangeButton.setText("Toggle View");
+    lootChangeButton.setText(`${YELLOW}Click To Change View`);
 });
 lootChangeButton.onMouseEnter((comp) => {
-    lootChangeButton.setText("Toggle View2");
+    lootChangeButton.setText(`${YELLOW}${UNDERLINE}Click To Change View`);
 });
 dianaLootOverlay.addChild(lootChangeButton);
 
@@ -244,7 +239,7 @@ register("guiMouseClick" , (x, y, button, gui) => {
         // if x and y are in the lootChangeButton then change the lootViewSetting
         print(dianaLootOverlayObj.X)
         print(dianaLootOverlayObj.Y)
-        if (x >= dianaLootOverlayObj.X && x <= dianaLootOverlayObj.X + 61 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
+        if (x >= dianaLootOverlayObj.X && x <= dianaLootOverlayObj.X + 100 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
             print("Clicked");
             settings.dianaLootTrackerView += 1;
             if (settings.dianaLootTrackerView > 3) {

@@ -166,6 +166,22 @@ register('renderOverlay', () => {
     renderWindow.draw()
 });
 
+// const inventoryRender = register("guiRender", () => {
+//     renderWindow.draw()
+// });
+// inventoryRender.unregister();
+
+// register('guiClosed', (gui) => {
+//     gui = gui.toString();
+//     if(gui.includes("Inventory")) inventoryRender.unregister();
+// });
+// register('guiRender', (gui) => {
+//     gui = gui.toString();
+//     if(!gui.includes("640")) return;
+//     inventoryRender.register();
+//     print(gui)
+// });
+
 register('postGuiRender', () => {
     if(!isInSkyblock()) return;
     postWindow.draw()
