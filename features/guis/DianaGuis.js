@@ -8,10 +8,10 @@ import { checkDiana } from "../../utils/checkDiana";
 
 
 
-let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaTracker", "dianaMobTrackerExample", "inventory", "MobLoc");
+let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaTracker", "dianaMobTrackerExample", "render", "MobLoc");
 let dianaMobOverlay = dianaMobOverlayObj.overlay;
 
-let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "inventory", "LootLoc");
+let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "render", "LootLoc");
 let dianaLootOverlay = dianaLootOverlayObj.overlay;
 let lootChangeButton = new UIWrappedText(`${YELLOW}Click To Change View`);
 lootChangeButton.setX((0).pixels()).setY((0).pixels()).onMouseClick(() => {

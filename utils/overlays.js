@@ -126,26 +126,21 @@ let guiOpen = false;
 const gui = new Gui();
 const renderWindow = new Window()
 const postWindow = new Window()
-const inventoryWindow = new Window()
 this.gui.registerClicked((x,y,b) => {
     this.renderWindow.mouseClick(x,y,b);
     this.postWindow.mouseClick(x,y,b);
-    this.inventoryWindow.mouseClick(x,y,b);
 });
 this.gui.registerMouseDragged((x, y, b) => {
     this.renderWindow.mouseDrag(x, y, b);
     this.postWindow.mouseDrag(x, y, b);
-    this.inventoryWindow.mouseDrag(x, y, b);
 });
 this.gui.registerMouseReleased(() => {
     this.renderWindow.mouseRelease();
     this.postWindow.mouseRelease();
-    this.inventoryWindow.mouseRelease();
 });
 this.gui.registerScrolled((mouseX, mouseY, scrollDirection) => {
     this.renderWindow.mouseScroll(scrollDirection);
     this.postWindow.mouseScroll(scrollDirection);
-    this.inventoryWindow.mouseScroll(scrollDirection);
 });
 
 register("command", () => { 
@@ -170,14 +165,19 @@ register('renderOverlay', () => {
     guiMover();
     renderWindow.draw()
 });
+let invRenderBool = false;
 const inventoryRender = register("guiRender", () => {
-    inventoryWindow.draw()
+    renderWindow.draw()
+    invRenderBool = true;
+    print("rendering")
 });
 inventoryRender.unregister();
 register('guiClosed', (gui) => {
     gui = gui.toString();
     if(gui.includes("Inventory")) {
         inventoryRender.unregister();
+        invRenderBool = false;
+        print("unregistering")
     }
 });
 register('guiOpened', () => {
@@ -205,37 +205,28 @@ function checkForSetting(overlay, setting, type, setting2, diana, renderBool){
     if(!overlay) return;
     if (renderBool || type == "post") {
         if(setting || (setting2 > 0 && diana)){
-            if((type === "render" || type === "inventory") && !renderWindow.children.includes(overlay)) {
+            if(type === "render" && !renderWindow.children.includes(overlay)) {
                 renderWindow.addChild(overlay);
             }
             else if(type === "post" && !postWindow.children.includes(overlay)){
                 postWindow.addChild(overlay);
             }
-            else if(type === "inventory" && !inventoryWindow.children.includes(overlay)){
-                inventoryWindow.addChild(overlay);
-            }
         }
         if(!setting || (setting2 === 0 && diana)){
-            if((type === "render" || type === "inventory") && renderWindow.children.includes(overlay)) {
+            if(type === "render" && renderWindow.children.includes(overlay)) {
                 renderWindow.removeChild(overlay);
             }
             else if(type === "post" && postWindow.children.includes(overlay)){
                 postWindow.removeChild(overlay);
             }
-            else if(type === "inventory" && inventoryWindow.children.includes(overlay)){
-                inventoryWindow.removeChild(overlay);
-            }
         }
     }
     else {
-        if((type === "render" || type === "inventory") && renderWindow.children.includes(overlay)) {
+        if(type === "render" && renderWindow.children.includes(overlay)) {
             renderWindow.removeChild(overlay);
         }
         else if(type === "post" && postWindow.children.includes(overlay)){
             postWindow.removeChild(overlay);
-        }
-        else if(type === "inventory" && inventoryWindow.children.includes(overlay)){
-            inventoryWindow.removeChild(overlay);
         }
     }
 }
