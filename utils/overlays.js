@@ -176,7 +176,8 @@ register('renderOverlay', () => {
     renderWindow.draw()
 });
 
-
+let delimiter = new UIWrappedText(`&e|`);
+delimiter.setX((63).pixels()).setY((0).pixels())
 
 let mobChangeButton = new UIWrappedText(`&eChange View`);
 mobChangeButton.setX((0).pixels()).setY((0).pixels())
@@ -248,6 +249,7 @@ register('guiClosed', (gui) => {
             if(overlay.name == "dianaLootTracker"){
                 overlay.overlay.removeChild(lootChangeButton);
                 overlay.overlay.removeChild(sellChangeButton);
+                overlay.overlay.removeChild(delimiter);
             }
         });
     }
@@ -270,6 +272,7 @@ register('guiOpened', () => {
                     if(settings.dianaLootTrackerView){
                         overlay.overlay.addChild(lootChangeButton);
                         overlay.overlay.addChild(sellChangeButton);
+                        overlay.overlay.addChild(delimiter);
                     }
                 }
             });
