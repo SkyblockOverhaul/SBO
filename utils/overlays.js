@@ -258,6 +258,9 @@ register('guiClosed', (gui) => {
     }
 });
 register('guiOpened', () => {
+    checkOpenedGui();
+});
+function checkOpenedGui(){
     setTimeout(() => {
         if (Client == undefined) return;
         if (Client.currentGui == undefined) return;
@@ -281,8 +284,7 @@ register('guiOpened', () => {
             });
         }
     }, 200);
-});
-
+}
 
 register('postGuiRender', () => {
     if(!isInSkyblock()) return;
