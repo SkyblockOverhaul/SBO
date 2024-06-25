@@ -259,6 +259,9 @@ register('guiClosed', (gui) => {
 });
 register('guiOpened', () => {
     setTimeout(() => {
+        if (Client == undefined) return;
+        if (Client.currentGui == undefined) return;
+        if (Client.currentGui.get() == null) return;
         let openedgui = Client.currentGui.get().toString();
         if(openedgui.includes("Inventory")) {
             inventoryRender.register();
@@ -277,7 +280,7 @@ register('guiOpened', () => {
                 }
             });
         }
-    }, 100);
+    }, 200);
 });
 
 
