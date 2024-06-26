@@ -1,60 +1,85 @@
 import settings from "../../settings";
-import { registerWhen, data, setRegisters } from "../../utils/variables";
+import { registerWhen, data } from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
-import { UIWrappedText } from "../../../Elementa";
-import { getGuiOpen, newOverlay, setSellText } from "../../utils/overlays";
+import { SboOverlay, OverlayTextLine, OverlayButton } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
 
 
 
-let dianaMobOverlayObj = newOverlay("dianaMobTracker", "dianaTracker", "dianaMobTrackerExample", "inventory", "MobLoc");
-let dianaMobOverlay = dianaMobOverlayObj.overlay;
 
-let dianaLootOverlayObj = newOverlay("dianaLootTracker", "dianaTracker", "dianaLootTrackerExample", "inventory", "LootLoc");
-let dianaLootOverlay = dianaLootOverlayObj.overlay;
+let overlayMobTracker = new SboOverlay("dianaMobTracker", "dianaTracker", "inventory", "MobLoc")
+let textOverlayLineMob = new OverlayTextLine("", true)
+let buttonChangeMobView = new OverlayButton("&eChange View", true, true)
+buttonChangeMobView.onClick(() => {
+    settings.dianaMobTrackerView += 1;
+    if (settings.dianaMobTrackerView > 3) {
+        settings.dianaMobTrackerView = 1;
+    }
+    mobOverlay();
+})
 
-let dianaStatsOverlayObj = newOverlay("dianaStats", "dianaStatsTracker", "dianaStatsExample", "render", "StatsLoc");
-let dianaStatsOverlay = dianaStatsOverlayObj.overlay;
+let overlayLootTracker = new SboOverlay("dianaLootTracker", "dianaTracker", "inventory", "LootLoc")
+let lootMessageLine = new OverlayTextLine("", true)
+let buttonChangeLootView = new OverlayButton("&eChange View", true, true)
+buttonChangeLootView.onClick(() => {  
+    settings.dianaLootTrackerView += 1;
+    if (settings.dianaLootTrackerView > 3) {
+        settings.dianaLootTrackerView = 1;
+    }
+    itemOverlay();
+})
+let buttonBazaarSetting = new OverlayButton("Sell", true, true, false)
+buttonBazaarSetting.onClick(() => {
+    settings.bazaarSettingDiana += 1;
+    if (settings.bazaarSettingDiana > 1) {
+        settings.bazaarSettingDiana = 0;
+    }
+    setSellText();
+    itemOverlay();
+})
 
-let dianaAvgMagicFindOverlayObj = newOverlay("dianaAvgMagicFind", "dianaAvgMagicFind", "dianaAvgMagicFindExample", "render", "AvgMagicFindLoc");
-let dianaAvgMagicFindOverlay = dianaAvgMagicFindOverlayObj.overlay;
+function setSellText(type = "") {
+    if (type == "hover") {
+        if (settings.bazaarSettingDiana == 0) {
+            buttonBazaarSetting.setText(`&e&nInstasell`);
+            
+        }
+        else {
+            buttonBazaarSetting.setText(`&e&nSell Offer`);
+        }
+    }
+    else {
+        if (settings.bazaarSettingDiana == 0) {
+            buttonBazaarSetting.setText(`&eInstasell`);
+        }
+        else {
+            buttonBazaarSetting.setText(`&eSell Offer`);
+        }
+    }
+}
+setSellText();
 
+let dianaStatsOverlay = new SboOverlay("dianaStats", "dianaStatsTracker", "render", "StatsLoc");
+let dianaStatsText = new OverlayTextLine("", true);
 
-let dianaMobTrackerText = new UIWrappedText("").setY((10).pixels());
-let dianaLootTrackerText = new UIWrappedText("").setY((10).pixels());
-let dianaStatsText = new UIWrappedText("");
-let dianaAvgMagicFindText = new UIWrappedText("");
+let dianaAvgMagicFindOverlay = new SboOverlay("dianaAvgMagicFind", "dianaAvgMagicFind", "render", "AvgMagicFindLoc");
+let dianaAvgMagicFindText = new OverlayTextLine("", true);
 
 export function avgMagicFindOverlay() {
-    if(getGuiOpen()) return;
-    if (!dianaAvgMagicFindOverlay.children.includes(dianaAvgMagicFindText)) {
-        dianaAvgMagicFindOverlay.clearChildren();
-        dianaAvgMagicFindOverlay.addChild(dianaAvgMagicFindText);
-    }
     let message = `${YELLOW}${BOLD}Diana Magic Find ${GRAY}(${YELLOW}${BOLD}Avg${GRAY})
 ${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${data.avgChimMagicFind}%
-${GRAY}- ${GOLD}Sticks: ${AQUA}${data.avgStickMagicFind}%
-    `
-
-    dianaAvgMagicFindText.setText(message);
-    dianaAvgMagicFindText.setTextScale((dianaAvgMagicFindOverlayObj.scale).pixels());
+${GRAY}- ${GOLD}Sticks: ${AQUA}${data.avgStickMagicFind}%`
+    dianaAvgMagicFindOverlay.setLines([dianaAvgMagicFindText.setText(message)]);
 }
 
 export function statsOverlay() {
-    if(getGuiOpen()) return;
-    if (!dianaStatsOverlay.children.includes(dianaStatsText)) {
-        dianaStatsOverlay.clearChildren();
-        dianaStatsOverlay.addChild(dianaStatsText);
-    }
     let message = `${YELLOW}${BOLD}Diana Stats Tracker
 ${GRAY}- ${LIGHT_PURPLE}Mobs since Inq: ${AQUA}${data.mobsSinceInq}
 ${GRAY}- ${LIGHT_PURPLE}Inqs since Chimera: ${AQUA}${data.inqsSinceChim}
 ${GRAY}- ${GOLD}Minos since Stick: ${AQUA}${formatNumberCommas(data.minotaursSinceStick)}
-${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.champsSinceRelic)}
-`
-    dianaStatsText.setText(message);
-    dianaStatsText.setTextScale((dianaStatsOverlayObj.scale).pixels());
+${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.champsSinceRelic)}`
+    dianaStatsOverlay.setLines([dianaStatsText.setText(message)]);
 }
 
 /**
@@ -62,17 +87,11 @@ ${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.cham
  * @param {string} setting 
  */
 export function mobOverlay() {
-    if(getGuiOpen()) return;
-    if (!dianaMobOverlay.children.includes(dianaMobTrackerText)) {
-        dianaMobOverlay.clearChildren();
-        dianaMobOverlay.addChild(dianaMobTrackerText);
-    }
     let message = "";
     if (settings.dianaMobTrackerView > 0) {
         message = getMobMassage(settings.dianaMobTrackerView);
     }
-    dianaMobTrackerText.setText(message);
-    dianaMobTrackerText.setTextScale((dianaMobOverlayObj.scale).pixels());
+    overlayMobTracker.setLines([buttonChangeMobView, textOverlayLineMob.setText(message)]);
 }
 
 function getMobMassage(setting) {
@@ -94,17 +113,11 @@ function getMobMassage(setting) {
  * @param {string} setting 
  */
 export function itemOverlay() {
-    if(getGuiOpen()) return;
-    if (!dianaLootOverlay.children.includes(dianaLootTrackerText)) {
-        dianaLootOverlay.clearChildren();
-        dianaLootOverlay.addChild(dianaLootTrackerText);   
-    }
     let message = "";
     if (settings.dianaLootTrackerView > 0) {
         message = getLootMessage(settings.dianaLootTrackerView);
     }
-    dianaLootTrackerText.setText(message);
-    dianaLootTrackerText.setTextScale((dianaLootOverlayObj.scale).pixels());
+    overlayLootTracker.setLines([buttonChangeLootView, buttonBazaarSetting, lootMessageLine.setText(message)]);
 }
 
 // .quick_status.buyPrice -> selloffer / instabuy
@@ -135,8 +148,7 @@ function getLootMessage(lootViewSetting) {
     let crownPrice = getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"]
     let souvenirPrice = getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"]
     
-    let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})
-`;
+    let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})\n`;
     function getMessagePart(price, color, itemName, itemAmount, percent = "") {
         if (percent == ""){
             return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount}\n`
@@ -172,24 +184,11 @@ function getLootMessage(lootViewSetting) {
     return lootMessage;
 }
 
-let mythosHpOverlayObj = newOverlay("mythosMobHp", "mythosMobHp", "mythosMobHpExample", "render", "MythosHpLoc");
-let mythosHpOverlay = mythosHpOverlayObj.overlay
+let mythosHpOverlay= new SboOverlay("mythosMobHp", "mythosMobHp", "render", "MythosHpLoc", "mythosMobHpExample");
+let mythosHpText = new OverlayTextLine("", true);
 
-let mythosMobHpText = new UIWrappedText("");
 
 export function mythosMobHpOverlay(mobNamesWithHp) {
-    // if (!renderGui) {
-    //     mythosHpOverlayObj.renderGui = false;
-    //     return;
-    // }
-    // else {
-    //     mythosHpOverlayObj.renderGui = true;
-    // }
-    if(getGuiOpen()) return
-    if(!mythosHpOverlay.children.includes(mythosMobHpText)) {
-        mythosHpOverlay.clearChildren();
-        mythosHpOverlay.addChild(mythosMobHpText);
-    }
     let message = "";
     if (mobNamesWithHp.length > 0) {
         message = "";
@@ -200,53 +199,35 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
     else {
         message = "";
     }
-    mythosMobHpText.setText(message);
-    mythosMobHpText.setTextScale((mythosHpOverlayObj.scale).pixels());
+    mythosHpOverlay.setLines([mythosHpText.setText(message)]);
 }
 
 registerWhen(register("step", () => {
     if (playerHasSpade() || checkDiana()) {
-        dianaMobOverlayObj.renderGui = true;
-        dianaLootOverlayObj.renderGui = true;
-        dianaStatsOverlayObj.renderGui = true;
-        dianaAvgMagicFindOverlayObj.renderGui = true;
+        overlayMobTracker.renderGui = true;
+        overlayLootTracker.renderGui = true;
+        dianaStatsOverlay.renderGui = true;
+        dianaAvgMagicFindOverlay.renderGui = true;
     }
     else {
-        dianaMobOverlayObj.renderGui = false;
-        dianaLootOverlayObj.renderGui = false;
-        dianaStatsOverlayObj.renderGui = false;
-        dianaAvgMagicFindOverlayObj.renderGui = false;
+        overlayMobTracker.renderGui = false;
+        overlayLootTracker.renderGui = false;
+        dianaStatsOverlay.renderGui = false;
+        dianaAvgMagicFindOverlay.renderGui = false;
     }
 }).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind);
 
-register("guiMouseClick" , (x, y, button, gui) => {
+
+register('guiClosed', (gui) => {
     gui = gui.toString();
-    if (gui.includes("GuiInventory")) {
-        // print(`Mouse Click: X: ${x} | Y: ${y} | Button: ${button} | GUI: ${gui}`)
-        // // if x and y are in the lootChangeButton then change the lootViewSetting
-        // print(dianaLootOverlayObj.X)
-        // print(dianaLootOverlayObj.Y)
-        if (x >= dianaLootOverlayObj.X && x <= dianaLootOverlayObj.X + 60 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
-            settings.dianaLootTrackerView += 1;
-            if (settings.dianaLootTrackerView > 3) {
-                settings.dianaLootTrackerView = 1;
-            }
-            itemOverlay();
-        }
-        if (x >= dianaMobOverlayObj.X && x <= dianaMobOverlayObj.X + 60 && y >= dianaMobOverlayObj.Y && y <= dianaMobOverlayObj.Y + 10) {
-            settings.dianaMobTrackerView += 1;
-            if (settings.dianaMobTrackerView > 3) {
-                settings.dianaMobTrackerView = 1;
-            }
-            mobOverlay();
-        }
-        if (x >= dianaLootOverlayObj.X +70 && x <= dianaLootOverlayObj.X + 110 && y >= dianaLootOverlayObj.Y && y <= dianaLootOverlayObj.Y + 10) {
-            settings.bazaarSettingDiana += 1;
-            if (settings.bazaarSettingDiana > 1) {
-                settings.bazaarSettingDiana = 0;
-            }
-            setSellText();
-            itemOverlay();
-        }
+    if (gui.includes("vigilance")) {
+        setSellText();
     }
-})
+});
+
+
+
+
+
+
+

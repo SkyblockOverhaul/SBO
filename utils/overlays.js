@@ -23,9 +23,9 @@ import {
     RelativeConstraint
 } from "../../Elementa";
 import settings from "../settings";
-import { loadGuiSettings, saveGuiSettings } from "../utils/functions";
-import { overlayExamples } from "../utils/guiExamples";
+import { loadGuiSettings, printDev, saveGuiSettings } from "../utils/functions";
 import { isInSkyblock } from '../utils/functions';
+import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../utils/constants";
 
 
 const dragOffset = {x: 0, y: 0};
@@ -63,6 +63,7 @@ class elementaOverlay {
             this.selected = true;
             dragOffset.x = event.absoluteX;
             dragOffset.y = event.absoluteY;
+            print("dragOffset.x: " + dragOffset.x + " dragOffset.y: " + dragOffset.y)
         });
 
         this.overlay.onMouseRelease(() => {
@@ -73,6 +74,9 @@ class elementaOverlay {
             if(!this.selected) return;
             const absoluteX = mx + comp.getLeft()
             const absoluteY = my + comp.getTop()
+            print("absoluteX: " + absoluteX + " absoluteY: " + absoluteY)
+            print("comp.getLeft(): " + comp.getLeft() + " comp.getTop(): " + comp.getTop())
+            print("mx: " + mx + " my: " + my)
             const dx = absoluteX - dragOffset.x;
             const dy = absoluteY - dragOffset.y;
             dragOffset.x = absoluteX;
@@ -176,87 +180,15 @@ register('renderOverlay', () => {
     renderWindow.draw()
 });
 
-let delimiter = new UIWrappedText(`&e|`);
-delimiter.setX((63).pixels()).setY((0).pixels())
-
-let mobChangeButton = new UIWrappedText(`&eChange View`);
-mobChangeButton.setX((0).pixels()).setY((0).pixels())
-mobChangeButton.onMouseLeave((comp) => {
-    mobChangeButton.setText(`&eChange View`);
-    mobChangeButton.setWidth(((mobChangeButton.getText().length) * 4.7).pixels())
-});
-mobChangeButton.onMouseEnter((comp) => {
-    mobChangeButton.setText(`&e&nChange View`);
-    mobChangeButton.setWidth(((mobChangeButton.getText().length-2) * 4.7).pixels())
-});
-let lootChangeButton = new UIWrappedText(`&eChange View`);
-lootChangeButton.setX((0).pixels()).setY((0).pixels())
-lootChangeButton.onMouseLeave((comp) => {
-    lootChangeButton.setText(`&eChange View`);
-    lootChangeButton.setWidth(((lootChangeButton.getText().length) * 4.7).pixels())
-});
-lootChangeButton.onMouseEnter((comp) => {
-    lootChangeButton.setText(`&e&nChange View`);
-    lootChangeButton.setWidth(((lootChangeButton.getText().length-2) * 4.7).pixels())
-});
-
-let sellChangeButton = new UIWrappedText(`&eInstasell`);
-sellChangeButton.setX((68).pixels()).setY((0).pixels())
-export function setSellText(type = "") {
-    if (type == "hover") {
-        if (settings.bazaarSettingDiana == 0) {
-            sellChangeButton.setText(`&e&nInstasell`);
-        }
-        else {
-            sellChangeButton.setText(`&e&nSell Offer`);
-        }
-        sellChangeButton.setWidth(((sellChangeButton.getText().length-2) * 4.3).pixels())
-    }
-    else {
-        if (settings.bazaarSettingDiana == 0) {
-            sellChangeButton.setText(`&eInstasell`);
-        }
-        else {
-            sellChangeButton.setText(`&eSell Offer`);
-        }
-        sellChangeButton.setWidth((sellChangeButton.getText().length * 4.3).pixels())
-    }
-    // set the text width to the max width of the text
-   
-}
-
-setSellText();
-sellChangeButton.onMouseLeave((comp) => {
-    setSellText();
-});
-sellChangeButton.onMouseEnter((comp) => {
-    setSellText("hover");
-});
-
-const inventoryRender = register("guiRender", () => {
-    inventoryWindow.draw()
-});
-inventoryRender.unregister();
+let isInInventory = false;
 register('guiClosed', (gui) => {
     gui = gui.toString();
     if(gui.includes("Inventory")) {
-        inventoryRender.unregister();
-        overLays.forEach(overlay => {
-            // remove the buttons from the inventory gui
-            if(overlay.name == "dianaMobTracker"){
-                overlay.overlay.removeChild(mobChangeButton);
-            }
-            if(overlay.name == "dianaLootTracker"){
-                overlay.overlay.removeChild(lootChangeButton);
-                overlay.overlay.removeChild(sellChangeButton);
-                overlay.overlay.removeChild(delimiter);
-            }
-        });
-    }
-    if (gui.includes("vigilance")) {
-        setSellText();
+        isInInventory = false;
     }
 });
+
+
 register('guiOpened', () => {
     setTimeout(() => {
         if (Client == undefined) return;
@@ -264,21 +196,7 @@ register('guiOpened', () => {
         if (Client.currentGui.get() == null) return;
         let openedgui = Client.currentGui.get().toString();
         if(openedgui.includes("Inventory")) {
-            inventoryRender.register();
-            overLays.forEach(overlay => {
-                if(overlay.name == "dianaMobTracker"){
-                    if(settings.dianaMobTrackerView){
-                        overlay.overlay.addChild(mobChangeButton);
-                    }
-                }
-                if(overlay.name == "dianaLootTracker"){
-                    if(settings.dianaLootTrackerView){
-                        overlay.overlay.addChild(lootChangeButton);
-                        overlay.overlay.addChild(sellChangeButton);
-                        overlay.overlay.addChild(delimiter);
-                    }
-                }
-            });
+            isInInventory = true;
         }
     }, 200);
 });
@@ -414,3 +332,421 @@ function clearExamples(){
         overlay.overlay.clearChildren();
     });
 }
+
+
+function loadSettings(overlay) {
+    if (guiSettings != undefined) {
+        overlay.X = parseInt(guiSettings[overlay.locName]["x"]);
+        overlay.Y = parseInt(guiSettings[overlay.locName]["y"]);
+    }
+}
+
+//// new overlay without elementa
+let overLaysNew = [];
+let editGui = new Gui();
+
+// if (this.gui.isOpen()) {
+//     let txt = "Drag to move. Use +/- to increase/decrease gui size. Use arrow keys to set alignment.";
+//     Renderer.drawStringWithShadow(txt, Renderer.screen.getWidth()/2 - Renderer.getStringWidth(txt)/2, Renderer.screen.getHeight()/2);
+// }
+
+editGui.registerScrolled((x, y, delta) => {
+    if (editGui.isOpen()) {
+        overLaysNew.forEach(overlay => {
+            // check if mouse is over the overlay
+            if (overlay.isInOverlay(x, y)) {
+                overlay.scale = parseFloat(guiSettings[overlay.locName]["s"]);
+                switch(delta){
+                    case -1:
+                        if(overlay.scale <= 0.1) return;
+                        overlay.scale -= 0.1;
+                        break;
+                    case 1:
+                        if(overlay.scale >= 10.0) return;
+                        overlay.scale += 0.1;
+                        break;
+                }
+                overlay.scale = overlay.scale.toFixed(1);
+                guiSettings[overlay.locName]["s"] = overlay.scale;
+                saveGuiSettings(guiSettings);
+            }
+        });
+    }
+});
+
+editGui.registerMouseDragged((x, y) => {
+    if (editGui.isOpen()) {
+        overLaysNew.forEach(overlay => {
+            if (overlay.selected) {
+                const mx = x - overlay.X;
+                const my = y - overlay.Y;
+                const absoluteX = mx + overlay.X;
+                const absoluteY = my + overlay.Y;
+                print("absoluteX: " + absoluteX + " absoluteY: " + absoluteY)
+                print("comp.getLeft(): " + overlay.X + " comp.getTop(): " + overlay.Y)
+                print("mx: " + mx + " my: " + my)
+                const dx = absoluteX - dragOffset.x;
+                const dy = absoluteY - dragOffset.y;
+                dragOffset.x = absoluteX;
+                dragOffset.y = absoluteY;
+                const newX = overlay.X + dx;
+                const newY = overlay.Y + dy;
+                overlay.X = newX;
+                overlay.Y = newY;
+                guiSettings[overlay.locName]["x"] = newX;
+                guiSettings[overlay.locName]["y"] = newY;
+            }
+        });
+    }
+});
+
+editGui.registerClicked((x, y, button) => {
+    if (editGui.isOpen()) {
+        overLaysNew.forEach(overlay => {
+            // check if mouse is over the overlay
+            if (overlay.isInOverlay(x, y)) {
+                overlay.selected = true;
+            }
+            else {
+                overlay.selected = false;
+            }
+        });
+        dragOffset.x = x;
+        dragOffset.y = y;
+    }
+});
+
+editGui.registerMouseReleased(() => {
+    overLaysNew.forEach(overlay => {
+        overlay.selected = false;
+    });
+    // save all gui settings
+    saveGuiSettings(guiSettings);
+});
+
+export class OverlayTextLine {
+    constructor(message, shadow = true) {
+        this.text = new Text(message ?? "");
+        this.text.setShadow(shadow);
+        this.text.setScale(1.0);
+        this.text.setAlign("LEFT")
+        this.X = -1;
+        this.Y = -1;
+        this.scale = 1.0;
+        this.lineBreak = true;
+
+    }
+
+    setText(message) {
+        this.text.setString(message);
+        return this;
+    }
+
+    getString() {
+        return this.text.getString();
+    }
+
+    setX(x) {
+        this.X = x;
+        this.text.setX(x);
+        return this;
+    }
+
+    setY(y) {
+        this.Y = y;
+        this.text.setY(y);
+        return this;
+    }
+
+    setScale(scale) {
+        this.scale = scale;
+        this.text.setScale(scale);
+        return this;
+    }
+
+    draw() {
+        this.text.draw();
+    }
+
+    setAlign(align) {
+        this.text.setAlign(align);
+        return this;
+    }
+
+    setShadow(shadow) {
+        this.text.setShadow(shadow);
+        return this;
+    }
+}
+
+let buttons = [];
+register("guiMouseClick" , (cx, cy, button, gui) => {
+    buttons.forEach(button => {
+        button.clicked(cx, cy, button, gui);
+    });
+});
+
+export class OverlayButton extends OverlayTextLine {
+    constructor(message, shadow, button, lineBreak = true, delimiter = "&e | &r" ) {
+        super(message, shadow);
+        this.button = button;
+        this.action = undefined;
+        this.lineBreak = lineBreak; 
+
+        this.delimiter = new Text(delimiter).setShadow(shadow);
+        
+        buttons.push(this);
+    }
+    
+    onClick(action) {
+        this.action = action;
+        return this;
+    }
+
+    clicked(cx, cy, button, gui) {
+        if (isInInventory) {
+            if (this.button && this.action && this.X != -1 && this.Y != -1) {
+                let stringCount = this.text.getString().split("\n").length;
+                let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
+
+                if (cx >= this.X && cx <= this.X + Renderer.getStringWidth(longestLine) * this.scale && cy >= this.Y && cy <= this.Y + 10 * this.scale * stringCount) {
+                    this.action();
+                }
+            }
+        }
+    }
+
+}
+
+
+function drawText(overlay) {
+    let lineCount = 0;
+    let textLines = overlay.textLines;
+    if (overlay.exampleText != undefined && editGui.isOpen()) { 
+        printDev(overlay.name + " " + overlay.exampleText)
+        textLines = [overlay.exampleText];
+    }
+    textLines.forEach((text, index) => {
+        if (text.button && !isInInventory && !editGui.isOpen()) return;
+        if (text.button && !text.lineBreak && index > 0) {
+            let previousText = overlay.textLines[index - 1].text.getString() 
+            text.delimiter.setX(overlay.X + overlay.offsetX + Renderer.getStringWidth(previousText) * overlay.scale)
+            text.delimiter.setY(overlay.Y + overlay.offsetY + (10 * overlay.scale * (lineCount - 1)))
+            text.delimiter.setScale(overlay.scale);
+            text.delimiter.draw();
+
+            text.setX(overlay.X + overlay.offsetX + Renderer.getStringWidth(previousText) * overlay.scale + Renderer.getStringWidth(text.delimiter.getString()) * overlay.scale)
+            text.setY(overlay.Y + overlay.offsetY + (10 * overlay.scale * (lineCount - 1)))
+            text.setScale(overlay.scale);
+            
+            text.draw();
+
+
+        }
+        else {
+            text.setX(overlay.X + overlay.offsetX)
+            text.setY(overlay.Y + overlay.offsetY + (10 * overlay.scale * (lineCount)))
+            text.setScale(overlay.scale);
+            text.draw();
+            lineCount += text.getString().split("\n").length;
+        }
+
+    });
+}
+
+export class SboOverlay {
+    constructor(name, setting, type, locName, example = "") {
+        overLaysNew.push(this);
+        this.name = name;
+        this.setting = setting;
+        this.example = example;
+        this.type = type;
+        this.locName = locName;
+        this.renderGui = true;
+        this.selected = false;
+        this.scale = parseFloat(guiSettings[locName]["s"]);
+        this.X = 0;
+        this.Y = 0;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.longestString = 0;
+        this.stringCount = 0;
+        this.editParameters = new Text("");
+        this.exampleText = overlayExamples[this.example] ?? undefined;
+        
+        this.textLines = [];    
+
+        this.gui = new Gui();
+
+        register("renderOverlay", () => {
+            if (isInSkyblock() && settings[this.setting] && (this.renderGui || editGui.isOpen()) && (this.type == "render" || (this.type == "inventory" && !isInInventory))) {
+
+                drawText(this);
+                if (editGui.isOpen()) {
+                    this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
+                    this.editParameters.setX(this.X)
+                    this.editParameters.setY(this.Y - 10)
+                    this.editParameters.draw();
+                    Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
+                }
+            }
+        });
+
+
+        register("postGuiRender", () => {
+            if (isInSkyblock() && settings[this.setting] && this.renderGui && this.type == "post") {
+                drawText(this)
+            }
+        });
+
+        register("guiRender", () => {
+            if (isInSkyblock() && settings[this.setting] && this.renderGui && (this.type == "inventory" && isInInventory)) {
+
+                drawText(this)
+            }
+        });
+
+        register("guiKey", (char, keyCode, gui, event) => {
+            const mouseX = Client.getMouseX();
+            const mouseY = Client.getMouseY();
+            if (editGui.isOpen() && this.isInOverlay(mouseX, mouseY)) {
+                switch (keyCode) {
+                    case Keyboard.KEY_LEFT:
+                        this.X -= 1;
+                        break;
+                    case Keyboard.KEY_RIGHT:
+                        this.X += 1;
+                        break;
+                    case Keyboard.KEY_UP:
+                        this.Y -= 1;
+                        break;
+                    case Keyboard.KEY_DOWN:
+                        this.Y += 1;
+                        break;
+                }
+                guiSettings[this.locName]["x"] = this.X;
+                guiSettings[this.locName]["y"] = this.Y;
+                saveGuiSettings(guiSettings);
+            }
+        });
+            
+        loadSettings(this);
+    }
+
+    setLines(lines) {
+        this.textLines = lines
+        this.longestString = ""
+        this.stringCount = 0;
+        this.textLines.forEach(text => {
+            let longestLine = text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
+            if (longestLine.length > this.longestString.length) {
+                this.longestString = longestLine;
+            }
+            if (text.lineBreak) {
+                this.stringCount += text.getString().split("\n").length;
+            }
+        });
+        
+        // this.text.setString(message);
+    };
+
+    openGui() {
+        return this.gui.open();
+    }
+
+    setOffsetX(offset) {
+        this.offsetX = offset;
+    }
+
+    setOffsetY(offset) {
+        this.offsetY = offset;
+    }
+
+    isInOverlay(x, y) {
+        // with offset
+        if (editGui.isOpen() && this.exampleText != undefined) {
+            let longestString = ""
+            let stringCount = 0;
+            [this.exampleText].forEach(text => {
+                let longestLine = text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
+                if (longestLine.length > this.longestString.length) {
+                    longestString = longestLine;
+                }
+                if (text.lineBreak) {
+                    stringCount += text.getString().split("\n").length;
+                }
+            });
+            if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 10 * this.scale * stringCount + this.offsetY) {
+                return true;
+            }
+            return false;
+        }
+        else {
+            if (x >= this.X && x <= this.X + Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 10 * this.scale * this.stringCount + this.offsetY) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+}
+
+register("command", () => {
+    // overLaysNew.forEach(overlay => {
+    //     overlay.openGui();
+    // });
+    editGui.open();
+}).setName("sbotestgui");
+
+
+///////////// examples
+
+
+
+
+export let blazeLootTrackerExample = 
+`${YELLOW}${BOLD}Blaze Loot Tracker
+-------------------
+${WHITE}${BOLD}Ice-Flavored:
+${WHITE}${BOLD}Fire Aspect III:
+${GREEN}${BOLD}Flawed Opal Gems:
+${BLUE}${BOLD}Lavatears Runes:
+${BLUE}${BOLD}Mana Disintegrator:
+${BLUE}${BOLD}Kelvin Inverter:
+${BLUE}${BOLD}Blaze Rod Dist:
+${BLUE}${BOLD}Glowstone Dist:
+${BLUE}${BOLD}Magma Cream Dist:
+${BLUE}${BOLD}Nether Wart Dist:
+${BLUE}${BOLD}Gabagool Dist:
+${DARK_PURPLE}${BOLD}Magma Arrows:
+${DARK_PURPLE}${BOLD}Archfiend Dice
+${GOLD}${BOLD}Fiery Burst Rune:
+${GOLD}${BOLD}Scorched Power:
+${GOLD}${BOLD}Engineering Plans:
+${GOLD}${BOLD}Subzero Inverter:
+${GOLD}${BOLD}High Class Dice:
+${LIGHT_PURPLE}${BOLD}Duplex:
+${LIGHT_PURPLE}${BOLD}Scorched Books:
+${GRAY}${BOLD}Blaze Killed: 
+`
+
+const mythosMobHpExample = new OverlayTextLine(`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`)
+const fossilExample = new OverlayTextLine(`Fossil: Unknown`)
+const effectsGuiExample = new OverlayTextLine(`&6Active Effects\n--------------\n&bWisp's Water: &f2520s`)
+const kuudraExampleOne = new OverlayTextLine(`&6&l600.00K &cCrimson Chestplate &7(BL 5/BR 4 - &6600.00K/600.00K&7)
+&6&l2.50M &cTerror Boots &7(ER 5/DO 4 - &61.48M/2.50M&7)
+&7Total Value: &62.1M coins`)
+const kuudraExampleTwo = new OverlayTextLine(`&6&l2.49M &cTerror Chestplate
+&7(BL 5/BR 4 - &6100.00K/2.49M)
+&6&l2.50M &cTerror Boots
+&7(ER 5/DO 4 - &61.48M/2.50M)
+&7Total Value: &64.99M coins`)
+
+
+let overlayExamples = {
+    kuudraExampleTwo: kuudraExampleTwo,
+    kuudraExampleOne: kuudraExampleOne,
+    fossilExample: fossilExample,
+    effectsGuiExample: effectsGuiExample,
+    mythosMobHpExample: mythosMobHpExample,
+};
