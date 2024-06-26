@@ -523,7 +523,6 @@ function drawText(overlay) {
     let lineCount = 0;
     let textLines = overlay.textLines;
     if (overlay.exampleText != undefined && editGui.isOpen()) { 
-        printDev(overlay.name + " " + overlay.exampleText)
         textLines = [overlay.exampleText];
     }
     textLines.forEach((text, index) => {
