@@ -1,15 +1,11 @@
 import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
-import { getGuiOpen, newOverlay } from "../../utils/overlays";
-import { UIWrappedText } from "../../../Elementa";
+import { OverlayTextLine, SboOverlay } from "../../utils/overlays";
 import { YELLOW, BOLD, AQUA } from "../../utils/constants";
 
-let legionOverlayObj = newOverlay("legionOverlay", "legionCounter", "legioncounterExample", "render", "LegionLoc");
-let legionOverlay = legionOverlayObj.overlay;
+let legionOverlay = new SboOverlay("legionOverlay", "legionCounter", "render", "LegionLoc");
+let legionOverlayText = new OverlayTextLine("");
 
-let legionText = new UIWrappedText(`${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}0`);
-legionText.setHeight((10).pixels())
-legionOverlay.addChild(legionText);
 
 function getLegionCount() {
     let legionDistance = 30;
@@ -29,13 +25,7 @@ function getLegionCount() {
 }
 
 function refreshLegionOverlay() {
-    if(getGuiOpen()) return;
-    if(!legionOverlay.children.includes(legionText)) {
-        legionOverlay.clearChildren();
-        legionOverlay.addChild(legionText);
-    }
-    legionText.setText(`${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}${getLegionCount()}`);
-    legionText.setTextScale((legionOverlayObj.scale).pixels());
+    legionOverlay.setLines([legionOverlayText.setText(`${YELLOW}${BOLD}Legion: ${AQUA}${BOLD}${getLegionCount()}`)]);
 }
 
 registerWhen(register("step", () => {

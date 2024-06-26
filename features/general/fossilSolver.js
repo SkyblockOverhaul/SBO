@@ -1,16 +1,14 @@
 import { drawRect } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
-import { newOverlay } from "../../utils/overlays";
+import { OverlayTextLine, SboOverlay, newOverlay } from "../../utils/overlays";
 import { UIWrappedText } from "../../../Elementa";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 
-let fossilOverlayObj = newOverlay("fossilSolver", "fossilOverlay", "fossilExample", "post", "fossilLoc");
-let fossilOverlay = fossilOverlayObj.overlay
-let fossilPossibleNames = new UIWrappedText("Possible Fossils: ");
+let fossilOverlay = new SboOverlay("fossilSolver", "fossilOverlay", "post", "fossilLoc", "fossilExample");
+let fossilOverlayText = new OverlayTextLine("Possible Fossils: ");
 
-fossilPossibleNames.setY((10).pixels());
 
 let fossilProcent = 0;
 function checkIfLocationsAreValid(locations, fossilMustBeAt, fossilCantBeAt) {
@@ -199,19 +197,16 @@ function calcNewCoords() {
 
     if (possibleFossils.length > 1) {
         let tempStringNames = "Possible Fossils: \n";
-            possibleFossils.forEach((fossil) => {
-                tempStringNames += fossil + " \n";
-            });
-        fossilPossibleNames.setText(tempStringNames);
-        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
+        possibleFossils.forEach((fossil) => {
+            tempStringNames += fossil + " \n";
+        });
+        fossilOverlay.setLines([fossilOverlayText.setText(tempStringNames)]);
     }
     else if (possibleFossils.length == 1) {
-        fossilPossibleNames.setText("Fossil: " + possibleFossils[0]);
-        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
+        fossilOverlay.setLines([fossilOverlayText.setText("Fossil: " + possibleFossils[0])]);
     }
     else {
-        fossilPossibleNames.setText("Fossil: No Fossil");
-        fossilPossibleNames.setTextScale((fossilOverlayObj.scale).pixels());
+        fossilOverlay.setLines([fossilOverlayText.setText("Fossil: No Fossil")]);
     }
 
     if (fossilFoundAt.length > 0) {
@@ -240,9 +235,6 @@ registerWhen(register("tick", () => {
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
-    if (!fossilOverlay.children.includes(fossilPossibleNames)) {
-        fossilOverlay.addChild(fossilPossibleNames);
-    }
     isInExcavatorGui = false;
     const items = container.getItems();
     for (let i = 0; i < items.length; i++) {
@@ -355,7 +347,7 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 })
 
 register("guiClosed", () => {
-    fossilOverlay.clearChildren();
+    fossilOverlay.setLines([fossilOverlayText.setText("")]);
 })
 
 registerWhen(register("renderSlot", (slot) => {

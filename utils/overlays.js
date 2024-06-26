@@ -382,9 +382,6 @@ editGui.registerMouseDragged((x, y) => {
                 const my = y - overlay.Y;
                 const absoluteX = mx + overlay.X;
                 const absoluteY = my + overlay.Y;
-                print("absoluteX: " + absoluteX + " absoluteY: " + absoluteY)
-                print("comp.getLeft(): " + overlay.X + " comp.getTop(): " + overlay.Y)
-                print("mx: " + mx + " my: " + my)
                 const dx = absoluteX - dragOffset.x;
                 const dy = absoluteY - dragOffset.y;
                 dragOffset.x = absoluteX;
@@ -540,7 +537,6 @@ function drawText(overlay) {
             
             text.draw();
 
-
         }
         else {
             text.setX(overlay.X + overlay.offsetX)
@@ -579,14 +575,13 @@ export class SboOverlay {
 
         register("renderOverlay", () => {
             if (isInSkyblock() && settings[this.setting] && (this.renderGui || editGui.isOpen()) && (this.type == "render" || (this.type == "inventory" && !isInInventory))) {
-
                 drawText(this);
                 if (editGui.isOpen()) {
                     this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
                     this.editParameters.setX(this.X)
                     this.editParameters.setY(this.Y - 10)
                     this.editParameters.draw();
-                    Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
+                    // Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
                 }
             }
         });
@@ -595,12 +590,18 @@ export class SboOverlay {
         register("postGuiRender", () => {
             if (isInSkyblock() && settings[this.setting] && this.renderGui && this.type == "post") {
                 drawText(this)
+                if (editGui.isOpen()) {
+                    this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
+                    this.editParameters.setX(this.X)
+                    this.editParameters.setY(this.Y - 10)
+                    this.editParameters.draw();
+                    // Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
+                }
             }
         });
 
         register("guiRender", () => {
             if (isInSkyblock() && settings[this.setting] && this.renderGui && (this.type == "inventory" && isInInventory)) {
-
                 drawText(this)
             }
         });
@@ -666,15 +667,14 @@ export class SboOverlay {
         if (editGui.isOpen() && this.exampleText != undefined) {
             let longestString = ""
             let stringCount = 0;
-            [this.exampleText].forEach(text => {
-                let longestLine = text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
-                if (longestLine.length > this.longestString.length) {
-                    longestString = longestLine;
-                }
-                if (text.lineBreak) {
-                    stringCount += text.getString().split("\n").length;
+            this.exampleText.getString().split("\n").forEach(line => {
+                if (line.length > longestString.length) {
+                    longestString = line;
                 }
             });
+
+            stringCount = this.exampleText.getString().split("\n").length;
+
             if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 10 * this.scale * stringCount + this.offsetY) {
                 return true;
             }
@@ -730,16 +730,10 @@ ${GRAY}${BOLD}Blaze Killed:
 `
 
 const mythosMobHpExample = new OverlayTextLine(`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`)
-const fossilExample = new OverlayTextLine(`Fossil: Unknown`)
-const effectsGuiExample = new OverlayTextLine(`&6Active Effects\n--------------\n&bWisp's Water: &f2520s`)
-const kuudraExampleOne = new OverlayTextLine(`&6&l600.00K &cCrimson Chestplate &7(BL 5/BR 4 - &6600.00K/600.00K&7)
-&6&l2.50M &cTerror Boots &7(ER 5/DO 4 - &61.48M/2.50M&7)
-&7Total Value: &62.1M coins`)
-const kuudraExampleTwo = new OverlayTextLine(`&6&l2.49M &cTerror Chestplate
-&7(BL 5/BR 4 - &6100.00K/2.49M)
-&6&l2.50M &cTerror Boots
-&7(ER 5/DO 4 - &61.48M/2.50M)
-&7Total Value: &64.99M coins`)
+const fossilExample = new OverlayTextLine(`Possible Fossils: Unknown`)
+const effectsGuiExample = new OverlayTextLine(`&6Active Effects\n&bWisp's Water: &f2520s`)
+const kuudraExampleOne = new OverlayTextLine(`&6&l600.00K &cCrimson Chestplate &7(BL 5/BR 4 - &6600.00K/600.00K&7)\n&6&l2.50M &cTerror Boots &7(ER 5/DO 4 - &61.48M/2.50M&7)\n&7Total Value: &62.1M coins`)
+const kuudraExampleTwo = new OverlayTextLine(`&6&l2.49M &cTerror Chestplate\n&7(BL 5/BR 4 - &6100.00K/2.49M)\n&6&l2.50M &cTerror Boots\n&7(ER 5/DO 4 - &61.48M/2.50M)\n&7Total Value: &64.99M coins`)
 
 
 let overlayExamples = {
