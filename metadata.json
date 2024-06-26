@@ -13,6 +13,7 @@
     "axios",
     "Elementa",
     "HypixelModAPI",
-    "FileUtilities"
+    "FileUtilities",
+    "KeybindFix"
   ]
 }

@@ -1,6 +1,7 @@
 import renderBeaconBeam from "../../../BeaconBeam/index";
 import RenderLibV2 from "../../../RenderLibv2";
 import settings from "../../settings";
+import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
@@ -217,7 +218,7 @@ let hubWarps = {
     museum: {x: -76, y: 76, z: 81, unlocked: true},
 };
 
-const warpKey = new KeyBind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
+const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
 warpKey.registerKeyPress(() => {
     if (settings.dianaBurrowWarp && finalLocation != null) {
@@ -232,7 +233,7 @@ warpKey.registerKeyPress(() => {
     }
 });
 
-const inquisWarpKey = new KeyBind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
+const inquisWarpKey = new Keybind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 inquisWarpKey.registerKeyPress(() => {
     if (settings.inqWarpKey) {
         warps = getInqWaypoints();
