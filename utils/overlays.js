@@ -222,11 +222,10 @@ register("guiMouseClick" , (cx, cy, button, gui) => {
 
 export class OverlayButton extends OverlayTextLine {
     constructor(message, shadow, button, lineBreak = true, hoverable = false, delimiter = "&e | &r" ) {
-        super(message, shadow);
+        super(message, shadow, hoverable);
         this.button = button;
         this.action = undefined;
         this.lineBreak = lineBreak; 
-        this.hoverable = hoverable;
 
         this.delimiter = new Text(delimiter).setShadow(shadow);
         
@@ -240,7 +239,7 @@ export class OverlayButton extends OverlayTextLine {
 
     clicked(cx, cy, button, gui) {
         if (isInInventory) {
-            if (this.button && this.action && this.X != -1 && this.Y != -1) {
+            if (this.action && this.X != -1 && this.Y != -1 && !editGui.isOpen()) {
                 let stringCount = this.text.getString().split("\n").length;
                 let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
 
@@ -384,7 +383,7 @@ export class SboOverlay {
         }), () => settings[this.setting]);
         
         registerWhen(register("tick", () => {
-            if (this.textLines.length > 0) {
+            if (this.textLines.length > 0 && !editGui.isOpen()) {
                 const mouseX = Client.getMouseX();
                 const mouseY = Client.getMouseY();
                 this.textLines.forEach(text => {

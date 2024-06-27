@@ -112,26 +112,103 @@ ${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.cham
  * @param {string} setting 
  */
 export function mobOverlay() {
-    let message = "";
+    let messageLines = []
     if (settings.dianaMobTrackerView > 0) {
-        message = getMobMassage(settings.dianaMobTrackerView);
+        messageLines = getMobMassage(settings.dianaMobTrackerView);
     }
-    overlayMobTracker.setLines([buttonChangeMobView, textOverlayLineMob.setText(message)]);
+    overlayMobTracker.setLines(messageLines);
 }
 
 function getMobMassage(setting) {
     const mobTrackerType = ["Total", "Event", "Session"][setting - 1];
     let mobTracker = getTracker(setting);
     let percentDict = calcPercent(mobTracker, "mobs");
-    let mobMessage = `${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})\n`
-    mobMessage += `${GRAY}- ${LIGHT_PURPLE}Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor Ls"])}${GRAY}]\n`
-    mobMessage += `${GRAY}- ${DARK_PURPLE}Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})\n`
-    mobMessage += `${GRAY}- ${GOLD}Minotaur: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minotaur"])} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})\n`
-    mobMessage += `${GRAY}- ${GREEN}Gaia Construct: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Gaia Construct"])} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})\n`
-    mobMessage += `${GRAY}- ${GREEN}Siamese Lynx: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Siamese Lynxes"])} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})\n`
-    mobMessage += `${GRAY}- ${GREEN}Hunter: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Hunter"])} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})\n`
-    mobMessage += `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`
-    return mobMessage;
+    let mobLines = [];
+    mobLines.push(buttonChangeMobView);
+    mobLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})`, true));
+    let inqText = `${GRAY}- ${LIGHT_PURPLE}Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor Ls"])}${GRAY}]`
+    let inqLine = new OverlayButton(inqText, true, false, true, true).onClick(() => {
+        if (inqLine.button) {
+            inqLine.button = false;
+            inqLine.setText(inqText);
+        }
+        else {
+            inqLine.button = true;
+            inqLine.setText("&7&m" + inqLine.text.getString().removeFormatting());
+        }
+    });
+    mobLines.push(inqLine);
+
+    let champText = `${GRAY}- ${DARK_PURPLE}Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})`
+    let champLine = new OverlayButton(champText, true, false, true, true).onClick(() => {
+        if (champLine.button) {
+            champLine.button = false;
+            champLine.setText(champText);
+        }
+        else {
+            champLine.button = true;
+            champLine.setText("&7&m" + champLine.text.getString().removeFormatting());
+        }
+    });
+    mobLines.push(champLine);
+
+    let minoText = `${GRAY}- ${GOLD}Minotaur: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minotaur"])} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})`
+    let minoLine = new OverlayButton(minoText, true, false, true, true).onClick(() => {
+        if (minoLine.button) {
+            minoLine.button = false;
+            minoLine.setText(minoText);
+        }
+        else {
+            minoLine.button = true;
+            minoLine.setText("&7&m" + minoLine.text.getString().removeFormatting());
+        }
+    });
+    mobLines.push(minoLine);
+
+    let gaiaText = `${GRAY}- ${GREEN}Gaia Construct: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Gaia Construct"])} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})`
+    let gaiaLine = new OverlayButton(gaiaText, true, false, true, true).onClick(() => {
+        if (gaiaLine.button) {
+            gaiaLine.button = false;
+            gaiaLine.setText(gaiaText);
+        }
+        else {
+            gaiaLine.button = true;
+            gaiaLine.setText("&7&m" + gaiaLine.text.getString().removeFormatting());
+        }
+    });
+    mobLines.push(gaiaLine);
+
+    let lynxText = `${GRAY}- ${GREEN}Siamese Lynx: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Siamese Lynxes"])} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})`
+    let lynxLine = new OverlayButton(lynxText, true, false, true, true).onClick(() => {
+        if (lynxLine.button) {
+            lynxLine.button = false;
+            lynxLine.setText(lynxText);
+        }
+        else {
+            lynxLine.button = true;
+            lynxLine.setText("&7&m" + lynxLine.text.getString().removeFormatting());
+        }
+    });
+    mobLines.push(lynxLine);
+
+    let hunterText = `${GRAY}- ${GREEN}Hunter: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Hunter"])} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})`
+    let hunterLine = new OverlayButton(hunterText, true, false, true, true).onClick(() => {
+        if (hunterLine.button) {
+            hunterLine.button = false;
+            hunterLine.setText(hunterText);
+        }
+        else {
+            hunterLine.button = true;
+            hunterLine.setText("&7&m" + hunterLine.text.getString().removeFormatting());
+        }
+    });
+    mobLines.push(hunterLine);
+
+    let totalText = `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`
+    let totalLine = new OverlayTextLine(totalText, true);
+    mobLines.push(totalLine);
+
+    return mobLines;
 }
 /**
  * 
