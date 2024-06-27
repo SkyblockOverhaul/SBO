@@ -119,6 +119,30 @@ export function mobOverlay() {
     overlayMobTracker.setLines(messageLines);
 }
 
+function createMobLine(name, color, shortName, extra, mobTracker, percentDict) {
+    let text = `${GRAY}- ${color}${name}: ${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName])} ${GRAY}(${AQUA}${percentDict[shortName]}%${GRAY})`;
+    if (extra) {
+        text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName + " Ls"])}${GRAY}]`;
+    }
+    let line = new OverlayButton(text, true, false, true, true).onClick(() => {
+        if (line.button) {
+            line.button = false;
+            line.setText(text);
+            data.hideTrackerLines = data.hideTrackerLines.filter((line) => line !== name);
+        } else {
+            line.button = true;
+            line.setText("&7&m" + line.text.getString().removeFormatting());
+            data.hideTrackerLines.push(name);
+        }
+        data.save();
+    });
+    if (data.hideTrackerLines.includes(name)) {
+        line.button = true;
+        line.setText("&7&m" + line.text.getString().removeFormatting());
+    }
+    return line;
+}
+
 function getMobMassage(setting) {
     const mobTrackerType = ["Total", "Event", "Session"][setting - 1];
     let mobTracker = getTracker(setting);
@@ -137,27 +161,8 @@ function getMobMassage(setting) {
         { name: "Hunter", color: GREEN, shortName: "Minos Hunter", extra: false }
     ];
 
-    function createMobLine(name, color, shortName, extra) {
-        let text = `${GRAY}- ${color}${name}: ${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName])} ${GRAY}(${AQUA}${percentDict[shortName]}%${GRAY})`;
-        if (extra) {
-            text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName + " Ls"])}${GRAY}]`;
-        }
-        let line = new OverlayButton(text, true, false, true, true).onClick(() => {
-            if (line.button) {
-                line.button = false;
-                line.setText(text);
-                data.hideTrackerLines.push("Minos Inquisitor");
-            } else {
-                line.button = true;
-                line.setText("&7&m" + line.text.getString().removeFormatting());
-                data.hideTrackerLines.push("Minos Inquisitor");
-            }
-        });
-        return line;
-    }
-
     for (let mob of mobData) {
-        mobLines.push(createMobLine(mob.name, mob.color, mob.shortName, mob.extra));
+        mobLines.push(createMobLine(mob.name, mob.color, mob.shortName, mob.extra, mobTracker, percentDict));
     }
 
     let totalText = `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`;
