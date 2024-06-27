@@ -1,38 +1,26 @@
 import settings from "../../settings";
 import { data, registerWhen } from "../../utils/variables";
 import { isInSkyblock } from "../../utils/functions";
-import { UIWrappedText } from "../../../Elementa";
 import { YELLOW, BOLD, WHITE, AQUA,} from "../../utils/constants";
-import { getGuiOpen, newOverlay } from "../../utils/overlays";
+import { OverlayTextLine, SboOverlay } from "../../utils/overlays";
 import { getWorld } from "../../utils/world";
 
-let effectsOverlayObj = newOverlay("effectsOverlay", "effectsGui", "effectsGuiExample", "render", "EffectsLoc")
-let effectsOverlay = effectsOverlayObj.overlay;
+let effectsOverlay = new SboOverlay("effectsOverlay", "effectsGui", "render", "EffectsLoc", "effectsGuiExample")
+let effectsOverlayText = new OverlayTextLine("")
 
-let effectsText = new UIWrappedText("Active Effects");
 function refreshEffectOverlay(effects) {
     if (getWorld() != "Crimson Isle") {
-        effectsOverlayObj.renderGui = false;
+        effectsOverlay.renderGui = false;
         return;
     }
     else {
-        effectsOverlayObj.renderGui = true;
-    }
-    if (getGuiOpen()) return;
-    let pixelIncrementOne = 15;
-    let height = 10;
-    if(!effectsOverlay.children.includes(effectsText)) {
-        effectsOverlay.clearChildren();
-        effectsOverlay.addChild(effectsText);
+        effectsOverlay.renderGui = true;
     }
     let message = "";
     if (effects.length > 0) {
-        message = `${YELLOW}${BOLD}Active Effects
---------------
-`;
+        message = `${YELLOW}${BOLD}Active Effects`;
         // add to message each effect and duration and if duration is over 60s convert to minutes and if over 3600s convert to hours
         effects.forEach((effect) => {
-            height += pixelIncrementOne;
             let duration = effect.duration;
             let durationMessage = "";
             if (duration > 3600) {
@@ -46,16 +34,12 @@ function refreshEffectOverlay(effects) {
             if (duration > 0) {
                 durationMessage += `${Math.floor(duration)}s`;
             }
-            message += `${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}\n`;
+            message += `\n${AQUA}${BOLD}${effect.name}: ${WHITE}${durationMessage}`;
         });
-        effectsText.setHeight((height).pixels());
-        effectsText.setText(message);
-        effectsText.setTextScale((effectsOverlayObj.scale).pixels());
+        effectsOverlay.setLines([effectsOverlayText.setText(message)]);
     }
     else {
-        effectsText.setHeight((height).pixels());
-        effectsText.setText(` `);
-        effectsText.setTextScale((effectsOverlayObj.scale).pixels());
+        effectsOverlay.setLines([effectsOverlayText.setText(" ")]);
     }
 }
 
@@ -78,7 +62,8 @@ registerWhen(register("chat", () => {
             loggedOff: false,
         });
     }
-}).setCriteria("&a&lBUFF! &fYou splashed yourself with &r&bWisp's Ice-Flavored Water I&r&f! Press TAB or type /effects to view your active effects!&r"), () => settings.effectsGui);;
+}).setCriteria("&a&lBUFF! &fYou splashed yourself with &r&bWisp's Ice-Flavored Water I&r&f! Press TAB or type /effects to view your active effects!&r"), () => settings.effectsGui);
+
 // &a&lPotion Effect! &r&bWisp's Ice-Flavored Water I&r
 registerWhen(register("chat", () => {
     let baseDuration = 3600;

@@ -1,17 +1,21 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { getRefreshOverlays } from "../../utils/overlays";
 import { playerHasSpade } from "../../utils/functions";
 
 // todo: 
 // todo end
+let lastMob = "";
+let lastInqDroped = false;
+let lastInqLsDroped = false;
+let lastChampDroped = false;
+let lastMinotaurDroped = false;
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
@@ -89,75 +93,45 @@ export function trackScavengerCoins(coins) {
     }
 }
 
-// get tracker by setting (0: default, 1: total, 2: event, 3: event) //
-export function getTracker(setting) {
-    switch (setting) {
-        case 1:
-            return trackerTotal;
-        case 2:
-            return trackerMayor;
-        case 3:
-            return trackerSession;
-    }
-}
-
-// refresh overlay (items, mobs) //
-function refreshOverlay(tracker, setting, category) {
-    if (isDataLoaded()) {
-        if (setting != 0 ) {
-            percentDict = calcPercent(tracker, category, setting);
-            if (percentDict == undefined) return;
-            if (tracker == undefined) return;
-            if (category === "items") {
-                itemOverlay(tracker, setting, percentDict);
-            }
-            else {
-                mobOverlay(tracker, setting, percentDict);
-            }
-        }
-    }
-}
-
-// calc percent from tracker //
-function calcPercent(trackerToCalc, type, setting) {
-    if (trackerToCalc == undefined) return;
-    percentDict = {};
-    if(type == "mobs"){
-        for (let mob in trackerToCalc["mobs"]) {
-            percentDict[mob] = parseFloat((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"] * 100).toFixed(2));
-        }
-        return percentDict;
-    }
-    else {
-        for (let obj in ["Minos Inquisitor", "Minos Champion", "Minotaur"].values()) {
-            switch (obj) {
-                case "Minos Inquisitor":
-                    percentDict["Chimera"] = parseFloat((trackerToCalc["items"]["Chimera"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
-                    break;
-                case "Minos Champion":
-                    percentDict["Minos Relic"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
-                    break;
-                case "Minotaur":
-                    percentDict["Daedalus Stick"] = parseFloat((trackerToCalc["items"]["Daedalus Stick"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
-                    break;
-            }
-        }
-        return percentDict;
-    }
-}
-
 // track logic //
 export function trackItem(item, category, amount) {
     if (isDataLoaded()) {
-        if (category === "mobs") {
+        if (lastMob == item && item != "Minos Inquisitor Ls") {
+            if (item == "Minos Inquisitor") {
+                ChatLib.chat("&6[SBO] &r&cb2b Inquisitor!")
+            };
+            // ChatLib.chat("&6[SBO] &r&cYou killed the same mob twice in a row!");
+        }
+        // if item in lastMobDrobs
+        
+        if (category === "mobs" && item != "Minos Inquisitor Ls") {
+            lastMob = item;
+            // if (item == "Minos Inquisitor") {
+            //     lastInqDroped = false;
+            // }
+            // else if (item == "Minos Champion") {
+            //     lastChampDroped = false;
+            // }
+            // else if (item == "Minotaur") {
+            //     lastMinotaurDroped = false;
+            // }
             data.mobsSinceInq += 1;
         }
+        // if (item == "Minos Inquisitor Ls") {
+        //     lastInqDroped = false;
+        // }
+        // if (category === "items") {
+        //     if (item == "Chimera") lastInqDroped = true;
+        //     if (item == "ChimeraLs") lastInqLsDroped = true;
+        //     if (item == "Minos Relic") lastChampDroped = true;
+        //     if (item == "Daedalus Stick") lastMinotaurDroped = true;
+        // }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
         trackOne(trackerTotal, item, category, "Total", amount);
 
-        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+        itemOverlay();
+        mobOverlay();
         statsOverlay();
         avgMagicFindOverlay();
     }
@@ -192,8 +166,8 @@ register("command", () => {
         trackerSession[key] = tempTracker[key];
     }
     trackerSession.save();
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    itemOverlay();
+    mobOverlay();
 }).setName("sboresetsession");
     
 // total burrow tracker //
@@ -300,7 +274,7 @@ registerWhen(register("chat", (drop, event) => {
                 }
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
-                if (gotLootShare()) {
+                if (gotLootShare() && settings.dianaTracker) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                 }
                 else {
@@ -313,14 +287,16 @@ registerWhen(register("chat", (drop, event) => {
                         
                             let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
                             data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
+                            avgMagicFindOverlay();
                         }
                     }
                     if(settings.replaceChimMessage) {
                         cancel(event)
                         ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
                     }
-                    
-                    trackItem("Chimera", "items", 1);
+                    if(settings.dianaTracker){
+                        trackItem("Chimera", "items", 1);
+                    }
                     if(settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
@@ -337,6 +313,7 @@ registerWhen(register("chat", (drop, event) => {
                     
                         let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
                         data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
+                        avgMagicFindOverlay();
                     }
                 }
 
@@ -349,11 +326,13 @@ registerWhen(register("chat", (drop, event) => {
                 }
 
                 playCustomSound(settings.stickSound, settings.stickVolume);
-                trackItem(drop, "items", 1);
+                if (settings.dianaTracker) {
+                    trackItem(drop, "items", 1);
+                }
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.replaceChimMessage));
 
 // refresh overlay //
 let tempSettingLoot = -1;
@@ -361,36 +340,25 @@ let tempSettingBazzar = -1;
 registerWhen(register("step", () => {
     tempSettingLoot = settings.dianaLootTrackerView;
     tempSettingBazzar = settings.bazaarSettingDiana
-    refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-
+    itemOverlay();
 }).setFps(1), () => settings.dianaTracker && (tempSettingLoot !== settings.dianaLootTrackerView || tempSettingBazzar !== settings.bazaarSettingDiana));
 
 let tempSettingMob = -1;
 registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
-    refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+    mobOverlay();
 }).setFps(1), () => settings.dianaTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
-let firstLoad = false;
-let tempGuiBool = false;
-register("step", () => {
-    if (getRefreshOverlays() && !tempGuiBool) {
-        tempGuiBool = true;
-    }
-    if (isInSkyblock() && !firstLoad && isDataLoaded()) {
-        refreshOverlay(getTracker(settings.dianaLootTrackerView), settings.dianaLootTrackerView, "items");
-        refreshOverlay(getTracker(settings.dianaMobTrackerView), settings.dianaMobTrackerView, "mobs");
+let firstLoadReg = register("tick", () => {
+    if (isInSkyblock() && isDataLoaded()) {
+        itemOverlay();
+        mobOverlay();
         statsOverlay();
         avgMagicFindOverlay();
         mythosMobHpOverlay([]);
-        firstLoad = true;
+        firstLoadReg.unregister();
     }
-    if (tempGuiBool && !getRefreshOverlays()) {
-        firstLoad = false;
-        tempGuiBool = false;
-    }
-}).setFps(1);
-
+})
 
 // // test command
 // register('command', () => {

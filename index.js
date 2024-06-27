@@ -1,7 +1,7 @@
 /// <reference types="../CTAutocomplete" />
 import "./features/Diana/DianaBurrows";
 import "./features/Kuudra";
-import "./features/diana/DianaMobDetect";
+import "./features/Diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
 import "./features/general/Waypoints";
@@ -10,7 +10,7 @@ import "./features/general/messageHider";
 import "./features/general/pickuplog";
 import "./features/guis/BobberCounter";
 import "./features/guis/LegionCounter";
-// import "./features/slayer/BlazeSlayer";
+import "./features/slayer/BlazeSlayer";
 import Settings from "./settings";
 import "./utils/overlays";
 import "./features/Diana/PartyFinder";
@@ -105,7 +105,6 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 // dojo sounds:
 // [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
 // [DEV]: Sound: mob.zombie.woodbreak | Volume: 1.5 | Pitch: 1 | Category: MOBS
-
 
 // register("chat", (drop) => {
 //     let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);

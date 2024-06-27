@@ -99,6 +99,7 @@ export let data = new PogObject("SBO", {
     "avgStickMagicFind": 0,
     "last10ChimMagicFind": [],
     "last10StickMagicFind": [],
+    "hideTrackerLines": [],
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
