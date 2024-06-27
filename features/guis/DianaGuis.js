@@ -177,11 +177,11 @@ function getMobMassage(setting) {
  * @param {string} setting 
  */
 export function itemOverlay() {
-    let message = "";
+    let messageLines = [];
     if (settings.dianaLootTrackerView > 0) {
-        message = getLootMessage(settings.dianaLootTrackerView);
+        messageLines = getLootMessage(settings.dianaLootTrackerView);
     }
-    overlayLootTracker.setLines([buttonChangeLootView, buttonBazaarSetting, lootMessageLine.setText(message)]);
+    overlayLootTracker.setLines(messageLines);
 }
 
 // .quick_status.buyPrice -> selloffer / instabuy
@@ -202,14 +202,14 @@ function getLootMessage(lootViewSetting) {
 
     const itemData = [
         { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true, hasLS: true },
-        { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahPrice: true, hasPercent: true },
+        { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
         { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
-        { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahPrice: true },
-        { name: "Souvenir", key: "Washed-up Souvenir", color: GOLD, ahPrice: true },
+        { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
+        { name: "Souvenir", key: "Washed-up Souvenir", color: GOLD, ahKey: "WASHED_UP_SOUVENIR" },
         { name: "Griffin Feather", key: "Griffin Feather", color: GOLD, bazaarKey: "GRIFFIN_FEATHER" },
-        { name: "Turtle Shelmet", key: "DWARF_TURTLE_SHELMET", color: DARK_GREEN, ahPrice: true },
-        { name: "Tiger Plushie", key: "CROCHET_TIGER_PLUSHIE", color: DARK_GREEN, ahPrice: true },
-        { name: "Antique Remedies", key: "ANTIQUE_REMEDIES", color: DARK_GREEN, ahPrice: true },
+        { name: "Turtle Shelmet", key: "DWARF_TURTLE_SHELMET", color: DARK_GREEN, ahKey: "DWARF_TURTLE_SHELMET" },
+        { name: "Tiger Plushie", key: "CROCHET_TIGER_PLUSHIE", color: DARK_GREEN, ahKey: "CROCHET_TIGER_PLUSHIE" },
+        { name: "Antique Remedies", key: "ANTIQUE_REMEDIES", color: DARK_GREEN, ahKey: "ANTIQUE_REMEDIES" },
         { name: "Ancient Claws", key: "ANCIENT_CLAW", color: BLUE, bazaarKey: "ANCIENT_CLAW" },
         { name: "Enchanted Claws", key: "ENCHANTED_ANCIENT_CLAW", color: BLUE, bazaarKey: "ENCHANTED_ANCIENT_CLAW" },
         { name: "Enchanted Gold", key: "ENCHANTED_GOLD", color: BLUE, bazaarKey: "ENCHANTED_GOLD" },
@@ -218,9 +218,12 @@ function getLootMessage(lootViewSetting) {
 
     function getPrice(item) {
         if (item.bazaarKey) {
+            if (item.name === "Chimera") {
+                return getBazaarPriceDiana(item.bazaarKey) * totalChimera;
+            }
             return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
-        } else if (item.ahPrice) {
-            return getDianaAhPrice(item.key) * lootTracker["items"][item.key];
+        } else if (item.ahKey) {
+            return getDianaAhPrice(item.ahKey) * lootTracker["items"][item.key];
         }
         return 0;
     }
@@ -243,16 +246,23 @@ function getLootMessage(lootViewSetting) {
             if (line.button) {
                 line.button = false;
                 line.setText(text);
+                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line !== item.name);
             } else {
                 line.button = true;
                 line.setText("&7&m" + line.text.getString().removeFormatting());
+                data.hideTrackerLines.push(item.name);
             }
         });
+        if (data.hideTrackerLines.includes(item.name)) {
+            line.button = true;
+            line.setText("&7&m" + line.text.getString().removeFormatting());
+        }
         return line;
     }
 
     let lootLines = [];
     lootLines.push(buttonChangeLootView);
+    lootLines.push(buttonBazaarSetting);
     lootLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})`, true));
 
     for (let item of itemData) {
