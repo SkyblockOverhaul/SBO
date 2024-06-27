@@ -6,7 +6,8 @@ import { UIWrappedText } from "../../../Elementa";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 
-let fossilOverlay = new SboOverlay("fossilSolver", "fossilOverlay", "post", "fossilLoc", "fossilExample");
+let fossilOverlay = new SboOverlay("fossilSolver", "fossilOverlay", "post", "fossilLoc");
+fossilOverlay.renderGui = false;
 let fossilOverlayText = new OverlayTextLine("Possible Fossils: ");
 
 

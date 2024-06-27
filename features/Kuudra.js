@@ -139,7 +139,7 @@ function readContainerItems() {
     // ChatLib.chat("&6[SBO] &6&lGUI OPENED! " + container.getName());
     const items = container.getItems();
     if (items.length == 0) return;
-    kuudraOverlayObj.renderGui = true;
+    // kuudraOverlayObj.renderGui = true;
     kuudraOverlay.renderGui = true;
     let highestPrice = 0;
     let tempString = "";
@@ -148,7 +148,7 @@ function readContainerItems() {
     if (container.getName() == "Paid Chest") {
         let keyPrice = getKeyPrice(tier);
         totalValue -= keyPrice;
-        tempString = `&c-${formatNumber(keyPrice)} &eTier ${tier} Key\n`;
+        tempString = `&c-${formatNumber(keyPrice)} &eTier ${tier} Key`;
         chestItems.push(new ItemString(tempString, -keyPrice, false));
 
         let essence = container.getStackInSlot(14).getNBT().toObject().tag.display.Name;
@@ -156,7 +156,7 @@ function readContainerItems() {
         
         essenceValue = getEsseceValue(essence);
         totalValue += essenceValue
-        tempString = `&6${formatNumber(essenceValue)} &eCrimson Essence\n`;
+        tempString = `&6${formatNumber(essenceValue)} &eCrimson Essence`;
         chestItems.push(new ItemString(tempString, essenceValue, false));
     }
 
@@ -165,7 +165,7 @@ function readContainerItems() {
         if (container.getName() != "container") {
             if (index >= items.length - 36) return;
         }
-        itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
+        let itemId = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
         if (itemId == "ENCHANTED_BOOK") {
             let enchants = item.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments").toObject();
             itemId = ("ENCHANTMENT_" + Object.keys(enchants)[0] + "_" + enchants[Object.keys(enchants)[0]]).toUpperCase();
@@ -208,7 +208,7 @@ function readContainerItems() {
                 if (settings.lineSetting == 0) {
                     tempString += `\n`
                 }
-                tempString += `&b(${chestItem.att1Name}/${chestItem.att2Name} - &6${formatNumber(chestItem.att1Value)}/${formatNumber(chestItem.att2Value)}&b)\n`;
+                tempString += `&b(${chestItem.att1Name}/${chestItem.att2Name} - &6${formatNumber(chestItem.att1Value)}/${formatNumber(chestItem.att2Value)}&b)`;
                 chestItems.push(new ItemString(tempString, highestPrice, index, true));
             }
         }
@@ -219,7 +219,7 @@ function readContainerItems() {
             if (price == 0) return;
             totalValue += price;
             let displayName = toTitleCase(itemId.replaceAll("_", " ").replace("ULTIMATE", "").replace("ENCHANTMENT", ""));
-            tempString = `&6${formatNumber(price)} &e${displayName}\n`;
+            tempString = `&6${formatNumber(price)} &e${displayName}`;
             chestItems.push(new ItemString(tempString, price, index, false));
         }
         else if (ahIds.includes(itemId)) {
@@ -231,7 +231,7 @@ function readContainerItems() {
             }
 
             let displayName = toTitleCase(itemId.replaceAll("_", " "));
-            tempString = `&6${formatNumber(price)} &e${displayName}\n`;
+            tempString = `&6${formatNumber(price)} &e${displayName}`;
             chestItems.push(new ItemString(tempString, price, index, false));
         }
         else if (itemId == "ATTRIBUTE_SHARD") {
@@ -242,14 +242,14 @@ function readContainerItems() {
                 name = "vitality";
             }
             if (!settings.attributeShards && container.getName() == "Paid Chest") {
-                tempString = `&60 &e${toTitleCase(name.replaceAll("_", " "))} Shard ${attributeDict[Object.keys(attributeDict)[0]]}\n`;
+                tempString = `&60 &e${toTitleCase(name.replaceAll("_", " "))} Shard ${attributeDict[Object.keys(attributeDict)[0]]}`;
                 chestItems.push(new ItemString(tempString, 0, index));
             }
             else {
                 let price = getAttributePrice("ATTRIBUTE_SHARD", name, attributeDict[Object.keys(attributeDict)[0]]);
                 let displayName = toTitleCase(name.replaceAll("_", " ")) + " Shard";
                 totalValue += price;
-                tempString = `&6${formatNumber(price)} &e${displayName} ${attributeDict[Object.keys(attributeDict)[0]]}\n`;
+                tempString = `&6${formatNumber(price)} &e${displayName} ${attributeDict[Object.keys(attributeDict)[0]]}`;
                 chestItems.push(new ItemString(tempString, price, index));
             }
         }
@@ -288,7 +288,7 @@ registerWhen(register("step", () => {
     if (guiStrings.length == 0) return;
     chestItems.forEach((item) => {
         if (guiStrings[item.indexOfObj] == undefined) return;
-        if (guiStrings[item.indexOfObj].isHovered()) {
+        if (guiStrings[item.indexOfObj].isHovered) {
             tempBool = true;
             indexToHighlight = item.index;
         }
@@ -327,64 +327,34 @@ function refreshOverlay(totalValue) {
             tempPixel = pixelIncrementOne;
         }
         if (counter <= settings.maxDisplayedItems) {
-            // tempObj = ;
-            // guiStrings.push(new UIWrappedText(item.string));
-            guiStrings.push(new OverlayTextLine(item.string));
+            guiStrings.push(new OverlayTextLine(item.string, true, true));
             item.indexOfObj = guiStrings.length-1;
-            // guiStrings[item.indexOfObj].setX(0);
-            // guiStrings[item.indexOfObj].setY(pixel).pixels());
-            // maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-            // guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-            // guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
 
             guiStrings[item.indexOfObj].onMouseLeave((comp) => {
-                // maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-                // guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
+                print("mouse leave");
                 guiStrings[item.indexOfObj].setText(item.string);
             });
             guiStrings[item.indexOfObj].onMouseEnter((comp) => {
-                // maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-                // guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-                // guiStrings[item.indexOfObj].effects;
-                guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
+                print("mouse enter");
+                guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&c").replaceAll("&e", "&c").replaceAll("&b", "&c"));
             });
-            // check if gui object is hovered
-            
-
-            // guiStrings.push(tempObj);
             pixel += tempPixel;
         }
         counter++;
     });
     if (counter > settings.maxDisplayedItems) {
-        overlayString += `&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
-        // tempObj = new UIWrappedText(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
-        tempObj = new OverlayTextLine(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
-        // tempObj.setX((0).pixels());
-        // tempObj.setY((pixel).pixel());
-        // tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
+        overlayString += `&o&7and ${counter - settings.maxDisplayedItems} more...`;
+        tempObj = new OverlayTextLine(`&o&7and ${counter - settings.maxDisplayedItems} more...`);
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
     if (totalValue != 0) {
         overlayString += `&eTotal Value: &6${formatNumber(totalValue)} coins`;
-        // tempObj = new UIWrappedText(`&eTotal Value: &6${formatNumber(totalValue)} coins`);
         tempObj = new OverlayTextLine(`&eTotal Value: &6${formatNumber(totalValue)} coins`);
-        // tempObj.setX((0).pixels());
-        // tempObj.setY((pixel).pixel());
-        // tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
     kuudraOverlay.setLines(guiStrings);
-    // kuudraOverlaywww.clearChildren();
-    // // let kuudraText = new UIWrappedText(overlayString);
-    // // kuudraText.setX(new SiblingConstraint());
-    // // kuudraText.setY(new SiblingConstraint());
-    // for (let i = 0; i < guiStrings.length; i++) {
-    //     kuudraOverlaywww.addChild(guiStrings[i]);
-    // }
-    // testOverlay.addChild(kuudraText);
 }
 
 function getAttributePrice(itemId, attribute, lvl) {

@@ -191,13 +191,13 @@ let mythosHpText = new OverlayTextLine("", true);
 export function mythosMobHpOverlay(mobNamesWithHp) {
     let message = "";
     if (mobNamesWithHp.length > 0) {
-        message = "";
         mobNamesWithHp.forEach((mob) => {
             message += `${mob}\n`;
         });
+        mythosHpOverlay.renderGui = true;
     }
     else {
-        message = "";
+        mythosHpOverlay.renderGui = false;
     }
     mythosHpOverlay.setLines([mythosHpText.setText(message)]);
 }

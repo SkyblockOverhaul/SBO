@@ -438,12 +438,12 @@ export class OverlayTextLine {
         this.isHovered = false;
         this.mouseEnterAction = undefined;
         this.mouseLeaveAction = undefined;
-
-        registerWhen(register("tick", () => {
+        register("tick", () => {
             const mouseX = Client.getMouseX();
             const mouseY = Client.getMouseY();
             if (this.X != -1 && this.Y != -1 && this.mouseEnterAction && this.mouseLeaveAction) {
                 if (this.isOverString(mouseX, mouseY)) {
+                    print("is over string")
                     if (!this.isHovered) {
                         this.mouseEnter();
                         this.isHovered = true;
@@ -456,7 +456,7 @@ export class OverlayTextLine {
                     }
                 }
             }
-        }), () => this.hoverable);
+        });
                 
 
     }
@@ -577,6 +577,14 @@ function drawText(overlay) {
     let lineCount = 0;
     let textLines = overlay.textLines;
     if (overlay.exampleText != undefined && editGui.isOpen()) { 
+        if (overlay.name == "kuudraOverlay") {
+            if (settings.lineSetting == 0) {
+                overlay.exampleText = overlayExamples[overlay.example + "Two"];
+            }
+            else {
+                overlay.exampleText = overlayExamples[overlay.example + "One"];
+            }
+        }
         textLines = [overlay.exampleText];
     }
     textLines.forEach((text, index) => {
@@ -607,7 +615,7 @@ function drawText(overlay) {
 }
 
 export class SboOverlay {
-    constructor(name, setting, type, locName, allowedGuis = ["any"], example = "") {
+    constructor(name, setting, type, locName, example = "", allowedGuis = ["any"]) {
         overLaysNew.push(this);
         this.name = name;
         this.setting = setting;
@@ -625,14 +633,20 @@ export class SboOverlay {
         this.longestString = 0;
         this.stringCount = 0;
         this.editParameters = new Text("");
-        this.exampleText = overlayExamples[this.example] ?? undefined;
+        this.exampleText = undefined;
+        if (example != "") {
+            this.exampleText = overlayExamples[example];
+            if (this.exampleText == undefined) {
+                this.exampleText = new OverlayTextLine("example text not found");
+            }
+        }
         
         this.textLines = [];    
 
         this.gui = new Gui();
 
         registerWhen(register("renderOverlay", () => {
-            if (((this.renderGui && (this.allowedGuis.includes(currentGui) || this.allowedGuis.includes("any"))) || editGui.isOpen()) && (this.type == "render" || (this.type == "inventory" && !isInInventory))) {
+            if ((this.renderGui || editGui.isOpen()) && (this.type == "render" || (this.type == "inventory" && !isInInventory))) {
                 drawText(this);
                 if (editGui.isOpen()) {
                     this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
@@ -645,7 +659,7 @@ export class SboOverlay {
         }), () => settings[this.setting]);
 
         registerWhen(register("postGuiRender", () => {
-            if (((this.renderGui && (this.allowedGuis.includes(currentGui) || this.allowedGuis.includes("any"))) || editGui.isOpen()) && this.type == "post") {
+            if ((this.renderGui || editGui.isOpen()) && this.type == "post") {
                 drawText(this)
                 if (editGui.isOpen()) {
                     this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
@@ -658,7 +672,7 @@ export class SboOverlay {
         }), () => settings[this.setting]);
 
         registerWhen(register("guiRender", () => {
-            if (((this.renderGui && (this.allowedGuis.includes(currentGui) || this.allowedGuis.includes("any"))) || editGui.isOpen()) && (this.type == "inventory" && isInInventory)) {
+            if ((this.renderGui || editGui.isOpen()) && (this.type == "inventory" && isInInventory)) {
                 drawText(this)
             }
         }), () => settings[this.setting]);
@@ -789,8 +803,8 @@ ${GRAY}${BOLD}Blaze Killed:
 const mythosMobHpExample = new OverlayTextLine(`&8[&7Lv750&8] &2Exalted Minos Inquisitor &a40M&f/&a40M`)
 const fossilExample = new OverlayTextLine(`Possible Fossils: Unknown`)
 const effectsGuiExample = new OverlayTextLine(`&6Active Effects\n&bWisp's Water: &f2520s`)
-const kuudraExampleOne = new OverlayTextLine(`&6&l600.00K &cCrimson Chestplate &7(BL 5/BR 4 - &6600.00K/600.00K&7)\n&6&l2.50M &cTerror Boots &7(ER 5/DO 4 - &61.48M/2.50M&7)\n&7Total Value: &62.1M coins`)
-const kuudraExampleTwo = new OverlayTextLine(`&6&l2.49M &cTerror Chestplate\n&7(BL 5/BR 4 - &6100.00K/2.49M)\n&6&l2.50M &cTerror Boots\n&7(ER 5/DO 4 - &61.48M/2.50M)\n&7Total Value: &64.99M coins`)
+const kuudraExampleOne = new OverlayTextLine(`&6600.00k &eCrimson Chestplate &b(BL 5/BR 4 - &6600.00k/600.00k&7&b)\n&62.50m &eTerror Boots &b(ER 5/DO 4 - &61.48m/2.50m&7&b)\n&eTotal Value: &62.1m coins`)
+const kuudraExampleTwo = new OverlayTextLine(`&62.49m &eTerror Chestplate\n&b(BL 5/BR 4 - &6100.00k/2.49m&b)\n&62.50m &eTerror Boots\n&b(ER 5/DO 4 - &61.48m/2.50m&b)\n&eTotal Value: &64.99m coins`)
 
 
 let overlayExamples = {

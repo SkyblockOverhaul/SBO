@@ -48,7 +48,6 @@ let effects = [];
 registerWhen(register("chat", () => {
     // ChatLib.chat("Buff received!");
     let baseDuration = 1800;
-    print("Buff received!");
     if (effects.some(e => e.name === "Wisp's Water")) {
         let wisp = effects.find(e => e.name === "Wisp's Water");
         wisp.duration = calcDuration(baseDuration);
