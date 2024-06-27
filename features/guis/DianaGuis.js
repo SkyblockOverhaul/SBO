@@ -118,8 +118,9 @@ export function mobOverlay() {
 }
 
 function createMobLine(name, color, shortName, extra, mobTracker, percentDict) {
-    let text = `${GRAY}- ${color}${name}: ${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName])} ${GRAY}(${AQUA}${percentDict[shortName]}%${GRAY})`;
-    if (extra) {
+    let percentText = percentDict[shortName].toString() != "NaN" ? `${GRAY}(${AQUA}${percentDict[shortName]}%${GRAY})` : "";
+    let text = `${GRAY}- ${color}${name}: ${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName])} ${percentText}`;
+    if (extra && mobTracker["mobs"][shortName + " Ls"] != 0) {
         text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName + " Ls"])}${GRAY}]`;
     }
     let line = new OverlayButton(text, true, false, true, true).onClick(() => {
