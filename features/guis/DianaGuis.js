@@ -1,8 +1,8 @@
 import settings from "../../settings";
 import { registerWhen, data } from "../../utils/variables";
-import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent } from "../../utils/functions";
+import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
-import { SboOverlay, OverlayTextLine, OverlayButton } from "../../utils/overlays";
+import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
 
 
@@ -186,6 +186,8 @@ export function itemOverlay() {
 // .quick_status.buyPrice -> selloffer / instabuy
 // .quick_status.sellPrice -> buyorder / instasell
 
+let coinHoverText = new hoverText("")
+
 
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
@@ -230,7 +232,7 @@ function getLootMessage(lootViewSetting) {
     function createLootLine(item) {
         const price = formatNumber(getPrice(item));
         const itemAmount = formatNumberCommas(lootTracker["items"][item.key]);
-        const percent = item.hasPercent ? percentDict[item.key] : "";
+        const percent = item.hasPercent ? percentDict[item.name] : "";
         const lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
         let text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
@@ -269,11 +271,17 @@ function getLootMessage(lootViewSetting) {
     }
 
     let totalBurrowsText = `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`;
-    let totalCoinsText = `${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`;
-
+    let totalCoinsText = new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`, true, true)
+    
     lootLines.push(new OverlayTextLine(totalBurrowsText, true));
-    lootLines.push(new OverlayTextLine(totalCoinsText, true));
-
+    coinHoverText.setText("totalCoinsText");
+    lootLines.push(totalCoinsText.onHover((overlay) => {
+        // print("hovering")
+        // coinHoverText.setXYScale(totalCoinsText.X, totalCoinsText.Y, totalCoinsText.scale)
+        // coinHoverText.draw();
+        overlay.gui.drawHoveringString(["test"], 0, 0)
+        // draw rectangle 
+    }));
     let totalValue = 0;
     for (let item of itemData) {
         totalValue += getPrice(item);

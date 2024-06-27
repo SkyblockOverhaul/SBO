@@ -138,6 +138,7 @@ export class OverlayTextLine {
         this.isHovered = false;
         this.mouseEnterAction = undefined;
         this.mouseLeaveAction = undefined;
+        this.hoverAction = undefined;
 
     }
 
@@ -149,6 +150,16 @@ export class OverlayTextLine {
     onMouseLeave(action) {
         this.mouseLeaveAction = action;
         return this;
+    }
+
+    onHover(action) { 
+        this.hoverAction = action;
+        return this;
+    }
+
+    hover(overlay) {
+        if (this.hoverAction)
+            this.hoverAction(overlay); 
     }
 
     mouseEnter() {
@@ -243,8 +254,7 @@ export class OverlayButton extends OverlayTextLine {
     }
 
 }
-
-
+let hovered = []
 function drawText(overlay) {
     let lineCount = 0;
     let textLines = overlay.textLines;
@@ -259,8 +269,14 @@ function drawText(overlay) {
         }
         textLines = [overlay.exampleText];
     }
+    
+    hovered.forEach(text => {
+        text.hover(overlay);
+    });
+    hovered = [];
     textLines.forEach((text, index) => {
         if (text.button && !isInInventory && !editGui.isOpen()) return;
+        
         if (text.button && !text.lineBreak && index > 0) {
             let previousText = overlay.textLines[index - 1].text.getString() 
             text.delimiter.setX(overlay.X + overlay.offsetX + Renderer.getStringWidth(previousText) * overlay.scale)
@@ -282,8 +298,50 @@ function drawText(overlay) {
             text.draw();
             lineCount += text.getString().split("\n").length;
         }
-
+        
+        if (text.isHovered) {
+            // print("hovered")
+            hovered.push(text);
+            // text.hover(overlay);
+        }
     });
+    
+}
+
+export class hoverText {
+    constructor(message) {
+        this.text = new Text(message);
+        this.text.setShadow(false);
+        this.text.setScale(1.0);
+        this.text.setAlign("LEFT")
+        this.X = 0;
+        this.Y = 0;
+        this.scale = 1.0;
+    }
+
+    draw() {
+        this.text.draw();
+        // draw ractangle around text
+        Renderer.translate(0, 0, 10)
+        Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.text.getString()) * this.scale, 10 * this.scale);
+        // print("drawing")
+
+    }
+
+    setText(message) {
+        this.text.setString(message);
+        return this;
+    }
+
+    setXYScale(x, y, scale) {
+        this.X = x;
+        this.Y = y;
+        this.scale = scale;
+        this.text.setX(x);
+        this.text.setY(y);
+        this.text.setScale(scale);
+        return this;
+    }
 }
 
 export class SboOverlay {
@@ -380,7 +438,7 @@ export class SboOverlay {
                 const mouseY = Client.getMouseY();
                 this.textLines.forEach(text => {
                     if (text.hoverable) {
-                        if (text.X != -1 && text.Y != -1 && text.mouseEnterAction && text.mouseLeaveAction) {
+                        if (text.X != -1 && text.Y != -1 && (text.mouseEnterAction || text.mouseLeaveAction || text.hoverAction)) {
                             if (text.isOverString(mouseX, mouseY)) {
                                 if (!text.isHovered) {
                                     text.mouseEnter();
