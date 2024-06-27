@@ -206,7 +206,7 @@ export class OverlayTextLine {
         let stringCount = this.text.getString().split("\n").length;
         let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
 
-        if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestLine) * this.scale && y >= this.Y && y <= this.Y + 10 * this.scale * stringCount) {
+        if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestLine) * this.scale && y >= this.Y && y <= this.Y + 9 * this.scale * stringCount) {
             return true;
         }
         return false;
@@ -243,7 +243,7 @@ export class OverlayButton extends OverlayTextLine {
                 let stringCount = this.text.getString().split("\n").length;
                 let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
 
-                if (cx >= this.X && cx <= this.X + Renderer.getStringWidth(longestLine) * this.scale && cy >= this.Y && cy <= this.Y + 10 * this.scale * stringCount) {
+                if (cx >= this.X && cx <= this.X + Renderer.getStringWidth(longestLine) * this.scale && cy >= this.Y && cy <= this.Y + 9 * this.scale * stringCount) {
                     this.action();
                 }
             }
@@ -450,13 +450,13 @@ export class SboOverlay {
 
             stringCount = this.exampleText.getString().split("\n").length;
 
-            if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 10 * this.scale * stringCount + this.offsetY) {
+            if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * stringCount + this.offsetY) {
                 return true;
             }
             return false;
         }
         else {
-            if (x >= this.X && x <= this.X + Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 10 * this.scale * this.stringCount + this.offsetY) {
+            if (x >= this.X && x <= this.X + Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * this.stringCount + this.offsetY) {
                 return true;
             }
             return false;
