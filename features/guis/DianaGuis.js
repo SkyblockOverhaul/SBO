@@ -271,14 +271,23 @@ function getLootMessage(lootViewSetting) {
     let totalBurrowsText = `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`;
     let totalCoinsText = new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`, true, true)
     
+    let treasure = formatNumber(lootTracker["items"]["coins"]).toString();
+    let fourEyedFish = formatNumber(lootTracker["items"]["fishCoins"]).toString();
+    let scavenger = formatNumber(lootTracker["items"]["scavengerCoins"]).toString();
+
     lootLines.push(new OverlayTextLine(totalBurrowsText, true));
-    let hoverText = ["Coin Breakdown:" + "\nTreasure:" + formatNumber(lootTracker["items"]["coins"]) +"\nFour-Eyed Fish: " + formatNumber(lootTracker["items"]["fishCoins"]) + "\nScavenger: " + formatNumber(lootTracker["items"]["scavengerCoins"])]
+    let hovertext = [
+        "Coin Breakdown:", 
+        `Treasure: ${treasure}`, 
+        `Four-Eyed Fish: ${fourEyedFish}`, 
+        `Scavenger: ${scavenger}`
+    ].map(item => item.toString()); // Explicitly convert each element to a string
 
     lootLines.push(totalCoinsText.onHover((overlay) => {
         // print("hovering")
         // coinHoverText.setXYScale(totalCoinsText.X, totalCoinsText.Y, totalCoinsText.scale)
         // coinHoverText.draw();
-        overlay.gui.drawHoveringString(hoverText, 0, 0)
+        overlay.gui.drawHoveringString(hovertext, 0, 0)
         // draw rectangle 
     }));
     let totalValue = 0;
