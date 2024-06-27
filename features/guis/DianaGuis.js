@@ -124,92 +124,49 @@ function getMobMassage(setting) {
     let mobTracker = getTracker(setting);
     let percentDict = calcPercent(mobTracker, "mobs");
     let mobLines = [];
+    
     mobLines.push(buttonChangeMobView);
     mobLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Diana Mob Tracker ${GRAY}(${YELLOW}${mobTrackerType}${GRAY})`, true));
-    let inqText = `${GRAY}- ${LIGHT_PURPLE}Inquisitor: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor"])} ${GRAY}(${AQUA}${percentDict["Minos Inquisitor"]}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Inquisitor Ls"])}${GRAY}]`
-    let inqLine = new OverlayButton(inqText, true, false, true, true).onClick(() => {
-        if (inqLine.button) {
-            inqLine.button = false;
-            inqLine.setText(inqText);
-        }
-        else {
-            inqLine.button = true;
-            inqLine.setText("&7&m" + inqLine.text.getString().removeFormatting());
-        }
-    });
-    mobLines.push(inqLine);
+    
+    const mobData = [
+        { name: "Inquisitor", color: LIGHT_PURPLE, shortName: "Minos Inquisitor", extra: true },
+        { name: "Champion", color: DARK_PURPLE, shortName: "Minos Champion", extra: false },
+        { name: "Minotaur", color: GOLD, shortName: "Minotaur", extra: false },
+        { name: "Gaia Construct", color: GREEN, shortName: "Gaia Construct", extra: false },
+        { name: "Siamese Lynx", color: GREEN, shortName: "Siamese Lynxes", extra: false },
+        { name: "Hunter", color: GREEN, shortName: "Minos Hunter", extra: false }
+    ];
 
-    let champText = `${GRAY}- ${DARK_PURPLE}Champion: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Champion"])} ${GRAY}(${AQUA}${percentDict["Minos Champion"]}%${GRAY})`
-    let champLine = new OverlayButton(champText, true, false, true, true).onClick(() => {
-        if (champLine.button) {
-            champLine.button = false;
-            champLine.setText(champText);
+    function createMobLine(name, color, shortName, extra) {
+        let text = `${GRAY}- ${color}${name}: ${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName])} ${GRAY}(${AQUA}${percentDict[shortName]}%${GRAY})`;
+        if (extra) {
+            text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${formatNumberCommas(mobTracker["mobs"][shortName + " Ls"])}${GRAY}]`;
         }
-        else {
-            champLine.button = true;
-            champLine.setText("&7&m" + champLine.text.getString().removeFormatting());
-        }
-    });
-    mobLines.push(champLine);
+        let line = new OverlayButton(text, true, false, true, true).onClick(() => {
+            if (line.button) {
+                line.button = false;
+                line.setText(text);
+                data.hideTrackerLines.push("Minos Inquisitor");
+            } else {
+                line.button = true;
+                line.setText("&7&m" + line.text.getString().removeFormatting());
+                data.hideTrackerLines.push("Minos Inquisitor");
+            }
+        });
+        return line;
+    }
 
-    let minoText = `${GRAY}- ${GOLD}Minotaur: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minotaur"])} ${GRAY}(${AQUA}${percentDict["Minotaur"]}%${GRAY})`
-    let minoLine = new OverlayButton(minoText, true, false, true, true).onClick(() => {
-        if (minoLine.button) {
-            minoLine.button = false;
-            minoLine.setText(minoText);
-        }
-        else {
-            minoLine.button = true;
-            minoLine.setText("&7&m" + minoLine.text.getString().removeFormatting());
-        }
-    });
-    mobLines.push(minoLine);
+    for (let mob of mobData) {
+        mobLines.push(createMobLine(mob.name, mob.color, mob.shortName, mob.extra));
+    }
 
-    let gaiaText = `${GRAY}- ${GREEN}Gaia Construct: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Gaia Construct"])} ${GRAY}(${AQUA}${percentDict["Gaia Construct"]}%${GRAY})`
-    let gaiaLine = new OverlayButton(gaiaText, true, false, true, true).onClick(() => {
-        if (gaiaLine.button) {
-            gaiaLine.button = false;
-            gaiaLine.setText(gaiaText);
-        }
-        else {
-            gaiaLine.button = true;
-            gaiaLine.setText("&7&m" + gaiaLine.text.getString().removeFormatting());
-        }
-    });
-    mobLines.push(gaiaLine);
-
-    let lynxText = `${GRAY}- ${GREEN}Siamese Lynx: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Siamese Lynxes"])} ${GRAY}(${AQUA}${percentDict["Siamese Lynxes"]}%${GRAY})`
-    let lynxLine = new OverlayButton(lynxText, true, false, true, true).onClick(() => {
-        if (lynxLine.button) {
-            lynxLine.button = false;
-            lynxLine.setText(lynxText);
-        }
-        else {
-            lynxLine.button = true;
-            lynxLine.setText("&7&m" + lynxLine.text.getString().removeFormatting());
-        }
-    });
-    mobLines.push(lynxLine);
-
-    let hunterText = `${GRAY}- ${GREEN}Hunter: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["Minos Hunter"])} ${GRAY}(${AQUA}${percentDict["Minos Hunter"]}%${GRAY})`
-    let hunterLine = new OverlayButton(hunterText, true, false, true, true).onClick(() => {
-        if (hunterLine.button) {
-            hunterLine.button = false;
-            hunterLine.setText(hunterText);
-        }
-        else {
-            hunterLine.button = true;
-            hunterLine.setText("&7&m" + hunterLine.text.getString().removeFormatting());
-        }
-    });
-    mobLines.push(hunterLine);
-
-    let totalText = `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`
+    let totalText = `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`;
     let totalLine = new OverlayTextLine(totalText, true);
     mobLines.push(totalLine);
 
     return mobLines;
 }
+
 /**
  * 
  * @param {string} setting 
