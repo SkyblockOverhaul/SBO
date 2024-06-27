@@ -26,6 +26,7 @@ import settings from "../settings";
 import { loadGuiSettings, printDev, saveGuiSettings } from "../utils/functions";
 import { isInSkyblock } from '../utils/functions';
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../utils/constants";
+import { registerWhen } from "./variables";
 
 
 const dragOffset = {x: 0, y: 0};
@@ -181,13 +182,14 @@ register('renderOverlay', () => {
 });
 
 let isInInventory = false;
+let currentGui = null;
 register('guiClosed', (gui) => {
     gui = gui.toString();
+    currentGui = null;
     if(gui.includes("Inventory")) {
         isInInventory = false;
     }
 });
-
 
 register('guiOpened', () => {
     setTimeout(() => {
@@ -195,6 +197,7 @@ register('guiOpened', () => {
         if (Client.currentGui == undefined) return;
         if (Client.currentGui.get() == null) return;
         let openedgui = Client.currentGui.get().toString();
+        currentGui = openedgui;
         if(openedgui.includes("Inventory")) {
             isInInventory = true;
         }
@@ -550,7 +553,7 @@ function drawText(overlay) {
 }
 
 export class SboOverlay {
-    constructor(name, setting, type, locName, example = "") {
+    constructor(name, setting, type, locName, allowedGuis = ["any"], example = "") {
         overLaysNew.push(this);
         this.name = name;
         this.setting = setting;
@@ -559,6 +562,7 @@ export class SboOverlay {
         this.locName = locName;
         this.renderGui = true;
         this.selected = false;
+        this.allowedGuis = allowedGuis;
         this.scale = parseFloat(guiSettings[locName]["s"]);
         this.X = 0;
         this.Y = 0;
@@ -573,8 +577,8 @@ export class SboOverlay {
 
         this.gui = new Gui();
 
-        register("renderOverlay", () => {
-            if (isInSkyblock() && settings[this.setting] && (this.renderGui || editGui.isOpen()) && (this.type == "render" || (this.type == "inventory" && !isInInventory))) {
+        registerWhen(register("renderOverlay", () => {
+            if (((this.renderGui && (this.allowedGuis.includes(currentGui) || this.allowedGuis.includes("any"))) || editGui.isOpen()) && (this.type == "render" || (this.type == "inventory" && !isInInventory))) {
                 drawText(this);
                 if (editGui.isOpen()) {
                     this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
@@ -584,11 +588,10 @@ export class SboOverlay {
                     // Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
                 }
             }
-        });
+        }), () => settings[this.setting]);
 
-
-        register("postGuiRender", () => {
-            if (isInSkyblock() && settings[this.setting] && this.renderGui && this.type == "post") {
+        registerWhen(register("postGuiRender", () => {
+            if (((this.renderGui && (this.allowedGuis.includes(currentGui) || this.allowedGuis.includes("any"))) || editGui.isOpen()) && this.type == "post") {
                 drawText(this)
                 if (editGui.isOpen()) {
                     this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
@@ -598,15 +601,15 @@ export class SboOverlay {
                     // Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
                 }
             }
-        });
+        }), () => settings[this.setting]);
 
-        register("guiRender", () => {
-            if (isInSkyblock() && settings[this.setting] && this.renderGui && (this.type == "inventory" && isInInventory)) {
+        registerWhen(register("guiRender", () => {
+            if (((this.renderGui && (this.allowedGuis.includes(currentGui) || this.allowedGuis.includes("any"))) || editGui.isOpen()) && (this.type == "inventory" && isInInventory)) {
                 drawText(this)
             }
-        });
+        }), () => settings[this.setting]);
 
-        register("guiKey", (char, keyCode, gui, event) => {
+        registerWhen(register("guiKey", (char, keyCode, gui, event) => {
             const mouseX = Client.getMouseX();
             const mouseY = Client.getMouseY();
             if (editGui.isOpen() && this.isInOverlay(mouseX, mouseY)) {
@@ -628,7 +631,7 @@ export class SboOverlay {
                 guiSettings[this.locName]["y"] = this.Y;
                 saveGuiSettings(guiSettings);
             }
-        });
+        }), () => settings[this.setting]);
             
         loadSettings(this);
     }
