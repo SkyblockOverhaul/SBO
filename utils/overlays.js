@@ -213,23 +213,15 @@ export class OverlayTextLine {
     }
 }
 
-let buttons = [];
-register("guiMouseClick" , (cx, cy, button, gui) => {
-    buttons.forEach(button => {
-        button.clicked(cx, cy, button, gui);
-    });
-});
-
 export class OverlayButton extends OverlayTextLine {
     constructor(message, shadow, button, lineBreak = true, hoverable = false, delimiter = "&e | &r" ) {
         super(message, shadow, hoverable);
         this.button = button;
         this.action = undefined;
         this.lineBreak = lineBreak; 
-
         this.delimiter = new Text(delimiter).setShadow(shadow);
-        
-        buttons.push(this);
+
+
     }
     
     onClick(action) {
@@ -405,7 +397,17 @@ export class SboOverlay {
                     }
                 });
             }
-        }), () => settings[this.setting]) && this.hoverable; 
+        }), () => settings[this.setting]) && this.hoverable;
+        
+        registerWhen(register("guiMouseClick" , (cx, cy, button, gui) => {
+            if (this.textLines.length > 0 && !editGui.isOpen()) {
+                this.textLines.forEach(text => {
+                    if (text.action) {
+                        text.clicked(cx, cy, button, gui);
+                    }
+                });
+            }
+        }), () => settings[this.setting]);
 
         loadSettings(this);
     }

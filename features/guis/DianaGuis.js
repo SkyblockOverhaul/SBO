@@ -128,7 +128,7 @@ function createMobLine(name, color, shortName, extra, mobTracker, percentDict) {
         if (line.button) {
             line.button = false;
             line.setText(text);
-            data.hideTrackerLines = data.hideTrackerLines.filter((line) => line !== name);
+            data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != name);
         } else {
             line.button = true;
             line.setText("&7&m" + line.text.getString().removeFormatting());
@@ -245,7 +245,7 @@ function getLootMessage(lootViewSetting) {
             if (line.button) {
                 line.button = false;
                 line.setText(text);
-                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line !== item.name);
+                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.name);
             } else {
                 line.button = true;
                 line.setText("&7&m" + line.text.getString().removeFormatting());
