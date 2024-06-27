@@ -344,6 +344,17 @@ registerWhen(register("step", () => {
     mobOverlay();
 }).setFps(1), () => settings.dianaTracker && tempSettingMob !== settings.dianaMobTrackerView);
 
+let firstLoadReg = register("tick", () => {
+    if (isInSkyblock() && isDataLoaded()) {
+        itemOverlay();
+        mobOverlay();
+        statsOverlay();
+        avgMagicFindOverlay();
+        mythosMobHpOverlay([]);
+        firstLoadReg.unregister();
+    }
+})
+
 // // test command
 // register('command', () => {
     // trackerSession = getTracker(3);
