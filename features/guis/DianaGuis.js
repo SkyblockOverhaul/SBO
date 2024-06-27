@@ -274,14 +274,14 @@ function getLootMessage(lootViewSetting) {
     let treasure = formatNumber(lootTracker["items"]["coins"]).toString();
     let fourEyedFish = formatNumber(lootTracker["items"]["fishCoins"]).toString();
     let scavenger = formatNumber(lootTracker["items"]["scavengerCoins"]).toString();
-
-    lootLines.push(new OverlayTextLine(totalBurrowsText, true));
     let hovertext = [
         "Coin Breakdown:", 
         `Treasure: ${treasure}`, 
         `Four-Eyed Fish: ${fourEyedFish}`, 
         `Scavenger: ${scavenger}`
     ].map(item => item.toString()); // Explicitly convert each element to a string
+
+    lootLines.push(new OverlayTextLine(totalBurrowsText, true));
 
     lootLines.push(totalCoinsText.onHover((overlay) => {
         // print("hovering")
