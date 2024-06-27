@@ -274,7 +274,7 @@ registerWhen(register("chat", (drop, event) => {
                 }
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
-                if (gotLootShare()) {
+                if (gotLootShare() && settings.dianaTracker) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                 }
                 else {
@@ -293,8 +293,9 @@ registerWhen(register("chat", (drop, event) => {
                         cancel(event)
                         ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
                     }
-                    
-                    trackItem("Chimera", "items", 1);
+                    if(settings.dianaTracker){
+                        trackItem("Chimera", "items", 1);
+                    }
                     if(settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
@@ -323,7 +324,9 @@ registerWhen(register("chat", (drop, event) => {
                 }
 
                 playCustomSound(settings.stickSound, settings.stickVolume);
-                trackItem(drop, "items", 1);
+                if (settings.dianaTracker) {
+                    trackItem(drop, "items", 1);
+                }
                 break;
         }
     }
