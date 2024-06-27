@@ -235,6 +235,7 @@ registerWhen(register("tick", () => {
     const container = Player.getContainer();
     if (container == null) return;
     if (container.getName() != "Fossil Excavator") return; 
+    fossilOverlay.renderGui = true;
     isInExcavatorGui = false;
     const items = container.getItems();
     for (let i = 0; i < items.length; i++) {
@@ -347,7 +348,8 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 })
 
 register("guiClosed", () => {
-    fossilOverlay.setLines([fossilOverlayText.setText("")]);
+    // fossilOverlay.setLines([fossilOverlayText.setText("")]);
+    fossilOverlay.renderGui = false;
 })
 
 registerWhen(register("renderSlot", (slot) => {

@@ -3,11 +3,12 @@ import { toTitleCase, drawRect, getKuudraItems, getBazaarItems, getBazaarPriceKu
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
-import { newOverlay } from "./../utils/overlays";
-import { UIWrappedText } from "../../Elementa";
+import { OverlayTextLine, SboOverlay } from "./../utils/overlays";
 
-let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuudraExample", "post", "KuudraValueLoc");
-let kuudraOverlay = kuudraOverlayObj.overlay
+// let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuudraExample", "post", "KuudraValueLoc");
+let kuudraOverlay = new SboOverlay("kuudraOverlay", "attributeValueOverlay", "post", "KuudraValueLoc", "kuudraExample")
+let kuudraOverlayText = new OverlayTextLine("")
+// let kuudraOverlaywww = kuudraOverlayObj.overlay
 
 
 let kuudraItems = undefined;
@@ -139,6 +140,7 @@ function readContainerItems() {
     const items = container.getItems();
     if (items.length == 0) return;
     kuudraOverlayObj.renderGui = true;
+    kuudraOverlay.renderGui = true;
     let highestPrice = 0;
     let tempString = "";
     let totalValue = 0;
@@ -260,8 +262,10 @@ function readContainerItems() {
 
 registerWhen(register("guiClosed", () => {
     indexToHighlight = -1;
-    kuudraOverlay.clearChildren();
-    kuudraOverlayObj.renderGui = false;
+    // kuudraOverlaywww.clearChildren();
+    // kuudraOverlayObj.renderGui = false;
+    kuudraOverlay.renderGui = false;
+    kuudraOverlay.setLines([kuudraOverlayText.setText("")]);
     chestItems = [];
     guiStrings = [];
 }), () => settings.attributeValueOverlay);
@@ -279,20 +283,20 @@ registerWhen(register("renderSlot", (slot) => {
 }), () => settings.attributeValueOverlay);
 
 let guiStrings = [];
-registerWhen(register("step", () => {
-    let tempBool = false;
-    if (guiStrings.length == 0) return;
-    chestItems.forEach((item) => {
-        if (guiStrings[item.indexOfObj] == undefined) return;
-        if (guiStrings[item.indexOfObj].isHovered()) {
-            tempBool = true;
-            indexToHighlight = item.index;
-        }
-    })
-    if (!tempBool) {
-        indexToHighlight = -1;
-    }
-}).setFps(20), () => settings.attributeValueOverlay);
+// registerWhen(register("step", () => {
+//     let tempBool = false;
+//     if (guiStrings.length == 0) return;
+//     chestItems.forEach((item) => {
+//         if (guiStrings[item.indexOfObj] == undefined) return;
+//         if (guiStrings[item.indexOfObj].isHovered()) {
+//             tempBool = true;
+//             indexToHighlight = item.index;
+//         }
+//     })
+//     if (!tempBool) {
+//         indexToHighlight = -1;
+//     }
+// }).setFps(20), () => settings.attributeValueOverlay);
 
 
 function refreshOverlay(totalValue) {
@@ -324,25 +328,26 @@ function refreshOverlay(totalValue) {
         }
         if (counter <= settings.maxDisplayedItems) {
             // tempObj = ;
-            guiStrings.push(new UIWrappedText(item.string));
+            // guiStrings.push(new UIWrappedText(item.string));
+            guiStrings.push(new OverlayTextLine(item.string));
             item.indexOfObj = guiStrings.length-1;
-            guiStrings[item.indexOfObj].setX((0).pixels());
-            guiStrings[item.indexOfObj].setY((pixel).pixels());
-            maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-            guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-            guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
+            // guiStrings[item.indexOfObj].setX(0);
+            // guiStrings[item.indexOfObj].setY(pixel).pixels());
+            // maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+            // guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
+            // guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
 
-            guiStrings[item.indexOfObj].onMouseLeave((comp) => {
-                maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-                guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-                guiStrings[item.indexOfObj].setText(item.string);
-            });
-            guiStrings[item.indexOfObj].onMouseEnter((comp) => {
-                maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-                guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-                // guiStrings[item.indexOfObj].effects;
-                guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
-            });
+            // guiStrings[item.indexOfObj].onMouseLeave((comp) => {
+            //     maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+            //     guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
+            //     guiStrings[item.indexOfObj].setText(item.string);
+            // });
+            // guiStrings[item.indexOfObj].onMouseEnter((comp) => {
+            //     maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+            //     guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
+            //     // guiStrings[item.indexOfObj].effects;
+            //     guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
+            // });
             // check if gui object is hovered
             
 
@@ -353,29 +358,32 @@ function refreshOverlay(totalValue) {
     });
     if (counter > settings.maxDisplayedItems) {
         overlayString += `&o&7and ${counter - settings.maxDisplayedItems} more...\n`;
-        tempObj = new UIWrappedText(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
-        tempObj.setX((0).pixels());
-        tempObj.setY((pixel).pixel());
-        tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
+        // tempObj = new UIWrappedText(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
+        tempObj = new OverlayTextLine(`&o&7and ${counter - settings.maxDisplayedItems} more...\n`);
+        // tempObj.setX((0).pixels());
+        // tempObj.setY((pixel).pixel());
+        // tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
     if (totalValue != 0) {
         overlayString += `&eTotal Value: &6${formatNumber(totalValue)} coins`;
-        tempObj = new UIWrappedText(`&eTotal Value: &6${formatNumber(totalValue)} coins`);
-        tempObj.setX((0).pixels());
-        tempObj.setY((pixel).pixel());
-        tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
+        // tempObj = new UIWrappedText(`&eTotal Value: &6${formatNumber(totalValue)} coins`);
+        tempObj = new OverlayTextLine(`&eTotal Value: &6${formatNumber(totalValue)} coins`);
+        // tempObj.setX((0).pixels());
+        // tempObj.setY((pixel).pixel());
+        // tempObj.setTextScale((kuudraOverlayObj.scale).pixels());
         guiStrings.push(tempObj);
         pixel += pixelIncrementOne;
     }
-    kuudraOverlay.clearChildren();
-    // let kuudraText = new UIWrappedText(overlayString);
-    // kuudraText.setX(new SiblingConstraint());
-    // kuudraText.setY(new SiblingConstraint());
-    for (let i = 0; i < guiStrings.length; i++) {
-        kuudraOverlay.addChild(guiStrings[i]);
-    }
+    kuudraOverlay.setLines(guiStrings);
+    // kuudraOverlaywww.clearChildren();
+    // // let kuudraText = new UIWrappedText(overlayString);
+    // // kuudraText.setX(new SiblingConstraint());
+    // // kuudraText.setY(new SiblingConstraint());
+    // for (let i = 0; i < guiStrings.length; i++) {
+    //     kuudraOverlaywww.addChild(guiStrings[i]);
+    // }
     // testOverlay.addChild(kuudraText);
 }
 
