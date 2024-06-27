@@ -266,6 +266,8 @@ registerWhen(register("chat", (drop, event) => {
     if (isDataLoaded() && checkDiana() && isInSkyblock()) {
         let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
         let magicFind = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
+        print("magicFindMtach: " + magicFindMatch);
+        print("magicFind: " + magicFind);
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
@@ -279,13 +281,16 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 else {
                     if(settings.dianaAvgMagicFind){
+                        print("detected Chimera")
                         if(magicFind > 0){
                             if(data.last10ChimMagicFind.length >= 10){
                                 data.last10ChimMagicFind.shift();
                             }
                             data.last10ChimMagicFind.push(magicFind);
+                            print("added last chim")
                         
                             let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
+                            print("chim sum: " + sum)
                             data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
                         }
                     }
@@ -304,13 +309,16 @@ registerWhen(register("chat", (drop, event) => {
                 break;
             case "Daedalus Stick":
                 if(settings.dianaAvgMagicFind){
+                    print("detected Stick")
                     if(magicFind > 0){
                         if(data.last10StickMagicFind.length >= 10){
                             data.last10StickMagicFind.shift();
                         }
                         data.last10StickMagicFind.push(magicFind);
+                        print("added last Stick")
                     
                         let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
+                        print("stick sum: " + sum)
                         data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
                     }
                 }
