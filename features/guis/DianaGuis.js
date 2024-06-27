@@ -193,60 +193,89 @@ function getLootMessage(lootViewSetting) {
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let percentDict = calcPercent(lootTracker, "loot");
     let totalChimera = 0;
+
     for (let key of ["Chimera", "ChimeraLs"]) {
         if (lootTracker.items[key] !== undefined) {
             totalChimera += lootTracker.items[key];
         }
     }
-    let relicPrice = getDianaAhPrice("MINOS_RELIC") * lootTracker["items"]["MINOS_RELIC"]
-    let chimeraPrice = getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * totalChimera
-    let daedalusPrice = getBazaarPriceDiana("DAEDALUS_STICK") * lootTracker["items"]["Daedalus Stick"]
-    let griffinPrice = getBazaarPriceDiana("GRIFFIN_FEATHER") * lootTracker["items"]["Griffin Feather"]
-    let clawPrice = getBazaarPriceDiana("ANCIENT_CLAW") * lootTracker["items"]["ANCIENT_CLAW"]
-    let echClawPrice = getBazaarPriceDiana("ENCHANTED_ANCIENT_CLAW") * lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]
-    let goldPrice = getBazaarPriceDiana("ENCHANTED_GOLD") * lootTracker["items"]["ENCHANTED_GOLD"]
-    let ironPrice = getBazaarPriceDiana("ENCHANTED_IRON") * lootTracker["items"]["ENCHANTED_IRON"]
-    let dwarfPrice = getDianaAhPrice("DWARF_TURTLE_SHELMET") * lootTracker["items"]["DWARF_TURTLE_SHELMET"]
-    let tigerPrice = getDianaAhPrice("CROCHET_TIGER_PLUSHIE") * lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]
-    let antiquePrice = getDianaAhPrice("ANTIQUE_REMEDIES") * lootTracker["items"]["ANTIQUE_REMEDIES"]
-    let crownPrice = getDianaAhPrice("CROWN_OF_GREED") * lootTracker["items"]["Crown of Greed"]
-    let souvenirPrice = getDianaAhPrice("WASHED_UP_SOUVENIR") * lootTracker["items"]["Washed-up Souvenir"]
-    
-    let lootMessage = `${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})\n`;
-    function getMessagePart(price, color, itemName, itemAmount, percent = "") {
-        if (percent == ""){
-            return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount}\n`
-        }
-        else if (itemName == "Chimera") {
-            return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY}) ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lootTracker["items"]["ChimeraLs"]}${GRAY}]\n`
-        }
-        else {
-            return `${GOLD}${price} ${GRAY}| ${color}${itemName}: ${AQUA}${itemAmount} ${GRAY}(${AQUA}${percent}%${GRAY})\n`
-        }
 
+    const itemData = [
+        { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true, hasLS: true },
+        { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahPrice: true, hasPercent: true },
+        { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
+        { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahPrice: true },
+        { name: "Souvenir", key: "Washed-up Souvenir", color: GOLD, ahPrice: true },
+        { name: "Griffin Feather", key: "Griffin Feather", color: GOLD, bazaarKey: "GRIFFIN_FEATHER" },
+        { name: "Turtle Shelmet", key: "DWARF_TURTLE_SHELMET", color: DARK_GREEN, ahPrice: true },
+        { name: "Tiger Plushie", key: "CROCHET_TIGER_PLUSHIE", color: DARK_GREEN, ahPrice: true },
+        { name: "Antique Remedies", key: "ANTIQUE_REMEDIES", color: DARK_GREEN, ahPrice: true },
+        { name: "Ancient Claws", key: "ANCIENT_CLAW", color: BLUE, bazaarKey: "ANCIENT_CLAW" },
+        { name: "Enchanted Claws", key: "ENCHANTED_ANCIENT_CLAW", color: BLUE, bazaarKey: "ENCHANTED_ANCIENT_CLAW" },
+        { name: "Enchanted Gold", key: "ENCHANTED_GOLD", color: BLUE, bazaarKey: "ENCHANTED_GOLD" },
+        { name: "Enchanted Iron", key: "ENCHANTED_IRON", color: BLUE, bazaarKey: "ENCHANTED_IRON" }
+    ];
+
+    function getPrice(item) {
+        if (item.bazaarKey) {
+            return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
+        } else if (item.ahPrice) {
+            return getDianaAhPrice(item.key) * lootTracker["items"][item.key];
+        }
+        return 0;
     }
-    
-    lootMessage += getMessagePart(formatNumber(chimeraPrice), LIGHT_PURPLE, "Chimera", lootTracker["items"]["Chimera"], percentDict["Chimera"]);
-    lootMessage += getMessagePart(formatNumber(relicPrice), DARK_PURPLE, "Minos Relic", lootTracker["items"]["MINOS_RELIC"], percentDict["Minos Relic"]);
-    lootMessage += getMessagePart(formatNumber(daedalusPrice), GOLD, "Daedalus Stick", lootTracker["items"]["Daedalus Stick"], percentDict["Daedalus Stick"]);
-    lootMessage += getMessagePart(formatNumber(crownPrice), GOLD, "Crown of Greed", formatNumberCommas(lootTracker["items"]["Crown of Greed"]));
-    lootMessage += getMessagePart(formatNumber(souvenirPrice), GOLD, "Souvenir", formatNumberCommas(lootTracker["items"]["Washed-up Souvenir"]));
-    lootMessage += getMessagePart(formatNumber(griffinPrice), GOLD, "Griffin Feather", formatNumberCommas(lootTracker["items"]["Griffin Feather"]));
-    lootMessage += getMessagePart(formatNumber(dwarfPrice), DARK_GREEN, "Turtle Shelmet", formatNumberCommas(lootTracker["items"]["DWARF_TURTLE_SHELMET"]));
-    lootMessage += getMessagePart(formatNumber(tigerPrice), DARK_GREEN, "Tiger Plushie", formatNumberCommas(lootTracker["items"]["CROCHET_TIGER_PLUSHIE"]));
-    lootMessage += getMessagePart(formatNumber(antiquePrice), DARK_GREEN, "Antique Remedies", formatNumberCommas(lootTracker["items"]["ANTIQUE_REMEDIES"]));
-    lootMessage += getMessagePart(formatNumber(clawPrice), BLUE, "Ancient Claws", formatNumber(lootTracker["items"]["ANCIENT_CLAW"]));
-    lootMessage += getMessagePart(formatNumber(echClawPrice), BLUE, "Enchanted Claws", formatNumberCommas(lootTracker["items"]["ENCHANTED_ANCIENT_CLAW"]));
-    lootMessage += getMessagePart(formatNumber(goldPrice), BLUE, "Enchanted Gold", formatNumber(lootTracker["items"]["ENCHANTED_GOLD"]));
-    lootMessage += getMessagePart(formatNumber(ironPrice), BLUE, "Enchanted Iron", formatNumber(lootTracker["items"]["ENCHANTED_IRON"]));
-        lootMessage += `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}\n`
-    lootMessage += `${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}\n`
-    let totalValue = 0;
-    totalValue = relicPrice + chimeraPrice + daedalusPrice + griffinPrice + dwarfPrice + tigerPrice + antiquePrice + crownPrice + souvenirPrice + clawPrice + echClawPrice + goldPrice + ironPrice + lootTracker["items"]["coins"];
-    lootMessage += `${YELLOW}Total Profit: ${AQUA}${formatNumber(totalValue)}`
 
-    return lootMessage;
+    function createLootLine(item) {
+        const price = formatNumber(getPrice(item));
+        const itemAmount = formatNumberCommas(lootTracker["items"][item.key]);
+        const percent = item.hasPercent ? percentDict[item.key] : "";
+        const lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
+        let text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
+
+        if (percent) {
+            text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
+            if (item.hasLS) {
+                text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
+            }
+        }
+
+        let line = new OverlayButton(text, true, false, true, true).onClick(() => {
+            if (line.button) {
+                line.button = false;
+                line.setText(text);
+            } else {
+                line.button = true;
+                line.setText("&7&m" + line.text.getString().removeFormatting());
+            }
+        });
+        return line;
+    }
+
+    let lootLines = [];
+    lootLines.push(buttonChangeLootView);
+    lootLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Diana Loot Tracker ${GRAY}(${YELLOW}${lootTrackerType}${GRAY})`, true));
+
+    for (let item of itemData) {
+        lootLines.push(createLootLine(item));
+    }
+
+    let totalBurrowsText = `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`;
+    let totalCoinsText = `${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`;
+
+    lootLines.push(new OverlayTextLine(totalBurrowsText, true));
+    lootLines.push(new OverlayTextLine(totalCoinsText, true));
+
+    let totalValue = 0;
+    for (let item of itemData) {
+        totalValue += getPrice(item);
+    }
+    totalValue += lootTracker["items"]["coins"];
+    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(totalValue)}`;
+    lootLines.push(new OverlayTextLine(totalProfitText, true));
+
+    return lootLines;
 }
+
 
 let mythosHpOverlay= new SboOverlay("mythosMobHp", "mythosMobHp", "render", "MythosHpLoc", "mythosMobHpExample");
 let mythosHpText = new OverlayTextLine("", true);
