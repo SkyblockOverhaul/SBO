@@ -134,7 +134,6 @@ function createMobLine(name, color, shortName, extra, mobTracker, percentDict) {
             line.setText("&7&m" + line.text.getString().removeFormatting());
             data.hideTrackerLines.push(name);
         }
-        data.save();
     });
     if (data.hideTrackerLines.includes(name)) {
         line.button = true;
