@@ -331,7 +331,7 @@ export class SboOverlay {
             if ((this.renderGui || editGui.isOpen()) && (this.type == "render" || (this.type == "inventory" && !isInInventory))) {
                 drawText(this);
                 if (editGui.isOpen()) {
-                    this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
+                    this.editParameters.setString("&oX: " + this.X + ", Y: " + this.Y + ", S: " + this.scale);
                     this.editParameters.setX(this.X)
                     this.editParameters.setY(this.Y - 10)
                     this.editParameters.draw();
@@ -344,7 +344,7 @@ export class SboOverlay {
             if ((this.renderGui || editGui.isOpen()) && this.type == "post") {
                 drawText(this)
                 if (editGui.isOpen()) {
-                    this.editParameters.setString("&oX: " + this.X + " Y: " + this.Y + " Scale: " + this.scale);
+                    this.editParameters.setString("&oX: " + this.X + ", Y: " + this.Y + ", S: " + this.scale);
                     this.editParameters.setX(this.X)
                     this.editParameters.setY(this.Y - 10)
                     this.editParameters.draw();
