@@ -443,7 +443,6 @@ export class OverlayTextLine {
             const mouseY = Client.getMouseY();
             if (this.X != -1 && this.Y != -1 && this.mouseEnterAction && this.mouseLeaveAction) {
                 if (this.isOverString(mouseX, mouseY)) {
-                    print("is over string")
                     if (!this.isHovered) {
                         this.mouseEnter();
                         this.isHovered = true;
