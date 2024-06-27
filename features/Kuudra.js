@@ -283,20 +283,20 @@ registerWhen(register("renderSlot", (slot) => {
 }), () => settings.attributeValueOverlay);
 
 let guiStrings = [];
-// registerWhen(register("step", () => {
-//     let tempBool = false;
-//     if (guiStrings.length == 0) return;
-//     chestItems.forEach((item) => {
-//         if (guiStrings[item.indexOfObj] == undefined) return;
-//         if (guiStrings[item.indexOfObj].isHovered()) {
-//             tempBool = true;
-//             indexToHighlight = item.index;
-//         }
-//     })
-//     if (!tempBool) {
-//         indexToHighlight = -1;
-//     }
-// }).setFps(20), () => settings.attributeValueOverlay);
+registerWhen(register("step", () => {
+    let tempBool = false;
+    if (guiStrings.length == 0) return;
+    chestItems.forEach((item) => {
+        if (guiStrings[item.indexOfObj] == undefined) return;
+        if (guiStrings[item.indexOfObj].isHovered()) {
+            tempBool = true;
+            indexToHighlight = item.index;
+        }
+    })
+    if (!tempBool) {
+        indexToHighlight = -1;
+    }
+}).setFps(20), () => settings.attributeValueOverlay);
 
 
 function refreshOverlay(totalValue) {
@@ -337,17 +337,17 @@ function refreshOverlay(totalValue) {
             // guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
             // guiStrings[item.indexOfObj].setHeight((tempPixel).pixels());
 
-            // guiStrings[item.indexOfObj].onMouseLeave((comp) => {
-            //     maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-            //     guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-            //     guiStrings[item.indexOfObj].setText(item.string);
-            // });
-            // guiStrings[item.indexOfObj].onMouseEnter((comp) => {
-            //     maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
-            //     guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
-            //     // guiStrings[item.indexOfObj].effects;
-            //     guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
-            // });
+            guiStrings[item.indexOfObj].onMouseLeave((comp) => {
+                // maxStringWidth = item.string.split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+                // guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
+                guiStrings[item.indexOfObj].setText(item.string);
+            });
+            guiStrings[item.indexOfObj].onMouseEnter((comp) => {
+                // maxStringWidth = item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l").split("\n").reduce((a, b) => a.length > b.length ? a : b).length;
+                // guiStrings[item.indexOfObj].setWidth((maxStringWidth * withMultiplicator).pixels());
+                // guiStrings[item.indexOfObj].effects;
+                guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&6&l").replaceAll("&e", "&e&l").replaceAll("&b", "&b&l"));
+            });
             // check if gui object is hovered
             
 

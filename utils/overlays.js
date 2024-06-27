@@ -425,7 +425,7 @@ editGui.registerMouseReleased(() => {
 });
 
 export class OverlayTextLine {
-    constructor(message, shadow = true) {
+    constructor(message, shadow = true, hoverable = false) {
         this.text = new Text(message ?? "");
         this.text.setShadow(shadow);
         this.text.setScale(1.0);
@@ -434,7 +434,51 @@ export class OverlayTextLine {
         this.Y = -1;
         this.scale = 1.0;
         this.lineBreak = true;
+        this.hoverable = hoverable;
+        this.isHovered = false;
+        this.mouseEnterAction = undefined;
+        this.mouseLeaveAction = undefined;
 
+        registerWhen(register("tick", () => {
+            const mouseX = Client.getMouseX();
+            const mouseY = Client.getMouseY();
+            if (this.X != -1 && this.Y != -1 && this.mouseEnterAction && this.mouseLeaveAction) {
+                if (this.isOverString(mouseX, mouseY)) {
+                    if (!this.isHovered) {
+                        this.mouseEnter();
+                        this.isHovered = true;
+                    }
+                }
+                else {
+                    if (this.isHovered) {
+                        this.mouseLeave();
+                        this.isHovered = false;
+                    }
+                }
+            }
+        }), () => this.hoverable);
+                
+
+    }
+
+    onMouseEnter(action) {
+        this.mouseEnterAction = action;
+        return this;
+    }
+
+    onMouseLeave(action) {
+        this.mouseLeaveAction = action;
+        return this;
+    }
+
+    mouseEnter() {
+        if (this.mouseEnterAction)
+            this.mouseEnterAction();
+    }
+
+    mouseLeave() {
+        if (this.mouseLeaveAction)
+            this.mouseLeaveAction();
     }
 
     setText(message) {
@@ -476,6 +520,16 @@ export class OverlayTextLine {
     setShadow(shadow) {
         this.text.setShadow(shadow);
         return this;
+    }
+
+    isOverString(x, y) {
+        let stringCount = this.text.getString().split("\n").length;
+        let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
+
+        if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestLine) * this.scale && y >= this.Y && y <= this.Y + 10 * this.scale * stringCount) {
+            return true;
+        }
+        return false;
     }
 }
 
