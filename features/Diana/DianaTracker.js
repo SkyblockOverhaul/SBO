@@ -1,13 +1,12 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, getTracker } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { getRefreshOverlays } from "../../utils/overlays";
 import { playerHasSpade } from "../../utils/functions";
 
 // todo: 
@@ -90,26 +89,6 @@ export function trackScavengerCoins(coins) {
         if (!forbiddenCoins.includes(coins) && coins < 60000) {
             trackItem("scavengerCoins", "items", coins);
             trackItem("coins", "items", coins);
-        }
-    }
-}
-
-// get tracker by setting (0: default, 1: total, 2: event, 3: event) //
-
-
-// refresh overlay (items, mobs) //
-function refreshOverlay(tracker, setting, category) {
-    if (isDataLoaded()) {
-        if (setting != 0 ) {
-            percentDict = calcPercent(tracker, category, setting);
-            if (percentDict == undefined) return;
-            if (tracker == undefined) return;
-            if (category === "items") {
-                itemOverlay(tracker, setting, percentDict);
-            }
-            else {
-                mobOverlay(tracker, setting, percentDict);
-            }
         }
     }
 }
@@ -364,27 +343,6 @@ registerWhen(register("step", () => {
     tempSettingMob = settings.dianaMobTrackerView;
     mobOverlay();
 }).setFps(1), () => settings.dianaTracker && tempSettingMob !== settings.dianaMobTrackerView);
-
-let firstLoad = false;
-let tempGuiBool = false;
-register("step", () => {
-    if (getRefreshOverlays() && !tempGuiBool) {
-        tempGuiBool = true;
-    }
-    if (isInSkyblock() && !firstLoad && isDataLoaded()) {
-        itemOverlay();
-        mobOverlay();
-        statsOverlay();
-        avgMagicFindOverlay();
-        mythosMobHpOverlay([]);
-        firstLoad = true;
-    }
-    if (tempGuiBool && !getRefreshOverlays()) {
-        firstLoad = false;
-        tempGuiBool = false;
-    }
-}).setFps(1);
-
 
 // // test command
 // register('command', () => {

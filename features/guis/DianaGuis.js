@@ -8,9 +8,9 @@ import { checkDiana } from "../../utils/checkDiana";
 
 
 
-let overlayMobTracker = new SboOverlay("dianaMobTracker", "dianaTracker", "inventory", "MobLoc")
+let overlayMobTracker = new SboOverlay("dianaMobTracker", "dianaTracker", "inventory", "MobLoc", "", true)
 let textOverlayLineMob = new OverlayTextLine("", true)
-let buttonChangeMobView = new OverlayButton("&eChange View", true, true)
+let buttonChangeMobView = new OverlayButton("&eChange View", true, true, true, true)
 buttonChangeMobView.onClick(() => {
     settings.dianaMobTrackerView += 1;
     if (settings.dianaMobTrackerView > 3) {
@@ -18,10 +18,17 @@ buttonChangeMobView.onClick(() => {
     }
     mobOverlay();
 })
+buttonChangeMobView.onMouseEnter(() => {
+    buttonChangeMobView.setText(`&e&nChange View`);
+})
+buttonChangeMobView.onMouseLeave(() => {
+    buttonChangeMobView.setText(`&eChange View`);
+})
 
-let overlayLootTracker = new SboOverlay("dianaLootTracker", "dianaTracker", "inventory", "LootLoc")
+
+let overlayLootTracker = new SboOverlay("dianaLootTracker", "dianaTracker", "inventory", "LootLoc", "", true)
 let lootMessageLine = new OverlayTextLine("", true)
-let buttonChangeLootView = new OverlayButton("&eChange View", true, true)
+let buttonChangeLootView = new OverlayButton("&eChange View", true, true, true, true)
 buttonChangeLootView.onClick(() => {  
     settings.dianaLootTrackerView += 1;
     if (settings.dianaLootTrackerView > 3) {
@@ -29,14 +36,32 @@ buttonChangeLootView.onClick(() => {
     }
     itemOverlay();
 })
-let buttonBazaarSetting = new OverlayButton("Sell", true, true, false)
+buttonChangeLootView.onMouseEnter(() => {
+    buttonChangeLootView.setText(`&e&nChange View`);
+})
+buttonChangeLootView.onMouseLeave(() => {
+    buttonChangeLootView.setText(`&eChange View`);
+})
+
+let buttonBazaarSetting = new OverlayButton("Sell", true, true, false, true)
 buttonBazaarSetting.onClick(() => {
     settings.bazaarSettingDiana += 1;
     if (settings.bazaarSettingDiana > 1) {
         settings.bazaarSettingDiana = 0;
     }
-    setSellText();
+    if (buttonBazaarSetting.isHovered) {
+        setSellText("hover");
+    }
+    else {
+        setSellText();
+    }
     itemOverlay();
+})
+buttonBazaarSetting.onMouseEnter(() => {
+    setSellText("hover");
+})
+buttonBazaarSetting.onMouseLeave(() => {
+    setSellText();
 })
 
 function setSellText(type = "") {

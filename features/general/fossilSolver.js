@@ -1,8 +1,7 @@
 import { drawRect } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
-import { OverlayTextLine, SboOverlay, newOverlay } from "../../utils/overlays";
-import { UIWrappedText } from "../../../Elementa";
+import { OverlayTextLine, SboOverlay } from "../../utils/overlays";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 
