@@ -5,29 +5,7 @@ import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
 
-
-
-
-let overlayMobTracker = new SboOverlay("dianaMobTracker", "dianaTracker", "inventory", "MobLoc", "", true)
-let textOverlayLineMob = new OverlayTextLine("", true)
-let buttonChangeMobView = new OverlayButton("&eChange View", true, true, true, true)
-buttonChangeMobView.onClick(() => {
-    settings.dianaMobTrackerView += 1;
-    if (settings.dianaMobTrackerView > 3) {
-        settings.dianaMobTrackerView = 1;
-    }
-    mobOverlay();
-})
-buttonChangeMobView.onMouseEnter(() => {
-    buttonChangeMobView.setText(`&e&nChange View`);
-})
-buttonChangeMobView.onMouseLeave(() => {
-    buttonChangeMobView.setText(`&eChange View`);
-})
-
-
 let overlayLootTracker = new SboOverlay("dianaLootTracker", "dianaTracker", "inventory", "LootLoc", "", true)
-let lootMessageLine = new OverlayTextLine("", true)
 let buttonChangeLootView = new OverlayButton("&eChange View", true, true, true, true)
 buttonChangeLootView.onClick(() => {  
     settings.dianaLootTrackerView += 1;
@@ -63,6 +41,26 @@ buttonBazaarSetting.onMouseEnter(() => {
 buttonBazaarSetting.onMouseLeave(() => {
     setSellText();
 })
+
+
+let overlayMobTracker = new SboOverlay("dianaMobTracker", "dianaTracker", "inventory", "MobLoc", "", true)
+let buttonChangeMobView = new OverlayButton("&eChange View", true, true, true, true)
+buttonChangeMobView.onClick(() => {
+    settings.dianaMobTrackerView += 1;
+    if (settings.dianaMobTrackerView > 3) {
+        settings.dianaMobTrackerView = 1;
+    }
+    mobOverlay();
+})
+buttonChangeMobView.onMouseEnter(() => {
+    buttonChangeMobView.setText(`&e&nChange View`);
+})
+buttonChangeMobView.onMouseLeave(() => {
+    buttonChangeMobView.setText(`&eChange View`);
+})
+
+
+
 
 function setSellText(type = "") {
     if (type == "hover") {
@@ -274,12 +272,13 @@ function getLootMessage(lootViewSetting) {
     let totalCoinsText = new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`, true, true)
     
     lootLines.push(new OverlayTextLine(totalBurrowsText, true));
-    coinHoverText.setText("totalCoinsText");
+    let hoverText = ["Coin Breakdown:" + "\nTreasure:" + formatNumber(lootTracker["items"]["coins"]) +"\nFour-Eyed Fish: " + formatNumber(lootTracker["items"]["fishCoins"]) + "\nScavenger: " + formatNumber(lootTracker["items"]["scavengerCoins"])]
+
     lootLines.push(totalCoinsText.onHover((overlay) => {
         // print("hovering")
         // coinHoverText.setXYScale(totalCoinsText.X, totalCoinsText.Y, totalCoinsText.scale)
         // coinHoverText.draw();
-        overlay.gui.drawHoveringString(["test"], 0, 0)
+        overlay.gui.drawHoveringString(hoverText, 0, 0)
         // draw rectangle 
     }));
     let totalValue = 0;

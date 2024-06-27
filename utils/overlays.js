@@ -254,7 +254,7 @@ export class OverlayButton extends OverlayTextLine {
     }
 
 }
-let hovered = []
+
 function drawText(overlay) {
     let lineCount = 0;
     let textLines = overlay.textLines;
@@ -270,10 +270,8 @@ function drawText(overlay) {
         textLines = [overlay.exampleText];
     }
     
-    hovered.forEach(text => {
-        text.hover(overlay);
-    });
-    hovered = [];
+    
+    let hovered = [];
     textLines.forEach((text, index) => {
         if (text.button && !isInInventory && !editGui.isOpen()) return;
         
@@ -304,6 +302,9 @@ function drawText(overlay) {
             hovered.push(text);
             // text.hover(overlay);
         }
+    });
+    hovered.forEach(text => {
+        text.hover(overlay);
     });
     
 }
