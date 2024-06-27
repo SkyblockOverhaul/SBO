@@ -6,7 +6,7 @@ import { registerWhen } from "./../utils/variables";
 import { OverlayTextLine, SboOverlay } from "./../utils/overlays";
 
 // let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuudraExample", "post", "KuudraValueLoc");
-let kuudraOverlay = new SboOverlay("kuudraOverlay", "attributeValueOverlay", "post", "KuudraValueLoc", "kuudraExample")
+let kuudraOverlay = new SboOverlay("kuudraOverlay", "attributeValueOverlay", "post", "KuudraValueLoc", "kuudraExample", true)
 let kuudraOverlayText = new OverlayTextLine("")
 // let kuudraOverlaywww = kuudraOverlayObj.overlay
 
@@ -308,37 +308,17 @@ function refreshOverlay(totalValue) {
     let overlayString = "";
     let counter = 1;
     let tempObj = undefined;
-    let pixel = 0;
-    let pixelIncrementOne = 9;
-    let pixelIncrementTwo = 18;
-    let tempPixel = 0;
-    let maxStringWidth = 0;
-    let withMultiplicator = 5.3;
     chestItems.forEach((item) => {
-        if (settings.lineSetting == 0) {
-            if (item.attributeItem) {
-                tempPixel = pixelIncrementTwo;
-            }
-            else {
-                tempPixel = pixelIncrementOne;
-            }
-        }
-        else {
-            tempPixel = pixelIncrementOne;
-        }
         if (counter <= settings.maxDisplayedItems) {
             guiStrings.push(new OverlayTextLine(item.string, true, true));
             item.indexOfObj = guiStrings.length-1;
 
             guiStrings[item.indexOfObj].onMouseLeave((comp) => {
-                print("mouse leave");
                 guiStrings[item.indexOfObj].setText(item.string);
             });
             guiStrings[item.indexOfObj].onMouseEnter((comp) => {
-                print("mouse enter");
                 guiStrings[item.indexOfObj].setText(item.string.replaceAll("&6", "&c").replaceAll("&e", "&c").replaceAll("&b", "&c"));
             });
-            pixel += tempPixel;
         }
         counter++;
     });
@@ -346,13 +326,11 @@ function refreshOverlay(totalValue) {
         overlayString += `&o&7and ${counter - settings.maxDisplayedItems} more...`;
         tempObj = new OverlayTextLine(`&o&7and ${counter - settings.maxDisplayedItems} more...`);
         guiStrings.push(tempObj);
-        pixel += pixelIncrementOne;
     }
     if (totalValue != 0) {
         overlayString += `&eTotal Value: &6${formatNumber(totalValue)} coins`;
         tempObj = new OverlayTextLine(`&eTotal Value: &6${formatNumber(totalValue)} coins`);
         guiStrings.push(tempObj);
-        pixel += pixelIncrementOne;
     }
     kuudraOverlay.setLines(guiStrings);
 }

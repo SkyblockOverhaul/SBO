@@ -438,25 +438,6 @@ export class OverlayTextLine {
         this.isHovered = false;
         this.mouseEnterAction = undefined;
         this.mouseLeaveAction = undefined;
-        register("tick", () => {
-            const mouseX = Client.getMouseX();
-            const mouseY = Client.getMouseY();
-            if (this.X != -1 && this.Y != -1 && this.mouseEnterAction && this.mouseLeaveAction) {
-                if (this.isOverString(mouseX, mouseY)) {
-                    if (!this.isHovered) {
-                        this.mouseEnter();
-                        this.isHovered = true;
-                    }
-                }
-                else {
-                    if (this.isHovered) {
-                        this.mouseLeave();
-                        this.isHovered = false;
-                    }
-                }
-            }
-        });
-                
 
     }
 
@@ -614,7 +595,7 @@ function drawText(overlay) {
 }
 
 export class SboOverlay {
-    constructor(name, setting, type, locName, example = "", allowedGuis = ["any"]) {
+    constructor(name, setting, type, locName, example = "", hoverable, allowedGuis = ["any"]) {
         overLaysNew.push(this);
         this.name = name;
         this.setting = setting;
@@ -633,6 +614,7 @@ export class SboOverlay {
         this.stringCount = 0;
         this.editParameters = new Text("");
         this.exampleText = undefined;
+        this.hoverable = hoverable;
         if (example != "") {
             this.exampleText = overlayExamples[example];
             if (this.exampleText == undefined) {
@@ -699,7 +681,30 @@ export class SboOverlay {
                 saveGuiSettings(guiSettings);
             }
         }), () => settings[this.setting]);
-            
+        
+        registerWhen(register("tick", () => {
+            if (this.textLines.length > 0) {
+                const mouseX = Client.getMouseX();
+                const mouseY = Client.getMouseY();
+                this.textLines.forEach(text => {
+                    if (text.X != -1 && text.Y != -1 && text.mouseEnterAction && text.mouseLeaveAction) {
+                        if (text.isOverString(mouseX, mouseY)) {
+                            if (!text.isHovered) {
+                                text.mouseEnter();
+                                text.isHovered = true;
+                            }
+                        }
+                        else {
+                            if (text.isHovered) {
+                                text.mouseLeave();
+                                text.isHovered = false;
+                            }
+                        }
+                    }
+                });
+            }
+        }), () => settings[this.setting]) && this.hoverable; 
+
         loadSettings(this);
     }
 
