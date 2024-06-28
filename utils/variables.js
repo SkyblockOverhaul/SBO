@@ -343,11 +343,12 @@ export class SBOTimer {
         this.running = false;
         this.startedOnce = false;
         this.lastActivityTime = Date.now();
-        this.INACTIVITY_LIMIT = inactiveTimeLimit * 60 * 1000; // 5 Minuten in Millisekunden
-        this.tickEvent = null; // Timeout-ID für die Inaktivitätsüberprüfung
+        this.INACTIVITY_LIMIT = inactiveTimeLimit * 60 * 1000; // milliseconds
+        this.tickEvent = null; // Timeout-ID
         this.dataFieldName = dataFieldName;
     }
 
+    // Starts the timer
     start() {
         if (this.running || this.startedOnce) return;
         this.startTime = Date.now();
@@ -360,6 +361,7 @@ export class SBOTimer {
         this.startInactivityCheck();
     }
 
+    // Updates the elapsed time based on the time since the last update
     updateElapsedTime() {
         if (!this.running) return;
         const now = Date.now();
@@ -368,6 +370,7 @@ export class SBOTimer {
         data[this.dataFieldName] = this.elapsedTime;
     }
 
+    // Pauses the timer
     pause() {
         if (!this.running) return;
         this.updateElapsedTime();
@@ -375,6 +378,7 @@ export class SBOTimer {
         this.stopInactivityCheck();
     }
 
+    // Continues the timer from where it was paused
     continue() {
         if (this.running) return;
         this.startTime = Date.now();
@@ -382,6 +386,7 @@ export class SBOTimer {
         this.startInactivityCheck();
     }
 
+    // Resets the timer to 0
     reset() {
         this.running = false;
         this.startedOnce = false;
@@ -391,16 +396,17 @@ export class SBOTimer {
         this.stopInactivityCheck();
     }
 
+    // Returns the elapsed time in milliseconds
     getElapsedTime() {
         return this.elapsedTime;
     }
 
-    // Update die letzte Aktivitätszeit
+    // Updates the last activity time to the current time
     updateActivity() {
         this.lastActivityTime = Date.now();
     }
 
-    // Starte die Überprüfung auf Inaktivität, falls gestartet oder fortgesetzt wird
+    // Starts the inactivity check
     startInactivityCheck() {
         if (!this.tickEvent && this.running) {
             this.tickEvent = register("tick", () => {
@@ -412,7 +418,7 @@ export class SBOTimer {
         }
     }
 
-    // Stoppe die Überprüfung auf Inaktivität, falls pausiert oder zurückgesetzt wird
+    // Stops the inactivity check
     stopInactivityCheck() {
         if (this.tickEvent) {
             this.tickEvent.unregister();
