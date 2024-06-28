@@ -11,10 +11,10 @@ export function getMobsToDisplay() {
 
 registerWhen(register("chat", (woah) => {
     if (checkDiana()) {
-        if(settings.inquisDetect)  {
+        if(settings.inquisDetect){
             ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
         }
-        if(settings.announceKill !== "")  {
+        if(settings.announceKill !== ""){
             setTimeout(function() 
                 {ChatLib.command("pc " + settings.announceKill);
             }, 5000);

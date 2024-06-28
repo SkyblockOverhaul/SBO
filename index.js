@@ -109,8 +109,8 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 // register("chat", (drop) => {
 //     let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
 //     let chimMf = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
-//     if(chimMf > 0)  {
-//         if(data.last10ChimMagicFind.length >= 10)  {
+//     if(chimMf > 0){
+//         if(data.last10ChimMagicFind.length >= 10){
 //             data.last10ChimMagicFind.shift();
 //         }
 //         data.last10ChimMagicFind.push(chimMf);

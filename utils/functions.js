@@ -9,7 +9,7 @@ if(!GlStateManager) {
     let GL11=Java.type("org.lwjgl.opengl.GL11")
     let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
 }
-export function trace (x, y, z, red, green, blue, alpha, type, lineWidth)  {
+export function trace (x, y, z, red, green, blue, alpha, type, lineWidth){
     if (type === "calc")
     {
         if (x >= 0) {
@@ -82,7 +82,7 @@ export function convertToPascalCase(input) {
  * @param {number} y
  * @param {number} z
  */
-export function mobAnnouncement(chat,mob,x,y,z)  {
+export function mobAnnouncement(chat,mob,x,y,z){
     x = Math.round(x);
     y = Math.round(y);
     z = Math.round(z);
@@ -653,7 +653,7 @@ export function getPurse() {
 export function calcPercent(trackerToCalc, type) {
     if (trackerToCalc == undefined) return;
     percentDict = {};
-    if(type == "mobs")  {
+    if(type == "mobs"){
         for (let mob in trackerToCalc["mobs"]) {
             percentDict[mob] = parseFloat((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"] * 100).toFixed(2));
         }

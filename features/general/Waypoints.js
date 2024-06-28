@@ -253,7 +253,7 @@ inquisWarpKey.registerKeyPress(() => {
 let closestWarp = undefined;
 let warpPlayer = false;
 let closestDistance = Infinity;
-function getClosestWarp(x, y, z)  {
+function getClosestWarp(x, y, z){
     let closestPlayerdistance = Math.sqrt(
         (Player.getLastX() - x)**2 +
         (Player.getLastY() - y)**2 +
@@ -281,7 +281,7 @@ function getClosestWarp(x, y, z)  {
     }
 
     for (let warp in hubWarps) {
-        if (hubWarps[warp].unlocked)  {
+        if (hubWarps[warp].unlocked){
             let distance = Math.sqrt(
                 (hubWarps[warp].x - x)**2 +
                 (hubWarps[warp].y - y)**2 +
@@ -320,7 +320,7 @@ register("chat" , (player) => {
 // check waypoint
 let highlighInquis = false;
 register("step", () => {
-    if (highlighInquis && settings.inqHighlight)  { 
+    if (highlighInquis && settings.inqHighlight){ 
         inqHighlightRegister.register(); 
     }
     else { 
@@ -451,10 +451,10 @@ registerWhen(register("renderWorld", () => {
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 // let guessLineRemoved = false;
-function renderBurrowLines()  {
+function renderBurrowLines(){
     if(burrowWaypoints.length > 0 && settings.burrowLine && inqWaypoints.length == 0) {
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
-        if (burrowDistance < 60)  {
+        if (burrowDistance < 60){
             trace(closestBurrow[1], closestBurrow[2] + 1, closestBurrow[3], closestBurrow[4], closestBurrow[5], closestBurrow[6], 0.7, "", parseInt(settings.burrowLineWidth));
         }
     }
@@ -464,13 +464,13 @@ function renderBurrowLines()  {
     if (guessWaypoint != null && settings.guessLine && inqWaypoints.length == 0) {
         if(getFinalLocation() === null) return;
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
-        if (burrowDistance > 60 && guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) > parseInt(settings.removeGuessDistance))  {
+        if (burrowDistance > 60 && guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) > parseInt(settings.removeGuessDistance)){
             trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "calc", parseInt(settings.burrowLineWidth));
         }
     }
 }
 
-function guessDistance(x,y,z)  {
+function guessDistance(x,y,z){
     return Math.sqrt(
         (Player.getX() - x)**2 +
         (Player.getY() - y)**2 +

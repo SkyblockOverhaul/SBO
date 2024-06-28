@@ -230,7 +230,7 @@ register("step", () => {
     for (let key in burrows) {
         // print each burrow with cords and type
         // print("x: " + burrows[key][1].x + " y: " + burrows[key][1].y + " z: " + burrows[key][1].z + " type: " + burrows[key][0].type);
-        if (burrows[key][0].type != undefined)  {
+        if (burrows[key][0].type != undefined){
             printDev("Creating Burrow");
             createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
         } // hängt sich hier auzf manchmal
@@ -243,9 +243,9 @@ register("step", () => {
 // }).setFilteredClass(net.minecraft.network.play.server.S2APacketParticles), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 registerWhen(register("packetReceived", (packet) => {
     packettype = packet.func_179749_a().toString()
-    if(packettype == "SMOKE_LARGE")  {
+    if(packettype == "SMOKE_LARGE"){
         packetSpeed = parseFloat(packet.func_149227_j()).toFixed(2)
-        if(packetSpeed == 0.01)  {
+        if(packetSpeed == 0.01){
             pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
             x = pos.getX();
             y = pos.getY();
