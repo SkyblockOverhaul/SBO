@@ -174,9 +174,21 @@ let timerOverlayLine = null;
 
 function formatTime(milliseconds) {
     const totalMinutes = parseInt(milliseconds / (60 * 1000));
-    const hours = parseInt(totalMinutes / 60);
+    const totalHours = parseInt(totalMinutes / 60);
+    const days = parseInt(totalHours / 24);
+    const hours = totalHours % 24;
     const minutes = totalMinutes % 60;
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes} min`;
+
+    let formattedTime = '';
+    if (days > 0) {
+        formattedTime += `${days}d `;
+    }
+    if (hours > 0 || days > 0) {
+        formattedTime += `${hours}h `;
+    }
+    formattedTime += `${minutes}m`;
+    
+    return formattedTime;
 }
 
 function getTimerMessage() {
