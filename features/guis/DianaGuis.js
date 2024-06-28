@@ -171,20 +171,30 @@ function getMobMassage(setting) {
 }
 let lootMessageLines = [];
 let timerOverlayLine = null;
+
+function formatTime(milliseconds) {
+    const totalMinutes = parseInt(milliseconds / (60 * 1000));
+    const hours = parseInt(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}min`;
+}
+
 function getTimerMessage() {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-    if(data[timer.dataFieldName] > 0){
-        return (parseInt(data[timer.dataFieldName] / (60 * 1000)));
-    } 
-    else{
-        return (parseInt(timer.getElapsedTime() / (60 * 1000)));
+    if (data[timer.dataFieldName] > 0) {
+        return formatTime(data[timer.dataFieldName]);
+    } else {
+        return formatTime(timer.getElapsedTime());
     }
 }
+
+
 register("tick", () => {
-    if(timerOverlayLine){
-        timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()} min`);
+    if (timerOverlayLine) {
+        timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
     }
 });
+
 /**
  * 
  * @param {string} setting 
@@ -194,17 +204,16 @@ export function itemOverlay() {
     if (settings.dianaLootTrackerView > 0) {
         lootMessageLines = getLootMessage(settings.dianaLootTrackerView);
 
-        let timerOverlayLine = new OverlayButton(`&ePlaytime: &b${getTimerMessage()} min`, true, false, true, false).onClick(() => {
+        timerOverlayLine = new OverlayButton(`&ePlaytime: &b${getTimerMessage()}`, true, false, true, false).onClick(() => {
             if (timerOverlayLine.button) {
                 timerOverlayLine.button = false;
-                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()} min`);
+                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
                 data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != "timer");
             } else {
                 timerOverlayLine.button = true;
                 timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
                 data.hideTrackerLines.push("timer");
             }
-
         });
         if (data.hideTrackerLines.includes("timer")) {
             timerOverlayLine.button = true;
@@ -214,7 +223,6 @@ export function itemOverlay() {
     }
     overlayLootTracker.setLines(lootMessageLines);
 }
-
 // .quick_status.buyPrice -> selloffer / instabuy
 // .quick_status.sellPrice -> buyorder / instasell
 
