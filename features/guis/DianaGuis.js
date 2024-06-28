@@ -176,7 +176,7 @@ function formatTime(milliseconds) {
     const totalMinutes = parseInt(milliseconds / (60 * 1000));
     const hours = parseInt(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}min`;
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes} min`;
 }
 
 function getTimerMessage() {
