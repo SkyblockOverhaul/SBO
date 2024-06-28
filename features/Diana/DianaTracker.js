@@ -197,7 +197,7 @@ registerWhen(register("chat", (burrow, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => getWorld() === "Hub");
+}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => getWorld() === "Hub" && settings.dianaTracker);
 
 registerWhen(register("chat", (burrow, event) => {
     if (isDataLoaded()) {
