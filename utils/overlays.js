@@ -366,6 +366,7 @@ export class SboOverlay {
         this.editParameters = new Text("");
         this.exampleText = undefined;
         this.hoverable = hoverable;
+        this.someTextIsHovered = false;
         if (example != "") {
             this.exampleText = overlayExamples[example];
             if (this.exampleText == undefined) {
@@ -410,46 +411,50 @@ export class SboOverlay {
         }), () => settings[this.setting]);
 
         registerWhen(register("guiKey", (char, keyCode, gui, event) => {
-            const mouseX = Client.getMouseX();
-            const mouseY = Client.getMouseY();
-            if (editGui.isOpen() && this.isInOverlay(mouseX, mouseY)) {
-                switch (keyCode) {
-                    case Keyboard.KEY_LEFT:
-                        this.X -= 1;
-                        break;
-                    case Keyboard.KEY_RIGHT:
-                        this.X += 1;
-                        break;
-                    case Keyboard.KEY_UP:
-                        this.Y -= 1;
-                        break;
-                    case Keyboard.KEY_DOWN:
-                        this.Y += 1;
-                        break;
+            if (editGui.isOpen() ) {
+                const mouseX = Client.getMouseX();
+                const mouseY = Client.getMouseY();
+                if (this.isInOverlay(mouseX, mouseY)) {
+                    switch (keyCode) {
+                        case Keyboard.KEY_LEFT:
+                            this.X -= 1;
+                            break;
+                        case Keyboard.KEY_RIGHT:
+                            this.X += 1;
+                            break;
+                        case Keyboard.KEY_UP:
+                            this.Y -= 1;
+                            break;
+                        case Keyboard.KEY_DOWN:
+                            this.Y += 1;
+                            break;
+                    }
+                    guiSettings[this.locName]["x"] = this.X;
+                    guiSettings[this.locName]["y"] = this.Y;
+                    saveGuiSettings(guiSettings);
                 }
-                guiSettings[this.locName]["x"] = this.X;
-                guiSettings[this.locName]["y"] = this.Y;
-                saveGuiSettings(guiSettings);
             }
         }), () => settings[this.setting]);
         
         registerWhen(register("tick", () => {
-            if (this.textLines.length > 0 && !editGui.isOpen()) {
+            if (this.textLines.length > 0 && !editGui.isOpen() && (isInInventory || this.someTextIsHovered)) {
                 const mouseX = Client.getMouseX();
                 const mouseY = Client.getMouseY();
                 this.textLines.forEach(text => {
                     if (text.hoverable) {
                         if (text.X != -1 && text.Y != -1 && (text.mouseEnterAction || text.mouseLeaveAction || text.hoverAction)) {
-                            if (text.isOverString(mouseX, mouseY)) {
+                            if (text.isOverString(mouseX, mouseY) && isInInventory) {
                                 if (!text.isHovered) {
                                     text.mouseEnter();
                                     text.isHovered = true;
+                                    this.someTextIsHovered = true;
                                 }
                             }
                             else {
                                 if (text.isHovered) {
                                     text.mouseLeave();
                                     text.isHovered = false;
+                                    this.someTextIsHovered = false;
                                 }
                             }
                         }

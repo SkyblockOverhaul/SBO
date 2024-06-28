@@ -184,7 +184,7 @@ export function itemOverlay() {
 
 // .quick_status.buyPrice -> selloffer / instabuy
 // .quick_status.sellPrice -> buyorder / instasell
-
+ 
 
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
