@@ -191,7 +191,12 @@ function getTimerMessage() {
 
 register("tick", () => {
     if (timerOverlayLine) {
-        timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+        if (data.hideTrackerLines.includes("timer")) {
+            timerOverlayLine.button = true;
+            timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+        } else {
+            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+        }
     }
 });
 
