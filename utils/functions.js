@@ -286,43 +286,6 @@ function checkSettings(loadedSettings) {
     return loadedSettings;
 }
 
-// function checkSettings(loadedSettings) {
-//     // check if all Properties are present if not set this property to default
-//     let defaultSettings = initializeGuiSettings();
-//     if (!loadedSettings.hasOwnProperty("MobLoc")) {
-//         loadedSettings["MobLoc"] = defaultSettings["MobLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("LootLoc")) {
-//         loadedSettings["LootLoc"] = defaultSettings["LootLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("BobberLoc")) {
-//         loadedSettings["BobberLoc"] = defaultSettings["BobberLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("MythosHpLoc")) {
-//         loadedSettings["MythosHpLoc"] = defaultSettings["MythosHpLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("EffectsLoc")) {
-//         loadedSettings["EffectsLoc"] = defaultSettings["EffectsLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("BlazeLoc")) {
-//         loadedSettings["BlazeLoc"] = defaultSettings["BlazeLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("KuudraValueLoc")) {
-//         loadedSettings["KuudraValueLoc"] = defaultSettings["KuudraValueLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("fossilLoc")) {
-//         loadedSettings["fossilLoc"] = defaultSettings["fossilLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("LegionLoc")) {
-//         loadedSettings["LegionLoc"] = defaultSettings["LegionLoc"];
-//     }
-//     if (!loadedSettings.hasOwnProperty("StatsLoc")) {
-//         loadedSettings["StatsLoc"] = defaultSettings["StatsLoc"];
-//     }
-//     return loadedSettings;
-// }
-
-
 export function saveGuiSettings(guiSettings) {
         FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
 }
@@ -402,78 +365,7 @@ register("command", () => {
 }).setName("sbodev")
 
 
-// party detection
-// partyleader
-// register("chat", (party) => {
-//     partyMembers = [];
-//     party = party.removeFormatting().replaceAll("'s", "");
-//     // ChatLib.chat("party: " + party);
-//     party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
-//     partyMembers.push(party)
-// }).setCriteria("&eYou have joined ${party} &r&eparty!&r");
 
-// // rest of party
-// register("chat", (party) => {
-//     party = party.removeFormatting()
-//     // ChatLib.chat("party: " + party);
-//     party = party.replace(/\[.*?\]/g, '').replaceAll(" ", "")
-//     // string to list names are separated by commas and extent partyMembers list with new names
-//     partyMembers = partyMembers.concat(party.split(","))
-// }).setCriteria("&eYou'll be partying with: ${party}");
-
-// // player joined party
-// register("chat", (player) => {
-//     player = player.removeFormatting()
-//     player = getplayername(player)
-//     partyMembers.push(player)
-// }).setCriteria("${player} &r&ejoined the party.&r");
-
-// // player left party
-// register("chat", (player) => {
-//     player = player.removeFormatting()
-//     player = getplayername(player)
-//     partyMembers = partyMembers.filter(e => e !== player)
-// }).setCriteria("${player} &r&ehas left the party.&r");
-
-// // &b[MVP&r&3+&r&b] hiddeeee &r&ehas been removed from the party.&r
-// register("chat", (player) => {
-//     player = player.removeFormatting()
-//     player = getplayername(player)
-//     partyMembers = partyMembers.filter(e => e !== player)
-// }).setCriteria("${player} &r&ehas been removed from the party.&r");
-
-// // &eThe party was transferred to &r&b[MVP&r&3+&r&b] NotACrafter &r&ebecause &r&b[MVP&r&d+&r&b] AlexIy &r&eleft&r
-// // player left party version 2
-// register("chat", (leader, player) => {
-//     player = player.removeFormatting()
-//     player = getplayername(player)
-//     partyMembers = partyMembers.filter(e => e !== player)
-// }).setCriteria("&eThe party was transferred to ${leader} &r&ebecause ${player} &r&eleft");
-
-// // you left party
-// register("chat", () => {
-//     partyMembers = [];
-// }).setCriteria("&eYou left the party.&r");
-
-// // get party members from party list
-// register("chat", (type, player) => {
-//     player = player.removeFormatting()
-//     if (player.split("●").length > 0) {
-//         player = player.split("●")
-//         for (let i = 0; i < player.length; i++) {
-//             player[i] = getplayername(player[i])
-//             partyMembers.push(player[i]) 
-//         }
-//     }
-//     else {
-//         player = getplayername(player)
-//         partyMembers.push(player)
-//     }
-// }).setCriteria("&eParty ${type}: ${player}");
-
-// register("chat", (count) => {
-//     partyMembers = [];
-// }).setCriteria("&r&aParty members ${count}");
 
 export function playCustomSound(sound, volume) {
     if (sound != "") {
@@ -487,29 +379,7 @@ export function playCustomSound(sound, volume) {
     }
 }
 
-// add time to life of 5 sek
-// export function setInterval(func, delay, ttl) {
-//     let startTime = java.lang.System.currentTimeMillis();
-//     let thread = new java.lang.Thread(new java.lang.Runnable({
-//         run: function() {
-//             while (true) {
-//                 if (java.lang.System.currentTimeMillis() - startTime > ttl) {
-//                     thread.stop();
-//                     break;
-//                 }
-//                 func();
-//                 java.lang.Thread.sleep(delay);
-//             }
-//         }
-//     }));
-//     thread.start();
-//     return thread;
-// }
-
-// export function clearInterval(thread) {
-//     thread.stop();
-// }
-
+// party detection
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     Object.keys(partyInfo).forEach(key => {
         partyMembersUuids.push(key);
@@ -688,28 +558,3 @@ export function getTracker(setting) {
     }
 }
 
-// export function getPurse() {
-//     let purse = 0;
-//     let scoreBoardLines = Scoreboard.getLines();
-    
-//     if (scoreBoardLines != undefined) {
-//         for (let i = 0; i < scoreBoardLines.length; i++) {
-//             let line = scoreBoardLines[i];
-//             // print(line);
-            
-//             // Check if line is a string and not null or undefined
-//             if (typeof line === 'string' && line.includes("Purse")) {
-//                 let parts = line.split(": ");
-//                 // print(line);
-//                 if (parts.length > 1) {
-//                     // print(parts[1]);
-//                     purse = parts[1];
-//                 }
-//                 break;
-//             }
-//         }
-//         return purse;
-//     } else {
-//         return -1;
-//     }
-// }w

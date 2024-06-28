@@ -185,9 +185,3 @@ register("step", () => {
         }
     }
 }).setFps(1);
-// 1719337880268
-// 1718986734000
-register("command", () => {
-    print(Date.now());
-    print(calcSkyblockDate("1718986734000"));
-}).setName("testdate");
