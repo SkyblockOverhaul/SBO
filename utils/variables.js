@@ -421,9 +421,9 @@ export class SBOTimer {
     }
 }
 
-const timerTotal = new SBOTimer("Total", 1, "totalTime");
-const timerSession = new SBOTimer("Session", 1, "sessionTime");
-const timerMayor = new SBOTimer("Mayor", 1, "mayorTime");
+const timerTotal = new SBOTimer("Total", 3, "totalTime");
+const timerSession = new SBOTimer("Session", 3, "sessionTime");
+const timerMayor = new SBOTimer("Mayor", 3, "mayorTime");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
 
