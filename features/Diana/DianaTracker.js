@@ -5,7 +5,7 @@ import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCu
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
-import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker } from "../../utils/variables";
+import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
 import { playerHasSpade } from "../../utils/functions";
 
@@ -16,6 +16,8 @@ let lastInqDroped = false;
 let lastInqLsDroped = false;
 let lastChampDroped = false;
 let lastMinotaurDroped = false;
+
+
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
@@ -96,6 +98,13 @@ export function trackScavengerCoins(coins) {
 // track logic //
 export function trackItem(item, category, amount) {
     if (isDataLoaded()) {
+        if(item == "Total Burrows") {
+            dianaTimerlist.forEach(timer => {
+                timer.start();
+                timer.continue();
+                timer.updateActivity();
+            });
+        }
         if (lastMob == item && item != "Minos Inquisitor Ls") {
             if (item == "Minos Inquisitor") {
                 ChatLib.chat("&6[SBO] &r&cb2b Inquisitor!")
@@ -166,6 +175,7 @@ register("command", () => {
         trackerSession[key] = tempTracker[key];
     }
     trackerSession.save();
+    dianaTimerlist[2].reset();
     itemOverlay();
     mobOverlay();
 }).setName("sboresetsession");

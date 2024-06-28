@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { registerWhen, data } from "../../utils/variables";
+import { registerWhen, data, dianaTimerlist} from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
@@ -169,29 +169,71 @@ function getMobMassage(setting) {
 
     return mobLines;
 }
+let lootMessageLines = [];
+let timerOverlayLine = null;
+
+function formatTime(milliseconds) {
+    const totalMinutes = parseInt(milliseconds / (60 * 1000));
+    const hours = parseInt(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}min`;
+}
+
+function getTimerMessage() {
+    const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+    if (data[timer.dataFieldName] > 0) {
+        return formatTime(data[timer.dataFieldName]);
+    } else {
+        return formatTime(timer.getElapsedTime());
+    }
+}
+
+
+register("tick", () => {
+    if (timerOverlayLine) {
+        timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+    }
+});
 
 /**
  * 
  * @param {string} setting 
  */
 export function itemOverlay() {
-    let messageLines = [];
+    lootMessageLines = [];
     if (settings.dianaLootTrackerView > 0) {
-        messageLines = getLootMessage(settings.dianaLootTrackerView);
-    }
-    overlayLootTracker.setLines(messageLines);
-}
+        lootMessageLines = getLootMessage(settings.dianaLootTrackerView);
 
+        timerOverlayLine = new OverlayButton(`&ePlaytime: &b${getTimerMessage()}`, true, false, true, false).onClick(() => {
+            if (timerOverlayLine.button) {
+                timerOverlayLine.button = false;
+                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != "timer");
+            } else {
+                timerOverlayLine.button = true;
+                timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+                data.hideTrackerLines.push("timer");
+            }
+        });
+        if (data.hideTrackerLines.includes("timer")) {
+            timerOverlayLine.button = true;
+            timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+        }
+        lootMessageLines.push(timerOverlayLine);
+    }
+    overlayLootTracker.setLines(lootMessageLines);
+}
 // .quick_status.buyPrice -> selloffer / instabuy
 // .quick_status.sellPrice -> buyorder / instasell
  
 
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
+
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let percentDict = calcPercent(lootTracker, "loot");
     let totalChimera = 0;
-
+    
     for (let key of ["Chimera", "ChimeraLs"]) {
         if (lootTracker.items[key] !== undefined) {
             totalChimera += lootTracker.items[key];
