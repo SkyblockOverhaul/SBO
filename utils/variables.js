@@ -342,10 +342,10 @@ export class SBOTimer {
         this.elapsedTime = 0;
         this.running = false;
         this.startedOnce = false;
-        this.lastActivityTime = Date.now();
+        this.lastActivityTime = Date.now(); 
         this.INACTIVITY_LIMIT = inactiveTimeLimit * 60 * 1000; // milliseconds
         this.tickEvent = null; // Timeout-ID
-        this.dataFieldName = dataFieldName;
+        this.dataFieldName = dataFieldName; // Name of the field in the data object
     }
 
     // Starts the timer
