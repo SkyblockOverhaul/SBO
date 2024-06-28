@@ -288,9 +288,9 @@ registerWhen(register("chat", (drop, event) => {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                 }
                 else {
-                    if(settings.dianaAvgMagicFind){
-                        if(magicFind > 0){
-                            if(data.last10ChimMagicFind.length >= 10){
+                    if(settings.dianaAvgMagicFind) {
+                        if(magicFind > 0) {
+                            if(data.last10ChimMagicFind.length >= 10) {
                                 data.last10ChimMagicFind.shift();
                             }
                             data.last10ChimMagicFind.push(magicFind);
@@ -304,7 +304,7 @@ registerWhen(register("chat", (drop, event) => {
                         cancel(event)
                         ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
                     }
-                    if(settings.dianaTracker){
+                    if(settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
                     }
                     if(settings.sendSinceMassage) {
@@ -314,9 +314,9 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 break;
             case "Daedalus Stick":
-                if(settings.dianaAvgMagicFind){
-                    if(magicFind > 0){
-                        if(data.last10StickMagicFind.length >= 10){
+                if(settings.dianaAvgMagicFind) {
+                    if(magicFind > 0) {
+                        if(data.last10StickMagicFind.length >= 10) {
                             data.last10StickMagicFind.shift();
                         }
                         data.last10StickMagicFind.push(magicFind);
