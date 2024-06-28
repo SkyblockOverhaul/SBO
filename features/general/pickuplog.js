@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { readPlayerInventory, isInSkyblock, isWorldLoaded, getPurse } from '../../utils/functions';
+import { readPlayerInventory, isInSkyblock, isWorldLoaded, getPurse, printDev } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
 import { dianaLootCounter, trackLootWithSacks, trackScavengerCoins } from '../Diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
@@ -63,15 +63,6 @@ registerWhen(register('step', () => {
         pickuplog();
     }
 }).setFps(10), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
-// const S30PacketWindowItems = net.minecraft.network.play.server.S30PacketWindowItems;
-// registerWhen(register("packetReceived", (packet) => {
-//     print("packet received");
-//     if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && checkDiana()) {
-//         pickuplog();
-//     }
-// }).setFilteredClass(S30PacketWindowItems), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
-
-
 
 // sack detection
 register("chat", (ammount, trash, time, event) => {
