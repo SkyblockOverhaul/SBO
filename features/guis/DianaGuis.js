@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { registerWhen, data } from "../../utils/variables";
+import { registerWhen, data, dianaTimerlist} from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
@@ -169,29 +169,88 @@ function getMobMassage(setting) {
 
     return mobLines;
 }
+let lootMessageLines = [];
+let timerOverlayLine = null;
+
+function formatTime(milliseconds) {
+    const totalMinutes = parseInt(milliseconds / (60 * 1000));
+    const totalHours = parseInt(totalMinutes / 60);
+    const days = parseInt(totalHours / 24);
+    const hours = totalHours % 24;
+    const minutes = totalMinutes % 60;
+
+    let formattedTime = '';
+    if (days > 0) {
+        formattedTime += `${days}d `;
+    }
+    if (hours > 0 || days > 0) {
+        formattedTime += `${hours}h `;
+    }
+    formattedTime += `${minutes}m`;
+    
+    return formattedTime;
+}
+
+function getTimerMessage() {
+    const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+    if (data[timer.dataFieldName] > 0) {
+        return formatTime(data[timer.dataFieldName]);
+    } else {
+        return formatTime(timer.getElapsedTime());
+    }
+}
+
+
+register("tick", () => {
+    if (timerOverlayLine) {
+        if (data.hideTrackerLines.includes("timer")) {
+            timerOverlayLine.button = true;
+            timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+        } else {
+            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+        }
+    }
+});
 
 /**
  * 
  * @param {string} setting 
  */
 export function itemOverlay() {
-    let messageLines = [];
+    lootMessageLines = [];
     if (settings.dianaLootTrackerView > 0) {
-        messageLines = getLootMessage(settings.dianaLootTrackerView);
-    }
-    overlayLootTracker.setLines(messageLines);
-}
+        lootMessageLines = getLootMessage(settings.dianaLootTrackerView);
 
+        timerOverlayLine = new OverlayButton(`&ePlaytime: &b${getTimerMessage()}`, true, false, true, false).onClick(() => {
+            if (timerOverlayLine.button) {
+                timerOverlayLine.button = false;
+                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != "timer");
+            } else {
+                timerOverlayLine.button = true;
+                timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+                data.hideTrackerLines.push("timer");
+            }
+        });
+        if (data.hideTrackerLines.includes("timer")) {
+            timerOverlayLine.button = true;
+            timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+        }
+        lootMessageLines.push(timerOverlayLine);
+    }
+    overlayLootTracker.setLines(lootMessageLines);
+}
 // .quick_status.buyPrice -> selloffer / instabuy
 // .quick_status.sellPrice -> buyorder / instasell
-
+ 
 
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
+
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let percentDict = calcPercent(lootTracker, "loot");
     let totalChimera = 0;
-
+    
     for (let key of ["Chimera", "ChimeraLs"]) {
         if (lootTracker.items[key] !== undefined) {
             totalChimera += lootTracker.items[key];
@@ -208,10 +267,10 @@ function getLootMessage(lootViewSetting) {
         { name: "Turtle Shelmet", key: "DWARF_TURTLE_SHELMET", color: DARK_GREEN, ahKey: "DWARF_TURTLE_SHELMET" },
         { name: "Tiger Plushie", key: "CROCHET_TIGER_PLUSHIE", color: DARK_GREEN, ahKey: "CROCHET_TIGER_PLUSHIE" },
         { name: "Antique Remedies", key: "ANTIQUE_REMEDIES", color: DARK_GREEN, ahKey: "ANTIQUE_REMEDIES" },
-        { name: "Ancient Claws", key: "ANCIENT_CLAW", color: BLUE, bazaarKey: "ANCIENT_CLAW" },
+        { name: "Ancient Claws", key: "ANCIENT_CLAW", color: BLUE, bazaarKey: "ANCIENT_CLAW", format: true },
         { name: "Enchanted Claws", key: "ENCHANTED_ANCIENT_CLAW", color: BLUE, bazaarKey: "ENCHANTED_ANCIENT_CLAW" },
-        { name: "Enchanted Gold", key: "ENCHANTED_GOLD", color: BLUE, bazaarKey: "ENCHANTED_GOLD" },
-        { name: "Enchanted Iron", key: "ENCHANTED_IRON", color: BLUE, bazaarKey: "ENCHANTED_IRON" }
+        { name: "Enchanted Gold", key: "ENCHANTED_GOLD", color: BLUE, bazaarKey: "ENCHANTED_GOLD", format: true },
+        { name: "Enchanted Iron", key: "ENCHANTED_IRON", color: BLUE, bazaarKey: "ENCHANTED_IRON", format: true }
     ];
 
     function getPrice(item) {
@@ -228,7 +287,7 @@ function getLootMessage(lootViewSetting) {
 
     function createLootLine(item) {
         const price = formatNumber(getPrice(item));
-        const itemAmount = formatNumberCommas(lootTracker["items"][item.key]);
+        const itemAmount = item.format ? formatNumber(lootTracker["items"][item.key]) : formatNumberCommas(lootTracker["items"][item.key]);
         const percent = item.hasPercent ? percentDict[item.name] : "";
         const lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
         let text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;

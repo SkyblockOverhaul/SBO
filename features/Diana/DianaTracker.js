@@ -5,7 +5,7 @@ import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCu
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
-import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker } from "../../utils/variables";
+import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
 import { playerHasSpade } from "../../utils/functions";
 
@@ -16,6 +16,8 @@ let lastInqDroped = false;
 let lastInqLsDroped = false;
 let lastChampDroped = false;
 let lastMinotaurDroped = false;
+
+
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
@@ -96,6 +98,13 @@ export function trackScavengerCoins(coins) {
 // track logic //
 export function trackItem(item, category, amount) {
     if (isDataLoaded()) {
+        if(item == "Total Burrows") {
+            dianaTimerlist.forEach(timer => {
+                timer.start();
+                timer.continue();
+                timer.updateActivity();
+            });
+        }
         if (lastMob == item && item != "Minos Inquisitor Ls") {
             if (item == "Minos Inquisitor") {
                 ChatLib.chat("&6[SBO] &r&cb2b Inquisitor!")
@@ -166,6 +175,7 @@ register("command", () => {
         trackerSession[key] = tempTracker[key];
     }
     trackerSession.save();
+    dianaTimerlist[2].reset();
     itemOverlay();
     mobOverlay();
 }).setName("sboresetsession");
@@ -278,9 +288,9 @@ registerWhen(register("chat", (drop, event) => {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                 }
                 else {
-                    if(settings.dianaAvgMagicFind){
-                        if(magicFind > 0){
-                            if(data.last10ChimMagicFind.length >= 10){
+                    if(settings.dianaAvgMagicFind) {
+                        if(magicFind > 0) {
+                            if(data.last10ChimMagicFind.length >= 10) {
                                 data.last10ChimMagicFind.shift();
                             }
                             data.last10ChimMagicFind.push(magicFind);
@@ -294,7 +304,7 @@ registerWhen(register("chat", (drop, event) => {
                         cancel(event)
                         ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
                     }
-                    if(settings.dianaTracker){
+                    if(settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
                     }
                     if(settings.sendSinceMassage) {
@@ -304,9 +314,9 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 break;
             case "Daedalus Stick":
-                if(settings.dianaAvgMagicFind){
-                    if(magicFind > 0){
-                        if(data.last10StickMagicFind.length >= 10){
+                if(settings.dianaAvgMagicFind) {
+                    if(magicFind > 0) {
+                        if(data.last10StickMagicFind.length >= 10) {
                             data.last10StickMagicFind.shift();
                         }
                         data.last10StickMagicFind.push(magicFind);

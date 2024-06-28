@@ -100,6 +100,9 @@ export let data = new PogObject("SBO", {
     "last10ChimMagicFind": [],
     "last10StickMagicFind": [],
     "hideTrackerLines": [],
+    "totalTime": 0,
+    "mayorTime": 0,
+    "sessionTime": 0,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
@@ -322,6 +325,7 @@ export function checkMayorTracker() {
             }
         }
         let newTracker = initializeTrackerMayor();
+        timerMayor.reset();
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
         }
@@ -329,6 +333,105 @@ export function checkMayorTracker() {
         pastDianaEvents.save();
     }
 }
+
+
+export class SBOTimer {
+    constructor(name, inactiveTimeLimit, dataFieldName) {
+        this.name = name;
+        this.startTime = 0;
+        this.elapsedTime = 0;
+        this.running = false;
+        this.startedOnce = false;
+        this.lastActivityTime = Date.now(); 
+        this.INACTIVITY_LIMIT = inactiveTimeLimit * 60 * 1000; // milliseconds
+        this.tickEvent = null; // Timeout-ID
+        this.dataFieldName = dataFieldName; // Name of the field in the data object
+    }
+
+    // Starts the timer
+    start() {
+        if (this.running || this.startedOnce) return;
+        this.startTime = Date.now();
+        if(data[this.dataFieldName] > 0) {
+            this.elapsedTime = data[this.dataFieldName];
+        }
+        this.running = true;
+        this.startedOnce = true;
+        this.updateElapsedTime();
+        this.startInactivityCheck();
+    }
+
+    // Updates the elapsed time based on the time since the last update
+    updateElapsedTime() {
+        if (!this.running) return;
+        const now = Date.now();
+        this.elapsedTime += now - this.startTime;
+        this.startTime = now;
+        data[this.dataFieldName] = this.elapsedTime;
+    }
+
+    // Pauses the timer
+    pause() {
+        if (!this.running) return;
+        this.updateElapsedTime();
+        this.running = false;
+        this.stopInactivityCheck();
+    }
+
+    // Continues the timer from where it was paused
+    continue() {
+        if (this.running) return;
+        this.startTime = Date.now();
+        this.running = true;
+        this.startInactivityCheck();
+    }
+
+    // Resets the timer to 0
+    reset() {
+        this.running = false;
+        this.startedOnce = false;
+        data[this.dataFieldName] = 0;
+        this.elapsedTime = 0;
+        this.startTime = 0;
+        this.stopInactivityCheck();
+    }
+
+    // Returns the elapsed time in milliseconds
+    getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    // Updates the last activity time to the current time
+    updateActivity() {
+        this.lastActivityTime = Date.now();
+    }
+
+    // Starts the inactivity check
+    startInactivityCheck() {
+        if (!this.tickEvent && this.running) {
+            this.tickEvent = register("tick", () => {
+                this.updateElapsedTime();
+                if (Date.now() - this.lastActivityTime > this.INACTIVITY_LIMIT && this.running) {
+                    this.pause();
+                }
+            });
+        }
+    }
+
+    // Stops the inactivity check
+    stopInactivityCheck() {
+        if (this.tickEvent) {
+            this.tickEvent.unregister();
+            this.tickEvent = null;
+        }
+    }
+}
+
+const timerTotal = new SBOTimer("Total", 3, "totalTime");
+const timerSession = new SBOTimer("Session", 3, "sessionTime");
+const timerMayor = new SBOTimer("Mayor", 3, "mayorTime");
+export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
+
 
 
 // --- TRIGGER CONTROL ---
