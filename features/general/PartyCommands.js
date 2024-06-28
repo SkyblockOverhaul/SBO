@@ -31,7 +31,7 @@ register("chat", (player, message) => {
     switch (message[0].toLowerCase()) {
         case "!w":
         case "!warp":
-            if(settings.PartyCommands && settings.WarpCommand){
+            if(settings.PartyCommands && settings.WarpCommand)  {
                 setTimeout(function() {
                     ChatLib.command("p warp")
                 },100)
@@ -40,7 +40,7 @@ register("chat", (player, message) => {
 
         case "!allinv":
         case "!allinvite":
-            if(settings.PartyCommands && settings.AllinviteCommand){
+            if(settings.PartyCommands && settings.AllinviteCommand)  {
                 setTimeout(function() {
                     ChatLib.command("p setting allinvite")
                 },100)
@@ -48,14 +48,14 @@ register("chat", (player, message) => {
             break;
         case "!ptme":
         case "!transfer":
-            if (settings.PartyCommands && settings.TransferCommand && message[1]){
-                if(settings.PartyCommands && settings.TransferCommand){
+            if (settings.PartyCommands && settings.TransferCommand && message[1])  {
+                if(settings.PartyCommands && settings.TransferCommand)  {
                     setTimeout(function() {
                         ChatLib.command("p transfer " + message[1])
                     },100)
                 }
             }
-            else if(settings.PartyCommands && settings.TransferCommand){
+            else if(settings.PartyCommands && settings.TransferCommand)  {
                 setTimeout(function() {
                     ChatLib.command("p transfer " + getplayername(player))
                 },100)
@@ -76,7 +76,7 @@ register("chat", (player, message) => {
             break;
         case "!c":
         case "!carrot":
-            if(settings.carrotCommand){
+            if(settings.carrotCommand)  {
                 setTimeout(function() {
                     ChatLib.command("pc " + carrot[Math.floor(Math.random() * carrot.length)]);
                 },100)
@@ -169,17 +169,17 @@ register("chat", (player, message) => {
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")
 
 register("command", (args1, args2, ...args) => {
-    if(args1 == undefined ||){
+    if(args1 == undefined ||)  {
         ChatLib.chat("&6[SBO] &4Please provide the magic find value and looting value!")
         ChatLib.chat("&6[SBO] &eUsage: /sbodropchance <magic find> <looting>")
         return;
     }
-    if(args2 == undefined){
+    if(args2 == undefined)  {
         ChatLib.chat("&6[SBO] &4Please provide the looting value!")
         ChatLib.chat("&6[SBO] &eUsage: /sbodropchance <magic find> <looting>")
         return;
     }
-    if(parseInt(args1) < 0 || parseInt(args2) < 0){
+    if(parseInt(args1) < 0 || parseInt(args2) < 0)  {
         ChatLib.chat("&6[SBO] &4Please provide a positive number!")
         ChatLib.chat("&6[SBO] &eUsage: /sbodropchance <magic find> <looting>")
         return;
@@ -195,7 +195,7 @@ register("command", (args1, args2, ...args) => {
     ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + (relicChance / 5 * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
 }).setName("sbodropchance").setAliases("sbodc")
 
-function getChance(magicfind, looting){ 
+function getChance(magicfind, looting)  { 
 
     const chimBaseChance = 0.01;
     const stickBaseChance = 0.0008;
@@ -208,6 +208,6 @@ function getChance(magicfind, looting){
     return [chimChance, stickChance, relicChance];
 }
 
-function getMagicFindAndLooting(magicfind, looting){
+function getMagicFindAndLooting(magicfind, looting)  {
     return " &7[MF:" + magicfind + "] [L:" + looting + "]"
 }

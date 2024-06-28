@@ -352,9 +352,9 @@ registerWhen(register("step", () => {
 }).setFps(1), () => settings.dianaBurrowGuess);
 
 
-function GetNewY(){
+function GetNewY()  {
     if(!finalLocation) return;
-    if(World.getWorld().func_175668_a(new (Java.type('net.minecraft.util.BlockPos'))(finalLocation.x, finalLocation.y, finalLocation.z), false)){
+    if(World.getWorld().func_175668_a(new (Java.type('net.minecraft.util.BlockPos'))(finalLocation.x, finalLocation.y, finalLocation.z), false))  {
         gY = 131;
         while (gY > 70) {
             let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());

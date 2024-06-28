@@ -47,7 +47,7 @@ register('worldUnload', () => {
     closeEditing();
 });
 
-function closeEditing(){
+function closeEditing()  {
     overLays.forEach(overlay => {
         overlay.selected = false;
     });
@@ -59,7 +59,7 @@ editGui.registerScrolled((x, y, delta) => {
         overLays.forEach(overlay => {
             if (overlay.isInOverlay(x, y)) {
                 overlay.scale = parseFloat(guiSettings[overlay.locName]["s"]);
-                switch(delta){
+                switch(delta)  {
                     case -1:
                         if(overlay.scale <= 0.1) return;
                         overlay.scale -= 0.1;
