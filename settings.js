@@ -501,6 +501,12 @@ class Settings {
         category: 'Quality of Life',
     })
     clickableInvite = false;
+    @SwitchProperty({
+        name: 'Pickup Log Overlay',
+        description: 'Displays your pickup log in an overlay like sba, /sboguis to move the overlay',
+        category: 'Quality of Life',
+    })
+    pickuplogOverlay = false;
     // General
     // General Waypoints
     @SwitchProperty({
@@ -518,12 +524,6 @@ class Settings {
         options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
     })
     hideOwnWaypoints = 0;
-    @SwitchProperty({
-        name: 'Pickup Log Overlay',
-        description: 'Displays your pickup log in an overlay like sba, /sboguis to move the overlay',
-        category: 'General',
-    })
-    pickuplogOverlay = false;
 
     // Kuudra
     // ---ProfitHud---
