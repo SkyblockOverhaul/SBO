@@ -121,10 +121,19 @@ let state = {
     entityDeathOccurred: false
 }
 
-// return 1sec long true if entity death occurred //
-export function isActiveForOneSecond() {
+let state2 = {
+    entityDeathOccurred: false
+}
+
+// return 2sec long true if entity death occurred //
+export function mobDeath2SecsTrue() {
     return state.entityDeathOccurred;
 }
+
+// return 5sec long true if entity death occurred //
+export function mobDeath5SecsTrue() {
+    return state2.entityDeathOccurred;
+}   
 
 let allowedToTrackSacks = false;
 export function getAllowedToTrackSacks() {
@@ -150,9 +159,13 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         if (dist < 30 ) {
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
+            state2.entityDeathOccurred = true;
             setTimeout(() => {
                 state.entityDeathOccurred = false;
             }, 2000);
+            setTimeout(() => {
+                state2.entityDeathOccurred = false;
+            }, 5000);
         }
     }
 }), () => getWorld() === "Hub" && settings.dianaTracker);
