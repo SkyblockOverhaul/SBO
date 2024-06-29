@@ -188,10 +188,10 @@ export function readPlayerInventory(type="") {
         if (i <= slots) {
             if (playerInvItems[i] !== null) {
                 if (playerItems[getSBID(playerInvItems[i])]) {
-                    playerItems[getSBID(playerInvItems[i])] += playerInvItems[i].getStackSize();
+                    playerItems[getSBID(playerInvItems[i])][0] += playerInvItems[i].getStackSize();
                 }
                 else {
-                    playerItems[getSBID(playerInvItems[i])] = playerInvItems[i].getStackSize();
+                    playerItems[getSBID(playerInvItems[i])] = [playerInvItems[i].getStackSize(), playerInvItems[i].getName()];
                 }
             }
         }
@@ -256,6 +256,7 @@ export function initializeGuiSettings() {
         LegionLoc: { "x": 10, "y": 310, "s": 1 },
         StatsLoc: { "x": 15, "y": 290, "s": 1 },
         AvgMagicFindLoc: { "x": 15, "y": 350, "s": 1 },
+        PickupLogLoc: { "x": 2, "y": 2, "s": 1 },
     };
 }
 
