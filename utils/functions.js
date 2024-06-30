@@ -130,8 +130,8 @@ export function mobDeath2SecsTrue() {
     return state.entityDeathOccurred;
 }
 
-// return 5sec long true if entity death occurred //
-export function mobDeath5SecsTrue() {
+// return 4sec long true if entity death occurred //
+export function mobDeath4SecsTrue() {
     return state2.entityDeathOccurred;
 }   
 
@@ -155,7 +155,7 @@ let dianaMobNames = ["Minos Inquisitor", "Minotaur", "Iron Golem", "Ocelot", "Mi
 registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er real enitiy names mint wie ZOMBIE, Iron Golem etc
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
-    if (dianaMobNames.includes(entityName)) {
+    if (dianaMobNames.includes(entityName.trim())) {
         if (dist < 30 ) {
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
@@ -165,7 +165,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             }, 2000);
             setTimeout(() => {
                 state2.entityDeathOccurred = false;
-            }, 5000);
+            }, 4000);
         }
     }
 }), () => getWorld() === "Hub" && settings.dianaTracker);

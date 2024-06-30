@@ -77,7 +77,7 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
             }
         }
         else {
-            dianaLootCounter(item, newPlayerItems[item]);
+            dianaLootCounter(item, newPlayerItems[item][0]);
             refreshPickuplogOverlay(item, newPlayerItems[item][1], newPlayerItems[item][0]);
             // ChatLib.chat("+ " + newPlayerItems[item] + "x " + newPlayerItems[item][1]);
         }

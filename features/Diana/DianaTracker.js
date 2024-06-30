@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath5SecsTrue } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -87,7 +87,7 @@ export function trackLootWithSacks(ammount, item) {
 
 let forbiddenCoins = [1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
 export function trackScavengerCoins(coins) {
-    if (mobDeath5SecsTrue()) {
+    if (mobDeath4SecsTrue()) {
         if (!forbiddenCoins.includes(coins) && coins < 60000) {
             trackItem("scavengerCoins", "items", coins);
             trackItem("coins", "items", coins);
