@@ -27,7 +27,10 @@ export function initializeTracker() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0
+            "fishCoins": 0,
+            "totalTime": 0,
+            "sessionTime": 0,
+            "mayorTime": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -64,7 +67,10 @@ export function initializeTrackerMayor() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0
+            "fishCoins": 0,
+            "totalTime": 0,
+            "sessionTime": 0,
+            "mayorTime": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -99,10 +105,7 @@ export let data = new PogObject("SBO", {
     "avgStickMagicFind": 0,
     "last10ChimMagicFind": [],
     "last10StickMagicFind": [],
-    "hideTrackerLines": [],
-    "totalTime": 0,
-    "mayorTime": 0,
-    "sessionTime": 0,
+    "hideTrackerLines": []
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
@@ -184,7 +187,10 @@ export let dianaTrackerTotal = new PogObject("../../../config", {
         "ENCHANTED_IRON": 0,
         "Total Burrows": 0,
         "scavengerCoins": 0,
-        "fishCoins": 0
+        "fishCoins": 0,
+        "totalTime": 0,
+        "sessionTime": 0,
+        "mayorTime": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -217,7 +223,10 @@ export let dianaTrackerSession = new PogObject("../../../config", {
         "ENCHANTED_IRON": 0,
         "Total Burrows": 0,
         "scavengerCoins": 0,
-        "fishCoins": 0
+        "fishCoins": 0,
+        "totalTime": 0, 
+        "sessionTime": 0,
+        "mayorTime": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -251,7 +260,10 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
         "ENCHANTED_IRON": 0,
         "Total Burrows": 0,
         "scavengerCoins": 0,
-        "fishCoins": 0
+        "fishCoins": 0,
+        "totalTime": 0,
+        "sessionTime": 0,
+        "mayorTime": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -336,7 +348,7 @@ export function checkMayorTracker() {
 
 
 export class SBOTimer {
-    constructor(name, inactiveTimeLimit, dataFieldName) {
+    constructor(name, inactiveTimeLimit, trackerObject, dataFieldName) {
         this.name = name;
         this.startTime = 0;
         this.elapsedTime = 0;
@@ -345,15 +357,16 @@ export class SBOTimer {
         this.lastActivityTime = Date.now(); 
         this.INACTIVITY_LIMIT = inactiveTimeLimit * 60 * 1000; // milliseconds
         this.tickEvent = null; // Timeout-ID
-        this.dataFieldName = dataFieldName; // Name of the field in the data object
+        this.trackerObject = trackerObject; // Tracker object (total/session/mayor)
+        this.dataFieldName = dataFieldName; // Name of the field in the tracker object
     }
 
     // Starts the timer
     start() {
         if (this.running || this.startedOnce) return;
         this.startTime = Date.now();
-        if(data[this.dataFieldName] > 0) {
-            this.elapsedTime = data[this.dataFieldName];
+        if(this.trackerObject.items[this.dataFieldName] > 0) {
+            this.elapsedTime = this.trackerObject.items[this.dataFieldName];
         }
         this.running = true;
         this.startedOnce = true;
@@ -367,7 +380,7 @@ export class SBOTimer {
         const now = Date.now();
         this.elapsedTime += now - this.startTime;
         this.startTime = now;
-        data[this.dataFieldName] = this.elapsedTime;
+        this.trackerObject.items[this.dataFieldName] = this.elapsedTime;
     }
 
     // Pauses the timer
@@ -390,7 +403,7 @@ export class SBOTimer {
     reset() {
         this.running = false;
         this.startedOnce = false;
-        data[this.dataFieldName] = 0;
+        this.trackerObject.items[this.dataFieldName] = 0;
         this.elapsedTime = 0;
         this.startTime = 0;
         this.stopInactivityCheck();
@@ -427,10 +440,11 @@ export class SBOTimer {
     }
 }
 
-const timerTotal = new SBOTimer("Total", 3, "totalTime");
-const timerSession = new SBOTimer("Session", 3, "sessionTime");
-const timerMayor = new SBOTimer("Mayor", 3, "mayorTime");
+const timerTotal = new SBOTimer("Total", 3, dianaTrackerTotal, "totalTime");
+const timerSession = new SBOTimer("Session", 3, dianaTrackerSession, "sessionTime");
+const timerMayor = new SBOTimer("Mayor", 3, dianaTrackerMayor, "mayorTime");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
+
 
 
 
