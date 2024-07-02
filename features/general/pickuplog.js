@@ -4,30 +4,87 @@ import { registerWhen } from '../../utils/variables';
 import { dianaLootCounter, trackLootWithSacks, trackScavengerCoins } from '../Diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
+import { OverlayTextLine, SboOverlay, isInInv } from "../../utils/overlays";
+
+let pickuplogOverlay = new SboOverlay("pickuplog", "pickuplogOverlay", "render", "PickupLogLoc", "pickupLogExample");
+let pickuplogOverlayText = new OverlayTextLine("");
+
+let itemsShownAdded = {};
+let itemsShownRemoved = {};
+function refreshPickuplogOverlay(item, displayName, ammount) {
+    if (item != "null" && item != "SKYBLOCK_MENU") {
+        if (ammount > 0) {
+            if (itemsShownAdded[item]) {
+                itemsShownAdded[item][0] += ammount;
+                itemsShownAdded[item][2] = Date.now();
+            }
+            else {
+                itemsShownAdded[item] = [ammount, displayName, Date.now()];
+            }
+        }
+        else {
+            if (itemsShownRemoved[item]) {
+                itemsShownRemoved[item][0] += ammount;
+                itemsShownRemoved[item][2] = Date.now();
+            }
+            else {
+                itemsShownRemoved[item] = [ammount, displayName, Date.now()];
+            }
+        }
+    }
+    if (isInInv()) return;
+    let text = "";
+    text = createPickupLogText(itemsShownAdded);
+    text += createPickupLogText(itemsShownRemoved);
+    pickuplogOverlay.setLines([pickuplogOverlayText.setText(text)]);
+
+}
+
+
+function createPickupLogText(dict) {
+    let text = "";
+    for (let item in dict) {
+        if (Date.now() - dict[item][2] > 6000) {
+            delete dict[item];
+            continue;
+        }
+        if (dict[item][0] > 0) {
+            text += "&a+ " + dict[item][0] + "x &r" + dict[item][1] + "\n";
+        }
+        else {
+            text += "&c- " + dict[item][0]*(-1) + "x &r" + dict[item][1] + "\n";
+        }
+    }
+    return text
+}
 
 let newPurse = 0;
 let oldPurse = 0;
 function compareInventories(oldPlayerItems, newPlayerItems) {
     for (let item in newPlayerItems) {
         if (oldPlayerItems[item]) {
-            diff = newPlayerItems[item] - oldPlayerItems[item];
+            diff = newPlayerItems[item][0] - oldPlayerItems[item][0];
             if (diff > 0 || diff < 0) {
                 if (diff > 0) {
                     dianaLootCounter(item, diff);
-                    // ChatLib.chat("+ " + diff + "x " + item);
+                    refreshPickuplogOverlay(item, newPlayerItems[item][1], diff);
+                    // ChatLib.chat("+ " + diff + "x " + newPlayerItems[item][1]);
                 }
                 else {
-                    // ChatLib.chat("- " + diff*(-1) + "x " + item);
+                    refreshPickuplogOverlay(item, newPlayerItems[item][1], diff);
+                    // ChatLib.chat("- " + diff*(-1) + "x " + newPlayerItems[item][1]);
                 }
             }
         }
         else {
-            dianaLootCounter(item, newPlayerItems[item]);
-            // ChatLib.chat("+ " + newPlayerItems[item] + "x " + item);
+            dianaLootCounter(item, newPlayerItems[item][0]);
+            refreshPickuplogOverlay(item, newPlayerItems[item][1], newPlayerItems[item][0]);
+            // ChatLib.chat("+ " + newPlayerItems[item] + "x " + newPlayerItems[item][1]);
         }
     }
     for (let item in oldPlayerItems) {
         if (!newPlayerItems[item]) {
+            refreshPickuplogOverlay(item, oldPlayerItems[item][1], oldPlayerItems[item][0]*-1);
             // ChatLib.chat("- " + oldPlayerItems[item] + "x " + item);
         }
     }
@@ -50,19 +107,20 @@ function pickuplog() {
         // ChatLib.chat("comparing inventories");
         newPlayerItems = readPlayerInventory();
         newPurse = getPurse();
-        if (newPlayerItems["SKYBLOCK_MENU"]) {
-            compareInventories(oldPlayerItems, newPlayerItems);
-            oldPlayerItems = readPlayerInventory();
-            oldPurse = getPurse();
-        }
+        compareInventories(oldPlayerItems, newPlayerItems);
+        oldPlayerItems = readPlayerInventory();
+        oldPurse = getPurse();
+    
     }
+    refreshPickuplogOverlay("null", 0); 
 }
 
 registerWhen(register('step', () => {
-    if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && checkDiana()) {
+    if (isDataLoaded() && isWorldLoaded() && isInSkyblock() && (checkDiana() || settings.pickuplogOverlay)) {
+        // print("pickuplog step")
         pickuplog();
     }
-}).setFps(10), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop);
+}).setFps(10), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop || settings.pickuplogOverlay);
 
 // sack detection
 register("chat", (ammount, trash, time, event) => {
