@@ -193,8 +193,8 @@ function formatTime(milliseconds) {
 
 function getTimerMessage() {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-    if (data[timer.dataFieldName] > 0) {
-        return formatTime(data[timer.dataFieldName]);
+    if (timer.trackerObject.items[timer.dataFieldName] > 0) {
+        return formatTime(timer.trackerObject.items[timer.dataFieldName]);
     } else {
         return formatTime(timer.getElapsedTime());
     }
