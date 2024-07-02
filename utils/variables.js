@@ -27,7 +27,10 @@ export function initializeTracker() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0
+            "fishCoins": 0,
+            "totalTime": 0,
+            "sessionTime": 0,
+            "mayorTime": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -64,7 +67,10 @@ export function initializeTrackerMayor() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0
+            "fishCoins": 0,
+            "totalTime": 0,
+            "sessionTime": 0,
+            "mayorTime": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -182,7 +188,9 @@ export let dianaTrackerTotal = new PogObject("../../../config", {
         "Total Burrows": 0,
         "scavengerCoins": 0,
         "fishCoins": 0,
-        "totalTime": 0
+        "totalTime": 0,
+        "sessionTime": 0,
+        "mayorTime": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -216,7 +224,9 @@ export let dianaTrackerSession = new PogObject("../../../config", {
         "Total Burrows": 0,
         "scavengerCoins": 0,
         "fishCoins": 0,
-        "sessionTime": 0
+        "totalTime": 0, 
+        "sessionTime": 0,
+        "mayorTime": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -251,6 +261,8 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
         "Total Burrows": 0,
         "scavengerCoins": 0,
         "fishCoins": 0,
+        "totalTime": 0,
+        "sessionTime": 0,
         "mayorTime": 0
     },
     mobs: {
