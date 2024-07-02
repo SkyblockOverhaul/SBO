@@ -244,14 +244,12 @@ export class OverlayButton extends OverlayTextLine {
     }
 
     clicked(cx, cy, button, gui) {
-        if (isInInventory) {
-            if (this.action && this.X != -1 && this.Y != -1 && !editGui.isOpen()) {
-                let stringCount = this.text.getString().split("\n").length;
-                let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
+        if (this.action && this.X != -1 && this.Y != -1 && !editGui.isOpen()) {
+            let stringCount = this.text.getString().split("\n").length;
+            let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
 
-                if (cx >= this.X && cx <= this.X + Renderer.getStringWidth(longestLine) * this.scale && cy >= this.Y && cy <= this.Y + 9 * this.scale * stringCount) {
-                    this.action();
-                }
+            if (cx >= this.X && cx <= this.X + Renderer.getStringWidth(longestLine) * this.scale && cy >= this.Y && cy <= this.Y + 9 * this.scale * stringCount) {
+                this.action();
             }
         }
     }
@@ -348,8 +346,12 @@ export class hoverText {
     }
 }
 
+// other guis:
+// GuiChest
+// GuiChat
+// GuiEditSign
 export class SboOverlay {
-    constructor(name, setting, type, locName, example = "", hoverable, allowedGuis = ["any"]) {
+    constructor(name, setting, type, locName, example = "", hoverable = false, allowedGuis = ["GuiInventory"]) {
         overLays.push(this);
         this.name = name;
         this.setting = setting;
@@ -440,39 +442,43 @@ export class SboOverlay {
         }), () => settings[this.setting]);
         
         registerWhen(register("tick", () => {
-            if (this.textLines.length > 0 && !editGui.isOpen() && (isInInventory || this.someTextIsHovered)) {
-                const mouseX = Client.getMouseX();
-                const mouseY = Client.getMouseY();
-                this.textLines.forEach(text => {
-                    if (text.hoverable) {
-                        if (text.X != -1 && text.Y != -1 && (text.mouseEnterAction || text.mouseLeaveAction || text.hoverAction)) {
-                            if (text.isOverString(mouseX, mouseY) && isInInventory) {
-                                if (!text.isHovered) {
-                                    text.mouseEnter();
-                                    text.isHovered = true;
-                                    this.someTextIsHovered = true;
+            if (this.renderGui) {
+                if (this.textLines.length > 0 && !editGui.isOpen() && (this.isInAllowedGui() || this.someTextIsHovered)) {
+                    const mouseX = Client.getMouseX();
+                    const mouseY = Client.getMouseY();
+                    this.textLines.forEach(text => {
+                        if (text.hoverable) {
+                            if (text.X != -1 && text.Y != -1 && (text.mouseEnterAction || text.mouseLeaveAction || text.hoverAction)) {
+                                if (text.isOverString(mouseX, mouseY) && this.isInAllowedGui()) {
+                                    if (!text.isHovered) {
+                                        text.mouseEnter();
+                                        text.isHovered = true;
+                                        this.someTextIsHovered = true;
+                                    }
                                 }
-                            }
-                            else {
-                                if (text.isHovered) {
-                                    text.mouseLeave();
-                                    text.isHovered = false;
-                                    this.someTextIsHovered = false;
+                                else {
+                                    if (text.isHovered) {
+                                        text.mouseLeave();
+                                        text.isHovered = false;
+                                        this.someTextIsHovered = false;
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }), () => settings[this.setting]) && this.hoverable;
         
         registerWhen(register("guiMouseClick" , (cx, cy, button, gui) => {
-            if (this.textLines.length > 0 && !editGui.isOpen()) {
-                this.textLines.forEach(text => {
-                    if (text.action) {
-                        text.clicked(cx, cy, button, gui);
-                    }
-                });
+            if (this.renderGui) {
+                if (this.textLines.length > 0 && !editGui.isOpen() && this.isInAllowedGui()) {
+                    this.textLines.forEach(text => {
+                        if (text.action) {
+                            text.clicked(cx, cy, button, gui);
+                        }
+                    });
+                }
             }
         }), () => settings[this.setting]);
 
@@ -506,28 +512,42 @@ export class SboOverlay {
         this.offsetY = offset;
     }
 
+    isInAllowedGui() {
+        if (Client == undefined) return false;
+        if (Client.currentGui == undefined) return false;
+        if (Client.currentGui.get() == null) return false;
+        let currentGui = Client.currentGui.get().toString();
+        // currentGui = currentGui.toString() and the last string bevor the @ symbol and after the last dot
+        currentGui = currentGui.substring(currentGui.lastIndexOf(".") + 1, currentGui.lastIndexOf("@"));
+        return this.allowedGuis.includes(currentGui);
+    }
+
     isInOverlay(x, y) {
-        // with offset
-        if (editGui.isOpen() && this.exampleText != undefined) {
-            let longestString = ""
-            let stringCount = 0;
-            this.exampleText.getString().split("\n").forEach(line => {
-                if (line.length > longestString.length) {
-                    longestString = line;
+        if (this.renderGui) {
+            if (editGui.isOpen() && this.exampleText != undefined) {
+                let longestString = ""
+                let stringCount = 0;
+                this.exampleText.getString().split("\n").forEach(line => {
+                    if (line.length > longestString.length) {
+                        longestString = line;
+                    }
+                });
+
+                stringCount = this.exampleText.getString().split("\n").length;
+
+                if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * stringCount + this.offsetY) {
+                    return true;
                 }
-            });
-
-            stringCount = this.exampleText.getString().split("\n").length;
-
-            if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * stringCount + this.offsetY) {
-                return true;
+                return false;
             }
-            return false;
+            else {
+                if (x >= this.X && x <= this.X + Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * this.stringCount + this.offsetY) {
+                    return true;
+                }
+                return false;
+            }
         }
         else {
-            if (x >= this.X && x <= this.X + Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * this.stringCount + this.offsetY) {
-                return true;
-            }
             return false;
         }
     }

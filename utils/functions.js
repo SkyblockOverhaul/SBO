@@ -197,9 +197,10 @@ export function readPlayerInventory(type="") {
     playerItems = {}
     let playerInv = Player.getInventory();
     let playerInvItems = playerInv.getItems();
+    const inventory = Player.getContainer();
     for (let i in playerInv.getItems()) {
         if (i <= slots) {
-            if (playerInvItems[i] !== null) {
+            if (playerInvItems[i] !== null && getSBID(playerInvItems[i]) != getSBID(inventory.getStackInSlot(44))) {
                 if (playerItems[getSBID(playerInvItems[i])]) {
                     playerItems[getSBID(playerInvItems[i])][0] += playerInvItems[i].getStackSize();
                 }
@@ -371,7 +372,9 @@ register("worldUnload", () => {
 });
 
 register("worldLoad", () => {
-    worldLoaded = true;
+    setTimeout(() => {
+        worldLoaded = true;
+    }, 1000);
 });
 
 register("command", () => {
