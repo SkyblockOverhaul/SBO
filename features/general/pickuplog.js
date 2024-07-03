@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { readPlayerInventory, isInSkyblock, isWorldLoaded, getPurse, printDev } from '../../utils/functions';
+import { readPlayerInventory, isInSkyblock, isWorldLoaded, getPurse, printDev, getSBID } from '../../utils/functions';
 import { registerWhen } from '../../utils/variables';
 import { dianaLootCounter, trackLootWithSacks, trackScavengerCoins } from '../Diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
@@ -11,8 +11,9 @@ let pickuplogOverlayText = new OverlayTextLine("");
 
 let itemsShownAdded = {};
 let itemsShownRemoved = {};
+let invDiff = {};
 function refreshPickuplogOverlay(item, displayName, ammount) {
-    if (item != "null" && item != "SKYBLOCK_MENU") {
+    if (item != "null" && ammount != undefined) {
         if (ammount > 0) {
             if (itemsShownAdded[item]) {
                 itemsShownAdded[item][0] += ammount;
@@ -31,11 +32,22 @@ function refreshPickuplogOverlay(item, displayName, ammount) {
                 itemsShownRemoved[item] = [ammount, displayName, Date.now()];
             }
         }
+        if (isInInv()) {
+            if (invDiff[item]) {
+                invDiff[item] += ammount;
+                // print("adding " + item + " to invDiff with ammount: " + invDiff[item]);
+            }
+            else {
+                // print("adding " + item + " to invDiff with ammount: " + ammount);
+                invDiff[item] = ammount;
+            }
+        };
     }
     if (isInInv()) return;
     let text = "";
     text = createPickupLogText(itemsShownAdded);
     text += createPickupLogText(itemsShownRemoved);
+    invDiff = {}; 
     pickuplogOverlay.setLines([pickuplogOverlayText.setText(text)]);
 
 }
@@ -44,6 +56,14 @@ function refreshPickuplogOverlay(item, displayName, ammount) {
 function createPickupLogText(dict) {
     let text = "";
     for (let item in dict) {
+        if (invDiff[item] != undefined) {
+            // print("invDiff: " + invDiff[item] + " dict: " + dict[item][0] + " item: " + item)
+            if (invDiff[item] == 0) {
+                // printDev("removing " + item + " from invDiff");
+                delete dict[item];
+                continue;
+            }
+        }
         if (Date.now() - dict[item][2] > 6000) {
             delete dict[item];
             continue;
