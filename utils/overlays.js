@@ -523,8 +523,8 @@ export class SboOverlay {
     }
 
     isInOverlay(x, y) {
-        if (this.renderGui) {
-            if (editGui.isOpen() && this.exampleText != undefined) {
+        if (this.renderGui || editGui.isOpen()) {
+            if (this.exampleText != undefined) {
                 let longestString = ""
                 let stringCount = 0;
                 this.exampleText.getString().split("\n").forEach(line => {
