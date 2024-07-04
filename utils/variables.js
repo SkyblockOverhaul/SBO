@@ -27,10 +27,7 @@ export function initializeTracker() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0,
-            "totalTime": 0,
-            "sessionTime": 0,
-            "mayorTime": 0
+            "fishCoins": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -67,10 +64,7 @@ export function initializeTrackerMayor() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0,
-            "totalTime": 0,
-            "sessionTime": 0,
-            "mayorTime": 0
+            "fishCoins": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -188,9 +182,7 @@ export let dianaTrackerTotal = new PogObject("../../../config", {
         "Total Burrows": 0,
         "scavengerCoins": 0,
         "fishCoins": 0,
-        "totalTime": 0,
-        "sessionTime": 0,
-        "mayorTime": 0
+        "totalTime": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -224,9 +216,7 @@ export let dianaTrackerSession = new PogObject("../../../config", {
         "Total Burrows": 0,
         "scavengerCoins": 0,
         "fishCoins": 0,
-        "totalTime": 0, 
-        "sessionTime": 0,
-        "mayorTime": 0
+        "sessionTime": 0
     },
     mobs: {
         "Minos Inquisitor": 0,
@@ -261,8 +251,6 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
         "Total Burrows": 0,
         "scavengerCoins": 0,
         "fishCoins": 0,
-        "totalTime": 0,
-        "sessionTime": 0,
         "mayorTime": 0
     },
     mobs: {
@@ -377,7 +365,7 @@ export class SBOTimer {
     // Updates the elapsed time based on the time since the last update
     updateElapsedTime() {
         if (!this.running) return;
-        const now = Date.now();
+        const now = Date.now(); 
         this.elapsedTime += now - this.startTime;
         this.startTime = now;
         this.trackerObject.items[this.dataFieldName] = this.elapsedTime;
