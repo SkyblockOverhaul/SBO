@@ -200,13 +200,14 @@ export function readPlayerInventory(type="") {
     // const inventory = Player.getContainer();
     for (let i in playerInv.getItems()) {
         if (i <= slots) {
-            if (playerInvItems[i] !== null && getSBID(playerInvItems[i]) != getSBID(playerInv.getStackInSlot(8))) { 
+            if (playerInvItems[i] !== null && ![8, 36, 37, 38, 39].includes(parseInt(i))) { 
                 if (playerItems[getSBID(playerInvItems[i])]) {
                     playerItems[getSBID(playerInvItems[i])][0] += playerInvItems[i].getStackSize();
                 }
                 else {
                     playerItems[getSBID(playerInvItems[i])] = [playerInvItems[i].getStackSize(), playerInvItems[i].getName()];
                 }
+                printDev("Item: " + playerItems[getSBID(playerInvItems[i])][1] + " in slot " + i);
             }
         }
     }
