@@ -6,7 +6,7 @@ import { registerWhen } from "./../utils/variables";
 import { OverlayTextLine, SboOverlay } from "./../utils/overlays";
 
 // let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuudraExample", "post", "KuudraValueLoc");
-let kuudraOverlay = new SboOverlay("kuudraOverlay", "attributeValueOverlay", "post", "KuudraValueLoc", "kuudraExample", true)
+let kuudraOverlay = new SboOverlay("kuudraOverlay", "attributeValueOverlay", "post", "KuudraValueLoc", "kuudraExample", true, ["GuiChest"])
 let kuudraOverlayText = new OverlayTextLine("")
 // let kuudraOverlaywww = kuudraOverlayObj.overlay
 
@@ -333,6 +333,9 @@ function refreshOverlay(totalValue) {
         guiStrings.push(tempObj);
     }
     kuudraOverlay.setLines(guiStrings);
+    if (guiStrings.length == 0) {
+        kuudraOverlay.renderGui = false;
+    }
 }
 
 function getAttributePrice(itemId, attribute, lvl) {

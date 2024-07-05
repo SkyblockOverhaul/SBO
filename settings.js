@@ -74,6 +74,7 @@ class Settings {
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
         this.addDependency('Inquis Color','Highlight Inquis');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
+        this.addDependency('Show Price Title','Loot Screen Announcer');
 
     } 
     //-----------Diana Burrows----------------
@@ -321,6 +322,14 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerScreen = false;
+    @SwitchProperty({
+        name: 'Show Price Title',
+        description: 'Announce chimera/stick/relic Price as a subtiltle on screen',
+        category: 'Diana',
+        subcategory: 'Loot Announcer',
+    })
+    lootAnnouncerPrice = true;
+
     //Party Commands
     @SwitchProperty({
         name: 'Party Commands',
@@ -501,6 +510,12 @@ class Settings {
         category: 'Quality of Life',
     })
     clickableInvite = false;
+    @SwitchProperty({
+        name: 'Pickup Log Overlay',
+        description: 'Displays your pickup log in an overlay like sba, /sboguis to move the overlay (WIP)',
+        category: 'Quality of Life',
+    })
+    pickuplogOverlay = false;
     // General
     // General Waypoints
     @SwitchProperty({

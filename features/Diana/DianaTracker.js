@@ -1,9 +1,9 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
-import { isActiveForOneSecond as mobDeath2SecsTrue } from "../../utils/functions";
+import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
@@ -44,7 +44,12 @@ export function dianaLootCounter(item, amount) {
                     }
                     data.champsSinceRelic = 0;
                     if (settings.lootAnnouncerScreen) {
-                        Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+                        if (settings.lootAnnouncerPrice) {
+                            Client.Companion.showTitle(`&5&lMinos Relic!`, `&6${formatNumber(getDianaAhPrice("MINOS_RELIC"))} coins`, 0, 25, 35);
+                        }
+                        else {
+                            Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+                        }
                     }
                     playCustomSound(settings.relicSound, settings.relicVolume);
                 }
@@ -75,7 +80,7 @@ export function dianaLootCounter(item, amount) {
 }
 
 export function trackLootWithSacks(ammount, item) {
-    let countThisIds = ["Enchanted Gold", "Enchanted Iron"] // , "Rotten Flesh"
+    let countThisIds = ["Enchanted Gold", "Enchanted Iron", "Ancient Claw"] // , "Rotten Flesh"
     if (getAllowedToTrackSacks()) {
         for (let i in countThisIds.values()) {
             if (item == i) {
@@ -87,7 +92,7 @@ export function trackLootWithSacks(ammount, item) {
 
 let forbiddenCoins = [1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
 export function trackScavengerCoins(coins) {
-    if (mobDeath2SecsTrue()) {
+    if (mobDeath4SecsTrue()) {
         if (!forbiddenCoins.includes(coins) && coins < 60000) {
             trackItem("scavengerCoins", "items", coins);
             trackItem("coins", "items", coins);
@@ -280,7 +285,12 @@ registerWhen(register("chat", (drop, event) => {
         switch (drop) {
             case "Enchanted Book":
                 if (settings.lootAnnouncerScreen) {
-                    Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
+                    if (settings.lootAnnouncerPrice) {
+                        Client.Companion.showTitle(`&d&lChimera!`, `&6${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1"))} coins`, 0, 25, 35);
+                    }
+                    else {
+                        Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
+                    }
                 }
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
@@ -332,7 +342,12 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
-                    Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
+                    if (settings.lootAnnouncerPrice) {
+                        Client.Companion.showTitle(`&6&lDaedalus Stick!`, `&6${formatNumber(getBazaarPriceDiana("DAEDALUS_STICK"))} coins`, 0, 25, 35);
+                    }
+                    else {
+                        Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
+                    }
                 }
 
                 playCustomSound(settings.stickSound, settings.stickVolume);

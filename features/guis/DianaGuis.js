@@ -193,8 +193,8 @@ function formatTime(milliseconds) {
 
 function getTimerMessage() {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-    if (data[timer.dataFieldName] > 0) {
-        return formatTime(data[timer.dataFieldName]);
+    if (timer.trackerObject.items[timer.dataFieldName] > 0) {
+        return formatTime(timer.trackerObject.items[timer.dataFieldName]);
     } else {
         return formatTime(timer.getElapsedTime());
     }
@@ -244,6 +244,7 @@ export function itemOverlay() {
 // .quick_status.sellPrice -> buyorder / instasell
  
 
+const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
 
@@ -342,11 +343,8 @@ function getLootMessage(lootViewSetting) {
     lootLines.push(new OverlayTextLine(totalBurrowsText, true));
 
     lootLines.push(totalCoinsText.onHover((overlay) => {
-        // print("hovering")
-        // coinHoverText.setXYScale(totalCoinsText.X, totalCoinsText.Y, totalCoinsText.scale)
-        // coinHoverText.draw();
-        overlay.gui.drawHoveringString(hovertext, 0, 0)
-        // draw rectangle 
+        // overlay.gui.drawHoveringString(hovertext, 0, 0)
+        GuiUtils.drawHoveringText(hovertext, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     }));
     let totalValue = 0;
     for (let item of itemData) {

@@ -9,8 +9,16 @@ const dragOffset = {x: 0, y: 0};
 let guiSettings = loadGuiSettings();
 
 let isInInventory = false;
+let guiOpened = false;
+export function isGuiOpened() {
+    if (Client == undefined) return false;
+    if (Client.currentGui == undefined) return false;
+    if (Client.currentGui.get() == null) return false;
+    return true
+}
 let currentGui = null;
 register('guiClosed', (gui) => {
+    guiOpened = false;
     gui = gui.toString();
     currentGui = null;
     if(gui.includes("Inventory")) {
@@ -19,6 +27,7 @@ register('guiClosed', (gui) => {
 });
 
 register('guiOpened', () => {
+    guiOpened = true;
     setTimeout(() => {
         if (Client == undefined) return;
         if (Client.currentGui == undefined) return;
@@ -241,14 +250,12 @@ export class OverlayButton extends OverlayTextLine {
     }
 
     clicked(cx, cy, button, gui) {
-        if (isInInventory) {
-            if (this.action && this.X != -1 && this.Y != -1 && !editGui.isOpen()) {
-                let stringCount = this.text.getString().split("\n").length;
-                let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
+        if (this.action && this.X != -1 && this.Y != -1 && !editGui.isOpen()) {
+            let stringCount = this.text.getString().split("\n").length;
+            let longestLine = this.text.getString().split("\n").reduce((a, b) => a.length > b.length ? a : b);
 
-                if (cx >= this.X && cx <= this.X + Renderer.getStringWidth(longestLine) * this.scale && cy >= this.Y && cy <= this.Y + 9 * this.scale * stringCount) {
-                    this.action();
-                }
+            if (cx >= this.X && cx <= this.X + Renderer.getStringWidth(longestLine) * this.scale && cy >= this.Y && cy <= this.Y + 9 * this.scale * stringCount) {
+                this.action();
             }
         }
     }
@@ -345,8 +352,12 @@ export class hoverText {
     }
 }
 
+// other guis:
+// GuiChest
+// GuiChat
+// GuiEditSign
 export class SboOverlay {
-    constructor(name, setting, type, locName, example = "", hoverable, allowedGuis = ["any"]) {
+    constructor(name, setting, type, locName, example = "", hoverable = false, allowedGuis = ["GuiInventory"]) {
         overLays.push(this);
         this.name = name;
         this.setting = setting;
@@ -437,39 +448,43 @@ export class SboOverlay {
         }), () => settings[this.setting]);
         
         registerWhen(register("tick", () => {
-            if (this.textLines.length > 0 && !editGui.isOpen() && (isInInventory || this.someTextIsHovered)) {
-                const mouseX = Client.getMouseX();
-                const mouseY = Client.getMouseY();
-                this.textLines.forEach(text => {
-                    if (text.hoverable) {
-                        if (text.X != -1 && text.Y != -1 && (text.mouseEnterAction || text.mouseLeaveAction || text.hoverAction)) {
-                            if (text.isOverString(mouseX, mouseY) && isInInventory) {
-                                if (!text.isHovered) {
-                                    text.mouseEnter();
-                                    text.isHovered = true;
-                                    this.someTextIsHovered = true;
+            if (this.renderGui) {
+                if (this.textLines.length > 0 && !editGui.isOpen() && (this.isInAllowedGui() || this.someTextIsHovered)) {
+                    const mouseX = Client.getMouseX();
+                    const mouseY = Client.getMouseY();
+                    this.textLines.forEach(text => {
+                        if (text.hoverable) {
+                            if (text.X != -1 && text.Y != -1 && (text.mouseEnterAction || text.mouseLeaveAction || text.hoverAction)) {
+                                if (text.isOverString(mouseX, mouseY) && this.isInAllowedGui()) {
+                                    if (!text.isHovered) {
+                                        text.mouseEnter();
+                                        text.isHovered = true;
+                                        this.someTextIsHovered = true;
+                                    }
                                 }
-                            }
-                            else {
-                                if (text.isHovered) {
-                                    text.mouseLeave();
-                                    text.isHovered = false;
-                                    this.someTextIsHovered = false;
+                                else {
+                                    if (text.isHovered) {
+                                        text.mouseLeave();
+                                        text.isHovered = false;
+                                        this.someTextIsHovered = false;
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }), () => settings[this.setting]) && this.hoverable;
         
         registerWhen(register("guiMouseClick" , (cx, cy, button, gui) => {
-            if (this.textLines.length > 0 && !editGui.isOpen()) {
-                this.textLines.forEach(text => {
-                    if (text.action) {
-                        text.clicked(cx, cy, button, gui);
-                    }
-                });
+            if (this.renderGui) {
+                if (this.textLines.length > 0 && !editGui.isOpen() && this.isInAllowedGui()) {
+                    this.textLines.forEach(text => {
+                        if (text.action) {
+                            text.clicked(cx, cy, button, gui);
+                        }
+                    });
+                }
             }
         }), () => settings[this.setting]);
 
@@ -503,28 +518,42 @@ export class SboOverlay {
         this.offsetY = offset;
     }
 
+    isInAllowedGui() {
+        if (Client == undefined) return false;
+        if (Client.currentGui == undefined) return false;
+        if (Client.currentGui.get() == null) return false;
+        let currentGui = Client.currentGui.get().toString();
+        // currentGui = currentGui.toString() and the last string bevor the @ symbol and after the last dot
+        currentGui = currentGui.substring(currentGui.lastIndexOf(".") + 1, currentGui.lastIndexOf("@"));
+        return this.allowedGuis.includes(currentGui);
+    }
+
     isInOverlay(x, y) {
-        // with offset
-        if (editGui.isOpen() && this.exampleText != undefined) {
-            let longestString = ""
-            let stringCount = 0;
-            this.exampleText.getString().split("\n").forEach(line => {
-                if (line.length > longestString.length) {
-                    longestString = line;
+        if (this.renderGui || editGui.isOpen()) {
+            if (this.exampleText != undefined) {
+                let longestString = ""
+                let stringCount = 0;
+                this.exampleText.getString().split("\n").forEach(line => {
+                    if (line.length > longestString.length) {
+                        longestString = line;
+                    }
+                });
+
+                stringCount = this.exampleText.getString().split("\n").length;
+
+                if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * stringCount + this.offsetY) {
+                    return true;
                 }
-            });
-
-            stringCount = this.exampleText.getString().split("\n").length;
-
-            if (x >= this.X && x <= this.X + Renderer.getStringWidth(longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * stringCount + this.offsetY) {
-                return true;
+                return false;
             }
-            return false;
+            else {
+                if (x >= this.X && x <= this.X + Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * this.stringCount + this.offsetY) {
+                    return true;
+                }
+                return false;
+            }
         }
         else {
-            if (x >= this.X && x <= this.X + Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX && y >= this.Y && y <= this.Y + 9 * this.scale * this.stringCount + this.offsetY) {
-                return true;
-            }
             return false;
         }
     }
@@ -571,7 +600,7 @@ const fossilExample = new OverlayTextLine(`Possible Fossils: Unknown`)
 const effectsGuiExample = new OverlayTextLine(`&6Active Effects\n&bWisp's Water: &f2520s`)
 const kuudraExampleOne = new OverlayTextLine(`&6600.00k &eCrimson Chestplate &b(BL 5/BR 4 - &6600.00k/600.00k&7&b)\n&62.50m &eTerror Boots &b(ER 5/DO 4 - &61.48m/2.50m&7&b)\n&eTotal Value: &62.1m coins`)
 const kuudraExampleTwo = new OverlayTextLine(`&62.49m &eTerror Chestplate\n&b(BL 5/BR 4 - &6100.00k/2.49m&b)\n&62.50m &eTerror Boots\n&b(ER 5/DO 4 - &61.48m/2.50m&b)\n&eTotal Value: &64.99m coins`)
-
+const pickupLogExample = new OverlayTextLine(`&a+ 1x &fRotten Flesh \n&c- 1x &5Empty Thunder Bottle`)
 
 let overlayExamples = {
     kuudraExampleTwo: kuudraExampleTwo,
@@ -579,4 +608,5 @@ let overlayExamples = {
     fossilExample: fossilExample,
     effectsGuiExample: effectsGuiExample,
     mythosMobHpExample: mythosMobHpExample,
+    pickupLogExample: pickupLogExample
 };

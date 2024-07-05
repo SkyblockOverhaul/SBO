@@ -80,18 +80,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
-    ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
-    ChatLib.chat(`&7> &aRemoved Rare Room Detection (hypixel removed room ids)`)
-    ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
-    ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp) (alias /sbocp)`)
-    ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>) (alias /sboc <player>)`)
-    ChatLib.chat(`&7> &aAdded command to get help with commands (/sbo help)`)
-
-    ChatLib.chat(`&7> &aFixed bug with Diana Burrows Detection`)
-    ChatLib.chat(`&7> &aFixed the inquisitor line always pointing up`)
-    ChatLib.chat(`&7> &aFixed bug with Blaze Slayer Effects`)
-    ChatLib.chat(`&7> &aSome other minor bug fixes`)
+    ChatLib.chat(`&7> &aAdded PickUp Log Overlay`)
+    ChatLib.chat(`&7> &aAdded Drop Price Title`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
@@ -163,5 +153,96 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 // //         World.playSound("random.levelup", 1, 1.6);
 // //    }, 150);
 // }).setName("sboinq");
+// import { request } from "../requestV2";
+
+// const ByteArrayInputStream = Java.type("java.io.ByteArrayInputStream")
+// const Base64 = Java.type("java.util.Base64")
+// const CompressedStreamTools = Java.type("net.minecraft.nbt.CompressedStreamTools")
+// export function decompress(compressed) {
+//     if (compressed === null || compressed.length == 0) {
+//         return null
+//     }
+//     return new NBTTagCompound(CompressedStreamTools.func_74796_a(new ByteArrayInputStream(Base64.getDecoder().decode(compressed))))
+// }
 
 
+// let page = 0;
+// let itemsFound = [];
+// let totalPages = 0;
+// let itemIdSearched = "";
+// let priceSearched = 0;
+
+// function get_info(url) {
+//     request({
+//         url: "https://api.hypixel.net/skyblock/auctions?page=" + page,
+//         json: true
+//     }).then((response)=>{
+//         let obj = JSON.parse(response)
+//         if (!obj.success) {
+//             print("API request failed");
+//             return false
+//         }
+//         obj.auctions.forEach(auction => {
+//             let itemNBT  = decompress(auction.item_bytes)
+//             let itemObj = itemNBT.toObject().i
+//             if (itemObj.length == 1 && auction.bin) {
+//                 let price = auction.starting_bid
+//                 let item = itemObj[0]
+//                 let itemId = item.tag.ExtraAttributes.id
+//                 if (itemId == itemIdSearched && price <= priceSearched) {
+//                     itemsFound.push({price: price, item: item, auction: auction.uuid, startDate: auction.start})
+//                 }
+//             }
+//         });
+
+//         allpages.push(response.auctions);
+//         page++;
+//         if (totalPages == 0) {
+//             totalPages = response.totalPages;
+//         }
+//         // for every 10th page print status
+//         if (page % 10 == 0 || page == totalPages || page == 0) {
+//             print("Page: " + page + " / " + totalPages);
+//         }
+//         if (page < totalPages) {
+//             get_info();
+//         } else {
+//             print("Done");
+//             // sort items found by start date then by price
+//             itemsFound.sort((a, b) => {
+//                 if (a.startDate == b.startDate) {
+//                     return a.price - b.price;
+//                 }
+//                 return a.startDate - b.startDate;
+//             });
+//             // print first 10 items
+//             if (itemsFound.length > 0) {
+//                 print("Found " + itemsFound.length + " items");
+//                 for (let i = 0; i < 10 && i < itemsFound.length; i++) {
+//                     let item = itemsFound[i];
+//                     print("Price: " + item.price + " | UUID: " + item.auction);
+//                 }
+//             }
+//             else {
+//                 print("No items found for " + itemIdSearched + " under " + priceSearched);  
+//             }
+//         }
+    
+//     }).catch((error)=>{
+//         print("error")
+//         console.error(error);
+//         return null;
+//     });
+// }
+
+// function get_all_auctions(id, price) {
+//     allpages = [];
+//     page = 0;
+//     totalPages = 0;
+
+//     get_info();
+// }
+
+// register("command", (args1, args2, ...args) => {
+//     get_all_auctions(args1, args2);
+// }).setName("allah");
