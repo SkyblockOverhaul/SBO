@@ -599,7 +599,7 @@ const fossilExample = new OverlayTextLine(`Possible Fossils: Unknown`)
 const effectsGuiExample = new OverlayTextLine(`&6Active Effects\n&bWisp's Water: &f2520s`)
 const kuudraExampleOne = new OverlayTextLine(`&6600.00k &eCrimson Chestplate &b(BL 5/BR 4 - &6600.00k/600.00k&7&b)\n&62.50m &eTerror Boots &b(ER 5/DO 4 - &61.48m/2.50m&7&b)\n&eTotal Value: &62.1m coins`)
 const kuudraExampleTwo = new OverlayTextLine(`&62.49m &eTerror Chestplate\n&b(BL 5/BR 4 - &6100.00k/2.49m&b)\n&62.50m &eTerror Boots\n&b(ER 5/DO 4 - &61.48m/2.50m&b)\n&eTotal Value: &64.99m coins`)
-const pickupLogExample = new OverlayTextLine(`&a+ 1x &fRotten Flesh`)
+const pickupLogExample = new OverlayTextLine(`&a+ 1x &fRotten Flesh \n&c- 1x &5Empty Thunder Bottle`)
 
 let overlayExamples = {
     kuudraExampleTwo: kuudraExampleTwo,
