@@ -80,18 +80,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aUpdate Fossil Solver (better detection)`)
-    ChatLib.chat(`&7> &aRemoved Mineshaft title (hypixel added it)`)
-    ChatLib.chat(`&7> &aRemoved Rare Room Detection (hypixel removed room ids)`)
-    ChatLib.chat(`&7> &aAdded Guild Bridge Bot Formatter`)
-    ChatLib.chat(`&7> &aAdded Party Checker For Diana (/sbocheckp) (alias /sbocp)`)
-    ChatLib.chat(`&7> &aAdded Player Checker For Diana (/sbocheck <player>) (alias /sboc <player>)`)
-    ChatLib.chat(`&7> &aAdded command to get help with commands (/sbo help)`)
-
-    ChatLib.chat(`&7> &aFixed bug with Diana Burrows Detection`)
-    ChatLib.chat(`&7> &aFixed the inquisitor line always pointing up`)
-    ChatLib.chat(`&7> &aFixed bug with Blaze Slayer Effects`)
-    ChatLib.chat(`&7> &aSome other minor bug fixes`)
+    ChatLib.chat(`&7> &aAdded PickUp Log Overlay`)
+    ChatLib.chat(`&7> &aAdded Drop Price Title`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
