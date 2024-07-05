@@ -4,66 +4,73 @@ import { registerWhen } from '../../utils/variables';
 import { dianaLootCounter, trackLootWithSacks, trackScavengerCoins } from '../Diana/DianaTracker';
 import { isDataLoaded } from "../../utils/checkData";
 import { checkDiana } from "../../utils/checkDiana";
-import { OverlayTextLine, SboOverlay, isInInv } from "../../utils/overlays";
+import { OverlayTextLine, SboOverlay, isGuiOpened } from "../../utils/overlays";
 
 let pickuplogOverlay = new SboOverlay("pickuplog", "pickuplogOverlay", "render", "PickupLogLoc", "pickupLogExample");
 let pickuplogOverlayText = new OverlayTextLine("");
 
 let itemsShownAdded = {};
 let itemsShownRemoved = {};
-let invDiff = {};
+// let invDiff = {};
+let guiBool = false;
+let trackBool = false;
+let refreshBool = false;
+
 function refreshPickuplogOverlay(item, displayName, ammount) {
-    if (item != "null" && ammount != undefined) {
-        if (ammount > 0) {
-            if (itemsShownAdded[item]) {
-                itemsShownAdded[item][0] += ammount;
-                itemsShownAdded[item][2] = Date.now();
+    // if (isGuiOpened()) return;
+    // if (refreshBool) return;
+
+    if (!isGuiOpened() && !refreshBool) {
+        if (item != "null" && ammount != undefined) {
+            if (ammount > 0) {
+                if (itemsShownAdded[item]) {
+                    itemsShownAdded[item][0] += ammount;
+                    itemsShownAdded[item][2] = Date.now();
+                }
+                else {
+                    itemsShownAdded[item] = [ammount, displayName, Date.now()];
+                }
             }
             else {
-                itemsShownAdded[item] = [ammount, displayName, Date.now()];
+                if (itemsShownRemoved[item]) {
+                    itemsShownRemoved[item][0] += ammount;
+                    itemsShownRemoved[item][2] = Date.now();
+                }
+                else {
+                    itemsShownRemoved[item] = [ammount, displayName, Date.now()];
+                }
             }
+            // if (isGuiOpened()) {
+            //     if (invDiff[item]) {
+            //         invDiff[item] += ammount;
+            //         // print("adding " + item + " to invDiff with ammount: " + invDiff[item]);
+            //     }
+            //     else {
+            //         // print("adding " + item + " to invDiff with ammount: " + ammount);
+            //         invDiff[item] = ammount;
+            //     }
+            // };
         }
-        else {
-            if (itemsShownRemoved[item]) {
-                itemsShownRemoved[item][0] += ammount;
-                itemsShownRemoved[item][2] = Date.now();
-            }
-            else {
-                itemsShownRemoved[item] = [ammount, displayName, Date.now()];
-            }
-        }
-        if (isInInv()) {
-            if (invDiff[item]) {
-                invDiff[item] += ammount;
-                // print("adding " + item + " to invDiff with ammount: " + invDiff[item]);
-            }
-            else {
-                // print("adding " + item + " to invDiff with ammount: " + ammount);
-                invDiff[item] = ammount;
-            }
-        };
     }
-    if (isInInv()) return;
     let text = "";
     text = createPickupLogText(itemsShownAdded);
     text += createPickupLogText(itemsShownRemoved);
-    invDiff = {}; 
+    // invDiff = {}; 
     pickuplogOverlay.setLines([pickuplogOverlayText.setText(text)]);
-
 }
 
 
 function createPickupLogText(dict) {
     let text = "";
     for (let item in dict) {
-        if (invDiff[item] != undefined) {
-            // print("invDiff: " + invDiff[item] + " dict: " + dict[item][0] + " item: " + item)
-            if (invDiff[item] == 0) {
-                // printDev("removing " + item + " from invDiff");
-                delete dict[item];
-                continue;
-            }
-        }
+        // if (invDiff[item] != undefined) {
+        //     // print("invDiff: " + invDiff[item] + " dict: " + dict[item][0] + " item: " + item)
+        //     if (invDiff[item] == 0) {
+        //         // printDev("removing " + item + " from invDiff");
+        //         delete dict[item];
+        //         continue;
+        //     }
+        // }
         if (Date.now() - dict[item][2] > 6000) {
             delete dict[item];
             continue;
@@ -80,13 +87,14 @@ function createPickupLogText(dict) {
 
 let newPurse = 0;
 let oldPurse = 0;
-function compareInventories(oldPlayerItems, newPlayerItems) {
+let tempInv = {};   
+function compareInventories(oldPlayerItems, newPlayerItems, onlyOverlay) {
     for (let item in newPlayerItems) {
         if (oldPlayerItems[item]) {
             diff = newPlayerItems[item][0] - oldPlayerItems[item][0];
             if (diff > 0 || diff < 0) {
                 if (diff > 0) {
-                    dianaLootCounter(item, diff);
+                    if (!onlyOverlay) dianaLootCounter(item, diff);
                     refreshPickuplogOverlay(item, newPlayerItems[item][1], diff);
                     // ChatLib.chat("+ " + diff + "x " + newPlayerItems[item][1]);
                 }
@@ -97,7 +105,7 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
             }
         }
         else {
-            dianaLootCounter(item, newPlayerItems[item][0]);
+            if (!onlyOverlay) dianaLootCounter(item, newPlayerItems[item][0]);
             refreshPickuplogOverlay(item, newPlayerItems[item][1], newPlayerItems[item][0]);
             // ChatLib.chat("+ " + newPlayerItems[item] + "x " + newPlayerItems[item][1]);
         }
@@ -114,10 +122,24 @@ function compareInventories(oldPlayerItems, newPlayerItems) {
     if (diff > 0) {
         trackScavengerCoins(diff);
     }
+    if (onlyOverlay) {
+        refreshBool = true;
+    }
+    if (refreshBool && !onlyOverlay) {
+        refreshBool = false;
+    }
 }
 
-oldPlayerItems = {};
+let oldPlayerItems = {};
 function pickuplog() {
+    if (!guiBool && isGuiOpened()) {
+        guiBool = true;
+        tempInv = Object.assign({}, oldPlayerItems);
+    }
+    else if (guiBool && !isGuiOpened()) {
+        trackBool = true
+        guiBool = false;
+    }
     if (Object.keys(oldPlayerItems).length == 0) {
         oldPurse = getPurse();
         oldPlayerItems = readPlayerInventory();
@@ -127,7 +149,12 @@ function pickuplog() {
         // ChatLib.chat("comparing inventories");
         newPlayerItems = readPlayerInventory();
         newPurse = getPurse();
-        compareInventories(oldPlayerItems, newPlayerItems);
+        if (trackBool) {
+            compareInventories(tempInv, newPlayerItems, true);
+            trackBool = false;
+            tempInv = {};
+        }
+        compareInventories(oldPlayerItems, newPlayerItems, false);
         oldPlayerItems = readPlayerInventory();
         oldPurse = getPurse();
     

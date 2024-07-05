@@ -9,8 +9,9 @@ const dragOffset = {x: 0, y: 0};
 let guiSettings = loadGuiSettings();
 
 let isInInventory = false;
-export function isInInv() {
-    return isInInventory;
+let guiOpened = false;
+export function isGuiOpened() {
+    return guiOpened;
 }
 let currentGui = null;
 register('guiClosed', (gui) => {
@@ -19,6 +20,9 @@ register('guiClosed', (gui) => {
     if(gui.includes("Inventory")) {
         isInInventory = false;
     }
+    setTimeout(() => {
+        guiOpened = false;
+    }, 200);
 });
 
 register('guiOpened', () => {
@@ -32,6 +36,7 @@ register('guiOpened', () => {
             isInInventory = true;
         }
     }, 200);
+    guiOpened = true;
 });
 
 
