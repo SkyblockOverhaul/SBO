@@ -75,7 +75,7 @@ export function dianaLootCounter(item, amount) {
 }
 
 export function trackLootWithSacks(ammount, item) {
-    let countThisIds = ["Enchanted Gold", "Enchanted Iron", "Ancient Claw", "Griffin Feather"] // , "Rotten Flesh"
+    let countThisIds = ["Enchanted Gold", "Enchanted Iron", "Ancient Claw"] // , "Rotten Flesh"
     if (getAllowedToTrackSacks()) {
         for (let i in countThisIds.values()) {
             if (item == i) {
