@@ -15,17 +15,16 @@ export function isGuiOpened() {
 }
 let currentGui = null;
 register('guiClosed', (gui) => {
+    guiOpened = false;
     gui = gui.toString();
     currentGui = null;
     if(gui.includes("Inventory")) {
         isInInventory = false;
     }
-    setTimeout(() => {
-        guiOpened = false;
-    }, 200);
 });
 
 register('guiOpened', () => {
+    guiOpened = true;
     setTimeout(() => {
         if (Client == undefined) return;
         if (Client.currentGui == undefined) return;
@@ -36,7 +35,6 @@ register('guiOpened', () => {
             isInInventory = true;
         }
     }, 200);
-    guiOpened = true;
 });
 
 
