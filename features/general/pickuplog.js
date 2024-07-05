@@ -142,12 +142,12 @@ function pickuplog() {
     }
     if (Object.keys(oldPlayerItems).length == 0) {
         oldPurse = getPurse();
-        oldPlayerItems = readPlayerInventory();
+        oldPlayerItems = readPlayerInventory("", isGuiOpened());
         // ChatLib.chat("old inventory read");
     }
     else {
         // ChatLib.chat("comparing inventories");
-        newPlayerItems = readPlayerInventory();
+        newPlayerItems = readPlayerInventory("", isGuiOpened());
         newPurse = getPurse();
         if (trackBool) {
             compareInventories(tempInv, newPlayerItems, true);
@@ -155,7 +155,7 @@ function pickuplog() {
             tempInv = {};
         }
         compareInventories(oldPlayerItems, newPlayerItems, false);
-        oldPlayerItems = readPlayerInventory();
+        oldPlayerItems = readPlayerInventory("", isGuiOpened());
         oldPurse = getPurse();
     
     }

@@ -185,7 +185,7 @@ export function toTitleCase(str) {
 }
 
 // read player inventory //
-export function readPlayerInventory(type="") {
+export function readPlayerInventory(type="", isGuiOpened=false) {
     let slots = 0;
     if (!worldLoaded) return {};
     if (type === "hotbar") {
@@ -200,7 +200,7 @@ export function readPlayerInventory(type="") {
     const inventory = Player.getContainer();
     for (let i in playerInv.getItems()) {
         if (i <= slots) {
-            if (playerInvItems[i] !== null && getSBID(playerInvItems[i]) != getSBID(inventory.getStackInSlot(44))) {
+            if (playerInvItems[i] !== null && (getSBID(playerInvItems[i]) != getSBID(inventory.getStackInSlot(44)) || isGuiOpened)) {
                 if (playerItems[getSBID(playerInvItems[i])]) {
                     playerItems[getSBID(playerInvItems[i])][0] += playerInvItems[i].getStackSize();
                 }
