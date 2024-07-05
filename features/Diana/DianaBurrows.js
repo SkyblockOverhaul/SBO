@@ -224,6 +224,11 @@ register("command", () => {
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
 }).setName("sboclearburrows").setAliases("sbocb"); 
 
+register("chat", () => {
+    resetBurrows();
+    ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
+}).setCriteria("&r&6Poof! &r&eYou have cleared your griffin burrows!&r")
+
 register("step", () => {
     // test command print all burrows to console
     // print("Burrows: ");

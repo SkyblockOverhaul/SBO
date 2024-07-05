@@ -11,7 +11,10 @@ let guiSettings = loadGuiSettings();
 let isInInventory = false;
 let guiOpened = false;
 export function isGuiOpened() {
-    return guiOpened;
+    if (Client == undefined) return false;
+    if (Client.currentGui == undefined) return false;
+    if (Client.currentGui.get() == null) return false;
+    return true
 }
 let currentGui = null;
 register('guiClosed', (gui) => {
