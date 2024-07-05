@@ -503,7 +503,7 @@ class Settings {
     clickableInvite = false;
     @SwitchProperty({
         name: 'Pickup Log Overlay',
-        description: 'Displays your pickup log in an overlay like sba, /sboguis to move the overlay',
+        description: 'Displays your pickup log in an overlay like sba, /sboguis to move the overlay (WIP)',
         category: 'Quality of Life',
     })
     pickuplogOverlay = false;
