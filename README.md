@@ -98,6 +98,7 @@ _-Other-_
 + Clean Diana Chat
 + Hide AutoPet Message
 + Hide Sacks Message
++ PickupLog
 + Clickable Message to invite a player
 + Effects for Blaze Slayer
 
