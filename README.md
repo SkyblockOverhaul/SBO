@@ -19,6 +19,7 @@
 + Legion Counter
 
 **--Diana--**
+
 _-Burrows-_
 + Diana burrow Guess
 + Diana burrow Warp
@@ -69,7 +70,9 @@ _-Other-_
 + Mineshaft Exit Waypoint
 
 **--Party Commands--**
+
 -_General_-
+
 !warp
 !allinv
 !transfer [name] or !ptme
@@ -77,7 +80,8 @@ _-Other-_
 !time
 !tps
 
-**-Diana Party Commands-**
+-_Diana Party Commands_-
+
 !chim | chim count
 !relic | relic count
 !stick | stick count
