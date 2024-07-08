@@ -34,6 +34,8 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (alias /sbocb)")
                 ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (alias /sboc <player>)")
                 ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
+                ChatLib.chat("&7> &a/sbodc &7- &eCommand for diana dropchances")
+                ChatLib.chat("&7> &a/sbopartyblacklist &7- &eCommand for party commands blacklisting")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -48,7 +50,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.1.7" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.2.6" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -80,8 +82,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aAdded PickUp Log Overlay`)
-    ChatLib.chat(`&7> &aAdded Drop Price Title`)
+    ChatLib.chat(`&7> &aAdded Loothsare Range`)
+    ChatLib.chat(`&7> &aAdded The ability to blacklist players from party commands`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
