@@ -25,9 +25,55 @@ const carrot = [
     "Carrot",
 ];
 
+register("command", (args1, args2, ...args) => {
+    if(args1 == undefined) {
+        ChatLib.chat("&6[SBO] &aPlease use /sbopartycommands <command>")
+        ChatLib.chat("&6[SBO] &eadd <playername>")
+        ChatLib.chat("&6[SBO] &eremove <playername>")
+        ChatLib.chat("&6[SBO] &elist")
+        return;
+    }
+    if(args2 != undefined) {
+        args2 = args2.toLowerCase().trim();
+    }
+    switch (args1.toLowerCase()) {
+        case "add":
+            if(args2 == undefined) {
+                ChatLib.chat("&6[SBO] &aPlease provide a playername!")
+                return;
+            }
+            if(data.partyBlacklist.includes(args2)) {
+                ChatLib.chat("&6[SBO] &e" + args2 + " is already in the list!")
+                return;
+            }
+            data.partyBlacklist.push(args2)
+            ChatLib.chat("&6[SBO] &eAdded " + args2 + " to the blacklist!")
+            break;
+        case "remove":
+            if(args2 == undefined) {
+                ChatLib.chat("&6[SBO] &aPlease provide a playername!")
+                return;
+            }
+            if(!data.partyBlacklist.includes(args2)) {
+                ChatLib.chat("&6[SBO] &e" + args2 + " is not in the list!")
+                return;
+            }
+            data.partyBlacklist = data.partyBlacklist.filter((name) => name != args2)
+            ChatLib.chat("&6[SBO] &eRemoved " + args2 + " from the blacklist!")
+            break;
+        case "list":
+            ChatLib.chat("&6[SBO] &eBlacklisted players:")
+            data.partyBlacklist.forEach((name) => {
+                ChatLib.chat("&7> &e" + name)
+            })
+            break;
+    }
+}).setName("sbopartyblacklist")
 
 register("chat", (player, message) => {
     message = message.split(" ");
+    playername = player.split("]")[1].trim();
+    if(data.partyBlacklist.includes(playername.toLowerCase())) return;
     switch (message[0].toLowerCase()) {
         case "!w":
         case "!warp":
