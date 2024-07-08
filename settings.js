@@ -1,3 +1,4 @@
+import { Color } from "../Vigilance";
 import {
     @ButtonProperty,
     @CheckboxProperty,
@@ -75,6 +76,7 @@ class Settings {
         this.addDependency('Inquis Color','Highlight Inquis');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
         this.addDependency('Show Price Title','Loot Screen Announcer');
+        this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
 
     } 
     //-----------Diana Burrows----------------
@@ -291,6 +293,22 @@ class Settings {
         subcategory: "Other"
     })
     inqColor = new Color(0,0.9,1,1);
+    @SwitchProperty({
+        name: "Inquis Lootshare Circle",
+        description: "Draws a circle around inquisitor which shows the lootshare range",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    inqCircle = false;
+    @SwitchProperty({
+        name: "Inquis Lootshare Cylinder",
+        description: "Draws a Cylinder instead of a circle around inquisitor which shows the lootshare range",  
+        category: "Diana",
+        subcategory: "Other",
+    })
+    inqCylinder = false;
+
+
     @SelectorProperty({
         name: "Add Warps",
         description: "Adds warp points for burrow warp",
