@@ -535,6 +535,30 @@ class Settings {
     })
     pickuplogOverlay = false;
     // General
+    @ButtonProperty({
+        name: "Move GUIs",
+        description: "Opens Gui Move Menu you can use /sboguis too",
+        placeholder: "Move GUIs",
+        category: "General",
+    })
+    sbomoveguis() {
+       ChatLib.command("sboguis", true);
+    }
+    //guis
+    @SwitchProperty({
+        name: "Bobber Counter",
+        description: "Tracks the number of bobbers near you /sboguis to move the counter",
+        category: "General",
+        subcategory: "GUIs",
+    })
+    bobberCounter = false;
+    @SwitchProperty({
+        name: "Legion Counter",
+        description: "Tracks the players near you for legion buff /sboguis to move the counter",
+        category: "General",
+        subcategory: "GUIs",
+    })
+    legionCounter = false;
     // General Waypoints
     @SwitchProperty({
         name: 'Detect Patcher Cords',
@@ -640,20 +664,6 @@ class Settings {
         category: "Mining",
     })
     mineSpeedBoost = false;
-
-    // General other
-    @SwitchProperty({
-        name: "Bobber Counter",
-        description: "Tracks the number of bobbers near you /sboguis to move the counter",
-        category: "General",
-    })
-    bobberCounter = false;
-    @SwitchProperty({
-        name: "Legion Counter",
-        description: "Tracks the players near you for legion buff /sboguis to move the counter",
-        category: "General",
-    })
-    legionCounter = false;
 
     // Color Settings
     @ColorProperty({
