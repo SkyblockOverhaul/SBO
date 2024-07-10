@@ -90,7 +90,7 @@ export function trackLootWithSacks(ammount, item) {
     }
 }
 
-let forbiddenCoins = [1, 1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
+let forbiddenCoins = [1, 5, 20, 1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
 export function trackScavengerCoins(coins) {
     if (mobDeath4SecsTrue()) {
         if (!forbiddenCoins.includes(coins) && coins < 60000) {
@@ -310,10 +310,6 @@ registerWhen(register("chat", (drop, event) => {
                             avgMagicFindOverlay();
                         }
                     }
-                    if(settings.replaceChimMessage) {
-                        cancel(event)
-                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
-                    }
                     if(settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
                     }
@@ -321,6 +317,10 @@ registerWhen(register("chat", (drop, event) => {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     data.inqsSinceChim = 0;
+                    if(settings.replaceChimMessage) {
+                        cancel(event)
+                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
+                    }
                 }
                 break;
             case "Daedalus Stick":

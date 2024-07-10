@@ -194,8 +194,9 @@ export function readPlayerInventory(type="") {
     else {
         slots = 39;
     }
-    playerItems = {}
+    let playerItems = {}
     let playerInv = Player.getInventory();
+    if (playerInv == null) return playerItems;
     let playerInvItems = playerInv.getItems();
     // const inventory = Player.getContainer();
     for (let i in playerInv.getItems()) {
@@ -303,7 +304,7 @@ function checkSettings(loadedSettings) {
 }
 
 export function saveGuiSettings(guiSettings) {
-        FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
+    FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
 }
 
 export function drawRect(x1,y1,scale,z) {
