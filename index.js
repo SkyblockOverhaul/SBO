@@ -97,6 +97,9 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 // [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
 // [DEV]: Sound: mob.zombie.woodbreak | Volume: 1.5 | Pitch: 1 | Category: MOBS
 
+// when hit with leftclick:
+// [DEV]: Sound: random.successful_hit | Volume: 1 | Pitch: 1 | Category: PLAYERS
+
 // register("chat", (drop) => {
 //     let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
 //     let chimMf = parseInt((magicFindMatch ? magicFindMatch[2] : 0));

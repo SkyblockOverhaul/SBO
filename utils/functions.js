@@ -194,8 +194,9 @@ export function readPlayerInventory(type="") {
     else {
         slots = 39;
     }
-    playerItems = {}
+    let playerItems = {}
     let playerInv = Player.getInventory();
+    if (playerInv == null) return playerItems;
     let playerInvItems = playerInv.getItems();
     // const inventory = Player.getContainer();
     for (let i in playerInv.getItems()) {
