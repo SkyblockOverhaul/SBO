@@ -150,8 +150,9 @@ register("chat", (player, message) => {
         case "!books":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
+                let totalChimera = dianaTrackerMayor["items"]["Chimera"] + dianaTrackerMayor["items"]["ChimeraLs"];
                 setTimeout(function() {
-                    ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"])
+                    ChatLib.command("pc Chimera: " + totalChimera)
                 }, 50)
             }
             break
