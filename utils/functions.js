@@ -303,7 +303,7 @@ function checkSettings(loadedSettings) {
 }
 
 export function saveGuiSettings(guiSettings) {
-        FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
+    FileLib.write("SBO", "guiSettings.json", JSON.stringify(guiSettings, null, 4));
 }
 
 export function drawRect(x1,y1,scale,z) {

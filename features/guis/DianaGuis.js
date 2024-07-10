@@ -293,7 +293,7 @@ function getLootMessage(lootViewSetting) {
         const lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
         let text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
-        if (percent) {
+        if (percent || item.hasLS) {
             text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
             if (item.hasLS) {
                 text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
