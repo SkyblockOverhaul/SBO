@@ -29,7 +29,7 @@ export function dianaLootCounter(item, amount) {
             for (let i in countThisIds.values()) {
                 if (item === i) {
                     if (item == "ANCIENT_CLAW") {
-                        if ([48, 96, 144].includes(parseInt(amount)) && gotLootShare()) {
+                        if ([10, 20, 30].includes(parseInt(amount)) && gotLootShare()) {
                             trackItem("Minos Inquisitor Ls", "mobs", 1); // ls inq
                         }
                     }
