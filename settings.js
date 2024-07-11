@@ -77,7 +77,7 @@ class Settings {
         this.addDependency('Four-Eyed Fish','Diana Tracker');
         this.addDependency('Show Price Title','Loot Screen Announcer');
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
-        this.addDependency('Diana Burrrow Warp','Diana Burrow Guess');
+        this.addDependency('Diana Burrow Warp','Diana Burrow Guess');
 
     } 
     //-----------Diana Burrows----------------
