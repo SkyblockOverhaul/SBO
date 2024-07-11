@@ -335,7 +335,14 @@ export function checkMayorTracker() {
     }
 }
 
-
+/**
+ * Adds a trigger with its associated dependency to the list of registered triggers.
+ *
+ * @param {string} name - name of the timer.
+ * @param {number} inactiveTimeLimit - the time limit in minutes for inactivity.
+ * @param {object} trackerObject - the Pog object to be updated.
+ * @param {string} dataFieldName - the name of the field in the Pog object.
+ */
 export class SBOTimer {
     constructor(name, inactiveTimeLimit, trackerObject, dataFieldName) {
         this.name = name;
