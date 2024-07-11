@@ -354,29 +354,30 @@ function getLootMessage(lootViewSetting) {
                 totalValue += getPrice(item, mayorTracker);
             }
             totalValue += mayorTracker["items"]["coins"];
-            return formatNumber(totalValue);
+            return totalValue;
         }
         else {
             for (let item of itemData) {
                 totalValue += getPrice(item);
             }
             totalValue += lootTracker["items"]["coins"];
-            return formatNumber(totalValue);
+            return totalValue;
         }
     }
-    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${getTotalValue()}`;
+    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
-    totalProfitLine.onHover((overlay) => {
-        const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-        const timePassed = timer.getElapsedTime(); // in milliseconds
-        const profitPerHour = getTotalValue() / (timePassed / 3600000); // in coins
-        let profitText = [
-            `§6${profitPerHour} coins/hour`,
+    const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+    const timePassed = timer.getHourTime(); // in hours 
+    const profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    let profitText = [
+        `§6${profitPerHour} coins/hour`,
 
-        ].map(item => item.toString()); // Explicitly convert each element to a string
+    ].map(item => item.toString()); // Explicitly convert each element to a string
+    print(timePassed);
+    totalProfitLine.onHover((overlay) => {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
-    setDianaMayorTotalProfit(getTotalValue(true), offertType);
+    setDianaMayorTotalProfit(formatNumber(getTotalValue(true)), offertType);
     lootLines.push(totalProfitLine);
 
     return lootLines;

@@ -412,7 +412,7 @@ export class SBOTimer {
 
     getHourTime() {
         let millisecondTime = this.trackerObject.items[this.dataFieldName];
-        let hours = Math.floor(millisecondTime / 3600000);
+        let hours = (millisecondTime / 3600000).toFixed(2);
         return hours;
     }
 
