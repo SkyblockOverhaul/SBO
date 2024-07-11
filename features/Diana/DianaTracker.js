@@ -319,7 +319,12 @@ registerWhen(register("chat", (drop, event) => {
                     data.inqsSinceChim = 0;
                     if(settings.replaceChimMessage) {
                         cancel(event)
+                        if(magicFind > 0) {
                         ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
+                        }
+                        else {
+                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera!&r");
+                        }
                     }
                 }
                 break;
