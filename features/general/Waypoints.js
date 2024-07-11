@@ -332,8 +332,18 @@ register("step", () => {
         // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
     }
 }).setFps(1);
-registerWhen(register("chat", (player, spacing, x, y, z) => {
+// ping that dont work
+// &r&9Party &8> &b[MVP&3+&b] EightLight89620&f: &rx: 145, y: 72, z: -2 | Minos Inquisitor spawned at [ ⏣ Wilderness ]!&r
+// because:
+
+registerWhen(register("chat", (player, spacing, x, y, z, event) => {
     if (isWorldLoaded()) {
+        // if (x == "&rx:") {
+        //     // get x y z from message like this &r&9Party &8> &b[MVP&3+&b] EightLight89620&f: &rx: 145, y: 72, z: -2 | Minos Inquisitor spawned at [ ⏣ Wilderness ]!&r
+        //     message = new Message(event)
+        //     print(message)
+        //     messageParts = message.getMessageParts();
+        // }
         if (checkDiana() && settings.allWaypointsAreInqs) {
             isInq = true;
         }
@@ -363,6 +373,10 @@ registerWhen(register("chat", (player, spacing, x, y, z) => {
                 // check if waypoint is from player
                 
                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
+                    if (z.split(" ").length > 1) {
+                        z = z.split(" ")[0];
+                    }
+                    print(player + " " + x + " " + y + " " + z);
                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
                 }
             }
