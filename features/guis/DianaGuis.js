@@ -230,7 +230,7 @@ export function itemOverlay() {
 const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
-
+    const offertType = ["Instasell", "Sell Offer"][settings.bazaarSettingDiana];
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
@@ -354,19 +354,30 @@ function getLootMessage(lootViewSetting) {
                 totalValue += getPrice(item, mayorTracker);
             }
             totalValue += mayorTracker["items"]["coins"];
-            return formatNumber(totalValue);
+            return totalValue;
         }
         else {
             for (let item of itemData) {
                 totalValue += getPrice(item);
             }
             totalValue += lootTracker["items"]["coins"];
-            return formatNumber(totalValue);
+            return totalValue;
         }
     }
-    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${getTotalValue()}`;
-    setDianaMayorTotalProfit(getTotalValue(true));
-    lootLines.push(new OverlayTextLine(totalProfitText, true));
+    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
+    let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
+    const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+    const timePassed = timer.getHourTime(); // in hours 
+    const profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    let profitText = [
+        `§6${profitPerHour} coins/hour`,
+
+    ].map(item => item.toString()); // Explicitly convert each element to a string
+    totalProfitLine.onHover((overlay) => {
+        GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
+    });
+    setDianaMayorTotalProfit(formatNumber(getTotalValue(true)), offertType);
+    lootLines.push(totalProfitLine);
 
     return lootLines;
 }

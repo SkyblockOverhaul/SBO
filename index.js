@@ -50,7 +50,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.2.7" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.3.0" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -82,7 +82,11 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aAdded Move GUIs button in general`)
+    ChatLib.chat(`&7> &a-- Diana Guis -- `)
+    ChatLib.chat(`&7> &aAdded profit/hr`)
+    ChatLib.chat(`&7> &a-- Party Commands --`)
+    ChatLib.chat(`&7> &aAdded !playtime, !pt`)
+    ChatLib.chat(`&7> &aAdded !profit`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion

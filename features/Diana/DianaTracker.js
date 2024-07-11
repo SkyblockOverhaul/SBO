@@ -103,13 +103,11 @@ export function trackScavengerCoins(coins) {
 // track logic //
 export function trackItem(item, category, amount) {
     if (isDataLoaded()) {
-        if(item == "Total Burrows") {
-            dianaTimerlist.forEach(timer => {
-                timer.start();
-                timer.continue();
-                timer.updateActivity();
-            });
-        }
+        dianaTimerlist.forEach(timer => {
+            timer.start();
+            timer.continue();
+            timer.updateActivity();
+        });
         if (lastMob == item && item != "Minos Inquisitor Ls") {
             if (item == "Minos Inquisitor") {
                 ChatLib.chat("&6[SBO] &r&cb2b Inquisitor!")

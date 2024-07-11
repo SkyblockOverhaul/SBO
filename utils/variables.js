@@ -335,7 +335,14 @@ export function checkMayorTracker() {
     }
 }
 
-
+/**
+ * Adds a trigger with its associated dependency to the list of registered triggers.
+ *
+ * @param {string} name - name of the timer.
+ * @param {number} inactiveTimeLimit - the time limit in minutes for inactivity.
+ * @param {object} trackerObject - the Pog object to be updated.
+ * @param {string} dataFieldName - the name of the field in the Pog object.
+ */
 export class SBOTimer {
     constructor(name, inactiveTimeLimit, trackerObject, dataFieldName) {
         this.name = name;
@@ -403,6 +410,12 @@ export class SBOTimer {
         return this.elapsedTime;
     }
 
+    getHourTime() {
+        let millisecondTime = this.trackerObject.items[this.dataFieldName];
+        let hours = (millisecondTime / 3600000).toFixed(2);
+        return hours;
+    }
+
     // Updates the last activity time to the current time
     updateActivity() {
         this.lastActivityTime = Date.now();
@@ -429,9 +442,9 @@ export class SBOTimer {
     }
 }
 
-const timerTotal = new SBOTimer("Total", 3, dianaTrackerTotal, "totalTime");
-const timerSession = new SBOTimer("Session", 3, dianaTrackerSession, "sessionTime");
-const timerMayor = new SBOTimer("Mayor", 3, dianaTrackerMayor, "mayorTime");
+const timerTotal = new SBOTimer("Total", 1.5, dianaTrackerTotal, "totalTime");
+const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionTime");
+const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
 
