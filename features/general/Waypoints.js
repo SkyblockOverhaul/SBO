@@ -376,7 +376,7 @@ registerWhen(register("chat", (player, spacing, x, y, z, event) => {
                     if (z.split(" ").length > 1) {
                         z = z.split(" ")[0];
                     }
-                    print(player + " " + x + " " + y + " " + z);
+                    // print(player + " " + x + " " + y + " " + z);
                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
                 }
             }
