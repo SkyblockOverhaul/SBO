@@ -178,11 +178,6 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         if (zSign == 1) zSign = 0;
         wp[1] = [x + xSign, y - 1, z + zSign];
         
-        /* Return Matrix
-           [message, x, y ,z]
-           [beacon x, y, z]
-           [r, g, b]
-        */
         if (type == "Guess") {
             formattedGuess.push(wp);
         }
