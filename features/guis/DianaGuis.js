@@ -366,14 +366,14 @@ function getLootMessage(lootViewSetting) {
     }
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${getTotalValue()}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
+    const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+    const timePassed = timer.getElapsedTime(); // in milliseconds
+    const profitPerHour = getTotalValue() / (timePassed / 3600000); // in coins
+    let profitText = [
+        `§6${profitPerHour} coins/hour`,
+    ].map(item => item.toString()); // Explicitly convert each element to a string
     totalProfitLine.onHover((overlay) => {
-        const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-        const timePassed = timer.getElapsedTime(); // in milliseconds
-        const profitPerHour = getTotalValue() / (timePassed / 3600000); // in coins
-        let profitText = [
-            `§6${profitPerHour} coins/hour`,
-
-        ].map(item => item.toString()); // Explicitly convert each element to a string
+        
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
     setDianaMayorTotalProfit(getTotalValue(true), offertType);
