@@ -73,7 +73,6 @@ class Settings {
         this.addDependency('Distance For Remove','Remove Guess');
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
-        this.addDependency('Inquis Color','Highlight Inquis');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
         this.addDependency('Show Price Title','Loot Screen Announcer');
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
@@ -87,21 +86,21 @@ class Settings {
         category: "Diana",
         subcategory: "Diana Burrows"
     })
-    dianaBurrowGuess = false;
+    dianaBurrowGuess = true;
     @SwitchProperty({
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow. set your keybind in controls",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
-    dianaBurrowWarp = false;
+    dianaBurrowWarp = true;
     @SwitchProperty({
         name: "Diana Burrow Detect",
         description: "Detects diana burrows | to reset waypoints /sboclearburrows",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
-    dianaBurrowDetect = false;
+    dianaBurrowDetect = true;
     @TextProperty({
         name: "Warp Block Difference",
         description: "Increase it to set the diffrence when player warps (inq/burrow warp)",
@@ -196,7 +195,7 @@ class Settings {
         category: 'Diana',
         subcategory: 'Diana Waypoints',
     })
-    inqWaypoints = false;
+    inqWaypoints = true;
     @SwitchProperty({
         name: 'All Waypoints Are Inqs',
         description: 'all the waypoints are inquisitor waypoints in hub during diana',
@@ -210,7 +209,7 @@ class Settings {
         category: 'Diana',
         subcategory: 'Diana Waypoints',
     })
-    inqWarpKey = false;
+    inqWarpKey = true;
     @SwitchProperty({
         name: 'Remove Guess',
         description: 'Removes guess when getting close to it',
@@ -267,12 +266,12 @@ class Settings {
     })
     mythosMobHp = false;
     @SwitchProperty({
-        name: "Inquis Party Message",
-        description: "Party message for inquisitor detection (patcher format).",
+        name: "Share Inquisitor",
+        description: "Sends cords for inquisitor in party message (patcher format).",
         category: "Diana",
         subcategory: "Other",
     })
-    inquisDetect = false;
+    inquisDetect = true;
     @TextProperty({
         name: "Send Text On Inq Spawn",
         description: "Sends a text on inq spawn 5 seconds after spawn",
@@ -288,12 +287,12 @@ class Settings {
     })
     inqHighlight = false;
     @ColorProperty({
-        name: "Inquis Color",
-        description: "Pick a color for your Inquis Highlighter",
+        name: "Inquis/Lootshare Color",
+        description: "Pick a color for inquisitor highlighting and lootshare circle",
         category: "Diana",
         subcategory: "Other"
     })
-    inqColor = new Color(0,0.9,1,1);
+    inqColor = new Color(0,0.9,1,0.6);
     @SwitchProperty({
         name: "Inquis Lootshare Circle",
         description: "Draws a circle around inquisitor which shows the lootshare range",
@@ -333,7 +332,7 @@ class Settings {
         category: 'Diana',
         subcategory: 'Loot Announcer',
     })
-    lootAnnouncerChat = false;
+    lootAnnouncerChat = true;
     @SwitchProperty({
         name: 'Loot Screen Announcer',
         description: 'Announce chimera/stick/relic on screen',

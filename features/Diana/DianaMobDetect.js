@@ -73,6 +73,10 @@ export const inqHighlightRegister = register("renderWorld", () => {
 });
 inqHighlightRegister.unregister();
 
+registerWhen(register("renderWorld", () => {
+    
+}), () => settings.inqCircle && getWorld() === "Hub"); 
+
 
 // register("tick", () => {
 //     // check if player is inside circle
