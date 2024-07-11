@@ -373,7 +373,6 @@ function getLootMessage(lootViewSetting) {
         `§6${profitPerHour} coins/hour`,
 
     ].map(item => item.toString()); // Explicitly convert each element to a string
-    print(timePassed);
     totalProfitLine.onHover((overlay) => {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
