@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, data, dianaTimerlist} from "../../utils/variables";
-import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect } from "../../utils/functions";
+import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect, formatTime } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
@@ -172,24 +172,7 @@ function getMobMassage(setting) {
 let lootMessageLines = [];
 let timerOverlayLine = null;
 
-function formatTime(milliseconds) {
-    const totalMinutes = parseInt(milliseconds / (60 * 1000));
-    const totalHours = parseInt(totalMinutes / 60);
-    const days = parseInt(totalHours / 24);
-    const hours = totalHours % 24;
-    const minutes = totalMinutes % 60;
 
-    let formattedTime = '';
-    if (days > 0) {
-        formattedTime += `${days}d `;
-    }
-    if (hours > 0 || days > 0) {
-        formattedTime += `${hours}h `;
-    }
-    formattedTime += `${minutes}m`;
-    
-    return formattedTime;
-}
 
 function getTimerMessage() {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
