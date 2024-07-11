@@ -596,3 +596,13 @@ export function formatTime(milliseconds) {
     return formattedTime;
 }
 
+let dianaMayorTotalProfit = 0;
+
+export function getDianaMayorTotalProfit() {
+    return dianaMayorTotalProfit;
+}
+
+export function setDianaMayorTotalProfit(profit) {
+    dianaMayorTotalProfit = profit;
+}
+
