@@ -73,7 +73,6 @@ class Settings {
         this.addDependency('Distance For Remove','Remove Guess');
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
         this.addDependency('Bridge Bot Name','Formated Bridge Bot');
-        this.addDependency('Inquis Color','Highlight Inquis');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
         this.addDependency('Show Price Title','Loot Screen Announcer');
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
@@ -288,12 +287,12 @@ class Settings {
     })
     inqHighlight = false;
     @ColorProperty({
-        name: "Inquis Color",
-        description: "Pick a color for your Inquis Highlighter",
+        name: "Inquis/Lootshare Color",
+        description: "Pick a color for inquisitor highlighting and lootshare circle",
         category: "Diana",
         subcategory: "Other"
     })
-    inqColor = new Color(0,0.9,1,1);
+    inqColor = new Color(0,0.9,1,0.6);
     @SwitchProperty({
         name: "Inquis Lootshare Circle",
         description: "Draws a circle around inquisitor which shows the lootshare range",

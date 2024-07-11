@@ -60,18 +60,25 @@ export const inqHighlightRegister = register("renderWorld", () => {
         if (settings.inqHighlight) {
             RenderLibV2.drawEspBoxV2(mob.x, mob.y - 2.05, mob.z, 1, 2, 1, red, green, blue, alpha, false)   
         }
-        if (settings.inqCircle) {
-            let hight = 0.6;
-            let y = mob.y - 2.05;
-            if (settings.inqCylinder) {
-                hight = 50;
-                y = 50;
-            }
-            RenderLibV2.drawCyl(mob.x, y, mob.z, 30, 30, hight, 120, 1, 0, 90, 90, red, green, blue, alpha, false, false)
-        }
     });
 });
 inqHighlightRegister.unregister();
+
+registerWhen(register("renderWorld", () => {
+    let red = settings.inqColor.getRed() / 255;
+    let green = settings.inqColor.getGreen() / 255;
+    let blue = settings.inqColor.getBlue() / 255;
+    let alpha = settings.inqColor.getAlpha() / 255;
+    if (settings.inqCircle) {
+        let hight = 0.6;
+        let y = mob.y - 2.05;
+        if (settings.inqCylinder) {
+            hight = 50;
+            y = 50;
+        }
+        RenderLibV2.drawCyl(mob.x, y, mob.z, 30, 30, hight, 120, 1, 0, 90, 90, red, green, blue, alpha, false, false)
+    }
+}), () => settings.inqCircle && getWorld() === "Hub"); 
 
 
 // register("tick", () => {
