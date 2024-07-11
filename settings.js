@@ -267,8 +267,8 @@ class Settings {
     })
     mythosMobHp = false;
     @SwitchProperty({
-        name: "Inquis Party Message",
-        description: "Party message for inquisitor detection (patcher format).",
+        name: "Share Inquisitor",
+        description: "Sends party message for inquisitor detection (patcher format).",
         category: "Diana",
         subcategory: "Other",
     })
