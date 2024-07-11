@@ -597,12 +597,14 @@ export function formatTime(milliseconds) {
 }
 
 let dianaMayorTotalProfit = 0;
+let dianaMayorOfferType
 
-export function getDianaMayorTotalProfit() {
-    return dianaMayorTotalProfit;
+export function getDianaMayorTotalProfitAndOfferType() {
+    return [dianaMayorTotalProfit, dianaMayorOfferType];
 }
 
-export function setDianaMayorTotalProfit(profit) {
+export function setDianaMayorTotalProfit(profit, offerType) {
     dianaMayorTotalProfit = profit;
+    dianaMayorOfferType = offerType;
 }
 

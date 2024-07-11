@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfit } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -222,8 +222,9 @@ register("chat", (player, message) => {
         case "!profit":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
+                let [profit, offerType] = getDianaMayorTotalProfitAndOfferType();
                 setTimeout(function() {
-                    ChatLib.command("pc Profit: " + getDianaMayorTotalProfit())
+                    ChatLib.command("pc Profit: " + profit + " (" + offerType + ")")
                 }, 50)
             }
             break

@@ -230,7 +230,7 @@ export function itemOverlay() {
 const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
-
+    const offertType = ["Instasell", "Sell Offer"][settings.bazaarSettingDiana];
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
@@ -365,7 +365,7 @@ function getLootMessage(lootViewSetting) {
         }
     }
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${getTotalValue()}`;
-    setDianaMayorTotalProfit(getTotalValue(true));
+    setDianaMayorTotalProfit(getTotalValue(true), offertType);
     lootLines.push(new OverlayTextLine(totalProfitText, true));
 
     return lootLines;
