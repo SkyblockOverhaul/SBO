@@ -411,7 +411,8 @@ export class SBOTimer {
     }
 
     getTime() {
-        return this.trackerObject.items[this.dataFieldName];
+        let millisecondTime = this.trackerObject.items[this.dataFieldName];
+        return Number(millisecondTime);
     }
 
     // Updates the last activity time to the current time
