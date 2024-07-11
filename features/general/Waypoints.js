@@ -320,7 +320,7 @@ register("chat" , (player) => {
 // check waypoint
 let highlighInquis = false;
 register("step", () => {
-    if (highlighInquis && settings.inqHighlight) { 
+    if (highlighInquis && (settings.inqHighlight || settings.inqCircle)) { 
         inqHighlightRegister.register(); 
     }
     else { 
@@ -360,7 +360,7 @@ registerWhen(register("chat", (player, spacing, x, y, z, event) => {
             player = player.replaceAll('&', '§');
 
         if (isInq) {
-            if(settings.inqHighlight && checkDiana()) {
+            if(settings.inqHighlight || settings.inqCircle && checkDiana()) {
                 highlighInquis = true;
                 setTimeout(() => {
                     highlighInquis = false;
