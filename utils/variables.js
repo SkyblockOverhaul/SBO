@@ -429,9 +429,9 @@ export class SBOTimer {
     }
 }
 
-const timerTotal = new SBOTimer("Total", 3, dianaTrackerTotal, "totalTime");
-const timerSession = new SBOTimer("Session", 3, dianaTrackerSession, "sessionTime");
-const timerMayor = new SBOTimer("Mayor", 3, dianaTrackerMayor, "mayorTime");
+const timerTotal = new SBOTimer("Total", 1.5, dianaTrackerTotal, "totalTime");
+const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionTime");
+const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
 
