@@ -410,6 +410,10 @@ export class SBOTimer {
         return this.elapsedTime;
     }
 
+    getTime() {
+        return this.trackerObject.items[this.dataFieldName];
+    }
+
     // Updates the last activity time to the current time
     updateActivity() {
         this.lastActivityTime = Date.now();
