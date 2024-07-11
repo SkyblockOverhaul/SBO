@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfit } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -210,8 +210,23 @@ register("chat", (player, message) => {
                 }, 50)
             }
             break
-
-
+        case "!playtime":
+        case "!pt":
+            if(!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Playtime: " + formatTime(dianaTrackerMayor.items.mayorTime))
+                }, 50)
+            }
+            break
+        case "!profit":
+            if(!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                setTimeout(function() {
+                    ChatLib.command("pc Profit: " + getDianaMayorTotalProfit())
+                }, 50)
+            }
+            break
     }
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")
 

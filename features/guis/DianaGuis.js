@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, data, dianaTimerlist} from "../../utils/variables";
-import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect } from "../../utils/functions";
+import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
@@ -172,24 +172,7 @@ function getMobMassage(setting) {
 let lootMessageLines = [];
 let timerOverlayLine = null;
 
-function formatTime(milliseconds) {
-    const totalMinutes = parseInt(milliseconds / (60 * 1000));
-    const totalHours = parseInt(totalMinutes / 60);
-    const days = parseInt(totalHours / 24);
-    const hours = totalHours % 24;
-    const minutes = totalMinutes % 60;
 
-    let formattedTime = '';
-    if (days > 0) {
-        formattedTime += `${days}d `;
-    }
-    if (hours > 0 || days > 0) {
-        formattedTime += `${hours}h `;
-    }
-    formattedTime += `${minutes}m`;
-    
-    return formattedTime;
-}
 
 function getTimerMessage() {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
@@ -249,12 +232,17 @@ function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
 
     let lootTracker = getTracker(settings.dianaLootTrackerView);
+    let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
     let totalChimera = 0;
+    let totalMayorChimera = 0;
     
     for (let key of ["Chimera", "ChimeraLs"]) {
         if (lootTracker.items[key] !== undefined) {
             totalChimera += lootTracker.items[key];
+        }
+        if (mayorTracker.items[key] !== undefined) {
+            totalMayorChimera += mayorTracker.items[key];
         }
     }
 
@@ -274,16 +262,29 @@ function getLootMessage(lootViewSetting) {
         { name: "Enchanted Iron", key: "ENCHANTED_IRON", color: BLUE, bazaarKey: "ENCHANTED_IRON", format: true }
     ];
 
-    function getPrice(item) {
-        if (item.bazaarKey) {
-            if (item.name === "Chimera") {
-                return getBazaarPriceDiana(item.bazaarKey) * totalChimera;
+    function getPrice(item, mayorTracker = undefined) {
+        if(mayorTracker) {
+            if (item.bazaarKey) {
+                if (item.name === "Chimera") {
+                    return getBazaarPriceDiana(item.bazaarKey) * totalMayorChimera;
+                }
+                return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"][item.key];
+            } else if (item.ahKey) {
+                return getDianaAhPrice(item.ahKey) * mayorTracker["items"][item.key];
             }
-            return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
-        } else if (item.ahKey) {
-            return getDianaAhPrice(item.ahKey) * lootTracker["items"][item.key];
+            return 0;
         }
-        return 0;
+        else{
+            if (item.bazaarKey) {
+                if (item.name === "Chimera") {
+                    return getBazaarPriceDiana(item.bazaarKey) * totalChimera;
+                }
+                return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
+            } else if (item.ahKey) {
+                return getDianaAhPrice(item.ahKey) * lootTracker["items"][item.key];
+            }
+            return 0;
+        }
     }
 
     function createLootLine(item) {
@@ -346,12 +347,25 @@ function getLootMessage(lootViewSetting) {
         // overlay.gui.drawHoveringString(hovertext, 0, 0)
         GuiUtils.drawHoveringText(hovertext, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     }));
-    let totalValue = 0;
-    for (let item of itemData) {
-        totalValue += getPrice(item);
+    function getTotalValue(mayorOnly = false) {
+        let totalValue = 0;
+        if(mayorOnly) {
+            for (let item of itemData) {
+                totalValue += getPrice(item, mayorTracker);
+            }
+            totalValue += mayorTracker["items"]["coins"];
+            return formatNumber(totalValue);
+        }
+        else {
+            for (let item of itemData) {
+                totalValue += getPrice(item);
+            }
+            totalValue += lootTracker["items"]["coins"];
+            return formatNumber(totalValue);
+        }
     }
-    totalValue += lootTracker["items"]["coins"];
-    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(totalValue)}`;
+    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${getTotalValue()}`;
+    setDianaMayorTotalProfit(getTotalValue(true));
     lootLines.push(new OverlayTextLine(totalProfitText, true));
 
     return lootLines;

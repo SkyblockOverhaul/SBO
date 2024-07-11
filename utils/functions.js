@@ -577,3 +577,32 @@ export function getTracker(setting) {
     }
 }
 
+export function formatTime(milliseconds) {
+    const totalMinutes = parseInt(milliseconds / (60 * 1000));
+    const totalHours = parseInt(totalMinutes / 60);
+    const days = parseInt(totalHours / 24);
+    const hours = totalHours % 24;
+    const minutes = totalMinutes % 60;
+
+    let formattedTime = '';
+    if (days > 0) {
+        formattedTime += `${days}d `;
+    }
+    if (hours > 0 || days > 0) {
+        formattedTime += `${hours}h `;
+    }
+    formattedTime += `${minutes}m`;
+    
+    return formattedTime;
+}
+
+let dianaMayorTotalProfit = 0;
+
+export function getDianaMayorTotalProfit() {
+    return dianaMayorTotalProfit;
+}
+
+export function setDianaMayorTotalProfit(profit) {
+    dianaMayorTotalProfit = profit;
+}
+
