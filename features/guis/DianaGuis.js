@@ -369,8 +369,7 @@ function getLootMessage(lootViewSetting) {
     totalProfitLine.onHover((overlay) => {
         const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
         const timePassed = timer.getElapsedTime(); // in milliseconds
-        const timerHours = ((timePassed / (60 * 1000)) / 60) % 24; 
-        const profitPerHour = getTotalValue() / timerHours; // in coins
+        const profitPerHour = getTotalValue() / (timePassed / 3600000); // in coins
         let profitText = [
             `§6${profitPerHour} coins/hour`,
 
