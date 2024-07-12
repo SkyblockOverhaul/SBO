@@ -72,7 +72,10 @@ register("command", (args1, args2, ...args) => {
 
 register("chat", (player, message) => {
     message = message.split(" ");
-    playername = player.split("]")[1].trim();
+    let playername = undefined
+    if(player){
+        playername = player.split("]")[1].trim();
+    }
     if(data.partyBlacklist.includes(playername.toLowerCase())) return;
     switch (message[0].toLowerCase()) {
         case "!w":
