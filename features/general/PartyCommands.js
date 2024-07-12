@@ -142,7 +142,7 @@ register("chat", (player, message) => {
             if (settings.tpsCommand) {
                 setTimeout(function() {
                     tpsCommand(player)
-                }, 50)
+                }, 100)
             }
             break
         case "!chim":
@@ -156,7 +156,7 @@ register("chat", (player, message) => {
                 let totalChimera = dianaTrackerMayor["items"]["Chimera"] + dianaTrackerMayor["items"]["ChimeraLs"];
                 setTimeout(function() {
                     ChatLib.command("pc Chimera: " + totalChimera)
-                }, 50)
+                }, 100)
             }
             break
         case "!inq":
@@ -166,7 +166,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"])
-                }, 50)
+                }, 100)
             }
             break
         case "!burrows":
@@ -175,7 +175,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"])
-                }, 50)
+                }, 100)
             }
             break
         case "!relic":
@@ -184,7 +184,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"])
-                }, 50)
+                }, 100)
             }
             break
         case "!stick":
@@ -193,7 +193,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"])
-                }, 50)
+                }, 100)
             }
             break
         case "!mob":
@@ -202,7 +202,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
-                }, 50)
+                }, 100)
             }
             break
         case "!since":
@@ -210,7 +210,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
-                }, 50)
+                }, 100)
             }
             break
         case "!playtime":
@@ -219,7 +219,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Playtime: " + formatTime(dianaTrackerMayor.items.mayorTime))
-                }, 50)
+                }, 100)
             }
             break
         case "!profit":
@@ -228,7 +228,7 @@ register("chat", (player, message) => {
                 let [profit, offerType] = getDianaMayorTotalProfitAndOfferType();
                 setTimeout(function() {
                     ChatLib.command("pc Profit: " + profit + " (" + offerType + ")")
-                }, 50)
+                }, 100)
             }
             break
     }
