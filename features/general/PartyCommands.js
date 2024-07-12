@@ -81,7 +81,8 @@ register("chat", (player, message) => {
             playername = undefined; 
         }
     }
-    if(data.partyBlacklist.includes(playername.toLowerCase())) return;
+    if (playername == undefined) return;
+    if (data.partyBlacklist.includes(playername.toLowerCase())) return;
     switch (message[0].toLowerCase()) {
         case "!w":
         case "!warp":
