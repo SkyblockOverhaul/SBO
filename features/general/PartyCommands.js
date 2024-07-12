@@ -269,9 +269,9 @@ function getChance(magicfind, looting, lootshare = false) {
     const relicBaseChance = 0.0002;
 
     if(lootshare) {
-        let chimChanceLs = chimBaseChance * (1 + magicfind / 100);
-        let stickChanceLs = stickBaseChance * (1 + magicfind / 100);
-        let relicChanceLs = relicBaseChance * (1 + magicfind / 100);
+        let chimChanceLs = (chimBaseChance * (1 + magicfind / 100)) / 5;
+        let stickChanceLs = (stickBaseChance * (1 + magicfind / 100)) / 5;
+        let relicChanceLs = (relicBaseChance * (1 + magicfind / 100)) / 5;
         return [chimChanceLs, stickChanceLs, relicChanceLs];
     }
     else{
