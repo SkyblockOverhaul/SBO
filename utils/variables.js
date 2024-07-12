@@ -438,6 +438,7 @@ export class SBOTimer {
         if (this.tickEvent) {
             this.tickEvent.unregister();
             this.tickEvent = null;
+            this.trackerObject.items[this.dataFieldName] -= 90000;
         }
     }
 }
