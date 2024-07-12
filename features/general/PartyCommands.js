@@ -254,12 +254,12 @@ register("command", (args1, args2, ...args) => {
     let looting = parseInt(args2);
     let [chimChance, stickChance, relicChance] = getChance(magicfind, looting);
     let [chimChanceLs, stickChanceLs, relicChanceLs] = getChance(magicfind, looting, true);
-    ChatLib.chat("&6[SBO] &eChimera Chance: &b" + (chimChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &eStick Chance: &b" + (stickChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &eRelic Chance: &b" + (relicChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eChimera Chance: &b" + (chimChanceLs / 5 * 100).toFixed(2) + "%" + " &7[MF:" + magicfind + "]")
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + (stickChanceLs / 5 * 100).toFixed(2) + "%" + " &7[MF:" + magicfind + "]")
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + (relicChanceLs / 5 * 100).toFixed(2) + "%" + " &7[MF:" + magicfind + "]")
+    ChatLib.chat("&6[SBO] &eChimera Chance: &b" + formatChanceAsPercentage(chimChance) + formatChanceAsFraction(chimChance) + getMagicFindAndLooting(magicfind, looting))
+    ChatLib.chat("&6[SBO] &eStick Chance: &b" + formatChanceAsPercentage(stickChance) + formatChanceAsFraction(stickChance) + getMagicFindAndLooting(magicfind, looting))
+    ChatLib.chat("&6[SBO] &eRelic Chance: &b" + formatChanceAsPercentage(relicChance) + formatChanceAsFraction(relicChance) + getMagicFindAndLooting(magicfind, looting))
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eChimera Chance: &b" + formatChanceAsPercentage(chimChanceLs) + formatChanceAsFraction(chimChanceLs) + " &7[MF:" + magicfind + "]")
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + formatChanceAsPercentage(stickChanceLs) + formatChanceAsFraction(stickChanceLs) + " &7[MF:" + magicfind + "]")
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + formatChanceAsPercentage(relicChanceLs) + formatChanceAsFraction(relicChanceLs) + " &7[MF:" + magicfind + "]")
 }).setName("sbodropchance").setAliases("sbodc")
 
 function getChance(magicfind, looting, lootshare = false) { 
@@ -280,6 +280,14 @@ function getChance(magicfind, looting, lootshare = false) {
         let relicChance = relicBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
         return [chimChance, stickChance, relicChance];
     }
+}
+
+function formatChanceAsPercentage(chance) {
+    return (chance * 100).toFixed(2) + "%";
+}
+
+function formatChanceAsFraction(chance) {
+    return " &7(&b1/" + Math.round(1 / chance) + "&7)";
 }
 
 function getMagicFindAndLooting(magicfind, looting) {
