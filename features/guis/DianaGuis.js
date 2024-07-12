@@ -296,7 +296,7 @@ function getLootMessage(lootViewSetting) {
 
         if (percent || item.hasLS) {
             text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
-            if (item.hasLS) {
+            if (item.hasLS && lsAmount > 0) {
                 text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
             }
         }
