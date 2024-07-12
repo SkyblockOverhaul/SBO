@@ -295,8 +295,9 @@ function getLootMessage(lootViewSetting) {
         let text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
         if (percent || item.hasLS) {
-            if (percent.toString() != "NaN") {
+            if (percent.toString() !== "NaN") {
                 text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
+            }
             if (item.hasLS && lsAmount > 0) {
                 text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
             }
