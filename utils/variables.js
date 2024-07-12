@@ -392,7 +392,7 @@ export class SBOTimer {
     continue() {
         if (this.running) return;
         if(this.inactivityFlag) {
-            this.elapsedTime -= INACTIVITY_LIMIT;
+            this.elapsedTime -= this.INACTIVITY_LIMIT;
         }
         this.startTime = Date.now();
         this.running = true;
@@ -433,7 +433,7 @@ export class SBOTimer {
                 if (Date.now() - this.lastActivityTime > this.INACTIVITY_LIMIT && this.running) {
                     this.pause();
                     if(!this.inactivityFlag) {
-                        this.trackerObject.items[this.dataFieldName] -= INACTIVITY_LIMIT;
+                        this.trackerObject.items[this.dataFieldName] -= this.INACTIVITY_LIMIT;
                         this.inactivityFlag = true;
                     }
                 }
