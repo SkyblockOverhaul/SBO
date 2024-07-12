@@ -355,6 +355,7 @@ export class SBOTimer {
         this.tickEvent = null; // Timeout-ID
         this.trackerObject = trackerObject; // Tracker object (total/session/mayor)
         this.dataFieldName = dataFieldName; // Name of the field in the tracker object
+        this.inactivityFlag = false;
     }
 
     // Starts the timer
@@ -390,6 +391,9 @@ export class SBOTimer {
     // Continues the timer from where it was paused
     continue() {
         if (this.running) return;
+        if(this.inactivityFlag) {
+            this.elapsedTime -= 90000;
+        }
         this.startTime = Date.now();
         this.running = true;
         this.startInactivityCheck();
@@ -428,6 +432,10 @@ export class SBOTimer {
                 this.updateElapsedTime();
                 if (Date.now() - this.lastActivityTime > this.INACTIVITY_LIMIT && this.running) {
                     this.pause();
+                    if(!this.inactivityFlag) {
+                        this.trackerObject.items[this.dataFieldName] -= 90000;
+                        this.inactivityFlag = true;
+                    }
                 }
             });
         }
@@ -438,7 +446,7 @@ export class SBOTimer {
         if (this.tickEvent) {
             this.tickEvent.unregister();
             this.tickEvent = null;
-            this.trackerObject.items[this.dataFieldName] -= 90000;
+            this.inactivityFlag = false;
         }
     }
 }
