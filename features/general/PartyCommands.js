@@ -253,25 +253,33 @@ register("command", (args1, args2, ...args) => {
     let magicfind = parseInt(args1);
     let looting = parseInt(args2);
     let [chimChance, stickChance, relicChance] = getChance(magicfind, looting);
+    let [chimChanceLs, stickChanceLs, relicChanceLs] = getChance(magicfind, looting, true);
     ChatLib.chat("&6[SBO] &eChimera Chance: &b" + (chimChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
     ChatLib.chat("&6[SBO] &eStick Chance: &b" + (stickChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
     ChatLib.chat("&6[SBO] &eRelic Chance: &b" + (relicChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eChimera Chance: &b" + (chimChance / 5 * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + (stickChance / 5 * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + (relicChance / 5 * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eChimera Chance: &b" + (chimChanceLs / 5 * 100).toFixed(2) + "%" + " &7[MF:" + magicfind + "]")
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + (stickChanceLs / 5 * 100).toFixed(2) + "%" + " &7[MF:" + magicfind + "]")
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + (relicChanceLs / 5 * 100).toFixed(2) + "%" + " &7[MF:" + magicfind + "]")
 }).setName("sbodropchance").setAliases("sbodc")
 
-function getChance(magicfind, looting) { 
+function getChance(magicfind, looting, lootshare = false) { 
 
     const chimBaseChance = 0.01;
     const stickBaseChance = 0.0008;
     const relicBaseChance = 0.0002;
 
-    let chimChance = chimBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-    let stickChance = stickBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-    let relicChance = relicBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-
-    return [chimChance, stickChance, relicChance];
+    if(lootshare) {
+        let chimChanceLs = chimBaseChance * (1 + magicfind / 100);
+        let stickChanceLs = stickBaseChance * (1 + magicfind / 100);
+        let relicChanceLs = relicBaseChance * (1 + magicfind / 100);
+        return [chimChanceLs, stickChanceLs, relicChanceLs];
+    }
+    else{
+        let chimChance = chimBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
+        let stickChance = stickBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
+        let relicChance = relicBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
+        return [chimChance, stickChance, relicChance];
+    }
 }
 
 function getMagicFindAndLooting(magicfind, looting) {
