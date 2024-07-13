@@ -30,7 +30,6 @@ export function dianaLootCounter(item, amount) {
                 if (item === i) {
                     if (item == "ANCIENT_CLAW") {
                         if ([10, 20, 30].includes(parseInt(amount)) && gotLootShare()) {
-                            print("Claws: " + amount);
                             trackItem("Minos Inquisitor Ls", "mobs", 1); // ls inq
                         }
                     }
