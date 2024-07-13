@@ -30,7 +30,7 @@ function refreshLegionOverlay() {
 
 registerWhen(register("step", () => {
     refreshLegionOverlay();
-}).setFps(10), () => settings.legionCounter);
+}).setFps(1), () => settings.legionCounter);
 
 function disctanceToPlayer(player) {
     return distance = Math.sqrt((player.x - Player.getX()) ** 2 + (player.z - Player.getZ()) ** 2);
