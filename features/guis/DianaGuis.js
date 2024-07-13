@@ -290,19 +290,14 @@ function getLootMessage(lootViewSetting) {
         let percent = undefined;
         let lsAmount = undefined;
         let text = "";
-        if (item.hasPercent && item.key !== "ChimeraLs") {
+        if (item.hasPercent) {
             percent = item.hasPercent ? percentDict[item.name] : "";
         }
         else if (item.name === "ChimeraLs") {
             percent = item.hasPercent ? percentDict[item.key] : "";
             lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
         }
-        if (item.key === "ChimeraLs") {
-            text = `${GOLD}${price} ${GRAY}| ${item.color}${item.key}: ${AQUA}${itemAmount}`;
-        }
-        else {
-            text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
-        }
+        text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
         if (percent) {
             if (percent.toString() !== "NaN") {
