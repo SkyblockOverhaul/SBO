@@ -208,7 +208,7 @@ export function readPlayerInventory(type="") {
                 else {
                     playerItems[getSBID(playerInvItems[i])] = [playerInvItems[i].getStackSize(), playerInvItems[i].getName()];
                 }
-                printDev("Item: " + playerItems[getSBID(playerInvItems[i])][1] + " in slot " + i);
+                // printDev("Item: " + playerItems[getSBID(playerInvItems[i])][1] + " in slot " + i);
             }
         }
     }
