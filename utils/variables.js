@@ -335,6 +335,43 @@ export function checkMayorTracker() {
     }
 }
 
+register("chat", () => {
+    // restet mayor tracker and increase year by 1 without checkMayor Function being called
+    if (ChatLib.removeFormatting(ChatLib.getChatMessage()).includes("Mayor")) {
+        let tempTracker = initializeTrackerMayor();
+        for (let key in dianaTrackerMayor) {
+            tempTracker[key] = dianaTrackerMayor[key];
+        }
+        if (dianaTrackerMayor.year != 0) {
+            // check if all keys have the value 0
+            let allZero = true;
+            for (let key in tempTracker.items) {
+                if (tempTracker.items[key] != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+            for (let key in tempTracker.mobs) {
+                if (tempTracker.mobs[key] != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+            if (!allZero) {
+                pastDianaEvents["events"].push(tempTracker);
+            }
+        }
+        let newTracker = initializeTrackerMayor();
+        timerMayor.reset();
+        for (let key in newTracker) {
+            dianaTrackerMayor[key] = newTracker[key];
+        }
+        dianaTrackerMayor.year++;
+        dianaTrackerMayor.save();
+        pastDianaEvents.save();
+    }
+}).setCriteria("&r&eThe election room is now closed. Clerk Seraphine is doing a final count of the votes...&r");
+
 /**
  * Adds a trigger with its associated dependency to the list of registered triggers.
  *

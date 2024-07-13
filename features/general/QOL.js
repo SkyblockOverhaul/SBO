@@ -46,6 +46,10 @@ registerWhen(register("chat", (player, dings) => {
     }
 }).setCriteria("${player} &r&eentered &r&aGlacite Mineshafts${dings}"), () => settings.exitWaypoint);
 
+
+registerWhen(register("chat", (dings1, dings2, event) => {
+    cancel(event);
+}).setCriteria("&a&aYou tipped ${dings1} players in ${dings2} different games!&r"), () => settings.hideTippedPlayers);
 // registerWhen(register("chat", () => {
 //     Client.showTitle("&l&9MINESHEFT!", "", 0, 90, 20);
 // }).setCriteria("&r&5&lWOW! &r&aYou found a &r&bGlacite Mineshaft &r&aportal!&r"), () => settings.mineshaftAnnouncer);
