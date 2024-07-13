@@ -295,6 +295,15 @@ registerWhen(register("chat", (drop, event) => {
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare() && settings.dianaTracker) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
+                    if(settings.replaceChimMessage) {
+                        cancel(event)
+                        if(magicFind > 0) {
+                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
+                        }
+                        else {
+                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera!&r");
+                        }
+                    }
                 }
                 else {
                     if(settings.dianaAvgMagicFind) {
@@ -362,6 +371,7 @@ registerWhen(register("chat", (drop, event) => {
         }
     }
 }).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.replaceChimMessage));
+"&r&6&lRARE DROP! &r&fEnchanted Book&r"
 
 // refresh overlay //
 let tempSettingLoot = -1;
