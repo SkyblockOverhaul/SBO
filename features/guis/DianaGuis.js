@@ -231,6 +231,7 @@ const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
     const offertType = ["Instasell", "Sell Offer"][settings.bazaarSettingDiana];
+    let mobTracker = getTracker(settings.dianaMobTrackerView);
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
@@ -299,7 +300,14 @@ function getLootMessage(lootViewSetting) {
                 text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
             }
             if (item.hasLS && lsAmount > 0) {
-                text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
+                // let chimLsChance = lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]; in percent
+                let chimLsChance = (lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]) * 100;
+                if (mobTracker["mobs"]["Minos Inquisitor Ls"] > 0) {
+                    text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}] ${GRAY}(${AQUA}${chimLsChance.toFixed(2)}%${GRAY})`;
+                }
+                else {
+                    text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
+                }
             }
         }
 
