@@ -238,7 +238,7 @@ function getLootMessage(lootViewSetting) {
 
     const itemData = [
         { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
-        { name: "Chimera", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+        { name: "ChimeraLs", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
         { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
         { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
         { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
@@ -256,10 +256,10 @@ function getLootMessage(lootViewSetting) {
     function getPrice(item, mayorTracker = undefined) {
         if(mayorTracker) {
             if (item.bazaarKey) {
-                if (item.name === "Chimera" && item.key === "Chimera") {
+                if (item.name === "Chimera") {
                     return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["Chimera"];
                 }
-                else if (item.name === "Chimera" && item.key === "ChimeraLs") {
+                else if (item.name === "ChimeraLs") {
                     return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["ChimeraLs"];
                 }
                 return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"][item.key];
@@ -270,10 +270,10 @@ function getLootMessage(lootViewSetting) {
         }
         else{
             if (item.bazaarKey) {
-                if (item.name === "Chimera" && item.key === "Chimera") {
+                if (item.name === "Chimera") {
                     return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["Chimera"]
                 }
-                else if (item.name === "Chimera" && item.key === "ChimeraLs") {
+                else if (item.name === "ChimeraLs") {
                     return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["ChimeraLs"];
                 }
                 return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
@@ -293,7 +293,7 @@ function getLootMessage(lootViewSetting) {
         if (item.hasPercent && item.key !== "ChimeraLs") {
             percent = item.hasPercent ? percentDict[item.name] : "";
         }
-        else if (item.key === "ChimeraLs") {
+        else if (item.name === "ChimeraLs") {
             percent = item.hasPercent ? percentDict[item.key] : "";
             lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
         }
@@ -314,27 +314,14 @@ function getLootMessage(lootViewSetting) {
             if (line.button) {
                 line.button = false;
                 line.setText(text);
-                if (item.key === "ChimeraLs") {
-                    data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.key);
-                } else {
-                    data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.name);
-                }
+                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.name);
             } else {
                 line.button = true;
                 line.setText("&7&m" + line.text.getString().removeFormatting());
-                if (item.key === "ChimeraLs") {
-                    data.hideTrackerLines.push(item.key);
-                }
-                else {
-                    data.hideTrackerLines.push(item.name);
-                }
+                data.hideTrackerLines.push(item.name);
             }
         });
-        if (data.hideTrackerLines.includes(item.name) && item.key !== "ChimeraLs") {
-            line.button = true;
-            line.setText("&7&m" + line.text.getString().removeFormatting());
-        }
-        else if (data.hideTrackerLines.includes(item.key) && item.key === "ChimeraLs") {
+        if (data.hideTrackerLines.includes(item.name)) {
             line.button = true;
             line.setText("&7&m" + line.text.getString().removeFormatting());
         }
