@@ -288,14 +288,9 @@ function getLootMessage(lootViewSetting) {
         const price = formatNumber(getPrice(item));
         const itemAmount = item.format ? formatNumber(lootTracker["items"][item.key]) : formatNumberCommas(lootTracker["items"][item.key]);
         let percent = undefined;
-        let lsAmount = undefined;
         let text = "";
         if (item.hasPercent) {
-            percent = item.hasPercent ? percentDict[item.name] : "";
-        }
-        else if (item.name === "ChimeraLs") {
             percent = item.hasPercent ? percentDict[item.key] : "";
-            lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
         }
         text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
