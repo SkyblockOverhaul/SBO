@@ -534,6 +534,12 @@ class Settings {
         category: 'Quality of Life',
     })
     pickuplogOverlay = false;
+    @SwitchProperty({
+        name: 'Hide Tipped Players',
+        description: 'Hides the players you tipped in the chat',
+        category: 'Quality of Life',
+    })
+    hideTippedPlayers = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",

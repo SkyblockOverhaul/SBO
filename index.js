@@ -18,7 +18,7 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import { data } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
-import { printDev } from "./utils/functions";
+import { formatNumber, printDev } from "./utils/functions";
 
 
 register("command", (args1, ...args) => {
@@ -162,6 +162,7 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 // //    }, 150);
 // }).setName("sboinq");
 // import { request } from "../requestV2";
+// import { request } from "../requestV2";
 
 // const ByteArrayInputStream = Java.type("java.io.ByteArrayInputStream")
 // const Base64 = Java.type("java.util.Base64")
@@ -173,23 +174,24 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 //     return new NBTTagCompound(CompressedStreamTools.func_74796_a(new ByteArrayInputStream(Base64.getDecoder().decode(compressed))))
 // }
 
-
 // let page = 0;
 // let itemsFound = [];
 // let totalPages = 0;
-// let itemIdSearched = "";
+// let itemIdSearched = "DYE_PORTAL";
+// // let itemIdSearched = "BATTLE_DISC";
 // let priceSearched = 0;
 
-// function get_info(url) {
+// function get_info() {
 //     request({
 //         url: "https://api.hypixel.net/skyblock/auctions?page=" + page,
-//         json: true
+//         json: false
 //     }).then((response)=>{
-//         let obj = JSON.parse(response)
+//         let obj = JSON.parse(response);
 //         if (!obj.success) {
 //             print("API request failed");
 //             return false
 //         }
+//         print("Page: " + page + " / " + obj.totalPages);
 //         obj.auctions.forEach(auction => {
 //             let itemNBT  = decompress(auction.item_bytes)
 //             let itemObj = itemNBT.toObject().i
@@ -206,12 +208,12 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 //         allpages.push(response.auctions);
 //         page++;
 //         if (totalPages == 0) {
-//             totalPages = response.totalPages;
+//             totalPages = obj.totalPages;
 //         }
 //         // for every 10th page print status
-//         if (page % 10 == 0 || page == totalPages || page == 0) {
-//             print("Page: " + page + " / " + totalPages);
-//         }
+//         // if (page % 10 == 0 || page == totalPages || page == 0) {
+//         //     print("Page: " + page + " / " + totalPages);
+//         // }
 //         if (page < totalPages) {
 //             get_info();
 //         } else {
@@ -229,6 +231,7 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 //                 for (let i = 0; i < 10 && i < itemsFound.length; i++) {
 //                     let item = itemsFound[i];
 //                     print("Price: " + item.price + " | UUID: " + item.auction);
+//                     new TextComponent("&6[SBO] &eClick to buy " + itemIdSearched + " " + formatNumber(item.price)).setClick("run_command", "/viewauction " + item.auction).setHover("show_text", "/viewauction " + item.auction).chat();
 //                 }
 //             }
 //             else {
@@ -243,14 +246,16 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 //     });
 // }
 
-// function get_all_auctions(id, price) {
+// function get_all_auctions(price) {
 //     allpages = [];
 //     page = 0;
 //     totalPages = 0;
+//     priceSearched = price;
+//     itemsFound = [];
 
 //     get_info();
 // }
 
-// register("command", (args1, args2, ...args) => {
-//     get_all_auctions(args1, args2);
+// register("command", (args2, ...args) => {
+//     get_all_auctions(args2);
 // }).setName("allah");
