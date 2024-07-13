@@ -231,21 +231,10 @@ const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
     const offertType = ["Instasell", "Sell Offer"][settings.bazaarSettingDiana];
-    let mobTracker = getTracker(settings.dianaLootTrackerView);
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
-    let totalChimera = 0;
-    let totalMayorChimera = 0;
-    
-    for (let key of ["Chimera", "ChimeraLs"]) {
-        if (lootTracker.items[key] !== undefined) {
-            totalChimera += lootTracker.items[key];
-        }
-        if (mayorTracker.items[key] !== undefined) {
-            totalMayorChimera += mayorTracker.items[key];
-        }
-    }
+
 
     const itemData = [
         { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
@@ -268,7 +257,7 @@ function getLootMessage(lootViewSetting) {
         if(mayorTracker) {
             if (item.bazaarKey) {
                 if (item.name === "Chimera" && item.key === "Chimera") {
-                    return getBazaarPriceDiana(item.bazaarKey) * totalMayorChimera;
+                    return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["Chimera"];
                 }
                 else if (item.name === "Chimera" && item.key === "ChimeraLs") {
                     return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["ChimeraLs"];
@@ -282,7 +271,7 @@ function getLootMessage(lootViewSetting) {
         else{
             if (item.bazaarKey) {
                 if (item.name === "Chimera" && item.key === "Chimera") {
-                    return getBazaarPriceDiana(item.bazaarKey) * totalChimera;
+                    return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["Chimera"]
                 }
                 else if (item.name === "Chimera" && item.key === "ChimeraLs") {
                     return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["ChimeraLs"];
@@ -325,11 +314,20 @@ function getLootMessage(lootViewSetting) {
             if (line.button) {
                 line.button = false;
                 line.setText(text);
-                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.name);
+                if (item.key === "ChimeraLs") {
+                    data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.key);
+                } else {
+                    data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.name);
+                }
             } else {
                 line.button = true;
                 line.setText("&7&m" + line.text.getString().removeFormatting());
-                data.hideTrackerLines.push(item.name);
+                if (item.key === "ChimeraLs") {
+                    data.hideTrackerLines.push(item.key);
+                }
+                else {
+                    data.hideTrackerLines.push(item.name);
+                }
             }
         });
         if (data.hideTrackerLines.includes(item.name)) {
