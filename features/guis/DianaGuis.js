@@ -238,7 +238,7 @@ function getLootMessage(lootViewSetting) {
 
     const itemData = [
         { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
-        { name: "ChimeraLs", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+        { name: "Chimera &7[Ls]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
         { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
         { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
         { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
