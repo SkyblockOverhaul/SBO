@@ -330,7 +330,11 @@ function getLootMessage(lootViewSetting) {
                 }
             }
         });
-        if (data.hideTrackerLines.includes(item.name)) {
+        if (data.hideTrackerLines.includes(item.name) && item.key !== "ChimeraLs") {
+            line.button = true;
+            line.setText("&7&m" + line.text.getString().removeFormatting());
+        }
+        else if (data.hideTrackerLines.includes(item.key) && item.key === "ChimeraLs") {
             line.button = true;
             line.setText("&7&m" + line.text.getString().removeFormatting());
         }
