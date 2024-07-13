@@ -176,7 +176,7 @@ let timerOverlayLine = null;
 
 function getTimerMessage() {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-    if (timer.trackerObject.items[timer.dataFieldName] === undefined) return
+    if (timer.trackerObject.items[timer.dataFieldName] === undefined) return formatTime(timer.getElapsedTime());
     if (timer.trackerObject.items[timer.dataFieldName] > 0) {
         return formatTime(timer.trackerObject.items[timer.dataFieldName]);
     } else {
