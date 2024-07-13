@@ -231,7 +231,7 @@ const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
     const offertType = ["Instasell", "Sell Offer"][settings.bazaarSettingDiana];
-    let mobTracker = getTracker(settings.dianaMobTrackerView);
+    let mobTracker = getTracker(settings.dianaLootTrackerView);
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
@@ -248,7 +248,8 @@ function getLootMessage(lootViewSetting) {
     }
 
     const itemData = [
-        { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true, hasLS: true },
+        { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+        { name: "Chimera", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
         { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
         { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
         { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
@@ -266,8 +267,11 @@ function getLootMessage(lootViewSetting) {
     function getPrice(item, mayorTracker = undefined) {
         if(mayorTracker) {
             if (item.bazaarKey) {
-                if (item.name === "Chimera") {
+                if (item.name === "Chimera" && item.key === "Chimera") {
                     return getBazaarPriceDiana(item.bazaarKey) * totalMayorChimera;
+                }
+                else if (item.name === "Chimera" && item.key === "ChimeraLs") {
+                    return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["ChimeraLs"];
                 }
                 return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"][item.key];
             } else if (item.ahKey) {
@@ -277,8 +281,11 @@ function getLootMessage(lootViewSetting) {
         }
         else{
             if (item.bazaarKey) {
-                if (item.name === "Chimera") {
+                if (item.name === "Chimera" && item.key === "Chimera") {
                     return getBazaarPriceDiana(item.bazaarKey) * totalChimera;
+                }
+                else if (item.name === "Chimera" && item.key === "ChimeraLs") {
+                    return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["ChimeraLs"];
                 }
                 return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
             } else if (item.ahKey) {
@@ -291,24 +298,35 @@ function getLootMessage(lootViewSetting) {
     function createLootLine(item) {
         const price = formatNumber(getPrice(item));
         const itemAmount = item.format ? formatNumber(lootTracker["items"][item.key]) : formatNumberCommas(lootTracker["items"][item.key]);
-        const percent = item.hasPercent ? percentDict[item.name] : "";
-        const lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
-        let text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
+        let percent = undefined;
+        let lsAmount = undefined;
+        let text = "";
+        if (item.hasPercent && item.key !== "ChimeraLs") {
+            percent = item.hasPercent ? percentDict[item.name] : "";
+        }
+        else if (item.key === "ChimeraLs") {
+            percent = item.hasPercent ? percentDict[item.key] : "";
+            lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
+        }
+        if (item.key === "ChimeraLs") {
+            text = `${GOLD}${price} ${GRAY}| ${item.color}${item.key}: ${AQUA}${itemAmount}`;
+        }
+        else {
+            text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
+        }
 
-        if (percent || item.hasLS) {
+        if (percent) {
             if (percent.toString() !== "NaN") {
                 text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
             }
-            if (item.hasLS && lsAmount > 0) {
-                // let chimLsChance = lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]; in percent
-                let chimLsChance = (lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]) * 100;
-                if (mobTracker["mobs"]["Minos Inquisitor Ls"] > 0) {
-                    text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}] ${GRAY}(${AQUA}${chimLsChance.toFixed(2)}%${GRAY})`;
-                }
-                else {
-                    text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
-                }
-            }
+            // let chimLsChance = lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]; in percent
+            // let chimLsChance = (lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]) * 100;
+            // if (mobTracker["mobs"]["Minos Inquisitor Ls"] > 0) {
+            //     text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}] ${GRAY}(${AQUA}${chimLsChance.toFixed(2)}%${GRAY})`;
+            // }
+            // else {
+            //     text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
+            // }
         }
 
         let line = new OverlayButton(text, true, false, true, true).onClick(() => {
