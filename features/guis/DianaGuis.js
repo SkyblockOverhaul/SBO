@@ -319,14 +319,6 @@ function getLootMessage(lootViewSetting) {
             if (percent.toString() !== "NaN") {
                 text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
             }
-            // let chimLsChance = lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]; in percent
-            // let chimLsChance = (lsAmount / mobTracker["mobs"]["Minos Inquisitor Ls"]) * 100;
-            // if (mobTracker["mobs"]["Minos Inquisitor Ls"] > 0) {
-            //     text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}] ${GRAY}(${AQUA}${chimLsChance.toFixed(2)}%${GRAY})`;
-            // }
-            // else {
-            //     text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
-            // }
         }
 
         let line = new OverlayButton(text, true, false, true, true).onClick(() => {
