@@ -222,8 +222,9 @@ registerWhen(register("chat", (time, event) => {
     cancel(event);
 }).setCriteria("&r&cThis ability is on cooldown for${time}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
-
-
+registerWhen(register("chat", (waste, event) => {
+    cancel(event);
+}).setCriteria("&r&7Warping${waste}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
 // mob tracker
 registerWhen(register("chat", (woah, arev, mob, event) => {
