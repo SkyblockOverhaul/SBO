@@ -291,8 +291,7 @@ function getLootMessage(lootViewSetting) {
         let percent = undefined;
         let text = "";
         if (item.hasPercent) {
-            if (item.name === "Minos Relic") percent = item.hasPercent ? percentDict[item.name] : "";
-            else percent = item.hasPercent ? percentDict[item.key] : "";
+            percent = item.hasPercent ? percentDict[item.key] : "";
         }
         text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
