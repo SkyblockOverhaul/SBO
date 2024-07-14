@@ -239,7 +239,7 @@ function getLootMessage(lootViewSetting) {
 
     const itemData = [
         { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
-        { name: "Chimera &7[Ls]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+        { name: "Chimera &7[&bLs&7]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
         { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
         { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
         { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
@@ -367,8 +367,11 @@ function getLootMessage(lootViewSetting) {
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-    const timePassed = timer.getHourTime(); // in hours 
-    const profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    let timePassed = timer.getHourTime(); // in hours 
+    let profitPerHour = 0;
+    if (timePassed != "NaN" && timePassed != 0) {
+        profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    }
     let profitText = [
         `§6${profitPerHour} coins/hour`,
 

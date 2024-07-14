@@ -177,8 +177,8 @@ register("command", () => {
     for (let key in tempTracker) {
         trackerSession[key] = tempTracker[key];
     }
-    trackerSession.save();
     dianaTimerlist[2].reset();
+    trackerSession.save();
     itemOverlay();
     mobOverlay();
 }).setName("sboresetsession");
@@ -219,9 +219,12 @@ register("chat", (event) => {
 
 // --for spade spam
 registerWhen(register("chat", (time, event) => {
-    if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&cThis ability is on cooldown for ${time}"), () => getWorld() === "Hub" && playerHasSpade());
+    cancel(event);
+}).setCriteria("&r&cThis ability is on cooldown for${time}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
+registerWhen(register("chat", (waste, event) => {
+    cancel(event);
+}).setCriteria("&r&7Warping${waste}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
 // mob tracker
 registerWhen(register("chat", (woah, arev, mob, event) => {
@@ -252,7 +255,7 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
-
+"&7[12:22] &r&r&r&c&lYikes! &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {

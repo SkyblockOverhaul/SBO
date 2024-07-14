@@ -4,6 +4,7 @@ import { getWorld } from "../../utils/world";
 import { mythosMobHpOverlay } from "./../guis/DianaGuis";
 import { checkDiana } from "../../utils/checkDiana";
 import RenderLibV2 from "../../../RenderLibv2";
+import { printDev } from "../../utils/functions";
 
 export function getMobsToDisplay() {
     return names;
@@ -50,6 +51,30 @@ registerWhen(register("step", () => {
         mythosMobHpOverlay(names);
     }
 }).setFps(6), () => settings.mythosMobHp && getWorld() === "Hub");
+
+// register("renderEntity", (entity, pos, ticks, event) => {
+//     if(entity.getClassName() == 'EntityOtherPlayerMP') {
+//         let name = entity.getName().trim();
+//         if (name.includes("Inquisitor")){
+//             let red = settings.inqColor.getRed() / 255;
+//             let green = settings.inqColor.getGreen() / 255;
+//             let blue = settings.inqColor.getBlue() / 255;
+//             let alpha = settings.inqColor.getAlpha() / 255;
+//             Tessellator.pushMatrix();
+//             Tessellator.colorize(red, green, blue, 1);
+//             Tessellator.enableAlpha()
+//             Tessellator.enableBlend()
+//         }
+//         if (name.includes("Champion")){
+//             let red = settings.inqColor.getRed() / 255;
+//             let green = settings.inqColor.getGreen() / 255;
+//             let blue = settings.inqColor.getBlue() / 255;
+//             let alpha = settings.inqColor.getAlpha() / 255;
+//             Tessellator.pushMatrix();
+//             Tessellator.colorize(red, green, blue, 1);
+//         }
+//     }
+// });
    
 export const inqHighlightRegister = register("renderWorld", () => {
     inqs.forEach((mob) => {

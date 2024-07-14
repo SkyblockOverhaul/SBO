@@ -327,6 +327,8 @@ export function checkMayorTracker() {
         }
         let newTracker = initializeTrackerMayor();
         timerMayor.reset();
+        data.last10ChimMagicFind = [];
+        data.last10StickMagicFind = [];
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
         }

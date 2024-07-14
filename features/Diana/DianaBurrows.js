@@ -132,14 +132,14 @@ function burrowDetect(packet) {
     // print("Particle: " + typename);
     const particleType = getParticleType(packet);
     if (!particleType) return;
-    printDev("Went thourhg particylType check");
+    // printDev("Went thourhg particylType check");
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
     if (burrowshistory.contains(posstring)) return;
-    printDev("Went thourhg history check");
+    // printDev("Went thourhg history check");
     
     if (!burrows[posstring]) {
-        printDev("Creating String");
+        // printDev("Creating String");
         burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
     }
 
@@ -236,7 +236,7 @@ register("step", () => {
         // print each burrow with cords and type
         // print("x: " + burrows[key][1].x + " y: " + burrows[key][1].y + " z: " + burrows[key][1].z + " type: " + burrows[key][0].type);
         if (burrows[key][0].type != undefined) {
-            printDev("Creating Burrow");
+            // printDev("Creating Burrow");
             createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
         } // hängt sich hier auzf manchmal
 

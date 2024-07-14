@@ -208,7 +208,7 @@ export function readPlayerInventory(type="") {
                 else {
                     playerItems[getSBID(playerInvItems[i])] = [playerInvItems[i].getStackSize(), playerInvItems[i].getName()];
                 }
-                printDev("Item: " + playerItems[getSBID(playerInvItems[i])][1] + " in slot " + i);
+                // printDev("Item: " + playerItems[getSBID(playerInvItems[i])][1] + " in slot " + i);
             }
         }
     }
@@ -556,7 +556,7 @@ export function calcPercent(trackerToCalc, type) {
                     percentDict["ChimeraLs"] = parseFloat((trackerToCalc["items"]["ChimeraLs"] / trackerToCalc["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2));
                     break;
                 case "Minos Champion":
-                    percentDict["Minos Relic"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
+                    percentDict["MINOS_RELIC"] = parseFloat((trackerToCalc["items"]["MINOS_RELIC"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
                     break;
                 case "Minotaur":
                     percentDict["Daedalus Stick"] = parseFloat((trackerToCalc["items"]["Daedalus Stick"] / trackerToCalc["mobs"][obj] * 100).toFixed(2));
