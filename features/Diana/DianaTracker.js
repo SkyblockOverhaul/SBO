@@ -177,8 +177,8 @@ register("command", () => {
     for (let key in tempTracker) {
         trackerSession[key] = tempTracker[key];
     }
-    trackerSession.save();
     dianaTimerlist[2].reset();
+    trackerSession.save();
     itemOverlay();
     mobOverlay();
 }).setName("sboresetsession");
