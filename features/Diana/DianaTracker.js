@@ -220,7 +220,8 @@ register("chat", (event) => {
 // --for spade spam
 registerWhen(register("chat", (time, event) => {
     cancel(event);
-}).setCriteria("&r&cThis ability is on cooldown for ${time}."), () => getWorld() === "Hub" && settings.cleanDianaChat);
+}).setCriteria("&r&cThis ability is on cooldown for${time}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
+
 
 
 
