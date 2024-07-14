@@ -367,8 +367,11 @@ function getLootMessage(lootViewSetting) {
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-    const timePassed = timer.getHourTime(); // in hours 
-    const profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    let timePassed = timer.getHourTime(); // in hours 
+    let profitPerHour = 0;
+    if (timePassed != "NaN" && timePassed != 0) {
+        profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    }
     let profitText = [
         `§6${profitPerHour} coins/hour`,
 
