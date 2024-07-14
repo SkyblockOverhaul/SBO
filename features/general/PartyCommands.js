@@ -74,6 +74,7 @@ register("chat", (player, message) => {
     message = message.split(" ");
     let playername = getplayername(player)
     if (data.partyBlacklist.includes(playername.toLowerCase())) return;
+    let args1 = message[1] ? message[1].toLowerCase() : undefined;
     switch (message[0].toLowerCase()) {
         case "!w":
         case "!warp":
@@ -205,9 +206,42 @@ register("chat", (player, message) => {
         case "!since":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
-                    ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
-                }, 100)
+                if(args1 == undefined) {
+                    setTimeout(function() {
+                        ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
+                    }, 100)
+                    return;
+                }
+                switch(args1){
+                    case "chimera":
+                    case "chim":
+                    case "chims":
+                    case "chimeras":
+                        setTimeout(function() {
+                            ChatLib.command("pc Inqs since chim: " + data.inqsSinceChim)
+                        }, 100)
+                        break
+                    case "stick":
+                    case "sticks":
+                        setTimeout(function() {
+                            ChatLib.command("pc Minos since stick: " + data.minotaursSinceStick)
+                        }, 100)
+                        break
+                    case "relic":
+                    case "relics":
+                        setTimeout(function() {
+                            ChatLib.command("pc Champs since relic: " + data.champsSinceRelic)
+                        }, 100)
+                        break
+                    case "inq":
+                    case "inqs":
+                    case "inquisitor":
+                        setTimeout(function() {
+                            ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
+                        }, 100)
+                        break
+                }
+                
             }
             break
         case "!playtime":
