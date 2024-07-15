@@ -1,11 +1,11 @@
 import renderBeaconBeam from "../../../BeaconBeam/index";
-import RenderLibV2 from "../../../RenderLibv2";
+import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
-import { getFinalLocation } from "../diana/DianaGuess";
+import { getFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 

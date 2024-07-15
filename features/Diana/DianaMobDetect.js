@@ -3,7 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { mythosMobHpOverlay } from "./../guis/DianaGuis";
 import { checkDiana } from "../../utils/checkDiana";
-import RenderLibV2 from "../../../RenderLibv2";
+import RenderLibV2 from "../../../RenderLibV2";
 import { printDev } from "../../utils/functions";
 
 export function getMobsToDisplay() {
