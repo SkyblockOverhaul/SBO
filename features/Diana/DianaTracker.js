@@ -146,6 +146,7 @@ export function trackItem(item, category, amount) {
         mobOverlay();
         statsOverlay();
         avgMagicFindOverlay();
+        data.save();
     }
 }
 
