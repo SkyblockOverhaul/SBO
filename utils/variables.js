@@ -64,7 +64,8 @@ export function initializeTrackerMayor() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0
+            "fishCoins": 0,
+            "mayorTime": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
