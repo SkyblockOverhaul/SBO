@@ -29,7 +29,7 @@ export function setBurrowWaypoints(burrows) {
 }
 
 let worldWaypoints = [];
-export function createWorldWaypoint(name, x, y, z, r, g, b, line, beam, distance) {
+export function createWorldWaypoint(name, x, y, z, r, g, b, line = false, beam = true, distance = true) {
     // check if x y z are already in worldWaypoints
     if (worldWaypoints.some(([_, wx, wy, wz]) => wx === x && wy === y && wz === z)) return;
     worldWaypoints.push([name, x, y, z, "", r, g, b, line, beam, distance]);

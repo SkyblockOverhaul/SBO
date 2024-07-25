@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { getplayername } from "../../utils/functions";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { createWorldWaypoint } from "./Waypoints";
+import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
 
 // register dragon wings for golden dragon nest
 let found = false;
@@ -107,3 +107,25 @@ registerWhen(register("chat", (player, command) => {
     }
 }).setCriteria("&dFrom ${player}&r&7: ${command}"), () => settings.clickableInvite);
 // &dFrom &r&b[MVP&r&a+&r&b] LeWhiteCore&r&7: &r&7!inv&r
+
+// carnival helper
+export function getLampOn() {
+    return lampOn;
+}
+
+let lampOn = false;
+register("packetReceived", (packet, event) => { 
+    const blockPos =  new BlockPos(packet.func_179827_b());
+    const blockState = packet.func_180728_a();
+    if (blockState == "minecraft:lit_redstone_lamp") {
+        // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState}`)
+        if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
+            createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
+            lampOn = true;
+        }
+    }
+    else if (blockState == "minecraft:redstone_lamp") {
+        removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
+        lampOn = false;
+    }
+}).setFilteredClass(net.minecraft.network.play.server.S23PacketBlockChange)
