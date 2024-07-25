@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { getplayername, trace } from "../../utils/functions";
 import { registerWhen } from "../../utils/variables";
-import { getWorld } from "../../utils/world";
+import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
 import RenderLibV2 from "../../../RenderLibV2";
 
@@ -111,22 +111,23 @@ registerWhen(register("chat", (player, command) => {
 
 // carnival helper
 let lampOn = false;
-register("packetReceived", (packet, event) => { 
-    const blockPos =  new BlockPos(packet.func_179827_b());
-    const blockState = packet.func_180728_a();
-    if (blockState == "minecraft:lit_redstone_lamp") {
-        // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState}`)
-        if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
-            createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
-            lampOn = true;
+registerWhen(register("packetReceived", (packet, event) => { 
+    if (getZone().includes("Carnival")) {
+        const blockPos =  new BlockPos(packet.func_179827_b());
+        const blockState = packet.func_180728_a();
+        if (blockState == "minecraft:lit_redstone_lamp") {
+            // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState} `);
+            if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
+                createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
+                lampOn = true;
+            }
+        }
+        else if (blockState == "minecraft:redstone_lamp") {
+            removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
+            lampOn = false;
         }
     }
-    else if (blockState == "minecraft:redstone_lamp") {
-        removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
-        lampOn = false;
-    }
-}).setFilteredClass(net.minecraft.network.play.server.S23PacketBlockChange)
-
+}).setFilteredClass(net.minecraft.network.play.server.S23PacketBlockChange), () => settings.carnivalHelperLamp);
 
 const EntityZombie = Java.type("net.minecraft.entity.monster.EntityZombie")
 const mobRating = {
@@ -135,46 +136,44 @@ const mobRating = {
     "Iron": 2,
     "Diamond": 4
 }
-register("renderWorld", () => {
-    const entities = World.getAllEntitiesOfType(EntityZombie.class).filter(a => !a.isInvisible())
-    let bestMob = undefined
-    let bestMobRating = 0
+registerWhen(register("renderWorld", () => {
+    if (getZone().includes("Carnival")) {
+        const entities = World.getAllEntitiesOfType(EntityZombie.class).filter(a => !a.isInvisible())
+        let bestMob = undefined
+        let bestMobRating = 0
 
-    for(let i = 0; i < entities.length; i++) {
-        let helmetName = new EntityLivingBase(entities[i].getEntity()).getItemInSlot(4)?.getName()?.removeFormatting()
-        if (helmetName != undefined) {
-            // print(helmetName)
-            let type, rgb
-            switch (helmetName) {
-                case "Leather Cap":
-                    type = "Leather"
-                    rgb = [0, 0, 1]
-                    break
-                case "Golden Helmet":
-                    type = "Gold"
-                    rgb = [0, 0, 1]
-                    break
-                case "Diamond Helmet":
-                    type = "Diamond"
-                    rgb = [0, 0, 1]
-                    break
-                case "Iron Helmet":
-                    type = "Iron"
-                    rgb = [0, 0, 1]
-                    break
-            }
-            if (type != undefined) {
-                if (mobRating[type] > bestMobRating) {
-                    bestMob = entities[i]
-                    bestMobRating = mobRating[type]
+        for(let i = 0; i < entities.length; i++) {
+            let helmetName = new EntityLivingBase(entities[i].getEntity()).getItemInSlot(4)?.getName()?.removeFormatting()
+            if (helmetName != undefined) {
+                // print(helmetName)
+                let type = undefined
+                switch (helmetName) {
+                    case "Leather Cap":
+                        type = "Leather"
+                        break
+                    case "Golden Helmet":
+                        type = "Gold"
+                        break
+                    case "Diamond Helmet":
+                        type = "Diamond"
+                        break
+                    case "Iron Helmet":
+                        type = "Iron"
+                        break
+                }
+                if (type != undefined) {
+                    if (mobRating[type] > bestMobRating) {
+                        bestMob = entities[i]
+                        bestMobRating = mobRating[type]
+                    }
                 }
             }
         }
-    }
-    if (bestMob != undefined) {
-        RenderLibV2.drawEspBoxV2(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 1, 2, 1, 0, 0, 1, 1, false)
-        if (!lampOn) {
-            trace(bestMob.getRenderX(), bestMob.getRenderY() + 1, bestMob.getRenderZ(), 0, 0, 1, 0.7, "calc", 2);
+        if (bestMob != undefined) {
+            RenderLibV2.drawEspBoxV2(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 1, 2, 1, 0, 0, 1, 1, false)
+            if (!lampOn) {
+                trace(bestMob.getRenderX(), bestMob.getRenderY() + 1, bestMob.getRenderZ(), 0, 0, 1, 0.7, "", 2);
+            }
         }
     }
-})
+}), () => settings.carnivalHelperZombie);
