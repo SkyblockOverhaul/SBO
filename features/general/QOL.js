@@ -118,7 +118,6 @@ registerWhen(register("packetReceived", (packet, event) => {
         const blockState = packet.func_180728_a();
         if (blockState == "minecraft:lit_redstone_lamp") {
             // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState} `);
-            print(getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, ""));
             if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
                 createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
                 lampOn = true;
