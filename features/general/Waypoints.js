@@ -29,10 +29,14 @@ export function setBurrowWaypoints(burrows) {
 }
 
 let worldWaypoints = [];
-export function createWorldWaypoint(name, x, y, z, r, g, b) {
+export function createWorldWaypoint(name, x, y, z, r, g, b, line) {
     // check if x y z are already in worldWaypoints
     if (worldWaypoints.some(([_, wx, wy, wz]) => wx === x && wy === y && wz === z)) return;
-    worldWaypoints.push([name, x, y, z, "", r, g, b]);
+    worldWaypoints.push([name, x, y, z, "", r, g, b, line]);
+}
+
+export function removeWorldWaypoint(x, y, z) {
+    worldWaypoints = worldWaypoints.filter(([_, wx, wy, wz]) => wx !== x || wy !== y || wz !== z);
 }
     
 register("worldUnload", () => {
@@ -456,6 +460,7 @@ registerWhen(register("renderWorld", () => {
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
         renderBurrowLines();
+        renderWaypointLines();
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
@@ -478,6 +483,17 @@ function renderBurrowLines() {
         }
     }
 }
+
+function renderWaypointLines() {
+    if (worldWaypoints.length > 0) {
+        worldWaypoints.forEach((waypoint) => {
+            if (waypoint[8]) {
+                trace(waypoint[1], waypoint[2], waypoint[3], waypoint[5]/255, waypoint[6]/255, waypoint[7]/255, 0.7, "calc", 2);
+            }
+        }
+    )}
+}
+
 
 function guessDistance(x,y,z) {
     return Math.sqrt(
