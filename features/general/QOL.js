@@ -112,11 +112,13 @@ registerWhen(register("chat", (player, command) => {
 // carnival helper
 let lampOn = false;
 registerWhen(register("packetReceived", (packet, event) => { 
-    if (getZone().includes("Carnival")) {
+    // only chars a-z und A-Z in carnival and no spaces
+    if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
         const blockPos =  new BlockPos(packet.func_179827_b());
         const blockState = packet.func_180728_a();
         if (blockState == "minecraft:lit_redstone_lamp") {
             // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState} `);
+            print(getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, ""));
             if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
                 createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
                 lampOn = true;
@@ -137,7 +139,7 @@ const mobRating = {
     "Diamond": 4
 }
 registerWhen(register("renderWorld", () => {
-    if (getZone().includes("Carnival")) {
+    if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
         const entities = World.getAllEntitiesOfType(EntityZombie.class).filter(a => !a.isInvisible())
         let bestMob = undefined
         let bestMobRating = 0
