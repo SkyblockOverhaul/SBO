@@ -174,7 +174,7 @@ register("renderWorld", () => {
     if (bestMob != undefined) {
         RenderLibV2.drawEspBoxV2(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 1, 2, 1, 0, 0, 1, 1, false)
         if (!lampOn) {
-            trace(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 0, 0, 1, 0.7, "calc", 2);
+            trace(bestMob.getRenderX(), bestMob.getRenderY() + 1, bestMob.getRenderZ(), 0, 0, 1, 0.7, "calc", 2);
         }
     }
 })
