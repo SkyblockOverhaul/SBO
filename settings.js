@@ -545,13 +545,19 @@ class Settings {
         description: 'Highlights the redstone lamps and draws a line to it',
         category: 'Quality of Life',
     })
-    carnivalHelperLamp = false;
+    carnivalLamp = false;
     @SwitchProperty({
         name: 'Carnival Zombie Helper',
         description: 'Highlights the best zombie to shoot',
         category: 'Quality of Life',
     })
-    carnivalHelperZombie = false; 
+    carnivalZombie = false; 
+    @SwitchProperty({
+        name: 'Carnival Zombie Line',
+        description: 'Draws a line to the best zombie to shoot',
+        category: 'Quality of Life',
+    })
+    CarnivalZombieLine = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
