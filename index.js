@@ -96,7 +96,7 @@ const changeLogReg = register("step", () => {
 }).setFps(1)
 
 register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
-    printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
+    // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
 })
 
 
@@ -108,9 +108,9 @@ register("packetReceived", (packet, event) => {
     const blockPos =  new BlockPos(packet.func_179827_b());// getBlockPosition
     const blockState = packet.func_180728_a() // getBlockState
     if (blockState == "minecraft:lit_redstone_lamp") {
-        ChatLib.chat(`detected block change packet: ${blockPos} ${blockState}`)
-
-        createWorldWaypoint("Lamp", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true);
+        // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState}`)
+        if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14)
+            createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
     }
     else if (blockState == "minecraft:redstone_lamp") {
         removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());

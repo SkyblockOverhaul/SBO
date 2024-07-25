@@ -29,10 +29,10 @@ export function setBurrowWaypoints(burrows) {
 }
 
 let worldWaypoints = [];
-export function createWorldWaypoint(name, x, y, z, r, g, b, line) {
+export function createWorldWaypoint(name, x, y, z, r, g, b, line, beam, distance) {
     // check if x y z are already in worldWaypoints
     if (worldWaypoints.some(([_, wx, wy, wz]) => wx === x && wy === y && wz === z)) return;
-    worldWaypoints.push([name, x, y, z, "", r, g, b, line]);
+    worldWaypoints.push([name, x, y, z, "", r, g, b, line, beam, distance]);
 }
 
 export function removeWorldWaypoint(x, y, z) {
@@ -110,7 +110,10 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distanceRaw, xSign, zSign = 0;
 
+    
     waypoints.forEach((waypoint) => {
+        let beam = true;
+        let distancBool = true
         if (type == "Burrow") {
             switch (waypoint[0]) {
                 case "Start":
@@ -135,6 +138,8 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             r = waypoint[5]/255;
             g = waypoint[6]/255;
             b = waypoint[7]/255;
+            beam = waypoint[9];
+            distancBool = waypoint[10];
         }
 
         if (waypoint[4] == undefined) {
@@ -175,8 +180,10 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             zSign = z == 0 ? 1 : Math.sign(z);
         }
 
-
-        wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw];
+        if (distancBool)
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+        else
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
@@ -536,9 +543,11 @@ function renderWaypoint(waypoints) {
         // RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], alpha/2, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
-        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
+        if (box[0] != "" && box[0] != "§7") {
+            Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
+        }
 
-        if (box[4] >= removeAtDistance) {
+        if (box[4] >= removeAtDistance && box[5]) {
             renderBeaconBeam(beam[0], beam[1]+1, beam[2], rgb[0], rgb[1], rgb[2], alpha, false);
         }
     });
