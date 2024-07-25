@@ -3,6 +3,7 @@ import { getplayername } from "../../utils/functions";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
+import RenderLibV2 from "../../../RenderLibV2";
 
 // register dragon wings for golden dragon nest
 let found = false;
