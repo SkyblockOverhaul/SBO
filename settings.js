@@ -77,6 +77,7 @@ class Settings {
         this.addDependency('Show Price Title','Loot Screen Announcer');
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
         this.addDependency('Diana Burrow Warp','Diana Burrow Guess');
+        this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
 
     } 
     //-----------Diana Burrows----------------
