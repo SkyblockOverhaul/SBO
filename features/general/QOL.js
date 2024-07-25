@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername } from "../../utils/functions";
+import { getplayername, trace } from "../../utils/functions";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
