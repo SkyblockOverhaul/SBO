@@ -109,10 +109,6 @@ registerWhen(register("chat", (player, command) => {
 // &dFrom &r&b[MVP&r&a+&r&b] LeWhiteCore&r&7: &r&7!inv&r
 
 // carnival helper
-export function getLampOn() {
-    return lampOn;
-}
-
 let lampOn = false;
 register("packetReceived", (packet, event) => { 
     const blockPos =  new BlockPos(packet.func_179827_b());
@@ -129,3 +125,55 @@ register("packetReceived", (packet, event) => {
         lampOn = false;
     }
 }).setFilteredClass(net.minecraft.network.play.server.S23PacketBlockChange)
+
+
+const EntityZombie = Java.type("net.minecraft.entity.monster.EntityZombie")
+const mobRating = {
+    "Leather": 1,
+    "Gold": 3,
+    "Iron": 2,
+    "Diamond": 4
+}
+register("renderWorld", () => {
+    const entities = World.getAllEntitiesOfType(EntityZombie.class).filter(a => !a.isInvisible())
+    let bestMob = undefined
+    let bestMobRating = 0
+
+    for(let i = 0; i < entities.length; i++) {
+        let helmetName = new EntityLivingBase(entities[i].getEntity()).getItemInSlot(4)?.getName()?.removeFormatting()
+        if (helmetName != undefined) {
+            // print(helmetName)
+            let type, rgb
+            switch (helmetName) {
+                case "Leather Cap":
+                    type = "Leather"
+                    rgb = [0, 0, 1]
+                    break
+                case "Golden Helmet":
+                    type = "Gold"
+                    rgb = [0, 0, 1]
+                    break
+                case "Diamond Helmet":
+                    type = "Diamond"
+                    rgb = [0, 0, 1]
+                    break
+                case "Iron Helmet":
+                    type = "Iron"
+                    rgb = [0, 0, 1]
+                    break
+            }
+            if (type != undefined) {
+                if (mobRating[type] > bestMobRating) {
+                    bestMob = entities[i]
+                    bestMobRating = mobRating[type]
+                }
+            }
+        }
+    }
+    if (bestMob != undefined) {
+        RenderLibV2.drawEspBoxV2(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 1, 2, 1, 0, 0, 1, 1, false)
+        if (!lampOn) {
+            trace(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 0, 0, 1, 0.7, "calc", 2);
+        }
+    }
+})

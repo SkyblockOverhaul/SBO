@@ -18,8 +18,6 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import { data } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
-import { formatNumber, printDev } from "./utils/functions";
-import { createWorldWaypoint, removeWorldWaypoint } from "./features/general/Waypoints";
 
 
 register("command", (args1, ...args) => {
