@@ -1,7 +1,7 @@
 import { request } from "../../requestV2";
 import settings from "../settings";
 import { HypixelModAPI } from "./../../HypixelModAPI";
-import { data, registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
+import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
 import { getWorld } from "./world";
 
 // geklaut von coleweight for drawline
@@ -152,9 +152,25 @@ registerWhen(register("guiOpened", () => {
 
 let dianaMobNames = ["Minos Inquisitor", "Minotaur", "Iron Golem", "Ocelot", "Minos Champion", "Zombie"];
 
+function trackLsInq(tracker, amount) {
+    if (tracker["mobs"]["Minos Inquisitor Ls"] != null) {
+        tracker["mobs"]["Minos Inquisitor Ls"] += amount;
+    }
+    else {
+        tracker["mobs"]["Minos Inquisitor Ls"] = amount;
+    }
+    tracker.save();
+}
+
 registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er real enitiy names mint wie ZOMBIE, Iron Golem etc
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
+    if (gotLootShare() && entityName == "Minos Inquisitor") {
+        // ChatLib.chat(`count inq`);
+        trackLsInq(trackerMayor, 1);
+        trackLsInq(trackerSession, 1);
+        trackLsInq(trackerTotal, 1);
+    }
     if (dianaMobNames.includes(entityName.trim())) {
         if (dist < 30 ) {
             allowedToTrackSacks = true;
