@@ -1,8 +1,9 @@
 import settings from "../../settings";
-import { getplayername } from "../../utils/functions";
+import { getplayername, trace } from "../../utils/functions";
 import { registerWhen } from "../../utils/variables";
-import { getWorld } from "../../utils/world";
-import { createWorldWaypoint } from "./Waypoints";
+import { getWorld, getZone } from "../../utils/world";
+import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
+import RenderLibV2 from "../../../RenderLibV2";
 
 // register dragon wings for golden dragon nest
 let found = false;
@@ -107,3 +108,73 @@ registerWhen(register("chat", (player, command) => {
     }
 }).setCriteria("&dFrom ${player}&r&7: ${command}"), () => settings.clickableInvite);
 // &dFrom &r&b[MVP&r&a+&r&b] LeWhiteCore&r&7: &r&7!inv&r
+
+// carnival helper
+let lampOn = false;
+registerWhen(register("packetReceived", (packet, event) => { 
+    // only chars a-z und A-Z in carnival and no spaces
+    if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
+        const blockPos =  new BlockPos(packet.func_179827_b());
+        const blockState = packet.func_180728_a();
+        if (blockState == "minecraft:lit_redstone_lamp") {
+            // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState} `);
+            if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
+                createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
+                lampOn = true;
+            }
+        }
+        else if (blockState == "minecraft:redstone_lamp") {
+            removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
+            lampOn = false;
+        }
+    }
+}).setFilteredClass(net.minecraft.network.play.server.S23PacketBlockChange), () => settings.carnivalLamp);
+
+const EntityZombie = Java.type("net.minecraft.entity.monster.EntityZombie")
+const mobRating = {
+    "Leather": 1,
+    "Gold": 3,
+    "Iron": 2,
+    "Diamond": 4
+}
+registerWhen(register("renderWorld", () => {
+    if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
+        const entities = World.getAllEntitiesOfType(EntityZombie.class).filter(a => !a.isInvisible())
+        let bestMob = undefined
+        let bestMobRating = 0
+
+        for(let i = 0; i < entities.length; i++) {
+            let helmetName = new EntityLivingBase(entities[i].getEntity()).getItemInSlot(4)?.getName()?.removeFormatting()
+            if (helmetName != undefined) {
+                // print(helmetName)
+                let type = undefined
+                switch (helmetName) {
+                    case "Leather Cap":
+                        type = "Leather"
+                        break
+                    case "Golden Helmet":
+                        type = "Gold"
+                        break
+                    case "Diamond Helmet":
+                        type = "Diamond"
+                        break
+                    case "Iron Helmet":
+                        type = "Iron"
+                        break
+                }
+                if (type != undefined) {
+                    if (mobRating[type] > bestMobRating) {
+                        bestMob = entities[i]
+                        bestMobRating = mobRating[type]
+                    }
+                }
+            }
+        }
+        if (bestMob != undefined) {
+            RenderLibV2.drawEspBoxV2(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 1, 2, 1, 0, 0, 1, 1, false)
+            if (!lampOn && settings.CarnivalZombieLine) {
+                trace(bestMob.getRenderX(), bestMob.getRenderY() + 1, bestMob.getRenderZ(), 0, 0, 1, 0.7, "", 2);
+            }
+        }
+    }
+}), () => settings.carnivalZombie);
