@@ -335,6 +335,7 @@ export function checkMayorTracker() {
         }
         dianaTrackerMayor.save();
         pastDianaEvents.save();
+        data.save();
     }
 }
 
