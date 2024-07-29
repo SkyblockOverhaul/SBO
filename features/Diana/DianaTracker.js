@@ -144,6 +144,7 @@ function trackOne(tracker, item, category, type, amount) {
 
 function checkCustomChimMessage(magicFind) {
     let text = settings.customChimMessage;
+    if (!settings.chimMessageBool) return [false, ""];
     if (text != "") {
         if (text.includes("{drop}")) {
             text = text.replace(/{drop}/g, "Chimera");
@@ -377,7 +378,7 @@ registerWhen(register("chat", (drop, event) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.customChimMessage));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.chimMessageBool));
 
 // refresh overlay //
 let tempSettingLoot = -1;

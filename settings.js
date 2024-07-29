@@ -78,6 +78,8 @@ class Settings {
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
         this.addDependency('Diana Burrow Warp','Diana Burrow Guess');
         this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
+        this.addDependency('Custom Chim Message Text','Chim Message');
+        this.addDependency('Reset Custom Chim Message','Chim Message');
 
     } 
     //-----------Diana Burrows----------------
@@ -318,8 +320,15 @@ class Settings {
         options: ["None", "Wizard", "Crypt", "Both"]
     })
     dianaAddWarps = 0;
+    @SwitchProperty({
+        name: "Chim Message",
+        description: "Enables custom chim message",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    chimMessageBool = false;
     @TextProperty({
-        name: "Custom Chim Message",
+        name: "Custom Chim Message Text",
         description: 'use: {drop} for drop name, {mf} for MagicFind, {amount} for drop Amount this event.',
         category: "Diana",
         subcategory: "Other",
