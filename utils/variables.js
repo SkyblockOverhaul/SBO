@@ -339,6 +339,41 @@ export function checkMayorTracker() {
     }
 }
 
+export function resetTracker(type) {
+    let trackerToReset = undefined;
+    if (type == "total") {
+        trackerToReset = dianaTrackerTotal;
+        timerTotal.reset();
+    } else if (type == "session") {
+        trackerToReset = dianaTrackerSession;
+        timerSession.reset();
+    } else if (type == "mayor") {
+        trackerToReset = dianaTrackerMayor;
+        timerMayor.reset();
+    }
+    if (trackerToReset && type != "mayor") {
+        let newTracker = initializeTracker();
+        for (let key in newTracker.items) {
+            trackerToReset.items[key] = newTracker.items[key];
+        }
+        for (let key in newTracker.mobs) {
+            trackerToReset.mobs[key] = newTracker.mobs[key];
+        }
+        trackerToReset.save();
+    } else if (trackerToReset && type == "mayor") {
+        let newTracker = initializeTrackerMayor();
+        for (let key in newTracker.items) {
+            trackerToReset.items[key] = newTracker.items[key];
+        }
+        for (let key in newTracker.mobs) {
+            trackerToReset.mobs[key] = newTracker.mobs[key];
+        }
+        trackerToReset.year = newTracker.year;
+        trackerToReset.save();
+    }
+
+}
+
 let lastyear = 0;   
 register("chat", () => {
     if (ChatLib.removeFormatting(ChatLib.getChatMessage()).includes("Mayor")) {
