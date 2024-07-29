@@ -444,6 +444,7 @@ function importDianaTracker(type, profileName, importType) {
         if (importType == "overwrite") {
             resetTracker("total");
             resetTracker("mayor");
+            resetTracker("session");
         }
 
         Object.keys(dianaShTracker.dianaProfitTracker.items).forEach((item) => {
@@ -460,14 +461,20 @@ function importDianaTracker(type, profileName, importType) {
         if (importType == "overwrite") {
             trackerMayor.mobs["TotalMobs"] = totalImportedMobs;
             trackerTotal.mobs["TotalMobs"] = totalImportedMobs;
+            trackerSession.mobs["TotalMobs"] = totalImportedMobs;
+
             trackerMayor.items["Total Burrows"] = activeProfile.diana.dianaProfitTracker.burrowsDug;
             trackerTotal.items["Total Burrows"] = activeProfile.diana.dianaProfitTracker.burrowsDug;
+            trackerSession.items["Total Burrows"] = activeProfile.diana.dianaProfitTracker.burrowsDug;
         }
         else if (importType == "add") {
             trackerMayor.mobs["TotalMobs"] += totalImportedMobs;
             trackerTotal.mobs["TotalMobs"] += totalImportedMobs;
+            trackerSession.mobs["TotalMobs"] += totalImportedMobs;
+
             trackerMayor.items["Total Burrows"] += activeProfile.diana.dianaProfitTracker.burrowsDug;
             trackerTotal.items["Total Burrows"] += activeProfile.diana.dianaProfitTracker.burrowsDug;
+            trackerSession.items["Total Burrows"] += activeProfile.diana.dianaProfitTracker.burrowsDug;
         }
         ChatLib.chat("&6[SBO] &aTracker imported!");
     }
@@ -481,6 +488,7 @@ function importDianaTracker(type, profileName, importType) {
         if (importType == "overwrite") {
             resetTracker("total");
             resetTracker("mayor");
+            resetTracker("session");
         }
 
         Object.keys(dianaStTracker.items).forEach((item) => {
@@ -498,9 +506,11 @@ function importDianaTracker(type, profileName, importType) {
         if (importType == "overwrite") {
             trackerMayor.mobs["TotalMobs"] = totalImportedMobs;
             trackerTotal.mobs["TotalMobs"] = totalImportedMobs;
+            trackerSession.mobs["TotalMobs"] = totalImportedMobs;
 
             trackerMayor.items["Total Burrows"] = dianaStTracker.dug;
             trackerTotal.items["Total Burrows"] = dianaStTracker.dug;
+            trackerSession.items["Total Burrows"] = dianaStTracker.dug;
         }
         ChatLib.chat("&6[SBO] &aTracker imported!");
     }
@@ -515,20 +525,24 @@ function transferData(type, item, itemKey, ammount, importType) {
         if (importType == "overwrite") {
             trackerMayor.items[itemKey] = ammount;
             trackerTotal.items[itemKey] = ammount;
+            trackerSession.items[itemKey] = ammount;
         }
         else if (importType == "add") {
             trackerMayor.items[itemKey] += ammount;
             trackerTotal.items[itemKey] += ammount;
+            trackerSession.items[itemKey] += ammount;
         }
     }
     else if (type == "mobs") {
         if (importType == "overwrite") {
             trackerMayor.mobs[itemKey] = ammount;
             trackerTotal.mobs[itemKey] = ammount;
+            trackerSession.mobs[itemKey] = ammount;
         }
         else if (importType == "add") {
             trackerMayor.mobs[itemKey] += ammount;
             trackerTotal.mobs[itemKey] += ammount;
+            trackerSession.mobs[itemKey] += ammount;
         }
         totalImportedMobs += ammount;
     }
@@ -563,10 +577,10 @@ register("command", (args1, args2, ...args) => {
 register("command", (args1, args2, args3, ...args) => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     if (args3 == "overwrite") {
-        ChatLib.chat("&aAre you sure you want to overwrite your diana tracker? (Total, Mayor)");
+        ChatLib.chat("&aAre you sure you want to overwrite your diana tracker? (Total, Mayor, Session)");
     } 
     else if (args3 == "add") {
-        ChatLib.chat("&aAre you sure you want to add the imported tracker to your diana tracker? (Total, Mayor)");
+        ChatLib.chat("&aAre you sure you want to add the imported tracker to your diana tracker? (Total, Mayor, Session)");
     }
     new TextComponent("&bYES").setClick("run_command", "/dianatrackerimporttracker " + args1 + " " + args2 + " " + args3).setHover("show_text", "Click Me").chat();
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
