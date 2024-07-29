@@ -145,8 +145,6 @@ function trackOne(tracker, item, category, type, amount) {
 function checkCustomChimMessage(magicFind) {
     let text = settings.customChimMessage;
     if (text != "") {
-        replaceChimMessage = true;
-        
         if (text.includes("{drop}")) {
             text = text.replace(/{drop}/g, "Chimera");
         }
