@@ -318,13 +318,22 @@ class Settings {
         options: ["None", "Wizard", "Crypt", "Both"]
     })
     dianaAddWarps = 0;
-    @SwitchProperty({
-        name: "Chim Message",
-        description: 'Replaces the standard chimera message with a proper Chimera Message: [SBO] RARE DROP! Chimera! (+411 ✯ Magic Find)',
+    @TextProperty({
+        name: "Custom Chim Message",
+        description: 'use: {drop} for drop name, {mf} for MagicFind, {amount} for drop Amount this event.',
         category: "Diana",
         subcategory: "Other",
     })
-    replaceChimMessage = false;
+    customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! {mf} &b#{amount}";
+    @ButtonProperty({
+        name: "Reset Custom Chim Message",
+        description: "Resets the custom chim message to default, reopen settings to see the change",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    resetCustomChimMessage() {
+        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! {mf} &b#{amount}";
+    }
 
     // Loot Announcer
     @SwitchProperty({

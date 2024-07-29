@@ -142,6 +142,41 @@ function trackOne(tracker, item, category, type, amount) {
     tracker.save();
 }
 
+function checkCustomChimMessage(magicFind) {
+    let text = settings.customChimMessage;
+    if (text != "") {
+        replaceChimMessage = true;
+        
+        if (text.includes("{drop}")) {
+            text = text.replace(/{drop}/g, "Chimera");
+        }
+        if (text.includes("{mf}")) {
+            let mfMessage = "";
+            if (magicFind > 0) {
+                mfMessage = "&r&b(+&r&b" + magicFind + "%" + " &r&b✯ Magic Find&r&b)&r";
+            } else {
+                mfMessage = "";
+            }
+            text = text.replace(/{mf}/g, mfMessage);
+        }
+        if (text.includes("{amount}")) {
+            let amount = trackerMayor["items"]["Chimera"] + trackerMayor["items"]["ChimeraLs"];
+            text = text.replace(/{amount}/g, amount);
+        }
+        return [true, text];
+    } else {
+        return [false, ""];
+    }
+}
+
+register("command", () => {
+    let [bool, txtxt] = checkCustomChimMessage(411);
+
+    if (bool) {
+        ChatLib.chat(txtxt);
+    }
+}).setName("sbochim");
+
 // command to reset session tracker
 register("command", () => {
     let tempTracker = initializeTracker();
@@ -271,14 +306,10 @@ registerWhen(register("chat", (drop, event) => {
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare() && settings.dianaTracker) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
-                    if(settings.replaceChimMessage) {
+                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                    if(replaceChimMessage) {
                         cancel(event)
-                        if(magicFind > 0) {
-                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
-                        }
-                        else {
-                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera!&r");
-                        }
+                        ChatLib.chat(customChimMessage);
                     }
                 }
                 else {
@@ -304,14 +335,10 @@ registerWhen(register("chat", (drop, event) => {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
                     }
                     data.inqsSinceChim = 0;
-                    if(settings.replaceChimMessage) {
+                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                    if(replaceChimMessage) {
                         cancel(event)
-                        if(magicFind > 0) {
-                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
-                        }
-                        else {
-                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera!&r");
-                        }
+                        ChatLib.chat(customChimMessage);
                     }
                 }
                 break;
@@ -352,8 +379,7 @@ registerWhen(register("chat", (drop, event) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.replaceChimMessage));
-"&r&6&lRARE DROP! &r&fEnchanted Book&r"
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.customChimMessage));
 
 // refresh overlay //
 let tempSettingLoot = -1;
