@@ -18,6 +18,7 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import { data } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
+import settings from "./settings";
 
 
 register("command", (args1, ...args) => {
@@ -94,6 +95,10 @@ const changeLogReg = register("step", () => {
 
 register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
     // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
+    if (name == "mob.ghast.scream" || name == "mob.ghast.moan" || name == "mob.ghast.charge" && settings.testFeatures) {
+        ChatLib.chat("sound for rag axe " + name)
+        Client.showTitle("RAG AXE", "", 0, 90, 20);
+    }
 })
 
 // dojo sounds:

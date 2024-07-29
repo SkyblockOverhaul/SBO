@@ -856,6 +856,10 @@ class Settings {
     })
     sprVolume = 50;
 
+    
+
+
+    // Debug
     @SelectorProperty({
         name: "Test Property Sound",
         description: "Select a custom sound for a specific item",
@@ -873,9 +877,12 @@ class Settings {
         max: 100
     })
     customVolume = 50;
-
-
-    // Debug
+    @SwitchProperty({
+        name: 'Test Features',
+        description: 'Enable test features',
+        category: 'Debug',
+    })
+    testFeatures = false;
     @SwitchProperty({
         name: 'Always Diana Mayor',
         description: 'Its always Diana, no need to check for mayor, perks or spade',
