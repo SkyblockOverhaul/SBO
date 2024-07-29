@@ -16,7 +16,7 @@ import "./utils/overlays";
 import "./features/Diana/PartyFinder";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
-import { data } from "./utils/variables";
+import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 import settings from "./settings";
 
@@ -93,13 +93,13 @@ const changeLogReg = register("step", () => {
     changeLogReg.unregister()
 }).setFps(1)
 
-register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
+registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
     // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
-    if (name == "mob.ghast.scream" || name == "mob.ghast.moan" || name == "mob.ghast.charge" && settings.testFeatures) {
+    if (name == "mob.ghast.scream" || name == "mob.ghast.moan" || name == "mob.ghast.charge") {
         ChatLib.chat("sound for rag axe " + name)
         Client.showTitle("RAG AXE", "", 0, 90, 20);
     }
-})
+}), () => settings.testFeatures);
 
 // dojo sounds:
 // [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
