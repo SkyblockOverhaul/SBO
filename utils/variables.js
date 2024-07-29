@@ -341,7 +341,6 @@ export function checkMayorTracker() {
 
 let lastyear = 0;   
 register("chat", () => {
-    // restet mayor tracker and increase year by 1 without checkMayor Function being called
     if (ChatLib.removeFormatting(ChatLib.getChatMessage()).includes("Mayor")) {
         lastyear = dianaTrackerMayor.year;
         let tempTracker = initializeTrackerMayor();
@@ -349,7 +348,6 @@ register("chat", () => {
             tempTracker[key] = dianaTrackerMayor[key];
         }
         if (dianaTrackerMayor.year != 0) {
-            // check if all keys have the value 0
             let allZero = true;
             for (let key in tempTracker.items) {
                 if (tempTracker.items[key] != 0) {

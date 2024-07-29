@@ -166,7 +166,6 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
     if (gotLootShare() && entityName == "Minos Inquisitor") {
-        // ChatLib.chat(`count inq`);
         trackLsInq(trackerMayor, 1);
         trackLsInq(trackerSession, 1);
         trackLsInq(trackerTotal, 1);
@@ -224,7 +223,6 @@ export function readPlayerInventory(type="") {
                 else {
                     playerItems[getSBID(playerInvItems[i])] = [playerInvItems[i].getStackSize(), playerInvItems[i].getName()];
                 }
-                // printDev("Item: " + playerItems[getSBID(playerInvItems[i])][1] + " in slot " + i);
             }
         }
     }

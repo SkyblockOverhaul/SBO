@@ -21,11 +21,6 @@ export function dianaLootCounter(item, amount) {
         if (checkDiana()) {
             for (let i in countThisIds.values()) {
                 if (item === i) {
-                    // if (item == "ANCIENT_CLAW") {
-                    //     if ([10, 20, 30].includes(parseInt(amount)) && gotLootShare()) {
-                    //         trackItem("Minos Inquisitor Ls", "mobs", 1); // ls inq
-                    //     }
-                    // }
                     trackItem(item, "items", amount);
                     checkBool = false;
                 }
