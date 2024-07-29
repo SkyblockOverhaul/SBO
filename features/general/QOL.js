@@ -51,7 +51,6 @@ registerWhen(register("chat", (player, dings) => {
 registerWhen(register("chat", (dings1, event) => {
     cancel(event);
 }).setCriteria("&a&aYou tipped ${dings1}"), () => settings.hideTippedPlayers);
-// &a&aYou tipped 5 players in 1 game!&r
 // registerWhen(register("chat", () => {
 //     Client.showTitle("&l&9MINESHEFT!", "", 0, 90, 20);
 // }).setCriteria("&r&5&lWOW! &r&aYou found a &r&bGlacite Mineshaft &r&aportal!&r"), () => settings.mineshaftAnnouncer);
@@ -107,17 +106,13 @@ registerWhen(register("chat", (player, command) => {
         }, 50);
     }
 }).setCriteria("&dFrom ${player}&r&7: ${command}"), () => settings.clickableInvite);
-// &dFrom &r&b[MVP&r&a+&r&b] LeWhiteCore&r&7: &r&7!inv&r
 
-// carnival helper
 let lampOn = false;
 registerWhen(register("packetReceived", (packet, event) => { 
-    // only chars a-z und A-Z in carnival and no spaces
     if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
         const blockPos =  new BlockPos(packet.func_179827_b());
         const blockState = packet.func_180728_a();
         if (blockState == "minecraft:lit_redstone_lamp") {
-            // ChatLib.chat(`detected block change packet: ${blockPos} ${blockState} `);
             if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
                 createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
                 lampOn = true;
@@ -146,7 +141,6 @@ registerWhen(register("renderWorld", () => {
         for(let i = 0; i < entities.length; i++) {
             let helmetName = new EntityLivingBase(entities[i].getEntity()).getItemInSlot(4)?.getName()?.removeFormatting()
             if (helmetName != undefined) {
-                // print(helmetName)
                 let type = undefined
                 switch (helmetName) {
                     case "Leather Cap":

@@ -976,19 +976,16 @@ class Settings {
 //     // FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
 // }
 
-// push all ogg filenames from Config.modulesFolder.replace("modules", "images") to customSounds
 FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/").forEach(file => {
     if (file.endsWith(".ogg")) {
         
-        // push only file name without extension split at \
         let filename = file.split("\\").pop();
         customSounds.push(filename.replace(".ogg", ""));
     }
 });
 
-// print(Config.modulesFolder.replace("modules", "images"))
 // let soundFiles = FileLib.getUrlContent(Config.modulesFolder.replace("modules", "images"));
-// // print(soundFiles);
+// print(soundFiles);
 // for (let i = 0; i < soundFiles.length; i++) {
 //     if (soundFiles[i].endsWith(".ogg")) {
 //         customSounds.push(soundFiles[i].replace(".ogg", ""));
