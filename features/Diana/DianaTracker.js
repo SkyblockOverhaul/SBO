@@ -153,7 +153,7 @@ function checkCustomChimMessage(magicFind) {
         if (text.includes("{mf}")) {
             let mfMessage = "";
             if (magicFind > 0) {
-                mfMessage = "&r&b(+&r&b" + magicFind + "%" + " &r&b✯ Magic Find&r&b)&r";
+                mfMessage = "(+" + magicFind + "%" + " ✯ Magic Find)";
             } else {
                 mfMessage = "";
             }
@@ -168,6 +168,14 @@ function checkCustomChimMessage(magicFind) {
         return [false, ""];
     }
 }
+
+register("command", () => {
+    let [bool, txtxt] = checkCustomChimMessage(411);
+
+    if (bool) {
+        ChatLib.chat(txtxt);
+    }
+}).setName("sbochim");
 
 // command to reset session tracker
 register("command", () => {

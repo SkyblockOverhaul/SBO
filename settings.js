@@ -324,7 +324,7 @@ class Settings {
         category: "Diana",
         subcategory: "Other",
     })
-    customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! {mf} &b#{amount}";
+    customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! &b{mf} &b#{amount}";
     @ButtonProperty({
         name: "Reset Custom Chim Message",
         description: "Resets the custom chim message to default, reopen settings to see the change",
@@ -332,7 +332,7 @@ class Settings {
         subcategory: "Other",
     })
     resetCustomChimMessage() {
-        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! {mf} &b#{amount}";
+        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! &b{mf} &b#{amount}";
     }
 
     // Loot Announcer
