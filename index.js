@@ -95,7 +95,7 @@ const changeLogReg = register("step", () => {
 
 registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
     // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
-    if (name == "mob.ghast.scream" || name == "mob.ghast.moan" || name == "mob.ghast.charge") {
+    if (name == "mob.ghast.scream" || name == "mob.ghast.charge") {
         ChatLib.chat("sound for rag axe " + name)
         Client.showTitle("RAG AXE", "", 0, 90, 20);
     }
