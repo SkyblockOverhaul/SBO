@@ -72,8 +72,9 @@ register("command", (args1, args2, ...args) => {
 
 register("chat", (player, message) => {
     message = message.split(" ");
-    playername = player.split("]")[1].trim();
-    if(data.partyBlacklist.includes(playername.toLowerCase())) return;
+    let playername = getplayername(player)
+    if (data.partyBlacklist.includes(playername.toLowerCase())) return;
+    let args1 = message[1] ? message[1].toLowerCase() : undefined;
     switch (message[0].toLowerCase()) {
         case "!w":
         case "!warp":
@@ -139,7 +140,7 @@ register("chat", (player, message) => {
             if (settings.tpsCommand) {
                 setTimeout(function() {
                     tpsCommand(player)
-                }, 50)
+                }, 100)
             }
             break
         case "!chim":
@@ -153,7 +154,7 @@ register("chat", (player, message) => {
                 let totalChimera = dianaTrackerMayor["items"]["Chimera"] + dianaTrackerMayor["items"]["ChimeraLs"];
                 setTimeout(function() {
                     ChatLib.command("pc Chimera: " + totalChimera)
-                }, 50)
+                }, 100)
             }
             break
         case "!inq":
@@ -163,7 +164,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"])
-                }, 50)
+                }, 100)
             }
             break
         case "!burrows":
@@ -172,7 +173,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"])
-                }, 50)
+                }, 100)
             }
             break
         case "!relic":
@@ -181,7 +182,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"])
-                }, 50)
+                }, 100)
             }
             break
         case "!stick":
@@ -190,7 +191,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"])
-                }, 50)
+                }, 100)
             }
             break
         case "!mob":
@@ -199,15 +200,48 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
-                }, 50)
+                }, 100)
             }
             break
         case "!since":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
-                    ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
-                }, 50)
+                if(args1 == undefined) {
+                    setTimeout(function() {
+                        ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
+                    }, 100)
+                    return;
+                }
+                switch(args1){
+                    case "chimera":
+                    case "chim":
+                    case "chims":
+                    case "chimeras":
+                        setTimeout(function() {
+                            ChatLib.command("pc Inqs since chim: " + data.inqsSinceChim)
+                        }, 100)
+                        break
+                    case "stick":
+                    case "sticks":
+                        setTimeout(function() {
+                            ChatLib.command("pc Minos since stick: " + data.minotaursSinceStick)
+                        }, 100)
+                        break
+                    case "relic":
+                    case "relics":
+                        setTimeout(function() {
+                            ChatLib.command("pc Champs since relic: " + data.champsSinceRelic)
+                        }, 100)
+                        break
+                    case "inq":
+                    case "inqs":
+                    case "inquisitor":
+                        setTimeout(function() {
+                            ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
+                        }, 100)
+                        break
+                }
+                
             }
             break
         case "!playtime":
@@ -216,7 +250,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(function() {
                     ChatLib.command("pc Playtime: " + formatTime(dianaTrackerMayor.items.mayorTime))
-                }, 50)
+                }, 100)
             }
             break
         case "!profit":
@@ -225,7 +259,7 @@ register("chat", (player, message) => {
                 let [profit, offerType] = getDianaMayorTotalProfitAndOfferType();
                 setTimeout(function() {
                     ChatLib.command("pc Profit: " + profit + " (" + offerType + ")")
-                }, 50)
+                }, 100)
             }
             break
     }
@@ -250,25 +284,41 @@ register("command", (args1, args2, ...args) => {
     let magicfind = parseInt(args1);
     let looting = parseInt(args2);
     let [chimChance, stickChance, relicChance] = getChance(magicfind, looting);
-    ChatLib.chat("&6[SBO] &eChimera Chance: &b" + (chimChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &eStick Chance: &b" + (stickChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &eRelic Chance: &b" + (relicChance * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eChimera Chance: &b" + (chimChance / 5 * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + (stickChance / 5 * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + (relicChance / 5 * 100).toFixed(2) + "%" + getMagicFindAndLooting(magicfind, looting))
+    let [chimChanceLs, stickChanceLs, relicChanceLs] = getChance(magicfind, looting, true);
+    ChatLib.chat("&6[SBO] &eChimera Chance: &b" + formatChanceAsPercentage(chimChance) + formatChanceAsFraction(chimChance) + getMagicFindAndLooting(magicfind, looting))
+    ChatLib.chat("&6[SBO] &eStick Chance: &b" + formatChanceAsPercentage(stickChance) + formatChanceAsFraction(stickChance) + getMagicFindAndLooting(magicfind, looting))
+    ChatLib.chat("&6[SBO] &eRelic Chance: &b" + formatChanceAsPercentage(relicChance) + formatChanceAsFraction(relicChance) + getMagicFindAndLooting(magicfind, looting))
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eChimera Chance: &b" + formatChanceAsPercentage(chimChanceLs) + formatChanceAsFraction(chimChanceLs) + " &7[MF:" + magicfind + "]")
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + formatChanceAsPercentage(stickChanceLs) + formatChanceAsFraction(stickChanceLs) + " &7[MF:" + magicfind + "]")
+    ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + formatChanceAsPercentage(relicChanceLs) + formatChanceAsFraction(relicChanceLs) + " &7[MF:" + magicfind + "]")
 }).setName("sbodropchance").setAliases("sbodc")
 
-function getChance(magicfind, looting) { 
+function getChance(magicfind, looting, lootshare = false) { 
 
     const chimBaseChance = 0.01;
     const stickBaseChance = 0.0008;
     const relicBaseChance = 0.0002;
 
-    let chimChance = chimBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-    let stickChance = stickBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-    let relicChance = relicBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
+    if(lootshare) {
+        let chimChanceLs = (chimBaseChance * (1 + magicfind / 100)) / 5;
+        let stickChanceLs = (stickBaseChance * (1 + magicfind / 100)) / 5;
+        let relicChanceLs = (relicBaseChance * (1 + magicfind / 100)) / 5;
+        return [chimChanceLs, stickChanceLs, relicChanceLs];
+    }
+    else{
+        let chimChance = chimBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
+        let stickChance = stickBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
+        let relicChance = relicBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
+        return [chimChance, stickChance, relicChance];
+    }
+}
 
-    return [chimChance, stickChance, relicChance];
+function formatChanceAsPercentage(chance) {
+    return (chance * 100).toFixed(2) + "%";
+}
+
+function formatChanceAsFraction(chance) {
+    return " &7(&b1/" + Math.round(1 / chance) + "&7)";
 }
 
 function getMagicFindAndLooting(magicfind, looting) {

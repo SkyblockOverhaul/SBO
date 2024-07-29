@@ -11,13 +11,6 @@ import { playerHasSpade } from "../../utils/functions";
 
 // todo: 
 // todo end
-let lastMob = "";
-let lastInqDroped = false;
-let lastInqLsDroped = false;
-let lastChampDroped = false;
-let lastMinotaurDroped = false;
-
-
 
 // track items with pickuplog //
 export function dianaLootCounter(item, amount) {
@@ -28,11 +21,11 @@ export function dianaLootCounter(item, amount) {
         if (checkDiana()) {
             for (let i in countThisIds.values()) {
                 if (item === i) {
-                    if (item == "ANCIENT_CLAW") {
-                        if ([10, 20, 30].includes(parseInt(amount)) && gotLootShare()) {
-                            trackItem("Minos Inquisitor Ls", "mobs", 1); // ls inq
-                        }
-                    }
+                    // if (item == "ANCIENT_CLAW") {
+                    //     if ([10, 20, 30].includes(parseInt(amount)) && gotLootShare()) {
+                    //         trackItem("Minos Inquisitor Ls", "mobs", 1); // ls inq
+                    //     }
+                    // }
                     trackItem(item, "items", amount);
                     checkBool = false;
                 }
@@ -41,6 +34,9 @@ export function dianaLootCounter(item, amount) {
                 if (item == "MINOS_RELIC") {
                     if(settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
+                    }
+                    if (data.champsSinceRelic == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b Relic!")
                     }
                     data.champsSinceRelic = 0;
                     if (settings.lootAnnouncerScreen) {
@@ -92,8 +88,8 @@ export function trackLootWithSacks(ammount, item) {
 
 let forbiddenCoins = [1, 5, 20, 1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
 export function trackScavengerCoins(coins) {
-    if (mobDeath4SecsTrue()) {
-        if (!forbiddenCoins.includes(coins) && coins < 60000) {
+    if (mobDeath4SecsTrue() && gotLootShare()) {
+        if (!forbiddenCoins.includes(coins) && coins < 65000) {
             trackItem("scavengerCoins", "items", coins);
             trackItem("coins", "items", coins);
         }
@@ -108,36 +104,10 @@ export function trackItem(item, category, amount) {
             timer.continue();
             timer.updateActivity();
         });
-        if (lastMob == item && item != "Minos Inquisitor Ls") {
-            if (item == "Minos Inquisitor") {
-                ChatLib.chat("&6[SBO] &r&cb2b Inquisitor!")
-            };
-            // ChatLib.chat("&6[SBO] &r&cYou killed the same mob twice in a row!");
-        }
-        // if item in lastMobDrobs
-        
-        if (category === "mobs" && item != "Minos Inquisitor Ls") {
-            lastMob = item;
-            // if (item == "Minos Inquisitor") {
-            //     lastInqDroped = false;
-            // }
-            // else if (item == "Minos Champion") {
-            //     lastChampDroped = false;
-            // }
-            // else if (item == "Minotaur") {
-            //     lastMinotaurDroped = false;
-            // }
+
+        if (category === "mobs") {
             data.mobsSinceInq += 1;
         }
-        // if (item == "Minos Inquisitor Ls") {
-        //     lastInqDroped = false;
-        // }
-        // if (category === "items") {
-        //     if (item == "Chimera") lastInqDroped = true;
-        //     if (item == "ChimeraLs") lastInqLsDroped = true;
-        //     if (item == "Minos Relic") lastChampDroped = true;
-        //     if (item == "Daedalus Stick") lastMinotaurDroped = true;
-        // }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
         trackOne(trackerTotal, item, category, "Total", amount);
@@ -146,6 +116,7 @@ export function trackItem(item, category, amount) {
         mobOverlay();
         statsOverlay();
         avgMagicFindOverlay();
+        data.save();
     }
 }
 
@@ -171,14 +142,40 @@ function trackOne(tracker, item, category, type, amount) {
     tracker.save();
 }
 
+function checkCustomChimMessage(magicFind) {
+    let text = settings.customChimMessage;
+    if (!settings.chimMessageBool) return [false, ""];
+    if (text != "") {
+        if (text.includes("{drop}")) {
+            text = text.replace(/{drop}/g, "Chimera");
+        }
+        if (text.includes("{mf}")) {
+            let mfMessage = "";
+            if (magicFind > 0) {
+                mfMessage = "(+" + magicFind + "%" + " ✯ Magic Find)";
+            } else {
+                mfMessage = "";
+            }
+            text = text.replace(/{mf}/g, mfMessage);
+        }
+        if (text.includes("{amount}")) {
+            let amount = trackerMayor["items"]["Chimera"] + trackerMayor["items"]["ChimeraLs"];
+            text = text.replace(/{amount}/g, amount);
+        }
+        return [true, text];
+    } else {
+        return [false, ""];
+    }
+}
+
 // command to reset session tracker
 register("command", () => {
     let tempTracker = initializeTracker();
     for (let key in tempTracker) {
         trackerSession[key] = tempTracker[key];
     }
-    trackerSession.save();
     dianaTimerlist[2].reset();
+    trackerSession.save();
     itemOverlay();
     mobOverlay();
 }).setName("sboresetsession");
@@ -219,9 +216,12 @@ register("chat", (event) => {
 
 // --for spade spam
 registerWhen(register("chat", (time, event) => {
-    if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&cThis ability is on cooldown for ${time}"), () => getWorld() === "Hub" && playerHasSpade());
+    cancel(event);
+}).setCriteria("&r&cThis ability is on cooldown for${time}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
+registerWhen(register("chat", (waste, event) => {
+    cancel(event);
+}).setCriteria("&r&7Warping${waste}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
 // mob tracker
 registerWhen(register("chat", (woah, arev, mob, event) => {
@@ -232,6 +232,9 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
                 trackItem(mob, "mobs", 1);
                 if(settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                }
+                if (data.mobsSinceInq == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b Inquisitor!")
                 }
                 data.mobsSinceInq = 0;        
                 break;
@@ -252,7 +255,7 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
-
+"&7[12:22] &r&r&r&c&lYikes! &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
@@ -294,6 +297,11 @@ registerWhen(register("chat", (drop, event) => {
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare() && settings.dianaTracker) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
+                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                    if(replaceChimMessage) {
+                        cancel(event)
+                        ChatLib.chat(customChimMessage);
+                    }
                 }
                 else {
                     if(settings.dianaAvgMagicFind) {
@@ -314,15 +322,14 @@ registerWhen(register("chat", (drop, event) => {
                     if(settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
+                    if (data.inqsSinceChim == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b Chimera!")
+                    }
                     data.inqsSinceChim = 0;
-                    if(settings.replaceChimMessage) {
+                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                    if(replaceChimMessage) {
                         cancel(event)
-                        if(magicFind > 0) {
-                        ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera! &r&b(+&r&b" + magicFind + "%" +" &r&b✯ Magic Find&r&b)&r");
-                        }
-                        else {
-                            ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &r&d&lChimera!&r");
-                        }
+                        ChatLib.chat(customChimMessage);
                     }
                 }
                 break;
@@ -343,6 +350,9 @@ registerWhen(register("chat", (drop, event) => {
                 if(settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
+                if (data.minotaursSinceStick == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b Daedalus Stick!")
+                }
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {
@@ -360,7 +370,7 @@ registerWhen(register("chat", (drop, event) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.replaceChimMessage));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.chimMessageBool));
 
 // refresh overlay //
 let tempSettingLoot = -1;

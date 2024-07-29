@@ -3,8 +3,8 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { mythosMobHpOverlay } from "./../guis/DianaGuis";
 import { checkDiana } from "../../utils/checkDiana";
-import RenderLibV2 from "../../../RenderLibv2";
-
+import RenderLibV2 from "../../../RenderLibV2";
+import { trace } from "../../utils/functions";
 export function getMobsToDisplay() {
     return names;
 }
@@ -28,11 +28,13 @@ registerWhen(register("step", () => {
     if (checkDiana()) {
         World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((mob) => {
             let name = mob.getName();   
-            if (Mobs.filter((e) => e.getUUID() === mob.getUUID()).length === 0) {
-                if ((name.includes("Exalted") || name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0")) { //  || name.includes("Graveyard Zombie")
-                    Mobs.push(mob);
+            if (name != "Armor Stand") {
+                if (Mobs.filter((e) => e.getUUID() === mob.getUUID()).length === 0) {
+                    if ((name.includes("Exalted") || name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0")) { //  || name.includes("Graveyard Zombie")
+                        Mobs.push(mob);
+                    }
+                    
                 }
-                
             }
         });
         Mobs = Mobs.filter((e) => !e.getEntity()["field_70128_L"]);
@@ -40,6 +42,8 @@ registerWhen(register("step", () => {
     }
 }).setFps(1), () => settings.mythosMobHp || settings.inqHighlight || settings.inqCircle && getWorld() === "Hub");
 
+// trace(waypoint[1], waypoint[2], waypoint[3], waypoint[5]/255, waypoint[6]/255, waypoint[7]/255, 0.7, "calc", 2);
+// Math.floor(entities[i].getRenderX()), Math.floor(entities[i].getRenderY()), Math.floor(entities[i].getRenderZ()
 let names = [];
 registerWhen(register("step", () => {
     if (checkDiana()) {
@@ -50,6 +54,30 @@ registerWhen(register("step", () => {
         mythosMobHpOverlay(names);
     }
 }).setFps(6), () => settings.mythosMobHp && getWorld() === "Hub");
+
+// register("renderEntity", (entity, pos, ticks, event) => {
+//     if(entity.getClassName() == 'EntityOtherPlayerMP') {
+//         let name = entity.getName().trim();
+//         if (name.includes("Inquisitor")){
+//             let red = settings.inqColor.getRed() / 255;
+//             let green = settings.inqColor.getGreen() / 255;
+//             let blue = settings.inqColor.getBlue() / 255;
+//             let alpha = settings.inqColor.getAlpha() / 255;
+//             Tessellator.pushMatrix();
+//             Tessellator.colorize(red, green, blue, 1);
+//             Tessellator.enableAlpha()
+//             Tessellator.enableBlend()
+//         }
+//         if (name.includes("Champion")){
+//             let red = settings.inqColor.getRed() / 255;
+//             let green = settings.inqColor.getGreen() / 255;
+//             let blue = settings.inqColor.getBlue() / 255;
+//             let alpha = settings.inqColor.getAlpha() / 255;
+//             Tessellator.pushMatrix();
+//             Tessellator.colorize(red, green, blue, 1);
+//         }
+//     }
+// });
    
 export const inqHighlightRegister = register("renderWorld", () => {
     inqs.forEach((mob) => {

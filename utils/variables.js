@@ -64,7 +64,8 @@ export function initializeTrackerMayor() {
             "ENCHANTED_IRON": 0,
             "Total Burrows": 0,
             "scavengerCoins": 0,
-            "fishCoins": 0
+            "fishCoins": 0,
+            "mayorTime": 0
         },
         mobs: {
             "Minos Inquisitor": 0,
@@ -327,13 +328,57 @@ export function checkMayorTracker() {
         }
         let newTracker = initializeTrackerMayor();
         timerMayor.reset();
+        data.last10ChimMagicFind = [];
+        data.last10StickMagicFind = [];
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
         }
         dianaTrackerMayor.save();
         pastDianaEvents.save();
+        data.save();
     }
 }
+
+let lastyear = 0;   
+register("chat", () => {
+    // restet mayor tracker and increase year by 1 without checkMayor Function being called
+    if (ChatLib.removeFormatting(ChatLib.getChatMessage()).includes("Mayor")) {
+        lastyear = dianaTrackerMayor.year;
+        let tempTracker = initializeTrackerMayor();
+        for (let key in dianaTrackerMayor) {
+            tempTracker[key] = dianaTrackerMayor[key];
+        }
+        if (dianaTrackerMayor.year != 0) {
+            // check if all keys have the value 0
+            let allZero = true;
+            for (let key in tempTracker.items) {
+                if (tempTracker.items[key] != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+            for (let key in tempTracker.mobs) {
+                if (tempTracker.mobs[key] != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+            if (!allZero) {
+                pastDianaEvents["events"].push(tempTracker);
+            }
+        }
+        let newTracker = initializeTrackerMayor();
+        timerMayor.reset();
+        for (let key in newTracker) {
+            dianaTrackerMayor[key] = newTracker[key];
+        }
+        if (lastyear == dianaTrackerMayor.year) {
+            dianaTrackerMayor.year++;
+        }
+        dianaTrackerMayor.save();
+        pastDianaEvents.save();
+    }
+}).setCriteria("&r&eThe election room is now closed. Clerk Seraphine is doing a final count of the votes...&r");
 
 /**
  * Adds a trigger with its associated dependency to the list of registered triggers.
@@ -355,6 +400,7 @@ export class SBOTimer {
         this.tickEvent = null; // Timeout-ID
         this.trackerObject = trackerObject; // Tracker object (total/session/mayor)
         this.dataFieldName = dataFieldName; // Name of the field in the tracker object
+        this.inactivityFlag = false;
     }
 
     // Starts the timer
@@ -390,6 +436,9 @@ export class SBOTimer {
     // Continues the timer from where it was paused
     continue() {
         if (this.running) return;
+        if(this.inactivityFlag) {
+            this.elapsedTime -= this.INACTIVITY_LIMIT;
+        }
         this.startTime = Date.now();
         this.running = true;
         this.startInactivityCheck();
@@ -428,6 +477,10 @@ export class SBOTimer {
                 this.updateElapsedTime();
                 if (Date.now() - this.lastActivityTime > this.INACTIVITY_LIMIT && this.running) {
                     this.pause();
+                    if(!this.inactivityFlag) {
+                        this.trackerObject.items[this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        this.inactivityFlag = true;
+                    }
                 }
             });
         }
@@ -438,6 +491,7 @@ export class SBOTimer {
         if (this.tickEvent) {
             this.tickEvent.unregister();
             this.tickEvent = null;
+            this.inactivityFlag = false;
         }
     }
 }

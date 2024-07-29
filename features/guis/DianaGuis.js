@@ -176,6 +176,8 @@ let timerOverlayLine = null;
 
 function getTimerMessage() {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+    if (timer === undefined) return "00:00:00";
+    if (timer.trackerObject.items[timer.dataFieldName] === undefined) return formatTime(timer.getElapsedTime());
     if (timer.trackerObject.items[timer.dataFieldName] > 0) {
         return formatTime(timer.trackerObject.items[timer.dataFieldName]);
     } else {
@@ -234,20 +236,11 @@ function getLootMessage(lootViewSetting) {
     let lootTracker = getTracker(settings.dianaLootTrackerView);
     let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
-    let totalChimera = 0;
-    let totalMayorChimera = 0;
-    
-    for (let key of ["Chimera", "ChimeraLs"]) {
-        if (lootTracker.items[key] !== undefined) {
-            totalChimera += lootTracker.items[key];
-        }
-        if (mayorTracker.items[key] !== undefined) {
-            totalMayorChimera += mayorTracker.items[key];
-        }
-    }
+
 
     const itemData = [
-        { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true, hasLS: true },
+        { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+        { name: "Chimera &7[&bLs&7]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
         { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
         { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
         { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
@@ -266,7 +259,10 @@ function getLootMessage(lootViewSetting) {
         if(mayorTracker) {
             if (item.bazaarKey) {
                 if (item.name === "Chimera") {
-                    return getBazaarPriceDiana(item.bazaarKey) * totalMayorChimera;
+                    return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["Chimera"];
+                }
+                else if (item.name === "ChimeraLs") {
+                    return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["ChimeraLs"];
                 }
                 return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"][item.key];
             } else if (item.ahKey) {
@@ -277,7 +273,10 @@ function getLootMessage(lootViewSetting) {
         else{
             if (item.bazaarKey) {
                 if (item.name === "Chimera") {
-                    return getBazaarPriceDiana(item.bazaarKey) * totalChimera;
+                    return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["Chimera"]
+                }
+                else if (item.name === "ChimeraLs") {
+                    return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["ChimeraLs"];
                 }
                 return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
             } else if (item.ahKey) {
@@ -290,14 +289,16 @@ function getLootMessage(lootViewSetting) {
     function createLootLine(item) {
         const price = formatNumber(getPrice(item));
         const itemAmount = item.format ? formatNumber(lootTracker["items"][item.key]) : formatNumberCommas(lootTracker["items"][item.key]);
-        const percent = item.hasPercent ? percentDict[item.name] : "";
-        const lsAmount = item.hasLS ? lootTracker["items"]["ChimeraLs"] : "";
-        let text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
+        let percent = undefined;
+        let text = "";
+        if (item.hasPercent) {
+            percent = item.hasPercent ? percentDict[item.key] : "";
+        }
+        text = `${GOLD}${price} ${GRAY}| ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
-        if (percent || item.hasLS) {
-            text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
-            if (item.hasLS) {
-                text += ` ${GRAY}[${AQUA}LS${GRAY}:${AQUA}${lsAmount}${GRAY}]`;
+        if (percent) {
+            if (percent.toString() !== "NaN") {
+                text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
             }
         }
 
@@ -367,8 +368,11 @@ function getLootMessage(lootViewSetting) {
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
-    const timePassed = timer.getHourTime(); // in hours 
-    const profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    let timePassed = timer.getHourTime(); // in hours 
+    let profitPerHour = 0;
+    if (timePassed != "NaN" && timePassed != 0) {
+        profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
+    }
     let profitText = [
         `§6${profitPerHour} coins/hour`,
 

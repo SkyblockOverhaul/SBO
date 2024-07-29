@@ -1,5 +1,5 @@
 import { delay } from "./threads"; // Importing delay function for asynchronous operations
-import { setRegisters } from "./variables"; // Importing setRegisters function from the variables file
+import { registerWhen, setRegisters } from "./variables"; // Importing setRegisters function from the variables file
 
 export function setPlayer() {
     player = Player.asPlayerMP().getEntity();
@@ -20,6 +20,10 @@ export function findZone() {
     if (zoneLine === undefined) zoneLine = Scoreboard.getLines().find((line) => line.getName().includes("ф"));
     return zoneLine === undefined ? "None" : zoneLine.getName().removeFormatting();
 }
+
+registerWhen(register("step", () => {
+    zone = findZone();
+}), () => true);
 
 // Function to find the current world and register/unregister features based on the world
 function findWorld() {

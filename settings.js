@@ -12,10 +12,10 @@ import {
     @Vigilant,
 } from 'Vigilance';
 // import { data, resetVersion } from './utils/variables';
-// import FileUtilities from "../FileUtilities/main";
+import FileUtilities from "../FileUtilities/main";
 
 
-// let customSounds = ["none"];
+let customSounds = ["none"];
 
 // The only parameter that is required is the first, which should be the Module name.
 // The other 2 parameters are optional.
@@ -77,6 +77,9 @@ class Settings {
         this.addDependency('Show Price Title','Loot Screen Announcer');
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
         this.addDependency('Diana Burrow Warp','Diana Burrow Guess');
+        this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
+        this.addDependency('Custom Chim Message Text','Chim Message');
+        this.addDependency('Reset Custom Chim Message','Chim Message');
 
     } 
     //-----------Diana Burrows----------------
@@ -319,11 +322,27 @@ class Settings {
     dianaAddWarps = 0;
     @SwitchProperty({
         name: "Chim Message",
-        description: 'Replaces the standard chimera message with a proper Chimera Message: [SBO] RARE DROP! Chimera! (+411 ✯ Magic Find)',
+        description: "Enables custom chim message",
         category: "Diana",
         subcategory: "Other",
     })
-    replaceChimMessage = false;
+    chimMessageBool = false;
+    @TextProperty({
+        name: "Custom Chim Message Text",
+        description: 'use: {drop} for drop name, {mf} for MagicFind, {amount} for drop Amount this event.',
+        category: "Diana",
+        subcategory: "Other",
+    })
+    customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! &b{mf} &b#{amount}";
+    @ButtonProperty({
+        name: "Reset Custom Chim Message",
+        description: "Resets the custom chim message to default, reopen settings to see the change",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    resetCustomChimMessage() {
+        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! &b{mf} &b#{amount}";
+    }
 
     // Loot Announcer
     @SwitchProperty({
@@ -534,6 +553,30 @@ class Settings {
         category: 'Quality of Life',
     })
     pickuplogOverlay = false;
+    @SwitchProperty({
+        name: 'Hide Tipped Players',
+        description: 'Hides the players you tipped in the chat',
+        category: 'Quality of Life',
+    })
+    hideTippedPlayers = false;
+    @SwitchProperty({
+        name: 'Carnival Redstone Lamp Helper',
+        description: 'Highlights the redstone lamps and draws a line to it',
+        category: 'Quality of Life',
+    })
+    carnivalLamp = false;
+    @SwitchProperty({
+        name: 'Carnival Zombie Helper',
+        description: 'Highlights the best zombie to shoot',
+        category: 'Quality of Life',
+    })
+    carnivalZombie = false; 
+    @SwitchProperty({
+        name: 'Carnival Zombie Line',
+        description: 'Draws a line to the best zombie to shoot',
+        category: 'Quality of Life',
+    })
+    CarnivalZombieLine = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
@@ -813,17 +856,33 @@ class Settings {
     })
     sprVolume = 50;
 
-    // @SelectorProperty({
-    //     name: "Custom Sound",
-    //     description: "Select a custom sound for a specific item",
-    //     category: "Customization",
-    //     subcategory: "Sound Settings",
-    //     options: customSounds
-    // })
-    // customSound = 0;
+    
 
 
     // Debug
+    @SelectorProperty({
+        name: "Test Property Sound",
+        description: "Select a custom sound for a specific item",
+        category: "Customization",
+        subcategory: "Sound Settings",
+        options: customSounds
+    })
+    customSound = 0;
+    @SliderProperty({
+        name: "Test Property Sound Volume",
+        description: "Set the volume for the custom sound",
+        category: "Customization",
+        subcategory: "Sound Settings",
+        min: 0,
+        max: 100
+    })
+    customVolume = 50;
+    @SwitchProperty({
+        name: 'Test Features',
+        description: 'Enable test features',
+        category: 'Debug',
+    })
+    testFeatures = false;
     @SwitchProperty({
         name: 'Always Diana Mayor',
         description: 'Its always Diana, no need to check for mayor, perks or spade',
@@ -917,17 +976,19 @@ class Settings {
 //     // FileLib.write("./config/ChatTriggers/modules/SBO/SboData.json", JSON.stringify(SboData, null, 4));
 // }
 
-// // push all ogg filenames from Config.modulesFolder.replace("modules", "images") to customSounds
-// FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/").forEach(file => {
-//     if (file.endsWith(".ogg")) {
+// push all ogg filenames from Config.modulesFolder.replace("modules", "images") to customSounds
+FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/").forEach(file => {
+    if (file.endsWith(".ogg")) {
         
-//         // push only file name without extension split at \
-//         let filename = file.split("\\").pop();
-//         customSounds.push(filename.replace(".ogg", ""));
-//     }
-// });
+        // push only file name without extension split at \
+        let filename = file.split("\\").pop();
+        customSounds.push(filename.replace(".ogg", ""));
+    }
+});
+
+// print(Config.modulesFolder.replace("modules", "images"))
 // let soundFiles = FileLib.getUrlContent(Config.modulesFolder.replace("modules", "images"));
-// print(soundFiles);
+// // print(soundFiles);
 // for (let i = 0; i < soundFiles.length; i++) {
 //     if (soundFiles[i].endsWith(".ogg")) {
 //         customSounds.push(soundFiles[i].replace(".ogg", ""));

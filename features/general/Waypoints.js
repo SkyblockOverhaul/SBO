@@ -1,11 +1,11 @@
 import renderBeaconBeam from "../../../BeaconBeam/index";
-import RenderLibV2 from "../../../RenderLibv2";
+import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
-import { getFinalLocation } from "../diana/DianaGuess";
+import { getFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 
@@ -29,10 +29,14 @@ export function setBurrowWaypoints(burrows) {
 }
 
 let worldWaypoints = [];
-export function createWorldWaypoint(name, x, y, z, r, g, b) {
+export function createWorldWaypoint(name, x, y, z, r, g, b, line = false, beam = true, distance = true) {
     // check if x y z are already in worldWaypoints
     if (worldWaypoints.some(([_, wx, wy, wz]) => wx === x && wy === y && wz === z)) return;
-    worldWaypoints.push([name, x, y, z, "", r, g, b]);
+    worldWaypoints.push([name, x, y, z, "", r, g, b, line, beam, distance]);
+}
+
+export function removeWorldWaypoint(x, y, z) {
+    worldWaypoints = worldWaypoints.filter(([_, wx, wy, wz]) => wx !== x || wy !== y || wz !== z);
 }
     
 register("worldUnload", () => {
@@ -106,7 +110,10 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distanceRaw, xSign, zSign = 0;
 
+    
     waypoints.forEach((waypoint) => {
+        let beam = true;
+        let distancBool = true
         if (type == "Burrow") {
             switch (waypoint[0]) {
                 case "Start":
@@ -131,6 +138,8 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             r = waypoint[5]/255;
             g = waypoint[6]/255;
             b = waypoint[7]/255;
+            beam = waypoint[9];
+            distancBool = waypoint[10];
         }
 
         if (waypoint[4] == undefined) {
@@ -171,18 +180,15 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             zSign = z == 0 ? 1 : Math.sign(z);
         }
 
-
-        wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw];
+        if (distancBool)
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+        else
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
         wp[1] = [x + xSign, y - 1, z + zSign];
         
-        /* Return Matrix
-           [message, x, y ,z]
-           [beacon x, y, z]
-           [r, g, b]
-        */
         if (type == "Guess") {
             formattedGuess.push(wp);
         }
@@ -461,6 +467,7 @@ registerWhen(register("renderWorld", () => {
         renderWaypoint(formattedBurrow);
         renderWaypoint(formattedGuess);
         renderBurrowLines();
+        renderWaypointLines();
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
@@ -483,6 +490,17 @@ function renderBurrowLines() {
         }
     }
 }
+
+function renderWaypointLines() {
+    if (worldWaypoints.length > 0) {
+        worldWaypoints.forEach((waypoint) => {
+            if (waypoint[8]) {
+                trace(waypoint[1], waypoint[2], waypoint[3], waypoint[5]/255, waypoint[6]/255, waypoint[7]/255, 0.7, "calc", 2);
+            }
+        }
+    )}
+}
+
 
 function guessDistance(x,y,z) {
     return Math.sqrt(
@@ -525,9 +543,11 @@ function renderWaypoint(waypoints) {
         // RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
         RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], alpha/2, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
-        Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
+        if (box[0] != "" && box[0] != "§7") {
+            Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
+        }
 
-        if (box[4] >= removeAtDistance) {
+        if (box[4] >= removeAtDistance && box[5]) {
             renderBeaconBeam(beam[0], beam[1]+1, beam[2], rgb[0], rgb[1], rgb[2], alpha, false);
         }
     });

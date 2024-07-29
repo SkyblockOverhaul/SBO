@@ -18,7 +18,7 @@ import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import { data } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
-import { printDev } from "./utils/functions";
+import settings from "./settings";
 
 
 register("command", (args1, ...args) => {
@@ -50,7 +50,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.3.0" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.3.1" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -82,11 +82,10 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a-- Diana Guis -- `)
-    ChatLib.chat(`&7> &aAdded profit/hr`)
-    ChatLib.chat(`&7> &a-- Party Commands --`)
-    ChatLib.chat(`&7> &aAdded !playtime, !pt`)
-    ChatLib.chat(`&7> &aAdded !profit`)
+    ChatLib.chat(`&7> &a--Diana-- `)
+    ChatLib.chat(`&7> &aCustom Chim mssage is now fully customizable`)
+    ChatLib.chat(`&7> &a--QOL--`)
+    ChatLib.chat(`&7> &aAdded Carnival Shootout helper`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
@@ -95,8 +94,13 @@ const changeLogReg = register("step", () => {
 }).setFps(1)
 
 register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
-    printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
+    // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
+    if (name == "mob.ghast.scream" || name == "mob.ghast.moan" || name == "mob.ghast.charge" && settings.testFeatures) {
+        ChatLib.chat("sound for rag axe " + name)
+        Client.showTitle("RAG AXE", "", 0, 90, 20);
+    }
 })
+
 // dojo sounds:
 // [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
 // [DEV]: Sound: mob.zombie.woodbreak | Volume: 1.5 | Pitch: 1 | Category: MOBS
@@ -161,96 +165,5 @@ register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
 // //         World.playSound("random.levelup", 1, 1.6);
 // //    }, 150);
 // }).setName("sboinq");
-// import { request } from "../requestV2";
-
-// const ByteArrayInputStream = Java.type("java.io.ByteArrayInputStream")
-// const Base64 = Java.type("java.util.Base64")
-// const CompressedStreamTools = Java.type("net.minecraft.nbt.CompressedStreamTools")
-// export function decompress(compressed) {
-//     if (compressed === null || compressed.length == 0) {
-//         return null
-//     }
-//     return new NBTTagCompound(CompressedStreamTools.func_74796_a(new ByteArrayInputStream(Base64.getDecoder().decode(compressed))))
-// }
 
 
-// let page = 0;
-// let itemsFound = [];
-// let totalPages = 0;
-// let itemIdSearched = "";
-// let priceSearched = 0;
-
-// function get_info(url) {
-//     request({
-//         url: "https://api.hypixel.net/skyblock/auctions?page=" + page,
-//         json: true
-//     }).then((response)=>{
-//         let obj = JSON.parse(response)
-//         if (!obj.success) {
-//             print("API request failed");
-//             return false
-//         }
-//         obj.auctions.forEach(auction => {
-//             let itemNBT  = decompress(auction.item_bytes)
-//             let itemObj = itemNBT.toObject().i
-//             if (itemObj.length == 1 && auction.bin) {
-//                 let price = auction.starting_bid
-//                 let item = itemObj[0]
-//                 let itemId = item.tag.ExtraAttributes.id
-//                 if (itemId == itemIdSearched && price <= priceSearched) {
-//                     itemsFound.push({price: price, item: item, auction: auction.uuid, startDate: auction.start})
-//                 }
-//             }
-//         });
-
-//         allpages.push(response.auctions);
-//         page++;
-//         if (totalPages == 0) {
-//             totalPages = response.totalPages;
-//         }
-//         // for every 10th page print status
-//         if (page % 10 == 0 || page == totalPages || page == 0) {
-//             print("Page: " + page + " / " + totalPages);
-//         }
-//         if (page < totalPages) {
-//             get_info();
-//         } else {
-//             print("Done");
-//             // sort items found by start date then by price
-//             itemsFound.sort((a, b) => {
-//                 if (a.startDate == b.startDate) {
-//                     return a.price - b.price;
-//                 }
-//                 return a.startDate - b.startDate;
-//             });
-//             // print first 10 items
-//             if (itemsFound.length > 0) {
-//                 print("Found " + itemsFound.length + " items");
-//                 for (let i = 0; i < 10 && i < itemsFound.length; i++) {
-//                     let item = itemsFound[i];
-//                     print("Price: " + item.price + " | UUID: " + item.auction);
-//                 }
-//             }
-//             else {
-//                 print("No items found for " + itemIdSearched + " under " + priceSearched);  
-//             }
-//         }
-    
-//     }).catch((error)=>{
-//         print("error")
-//         console.error(error);
-//         return null;
-//     });
-// }
-
-// function get_all_auctions(id, price) {
-//     allpages = [];
-//     page = 0;
-//     totalPages = 0;
-
-//     get_info();
-// }
-
-// register("command", (args1, args2, ...args) => {
-//     get_all_auctions(args1, args2);
-// }).setName("allah");
