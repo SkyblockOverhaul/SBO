@@ -169,14 +169,6 @@ function checkCustomChimMessage(magicFind) {
     }
 }
 
-register("command", () => {
-    let [bool, txtxt] = checkCustomChimMessage(411);
-
-    if (bool) {
-        ChatLib.chat(txtxt);
-    }
-}).setName("sbochim");
-
 // command to reset session tracker
 register("command", () => {
     let tempTracker = initializeTracker();
