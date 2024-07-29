@@ -562,28 +562,33 @@ register("command", (args1, ...args) => {
 }).setName("sboimporttracker");
 
 register("command", (args1, args2, ...args) => {
-    ChatLib.chat(ChatLib.getChatBreak("&b-"))
-
-    if (args1 == "sh")  ChatLib.chat("&a&lSkyHanni:");
-    else if (args1 == "st") ChatLib.chat("&a&lSkytils:");
-
-    ChatLib.chat("&aDo you want to overwrite or add on top of your current diana tracker");
-    new TextComponent("&bTo overwrite, click here").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " " + args2 + " overwrite").setHover("show_text", "Click Me").chat();
-    new TextComponent("&bTo add to your tracker, click here").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " " + args2 + " add").setHover("show_text", "Click Me").chat();
-    ChatLib.chat(ChatLib.getChatBreak("&b-"))
-
+    if (args1 != undefined && args2 != undefined) {
+        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+        if (args1 == "sh")  ChatLib.chat("&a&lSkyHanni:");
+        else if (args1 == "st") ChatLib.chat("&a&lSkytils:");
+        ChatLib.chat("&aDo you want to overwrite or add on top of your current diana tracker");
+        new TextComponent("&bTo overwrite, click here").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " " + args2 + " overwrite").setHover("show_text", "Click Me").chat();
+        new TextComponent("&bTo add to your tracker, click here").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " " + args2 + " add").setHover("show_text", "Click Me").chat();
+        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    } else {
+        ChatLib.chat("&6[SBO] &cInvalid arguments. use /sboimporttracker <profilename>");
+    }
 }).setName("dianatrackerimportcheck");
 
 register("command", (args1, args2, args3, ...args) => {
-    ChatLib.chat(ChatLib.getChatBreak("&b-"))
-    if (args3 == "overwrite") {
-        ChatLib.chat("&aAre you sure you want to overwrite your diana tracker? (Total, Mayor, Session)");
-    } 
-    else if (args3 == "add") {
-        ChatLib.chat("&aAre you sure you want to add the imported tracker to your diana tracker? (Total, Mayor, Session)");
+    if (args1 != undefined && args2 != undefined && args3 != undefined) {
+        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+        if (args3 == "overwrite") {
+            ChatLib.chat("&aAre you sure you want to overwrite your diana tracker? (Total, Mayor, Session)");
+        } 
+        else if (args3 == "add") {
+            ChatLib.chat("&aAre you sure you want to add the imported tracker to your diana tracker? (Total, Mayor, Session)");
+        }
+        new TextComponent("&bYES").setClick("run_command", "/dianatrackerimporttracker " + args1 + " " + args2 + " " + args3).setHover("show_text", "Click Me").chat();
+        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    } else {
+        ChatLib.chat("&6[SBO] &cInvalid arguments. use /sboimporttracker <profilename>");
     }
-    new TextComponent("&bYES").setClick("run_command", "/dianatrackerimporttracker " + args1 + " " + args2 + " " + args3).setHover("show_text", "Click Me").chat();
-    ChatLib.chat(ChatLib.getChatBreak("&b-"))
 }).setName("dianatrackerimportcheck2");
 
 register("command", (args1, args2, args3, ...args) => {
