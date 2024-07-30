@@ -592,8 +592,6 @@ register("command", (args1, args2, args3, ...args) => {
 }).setName("dianatrackerimportcheck2");
 
 register("command", (args1, args2, args3, ...args) => {
-    // ChatLib.chat("importing");
-    // ChatLib.chat("args1: " + args1 + " args2: " + args2 + " args3: " + args3);
     if (args1 != undefined && args2 != undefined && args3 != undefined) {
         importDianaTracker(args1, args2, args3);
     }
