@@ -95,7 +95,7 @@ const changeLogReg = register("step", () => {
 
 registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
     // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
-    if (name == "mob.ghast.scream" || name == "mob.ghast.charge") {
+    if (name == "mob.ghast.scream" || name == "mob.ghast.moan" || name == "mob.ghast.charge") {
         ChatLib.chat("sound for rag axe " + name)
         Client.showTitle("RAG AXE", "", 0, 90, 20);
     }
@@ -104,6 +104,36 @@ registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, even
 // dojo sounds:
 // [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
 // [DEV]: Sound: mob.zombie.woodbreak | Volume: 1.5 | Pitch: 1 | Category: MOBS
+
+// when hit with leftclick:
+// [DEV]: Sound: random.successful_hit | Volume: 1 | Pitch: 1 | Category: PLAYERS
+
+// register("chat", (drop) => {
+//     let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
+//     let chimMf = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
+//     if(chimMf > 0) {
+//         if(data.last10ChimMagicFind.length >= 10) {
+//             data.last10ChimMagicFind.shift();
+//         }
+//         data.last10ChimMagicFind.push(chimMf);
+    
+//         let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
+//         data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
+//     }
+
+// }).setCriteria("&r&6&lRARE DROP! ${drop}");
+
+// register("step", () => {
+//     // print each egg
+//     print(`&r&6Eggs: &e${eggs.length}`);
+//     eggs.forEach(egg => {
+//         createWorldWaypoint("Egg", egg.x, egg.y, egg.z, 0, 255, 0);
+//     })
+// }).setFps(1);
+
+// register("chat", (event) => {
+//     Client.showTitle("&l&9!!!!!WORM!!!!!!", "&eKILL!!!", 0, 90, 20);
+// }).setCriteria("&r&7&oYou hear the sound of something approaching...&r");
 
 // register("chat", (message, event) => {
 //     message = message.removeFormatting();
@@ -118,6 +148,22 @@ registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, even
 //     }
 // }).setCriteria("&r&aYou received ${message}");
 
-
+// register("command", () => {
+//     // Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, "&r&b[MVP&f+&b] RolexDE", 0, 90, 20);
+// //     Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
+// //     ChatLib.chat("&6[SBO] &r&6&lRARE DROP! &5Minos Relic!");
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.0);
+// //    }, 0);
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.2);
+// //    }, 50);
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.4);
+// //    }, 100);
+// //     setTimeout(function() {
+// //         World.playSound("random.levelup", 1, 1.6);
+// //    }, 150);
+// }).setName("sboinq");
 
 

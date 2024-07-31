@@ -370,14 +370,11 @@ function getLootMessage(lootViewSetting) {
     const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
     let timePassed = timer.getHourTime(); // in hours 
     let profitPerHour = 0;
-    let profitPerBurrow = 0;
     if (timePassed != "NaN" && timePassed != 0) {
         profitPerHour = formatNumber((getTotalValue() / timePassed).toFixed()) // in coins
-        profitPerBurrow = formatNumber((getTotalValue() / lootTracker["items"]["Total Burrows"]).toFixed()) // in coins
     }
     let profitText = [
         `§6${profitPerHour} coins/hour`,
-        `§6${profitPerBurrow} coins/burrow`
 
     ].map(item => item.toString()); // Explicitly convert each element to a string
     totalProfitLine.onHover((overlay) => {
