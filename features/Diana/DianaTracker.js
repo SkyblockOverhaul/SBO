@@ -429,9 +429,9 @@ function importDianaTracker(type, profileName, importType) {
     totalImportedMobs = 0;
     if (type == "sh") {
         ChatLib.chat("&6[SBO] &aImporting from SkyHanni...");
-        let shConfig = JSON.parse(FileLib.read("./config/skyhanni/config.json")); // if undefined then no skyhanni installed
-        let activePlayer = shConfig.storage.players[Player.getUUID()] // if undefined then player not found
-        let activeProfile = activePlayer.profiles[profileName]; // if undefined then profile not found
+        let shConfig = JSON.parse(FileLib.read("./config/skyhanni/config.json"));
+        let activePlayer = shConfig.storage.players[Player.getUUID()] 
+        let activeProfile = activePlayer.profiles[profileName]; 
         let dianaShTracker = activeProfile.diana
         if (shConfig == undefined) {
             ChatLib.chat("&6[SBO] &cSkyHanni not found. cant import tracker");
