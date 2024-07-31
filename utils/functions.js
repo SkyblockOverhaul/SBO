@@ -526,7 +526,7 @@ export function formatNumber(number) {
     else if (number >= 1000) {
         return (number / 1000).toFixed(1) + "k";
     }
-    return number.toFixed(0);
+    return parseFloat(number).toFixed(0);
 }
 
 export function formatNumberCommas(number) {
