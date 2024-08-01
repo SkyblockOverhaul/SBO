@@ -15,20 +15,48 @@ function crownOverlay() {
     crownTracker.setLines(messageLines);
 }
 
+const crownTiers = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000];
+
 function getCrownMessage() {
-    let cronwLines = [];
-    let timePassed = timerCrown.getHourTime();
+    let crownLines = [];
+    let timePassed = timerCrown.getHourTime(); // Zeit seit dem letzten Reset oder Beginn
     let profitPerHour = 0;
+    let timeUntilNextTier = 0;
+    let currentTier = 0;
+
+    for (let i = 0; i < crownTiers.length; i++) {
+        if (data.totalCrownCoins < crownTiers[i]) {
+            currentTier = i - 1;
+            break;
+        }
+    }
+    if (currentTier < 0) currentTier = 0;
+    let nextTier = crownTiers[currentTier + 1];
+
     if (timePassed != "NaN" && timePassed != 0) {
         profitPerHour = (data.totalCrownCoinsGained / timePassed).toFixed();
     }
-    cronwLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
-    cronwLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)}`, true));
-    cronwLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)}`, true));
-    cronwLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumber(data.lastCrownCoins)}`, true));
-    cronwLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
 
-    return cronwLines;
+    if (profitPerHour > 0 && nextTier > data.totalCrownCoins) {
+        let coinsNeeded = nextTier - data.totalCrownCoins;
+        let hoursUntilNextTier = coinsNeeded / profitPerHour;
+        let millisecondsUntilNextTier = hoursUntilNextTier * 60 * 60 * 1000; // Stunden in Millisekunden umrechnen
+        timeUntilNextTier = formatTime(millisecondsUntilNextTier); // Formatierte Zeit
+    }
+
+    crownLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumber(data.lastCrownCoins)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
+
+    if (timeUntilNextTier) {
+        crownLines.push(new OverlayTextLine(`${GOLD}Time til next tier: ${AQUA}${timeUntilNextTier}`, true));
+    } else {
+        crownLines.push(new OverlayTextLine(`${GOLD}Tier: MAX!`, true));
+    }
+
+    return crownLines;
 }
 
 function getTimerMessage() {
