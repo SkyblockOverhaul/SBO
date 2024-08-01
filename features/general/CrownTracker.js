@@ -43,9 +43,10 @@ function getTimerMessage() {
 }
 
 function getCoinsFromCrown() {
-    if (!Player.armor.getHelmet()) return 0;
-    if (!Player.armor.getHelmet().getLore()) return 0;
+    if (!Player.armor.getHelmet() || Player.armor.getHelmet() == null) return 0;
+    if (!Player.armor.getHelmet().getLore() || Player.armor.getHelmet().getLore() == null) return 0;
     let helmet = Player.armor.getHelmet();
+    if (!helmet.getName() || helmet.getName() == null) return 0
     let helmetName = helmet.getName().trim();
     if (!helmetName.includes("Crown of Avarice")) return 0
     let helmetLore = helmet.getLore();
