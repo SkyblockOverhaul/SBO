@@ -4,8 +4,6 @@ import { formatNumber, formatNumberCommas, formatTime } from "../../utils/functi
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 
-
-
 let crownTracker = new SboOverlay("crownTracker", "crownTracker", "render", "CrownLoc");
 let timerOverlayLine = new OverlayTextLine(`&ePlaytime: &b${getTimerMessage()}`, true);
 
@@ -97,5 +95,3 @@ register("command", () => {
     data.lastCrownCoins = 0;
     timerCrown.reset();
 }).setName("sboresetcrowntracker")
-
-"§dRenowned Crown of Avarice"
