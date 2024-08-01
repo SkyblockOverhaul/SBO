@@ -52,7 +52,11 @@ function getCrownMessage() {
 
     if (timeUntilNextTier) {
         crownLines.push(new OverlayTextLine(`${GOLD}Time til next tier: ${AQUA}${timeUntilNextTier}`, true));
-    } else {
+    } 
+    else if (data.totalCrownCoinsGained == 0) {
+        crownLines.push(new OverlayTextLine(`${GOLD}Time til next tier: ${AQUA}Unknown`, true));
+    }
+    else if (currentTier == crownTiers.length - 1) {
         crownLines.push(new OverlayTextLine(`${GOLD}Tier: MAX!`, true));
     }
 
@@ -96,7 +100,7 @@ let coinsBeforeCreeperDeath = getCoinsFromCrown();
 function calculateCrownCoins() {
     let coinsAfterCreeperDeath = getCoinsFromCrown();
     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
-    if (coinsGained > 0) {
+    if (coinsGained > 0 && coinsGained != coinsAfterCreeperDeath) {
         timerCrown.start();
         timerCrown.continue();
         timerCrown.updateActivity();
