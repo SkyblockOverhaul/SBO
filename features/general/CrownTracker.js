@@ -22,10 +22,11 @@ function getCrownMessage() {
     let timePassed = timerCrown.getHourTime();
     let profitPerHour = 0;
     if (timePassed != "NaN" && timePassed != 0) {
-        profitPerHour = (data.totalCrownCoins / timePassed).toFixed();
+        profitPerHour = (data.totalCrownCoinsGained / timePassed).toFixed();
     }
     cronwLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
-    cronwLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoins)}`, true));
+    cronwLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)}`, true));
+    cronwLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)}`, true));
     cronwLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumber(data.lastCrownCoins)}`, true));
     cronwLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
 
@@ -63,6 +64,7 @@ function getCoinsFromCrown() {
     return coinsFound;
 }
 
+data.totalCrownCoins = getCoinsFromCrown();
 let coinsBeforeCreeperDeath = getCoinsFromCrown();
 function calculateCrownCoins() {
     let coinsAfterCreeperDeath = getCoinsFromCrown();
@@ -71,9 +73,10 @@ function calculateCrownCoins() {
         timerCrown.start();
         timerCrown.continue();
         timerCrown.updateActivity();
-        coinsBeforeCreeperDeath = coinsAfterCreeperDeath;
-        data.totalCrownCoins += coinsGained;
+        data.totalCrownCoinsGained += coinsGained;
         data.lastCrownCoins = coinsGained;
+        data.totalCrownCoins = coinsAfterCreeperDeath;
+        coinsBeforeCreeperDeath = coinsAfterCreeperDeath;
     }
 }
 
@@ -93,7 +96,7 @@ registerWhen(register("step", () => {
 }).setFps(4), () => settings.crownTracker);
 
 register("command", () => {
-    data.totalCrownCoins = 0;
+    data.totalCrownCoinsGained = 0;
     data.lastCrownCoins = 0;
     timerCrown.reset();
 }).setName("sboresetcrowntracker")

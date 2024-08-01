@@ -105,6 +105,7 @@ export let data = new PogObject("SBO", {
     "crownTimer": 0,
     "totalCrownCoins" : 0,
     "lastCrownCoins" : 0,
+    "totalCrownCoinsGained" : 0,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
