@@ -612,7 +612,9 @@ export function formatTime(milliseconds) {
     if (minutes > 0 || hours > 0 || days > 0) {
         formattedTime += `${minutes}m `;
     }
-    formattedTime += `${seconds}s`;
+    if (minutes < 1 && hours == 0 && days == 0) {
+        formattedTime += `${seconds}s `;
+    }
 
     return formattedTime;
 }
