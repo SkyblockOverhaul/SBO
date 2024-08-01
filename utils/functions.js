@@ -287,6 +287,7 @@ export function initializeGuiSettings() {
         StatsLoc: { "x": 15, "y": 290, "s": 1 },
         AvgMagicFindLoc: { "x": 15, "y": 350, "s": 1 },
         PickupLogLoc: { "x": 2, "y": 2, "s": 1 },
+        CrownLoc: { "x": 10, "y": 10, "s": 1 },
     };
 }
 

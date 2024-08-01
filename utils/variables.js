@@ -102,6 +102,9 @@ export let data = new PogObject("SBO", {
     "last10StickMagicFind": [],
     "hideTrackerLines": [],
     "partyBlacklist": [],
+    "crownTimer": 0,
+    "totalCrownCoins" : 0,
+    "lastCrownCoins" : 0,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
@@ -534,7 +537,7 @@ const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionT
 const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
-
+export const timerCrown = new SBOTimer("Crown", 0.3, data, "crownTimer");
 
 
 // --- TRIGGER CONTROL ---

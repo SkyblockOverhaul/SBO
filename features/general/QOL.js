@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { getplayername, trace } from "../../utils/functions";
-import { registerWhen } from "../../utils/variables";
+import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
 import RenderLibV2 from "../../../RenderLibV2";
@@ -172,32 +172,3 @@ registerWhen(register("renderWorld", () => {
         }
     }
 }), () => settings.carnivalZombie);
-
-// function getCoinsFromCrown() {
-//     if (Player.armor.getHelmet() == null || !Player.armor.getHelmet()) return 0;
-//     helmet = Player.armor.getHelmet()
-//     for (line in helmet.getLore()) {
-//         loreline = helmet.getLore()[line]
-//         if (helmet.getLore()[line] == null || !helmet.getLore()[line]) return 0;
-//         if(loreline.includes("Collected Coins")) {
-//             let coins = loreline.split(": ")[1];
-//             if (coins.includes("§") && coins.length > coins.indexOf("§") + 1) {
-//                 coins = coins.replace(/§./, "").replaceAll(",", "");
-//             }
-//             return parseInt(coins);
-//         }
-//     }
-// }
-
-// let coinsBeforeCreeperDeath = getCoinsFromCrown();
-// function calculateCoinsGained() {
-//     let coinsAfterCreeperDeath = getCoinsFromCrown();
-//     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
-//     ChatLib.chat(`§6§o§7Coins gained: §6${coinsGained}`);
-//     coinsBeforeCreeperDeath = coinsAfterCreeperDeath;
-// }
-
-// registerWhen(register("step", () => {
-//     calculateCoinsGained();
-// }).setFps(4), () => settings.testFeatures);
-// "§5§o§7Collected Coins: §66,247,412"

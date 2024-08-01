@@ -712,6 +712,26 @@ class Settings {
         subcategory: "Colors"
     })
     slotColor = Color.RED;
+
+    //Crown Tracker
+    @SwitchProperty({
+        name: "Crown Tracker",
+        description: "Tracks your crown of avarice coins",
+        category: "Quality of Life",
+        subcategory: "Crown Tracker"
+    })
+    crownTracker = false;
+    @ButtonProperty({
+        name: "Reset Crown Tracker",
+        description: "Resets the crown tracker",
+        placeholder: "Reset Crown Tracker",
+        category: "Quality of Life",
+        subcategory: "Crown Tracker"
+    })
+    resetCrownTracker() {
+        ChatLib.command("sboresetcrowntracker", true);
+    }
+
     // sound settings
     @ButtonProperty({
         name: "Open Sound Folder",
