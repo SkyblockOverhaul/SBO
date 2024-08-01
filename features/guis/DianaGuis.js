@@ -378,7 +378,6 @@ function getLootMessage(lootViewSetting) {
     let profitText = [
         `§6${profitPerHour} coins/hour`,
         `§6${profitPerBurrow} coins/burrow`
-
     ].map(item => item.toString()); // Explicitly convert each element to a string
     totalProfitLine.onHover((overlay) => {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());

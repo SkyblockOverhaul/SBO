@@ -521,7 +521,7 @@ export class SBOTimer {
         else {
             millisecondTime = this.trackerObject[this.dataFieldName];
         }
-        let hours = (millisecondTime / 3600000).toFixed(2);
+        let hours = millisecondTime / 3600000;
         return hours;
     }
 
