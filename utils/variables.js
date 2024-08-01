@@ -443,8 +443,15 @@ export class SBOTimer {
     start() {
         if (this.running || this.startedOnce) return;
         this.startTime = Date.now();
-        if(this.trackerObject.items[this.dataFieldName] > 0) {
-            this.elapsedTime = this.trackerObject.items[this.dataFieldName];
+        if (this.trackerObject.items) {
+            if (this.trackerObject.items[this.dataFieldName] > 0) {
+                this.elapsedTime = this.trackerObject.items[this.dataFieldName];
+            }
+        }
+        else {
+            if (this.trackerObject[this.dataFieldName] > 0) {
+                this.elapsedTime = this.trackerObject[this.dataFieldName];
+            }
         }
         this.running = true;
         this.startedOnce = true;
@@ -458,7 +465,12 @@ export class SBOTimer {
         const now = Date.now(); 
         this.elapsedTime += now - this.startTime;
         this.startTime = now;
-        this.trackerObject.items[this.dataFieldName] = this.elapsedTime;
+        if (this.trackerObject.items) {
+            this.trackerObject.items[this.dataFieldName] = this.elapsedTime;
+        }
+        else {
+            this.trackerObject[this.dataFieldName] = this.elapsedTime;
+        }
     }
 
     // Pauses the timer
@@ -484,7 +496,12 @@ export class SBOTimer {
     reset() {
         this.running = false;
         this.startedOnce = false;
-        this.trackerObject.items[this.dataFieldName] = 0;
+        if (this.trackerObject.items) {
+            this.trackerObject.items[this.dataFieldName] = 0;
+        }
+        else {
+            this.trackerObject[this.dataFieldName] = 0;
+        }
         this.elapsedTime = 0;
         this.startTime = 0;
         this.stopInactivityCheck();
@@ -496,7 +513,13 @@ export class SBOTimer {
     }
 
     getHourTime() {
-        let millisecondTime = this.trackerObject.items[this.dataFieldName];
+        let millisecondTime = 0;
+        if (this.trackerObject.items) {
+            millisecondTime = this.trackerObject.items[this.dataFieldName];
+        }
+        else {
+            millisecondTime = this.trackerObject[this.dataFieldName];
+        }
         let hours = (millisecondTime / 3600000).toFixed(2);
         return hours;
     }
@@ -514,7 +537,12 @@ export class SBOTimer {
                 if (Date.now() - this.lastActivityTime > this.INACTIVITY_LIMIT && this.running) {
                     this.pause();
                     if(!this.inactivityFlag) {
-                        this.trackerObject.items[this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        if (this.trackerObject.items) {
+                            this.trackerObject.items[this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        }
+                        else {
+                            this.trackerObject[this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        }
                         this.inactivityFlag = true;
                     }
                 }

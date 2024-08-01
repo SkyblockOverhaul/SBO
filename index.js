@@ -16,6 +16,7 @@ import "./utils/overlays";
 import "./features/Diana/PartyFinder";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
+import "./features/general/CrownTracker";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 import settings from "./settings";
