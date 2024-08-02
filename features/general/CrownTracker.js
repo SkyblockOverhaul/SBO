@@ -117,6 +117,16 @@ function hasCrown() {
     return helmet;
 }
 
+let isInitilized = false;
+function cronwInitilization() {
+    if (isInitilized) return;
+    if (isInSkyblock() && isDataLoaded()) {
+        data.totalCrownCoins = getCoinsFromCrown();
+        if (data.totalCrownCoins > 0) {
+            isInitilized = true;
+        }
+    }
+}
 
 let firstLoadReg = register("tick", () => {
     if (isInSkyblock() && isDataLoaded()) {
@@ -142,16 +152,8 @@ registerWhen(register("step", () => {
     }
     else {
         crownTracker.renderGui = true
+        cronwInitilization();
         crownOverlay();
-        let crownIni = register("step", () => {
-            if (isInSkyblock() && isDataLoaded()) {
-                data.totalCrownCoins = getCoinsFromCrown();
-                crownOverlay();
-                if (data.totalCrownCoins > 0) {
-                    crownIni.unregister();
-                }
-            }
-        }).setFps(4);
     }
 }).setFps(4), () => settings.crownTracker);
 
