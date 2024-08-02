@@ -3,7 +3,7 @@ import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { formatNumber, formatNumberCommas, formatTime, isInSkyblock } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
-import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
+import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE, RED} from "../../utils/constants";
 
 let crownTracker = new SboOverlay("crownTracker", "crownTracker", "render", "CrownLoc");
 let timerOverlayLine = new OverlayTextLine(`&ePlaytime: &b${getTimerMessage()}`, true);
@@ -52,13 +52,13 @@ function getCrownMessage() {
     crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
 
     if (timeUntilNextTier) {
-        crownLines.push(new OverlayTextLine(`${GOLD}Time til next tier: ${AQUA}${timeUntilNextTier}`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}`, true));
     } 
     else if (data.totalCrownCoinsGained == 0) {
-        crownLines.push(new OverlayTextLine(`${GOLD}Time til next tier: ${AQUA}Unknown`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}Unknown`, true));
     }
     else if (currentTier == crownTiers.length - 1) {
-        crownLines.push(new OverlayTextLine(`${GOLD}Tier: MAX!`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}Tier: ${RED}MAX!`, true));
     }
 
     return crownLines;
