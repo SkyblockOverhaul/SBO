@@ -568,7 +568,7 @@ const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionT
 const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime", "items");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
-export const timerCrown = new SBOTimer("Crown", 1.5, data, "crownTimer");
+export const timerCrown = new SBOTimer("Crown", 1, data, "crownTimer");
 
 
 // --- TRIGGER CONTROL ---
