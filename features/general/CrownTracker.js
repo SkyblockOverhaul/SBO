@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
-import { formatNumber, formatNumberCommas, formatTime } from "../../utils/functions";
+import { formatNumber, formatNumberCommas, formatTime, isInSkyblock } from "../../utils/functions";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 
@@ -124,7 +124,7 @@ registerWhen(register("tick", () => {
 
 registerWhen(register("step", () => {
     crownOverlay();
-}).setFps(4), () => settings.crownTracker);
+}).setFps(4), () => settings.crownTracker && isInSkyblock());
 
 register("command", () => {
     data.totalCrownCoinsGained = 0;
