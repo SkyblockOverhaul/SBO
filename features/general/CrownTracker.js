@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { formatNumber, formatNumberCommas, formatTime, isInSkyblock } from "../../utils/functions";
+import { isDataLoaded } from "../../utils/checkData";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 
@@ -75,12 +76,8 @@ function getTimerMessage() {
 }
 
 function getCoinsFromCrown() {
-    if (!Player.armor.getHelmet() || Player.armor.getHelmet() == null) return 0;
-    if (!Player.armor.getHelmet().getLore() || Player.armor.getHelmet().getLore() == null) return 0;
-    let helmet = Player.armor.getHelmet();
-    if (!helmet.getName() || helmet.getName() == null) return 0
-    let helmetName = helmet.getName().trim();
-    if (!helmetName.includes("Crown of Avarice")) return 0
+    let helmet = hasCrown();
+    if (!helmet) return 0;
     let helmetLore = helmet.getLore();
     let coinsFound = 0;
     for (let line of helmetLore) {
@@ -124,10 +121,33 @@ registerWhen(register("tick", () => {
 
 registerWhen(register("step", () => {
     crownOverlay();
-}).setFps(4), () => settings.crownTracker && isInSkyblock());
+    if (!hasCrown()) {
+        crownTracker.renderGui = false;
+    }
+    else {
+        crownTracker.renderGui = true
+    }
+}).setFps(4), () => settings.crownTracker);
 
 register("command", () => {
     data.totalCrownCoinsGained = 0;
     data.lastCrownCoins = 0;
     timerCrown.reset();
 }).setName("sboresetcrowntracker")
+
+let firstLoadReg = register("tick", () => {
+    if (isInSkyblock() && isDataLoaded()) {
+        crownOverlay();
+        firstLoadReg.unregister();
+    }
+})
+
+function hasCrown() {
+    if (!Player.armor.getHelmet() || Player.armor.getHelmet() == null) return false;
+    if (!Player.armor.getHelmet().getLore() || Player.armor.getHelmet().getLore() == null) return false;
+    let helmet = Player.armor.getHelmet();
+    if (!helmet.getName() || helmet.getName() == null) return false;
+    let helmetName = helmet.getName().trim();
+    if (!helmetName.includes("Crown of Avarice")) return false;
+    return helmet;
+}
