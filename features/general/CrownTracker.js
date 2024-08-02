@@ -108,6 +108,23 @@ function calculateCrownCoins() {
     }
 }
 
+function hasCrown() {
+    if (!Player.armor.getHelmet() || Player.armor.getHelmet() == null) return false;
+    if (!Player.armor.getHelmet().getLore() || Player.armor.getHelmet().getLore() == null) return false;
+    let helmet = Player.armor.getHelmet();
+    if (!helmet.getName() || helmet.getName() == null) return false;
+    let helmetName = helmet.getName().trim();
+    if (!helmetName.includes("Crown of Avarice")) return false;
+    return helmet;
+}
+
+let firstLoadReg = register("tick", () => {
+    if (isInSkyblock() && isDataLoaded()) {
+        crownOverlay();
+        firstLoadReg.unregister();
+    }
+})
+
 registerWhen(register("tick", () => {
     if (timerOverlayLine) {
         if (data.hideTrackerLines.includes("timer")) {
@@ -134,20 +151,3 @@ register("command", () => {
     data.lastCrownCoins = 0;
     timerCrown.reset();
 }).setName("sboresetcrowntracker")
-
-let firstLoadReg = register("tick", () => {
-    if (isInSkyblock() && isDataLoaded()) {
-        crownOverlay();
-        firstLoadReg.unregister();
-    }
-})
-
-function hasCrown() {
-    if (!Player.armor.getHelmet() || Player.armor.getHelmet() == null) return false;
-    if (!Player.armor.getHelmet().getLore() || Player.armor.getHelmet().getLore() == null) return false;
-    let helmet = Player.armor.getHelmet();
-    if (!helmet.getName() || helmet.getName() == null) return false;
-    let helmetName = helmet.getName().trim();
-    if (!helmetName.includes("Crown of Avarice")) return false;
-    return helmet;
-}
