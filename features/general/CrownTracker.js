@@ -20,7 +20,7 @@ const crownTiers = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 10000000
 
 function getCrownMessage() {
     let crownLines = [];
-    let timePassed = timerCrown.getHourTime(); // Zeit seit dem letzten Reset oder Beginn
+    let timePassed = timerCrown.getHourTime();
     let profitPerHour = 0;
     let timeUntilNextTier = 0;
     let currentTier = 0;
@@ -41,8 +41,8 @@ function getCrownMessage() {
     if (profitPerHour > 0 && nextTier > data.totalCrownCoins) {
         let coinsNeeded = nextTier - data.totalCrownCoins;
         let hoursUntilNextTier = coinsNeeded / profitPerHour;
-        let millisecondsUntilNextTier = hoursUntilNextTier * 60 * 60 * 1000; // Stunden in Millisekunden umrechnen
-        timeUntilNextTier = formatTime(millisecondsUntilNextTier); // Formatierte Zeit
+        let millisecondsUntilNextTier = hoursUntilNextTier * 60 * 60 * 1000;
+        timeUntilNextTier = formatTime(millisecondsUntilNextTier);
     }
 
     crownLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
