@@ -92,7 +92,6 @@ function getCoinsFromCrown() {
     return coinsFound;
 }
 
-data.totalCrownCoins = getCoinsFromCrown();
 let coinsBeforeCreeperDeath = getCoinsFromCrown();
 function calculateCrownCoins() {
     let coinsAfterCreeperDeath = getCoinsFromCrown();
@@ -117,6 +116,16 @@ function hasCrown() {
     if (!helmetName.includes("Crown of Avarice")) return false;
     return helmet;
 }
+
+let crownIni = register("step", () => {
+    if (isInSkyblock() && isDataLoaded()) {
+        data.totalCrownCoins = getCoinsFromCrown();
+        crownOverlay();
+        if (data.totalCrownCoins > 0) {
+            crownIni.unregister();
+        }
+    }
+}).setFps(4);
 
 let firstLoadReg = register("tick", () => {
     if (isInSkyblock() && isDataLoaded()) {
