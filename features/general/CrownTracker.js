@@ -120,12 +120,12 @@ registerWhen(register("tick", () => {
 }), () => settings.crownTracker);
 
 registerWhen(register("step", () => {
-    crownOverlay();
     if (!hasCrown()) {
         crownTracker.renderGui = false;
     }
     else {
         crownTracker.renderGui = true
+        crownOverlay();
     }
 }).setFps(4), () => settings.crownTracker);
 
