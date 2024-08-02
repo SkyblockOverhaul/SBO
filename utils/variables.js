@@ -424,9 +424,10 @@ register("chat", () => {
  * @param {number} inactiveTimeLimit - the time limit in minutes for inactivity.
  * @param {object} trackerObject - the Pog object to be updated.
  * @param {string} dataFieldName - the name of the field in the Pog object.
+ * @param {string} dataFieldClass - the class of the field in the Pog object. (Optional)
  */
 export class SBOTimer {
-    constructor(name, inactiveTimeLimit, trackerObject, dataFieldName) {
+    constructor(name, inactiveTimeLimit, trackerObject, dataFieldName, dataFieldClass = false) {
         this.name = name;
         this.startTime = 0;
         this.elapsedTime = 0;
@@ -436,7 +437,8 @@ export class SBOTimer {
         this.INACTIVITY_LIMIT = inactiveTimeLimit * 60 * 1000; // milliseconds
         this.tickEvent = null; // Timeout-ID
         this.trackerObject = trackerObject; // Tracker object (total/session/mayor)
-        this.dataFieldName = dataFieldName; // Name of the field in the tracker object
+        this.dataFieldName = dataFieldName; // Name of the field in the tracker object#
+        this.dataFieldClass = dataFieldClass;
         this.inactivityFlag = false;
     }
 
@@ -444,9 +446,9 @@ export class SBOTimer {
     start() {
         if (this.running || this.startedOnce) return;
         this.startTime = Date.now();
-        if (this.trackerObject.items) {
-            if (this.trackerObject.items[this.dataFieldName] > 0) {
-                this.elapsedTime = this.trackerObject.items[this.dataFieldName];
+        if (this.dataFieldClass) {
+            if (this.trackerObject[this.dataFieldClass][this.dataFieldName] > 0) {
+                this.elapsedTime = this.trackerObject[this.dataFieldClass][this.dataFieldName];
             }
         }
         else {
@@ -466,8 +468,8 @@ export class SBOTimer {
         const now = Date.now(); 
         this.elapsedTime += now - this.startTime;
         this.startTime = now;
-        if (this.trackerObject.items) {
-            this.trackerObject.items[this.dataFieldName] = this.elapsedTime;
+        if (this.dataFieldClass) {
+            this.trackerObject[this.dataFieldClass][this.dataFieldName] = this.elapsedTime;
         }
         else {
             this.trackerObject[this.dataFieldName] = this.elapsedTime;
@@ -497,8 +499,8 @@ export class SBOTimer {
     reset() {
         this.running = false;
         this.startedOnce = false;
-        if (this.trackerObject.items) {
-            this.trackerObject.items[this.dataFieldName] = 0;
+        if (this.dataFieldClass) {
+            this.trackerObject[this.dataFieldClass][this.dataFieldName] = 0;
         }
         else {
             this.trackerObject[this.dataFieldName] = 0;
@@ -515,8 +517,8 @@ export class SBOTimer {
 
     getHourTime() {
         let millisecondTime = 0;
-        if (this.trackerObject.items) {
-            millisecondTime = this.trackerObject.items[this.dataFieldName];
+        if (this.dataFieldClass) {
+            millisecondTime = this.trackerObject[this.dataFieldClass][this.dataFieldName];
         }
         else {
             millisecondTime = this.trackerObject[this.dataFieldName];
@@ -538,8 +540,8 @@ export class SBOTimer {
                 if (Date.now() - this.lastActivityTime > this.INACTIVITY_LIMIT && this.running) {
                     this.pause();
                     if(!this.inactivityFlag) {
-                        if (this.trackerObject.items) {
-                            this.trackerObject.items[this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        if (this.dataFieldClass) {
+                            this.trackerObject[this.dataFieldClass][this.dataFieldName] -= this.INACTIVITY_LIMIT;
                         }
                         else {
                             this.trackerObject[this.dataFieldName] -= this.INACTIVITY_LIMIT;
@@ -561,9 +563,9 @@ export class SBOTimer {
     }
 }
 
-const timerTotal = new SBOTimer("Total", 1.5, dianaTrackerTotal, "totalTime");
-const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionTime");
-const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime");
+const timerTotal = new SBOTimer("Total", 1.5, dianaTrackerTotal, "totalTime", "items");
+const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionTime", "items");
+const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime", "items");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
 export const timerCrown = new SBOTimer("Crown", 1.5, data, "crownTimer");
