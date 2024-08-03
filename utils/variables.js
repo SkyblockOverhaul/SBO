@@ -1,7 +1,7 @@
 
 // Importing constants and utility functions from other files
 import { delay } from "./threads";
-import { getDateMayorElected } from "./mayor";
+import { getDateMayorElected, setNewMayorBool } from "./mayor";
 // Importing the PogObject class from another file named "PogData"
 import PogObject from "../../PogData";
 
@@ -380,41 +380,40 @@ export function resetTracker(type) {
 
 let lastyear = 0;   
 register("chat", () => {
-    if (ChatLib.removeFormatting(ChatLib.getChatMessage()).includes("Mayor")) {
-        lastyear = dianaTrackerMayor.year;
-        let tempTracker = initializeTrackerMayor();
-        for (let key in dianaTrackerMayor) {
-            tempTracker[key] = dianaTrackerMayor[key];
-        }
-        if (dianaTrackerMayor.year != 0) {
-            let allZero = true;
-            for (let key in tempTracker.items) {
-                if (tempTracker.items[key] != 0) {
-                    allZero = false;
-                    break;
-                }
-            }
-            for (let key in tempTracker.mobs) {
-                if (tempTracker.mobs[key] != 0) {
-                    allZero = false;
-                    break;
-                }
-            }
-            if (!allZero) {
-                pastDianaEvents["events"].push(tempTracker);
-            }
-        }
-        let newTracker = initializeTrackerMayor();
-        timerMayor.reset();
-        for (let key in newTracker) {
-            dianaTrackerMayor[key] = newTracker[key];
-        }
-        if (lastyear == dianaTrackerMayor.year) {
-            dianaTrackerMayor.year++;
-        }
-        dianaTrackerMayor.save();
-        pastDianaEvents.save();
+    lastyear = dianaTrackerMayor.year;
+    let tempTracker = initializeTrackerMayor();
+    for (let key in dianaTrackerMayor) {
+        tempTracker[key] = dianaTrackerMayor[key];
     }
+    if (dianaTrackerMayor.year != 0) {
+        let allZero = true;
+        for (let key in tempTracker.items) {
+            if (tempTracker.items[key] != 0) {
+                allZero = false;
+                break;
+            }
+        }
+        for (let key in tempTracker.mobs) {
+            if (tempTracker.mobs[key] != 0) {
+                allZero = false;
+                break;
+            }
+        }
+        if (!allZero) {
+            pastDianaEvents["events"].push(tempTracker);
+        }
+    }
+    let newTracker = initializeTrackerMayor();
+    timerMayor.reset();
+    for (let key in newTracker) {
+        dianaTrackerMayor[key] = newTracker[key];
+    }
+    if (lastyear == dianaTrackerMayor.year) {
+        dianaTrackerMayor.year++;
+    }
+    dianaTrackerMayor.save();
+    pastDianaEvents.save();
+    setNewMayorBool();
 }).setCriteria("&r&eThe election room is now closed. Clerk Seraphine is doing a final count of the votes...&r");
 
 /**
