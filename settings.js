@@ -463,16 +463,10 @@ class Settings {
     // Quality of Life
     @SwitchProperty({
         name: 'Formated Bridge Bot',
-        description: 'Format bridge bot messages (that are like this "Guild > birgeBot: player<delimiter> message")',
+        description: 'Format bridge bot messages (that are like this "Guild > birgeBot: player: message")',
         category: 'Quality of Life',
     })
     formatBridgeBot = false;
-    @SwitchProperty({
-        name: 'Bridge Bot Delimiter',
-        description: 'Set the delimiter for the bridge bot messages',
-        category: 'Quality of Life',
-    })
-    delimiter = ":";
     @TextProperty({
         name: 'Bridge Bot Name',
         description: 'Set the name of the bridge bot',

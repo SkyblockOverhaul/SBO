@@ -82,7 +82,7 @@ registerWhen(register("chat", (botName, player, message, event) =>{
             // print("&r&2Guild > &b[DC] &b" + player1 + " &3replying to &b" + player2 + "&r:" + message);
         }
     }
-}).setCriteria("&r&2Guild > ${botName}: ${player}" + settings.delimiter + " ${message}"), () => settings.formatBridgeBot);
+}).setCriteria("&r&2Guild > ${botName}: ${player}: ${message}"), () => settings.formatBridgeBot);
 // old &r&2Guild > &a[VIP] SlowDT &3[GM]&f: ${player}: ${message}
 // geht
 // &r&2Guild > &a[VIP] SlowDT &3[GM]&f: &rSuccesfully invited kenchika to the party!&r
