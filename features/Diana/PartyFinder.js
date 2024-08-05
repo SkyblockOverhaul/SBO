@@ -5,7 +5,6 @@ import { HypixelModAPI } from "./../../../HypixelModAPI";
 let api = "https://api.skyblockoverhaul.com";
 
 function getPartyInfo(party) {
-    party = party.filter(uuid => uuid != Player.getUUID());
     request({
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
@@ -32,6 +31,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     Object.keys(partyInfo).forEach(key => {
         party.push(key);
     })
+    party = party.filter(uuid => uuid != Player.getUUID());
     if (party.length == 0) {
         ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
         return;
@@ -46,17 +46,6 @@ register("command", () => {
         lastUsed = Date.now();
         ChatLib.chat("&6[SBO] &eChecking party members...");
         sendPartyRequest();
-        // let interval = setInterval(() => {
-        //     if (getPartyBool()) {
-        //         let party = getPartyMembersUuids();
-        //         if (party.length == 0) {
-        //             ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
-        //             return;
-        //         }
-        //         getPartyInfo(party);
-        //         clearInterval(interval);
-        //     }
-        // }, 100, 50000);
     }
     else {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
@@ -65,9 +54,7 @@ register("command", () => {
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
-        // if (partyinfo[i].legPet) { // to remove all player without legendary griffin pet
-            ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&e&r&9│ &r&eLvL&r&f: &r&6" + partyinfo[i].sbLvl + "&r&e&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&e&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&e &r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
-        // }
+        ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&e&r&9│ &r&eLvL&r&f: &r&6" + partyinfo[i].sbLvl + "&r&e&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&e&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&e &r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
     }
 }
 
