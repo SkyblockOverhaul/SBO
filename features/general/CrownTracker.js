@@ -84,18 +84,15 @@ function getTimerMessage() {
 
 function getCoinsFromCrown() {
     let helmet = hasCrown();
-    if (!helmet) return 0;
-    printDev("[CTT] coins searching", "debounce", 500);
     let helmetLore = helmet.getLore();
     let coinsFound = 0;
     for (let line of helmetLore) {
-        printDev("[CTT] Lore" + helmetLore, "debounce", 1000);
-        if (line == null) continue;
+        if (line == null || !line) continue;
         if (line.includes("Collected Coins")) {
             let coins = line.split(": ")[1];
             coins = coins.replace(/§./, "").replaceAll(",", "");
             coinsFound = parseInt(coins);
-            printDev("[CTT] Coins Found", "debounce", 0);
+            printDev("[CTT] Coins Found");
             break;
         }
     }
@@ -107,7 +104,7 @@ function calculateCrownCoins() {
     let coinsAfterCreeperDeath = getCoinsFromCrown();
     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
     if (coinsGained > 0 && coinsGained != coinsAfterCreeperDeath) {
-        printDev("[CTT] coins gained", "debounce", 1000);
+        printDev("[CTT] coins gained");
         timerCrown.start();
         timerCrown.continue();
         timerCrown.updateActivity();
