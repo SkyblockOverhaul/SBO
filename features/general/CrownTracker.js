@@ -48,7 +48,7 @@ function getCrownMessage() {
     }
 
     totalPerecent = (data.totalCrownCoins / crownTiers[crownTiers.length - 1]) * 100;
-    percentToNextTier = ((data.totalCrownCoins - crownTiers[currentTier]) / (crownTiers[currentTier + 1] - crownTiers[currentTier])) * 100;
+    percentToNextTier = (data.totalCrownCoins / nextTier) * 100;
     totalPerecent = totalPerecent.toFixed(2);
     percentToNextTier = percentToNextTier.toFixed(2);
 
