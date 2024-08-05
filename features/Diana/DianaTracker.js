@@ -141,9 +141,6 @@ function checkCustomChimMessage(magicFind) {
     let text = settings.customChimMessage;
     if (!settings.chimMessageBool) return [false, ""];
     if (text != "") {
-        if (text.includes("{drop}")) {
-            text = text.replace(/{drop}/g, "Chimera");
-        }
         if (text.includes("{mf}")) {
             let mfMessage = "";
             if (magicFind > 0) {
@@ -162,6 +159,13 @@ function checkCustomChimMessage(magicFind) {
         return [false, ""];
     }
 }
+
+register("command", () => {
+    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(400);
+    if(replaceChimMessage) {
+        ChatLib.chat(customChimMessage);
+    }
+}).setName("sbochimtest");
 
 // command to reset session tracker
 register("command", () => {
