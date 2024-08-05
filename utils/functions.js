@@ -287,6 +287,7 @@ export function initializeGuiSettings() {
         StatsLoc: { "x": 15, "y": 290, "s": 1 },
         AvgMagicFindLoc: { "x": 15, "y": 350, "s": 1 },
         PickupLogLoc: { "x": 2, "y": 2, "s": 1 },
+        CrownLoc: { "x": 15, "y": 435, "s": 1 },
     };
 }
 
@@ -526,7 +527,7 @@ export function formatNumber(number) {
     else if (number >= 1000) {
         return (number / 1000).toFixed(1) + "k";
     }
-    return number.toFixed(0);
+    return parseFloat(number).toFixed(0);
 }
 
 export function formatNumberCommas(number) {
@@ -593,11 +594,13 @@ export function getTracker(setting) {
 }
 
 export function formatTime(milliseconds) {
-    const totalMinutes = parseInt(milliseconds / (60 * 1000));
+    const totalSeconds = parseInt(milliseconds / 1000);
+    const totalMinutes = parseInt(totalSeconds / 60);
     const totalHours = parseInt(totalMinutes / 60);
     const days = parseInt(totalHours / 24);
     const hours = totalHours % 24;
     const minutes = totalMinutes % 60;
+    const seconds = totalSeconds % 60;
 
     let formattedTime = '';
     if (days > 0) {
@@ -606,8 +609,13 @@ export function formatTime(milliseconds) {
     if (hours > 0 || days > 0) {
         formattedTime += `${hours}h `;
     }
-    formattedTime += `${minutes}m`;
-    
+    if (minutes > 0 || hours > 0 || days > 0) {
+        formattedTime += `${minutes}m `;
+    }
+    if (minutes < 1 && hours == 0 && days == 0) {
+        formattedTime += `${seconds}s `;
+    }
+
     return formattedTime;
 }
 

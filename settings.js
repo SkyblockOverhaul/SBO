@@ -60,8 +60,6 @@ class Settings {
         this.addDependency('Promote/Demote','Party Commands');
         this.addDependency('Ask Carrot','Party Commands');
         this.addDependency('Inq Warp Key','Detect Inq Cords');
-        // this.addDependency('Notify Party About Rare Room','Recognize Rare Room');
-        // this.addDependency('Announce Rare Room On Screen','Recognize Rare Room');
         // this.addDependency('Blaze View','Blaze Tracker');
         this.addDependency('Max Displayed Items','Attribute Value Overlay')
         this.addDependency('Select Displayed Lines','Attribute Value Overlay');
@@ -113,14 +111,6 @@ class Settings {
     warpDiff = "10";
 
     // --- Diana Tracker ---
-    // @SwitchProperty({
-    //     name: "Diana Mob Tracker",
-    //     description: "Tracks your diana mob kills",
-    //     category: "Diana",
-    //     subcategory: "Diana Tracker",
-    // })
-    // dianaMobTracker = false;
-
     @SwitchProperty({
         name: "Diana Tracker",
         description: "Tracks your diana loot and mob kills (you need to have Settings -> Personal -> Chat -> Sacks Notifications enabled for Gold and Iron to work)",
@@ -470,28 +460,6 @@ class Settings {
     //     options: ["OFF", "Overall View", "Event View", "Session View"]
     // })
     // blazeLootTrackerView = 0;
-    // // Dungeon
-    // @SwitchProperty({
-    //     name: 'Recognize Rare Room',
-    //     description: 'Recognize rare rooms in dungeons (like Trinity etc.)',
-    //     category: 'Dungeon',
-    //     subcategory: 'Quality of Life',
-    // })
-    // recognizeRareRoom = false;
-    // @SwitchProperty({
-    //     name: 'Notify Party About Rare Room',
-    //     description: "Notify's your party about the rare room you found",
-    //     category: 'Dungeon',
-    //     subcategory: 'Quality of Life',
-    // })
-    // notifyPartyRareRoom = false;
-    // @SwitchProperty({
-    //     name: 'Announce Rare Room On Screen',
-    //     description: 'Announce the rare room you found on screen',
-    //     category: 'Dungeon',
-    //     subcategory: 'Quality of Life',
-    // })
-    // announceRareRoomScreen = false;
     // Quality of Life
     @SwitchProperty({
         name: 'Formated Bridge Bot',
@@ -744,6 +712,26 @@ class Settings {
         subcategory: "Colors"
     })
     slotColor = Color.RED;
+
+    //Crown Tracker
+    @SwitchProperty({
+        name: "Crown Tracker",
+        description: "Tracks your crown of avarice coins",
+        category: "Quality of Life",
+        subcategory: "Crown Tracker"
+    })
+    crownTracker = false;
+    @ButtonProperty({
+        name: "Reset Crown Tracker",
+        description: "Resets the crown tracker",
+        placeholder: "Reset Crown Tracker",
+        category: "Quality of Life",
+        subcategory: "Crown Tracker"
+    })
+    resetCrownTracker() {
+        ChatLib.command("sboresetcrowntracker", true);
+    }
+
     // sound settings
     @ButtonProperty({
         name: "Open Sound Folder",
@@ -984,14 +972,4 @@ FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/")
     }
 });
 
-// let soundFiles = FileLib.getUrlContent(Config.modulesFolder.replace("modules", "images"));
-// print(soundFiles);
-// for (let i = 0; i < soundFiles.length; i++) {
-//     if (soundFiles[i].endsWith(".ogg")) {
-//         customSounds.push(soundFiles[i].replace(".ogg", ""));
-//     }
-// }
-
 export default new Settings();
-
-//  java.awt.Desktop.getDesktop().browse(new java.net.URI("url"));

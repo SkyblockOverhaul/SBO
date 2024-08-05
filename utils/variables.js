@@ -1,7 +1,7 @@
 
 // Importing constants and utility functions from other files
 import { delay } from "./threads";
-import { getDateMayorElected } from "./mayor";
+import { getDateMayorElected, setNewMayorBool } from "./mayor";
 // Importing the PogObject class from another file named "PogData"
 import PogObject from "../../PogData";
 
@@ -102,6 +102,10 @@ export let data = new PogObject("SBO", {
     "last10StickMagicFind": [],
     "hideTrackerLines": [],
     "partyBlacklist": [],
+    "crownTimer": 0,
+    "totalCrownCoins" : 0,
+    "lastCrownCoins" : 0,
+    "totalCrownCoinsGained" : 0,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
@@ -339,43 +343,77 @@ export function checkMayorTracker() {
     }
 }
 
+export function resetTracker(type) {
+    let trackerToReset = undefined;
+    if (type == "total") {
+        trackerToReset = dianaTrackerTotal;
+        timerTotal.reset();
+    } else if (type == "session") {
+        trackerToReset = dianaTrackerSession;
+        timerSession.reset();
+    } else if (type == "mayor") {
+        trackerToReset = dianaTrackerMayor;
+        timerMayor.reset();
+    }
+    if (trackerToReset && type != "mayor") {
+        let newTracker = initializeTracker();
+        for (let key in newTracker.items) {
+            trackerToReset.items[key] = newTracker.items[key];
+        }
+        for (let key in newTracker.mobs) {
+            trackerToReset.mobs[key] = newTracker.mobs[key];
+        }
+        trackerToReset.save();
+    } else if (trackerToReset && type == "mayor") {
+        let newTracker = initializeTrackerMayor();
+        for (let key in newTracker.items) {
+            trackerToReset.items[key] = newTracker.items[key];
+        }
+        for (let key in newTracker.mobs) {
+            trackerToReset.mobs[key] = newTracker.mobs[key];
+        }
+        trackerToReset.year = newTracker.year;
+        trackerToReset.save();
+    }
+
+}
+
 let lastyear = 0;   
 register("chat", () => {
-    if (ChatLib.removeFormatting(ChatLib.getChatMessage()).includes("Mayor")) {
-        lastyear = dianaTrackerMayor.year;
-        let tempTracker = initializeTrackerMayor();
-        for (let key in dianaTrackerMayor) {
-            tempTracker[key] = dianaTrackerMayor[key];
-        }
-        if (dianaTrackerMayor.year != 0) {
-            let allZero = true;
-            for (let key in tempTracker.items) {
-                if (tempTracker.items[key] != 0) {
-                    allZero = false;
-                    break;
-                }
-            }
-            for (let key in tempTracker.mobs) {
-                if (tempTracker.mobs[key] != 0) {
-                    allZero = false;
-                    break;
-                }
-            }
-            if (!allZero) {
-                pastDianaEvents["events"].push(tempTracker);
-            }
-        }
-        let newTracker = initializeTrackerMayor();
-        timerMayor.reset();
-        for (let key in newTracker) {
-            dianaTrackerMayor[key] = newTracker[key];
-        }
-        if (lastyear == dianaTrackerMayor.year) {
-            dianaTrackerMayor.year++;
-        }
-        dianaTrackerMayor.save();
-        pastDianaEvents.save();
+    lastyear = dianaTrackerMayor.year;
+    let tempTracker = initializeTrackerMayor();
+    for (let key in dianaTrackerMayor) {
+        tempTracker[key] = dianaTrackerMayor[key];
     }
+    if (dianaTrackerMayor.year != 0) {
+        let allZero = true;
+        for (let key in tempTracker.items) {
+            if (tempTracker.items[key] != 0) {
+                allZero = false;
+                break;
+            }
+        }
+        for (let key in tempTracker.mobs) {
+            if (tempTracker.mobs[key] != 0) {
+                allZero = false;
+                break;
+            }
+        }
+        if (!allZero) {
+            pastDianaEvents["events"].push(tempTracker);
+        }
+    }
+    let newTracker = initializeTrackerMayor();
+    timerMayor.reset();
+    for (let key in newTracker) {
+        dianaTrackerMayor[key] = newTracker[key];
+    }
+    if (lastyear == dianaTrackerMayor.year) {
+        dianaTrackerMayor.year++;
+    }
+    dianaTrackerMayor.save();
+    pastDianaEvents.save();
+    setNewMayorBool();
 }).setCriteria("&r&eThe election room is now closed. Clerk Seraphine is doing a final count of the votes...&r");
 
 /**
@@ -385,9 +423,10 @@ register("chat", () => {
  * @param {number} inactiveTimeLimit - the time limit in minutes for inactivity.
  * @param {object} trackerObject - the Pog object to be updated.
  * @param {string} dataFieldName - the name of the field in the Pog object.
+ * @param {string} dataFieldClass - the class of the field in the Pog object. (Optional)
  */
 export class SBOTimer {
-    constructor(name, inactiveTimeLimit, trackerObject, dataFieldName) {
+    constructor(name, inactiveTimeLimit, trackerObject, dataFieldName, dataFieldClass = false) {
         this.name = name;
         this.startTime = 0;
         this.elapsedTime = 0;
@@ -397,7 +436,8 @@ export class SBOTimer {
         this.INACTIVITY_LIMIT = inactiveTimeLimit * 60 * 1000; // milliseconds
         this.tickEvent = null; // Timeout-ID
         this.trackerObject = trackerObject; // Tracker object (total/session/mayor)
-        this.dataFieldName = dataFieldName; // Name of the field in the tracker object
+        this.dataFieldName = dataFieldName; // Name of the field in the tracker object#
+        this.dataFieldClass = dataFieldClass;
         this.inactivityFlag = false;
     }
 
@@ -405,8 +445,15 @@ export class SBOTimer {
     start() {
         if (this.running || this.startedOnce) return;
         this.startTime = Date.now();
-        if(this.trackerObject.items[this.dataFieldName] > 0) {
-            this.elapsedTime = this.trackerObject.items[this.dataFieldName];
+        if (this.dataFieldClass) {
+            if (this.trackerObject[this.dataFieldClass][this.dataFieldName] > 0) {
+                this.elapsedTime = this.trackerObject[this.dataFieldClass][this.dataFieldName];
+            }
+        }
+        else {
+            if (this.trackerObject[this.dataFieldName] > 0) {
+                this.elapsedTime = this.trackerObject[this.dataFieldName];
+            }
         }
         this.running = true;
         this.startedOnce = true;
@@ -420,7 +467,12 @@ export class SBOTimer {
         const now = Date.now(); 
         this.elapsedTime += now - this.startTime;
         this.startTime = now;
-        this.trackerObject.items[this.dataFieldName] = this.elapsedTime;
+        if (this.dataFieldClass) {
+            this.trackerObject[this.dataFieldClass][this.dataFieldName] = this.elapsedTime;
+        }
+        else {
+            this.trackerObject[this.dataFieldName] = this.elapsedTime;
+        }
     }
 
     // Pauses the timer
@@ -446,7 +498,12 @@ export class SBOTimer {
     reset() {
         this.running = false;
         this.startedOnce = false;
-        this.trackerObject.items[this.dataFieldName] = 0;
+        if (this.dataFieldClass) {
+            this.trackerObject[this.dataFieldClass][this.dataFieldName] = 0;
+        }
+        else {
+            this.trackerObject[this.dataFieldName] = 0;
+        }
         this.elapsedTime = 0;
         this.startTime = 0;
         this.stopInactivityCheck();
@@ -458,8 +515,14 @@ export class SBOTimer {
     }
 
     getHourTime() {
-        let millisecondTime = this.trackerObject.items[this.dataFieldName];
-        let hours = (millisecondTime / 3600000).toFixed(2);
+        let millisecondTime = 0;
+        if (this.dataFieldClass) {
+            millisecondTime = this.trackerObject[this.dataFieldClass][this.dataFieldName];
+        }
+        else {
+            millisecondTime = this.trackerObject[this.dataFieldName];
+        }
+        let hours = (millisecondTime / 3600000).toFixed(6);
         return hours;
     }
 
@@ -476,7 +539,12 @@ export class SBOTimer {
                 if (Date.now() - this.lastActivityTime > this.INACTIVITY_LIMIT && this.running) {
                     this.pause();
                     if(!this.inactivityFlag) {
-                        this.trackerObject.items[this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        if (this.dataFieldClass) {
+                            this.trackerObject[this.dataFieldClass][this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        }
+                        else {
+                            this.trackerObject[this.dataFieldName] -= this.INACTIVITY_LIMIT;
+                        }
                         this.inactivityFlag = true;
                     }
                 }
@@ -494,12 +562,12 @@ export class SBOTimer {
     }
 }
 
-const timerTotal = new SBOTimer("Total", 1.5, dianaTrackerTotal, "totalTime");
-const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionTime");
-const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime");
+const timerTotal = new SBOTimer("Total", 1.5, dianaTrackerTotal, "totalTime", "items");
+const timerSession = new SBOTimer("Session", 1.5, dianaTrackerSession, "sessionTime", "items");
+const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime", "items");
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
-
+export const timerCrown = new SBOTimer("Crown", 1, data, "crownTimer");
 
 
 // --- TRIGGER CONTROL ---

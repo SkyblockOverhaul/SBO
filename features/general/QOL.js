@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { getplayername, trace } from "../../utils/functions";
-import { registerWhen } from "../../utils/variables";
+import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
 import RenderLibV2 from "../../../RenderLibV2";
