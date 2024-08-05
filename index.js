@@ -11,7 +11,6 @@ import "./features/general/pickuplog";
 import "./features/guis/BobberCounter";
 import "./features/guis/LegionCounter";
 import "./features/slayer/BlazeSlayer";
-import Settings from "./settings";
 import "./utils/overlays";
 import "./features/Diana/PartyFinder";
 import "./features/general/QOL";
@@ -19,7 +18,8 @@ import "./features/guis/SlayerGuis";
 import "./features/general/CrownTracker";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
-import settings from "./settings";
+import Settings from "./settings";
+
 
 
 register("command", (args1, ...args) => {
@@ -100,7 +100,7 @@ registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, even
         ChatLib.chat("sound for rag axe " + name)
         Client.showTitle("RAG AXE", "", 0, 90, 20);
     }
-}), () => settings.testFeatures);
+}), () => Settings.testFeatures);
 
 // dojo sounds:
 // [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
