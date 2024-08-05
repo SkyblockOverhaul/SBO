@@ -396,6 +396,12 @@ register("worldLoad", () => {
 
 register("command", () => {
     printBool = !printBool;
+    if(printBool) {
+        ChatLib.chat("&6[SBO] &aDev Mode enabled");
+    }
+    else {
+        ChatLib.chat("&6[SBO] &aDev Mode disabled");
+    }
 }).setName("sbodev")
 
 
