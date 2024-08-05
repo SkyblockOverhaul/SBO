@@ -136,12 +136,14 @@ let firstLoadReg = register("tick", () => {
 })
 
 registerWhen(register("tick", () => {
-    if (timerOverlayLine) {
-        if (data.hideTrackerLines.includes("timer")) {
-            timerOverlayLine.button = true;
-            timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
-        } else {
-            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+    if (hasCrown()) {
+        if (timerOverlayLine) {
+            if (data.hideTrackerLines.includes("timer")) {
+                timerOverlayLine.button = true;
+                timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+            } else {
+                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+            }
         }
     }
 }), () => settings.crownTracker);
