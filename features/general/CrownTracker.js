@@ -57,9 +57,17 @@ function getCrownMessage() {
     crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)}`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumberCommas(data.lastCrownCoins)}`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
+    
+    function nextTierMessage() {
+        if (nextTier != crownTiers[crownTiers.length - 1]) {
+            return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}&7(&b${percentToNextTier}%&7)`, true);
+        } else {
+            return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}`, true);
+        }
+    }
 
     if (timeUntilNextTier) {
-        crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}&7(&b${percentToNextTier}%&7)`, true));
+        crownLines.push(nextTierMessage());
     } 
     else if (data.totalCrownCoinsGained == 0) {
         crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}Unknown`, true));
