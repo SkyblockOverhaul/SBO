@@ -72,7 +72,7 @@ function getCrownMessage() {
     else if (data.totalCrownCoinsGained == 0) {
         crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}Unknown`, true));
     }
-    else if (currentTier == crownTiers.length - 1) {
+    else if (currentTier == crownTiers[crownTiers.length - 1]) {
         crownLines.push(new OverlayTextLine(`${GOLD}Tier: ${RED}MAX!`, true));
     }
 
