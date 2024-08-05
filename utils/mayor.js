@@ -41,7 +41,11 @@ export function getDateMayorElected() {
 }
 
 export function setNewMayorBool() {
-    newMayor = true;
+    setTimeout(() => {
+        newMayor = true;
+    }, 300000);
+    mayor = "Diana";
+    perks = new Set(["Mythological Ritual"]);
 }
 
 let dateMayorElected = undefined;
