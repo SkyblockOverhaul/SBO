@@ -24,6 +24,8 @@ function getCrownMessage() {
     let profitPerHour = 0;
     let timeUntilNextTier = 0;
     let currentTier = 0;
+    let totalPerecent = 0;
+    let percentToNextTier = 0;
 
     for (let i = 0; i < crownTiers.length; i++) {
         if (data.totalCrownCoins < crownTiers[i]) {
@@ -45,14 +47,19 @@ function getCrownMessage() {
         timeUntilNextTier = formatTime(millisecondsUntilNextTier);
     }
 
+    totalPerecent = (data.totalCrownCoins / crownTiers[crownTiers.length - 1]) * 100;
+    percentToNextTier = ((data.totalCrownCoins - crownTiers[currentTier]) / (crownTiers[currentTier + 1] - crownTiers[currentTier])) * 100;
+    totalPerecent = totalPerecent.toFixed(2);
+    percentToNextTier = percentToNextTier.toFixed(2);
+
     crownLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
-    crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)} &7(&b${totalPerecent}%&7)`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)}`, true));
-    crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumber(data.lastCrownCoins)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumberCommas(data.lastCrownCoins)}`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
 
     if (timeUntilNextTier) {
-        crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier} &7(&b${percentToNextTier}%&7)`, true));
     } 
     else if (data.totalCrownCoinsGained == 0) {
         crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}Unknown`, true));
