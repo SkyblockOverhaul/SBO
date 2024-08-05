@@ -359,9 +359,44 @@ export function drawOutlinedString(text,x1,y1,scale,z) {
 }
 
 let printBool = false;
-export function printDev(msg) {
-    if(!printBool) return;
-    return print("[DEV]: " + msg);
+let lastPrintTime = 0;
+let pending = false;
+
+/**
+ * Custom Print method for debugging.
+ * @param {string} msg - message content
+ * @param {string} type - debounce(delay) or throttle(limit)
+ * @param {number} delayOrLimit - delay in ms or limit in int
+ */
+export function printDev(msg, mode = 'debounce', delayOrLimit = 1000) {
+    if (!printBool) return;
+
+    const currentTime = new Date().getTime();
+    const printMessage = () => {
+        console.log("[DEV]: " + msg);
+        lastPrintTime = currentTime;
+        pending = false;
+    };
+
+    if (mode === 'debounce') {
+        if (pending) return;
+        pending = true;
+        const wait = () => {
+            const now = new Date().getTime();
+            if (now - currentTime >= delayOrLimit) {
+                printMessage();
+            } else {
+                setTimeout(wait, delayOrLimit - (now - currentTime));
+            }
+        };
+        wait();
+    } else if (mode === 'throttle') {
+        if (currentTime - lastPrintTime >= delayOrLimit) {
+            printMessage();
+        }
+    } else {
+        console.error("Invalid mode. Use 'debounce' or 'throttle'.");
+    }
 }
 
 export function getplayername(player) {

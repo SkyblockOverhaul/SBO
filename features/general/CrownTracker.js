@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
-import { formatNumber, formatNumberCommas, formatTime, isInSkyblock } from "../../utils/functions";
+import { formatNumber, formatNumberCommas, formatTime, isInSkyblock, printDev } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE, RED} from "../../utils/constants";
@@ -97,6 +97,7 @@ function calculateCrownCoins() {
     let coinsAfterCreeperDeath = getCoinsFromCrown();
     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
     if (coinsGained > 0 && coinsGained != coinsAfterCreeperDeath) {
+        printDev("[CTT] coins gained", "debounce", 1000);
         timerCrown.start();
         timerCrown.continue();
         timerCrown.updateActivity();
@@ -108,11 +109,13 @@ function calculateCrownCoins() {
 }
 
 function hasCrown() {
-    if (!Player.armor.getHelmet() || Player.armor.getHelmet() == null) return false;
-    if (!Player.armor.getHelmet().getLore() || Player.armor.getHelmet().getLore() == null) return false;
     let helmet = Player.armor.getHelmet();
-    if (!helmet.getName() || helmet.getName() == null) return false;
-    let helmetName = helmet.getName().trim();
+    if (!helmet) return false;
+    let helmetLore = helmet.getLore();
+    if (!helmetLore) return false;
+    let helmetName = helmet.getName();
+    if (!helmetName) return false;
+    helmetName = helmetName.trim();
     if (!helmetName.includes("Crown of Avarice")) return false;
     return helmet;
 }
@@ -121,19 +124,13 @@ let isInitilized = false;
 function cronwInitilization() {
     if (isInitilized) return;
     if (isInSkyblock() && isDataLoaded()) {
+        printDev("[CTT] initilization", "debounce", 1000);
         data.totalCrownCoins = getCoinsFromCrown();
         if (data.totalCrownCoins > 0) {
             isInitilized = true;
         }
     }
 }
-
-let firstLoadReg = register("tick", () => {
-    if (isInSkyblock() && isDataLoaded()) {
-        crownOverlay();
-        firstLoadReg.unregister();
-    }
-})
 
 registerWhen(register("tick", () => {
     if (hasCrown()) {
@@ -149,10 +146,11 @@ registerWhen(register("tick", () => {
 }), () => settings.crownTracker);
 
 registerWhen(register("step", () => {
-    if (!hasCrown()) {
+    if (!hasCrown() || !isDataLoaded() || !isInSkyblock()) {
         crownTracker.renderGui = false;
     }
     else {
+        printDev("[CTT] is on", "debounce", 1000);
         crownTracker.renderGui = true
         cronwInitilization();
         crownOverlay();
