@@ -85,14 +85,17 @@ function getTimerMessage() {
 function getCoinsFromCrown() {
     let helmet = hasCrown();
     if (!helmet) return 0;
+    printDev("[CTT] coins searching", "debounce", 500);
     let helmetLore = helmet.getLore();
     let coinsFound = 0;
     for (let line of helmetLore) {
+        printDev("[CTT] Lore" + helmetLore, "debounce", 1000);
         if (line == null) continue;
         if (line.includes("Collected Coins")) {
             let coins = line.split(": ")[1];
             coins = coins.replace(/§./, "").replaceAll(",", "");
             coinsFound = parseInt(coins);
+            printDev("[CTT] Coins Found", "debounce", 0);
             break;
         }
     }
@@ -112,6 +115,7 @@ function calculateCrownCoins() {
         data.lastCrownCoins = coinsGained;
         data.totalCrownCoins = coinsAfterCreeperDeath;
         coinsBeforeCreeperDeath = coinsAfterCreeperDeath;
+        data.save();
     }
 }
 
@@ -131,7 +135,6 @@ let isInitilized = false;
 function cronwInitilization() {
     if (isInitilized) return;
     if (isInSkyblock() && isDataLoaded()) {
-        printDev("[CTT] initilization", "debounce", 1000);
         data.totalCrownCoins = getCoinsFromCrown();
         if (data.totalCrownCoins > 0) {
             isInitilized = true;
@@ -157,7 +160,6 @@ registerWhen(register("step", () => {
         crownTracker.renderGui = false;
     }
     else {
-        printDev("[CTT] is on", "debounce", 1000);
         crownTracker.renderGui = true
         cronwInitilization();
         crownOverlay();
