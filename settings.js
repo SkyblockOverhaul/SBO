@@ -319,11 +319,20 @@ class Settings {
     chimMessageBool = false;
     @TextProperty({
         name: "Custom Chim Message Text",
-        description: 'use: {drop} for drop name, {mf} for MagicFind, {amount} for drop Amount this event.',
+        description: 'use: {mf} for MagicFind, {amount} for drop Amount this event.',
         category: "Diana",
         subcategory: "Other",
     })
-    customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! &b{mf} &b#{amount}";
+    customChimMessage = "&6[SBO] &6&lRARE DROP! &d&lChimera! &b{mf} &b#{amount}";
+    @ButtonProperty({
+        name: "Chim Message Test",
+        description: "Sends a test chim message in chat",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    chimMessageTest() {
+        ChatLib.command("sbochimtest", true);
+    }
     @ButtonProperty({
         name: "Reset Custom Chim Message",
         description: "Resets the custom chim message to default, reopen settings to see the change",

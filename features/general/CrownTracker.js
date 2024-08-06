@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
-import { formatNumber, formatNumberCommas, formatTime, isInSkyblock } from "../../utils/functions";
+import { formatNumber, formatNumberCommas, formatTime, isInSkyblock, printDev } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE, RED} from "../../utils/constants";
@@ -24,6 +24,8 @@ function getCrownMessage() {
     let profitPerHour = 0;
     let timeUntilNextTier = 0;
     let currentTier = 0;
+    let totalPerecent = 0;
+    let percentToNextTier = 0;
 
     for (let i = 0; i < crownTiers.length; i++) {
         if (data.totalCrownCoins < crownTiers[i]) {
@@ -45,19 +47,32 @@ function getCrownMessage() {
         timeUntilNextTier = formatTime(millisecondsUntilNextTier);
     }
 
+    totalPerecent = (data.totalCrownCoins / crownTiers[crownTiers.length - 1]) * 100;
+    percentToNextTier = (data.totalCrownCoins / nextTier) * 100;
+    totalPerecent = totalPerecent.toFixed(2);
+    percentToNextTier = percentToNextTier.toFixed(2);
+
     crownLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
-    crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)} &7(&b${totalPerecent}%&7)`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)}`, true));
-    crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumber(data.lastCrownCoins)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumberCommas(data.lastCrownCoins)}`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
+    
+    function nextTierMessage() {
+        if (nextTier != crownTiers[crownTiers.length - 1]) {
+            return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}&7(&b${percentToNextTier}%&7)`, true);
+        } else {
+            return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}`, true);
+        }
+    }
 
     if (timeUntilNextTier) {
-        crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}`, true));
+        crownLines.push(nextTierMessage());
     } 
     else if (data.totalCrownCoinsGained == 0) {
         crownLines.push(new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}Unknown`, true));
     }
-    else if (currentTier == crownTiers.length - 1) {
+    else if (currentTier == crownTiers[crownTiers.length - 1]) {
         crownLines.push(new OverlayTextLine(`${GOLD}Tier: ${RED}MAX!`, true));
     }
 
@@ -77,26 +92,27 @@ function getTimerMessage() {
 
 function getCoinsFromCrown() {
     let helmet = hasCrown();
-    if (!helmet) return 0;
     let helmetLore = helmet.getLore();
     let coinsFound = 0;
     for (let line of helmetLore) {
-        if (line == null) continue;
+        if (line == null || !line) continue;
         if (line.includes("Collected Coins")) {
             let coins = line.split(": ")[1];
             coins = coins.replace(/§./, "").replaceAll(",", "");
             coinsFound = parseInt(coins);
+            printDev("[CTT] Coins Found");
             break;
         }
     }
     return coinsFound;
 }
-
-let coinsBeforeCreeperDeath = getCoinsFromCrown();
+let coinsBeforeCreeperDeath = 0;
+if (data.totalCrownCoins > 0) coinsBeforeCreeperDeath = data.totalCrownCoins;
 function calculateCrownCoins() {
     let coinsAfterCreeperDeath = getCoinsFromCrown();
     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
     if (coinsGained > 0 && coinsGained != coinsAfterCreeperDeath) {
+        printDev("[CTT] coins gained");
         timerCrown.start();
         timerCrown.continue();
         timerCrown.updateActivity();
@@ -104,15 +120,18 @@ function calculateCrownCoins() {
         data.lastCrownCoins = coinsGained;
         data.totalCrownCoins = coinsAfterCreeperDeath;
         coinsBeforeCreeperDeath = coinsAfterCreeperDeath;
+        data.save();
     }
 }
 
 function hasCrown() {
-    if (!Player.armor.getHelmet() || Player.armor.getHelmet() == null) return false;
-    if (!Player.armor.getHelmet().getLore() || Player.armor.getHelmet().getLore() == null) return false;
     let helmet = Player.armor.getHelmet();
-    if (!helmet.getName() || helmet.getName() == null) return false;
-    let helmetName = helmet.getName().trim();
+    if (!helmet) return false;
+    let helmetLore = helmet.getLore();
+    if (!helmetLore) return false;
+    let helmetName = helmet.getName();
+    if (!helmetName) return false;
+    helmetName = helmetName.trim();
     if (!helmetName.includes("Crown of Avarice")) return false;
     return helmet;
 }
@@ -128,26 +147,21 @@ function cronwInitilization() {
     }
 }
 
-let firstLoadReg = register("tick", () => {
-    if (isInSkyblock() && isDataLoaded()) {
-        crownOverlay();
-        firstLoadReg.unregister();
-    }
-})
-
 registerWhen(register("tick", () => {
-    if (timerOverlayLine) {
-        if (data.hideTrackerLines.includes("timer")) {
-            timerOverlayLine.button = true;
-            timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
-        } else {
-            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+    if (hasCrown()) {
+        if (timerOverlayLine) {
+            if (data.hideTrackerLines.includes("timer")) {
+                timerOverlayLine.button = true;
+                timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+            } else {
+                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+            }
         }
     }
 }), () => settings.crownTracker);
 
 registerWhen(register("step", () => {
-    if (!hasCrown()) {
+    if (!hasCrown() || !isDataLoaded() || !isInSkyblock()) {
         crownTracker.renderGui = false;
     }
     else {

@@ -396,6 +396,12 @@ register("worldLoad", () => {
 
 register("command", () => {
     printBool = !printBool;
+    if(printBool) {
+        ChatLib.chat("&6[SBO] &aDev Mode enabled");
+    }
+    else {
+        ChatLib.chat("&6[SBO] &aDev Mode disabled");
+    }
 }).setName("sbodev")
 
 
@@ -467,7 +473,7 @@ function updateItemValues() {
         kuudraItems = response[0];
         dianaItems = response[1];
     }).catch((error)=>{
-        console.error(error);
+        console.error("ah " + error);
     });
 
     request({
@@ -476,7 +482,7 @@ function updateItemValues() {
     }).then((response)=>{
         bazaarItems = response;
     }).catch((error)=>{
-        console.error(error);
+        console.error("bazaar " + error);
     });
 }
 

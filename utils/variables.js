@@ -426,6 +426,7 @@ register("chat", () => {
  * @param {string} dataFieldClass - the class of the field in the Pog object. (Optional)
  */
 export class SBOTimer {
+    static timerList = [];
     constructor(name, inactiveTimeLimit, trackerObject, dataFieldName, dataFieldClass = false) {
         this.name = name;
         this.startTime = 0;
@@ -439,6 +440,8 @@ export class SBOTimer {
         this.dataFieldName = dataFieldName; // Name of the field in the tracker object#
         this.dataFieldClass = dataFieldClass;
         this.inactivityFlag = false;
+
+        SBOTimer.timerList.push(this);
     }
 
     // Starts the timer
@@ -569,6 +572,11 @@ export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
 export const timerCrown = new SBOTimer("Crown", 1, data, "crownTimer");
 
+register("serverDisconnect" , () => {
+    for (let timer of SBOTimer.timerList) {
+        timer.pause();
+    }
+});
 
 // --- TRIGGER CONTROL ---
 
