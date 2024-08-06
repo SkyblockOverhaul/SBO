@@ -92,6 +92,7 @@ function getTimerMessage() {
 
 function getCoinsFromCrown() {
     let helmet = hasCrown();
+    if (!helmet) return 0;
     let helmetLore = helmet.getLore();
     let coinsFound = 0;
     for (let line of helmetLore) {
