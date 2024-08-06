@@ -86,7 +86,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&7> &a--Diana-- `)
     ChatLib.chat(`&7> &aCustom Chim mssage is now fully customizable`)
     ChatLib.chat(`&7> &a--QOL--`)
-    ChatLib.chat(`&7> &aAdded Carnival Shootout helper`)
+    ChatLib.chat(`&7> &aAdded Carnival shootout helper`)
+    ChatLib.chat(`&7> &aAdded Crown of avarice tracker`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
