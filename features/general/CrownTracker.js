@@ -106,8 +106,8 @@ function getCoinsFromCrown() {
     }
     return coinsFound;
 }
-
-let coinsBeforeCreeperDeath = getCoinsFromCrown();
+let coinsBeforeCreeperDeath = 0;
+if (data.totalCrownCoins > 0) coinsBeforeCreeperDeath = data.totalCrownCoins;
 function calculateCrownCoins() {
     let coinsAfterCreeperDeath = getCoinsFromCrown();
     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
