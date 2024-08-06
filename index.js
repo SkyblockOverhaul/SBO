@@ -35,6 +35,7 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (alias /sbocb)")
                 ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (alias /sboc <player>)")
                 ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
+                ChatLib.chat("&7> &a/sboimporttracker <profilename> &7- &eImport skyhanni/skytils tracker")
                 ChatLib.chat("&7> &a/sbodc &7- &eCommand for diana dropchances")
                 ChatLib.chat("&7> &a/sbopartyblacklist &7- &eCommand for party commands blacklisting")
                 break;
@@ -84,6 +85,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &a--Diana-- `)
+    ChatLib.chat(`&7> &aAdded being able to import skyhanni/skytils tracker`)
     ChatLib.chat(`&7> &aCustom Chim mssage is now fully customizable`)
     ChatLib.chat(`&7> &a--QOL--`)
     ChatLib.chat(`&7> &aAdded Carnival shootout helper`)
