@@ -622,7 +622,7 @@ export function formatTime(milliseconds) {
         formattedTime += `${seconds}s `;
     }
 
-    return formattedTime;
+    return formattedTime.trim();
 }
 
 let dianaMayorTotalProfit = 0;

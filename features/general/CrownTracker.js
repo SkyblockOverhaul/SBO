@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { registerWhen, timerCrown, data } from "../../utils/variables";
+import { registerWhen, timerCrown, timerCrownSession, data } from "../../utils/variables";
 import { formatNumber, formatNumberCommas, formatTime, isInSkyblock, printDev } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
@@ -7,6 +7,8 @@ import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_
 
 let crownTracker = new SboOverlay("crownTracker", "crownTracker", "render", "CrownLoc");
 let timerOverlayLine = new OverlayTextLine(`&ePlaytime: &b${getTimerMessage()}`, true);
+
+let crownTimers = [timerCrown, timerCrownSession];
 
 function crownOverlay() {
     calculateCrownCoins();
@@ -18,9 +20,11 @@ function crownOverlay() {
 
 const crownTiers = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000];
 
+let profitPerHourSession = 0;
 function getCrownMessage() {
     let crownLines = [];
     let timePassed = timerCrown.getHourTime();
+    let timePassedSession = timerCrownSession.getHourTime();
     let profitPerHour = 0;
     let timeUntilNextTier = 0;
     let currentTier = 0;
@@ -39,13 +43,16 @@ function getCrownMessage() {
     if (timePassed != "NaN" && timePassed != 0) {
         profitPerHour = (data.totalCrownCoinsGained / timePassed).toFixed();
     }
-
+    if(timePassedSession != "NaN" && timePassedSession != 0) {
+        profitPerHourSession = (data.totalCrownCoinsSession / timePassedSession).toFixed();
+    }
     if (profitPerHour > 0 && nextTier > data.totalCrownCoins) {
         let coinsNeeded = nextTier - data.totalCrownCoins;
         let hoursUntilNextTier = coinsNeeded / profitPerHour;
         let millisecondsUntilNextTier = hoursUntilNextTier * 60 * 60 * 1000;
         timeUntilNextTier = formatTime(millisecondsUntilNextTier);
     }
+
 
     totalPerecent = (data.totalCrownCoins / crownTiers[crownTiers.length - 1]) * 100;
     percentToNextTier = (data.totalCrownCoins / nextTier) * 100;
@@ -54,13 +61,13 @@ function getCrownMessage() {
 
     crownLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)} &7(&b${totalPerecent}%&7)`, true));
-    crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)} &7(${formatNumber(data.totalCrownCoinsSession)})`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumberCommas(data.lastCrownCoins)}`, true));
-    crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)}`, true));
+    crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}${formatNumber(profitPerHour)} &7(${formatNumber(profitPerHourSession)})`, true));
     
     function nextTierMessage() {
         if (nextTier != crownTiers[crownTiers.length - 1]) {
-            return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}&7(&b${percentToNextTier}%&7)`, true);
+            return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier} &7(&b${percentToNextTier}%&7)`, true);
         } else {
             return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}`, true);
         }
@@ -79,8 +86,7 @@ function getCrownMessage() {
     return crownLines;
 }
 
-function getTimerMessage() {
-    const timer = timerCrown;
+function getTimerMessage(timer) {
     if (timer === undefined) return "00:00:00";
     if (timer.trackerObject[timer.dataFieldName] === undefined) return formatTime(timer.getElapsedTime());
     if (timer.trackerObject[timer.dataFieldName] > 0) {
@@ -114,10 +120,13 @@ function calculateCrownCoins() {
     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
     if (coinsGained > 0 && coinsGained != coinsAfterCreeperDeath) {
         printDev("[CTT] coins gained");
-        timerCrown.start();
-        timerCrown.continue();
-        timerCrown.updateActivity();
+        for (let timer of crownTimers) {
+            timer.start();
+            timer.continue();
+            timer.updateActivity();
+        }
         data.totalCrownCoinsGained += coinsGained;
+        data.totalCrownCoinsSession += coinsGained;
         data.lastCrownCoins = coinsGained;
         data.totalCrownCoins = coinsAfterCreeperDeath;
         coinsBeforeCreeperDeath = coinsAfterCreeperDeath;
@@ -151,12 +160,7 @@ function cronwInitilization() {
 registerWhen(register("tick", () => {
     if (hasCrown()) {
         if (timerOverlayLine) {
-            if (data.hideTrackerLines.includes("timer")) {
-                timerOverlayLine.button = true;
-                timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
-            } else {
-                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
-            }
+            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(timerCrown)} &7(${getTimerMessage(timerCrownSession)})`);
         }
     }
 }), () => settings.crownTracker);
@@ -174,6 +178,15 @@ registerWhen(register("step", () => {
 
 register("command", () => {
     data.totalCrownCoinsGained = 0;
+    data.totalCrownCoinsSession = 0;
     data.lastCrownCoins = 0;
     timerCrown.reset();
+    timerCrownSession.reset();
 }).setName("sboresetcrowntracker")
+
+register("gameUnload", () => {
+    data.totalCrownCoinsSession = 0;
+    profitPerHourSession = 0;
+    timerCrownSession.reset();
+    data.save();
+});
