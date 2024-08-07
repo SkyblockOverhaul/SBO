@@ -52,7 +52,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.3.2" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.3.3" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -84,8 +84,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a--Fixes-- `)
-    ChatLib.chat(`&7> &aFixed crown tracker breaking our module sometimes`)
+    ChatLib.chat(`&7> &a--QOL-- `)
+    ChatLib.chat(`&7> &aAdded Crown session stats`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion

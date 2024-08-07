@@ -106,6 +106,8 @@ export let data = new PogObject("SBO", {
     "totalCrownCoins" : 0,
     "lastCrownCoins" : 0,
     "totalCrownCoinsGained" : 0,
+    "totalCrownCoinsSession" : 0,
+    "cronwTimerSession" : 0,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
@@ -571,6 +573,7 @@ const timerMayor = new SBOTimer("Mayor", 1.5, dianaTrackerMayor, "mayorTime", "i
 export let dianaTimerlist = [timerTotal, timerMayor, timerSession];
 
 export const timerCrown = new SBOTimer("Crown", 1, data, "crownTimer");
+export const timerCrownSession = new SBOTimer("CrownSession", 1, data, "cronwTimerSession");
 
 register("serverDisconnect" , () => {
     for (let timer of SBOTimer.timerList) {
