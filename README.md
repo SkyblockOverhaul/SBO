@@ -105,9 +105,12 @@ _-Other-_
 + PickupLog
 + Clickable Message to invite a player
 + Effects for Blaze Slayer
++ Crown of avarice tracker
 
 --Other Features--
 + Check Party or Player
 -> /sbocp, /sboc [name] (Displays infos such as eman9, total kills, L5 Daxe)
 + Diana Drop Chances
 -> /sbodc [Magicfind] [Looting] (Displays drop chances for all rng drops from diana)
++ Import tracker (sh/st)
+-> /sboimporttracker [profilename] (Import skyhanni/skytils tracker)
