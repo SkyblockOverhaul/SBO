@@ -99,16 +99,23 @@ register("command", () => {
             "\n&7- &9Rarity&7: " + getRarity(lastCheckedPlayer.griffinRarity) +
             "\n&7- &9Item&7: " + getGriffinItemColor(lastCheckedPlayer.griffinItem);
     } else {
-        messageString += "\nGriffin&7: &4✗";
+        messageString += "\n&3Griffin&7: &4✗";
     }
+
+    messageString += "\n&3Talis&7: " +
+        "\n&7- &9Magical Power&7: &b" + formatNumberCommas(lastCheckedPlayer.magicalPower) +
+        "\n&7- &9Enrichments&7: &b" + lastCheckedPlayer.enrichments;
+    
+    if (lastCheckedPlayer.missingEnrichment > 0)
+        messageString += "\n&7- &9Missing Enrichments&7: " + lastCheckedPlayer.missingEnrichments;
     
     messageString += "\n&3Misc&7: " +
         "\n&7- &9Enderman Slayer&7: " + getNumberColor(lastCheckedPlayer.emanLvl, 9) +
-        "\n&7- &9Diana Kills&7: " + formatNumberCommas(lastCheckedPlayer.mythosKills);
+        "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills);
 
-    if (lastCheckedPlayer.clover) {
+    if (lastCheckedPlayer.clover) 
         messageString += "\n&7- &9Clover&7: &a✓";
-    }
+    
 
     messageString += "\n&7- &9Inventory API&7: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
     ChatLib.chat(messageString);
