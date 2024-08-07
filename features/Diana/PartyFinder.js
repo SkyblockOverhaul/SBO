@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -87,30 +87,30 @@ register("command", () => {
     let messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
 
     if (lastCheckedPlayer.daxeLootingLvl != -1) {
-        messageString += "\nDaedalus Axe: " +
-            "\n- Chimera: " + lastCheckedPlayer.daxeChimLvl +
-            "\n- Looting: " + lastCheckedPlayer.daxeLootingLvl;
+        messageString += "\n&3Daedalus Axe&7: " +
+            "\n&7- &9Chimera&7: " + getNumberColor(lastCheckedPlayer.daxeChimLvl, 5) +
+            "\n&7- &9Looting&7: " + getNumberColor(lastCheckedPlayer.daxeLootingLvl, 5);
     } else {
-        messageString += "\nDaedalus Axe: &4✗";
+        messageString += "\n&3Daedalus Axe&7: &4✗";
     }
 
     if (lastCheckedPlayer.griffinRarity != -1) {
-        messageString += "\nGriffin: " +
-            "\n- Rarity: " + lastCheckedPlayer.griffinRarity +
-            "\n- Item: " + toTitleCase(lastCheckedPlayer.griffinItem.replaceAll("_", " "));
+        messageString += "\n&3Griffin&7: " +
+            "\n&7- &9Rarity&7: " + getRarity(lastCheckedPlayer.griffinRarity) +
+            "\n&7- &9Item&7: " + getGriffinItemColor(lastCheckedPlayer.griffinItem);
     } else {
-        messageString += "\nGriffin: &4✗";
+        messageString += "\nGriffin&7: &4✗";
     }
     
-    messageString += "\nMisc: " +
-        "\n- Enderman Slayer: " + lastCheckedPlayer.emanLvl +
-        "\n- Diana Kills: " + formatNumberCommas(lastCheckedPlayer.mythosKills);
+    messageString += "\n&3Misc&7: " +
+        "\n&7- &9Enderman Slayer&7: " + getNumberColor(lastCheckedPlayer.emanLvl, 9) +
+        "\n&7- &9Diana Kills&7: " + formatNumberCommas(lastCheckedPlayer.mythosKills);
 
     if (lastCheckedPlayer.clover) {
-        messageString += "\n- Clover: &a✓";
+        messageString += "\n&7- &9Clover&7: &a✓";
     }
 
-    messageString += "\n- Inventory API: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
+    messageString += "\n&7- &9Inventory API&7: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
     ChatLib.chat(messageString);
 }).setName("extrastatsbuttonforsbo");
 

@@ -637,3 +637,56 @@ export function setDianaMayorTotalProfit(profit, offerType) {
     dianaMayorOfferType = offerType;
 }
 
+export function getRarity(item){
+    switch (item.toLowerCase().trim()) {
+        case "common":
+            return "&f" + item;
+        case "uncommon":
+            return "&a" + item;
+        case "rare":
+            return "&9" + item;
+        case "epic":
+            return "&5" + item;
+        case "legendary":
+            return "&6" + item;
+        case "mythic":
+            return "&d" + item;
+        default:
+            return "&7";
+    }
+}
+
+export function getNumberColor(number, range) {
+    if (number === range) {
+        return "&c" + number;
+    }
+    else if (number === range - 1) {
+        return "&6" + number;
+    }
+    else {
+        return "&9" + number;
+    }
+}
+
+export function getGriffinItemColor(item) {
+    function formatReturn(item) {
+        return toTitleCase(item.replaceAll("_", " "))
+    }
+    switch (item) {
+        case "FOUR_EYED_FISH":
+            return "&5" + formatReturn(item);
+        case "DWARF_TURTLE_SHELMET":
+            return "&a" + formatReturn(item);
+        case "CROCHET_TIGER_PLUSHIE":
+            return "&5" + formatReturn(item);
+        case "ANTIQUE_REMEDIES":
+            return "&5" + formatReturn(item);
+        case "LUCKY_CLOVER":
+            return "&a" + formatReturn(item);
+        case "MINOS_RELIC":
+            return "&5" + formatReturn(item);
+        default:
+            return "&7" + formatReturn(item);
+    }
+}
+
