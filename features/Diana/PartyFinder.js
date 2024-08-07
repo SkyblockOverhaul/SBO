@@ -84,41 +84,46 @@ function printCheckedPlayer(playerinfo) {
 }
 
 register("command", () => {
-    let messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
+    if (lastCheckedPlayer) {
+        let messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
 
-    if (lastCheckedPlayer.daxeLootingLvl != -1) {
-        messageString += "\n&3Daedalus Axe&7: " +
-            "\n&7- &9Chimera&7: " + getNumberColor(lastCheckedPlayer.daxeChimLvl, 5) +
-            "\n&7- &9Looting&7: " + getNumberColor(lastCheckedPlayer.daxeLootingLvl, 5);
-    } else {
-        messageString += "\n&3Daedalus Axe&7: &4✗";
+        if (lastCheckedPlayer.daxeLootingLvl != -1) {
+            messageString += "\n&3Daedalus Axe&7: " +
+                "\n&7- &9Chimera&7: " + getNumberColor(lastCheckedPlayer.daxeChimLvl, 5) +
+                "\n&7- &9Looting&7: " + getNumberColor(lastCheckedPlayer.daxeLootingLvl, 5);
+        } else {
+            messageString += "\n&3Daedalus Axe&7: &4✗";
+        }
+
+        if (lastCheckedPlayer.griffinRarity != -1) {
+            messageString += "\n&3Griffin&7: " +
+                "\n&7- &9Rarity&7: " + getRarity(lastCheckedPlayer.griffinRarity) +
+                "\n&7- &9Item&7: " + getGriffinItemColor(lastCheckedPlayer.griffinItem);
+        } else {
+            messageString += "\n&3Griffin&7: &4✗";
+        }
+
+        messageString += "\n&3Talis&7: " +
+            "\n&7- &9Magical Power&7: &b" + formatNumberCommas(lastCheckedPlayer.magicalPower) +
+            "\n&7- &9Enrichments&7: &b" + lastCheckedPlayer.enrichments;
+        
+        if (lastCheckedPlayer.missingEnrichment > 0)
+            messageString += "\n&7- &9Missing Enrichments&7: " + lastCheckedPlayer.missingEnrichments;
+        
+        messageString += "\n&3Misc&7: " +
+            "\n&7- &9Enderman Slayer&7: " + getNumberColor(lastCheckedPlayer.emanLvl, 9) +
+            "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills);
+
+        if (lastCheckedPlayer.clover) 
+            messageString += "\n&7- &9Clover&7: &a✓";
+        
+
+        messageString += "\n&7- &9Inventory API&7: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
+        ChatLib.chat(messageString);
     }
-
-    if (lastCheckedPlayer.griffinRarity != -1) {
-        messageString += "\n&3Griffin&7: " +
-            "\n&7- &9Rarity&7: " + getRarity(lastCheckedPlayer.griffinRarity) +
-            "\n&7- &9Item&7: " + getGriffinItemColor(lastCheckedPlayer.griffinItem);
-    } else {
-        messageString += "\n&3Griffin&7: &4✗";
+    else {
+        ChatLib.chat("&6[SBO] &4Invalid button. Please check a player first. /sbocheck <player>");
     }
-
-    messageString += "\n&3Talis&7: " +
-        "\n&7- &9Magical Power&7: &b" + formatNumberCommas(lastCheckedPlayer.magicalPower) +
-        "\n&7- &9Enrichments&7: &b" + lastCheckedPlayer.enrichments;
-    
-    if (lastCheckedPlayer.missingEnrichment > 0)
-        messageString += "\n&7- &9Missing Enrichments&7: " + lastCheckedPlayer.missingEnrichments;
-    
-    messageString += "\n&3Misc&7: " +
-        "\n&7- &9Enderman Slayer&7: " + getNumberColor(lastCheckedPlayer.emanLvl, 9) +
-        "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills);
-
-    if (lastCheckedPlayer.clover) 
-        messageString += "\n&7- &9Clover&7: &a✓";
-    
-
-    messageString += "\n&7- &9Inventory API&7: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
-    ChatLib.chat(messageString);
 }).setName("extrastatsbuttonforsbo");
 
 function checkPlayer(player) {
