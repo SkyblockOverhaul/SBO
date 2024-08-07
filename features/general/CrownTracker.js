@@ -182,6 +182,7 @@ register("command", () => {
     data.lastCrownCoins = 0;
     timerCrown.reset();
     timerCrownSession.reset();
+    data.save();
 }).setName("sboresetcrowntracker")
 
 register("gameUnload", () => {
