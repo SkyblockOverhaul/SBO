@@ -83,6 +83,7 @@ function getCrownMessage() {
             let coinsNeeded = nextTier - data.totalCrownCoins;
 
             if (ghostCoinsList.length < 100 || Math.abs(ghostCoins - ghostCoinsAVG) < 500) {
+                printDev(Math.abs(ghostCoins - ghostCoinsAVG) < 500);
                 ghostCoinsList.push(ghostCoins);
             }
 
@@ -189,14 +190,12 @@ function cronwInitilization() {
 function countGhostKills(entity) {
     let name = entity.getName();
     if (!name) return;
-    printDev(name);
     if (!name.includes("Creeper")) return;
     const distance = Math.sqrt(
         (Player.getX() - entity.getX())**2 +
         (Player.getY() - entity.getY())**2 +
         (Player.getZ() - entity.getZ())**2
     );
-    printDev(distance);
     if (distance > 10) return;
     data.ghostKills++;
     ghostKillsSession++;
