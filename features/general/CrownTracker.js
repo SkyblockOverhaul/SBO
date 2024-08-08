@@ -189,12 +189,14 @@ function cronwInitilization() {
 function countGhostKills(entity) {
     let name = entity.getName();
     if (!name) return;
+    printDev(name);
     if (!name.includes("Creeper")) return;
     const distance = Math.sqrt(
         (Player.getX() - entity.getX())**2 +
         (Player.getY() - entity.getY())**2 +
         (Player.getZ() - entity.getZ())**2
     );
+    printDev(distance);
     if (distance > 10) return;
     data.ghostKills++;
     ghostKillsSession++;
