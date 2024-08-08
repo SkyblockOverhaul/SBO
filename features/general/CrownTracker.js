@@ -83,7 +83,7 @@ function getCrownMessage() {
             crownLines.push(new OverlayTextLine(`${GOLD}~Ghosts/Tier: ${AQUA}${formatNumberCommas(ghostsTillTier.toFixed())}`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Ghost Kills: ${AQUA}${formatNumber(data.ghostKills)} &7(${formatNumber(ghostKillsSession)})`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Sorrows: ${AQUA}${formatNumber(data.sorrowDrops)} &7(${formatNumber(sorrowDropsSession)})`, true));
-            crownLines.push(new OverlayTextLine(`${GOLD}Coin bags: ${AQUA}${formatNumber(data.crownOneMilCoins)}`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}1m drops: ${AQUA}${formatNumber(data.crownOneMilCoins)}`, true));
         }
     }
 
