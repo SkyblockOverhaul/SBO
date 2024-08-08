@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { registerWhen, timerCrown, timerCrownSession, data } from "../../utils/variables";
-import { formatNumber, formatNumberCommas, formatTime, isInSkyblock, printDev } from "../../utils/functions";
+import { formatNumber, formatNumberCommas, formatTime, isInSkyblock, printDev, getMagicFind } from "../../utils/functions";
+import { getZone } from "../../utils/world";
 import { isDataLoaded } from "../../utils/checkData";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE, RED} from "../../utils/constants";
@@ -21,6 +22,8 @@ function crownOverlay() {
 const crownTiers = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000];
 
 let profitPerHourSession = 0;
+let ghostKillsSession = 0;
+let sorrowDropsSession = 0;
 function getCrownMessage() {
     let crownLines = [];
     let timePassed = timerCrown.getHourTime();
@@ -70,6 +73,32 @@ function getCrownMessage() {
             return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier} &7(&b${percentToNextTier}%&7)`, true);
         } else {
             return new OverlayTextLine(`${GOLD}${formatNumber(nextTier)} in: ${AQUA}${timeUntilNextTier}`, true);
+        }
+    }
+
+    if (settings.crownGhostMode) {
+        if (getZone().includes("The Mist")) {
+            let ghostCoins = data.lastCrownCoins;
+            let ghostCoinsList = [];
+            let coinsNeeded = nextTier - data.totalCrownCoins;
+
+            if (ghostCoinsList.length < 100 || Math.abs(ghostCoins - ghostCoinsAVG) < 500) {
+                ghostCoinsList.push(ghostCoins);
+            }
+
+            if (ghostCoinsList.length > 1000) {
+                ghostCoinsList.shift();
+            }
+
+            let ghostCoinsAVG = 0;
+            if (ghostCoinsList.length > 0) {
+                ghostCoinsAVG = ghostCoinsList.reduce((a, b) => a + b, 0) / ghostCoinsList.length;
+            }
+
+            let ghostsTillTier = ghostCoinsAVG > 0 ? coinsNeeded / ghostCoinsAVG : 0;
+            crownLines.push(new OverlayTextLine(`${GOLD}~Ghosts/Tier: ${AQUA}${formatNumberCommas(ghostsTillTier.toFixed())}`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}Ghost Kills: ${AQUA}${formatNumber(data.ghostKills)} &7(${formatNumber(ghostKillsSession)})`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}Sorrows: ${AQUA}${formatNumber(data.sorrowDrops)} &7(${formatNumber(sorrowDropsSession)})`, true));
         }
     }
 
@@ -157,6 +186,33 @@ function cronwInitilization() {
     }
 }
 
+function countGhostKills(entity) {
+    let name = entity.getName();
+    if (!name) return;
+    if (!name.includes("Creeper")) return;
+    const distance = Math.sqrt(
+        (Player.getX() - entity.getX())**2 +
+        (Player.getY() - entity.getY())**2 +
+        (Player.getZ() - entity.getZ())**2
+    );
+    if (distance > 10) return;
+    data.ghostKills++;
+    ghostKillsSession++;
+    data.save();
+}
+
+registerWhen(register("entityDeath", (entity) => {
+    countGhostKills(entity);
+}), () => settings.crownTracker && settings.crownGhostMode && getZone().includes("The Mist"));
+
+registerWhen(register("chat", (mf) => {
+    let magicFind = getMagicFind(mf);
+    data.sorrowDrops++;
+    sorrowDropsSession++;
+    data.save();
+}).setCriteria("&r&6&lRARE DROP! &r&9Sorrow${mf}"), () => settings.crownTracker && settings.crownGhostMode);
+// &7[16:23] &r&r&r&6&lRARE DROP! &r&9Sorrow &r&b(+&r&b378% &r&b✯ Magic Find&r&b)&r
+
 registerWhen(register("tick", () => {
     if (hasCrown()) {
         if (timerOverlayLine) {
@@ -170,7 +226,7 @@ registerWhen(register("step", () => {
         crownTracker.renderGui = false;
     }
     else {
-        crownTracker.renderGui = true
+        crownTracker.renderGui = true;
         cronwInitilization();
         crownOverlay();
     }
@@ -180,6 +236,10 @@ register("command", () => {
     data.totalCrownCoinsGained = 0;
     data.totalCrownCoinsSession = 0;
     data.lastCrownCoins = 0;
+    data.ghostKills = 0;
+    data.sorrowDrops = 0;
+    ghostKillsSession = 0;
+    sorrowDropsSession = 0;
     timerCrown.reset();
     timerCrownSession.reset();
     data.save();
@@ -188,6 +248,8 @@ register("command", () => {
 register("gameUnload", () => {
     data.totalCrownCoinsSession = 0;
     profitPerHourSession = 0;
+    ghostKillsSession = 0;
+    sorrowDropsSession = 0;
     timerCrownSession.reset();
     data.save();
 });
