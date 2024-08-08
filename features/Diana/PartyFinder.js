@@ -27,7 +27,7 @@ register("chat", (party) => {
 
 // command to check party members
 let checkPartyBool = false;
-const partyLimit = 7;
+const partyLimit = 6;
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     if (!checkPartyBool) return;
     checkPartyBool = false;
@@ -39,7 +39,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         if (count >= partyLimit+1) return;
         party.push(key);
     })
-    if (count >= partyLimit) {
+    if (count >= partyLimit+1) {
         ChatLib.chat("&6[SBO] &eParty members limit reached. Only checking first " + partyLimit + " members.");
     }
     if (party.length == 0) {
