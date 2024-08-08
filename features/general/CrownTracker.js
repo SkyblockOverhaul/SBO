@@ -25,8 +25,6 @@ let profitPerHourSession = 0;
 let ghostKillsSession = 0;
 let sorrowDropsSession = 0;
 let profitPerHour = 0;
-let ghostCoinsAVG = 0;
-let ghostCoinsList = [];
 let nextTier = 0;
 let ghostsTillTier = 0;
 function getCrownMessage() {
@@ -85,6 +83,7 @@ function getCrownMessage() {
             crownLines.push(new OverlayTextLine(`${GOLD}~Ghosts/Tier: ${AQUA}${formatNumberCommas(ghostsTillTier.toFixed())}`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Ghost Kills: ${AQUA}${formatNumber(data.ghostKills)} &7(${formatNumber(ghostKillsSession)})`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Sorrows: ${AQUA}${formatNumber(data.sorrowDrops)} &7(${formatNumber(sorrowDropsSession)})`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}Coin bags: ${AQUA}${formatNumber(data.crownOneMilCoins)}`, true));
         }
     }
 
@@ -187,20 +186,27 @@ function countGhostKills(entity) {
     data.save();
 }
 
+let ghostCoinsSum = 0;
+let maxListSize = 500;
+let insertIndex = 0;
+let ghostCoinsList = [];
+let pushIndex = maxListSize / 10;
 function calculateGhostsTillTier() {
     let ghostCoins = data.lastCrownCoins;
     let coinsNeeded = nextTier - data.totalCrownCoins;
 
-    if (ghostCoinsList.length > 0) {
-        ghostCoinsAVG = ghostCoinsList.reduce((a, b) => a + b, 0) / ghostCoinsList.length;
-    }
+    let ghostCoinsAVG = ghostCoinsList.length > 0 ? ghostCoinsSum / ghostCoinsList.length : 0;
 
-    if (ghostCoinsList.length < 100 || Math.abs(ghostCoinsList - ghostCoinsAVG) > 500) {
-        ghostCoinsList.push(ghostCoins);
-    }
-
-    if (ghostCoinsList.length > 1000) {
-        ghostCoinsList.shift();
+    if (ghostCoinsList.length < pushIndex || Math.abs(ghostCoins - ghostCoinsAVG) > 500) {
+        if (ghostCoinsList.length < maxListSize) {
+            ghostCoinsList.push(ghostCoins);
+            ghostCoinsSum += ghostCoins;
+        } else {
+            ghostCoinsSum -= ghostCoinsList[insertIndex];
+            ghostCoinsList[insertIndex] = ghostCoins;
+            ghostCoinsSum += ghostCoins;
+            insertIndex = (insertIndex + 1) % maxListSize;
+        }
     }
 
     ghostsTillTier = ghostCoinsAVG > 0 ? coinsNeeded / ghostCoinsAVG : 0;
@@ -218,7 +224,11 @@ registerWhen(register("chat", (mf) => {
     sorrowDropsSession++;
     data.save();
 }).setCriteria("&r&6&lRARE DROP! &r&9Sorrow${mf}"), () => settings.crownTracker && settings.crownGhostMode);
-// &7[16:23] &r&r&r&6&lRARE DROP! &r&9Sorrow &r&b(+&r&b378% &r&b✯ Magic Find&r&b)&r
+
+registerWhen(register("chat", () => {
+    data.crownOneMilCoins++;
+    data.save();
+}).setCriteria("&r&eThe ghost's death materialized &r&61,000,000 coins &r&efrom the mists!&r"), () => settings.crownTracker && settings.crownGhostMode);
 
 registerWhen(register("tick", () => {
     if (hasCrown()) {
