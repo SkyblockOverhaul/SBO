@@ -137,7 +137,6 @@ function getCoinsFromCrown() {
             let coins = line.split(": ")[1];
             coins = coins.replace(/§./, "").replaceAll(",", "");
             coinsFound = parseInt(coins);
-            printDev("[CTT] Coins Found");
             break;
         }
     }
