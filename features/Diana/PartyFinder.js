@@ -116,7 +116,7 @@ register("command", () => {
         
         messageString += "\n&3Misc&7: " +
             "\n&7- &9Enderman Slayer&7: " + getNumberColor(lastCheckedPlayer.emanLvl, 9) +
-            "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills) + (lastCheckedPlayer.killLeaderboard <= 100 ? " &7(&6#" + lastCheckedPlayer.killLeaderboard + "&7)" : "");
+            "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills) + (lastCheckedPlayer.killLeaderboard <= 100 ? " &7(#" + lastCheckedPlayer.killLeaderboard + ")" : "");
 
         if (lastCheckedPlayer.clover) 
             messageString += "\n&7- &9Clover&7: &a✓";
