@@ -669,24 +669,25 @@ export function getNumberColor(number, range) {
 }
 
 export function getGriffinItemColor(item) {
-    function formatReturn(item) {
-        return toTitleCase(item.replaceAll("_", " "))
+    if (item != 0) {
+        let name = toTitleCase(item.replaceAll("_", " "));
+        switch (item) {
+            case "FOUR_EYED_FISH":
+                return "&5" + name;
+            case "DWARF_TURTLE_SHELMET":
+                return "&a" + name;
+            case "CROCHET_TIGER_PLUSHIE":
+                return "&5" + name;
+            case "ANTIQUE_REMEDIES":
+                return "&5" + name;
+            case "LUCKY_CLOVER":
+                return "&a" + name;
+            case "MINOS_RELIC":
+                return "&5" + name;
+            default:
+                return "&7" + name;
+        }
     }
-    switch (item) {
-        case "FOUR_EYED_FISH":
-            return "&5" + formatReturn(item);
-        case "DWARF_TURTLE_SHELMET":
-            return "&a" + formatReturn(item);
-        case "CROCHET_TIGER_PLUSHIE":
-            return "&5" + formatReturn(item);
-        case "ANTIQUE_REMEDIES":
-            return "&5" + formatReturn(item);
-        case "LUCKY_CLOVER":
-            return "&a" + formatReturn(item);
-        case "MINOS_RELIC":
-            return "&5" + formatReturn(item);
-        default:
-            return "&7" + formatReturn(item);
-    }
+    return "";
 }
 
