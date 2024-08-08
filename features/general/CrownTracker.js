@@ -197,7 +197,7 @@ function calculateGhostsTillTier() {
 
     let ghostCoinsAVG = ghostCoinsList.length > 0 ? ghostCoinsSum / ghostCoinsList.length : 0;
 
-    if (ghostCoinsList.length < pushIndex || Math.abs(ghostCoins - ghostCoinsAVG) > 500) {
+    if ((ghostCoinsList.length < pushIndex || Math.abs(ghostCoins - ghostCoinsAVG) > 500) && ghostCoins < 1000000) {
         if (ghostCoinsList.length < maxListSize) {
             ghostCoinsList.push(ghostCoins);
             ghostCoinsSum += ghostCoins;
