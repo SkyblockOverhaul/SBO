@@ -24,11 +24,11 @@ const crownTiers = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 10000000
 let profitPerHourSession = 0;
 let ghostKillsSession = 0;
 let sorrowDropsSession = 0;
+let profitPerHour = 0;
 function getCrownMessage() {
     let crownLines = [];
     let timePassed = timerCrown.getHourTime();
     let timePassedSession = timerCrownSession.getHourTime();
-    let profitPerHour = 0;
     let timeUntilNextTier = 0;
     let currentTier = 0;
     let totalPerecent = 0;
@@ -240,6 +240,8 @@ register("command", () => {
     data.sorrowDrops = 0;
     ghostKillsSession = 0;
     sorrowDropsSession = 0;
+    profitPerHour = 0;
+    profitPerHourSession = 0;
     timerCrown.reset();
     timerCrownSession.reset();
     data.save();
