@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -279,8 +279,7 @@ registerWhen(register("chat", (coins) => {
 
 registerWhen(register("chat", (drop, event) => {
     if (isDataLoaded() && checkDiana() && isInSkyblock()) {
-        let magicFindMatch = drop.match(/\+(&r&b)?(\d+)%/);
-        let magicFind = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
+        let magicFind = getMagicFind(drop);
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":

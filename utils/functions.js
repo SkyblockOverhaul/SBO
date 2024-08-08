@@ -691,3 +691,9 @@ export function getGriffinItemColor(item) {
     return "";
 }
 
+export function getMagicFind(mf) {
+    let magicFindMatch = mf.match(/\+(&r&b)?(\d+)%/);
+    let magicFind = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
+    return magicFind;
+}
+

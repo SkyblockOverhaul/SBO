@@ -730,6 +730,13 @@ class Settings {
         subcategory: "Crown Tracker"
     })
     crownTracker = false;
+    @SwitchProperty({
+        name: "Crown Ghost Mode",
+        description: "Displays Session stats for ghosts: Ghosts/Tier (how many ghosts for next tier (not perfetly accurate))",
+        category: "Quality of Life",
+        subcategory: "Crown Tracker"
+    })
+    crownGhostMode = false;
     @ButtonProperty({
         name: "Reset Crown Tracker",
         description: "Resets the crown tracker",

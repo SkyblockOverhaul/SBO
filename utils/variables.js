@@ -108,6 +108,8 @@ export let data = new PogObject("SBO", {
     "totalCrownCoinsGained" : 0,
     "totalCrownCoinsSession" : 0,
     "cronwTimerSession" : 0,
+    "ghostKills" : 0,
+    "sorrowDrops" : 0,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
