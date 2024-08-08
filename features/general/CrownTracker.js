@@ -81,19 +81,18 @@ function getCrownMessage() {
             let ghostCoins = data.lastCrownCoins;
             let ghostCoinsList = [];
             let coinsNeeded = nextTier - data.totalCrownCoins;
+            let ghostCoinsAVG = 0;
 
-            if (ghostCoinsList.length < 100 || Math.abs(ghostCoins - ghostCoinsAVG) < 500) {
-                printDev(Math.abs(ghostCoins - ghostCoinsAVG) < 500);
+            if (ghostCoinsList.length > 0) {
+                ghostCoinsAVG = ghostCoinsList.reduce((a, b) => a + b, 0) / ghostCoinsList.length;
+            }
+
+            if (ghostCoinsList.length < 100 || Math.abs(ghostCoinsList - ghostCoinsAVG) > 500) {
                 ghostCoinsList.push(ghostCoins);
             }
 
             if (ghostCoinsList.length > 1000) {
                 ghostCoinsList.shift();
-            }
-
-            let ghostCoinsAVG = 0;
-            if (ghostCoinsList.length > 0) {
-                ghostCoinsAVG = ghostCoinsList.reduce((a, b) => a + b, 0) / ghostCoinsList.length;
             }
 
             let ghostsTillTier = ghostCoinsAVG > 0 ? coinsNeeded / ghostCoinsAVG : 0;
