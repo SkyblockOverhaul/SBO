@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { registerWhen, timerCrown, timerCrownSession, data } from "../../utils/variables";
 import { formatNumber, formatNumberCommas, formatTime, isInSkyblock, printDev, getMagicFind } from "../../utils/functions";
-import { getZone } from "../../utils/world";
+import { getZone, getWorld } from "../../utils/world";
 import { isDataLoaded } from "../../utils/checkData";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE, RED} from "../../utils/constants";
@@ -210,7 +210,7 @@ registerWhen(register("entityDeath", (entity) => {
     if (getZone().includes("The Mist")){
         countGhostKills(entity);
     }
-}), () => settings.crownTracker && settings.crownGhostMode);
+}), () => settings.crownTracker && settings.crownGhostMode && getWorld() == "Dwarven Mines");
 
 registerWhen(register("chat", (mf) => {
     let magicFind = getMagicFind(mf);
