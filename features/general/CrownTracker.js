@@ -25,6 +25,10 @@ let profitPerHourSession = 0;
 let ghostKillsSession = 0;
 let sorrowDropsSession = 0;
 let profitPerHour = 0;
+let ghostCoinsAVG = 0;
+let ghostCoinsList = [];
+let nextTier = 0;
+let ghostsTillTier = 0;
 function getCrownMessage() {
     let crownLines = [];
     let timePassed = timerCrown.getHourTime();
@@ -41,7 +45,7 @@ function getCrownMessage() {
         }
     }
     if (currentTier < 0) currentTier = 0;
-    let nextTier = crownTiers[currentTier + 1];
+    nextTier = crownTiers[currentTier + 1];
 
     if (timePassed != "NaN" && timePassed != 0) {
         profitPerHour = (data.totalCrownCoinsGained / timePassed).toFixed();
@@ -78,24 +82,6 @@ function getCrownMessage() {
 
     if (settings.crownGhostMode) {
         if (getZone().includes("The Mist")) {
-            let ghostCoins = data.lastCrownCoins;
-            let ghostCoinsList = [];
-            let coinsNeeded = nextTier - data.totalCrownCoins;
-            let ghostCoinsAVG = 0;
-
-            if (ghostCoinsList.length > 0) {
-                ghostCoinsAVG = ghostCoinsList.reduce((a, b) => a + b, 0) / ghostCoinsList.length;
-            }
-
-            if (ghostCoinsList.length < 100 || Math.abs(ghostCoinsList - ghostCoinsAVG) > 500) {
-                ghostCoinsList.push(ghostCoins);
-            }
-
-            if (ghostCoinsList.length > 1000) {
-                ghostCoinsList.shift();
-            }
-
-            let ghostsTillTier = ghostCoinsAVG > 0 ? coinsNeeded / ghostCoinsAVG : 0;
             crownLines.push(new OverlayTextLine(`${GOLD}~Ghosts/Tier: ${AQUA}${formatNumberCommas(ghostsTillTier.toFixed())}`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Ghost Kills: ${AQUA}${formatNumber(data.ghostKills)} &7(${formatNumber(ghostKillsSession)})`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Sorrows: ${AQUA}${formatNumber(data.sorrowDrops)} &7(${formatNumber(sorrowDropsSession)})`, true));
@@ -195,14 +181,36 @@ function countGhostKills(entity) {
         (Player.getZ() - entity.getZ())**2
     );
     if (distance > 10) return;
+    calculateGhostsTillTier();
     data.ghostKills++;
     ghostKillsSession++;
     data.save();
 }
 
+function calculateGhostsTillTier() {
+    let ghostCoins = data.lastCrownCoins;
+    let coinsNeeded = nextTier - data.totalCrownCoins;
+
+    if (ghostCoinsList.length > 0) {
+        ghostCoinsAVG = ghostCoinsList.reduce((a, b) => a + b, 0) / ghostCoinsList.length;
+    }
+
+    if (ghostCoinsList.length < 100 || Math.abs(ghostCoinsList - ghostCoinsAVG) > 500) {
+        ghostCoinsList.push(ghostCoins);
+    }
+
+    if (ghostCoinsList.length > 1000) {
+        ghostCoinsList.shift();
+    }
+
+    ghostsTillTier = ghostCoinsAVG > 0 ? coinsNeeded / ghostCoinsAVG : 0;
+}
+
 registerWhen(register("entityDeath", (entity) => {
-    countGhostKills(entity);
-}), () => settings.crownTracker && settings.crownGhostMode && getZone().includes("The Mist"));
+    if (getZone().includes("The Mist")){
+        countGhostKills(entity);
+    }
+}), () => settings.crownTracker && settings.crownGhostMode);
 
 registerWhen(register("chat", (mf) => {
     let magicFind = getMagicFind(mf);
