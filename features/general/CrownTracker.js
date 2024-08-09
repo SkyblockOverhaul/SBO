@@ -262,6 +262,7 @@ register("command", () => {
     profitPerHour = 0;
     profitPerHourSession = 0;
     oneMillDropsSession = 0;
+    data.crownOneMilCoins
     timerCrown.reset();
     timerCrownSession.reset();
     data.save();
