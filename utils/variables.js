@@ -276,6 +276,10 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
     }
 }, "dianaTrackerMayor.json");
 
+export let achievementsData = new PogObject("../../../config", {
+    "unlocked": []
+}, "sbo_achievements.json");
+
 if (!data.trackerMigration) {
     // check if old tracker exists and is not empty
     if (Object.keys(oldMayorTracker).length != 0) {

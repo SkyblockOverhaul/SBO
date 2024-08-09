@@ -570,30 +570,3 @@ function componentToHex(c) {
     let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
-
-
-
-register("command", (args1, ...args) => {
-    ChatLib.chat("&6[SBO] &eplaying test sound for " + args1)
-    switch (args1) {
-        case "inqSound":
-            playCustomSound(settings.inqSound, settings.inqVolume);
-            break;
-        case "burrowSound":
-            playCustomSound(settings.burrowSound, settings.burrowVolume);
-            break;
-        case "chimSound":
-            playCustomSound(settings.chimSound, settings.chimVolume);
-            break;
-        case "sprSound":
-            playCustomSound(settings.sprSound, settings.sprVolume);
-            break;
-        case "stickSound":
-            playCustomSound(settings.stickSound, settings.stickVolume);
-            break;
-        case "relicSound":
-            playCustomSound(settings.relicSound, settings.relicVolume);
-            break;
-    }
-}).setName("sbotest");   
-
