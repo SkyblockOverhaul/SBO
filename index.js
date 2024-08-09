@@ -85,7 +85,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &a--QOL-- `)
-    ChatLib.chat(`&7> &aAdded Crown session stats`)
+    ChatLib.chat(`&7> &aAdded Crown session stats and ghost mode`)
+    ChatLib.chat(`&7> &aAdded extra stats button when checking a player with /sbocheck, /sboc`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
