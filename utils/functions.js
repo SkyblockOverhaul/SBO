@@ -697,20 +697,6 @@ export function getMagicFind(mf) {
     return magicFind;
 }
 
-// Bone Meal	White	[40] [player]	SkyBlock Level 40
-// Dandelion Yellow	Yellow	[80] [player]	SkyBlock Level 80
-// Lime Dye	Green	[120] [player]	SkyBlock Level 120
-// Cactus Green	Dark Green	[160] [player]	SkyBlock Level 160
-// Light Blue Dye	Aqua	[200] [player]	SkyBlock Level 200
-// Cyan Dye	Cyan	[240] [player]	SkyBlock Level 240
-// Lapis Lazuli	Blue	[280] [player]	SkyBlock Level 280
-// Pink Dye	Pink	[320] [player]	SkyBlock Level 320
-// Purple Dye	Purple	[360] [player]	SkyBlock Level 360
-// Orange Dye	Gold	[400] [player]	SkyBlock Level 400
-// Rose Red	Red	[440] [player]	SkyBlock Level 440
-// Redstone	Dark Red	[480] [player]	SkyBlock Level 480
-
-
 export function matchLvlToColor(lvl) {
     if (lvl >= 480) {
         return "&4" + lvl;
