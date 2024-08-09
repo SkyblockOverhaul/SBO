@@ -622,7 +622,7 @@ export function formatTime(milliseconds) {
         formattedTime += `${seconds}s `;
     }
 
-    return formattedTime;
+    return formattedTime.trim();
 }
 
 let dianaMayorTotalProfit = 0;
@@ -635,5 +635,65 @@ export function getDianaMayorTotalProfitAndOfferType() {
 export function setDianaMayorTotalProfit(profit, offerType) {
     dianaMayorTotalProfit = profit;
     dianaMayorOfferType = offerType;
+}
+
+export function getRarity(item){
+    switch (item.toLowerCase().trim()) {
+        case "common":
+            return "&f" + item;
+        case "uncommon":
+            return "&a" + item;
+        case "rare":
+            return "&9" + item;
+        case "epic":
+            return "&5" + item;
+        case "legendary":
+            return "&6" + item;
+        case "mythic":
+            return "&d" + item;
+        default:
+            return "&7";
+    }
+}
+
+export function getNumberColor(number, range) {
+    if (number === range) {
+        return "&c" + number;
+    }
+    else if (number === range - 1) {
+        return "&6" + number;
+    }
+    else {
+        return "&9" + number;
+    }
+}
+
+export function getGriffinItemColor(item) {
+    if (item != 0) {
+        let name = toTitleCase(item.replaceAll("_", " "));
+        switch (item) {
+            case "FOUR_EYED_FISH":
+                return "&5" + name;
+            case "DWARF_TURTLE_SHELMET":
+                return "&a" + name;
+            case "CROCHET_TIGER_PLUSHIE":
+                return "&5" + name;
+            case "ANTIQUE_REMEDIES":
+                return "&5" + name;
+            case "LUCKY_CLOVER":
+                return "&a" + name;
+            case "MINOS_RELIC":
+                return "&5" + name;
+            default:
+                return "&7" + name;
+        }
+    }
+    return "";
+}
+
+export function getMagicFind(mf) {
+    let magicFindMatch = mf.match(/\+(&r&b)?(\d+)%/);
+    let magicFind = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
+    return magicFind;
 }
 

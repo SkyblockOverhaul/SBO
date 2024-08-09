@@ -1,6 +1,7 @@
 import { request } from "../../../requestV2";
-import { getplayername, sendPartyRequest } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
+import { checkDiana } from "../../utils/checkDiana";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -17,21 +18,30 @@ function getPartyInfo(party) {
 
 // message to check party when joining a party
 register("chat", (party) => {
-    setTimeout(() => {
-        new TextComponent("&6[SBO] &eClick to check party members").setClick("run_command", "/sbocheckp").setHover("show_text", "/sbocheckp").chat();
-    }, 100);
+    if (checkDiana()) {
+        setTimeout(() => {
+            new TextComponent("&6[SBO] &eClick to check party members").setClick("run_command", "/sbocheckp").setHover("show_text", "/sbocheckp").chat();
+        }, 100);
+    }
 }).setCriteria("&eYou have joined ${party} &r&eparty!&r");
 
 // command to check party members
 let checkPartyBool = false;
+const partyLimit = 6;
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     if (!checkPartyBool) return;
     checkPartyBool = false;
     let party = [];
+    let count = 0;
     Object.keys(partyInfo).forEach(key => {
+        if (key == Player.getUUID()) return;
+        count++;
+        if (count >= partyLimit+1) return;
         party.push(key);
     })
-    party = party.filter(uuid => uuid != Player.getUUID());
+    if (count >= partyLimit+1) {
+        ChatLib.chat("&6[SBO] &eParty members limit reached. Only checking first " + partyLimit + " members.");
+    }
     if (party.length == 0) {
         ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
         return;
@@ -50,25 +60,75 @@ register("command", () => {
     else {
         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
     }
-}).setName("sbocheckp").setAliases("sbocp");;
+}).setName("sbocheckp").setAliases("sbocp");
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
-        ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&e&r&9│ &r&eLvL&r&f: &r&6" + partyinfo[i].sbLvl + "&r&e&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&e&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&e &r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
+        ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&9│ &r&eLvL&r&f: &r&6" + partyinfo[i].sbLvl + "&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
     }
 }
 
 /// Player Checker
+let lastCheckedPlayer = undefined;
 function printCheckedPlayer(playerinfo) {
     playerinfo = playerinfo[0];
+    lastCheckedPlayer = playerinfo;
     new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
-    "&r&e&r&9│ &r&eLvL&r&f: &r&6" + playerinfo.sbLvl + 
-    "&r&e&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&e&r&9│ &r&el5 Daxe&r&f: " + 
+    "&r&9│ &r&eLvL&r&f: &r&6" + playerinfo.sbLvl + 
+    "&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + 
     (playerinfo.looting5daxe ? "&a✓" : "&4✗") + 
-    "&e &r&9│ &r&eKills&r&f: &r&6" + 
+    "&r&9│ &r&eKills&r&f: &r&6" + 
     (playerinfo.mythosKills / 1000).toFixed(2) + "k")
     .setClick("run_command", "/p " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name).chat();
+    new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
 }
+
+register("command", () => {
+    if (lastCheckedPlayer) {
+        let messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
+
+        if (lastCheckedPlayer.daxeLootingLvl != -1) {
+            messageString += "\n&3Daedalus Axe&7: " +
+                "\n&7- &9Chimera&7: " + getNumberColor(lastCheckedPlayer.daxeChimLvl, 5) +
+                "\n&7- &9Looting&7: " + getNumberColor(lastCheckedPlayer.daxeLootingLvl, 5);
+        } else {
+            messageString += "\n&3Daedalus Axe&7: &4✗";
+        }
+        if (lastCheckedPlayer.griffinRarity != "none") {
+            messageString += "\n&3Griffin&7: " +
+                "\n&7- &9Rarity&7: " + getRarity(lastCheckedPlayer.griffinRarity) +
+                "\n&7- &9Item&7: " + getGriffinItemColor(lastCheckedPlayer.griffinItem);
+        } else {
+            messageString += "\n&3Griffin&7: &4✗";
+        }
+
+        if (lastCheckedPlayer.invApi) {
+            messageString += "\n&3Talis&7: " +
+                "\n&7- &9Magical Power&7: &b" + formatNumberCommas(lastCheckedPlayer.magicalPower) +
+                "\n&7- &9Enrichments&7: &b" + lastCheckedPlayer.enrichments;
+        } else {
+            messageString += "\n&3Talis&7: " +
+                "\n&7- &9Magical Power&7: ~" + formatNumberCommas(lastCheckedPlayer.magicalPower);
+        }
+        
+        if (lastCheckedPlayer.missingEnrichment > 0)
+            messageString += "\n&7- &9Missing Enrichments&7: " + lastCheckedPlayer.missingEnrichments;
+        
+        messageString += "\n&3Misc&7: " +
+            "\n&7- &9Enderman Slayer&7: " + getNumberColor(lastCheckedPlayer.emanLvl, 9) +
+            "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills) + (lastCheckedPlayer.killLeaderboard <= 100 ? " &7(#" + lastCheckedPlayer.killLeaderboard + ")" : "");
+
+        if (lastCheckedPlayer.clover) 
+            messageString += "\n&7- &9Clover&7: &a✓";
+        
+
+        messageString += "\n&7- &9Inventory API&7: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
+        ChatLib.chat(messageString);
+    }
+    else {
+        ChatLib.chat("&6[SBO] &4Invalid button. Please check a player first. /sbocheck <player>");
+    }
+}).setName("extrastatsbuttonforsbo");
 
 function checkPlayer(player) {
     let playerName = player;
@@ -94,114 +154,8 @@ register("command", (args1, ...args) => {
 
 register("chat", (player) => {
     setTimeout(() => {
-        // send clickable message to execute command
         player = player.removeFormatting()
         player = getplayername(player)
         new TextComponent("&6[SBO] &eClick to check player").setClick("run_command", "/sbocheck " + player).setHover("show_text", "/sbocheck " + player).chat();
     }, 50);
 }).setCriteria("&dFrom ${player}&r&7: &r&d&lBoop!&r");
-
-
-// register("command", () => {
-//     const playernames = TabList.getNames();
-//     for (let i = 0; i < playernames.length; i++) {
-//         print(playernames[i]);
-//     }
-// }).setName("sbogetplayers");
-
-// ).setTabCompletions((args) => {
-//     return TabList.getNames();
-// }
-
-// old code 
-
-// old party checker
-// register("command", () => {
-//     if (Date.now() - lastUsed > 60000 || lastUsed == 0) { // 1 minutes
-//         lastUsed = Date.now();
-//         try {
-//             ChatLib.chat("&6[SBO] &eChecking party members...");
-//             let party = getPartyMembers();
-//             if (party.length == 0) {
-//                 ChatLib.chat("&6[SBO] &eNo party members found. try /pl and /sbocheckp again if your in a party.");
-//                 return;
-//             }
-//             getPartyInfo(party);
-//         } catch (error) {
-//             ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party members. Please try /pl and /sbocheckp again.");
-//             console.error(error);
-//         }
-//     }
-//     else {
-//         ChatLib.chat("&6[SBO] &ePlease wait 1 minutes before checking party members again.");
-//     }
-// }).setName("sbocheckp");
-
-/// partyfinde test code
-// function queueAsPlayer() {
-//     // Queue as a player
-//     let success = false;
-//     request({
-//         url: api + "/addPlayerToQueue?PlayerName=" + Player.getName(),
-//         json: true
-//     }).then((response)=>{
-//         success = response.Success;
-//         if (success) {
-//             ChatLib.chat("Successfully queued as " + Player.getName());
-//         }
-//         else {
-//             ChatLib.chat("Failed to queue as " + Player.getName());
-//         }    
-//     }).catch((error)=>{
-//         console.error(error);
-//     });
-// }
-
-// function removeFromQueue() {
-//     // Remove player from queue
-//     let success = false;
-//     request({
-//         url: api + "/removePlayerFromQueue?PlayerName=" + Player.getName(),
-//         json: true
-//     }).then((response)=>{
-//         success = response.Success;
-//         if (success) {
-//             ChatLib.chat("Successfully removed " + Player.getName() + " from queue");
-//         }
-//         else {
-//             ChatLib.chat("Failed to remove " + Player.getName() + " from queue");
-//         }
-//         getQueuePlayer();
-//     }).catch((error)=>{
-//         console.error(error);
-//     });
-// }
-    
-// let queue = [];
-// function getQueuePlayer() {
-//     // Get the queue
-//     request({
-//         url: api + "/queuePlayer",
-//         json: true
-//     }).then((response)=>{
-//         queue = response.Queue;
-//         ChatLib.chat("Queue: ");
-//         if (queue.length == 0) {
-//             ChatLib.chat("Empty");
-//         }
-//         for (let i = 0; i < queue.length; i++) {
-//             ChatLib.chat("name: " + queue[i].name + " sb lvl: " + queue[i].sbLvl + " eman9 " + queue[i].eman9 + " kills: " + queue[i].mythosKills + " legi pet: " + queue[i].legPet);
-//         }
-//     }).catch((error)=>{
-//         console.error(error);
-//     });
-// }
-
-// register("command", () => {
-//     queueAsPlayer();
-// }).setName("sboqueue");
-
-// // each player in queue has a name, rank, sbLvl, eman9, mythosKills, legPet
-// register("command", () => {
-//     getQueuePlayer();
-// }).setName("sbopf");
