@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 
@@ -64,7 +64,7 @@ register("command", () => {
 
 function printPartyInfo(partyinfo) {
     for (let i = 0; i < partyinfo.length; i++) {
-        ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&9│ &r&eLvL&r&f: &r&6" + partyinfo[i].sbLvl + "&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
+        ChatLib.chat("&6[SBO] &eName&r&f: &r&b" + partyinfo[i].name + "&r&9│ &r&eLvL&r&f: &r&6" + matchLvlToColor(partyinfo[i].sbLvl) + "&r&9│ &r&eEman 9&r&f: &r&f" + (partyinfo[i].eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + (partyinfo[i].looting5daxe ? "&a✓" : "&4✗") + "&r&9│ &r&eKills&r&f: &r&6" + (partyinfo[i].mythosKills / 1000).toFixed(2) + "k");
     }
 }
 
@@ -74,7 +74,7 @@ function printCheckedPlayer(playerinfo) {
     playerinfo = playerinfo[0];
     lastCheckedPlayer = playerinfo;
     new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
-    "&r&9│ &r&eLvL&r&f: &r&6" + playerinfo.sbLvl + 
+    "&r&9│ &r&eLvL&r&f: &r&6" + matchLvlToColor(playerinfo.sbLvl) + 
     "&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + 
     (playerinfo.looting5daxe ? "&a✓" : "&4✗") + 
     "&r&9│ &r&eKills&r&f: &r&6" + 
