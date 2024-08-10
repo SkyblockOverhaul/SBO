@@ -77,14 +77,12 @@ class Achivement {
 // be achievement
 
 // gute namen: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?
-
-new Achivement(1, "b2b Chimera", "Get 2 Chimera in a row", "Mythic"); // added
+new Achivement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic"); // added 
 new Achivement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine"); // added
-new Achivement(3, "b2b Stick", "Get 2 Sticks in a row", "Mythic");  // added
-new Achivement(4, "b2b2b Stick", "Get 3 Sticks in a row", "Divine"); // added
-new Achivement(5, "b2b Relic", "Get 2 Relics in a row", "Impossible");  // added
-new Achivement(6, "b2b Inquisitor", "Get 2 Inquisitors in a row", "Epic"); // added
-new Achivement(7, "b2b2b Inquisitor", "Get 3 Inquisitors in a row", "Mythic");// added
+new Achivement(3, "Back-to-Back Stick", "Get 2 Sticks in a row", "Divine");  // added 
+new Achivement(5, "Back-to-Back Relic", "Get 2 Relics in a row", "Impossible");  // added 
+new Achivement(6, "Inquisitor Double Trouble", "Get 2 Inquisitors in a row", "Epic"); // added 
+new Achivement(7, "b2b2b Inquisitor", "Get 3 Inquisitors in a row", "Divine");// added
 
 
 new Achivement(12, "First Chimera", "Get your first chimera", "Uncommon");// added
@@ -128,10 +126,10 @@ new Achivement(37, "No more Diana", "100 inquisitors since chimera", "Divine", 3
 
 new Achivement(38, "Real Diana Non", "Download SBO", "Divine"); // added
 
-new Achivement(39, "I need more!", "Get a Diana drop with 300 Magic Find", "Uncommon");
-new Achivement(40, "Even more!", "Get a Diana drop with 400 Magic Find", "Epic", 39);
-new Achivement(41, "Do i have enough?", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
-new Achivement(42, "I think i am Magic", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3);
+new Achivement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "Uncommon");
+new Achivement(40, "Bleesed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
+new Achivement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
+new Achivement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
 
 new Achivement(28, "Where Chimera?", "Get all other drops from an inquisitor", "Legendary");
 
@@ -157,7 +155,7 @@ function writeAchievements() {
 }
 
 register("command", () => {
-    unlockAchievement(22);
+    unlockAchievement(42);
 }).setName("sbotest");
 
 export function trackAchievements(mayorTracker, item) {
