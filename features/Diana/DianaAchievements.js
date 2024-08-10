@@ -97,10 +97,10 @@ new Achivement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Mythic", 13)
 new Achivement(14, "First Stick", "Get your first stick", "Common");// added
 new Achivement(8, "Can i make a ladder now?", "Get 7 sticks in one event", "Epic", 14);// added
 
-new Achivement(15, "ls Stick", "Lootshare a Stick", "Divine"); // 1/6250 base chance
+new Achivement(15, "ls Stick", "Lootshare a Stick (1/6250 base chance)", "Divine"); // added
 
 new Achivement(16, "First Relic", "Get your first relic", "Rare"); // added
-new Achivement(17, "1/25000", "Lootshare a Relic", "Impossible"); // 1/25000 base chance
+new Achivement(17, "1/25000", "Lootshare a Relic ( 1/25000 base chance)", "Impossible"); // added
 
 new Achivement(18, "Where the grind begins", "Get 5k burrows in one event", "Common"); // added
 new Achivement(19, "Touch some grass", "Get 10k burrows in one event", "Uncommon", 18); // added
@@ -128,6 +128,11 @@ new Achivement(37, "No more Diana", "100 inquisitors since chimera", "Divine", 3
 
 new Achivement(38, "Real Diana Non", "Download SBO", "Divine"); // added
 
+new Achivement(39, "I need more!", "Get a Diana drop with 300 Magic Find", "Uncommon");
+new Achivement(40, "Even more!", "Get a Diana drop with 400 Magic Find", "Epic", 39);
+new Achivement(41, "Do i have enough?", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
+new Achivement(42, "I think i am Magic", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3);
+
 new Achivement(28, "Where Chimera?", "Get all other drops from an inquisitor", "Legendary");
 
 
@@ -152,7 +157,7 @@ function writeAchievements() {
 }
 
 register("command", () => {
-    unlockAchievement(27);
+    unlockAchievement(22);
 }).setName("sbotest");
 
 export function trackAchievements(mayorTracker, item) {
