@@ -13,6 +13,9 @@ import { playerHasSpade } from "../../utils/functions";
 // todo end
 
 // track items with pickuplog //
+let b2bRelic = false;
+let b2bStick = false;
+let b2bChim = false;
 export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
@@ -32,6 +35,10 @@ export function dianaLootCounter(item, amount) {
                     }
                     if (data.champsSinceRelic == 1) {
                         ChatLib.chat("&6[SBO] &cb2b Relic!")
+                        b2bRelic = true;
+                    }
+                    if (b2bRelic && data.champsSinceRelic == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b2b Relic!")
                     }
                     data.champsSinceRelic = 0;
                     if (settings.lootAnnouncerScreen) {
@@ -102,6 +109,7 @@ export function trackItem(item, category, amount) {
 
         if (category === "mobs") {
             data.mobsSinceInq += 1;
+            if (data.mobsSinceInq == 2) b2bInq = false;
         }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
@@ -223,6 +231,7 @@ registerWhen(register("chat", (waste, event) => {
 }).setCriteria("&r&7Warping${waste}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
 // mob tracker
+let b2bInq = false;
 registerWhen(register("chat", (woah, arev, mob, event) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
@@ -232,17 +241,24 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
                 if(settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "&eClick To Copy").chat();
                 }
-                if (data.mobsSinceInq == 1) {
+                if (data.mobsSinceInq == 1 && !b2bInq) {
                     ChatLib.chat("&6[SBO] &cb2b Inquisitor!")
+                    b2bInq = true;
+                }
+                if (data.inqsSinceChim == 2) b2bChim = false;
+                if (b2bInq && data.mobsSinceInq == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
                 }
                 data.mobsSinceInq = 0;        
                 break;
             case "Minos Champion":
                 data.champsSinceRelic += 1;
+                if (data.champsSinceRelic == 2) b2bRelic = false;
                 trackItem(mob, "mobs", 1);
                 break;
             case "Minotaur":
                 data.minotaursSinceStick += 1;
+                if (data.minotaursSinceStick == 2) b2bStick = false;
                 trackItem(mob, "mobs", 1);
                 break;
             case "Minos Hunter":
@@ -320,8 +336,12 @@ registerWhen(register("chat", (drop, event) => {
                     if(settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
-                    if (data.inqsSinceChim == 1) {
+                    if (data.inqsSinceChim == 1 && !b2bChim) {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
+                        b2bChim = true;
+                    }
+                    if (b2bChim && data.inqsSinceChim == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
                     }
                     data.inqsSinceChim = 0;
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
@@ -348,8 +368,12 @@ registerWhen(register("chat", (drop, event) => {
                 if(settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
-                if (data.minotaursSinceStick == 1) {
+                if (data.minotaursSinceStick == 1 && !b2bStick) {
                     ChatLib.chat("&6[SBO] &cb2b Daedalus Stick!")
+                    b2bStick = true;
+                }
+                if (b2bStick && data.minotaursSinceStick == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
                 }
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
