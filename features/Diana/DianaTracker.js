@@ -7,13 +7,12 @@ import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { playerHasSpade } from "../../utils/functions";
+import { trackSinceItem, trackSinceMob, unlockAchievement } from "./DianaAchievements";
 
 // todo: 
 // todo end
 
 // track items with pickuplog //
-let b2bRelic = false;
 let b2bStick = false;
 let b2bChim = false;
 export function dianaLootCounter(item, amount) {
@@ -35,11 +34,9 @@ export function dianaLootCounter(item, amount) {
                     }
                     if (data.champsSinceRelic == 1) {
                         ChatLib.chat("&6[SBO] &cb2b Relic!")
-                        b2bRelic = true;
+                        unlockAchievement(5) // b2b relic
                     }
-                    if (b2bRelic && data.champsSinceRelic == 1) {
-                        ChatLib.chat("&6[SBO] &cb2b2b Relic!")
-                    }
+                    if (gotLootShare()) unlockAchievement(17) // relic ls
                     data.champsSinceRelic = 0;
                     if (settings.lootAnnouncerScreen) {
                         if (settings.lootAnnouncerPrice) {
@@ -143,6 +140,12 @@ function trackOne(tracker, item, category, type, amount) {
         }
     }
     tracker.save();
+    if (type == "Mayor") {
+        trackAchievements(tracker, item);
+        if (category == "mobs") {
+            trackSinceMob();
+        }
+    }
 }
 
 function checkCustomChimMessage(magicFind) {
@@ -243,17 +246,18 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
                 }
                 if (data.mobsSinceInq == 1 && !b2bInq) {
                     ChatLib.chat("&6[SBO] &cb2b Inquisitor!")
+                    unlockAchievement(6) // b2b inq
                     b2bInq = true;
                 }
                 if (data.inqsSinceChim == 2) b2bChim = false;
                 if (b2bInq && data.mobsSinceInq == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
+                    unlockAchievement(7) // b2b2b inq
                 }
                 data.mobsSinceInq = 0;        
                 break;
             case "Minos Champion":
                 data.champsSinceRelic += 1;
-                if (data.champsSinceRelic == 2) b2bRelic = false;
                 trackItem(mob, "mobs", 1);
                 break;
             case "Minotaur":
@@ -339,9 +343,11 @@ registerWhen(register("chat", (drop, event) => {
                     if (data.inqsSinceChim == 1 && !b2bChim) {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
                         b2bChim = true;
+                        unlockAchievement(1) // b2b chim
                     }
                     if (b2bChim && data.inqsSinceChim == 1) {
                         ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
+                        unlockAchievement(2) // b2b2b chim
                     }
                     data.inqsSinceChim = 0;
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
@@ -371,10 +377,13 @@ registerWhen(register("chat", (drop, event) => {
                 if (data.minotaursSinceStick == 1 && !b2bStick) {
                     ChatLib.chat("&6[SBO] &cb2b Daedalus Stick!")
                     b2bStick = true;
+                    unlockAchievement(3) // b2b stick
                 }
                 if (b2bStick && data.minotaursSinceStick == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
+                    unlockAchievement(4) // b2b2b stick
                 }
+                if (gotLootShare()) unlockAchievement(15) // ls stick
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {
