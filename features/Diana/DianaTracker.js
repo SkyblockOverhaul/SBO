@@ -7,7 +7,7 @@ import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { trackSinceMob, unlockAchievement } from "./DianaAchievements";
+import { trackSinceMob, unlockAchievement, trackAchievements } from "./DianaAchievements";
 
 // todo: 
 // todo end
