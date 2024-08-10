@@ -56,7 +56,7 @@ class Achivement {
     }   
 }
 // Raritys: Divinee, Mythic, Legendary, Epic, Rare, Uncommon, Common
-// todo: add sounds
+// todo: add mc sound (maybe only for over epic rarity)
 // funny names for the achievements
 // be achievement
 
