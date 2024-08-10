@@ -81,14 +81,14 @@ new Achivement("1/25000", "Lootshare a Relic", "Divine"); // 1/25000 base chance
 new Achivement("5k Burrows", "Get 5k burrows in one event", "Common"); 
 new Achivement("10k Burrows", "Get 10k burrows in one event", "Uncommon"); 
 new Achivement("15k Burrows", "Get 15k burrows in one event", "Epic"); 
-new Achivement("20k Burrows", "Get 20k burrows in one event", "Legendary"); 
+new Achivement("20k Burrows", "Get 20k burrows in one event", "Legendary");  
 new Achivement("Are you mentally stable?", "Get 25k burrows in one event", "Mythic"); 
 
-new Achivement("1h Playtime", "1 hour of playtime in one event", "Common"); 
-new Achivement("10h Playtime", "10 hours of playtime in one event", "Uncommon");
-new Achivement("1d Playtime", "1 day of playtime in one event", "Rare");
-new Achivement("2d Playtime", "2 days of playtime in one event", "Epic");
-new Achivement("3d Playtime", "3 days of playtime in one event", "Legendary");
+new Achivement("So this is Diana", "1 hour of playtime in one event", "Common"); 
+new Achivement("Is this really fun?", "10 hours of playtime in one event", "Uncommon");
+new Achivement("No shower for me", "1 day of playtime in one event", "Rare");
+new Achivement("Are you okay?", "2 days of playtime in one event", "Epic"); 
+new Achivement("Sleep is downtime!", "3 days of playtime in one event", "Legendary"); 
 
 new Achivement("Where Chimera?", "Get all other drops from an inquisitor", "Legendary");
 
