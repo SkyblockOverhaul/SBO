@@ -127,10 +127,17 @@ export function unlockAchievement(id) {
         }
     })
 }
+// achivements in txt data
+function writeAchievements() {
+    let achievements = [];
+    Achivement.list.forEach(achievement => {
+        achievements.push(achievement.getName(), ": " ,achievement.getDescription(), "\n");
+    })
+    FileLib.write("./config/ChatTriggers/modules/SBO/SboAchivements.txt", achievements.join(""));
+}
 
 register("command", () => {
     // unlockAchievement(5);
-
     setTimeout(() => {
     }, 1000);
 }).setName("sbotest");
