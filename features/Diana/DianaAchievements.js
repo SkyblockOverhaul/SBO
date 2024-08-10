@@ -61,23 +61,28 @@ class Achivement {
 // be achievement
 
 new Achivement("b2b Chimera", "Get 2 Chimera in a row", "Mythic"); 
-new Achivement("b2b Stick", "Get 2 Sticks in a row", "Legendary"); 
+new Achivement("b2b Stick", "Get 2 Sticks in a row", "Mythic"); 
 new Achivement("b2b Relic", "Get 2 Relics in a row", "Divine"); 
 new Achivement("b2b Inquisitor", "Get 2 Inquisitors in a row", "Epic"); 
 
-new Achivement("ls Chimera", "Lootshare a Chimera", "Mythic");
-new Achivement("ls Stick", "Lootshare a Stick", "Legendary"); // 1/6250 base chance
-new Achivement("1/25000", "Lootshare a Relic", "Divine"); // 1/25000 base chance
+new Achivement("Can i make a ladder now?", "Get 7 sticks in one event", "Epic");
+new Achivement("Chimera V", "Get 16 chimera in one event", "Mythic");
+new Achivement("Chimera VI", "Get 32 chimera in one event", "Divine");
 
-new Achivement("Can i make a ladder now?", "Get 7 Sticks in one event", "Epic");
-new Achivement("Chimera V", "Get 16 Chimera in one event", "Mythic");
-new Achivement("Chimera VI", "Get 32 Chimera in one event", "Divine");
+new Achivement("First Chimera", "Get your first chimera", "Uncommon");
+new Achivement("First lootshare Chimera", "Lootshare your first chimera", "Legendary");
+
+new Achivement("First Stick", "Get your first stick", "Common");
+new Achivement("ls Stick", "Lootshare a Stick", "Legendary"); // 1/6250 base chance
+
+new Achivement("First Relic", "Get your first relic", "Rare");
+new Achivement("1/25000", "Lootshare a Relic", "Divine"); // 1/25000 base chance
 
 new Achivement("5k Burrows", "Get 5k burrows in one event", "Common"); 
 new Achivement("10k Burrows", "Get 10k burrows in one event", "Uncommon"); 
-new Achivement("15k Burrows", "Get 15k burrows in one event", "Rare"); 
-new Achivement("20k Burrows", "Get 20k burrows in one event", "Epic"); 
-new Achivement("25k Burrows", "Get 25k burrows in one event", "Legendary"); 
+new Achivement("15k Burrows", "Get 15k burrows in one event", "Epic"); 
+new Achivement("20k Burrows", "Get 20k burrows in one event", "Legendary"); 
+new Achivement("Are you mentally stable?", "Get 25k burrows in one event", "Mythic"); 
 
 new Achivement("1h Playtime", "1 hour of playtime in one event", "Common"); 
 new Achivement("10h Playtime", "10 hours of playtime in one event", "Uncommon");
@@ -86,6 +91,23 @@ new Achivement("2d Playtime", "2 days of playtime in one event", "Epic");
 new Achivement("3d Playtime", "3 days of playtime in one event", "Legendary");
 
 new Achivement("Where Chimera?", "Get all other drops from an inquisitor", "Legendary");
+
+//drystreaks
+new Achivement("lf inquisitor", "250 mobs since inquisitor", "Common");
+new Achivement("lf Chimera", "15 inquisitors since chimera", "Common");
+new Achivement("lf Stick", "200 minotaur since stick", "Common");
+new Achivement("lf Relic", "1000 champions since relic", "Uncommon");
+
+new Achivement("you have legi griffin right?", "500 mobs since inquisitor", "Rare");
+new Achivement("why do you still play?", "1000 mobs since inquisitor", "Legendary");
+
+
+
+new Achivement("Real Diana Non", "Download SBO", "Divine");
+
+
+
+
 
 
 
