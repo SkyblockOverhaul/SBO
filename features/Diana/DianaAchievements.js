@@ -383,7 +383,7 @@ register("guiOpened", (event) => {
             trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills);
 
         }
-    }, 1000);
+    }, 400);
 })
 
 export function backTrackAchievements() {
