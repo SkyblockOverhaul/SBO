@@ -200,10 +200,14 @@ function unlockAchievements() {
     unlocking = true;
     if (achievementsToUnlock.length > 0) {
         let achievement = achievementsToUnlock.shift();
-        unlockAchievement(achievement);
-        setTimeout(() => {
+        if (achievementsData[achievement] == undefined) {
+            unlockAchievement(achievement);
+            setTimeout(() => {
+                unlockAchievements();
+            }, 2000);
+        } else {
             unlockAchievements();
-        }, 2000);
+        }
     } else {
         unlocking = false;
     }

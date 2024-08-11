@@ -642,4 +642,5 @@ register("gameUnload", () => {
     dianaTrackerSession.save();
     dianaTrackerMayor.save();
     pastDianaEvents.save();
+    achievementsData.save();
 });
