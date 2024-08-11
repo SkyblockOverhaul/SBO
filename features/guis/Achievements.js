@@ -79,18 +79,9 @@ function onClose() {
     currentPage = 0;
 }
 
-function achievementRender() {
-    const layout = getLayoutData();
-    let { displayX, displayY, boxWidth, boxHeight, spacingX, spacingY, columns, rows, achievementsPerPage, totalWidth, totalHeight, startX, startY, buttonYPos, buttonTextY, buttonWidth, buttonHeight } = layout;
-
-    let startAchievement = currentPage * achievementsPerPage;
-    let endAchievement = Math.min(startAchievement + achievementsPerPage, Achivement.list.length);
-
-    Renderer.drawRect(Renderer.color(0, 0, 0, 200), 0, 0, displayX, displayY);
-
+function drawTitleAndSubtitle(startY, startX) {
     let title = "SBO Achievements";
-    let titleText = new Text("");
-    titleText.setString(title);
+    let titleText = new Text(title);
     titleText.setScale(2.25);
     titleText.setColor(Renderer.color(255, 255, 255, 255)); 
     titleText.setShadow(true); 
@@ -100,6 +91,28 @@ function achievementRender() {
 
     titleText.setX(startX).setY(titleY).draw();
 
+    let subtitle = "Unlocked: " + Achivement.achievementsUnlocked + "/" + Achivement.list.length;
+    let subtitleText = new Text(subtitle);
+    subtitleText.setScale(1.0);  
+    subtitleText.setColor(Renderer.color(0, 255, 35, 224)); 
+    subtitleText.setShadow(true); 
+
+    let subtitleY = titleY + titleHeight;
+
+    subtitleText.setX(startX + 2).setY(subtitleY).draw();
+}
+
+
+function achievementRender() {
+    const layout = getLayoutData();
+    let { displayX, displayY, boxWidth, boxHeight, spacingX, spacingY, columns, rows, achievementsPerPage, totalWidth, totalHeight, startX, startY, buttonYPos, buttonTextY, buttonWidth, buttonHeight } = layout;
+
+    let startAchievement = currentPage * achievementsPerPage;
+    let endAchievement = Math.min(startAchievement + achievementsPerPage, Achivement.list.length);
+
+    Renderer.drawRect(Renderer.color(0, 0, 0, 200), 0, 0, displayX, displayY);
+
+    drawTitleAndSubtitle(startY, startX);
 
     for (let i = startAchievement; i < endAchievement; i++) {
         let achievement = Achivement.list[i];
