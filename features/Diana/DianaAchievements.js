@@ -372,7 +372,6 @@ register("guiOpened", (event) => {
         const container = Player.getContainer();
         if (container == null) return;
         if (container == undefined) return;
-        print(container.getName())
         if (container.getName().includes("Mythological Creatur")) {
             let gaiaKills = getKillsFromLore(container.getStackInSlot(10)); 
             let champKills = getKillsFromLore(container.getStackInSlot(11));
