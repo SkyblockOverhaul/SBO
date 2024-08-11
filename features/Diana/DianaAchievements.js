@@ -133,7 +133,7 @@ new Achivement(20, "Please go outside", "Get 15k burrows in one event", "Epic", 
 new Achivement(21, "Digging your own grave", "Get 20k burrows in one event", "Legendary", 20, 3); 
 new Achivement(22, "Are you mentally stable?", "Get 25k burrows in one event", "Mythic", 21, 4); 
 
-new Achivement(23, "So this is Diana", "1 hour of playtime in one event", "Common"); 
+new Achivement(23, "So this is Diana?", "1 hour of playtime in one event", "Common"); 
 new Achivement(24, "Is this really fun?", "10 hours of playtime in one event", "Uncommon", 23);
 new Achivement(25, "No shower for me", "1 day of playtime in one event", "Rare", 24, 2);
 new Achivement(26, "Are you okay?", "2 days of playtime in one event", "Epic", 25, 3); 
