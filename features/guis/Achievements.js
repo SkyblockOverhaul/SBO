@@ -88,6 +88,19 @@ function achievementRender() {
 
     Renderer.drawRect(Renderer.color(0, 0, 0, 200), 0, 0, displayX, displayY);
 
+    let title = "SBO Achievements";
+    let titleText = new Text("");
+    titleText.setString(title);
+    titleText.setScale(2.25);
+    titleText.setColor(Renderer.color(255, 255, 255, 255)); 
+    titleText.setShadow(true); 
+
+    let titleHeight = titleText.getHeight();
+    let titleY = startY - titleHeight - 10; 
+
+    titleText.setX(startX).setY(titleY).draw();
+
+
     for (let i = startAchievement; i < endAchievement; i++) {
         let achievement = Achivement.list[i];
         let index = i - startAchievement;
