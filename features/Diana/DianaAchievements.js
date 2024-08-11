@@ -45,14 +45,17 @@ export class Achivement {
             achievementsData.unlocked.push(this.id);
             achievementsData.save();
             Client.showTitle(`${this.color}${this.name}`, `&aAchievement Unlocked`, 0, 40, 20);
+            let hiddenExtra = "";
             if (this.hidden) {
                 this.description = this.description.substring(2);
-            }
+                hiddenExtra = "&7[Secret Achievement] ";
+            } 
+
             if (this.rarity == "Divine" || this.rarity == "Impossible") {
                 new Sound({ source: new java.lang.String("achievementUnlockedRare.ogg") }).setVolume(settings.achievementVolume/100).play()
-                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}&k &r ${this.color}${this.name} &k &r`).setHover("show_text", "&a" + this.description).chat();
+                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}&k &r ${this.color}${this.name} &k &r`).setHover("show_text", hiddenExtra + "&a" + this.description).chat();
             } else {
-                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
+                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", hiddenExtra + "&a" + this.description).chat();
                 World.playSound("random.levelup", settings.achievementVolume/100, 1);
             }
             this.unlocked = true;
@@ -172,6 +175,7 @@ new Achivement(50, "Gaia Slayer", "Max the Gaia Bestiary", "Legendary");
 new Achivement(51, "Time to get on the leaderboard", "Max all Diana Bestiaries", "Mythic", false, 1, true);
 
 export function unlockAchievement(id) {
+    if (!settings.achievementEnabler) return;
     if (achievementsData[id] != undefined) return;
     Achivement.list.forEach(achievement => {
         if (achievement.id == id) {
@@ -180,19 +184,6 @@ export function unlockAchievement(id) {
         }
     })
 }
-// achivements in txt data
-function writeAchievements() {
-    let achievements = [];
-    Achivement.list.forEach(achievement => {
-        achievements.push(achievement.getName(), ": " ,achievement.getDescription(), "\n");
-    })
-    FileLib.write("./config/ChatTriggers/modules/SBO/SboAchivements.txt", achievements.join(""));
-}
-
-register("command", () => {
-    unlockAchievement(17);
-}).setName("sbotest");
-
 
 export const achievementItems = [
     "Total Burrows",
@@ -204,6 +195,7 @@ export const achievementItems = [
 let achievementsToUnlock = [];
 let unlocking = false;  
 function unlockAchievements() {
+    if (!settings.achievementEnabler) return;
     if (!unlocking) achievementsToUnlock = [...new Set(achievementsToUnlock)];
     unlocking = true;
     if (achievementsToUnlock.length > 0) {
@@ -218,6 +210,7 @@ function unlockAchievements() {
 }
 
 export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
+    if (!settings.achievementEnabler) return;
     let totalChimera = 0;
     if (item == "Chimera") {
         if ("ChimeraLs" in mayorTracker) {
@@ -284,6 +277,7 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
 // }
 
 export function trackSinceMob() {
+    if (!settings.achievementEnabler) return;
     if (data["mobsSinceInq"] >= 250 && data["mobsSinceInq"] < 500) {
         achievementsToUnlock.push(31);
     } else if (data["mobsSinceInq"] >= 500 && data["mobsSinceInq"] < 1000) {
@@ -313,6 +307,7 @@ export function trackSinceMob() {
 }
 
 export function trackMagicFind(magicFind, chimera=false) {
+    if (!settings.achievementEnabler) return;
     if (magicFind >= 300 && magicFind < 400) {
         achievementsToUnlock.push(39);
     } else if (magicFind >= 400 && magicFind < 500) {
@@ -368,6 +363,7 @@ function getKillsFromLore(item) {
 }
 
 register("guiOpened", (event) => {
+    if (!settings.achievementEnabler) return;
     setTimeout(() => {
         const container = Player.getContainer();
         if (container == null) return;
@@ -400,5 +396,19 @@ export function backTrackAchievements() {
 }
 
 register("command", () => {
+    if (!settings.achievementEnabler) return;
     backTrackAchievements();
 }).setName("sbobacktrackachivements");
+
+// achivements in txt data
+function writeAchievements() {
+    let achievements = [];
+    Achivement.list.forEach(achievement => {
+        achievements.push(achievement.getName(), ": " ,achievement.getDescription(), "\n");
+    })
+    FileLib.write("./config/ChatTriggers/modules/SBO/SboAchivements.txt", achievements.join(""));
+}
+
+register("command", () => {
+    unlockAchievement(17);
+}).setName("sbotest");
