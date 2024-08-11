@@ -1,4 +1,4 @@
-import { Achivement } from "../Diana/DianaAchievements";
+import { Achievement } from "../Diana/DianaAchievements";
 import { data } from "../../utils/variables";
 
 const AchivementGui = new Gui();
@@ -93,8 +93,8 @@ function drawTitleAndSubtitle(startY, startX) {
 
     titleText.setX(startX).setY(titleY).draw();
 
-    let achievementPercentage = (Achivement.achievementsUnlocked / Achivement.list.length * 100).toFixed(2);
-    let subtitle = "Unlocked: " + Achivement.achievementsUnlocked + "/" + Achivement.list.length + " (" + achievementPercentage + "%)";
+    let achievementPercentage = (Achievement.achievementsUnlocked / Achievement.list.length * 100).toFixed(2);
+    let subtitle = "Unlocked: " + Achievement.achievementsUnlocked + "/" + Achievement.list.length + " (" + achievementPercentage + "%)";
     let subtitleText = new Text(subtitle);
     subtitleText.setScale(1.0);  
     subtitleText.setColor(Renderer.color(0, 255, 35, 224)); 
@@ -111,7 +111,7 @@ function drawFilterDropdown(filterButtonWidth, filterButtonHeight, filterY, filt
 }
 
 function getFilteredAchievements() {
-    let achievements = [...Achivement.list];
+    let achievements = [...Achievement.list];
 
     if (filterType === "Rarity") {
         achievements.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
