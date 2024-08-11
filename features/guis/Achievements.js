@@ -33,8 +33,8 @@ function getLayoutData() {
     let buttonWidth = 30;
     let buttonHeight = 20;
 
-    let filterButtonWidth = 85;  // Width of the filter dropdown
-    let filterButtonHeight = 18;  // Height of the filter dropdown
+    let filterButtonWidth = 85;
+    let filterButtonHeight = 18;
     let filterY = startY - 25;
     let filterTextY = filterY + 5;
     let filterX = startX + totalWidth - filterButtonWidth;
@@ -109,7 +109,7 @@ function drawFilterDropdown(filterButtonWidth, filterButtonHeight, filterY, filt
 }
 
 function getFilteredAchievements() {
-    let achievements = [...Achivement.list];  // Kopie der Liste für Sortierung
+    let achievements = [...Achivement.list];
 
     if (filterType === "Rarity") {
         achievements.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
