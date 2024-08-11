@@ -406,7 +406,7 @@ register("command", () => {
 register("command", (args1, ...args) => {
     if (!settings.achievementEnabler) return;
     if (args1 != "CONFIRM") {
-        ChatLib.chat("&6[SBO] &eYou are about to reset all your achievements. Type &c/sboachievements CONFIRM &eto confirm");
+        ChatLib.chat("&6[SBO] &eYou are about to reset all your achievements. Type &c/sbolockachievements CONFIRM &eto confirm");
         return;
     }
     Achievement.list.forEach(achievement => {
