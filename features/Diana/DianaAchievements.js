@@ -48,11 +48,12 @@ export class Achivement {
                 this.description = this.description.substring(2);
             }
             if (this.rarity == "Divine" || this.rarity == "Impossible") {
-                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> &b&k &r ${this.color}${this.name} &k &r`).setHover("show_text", "&a" + this.description).chat();
+                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}&k &r ${this.color}${this.name} &k &r`).setHover("show_text", "&a" + this.description).chat();
             } else {
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
             }
-            this.lock();
+            this.unlocked = true;
+            // this.lock();
         }
     }
 
@@ -61,6 +62,7 @@ export class Achivement {
             delete achievementsData[this.id];
             achievementsData.unlocked = achievementsData.unlocked.filter(achievement => achievement != this.id);
             achievementsData.save();
+            this.unlocked = false;
         }
     }
 
@@ -172,7 +174,7 @@ function writeAchievements() {
 }
 
 register("command", () => {
-    unlockAchievement(42);
+    unlockAchievement(17);
 }).setName("sbotest");
 
 
