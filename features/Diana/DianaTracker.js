@@ -7,7 +7,7 @@ import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { trackSinceMob, unlockAchievement, trackAchievements } from "./DianaAchievements";
+import { trackSinceMob, unlockAchievement, trackAchievementsItem, achievementItems } from "./DianaAchievements";
 
 // todo: 
 // todo end
@@ -141,7 +141,9 @@ function trackOne(tracker, item, category, type, amount) {
     }
     tracker.save();
     if (type == "Mayor") {
-        trackAchievements(tracker, item);
+        if (item in achievementItems) {
+            trackAchievementsItem(tracker.items, item);
+        }
         if (category == "mobs") {
             trackSinceMob();
         }

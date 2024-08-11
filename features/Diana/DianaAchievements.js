@@ -1,4 +1,4 @@
-import { achievementsData, data } from "../../utils/variables";
+import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -27,24 +27,27 @@ class Achivement {
     }
 
     check() {
-        if (this.requirement) {
-            if (!this.requirement.isUnlocked()) {
-                this.requirement.check();
-                setTimeout(() => {
-                    this.unlock();
-                }, 1000 * this.timeout);
-            }
+        if (this.requirement && !this.requirement.isUnlocked()) {
+            this.requirement.check();
+            setTimeout(() => {
+                this.unlock();
+            }, 1000 * this.timeout);
         } else this.unlock();
     }
 
     unlock() {
+        // print(this.id);
         if (achievementsData[this.id] == undefined) {
             achievementsData[this.id] = true;
             achievementsData.unlocked.push(this.id);
             achievementsData.save();
             Client.showTitle(`${this.color}${this.name}`, `&aAchievement Unlocked`, 0, 40, 20);
-            new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
-            this.lock();
+            if (this.rarity == "Divine" || this.rarity == "Impossible") {
+                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> &b&k &r ${this.color}${this.name} &k &r`).setHover("show_text", "&a" + this.description).chat();
+            } else {
+                new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
+            }
+            // this.lock();
         }
     }
 
@@ -85,9 +88,9 @@ new Achivement(6, "Inquisitor Double Trouble", "Get 2 Inquisitors in a row", "Ep
 new Achivement(7, "b2b2b Inquisitor", "Get 3 Inquisitors in a row", "Divine");// added
 
 
-new Achivement(12, "First Chimera", "Get your first chimera", "Uncommon");// added
+new Achivement(12, "First Chimera", "Get your first chimera", "Epic");// added
 new Achivement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12);// added
-new Achivement(11, "Chimera VI", "Get 32 chimera in one event", "Divine", 9, 2);// added
+new Achivement(11, "Chimera VI", "Get 32 chimera in one event", "Divine", 9, 2);// added - missing
 
 new Achivement(13, "First lootshare Chimera", "Lootshare your first chimera", "Legendary");// added
 new Achivement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Mythic", 13);// added
@@ -102,7 +105,7 @@ new Achivement(17, "1/25000", "Lootshare a Relic ( 1/25000 base chance)", "Impos
 
 new Achivement(18, "Where the grind begins", "Get 5k burrows in one event", "Common"); // added
 new Achivement(19, "Touch some grass", "Get 10k burrows in one event", "Uncommon", 18); // added
-new Achivement(20, "Please go outside", "Get 15k burrows in one event", "Epic", 19 , 2); // added
+new Achivement(20, "Please go outside", "Get 15k burrows in one event", "Epic", 19 , 2); // added - missing
 new Achivement(21, "Digging your own grave", "Get 20k burrows in one event", "Legendary", 20, 3); // added
 new Achivement(22, "Are you mentally stable?", "Get 25k burrows in one event", "Mythic", 21, 4); // added
 
@@ -133,14 +136,16 @@ new Achivement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find
 
 new Achivement(28, "Where Chimera?", "Get all other drops from an inquisitor", "Legendary");
 
+new Achivement(43, "", "Drop a Chimera with 100 Magic Find or below", "Legendary"); 
+new Achivement(44, "", "Drop a Chimera with 200 Magic Find or below", "Epic");
+// possible name: "Don't need Magic Find" or "Magic Find is overrated" or "Magic Find is a lie" or "Magic Find is a scam" or "Magic Find is a cosmectic" or "Magic Find is a myth" 
+
 
 export function unlockAchievement(id) {
     if (achievementsData[id] != undefined) return;
     Achivement.list.forEach(achievement => {
         if (achievement.id == id) {
-            setTimeout(() => {
-                achievement.check();
-            }, 1000);
+            achievement.check();
             return;
         }
     })
@@ -158,109 +163,150 @@ register("command", () => {
     unlockAchievement(42);
 }).setName("sbotest");
 
-export function trackAchievements(mayorTracker, item) {
-    if (mayorTracker["Total Burrows"] >= 5000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 10000) {
-        unlockAchievement(18);
-        return;
-    } else if (mayorTracker["Total Burrows"] >= 10000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 15000) {
-        unlockAchievement(19);
-        return;
-    } else if (mayorTracker["Total Burrows"] >= 15000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 20000) {
-        unlockAchievement(20);
-        return;
-    } else if (mayorTracker["Total Burrows"] >= 20000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 25000) {
-        unlockAchievement(21);
-        return;
-    } else if (mayorTracker["Total Burrows"] >= 25000 && item == "Total Burrows") {
-        unlockAchievement(22);  
-        return;
-    }
 
-    // time saved in milliseconds
-    if (mayorTracker["mayorTime"] >= 3600000 && mayorTracker["mayorTime"] < 3600000 * 10) {
-        unlockAchievement(23);
-        return;
-    } else if (mayorTracker["mayorTime"] >= 3600000 * 10 && mayorTracker["mayorTime"] < 86400000) {
-        unlockAchievement(24);
-        return;
-    } else if (mayorTracker["mayorTime"] >= 86400000 && mayorTracker["mayorTime"] < 86400000 * 2) {
-        unlockAchievement(25);
-        return;
-    } else if (mayorTracker["mayorTime"] >= 86400000 * 2 && mayorTracker["mayorTime"] < 86400000 * 3) {
-        unlockAchievement(26);
-        return;
-    } else if (mayorTracker["mayorTime"] >= 86400000 * 3) {
-        unlockAchievement(27);
-        return;
-    }
-    
-    if (mayorTracker["MINOS_RELIC"] >= 1 && item == "MINOS_RELIC") {
-        unlockAchievement(16);
-        return;
-    }
-
-    if (mayorTracker["Daedalus Stick"] >= 1 && item == "Daedalus Stick" && mayorTracker["Daedalus Stick"] < 7) {
-        unlockAchievement(14);
-        return;
-    } else if (mayorTracker["Daedalus Stick"] >= 7 && item == "Daedalus Stick") {
-        unlockAchievement(8);
-        return;
-    }
-
-    if (mayorTracker["Chimera"] >= 1 && item == "Chimera" && mayorTracker["Chimera"] < 16) {
-        unlockAchievement(12);
-        return;
-    } else if (mayorTracker["Chimera"] >= 16 && item == "Chimera" && mayorTracker["Chimera"] < 32) {
-        unlockAchievement(9);
-        return;
-    } else if (mayorTracker["Chimera"] >= 32 && item == "Chimera") {
-        unlockAchievement(11);
-        return;
-    }
-
-    if (mayorTracker["ChimeraLs"] >= 1 && item == "ChimeraLs" && mayorTracker["ChimeraLs"] < 16) {
-        unlockAchievement(13);
-        return;
-    } else if (mayorTracker["ChimeraLs"] >= 16 && item == "ChimeraLs") {
-        unlockAchievement(10);
-        return;
+export const achievementItems = [
+    "Total Burrows",
+    "Daedalus Stick",
+    "Chimera",
+    "ChimeraLs",
+    "MINOS_RELIC"
+]
+let achievementsToUnlock = [];
+let unlocking = false;  
+function unlockAchievements() {
+    if (!unlocking) achievementsToUnlock = [...new Set(achievementsToUnlock)];
+    unlocking = true;
+    if (achievementsToUnlock.length > 0) {
+        let achievement = achievementsToUnlock.shift();
+        unlockAchievement(achievement);
+        setTimeout(() => {
+            unlockAchievements();
+        }, 2000);
+    } else {
+        unlocking = false;
     }
 }
+
+export function trackAchievementsItem(mayorTracker, item, backtrack=false, last=false) {
+    if (!last) {
+        let totalChimera = 0;
+        if (item == "Chimera") {
+            if ("ChimeraLs" in mayorTracker) {
+                totalChimera = mayorTracker["Chimera"] + mayorTracker["ChimeraLs"];
+            } else {
+                totalChimera = mayorTracker["Chimera"];
+            }
+        }
+
+        if (mayorTracker["Total Burrows"] >= 5000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 10000) {
+            achievementsToUnlock.push(18);
+        } else if (mayorTracker["Total Burrows"] >= 10000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 15000) {
+            achievementsToUnlock.push(19);
+        } else if (mayorTracker["Total Burrows"] >= 15000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 20000) {
+            achievementsToUnlock.push(20);
+        } else if (mayorTracker["Total Burrows"] >= 20000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 25000) {
+            achievementsToUnlock.push(21);
+        } else if (mayorTracker["Total Burrows"] >= 25000 && item == "Total Burrows") {
+            achievementsToUnlock.push(22);
+        }
+
+        if (mayorTracker["mayorTime"] >= 3600000 && mayorTracker["mayorTime"] < 3600000 * 10) {
+            achievementsToUnlock.push(23);
+        } else if (mayorTracker["mayorTime"] >= 3600000 * 10 && mayorTracker["mayorTime"] < 86400000) {
+            achievementsToUnlock.push(24);
+        } else if (mayorTracker["mayorTime"] >= 86400000 && mayorTracker["mayorTime"] < 86400000 * 2) {
+            achievementsToUnlock.push(25);
+        } else if (mayorTracker["mayorTime"] >= 86400000 * 2 && mayorTracker["mayorTime"] < 86400000 * 3) {
+            achievementsToUnlock.push(26);
+        } else if (mayorTracker["mayorTime"] >= 86400000 * 3) {
+            achievementsToUnlock.push(27);
+        }
+        
+        if (mayorTracker["MINOS_RELIC"] >= 1 && item == "MINOS_RELIC") {
+            achievementsToUnlock.push(16);
+        }
+
+        if (mayorTracker["Daedalus Stick"] >= 1 && item == "Daedalus Stick" && mayorTracker["Daedalus Stick"] < 7) {
+            achievementsToUnlock.push(14);
+        } else if (mayorTracker["Daedalus Stick"] >= 7 && item == "Daedalus Stick") {
+            achievementsToUnlock.push(8);
+        }
+
+        if (totalChimera >= 1 && item == "Chimera" && totalChimera < 16) {
+            achievementsToUnlock.push(12);
+        } else if (totalChimera >= 16 && item == "Chimera" && totalChimera < 32) {
+            achievementsToUnlock.push(9);
+        } else if (totalChimera >= 32 && item == "Chimera") {
+            achievementsToUnlock.push(11);
+        }
+
+        if (mayorTracker["ChimeraLs"] >= 1 && item == "ChimeraLs" && mayorTracker["ChimeraLs"] < 16) {
+            achievementsToUnlock.push(13);
+        } else if (mayorTracker["ChimeraLs"] >= 16 && item == "ChimeraLs") {
+            achievementsToUnlock.push(10);
+        }
+        if (!backtrack) {
+            unlockAchievements();
+        }
+    } else {
+        unlockAchievements();
+    }
+}
+
+// export function trackAchievementsMob(mayorTracker, mob) {
+
+// }
 
 export function trackSinceMob() {
     if (data["mobsSinceInq"] >= 250 && data["mobsSinceInq"] < 500) {
-        unlockAchievement(31);
-        return;
+        achievementsToUnlock.push(31);
     } else if (data["mobsSinceInq"] >= 500 && data["mobsSinceInq"] < 1000) {
-        unlockAchievement(32);
-        return;
+        achievementsToUnlock.push(32);
     } else if (data["mobsSinceInq"] >= 1000) {
-        unlockAchievement(33);
-        return;
+        achievementsToUnlock.push(33);
     }
 
     if (data["inqsSinceChim"] >= 15 && data["inqsSinceChim"] < 30) {
-        unlockAchievement(34);
-        return;
+        achievementsToUnlock.push(34);
     } else if (data["inqsSinceChim"] >= 30 && data["inqsSinceChim"] < 60) {
-        unlockAchievement(35);
-        return;
+        achievementsToUnlock.push(35);
     } else if (data["inqsSinceChim"] >= 60 && data["inqsSinceChim"] < 100) {
-        unlockAchievement(36);
-        return;
+        achievementsToUnlock.push(36);
     } else if (data["inqsSinceChim"] >= 100) {
-        unlockAchievement(37);
-        return;
+        achievementsToUnlock.push(37);
     }
 
     if (data["minotaursSinceStick"] >= 200) {
-        unlockAchievement(29);
-        return;
+        achievementsToUnlock.push(29);
     }
 
     if (data["champsSinceRelic"] >= 1000) {
-        unlockAchievement(30);
-        return;
+        achievementsToUnlock.push(30);
+    }
+    unlockAchievements();
+}
+
+export function trackMagicFind(magicFind) {
+    if (magicFind >= 300 && magicFind < 400) {
+        unlockAchievement(39);
+    } else if (magicFind >= 400 && magicFind < 500) {
+        unlockAchievement(40);
+    } else if (magicFind >= 500 && magicFind < 600) {
+        unlockAchievement(41);
+    } else if (magicFind >= 600) {
+        unlockAchievement(42);
     }
 }
 
+register("command", () => {
+    for (let event in pastDianaEvents.events) {
+        for (let key in pastDianaEvents.events[event].items) {
+            trackAchievementsItem(pastDianaEvents.events[event].items, key, true);
+        }
+        // for (let key in event.mobs) {
+        //     trackAchievementsMob(event.mobs, key);
+        // }
+    }
+    trackAchievementsItem({}, "", true, true);
+
+}).setName("sbobacktrackachivements");
