@@ -12,6 +12,7 @@ rarityColorDict = {
 }
 export class Achivement {
     static list = [];
+    static achievementsUnlocked = achievementsData.unlocked;
     constructor(id, name, description, rarity, requirement=false, timeout=1, hidden=false) {
         this.id = id;
         this.name = name;
@@ -23,7 +24,6 @@ export class Achivement {
         this.timeout = timeout;
         this.hidden = hidden;
         this.unlocked = false;
-        // this.sound = sound;
         this.loadState();
         Achivement.list.push(this);
     }
@@ -67,7 +67,6 @@ export class Achivement {
     loadState() {
         if (achievementsData[this.id] != undefined) {
             this.unlocked = true;
-            
         }
         if (this.hidden && !this.unlocked) {
             this.description = "&k" + this.description;
