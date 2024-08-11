@@ -12,7 +12,7 @@ rarityColorDict = {
 }
 export class Achivement {
     static list = [];
-    static achievementsUnlocked = achievementsData.unlocked.length;
+    static achievementsUnlocked = 0;
     constructor(id, name, description, rarity, requirement=false, timeout=1, hidden=false) {
         this.id = id;
         this.name = name;
@@ -53,6 +53,7 @@ export class Achivement {
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
             }
             this.unlocked = true;
+            Achivement.achievementsUnlocked++;
             // this.lock();
         }
     }
@@ -69,6 +70,7 @@ export class Achivement {
     loadState() {
         if (achievementsData[this.id] != undefined) {
             this.unlocked = true;
+            Achivement.achievementsUnlocked++;
         }
         if (this.hidden && !this.unlocked) {
             this.description = "&k" + this.description;
