@@ -70,6 +70,9 @@ export class Achievement {
             achievementsData.save();
             this.unlocked = false;
             Achievement.achievementsUnlocked--;
+            if (this.hidden) {
+                this.description = "&k" + this.description;
+            }
         }
     }
 
