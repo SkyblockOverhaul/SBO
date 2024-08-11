@@ -79,7 +79,29 @@ function onClose() {
     currentPage = 0;
 }
 
+function splitTextIntoLines(text, maxWidth) {
+    let words = text.split(" ");
+    let lines = [];
+    let currentLine = "";
 
+    for (let word of words) {
+        let textLine = currentLine + (currentLine.length > 0 ? " " : "") + word;
+        let textWidth = Renderer.getStringWidth(textLine);
+
+        if (textWidth > maxWidth) {
+            lines.push(currentLine);
+            currentLine = word;
+        } else {
+            currentLine = textLine;
+        }
+    }
+
+    if (currentLine) {
+        lines.push(currentLine);
+    }
+
+    return lines;
+}
 
 function achievementRender() {
     const layout = getLayoutData();
@@ -88,7 +110,7 @@ function achievementRender() {
     let startAchievement = currentPage * achievementsPerPage;
     let endAchievement = Math.min(startAchievement + achievementsPerPage, Achivement.list.length);
 
-    Renderer.drawRect(Renderer.color(0, 0, 0, 100), 0, 0, displayX, displayY);
+    Renderer.drawRect(Renderer.color(0, 0, 0, 200), 0, 0, displayX, displayY);
 
     for (let i = startAchievement; i < endAchievement; i++) {
         let achievement = Achivement.list[i];
@@ -100,18 +122,24 @@ function achievementRender() {
         let y = startY + row * (boxHeight + spacingY);
 
         Renderer.drawRect(Renderer.color(0, 0, 0, 150), x, y, boxWidth, boxHeight);
-        
-        Renderer.drawString(`${achievement.getDisplayName()}`, x + 5, y + 5);
-        Renderer.drawString(`&7${achievement.getDescription()}`, x + 5, y + 15);
-        Renderer.drawString(`${achievement.color}${achievement.rarity}`, x + 5, y + boxHeight - 10);
 
-        if (achievement.isUnlocked()) {
-            Renderer.drawRect(Renderer.color(0, 255, 0, 150), x + boxWidth - 20, y + 5, 15, 15); 
-            Renderer.drawString("✔", x + boxWidth - 20 + 4, y + 5 + 12); 
-        } else {
-            Renderer.drawRect(Renderer.color(255, 0, 0, 150), x + boxWidth - 20, y + 5, 15, 15); 
-            Renderer.drawString("✘", x + boxWidth - 20 + 4, y + 5 + 12); 
-        }
+        let borderColor = achievement.isUnlocked() ? Renderer.color(0, 255, 0, 255) : Renderer.color(255, 0, 0, 255);
+        let thickness = 1;
+        
+        Renderer.drawLine(borderColor, x, y, x + boxWidth, y, thickness);
+        Renderer.drawLine(borderColor, x, y, x, y + boxHeight, thickness);
+        Renderer.drawLine(borderColor, x + boxWidth, y, x + boxWidth, y + boxHeight, thickness);
+        Renderer.drawLine(borderColor, x, y + boxHeight, x + boxWidth, y + boxHeight, thickness);
+
+        Renderer.drawString(`${achievement.getDisplayName()}`, x + 5, y + 5);
+
+        // let descriptionLines = splitTextIntoLines(achievement.getDescription(), boxWidth - 10);
+        // for (let j = 0; j < descriptionLines.length; j++) {
+        //     Renderer.drawString(`&7${descriptionLines[j]}`, x + 5, y + 17 + j * 12);
+        // }
+        Renderer.drawString(`&7${achievement.getDescription()}`, x + 5, y + 15);
+
+        Renderer.drawString(`${achievement.color}${achievement.rarity}`, x + 5, y + boxHeight - 10);
     }
 
     Renderer.drawRect(Renderer.color(0, 0, 0, 150), startX, buttonYPos, buttonWidth, buttonHeight);
