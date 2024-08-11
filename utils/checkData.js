@@ -24,7 +24,7 @@ register("step", () => {
             dataLoaded = true;
             ChatLib.chat("§6[SBO] §4Module Loaded");
             unlockAchievement(38); // SBO downloaded
-            if (data.backTrack == false) {
+            if (data.backTrack == false && settings.achievementEnabler) {
                 new TextComponent("&6[SBO] &aDo you want to backtrack your Diana Achievements?").setClick("run_command", "/sbobacktrackachivements").setHover("show_text", "&7Click to backtrack your Achievements").chat();
                 data.backTrack = true;
             }
