@@ -415,6 +415,7 @@ register("command", (args1, ...args) => {
     Achievement.list.forEach(achievement => {
         if (achievement.isUnlocked() && achievement.id != 38) achievement.lock();
     })
+    ChatLib.chat("&6[SBO] &eAchievements locked");
 }).setName("sbolockachievements");
 
 // achivements in txt data
