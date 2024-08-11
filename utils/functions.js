@@ -472,6 +472,14 @@ function updateItemValues() {
     }).then((response)=>{
         kuudraItems = response[0];
         dianaItems = response[1];
+        if (kuudraItems == undefined) {
+            print("kuudra items undefined");
+            kuudraItems = {};
+        }
+        if (dianaItems == undefined) {
+            print("diana items undefined");
+            dianaItems = {};
+        }
     }).catch((error)=>{
         console.error("ah " + error);
     });
@@ -481,6 +489,10 @@ function updateItemValues() {
         json: true
     }).then((response)=>{
         bazaarItems = response;
+        if (bazaarItems == undefined) {
+            print("bazaar items undefined");
+            bazaarItems = {};
+        }
     }).catch((error)=>{
         console.error("bazaar " + error);
     });

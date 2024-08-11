@@ -47,6 +47,7 @@ function checkAllCriteria() {
         check9 = true;
         checkMayorTracker();
     }
+    // print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5 + " check6: " + check6 + " check7: " + check7 + " check8: " + check8 + " check9: " + check9);
     if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9) {
         unlockAchievement(38); // SBO downloaded
         return true;
