@@ -93,7 +93,8 @@ function drawTitleAndSubtitle(startY, startX) {
 
     titleText.setX(startX).setY(titleY).draw();
 
-    let subtitle = "Unlocked: " + Achivement.achievementsUnlocked + "/" + Achivement.list.length;
+    let achievementPercentage = (Achivement.achievementsUnlocked / Achivement.list.length * 100).toFixed(2);
+    let subtitle = "Unlocked: " + Achivement.achievementsUnlocked + "/" + Achivement.list.length + " (" + achievementPercentage + "%)";
     let subtitleText = new Text(subtitle);
     subtitleText.setScale(1.0);  
     subtitleText.setColor(Renderer.color(0, 255, 35, 224)); 
