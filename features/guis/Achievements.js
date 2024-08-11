@@ -1,11 +1,11 @@
 import { Achievement } from "../Diana/DianaAchievements";
 import { data } from "../../utils/variables";
 
-const AchivementGui = new Gui();
+const AchievementGui = new Gui();
 let currentPage = 0;
 let filterType = data.achievementFilter;
-AchivementGui.registerDraw(achievementRender);
-AchivementGui.registerClosed(onClose);
+AchievementGui.registerDraw(achievementRender);
+AchievementGui.registerClosed(onClose);
 
 const rarityOrder = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Impossible"];
 
@@ -175,7 +175,7 @@ function achievementRender() {
     Renderer.drawString(`Page ${currentPage + 1} of ${Math.ceil(achievementsToDisplay.length / achievementsPerPage)}`, startX, startY + totalHeight + 7);
 }
 
-AchivementGui.registerClicked((mouseX, mouseY, button) => {
+AchievementGui.registerClicked((mouseX, mouseY, button) => {
     const layout = getLayoutData();
     let { startX, totalWidth, columns, rows, buttonYPos, buttonHeight,
         buttonWidth, filterButtonWidth, filterButtonHeight,
@@ -212,13 +212,13 @@ AchivementGui.registerClicked((mouseX, mouseY, button) => {
 
 register("command", () => {
     currentPage = 0;
-    AchivementGui.open();
+    AchievementGui.open();
 }).setName("sboAchievements");
 
 register("tick", () => {
     const { achievementsPerPage } = getLayoutData();
     let totalPages = Math.ceil(getFilteredAchievements().length / achievementsPerPage);
-    if (AchivementGui.isOpen() && currentPage >= totalPages) {
+    if (AchievementGui.isOpen() && currentPage >= totalPages) {
         updateTotalPages();
     }
 });
@@ -242,6 +242,6 @@ register("guiMouseClick", (mx, my, mb, gui) => {
         gui instanceof net.minecraft.client.gui.GuiIngameMenu
     ){
         currentPage = 0;
-        AchivementGui.open();
+        AchievementGui.open();
     }
 });
