@@ -422,7 +422,3 @@ function writeAchievements() {
     })
     FileLib.write("./config/ChatTriggers/modules/SBO/SboAchivements.txt", achievements.join(""));
 }
-
-register("command", () => {
-    unlockAchievement(17);
-}).setName("sbotest");
