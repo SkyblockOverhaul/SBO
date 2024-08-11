@@ -95,17 +95,23 @@ function achievementRender() {
         let index = i - startAchievement;
         let column = index % columns;
         let row = Math.floor(index / columns);
-        
+
         let x = startX + column * (boxWidth + spacingX);
         let y = startY + row * (boxHeight + spacingY);
 
         Renderer.drawRect(Renderer.color(0, 0, 0, 150), x, y, boxWidth, boxHeight);
         
         Renderer.drawString(`${achievement.getDisplayName()}`, x + 5, y + 5);
-        
         Renderer.drawString(`&7${achievement.getDescription()}`, x + 5, y + 15);
-
         Renderer.drawString(`${achievement.color}${achievement.rarity}`, x + 5, y + boxHeight - 10);
+
+        if (achievement.isUnlocked()) {
+            Renderer.drawRect(Renderer.color(0, 255, 0, 150), x + boxWidth - 20, y + 5, 15, 15); 
+            Renderer.drawString("✔", x + boxWidth - 20 + 4, y + 5 + 12); 
+        } else {
+            Renderer.drawRect(Renderer.color(255, 0, 0, 150), x + boxWidth - 20, y + 5, 15, 15); 
+            Renderer.drawString("✘", x + boxWidth - 20 + 4, y + 5 + 12); 
+        }
     }
 
     Renderer.drawRect(Renderer.color(0, 0, 0, 150), startX, buttonYPos, buttonWidth, buttonHeight);
