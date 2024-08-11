@@ -1,8 +1,9 @@
 import { Achivement } from "../Diana/DianaAchievements";
+import { data } from "../../utils/variables";
 
 const AchivementGui = new Gui();
 let currentPage = 0;
-let filterType = "Rarity";  // Default filter type
+let filterType = data.achievementFilter;
 AchivementGui.registerDraw(achievementRender);
 AchivementGui.registerClosed(onClose);
 
@@ -35,7 +36,7 @@ function getLayoutData() {
 
     let filterButtonWidth = 85;
     let filterButtonHeight = 18;
-    let filterY = startY - 25;
+    let filterY = startY - 23;
     let filterTextY = filterY + 5;
     let filterX = startX + totalWidth - filterButtonWidth;
     let filterTextX = filterX + 5;
@@ -173,17 +174,25 @@ function achievementRender() {
     Renderer.drawString(`Page ${currentPage + 1} of ${Math.ceil(achievementsToDisplay.length / achievementsPerPage)}`, startX, startY + totalHeight + 7);
 }
 
-AchivementGui.registerClicked((mouseX, mouseY) => {
+AchivementGui.registerClicked((mouseX, mouseY, button) => {
     const layout = getLayoutData();
     let { startX, totalWidth, columns, rows, buttonYPos, buttonHeight,
         buttonWidth, filterButtonWidth, filterButtonHeight,
         filterY, filterX
     } = layout;
-
     if (mouseX >= filterX && mouseX <= filterX + filterButtonWidth && mouseY >= filterY && mouseY <= filterY + filterButtonHeight) {
         const filterOptions = ["Default", "Rarity", "Locked", "Unlocked"];
         let currentIndex = filterOptions.indexOf(filterType);
-        filterType = filterOptions[(currentIndex + 1) % filterOptions.length];
+        if (button == 1) {
+            filterType = filterOptions[(currentIndex + filterOptions.length - 1) % filterOptions.length];
+            data.achievementFilter = filterType;
+            data.save();
+        }
+        else if (button == 0) {
+            filterType = filterOptions[(currentIndex + 1) % filterOptions.length];
+            data.achievementFilter = filterType;
+            data.save();
+        }
         updateTotalPages();
     }
 

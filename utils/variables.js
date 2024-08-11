@@ -112,6 +112,7 @@ export let data = new PogObject("SBO", {
     "sorrowDrops" : 0,
     "crownOneMilCoins" : 0,
     "backTrack": false,
+    "achievementFilter": "Rarity",
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
