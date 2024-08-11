@@ -12,7 +12,7 @@ rarityColorDict = {
 }
 export class Achivement {
     static list = [];
-    constructor(id, name, description, rarity, requirement=false, timeout=1) {
+    constructor(id, name, description, rarity, requirement=false, timeout=1, hidden=false) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -21,8 +21,10 @@ export class Achivement {
         if (requirement) this.requirement = Achivement.list.find(achievement => achievement.id == requirement);
         else this.requirement = requirement;
         this.timeout = timeout;
+        this.hidden = hidden;
+        this.unlocked = false;
         // this.sound = sound;
-
+        this.loadState();
         Achivement.list.push(this);
     }
 
@@ -42,12 +44,15 @@ export class Achivement {
             achievementsData.unlocked.push(this.id);
             achievementsData.save();
             Client.showTitle(`${this.color}${this.name}`, `&aAchievement Unlocked`, 0, 40, 20);
+            if (this.hidden) {
+                this.description = this.description.substring(2);
+            }
             if (this.rarity == "Divine" || this.rarity == "Impossible") {
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> &b&k &r ${this.color}${this.name} &k &r`).setHover("show_text", "&a" + this.description).chat();
             } else {
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
             }
-            // this.lock();
+            this.lock();
         }
     }
 
@@ -59,8 +64,18 @@ export class Achivement {
         }
     }
 
+    loadState() {
+        if (achievementsData[this.id] != undefined) {
+            this.unlocked = true;
+            
+        }
+        if (this.hidden && !this.unlocked) {
+            this.description = "&k" + this.description;
+        }
+    }
+
     isUnlocked() {
-        return achievementsData[this.id] != undefined;
+        return this.unlocked;
     }
 
     getName() {
@@ -79,67 +94,65 @@ export class Achivement {
 // todo: add mc sound (maybe only for over epic rarity)
 // be achievement
 
-// gute namen: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?
-new Achivement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic"); // added 
-new Achivement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine"); // added
-new Achivement(3, "Back-to-Back Stick", "Get 2 Sticks in a row", "Divine");  // added 
-new Achivement(5, "Back-to-Back Relic", "Get 2 Relics in a row", "Impossible");  // added 
-new Achivement(6, "Inquisitor Double Trouble", "Get 2 Inquisitors in a row", "Epic"); // added 
-new Achivement(7, "b2b2b Inquisitor", "Get 3 Inquisitors in a row", "Divine");// added
+// gute namen: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?, "Magic Find is a lie", "Magic Find is a scam", "Magic Find is a cosmectic", "Magic Find is a myth" 
+new Achivement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic");  
+new Achivement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine"); 
+new Achivement(3, "Back-to-Back Stick", "Get 2 Sticks in a row", "Divine");   
+new Achivement(5, "Back-to-Back Relic", "Get 2 Relics in a row", "Impossible");   
+new Achivement(6, "Inquisitor Double Trouble", "Get 2 Inquisitors in a row", "Epic");  
+new Achivement(7, "b2b2b Inquisitor", "Get 3 Inquisitors in a row", "Divine");
 
 
-new Achivement(12, "First Chimera", "Get your first chimera", "Epic");// added
-new Achivement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12);// added
-new Achivement(11, "Chimera VI", "Get 32 chimera in one event", "Divine", 9, 2);// added - missing
+new Achivement(12, "First Chimera", "Get your first Chimera", "Epic");
+new Achivement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12);
+new Achivement(11, "Chimera VI", "Get 32 Chimera in one event", "Divine", 9, 2); 
 
-new Achivement(13, "First lootshare Chimera", "Lootshare your first chimera", "Legendary");// added
-new Achivement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Divine", 13);// added
+new Achivement(13, "First lootshare Chimera", "Lootshare your first Chimera", "Legendary");
+new Achivement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Divine", 13);
 
-new Achivement(14, "First Stick", "Get your first stick", "Uncommon");// added
-new Achivement(8, "Can i make a ladder now?", "Get 7 sticks in one event", "Epic", 14);// added
+new Achivement(14, "First Stick", "Get your first Stick", "Uncommon");
+new Achivement(8, "Can i make a ladder now?", "Get 7 Sticks in one event", "Epic", 14);
 
-new Achivement(15, "1/6250", "Lootshare a Stick (1/6250)", "Divine"); // added
+new Achivement(15, "1/6250", "Lootshare a Stick (1/6250)", "Impossible", false, 1, true); 
 
-new Achivement(16, "First Relic", "Get your first relic", "Epic"); // added
-new Achivement(17, "1/25000", "Lootshare a Relic (1/25000)", "Impossible"); // added
+new Achivement(16, "First Relic", "Get your first Relic", "Epic"); 
+new Achivement(17, "1/25000", "Lootshare a Relic (1/25000)", "Impossible", false, 1, true); 
 
-new Achivement(18, "Where the grind begins", "Get 5k burrows in one event", "Common"); // added
-new Achivement(19, "Touch some grass", "Get 10k burrows in one event", "Uncommon", 18); // added
-new Achivement(20, "Please go outside", "Get 15k burrows in one event", "Epic", 19 , 2); // added - missing
-new Achivement(21, "Digging your own grave", "Get 20k burrows in one event", "Legendary", 20, 3); // added
-new Achivement(22, "Are you mentally stable?", "Get 25k burrows in one event", "Mythic", 21, 4); // added
+new Achivement(18, "Where the grind begins", "Get 5k burrows in one event", "Common"); 
+new Achivement(19, "Touch some grass", "Get 10k burrows in one event", "Uncommon", 18); 
+new Achivement(20, "Please go outside", "Get 15k burrows in one event", "Epic", 19 , 2); 
+new Achivement(21, "Digging your own grave", "Get 20k burrows in one event", "Legendary", 20, 3); 
+new Achivement(22, "Are you mentally stable?", "Get 25k burrows in one event", "Mythic", 21, 4); 
 
-new Achivement(23, "So this is Diana", "1 hour of playtime in one event", "Common"); // added
-new Achivement(24, "Is this really fun?", "10 hours of playtime in one event", "Uncommon", 23);// added
-new Achivement(25, "No shower for me", "1 day of playtime in one event", "Rare", 24, 2);// added
-new Achivement(26, "Are you okay?", "2 days of playtime in one event", "Epic", 25, 3); // added
-new Achivement(27, "Sleep is downtime!", "3 days of playtime in one event", "Legendary", 26, 4); // added
+new Achivement(23, "So this is Diana", "1 hour of playtime in one event", "Common"); 
+new Achivement(24, "Is this really fun?", "10 hours of playtime in one event", "Uncommon", 23);
+new Achivement(25, "No shower for me", "1 day of playtime in one event", "Rare", 24, 2);
+new Achivement(26, "Are you okay?", "2 days of playtime in one event", "Epic", 25, 3); 
+new Achivement(27, "Sleep is downtime!", "3 days of playtime in one event", "Legendary", 26, 4); 
 
-new Achivement(29, "lf Stick", "200 minotaur since stick", "Common"); // added
-new Achivement(30, "lf Relic", "1000 champions since relic", "Uncommon"); // added
+new Achivement(29, "lf Stick", "200 Minotaur since Stick", "Common"); 
+new Achivement(30, "lf Relic", "1000 Champions since Relic", "Uncommon"); 
 
-new Achivement(31, "lf inquisitor", "250 mobs since inquisitor", "Common"); // added
-new Achivement(32, "you have legi griffin right?", "500 mobs since inquisitor", "Rare", 31); // added
-new Achivement(33, "why do you still play?", "1000 mobs since inquisitor", "Legendary", 32, 2); // added
+new Achivement(31, "lf Inquisitor", "250 mobs since Inquisitor", "Common"); 
+new Achivement(32, "You have legi Griffin right?", "500 mobs since Inquisitor", "Rare", 31); 
+new Achivement(33, "Why do you still play?", "1000 mobs since Inquisitor", "Legendary", 32, 2); 
 
-new Achivement(34, "lf Chimera", "15 inquisitors since chimera", "Common"); // added
-new Achivement(35, "So where is my Chimera?", "30 inquisitors since chimera", "Epic", 34); // added
-new Achivement(36, "I am done", "60 inquisitors since chimera", "Legendary", 35, 2); // added 
-new Achivement(37, "No more Diana", "100 inquisitors since chimera", "Divine", 36, 3);// added
+new Achivement(34, "lf Chimera", "15 Inquisitors since Chimera", "Common"); 
+new Achivement(35, "So where is my Chimera?", "30 inquisitors since Chimera", "Epic", 34); 
+new Achivement(36, "I am done", "60 Inquisitors since Chimera", "Legendary", 35, 2); 
+new Achivement(37, "No more Diana", "100 Inquisitors since Chimera", "Divine", 36, 3);
 
-new Achivement(38, "Real Diana Non", "Download SBO", "Divine"); // added
+new Achivement(38, "Real Diana non", "Download SBO", "Divine"); 
 
 new Achivement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "Uncommon");
 new Achivement(40, "Bleesed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
 new Achivement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
 new Achivement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
 
-new Achivement(28, "Where Chimera?", "Get all other drops from an inquisitor", "Legendary");
+// new Achivement(28, "Where Chimera?", "Get all other drops from an Inquisitor", "Legendary");
 
-new Achivement(43, "", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
-new Achivement(44, "", "Drop a Chimera, under 200 Magic Find", "Epic");
-// possible name: "Don't need Magic Find" or "Magic Find is overrated" or "Magic Find is a lie" or "Magic Find is a scam" or "Magic Find is a cosmectic" or "Magic Find is a myth" 
-
+new Achivement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
+new Achivement(44, "Magic Find is overrated", "Drop a Chimera, under 200 Magic Find", "Epic");
 
 export function unlockAchievement(id) {
     if (achievementsData[id] != undefined) return;
