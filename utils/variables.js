@@ -111,6 +111,7 @@ export let data = new PogObject("SBO", {
     "ghostKills" : 0,
     "sorrowDrops" : 0,
     "crownOneMilCoins" : 0,
+    "backTrack": false,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {

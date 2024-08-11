@@ -187,68 +187,64 @@ function unlockAchievements() {
     }
 }
 
-export function trackAchievementsItem(mayorTracker, item, backtrack=false, last=false) {
-    if (!last) {
-        let totalChimera = 0;
-        if (item == "Chimera") {
-            if ("ChimeraLs" in mayorTracker) {
-                totalChimera = mayorTracker["Chimera"] + mayorTracker["ChimeraLs"];
-            } else {
-                totalChimera = mayorTracker["Chimera"];
-            }
+export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
+    let totalChimera = 0;
+    if (item == "Chimera") {
+        if ("ChimeraLs" in mayorTracker) {
+            totalChimera = mayorTracker["Chimera"] + mayorTracker["ChimeraLs"];
+        } else {
+            totalChimera = mayorTracker["Chimera"];
         }
+    }
 
-        if (mayorTracker["Total Burrows"] >= 5000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 10000) {
-            achievementsToUnlock.push(18);
-        } else if (mayorTracker["Total Burrows"] >= 10000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 15000) {
-            achievementsToUnlock.push(19);
-        } else if (mayorTracker["Total Burrows"] >= 15000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 20000) {
-            achievementsToUnlock.push(20);
-        } else if (mayorTracker["Total Burrows"] >= 20000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 25000) {
-            achievementsToUnlock.push(21);
-        } else if (mayorTracker["Total Burrows"] >= 25000 && item == "Total Burrows") {
-            achievementsToUnlock.push(22);
-        }
+    if (mayorTracker["Total Burrows"] >= 5000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 10000) {
+        achievementsToUnlock.push(18);
+    } else if (mayorTracker["Total Burrows"] >= 10000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 15000) {
+        achievementsToUnlock.push(19);
+    } else if (mayorTracker["Total Burrows"] >= 15000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 20000) {
+        achievementsToUnlock.push(20);
+    } else if (mayorTracker["Total Burrows"] >= 20000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 25000) {
+        achievementsToUnlock.push(21);
+    } else if (mayorTracker["Total Burrows"] >= 25000 && item == "Total Burrows") {
+        achievementsToUnlock.push(22);
+    }
 
-        if (mayorTracker["mayorTime"] >= 3600000 && mayorTracker["mayorTime"] < 3600000 * 10) {
-            achievementsToUnlock.push(23);
-        } else if (mayorTracker["mayorTime"] >= 3600000 * 10 && mayorTracker["mayorTime"] < 86400000) {
-            achievementsToUnlock.push(24);
-        } else if (mayorTracker["mayorTime"] >= 86400000 && mayorTracker["mayorTime"] < 86400000 * 2) {
-            achievementsToUnlock.push(25);
-        } else if (mayorTracker["mayorTime"] >= 86400000 * 2 && mayorTracker["mayorTime"] < 86400000 * 3) {
-            achievementsToUnlock.push(26);
-        } else if (mayorTracker["mayorTime"] >= 86400000 * 3) {
-            achievementsToUnlock.push(27);
-        }
-        
-        if (mayorTracker["MINOS_RELIC"] >= 1 && item == "MINOS_RELIC") {
-            achievementsToUnlock.push(16);
-        }
+    if (mayorTracker["mayorTime"] >= 3600000 && mayorTracker["mayorTime"] < 3600000 * 10) {
+        achievementsToUnlock.push(23);
+    } else if (mayorTracker["mayorTime"] >= 3600000 * 10 && mayorTracker["mayorTime"] < 86400000) {
+        achievementsToUnlock.push(24);
+    } else if (mayorTracker["mayorTime"] >= 86400000 && mayorTracker["mayorTime"] < 86400000 * 2) {
+        achievementsToUnlock.push(25);
+    } else if (mayorTracker["mayorTime"] >= 86400000 * 2 && mayorTracker["mayorTime"] < 86400000 * 3) {
+        achievementsToUnlock.push(26);
+    } else if (mayorTracker["mayorTime"] >= 86400000 * 3) {
+        achievementsToUnlock.push(27);
+    }
+    
+    if (mayorTracker["MINOS_RELIC"] >= 1 && item == "MINOS_RELIC") {
+        achievementsToUnlock.push(16);
+    }
 
-        if (mayorTracker["Daedalus Stick"] >= 1 && item == "Daedalus Stick" && mayorTracker["Daedalus Stick"] < 7) {
-            achievementsToUnlock.push(14);
-        } else if (mayorTracker["Daedalus Stick"] >= 7 && item == "Daedalus Stick") {
-            achievementsToUnlock.push(8);
-        }
+    if (mayorTracker["Daedalus Stick"] >= 1 && item == "Daedalus Stick" && mayorTracker["Daedalus Stick"] < 7) {
+        achievementsToUnlock.push(14);
+    } else if (mayorTracker["Daedalus Stick"] >= 7 && item == "Daedalus Stick") {
+        achievementsToUnlock.push(8);
+    }
 
-        if (totalChimera >= 1 && item == "Chimera" && totalChimera < 16) {
-            achievementsToUnlock.push(12);
-        } else if (totalChimera >= 16 && item == "Chimera" && totalChimera < 32) {
-            achievementsToUnlock.push(9);
-        } else if (totalChimera >= 32 && item == "Chimera") {
-            achievementsToUnlock.push(11);
-        }
+    if (totalChimera >= 1 && item == "Chimera" && totalChimera < 16) {
+        achievementsToUnlock.push(12);
+    } else if (totalChimera >= 16 && item == "Chimera" && totalChimera < 32) {
+        achievementsToUnlock.push(9);
+    } else if (totalChimera >= 32 && item == "Chimera") {
+        achievementsToUnlock.push(11);
+    }
 
-        if (mayorTracker["ChimeraLs"] >= 1 && item == "ChimeraLs" && mayorTracker["ChimeraLs"] < 16) {
-            achievementsToUnlock.push(13);
-        } else if (mayorTracker["ChimeraLs"] >= 16 && item == "ChimeraLs") {
-            achievementsToUnlock.push(10);
-        }
-        if (!backtrack) {
-            unlockAchievements();
-        }
-    } else {
+    if (mayorTracker["ChimeraLs"] >= 1 && item == "ChimeraLs" && mayorTracker["ChimeraLs"] < 16) {
+        achievementsToUnlock.push(13);
+    } else if (mayorTracker["ChimeraLs"] >= 16 && item == "ChimeraLs") {
+        achievementsToUnlock.push(10);
+    }
+    if (!backtrack) {
         unlockAchievements();
     }
 }
@@ -286,19 +282,27 @@ export function trackSinceMob() {
     unlockAchievements();
 }
 
-export function trackMagicFind(magicFind) {
+export function trackMagicFind(magicFind, chimera=false) {
     if (magicFind >= 300 && magicFind < 400) {
-        unlockAchievement(39);
+        achievementsToUnlock.push(39);
     } else if (magicFind >= 400 && magicFind < 500) {
-        unlockAchievement(40);
+        achievementsToUnlock.push(40);
     } else if (magicFind >= 500 && magicFind < 600) {
-        unlockAchievement(41);
+        achievementsToUnlock.push(41);
     } else if (magicFind >= 600) {
-        unlockAchievement(42);
+        achievementsToUnlock.push(42);
     }
+
+    if (magicFind < 100 && chimera) {
+        achievementsToUnlock.push(43);
+    } else if (magicFind < 200 && chimera) {
+        achievementsToUnlock.push(44);
+    }
+    unlockAchievements();
 }
 
-register("command", () => {
+export function backTrackAchievements() {
+    ChatLib.chat("&6[SBO] &eBacktracking Achievements...");
     for (let event in pastDianaEvents.events) {
         for (let key in pastDianaEvents.events[event].items) {
             trackAchievementsItem(pastDianaEvents.events[event].items, key, true);
@@ -307,6 +311,9 @@ register("command", () => {
         //     trackAchievementsMob(event.mobs, key);
         // }
     }
-    trackAchievementsItem({}, "", true, true);
+    trackSinceMob();
+}
 
+register("command", () => {
+    backTrackAchievements();
 }).setName("sbobacktrackachivements");

@@ -7,7 +7,7 @@ import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { trackSinceMob, unlockAchievement, trackAchievementsItem, achievementItems } from "./DianaAchievements";
+import { trackSinceMob, unlockAchievement, trackAchievementsItem, achievementItems, trackMagicFind } from "./DianaAchievements";
 
 // todo: 
 // todo end
@@ -305,6 +305,7 @@ registerWhen(register("chat", (drop, event) => {
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
+                trackMagicFind(magicFind, true);
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {
                         Client.Companion.showTitle(`&d&lChimera!`, `&6${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1"))} coins`, 0, 25, 35);
@@ -360,6 +361,7 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 break;
             case "Daedalus Stick":
+                trackMagicFind(magicFind);
                 if(settings.dianaAvgMagicFind) {
                     if(magicFind > 0) {
                         if(data.last10StickMagicFind.length >= 10) {
