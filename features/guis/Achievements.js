@@ -222,3 +222,26 @@ register("tick", () => {
         updateTotalPages();
     }
 });
+
+const button = new net.minecraft.client.gui.GuiButton(299999, 0, 0, 30, 20, "SBO");
+register("postGuiRender", (mx, my, gui) => {
+    if (!(gui instanceof net.minecraft.client.gui.GuiIngameMenu)) return;
+
+    button.field_146128_h = (Renderer.screen.getWidth() / 2) + 104;
+    button.field_146129_i = (Renderer.screen.getHeight() / 4) + 32;
+
+    button.func_146112_a(Client.getMinecraft(), mx, my);
+});
+
+register("guiMouseClick", (mx, my, mb, gui) => {
+    if (
+        mx > button.field_146128_h && 
+        mx < button.field_146128_h + button.field_146120_f &&
+        my > button.field_146129_i &&
+        my < button.field_146129_i + button.field_146121_g &&
+        gui instanceof net.minecraft.client.gui.GuiIngameMenu
+    ){
+        currentPage = 0;
+        AchivementGui.open();
+    }
+});
