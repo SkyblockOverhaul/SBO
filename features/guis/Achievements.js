@@ -79,30 +79,6 @@ function onClose() {
     currentPage = 0;
 }
 
-function splitTextIntoLines(text, maxWidth) {
-    let words = text.split(" ");
-    let lines = [];
-    let currentLine = "";
-
-    for (let word of words) {
-        let textLine = currentLine + (currentLine.length > 0 ? " " : "") + word;
-        let textWidth = Renderer.getStringWidth(textLine);
-
-        if (textWidth > maxWidth) {
-            lines.push(currentLine);
-            currentLine = word;
-        } else {
-            currentLine = textLine;
-        }
-    }
-
-    if (currentLine) {
-        lines.push(currentLine);
-    }
-
-    return lines;
-}
-
 function achievementRender() {
     const layout = getLayoutData();
     let { displayX, displayY, boxWidth, boxHeight, spacingX, spacingY, columns, rows, achievementsPerPage, totalWidth, totalHeight, startX, startY, buttonYPos, buttonTextY, buttonWidth, buttonHeight } = layout;
@@ -132,13 +108,7 @@ function achievementRender() {
         Renderer.drawLine(borderColor, x, y + boxHeight, x + boxWidth, y + boxHeight, thickness);
 
         Renderer.drawString(`${achievement.getDisplayName()}`, x + 5, y + 5);
-
-        // let descriptionLines = splitTextIntoLines(achievement.getDescription(), boxWidth - 10);
-        // for (let j = 0; j < descriptionLines.length; j++) {
-        //     Renderer.drawString(`&7${descriptionLines[j]}`, x + 5, y + 17 + j * 12);
-        // }
         Renderer.drawString(`&7${achievement.getDescription()}`, x + 5, y + 15);
-
         Renderer.drawString(`${achievement.color}${achievement.rarity}`, x + 5, y + boxHeight - 10);
     }
 
