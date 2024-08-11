@@ -60,7 +60,6 @@ export class Achievement {
             }
             this.unlocked = true;
             Achievement.achievementsUnlocked++;
-            // this.lock();
         }
     }
 
@@ -70,6 +69,7 @@ export class Achievement {
             achievementsData.unlocked = achievementsData.unlocked.filter(achievement => achievement != this.id);
             achievementsData.save();
             this.unlocked = false;
+            Achievement.achievementsUnlocked--;
         }
     }
 
@@ -200,10 +200,14 @@ function unlockAchievements() {
     unlocking = true;
     if (achievementsToUnlock.length > 0) {
         let achievement = achievementsToUnlock.shift();
-        unlockAchievement(achievement);
-        setTimeout(() => {
+        if (achievementsData[achievement] == undefined) {
+            unlockAchievement(achievement);
+            setTimeout(() => {
+                unlockAchievements();
+            }, 2000);
+        } else {
             unlockAchievements();
-        }, 2000);
+        }
     } else {
         unlocking = false;
     }
@@ -368,7 +372,6 @@ register("guiOpened", (event) => {
         const container = Player.getContainer();
         if (container == null) return;
         if (container == undefined) return;
-        print(container.getName())
         if (container.getName().includes("Mythological Creatur")) {
             let gaiaKills = getKillsFromLore(container.getStackInSlot(10)); 
             let champKills = getKillsFromLore(container.getStackInSlot(11));
@@ -398,7 +401,18 @@ export function backTrackAchievements() {
 register("command", () => {
     if (!settings.achievementEnabler) return;
     backTrackAchievements();
-}).setName("sbobacktrackachivements");
+}).setName("sbobacktrackachievements");
+
+register("command", (args1, ...args) => {
+    if (!settings.achievementEnabler) return;
+    if (args1 != "CONFIRM") {
+        ChatLib.chat("&6[SBO] &eYou are about to reset all your achievements. Type &c/sboachievements CONFIRM &eto confirm");
+        return;
+    }
+    Achievement.list.forEach(achievement => {
+        achievement.lock();
+    })
+}).setName("sbolockachievements");
 
 // achivements in txt data
 function writeAchievements() {
@@ -408,7 +422,3 @@ function writeAchievements() {
     })
     FileLib.write("./config/ChatTriggers/modules/SBO/SboAchivements.txt", achievements.join(""));
 }
-
-register("command", () => {
-    unlockAchievement(17);
-}).setName("sbotest");
