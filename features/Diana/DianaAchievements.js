@@ -60,7 +60,6 @@ export class Achievement {
             }
             this.unlocked = true;
             Achievement.achievementsUnlocked++;
-            // this.lock();
         }
     }
 
@@ -70,6 +69,7 @@ export class Achievement {
             achievementsData.unlocked = achievementsData.unlocked.filter(achievement => achievement != this.id);
             achievementsData.save();
             this.unlocked = false;
+            Achievement.achievementsUnlocked--;
         }
     }
 
@@ -401,7 +401,18 @@ export function backTrackAchievements() {
 register("command", () => {
     if (!settings.achievementEnabler) return;
     backTrackAchievements();
-}).setName("sbobacktrackachivements");
+}).setName("sbobacktrackachievements");
+
+register("command", (args1, ...args) => {
+    if (!settings.achievementEnabler) return;
+    if (args1 != "CONFIRM") {
+        ChatLib.chat("&6[SBO] &eYou are about to reset all your achievements. Type &c/sboachievements CONFIRM &eto confirm");
+        return;
+    }
+    Achievement.list.forEach(achievement => {
+        achievement.lock();
+    })
+}).setName("sbolockachievements");
 
 // achivements in txt data
 function writeAchievements() {
