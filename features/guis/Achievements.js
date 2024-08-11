@@ -17,7 +17,7 @@ function getLayoutData() {
     let spacingX = 20;
     let spacingY = 20;
 
-    let columns = Math.floor((displayX * 0.6 - spacingX) / (boxWidth + spacingX));
+    let columns = Math.floor((displayX * 0.75 - spacingX) / (boxWidth + spacingX));
     let rows = Math.floor((displayY * 0.6 - spacingY) / (boxHeight + spacingY));
     let achievementsPerPage = columns * rows;
 
