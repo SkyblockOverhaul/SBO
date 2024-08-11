@@ -410,7 +410,7 @@ register("command", (args1, ...args) => {
         return;
     }
     Achievement.list.forEach(achievement => {
-        achievement.lock();
+        if (achievement.isUnlocked() && achievement.id != 38) achievement.lock();
     })
 }).setName("sbolockachievements");
 
