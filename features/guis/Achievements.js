@@ -97,7 +97,7 @@ function drawTitleAndSubtitle(startY, startX) {
     subtitleText.setColor(Renderer.color(0, 255, 35, 224)); 
     subtitleText.setShadow(true); 
 
-    let subtitleY = titleY + titleHeight;
+    let subtitleY = titleY + titleHeight - 2;
 
     subtitleText.setX(startX + 2).setY(subtitleY).draw();
 }
