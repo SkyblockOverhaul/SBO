@@ -2,11 +2,8 @@ import { Achivement } from "../Diana/DianaAchievements";
 
 const AchivementGui = new Gui();
 let currentPage = 0;
-
-register("command", () => {
-    currentPage = 0;
-    AchivementGui.open();
-}).setName("sboAchievements");
+AchivementGui.registerDraw(achievementRender);
+AchivementGui.registerClosed(onClose);
 
 function getLayoutData() {
     let displayX = Renderer.screen.getWidth();
@@ -63,17 +60,6 @@ function updateTotalPages() {
         currentPage = totalPages - 1;
     }
 }
-
-register("tick", () => {
-    const { achievementsPerPage } = getLayoutData();
-    let totalPages = Math.ceil(Achivement.list.length / achievementsPerPage);
-    if (AchivementGui.isOpen() && currentPage >= totalPages) {
-        updateTotalPages();
-    }
-});
-
-AchivementGui.registerDraw(achievementRender);
-AchivementGui.registerClosed(onClose);
 
 function onClose() {
     currentPage = 0;
@@ -161,5 +147,18 @@ AchivementGui.registerClicked((mouseX, mouseY) => {
         if ((currentPage + 1) * columns * rows < Achivement.list.length) {
             currentPage++;
         }
+    }
+});
+
+register("command", () => {
+    currentPage = 0;
+    AchivementGui.open();
+}).setName("sboAchievements");
+
+register("tick", () => {
+    const { achievementsPerPage } = getLayoutData();
+    let totalPages = Math.ceil(Achivement.list.length / achievementsPerPage);
+    if (AchivementGui.isOpen() && currentPage >= totalPages) {
+        updateTotalPages();
     }
 });
