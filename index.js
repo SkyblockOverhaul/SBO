@@ -40,6 +40,7 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sboimporttracker <profilename> &7- &eImport skyhanni/skytils tracker")
                 ChatLib.chat("&7> &a/sbodc &7- &eCommand for diana dropchances")
                 ChatLib.chat("&7> &a/sbopartyblacklist &7- &eCommand for party commands blacklisting")
+                ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack your achievements")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
