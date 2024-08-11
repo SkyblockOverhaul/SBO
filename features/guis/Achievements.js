@@ -2,8 +2,11 @@ import { Achivement } from "../Diana/DianaAchievements";
 
 const AchivementGui = new Gui();
 let currentPage = 0;
+let filterType = "Rarity";  // Default filter type
 AchivementGui.registerDraw(achievementRender);
 AchivementGui.registerClosed(onClose);
+
+const rarityOrder = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Impossible"];
 
 function getLayoutData() {
     let displayX = Renderer.screen.getWidth();
@@ -17,7 +20,7 @@ function getLayoutData() {
     let columns = Math.floor((displayX * 0.75 - spacingX) / (boxWidth + spacingX));
     let rows = Math.floor((displayY * 0.6 - spacingY) / (boxHeight + spacingY));
     let achievementsPerPage = columns * rows;
- 
+
     let totalWidth = columns * boxWidth + (columns - 1) * spacingX;
     let totalHeight = rows * boxHeight + (rows - 1) * spacingY;
 
@@ -27,9 +30,15 @@ function getLayoutData() {
     let buttonYPos = startY + totalHeight + 20;
     let buttonTextY = buttonYPos + 5;
 
-    
     let buttonWidth = 30;
     let buttonHeight = 20;
+
+    let filterButtonWidth = 85;  // Width of the filter dropdown
+    let filterButtonHeight = 18;  // Height of the filter dropdown
+    let filterY = startY - 25;
+    let filterTextY = filterY + 5;
+    let filterX = startX + totalWidth - filterButtonWidth;
+    let filterTextX = filterX + 5;
 
     return {
         displayX,
@@ -48,13 +57,19 @@ function getLayoutData() {
         buttonYPos,
         buttonTextY,
         buttonWidth,
-        buttonHeight
+        buttonHeight,
+        filterButtonWidth,
+        filterButtonHeight,
+        filterY,
+        filterTextY,
+        filterX,
+        filterTextX
     };
 }
 
 function updateTotalPages() {
     const { achievementsPerPage } = getLayoutData();
-    let totalPages = Math.ceil(Achivement.list.length / achievementsPerPage);
+    let totalPages = Math.ceil(getFilteredAchievements().length / achievementsPerPage);
     
     if (currentPage >= totalPages) {
         currentPage = totalPages - 1;
@@ -88,20 +103,45 @@ function drawTitleAndSubtitle(startY, startX) {
     subtitleText.setX(startX + 2).setY(subtitleY).draw();
 }
 
+function drawFilterDropdown(filterButtonWidth, filterButtonHeight, filterY, filterTextY, filterTextX, filterX) {
+    Renderer.drawRect(Renderer.color(0, 0, 0, 150), filterX, filterY, filterButtonWidth, filterButtonHeight);
+    Renderer.drawString("Filter: " + filterType.charAt(0).toUpperCase() + filterType.slice(1), filterTextX, filterTextY);
+}
+
+function getFilteredAchievements() {
+    let achievements = [...Achivement.list];  // Kopie der Liste für Sortierung
+
+    if (filterType === "Rarity") {
+        achievements.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
+    }
+    else if (filterType === "Locked") {
+        achievements = achievements.filter(a => !a.isUnlocked());
+    }
+    else if (filterType === "Unlocked") {
+        achievements = achievements.filter(a => a.isUnlocked());
+    }
+    return achievements;
+}
 
 function achievementRender() {
     const layout = getLayoutData();
-    let { displayX, displayY, boxWidth, boxHeight, spacingX, spacingY, columns, rows, achievementsPerPage, totalWidth, totalHeight, startX, startY, buttonYPos, buttonTextY, buttonWidth, buttonHeight } = layout;
+    let { displayX, displayY, boxWidth, boxHeight, spacingX, spacingY, columns,
+        achievementsPerPage, totalWidth, totalHeight, startX, startY, buttonYPos,
+        buttonTextY, buttonWidth, buttonHeight, filterButtonWidth, filterButtonHeight,
+        filterY, filterTextY, filterX, filterTextX
+    } = layout;
 
+    let achievementsToDisplay = getFilteredAchievements();
     let startAchievement = currentPage * achievementsPerPage;
-    let endAchievement = Math.min(startAchievement + achievementsPerPage, Achivement.list.length);
+    let endAchievement = Math.min(startAchievement + achievementsPerPage, achievementsToDisplay.length);
 
     Renderer.drawRect(Renderer.color(0, 0, 0, 200), 0, 0, displayX, displayY);
 
     drawTitleAndSubtitle(startY, startX);
+    drawFilterDropdown(filterButtonWidth, filterButtonHeight, filterY, filterTextY, filterTextX, filterX);
 
     for (let i = startAchievement; i < endAchievement; i++) {
-        let achievement = Achivement.list[i];
+        let achievement = achievementsToDisplay[i];
         let index = i - startAchievement;
         let column = index % columns;
         let row = Math.floor(index / columns);
@@ -130,12 +170,22 @@ function achievementRender() {
     Renderer.drawRect(Renderer.color(0, 0, 0, 150), startX + totalWidth - buttonWidth, buttonYPos, buttonWidth, buttonHeight);
     Renderer.drawString("->", startX + totalWidth - buttonWidth + 10, buttonTextY);
 
-    Renderer.drawString(`Page ${currentPage + 1} of ${Math.ceil(Achivement.list.length / achievementsPerPage)}`, startX, startY + totalHeight + 7);
+    Renderer.drawString(`Page ${currentPage + 1} of ${Math.ceil(achievementsToDisplay.length / achievementsPerPage)}`, startX, startY + totalHeight + 7);
 }
 
 AchivementGui.registerClicked((mouseX, mouseY) => {
     const layout = getLayoutData();
-    let { startX, totalWidth, columns, rows, buttonYPos, buttonHeight, buttonWidth } = layout;
+    let { startX, totalWidth, columns, rows, buttonYPos, buttonHeight,
+        buttonWidth, filterButtonWidth, filterButtonHeight,
+        filterY, filterX
+    } = layout;
+
+    if (mouseX >= filterX && mouseX <= filterX + filterButtonWidth && mouseY >= filterY && mouseY <= filterY + filterButtonHeight) {
+        const filterOptions = ["Default", "Rarity", "Locked", "Unlocked"];
+        let currentIndex = filterOptions.indexOf(filterType);
+        filterType = filterOptions[(currentIndex + 1) % filterOptions.length];
+        updateTotalPages();
+    }
 
     if (mouseX >= startX && mouseX <= startX + buttonWidth && mouseY >= buttonYPos && mouseY <= buttonYPos + buttonHeight) {
         if (currentPage > 0) {
@@ -144,7 +194,7 @@ AchivementGui.registerClicked((mouseX, mouseY) => {
     }
     
     if (mouseX >= startX + totalWidth - buttonWidth && mouseX <= startX + totalWidth && mouseY >= buttonYPos && mouseY <= buttonYPos + buttonHeight) {
-        if ((currentPage + 1) * columns * rows < Achivement.list.length) {
+        if ((currentPage + 1) * columns * rows < getFilteredAchievements().length) {
             currentPage++;
         }
     }
@@ -157,7 +207,7 @@ register("command", () => {
 
 register("tick", () => {
     const { achievementsPerPage } = getLayoutData();
-    let totalPages = Math.ceil(Achivement.list.length / achievementsPerPage);
+    let totalPages = Math.ceil(getFilteredAchievements().length / achievementsPerPage);
     if (AchivementGui.isOpen() && currentPage >= totalPages) {
         updateTotalPages();
     }

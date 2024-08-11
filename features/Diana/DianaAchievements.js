@@ -94,7 +94,11 @@ export class Achivement {
 
     getDescription() {
         return this.description;
-    }   
+    }
+    
+    getRarity() {
+        return this.rarity;
+    }
 }
 // Raritys: Impossible, Divine, Mythic, Legendary, Epic, Rare, Uncommon, Common
 // todo: add mc sound (maybe only for over epic rarity)
