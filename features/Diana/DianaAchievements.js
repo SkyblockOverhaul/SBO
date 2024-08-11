@@ -10,7 +10,7 @@ rarityColorDict = {
     "Common": "&f",
     "Impossible": "&4"
 }
-class Achivement {
+export class Achivement {
     static list = [];
     constructor(id, name, description, rarity, requirement=false, timeout=1) {
         this.id = id;
