@@ -93,15 +93,15 @@ new Achivement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12);// a
 new Achivement(11, "Chimera VI", "Get 32 chimera in one event", "Divine", 9, 2);// added - missing
 
 new Achivement(13, "First lootshare Chimera", "Lootshare your first chimera", "Legendary");// added
-new Achivement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Mythic", 13);// added
+new Achivement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Divine", 13);// added
 
-new Achivement(14, "First Stick", "Get your first stick", "Common");// added
+new Achivement(14, "First Stick", "Get your first stick", "Uncommon");// added
 new Achivement(8, "Can i make a ladder now?", "Get 7 sticks in one event", "Epic", 14);// added
 
-new Achivement(15, "ls Stick", "Lootshare a Stick (1/6250 base chance)", "Divine"); // added
+new Achivement(15, "1/6250", "Lootshare a Stick (1/6250)", "Divine"); // added
 
-new Achivement(16, "First Relic", "Get your first relic", "Rare"); // added
-new Achivement(17, "1/25000", "Lootshare a Relic ( 1/25000 base chance)", "Impossible"); // added
+new Achivement(16, "First Relic", "Get your first relic", "Epic"); // added
+new Achivement(17, "1/25000", "Lootshare a Relic (1/25000)", "Impossible"); // added
 
 new Achivement(18, "Where the grind begins", "Get 5k burrows in one event", "Common"); // added
 new Achivement(19, "Touch some grass", "Get 10k burrows in one event", "Uncommon", 18); // added
@@ -136,8 +136,8 @@ new Achivement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find
 
 new Achivement(28, "Where Chimera?", "Get all other drops from an inquisitor", "Legendary");
 
-new Achivement(43, "", "Drop a Chimera with 100 Magic Find or below", "Legendary"); 
-new Achivement(44, "", "Drop a Chimera with 200 Magic Find or below", "Epic");
+new Achivement(43, "", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
+new Achivement(44, "", "Drop a Chimera, under 200 Magic Find", "Epic");
 // possible name: "Don't need Magic Find" or "Magic Find is overrated" or "Magic Find is a lie" or "Magic Find is a scam" or "Magic Find is a cosmectic" or "Magic Find is a myth" 
 
 
