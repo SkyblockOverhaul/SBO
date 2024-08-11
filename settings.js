@@ -859,9 +859,15 @@ class Settings {
         max: 100
     })
     sprVolume = 50;
-
-    
-
+    @SliderProperty({
+        name: "Achievement Sound Volume",
+        description: "Set the volume for the achievement sound",
+        category: "Customization",
+        subcategory: "Sound Settings",
+        min: 0,
+        max: 100
+    })
+    achievementVolume = 50;
 
     // Debug
     @SelectorProperty({

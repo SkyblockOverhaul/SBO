@@ -1,3 +1,4 @@
+import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
 
 rarityColorDict = {
@@ -48,6 +49,7 @@ export class Achivement {
                 this.description = this.description.substring(2);
             }
             if (this.rarity == "Divine" || this.rarity == "Impossible") {
+                new Sound({ source: new java.lang.String("achievementUnlockedRare.ogg") }).setVolume(settings.achievementVolume/100).play()
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}&k &r ${this.color}${this.name} &k &r`).setHover("show_text", "&a" + this.description).chat();
             } else {
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
@@ -104,7 +106,6 @@ new Achivement(3, "Back-to-Back Stick", "Get 2 Sticks in a row", "Divine");
 new Achivement(5, "Back-to-Back Relic", "Get 2 Relics in a row", "Impossible");   
 new Achivement(6, "Inquisitor Double Trouble", "Get 2 Inquisitors in a row", "Epic");  
 new Achivement(7, "b2b2b Inquisitor", "Get 3 Inquisitors in a row", "Divine");
-
 
 new Achivement(12, "First Chimera", "Get your first Chimera", "Epic");
 new Achivement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12);
