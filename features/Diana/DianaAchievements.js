@@ -53,6 +53,7 @@ export class Achivement {
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}&k &r ${this.color}${this.name} &k &r`).setHover("show_text", "&a" + this.description).chat();
             } else {
                 new TextComponent(`&6[SBO] &aAchievement Unlocked &7>> ${this.color}${this.name}`).setHover("show_text", "&a" + this.description).chat();
+                World.playSound("random.levelup", settings.achievementVolume/100, 1);
             }
             this.unlocked = true;
             Achivement.achievementsUnlocked++;
