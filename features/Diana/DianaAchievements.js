@@ -406,16 +406,21 @@ register("command", () => {
     backTrackAchievements();
 }).setName("sbobacktrackachievements");
 
+let confirmState = false;
 register("command", (args1, ...args) => {
     if (!settings.achievementEnabler) return;
     if (args1 != "CONFIRM") {
         ChatLib.chat("&6[SBO] &eYou are about to reset all your achievements. Type &c/sbolockachievements CONFIRM &eto confirm");
+        confirmState = true;
         return;
     }
-    Achievement.list.forEach(achievement => {
-        if (achievement.isUnlocked() && achievement.id != 38) achievement.lock();
-    })
-    ChatLib.chat("&6[SBO] &eAchievements locked");
+    if (confirmState) {
+        Achievement.list.forEach(achievement => {
+            if (achievement.isUnlocked() && achievement.id != 38) achievement.lock();
+        })
+        confirmState = false;
+        ChatLib.chat("&6[SBO] &eAchievements locked");
+    }
 }).setName("sbolockachievements");
 
 // achivements in txt data
