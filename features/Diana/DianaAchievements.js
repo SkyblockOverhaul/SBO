@@ -163,6 +163,14 @@ new Achivement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find
 new Achivement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
 new Achivement(44, "Magic Find is overrated", "Drop a Chimera, under 200 Magic Find", "Epic");
 
+new Achivement(45, "Inquisitor Slayer", "Max the Inquisitor Bestiary", "Epic");
+new Achivement(46, "Minotaur Slayer", "Max the Minotaur Bestiary", "Legendary");
+new Achivement(47, "Champion Slayer", "Max the Champion Bestiary", "Epic");
+new Achivement(48, "Hunter Slayer", "Max the Hunter Bestiary", "Epic");
+new Achivement(49, "Lynx Slayer", "Max the Siamese Lynx Bestiary", "Epic");
+new Achivement(50, "Gaia Slayer", "Max the Gaia Bestiary", "Legendary");
+new Achivement(51, "Time to get on the leaderboard", "Max all Diana Bestiaries", "Mythic", false, 1, true);
+
 export function unlockAchievement(id) {
     if (achievementsData[id] != undefined) return;
     Achivement.list.forEach(achievement => {
@@ -322,6 +330,61 @@ export function trackMagicFind(magicFind, chimera=false) {
     }
     unlockAchievements();
 }
+
+function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills) {
+    if (gaiaKills >= 100) {
+        achievementsToUnlock.push(50);
+    }
+    if (inqKills >= 100) {
+        achievementsToUnlock.push(45);
+    }
+    if (minoKills >= 100) {
+        achievementsToUnlock.push(46);
+    }
+    if (champKills >= 100) {
+        achievementsToUnlock.push(47);
+    }
+    if (hunterKills >= 100) {
+        achievementsToUnlock.push(48);
+    }
+    if (catKills >= 100) {
+        achievementsToUnlock.push(49);
+    }
+    if (gaiaKills >= 100 && inqKills >= 100 && minoKills >= 100 && champKills >= 100 && hunterKills >= 100 && catKills >= 100) {
+        achievementsToUnlock.push(51);
+    }
+    unlockAchievements();
+}
+
+function getKillsFromLore(item) {
+    let lore = item.getLore();
+    let kills = 0;
+    lore.forEach(line => {
+        if (line.removeFormatting().includes("Kills: ")) {
+            kills = parseInt(line.split("Kills: ")[1].removeFormatting().replace(",", ""));
+        }
+    });
+    return kills;
+}
+
+register("guiOpened", (event) => {
+    setTimeout(() => {
+        const container = Player.getContainer();
+        if (container == null) return;
+        if (container == undefined) return;
+        print(container.getName())
+        if (container.getName().includes("Mythological Creatur")) {
+            let gaiaKills = getKillsFromLore(container.getStackInSlot(10)); 
+            let champKills = getKillsFromLore(container.getStackInSlot(11));
+            let hunterKills = getKillsFromLore(container.getStackInSlot(12));
+            let inqKills = getKillsFromLore(container.getStackInSlot(13));
+            let minoKills = getKillsFromLore(container.getStackInSlot(14));
+            let catKills = getKillsFromLore(container.getStackInSlot(15));
+            trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills);
+
+        }
+    }, 1000);
+})
 
 export function backTrackAchievements() {
     ChatLib.chat("&6[SBO] &eBacktracking Achievements...");
