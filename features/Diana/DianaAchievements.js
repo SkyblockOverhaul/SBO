@@ -1,5 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
+import { checkDaxeEnchants } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -174,6 +175,11 @@ new Achievement(48, "Hunter Slayer", "Max the Hunter Bestiary", "Epic");
 new Achievement(49, "Lynx Slayer", "Max the Siamese Lynx Bestiary", "Epic");
 new Achievement(50, "Gaia Slayer", "Max the Gaia Bestiary", "Legendary");
 new Achievement(51, "Time to get on the leaderboard", "Max all Diana Bestiaries", "Mythic", false, 1, true);
+
+new Achievement(52, "Daedalus Mastery: Chimera V", "Chimera V on Daedalus Axe", "Legendary");
+new Achievement(53, "Daedalus Mastery: Looting V", "Looting V on Daedalus Axe", "Legendary");
+new Achievement(54, "Daedalus Mastery: Divine Gift III", "Divine Gift III on Daedalus Axe", "Legendary");
+new Achievement(55, "Looking Clean", "Get max Divine Gift, Chimera, Looting", "Mythic", false, 1, true);
 
 export function unlockAchievement(id) {
     if (!settings.achievementEnabler) return;
@@ -352,6 +358,29 @@ function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, c
     unlockAchievements();
 }
 
+let checkedDaxeEnchants = false
+function dAxeAchivementCheck() {
+    if (!settings.achievementEnabler) return;
+    if (achievementsData[55] != undefined) return;
+    if (checkedDaxeEnchants) return;
+    let dAxeEnchants = checkDaxeEnchants();
+    if (dAxeEnchants == "not daxe") return;
+    if (dAxeEnchants[0]) {
+        achievementsToUnlock.push(52);
+    }
+    if (dAxeEnchants[1]) {
+        achievementsToUnlock.push(53);
+    }
+    if (dAxeEnchants[2]) {
+        achievementsToUnlock.push(54);
+    }
+    if (dAxeEnchants[0] && dAxeEnchants[1] && dAxeEnchants[2]) {
+        achievementsToUnlock.push(55);
+    }
+    unlockAchievements();
+    checkedDaxeEnchants = true;
+}
+
 function getKillsFromLore(item) {
     let lore = item.getLore();
     let kills = 0;
@@ -413,3 +442,7 @@ register("command", (args1, ...args) => {
         ChatLib.chat("&6[SBO] &eAchievements locked");
     }
 }).setName("sbolockachievements");
+
+register("step", () => {
+    dAxeAchivementCheck();
+}).setFps(1);

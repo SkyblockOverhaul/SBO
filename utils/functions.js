@@ -241,6 +241,54 @@ export function checkItemInHotbar(item) {
     return false;
 }
 
+function checkHotbarItems() {
+    let hotbarItems = []
+    if (!worldLoaded) return hotbarItems;
+    let playerInv = Player.getInventory();
+    if (playerInv == null) return hotbarItems;
+    let playerInvItems = playerInv.getItems();
+    playerInvItems.forEach((item, i) => {
+        if (i <= 8) {
+            if (playerInvItems[i] !== null) {
+                hotbarItems.push(item);
+            }
+        }
+    });
+    return hotbarItems;
+}
+
+let chimVbool, lootingVbool, divineGift3bool = false;
+export function checkDaxeEnchants() {
+    if (!worldLoaded) return [false, false, false];
+    let hotbarItems = checkHotbarItems();
+    for (let item of hotbarItems) {
+        let nbtData = item.getNBT();
+        if (!nbtData) return [false, false, false];
+        let itemName = nbtData.getCompoundTag("tag").getCompoundTag("display").getString("Name");
+        if (!itemName) return [false, false, false];
+        itemName = itemName.removeFormatting().trim();
+        if (itemName.includes("Daedalus Axe")) {
+            let lore = item.getLore();
+            if (!lore) return [false, false, false];
+            for (let line of lore) {
+                if (line.includes("Chimera V")) {
+                    chimVbool = true;
+                }
+                if (line.includes("Looting V")) {
+                    lootingVbool = true;
+                }
+                if (line.includes("Divine Gift III")) {
+                    divineGift3bool = true;
+                }
+            }
+            return [chimVbool, lootingVbool, divineGift3bool];
+        }
+        else {
+            return "not daxe";
+        }
+    }
+}
+
 export function playerHasSpade() {
     return spadeBool;
 }
@@ -249,8 +297,6 @@ let spadeBool = false;
 register("step", () => {
     spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
 }).setFps(1)
-
-
 
 // return 1sec long true if player got loot share //
 export function gotLootShare() {
