@@ -18,17 +18,16 @@ function checkDataLoaded() {
     }
 }
 
-register("step", () => {
-    if (!dataLoaded) {
-        if (checkAllCriteria()) {
-            dataLoaded = true;
-            ChatLib.chat("§6[SBO] §4Module Loaded");
-            unlockAchievement(38); // SBO downloaded
-            if (data.backTrack == false && settings.achievementEnabler) {
-                new TextComponent("&6[SBO] &aDo you want to backtrack your Diana Achievements?").setClick("run_command", "/sbobacktrackachivements").setHover("show_text", "&7Click to backtrack your Achievements").chat();
-                data.backTrack = true;
-            }
+let dataLoadReg = register("step", () => {
+    if (checkAllCriteria()) {
+        dataLoaded = true;
+        ChatLib.chat("§6[SBO] §4Module Loaded");
+        unlockAchievement(38); // SBO downloaded
+        if (data.backTrack == false && settings.achievementEnabler) {
+            new TextComponent("&6[SBO] &aDo you want to backtrack your Diana Achievements?").setClick("run_command", "/sbobacktrackachivements").setHover("show_text", "&7Click to backtrack your Achievements").chat();
+            data.backTrack = true;
         }
+        dataLoadReg.unregister();
     }
 }).setFps(1);
 
@@ -52,7 +51,7 @@ function checkAllCriteria() {
         check9 = true;
         checkMayorTracker();
     }
-    // print("check1: " + check1 + " check2: " + check2 + " check3: " + check3 + " check4: " + check4 + " check5: " + check5 + " check6: " + check6 + " check7: " + check7 + " check8: " + check8 + " check9: " + check9);
+    
     if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9) {
         return true;
     }
