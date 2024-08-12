@@ -409,7 +409,6 @@ function getSlayerLvlFromLore(item) {
     return slayerLvl;
 }
 
-
 register("guiOpened", (event) => {
     if (!settings.achievementEnabler) return;
     setTimeout(() => {
@@ -424,7 +423,6 @@ register("guiOpened", (event) => {
             let minoKills = getKillsFromLore(container.getStackInSlot(14));
             let catKills = getKillsFromLore(container.getStackInSlot(15));
             trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills);
-
         }
         if (container.getName() == "Slayer") {
             if (getSlayerLvlFromLore(container.getStackInSlot(13)) >= 9) {
@@ -440,7 +438,6 @@ register("guiOpened", (event) => {
                 if (getSBID(item) == null) return;
                 if (getSBID(item).includes("BEASTMASTER_CREST")) {
                     let kills = getKillsFromLore(item);
-                    print(kills);
                     if (kills >= 10000 && kills < 25000) {
                         achievementsToUnlock.push(57);
                     } else if (kills >= 25000 && kills < 50000) {
@@ -461,7 +458,6 @@ register("chat", (event) => {
     achievementsToUnlock.push(56);
     unlockAchievements();
 }).setCriteria("LVL UP! ➜ Enderman Slayer LVL 9!");
-
 
 export function backTrackAchievements() {
     ChatLib.chat("&6[SBO] &eBacktracking Achievements...");
