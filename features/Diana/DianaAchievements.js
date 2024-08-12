@@ -358,11 +358,9 @@ function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, c
     unlockAchievements();
 }
 
-let checkedDaxeEnchants = false
 function dAxeAchivementCheck() {
     if (!settings.achievementEnabler) return;
     if (achievementsData[55] != undefined) return;
-    if (checkedDaxeEnchants) return;
     let dAxeEnchants = checkDaxeEnchants();
     if (dAxeEnchants == "not daxe") return;
     if (dAxeEnchants[0]) {
@@ -378,7 +376,6 @@ function dAxeAchivementCheck() {
         achievementsToUnlock.push(55);
     }
     unlockAchievements();
-    checkedDaxeEnchants = true;
 }
 
 function getKillsFromLore(item) {
