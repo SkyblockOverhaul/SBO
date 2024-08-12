@@ -286,6 +286,12 @@ function getClosestWarp(x, y, z) {
             break;
     }
 
+    if (settings.stonksWarp) {
+        hubWarps.stonks = {x: -53, y: 72, z: -53, unlocked: true}
+    } else {
+        delete hubWarps.stonks;
+    }
+
     for (let warp in hubWarps) {
         if (hubWarps[warp].unlocked) {
             let distance = Math.sqrt(
