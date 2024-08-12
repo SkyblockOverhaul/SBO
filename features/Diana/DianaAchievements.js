@@ -201,19 +201,20 @@ export const achievementItems = [
 ]
 let achievementsToUnlock = [];
 let unlocking = false;  
-function unlockAchievements() {
+function unlockAchievements(override=false) {
     if (!settings.achievementEnabler) return;
     if (!unlocking) achievementsToUnlock = [...new Set(achievementsToUnlock)];
+    if (!override && unlocking) return;
     unlocking = true;
     if (achievementsToUnlock.length > 0) {
         let achievement = achievementsToUnlock.shift();
         if (achievementsData[achievement] == undefined) {
             unlockAchievement(achievement);
             setTimeout(() => {
-                unlockAchievements();
+                unlockAchievements(true);
             }, 2000);
         } else {
-            unlockAchievements();
+            unlockAchievements(true);
         }
     } else {
         unlocking = false;
