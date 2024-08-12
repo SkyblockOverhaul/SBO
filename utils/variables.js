@@ -111,6 +111,8 @@ export let data = new PogObject("SBO", {
     "ghostKills" : 0,
     "sorrowDrops" : 0,
     "crownOneMilCoins" : 0,
+    "backTrack": false,
+    "achievementFilter": "Rarity",
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
@@ -275,6 +277,10 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
         "Minos Inquisitor Ls": 0
     }
 }, "dianaTrackerMayor.json");
+
+export let achievementsData = new PogObject("../../../config", {
+    "unlocked": []
+}, "sbo_achievements.json");
 
 if (!data.trackerMigration) {
     // check if old tracker exists and is not empty
@@ -636,4 +642,5 @@ register("gameUnload", () => {
     dianaTrackerSession.save();
     dianaTrackerMayor.save();
     pastDianaEvents.save();
+    achievementsData.save();
 });

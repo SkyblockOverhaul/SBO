@@ -16,6 +16,8 @@ import "./features/Diana/PartyFinder";
 import "./features/general/QOL";
 import "./features/guis/SlayerGuis";
 import "./features/general/CrownTracker";
+import "./features/Diana/DianaAchievements";
+import "./features/guis/Achievements";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 import Settings from "./settings";
@@ -38,6 +40,9 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sboimporttracker <profilename> &7- &eImport skyhanni/skytils tracker")
                 ChatLib.chat("&7> &a/sbodc &7- &eCommand for diana dropchances")
                 ChatLib.chat("&7> &a/sbopartyblacklist &7- &eCommand for party commands blacklisting")
+                ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack your achievements")
+                ChatLib.chat("&7> &a/sboachievements &7- &eOpens the achievements GUI")
+                ChatLib.chat("&7> &a/sbolockachievements &7- &eLocks all Achievements (needs confirmation)")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -52,7 +57,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.3.3" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.3.4" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -84,9 +89,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a--QOL-- `)
-    ChatLib.chat(`&7> &aAdded Crown session stats and ghost mode`)
-    ChatLib.chat(`&7> &aAdded extra stats button when checking a player with /sbocheck, /sboc`)
+    ChatLib.chat(`&7> &a[WIP] Achievements System (Enable it in Settings -> Debug)`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion

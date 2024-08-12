@@ -472,6 +472,14 @@ function updateItemValues() {
     }).then((response)=>{
         kuudraItems = response[0];
         dianaItems = response[1];
+        if (kuudraItems == undefined) {
+            print("kuudra items undefined");
+            kuudraItems = {};
+        }
+        if (dianaItems == undefined) {
+            print("diana items undefined");
+            dianaItems = {};
+        }
     }).catch((error)=>{
         console.error("ah " + error);
     });
@@ -481,6 +489,10 @@ function updateItemValues() {
         json: true
     }).then((response)=>{
         bazaarItems = response;
+        if (bazaarItems == undefined) {
+            print("bazaar items undefined");
+            bazaarItems = {};
+        }
     }).catch((error)=>{
         console.error("bazaar " + error);
     });
@@ -697,3 +709,24 @@ export function getMagicFind(mf) {
     return magicFind;
 }
 
+export function matchLvlToColor(lvl) {
+    if (lvl >= 480) {
+        return "&4" + lvl;
+    } else if (lvl >= 440) {
+        return "&c" + lvl;
+    } else if (lvl >= 400) {
+        return "&6" + lvl;
+    } else if (lvl >= 360) {
+        return "&5" + lvl;
+    } else if (lvl >= 320) {
+        return "&d" + lvl;
+    } else if (lvl >= 280) {
+        return "&9" + lvl;
+    } else if (lvl >= 240) {
+        return "&3" + lvl;
+    } else if (lvl >= 200) {
+        return "&b" + lvl;
+    } else {
+        return "&7" + lvl;
+    }
+}

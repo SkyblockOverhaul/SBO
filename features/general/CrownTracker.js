@@ -27,6 +27,7 @@ let sorrowDropsSession = 0;
 let profitPerHour = 0;
 let nextTier = 0;
 let ghostsTillTier = 0;
+let oneMillDropsSession = 0;
 function getCrownMessage() {
     let crownLines = [];
     let timePassed = timerCrown.getHourTime();
@@ -80,10 +81,10 @@ function getCrownMessage() {
 
     if (settings.crownGhostMode) {
         if (getZone().includes("The Mist")) {
-            crownLines.push(new OverlayTextLine(`${GOLD}~Ghosts/Tier: ${AQUA}${formatNumberCommas(ghostsTillTier.toFixed())}`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}Ghosts/Tier: ${AQUA}${formatNumberCommas(ghostsTillTier.toFixed())}`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Ghost Kills: ${AQUA}${formatNumber(data.ghostKills)} &7(${formatNumber(ghostKillsSession)})`, true));
             crownLines.push(new OverlayTextLine(`${GOLD}Sorrows: ${AQUA}${formatNumber(data.sorrowDrops)} &7(${formatNumber(sorrowDropsSession)})`, true));
-            crownLines.push(new OverlayTextLine(`${GOLD}1m drops: ${AQUA}${formatNumber(data.crownOneMilCoins)}`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}1m drops: ${AQUA}${formatNumber(data.crownOneMilCoins)} &7(${formatNumber(oneMillDropsSession)})`, true));
         }
     }
 
@@ -227,6 +228,7 @@ registerWhen(register("chat", (mf) => {
 
 registerWhen(register("chat", () => {
     data.crownOneMilCoins++;
+    oneMillDropsSession++;
     data.save();
 }).setCriteria("&r&eThe ghost's death materialized &r&61,000,000 coins &r&efrom the mists!&r"), () => settings.crownTracker && settings.crownGhostMode);
 
@@ -259,6 +261,8 @@ register("command", () => {
     sorrowDropsSession = 0;
     profitPerHour = 0;
     profitPerHourSession = 0;
+    oneMillDropsSession = 0;
+    data.crownOneMilCoins
     timerCrown.reset();
     timerCrownSession.reset();
     data.save();
@@ -266,6 +270,7 @@ register("command", () => {
 
 register("gameUnload", () => {
     data.totalCrownCoinsSession = 0;
+    oneMillDropsSession = 0;
     profitPerHourSession = 0;
     ghostKillsSession = 0;
     sorrowDropsSession = 0;
