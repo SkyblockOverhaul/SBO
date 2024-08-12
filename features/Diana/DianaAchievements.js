@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
-import { checkDaxeEnchants } from "../../utils/functions";
+import { checkDaxeEnchants, getSBID } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -180,6 +180,14 @@ new Achievement(52, "Daedalus Mastery: Chimera V", "Chimera V on Daedalus Axe", 
 new Achievement(53, "Daedalus Mastery: Looting V", "Looting V on Daedalus Axe", "Legendary");
 new Achievement(54, "Daedalus Mastery: Divine Gift III", "Divine Gift III on Daedalus Axe", "Legendary");
 new Achievement(55, "Looking Clean", "Get max Divine Gift, Chimera, Looting", "Mythic", false, 1, true);
+
+new Achievement(56, "Now you can't complain", "Obtain Enderman Slayer 9", "Epic", false, 1, true);
+
+new Achievement(57, "Oh look maxed Crest", "Kill 10k Diana Mobs", "Rare");
+new Achievement(58, "Keep the grind going", "Kill 25k Diana Mobs", "Epic", 57);
+new Achievement(59, "I am not addicted", "Kill 50k Diana Mobs", "Legendary", 58, 2);
+new Achievement(60, "100k gang", "Kill 100k Diana Mobs", "Mythic", 59, 3);
+new Achievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, 4, true);
 
 export function unlockAchievement(id) {
     if (!settings.achievementEnabler) return;
@@ -384,10 +392,23 @@ function getKillsFromLore(item) {
     lore.forEach(line => {
         if (line.removeFormatting().includes("Kills: ")) {
             kills = parseInt(line.split("Kills: ")[1].removeFormatting().replace(",", ""));
+
         }
     });
     return kills;
 }
+
+function getSlayerLvlFromLore(item) {
+    let lore = item.getLore();
+    let slayerLvl = 0;
+    lore.forEach(line => {
+        if (line.removeFormatting().includes("LVL ")) {
+            slayerLvl = parseInt(line.split("LVL ")[1].removeFormatting());
+        }
+    });
+    return slayerLvl;
+}
+
 
 register("guiOpened", (event) => {
     if (!settings.achievementEnabler) return;
@@ -405,8 +426,42 @@ register("guiOpened", (event) => {
             trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills);
 
         }
+        if (container.getName() == "Slayer") {
+            if (getSlayerLvlFromLore(container.getStackInSlot(13)) >= 9) {
+                achievementsToUnlock.push(56);
+                unlockAchievements();
+            }
+        }
+        if (container.getName().includes("Accessory Bag")) {
+            let items = container.getItems();
+            items.forEach((item, index) => {
+                if (item == null) return;
+                if (item == undefined) return;
+                if (getSBID(item) == null) return;
+                if (getSBID(item).includes("BEASTMASTER_CREST")) {
+                    let kills = getKillsFromLore(item);
+                    print(kills);
+                    if (kills >= 10000 && kills < 25000) {
+                        achievementsToUnlock.push(57);
+                    } else if (kills >= 25000 && kills < 50000) {
+                        achievementsToUnlock.push(58);
+                    } else if (kills >= 50000 && kills < 100000) {
+                        achievementsToUnlock.push(59);
+                    } else if (kills >= 100000) {
+                        achievementsToUnlock.push(60);
+                    }
+                    unlockAchievements();
+                }
+            });
+        }
     }, 400);
 })
+
+register("chat", (event) => {
+    achievementsToUnlock.push(56);
+    unlockAchievements();
+}).setCriteria("LVL UP! ➜ Enderman Slayer LVL 9!");
+
 
 export function backTrackAchievements() {
     ChatLib.chat("&6[SBO] &eBacktracking Achievements...");
