@@ -362,7 +362,7 @@ function dAxeAchivementCheck() {
     if (!settings.achievementEnabler) return;
     if (achievementsData[55] != undefined) return;
     let dAxeEnchants = checkDaxeEnchants();
-    if (dAxeEnchants == "not daxe") return;
+    if (!dAxeEnchants[0] && !dAxeEnchants[1] && !dAxeEnchants[2]) return;
     if (dAxeEnchants[0]) {
         achievementsToUnlock.push(52);
     }

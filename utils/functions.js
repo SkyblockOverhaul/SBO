@@ -283,9 +283,6 @@ export function checkDaxeEnchants() {
             }
             return [chimVbool, lootingVbool, divineGift3bool];
         }
-        else {
-            return "not daxe";
-        }
     }
 }
 
