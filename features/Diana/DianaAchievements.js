@@ -106,11 +106,9 @@ export class Achievement {
         return this.rarity;
     }
 }
-// Raritys: Impossible, Divine, Mythic, Legendary, Epic, Rare, Uncommon, Common
-// todo: add mc sound (maybe only for over epic rarity)
-// be achievement
 
-// gute namen: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?, "Magic Find is a lie", "Magic Find is a scam", "Magic Find is a cosmectic", "Magic Find is a myth" 
+// Raritys: Impossible, Divine, Mythic, Legendary, Epic, Rare, Uncommon, Common
+// good names: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?, "Magic Find is a lie", "Magic Find is a scam", "Magic Find is a cosmectic", "Magic Find is a myth" 
 new Achievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic");  
 new Achievement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine"); 
 new Achievement(3, "Back-to-Back Stick", "Get 2 Sticks in a row", "Divine");   
@@ -279,10 +277,6 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
     }
 }
 
-// export function trackAchievementsMob(mayorTracker, mob) {
-
-// }
-
 export function trackSinceMob() {
     if (!settings.achievementEnabler) return;
     if (data["mobsSinceInq"] >= 250 && data["mobsSinceInq"] < 500) {
@@ -394,9 +388,6 @@ export function backTrackAchievements() {
         for (let key in pastDianaEvents.events[event].items) {
             trackAchievementsItem(pastDianaEvents.events[event].items, key, true);
         }
-        // for (let key in event.mobs) {
-        //     trackAchievementsMob(event.mobs, key);
-        // }
     }
     trackSinceMob();
 }
@@ -422,12 +413,3 @@ register("command", (args1, ...args) => {
         ChatLib.chat("&6[SBO] &eAchievements locked");
     }
 }).setName("sbolockachievements");
-
-// achivements in txt data
-function writeAchievements() {
-    let achievements = [];
-    Achievement.list.forEach(achievement => {
-        achievements.push(achievement.getName(), ": " ,achievement.getDescription(), "\n");
-    })
-    FileLib.write("./config/ChatTriggers/modules/SBO/SboAchivements.txt", achievements.join(""));
-}
