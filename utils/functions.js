@@ -257,8 +257,9 @@ function checkHotbarItems() {
     return hotbarItems;
 }
 
-let chimVbool, lootingVbool, divineGift3bool = false;
+
 export function checkDaxeEnchants() {
+    let chimVbool, lootingVbool, divineGift3bool = false;
     if (!worldLoaded) return [false, false, false];
     let hotbarItems = checkHotbarItems();
     for (let item of hotbarItems) {
@@ -267,7 +268,7 @@ export function checkDaxeEnchants() {
         let itemName = nbtData.getCompoundTag("tag").getCompoundTag("display").getString("Name");
         if (!itemName) return [false, false, false];
         itemName = itemName.removeFormatting().trim();
-        let enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
+        enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
         if (!enchantments) return [false, false, false];
         if (itemName.includes("Daedalus Axe")) {
             if (enchantments.getInteger("ultimate_chimera") == 5) {
