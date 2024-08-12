@@ -267,23 +267,21 @@ export function checkDaxeEnchants() {
         let itemName = nbtData.getCompoundTag("tag").getCompoundTag("display").getString("Name");
         if (!itemName) return [false, false, false];
         itemName = itemName.removeFormatting().trim();
+        let enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
+        if (!enchantments) return [false, false, false];
         if (itemName.includes("Daedalus Axe")) {
-            let lore = item.getLore();
-            if (!lore) return [false, false, false];
-            for (let line of lore) {
-                if (line.includes("Chimera V")) {
-                    chimVbool = true;
-                }
-                if (line.includes("Looting V")) {
-                    lootingVbool = true;
-                }
-                if (line.includes("Divine Gift III")) {
-                    divineGift3bool = true;
-                }
+            if (enchantments.getInteger("ultimate_chimera") == 5) {
+                chimVbool = true;
             }
-            return [chimVbool, lootingVbool, divineGift3bool];
+            if (enchantments.getInteger("looting") == 5) {
+                lootingVbool = true;
+            }
+            if (enchantments.getInteger("divine_gift") == 3) {
+                divineGift3bool = true;
+            }
         }
     }
+    return [chimVbool, lootingVbool, divineGift3bool];
 }
 
 export function playerHasSpade() {
