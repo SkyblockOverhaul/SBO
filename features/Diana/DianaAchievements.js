@@ -361,7 +361,6 @@ function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, c
 
 function dAxeAchivementCheck() {
     if (!settings.achievementEnabler) return;
-    if (achievementsData[55] != undefined) return;
     let dAxeEnchants = checkDaxeEnchants();
     if (!dAxeEnchants[0] && !dAxeEnchants[1] && !dAxeEnchants[2]) return;
     if (dAxeEnchants[0]) {
@@ -438,9 +437,13 @@ register("command", (args1, ...args) => {
         })
         confirmState = false;
         ChatLib.chat("&6[SBO] &eAchievements locked");
+        checkDaxeAchievements.register();
     }
 }).setName("sbolockachievements");
 
-register("step", () => {
+let checkDaxeAchievements = register("step", () => {
     dAxeAchivementCheck();
+    if(achievementsData[55] != undefined)
+        checkDaxeAchievements.unregister();
 }).setFps(1);
+checkDaxeAchievements.register();
