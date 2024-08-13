@@ -523,7 +523,12 @@ function updateItemValues() {
             dianaItems = {};
         }
     }).catch((error)=>{
-        console.error("ah " + error);
+        if (error.response && error.response.status == 429) {
+            console.error("rate limited, try again in 5 minutes");
+        }
+        else {
+            console.error("An error occurred: " + error.message);
+        }
     });
 
     request({
