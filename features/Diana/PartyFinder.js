@@ -2,6 +2,7 @@ import { request } from "../../../requestV2";
 import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
+import { trackWithCheckPlayer } from "./DianaAchievements";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -73,6 +74,9 @@ let lastCheckedPlayer = undefined;
 function printCheckedPlayer(playerinfo) {
     playerinfo = playerinfo[0];
     lastCheckedPlayer = playerinfo;
+    if (playerinfo.name == Player.getName()) {
+        trackWithCheckPlayer(playerinfo);
+    }
     new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
     "&r&9│ &r&eLvL&r&f: &r&6" + matchLvlToColor(playerinfo.sbLvl) + 
     "&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + 

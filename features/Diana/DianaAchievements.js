@@ -32,6 +32,7 @@ export class Achievement {
 
     check() {
         if (this.requirement && !this.requirement.isUnlocked()) {
+            
             this.requirement.check();
             setTimeout(() => {
                 this.unlock();
@@ -188,6 +189,10 @@ new Achievement(58, "Keep the grind going", "Kill 25k Diana Mobs", "Epic", 57);
 new Achievement(59, "I am not addicted", "Kill 50k Diana Mobs", "Legendary", 58, 2);
 new Achievement(60, "100k gang", "Kill 100k Diana Mobs", "Mythic", 59, 3);
 new Achievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, 4, true);
+
+new Achievement(62, "Mom look i am on the leaderboard", "Get on the Mythos Mobs killed Leaderboard (Top 100)", "Legendary");
+new Achievement(63, "So this is what addiction feels like", "Get on the Mythos Mobs killed Leaderboard (Top 50)", "Mythic", 62);
+new Achievement(64, "Diana is my life", "Get on the Mythos Mobs killed Leaderboard (Top 10)", "Divine", 63, 2);
 
 export function unlockAchievement(id) {
     if (!settings.achievementEnabler) return;
@@ -455,6 +460,7 @@ register("guiOpened", (event) => {
 })
 
 register("chat", (event) => {
+    if (!settings.achievementEnabler) return;
     achievementsToUnlock.push(56);
     unlockAchievements();
 }).setCriteria("LVL UP! ➜ Enderman Slayer LVL 9!");
@@ -467,6 +473,32 @@ export function backTrackAchievements() {
         }
     }
     trackSinceMob();
+}
+
+export function trackWithCheckPlayer(playerinfo) {
+    if (!settings.achievementEnabler) return;
+    if (playerinfo.eman9) {
+        achievementsToUnlock.push(56);
+    }
+    if (playerinfo.mythosKills >= 10000 && playerinfo.mythosKills < 25000) {
+        achievementsToUnlock.push(57);
+    } else if (playerinfo.mythosKills >= 25000 && playerinfo.mythosKills < 50000) {
+        achievementsToUnlock.push(58);
+    } else if (playerinfo.mythosKills >= 50000 && playerinfo.mythosKills < 100000) {
+        achievementsToUnlock.push(59);
+    } else if (playerinfo.mythosKills >= 100000) {
+        achievementsToUnlock.push(60);
+    }
+    if (playerinfo.killLeaderboard <= 100) {
+        achievementsToUnlock.push(62);
+    } 
+    if (playerinfo.killLeaderboard <= 50) {
+        achievementsToUnlock.push(63);
+    } 
+    if (playerinfo.killLeaderboard <= 10) {
+        achievementsToUnlock.push(64);
+    }
+    unlockAchievements();
 }
 
 register("command", () => {
