@@ -17,9 +17,9 @@ function getPartyInfo(party) {
         ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
         printPartyInfo(response.PartyInfo)
     }).catch((error)=> {
-        if (error.detail == "Rate limit exceeded") {
-            console.error("[SBO] rate limited, try again in 5 minutes");
-            ChatLib.chat("&6[SBO] &4Error: Rate limit exceeded, try again in 5 minutes");
+        if (error.detail) {
+            console.error("[SBO] " + error.detail);
+            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
         } else {
             console.error(JSON.stringify(error));
             ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party members");
@@ -157,9 +157,9 @@ function checkPlayer(player) {
     }).then((response)=> {
         printCheckedPlayer(response.PartyInfo)
     }).catch((error)=> {
-        if (error.detail == "Rate limit exceeded") {
-            console.error("[SBO] rate limited, try again in 5 minutes");
-            ChatLib.chat("&6[SBO] &4Error: Rate limit exceeded, try again in 5 minutes");
+        if (error.detail) {
+            console.error("[SBO] " + error.detail);
+            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
         } else {
             console.error(JSON.stringify(error));
             ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking player: " + playerName); 
