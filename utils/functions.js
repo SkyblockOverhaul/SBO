@@ -446,9 +446,6 @@ register("command", () => {
     }
 }).setName("sbodev")
 
-
-
-
 export function playCustomSound(sound, volume) {
     if (sound != "") {
         if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
@@ -491,7 +488,6 @@ export function getBazaarItems() {
     return bazaarItems;
 }
 
-
 registerWhen(register("step", () => {
     // update every 5 minutes
     if (updateing) return;
@@ -505,7 +501,6 @@ registerWhen(register("step", () => {
         }, 300000);
     }
 }).setFps(1), () => settings.attributeValueOverlay || settings.dianaTracker);
-
 
 function updateItemValues() {
     request({
@@ -523,12 +518,7 @@ function updateItemValues() {
             dianaItems = {};
         }
     }).catch((error)=>{
-        if (error.response && error.response.status == 429) {
-            console.error("rate limited, try again in 5 minutes");
-        }
-        else {
-            console.error("An error occurred: " + error.message);
-        }
+        console.error("An error occurred: " + error);
     });
 
     request({

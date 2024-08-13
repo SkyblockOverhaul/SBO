@@ -190,9 +190,9 @@ new Achievement(59, "I am not addicted", "Kill 50k Diana Mobs", "Legendary", 58,
 new Achievement(60, "100k gang", "Kill 100k Diana Mobs", "Mythic", 59, 3);
 new Achievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, 4, true);
 
-new Achievement(62, "Mom look i am on the leaderboard", "Get on the Mythos Mobs killed Leaderboard (Top 100)", "Legendary");
-new Achievement(63, "So this is what addiction feels like", "Get on the Mythos Mobs killed Leaderboard (Top 50)", "Mythic", 62);
-new Achievement(64, "Diana is my life", "Get on the Mythos Mobs killed Leaderboard (Top 10)", "Divine", 63, 2);
+new Achievement(62, "Mom look i am on the leaderboard", "Top 100 on the kills leaderboard", "Legendary");
+new Achievement(63, "So this is what addiction feels like", "Top 50 on the kills leaderboard", "Mythic", 62);
+new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divine", 63, 2);
 
 export function unlockAchievement(id) {
     if (!settings.achievementEnabler) return;

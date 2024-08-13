@@ -6,11 +6,15 @@ import { trackWithCheckPlayer } from "./DianaAchievements";
 
 let api = "https://api.skyblockoverhaul.com";
 
+let firstTimeStamp = 0;
 function getPartyInfo(party) {
+    firstTimeStamp = Date.now();
     request({
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
     }).then((response)=> {
+        let timeTaken = Date.now() - firstTimeStamp;
+        ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
         printPartyInfo(response.PartyInfo)
     }).catch((error)=> {
         console.error(JSON.stringify(error));
@@ -147,6 +151,10 @@ function checkPlayer(player) {
     }).then((response)=> {
         printCheckedPlayer(response.PartyInfo)
     }).catch((error)=> {
+        if (error.detail == "Rate limit exceeded") {
+            console.error("[SBO] rate limited, try again in 5 minutes");
+            ChatLib.chat("&6[SBO] &4Error: Rate limit exceeded, try again in 5 minutes");
+        }
         console.error(error);
         ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + playerName); 
     });
