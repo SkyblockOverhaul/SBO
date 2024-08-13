@@ -42,7 +42,6 @@ buttonBazaarSetting.onMouseLeave(() => {
     setSellText();
 })
 
-
 let overlayMobTracker = new SboOverlay("dianaMobTracker", "dianaTracker", "inventory", "MobLoc", "", true)
 let buttonChangeMobView = new OverlayButton("&eChange View", true, true, true, true)
 buttonChangeMobView.onClick(() => {
@@ -58,9 +57,6 @@ buttonChangeMobView.onMouseEnter(() => {
 buttonChangeMobView.onMouseLeave(() => {
     buttonChangeMobView.setText(`&eChange View`);
 })
-
-
-
 
 function setSellText(type = "") {
     if (type == "hover") {
@@ -113,6 +109,9 @@ export function mobOverlay() {
     let messageLines = []
     if (settings.dianaMobTrackerView > 0) {
         messageLines = getMobMassage(settings.dianaMobTrackerView);
+    }
+    else {
+        messageLines = getMobMassage(1);
     }
     overlayMobTracker.setLines(messageLines);
 }
@@ -172,10 +171,8 @@ function getMobMassage(setting) {
 let lootMessageLines = [];
 let timerOverlayLine = null;
 
-
-
-function getTimerMessage() {
-    const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+function getTimerMessage(viewSetting) {
+    const timer = dianaTimerlist[viewSetting - 1];
     if (timer === undefined) return "00:00:00";
     if (timer.trackerObject.items[timer.dataFieldName] === undefined) return formatTime(timer.getElapsedTime());
     if (timer.trackerObject.items[timer.dataFieldName] > 0) {
@@ -185,14 +182,17 @@ function getTimerMessage() {
     }
 }
 
-
 register("tick", () => {
     if (timerOverlayLine) {
+        let viewSetting = settings.dianaLootTrackerView;
+        if (settings.dianaLootTrackerView == 0) {
+            viewSetting = 1;
+        }
         if (data.hideTrackerLines.includes("timer")) {
             timerOverlayLine.button = true;
             timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
         } else {
-            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
+            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)}`);
         }
     }
 });
@@ -203,26 +203,29 @@ register("tick", () => {
  */
 export function itemOverlay() {
     lootMessageLines = [];
-    if (settings.dianaLootTrackerView > 0) {
-        lootMessageLines = getLootMessage(settings.dianaLootTrackerView);
+    let viewSetting = settings.dianaLootTrackerView;    
+    if (settings.dianaLootTrackerView == 0) {
+        viewSetting = 1;
+    } 
+    lootMessageLines = getLootMessage(viewSetting);
 
-        timerOverlayLine = new OverlayButton(`&ePlaytime: &b${getTimerMessage()}`, true, false, true, false).onClick(() => {
-            if (timerOverlayLine.button) {
-                timerOverlayLine.button = false;
-                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage()}`);
-                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != "timer");
-            } else {
-                timerOverlayLine.button = true;
-                timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
-                data.hideTrackerLines.push("timer");
-            }
-        });
-        if (data.hideTrackerLines.includes("timer")) {
+
+    timerOverlayLine = new OverlayButton(`&ePlaytime: &b${getTimerMessage(viewSetting)}`, true, false, true, false).onClick(() => {
+        if (timerOverlayLine.button) {
+            timerOverlayLine.button = false;
+            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)}`);
+            data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != "timer");
+        } else {
             timerOverlayLine.button = true;
             timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
+            data.hideTrackerLines.push("timer");
         }
-        lootMessageLines.push(timerOverlayLine);
+    });
+    if (data.hideTrackerLines.includes("timer")) {
+        timerOverlayLine.button = true;
+        timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
     }
+    lootMessageLines.push(timerOverlayLine);
     overlayLootTracker.setLines(lootMessageLines);
 }
 // .quick_status.buyPrice -> selloffer / instabuy
@@ -233,7 +236,7 @@ const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];
     const offertType = ["Instasell", "Sell Offer"][settings.bazaarSettingDiana];
-    let lootTracker = getTracker(settings.dianaLootTrackerView);
+    let lootTracker = getTracker(lootViewSetting);
     let mayorTracker = getTracker(2);
     let percentDict = calcPercent(lootTracker, "loot");
 
@@ -340,7 +343,7 @@ function getLootMessage(lootViewSetting) {
         `§6Treasure: §b${treasure}`, 
         `§6Four-Eyed Fish: §b${fourEyedFish}`, 
         `§6Scavenger: §b${scavenger}`
-    ].map(item => item.toString()); // Explicitly convert each element to a string
+    ].map(item => item.toString()); 
 
     lootLines.push(new OverlayTextLine(totalBurrowsText, true));
 
@@ -367,7 +370,7 @@ function getLootMessage(lootViewSetting) {
     }
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
-    const timer = dianaTimerlist[settings.dianaLootTrackerView - 1];
+    const timer = dianaTimerlist[lootViewSetting - 1];
     let timePassed = timer.getHourTime(); // in hours 
     let profitPerHour = 0;
     let profitPerBurrow = 0;
@@ -388,10 +391,8 @@ function getLootMessage(lootViewSetting) {
     return lootLines;
 }
 
-
 let mythosHpOverlay= new SboOverlay("mythosMobHp", "mythosMobHp", "render", "MythosHpLoc", "mythosMobHpExample");
 let mythosHpText = new OverlayTextLine("", true);
-
 
 export function mythosMobHpOverlay(mobNamesWithHp) {
     let message = "";
@@ -409,8 +410,16 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
 
 registerWhen(register("step", () => {
     if (playerHasSpade() || checkDiana()) {
-        overlayMobTracker.renderGui = true;
-        overlayLootTracker.renderGui = true;
+        if (settings.dianaLootTrackerView > 0) {
+            overlayLootTracker.renderGui = true;
+        } else {
+            overlayLootTracker.renderGui = false;
+        }
+        if (settings.dianaMobTrackerView > 0) {
+            overlayMobTracker.renderGui = true;
+        } else {
+            overlayMobTracker.renderGui = false;
+        }
         dianaStatsOverlay.renderGui = true;
         dianaAvgMagicFindOverlay.renderGui = true;
     }
@@ -421,7 +430,6 @@ registerWhen(register("step", () => {
         dianaAvgMagicFindOverlay.renderGui = false;
     }
 }).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind);
-
 
 register('guiClosed', (gui) => {
     gui = gui.toString();
