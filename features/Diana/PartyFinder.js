@@ -18,7 +18,6 @@ function getPartyInfo(party) {
         printPartyInfo(response.PartyInfo)
     }).catch((error)=> {
         if (error.detail) {
-            console.error("[SBO] " + error.detail);
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
         } else {
             console.error(JSON.stringify(error));
@@ -158,7 +157,6 @@ function checkPlayer(player) {
         printCheckedPlayer(response.PartyInfo)
     }).catch((error)=> {
         if (error.detail) {
-            console.error("[SBO] " + error.detail);
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
         } else {
             console.error(JSON.stringify(error));
