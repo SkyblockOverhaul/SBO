@@ -168,6 +168,7 @@ function checkPlayer(player) {
 }
 
 register("command", (args1, ...args) => {
+    if (args1 == undefined) args1 = Player.getName();
     checkPlayer(args1);
 }).setName("sbocheck").setAliases("sboc");;
 
