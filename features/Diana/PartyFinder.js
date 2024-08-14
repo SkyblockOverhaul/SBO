@@ -151,7 +151,7 @@ register("command", () => {
 
 register("command", () => {
     ChatLib.command("ct copy " + messageString.removeFormatting(), true);
-    ChatLib.chat("&6[SBO] &aCopied");
+    ChatLib.chat("&6[SBO] &aCopied to Clipboard");
 }).setName("buttonforsbotocopystats");
 
 
