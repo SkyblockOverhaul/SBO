@@ -137,7 +137,11 @@ register("command", () => {
         
 
         messageString += "\n&7- &9Inventory API&7: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
-        ChatLib.chat(messageString);
+        let messageParts = messageString.split("\n");
+        for (let i = 0; i < messageParts.length; i++) {
+            ChatLib.chat(messageParts[i]);
+        }
+        new TextComponent("&7[&3Copy All&7]").setClick("run_command", "/ct copy " + messageString.removeFormatting()).setHover("show_text", "Click to copy").chat();
     }
     else {
         ChatLib.chat("&6[SBO] &4Invalid button. Please check a player first. /sbocheck <player>");
