@@ -486,9 +486,12 @@ export function trackWithCheckPlayer(playerinfo) {
         achievementsToUnlock.push(58);
     } else if (playerinfo.mythosKills >= 50000 && playerinfo.mythosKills < 100000) {
         achievementsToUnlock.push(59);
-    } else if (playerinfo.mythosKills >= 100000) {
+    } else if (playerinfo.mythosKills >= 100000 && playerinfo.mythosKills < 150000) {
         achievementsToUnlock.push(60);
+    } else if (playerinfo.mythosKills >= 150000) {
+        achievementsToUnlock.push(61);
     }
+    
     if (playerinfo.killLeaderboard <= 100) {
         achievementsToUnlock.push(62);
     } 

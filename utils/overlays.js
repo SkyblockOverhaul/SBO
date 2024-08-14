@@ -40,8 +40,6 @@ register('guiOpened', () => {
     }, 200);
 });
 
-
-
 function loadSettings(overlay) {
     if (guiSettings != undefined) {
         overlay.X = parseInt(guiSettings[overlay.locName]["x"]);
@@ -352,10 +350,6 @@ export class hoverText {
     }
 }
 
-// other guis:
-// GuiChest
-// GuiChat
-// GuiEditSign
 export class SboOverlay {
     constructor(name, setting, type, locName, example = "", hoverable = false, allowedGuis = ["GuiInventory"]) {
         overLays.push(this);
