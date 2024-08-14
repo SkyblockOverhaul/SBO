@@ -96,9 +96,11 @@ function printCheckedPlayer(playerinfo) {
     new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
 }
 
+let messageString = "";
 register("command", () => {
     if (lastCheckedPlayer) {
-        let messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
+        messageString = "";
+        messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
 
         if (lastCheckedPlayer.daxeLootingLvl != -1) {
             messageString += "\n&3Daedalus Axe&7: " +
@@ -140,12 +142,18 @@ register("command", () => {
         for (let i = 0; i < messageParts.length; i++) {
             ChatLib.chat(messageParts[i]);
         }
-        new TextComponent("&7[&3Copy All&7]").setClick("run_command", "/ct copy " + messageString.removeFormatting()).setHover("show_text", "Click to copy").chat();
+        new TextComponent("&7[&3Copy All&7]").setClick("run_command", "/buttonforsbotocopystats").setHover("show_text", "Click to copy").chat();
     }
     else {
         ChatLib.chat("&6[SBO] &4Invalid button. Please check a player first. /sbocheck <player>");
     }
 }).setName("extrastatsbuttonforsbo");
+
+register("command", () => {
+    ChatLib.command("ct copy " + messageString.removeFormatting(), true);
+    ChatLib.chat("&6[SBO] &aCopied");
+}).setName("buttonforsbotocopystats");
+
 
 function checkPlayer(player) {
     let playerName = player;
