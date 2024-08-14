@@ -719,19 +719,20 @@ export function getNumberColor(number, range) {
 
 export function getGriffinItemColor(item) {
     if (item != 0) {
-        let name = toTitleCase(item.replaceAll("_", " "));
-        switch (item) {
-            case "FOUR_EYED_FISH":
+        let name = item.replace("PET_ITEM_", "");
+        name = toTitleCase(name.replaceAll("_", " "));
+        switch (name) {
+            case "Four Eyed Fish":
                 return "&5" + name;
-            case "DWARF_TURTLE_SHELMET":
+            case "Dwarf Turtle Shelmet":
                 return "&a" + name;
-            case "CROCHET_TIGER_PLUSHIE":
+            case "Crochet Tiger Plushie":
                 return "&5" + name;
-            case "ANTIQUE_REMEDIES":
+            case "Antique Remedies":
                 return "&5" + name;
-            case "LUCKY_CLOVER":
+            case "Lucky Clover":
                 return "&a" + name;
-            case "MINOS_RELIC":
+            case "Minos Relic":
                 return "&5" + name;
             default:
                 return "&7" + name;
