@@ -294,7 +294,7 @@ function drawText(overlay) {
             text.setX(overlay.X + overlay.offsetX)
             text.setY(overlay.Y + overlay.offsetY + (10 * overlay.scale * (lineCount)))
             text.setScale(overlay.scale);
-            if (text.getString().substring(0, 4) != "§7§m" && editGui.isOpen()) {
+            if (text.getString().substring(0, 4) == "§7§m") {
                 if (!editGui.isOpen()) {
                     text.draw();
                     lineCount += text.getString().split("\n").length;
