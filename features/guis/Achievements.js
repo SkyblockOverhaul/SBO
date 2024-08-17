@@ -186,12 +186,14 @@ AchievementGui.registerClicked((mouseX, mouseY, button) => {
         let currentIndex = filterOptions.indexOf(filterType);
         if (button == 1) {
             filterType = filterOptions[(currentIndex + filterOptions.length - 1) % filterOptions.length];
+            currentPage = 0;
             data.achievementFilter = filterType;
             data.save();
         }
         else if (button == 0) {
             filterType = filterOptions[(currentIndex + 1) % filterOptions.length];
             data.achievementFilter = filterType;
+            currentPage = 0;
             data.save();
         }
         updateTotalPages();

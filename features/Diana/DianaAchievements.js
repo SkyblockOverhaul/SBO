@@ -527,7 +527,7 @@ register("command", (args1, ...args) => {
     }
     if (confirmState) {
         Achievement.list.forEach(achievement => {
-            if (achievement.isUnlocked() && achievement.id != 38) achievement.lock();
+            if (achievement.isUnlocked()) achievement.lock();
         })
         confirmState = false;
         ChatLib.chat("&6[SBO] &eAchievements locked");
