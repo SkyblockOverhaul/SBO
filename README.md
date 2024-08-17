@@ -114,3 +114,7 @@ _-Other-_
 -> /sbodc [Magicfind] [Looting] (Displays drop chances for all rng drops from diana)
 + Import tracker (sh/st)
 -> /sboimporttracker [profilename] (Import skyhanni/skytils tracker)
++ Achivements
+  + /sboachievements (opens Achievements, can be accessed in 'ESC' screen aswell)
+  + /sbobacktrackachievements (backtracks Achievements from past events)
+  + /sbolockachievements (Locks all Achievements, for testing purposes)
