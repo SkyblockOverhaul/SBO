@@ -112,7 +112,6 @@ function drawFilterDropdown(filterButtonWidth, filterButtonHeight, filterY, filt
 
 function getFilteredAchievements() {
     let achievements = [...Achievement.list];
-
     if (filterType === "Rarity") {
         achievements.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
     }
@@ -144,6 +143,7 @@ function achievementRender() {
 
     for (let i = startAchievement; i < endAchievement; i++) {
         let achievement = achievementsToDisplay[i];
+        if (!achievement) continue;
         let index = i - startAchievement;
         let column = index % columns;
         let row = Math.floor(index / columns);

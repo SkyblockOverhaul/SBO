@@ -511,7 +511,6 @@ register("command", () => {
 
 let confirmState = false;
 register("command", (args1, ...args) => {
-    if (!settings.achievementEnabler) return;
     if (args1 != "CONFIRM") {
         ChatLib.chat("&6[SBO] &eYou are about to reset all your achievements. Type &c/sbolockachievements CONFIRM &eto confirm");
         confirmState = true;
