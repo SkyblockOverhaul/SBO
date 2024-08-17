@@ -489,7 +489,7 @@ export function getBazaarItems() {
     return bazaarItems;
 }
 
-registerWhen(register("step", () => {
+register("step", () => {
     // update every 5 minutes
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
@@ -497,11 +497,12 @@ registerWhen(register("step", () => {
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
+        getActiveUsers();
         setTimeout(() => {
             updateing = false;
         }, 300000);
     }
-}).setFps(1), () => settings.attributeValueOverlay || settings.dianaTracker);
+}).setFps(1);
 
 function updateItemValues() {
     request({
@@ -535,6 +536,29 @@ function updateItemValues() {
         console.error("bazaar " + error);
     });
 }
+
+let activeUsers = undefined
+function getActiveUsers() {
+    request({
+        url: "https://api.skyblockoverhaul.com/activeUsers",
+        json: true
+    }).then((response)=>{
+        activeUsers = response.activeUsers;
+        if (activeUsers == undefined) {
+            print("active users undefined");
+            activeUsers = {};
+        }
+    }).catch((error)=>{
+        console.error("An error occurred: " + error);
+    });
+}
+
+
+register("command", () => {
+    if (activeUsers != undefined) {
+        ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
+    }
+}).setName("sboactiveuser");
 
 export function getBazaarPriceKuudra(itemId) {
     if (bazaarItems == undefined) return 0;

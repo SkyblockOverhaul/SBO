@@ -112,7 +112,6 @@ function drawFilterDropdown(filterButtonWidth, filterButtonHeight, filterY, filt
 
 function getFilteredAchievements() {
     let achievements = [...Achievement.list];
-
     if (filterType === "Rarity") {
         achievements.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
     }
@@ -144,6 +143,7 @@ function achievementRender() {
 
     for (let i = startAchievement; i < endAchievement; i++) {
         let achievement = achievementsToDisplay[i];
+        if (!achievement) continue;
         let index = i - startAchievement;
         let column = index % columns;
         let row = Math.floor(index / columns);
@@ -186,12 +186,14 @@ AchievementGui.registerClicked((mouseX, mouseY, button) => {
         let currentIndex = filterOptions.indexOf(filterType);
         if (button == 1) {
             filterType = filterOptions[(currentIndex + filterOptions.length - 1) % filterOptions.length];
+            currentPage = 0;
             data.achievementFilter = filterType;
             data.save();
         }
         else if (button == 0) {
             filterType = filterOptions[(currentIndex + 1) % filterOptions.length];
             data.achievementFilter = filterType;
+            currentPage = 0;
             data.save();
         }
         updateTotalPages();
