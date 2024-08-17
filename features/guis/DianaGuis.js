@@ -101,10 +101,6 @@ ${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.cham
     dianaStatsOverlay.setLines([dianaStatsText.setText(message)]);
 }
 
-/**
- * 
- * @param {string} setting 
- */
 export function mobOverlay() {
     let messageLines = []
     if (settings.dianaMobTrackerView > 0) {
@@ -197,10 +193,6 @@ register("tick", () => {
     }
 });
 
-/**
- * 
- * @param {string} setting 
- */
 export function itemOverlay() {
     lootMessageLines = [];
     let viewSetting = settings.dianaLootTrackerView;    
@@ -231,7 +223,6 @@ export function itemOverlay() {
 // .quick_status.buyPrice -> selloffer / instabuy
 // .quick_status.sellPrice -> buyorder / instasell
  
-
 const GuiUtils = Java.type("net.minecraftforge.fml.client.config.GuiUtils")
 function getLootMessage(lootViewSetting) {
     const lootTrackerType = ["Total", "Event", "Session"][lootViewSetting - 1];

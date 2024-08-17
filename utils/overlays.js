@@ -238,8 +238,6 @@ export class OverlayButton extends OverlayTextLine {
         this.action = undefined;
         this.lineBreak = lineBreak; 
         this.delimiter = new Text(delimiter).setShadow(shadow);
-
-
     }
     
     onClick(action) {
@@ -290,22 +288,26 @@ function drawText(overlay) {
             text.setX(overlay.X + overlay.offsetX + Renderer.getStringWidth(previousText) * overlay.scale + Renderer.getStringWidth(text.delimiter.getString()) * overlay.scale)
             text.setY(overlay.Y + overlay.offsetY + (10 * overlay.scale * (lineCount - 1)))
             text.setScale(overlay.scale);
-            
             text.draw();
-
         }
         else {
             text.setX(overlay.X + overlay.offsetX)
             text.setY(overlay.Y + overlay.offsetY + (10 * overlay.scale * (lineCount)))
             text.setScale(overlay.scale);
-            text.draw();
-            lineCount += text.getString().split("\n").length;
+            if (text.getString().substring(0, 4) == "§7§m") {
+                if (!editGui.isOpen()) {
+                    text.draw();
+                    lineCount += text.getString().split("\n").length;
+                }
+            }
+            else {
+                text.draw();
+                lineCount += text.getString().split("\n").length;
+            }
         }
         
         if (text.isHovered) {
-            // print("hovered")
             hovered.push(text);
-            // text.hover(overlay);
         }
     });
     hovered.forEach(text => {
