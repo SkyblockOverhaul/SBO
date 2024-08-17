@@ -241,6 +241,50 @@ export function checkItemInHotbar(item) {
     return false;
 }
 
+function checkHotbarItems() {
+    let hotbarItems = []
+    if (!worldLoaded) return hotbarItems;
+    let playerInv = Player.getInventory();
+    if (playerInv == null) return hotbarItems;
+    let playerInvItems = playerInv.getItems();
+    playerInvItems.forEach((item, i) => {
+        if (i <= 8) {
+            if (playerInvItems[i] !== null) {
+                hotbarItems.push(item);
+            }
+        }
+    });
+    return hotbarItems;
+}
+
+
+export function checkDaxeEnchants() {
+    let chimVbool, lootingVbool, divineGift3bool = false;
+    if (!worldLoaded) return [false, false, false];
+    let hotbarItems = checkHotbarItems();
+    for (let item of hotbarItems) {
+        let nbtData = item.getNBT();
+        if (!nbtData) return [false, false, false];
+        let itemName = nbtData.getCompoundTag("tag").getCompoundTag("display").getString("Name");
+        if (!itemName) return [false, false, false];
+        itemName = itemName.removeFormatting().trim();
+        enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
+        if (!enchantments) return [false, false, false];
+        if (itemName.includes("Daedalus Axe")) {
+            if (enchantments.getInteger("ultimate_chimera") == 5) {
+                chimVbool = true;
+            }
+            if (enchantments.getInteger("looting") == 5) {
+                lootingVbool = true;
+            }
+            if (enchantments.getInteger("divine_gift") == 3) {
+                divineGift3bool = true;
+            }
+        }
+    }
+    return [chimVbool, lootingVbool, divineGift3bool];
+}
+
 export function playerHasSpade() {
     return spadeBool;
 }
@@ -249,8 +293,6 @@ let spadeBool = false;
 register("step", () => {
     spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
 }).setFps(1)
-
-
 
 // return 1sec long true if player got loot share //
 export function gotLootShare() {
@@ -404,9 +446,6 @@ register("command", () => {
     }
 }).setName("sbodev")
 
-
-
-
 export function playCustomSound(sound, volume) {
     if (sound != "") {
         if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
@@ -449,7 +488,6 @@ export function getBazaarItems() {
     return bazaarItems;
 }
 
-
 registerWhen(register("step", () => {
     // update every 5 minutes
     if (updateing) return;
@@ -463,7 +501,6 @@ registerWhen(register("step", () => {
         }, 300000);
     }
 }).setFps(1), () => settings.attributeValueOverlay || settings.dianaTracker);
-
 
 function updateItemValues() {
     request({
@@ -481,7 +518,7 @@ function updateItemValues() {
             dianaItems = {};
         }
     }).catch((error)=>{
-        console.error("ah " + error);
+        console.error("An error occurred: " + error);
     });
 
     request({
@@ -682,19 +719,20 @@ export function getNumberColor(number, range) {
 
 export function getGriffinItemColor(item) {
     if (item != 0) {
-        let name = toTitleCase(item.replaceAll("_", " "));
-        switch (item) {
-            case "FOUR_EYED_FISH":
+        let name = item.replace("PET_ITEM_", "");
+        name = toTitleCase(name.replaceAll("_", " "));
+        switch (name) {
+            case "Four Eyed Fish":
                 return "&5" + name;
-            case "DWARF_TURTLE_SHELMET":
+            case "Dwarf Turtle Shelmet":
                 return "&a" + name;
-            case "CROCHET_TIGER_PLUSHIE":
+            case "Crochet Tiger Plushie":
                 return "&5" + name;
-            case "ANTIQUE_REMEDIES":
+            case "Antique Remedies":
                 return "&5" + name;
-            case "LUCKY_CLOVER":
+            case "Lucky Clover":
                 return "&a" + name;
-            case "MINOS_RELIC":
+            case "Minos Relic":
                 return "&5" + name;
             default:
                 return "&7" + name;

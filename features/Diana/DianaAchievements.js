@@ -1,5 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
+import { checkDaxeEnchants, getSBID } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -31,6 +32,7 @@ export class Achievement {
 
     check() {
         if (this.requirement && !this.requirement.isUnlocked()) {
+            
             this.requirement.check();
             setTimeout(() => {
                 this.unlock();
@@ -175,6 +177,23 @@ new Achievement(49, "Lynx Slayer", "Max the Siamese Lynx Bestiary", "Epic");
 new Achievement(50, "Gaia Slayer", "Max the Gaia Bestiary", "Legendary");
 new Achievement(51, "Time to get on the leaderboard", "Max all Diana Bestiaries", "Mythic", false, 1, true);
 
+new Achievement(52, "Daedalus Mastery: Chimera V", "Chimera V on Daedalus Axe", "Legendary");
+new Achievement(53, "Daedalus Mastery: Looting V", "Looting V on Daedalus Axe", "Legendary");
+new Achievement(54, "Daedalus Mastery: Divine Gift III", "Divine Gift III on Daedalus Axe", "Legendary");
+new Achievement(55, "Looking Clean", "Get max Divine Gift, Chimera, Looting", "Mythic", false, 1, true);
+
+new Achievement(56, "Now you can't complain", "Obtain Enderman Slayer 9", "Epic", false, 1, true);
+
+new Achievement(57, "Oh look maxed Crest", "Kill 10k Diana Mobs", "Rare");
+new Achievement(58, "Keep the grind going", "Kill 25k Diana Mobs", "Epic", 57);
+new Achievement(59, "I am not addicted", "Kill 50k Diana Mobs", "Legendary", 58, 2);
+new Achievement(60, "100k gang", "Kill 100k Diana Mobs", "Mythic", 59, 3);
+new Achievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, 4, true);
+
+new Achievement(62, "Mom look i am on the leaderboard", "Top 100 on the kills leaderboard", "Legendary");
+new Achievement(63, "So this is what addiction feels like", "Top 50 on the kills leaderboard", "Mythic", 62);
+new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divine", 63, 2);
+
 export function unlockAchievement(id) {
     if (!settings.achievementEnabler) return;
     if (achievementsData[id] != undefined) return;
@@ -195,19 +214,20 @@ export const achievementItems = [
 ]
 let achievementsToUnlock = [];
 let unlocking = false;  
-function unlockAchievements() {
+function unlockAchievements(override=false) {
     if (!settings.achievementEnabler) return;
     if (!unlocking) achievementsToUnlock = [...new Set(achievementsToUnlock)];
+    if (!override && unlocking) return;
     unlocking = true;
     if (achievementsToUnlock.length > 0) {
         let achievement = achievementsToUnlock.shift();
         if (achievementsData[achievement] == undefined) {
             unlockAchievement(achievement);
             setTimeout(() => {
-                unlockAchievements();
+                unlockAchievements(true);
             }, 2000);
         } else {
-            unlockAchievements();
+            unlockAchievements(true);
         }
     } else {
         unlocking = false;
@@ -352,15 +372,46 @@ function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, c
     unlockAchievements();
 }
 
+function dAxeAchivementCheck() {
+    if (!settings.achievementEnabler) return;
+    let dAxeEnchants = checkDaxeEnchants();
+    if (!dAxeEnchants[0] && !dAxeEnchants[1] && !dAxeEnchants[2]) return;
+    if (dAxeEnchants[0]) {
+        achievementsToUnlock.push(52);
+    }
+    if (dAxeEnchants[1]) {
+        achievementsToUnlock.push(53);
+    }
+    if (dAxeEnchants[2]) {
+        achievementsToUnlock.push(54);
+    }
+    if (dAxeEnchants[0] && dAxeEnchants[1] && dAxeEnchants[2]) {
+        achievementsToUnlock.push(55);
+    }
+    unlockAchievements();
+}
+
 function getKillsFromLore(item) {
     let lore = item.getLore();
     let kills = 0;
     lore.forEach(line => {
         if (line.removeFormatting().includes("Kills: ")) {
             kills = parseInt(line.split("Kills: ")[1].removeFormatting().replace(",", ""));
+
         }
     });
     return kills;
+}
+
+function getSlayerLvlFromLore(item) {
+    let lore = item.getLore();
+    let slayerLvl = 0;
+    lore.forEach(line => {
+        if (line.removeFormatting().includes("LVL ")) {
+            slayerLvl = parseInt(line.split("LVL ")[1].removeFormatting());
+        }
+    });
+    return slayerLvl;
 }
 
 register("guiOpened", (event) => {
@@ -377,10 +428,42 @@ register("guiOpened", (event) => {
             let minoKills = getKillsFromLore(container.getStackInSlot(14));
             let catKills = getKillsFromLore(container.getStackInSlot(15));
             trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills);
-
+        }
+        if (container.getName() == "Slayer") {
+            if (getSlayerLvlFromLore(container.getStackInSlot(13)) >= 9) {
+                achievementsToUnlock.push(56);
+                unlockAchievements();
+            }
+        }
+        if (container.getName().includes("Accessory Bag")) {
+            let items = container.getItems();
+            items.forEach((item, index) => {
+                if (item == null) return;
+                if (item == undefined) return;
+                if (getSBID(item) == null) return;
+                if (getSBID(item).includes("BEASTMASTER_CREST")) {
+                    let kills = getKillsFromLore(item);
+                    if (kills >= 10000 && kills < 25000) {
+                        achievementsToUnlock.push(57);
+                    } else if (kills >= 25000 && kills < 50000) {
+                        achievementsToUnlock.push(58);
+                    } else if (kills >= 50000 && kills < 100000) {
+                        achievementsToUnlock.push(59);
+                    } else if (kills >= 100000) {
+                        achievementsToUnlock.push(60);
+                    }
+                    unlockAchievements();
+                }
+            });
         }
     }, 400);
 })
+
+register("chat", (event) => {
+    if (!settings.achievementEnabler) return;
+    achievementsToUnlock.push(56);
+    unlockAchievements();
+}).setCriteria("LVL UP! ➜ Enderman Slayer LVL 9!");
 
 export function backTrackAchievements() {
     ChatLib.chat("&6[SBO] &eBacktracking Achievements...");
@@ -390,6 +473,35 @@ export function backTrackAchievements() {
         }
     }
     trackSinceMob();
+}
+
+export function trackWithCheckPlayer(playerinfo) {
+    if (!settings.achievementEnabler) return;
+    if (playerinfo.eman9) {
+        achievementsToUnlock.push(56);
+    }
+    if (playerinfo.mythosKills >= 10000 && playerinfo.mythosKills < 25000) {
+        achievementsToUnlock.push(57);
+    } else if (playerinfo.mythosKills >= 25000 && playerinfo.mythosKills < 50000) {
+        achievementsToUnlock.push(58);
+    } else if (playerinfo.mythosKills >= 50000 && playerinfo.mythosKills < 100000) {
+        achievementsToUnlock.push(59);
+    } else if (playerinfo.mythosKills >= 100000 && playerinfo.mythosKills < 150000) {
+        achievementsToUnlock.push(60);
+    } else if (playerinfo.mythosKills >= 150000) {
+        achievementsToUnlock.push(61);
+    }
+    
+    if (playerinfo.killLeaderboard <= 100) {
+        achievementsToUnlock.push(62);
+    } 
+    if (playerinfo.killLeaderboard <= 50) {
+        achievementsToUnlock.push(63);
+    } 
+    if (playerinfo.killLeaderboard <= 10) {
+        achievementsToUnlock.push(64);
+    }
+    unlockAchievements();
 }
 
 register("command", () => {
@@ -411,5 +523,13 @@ register("command", (args1, ...args) => {
         })
         confirmState = false;
         ChatLib.chat("&6[SBO] &eAchievements locked");
+        checkDaxeAchievements.register();
     }
 }).setName("sbolockachievements");
+
+let checkDaxeAchievements = register("step", () => {
+    dAxeAchivementCheck();
+    if(achievementsData[55] != undefined)
+        checkDaxeAchievements.unregister();
+}).setFps(1);
+checkDaxeAchievements.register();

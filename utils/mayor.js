@@ -13,6 +13,14 @@ export function getMayor() {
     return mayor;
 }
 
+export function getMinister() {
+    return minister;
+}
+
+export function getMinisterPerk() {
+    return ministerPerk;
+}
+
 export function getYear() {
     return year;
 }
@@ -54,6 +62,8 @@ let mayor = undefined;
 let perks = new Set([]);
 let mayorApiError = false;
 let apiLastUpdated = undefined;
+let minister = undefined;
+let ministerPerk = undefined;
 function getYearMayorRequestV2() {
     mayor = undefined;
     perks = new Set([]);
@@ -63,6 +73,8 @@ function getYearMayorRequestV2() {
     }).then((response)=>{
         mayor = response.mayor.name;
         apiLastUpdated = response.lastUpdated;
+        minister = response.mayor.minister.name;
+        ministerPerk = response.mayor.minister.perk.name;
         perks = new Set([...response.mayor.perks.map(perk => perk.name)]);
         mayorApiError = false;
     }).catch((error)=>{

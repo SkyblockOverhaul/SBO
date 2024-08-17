@@ -2,17 +2,27 @@ import { request } from "../../../requestV2";
 import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
+import { trackWithCheckPlayer } from "./DianaAchievements";
 
 let api = "https://api.skyblockoverhaul.com";
 
+let firstTimeStamp = 0;
 function getPartyInfo(party) {
+    firstTimeStamp = Date.now();
     request({
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
     }).then((response)=> {
+        let timeTaken = Date.now() - firstTimeStamp;
+        ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
         printPartyInfo(response.PartyInfo)
     }).catch((error)=> {
-        console.error(JSON.stringify(error));
+        if (error.detail) {
+            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+        } else {
+            console.error(JSON.stringify(error));
+            ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party members");
+        }
     });
 }
 
@@ -73,6 +83,9 @@ let lastCheckedPlayer = undefined;
 function printCheckedPlayer(playerinfo) {
     playerinfo = playerinfo[0];
     lastCheckedPlayer = playerinfo;
+    if (playerinfo.name == Player.getName()) {
+        trackWithCheckPlayer(playerinfo);
+    }
     new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
     "&r&9│ &r&eLvL&r&f: &r&6" + matchLvlToColor(playerinfo.sbLvl) + 
     "&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + 
@@ -83,9 +96,11 @@ function printCheckedPlayer(playerinfo) {
     new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
 }
 
+let messageString = "";
 register("command", () => {
     if (lastCheckedPlayer) {
-        let messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
+        messageString = "";
+        messageString = "&6[SBO] &eExtra Stats: " + lastCheckedPlayer.name;
 
         if (lastCheckedPlayer.daxeLootingLvl != -1) {
             messageString += "\n&3Daedalus Axe&7: " +
@@ -123,12 +138,22 @@ register("command", () => {
         
 
         messageString += "\n&7- &9Inventory API&7: " + (lastCheckedPlayer.invApi ? "&aOn" : "&4Off");
-        ChatLib.chat(messageString);
+        let messageParts = messageString.split("\n");
+        for (let i = 0; i < messageParts.length; i++) {
+            ChatLib.chat(messageParts[i]);
+        }
+        new TextComponent("&7[&3Copy All&7]").setClick("run_command", "/buttonforsbotocopystats").setHover("show_text", "Click to copy").chat();
     }
     else {
         ChatLib.chat("&6[SBO] &4Invalid button. Please check a player first. /sbocheck <player>");
     }
 }).setName("extrastatsbuttonforsbo");
+
+register("command", () => {
+    ChatLib.command("ct copy " + messageString.removeFormatting(), true);
+    ChatLib.chat("&6[SBO] &aCopied to Clipboard");
+}).setName("buttonforsbotocopystats");
+
 
 function checkPlayer(player) {
     let playerName = player;
@@ -143,12 +168,17 @@ function checkPlayer(player) {
     }).then((response)=> {
         printCheckedPlayer(response.PartyInfo)
     }).catch((error)=> {
-        console.error(error);
-        ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking party member: " + playerName); 
+        if (error.detail) {
+            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+        } else {
+            console.error(JSON.stringify(error));
+            ChatLib.chat("&6[SBO] &4Unexpected error occurred while checking player: " + playerName); 
+        }
     });
 }
 
 register("command", (args1, ...args) => {
+    if (args1 == undefined) args1 = Player.getName();
     checkPlayer(args1);
 }).setName("sbocheck").setAliases("sboc");;
 

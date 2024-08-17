@@ -311,6 +311,13 @@ class Settings {
     })
     dianaAddWarps = 0;
     @SwitchProperty({
+        name: "Add Stonks Warp",
+        description: "Adds a warp point /warp stonks",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    stonksWarp = false;
+    @SwitchProperty({
         name: "Chim Message",
         description: "Enables custom chim message",
         category: "Diana",

@@ -66,6 +66,22 @@ function getCrownMessage() {
     percentToNextTier = percentToNextTier.toFixed(2);
 
     crownLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Crown Tracker`, true));
+
+    if (!hasCrown()) {
+        crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}0`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}0`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}0`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}Coins/hr: ${AQUA}0`, true));
+        if (settings.crownGhostMode) {
+            crownLines.push(new OverlayTextLine(`${GOLD}Ghosts/Tier: ${AQUA}0`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}Ghost Kills: ${AQUA}0`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}Sorrows: ${AQUA}0`, true));
+            crownLines.push(new OverlayTextLine(`${GOLD}1m drops: ${AQUA}0`, true));
+        }
+        crownLines.push(new OverlayTextLine(`${GOLD}0 in ${AQUA}0s`, true));
+        crownLines.push(new OverlayTextLine(`${GOLD}Tier: ${AQUA}0`, true));
+        return crownLines;
+    }
     crownLines.push(new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumberCommas(data.totalCrownCoins)} &7(&b${totalPerecent}%&7)`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Tracked Coins: ${AQUA}${formatNumber(data.totalCrownCoinsGained)} &7(${formatNumber(data.totalCrownCoinsSession)})`, true));
     crownLines.push(new OverlayTextLine(`${GOLD}Last Coins: ${AQUA}${formatNumberCommas(data.lastCrownCoins)}`, true));
@@ -130,6 +146,7 @@ function getCoinsFromCrown() {
 let coinsBeforeCreeperDeath = 0;
 if (data.totalCrownCoins > 0) coinsBeforeCreeperDeath = data.totalCrownCoins;
 function calculateCrownCoins() {
+    if (!hasCrown()) return;
     let coinsAfterCreeperDeath = getCoinsFromCrown();
     let coinsGained = coinsAfterCreeperDeath - coinsBeforeCreeperDeath;
     if (coinsGained > 0 && coinsGained != coinsAfterCreeperDeath) {
@@ -213,6 +230,12 @@ function calculateGhostsTillTier() {
     ghostsTillTier = ghostCoinsAVG > 0 ? coinsNeeded / ghostCoinsAVG : 0;
 }
 
+
+let firsLoadCrown = register("tick", () => {
+    crownOverlay();
+    firsLoadCrown.unregister();
+});
+
 registerWhen(register("entityDeath", (entity) => {
     if (getZone().includes("The Mist")){
         countGhostKills(entity);
@@ -241,6 +264,7 @@ registerWhen(register("tick", () => {
 }), () => settings.crownTracker);
 
 registerWhen(register("step", () => {
+    firsLoadCrown.register();
     if (!hasCrown() || !isDataLoaded() || !isInSkyblock()) {
         crownTracker.renderGui = false;
     }
