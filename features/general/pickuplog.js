@@ -11,7 +11,6 @@ let pickuplogOverlayText = new OverlayTextLine("");
 
 let itemsShownAdded = {};
 let itemsShownRemoved = {};
-// let invDiff = {};
 let guiBool = false;
 let trackBool = false;
 let refreshBool = false;
@@ -40,22 +39,11 @@ function refreshPickuplogOverlay(item, displayName, ammount) {
                     itemsShownRemoved[item] = [ammount, displayName, Date.now()];
                 }
             }
-            // if (isGuiOpened()) {
-            //     if (invDiff[item]) {
-            //         invDiff[item] += ammount;
-            //         // print("adding " + item + " to invDiff with ammount: " + invDiff[item]);
-            //     }
-            //     else {
-            //         // print("adding " + item + " to invDiff with ammount: " + ammount);
-            //         invDiff[item] = ammount;
-            //     }
-            // };
         }
     }
     let text = "";
     text = createPickupLogText(itemsShownAdded);
     text += createPickupLogText(itemsShownRemoved);
-    // invDiff = {}; 
     pickuplogOverlay.setLines([pickuplogOverlayText.setText(text)]);
 }
 
@@ -63,14 +51,6 @@ function refreshPickuplogOverlay(item, displayName, ammount) {
 function createPickupLogText(dict) {
     let text = "";
     for (let item in dict) {
-        // if (invDiff[item] != undefined) {
-        //     // print("invDiff: " + invDiff[item] + " dict: " + dict[item][0] + " item: " + item)
-        //     if (invDiff[item] == 0) {
-        //         // printDev("removing " + item + " from invDiff");
-        //         delete dict[item];
-        //         continue;
-        //     }
-        // }
         if (Date.now() - dict[item][2] > 6000) {
             delete dict[item];
             continue;
@@ -131,7 +111,13 @@ function compareInventories(oldPlayerItems, newPlayerItems, onlyOverlay) {
 }
 
 let oldPlayerItems = {};
+let firstLoad = false;
 function pickuplog() {
+    if (!firstLoad) {
+        oldPurse = getPurse();
+        oldPlayerItems = readPlayerInventory("");
+        firstLoad = true;
+    }
     if (!guiBool && isGuiOpened()) {
         guiBool = true;
         tempInv = Object.assign({}, oldPlayerItems);
@@ -140,25 +126,18 @@ function pickuplog() {
         trackBool = true
         guiBool = false;
     }
-    if (Object.keys(oldPlayerItems).length == 0) {
-        oldPurse = getPurse();
-        oldPlayerItems = readPlayerInventory("", isGuiOpened());
-        // ChatLib.chat("old inventory read");
+
+    newPlayerItems = readPlayerInventory("");
+    newPurse = getPurse();
+    if (trackBool) {
+        compareInventories(tempInv, newPlayerItems, true);
+        trackBool = false;
+        tempInv = {};
     }
-    else {
-        // ChatLib.chat("comparing inventories");
-        newPlayerItems = readPlayerInventory("", isGuiOpened());
-        newPurse = getPurse();
-        if (trackBool) {
-            compareInventories(tempInv, newPlayerItems, true);
-            trackBool = false;
-            tempInv = {};
-        }
-        compareInventories(oldPlayerItems, newPlayerItems, false);
-        oldPlayerItems = readPlayerInventory("", isGuiOpened());
-        oldPurse = getPurse();
-    
-    }
+    compareInventories(oldPlayerItems, newPlayerItems, false);
+    oldPlayerItems = readPlayerInventory("");
+    oldPurse = getPurse();
+
     refreshPickuplogOverlay("null", 0); 
 }
 
