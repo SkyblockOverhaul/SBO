@@ -90,6 +90,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &aFixed achievement page not working as intended when you have 0 achievements unlocked`)
+    ChatLib.chat(`&7> &aFixed hidden tarcker lines showing up in /sboguis`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
