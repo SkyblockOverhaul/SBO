@@ -131,6 +131,7 @@ function compareInventories(oldPlayerItems, newPlayerItems, onlyOverlay) {
 }
 
 let oldPlayerItems = {};
+let firstLoad = false;
 function pickuplog() {
     if (!guiBool && isGuiOpened()) {
         guiBool = true;
@@ -140,14 +141,15 @@ function pickuplog() {
         trackBool = true
         guiBool = false;
     }
-    if (Object.keys(oldPlayerItems).length == 0) {
+    if (!firstLoad) {
         oldPurse = getPurse();
-        oldPlayerItems = readPlayerInventory("", isGuiOpened());
+        oldPlayerItems = readPlayerInventory("");
         // ChatLib.chat("old inventory read");
+        if (Object.keys(oldPlayerItems).length > 0) firstLoad = true;
     }
     else {
         // ChatLib.chat("comparing inventories");
-        newPlayerItems = readPlayerInventory("", isGuiOpened());
+        newPlayerItems = readPlayerInventory("");
         newPurse = getPurse();
         if (trackBool) {
             compareInventories(tempInv, newPlayerItems, true);
@@ -155,11 +157,11 @@ function pickuplog() {
             tempInv = {};
         }
         compareInventories(oldPlayerItems, newPlayerItems, false);
-        oldPlayerItems = readPlayerInventory("", isGuiOpened());
+        oldPlayerItems = readPlayerInventory("");
         oldPurse = getPurse();
     
     }
-    refreshPickuplogOverlay("null", 0); 
+    if (firstLoad) refreshPickuplogOverlay("null", 0); 
 }
 
 registerWhen(register('step', () => {
