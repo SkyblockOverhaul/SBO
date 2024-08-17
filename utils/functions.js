@@ -241,7 +241,7 @@ export function checkItemInHotbar(item) {
     return false;
 }
 
-function checkHotbarItems() {
+export function checkHotbarItems() {
     let hotbarItems = []
     if (!worldLoaded) return hotbarItems;
     let playerInv = Player.getInventory();
@@ -281,6 +281,7 @@ export function checkDaxeEnchants() {
                 divineGift3bool = true;
             }
         }
+        break;
     }
     return [chimVbool, lootingVbool, divineGift3bool];
 }
