@@ -78,15 +78,6 @@ export class Achievement {
         }
     }
 
-    static lockById(id) {
-        if (achievementsData[id] != undefined) {
-            delete achievementsData[id];
-            achievementsData.unlocked = achievementsData.unlocked.filter(achievement => achievement != id);
-            achievementsData.save();
-            Achievement.achievementsUnlocked--;
-        }
-    }
-
     loadState() {
         if (achievementsData[this.id] != undefined) {
             this.unlocked = true;
@@ -357,27 +348,27 @@ export function trackMagicFind(magicFind, chimera=false) {
 }
 
 function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills) {
-    if (gaiaKills >= 3000) {
+    if (gaiaKills >= 100) {
         achievementsToUnlock.push(50);
-    } else Achievement.lockById(50);
-    if (inqKills >= 500) {
+    }
+    if (inqKills >= 100) {
         achievementsToUnlock.push(45);
-    } else Achievement.lockById(45);
-    if (minoKills >= 3000) {
+    }
+    if (minoKills >= 100) {
         achievementsToUnlock.push(46);
-    } else Achievement.lockById(46);
-    if (champKills >= 1000) {
+    }
+    if (champKills >= 100) {
         achievementsToUnlock.push(47);
-    } else Achievement.lockById(47);
-    if (hunterKills >= 1000) {
+    }
+    if (hunterKills >= 100) {
         achievementsToUnlock.push(48);
-    } else Achievement.lockById(48);
-    if (catKills >= 3000) {
+    }
+    if (catKills >= 100) {
         achievementsToUnlock.push(49);
-    } else Achievement.lockById(49);
-    if (gaiaKills >= 3000 && champKills >= 1000 && hunterKills >= 1000 && inqKills >= 500 && minoKills >= 3000 && catKills >= 3000) {
+    }
+    if (gaiaKills >= 100 && inqKills >= 100 && minoKills >= 100 && champKills >= 100 && hunterKills >= 100 && catKills >= 100) {
         achievementsToUnlock.push(51);
-    } else Achievement.lockById(51);
+    }
     unlockAchievements();
 }
 
@@ -527,7 +518,7 @@ register("command", (args1, ...args) => {
     }
     if (confirmState) {
         Achievement.list.forEach(achievement => {
-            if (achievement.isUnlocked()) achievement.lock();
+            if (achievement.isUnlocked() && achievement.id != 38) achievement.lock();
         })
         confirmState = false;
         ChatLib.chat("&6[SBO] &eAchievements locked");
