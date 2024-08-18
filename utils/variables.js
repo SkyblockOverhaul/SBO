@@ -649,8 +649,10 @@ export function checkPastDianaEvents() {
     // remove all event that have 0 TotalBurrows
     let tempEvents = [];
     for (let event of pastDianaEvents.events) {
-        if (event.items["Total Burrows"] != 0) {
-            tempEvents.push(event);
+        if (event.items["Total Burrows"]) {
+            if (event.items["Total Burrows"] != 0) {
+                tempEvents.push(event);
+            }
         }
     }
     pastDianaEvents.events = tempEvents;
