@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -153,7 +153,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 let totalChimera = dianaTrackerMayor["items"]["Chimera"] + dianaTrackerMayor["items"]["ChimeraLs"];
                 setTimeout(function() {
-                    ChatLib.command("pc Chimera: " + totalChimera)
+                    ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"] + " (" + calcPercentOne(dianaTrackerMayor, "Chimera", "Minos Inquisitor") + "%) [LS:" + dianaTrackerMayor["items"]["ChimeraLs"] + "]")
                 }, 100)
             }
             break
@@ -163,7 +163,7 @@ register("chat", (player, message) => {
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"])
+                    ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"] + " (" + calcPercentOne(dianaTrackerMayor, "Minos Inquisitor") + "%)")
                 }, 100)
             }
             break
@@ -181,7 +181,7 @@ register("chat", (player, message) => {
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"])
+                    ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"] + " (" + calcPercentOne(dianaTrackerMayor, "MINOS_RELIC", "Minos Champion") + "%)")
                 }, 100)
             }
             break
@@ -190,7 +190,7 @@ register("chat", (player, message) => {
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(function() {
-                    ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"])
+                    ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"] + " (" + calcPercentOne(dianaTrackerMayor, "Daedalus Stick", "Minotaur") + "%)")
                 }, 100)
             }
             break
