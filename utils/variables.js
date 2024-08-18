@@ -415,15 +415,15 @@ register("chat", () => {
         }
     }
     let newTracker = initializeTrackerMayor();
-    timerMayor.reset();
     for (let key in newTracker) {
         dianaTrackerMayor[key] = newTracker[key];
     }
     if (lastyear == dianaTrackerMayor.year) {
         dianaTrackerMayor.year++;
     }
-    dianaTrackerMayor.save();
     pastDianaEvents.save();
+    timerMayor.reset();
+    dianaTrackerMayor.save();
     setNewMayorBool();
 }).setCriteria("&r&eThe election room is now closed. Clerk Seraphine is doing a final count of the votes...&r");
 
