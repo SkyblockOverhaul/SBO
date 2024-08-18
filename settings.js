@@ -573,19 +573,19 @@ class Settings {
     }
     //guis
     @SwitchProperty({
-        name: "Bobber Counter",
+        name: "Bobber Overlay",
         description: "Tracks the number of bobbers near you /sboguis to move the counter",
         category: "General",
         subcategory: "GUIs",
     })
-    bobberCounter = false;
+    bobberOverlay = false;
     @SwitchProperty({
-        name: "Legion Counter",
+        name: "Legion Overlay",
         description: "Tracks the players near you for legion buff /sboguis to move the counter",
         category: "General",
         subcategory: "GUIs",
     })
-    legionCounter = false;
+    legionOverlay = false;
     // General Waypoints
     @SwitchProperty({
         name: 'Detect Patcher Cords',
