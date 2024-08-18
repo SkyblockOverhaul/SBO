@@ -10,11 +10,9 @@ registerWhen(register("playerInteract", (action, pos) => {
 }), () => Settings.testFeatures);
 
 registerWhen(register("tick", () => {
-    // if older than 2min and 30sec send message
     if (Date.now() - lastTimeThrown > 150000 && throwBool) {
         ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
-        // play multiple sounds
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 6; i++) {
             setTimeout(() => {
                 World.playSound("random.levelup", 100, 0.5*i);
             }, i * 500);
@@ -24,13 +22,10 @@ registerWhen(register("tick", () => {
 }), () => Settings.testFeatures);
 
 
-registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
+registerWhen(register("chat", () => {
     // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
-    if (name == "mob.ghast.scream" || name == "mob.ghast.charge") {
-        ChatLib.chat("sound for rag axe " + name)
-        Client.showTitle("RAG AXE", "", 0, 90, 20);
-    }
-}), () => Settings.testFeatures);
+    Client.showTitle("RAG AXE", "", 0, 90, 20);
+}).setCriteria("&r&4[BOSS] &r&4&kWither King&r&c: &r&cI no longer wish to fight, but I know that will not stop you.&r"), () => Settings.testFeatures);
 
 // dojo sounds:
 // [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
