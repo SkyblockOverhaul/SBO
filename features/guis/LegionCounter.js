@@ -6,8 +6,8 @@ import { YELLOW, BOLD, AQUA } from "../../utils/constants";
 let legionOverlay = new SboOverlay("legionOverlay", "legionOverlay", "render", "LegionLoc");
 let legionOverlayText = new OverlayTextLine("");
 
-
-function getLegionCount() {
+// credits FeeshNotifier
+function getLegionCount() { // not working perfectly
     let legionDistance = 30;
     const players = World
         .getAllPlayers()

@@ -16,9 +16,10 @@ registerWhen(register("tick", () => {
         ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
         for (let i = 0; i < 6; i++) {
             setTimeout(() => {
-                World.playSound("random.levelup", 100, 0.5*i);
+                World.playSound("random.levelup", 100, 1);
             }, i * 500);
         }
+        Client.showTitle("&cLAVA ROD", "&eTHROW IT", 0, 100, 20);
         throwBool = false
     }
 }), () => Settings.testFeatures);
