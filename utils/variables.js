@@ -411,7 +411,7 @@ register("chat", () => {
             }
         }
         if (!allZero) {
-            pastDianaEvents["events"].push(tempTracker);
+            pastDianaEvents["events"].push(tempTracker.copy());
         }
     }
     let newTracker = initializeTrackerMayor();
