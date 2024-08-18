@@ -75,8 +75,8 @@ function calculateBoxHeight() {
     const events = processDianaEvents();
     if (events.length === 0) return 300;
 
-    let itemHeight = 20;
-    let mobHeight = 20;
+    let itemHeight = 16;
+    let mobHeight = 16;
     let maxItemHeight = 0;
     let maxMobHeight = 0;
 
@@ -269,13 +269,13 @@ function drawItems(event, startX, itemYPos) {
         Renderer.drawString(`&a${itemName}: &7${itemAmount}`, adjustedX, adjustedY);
         Renderer.scale(1, 1);
         if (guiScale === 3) {
-            itemYPos += 12;
+            itemYPos += 8;
         }
         else if (guiScale === 1) {
-            itemYPos += 42;
+            itemYPos += 38;
         }
         else {
-            itemYPos += 20;
+            itemYPos += 16;
         }
         totalProfit += calcTotalProfit(itemName, event.items[item]);
     }
@@ -406,7 +406,6 @@ function deleteEvent() {
     pastDianaEvents.events = events;
     pastDianaEvents.save();
     showConfirmDelete = false;
-    print("deleteEvent");
 }
 
 PastDianaEventsGui.registerClicked((mouseX, mouseY, button) => {
