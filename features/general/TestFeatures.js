@@ -1,10 +1,11 @@
+import { registerWhen } from "../../utils/variables";
+
 let lastTimeThrown = 0
 let throwBool = false
 registerWhen(register("playerInteract", (action, pos) => {
     let item = Player.getHeldItem()
     if (item.getLore()[1].includes("§8Lava Rod")) {
         lastTimeThrown = Date.now()
-        ChatLib.chat("&6[SBO] &eYou have thrown your Lava Rod") 
         throwBool = true
     }
 }), () => Settings.testFeatures);
