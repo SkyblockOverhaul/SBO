@@ -793,3 +793,10 @@ export function matchLvlToColor(lvl) {
         return "&7" + lvl;
     }
 }
+
+export function drawRectangleOutline(x, y, width, height, color, thickness) {
+    Renderer.drawLine(color, x, y, x + width, y, thickness);
+    Renderer.drawLine(color, x, y, x, y + height, thickness);
+    Renderer.drawLine(color, x, y + height, x + width, y + height, thickness);
+    Renderer.drawLine(color, x + width, y, x + width, y + height, thickness);
+}
