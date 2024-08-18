@@ -1,4 +1,5 @@
 import { registerWhen } from "../../utils/variables";
+import Settings from "../../settings";
 
 let lastTimeThrown = 0
 let throwBool = false
