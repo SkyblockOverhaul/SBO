@@ -3,7 +3,7 @@ import { BOLD, AQUA, YELLOW} from "../../utils/constants";
 import { registerWhen } from "../../utils/variables";
 import { OverlayTextLine, SboOverlay} from "../../utils/overlays";
 
-let bobberOverlay = new SboOverlay("bobberOverlay", "bobberCounter", "render", "BobberLoc");
+let bobberOverlay = new SboOverlay("bobberOverlay", "bobberOverlay", "render", "BobberLoc");
 let bobberOverlayText = new OverlayTextLine("");
 
 let bobberCount = 0;
