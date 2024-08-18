@@ -51,6 +51,13 @@ function layoutData() {
     let buttonHeight = 20 * compensationFactor;
     let buttonTextY = boxY + 10 * compensationFactor;
 
+    if (guiScale === 1) {
+        startY -= 15;
+        titleY -= 15;
+        boxY -= 15;
+        buttonTextY -= 15;
+    }
+
     return {
         displayX,
         displayY,
@@ -272,7 +279,7 @@ function drawItems(event, startX, itemYPos) {
             itemYPos += 8;
         }
         else if (guiScale === 1) {
-            itemYPos += 38;
+            itemYPos += 34;
         }
         else {
             itemYPos += 16;
