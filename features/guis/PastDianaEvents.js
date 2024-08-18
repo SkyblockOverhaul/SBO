@@ -310,13 +310,13 @@ function drawMobs(event, mobsX, mobYPos) {
         Renderer.drawString(`&a${mob}: &7${event.mobs[mob]}`, adjustedX, adjustedY);
         Renderer.scale(1, 1);
         if (guiScale === 3) {
-            mobYPos += 12;
+            mobYPos += 8;
         }
         else if (guiScale === 1) {
-            mobYPos += 42;
+            mobYPos += 34;
         }
         else {
-            mobYPos += 20;
+            mobYPos += 16;
         }
     }
 }
