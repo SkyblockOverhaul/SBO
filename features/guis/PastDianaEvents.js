@@ -57,6 +57,12 @@ function layoutData() {
         boxY -= 65;
         buttonTextY -= 65;
     }
+    if (guiScale === 3) {
+        startY += 10;
+        titleY += 10;
+        boxY += 10;
+        buttonTextY += 10;
+    }
 
     return {
         displayX,
