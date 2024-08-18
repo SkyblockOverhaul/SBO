@@ -1,6 +1,6 @@
 import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
 import { initializeGuiSettings, getKuudraItems, getBazaarItems } from "./functions";
-import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
+import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents } from "./variables";
 import settings from "../settings";
 import { unlockAchievement } from "../features/Diana/DianaAchievements";
 
@@ -50,6 +50,7 @@ function checkAllCriteria() {
     if (check8 && check5) {
         check9 = true;
         checkMayorTracker();
+        checkPastDianaEvents();
     }
     
     if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9) {

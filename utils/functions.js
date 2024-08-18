@@ -662,6 +662,15 @@ export function calcPercent(trackerToCalc, type) {
     }
 }
 
+export function calcPercentOne(tracker, item, mob = undefined) {
+    if (tracker == undefined) return;
+    if (mob) {
+        return parseFloat((tracker["items"][item] / tracker["mobs"][mob] * 100).toFixed(2));
+    } else {
+        return parseFloat((tracker["mobs"][item] / tracker["mobs"]["TotalMobs"] * 100).toFixed(2));  
+    }
+}
+
 export function getTracker(setting) {
     switch (setting) {
         case 1:
