@@ -644,3 +644,15 @@ register("gameUnload", () => {
     pastDianaEvents.save();
     achievementsData.save();
 });
+
+export function checkPastDianaEvents() {
+    // remove all event that have 0 TotalBurrows
+    let tempEvents = [];
+    for (let event of pastDianaEvents.events) {
+        if (event.items["Total Burrows"] != 0) {
+            tempEvents.push(event);
+        }
+    }
+    pastDianaEvents.events = tempEvents;
+    pastDianaEvents.save();
+}
