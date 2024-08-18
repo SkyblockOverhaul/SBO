@@ -52,10 +52,10 @@ function layoutData() {
     let buttonTextY = boxY + 10 * compensationFactor;
 
     if (guiScale === 1) {
-        startY -= 15;
-        titleY -= 15;
-        boxY -= 15;
-        buttonTextY -= 15;
+        startY -= 35;
+        titleY -= 35;
+        boxY -= 35;
+        buttonTextY -= 35;
     }
 
     return {
