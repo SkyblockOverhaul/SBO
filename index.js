@@ -18,6 +18,7 @@ import "./features/guis/SlayerGuis";
 import "./features/general/CrownTracker";
 import "./features/Diana/DianaAchievements";
 import "./features/guis/Achievements";
+import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 import Settings from "./settings";
