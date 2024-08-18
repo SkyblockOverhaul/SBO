@@ -546,7 +546,7 @@ function getActiveUsers() {
         activeUsers = response.activeUsers;
         if (activeUsers == undefined) {
             print("active users undefined");
-            activeUsers = {};
+            activeUsers = 0;
         }
     }).catch((error)=>{
         console.error("An error occurred: " + error);
