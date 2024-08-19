@@ -34,11 +34,10 @@ registerWhen(register("chat", (trash, drop) => {
 const GuiChat = Java.type('net.minecraft.client.gui.GuiChat')
 const Mouse = org.lwjgl.input.Mouse
 
-register("guiMouseClick", (mouseX, mouseY, button, gui, event) => {
+registerWhen(register("guiMouseClick", (mouseX, mouseY, button, gui, event) => {
     if (!gui instanceof GuiChat) return;
-    if (!settings.copyChatMessage) return;
     onMouseClick(button);
-});
+}), () => settings.copyChatMessage);
 
 function onMouseClick(button) {
     if (button != 1 || !Client.isInChat()) return;
