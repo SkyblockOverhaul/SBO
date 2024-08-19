@@ -29,10 +29,15 @@ registerWhen(register("chat", (trash, drop) => {
 // VERY RARE DROP! (◆ Pestilence Rune I) (+364% ✯ Magic Find)
 // &r&5&lVERY RARE DROP! &r&7(&r&f&r&2◆ Pestilence Rune I&r&7) &r&b(+364% &r&b✯ Magic Find&r&b)&r
 
-// const GuiChat = Java.type('net.minecraft.client.gui.GuiChat')
-// register("postGuiRender", (gui,x,y) => {
-//     if (!gui instanceof GuiChat) return;
-//     if (Client.isInChat()){
-//         print(Client.getChatGUI()?.func_146236_a(Client.getMouseX(), Client.getMouseY()));
-//     }
-// });
+const GuiChat = Java.type('net.minecraft.client.gui.GuiChat')
+const ChatLine = Java.type('net.minecraft.client.gui.ChatLine')
+register("postGuiRender", (gui,x,y) => {
+    if (!gui instanceof GuiChat) return;
+    if (Client.isInChat()){
+        chatClickRegister.register();
+    }
+});
+
+let chatClickRegister = register("chatComponentClicked", (chatComponent) => {
+    print(chatComponent.toString());
+}).unregister();
