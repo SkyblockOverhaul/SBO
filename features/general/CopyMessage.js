@@ -83,7 +83,7 @@ function onMouseClick(button) {
         if (i >= 0 && i <= 10) {
             if (scannedComponent2) {
                 const text2 = scannedComponent2.func_150261_e()?.removeFormatting();
-                if (text2.startsWith(" ") || text2.startsWith(" ☠")) {
+                if (text2.startsWith(" ") && !text2.startsWith(" ☠")) {
                     multilineCopy(scannedComponent2, line2, true);
                 } else {
                     stopCopying = true;
@@ -91,7 +91,7 @@ function onMouseClick(button) {
             }
             if (scannedComponent3 && !stopCopying) {
                 const text3 = scannedComponent3.func_150261_e()?.removeFormatting();
-                if (text3.startsWith(" ") || text3.startsWith(" ☠")) {
+                if (text3.startsWith(" ") && !text3.startsWith(" ☠")) {
                     multilineCopy(scannedComponent3, line3, true);
                 } else {
                     stopCopying = true;
@@ -99,7 +99,7 @@ function onMouseClick(button) {
             }
             if (scannedComponent4 && !stopCopying) {
                 const text4 = scannedComponent4.func_150261_e()?.removeFormatting();
-                if (text4.startsWith(" ") || text4.startsWith(" ☠")) {
+                if (text4.startsWith(" ") && !text4.startsWith(" ☠")) {
                     multilineCopy(scannedComponent4, line4, true);
                 } else {
                     stopCopying = true;
@@ -107,7 +107,7 @@ function onMouseClick(button) {
             }
             if (scannedComponent5 && !stopCopying) {
                 const text5 = scannedComponent5.func_150261_e()?.removeFormatting();
-                if (text5.startsWith(" ") || text5.startsWith(" ☠")) {
+                if (text5.startsWith(" ") && !text5.startsWith(" ☠")) {
                     multilineCopy(scannedComponent5, line5, true);
                 } else {
                     stopCopying = true;
