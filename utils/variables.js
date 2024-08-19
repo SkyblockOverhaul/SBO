@@ -342,14 +342,14 @@ export function checkMayorTracker() {
             }
         }
         let newTracker = initializeTrackerMayor();
-        timerMayor.reset();
         data.last10ChimMagicFind = [];
         data.last10StickMagicFind = [];
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
         }
-        dianaTrackerMayor.save();
         pastDianaEvents.save();
+        timerMayor.reset();
+        dianaTrackerMayor.save();
         data.save();
     }
 }
@@ -411,7 +411,7 @@ register("chat", () => {
             }
         }
         if (!allZero) {
-            pastDianaEvents["events"].push(tempTracker.copy());
+            pastDianaEvents["events"].push(tempTracker);
         }
     }
     let newTracker = initializeTrackerMayor();
