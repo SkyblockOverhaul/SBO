@@ -116,7 +116,7 @@ function singleLineCopy(button, chatGui, mouseY) {
         if (!scannedComponent) continue;
 
         chatComponents.push (
-            Client.isShiftDown()
+            Client.isControlDown()
                 ? scannedComponent.func_150261_e()?.replace(/§/g, "&")
                 : scannedComponent.func_150261_e()?.removeFormatting()?.replace(/§z/g, "")
         )
