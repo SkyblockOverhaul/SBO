@@ -58,7 +58,7 @@ function onMouseClick(button) {
         chatComponents.push (
             Client.isControlDown()
                 ? scannedComponent.func_150261_e()?.replace(/§/g, "&")
-                : scannedComponent.func_150261_e().removeFormatting()
+                : scannedComponent.func_150261_e()?.removeFormatting()?.replace(/§z/g, "")
         )
         i += Renderer.getStringWidth(scannedComponent?.func_150265_g()) * guiScale
     }
