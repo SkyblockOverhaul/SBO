@@ -189,9 +189,13 @@ registerWhen(register("playerInteract", (action, pos) => {
         lastTimeThrown = Date.now()
         throwBool = true
     }
-}), () => settings.goldenFishTimer);
+}), () => settings.goldenFishTimer && getWorld() == "Crimson Isle");
 
 registerWhen(register("tick", () => {
+    if (getWorld() != "Crimson Isle" && goldenFishOverlay.renderGui) {
+        if (spawnTimer != 0) resetGoldenFish();
+        goldenFishOverlay.renderGui = false
+    }
     if (spawnTimer == 0 && lastTimeThrown != 0) {
         spawnTimer = Date.now()
     }    
@@ -241,8 +245,8 @@ function calculatePercentage(timeInMillis, minTime, maxTime) {
 
 registerWhen(register("chat", (rarity) => {
     resetGoldenFish();
-}).setCriteria("TROPHY FISH! You caught a Golden Fish ${rarity}"), () => settings.goldenFishTimer); 
+}).setCriteria("TROPHY FISH! You caught a Golden Fish ${rarity}"), () => settings.goldenFishTimer && getWorld() == "Crimson Isle"); 
 
 registerWhen(register("chat", () => {
     ChatLib.chat("&6[SBO] &eA Golden Fish has spawned")
-}).setCriteria("You spot a Golden Fish surface from beneath the lava!"), () => settings.goldenFishTimer);
+}).setCriteria("You spot a Golden Fish surface from beneath the lava!"), () => settings.goldenFishTimer && getWorld() == "Crimson Isle");
