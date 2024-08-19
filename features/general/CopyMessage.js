@@ -30,14 +30,38 @@ registerWhen(register("chat", (trash, drop) => {
 // &r&5&lVERY RARE DROP! &r&7(&r&f&r&2◆ Pestilence Rune I&r&7) &r&b(+364% &r&b✯ Magic Find&r&b)&r
 
 const GuiChat = Java.type('net.minecraft.client.gui.GuiChat')
-const ChatLine = Java.type('net.minecraft.client.gui.ChatLine')
-register("postGuiRender", (gui,x,y) => {
+const Mouse = org.lwjgl.input.Mouse
+
+register("guiMouseClick", (mouseX, mouseY, button, gui, event) => {
     if (!gui instanceof GuiChat) return;
-    if (Client.isInChat()){
-        chatClickRegister.register();
-    }
+    if (!settings.copyChatMessage) return;
+    onMouseClick(button);
 });
 
-let chatClickRegister = register("chatComponentClicked", (chatComponent) => {
-    print(chatComponent.toString());
-}).unregister();
+function onMouseClick(button) {
+    if (button != 1 || !Client.isInChat()) return;
+    const [ mouseX, mouseY ] = [Mouse.getX(), Mouse.getY()];
+    const chatGui = Client.getChatGUI();
+    const component = chatGui.func_146236_a(mouseX, mouseY)
+
+    if (!component?.func_150261_e()) return;
+    const guiScale = Client.settings.video.getGuiScale()
+    const chatWidth = chatGui.func_146233_a(guiScale)
+
+    let chatComponents = []
+
+    for (let i = 0; i < chatWidth; i++) {
+        let scannedComponent = chatGui.func_146236_a(i, mouseY)
+        if (!scannedComponent) continue;
+
+        chatComponents.push (
+            Client.isControlDown()
+                ? scannedComponent.func_150261_e()?.replace(/§/g, "&")
+                : scannedComponent.func_150261_e().removeFormatting()
+        )
+        i += Renderer.getStringWidth(scannedComponent?.func_150265_g()) * guiScale
+    }
+
+    ChatLib.command(`ct copy ${chatComponents.join("")}`, true);
+    ChatLib.chat("§6[SBO] §aCopied Chat Message!§r");
+}

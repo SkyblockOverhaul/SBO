@@ -561,6 +561,13 @@ class Settings {
         category: 'Quality of Life',
     })
     CarnivalZombieLine = false;
+    @SwitchProperty({
+        name: 'Copy Chat Message',
+        description: 'Copy chat message to clipboard',
+        category: 'Quality of Life',
+    })
+    copyChatMessage = false;
+
     // General
     @ButtonProperty({
         name: "Move GUIs",
@@ -754,6 +761,8 @@ class Settings {
     resetCrownTracker() {
         ChatLib.command("sboresetcrowntracker", true);
     }
+
+
 
     // sound settings
     @ButtonProperty({
