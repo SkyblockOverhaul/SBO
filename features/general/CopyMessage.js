@@ -43,6 +43,10 @@ function onMouseClick(button) {
     if (button != 1 || !Client.isInChat()) return;
     const mouseY = Mouse.getY()
     const chatGui = Client.getChatGUI()
+    if (Client.isShiftDown() && !Client.isControlDown()) {
+        singleLineCopy(button)
+        return
+    }
     const guiScale = Client.settings.video.getGuiScale()
     const chatWidth = chatGui.func_146233_a(guiScale)
 
@@ -94,4 +98,32 @@ function multilineCopy (comp, arr, secondLine = false) {
     if (arr.indexOf(msg) !== -1) return
 
     arr.push(msg)
+}
+
+function singleLineCopy(button) {
+    if (button != 1 || !Client.isInChat()) return;
+    const [ mouseX, mouseY ] = [Mouse.getX(), Mouse.getY()];
+    const chatGui = Client.getChatGUI();
+    const component = chatGui.func_146236_a(mouseX, mouseY)
+
+    if (!component?.func_150261_e()) return;
+    const guiScale = Client.settings.video.getGuiScale()
+    const chatWidth = chatGui.func_146233_a(guiScale)
+
+    let chatComponents = []
+
+    for (let i = 0; i < chatWidth; i++) {
+        let scannedComponent = chatGui.func_146236_a(i, mouseY)
+        if (!scannedComponent) continue;
+
+        chatComponents.push (
+            Client.isShiftDown()
+                ? scannedComponent.func_150261_e()?.replace(/§/g, "&")
+                : scannedComponent.func_150261_e()?.removeFormatting()?.replace(/§z/g, "")
+        )
+        i += Renderer.getStringWidth(scannedComponent?.func_150265_g()) * guiScale
+    }
+
+    ChatLib.command(`ct copy ${chatComponents.join("")}`, true);
+    ChatLib.chat("§6[SBO] §aCopied Chat Message!§r");
 }
