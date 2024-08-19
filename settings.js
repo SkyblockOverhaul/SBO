@@ -576,7 +576,7 @@ class Settings {
     goldenFishNotification = false;
     @SwitchProperty({
         name: 'Copy Chat Message',
-        description: 'Copy chat message to clipboard (Like SBE)',
+        description: '[WIP] Copy chat message to clipboard (Like SBE)',
         category: 'Quality of Life',
     })
     copyChatMessage = false;
