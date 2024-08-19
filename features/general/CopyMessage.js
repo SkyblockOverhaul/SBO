@@ -29,6 +29,8 @@ registerWhen(register("chat", (trash, drop) => {
 // VERY RARE DROP! (◆ Pestilence Rune I) (+364% ✯ Magic Find)
 // &r&5&lVERY RARE DROP! &r&7(&r&f&r&2◆ Pestilence Rune I&r&7) &r&b(+364% &r&b✯ Magic Find&r&b)&r
 
+
+// Credits to DocilElm for this see here: https://github.com/DocilElm/Doc/blob/main/Doc/features/misc/CopyChat.js
 const GuiChat = Java.type('net.minecraft.client.gui.GuiChat')
 const Mouse = org.lwjgl.input.Mouse
 

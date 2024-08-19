@@ -1,30 +1,6 @@
 import { registerWhen } from "../../utils/variables";
 import Settings from "../../settings";
 
-let lastTimeThrown = 0
-let throwBool = false
-registerWhen(register("playerInteract", (action, pos) => {
-    let item = Player.getHeldItem()
-    if (item.getLore()[1].includes("§8Lava Rod")) {
-        lastTimeThrown = Date.now()
-        throwBool = true
-    }
-}), () => Settings.testFeatures);
-
-registerWhen(register("tick", () => {
-    if (Date.now() - lastTimeThrown > 150000 && throwBool) {
-        ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
-        for (let i = 0; i < 6; i++) {
-            setTimeout(() => {
-                World.playSound("random.levelup", 100, 1);
-            }, i * 500);
-        }
-        Client.showTitle("&cLAVA ROD", "&eTHROW IT", 0, 100, 20);
-        throwBool = false
-    }
-}), () => Settings.testFeatures);
-
-
 registerWhen(register("chat", () => {
     // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
     Client.showTitle("RAG AXE", "", 0, 90, 20);

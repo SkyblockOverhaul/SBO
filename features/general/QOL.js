@@ -1,9 +1,10 @@
 import settings from "../../settings";
-import { getplayername, trace } from "../../utils/functions";
+import { getplayername, trace, formatTimeMinSec } from "../../utils/functions";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
 import RenderLibV2 from "../../../RenderLibV2";
+import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 
 // register dragon wings for golden dragon nest
 let found = false;
@@ -172,3 +173,76 @@ registerWhen(register("renderWorld", () => {
         }
     }
 }), () => settings.carnivalZombie);
+
+let goldenFishOverlay = new SboOverlay("Golden Fish", "goldenFishTimer", "render", "GoldenFishLoc")
+let goldenFishTitle = new OverlayTextLine("&6&lGolden Fish Timer")
+let goldenFishSpawnLine = new OverlayTextLine("&6Spawn: &b15m 0s")
+let goldenFishTimeLine = new OverlayTextLine("&6Cast: &b3m 0s")
+goldenFishOverlay.setLines([goldenFishTitle, goldenFishSpawnLine, goldenFishTimeLine])
+
+let spawnTimer = 0
+let lastTimeThrown = 0
+let throwBool = false
+registerWhen(register("playerInteract", (action, pos) => {
+    let item = Player.getHeldItem()
+    if (item.getLore()[1].includes("§8Lava Rod")) {
+        lastTimeThrown = Date.now()
+        throwBool = true
+    }
+}), () => Settings.goldenFishTimer);
+
+registerWhen(register("tick", () => {
+    if (spawnTimer == 0 && lastTimeThrown != 0) {
+        spawnTimer = Date.now()
+    }    
+    if (Date.now() - lastTimeThrown > 150000 && throwBool) {
+        if (Settings.goldenFishNotification) {
+            ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    World.playSound("random.levelup", 100, 1);
+                }, i * 500);
+            }
+            Client.showTitle("&cCast Rod", "", 0, 100, 20);
+            throwBool = false
+        } 
+    }
+    if (lastTimeThrown != 0) { // at 15m its 0% chance at 20m its 100% chance linearly
+        if (900000 - (Date.now() - spawnTimer) < 0) {
+            let spawnChance = calculatePercentage(Date.now() - spawnTimer, 900000, 1200000)
+            goldenFishSpawnLine.setText("&6Spawn Chance: &b" + (spawnChance).toFixed(2) + "%")
+        } else {
+            goldenFishSpawnLine.setText(`&6Next Spawn: &b${formatTimeMinSec(900000 - (Date.now() - spawnTimer))}`)
+        }
+        goldenFishTimeLine.setText(`&6Cast Before: &b${formatTimeMinSec(180000 - (Date.now() - lastTimeThrown))}`)
+        if (180000 - (Date.now() - lastTimeThrown) < 0) {
+            resetGoldenFish();
+        }
+    }
+}), () => Settings.goldenFishTimer);
+
+function resetGoldenFish() {
+    spawnTimer = 0
+    lastTimeThrown = 0
+    throwBool = false
+    goldenFishSpawnLine.setText("&6Spawn: &b15m 0s")
+    goldenFishTimeLine.setText("&6Cast: &be3m 0s")
+}
+
+function calculatePercentage(timeInMillis, minTime, maxTime) {
+    if (timeInMillis <= minTime) {
+        return 0;
+    } else if (timeInMillis >= maxTime) {
+        return 100;
+    } else {
+        return ((timeInMillis - minTime) / (maxTime - minTime)) * 100;
+    }
+}
+
+registerWhen(register("chat", (rarity) => {
+    resetGoldenFish();
+}).setCriteria("TROPHY FISH! You caught a Golden Fish ${rarity}"), () => Settings.goldenFishTimer); 
+
+registerWhen(register("chat", () => {
+    ChatLib.chat("&6[SBO] &eA Golden Fish has spawned")
+}).setCriteria("You spot a Golden Fish surface from beneath the lava!"), () => Settings.goldenFishTimer);
