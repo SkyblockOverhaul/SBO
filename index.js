@@ -89,7 +89,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> --QOL--`)
+    ChatLib.chat(`&7> &e--QOL--`)
     ChatLib.chat(`&7> &a- Added Chat Copying, functions exactly like SBE Copy Chat`)
     ChatLib.chat(`&7> &a- Added a Golden Fish Timer`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
