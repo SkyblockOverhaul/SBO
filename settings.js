@@ -564,7 +564,7 @@ class Settings {
     CarnivalZombieLine = false;
     @SwitchProperty({
         name: 'Golden Fish Timer',
-        description: 'Shows the time since you last threw your Lava Rod',
+        description: 'Shows a overlay with the timer until the next golden fish can spawn',
         category: 'Quality of Life',
     })
     goldenFishTimer = false;
