@@ -57,7 +57,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.3.6" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.3.7" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -89,9 +89,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aFixed achievement page not working as intended when you have 0 achievements unlocked`)
-    ChatLib.chat(`&7> &aFixed hidden tracker lines showing up in /sboguis`)
-    ChatLib.chat(`&7> &aFixed Be achievements giving always the highest achivement`)
+    ChatLib.chat(`&7> --QOL--`)
+    ChatLib.chat(`&7> &a- Added Chat Copying, functions exactly like SBE Copy Chat`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
