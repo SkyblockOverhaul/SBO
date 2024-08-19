@@ -55,7 +55,6 @@ function onMouseClick(button) {
     let line3 = [];
     let line4 = [];
     let line5 = [];
-    let line6 = [];
 
     let stopCopying = false;
 
@@ -116,7 +115,7 @@ function onMouseClick(button) {
         }
         if (scannedComponent) i += (Renderer.getStringWidth(scannedComponent.func_150261_e()) * guiScale);
     }
-    ChatLib.command(`ct copy ${[...line1, ...line2, ...line3, ...line4, ...line5, ...line6].join("\n")}`, true);
+    ChatLib.command(`ct copy ${[...line1, ...line2, ...line3, ...line4, ...line5].join("\n")}`, true);
     ChatLib.chat("§6[SBO] §aCopied Chat Message!§r");
 }
 
