@@ -22,11 +22,11 @@ import "./features/guis/PastDianaEvents";
 import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
-import Settings from "./settings";
+import settings from "./settings";
 
 register("command", (args1, ...args) => {
     if (args1 == undefined) {
-        Settings.openGUI()
+        settings.openGUI()
     } else {
         switch (args1.toLowerCase()) { 
             case "help":

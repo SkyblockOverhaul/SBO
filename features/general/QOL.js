@@ -189,14 +189,14 @@ registerWhen(register("playerInteract", (action, pos) => {
         lastTimeThrown = Date.now()
         throwBool = true
     }
-}), () => Settings.goldenFishTimer);
+}), () => settings.goldenFishTimer);
 
 registerWhen(register("tick", () => {
     if (spawnTimer == 0 && lastTimeThrown != 0) {
         spawnTimer = Date.now()
     }    
     if (Date.now() - lastTimeThrown > 150000 && throwBool) {
-        if (Settings.goldenFishNotification) {
+        if (settings.goldenFishNotification) {
             ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
             for (let i = 0; i < 6; i++) {
                 setTimeout(() => {
@@ -219,7 +219,7 @@ registerWhen(register("tick", () => {
             resetGoldenFish();
         }
     }
-}), () => Settings.goldenFishTimer);
+}), () => settings.goldenFishTimer);
 
 function resetGoldenFish() {
     spawnTimer = 0
@@ -241,8 +241,8 @@ function calculatePercentage(timeInMillis, minTime, maxTime) {
 
 registerWhen(register("chat", (rarity) => {
     resetGoldenFish();
-}).setCriteria("TROPHY FISH! You caught a Golden Fish ${rarity}"), () => Settings.goldenFishTimer); 
+}).setCriteria("TROPHY FISH! You caught a Golden Fish ${rarity}"), () => settings.goldenFishTimer); 
 
 registerWhen(register("chat", () => {
     ChatLib.chat("&6[SBO] &eA Golden Fish has spawned")
-}).setCriteria("You spot a Golden Fish surface from beneath the lava!"), () => Settings.goldenFishTimer);
+}).setCriteria("You spot a Golden Fish surface from beneath the lava!"), () => settings.goldenFishTimer);
