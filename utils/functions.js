@@ -331,6 +331,7 @@ export function initializeGuiSettings() {
         AvgMagicFindLoc: { "x": 15, "y": 350, "s": 1 },
         PickupLogLoc: { "x": 2, "y": 2, "s": 1 },
         CrownLoc: { "x": 15, "y": 435, "s": 1 },
+        GoldenFishLoc: { "x": 15, "y": 50, "s": 1 },   
     };
 }
 
@@ -706,6 +707,17 @@ export function formatTime(milliseconds) {
     }
 
     return formattedTime.trim();
+}
+
+export function formatTimeMinSec(milliseconds) {
+    const totalSeconds = parseInt(milliseconds / 1000);
+    const totalMinutes = parseInt(totalSeconds / 60);
+    const minutes = totalMinutes % 60;
+    const seconds = totalSeconds % 60;
+
+    let formattedTime = `${minutes}m ${seconds}s`;
+
+    return formattedTime;
 }
 
 let dianaMayorTotalProfit = 0;

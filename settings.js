@@ -78,6 +78,7 @@ class Settings {
         this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
         this.addDependency('Custom Chim Message Text','Chim Message');
         this.addDependency('Reset Custom Chim Message','Chim Message');
+        this.addDependency('Golden Fish Notification','Golden Fish Timer');
 
     } 
     //-----------Diana Burrows----------------
@@ -561,6 +562,18 @@ class Settings {
         category: 'Quality of Life',
     })
     CarnivalZombieLine = false;
+    @SwitchProperty({
+        name: 'Golden Fish Timer',
+        description: 'Shows the time since you last threw your Lava Rod',
+        category: 'Quality of Life',
+    })
+    goldenFishTimer = false;
+    @SwitchProperty({
+        name: 'Golden Fish Notification',
+        description: 'Notifies you when you have not thrown your Lava Rod in over 2 minutes and 30 seconds',
+        category: 'Quality of Life',
+    })
+    goldenFishNotification = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
