@@ -43,8 +43,8 @@ function onMouseClick(button) {
     if (button != 1 || !Client.isInChat()) return;
     const mouseY = Mouse.getY()
     const chatGui = Client.getChatGUI()
-    if (Client.isShiftDown() && !Client.isControlDown()) {
-        singleLineCopy(button)
+    if (Client.isShiftDown()) {
+        singleLineCopy(button, chatGui, mouseY)
         return
     }
     const guiScale = Client.settings.video.getGuiScale()
@@ -100,10 +100,9 @@ function multilineCopy (comp, arr, secondLine = false) {
     arr.push(msg)
 }
 
-function singleLineCopy(button) {
+function singleLineCopy(button, chatGui, mouseY) {
     if (button != 1 || !Client.isInChat()) return;
-    const [ mouseX, mouseY ] = [Mouse.getX(), Mouse.getY()];
-    const chatGui = Client.getChatGUI();
+    const mouseX = Mouse.getX();
     const component = chatGui.func_146236_a(mouseX, mouseY)
 
     if (!component?.func_150261_e()) return;
