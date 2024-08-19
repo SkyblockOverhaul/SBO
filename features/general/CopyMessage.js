@@ -51,11 +51,17 @@ function onMouseClick(button) {
     let line1 = []
     let line2 = []
     let line3 = []
+    let line4 = []
+    let line5 = []
+    let line6 = []
 
     for (let i = 0; i < chatWidth; i ++) {
         let scannedComponent = chatGui.func_146236_a(i, mouseY)
         let scannedComponent2 = chatGui.func_146236_a(i, mouseY - (10 * guiScale))
         let scannedComponent3 = chatGui.func_146236_a(i, mouseY - (20 * guiScale))
+        let scannedComponent4 = chatGui.func_146236_a(i, mouseY - (30 * guiScale))
+        let scannedComponent5 = chatGui.func_146236_a(i, mouseY - (40 * guiScale))
+        let scannedComponent6 = chatGui.func_146236_a(i, mouseY - (50 * guiScale))
         
         multilineCopy(scannedComponent, line1)
         if (i >= 0 && i <= 10 && scannedComponent2?.func_150261_e()?.removeFormatting()?.startsWith(" ")) {
@@ -64,12 +70,15 @@ function onMouseClick(button) {
         if (multiline) {
             multilineCopy(scannedComponent2, line2, true)
             multilineCopy(scannedComponent3, line3, true)
+            multilineCopy(scannedComponent4, line4, true)
+            multilineCopy(scannedComponent5, line5, true)
+            multilineCopy(scannedComponent6, line6, true)
         }
 
         if (scannedComponent) i += (Renderer.getStringWidth(scannedComponent.func_150261_e()) * guiScale)
     }
 
-    ChatLib.command(`ct copy ${[...line1, ...line2, ...line3].join("\n")}`, true)
+    ChatLib.command(`ct copy ${[...line1, ...line2, ...line3, ...line4, ...line5, ...line6].join("\n")}`, true)
     ChatLib.chat("§6[SBO] §aCopied Chat Message!§r");
 }
 
