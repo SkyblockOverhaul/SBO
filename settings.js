@@ -563,13 +563,6 @@ class Settings {
     })
     CarnivalZombieLine = false;
     @SwitchProperty({
-        name: 'Copy Chat Message',
-        description: 'Copy chat message to clipboard',
-        category: 'Quality of Life',
-    })
-    copyChatMessage = false;
-
-    @SwitchProperty({
         name: 'Golden Fish Timer',
         description: 'Shows a overlay with the timer until the next golden fish can spawn',
         category: 'Quality of Life',
@@ -581,6 +574,12 @@ class Settings {
         category: 'Quality of Life',
     })
     goldenFishNotification = false;
+    @SwitchProperty({
+        name: 'Copy Chat Message',
+        description: 'Copy chat message to clipboard (Like SBE)',
+        category: 'Quality of Life',
+    })
+    copyChatMessage = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
