@@ -41,7 +41,7 @@ registerWhen(register("guiMouseClick", (mouseX, mouseY, button, gui, event) => {
 
 function onMouseClick(button) {
     if (button != 1 || !Client.isInChat()) return;
-    const mouseY = Mouse.getY();
+    let mouseY = Mouse.getY();
     const chatGui = Client.getChatGUI();
     if (Client.isShiftDown()) {
         singleLineCopy(button, chatGui, mouseY);
@@ -58,6 +58,15 @@ function onMouseClick(button) {
     let line6 = [];
 
     let stopCopying = false;
+
+    for (let i = 0; i < chatWidth; i ++) {
+        if (chatGui.func_146236_a(i, mouseY)?.func_150261_e()) {
+            while (chatGui.func_146236_a(i, mouseY)?.func_150261_e()?.removeFormatting()?.startsWith(" ")) {
+                mouseY = mouseY + (10 * guiScale)
+            }
+            break
+        }
+    }
 
     for (let i = 0; i < chatWidth; i++) {
         let scannedComponent = chatGui.func_146236_a(i, mouseY);
