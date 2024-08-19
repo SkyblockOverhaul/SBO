@@ -61,10 +61,14 @@ function onMouseClick(button) {
 
     for (let i = 0; i < chatWidth; i ++) {
         if (chatGui.func_146236_a(i, mouseY)?.func_150261_e()) {
-            while (chatGui.func_146236_a(i, mouseY)?.func_150261_e()?.removeFormatting()?.startsWith(" ")) {
-                mouseY = mouseY + (10 * guiScale)
+            if (!chatGui.func_146236_a(i, mouseY)?.func_150261_e()?.removeFormatting()?.startsWith(" ☠")) {
+                while (chatGui.func_146236_a(i, mouseY)?.func_150261_e()?.removeFormatting()?.startsWith(" ")) {
+                    mouseY = mouseY + (10 * guiScale)
+                }
+                break
+            } else {
+                break
             }
-            break
         }
     }
 
