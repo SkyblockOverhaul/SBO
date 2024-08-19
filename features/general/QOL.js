@@ -176,8 +176,8 @@ registerWhen(register("renderWorld", () => {
 
 let goldenFishOverlay = new SboOverlay("Golden Fish", "goldenFishTimer", "render", "GoldenFishLoc")
 let goldenFishTitle = new OverlayTextLine("&6&lGolden Fish Timer")
-let goldenFishSpawnLine = new OverlayTextLine("&6Spawn: &b15m 0s")
-let goldenFishTimeLine = new OverlayTextLine("&6Cast: &b3m 0s")
+let goldenFishSpawnLine = new OverlayTextLine("&6Next Spawn: &b15m 0s")
+let goldenFishTimeLine = new OverlayTextLine("&6Cast Before: &b3m 0s")
 goldenFishOverlay.setLines([goldenFishTitle, goldenFishSpawnLine, goldenFishTimeLine])
 
 let spawnTimer = 0
@@ -225,8 +225,8 @@ function resetGoldenFish() {
     spawnTimer = 0
     lastTimeThrown = 0
     throwBool = false
-    goldenFishSpawnLine.setText("&6Spawn: &b15m 0s")
-    goldenFishTimeLine.setText("&6Cast: &be3m 0s")
+    goldenFishSpawnLine.setText("&6Next Spawn: &b15m 0s")
+    goldenFishTimeLine.setText("&6Cast Before: &be3m 0s")
 }
 
 function calculatePercentage(timeInMillis, minTime, maxTime) {
