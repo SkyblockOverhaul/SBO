@@ -41,28 +41,48 @@ registerWhen(register("guiMouseClick", (mouseX, mouseY, button, gui, event) => {
 
 function onMouseClick(button) {
     if (button != 1 || !Client.isInChat()) return;
-    const [ mouseX, mouseY ] = [Mouse.getX(), Mouse.getY()];
-    const chatGui = Client.getChatGUI();
-    const component = chatGui.func_146236_a(mouseX, mouseY)
-
-    if (!component?.func_150261_e()) return;
+    const mouseY = Mouse.getY()
+    const chatGui = Client.getChatGUI()
     const guiScale = Client.settings.video.getGuiScale()
     const chatWidth = chatGui.func_146233_a(guiScale)
 
-    let chatComponents = []
+    let multiline = false
 
-    for (let i = 0; i < chatWidth; i++) {
+    let line1 = []
+    let line2 = []
+    let line3 = []
+
+    for (let i = 0; i < chatWidth; i ++) {
         let scannedComponent = chatGui.func_146236_a(i, mouseY)
-        if (!scannedComponent) continue;
+        let scannedComponent2 = chatGui.func_146236_a(i, mouseY - (10 * guiScale))
+        let scannedComponent3 = chatGui.func_146236_a(i, mouseY - (20 * guiScale))
+        
+        multilineCopy(scannedComponent, line1)
+        if (i >= 0 && i <= 10 && scannedComponent2?.func_150261_e()?.removeFormatting()?.startsWith(" ")) {
+            multiline = true
+        }
+        if (multiline) {
+            multilineCopy(scannedComponent2, line2, true)
+            multilineCopy(scannedComponent3, line3, true)
+        }
 
-        chatComponents.push (
-            Client.isControlDown()
-                ? scannedComponent.func_150261_e()?.replace(/§/g, "&")
-                : scannedComponent.func_150261_e()?.removeFormatting()?.replace(/§z/g, "")
-        )
-        i += Renderer.getStringWidth(scannedComponent?.func_150265_g()) * guiScale
+        if (scannedComponent) i += (Renderer.getStringWidth(scannedComponent.func_150261_e()) * guiScale)
     }
 
-    ChatLib.command(`ct copy ${chatComponents.join("")}`, true);
+    ChatLib.command(`ct copy ${[...line1, ...line2, ...line3].join("\n")}`, true)
     ChatLib.chat("§6[SBO] §aCopied Chat Message!§r");
+}
+
+function multilineCopy (comp, arr, secondLine = false) {
+    if (!comp) return;
+    const str = comp.func_150261_e()?.removeFormatting()
+    if (secondLine && (!str.startsWith(" ") || /^ \(\d+\)$/.test(str))) return;
+    const isControlDown = Client.isControlDown()
+
+    const msg = isControlDown
+        ? comp.func_150261_e()?.replace(/§/g, "&")
+        : comp.func_150261_e()?.removeFormatting()?.replace(/§z/g, "")
+    if (arr.indexOf(msg) !== -1) return
+
+    arr.push(msg)
 }
