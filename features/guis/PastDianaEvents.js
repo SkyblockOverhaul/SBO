@@ -331,11 +331,30 @@ function drawMobs(event, mobsX, mobYPos) {
     let guiScale = Client.settings.video.getGuiScale();
     let scale = 2.0 / guiScale;
 
-    for (let mob in event.mobs) {
+    const sortOrder = [
+        "Minos Inquisitor", "Minos Inquisitor Ls"
+    ]
+
+    let mobsArray = Object.entries(event.mobs);
+
+    mobsArray.sort((a, b) => {
+        let mobNameA = toTitleCase(a[0].replaceAll("_", " "));
+        let mobNameB = toTitleCase(b[0].replaceAll("_", " "));
+
+        let indexA = sortOrder.indexOf(mobNameA);
+        let indexB = sortOrder.indexOf(mobNameB);
+
+        if (indexA === -1) indexA = sortOrder.length;
+        if (indexB === -1) indexB = sortOrder.length;
+
+        return indexA - indexB;
+    });
+
+    for (let i = 0; i < mobsArray.length; i++) {
         Renderer.scale(scale, scale);
         let adjustedX = (mobsX + 10) / scale;
         let adjustedY = mobYPos / scale;
-        Renderer.drawString(`&a${mob}: &7${event.mobs[mob]}`, adjustedX, adjustedY);
+        Renderer.drawString(`&a${mobsArray[i][0]}: &7${mobsArray[i][1]}`, adjustedX, adjustedY);
         Renderer.scale(1, 1);
         if (guiScale === 3) {
             mobYPos += 8;
