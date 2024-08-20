@@ -462,13 +462,13 @@ export function playCustomSound(sound, volume) {
 
 // party detection
 HypixelModAPI.on("partyInfo", (partyInfo) => {
+    partyMembersUuids = [];
     Object.keys(partyInfo).forEach(key => {
         partyMembersUuids.push(key);
     })
 })
 
 export function sendPartyRequest() {
-    partyMembersUuids = [];
     HypixelModAPI.requestPartyInfo();
 }
 
