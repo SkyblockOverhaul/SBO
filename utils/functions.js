@@ -498,7 +498,6 @@ register("step", () => {
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
-        getActiveUsers();
         setTimeout(() => {
             updateing = false;
         }, 300000);
@@ -549,6 +548,7 @@ function getActiveUsers() {
             print("active users undefined");
             activeUsers = 0;
         }
+        ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
     }).catch((error)=>{
         console.error("An error occurred: " + error);
     });
@@ -556,9 +556,7 @@ function getActiveUsers() {
 
 
 register("command", () => {
-    if (activeUsers != undefined) {
-        ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
-    }
+    getActiveUsers();
 }).setName("sboactiveuser");
 
 export function getBazaarPriceKuudra(itemId) {
