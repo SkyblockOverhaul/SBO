@@ -195,6 +195,8 @@ registerWhen(register("tick", () => {
     if (getWorld() != "Crimson Isle" && goldenFishOverlay.renderGui) {
         if (spawnTimer != 0) resetGoldenFish();
         goldenFishOverlay.renderGui = false
+    } else if (getWorld() == "Crimson Isle" && !goldenFishOverlay.renderGui) {
+        goldenFishOverlay.renderGui = true
     }
     if (spawnTimer == 0 && lastTimeThrown != 0) {
         spawnTimer = Date.now()
@@ -230,7 +232,7 @@ function resetGoldenFish() {
     lastTimeThrown = 0
     throwBool = false
     goldenFishSpawnLine.setText("&6Next Spawn: &b15m 0s")
-    goldenFishTimeLine.setText("&6Cast Before: &be3m 0s")
+    goldenFishTimeLine.setText("&6Cast Before: &b3m 0s")
 }
 
 function calculatePercentage(timeInMillis, minTime, maxTime) {
