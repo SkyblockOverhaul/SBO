@@ -109,12 +109,16 @@ _-Other-_
 
 --Other Features--
 + Check Party or Player
--> /sbocp, /sboc [name] (Displays infos such as eman9, total kills, L5 Daxe)
+  + /sbocp, /sboc [name] (Displays infos such as eman9, total kills, L5 Daxe)
 + Diana Drop Chances
--> /sbodc [Magicfind] [Looting] (Displays drop chances for all rng drops from diana)
+  + /sbodc [Magicfind] [Looting] (Displays drop chances for all rng drops from diana)
 + Import tracker (sh/st)
--> /sboimporttracker [profilename] (Import skyhanni/skytils tracker)
+  + /sboimporttracker [profilename] (Import skyhanni/skytils tracker)
 + Achivements
   + /sboachievements (opens Achievements, can be accessed in 'ESC' screen aswell)
   + /sbobacktrackachievements (backtracks Achievements from past events)
   + /sbolockachievements (Locks all Achievements, for testing purposes)
++ Past Diana Events
+  + /sbopde Opens the Past Diana Events GUI
++ Active User
+  + /sboactiveuser Shows the active user of the mod
