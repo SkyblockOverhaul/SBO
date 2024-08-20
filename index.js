@@ -33,16 +33,18 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&6[SBO] &eCommands:")
                 ChatLib.chat("&7> &a/sbo &7- &eOpen the settings")
                 ChatLib.chat("&7> &a/sbo help &7- &eShow this message")
-                ChatLib.chat("&7> &a/sboguis &7- &eOpen the GUIs and move them around (alias /sbomoveguis)")
-                ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (alias /sbocb)")
-                ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (alias /sboc <player>)")
+                ChatLib.chat("&7> &a/sboguis &7- &eOpen the GUIs and move them around (or: /sbomoveguis)")
+                ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (or: /sbocb)")
+                ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (or: /sboc <player>)")
                 ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
                 ChatLib.chat("&7> &a/sboimporttracker <profilename> &7- &eImport skyhanni/skytils tracker")
-                ChatLib.chat("&7> &a/sbodc &7- &eCommand for diana dropchances")
-                ChatLib.chat("&7> &a/sbopartyblacklist &7- &eCommand for party commands blacklisting")
-                ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack your achievements")
+                ChatLib.chat("&7> &a/sbodc &7- &eDiana dropchances")
+                ChatLib.chat("&7> &a/sbopartyblacklist &7- &eParty commands blacklisting")
+                ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack achievements")
                 ChatLib.chat("&7> &a/sboachievements &7- &eOpens the achievements GUI")
                 ChatLib.chat("&7> &a/sbolockachievements &7- &eLocks all Achievements (needs confirmation)")
+                ChatLib.chat("&7> &a/sbopde &7- &eOpens the Past Diana Events GUI")
+                ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -94,6 +96,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&7> &a- Added a Golden Fish Timer`)
     ChatLib.chat(`&7> &e--Other--`)
     ChatLib.chat(`&7> &a- Added Past Diana Events GUI /sbopde or /sbopastdianaevents`)
+    ChatLib.chat(`&7> &a- Added Active User command, /sboactiveuser`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
