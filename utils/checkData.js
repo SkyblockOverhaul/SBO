@@ -1,6 +1,6 @@
 import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
 import { initializeGuiSettings, getKuudraItems, getBazaarItems } from "./functions";
-import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
+import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents } from "./variables";
 import settings from "../settings";
 import { unlockAchievement } from "../features/Diana/DianaAchievements";
 
@@ -35,21 +35,19 @@ let dataLoadReg = register("step", () => {
 let dataLoaded = false;
 function checkAllCriteria() {
     checkDataLoaded();
-    let check7 = true;
     let check1 = FileLib.exists("../../../config", trackerFileLocation  + "Total.json");
     let check2 = FileLib.exists("../../../config", trackerFileLocation  + "Mayor.json");
     let check3 = FileLib.exists("../../../config", trackerFileLocation  + "Session.json");
     let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;
-    if (settings.attributeValueOverlay) {
-        check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
-    }
+    let check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
     let check8 = (trackerTotal !== undefined && trackerMayor !== undefined && trackerSession !== undefined);
     let check9 = false;
     if (check8 && check5) {
         check9 = true;
         checkMayorTracker();
+        checkPastDianaEvents();
     }
     
     if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9) {

@@ -5,8 +5,6 @@ import { checkDiana } from "../../utils/checkDiana";
 import { printDev } from "../../utils/functions";
 import { createBurrowWaypoints, removeBurrowWaypoint, removeBurrowWaypointBySmoke, setBurrowWaypoints } from "../general/Waypoints";
 
-
-
 class EvictingQueue {
     constructor(capacity) {
         this.capacity = capacity;
@@ -15,7 +13,7 @@ class EvictingQueue {
 
     add(item) {
         if (this.queue.length >= this.capacity) {
-            this.queue.shift(); // Remove the oldest item
+            this.queue.shift(); 
         }
         this.queue.push(item);
     }
@@ -28,9 +26,8 @@ class EvictingQueue {
         this.queue = [];
     }
 }
-const EnumParticleTypes = net.minecraft.util.EnumParticleTypes
-const S2APacketParticles = net.minecraft.network.play.server.S2APacketParticles
 
+const S2APacketParticles = net.minecraft.network.play.server.S2APacketParticles
 
 class ParticleType {
     constructor(typeCheck) {
@@ -90,7 +87,6 @@ function getParticleType(packet) {
     return null;
 }
 
-
 class Diggable {
     constructor(x, y, z, type) {
         x = x;
@@ -129,17 +125,13 @@ let burrowshistory = new EvictingQueue(2);
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
     if (typename != "FOOTSTEP" && typename != "CRIT_MAGIC" && typename != "CRIT" && typename != "DRIP_LAVA" && typename != "ENCHANTMENT_TABLE") return;
-    // print("Particle: " + typename);
     const particleType = getParticleType(packet);
     if (!particleType) return;
-    // printDev("Went thourhg particylType check");
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
     if (burrowshistory.contains(posstring)) return;
-    // printDev("Went thourhg history check");
     
     if (!burrows[posstring]) {
-        // printDev("Creating String");
         burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
     }
 
@@ -164,9 +156,7 @@ function burrowDetect(packet) {
 
 function removeBurrowBySmoke(x, y, z) {
     let removedBurrow = removeBurrowWaypointBySmoke(x, y, z);
-    // print("x" + x + " y: " + (y-1) + " z: " + z)
     const posstring = x + " " + (y - 1) + " " + z;
-    // remove burrow from burrows
     delete burrows[posstring];
 }
 
@@ -184,11 +174,8 @@ function refreshBurrows() {
     let removedBurrow = result.removedBurrow;
     if (removedBurrow != null) {
         burrowshistory.add(removedBurrow);
-        // print("Burrow removed: " + removedBurrow);
     }
 }
-
-
 
 registerWhen(register("chat", (burrow) => {
     refreshBurrows();
@@ -202,22 +189,9 @@ registerWhen(register("chat", (died) => {
     refreshBurrows();
 }).setCriteria(" ☠ You ${died}."), () => getWorld() == "Hub" && settings.dianaBurrowDetect);
 
-// registerWhen(register("spawnParticle", (particle, type, event) => {
-//     if (!checkDiana()) return;
-//     if (type.toString() == "SMOKE_LARGE") {
-//         const particlepos = particle.getPos();
-//         const xyz = [particlepos.getX(), particlepos.getY(), particlepos.getZ()];
-//         const [x, y , z] = [xyz[0], xyz[1], xyz[2]];
-//         // print("x: " + x + " y: " + y + " z: " + z);
-//         print("smoke large at: " + x + " " + y + " " + z);
-//         removeBurrowBySmoke(x, y, z);
-//     }
-// }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
-
 registerWhen(register("worldUnload", () => {
     resetBurrows();
 }), () => settings.dianaBurrowDetect);
-
 
 register("command", () => {
     resetBurrows();
@@ -230,22 +204,13 @@ register("chat", () => {
 }).setCriteria("&r&6Poof! &r&eYou have cleared your griffin burrows!&r")
 
 register("step", () => {
-    // test command print all burrows to console
-    // print("Burrows: ");
     for (let key in burrows) {
-        // print each burrow with cords and type
-        // print("x: " + burrows[key][1].x + " y: " + burrows[key][1].y + " z: " + burrows[key][1].z + " type: " + burrows[key][0].type);
         if (burrows[key][0].type != undefined) {
-            // printDev("Creating Burrow");
             createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
-        } // hängt sich hier auzf manchmal
-
+        } 
     }
 }).setFps(4);
 
-// registerWhen(register("packetReceived", (packet)=> {
-//     burrowDetect(packet)
-// }).setFilteredClass(net.minecraft.network.play.server.S2APacketParticles), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 registerWhen(register("packetReceived", (packet) => {
     packettype = packet.func_179749_a().toString()
     if(packettype == "SMOKE_LARGE") {
@@ -258,22 +223,6 @@ registerWhen(register("packetReceived", (packet) => {
             if (!checkDiana()) return;
             removeBurrowBySmoke(x, (parseInt(y) + 1), z);
         }
-        // packetcount = parseInt(packet.func_149222_k())
-        // packetXOffset = parseFloat(packet.func_149221_g()).toFixed(1)
-        // packetYOffset = parseFloat(packet.func_149224_h()).toFixed(1)
-        // packetZOffset = parseFloat(packet.func_149223_i()).toFixed(1)
-        // const { x, y, z } = (pos => ({ x: pos.getX(), y: pos.getY(), z: pos.getZ() }))(
-        //     new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down()
-        // );
-        // print("Packet type: " + packettype)
-        // print("Packet count: " + packetcount)
-        // print("Packet speed: " + packetSpeed)
-        // print("Packet X Offset: " + packetXOffset)
-        // print("Packet Y Offset: " + packetYOffset)
-        // print("Packet Z Offset: " + packetZOffset)
-        // print("X: " + x)
-        // print("Y: " + y)
-        // print("Z: " + z)
     }
     burrowDetect(packet)    
 }).setFilteredClass(S2APacketParticles), () => settings.dianaBurrowDetect && getWorld() == "Hub");
@@ -319,9 +268,3 @@ registerWhen(register("playerInteract", (action, pos) => {
         }   
     }
 }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
-
-// const C09PacketHeldItemChange = net.minecraft.network.play.client.C09PacketHeldItemChange
-
-// register("packetSent", (packet) => {
-//     print(packet.func_149614_c().toString())
-// }).setFilteredClass(C09PacketHeldItemChange);

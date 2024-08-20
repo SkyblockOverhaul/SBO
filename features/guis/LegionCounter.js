@@ -3,11 +3,11 @@ import { registerWhen } from "../../utils/variables";
 import { OverlayTextLine, SboOverlay } from "../../utils/overlays";
 import { YELLOW, BOLD, AQUA } from "../../utils/constants";
 
-let legionOverlay = new SboOverlay("legionOverlay", "legionCounter", "render", "LegionLoc");
+let legionOverlay = new SboOverlay("legionOverlay", "legionOverlay", "render", "LegionLoc");
 let legionOverlayText = new OverlayTextLine("");
 
-
-function getLegionCount() {
+// credits FeeshNotifier
+function getLegionCount() { // not working perfectly
     let legionDistance = 30;
     const players = World
         .getAllPlayers()
@@ -30,7 +30,7 @@ function refreshLegionOverlay() {
 
 registerWhen(register("step", () => {
     refreshLegionOverlay();
-}).setFps(1), () => settings.legionCounter);
+}).setFps(1), () => settings.legionOverlay);
 
 function disctanceToPlayer(player) {
     return distance = Math.sqrt((player.x - Player.getX()) ** 2 + (player.z - Player.getZ()) ** 2);

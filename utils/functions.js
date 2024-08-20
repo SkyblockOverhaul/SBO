@@ -331,6 +331,7 @@ export function initializeGuiSettings() {
         AvgMagicFindLoc: { "x": 15, "y": 350, "s": 1 },
         PickupLogLoc: { "x": 2, "y": 2, "s": 1 },
         CrownLoc: { "x": 15, "y": 435, "s": 1 },
+        GoldenFishLoc: { "x": 15, "y": 50, "s": 1 },   
     };
 }
 
@@ -461,13 +462,13 @@ export function playCustomSound(sound, volume) {
 
 // party detection
 HypixelModAPI.on("partyInfo", (partyInfo) => {
+    partyMembersUuids = [];
     Object.keys(partyInfo).forEach(key => {
         partyMembersUuids.push(key);
     })
 })
 
 export function sendPartyRequest() {
-    partyMembersUuids = [];
     HypixelModAPI.requestPartyInfo();
 }
 
@@ -497,7 +498,6 @@ register("step", () => {
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
-        getActiveUsers();
         setTimeout(() => {
             updateing = false;
         }, 300000);
@@ -546,8 +546,9 @@ function getActiveUsers() {
         activeUsers = response.activeUsers;
         if (activeUsers == undefined) {
             print("active users undefined");
-            activeUsers = {};
+            activeUsers = 0;
         }
+        ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
     }).catch((error)=>{
         console.error("An error occurred: " + error);
     });
@@ -555,9 +556,7 @@ function getActiveUsers() {
 
 
 register("command", () => {
-    if (activeUsers != undefined) {
-        ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
-    }
+    getActiveUsers();
 }).setName("sboactiveuser");
 
 export function getBazaarPriceKuudra(itemId) {
@@ -662,6 +661,15 @@ export function calcPercent(trackerToCalc, type) {
     }
 }
 
+export function calcPercentOne(tracker, item, mob = undefined) {
+    if (tracker == undefined) return;
+    if (mob) {
+        return parseFloat((tracker["items"][item] / tracker["mobs"][mob] * 100).toFixed(2));
+    } else {
+        return parseFloat((tracker["mobs"][item] / tracker["mobs"]["TotalMobs"] * 100).toFixed(2));  
+    }
+}
+
 export function getTracker(setting) {
     switch (setting) {
         case 1:
@@ -697,6 +705,17 @@ export function formatTime(milliseconds) {
     }
 
     return formattedTime.trim();
+}
+
+export function formatTimeMinSec(milliseconds) {
+    const totalSeconds = parseInt(milliseconds / 1000);
+    const totalMinutes = parseInt(totalSeconds / 60);
+    const minutes = totalMinutes % 60;
+    const seconds = totalSeconds % 60;
+
+    let formattedTime = `${minutes}m ${seconds}s`;
+
+    return formattedTime;
 }
 
 let dianaMayorTotalProfit = 0;
@@ -792,4 +811,11 @@ export function matchLvlToColor(lvl) {
     } else {
         return "&7" + lvl;
     }
+}
+
+export function drawRectangleOutline(x, y, width, height, color, thickness) {
+    Renderer.drawLine(color, x, y, x + width, y, thickness);
+    Renderer.drawLine(color, x, y, x, y + height, thickness);
+    Renderer.drawLine(color, x, y + height, x + width, y + height, thickness);
+    Renderer.drawLine(color, x + width, y, x + width, y + height, thickness);
 }

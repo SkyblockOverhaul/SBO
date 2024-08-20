@@ -83,9 +83,6 @@ let lastCheckedPlayer = undefined;
 function printCheckedPlayer(playerinfo) {
     playerinfo = playerinfo[0];
     lastCheckedPlayer = playerinfo;
-    if (playerinfo.name == Player.getName()) {
-        trackWithCheckPlayer(playerinfo);
-    }
     new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
     "&r&9│ &r&eLvL&r&f: &r&6" + matchLvlToColor(playerinfo.sbLvl) + 
     "&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + 
@@ -94,6 +91,9 @@ function printCheckedPlayer(playerinfo) {
     (playerinfo.mythosKills / 1000).toFixed(2) + "k")
     .setClick("run_command", "/p " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name).chat();
     new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
+    if (playerinfo.name == Player.getName()) {
+        trackWithCheckPlayer(playerinfo);
+    }
 }
 
 let messageString = "";

@@ -18,31 +18,33 @@ import "./features/guis/SlayerGuis";
 import "./features/general/CrownTracker";
 import "./features/Diana/DianaAchievements";
 import "./features/guis/Achievements";
+import "./features/guis/PastDianaEvents";
+import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
-import Settings from "./settings";
-
-
+import settings from "./settings";
 
 register("command", (args1, ...args) => {
     if (args1 == undefined) {
-        Settings.openGUI()
+        settings.openGUI()
     } else {
         switch (args1.toLowerCase()) { 
             case "help":
                 ChatLib.chat("&6[SBO] &eCommands:")
                 ChatLib.chat("&7> &a/sbo &7- &eOpen the settings")
                 ChatLib.chat("&7> &a/sbo help &7- &eShow this message")
-                ChatLib.chat("&7> &a/sboguis &7- &eOpen the GUIs and move them around (alias /sbomoveguis)")
-                ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (alias /sbocb)")
-                ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (alias /sboc <player>)")
+                ChatLib.chat("&7> &a/sboguis &7- &eOpen the GUIs and move them around (or: /sbomoveguis)")
+                ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (or: /sbocb)")
+                ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (or: /sboc <player>)")
                 ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
                 ChatLib.chat("&7> &a/sboimporttracker <profilename> &7- &eImport skyhanni/skytils tracker")
-                ChatLib.chat("&7> &a/sbodc &7- &eCommand for diana dropchances")
-                ChatLib.chat("&7> &a/sbopartyblacklist &7- &eCommand for party commands blacklisting")
-                ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack your achievements")
+                ChatLib.chat("&7> &a/sbodc &7- &eDiana dropchances")
+                ChatLib.chat("&7> &a/sbopartyblacklist &7- &eParty commands blacklisting")
+                ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack achievements")
                 ChatLib.chat("&7> &a/sboachievements &7- &eOpens the achievements GUI")
                 ChatLib.chat("&7> &a/sbolockachievements &7- &eLocks all Achievements (needs confirmation)")
+                ChatLib.chat("&7> &a/sbopde &7- &eOpens the Past Diana Events GUI")
+                ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -57,7 +59,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.3.6" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.3.7" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -89,41 +91,15 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aFixed achievement page not working as intended when you have 0 achievements unlocked`)
-    ChatLib.chat(`&7> &aFixed hidden tracker lines showing up in /sboguis`)
-    ChatLib.chat(`&7> &aFixed Be achievements giving always the highest achivement`)
+    ChatLib.chat(`&7> &e--QOL--`)
+    ChatLib.chat(`&7> &a- Added Chat Copying, functions exactly like SBE Copy Chat [WIP]`)
+    ChatLib.chat(`&7> &a- Added a Golden Fish Timer`)
+    ChatLib.chat(`&7> &e--Other--`)
+    ChatLib.chat(`&7> &a- Added Past Diana Events GUI /sbopde or /sbopastdianaevents`)
+    ChatLib.chat(`&7> &a- Added Active User command, /sboactiveuser`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
     data.save()
     changeLogReg.unregister()
 }).setFps(1)
-
-registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
-    // printDev(`Sound: ${name} | Volume: ${volume} | Pitch: ${pitch} | Category: ${categoryName}`)
-    if (name == "mob.ghast.scream" || name == "mob.ghast.charge") {
-        ChatLib.chat("sound for rag axe " + name)
-        Client.showTitle("RAG AXE", "", 0, 90, 20);
-    }
-}), () => Settings.testFeatures);
-
-// dojo sounds:
-// [DEV]: Sound: mob.cat.hiss | Volume: 2 | Pitch: 1.4920635223388672 | Category: ANIMALS
-// [DEV]: Sound: mob.zombie.woodbreak | Volume: 1.5 | Pitch: 1 | Category: MOBS
-
-// register("chat", (message, event) => {
-//     message = message.removeFormatting();
-//     if (!message.includes("Powder") && !message.includes("Refelctor") && !message.includes("Blue Goblin Egg") && !message.includes("Heart")) {
-//         cancel(event);
-//     }
-//     if (message.includes("Refelctor")) {
-//         Client.showTitle("&9Robotron Reflector", "&eCarrot", 0, 40, 20);
-//     }
-//     if (message.includes("Blue Goblin Egg")) {
-//         Client.showTitle("&3Blue Goblin Egg", "&eCarrot", 0, 40, 20);
-//     }
-// }).setCriteria("&r&aYou received ${message}");
-
-
-
-

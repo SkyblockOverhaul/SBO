@@ -78,6 +78,7 @@ class Settings {
         this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
         this.addDependency('Custom Chim Message Text','Chim Message');
         this.addDependency('Reset Custom Chim Message','Chim Message');
+        this.addDependency('Golden Fish Notification','Golden Fish Timer');
 
     } 
     //-----------Diana Burrows----------------
@@ -561,6 +562,24 @@ class Settings {
         category: 'Quality of Life',
     })
     CarnivalZombieLine = false;
+    @SwitchProperty({
+        name: 'Golden Fish Timer',
+        description: 'Shows a overlay with the timer until the next golden fish can spawn',
+        category: 'Quality of Life',
+    })
+    goldenFishTimer = false;
+    @SwitchProperty({
+        name: 'Golden Fish Notification',
+        description: 'Notifies you when you have not thrown your Lava Rod in over 2 minutes and 30 seconds',
+        category: 'Quality of Life',
+    })
+    goldenFishNotification = false;
+    @SwitchProperty({
+        name: 'Copy Chat Message',
+        description: '[WIP] Copy chat message to clipboard (Like SBE)',
+        category: 'Quality of Life',
+    })
+    copyChatMessage = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
@@ -573,19 +592,19 @@ class Settings {
     }
     //guis
     @SwitchProperty({
-        name: "Bobber Counter",
+        name: "Bobber Overlay",
         description: "Tracks the number of bobbers near you /sboguis to move the counter",
         category: "General",
         subcategory: "GUIs",
     })
-    bobberCounter = false;
+    bobberOverlay = false;
     @SwitchProperty({
-        name: "Legion Counter",
+        name: "Legion Overlay",
         description: "Tracks the players near you for legion buff /sboguis to move the counter",
         category: "General",
         subcategory: "GUIs",
     })
-    legionCounter = false;
+    legionOverlay = false;
     // General Waypoints
     @SwitchProperty({
         name: 'Detect Patcher Cords',
@@ -754,6 +773,8 @@ class Settings {
     resetCrownTracker() {
         ChatLib.command("sboresetcrowntracker", true);
     }
+
+
 
     // sound settings
     @ButtonProperty({

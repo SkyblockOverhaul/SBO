@@ -76,11 +76,6 @@ export const inqHighlightRegister = register("renderWorld", () => {
 });
 inqHighlightRegister.unregister();
 
-registerWhen(register("renderWorld", () => {
-    
-}), () => settings.inqCircle && getWorld() === "Hub"); 
-
-
 // register("tick", () => {
 //     // check if player is inside circle
 //     // player x = Player.getX()
@@ -100,16 +95,3 @@ register("worldUnload", () => {
     inqs = [];
     names = [];
 });
-
-//mob.nameTag.getName() step 10
-// if (!Mobs?.map((a) => a.getUUID().toString()).includes(mob.getUUID().toString())) {
-//     if ((name.includes("Exalted") || name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0")) {
-//         print("pushed");
-//         Mobs.push(mob);
-//     }
-// }
-
-
-// register("command", () => {
-//     ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
-// }).setName("sbodetectinq");

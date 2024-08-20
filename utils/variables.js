@@ -342,14 +342,14 @@ export function checkMayorTracker() {
             }
         }
         let newTracker = initializeTrackerMayor();
-        timerMayor.reset();
         data.last10ChimMagicFind = [];
         data.last10StickMagicFind = [];
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
         }
-        dianaTrackerMayor.save();
         pastDianaEvents.save();
+        timerMayor.reset();
+        dianaTrackerMayor.save();
         data.save();
     }
 }
@@ -415,15 +415,15 @@ register("chat", () => {
         }
     }
     let newTracker = initializeTrackerMayor();
-    timerMayor.reset();
     for (let key in newTracker) {
         dianaTrackerMayor[key] = newTracker[key];
     }
     if (lastyear == dianaTrackerMayor.year) {
         dianaTrackerMayor.year++;
     }
-    dianaTrackerMayor.save();
     pastDianaEvents.save();
+    timerMayor.reset();
+    dianaTrackerMayor.save();
     setNewMayorBool();
 }).setCriteria("&r&eThe election room is now closed. Clerk Seraphine is doing a final count of the votes...&r");
 
@@ -644,3 +644,17 @@ register("gameUnload", () => {
     pastDianaEvents.save();
     achievementsData.save();
 });
+
+export function checkPastDianaEvents() {
+    // remove all event that have 0 TotalBurrows
+    let tempEvents = [];
+    for (let event of pastDianaEvents.events) {
+        if (event.items["Total Burrows"]) {
+            if (event.items["Total Burrows"] != 0) {
+                tempEvents.push(event);
+            }
+        }
+    }
+    pastDianaEvents.events = tempEvents;
+    pastDianaEvents.save();
+}
