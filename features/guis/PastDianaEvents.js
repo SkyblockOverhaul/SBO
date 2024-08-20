@@ -265,16 +265,45 @@ function drawItems(event, startX, itemYPos) {
     let totalProfit = 0;
     let guiScale = Client.settings.video.getGuiScale();
     let scale = 2.0 / guiScale;
-    for (let item in event.items) {
+
+    const sortOrder = ["Chimera", "Chimerals", "Minos Relic", "Daedalus Stick", "Crown Of Greed", 
+                       "Washed-up Souvenir", "Griffin Feather", "Dwarf Turtle Shelmet", 
+                       "Crochet Tiger Plushie", "Antique Remedies", "Ancient Claw", 
+                       "Enchanted Ancient Claw", "Enchanted Gold", "Enchanted Iron", 
+                       "Coins", "Fishcoins", "Scavengercoins", "Mayortime"];
+
+    let itemsArray = Object.entries(event.items);
+
+    itemsArray.sort((a, b) => {
+        let itemNameA = toTitleCase(a[0].replaceAll("_", " "));
+        let itemNameB = toTitleCase(b[0].replaceAll("_", " "));
+
+        let indexA = sortOrder.indexOf(itemNameA);
+        let indexB = sortOrder.indexOf(itemNameB);
+
+        if (indexA === -1) indexA = sortOrder.length;
+        if (indexB === -1) indexB = sortOrder.length;
+
+        return indexA - indexB;
+    });
+
+    for (let i = 0; i < itemsArray.length; i++) {
+        let item = itemsArray[i][0];
+        let amount = itemsArray[i][1];
         let itemName = item.replaceAll("_", " ");
         let itemAmount = 0;
         itemName = toTitleCase(itemName);
+        totalProfit += calcTotalProfit(itemName, amount);
         if (itemName === "Mayortime") {
             itemName = "Playtime";
-            itemAmount = formatTime(event.items[item]);
+            itemAmount = formatTime(amount);
+        }
+        else if (itemName === "Coins" && event.items["fishCoins"] > 0 && event.items["scavengerCoins"] > 0) {
+            itemAmount = formatNumber(amount - event.items["fishCoins"] - event.items["scavengerCoins"]);
+            itemName = "Treasure";
         }
         else {
-            itemAmount = formatNumber(event.items[item]);
+            itemAmount = formatNumber(amount);
         }
         Renderer.scale(scale, scale);
         let adjustedX = (startX + 10) / scale;
@@ -290,7 +319,6 @@ function drawItems(event, startX, itemYPos) {
         else {
             itemYPos += 16;
         }
-        totalProfit += calcTotalProfit(itemName, event.items[item]);
     }
     Renderer.scale(scale, scale);
     let adjustedX = (startX + 10) / scale;
