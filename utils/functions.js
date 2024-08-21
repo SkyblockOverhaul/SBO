@@ -161,14 +161,18 @@ function trackLsInq(tracker, amount) {
     }
     tracker.save();
 }
-
+let hasTrackedInq = false;
 registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er real enitiy names mint wie ZOMBIE, Iron Golem etc
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
-    if (gotLootShare() && entityName == "Minos Inquisitor") {
+    if (gotLootShare() && entityName == "Minos Inquisitor" && !hasTrackedInq) {
         trackLsInq(trackerMayor, 1);
         trackLsInq(trackerSession, 1);
         trackLsInq(trackerTotal, 1);
+        hasTrackedInq = true;
+        setTimeout(() => {
+            hasTrackedInq = false;
+        }, 4000);
     }
     if (dianaMobNames.includes(entityName.trim())) {
         if (dist < 30 ) {
