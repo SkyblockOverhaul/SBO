@@ -305,7 +305,6 @@ registerWhen(register("chat", (drop, event) => {
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
-                trackMagicFind(magicFind, true);
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {
                         Client.Companion.showTitle(`&d&lChimera!`, `&6${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1"))} coins`, 0, 25, 35);
@@ -319,15 +318,16 @@ registerWhen(register("chat", (drop, event) => {
                 if (gotLootShare() && settings.dianaTracker) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if(replaceChimMessage) {
+                    if (replaceChimMessage) {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
                     }
                 }
                 else {
-                    if(settings.dianaAvgMagicFind) {
-                        if(magicFind > 0) {
-                            if(data.last10ChimMagicFind.length >= 10) {
+                    trackMagicFind(magicFind, true);
+                    if (settings.dianaAvgMagicFind) {
+                        if (magicFind > 0) {
+                            if (data.last10ChimMagicFind.length >= 10) {
                                 data.last10ChimMagicFind.shift();
                             }
                             data.last10ChimMagicFind.push(magicFind);
@@ -337,10 +337,10 @@ registerWhen(register("chat", (drop, event) => {
                             avgMagicFindOverlay();
                         }
                     }
-                    if(settings.dianaTracker) {
+                    if (settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
                     }
-                    if(settings.sendSinceMassage) {
+                    if (settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     if (data.inqsSinceChim == 1 && !b2bChim) {
@@ -354,28 +354,32 @@ registerWhen(register("chat", (drop, event) => {
                     }
                     data.inqsSinceChim = 0;
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if(replaceChimMessage) {
+                    if (replaceChimMessage) {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
                     }
                 }
                 break;
             case "Daedalus Stick":
-                trackMagicFind(magicFind);
-                if(settings.dianaAvgMagicFind) {
-                    if(magicFind > 0) {
-                        if(data.last10StickMagicFind.length >= 10) {
-                            data.last10StickMagicFind.shift();
+                if (gotLootShare()) {
+                    unlockAchievement(15)
+                }
+                else{
+                    trackMagicFind(magicFind);
+                    if (settings.dianaAvgMagicFind) {
+                        if (magicFind > 0) {
+                            if (data.last10StickMagicFind.length >= 10) {
+                                data.last10StickMagicFind.shift();
+                            }
+                            data.last10StickMagicFind.push(magicFind);
+                        
+                            let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
+                            data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
+                            avgMagicFindOverlay();
                         }
-                        data.last10StickMagicFind.push(magicFind);
-                    
-                        let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
-                        data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
-                        avgMagicFindOverlay();
                     }
                 }
-
-                if(settings.sendSinceMassage) {
+                if (settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
                 if (data.minotaursSinceStick == 1 && !b2bStick) {
@@ -387,7 +391,6 @@ registerWhen(register("chat", (drop, event) => {
                     ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
                     unlockAchievement(4) // b2b2b stick
                 }
-                if (gotLootShare()) unlockAchievement(15) // ls stick
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {
