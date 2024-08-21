@@ -141,7 +141,7 @@ function trackOne(tracker, item, category, type, amount) {
     }
     tracker.save();
     if (type == "Mayor") {
-        if (item in achievementItems) {
+        if (achievementItems.includes(item)) {
             trackAchievementsItem(tracker.items, item);
         }
         if (category == "mobs") {
