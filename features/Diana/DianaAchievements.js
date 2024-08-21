@@ -357,27 +357,28 @@ export function trackMagicFind(magicFind, chimera=false) {
 }
 
 function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills) {
+
     if (gaiaKills >= 3000) {
         achievementsToUnlock.push(50);
-    } else Achievement.lockById(50);
+    } else if (gaiaKills != 0) Achievement.lockById(50);
     if (inqKills >= 500) {
         achievementsToUnlock.push(45);
-    } else Achievement.lockById(45);
+    } else if (inqKills != 0) Achievement.lockById(45);
     if (minoKills >= 3000) {
         achievementsToUnlock.push(46);
-    } else Achievement.lockById(46);
+    } else if (minoKills != 0) Achievement.lockById(46);
     if (champKills >= 1000) {
         achievementsToUnlock.push(47);
-    } else Achievement.lockById(47);
+    } else if (champKills != 0) Achievement.lockById(47);
     if (hunterKills >= 1000) {
         achievementsToUnlock.push(48);
-    } else Achievement.lockById(48);
+    } else if (hunterKills != 0) Achievement.lockById(48);
     if (catKills >= 3000) {
         achievementsToUnlock.push(49);
-    } else Achievement.lockById(49);
+    } else if (catKills != 0) Achievement.lockById(49);
     if (gaiaKills >= 3000 && champKills >= 1000 && hunterKills >= 1000 && inqKills >= 500 && minoKills >= 3000 && catKills >= 3000) {
         achievementsToUnlock.push(51);
-    } else Achievement.lockById(51);
+    } else if (gaiaKills != 0 && champKills != 0 && hunterKills != 0 && inqKills != 0 && minoKills != 0 && catKills != 0) Achievement.lockById(51);
     unlockAchievements();
 }
 
