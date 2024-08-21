@@ -59,7 +59,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.3.7" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.3.8" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -91,12 +91,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &e--QOL--`)
-    ChatLib.chat(`&7> &a- Added Chat Copying, functions exactly like SBE Copy Chat [WIP]`)
-    ChatLib.chat(`&7> &a- Added a Golden Fish Timer`)
-    ChatLib.chat(`&7> &e--Other--`)
-    ChatLib.chat(`&7> &a- Added Past Diana Events GUI /sbopde or /sbopastdianaevents`)
-    ChatLib.chat(`&7> &a- Added Active User command, /sboactiveuser`)
+    ChatLib.chat(`&7> &a- Fixed ls inq tracking (hopefully)`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
