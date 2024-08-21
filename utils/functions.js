@@ -166,7 +166,6 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
     if (gotLootShare() && entityName == "Minos Inquisitor" && !hasTrackedInq) {
-        print("Minos Inquisitor died");
         trackLsInq(trackerMayor, 1);
         trackLsInq(trackerSession, 1);
         trackLsInq(trackerTotal, 1);
