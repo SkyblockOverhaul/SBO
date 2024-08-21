@@ -246,16 +246,17 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
                 if(settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "&eClick To Copy").chat();
                 }
+                if (b2bInq && data.mobsSinceInq == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
+                    unlockAchievement(7) // b2b2b inq
+                }
                 if (data.mobsSinceInq == 1 && !b2bInq) {
                     ChatLib.chat("&6[SBO] &cb2b Inquisitor!")
                     unlockAchievement(6) // b2b inq
                     b2bInq = true;
                 }
                 if (data.inqsSinceChim == 2) b2bChim = false;
-                if (b2bInq && data.mobsSinceInq == 1) {
-                    ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
-                    unlockAchievement(7) // b2b2b inq
-                }
+
                 data.mobsSinceInq = 0;        
                 break;
             case "Minos Champion":
@@ -343,15 +344,16 @@ registerWhen(register("chat", (drop, event) => {
                     if (settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
+                    if (b2bChim && data.inqsSinceChim == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
+                        unlockAchievement(2) // b2b2b chim
+                    }
                     if (data.inqsSinceChim == 1 && !b2bChim) {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
                         b2bChim = true;
                         unlockAchievement(1) // b2b chim
                     }
-                    if (b2bChim && data.inqsSinceChim == 1) {
-                        ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
-                        unlockAchievement(2) // b2b2b chim
-                    }
+
                     data.inqsSinceChim = 0;
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
                     if (replaceChimMessage) {
@@ -382,15 +384,16 @@ registerWhen(register("chat", (drop, event) => {
                 if (settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
+                if (b2bStick && data.minotaursSinceStick == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
+                    unlockAchievement(4) // b2b2b stick
+                }
                 if (data.minotaursSinceStick == 1 && !b2bStick) {
                     ChatLib.chat("&6[SBO] &cb2b Daedalus Stick!")
                     b2bStick = true;
                     unlockAchievement(3) // b2b stick
                 }
-                if (b2bStick && data.minotaursSinceStick == 1) {
-                    ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
-                    unlockAchievement(4) // b2b2b stick
-                }
+
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {
