@@ -414,6 +414,7 @@ function getKillsFromLore(item) {
 }
 
 function getSlayerLvlFromLore(item) {
+    if (item == null) return 0;
     let lore = item.getLore();
     let slayerLvl = 0;
     lore.forEach(line => {
