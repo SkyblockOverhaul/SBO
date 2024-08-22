@@ -285,7 +285,7 @@ export function checkDaxeEnchants() {
                 divineGift3bool = true;
             }
         }
-        break;
+        continue;
     }
     return [chimVbool, lootingVbool, divineGift3bool];
 }
