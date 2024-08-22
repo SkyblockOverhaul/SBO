@@ -156,6 +156,8 @@ new Achievement(27, "Sleep is downtime!", "3 days of playtime in one event", "Le
 
 new Achievement(29, "lf Stick", "200 Minotaur since Stick", "Common"); 
 new Achievement(30, "lf Relic", "1000 Champions since Relic", "Uncommon"); 
+new Achievement(66, "Where is my Relic?", "3000 champions since Relic", "Mythic", 30, 2);
+
 
 new Achievement(31, "lf Inquisitor", "250 mobs since Inquisitor", "Common"); 
 new Achievement(32, "You have legi Griffin right?", "500 mobs since Inquisitor", "Rare", 31); 
@@ -202,6 +204,9 @@ new Achievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 6
 new Achievement(62, "Mom look i am on the leaderboard", "Top 100 on the kills leaderboard", "Legendary");
 new Achievement(63, "So this is what addiction feels like", "Top 50 on the kills leaderboard", "Mythic", 62);
 new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divine", 63, 2);
+
+// new Achievement(65, "oh baybe it's a triple", "Get 3 drops from a single Inquisitor", "Epic", false, 1, true); 
+
 
 export function unlockAchievement(id) {
     if (!settings.achievementEnabler) return;
@@ -330,8 +335,10 @@ export function trackSinceMob() {
         achievementsToUnlock.push(29);
     }
 
-    if (data["champsSinceRelic"] >= 1000) {
+    if (data["champsSinceRelic"] >= 1000 && data["champsSinceRelic"] < 3000) {
         achievementsToUnlock.push(30);
+    } else if (data["champsSinceRelic"] >= 3000) {
+        achievementsToUnlock.push(66);
     }
     unlockAchievements();
 }
