@@ -270,10 +270,10 @@ export function checkDaxeEnchants() {
         let nbtData = item.getNBT();
         if (!nbtData) return [false, false, false];
         let itemName = nbtData.getCompoundTag("tag").getCompoundTag("display").getString("Name");
-        if (!itemName) return [false, false, false];
+        if (!itemName) itemName = "";
         itemName = itemName.removeFormatting().trim();
         enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
-        if (!enchantments) return [false, false, false];
+        if (!enchantments) enchantments = {};
         if (itemName.includes("Daedalus Axe")) {
             if (enchantments.getInteger("ultimate_chimera") == 5) {
                 chimVbool = true;
@@ -285,7 +285,7 @@ export function checkDaxeEnchants() {
                 divineGift3bool = true;
             }
         }
-        break;
+        continue;
     }
     return [chimVbool, lootingVbool, divineGift3bool];
 }
