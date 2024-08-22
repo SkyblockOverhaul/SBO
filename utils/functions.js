@@ -273,7 +273,6 @@ export function checkDaxeEnchants() {
         if (!itemName) return [false, false, false];
         itemName = itemName.removeFormatting().trim();
         enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
-        if (!enchantments) return [false, false, false];
         if (itemName.includes("Daedalus Axe")) {
             if (enchantments.getInteger("ultimate_chimera") == 5) {
                 chimVbool = true;
