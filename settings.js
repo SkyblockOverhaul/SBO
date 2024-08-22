@@ -381,7 +381,7 @@ class Settings {
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
-    PartyCommands = false;
+    PartyCommands = true;
     @SwitchProperty({
         name: 'Warp Party',
         description: '!w, !warp',
@@ -438,7 +438,7 @@ class Settings {
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
-    dianaPartyCommands = false;
+    dianaPartyCommands = true;
 
     // Slayer
     @SwitchProperty({
