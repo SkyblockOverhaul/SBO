@@ -270,7 +270,6 @@ export function checkDaxeEnchants() {
         let nbtData = item.getNBT();
         if (!nbtData) return [false, false, false];
         let itemName = nbtData.getCompoundTag("tag").getCompoundTag("display").getString("Name");
-        if (!itemName) return [false, false, false];
         itemName = itemName.removeFormatting().trim();
         enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
         if (itemName.includes("Daedalus Axe")) {
