@@ -323,9 +323,10 @@ function getLootMessage(lootViewSetting) {
         lootLines.push(createLootLine(item));
     }
 
-    let totalBurrowsText = `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`;
+    let totalBurrows = new OverlayTextLine(`${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`, true, true);
     let totalCoinsText = new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`, true, true)
-    
+    let burrowsPerHour = lootTracker["items"]["Total Burrows"] / dianaTimerlist[lootViewSetting - 1].getHourTime();
+
     let treasure = formatNumber(lootTracker["items"]["coins"] - lootTracker["items"]["fishCoins"] - lootTracker["items"]["scavengerCoins"]).toString();
     let fourEyedFish = formatNumber(lootTracker["items"]["fishCoins"]).toString();
     let scavenger = formatNumber(lootTracker["items"]["scavengerCoins"]).toString();
@@ -336,7 +337,13 @@ function getLootMessage(lootViewSetting) {
         `§6Scavenger: §b${scavenger}`
     ].map(item => item.toString()); 
 
-    lootLines.push(new OverlayTextLine(totalBurrowsText, true));
+    let burrowHover = [
+        `§6Burrows per hour: §b${burrowsPerHour.toFixed(2)}`,
+    ].map(item => item.toString());
+    lootLines.push(totalBurrows.onHover((overlay) => {
+        // overlay.gui.drawHoveringString(hovertext, 0, 0)
+        GuiUtils.drawHoveringText(burrowHover, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
+    }));
 
     lootLines.push(totalCoinsText.onHover((overlay) => {
         // overlay.gui.drawHoveringString(hovertext, 0, 0)
