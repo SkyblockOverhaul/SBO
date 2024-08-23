@@ -332,7 +332,6 @@ register("chat" , (player) => {
         let dy = y - playerY;
         let dz = z - playerZ;
         let distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        print(distance.toFixed());
         return distance <= 20;
     }
     inqWaypoints = inqWaypoints.filter((waypoint) => {
