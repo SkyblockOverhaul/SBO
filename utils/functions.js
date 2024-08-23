@@ -724,6 +724,15 @@ export function formatTimeMinSec(milliseconds) {
 
 let dianaMayorTotalProfit = 0;
 let dianaMayorOfferType
+let burrowsPerHour = 0;
+
+export function getBurrowsPerHour() {
+    return burrowsPerHour;
+}
+
+export function setBurrowsPerHour(burrows) {
+    burrowsPerHour = burrows;
+}
 
 export function getDianaMayorTotalProfitAndOfferType() {
     return [dianaMayorTotalProfit, dianaMayorOfferType];
