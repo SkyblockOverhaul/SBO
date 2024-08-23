@@ -409,6 +409,7 @@ function dAxeAchivementCheck() {
 }
 
 function getKillsFromLore(item) {
+    if (item == null) return 0;
     let lore = item.getLore();
     let kills = 0;
     lore.forEach(line => {
