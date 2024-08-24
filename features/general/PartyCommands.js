@@ -245,7 +245,6 @@ register("chat", (player, message) => {
             }
             break
         case "!playtime":
-        case "!pt":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(() => {
