@@ -724,6 +724,7 @@ export function formatTimeMinSec(milliseconds) {
 
 let dianaMayorTotalProfit = 0;
 let dianaMayorOfferType
+let profitPerHour = 0;
 let burrowsPerHour = 0;
 
 export function getBurrowsPerHour() {
@@ -735,12 +736,13 @@ export function setBurrowsPerHour(burrows) {
 }
 
 export function getDianaMayorTotalProfitAndOfferType() {
-    return [dianaMayorTotalProfit, dianaMayorOfferType];
+    return [dianaMayorTotalProfit, dianaMayorOfferType, profitPerHour];
 }
 
-export function setDianaMayorTotalProfit(profit, offerType) {
+export function setDianaMayorTotalProfit(profit, offerType, profitHour) {
     dianaMayorTotalProfit = profit;
     dianaMayorOfferType = offerType;
+    profitPerHour = profitHour;
 }
 
 export function getRarity(item){

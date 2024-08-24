@@ -256,9 +256,9 @@ register("chat", (player, message) => {
         case "!profit":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                let [profit, offerType] = getDianaMayorTotalProfitAndOfferType();
+                let [profit, offerType, profitHour] = getDianaMayorTotalProfitAndOfferType();
                 setTimeout(() => {
-                    ChatLib.command("pc Profit: " + profit + " (" + offerType + ")")
+                    ChatLib.command("pc Profit: " + profit + " (" + offerType + ") (" + profitHour + "/h)")
                 }, 100)
             }
             break

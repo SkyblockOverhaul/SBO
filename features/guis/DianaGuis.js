@@ -386,7 +386,7 @@ function getLootMessage(lootViewSetting) {
     totalProfitLine.onHover((overlay) => {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
-    setDianaMayorTotalProfit(formatNumber(getTotalValue(true)), offertType);
+    setDianaMayorTotalProfit(formatNumber(getTotalValue(true)), offertType, profitPerHour);
     lootLines.push(totalProfitLine);
 
     return lootLines;
