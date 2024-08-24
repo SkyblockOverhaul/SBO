@@ -217,6 +217,7 @@ register("chat", (player, message) => {
                     case "chim":
                     case "chims":
                     case "chimeras":
+                    case "book":
                         setTimeout(() => {
                             ChatLib.command("pc Inqs since chim: " + data.inqsSinceChim)
                         }, 100)
