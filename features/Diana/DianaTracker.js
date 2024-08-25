@@ -316,7 +316,7 @@ registerWhen(register("chat", (drop, event) => {
                 }
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
-                if (gotLootShare() && settings.dianaTracker) {
+                if (gotLootShare()) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
                     if (replaceChimMessage) {
