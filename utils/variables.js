@@ -412,6 +412,8 @@ register("chat", () => {
         }
         if (!allZero) {
             pastDianaEvents["events"].push(tempTracker);
+            ChatLib.chat("&7[&6SBO&7] &eMayor " + dianaTrackerMayor.year + " has ended.");
+            new TextComponent("&7[&6SBO&7] &eYou can view the stats for this event with &6/sbopastdianaevents").setClick("run_command", "/sbopde").setHoverValue("&7Click to view the stats").chat();
         }
     }
     let newTracker = initializeTrackerMayor();
