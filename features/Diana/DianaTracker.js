@@ -325,7 +325,7 @@ registerWhen(register("chat", (drop, event) => {
                     }
                 }
                 else {
-                    trackMagicFind(magicFind, true);
+                    if (magicFind > 0) trackMagicFind(magicFind, true);
                     if (settings.dianaAvgMagicFind) {
                         if (magicFind > 0) {
                             if (data.last10ChimMagicFind.length >= 10) {
@@ -367,7 +367,7 @@ registerWhen(register("chat", (drop, event) => {
                     unlockAchievement(15)
                 }
                 else{
-                    trackMagicFind(magicFind);
+                    if (magicFind > 0) trackMagicFind(magicFind);
                     if (settings.dianaAvgMagicFind) {
                         if (magicFind > 0) {
                             if (data.last10StickMagicFind.length >= 10) {
