@@ -277,7 +277,6 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
-"&7[12:22] &r&r&r&c&lYikes! &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {

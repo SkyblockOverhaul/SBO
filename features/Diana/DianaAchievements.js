@@ -1,6 +1,7 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
 import { checkDaxeEnchants, getSBID } from "../../utils/functions";
+import { isDataLoaded } from "../../utils/checkData";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -158,7 +159,6 @@ new Achievement(29, "lf Stick", "200 Minotaur since Stick", "Common");
 new Achievement(30, "lf Relic", "1000 Champions since Relic", "Uncommon"); 
 new Achievement(66, "Where is my Relic?", "3000 champions since Relic", "Mythic", 30, 2);
 
-
 new Achievement(31, "lf Inquisitor", "250 mobs since Inquisitor", "Common"); 
 new Achievement(32, "You have legi Griffin right?", "500 mobs since Inquisitor", "Rare", 31); 
 new Achievement(33, "Why do you still play?", "1000 mobs since Inquisitor", "Legendary", 32, 2); 
@@ -174,8 +174,6 @@ new Achievement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "U
 new Achievement(40, "Bleesed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
 new Achievement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
 new Achievement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
-
-// new Achivement(28, "Where Chimera?", "Get all other drops from an Inquisitor", "Legendary");
 
 new Achievement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
 new Achievement(44, "Magic Find is overrated", "Drop a Chimera, under 200 Magic Find", "Epic");
@@ -206,6 +204,8 @@ new Achievement(63, "So this is what addiction feels like", "Top 50 on the kills
 new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divine", 63, 2);
 
 // new Achievement(65, "oh baybe it's a triple", "Get 3 drops from a single Inquisitor", "Epic", false, 1, true); 
+// new Achivement(28, "Where Chimera?", "Get all other drops from an Inquisitor", "Legendary");
+
 
 
 export function unlockAchievement(id) {
@@ -551,3 +551,23 @@ let checkDaxeAchievements = register("step", () => {
         checkDaxeAchievements.unregister();
 }).setFps(1);
 checkDaxeAchievements.register();
+
+const achievementCheck = register("step", () => {
+    if (!settings.achievementEnabler) return;   
+    if (!isDataLoaded) return;
+    achievementCheck.unregister();
+    if (data.achievementFix1) {
+        data.achievementFix = true;
+        let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
+        let lockedAchievement = false;
+        buggedAchievements.forEach(achievement => {
+            if (achievementsData[achievement] != undefined) {
+                Achievement.lockById(achievement);
+                lockedAchievement = true;
+            }
+        });
+        if (lockedAchievement) {
+            ChatLib.chat("&6[SBO] Warning: &eSome achievements have been reset due to a bug.");
+        }
+    }
+}).setFps(1);
