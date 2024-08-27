@@ -208,7 +208,6 @@ new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divi
 
 
 export function unlockAchievement(id) {
-    if (!settings.achievementEnabler) return;
     if (achievementsData[id] != undefined) return;
     Achievement.list.forEach(achievement => {
         if (achievement.id == id) {
@@ -228,7 +227,6 @@ export const achievementItems = [
 let achievementsToUnlock = [];
 let unlocking = false;  
 function unlockAchievements(override=false) {
-    if (!settings.achievementEnabler) return;
     if (!unlocking) achievementsToUnlock = [...new Set(achievementsToUnlock)];
     if (!override && unlocking) return;
     unlocking = true;
@@ -248,7 +246,6 @@ function unlockAchievements(override=false) {
 }
 
 export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
-    if (!settings.achievementEnabler) return;
     let totalChimera = 0;
     if (item == "Chimera") {
         if ("ChimeraLs" in mayorTracker) {
@@ -311,7 +308,6 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
 }
 
 export function trackSinceMob() {
-    if (!settings.achievementEnabler) return;
     if (data["mobsSinceInq"] >= 250 && data["mobsSinceInq"] < 500) {
         achievementsToUnlock.push(31);
     } else if (data["mobsSinceInq"] >= 500 && data["mobsSinceInq"] < 1000) {
@@ -343,7 +339,6 @@ export function trackSinceMob() {
 }
 
 export function trackMagicFind(magicFind, chimera=false) {
-    if (!settings.achievementEnabler) return;
     if (magicFind >= 300 && magicFind < 400) {
         achievementsToUnlock.push(39);
     } else if (magicFind >= 400 && magicFind < 500) {
@@ -363,7 +358,6 @@ export function trackMagicFind(magicFind, chimera=false) {
 }
 
 function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills) {
-
     if (gaiaKills >= 3000) {
         achievementsToUnlock.push(50);
     } else if (gaiaKills != 0) Achievement.lockById(50);
@@ -389,7 +383,6 @@ function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, c
 }
 
 function dAxeAchivementCheck() {
-    if (!settings.achievementEnabler) return;
     let dAxeEnchants = checkDaxeEnchants();
     if (!dAxeEnchants[0] && !dAxeEnchants[1] && !dAxeEnchants[2]) return;
     if (dAxeEnchants[0]) {
@@ -433,7 +426,6 @@ function getSlayerLvlFromLore(item) {
 }
 
 register("guiOpened", (event) => {
-    if (!settings.achievementEnabler) return;
     setTimeout(() => {
         const container = Player.getContainer();
         if (container == null) return;
@@ -478,7 +470,6 @@ register("guiOpened", (event) => {
 })
 
 register("chat", (event) => {
-    if (!settings.achievementEnabler) return;
     achievementsToUnlock.push(56);
     unlockAchievements();
 }).setCriteria("LVL UP! ➜ Enderman Slayer LVL 9!");
@@ -494,7 +485,6 @@ export function backTrackAchievements() {
 }
 
 export function trackWithCheckPlayer(playerinfo) {
-    if (!settings.achievementEnabler) return;
     if (playerinfo.eman9) {
         achievementsToUnlock.push(56);
     }
@@ -523,7 +513,6 @@ export function trackWithCheckPlayer(playerinfo) {
 }
 
 register("command", () => {
-    if (!settings.achievementEnabler) return;
     backTrackAchievements();
 }).setName("sbobacktrackachievements");
 
@@ -552,7 +541,6 @@ let checkDaxeAchievements = register("step", () => {
 checkDaxeAchievements.register();
 
 const achievementCheck = register("step", () => {
-    if (!settings.achievementEnabler) return;   
     if (!data.achievementFix1) {
         data.achievementFix1 = true;
         let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51];

@@ -898,12 +898,6 @@ class Settings {
     achievementVolume = 50;
 
     // Debug
-    @SwitchProperty({
-        name: '[WIP] Achievement Enabler',
-        description: 'Enables achievements tracking (allows you to get achievements to test the functionality. If you find any bugs please report them on discord)',
-        category: 'Debug',
-    })
-    achievementEnabler = false;
     @SelectorProperty({
         name: "Test Property Sound",
         description: "Select a custom sound for a specific item",
