@@ -553,8 +553,7 @@ checkDaxeAchievements.register();
 
 const achievementCheck = register("step", () => {
     if (!settings.achievementEnabler) return;   
-    achievementCheck.unregister();
-    if (data.achievementFix1) {
+    if (!data.achievementFix1) {
         data.achievementFix1 = true;
         let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
         let lockedAchievement = false;
@@ -565,7 +564,8 @@ const achievementCheck = register("step", () => {
             }
         });
         if (lockedAchievement) {
-            ChatLib.chat("&6[SBO] Warning: &eSome achievements have been reset due to a bug.");
+            ChatLib.chat("&6[SBO] &cWarning: &eSome achievements have been reset due to a bug.");
         }
     }
+    achievementCheck.unregister();
 }).setFps(1);
