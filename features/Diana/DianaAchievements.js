@@ -1,7 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
 import { checkDaxeEnchants, getSBID } from "../../utils/functions";
-import { isDataLoaded } from "../../utils/checkData";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -554,10 +553,9 @@ checkDaxeAchievements.register();
 
 const achievementCheck = register("step", () => {
     if (!settings.achievementEnabler) return;   
-    if (!isDataLoaded) return;
     achievementCheck.unregister();
     if (data.achievementFix1) {
-        data.achievementFix = true;
+        data.achievementFix1 = true;
         let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
         let lockedAchievement = false;
         buggedAchievements.forEach(achievement => {
