@@ -543,7 +543,7 @@ checkDaxeAchievements.register();
 const achievementCheck = register("step", () => {
     if (!data.achievementFix1) {
         data.achievementFix1 = true;
-        let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
+        let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44];
         let lockedAchievement = false;
         buggedAchievements.forEach(achievement => {
             if (achievementsData[achievement] != undefined) {
