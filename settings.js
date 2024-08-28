@@ -915,6 +915,16 @@ class Settings {
         max: 100
     })
     customVolume = 50;
+    @ButtonProperty({
+        name: "Play Test Sound",
+        description: "Plays the selected sound to test it",
+        placeholder: "Play Sound",
+        category: "Customization",
+        subcategory: "Sound Settings"
+    })
+    playTestSound() {
+        ChatLib.command("playsbotestsound", true);
+    }
     @SwitchProperty({
         name: 'Test Features',
         description: 'Enable test features',
@@ -1021,5 +1031,8 @@ FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/")
         customSounds.push(filename.replace(".ogg", ""));
     }
 });
+export function getcustomSounds() {
+    return customSounds;
+}
 
 export default new Settings();

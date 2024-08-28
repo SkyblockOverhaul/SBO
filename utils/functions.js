@@ -1,5 +1,5 @@
 import { request } from "../../requestV2";
-import settings from "../settings";
+import settings, { getcustomSounds } from "../settings";
 import { HypixelModAPI } from "./../../HypixelModAPI";
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
 import { getWorld } from "./world";
@@ -453,7 +453,7 @@ register("command", () => {
 }).setName("sbodev")
 
 export function playCustomSound(sound, volume) {
-    if (sound != "") {
+    if (sound != "" && sound != undefined && sound != "none") {
         if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
         if (FileLib.exists(Config.modulesFolder.replace("modules", "images") + `/${sound}.ogg`)) {
             new Sound({ source: new java.lang.String(sound + ".ogg") }).setVolume(volume/100).play()
@@ -463,6 +463,12 @@ export function playCustomSound(sound, volume) {
         }
     }
 }
+
+let customSounds = undefined
+register("command", () => {
+    customSounds = getcustomSounds();
+    playCustomSound(customSounds[settings.customSound], settings.customVolume);
+}).setName("playsbotestsound");
 
 // party detection
 HypixelModAPI.on("partyInfo", (partyInfo) => {
