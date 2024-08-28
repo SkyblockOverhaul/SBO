@@ -94,6 +94,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&7> &a- Added more info to party commands`)
     ChatLib.chat(`&7> &a- Removed "!pt" to check playtime of party members (use !playtime instead)`)
     ChatLib.chat(`&7> &a- Added burrows/hours in tracker`)
+    ChatLib.chat(`&7> &a- Added button in settings to test custom sounds`)
     ChatLib.chat(`&7> &a- Fixed all known achievement bugs`)
     ChatLib.chat(`&7> &a- Fixed many other small bugs`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
