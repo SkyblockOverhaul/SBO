@@ -185,6 +185,7 @@ let lastTimeThrown = 0
 let throwBool = false
 registerWhen(register("playerInteract", (action, pos) => {
     let item = Player.getHeldItem()
+    if (item == null) return
     if (item.getLore()[1].includes("§8Lava Rod")) {
         lastTimeThrown = Date.now()
         throwBool = true
