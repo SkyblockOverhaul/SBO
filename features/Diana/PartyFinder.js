@@ -28,7 +28,7 @@ function getPartyInfo(party) {
 
 // message to check party when joining a party
 register("chat", (party) => {
-    if (checkDiana()) {
+    if (checkDiana(true)) {
         setTimeout(() => {
             new TextComponent("&6[SBO] &eClick to check party members").setClick("run_command", "/sbocheckp").setHover("show_text", "/sbocheckp").chat();
         }, 100);
