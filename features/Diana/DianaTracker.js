@@ -76,7 +76,7 @@ export function dianaLootCounter(item, amount) {
 
 export function trackLootWithSacks(ammount, item) {
     let countThisIds = ["Enchanted Gold", "Enchanted Iron", "Ancient Claw"] // , "Rotten Flesh"
-    if (getAllowedToTrackSacks()) {
+    if (getAllowedToTrackSacks() && checkDiana()) {
         for (let i in countThisIds.values()) {
             if (item == i) {
                 trackItem(item.replaceAll(" ", "_").toUpperCase(), "items", parseInt(ammount));
@@ -87,6 +87,7 @@ export function trackLootWithSacks(ammount, item) {
 
 let forbiddenCoins = [1, 5, 20, 1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
 export function trackScavengerCoins(coins) {
+    if (!checkDiana()) return;
     if (mobDeath4SecsTrue() || gotLootShare()) {
         if (!forbiddenCoins.includes(coins) && coins < 65000) {
             trackItem("scavengerCoins", "items", coins);
