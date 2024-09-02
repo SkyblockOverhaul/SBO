@@ -434,7 +434,7 @@ class Settings {
     //--Diana Party Commands--
     @SwitchProperty({
         name: 'Diana Party Commands',
-        description: 'Enable diana party commands (!chim, !inq, !relic, !stick, !since, !burrow, !mob)',
+        description: 'Enable diana party commands (!chim, !inq, !relic, !stick, !since, !burrow, !mob) (note: you need to have diana tracker enabled)',
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
