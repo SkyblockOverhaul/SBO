@@ -1,6 +1,8 @@
 import settings from "../../settings";
 import { registerWhen, data, dianaTimerlist} from "../../utils/variables";
-import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit } from "../../utils/functions";
+import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, 
+    getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit, setBurrowsPerHour 
+} from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 import { checkDiana } from "../../utils/checkDiana";
@@ -234,7 +236,7 @@ function getLootMessage(lootViewSetting) {
 
     const itemData = [
         { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
-        { name: "Chimera &7[&bLs&7]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+        { name: "Chimera &7[&bLS&7]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
         { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
         { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
         { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
@@ -323,9 +325,11 @@ function getLootMessage(lootViewSetting) {
         lootLines.push(createLootLine(item));
     }
 
-    let totalBurrowsText = `${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`;
+    let totalBurrows = new OverlayTextLine(`${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`, true, true);
     let totalCoinsText = new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`, true, true)
-    
+    let burrowsPerHour = lootTracker["items"]["Total Burrows"] / dianaTimerlist[lootViewSetting - 1].getHourTime();
+    setBurrowsPerHour(burrowsPerHour.toFixed());
+
     let treasure = formatNumber(lootTracker["items"]["coins"] - lootTracker["items"]["fishCoins"] - lootTracker["items"]["scavengerCoins"]).toString();
     let fourEyedFish = formatNumber(lootTracker["items"]["fishCoins"]).toString();
     let scavenger = formatNumber(lootTracker["items"]["scavengerCoins"]).toString();
@@ -336,7 +340,13 @@ function getLootMessage(lootViewSetting) {
         `§6Scavenger: §b${scavenger}`
     ].map(item => item.toString()); 
 
-    lootLines.push(new OverlayTextLine(totalBurrowsText, true));
+    let burrowHover = [
+        `§6Burrows per hour: §b${burrowsPerHour.toFixed(2)}`,
+    ].map(item => item.toString());
+    lootLines.push(totalBurrows.onHover((overlay) => {
+        // overlay.gui.drawHoveringString(hovertext, 0, 0)
+        GuiUtils.drawHoveringText(burrowHover, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
+    }));
 
     lootLines.push(totalCoinsText.onHover((overlay) => {
         // overlay.gui.drawHoveringString(hovertext, 0, 0)
@@ -376,7 +386,7 @@ function getLootMessage(lootViewSetting) {
     totalProfitLine.onHover((overlay) => {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
-    setDianaMayorTotalProfit(formatNumber(getTotalValue(true)), offertType);
+    setDianaMayorTotalProfit(formatNumber(getTotalValue(true)), offertType, profitPerHour);
     lootLines.push(totalProfitLine);
 
     return lootLines;

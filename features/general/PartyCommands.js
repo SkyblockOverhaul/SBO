@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -79,7 +79,7 @@ register("chat", (player, message) => {
         case "!w":
         case "!warp":
             if(settings.PartyCommands && settings.WarpCommand) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("p warp")
                 },100)
             }
@@ -88,7 +88,7 @@ register("chat", (player, message) => {
         case "!allinv":
         case "!allinvite":
             if(settings.PartyCommands && settings.AllinviteCommand) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("p setting allinvite")
                 },100)
             }
@@ -97,13 +97,13 @@ register("chat", (player, message) => {
         case "!transfer":
             if (settings.PartyCommands && settings.TransferCommand && message[1]) {
                 if(settings.PartyCommands && settings.TransferCommand) {
-                    setTimeout(function() {
+                    setTimeout(() => {
                         ChatLib.command("p transfer " + message[1])
                     },100)
                 }
             }
             else if(settings.PartyCommands && settings.TransferCommand) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("p transfer " + getplayername(player))
                 },100)
             }
@@ -111,12 +111,12 @@ register("chat", (player, message) => {
         case "!demote":
         case "!promote":
             if (settings.PartyCommands && settings.MoteCommand && message[1]) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("p " + message[0].slice(1) + " " + message[1])
                 },100)
                 }
             else if (settings.PartyCommands && settings.MoteCommand) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("p " + message[0].slice(1) + " " + getplayername(player))
                 },100)
             }
@@ -124,23 +124,23 @@ register("chat", (player, message) => {
         case "!c":
         case "!carrot":
             if(settings.carrotCommand) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("pc " + carrot[Math.floor(Math.random() * carrot.length)]);
                 },100)
             }
             break;
         case "!time":
             if (settings.timeCommand) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("pc " + new Date().toLocaleTimeString());
-                }, 100)
+                }, 200)
             }
             break;
         case "!tps":
             if (settings.tpsCommand) {
-                setTimeout(function() {
+                setTimeout(() => {
                     tpsCommand(player)
-                }, 100)
+                }, 200)
             }
             break
         case "!chim":
@@ -152,9 +152,9 @@ register("chat", (player, message) => {
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 let totalChimera = dianaTrackerMayor["items"]["Chimera"] + dianaTrackerMayor["items"]["ChimeraLs"];
-                setTimeout(function() {
-                    ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"] + " (" + calcPercentOne(dianaTrackerMayor, "Chimera", "Minos Inquisitor") + "%) [LS:" + dianaTrackerMayor["items"]["ChimeraLs"] + "]")
-                }, 100)
+                setTimeout(() => {
+                    ChatLib.command("pc Chimera: " + dianaTrackerMayor["items"]["Chimera"] + " (" + calcPercentOne(dianaTrackerMayor, "Chimera", "Minos Inquisitor") + "%) +" + dianaTrackerMayor["items"]["ChimeraLs"] + " LS")
+                }, 200)
             }
             break
         case "!inq":
@@ -162,54 +162,54 @@ register("chat", (player, message) => {
         case "!inquisitor":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("pc Inquisitor: " + dianaTrackerMayor["mobs"]["Minos Inquisitor"] + " (" + calcPercentOne(dianaTrackerMayor, "Minos Inquisitor") + "%)")
-                }, 100)
+                }, 200)
             }
             break
         case "!burrows":
         case "!burrow":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
-                    ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"])
-                }, 100)
+                setTimeout(() => {
+                    ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"] + " (" + getBurrowsPerHour(dianaTrackerMayor) + "/h)")
+                }, 200)
             }
             break
         case "!relic":
         case "!relics":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("pc Relics: " + dianaTrackerMayor["items"]["MINOS_RELIC"] + " (" + calcPercentOne(dianaTrackerMayor, "MINOS_RELIC", "Minos Champion") + "%)")
-                }, 100)
+                }, 200)
             }
             break
         case "!stick":
         case "!sticks":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"] + " (" + calcPercentOne(dianaTrackerMayor, "Daedalus Stick", "Minotaur") + "%)")
-                }, 100)
+                }, 200)
             }
             break
         case "!mob":
         case "!mobs":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
-                }, 100)
+                }, 200)
             }
             break
         case "!since":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 if(args1 == undefined) {
-                    setTimeout(function() {
+                    setTimeout(() => {
                         ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
-                    }, 100)
+                    }, 200)
                     return;
                 }
                 switch(args1){
@@ -217,49 +217,49 @@ register("chat", (player, message) => {
                     case "chim":
                     case "chims":
                     case "chimeras":
-                        setTimeout(function() {
+                    case "book":
+                        setTimeout(() => {
                             ChatLib.command("pc Inqs since chim: " + data.inqsSinceChim)
-                        }, 100)
+                        }, 200)
                         break
                     case "stick":
                     case "sticks":
-                        setTimeout(function() {
+                        setTimeout(() => {
                             ChatLib.command("pc Minos since stick: " + data.minotaursSinceStick)
-                        }, 100)
+                        }, 200)
                         break
                     case "relic":
                     case "relics":
-                        setTimeout(function() {
+                        setTimeout(() => {
                             ChatLib.command("pc Champs since relic: " + data.champsSinceRelic)
-                        }, 100)
+                        }, 200)
                         break
                     case "inq":
                     case "inqs":
                     case "inquisitor":
-                        setTimeout(function() {
+                        setTimeout(() => {
                             ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
-                        }, 100)
+                        }, 200)
                         break
                 }
                 
             }
             break
         case "!playtime":
-        case "!pt":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                setTimeout(function() {
+                setTimeout(() => {
                     ChatLib.command("pc Playtime: " + formatTime(dianaTrackerMayor.items.mayorTime))
-                }, 100)
+                }, 200)
             }
             break
         case "!profit":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
-                let [profit, offerType] = getDianaMayorTotalProfitAndOfferType();
-                setTimeout(function() {
-                    ChatLib.command("pc Profit: " + profit + " (" + offerType + ")")
-                }, 100)
+                let [profit, offerType, profitHour] = getDianaMayorTotalProfitAndOfferType();
+                setTimeout(() => {
+                    ChatLib.command("pc Profit: " + profit + " (" + offerType + ") " + profitHour + "/h")
+                }, 200)
             }
             break
     }

@@ -1,5 +1,5 @@
 import { request } from "../../requestV2";
-import settings from "../settings";
+import settings, { getcustomSounds } from "../settings";
 import { HypixelModAPI } from "./../../HypixelModAPI";
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
 import { getWorld } from "./world";
@@ -270,10 +270,10 @@ export function checkDaxeEnchants() {
         let nbtData = item.getNBT();
         if (!nbtData) return [false, false, false];
         let itemName = nbtData.getCompoundTag("tag").getCompoundTag("display").getString("Name");
-        if (!itemName) return [false, false, false];
+        if (!itemName) itemName = "";
         itemName = itemName.removeFormatting().trim();
         enchantments = nbtData.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("enchantments");
-        if (!enchantments) return [false, false, false];
+        if (!enchantments) enchantments = {};
         if (itemName.includes("Daedalus Axe")) {
             if (enchantments.getInteger("ultimate_chimera") == 5) {
                 chimVbool = true;
@@ -285,7 +285,7 @@ export function checkDaxeEnchants() {
                 divineGift3bool = true;
             }
         }
-        break;
+        continue;
     }
     return [chimVbool, lootingVbool, divineGift3bool];
 }
@@ -453,7 +453,7 @@ register("command", () => {
 }).setName("sbodev")
 
 export function playCustomSound(sound, volume) {
-    if (sound != "") {
+    if (sound != "" && sound != undefined && sound != "none") {
         if (sound.includes(".ogg")) sound = sound.replace(".ogg", "");
         if (FileLib.exists(Config.modulesFolder.replace("modules", "images") + `/${sound}.ogg`)) {
             new Sound({ source: new java.lang.String(sound + ".ogg") }).setVolume(volume/100).play()
@@ -463,6 +463,12 @@ export function playCustomSound(sound, volume) {
         }
     }
 }
+
+let customSounds = undefined
+register("command", () => {
+    customSounds = getcustomSounds();
+    playCustomSound(customSounds[settings.customSound], settings.customVolume);
+}).setName("playsbotestsound");
 
 // party detection
 HypixelModAPI.on("partyInfo", (partyInfo) => {
@@ -724,14 +730,25 @@ export function formatTimeMinSec(milliseconds) {
 
 let dianaMayorTotalProfit = 0;
 let dianaMayorOfferType
+let profitPerHour = 0;
+let burrowsPerHour = 0;
 
-export function getDianaMayorTotalProfitAndOfferType() {
-    return [dianaMayorTotalProfit, dianaMayorOfferType];
+export function getBurrowsPerHour() {
+    return burrowsPerHour;
 }
 
-export function setDianaMayorTotalProfit(profit, offerType) {
+export function setBurrowsPerHour(burrows) {
+    burrowsPerHour = burrows;
+}
+
+export function getDianaMayorTotalProfitAndOfferType() {
+    return [dianaMayorTotalProfit, dianaMayorOfferType, profitPerHour];
+}
+
+export function setDianaMayorTotalProfit(profit, offerType, profitHour) {
     dianaMayorTotalProfit = profit;
     dianaMayorOfferType = offerType;
+    profitPerHour = profitHour;
 }
 
 export function getRarity(item){

@@ -156,6 +156,7 @@ new Achievement(27, "Sleep is downtime!", "3 days of playtime in one event", "Le
 
 new Achievement(29, "lf Stick", "200 Minotaur since Stick", "Common"); 
 new Achievement(30, "lf Relic", "1000 Champions since Relic", "Uncommon"); 
+new Achievement(66, "Where is my Relic?", "3000 champions since Relic", "Mythic", 30, 2);
 
 new Achievement(31, "lf Inquisitor", "250 mobs since Inquisitor", "Common"); 
 new Achievement(32, "You have legi Griffin right?", "500 mobs since Inquisitor", "Rare", 31); 
@@ -172,8 +173,6 @@ new Achievement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "U
 new Achievement(40, "Bleesed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
 new Achievement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
 new Achievement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
-
-// new Achivement(28, "Where Chimera?", "Get all other drops from an Inquisitor", "Legendary");
 
 new Achievement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
 new Achievement(44, "Magic Find is overrated", "Drop a Chimera, under 200 Magic Find", "Epic");
@@ -203,8 +202,12 @@ new Achievement(62, "Mom look i am on the leaderboard", "Top 100 on the kills le
 new Achievement(63, "So this is what addiction feels like", "Top 50 on the kills leaderboard", "Mythic", 62);
 new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divine", 63, 2);
 
+// new Achievement(65, "oh baybe it's a triple", "Get 3 drops from a single Inquisitor", "Epic", false, 1, true); 
+// new Achivement(28, "Where Chimera?", "Get all other drops from an Inquisitor", "Legendary");
+
+
+
 export function unlockAchievement(id) {
-    if (!settings.achievementEnabler) return;
     if (achievementsData[id] != undefined) return;
     Achievement.list.forEach(achievement => {
         if (achievement.id == id) {
@@ -224,7 +227,6 @@ export const achievementItems = [
 let achievementsToUnlock = [];
 let unlocking = false;  
 function unlockAchievements(override=false) {
-    if (!settings.achievementEnabler) return;
     if (!unlocking) achievementsToUnlock = [...new Set(achievementsToUnlock)];
     if (!override && unlocking) return;
     unlocking = true;
@@ -244,7 +246,6 @@ function unlockAchievements(override=false) {
 }
 
 export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
-    if (!settings.achievementEnabler) return;
     let totalChimera = 0;
     if (item == "Chimera") {
         if ("ChimeraLs" in mayorTracker) {
@@ -307,7 +308,6 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
 }
 
 export function trackSinceMob() {
-    if (!settings.achievementEnabler) return;
     if (data["mobsSinceInq"] >= 250 && data["mobsSinceInq"] < 500) {
         achievementsToUnlock.push(31);
     } else if (data["mobsSinceInq"] >= 500 && data["mobsSinceInq"] < 1000) {
@@ -330,14 +330,15 @@ export function trackSinceMob() {
         achievementsToUnlock.push(29);
     }
 
-    if (data["champsSinceRelic"] >= 1000) {
+    if (data["champsSinceRelic"] >= 1000 && data["champsSinceRelic"] < 3000) {
         achievementsToUnlock.push(30);
+    } else if (data["champsSinceRelic"] >= 3000) {
+        achievementsToUnlock.push(66);
     }
     unlockAchievements();
 }
 
 export function trackMagicFind(magicFind, chimera=false) {
-    if (!settings.achievementEnabler) return;
     if (magicFind >= 300 && magicFind < 400) {
         achievementsToUnlock.push(39);
     } else if (magicFind >= 400 && magicFind < 500) {
@@ -359,30 +360,29 @@ export function trackMagicFind(magicFind, chimera=false) {
 function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills) {
     if (gaiaKills >= 3000) {
         achievementsToUnlock.push(50);
-    } else Achievement.lockById(50);
+    } else if (gaiaKills != 0) Achievement.lockById(50);
     if (inqKills >= 500) {
         achievementsToUnlock.push(45);
-    } else Achievement.lockById(45);
+    } else if (inqKills != 0) Achievement.lockById(45);
     if (minoKills >= 3000) {
         achievementsToUnlock.push(46);
-    } else Achievement.lockById(46);
+    } else if (minoKills != 0) Achievement.lockById(46);
     if (champKills >= 1000) {
         achievementsToUnlock.push(47);
-    } else Achievement.lockById(47);
+    } else if (champKills != 0) Achievement.lockById(47);
     if (hunterKills >= 1000) {
         achievementsToUnlock.push(48);
-    } else Achievement.lockById(48);
+    } else if (hunterKills != 0) Achievement.lockById(48);
     if (catKills >= 3000) {
         achievementsToUnlock.push(49);
-    } else Achievement.lockById(49);
+    } else if (catKills != 0) Achievement.lockById(49);
     if (gaiaKills >= 3000 && champKills >= 1000 && hunterKills >= 1000 && inqKills >= 500 && minoKills >= 3000 && catKills >= 3000) {
         achievementsToUnlock.push(51);
-    } else Achievement.lockById(51);
+    } else if (gaiaKills != 0 && champKills != 0 && hunterKills != 0 && inqKills != 0 && minoKills != 0 && catKills != 0) Achievement.lockById(51);
     unlockAchievements();
 }
 
 function dAxeAchivementCheck() {
-    if (!settings.achievementEnabler) return;
     let dAxeEnchants = checkDaxeEnchants();
     if (!dAxeEnchants[0] && !dAxeEnchants[1] && !dAxeEnchants[2]) return;
     if (dAxeEnchants[0]) {
@@ -401,6 +401,7 @@ function dAxeAchivementCheck() {
 }
 
 function getKillsFromLore(item) {
+    if (item == null) return 0;
     let lore = item.getLore();
     let kills = 0;
     lore.forEach(line => {
@@ -413,6 +414,7 @@ function getKillsFromLore(item) {
 }
 
 function getSlayerLvlFromLore(item) {
+    if (item == null) return 0;
     let lore = item.getLore();
     let slayerLvl = 0;
     lore.forEach(line => {
@@ -424,7 +426,6 @@ function getSlayerLvlFromLore(item) {
 }
 
 register("guiOpened", (event) => {
-    if (!settings.achievementEnabler) return;
     setTimeout(() => {
         const container = Player.getContainer();
         if (container == null) return;
@@ -469,7 +470,6 @@ register("guiOpened", (event) => {
 })
 
 register("chat", (event) => {
-    if (!settings.achievementEnabler) return;
     achievementsToUnlock.push(56);
     unlockAchievements();
 }).setCriteria("LVL UP! ➜ Enderman Slayer LVL 9!");
@@ -485,7 +485,6 @@ export function backTrackAchievements() {
 }
 
 export function trackWithCheckPlayer(playerinfo) {
-    if (!settings.achievementEnabler) return;
     if (playerinfo.eman9) {
         achievementsToUnlock.push(56);
     }
@@ -514,7 +513,6 @@ export function trackWithCheckPlayer(playerinfo) {
 }
 
 register("command", () => {
-    if (!settings.achievementEnabler) return;
     backTrackAchievements();
 }).setName("sbobacktrackachievements");
 
@@ -541,3 +539,21 @@ let checkDaxeAchievements = register("step", () => {
         checkDaxeAchievements.unregister();
 }).setFps(1);
 checkDaxeAchievements.register();
+
+const achievementCheck = register("step", () => {
+    if (!data.achievementFix1) {
+        data.achievementFix1 = true;
+        let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44];
+        let lockedAchievement = false;
+        buggedAchievements.forEach(achievement => {
+            if (achievementsData[achievement] != undefined) {
+                Achievement.lockById(achievement);
+                lockedAchievement = true;
+            }
+        });
+        if (lockedAchievement) {
+            ChatLib.chat("&6[SBO] &cWarning: &eSome achievements have been reset due to a bug.");
+        }
+    }
+    achievementCheck.unregister();
+}).setFps(1);

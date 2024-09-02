@@ -71,15 +71,18 @@ function getYearMayorRequestV2() {
         url: "https://api.hypixel.net/resources/skyblock/election",
         json: true
     }).then((response)=>{
-        mayor = response.mayor.name;
         apiLastUpdated = response.lastUpdated;
-        minister = response.mayor.minister.name;
-        ministerPerk = response.mayor.minister.perk.name;
+        mayor = response.mayor.name;
         perks = new Set([...response.mayor.perks.map(perk => perk.name)]);
+        if (response.mayor.minister) {
+            minister = response.mayor.minister.name;
+            ministerPerk = response.mayor.minister.perk.name;
+        }
         mayorApiError = false;
     }).catch((error)=>{
         mayorApiError = true;
         console.error(error);
+        print("Error getting mayor from api");
     });
 }
 

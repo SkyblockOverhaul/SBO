@@ -76,7 +76,7 @@ export function dianaLootCounter(item, amount) {
 
 export function trackLootWithSacks(ammount, item) {
     let countThisIds = ["Enchanted Gold", "Enchanted Iron", "Ancient Claw"] // , "Rotten Flesh"
-    if (getAllowedToTrackSacks()) {
+    if (getAllowedToTrackSacks() && checkDiana()) {
         for (let i in countThisIds.values()) {
             if (item == i) {
                 trackItem(item.replaceAll(" ", "_").toUpperCase(), "items", parseInt(ammount));
@@ -87,6 +87,7 @@ export function trackLootWithSacks(ammount, item) {
 
 let forbiddenCoins = [1, 5, 20, 1000, 2000, 3000, 4000, 5000, 7500, 8000, 10000, 12000, 15000, 20000, 25000, 40000, 50000]
 export function trackScavengerCoins(coins) {
+    if (!checkDiana()) return;
     if (mobDeath4SecsTrue() || gotLootShare()) {
         if (!forbiddenCoins.includes(coins) && coins < 65000) {
             trackItem("scavengerCoins", "items", coins);
@@ -141,7 +142,7 @@ function trackOne(tracker, item, category, type, amount) {
     }
     tracker.save();
     if (type == "Mayor") {
-        if (item in achievementItems) {
+        if (achievementItems.includes(item)) {
             trackAchievementsItem(tracker.items, item);
         }
         if (category == "mobs") {
@@ -246,16 +247,17 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
                 if(settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "&eClick To Copy").chat();
                 }
+                if (b2bInq && data.mobsSinceInq == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
+                    unlockAchievement(7) // b2b2b inq
+                }
                 if (data.mobsSinceInq == 1 && !b2bInq) {
                     ChatLib.chat("&6[SBO] &cb2b Inquisitor!")
                     unlockAchievement(6) // b2b inq
                     b2bInq = true;
                 }
                 if (data.inqsSinceChim == 2) b2bChim = false;
-                if (b2bInq && data.mobsSinceInq == 1) {
-                    ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
-                    unlockAchievement(7) // b2b2b inq
-                }
+
                 data.mobsSinceInq = 0;        
                 break;
             case "Minos Champion":
@@ -276,7 +278,6 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
     }
     if (settings.cleanDianaChat) cancel(event);
 }).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
-"&7[12:22] &r&r&r&c&lYikes! &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
@@ -305,7 +306,6 @@ registerWhen(register("chat", (drop, event) => {
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
-                trackMagicFind(magicFind, true);
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {
                         Client.Companion.showTitle(`&d&lChimera!`, `&6${formatNumber(getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1"))} coins`, 0, 25, 35);
@@ -316,18 +316,19 @@ registerWhen(register("chat", (drop, event) => {
                 }
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
-                if (gotLootShare() && settings.dianaTracker) {
+                if (gotLootShare()) {
                     trackItem("ChimeraLs", "items", 1); // ls chim
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if(replaceChimMessage) {
+                    if (replaceChimMessage) {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
                     }
                 }
                 else {
-                    if(settings.dianaAvgMagicFind) {
-                        if(magicFind > 0) {
-                            if(data.last10ChimMagicFind.length >= 10) {
+                    if (magicFind > 0) trackMagicFind(magicFind, true);
+                    if (settings.dianaAvgMagicFind) {
+                        if (magicFind > 0) {
+                            if (data.last10ChimMagicFind.length >= 10) {
                                 data.last10ChimMagicFind.shift();
                             }
                             data.last10ChimMagicFind.push(magicFind);
@@ -337,57 +338,62 @@ registerWhen(register("chat", (drop, event) => {
                             avgMagicFindOverlay();
                         }
                     }
-                    if(settings.dianaTracker) {
+                    if (settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
                     }
-                    if(settings.sendSinceMassage) {
+                    if (settings.sendSinceMassage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
+                    }
+                    if (b2bChim && data.inqsSinceChim == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
+                        unlockAchievement(2) // b2b2b chim
                     }
                     if (data.inqsSinceChim == 1 && !b2bChim) {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
                         b2bChim = true;
                         unlockAchievement(1) // b2b chim
                     }
-                    if (b2bChim && data.inqsSinceChim == 1) {
-                        ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
-                        unlockAchievement(2) // b2b2b chim
-                    }
+
                     data.inqsSinceChim = 0;
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if(replaceChimMessage) {
+                    if (replaceChimMessage) {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
                     }
                 }
                 break;
             case "Daedalus Stick":
-                trackMagicFind(magicFind);
-                if(settings.dianaAvgMagicFind) {
-                    if(magicFind > 0) {
-                        if(data.last10StickMagicFind.length >= 10) {
-                            data.last10StickMagicFind.shift();
+                if (gotLootShare()) {
+                    unlockAchievement(15)
+                }
+                else{
+                    if (magicFind > 0) trackMagicFind(magicFind);
+                    if (settings.dianaAvgMagicFind) {
+                        if (magicFind > 0) {
+                            if (data.last10StickMagicFind.length >= 10) {
+                                data.last10StickMagicFind.shift();
+                            }
+                            data.last10StickMagicFind.push(magicFind);
+                        
+                            let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
+                            data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
+                            avgMagicFindOverlay();
                         }
-                        data.last10StickMagicFind.push(magicFind);
-                    
-                        let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
-                        data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
-                        avgMagicFindOverlay();
                     }
                 }
-
-                if(settings.sendSinceMassage) {
+                if (settings.sendSinceMassage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
+                }
+                if (b2bStick && data.minotaursSinceStick == 1) {
+                    ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
+                    unlockAchievement(4) // b2b2b stick
                 }
                 if (data.minotaursSinceStick == 1 && !b2bStick) {
                     ChatLib.chat("&6[SBO] &cb2b Daedalus Stick!")
                     b2bStick = true;
                     unlockAchievement(3) // b2b stick
                 }
-                if (b2bStick && data.minotaursSinceStick == 1) {
-                    ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
-                    unlockAchievement(4) // b2b2b stick
-                }
-                if (gotLootShare()) unlockAchievement(15) // ls stick
+
                 data.minotaursSinceStick = 0;
                 if (settings.lootAnnouncerScreen) {
                     if (settings.lootAnnouncerPrice) {

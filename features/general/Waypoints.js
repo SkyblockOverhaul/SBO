@@ -324,8 +324,19 @@ function getClosestWarp(x, y, z) {
 }
 // check if player got loot share //
 register("chat" , (player) => {
-    // remove each waypoint from inqWaypoints that contains player
-    inqWaypoints = inqWaypoints.filter(([p, _, _, _, _]) => !p.includes(player.removeFormatting()));
+    let playerX = Player.getX();
+    let playerY = Player.getY();
+    let playerZ = Player.getZ();
+    function isWithin20BlockRadius(x, y, z) {
+        let dx = x - playerX;
+        let dy = y - playerY;
+        let dz = z - playerZ;
+        let distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        return distance <= 20;
+    }
+    inqWaypoints = inqWaypoints.filter((waypoint) => {
+        return !waypoint[0].includes(player.removeFormatting()) && !isWithin20BlockRadius(waypoint[1], waypoint[2], waypoint[3]);
+    });
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 // &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 

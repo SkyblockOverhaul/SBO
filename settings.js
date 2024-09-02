@@ -381,7 +381,7 @@ class Settings {
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
-    PartyCommands = false;
+    PartyCommands = true;
     @SwitchProperty({
         name: 'Warp Party',
         description: '!w, !warp',
@@ -434,11 +434,11 @@ class Settings {
     //--Diana Party Commands--
     @SwitchProperty({
         name: 'Diana Party Commands',
-        description: 'Enable diana party commands (!chim, !inq, !relic, !stick, !since, !burrow, !mob)',
+        description: 'Enable diana party commands (!chim, !inq, !relic, !stick, !since, !burrow, !mob) (note: you need to have diana tracker enabled)',
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
-    dianaPartyCommands = false;
+    dianaPartyCommands = true;
 
     // Slayer
     @SwitchProperty({
@@ -898,12 +898,6 @@ class Settings {
     achievementVolume = 50;
 
     // Debug
-    @SwitchProperty({
-        name: '[WIP] Achievement Enabler',
-        description: 'Enables achievements tracking (allows you to get achievements to test the functionality. If you find any bugs please report them on discord)',
-        category: 'Debug',
-    })
-    achievementEnabler = false;
     @SelectorProperty({
         name: "Test Property Sound",
         description: "Select a custom sound for a specific item",
@@ -921,6 +915,16 @@ class Settings {
         max: 100
     })
     customVolume = 50;
+    @ButtonProperty({
+        name: "Play Test Sound",
+        description: "Plays the selected sound to test it",
+        placeholder: "Play Sound",
+        category: "Customization",
+        subcategory: "Sound Settings"
+    })
+    playTestSound() {
+        ChatLib.command("playsbotestsound", true);
+    }
     @SwitchProperty({
         name: 'Test Features',
         description: 'Enable test features',
@@ -1027,5 +1031,8 @@ FileUtilities.listFiles(Config.modulesFolder.replace("modules", "images") + "/")
         customSounds.push(filename.replace(".ogg", ""));
     }
 });
+export function getcustomSounds() {
+    return customSounds;
+}
 
 export default new Settings();
