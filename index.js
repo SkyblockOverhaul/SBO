@@ -19,6 +19,7 @@ import "./features/general/CrownTracker";
 import "./features/Diana/DianaAchievements";
 import "./features/guis/Achievements";
 import "./features/guis/PastDianaEvents";
+import "./features/guis/PartyFinderGUI";
 import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
