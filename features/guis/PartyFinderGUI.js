@@ -1,9 +1,16 @@
-import { drawRectangleOutline as outline } from "../../utils/functions";
+import { drawRectangleOutline as outline, text, rect, color, line, Button, getActiveUsers } from "../../utils/functions";
 
 const PartyFinderGUI = new Gui()
 let currentPage = 0
+let onlineUsers = 0
+let partyCount = 0
 PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
+PartyFinderGUI.registerOpened(() => {
+    getActiveUsers(true, (userCount) => {
+        onlineUsers = userCount
+    });
+});
 
 function getLayoutData() {
     let displayX = Renderer.screen.getWidth()
@@ -13,6 +20,17 @@ function getLayoutData() {
     let pfWindowHeight = displayY * 0.7
     let pfWindowX = (displayX - pfWindowWidth) / 2
     let pfWindowY = (displayY - pfWindowHeight) / 2
+
+    let pfListWidth = pfWindowWidth * 0.9
+    let pfListHeight = pfWindowHeight * 0.85
+    let pfListX = pfWindowX + (pfWindowWidth - pfListWidth) / 2
+    let pfListY = pfWindowY + (pfWindowHeight - pfListHeight) / 2
+
+    let titleX = pfWindowX * 1.05
+    let titleY = pfWindowY * 1.05
+
+    let onlineUserX = titleX
+    let onlineUserY = titleY * 1.18
 
     let boxWidth = 200
     let boxHeight = 35
@@ -30,29 +48,29 @@ function getLayoutData() {
 
 
     return {
-        displayX,
-        displayY,
-        boxWidth,
-        boxHeight,
-        spacingX,
-        spacingY,
-        columns,
-        rows,
-        totalWidth,
-        totalHeight,
-        startX,
-        startY,
-        pfWindowWidth,
-        pfWindowHeight,
-        pfWindowX,
-        pfWindowY
+        displayX, displayY, 
+        boxWidth, boxHeight, spacingX, spacingY, columns, rows, totalWidth, totalHeight, startX, startY, 
+        pfWindowWidth, pfWindowHeight, pfWindowX, pfWindowY, 
+        pfListWidth, pfListHeight, pfListX, pfListY,
+        titleX, titleY, onlineUserX, onlineUserY
     }
 }
 
 function partyFinderRender() {
     const layoutData = getLayoutData()
 
-    roundRect(color(30, 30, 30, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 10);
+    rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
+    outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
+    line(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY * 1.35, layoutData.pfWindowX + layoutData.pfWindowWidth, layoutData.pfWindowY * 1.35, 1)
+
+    rect(color(0, 0, 0, 0), layoutData.pfListX, layoutData.pfListY, layoutData.pfListWidth, layoutData.pfListHeight);
+    outline(color(0, 173, 255, 255), layoutData.pfListX, layoutData.pfListY, layoutData.pfListWidth, layoutData.pfListHeight, 1);
+
+    text(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 2.2, true)
+    text(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false)
+    text(color(255, 255, 255, 255), layoutData.onlineUserX * 1.38, layoutData.onlineUserY, `Party Count: ${partyCount}`, 1, false)
+
+    textButton.draw()
 }
 
 function partyFinderClose() {
@@ -64,26 +82,10 @@ register("command", () => {
     PartyFinderGUI.open()
 }).setName("sbopartyfinder").setAliases("sbopf")
 
-function rect(color, x, y, width, height) {
-    Renderer.drawRect(color, x, y, width, height);
-}
+const textButton = new Button(0, 0, 100, 30, "Click me", false, (button) => {
+    ChatLib.chat("Button clicked");
+});
 
-function color(r, g, b, a) {
-    return Renderer.color(r, g, b, a)
-}
-
-function roundRect(color, x, y, width, height, radius) {
-    radius = Math.min(radius, width / 2, height / 2);
-
-    rect(color, x + radius, y + radius, width - 2 * radius, height - 2 * radius);
-
-    rect(color, x + radius, y, width - 2 * radius, radius); // Top rectangle
-    rect(color, x + radius, y + height - radius, width - 2 * radius, radius); // Bottom rectangle
-    rect(color, x, y + radius, radius, height - 2 * radius); // Left rectangle
-    rect(color, x + width - radius, y + radius, radius, height - 2 * radius); // Right rectangle
-
-    Renderer.drawCircle(color, x + radius, y + radius, radius, 100, 5); // Top-left corner
-    Renderer.drawCircle(color, x + width - radius, y + radius, radius, 100, 5); // Top-right corner
-    Renderer.drawCircle(color, x + width - radius, y + height - radius, radius, 100, 5); // Bottom-right corner
-    Renderer.drawCircle(color, x + radius, y + height - radius, radius, 100, 5); // Bottom-left corner
-}
+PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
+    if (textButton.isClicked(mouseX, mouseY, button)) return;
+});

@@ -548,22 +548,27 @@ function updateItemValues() {
 }
 
 let activeUsers = undefined
-function getActiveUsers() {
+export function getActiveUsers(useCallback = false, callback = null) {
     request({
         url: "https://api.skyblockoverhaul.com/activeUsers",
         json: true
-    }).then((response)=>{
+    }).then((response) => {
         activeUsers = response.activeUsers;
-        if (activeUsers == undefined) {
+
+        if (activeUsers === undefined) {
             print("active users undefined");
             activeUsers = 0;
         }
-        ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
-    }).catch((error)=>{
+
+        if (useCallback && callback) {
+            callback(activeUsers);
+        } else {
+            ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
+        }
+    }).catch((error) => {
         console.error("An error occurred: " + error);
     });
 }
-
 
 register("command", () => {
     getActiveUsers();
@@ -834,9 +839,88 @@ export function matchLvlToColor(lvl) {
     }
 }
 
+// gui functions/classes
 export function drawRectangleOutline(color, x, y, width, height, thickness) {
-    Renderer.drawLine(color, x, y, x + width, y, thickness);
-    Renderer.drawLine(color, x, y, x, y + height, thickness);
-    Renderer.drawLine(color, x, y + height, x + width, y + height, thickness);
-    Renderer.drawLine(color, x + width, y, x + width, y + height, thickness);
+    Renderer.drawLine(color, x - 0.6 , y, x + width + 0.5, y, thickness); // Top Line
+    Renderer.drawLine(color, x, y, x, y + height, thickness); // Left Line
+    Renderer.drawLine(color, x- 0.6 , y + height, x + width + 0.5, y + height, thickness); // Bottom Line
+    Renderer.drawLine(color, x + width, y, x + width, y + height, thickness); // Right Line
+}
+
+export function roundRect(color, x, y, width, height, radius) {
+    radius = Math.min(radius, width / 2, height / 2);
+
+    rect(color, x + radius, y + radius, width - 2 * radius, height - 2 * radius);
+
+    rect(color, x + radius, y, width - 2 * radius, radius); // Top rectangle
+    rect(color, x + radius, y + height - radius, width - 2 * radius, radius); // Bottom rectangle
+    rect(color, x, y + radius, radius, height - 2 * radius); // Left rectangle
+    rect(color, x + width - radius, y + radius, radius, height - 2 * radius); // Right rectangle
+
+    Renderer.drawCircle(color, x + radius, y + radius, radius, 100, 5); // Top-left corner
+    Renderer.drawCircle(color, x + width - radius, y + radius, radius, 100, 5); // Top-right corner
+    Renderer.drawCircle(color, x + width - radius, y + height - radius, radius, 100, 5); // Bottom-right corner
+    Renderer.drawCircle(color, x + radius, y + height - radius, radius, 100, 5); // Bottom-left corner
+}
+
+export function rect(color, x, y, width, height) {
+    Renderer.drawRect(color, x, y, width, height);
+}
+
+export function color(r, g, b, a) {
+    return Renderer.color(r, g, b, a)
+}
+
+export function line(color, x1, y1, x2, y2, thickness) {
+    Renderer.drawLine(color, x1, y1, x2, y2, thickness)
+}
+
+export function text(color, x, y, string, scale, shadow) {
+    let guiScale = Client.settings.video.getGuiScale();
+    
+    let compensation;
+    if (guiScale === 1) {
+        compensation = 1.9;
+    } else if (guiScale === 3) {
+        compensation = 0.75;
+    } else {
+        const targetScale = 2.0;
+        compensation = guiScale / targetScale;
+    }
+
+    scale *= compensation;
+    let text = new Text(string);
+    text.setColor(color);
+    text.setScale(scale);
+    text.setShadow(shadow);
+    text.setX(x).setY(y).draw();
+}
+
+export class Button {
+    constructor(x, y, width, height, text, rightClick, onClick) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.text = text;
+        this.onClick = onClick;
+        this.rightClick = rightClick;
+    }
+
+    draw() {
+        rect(color(0, 0, 0, 150), this.x, this.y, this.width, this.height);
+        text(color(255, 255, 255, 255), this.x + 5, this.y + 2, this.text, 1, false);
+        drawRectangleOutline(color(255, 255, 255, 255), this.x, this.y, this.width, this.height, 1);
+    }
+
+    isClicked(mouseX, mouseY, button) {
+        if (mouseX >= this.x && mouseX <= this.x + this.width && 
+            mouseY >= this.y && mouseY <= this.y + this.height) {
+            if (button == 0 || (button == 1 && this.rightClick)) {
+                this.onClick(button);
+                return true;
+            }
+        }
+        return false;
+    }
 }

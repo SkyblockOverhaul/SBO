@@ -157,12 +157,8 @@ function achievementRender() {
 
         let borderColor = achievement.isUnlocked() ? Renderer.color(0, 255, 0, 255) : Renderer.color(255, 0, 0, 255);
         let thickness = 1;
-        
-        Renderer.drawLine(borderColor, x, y, x + boxWidth, y, thickness);
-        Renderer.drawLine(borderColor, x, y, x, y + boxHeight, thickness);
-        Renderer.drawLine(borderColor, x + boxWidth, y, x + boxWidth, y + boxHeight, thickness);
-        Renderer.drawLine(borderColor, x, y + boxHeight, x + boxWidth, y + boxHeight, thickness);
 
+        drawRectangleOutline(borderColor, x, y, boxWidth, boxHeight, thickness);
         Renderer.drawString(`${achievement.getDisplayName()}`, x + 5, y + 5);
         Renderer.drawString(`&7${achievement.getDescription()}`, x + 5, y + 15);
         Renderer.drawString(`${achievement.color}${achievement.rarity}`, x + 5, y + boxHeight - 10);
