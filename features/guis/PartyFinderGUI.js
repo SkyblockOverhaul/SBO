@@ -33,22 +33,7 @@ function getPartyFinderData(refresh = false) {
         else {
             partyCount = partyList.length;
             pageCount = Math.ceil(partyCount / 6);
-            const startIndex = (currentPage - 1) * 6;
-            const endIndex = startIndex + 6;
-            const partiesToDisplay = partyList.slice(startIndex, endIndex);
-        
-            partiesToDisplay.forEach((party, index) => {
-                let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
-                const joinX = layoutData.partyBoxX + layoutData.partyBoxWidth - 100; 
-                const joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
-        
-                const joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, (button) => {
-                    ChatLib.chat(`Joining party led by ${party.leaderName}`);
-                    print("Joining party led by " + party.leaderName)
-                });
-                joinButton.draw(Client.getMouseX(), Client.getMouseY());
-                joinButtons.push(joinButton);
-            });
+            updatePageButtons()
             if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.")
         }
     }).catch((error)=> {
@@ -58,6 +43,26 @@ function getPartyFinderData(refresh = false) {
             console.error(JSON.stringify(error));
             ChatLib.chat("&6[SBO] &4Unexpected error occurred while getting all parties");
         }
+    });
+}
+
+function updatePageButtons() {
+    let layoutData = getLayoutData()
+    const startIndex = (currentPage - 1) * 6;
+    const endIndex = startIndex + 6;
+    const partiesToDisplay = partyList.slice(startIndex, endIndex);
+    joinButtons = []
+
+    partiesToDisplay.forEach((party, index) => {
+        let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
+        const joinX = layoutData.partyBoxX + layoutData.partyBoxWidth - 100; 
+        const joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
+
+        const joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, (button) => {
+            ChatLib.chat(`Joining party led by ${party.leaderName}`);
+            print("Joining party led by " + party.leaderName)
+        });
+        joinButtons.push(joinButton);
     });
 }
  
@@ -71,6 +76,9 @@ PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (pageBackButton.isClicked(mouseX, mouseY, button)) return;
     if (pageNextButton.isClicked(mouseX, mouseY, button)) return;
     if (createPartyButton.isClicked(mouseX, mouseY, button)) return;
+    joinButtons.forEach((joinButton) => {
+        if (joinButton.isClicked(mouseX, mouseY, button)) return;
+    });
 });
 CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
@@ -126,12 +134,16 @@ const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, (bu
     getPartyFinderData(true)
 });
 const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, (button) => {
-    if (currentPage > 1)
+    if (currentPage > 1) {
+        updatePageButtons()
         currentPage -= 1
+    }
 });
 const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, (button) => {
-    if (currentPage < pageCount)
+    if (currentPage < pageCount) {
+        updatePageButtons()
         currentPage += 1
+    }
 });
 const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, (button) => {
     CreatePartyGUI.open()
@@ -252,6 +264,10 @@ function partyFinderRender() {
             let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
             rect(color(20, 20, 20, 240), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight);
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
+            Renderer.drawString(`Leader: ${party.leaderName}`, layoutData.partyBoxX + 5, partyBoxY + 5);
+        });
+        joinButtons.forEach((button) => {
+            button.draw(Client.getMouseX(), Client.getMouseY());
         });
     }
 
