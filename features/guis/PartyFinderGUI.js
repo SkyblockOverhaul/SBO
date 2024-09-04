@@ -113,12 +113,12 @@ function getLayoutData() {
     let refreshWidth = displayX * 0.07
     let refreshHeight = displayY * 0.04
 
-    let pageBackX = pfWindowX * 1.233
+    let pageBackX = (pfWindowY + pfWindowHeight) * 0.384
     let pageBackY = (pfWindowY + pfWindowHeight) * 0.945
     let pageBackWidth = displayX * 0.05
     let pageBackHeight = displayY * 0.04
 
-    let pageNextX = pfWindowX * 1.6
+    let pageNextX = (pfWindowY + pfWindowHeight) * 0.5
     let pageNextY = (pfWindowY + pfWindowHeight) * 0.945
     let pageNextWidth = displayX * 0.05
     let pageNextHeight = displayY * 0.04
