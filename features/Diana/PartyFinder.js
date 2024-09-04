@@ -199,12 +199,17 @@ export function createParty() {
     createPartyTimeStamp = Date.now();
 }
 // "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+HypixelModAPI.setLogging(true)
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     if (creatingParty) {
         creatingParty = false;
         let party = [];
         Object.keys(partyInfo).forEach(key => {
-            party.push(key);
+            if (partyInfo[key] == "LEADER") {
+                party.unshift(key);
+            } else {
+                party.push(key);
+            }
         })
         if (party.length == 0) {
             ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
