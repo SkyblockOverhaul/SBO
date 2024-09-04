@@ -1,5 +1,6 @@
 import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers } from "../../utils/functions";
 import { createParty, getAllParties } from "../Diana/PartyFinder";
+import { request } from "../../../requestV2";
 
 const PartyFinderGUI = new Gui()
 const CreatePartyGUI = new Gui()
@@ -17,22 +18,46 @@ CreatePartyGUI.registerDraw(createPartyRender);
 HdwiGUI.registerDraw(hdwiRender);
 
 function getPartyFinderData(refresh = false) {
+    let layoutData = getLayoutData()
     getActiveUsers(true, (userCount) => {
         onlineUsers = userCount
     });
-    getAllParties(true, (partyReturn) => {
-        partyCount = partyReturn.length
-        partyList = partyReturn
-        // partyList.forEach(party => {
-        //     print("Leader: " + party.leaderName)
-        //     print("MemberCount: " + party.partymembers)
-        //     party.partyinfo.forEach(player => {
-        //         print("Member: " + player.name)
-        //     })
-        // });
-        buttonsNeedUpdate = true
-        pageCount = Math.ceil(partyCount / 6)
-        if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.")
+    request({
+        url: "https://api.skyblockoverhaul.com/getAllParties",
+        json: true
+    }).then((response)=> {
+        partyList = response.Parties;
+        if (partyList.length == 0) {
+            ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
+        }
+        else {
+            partyCount = partyList.length;
+            pageCount = Math.ceil(partyCount / 6);
+            const startIndex = (currentPage - 1) * 6;
+            const endIndex = startIndex + 6;
+            const partiesToDisplay = partyList.slice(startIndex, endIndex);
+        
+            partiesToDisplay.forEach((party, index) => {
+                let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
+                const joinX = layoutData.partyBoxX + layoutData.partyBoxWidth - 100; 
+                const joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
+        
+                const joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, (button) => {
+                    ChatLib.chat(`Joining party led by ${party.leaderName}`);
+                    print("Joining party led by " + party.leaderName)
+                });
+                joinButton.draw(Client.getMouseX(), Client.getMouseY());
+                joinButtons.push(joinButton);
+            });
+            if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.")
+        }
+    }).catch((error)=> {
+        if (error.detail) {
+            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+        } else {
+            console.error(JSON.stringify(error));
+            ChatLib.chat("&6[SBO] &4Unexpected error occurred while getting all parties");
+        }
     });
 }
  
