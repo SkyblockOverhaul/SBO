@@ -841,9 +841,9 @@ export function matchLvlToColor(lvl) {
 
 // gui functions/classes
 export function drawRectangleOutline(color, x, y, width, height, thickness) {
-    Renderer.drawLine(color, x - 0.6 , y, x + width + 0.5, y, thickness); // Top Line
+    Renderer.drawLine(color, x , y, x + width, y, thickness); // Top Line
     Renderer.drawLine(color, x, y, x, y + height, thickness); // Left Line
-    Renderer.drawLine(color, x- 0.6 , y + height, x + width + 0.5, y + height, thickness); // Bottom Line
+    Renderer.drawLine(color, x , y + height, x + width, y + height, thickness); // Bottom Line
     Renderer.drawLine(color, x + width, y, x + width, y + height, thickness); // Right Line
 }
 
@@ -875,42 +875,63 @@ export function line(color, x1, y1, x2, y2, thickness) {
     Renderer.drawLine(color, x1, y1, x2, y2, thickness)
 }
 
-export function text(color, x, y, string, scale, shadow) {
-    let guiScale = Client.settings.video.getGuiScale();
-    
-    let compensation;
-    if (guiScale === 1) {
-        compensation = 1.9;
-    } else if (guiScale === 3) {
-        compensation = 0.75;
-    } else {
-        const targetScale = 2.0;
-        compensation = guiScale / targetScale;
+export class TextClass {
+    constructor(color, x, y, string, scale, shadow) {
+        this.string = string;
+        this.color = color;
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.shadow = shadow;
+        this.checked = false;
+        this.lastScreenSize = undefined;
     }
 
-    scale *= compensation;
-    let text = new Text(string);
-    text.setColor(color);
-    text.setScale(scale);
-    text.setShadow(shadow);
-    text.setX(x).setY(y).draw();
+    draw() {
+        let guiScale = Client.settings.video.getGuiScale();
+        let compensation;
+        if (guiScale === 1) {
+            compensation = 1.9;
+        } else if (guiScale === 3) {
+            compensation = 0.66;
+        } else {
+            const targetScale = 2.0;
+            compensation = guiScale / targetScale;
+        }
+        let scale = this.scale * compensation;
+        let text = new Text(this.string);
+        text.setColor(this.color);
+        text.setScale(scale);
+        text.setShadow(this.shadow);
+        text.setX(this.x).setY(this.y).draw();
+    }
 }
 
 export class Button {
-    constructor(x, y, width, height, text, rightClick, onClick) {
+    constructor(x, y, width, height, text, rightClick, outlined, background, onClick) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.text = text;
-        this.onClick = onClick;
         this.rightClick = rightClick;
-    }
+        this.outlined = outlined;
+        this.background = background;
+        this.onClick = onClick;
+        this.isHovering = false;
+        this.lastScale = undefined;
+        this.originalWidth = width;
+        this.originalHeight = height;
+        this.lastScreenSize = undefined;
 
-    draw() {
-        rect(color(0, 0, 0, 150), this.x, this.y, this.width, this.height);
-        text(color(255, 255, 255, 255), this.x + 5, this.y + 2, this.text, 1, false);
-        drawRectangleOutline(color(255, 255, 255, 255), this.x, this.y, this.width, this.height, 1);
+        this.textWidth = undefined;
+        this.originalTextWidth = Renderer.getStringWidth(text);
+        this.textColor = color(255, 255, 255, 255);
+        this.textScale = 1;
+        this.textX = this.x + (this.width - this.textWidth) / 2;
+        this.textY = (this.y + this.height / 2) - 4;
+        this.bgColor = color(0, 0, 0, 150);
+        this.outlineColor = color(255, 255, 255, 255);
     }
 
     isClicked(mouseX, mouseY, button) {
@@ -922,5 +943,80 @@ export class Button {
             }
         }
         return false;
+    }
+
+    isHovered(mouseX, mouseY) {
+        return (
+            mouseX >= this.x && 
+            mouseX <= this.x + this.width && 
+            mouseY >= this.y && 
+            mouseY <= this.y + this.height
+        );
+    }
+
+    updateDimensions() {
+        let guiScale = Client.settings.video.getGuiScale();
+        let displayX = Renderer.screen.getWidth();
+        let displayY = Renderer.screen.getHeight();
+        if (this.lastScreenSize !== displayX + displayY) {
+            this.lastScale = undefined;
+            this.lastScreenSize = displayX + displayY;
+        }
+        if (this.lastScale !== guiScale) {
+            if (guiScale == 1) {
+                this.width = this.originalWidth * 2;
+                this.height = this.originalHeight * 2;
+                this.textX = this.x + (this.width / 2) * 0.05;
+                this.textY = this.y + (this.height / 2) * 0.35;
+            }
+            else if (guiScale == 3) {
+                this.width = this.originalWidth * 0.66;
+                this.height = this.originalHeight * 0.66;
+                this.textWidth = this.originalTextWidth * 0.4;
+                this.textX = this.x + (this.width - this.textWidth) / 2;
+                this.textY = this.y + (this.height / 2);
+            }
+            else {
+                this.width = this.originalWidth;
+                this.height = this.originalHeight;
+                this.textWidth = this.originalTextWidth;
+                this.textX = this.x + (this.width - this.textWidth) / 2;
+                this.textY = this.y + (this.height / 2) * 0.65;
+            }
+            this.lastScale = guiScale;
+        }
+    }
+
+    draw(mouseX, mouseY) {
+        this.updateDimensions();
+        this.isHovering = this.isHovered(mouseX, mouseY);
+        let bgColor = this.isHovering ? color(255, 255, 255, 150) : this.bgColor;
+        if (!this.background) bgColor = this.isHovering ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
+        rect(bgColor, this.x, this.y, this.width, this.height);
+        if (this.outlined)     
+            drawRectangleOutline(this.outlineColor, this.x, this.y, this.width, this.height, 1);
+
+        const text = new TextClass(this.textColor, this.textX, this.textY, this.text, this.textScale, false); text.draw();
+    }
+
+    customize(options) {
+        if (options.textColor) this.textColor = options.textColor;
+        if (options.textScale) this.textScale = options.textScale;
+        if (options.textX) this.textX = this.textX * options.textX;
+        if (options.textY) this.textY = this.textY * options.textY;
+        if (options.bgColor) this.bgColor = options.bgColor;
+        if (options.outlineColor) this.outlineColor = options.outlineColor;
+        if (options.text) this.text = options.text;
+        if (options.width) {
+            this.width = options.width;
+            this.originalWidth = options.width;
+        }
+        if (options.height) {
+            this.height = options.height;
+            this.originalHeight = options.height;
+        }
+        if (options.x) this.x = options.x;
+        if (options.y) this.y = options.y;
+        this.updateDimensions();
     }
 }
