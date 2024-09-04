@@ -48,17 +48,17 @@ function getPartyFinderData(refresh = false) {
 
 function updatePageButtons() {
     let layoutData = getLayoutData()
-    const startIndex = (currentPage - 1) * 6;
-    const endIndex = startIndex + 6;
-    const partiesToDisplay = partyList.slice(startIndex, endIndex);
+    let startIndex = (currentPage - 1) * 6;
+    let endIndex = startIndex + 6;
+    let partiesToDisplay = partyList.slice(startIndex, endIndex);
     joinButtons = []
 
     partiesToDisplay.forEach((party, index) => {
         let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
-        const joinX = layoutData.partyBoxX + layoutData.partyBoxWidth - 100; 
-        const joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
+        let joinX = layoutData.partyBoxX + layoutData.partyBoxWidth - 100; 
+        let joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
 
-        const joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, (button) => {
+        let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, (button) => {
             ChatLib.chat(`Joining party led by ${party.leaderName}`);
             print("Joining party led by " + party.leaderName)
         });
@@ -135,14 +135,14 @@ const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, (bu
 });
 const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, (button) => {
     if (currentPage > 1) {
-        updatePageButtons()
         currentPage -= 1
+        updatePageButtons()
     }
 });
 const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, (button) => {
     if (currentPage < pageCount) {
-        updatePageButtons()
         currentPage += 1
+        updatePageButtons()
     }
 });
 const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, (button) => {
