@@ -228,7 +228,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             inQueue = true; 
         }).catch((error)=> {
             if (error.detail) {
-                ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+                ChatLib.chat("&6[SBO] &4Error1: " + error.detail);
             } else {
                 console.error(JSON.stringify(error));
                 ChatLib.chat("&6[SBO] &4Unexpected error occurred while creating party");
@@ -252,7 +252,7 @@ export function getAllParties(useCallback = false, callback = null) {
         }
     }).catch((error)=> {
         if (error.detail) {
-            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+            ChatLib.chat("&6[SBO] &4Error2: " + error.detail);
         } else {
             console.error(JSON.stringify(error));
             ChatLib.chat("&6[SBO] &4Unexpected error occurred while getting all parties");
@@ -261,58 +261,59 @@ export function getAllParties(useCallback = false, callback = null) {
     });
 }
 
-partyDisbanded = [
+
+function removePartyFromQueue() {
+    if (inQueue) {
+        request({
+            url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),
+            json: true
+        }).then((response)=> {
+            inQueue = false;
+            ChatLib.chat("&6[SBO] &eYou have been removed from the queue");
+        }).catch((error)=> {
+            if (error.detail) {
+                ChatLib.chat("&6[SBO] &4Error3: " + error.detail);
+            } else {
+                console.error(JSON.stringify(error));
+                ChatLib.chat("&6[SBO] &4Unexpected error occurred while removing party from queue");
+            }
+        });
+    }
+}
+
+let lastUpdated = 0;
+register("step", () => {
+    if (inQueue) {
+        // 4 minutes
+        if (Date.now() - lastUpdated > 240000) {
+            lastUpdated = Date.now();
+            request({
+                url: api + "/queueUpdate?leaderId=" + Player.getUUID().replaceAll("-", ""),
+                json: true
+            }).catch((error)=> {
+                inQueue = false;
+                if (error.detail) {
+                    ChatLib.chat("&6[SBO] &4Error4: " + error.detail);
+                } else {
+                    console.error(JSON.stringify(error));
+                    ChatLib.chat("&6[SBO] &4Unexpected error occurred while updating queue");
+                }
+            });
+        }
+    }
+}).setFps(1);
+
+partyDisbanded = [ 
     /^.+ &r&ehas disbanded the party!&r$/,
-    /^&cThe party was disbanded because all invites expired and the party was empty&r$/,
+    /^&cThe party was disbanded because all invites expired and the party was empty.&r$/,
     /^&eYou left the party.&r$/,
-    /^&6Party Members \(\d+\)&r$/,
     /^You are not currently in a party\.$/,
-    /^You have been kicked from the party by .+$/,
-    /^The party was disbanded because the party leader disconnected\.$/
+    /^You have been kicked from the party by .+$/
 ]
 leaderMessages = [
-    /^&eParty Leader: &r(.+) &r&a●&r$/,
     /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
     /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
 ]
-
-function removePartyFromQueue() {
-    request({
-        url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),
-        json: true
-    }).then((response)=> {
-        inQueue = false;
-        ChatLib.chat("&6[SBO] &eYou have been removed from the queue");
-    }).catch((error)=> {
-        if (error.detail) {
-            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
-        } else {
-            console.error(JSON.stringify(error));
-            ChatLib.chat("&6[SBO] &4Unexpected error occurred while removing party from queue");
-        }
-    });
-}
-
-// let lastUpdated = 0;
-// register("step", () => {
-//     if (inQueue) {
-//         // 4 minutes
-//         if (Date.now() - lastUpdated > 240000) {
-//             lastUpdated = Date.now();
-//             request({
-//                 url: api + "/queueUpdate?leaderId=" + Player.getUUID().replaceAll("-", ""),
-//                 json: true
-//             }).catch((error)=> {
-//                 if (error.detail) {
-//                     ChatLib.chat("&6[SBO] &4Error: " + error.detail);
-//                 } else {
-//                     console.error(JSON.stringify(error));
-//                     ChatLib.chat("&6[SBO] &4Unexpected error occurred while updating queue");
-//                 }
-//             });
-//         }
-//     }
-// }).setFps(1);
 
 
 register("chat", (event) => {

@@ -904,6 +904,7 @@ export class TextClass {
         text.setScale(scale);
         text.setShadow(this.shadow);
         text.setX(this.x).setY(this.y).draw();
+        return this;
     }
 }
 
@@ -997,6 +998,7 @@ export class Button {
             drawRectangleOutline(this.outlineColor, this.x, this.y, this.width, this.height, 1);
 
         const text = new TextClass(this.textColor, this.textX, this.textY, this.text, this.textScale, false); text.draw();
+        return this;
     }
 
     customize(options) {
@@ -1018,5 +1020,6 @@ export class Button {
         if (options.x) this.x = options.x;
         if (options.y) this.y = options.y;
         this.updateDimensions();
+        return this;
     }
 }
