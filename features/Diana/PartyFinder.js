@@ -293,6 +293,28 @@ function removePartyFromQueue() {
     });
 }
 
+// let lastUpdated = 0;
+// register("step", () => {
+//     if (inQueue) {
+//         // 4 minutes
+//         if (Date.now() - lastUpdated > 240000) {
+//             lastUpdated = Date.now();
+//             request({
+//                 url: api + "/queueUpdate?leaderId=" + Player.getUUID().replaceAll("-", ""),
+//                 json: true
+//             }).catch((error)=> {
+//                 if (error.detail) {
+//                     ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+//                 } else {
+//                     console.error(JSON.stringify(error));
+//                     ChatLib.chat("&6[SBO] &4Unexpected error occurred while updating queue");
+//                 }
+//             });
+//         }
+//     }
+// }).setFps(1);
+
+
 register("chat", (event) => {
     if (inQueue) {
         let formatted = ChatLib.getChatMessage(event, true)
