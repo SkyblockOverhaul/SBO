@@ -189,3 +189,40 @@ register("chat", (player) => {
         new TextComponent("&6[SBO] &eClick to check player").setClick("run_command", "/sbocheck " + player).setHover("show_text", "/sbocheck " + player).chat();
     }, 50);
 }).setCriteria("&dFrom ${player}&r&7: &r&d&lBoop!&r");
+
+let creatingParty = false;
+let createPartyTimeStamp = 0;
+export function createParty() {
+    print("Creating Party");
+    creatingParty = true;
+    sendPartyRequest();
+    createPartyTimeStamp = Date.now();
+}
+// "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    if (creatingParty) {
+        creatingParty = false;
+        let party = [];
+        Object.keys(partyInfo).forEach(key => {
+            party.push(key);
+        })
+        if (party.length == 0) {
+            ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
+            return;
+        }
+        request({
+            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+            json: true
+        }).then((response)=> {
+            let timeTaken = Date.now() - createPartyTimeStamp;
+            ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
+        }).catch((error)=> {
+            if (error.detail) {
+                ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+            } else {
+                console.error(JSON.stringify(error));
+                ChatLib.chat("&6[SBO] &4Unexpected error occurred while creating party");
+            }
+        });
+    }
+})

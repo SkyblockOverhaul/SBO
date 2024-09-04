@@ -1,4 +1,5 @@
 import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers } from "../../utils/functions";
+import { createParty } from "../Diana/PartyFinder";
 
 const PartyFinderGUI = new Gui()
 const CreatePartyGUI = new Gui()
@@ -78,6 +79,7 @@ const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, 
     CreatePartyGUI.open()
 });
 const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, (button) => {
+    createParty()
     CreatePartyGUI.close()
     PartyFinderGUI.open()
 });
