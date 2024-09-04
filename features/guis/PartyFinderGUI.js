@@ -9,26 +9,30 @@ let pageCount = 0
 let onlineUsers = 0
 let partyCount = 0
 let partyList = []
+let joinButtons = []
+
 PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
 CreatePartyGUI.registerDraw(createPartyRender);
 HdwiGUI.registerDraw(hdwiRender);
 
-function getPartyFinderData() {
+function getPartyFinderData(refresh = false) {
     getActiveUsers(true, (userCount) => {
         onlineUsers = userCount
     });
     getAllParties(true, (partyReturn) => {
         partyCount = partyReturn.length
         partyList = partyReturn
-        partyList.forEach(party => {
-            print("Leader: " + party.leaderName)
-            print("MemberCount: " + party.partymembers)
-            party.partyinfo.forEach(player => {
-                print("Member: " + player.name)
-            })
-        });
+        // partyList.forEach(party => {
+        //     print("Leader: " + party.leaderName)
+        //     print("MemberCount: " + party.partymembers)
+        //     party.partyinfo.forEach(player => {
+        //         print("Member: " + player.name)
+        //     })
+        // });
+        buttonsNeedUpdate = true
         pageCount = Math.ceil(partyCount / 6)
+        if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.")
     });
 }
  
@@ -94,7 +98,7 @@ const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, tru
     HdwiGUI.open()
 });
 const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, (button) => {
-    getPartyFinderData()
+    getPartyFinderData(true)
 });
 const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, (button) => {
     if (currentPage > 1)
@@ -214,11 +218,17 @@ function partyFinderRender() {
     rect(color(0, 0, 0, 0), layoutData.pfListX, layoutData.pfListY, layoutData.pfListWidth, layoutData.pfListHeight);
     outline(color(0, 173, 255, 255), layoutData.pfListX, layoutData.pfListY, layoutData.pfListWidth, layoutData.pfListHeight, 1);
 
-    partyList.forEach((party, index) => {
-        let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
-        rect(color(20, 20, 20, 240), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight);
-        outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
-    });
+    if (partyList && partyList.length !== 0) {
+        const startIndex = (currentPage - 1) * 6;
+        const endIndex = startIndex + 6;
+        const partiesToDisplay = partyList.slice(startIndex, endIndex);
+
+        partiesToDisplay.forEach((party, index) => {
+            let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
+            rect(color(20, 20, 20, 240), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight);
+            outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
+        });
+    }
 
     const pfText = new TextClass(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 1.75, true); pfText.draw()
     const onlineUserText = new TextClass(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false); onlineUserText.draw()
