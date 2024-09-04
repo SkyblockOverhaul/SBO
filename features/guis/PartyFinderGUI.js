@@ -282,8 +282,6 @@ function partyFinderRender() {
             let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
             rect(color(20, 20, 20, 240), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight);
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
-            // Renderer.drawString(`Leader: ${party.leaderName}`, layoutData.partyBoxX + 5, partyBoxY + 5);
-            // Renderer.drawString(`Members: ${party.partymembers}/${maxMembers}`, layoutData.partyBoxX + 5, partyBoxY + 20);
             const leaderText = new TextClass(color(255, 255, 255, 255), layoutData.partyBoxX + 5, partyBoxY + 5, `Leader: ${party.leaderName}`, 1, false); leaderText.draw()
             const membersText = new TextClass(color(255, 255, 255, 255), layoutData.partyBoxX + 5, partyBoxY + 20, `Members: ${party.partymembers}/${maxMembers}`, 1, false); membersText.draw()
         });
@@ -296,7 +294,7 @@ function partyFinderRender() {
     const pfText = new TextClass(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 1.75, true); pfText.draw()
     const onlineUserText = new TextClass(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false); onlineUserText.draw()
     const partyCountText = new TextClass(color(255, 255, 255, 255), layoutData.partyCountX, layoutData.partyCountY, `Party Count: ${partyCount}`, 1, false); partyCountText.draw()
-    Renderer.drawString(`Page ${currentPage}/${pageCount}`, layoutData.pageCountX, layoutData.pageCountY);
+    const pageCountText = new TextClass(color(255, 255, 255, 255), layoutData.pageCountX, layoutData.pageCountY, `Page ${currentPage}/${pageCount}`, 1, false); pageCountText.draw()
 
     drawButtonsMain(layoutData);
 }
