@@ -11,6 +11,9 @@ let onlineUsers = 0
 let partyCount = 0
 let partyList = []
 let joinButtons = []
+let maxMembers = 6
+let startDisplayWidth = Renderer.screen.getWidth()
+let startDisplayHeight = Renderer.screen.getHeight()
 
 PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
@@ -18,7 +21,6 @@ CreatePartyGUI.registerDraw(createPartyRender);
 HdwiGUI.registerDraw(hdwiRender);
 
 function getPartyFinderData(refresh = false) {
-    let layoutData = getLayoutData()
     getActiveUsers(true, (userCount) => {
         onlineUsers = userCount
     });
@@ -160,15 +162,31 @@ const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, (button) 
 function getGuiScaleData() {
     let guiScale = Client.settings.video.getGuiScale();
     let partyCountComp;
+    let joinX;
+    let joinY;
+    let joinTextX;
+    let joinTextY;
     if (guiScale === 1) {
         partyCountComp = 1.85;
+        joinTextX = 1.85;
+        joinTextY = 1.85;
+        joinX = 1.85;
+        joinY = 1.85;
     } else if (guiScale === 3) {
         partyCountComp = 0.65;
+        joinTextX = 0.65;
+        joinTextY = 0.65;
+        joinX = 0.65;
+        joinY = 0.65;
     } else {
         partyCountComp = 1;
+        joinTextX = 1;
+        joinTextY = 1;
+        joinX = 1;
+        joinY = 1;
     }
     return {
-        partyCountComp
+        partyCountComp, joinX, joinY, joinTextX, joinTextY
     }
 }
 
@@ -247,6 +265,13 @@ function getLayoutData() {
 
 function partyFinderRender() {
     let layoutData = getLayoutData()
+    let guiScaleData = getGuiScaleData()
+
+    if (startDisplayWidth !== Renderer.screen.getWidth() || startDisplayHeight !== Renderer.screen.getHeight()) {
+        startDisplayWidth = Renderer.screen.getWidth()
+        startDisplayHeight = Renderer.screen.getHeight()
+        updatePageButtons()
+    }
 
     rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
     outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
@@ -265,9 +290,14 @@ function partyFinderRender() {
             rect(color(20, 20, 20, 240), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight);
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
             Renderer.drawString(`Leader: ${party.leaderName}`, layoutData.partyBoxX + 5, partyBoxY + 5);
+            Renderer.drawString(`Members: ${party.partymembers}/${maxMembers}`, layoutData.partyBoxX + 5, partyBoxY + 20);
         });
         joinButtons.forEach((button) => {
-            button.draw(Client.getMouseX(), Client.getMouseY());
+            if (button) {
+                button.customize({
+                    textX: guiScaleData.joinTextX, textY: guiScaleData.joinTextY,
+                }).draw(Client.getMouseX(), Client.getMouseY());
+            }
         });
     }
 
