@@ -1,13 +1,15 @@
 import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers } from "../../utils/functions";
 
 const PartyFinderGUI = new Gui()
+const CreatePartyGUI = new Gui()
 let currentPage = 0
 let pageCount = 100 // This will be calculated based on the number of parties
 let onlineUsers = 0
 let partyCount = 0
 PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
-
+CreatePartyGUI.registerDraw(createPartyRender);
+ 
 PartyFinderGUI.registerOpened(() => {
     getActiveUsers(true, (userCount) => {
         onlineUsers = userCount
@@ -22,7 +24,11 @@ PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (createPartyButton.isClicked(mouseX, mouseY, button)) return;
 });
 
-function drawButtons(layoutData) {
+CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
+    if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
+});
+
+function drawButtonsMain(layoutData) {
     const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
     hdiwButton.customize({
         x: layoutData.hdwiX, y: layoutData.hdwiY,
@@ -46,6 +52,14 @@ function drawButtons(layoutData) {
     }); createPartyButton.draw(mouseX, mouseY)
 }
 
+function drawButtonsCreate(layoutData) {
+    const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
+    submitPartyButton.customize({
+        x: layoutData.createPartyX, y: layoutData.createPartyY,
+        width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
+    }); submitPartyButton.draw(mouseX, mouseY)
+}
+
 const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, (button) => {
     ChatLib.chat("Button clicked");
 });
@@ -61,7 +75,11 @@ const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, (butt
         currentPage += 1
 });
 const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, (button) => {
-    ChatLib.chat("Button clicked");
+    CreatePartyGUI.open()
+});
+const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, (button) => {
+    CreatePartyGUI.close()
+    PartyFinderGUI.open()
 });
 
 function getGuiScaleData() {
@@ -159,9 +177,16 @@ function partyFinderRender() {
     const pfText = new TextClass(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 1.75, true); pfText.draw()
     const onlineUserText = new TextClass(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false); onlineUserText.draw()
     const partyCountText = new TextClass(color(255, 255, 255, 255), layoutData.partyCountX, layoutData.partyCountY, `Party Count: ${partyCount}`, 1, false); partyCountText.draw()
-    Renderer.drawString(`Page ${currentPage}/${pageCount}`, layoutData.pageCountX, layoutData.pageCountY)
+    Renderer.drawString(`Page ${currentPage}/${pageCount}`, layoutData.pageCountX, layoutData.pageCountY);
 
-    drawButtons(layoutData)
+    drawButtonsMain(layoutData);
+}
+
+function createPartyRender() {
+    let layoutData = getLayoutData()
+    rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
+    outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
+    drawButtonsCreate(layoutData);
 }
 
 function partyFinderClose() {
