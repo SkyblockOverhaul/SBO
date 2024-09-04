@@ -92,23 +92,23 @@ function drawButtonsMain(layoutData) {
     hdiwButton.customize({
         x: layoutData.hdwiX, y: layoutData.hdwiY,
         width: layoutData.hdwiWidth, height: layoutData.hdwiHeight
-    }); hdiwButton.draw(mouseX, mouseY)
+    }).draw(mouseX, mouseY)
     refreshButton.customize({
         x: layoutData.refreshX, y: layoutData.refreshY,
         width: layoutData.refreshWidth, height: layoutData.refreshHeight
-    }); refreshButton.draw(mouseX, mouseY)
+    }).draw(mouseX, mouseY)
     pageBackButton.customize({
         x: layoutData.pageBackX, y: layoutData.pageBackY,
         width: layoutData.pageBackWidth, height: layoutData.pageBackHeight
-    }); pageBackButton.draw(mouseX, mouseY)
+    }).draw(mouseX, mouseY)
     pageNextButton.customize({
         x: layoutData.pageNextX, y: layoutData.pageNextY,
         width: layoutData.pageNextWidth, height: layoutData.pageNextHeight
-    }); pageNextButton.draw(mouseX, mouseY)
+    }).draw(mouseX, mouseY)
     createPartyButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
         width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
-    }); createPartyButton.draw(mouseX, mouseY)
+    }).draw(mouseX, mouseY)
 }
 
 function drawButtonsCreate(layoutData) {
@@ -116,7 +116,7 @@ function drawButtonsCreate(layoutData) {
     submitPartyButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
         width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
-    }); submitPartyButton.draw(mouseX, mouseY)
+    }).draw(mouseX, mouseY)
 }
 
 function drawButtonsHdwi(layoutData) {
@@ -124,7 +124,7 @@ function drawButtonsHdwi(layoutData) {
     backButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
         width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
-    }); backButton.draw(mouseX, mouseY)
+    }).draw(mouseX, mouseY)
 }
 
 const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, (button) => {
@@ -271,9 +271,9 @@ function partyFinderRender() {
         });
     }
 
-    const pfText = new TextClass(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 1.75, true); pfText.draw()
-    const onlineUserText = new TextClass(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false); onlineUserText.draw()
-    const partyCountText = new TextClass(color(255, 255, 255, 255), layoutData.partyCountX, layoutData.partyCountY, `Party Count: ${partyCount}`, 1, false); partyCountText.draw()
+    const pfText = new TextClass(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 1.75, true).draw()
+    const onlineUserText = new TextClass(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false).draw()
+    const partyCountText = new TextClass(color(255, 255, 255, 255), layoutData.partyCountX, layoutData.partyCountY, `Party Count: ${partyCount}`, 1, false).draw()
     Renderer.drawString(`Page ${currentPage}/${pageCount}`, layoutData.pageCountX, layoutData.pageCountY);
 
     drawButtonsMain(layoutData);
