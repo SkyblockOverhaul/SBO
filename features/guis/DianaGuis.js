@@ -220,6 +220,18 @@ export function itemOverlay() {
         timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
     }
     lootMessageLines.push(timerOverlayLine);
+
+    let resetSessionButton = new OverlayButton("&cReset Session", true, true, true, true).onClick(() => {
+        ChatLib.command("sboresetsession", true);
+    });
+    resetSessionButton.onMouseEnter(() => {
+        resetSessionButton.setText(`&c&nReset Session`);
+    })
+    resetSessionButton.onMouseLeave(() => {
+        resetSessionButton.setText(`&cReset Session`);
+    })
+    if (viewSetting == 3) lootMessageLines.push(resetSessionButton);
+
     overlayLootTracker.setLines(lootMessageLines);
 }
 // .quick_status.buyPrice -> selloffer / instabuy
