@@ -237,12 +237,19 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     }
 })
 
-export function getAllParties() {
+let partyList = [];
+export function getAllParties(useCallback = false, callback = null) { 
     request({
         url: api + "/getAllParties",
         json: true
     }).then((response)=> {
-        return response;
+        partyList = response.Parties;
+        if (partyList.length == 0) {
+            ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
+        }
+        if (useCallback && callback) {
+            callback(partyList);
+        }
     }).catch((error)=> {
         if (error.detail) {
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
