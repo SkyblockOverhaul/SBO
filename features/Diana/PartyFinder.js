@@ -226,3 +226,20 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         });
     }
 })
+
+export function getAllParties() {
+    request({
+        url: api + "/getAllParties",
+        json: true
+    }).then((response)=> {
+        return response;
+    }).catch((error)=> {
+        if (error.detail) {
+            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+        } else {
+            console.error(JSON.stringify(error));
+            ChatLib.chat("&6[SBO] &4Unexpected error occurred while getting all parties");
+        }
+        return [];
+    });
+}
