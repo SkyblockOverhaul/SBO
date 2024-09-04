@@ -210,6 +210,10 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
             return;
         }
+        if (party[0] != Player.getUUID()) {
+            ChatLib.chat("&6[SBO] &eYou are not the party leader. Only party leader can queue with the party.");
+            return;
+        }
         request({
             url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", ""),
             json: true
