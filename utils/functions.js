@@ -1004,8 +1004,6 @@ export class Button {
     customize(options) {
         if (options.textColor) this.textColor = options.textColor;
         if (options.textScale) this.textScale = options.textScale;
-        if (options.textX) this.textX = this.textX * options.textX;
-        if (options.textY) this.textY = this.textY * options.textY;
         if (options.bgColor) this.bgColor = options.bgColor;
         if (options.outlineColor) this.outlineColor = options.outlineColor;
         if (options.text) this.text = options.text;
@@ -1020,6 +1018,8 @@ export class Button {
         if (options.x) this.x = options.x;
         if (options.y) this.y = options.y;
         this.updateDimensions();
+        if (options.textX) this.textX = this.textX * options.textX;
+        if (options.textY) this.textY = this.textY * options.textY;
         return this;
     }
 }
