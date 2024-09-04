@@ -22,10 +22,10 @@ function getPartyFinderData() {
         partyCount = partyReturn.length
         partyList = partyReturn
         partyList.forEach(party => {
-            print("party Leader" + party.leader)
+            print("Leader: " + party.leaderName)
+            print("MemberCount: " + party.partymembers)
             party.partyinfo.forEach(player => {
-                print("name" + player.name)
-                print("lvl" + player.sbLvl)
+                print("Member: " + player.name)
             })
         });
         pageCount = Math.ceil(partyCount / 6)
@@ -43,11 +43,9 @@ PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (pageNextButton.isClicked(mouseX, mouseY, button)) return;
     if (createPartyButton.isClicked(mouseX, mouseY, button)) return;
 });
-
 CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
 });
-
 HdwiGUI.registerClicked((mouseX, mouseY, button) => {
     if (backButton.isClicked(mouseX, mouseY, button)) return;
 });
