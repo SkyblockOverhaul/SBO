@@ -199,7 +199,7 @@ export function createParty() {
     createPartyTimeStamp = Date.now();
 }
 // "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
-HypixelModAPI.setLogging(true)
+let inQueue = false;
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     if (creatingParty) {
         creatingParty = false;
@@ -225,6 +225,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         }).then((response)=> {
             let timeTaken = Date.now() - createPartyTimeStamp;
             ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
+            inQueue = true; 
         }).catch((error)=> {
             if (error.detail) {
                 ChatLib.chat("&6[SBO] &4Error: " + error.detail);
@@ -259,3 +260,63 @@ export function getAllParties(useCallback = false, callback = null) {
         return [];
     });
 }
+
+partyDisbanded = [
+    /^.+ &r&ehas disbanded the party!&r$/,
+    /^&cThe party was disbanded because all invites expired and the party was empty&r$/,
+    /^&eYou left the party.&r$/,
+    /^&6Party Members \(\d+\)&r$/,
+    /^You are not currently in a party\.$/,
+    /^You have been kicked from the party by .+$/,
+    /^The party was disbanded because the party leader disconnected\.$/
+]
+leaderMessages = [
+    /^&eParty Leader: &r(.+) &r&a●&r$/,
+    /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
+    /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
+]
+
+function removePartyFromQueue() {
+    request({
+        url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),
+        json: true
+    }).then((response)=> {
+        inQueue = false;
+        ChatLib.chat("&6[SBO] &eYou have been removed from the queue");
+    }).catch((error)=> {
+        if (error.detail) {
+            ChatLib.chat("&6[SBO] &4Error: " + error.detail);
+        } else {
+            console.error(JSON.stringify(error));
+            ChatLib.chat("&6[SBO] &4Unexpected error occurred while removing party from queue");
+        }
+    });
+}
+
+register("chat", (event) => {
+    if (inQueue) {
+        let formatted = ChatLib.getChatMessage(event, true)
+        leaderMessages.forEach(regex => {
+            // unqueue if leader message
+            let match = formatted.match(regex)
+            if (match) removePartyFromQueue()
+        })
+        partyDisbanded.forEach(regex => {
+            // unqueue if party disbanded
+            let match = formatted.match(regex)
+            if (match) removePartyFromQueue()
+        })
+    }
+})
+
+register("gameUnload", () => {
+    if (inQueue) {
+        removePartyFromQueue();
+    }
+})
+
+register("serverDisconnect", () => {
+    if (inQueue) {
+        removePartyFromQueue();
+    }
+})
