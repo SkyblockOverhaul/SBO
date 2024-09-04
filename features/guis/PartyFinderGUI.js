@@ -1,20 +1,39 @@
 import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers } from "../../utils/functions";
-import { createParty } from "../Diana/PartyFinder";
+import { createParty, getAllParties } from "../Diana/PartyFinder";
 
 const PartyFinderGUI = new Gui()
 const CreatePartyGUI = new Gui()
-let currentPage = 0
-let pageCount = 100 // This will be calculated based on the number of parties
+const HdwiGUI = new Gui()
+let currentPage = 1
+let pageCount = 0 
 let onlineUsers = 0
 let partyCount = 0
+let partyList = []
 PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
 CreatePartyGUI.registerDraw(createPartyRender);
- 
-PartyFinderGUI.registerOpened(() => {
+HdwiGUI.registerDraw(hdwiRender);
+
+function getPartyFinderData() {
     getActiveUsers(true, (userCount) => {
         onlineUsers = userCount
     });
+    getAllParties(true, (partyReturn) => {
+        partyCount = partyReturn.length
+        partyList = partyReturn
+        partyList.forEach(party => {
+            print("party Leader" + party.leader)
+            party.partyinfo.forEach(player => {
+                print("name" + player.name)
+                print("lvl" + player.sbLvl)
+            })
+        });
+        pageCount = Math.ceil(partyCount / 6)
+    });
+}
+ 
+PartyFinderGUI.registerOpened(() => {
+    getPartyFinderData()
 });
 
 PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
@@ -27,6 +46,10 @@ PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
 
 CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
+});
+
+HdwiGUI.registerClicked((mouseX, mouseY, button) => {
+    if (backButton.isClicked(mouseX, mouseY, button)) return;
 });
 
 function drawButtonsMain(layoutData) {
@@ -61,14 +84,22 @@ function drawButtonsCreate(layoutData) {
     }); submitPartyButton.draw(mouseX, mouseY)
 }
 
+function drawButtonsHdwi(layoutData) {
+    const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
+    backButton.customize({
+        x: layoutData.createPartyX, y: layoutData.createPartyY,
+        width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
+    }); backButton.draw(mouseX, mouseY)
+}
+
 const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, (button) => {
-    ChatLib.chat("Button clicked");
+    HdwiGUI.open()
 });
 const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, (button) => {
-    ChatLib.chat("Button clicked");
+    getPartyFinderData()
 });
 const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, (button) => {
-    if (currentPage > 0)
+    if (currentPage > 1)
         currentPage -= 1
 });
 const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, (button) => {
@@ -80,9 +111,12 @@ const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, 
 });
 const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, (button) => {
     createParty()
-    CreatePartyGUI.close()
     PartyFinderGUI.open()
 });
+const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, (button) => {
+    PartyFinderGUI.open()
+});
+
 
 function getGuiScaleData() {
     let guiScale = Client.settings.video.getGuiScale();
@@ -109,7 +143,7 @@ function getLayoutData() {
     let pfWindowX = (displayX - pfWindowWidth) / 2
     let pfWindowY = (displayY - pfWindowHeight) / 2
 
-    let pfListWidth = pfWindowWidth * 0.9
+    let pfListWidth = pfWindowWidth
     let pfListHeight = pfWindowHeight * 0.85
     let pfListX = pfWindowX + (pfWindowWidth - pfListWidth) / 2
     let pfListY = pfWindowY + (pfWindowHeight - pfListHeight) / 2
@@ -123,33 +157,38 @@ function getLayoutData() {
     let partyCountX = pfWindowX + 90 * guiScaleData.partyCountComp
     let partyCountY = pfWindowY * 1.4
 
-    let hdwiX = (pfWindowX + pfWindowWidth) * 0.847
+    let pageCountX = (pfWindowX + pfWindowWidth) * 0.55
+    let pageCountY = (pfWindowY + pfWindowHeight) * 0.95
+
+    let hdwiX = (pfWindowX + pfWindowWidth) * 0.875
     let hdwiY = pfWindowY * 1.1
     let hdwiWidth = displayX * 0.095
     let hdwiHeight = displayY * 0.04
 
-    let refreshX = (pfWindowX + pfWindowWidth) * 0.76
+    let refreshX = (pfWindowX + pfWindowWidth) * 0.788
     let refreshY = pfWindowY * 1.1
     let refreshWidth = displayX * 0.07
     let refreshHeight = displayY * 0.04
 
-    let pageBackX = (pfWindowY + pfWindowHeight) * 0.384
+    let pageBackX = (pfWindowY + pfWindowHeight) * 0.334
     let pageBackY = (pfWindowY + pfWindowHeight) * 0.945
     let pageBackWidth = displayX * 0.05
     let pageBackHeight = displayY * 0.04
 
-    let pageNextX = (pfWindowY + pfWindowHeight) * 0.5
+    let pageNextX = (pfWindowY + pfWindowHeight) * 0.45
     let pageNextY = (pfWindowY + pfWindowHeight) * 0.945
     let pageNextWidth = displayX * 0.05
     let pageNextHeight = displayY * 0.04
 
-    let createPartyX = (pfWindowX + pfWindowWidth) * 0.847
+    let createPartyX = (pfWindowX + pfWindowWidth) * 0.875
     let createPartyY = (pfWindowY + pfWindowHeight) * 0.945
     let createPartyWidth = displayX * 0.095
     let createPartyHeight = displayY * 0.04
 
-    let pageCountX = (pfWindowX + pfWindowWidth) * 0.55
-    let pageCountY = (pfWindowY + pfWindowHeight) * 0.95
+    let partyBoxWidth = pfListWidth
+    let partyBoxHeight = pfListHeight / 6
+    let partyBoxX = pfListX
+    let partyBoxY = pfListY
 
     return {
         displayX, displayY, 
@@ -162,7 +201,8 @@ function getLayoutData() {
         pageBackX, pageBackY, pageBackWidth, pageBackHeight,
         pageNextX, pageNextY, pageNextWidth, pageNextHeight,
         createPartyX, createPartyY, createPartyWidth, createPartyHeight,
-        pageCountX, pageCountY
+        pageCountX, pageCountY,
+        partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY
     }
 }
 
@@ -175,6 +215,12 @@ function partyFinderRender() {
 
     rect(color(0, 0, 0, 0), layoutData.pfListX, layoutData.pfListY, layoutData.pfListWidth, layoutData.pfListHeight);
     outline(color(0, 173, 255, 255), layoutData.pfListX, layoutData.pfListY, layoutData.pfListWidth, layoutData.pfListHeight, 1);
+
+    partyList.forEach((party, index) => {
+        let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
+        rect(color(20, 20, 20, 240), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight);
+        outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
+    });
 
     const pfText = new TextClass(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 1.75, true); pfText.draw()
     const onlineUserText = new TextClass(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false); onlineUserText.draw()
@@ -191,11 +237,18 @@ function createPartyRender() {
     drawButtonsCreate(layoutData);
 }
 
+function hdwiRender() {
+    let layoutData = getLayoutData()
+    rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
+    outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
+    drawButtonsHdwi(layoutData);
+}
+
 function partyFinderClose() {
-    currentPage = 0
+    currentPage = 1
 }
 
 register("command", () => {
-    currentPage = 0
+    currentPage = 1
     PartyFinderGUI.open()
 }).setName("sbopartyfinder").setAliases("sbopf")
