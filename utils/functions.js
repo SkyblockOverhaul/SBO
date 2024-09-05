@@ -789,6 +789,7 @@ export function getNumberColor(number, range) {
 
 export function getGriffinItemColor(item) {
     if (item != 0) {
+        if (!item) return "";
         let name = item.replace("PET_ITEM_", "");
         name = toTitleCase(name.replaceAll("_", " "));
         switch (name) {
