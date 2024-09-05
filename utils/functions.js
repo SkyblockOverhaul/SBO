@@ -1036,3 +1036,29 @@ export class Button {
         return this;
     }
 }
+
+let dianaStats = undefined;
+export function getDianaStats() {
+    if (dianaStats == undefined) {
+        loadDianaStats(true, (stats) => {
+            return stats;
+        });
+    }
+    else {
+        return dianaStats;
+    }
+}
+
+function loadDianaStats(useCallback = false, callback = null) {
+    request({
+        url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
+        json: true
+    }).then((response) => {
+        dianaStats = response[0];
+        if (useCallback && callback) {
+            callback(dianaStats);
+        } 
+    }).catch((error) => {
+        console.error("An error occurred: " + error);
+    });
+}
