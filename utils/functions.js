@@ -990,7 +990,8 @@ export class Button {
     }
 
     draw(mouseX, mouseY, buttons = []) {
-        this.updateDimensions();
+        if (this.hoverPriority !== "partyInfo")
+            this.updateDimensions();
     
         let isAnyJoinHovered = buttons.some(button => button.isHovered(mouseX, mouseY) && button.hoverPriority === "join");
         if (this.hoverPriority === "join") {
@@ -1030,7 +1031,8 @@ export class Button {
         }
         if (options.x) this.x = options.x;
         if (options.y) this.y = options.y;
-        this.updateDimensions();
+        if (this.hoverPriority !== "partyInfo")
+            this.updateDimensions();
         if (options.textX) this.textX = this.textX * options.textX;
         if (options.textY) this.textY = this.textY * options.textY;
         return this;
