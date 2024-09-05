@@ -909,7 +909,7 @@ export class TextClass {
 }
 
 export class Button {
-    constructor(x, y, width, height, text, rightClick, outlined, background, onClick) {
+    constructor(x, y, width, height, text, rightClick, outlined, background, hoverPriority, onClick) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -918,6 +918,7 @@ export class Button {
         this.rightClick = rightClick;
         this.outlined = outlined;
         this.background = background;
+        this.hoverPriority = hoverPriority;
         this.onClick = onClick;
         this.isHovering = false;
         this.lastScale = undefined;
@@ -988,16 +989,28 @@ export class Button {
         }
     }
 
-    draw(mouseX, mouseY) {
+    draw(mouseX, mouseY, buttons = []) {
         this.updateDimensions();
-        this.isHovering = this.isHovered(mouseX, mouseY);
+    
+        let isAnyJoinHovered = buttons.some(button => button.isHovered(mouseX, mouseY) && button.hoverPriority === "join");
+        if (this.hoverPriority === "join") {
+            this.isHovering = this.isHovered(mouseX, mouseY);
+        } else if (this.hoverPriority === "partyInfo" && !isAnyJoinHovered) {
+            this.isHovering = this.isHovered(mouseX, mouseY);
+        } else if (this.hoverPriority === "") {
+            this.isHovering = this.isHovered(mouseX, mouseY);
+        }
+        else {
+            this.isHovering = false;
+        }
         let bgColor = this.isHovering ? color(255, 255, 255, 150) : this.bgColor;
         if (!this.background) bgColor = this.isHovering ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
         rect(bgColor, this.x, this.y, this.width, this.height);
         if (this.outlined)     
             drawRectangleOutline(this.outlineColor, this.x, this.y, this.width, this.height, 1);
-
-        const text = new TextClass(this.textColor, this.textX, this.textY, this.text, this.textScale, false); text.draw();
+        const text = new TextClass(this.textColor, this.textX, this.textY, this.text, this.textScale, false); 
+        text.draw();
+    
         return this;
     }
 
