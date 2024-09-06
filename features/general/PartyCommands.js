@@ -123,7 +123,7 @@ register("chat", (player, message) => {
             break;
         case "!c":
         case "!carrot":
-            if(settings.carrotCommand) {
+            if(settings.PartyCommands && settings.carrotCommand) {
                 setTimeout(() => {
                     ChatLib.command("pc " + carrot[Math.floor(Math.random() * carrot.length)]);
                 },100)
