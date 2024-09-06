@@ -421,7 +421,7 @@ registerWhen(register("chat", (player, spacing, x, y, z, event) => {
             }
         }
     }
-}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherWaypoints || settings.inqWaypoints);
+}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherWaypoints || settings.inqWaypoints || settings.inqHighlight || settings.inqCircle);
 
 registerWhen(register("chat", () => {
     if (tryWarp) {
