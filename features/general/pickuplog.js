@@ -146,7 +146,7 @@ registerWhen(register('step', () => {
         // print("pickuplog step")
         pickuplog();
     }
-}).setFps(10), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop || settings.pickuplogOverlay);
+}).setFps(10), () => settings.dianaTracker || settings.lootAnnouncerChat || settings.lootAnnouncerScreen || settings.copyRareDrop || settings.pickuplogOverlay || settings.dianaStatsTracker);
 
 // sack detection
 register("chat", (ammount, trash, time, event) => {
