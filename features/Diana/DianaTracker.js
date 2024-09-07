@@ -238,7 +238,7 @@ registerWhen(register("chat", (waste, event) => {
 
 // mob tracker
 let b2bInq = false;
-registerWhen(register("chat", (woah, arev, mob, event) => {
+registerWhen(register("chat", (woah, arev, mob, skyhanni, event) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
@@ -277,7 +277,7 @@ registerWhen(register("chat", (woah, arev, mob, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!&r"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skyhanni}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {

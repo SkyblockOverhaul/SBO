@@ -253,7 +253,7 @@ function removePartyFromQueue() {
 function updatePartyInQueue() {
     if (inQueue) {
         updateBool = true;
-        sendPartyRequest();
+        // sendPartyRequest();
     }
 }
 
@@ -360,7 +360,7 @@ register("serverDisconnect", () => {
         removePartyFromQueue();
     }
 })
-HypixelModAPI.setLogging(true);
+
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     let party = [];
     Object.keys(partyInfo).forEach(key => {
