@@ -348,7 +348,7 @@ class Settings {
         subcategory: "Other",
     })
     resetCustomChimMessage() {
-        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! &b{mf} &b#{amount}";
+        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&lChimera! &b{mf} &b#{amount}}";
     }
 
     // Loot Announcer
