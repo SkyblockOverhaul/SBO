@@ -910,7 +910,7 @@ export class TextClass {
 }
 
 export class Button {
-    constructor(x, y, width, height, text, rightClick, outlined, background, hoverPriority) {
+    constructor(x, y, width, height, text, rightClick, outlined, background, hoverPriority, updateScaling = false) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -920,6 +920,7 @@ export class Button {
         this.outlined = outlined;
         this.background = background;
         this.hoverPriority = hoverPriority;
+        this.updateScaling = updateScaling
         this.isHovering = false;
         this.lastScale = undefined;
         this.originalWidth = width;
@@ -996,7 +997,7 @@ export class Button {
     }
 
     draw(mouseX, mouseY, buttons = []) {
-        if (this.hoverPriority !== "partyInfo")
+        if (this.updateScaling)
             this.updateDimensions();
     
         let isAnyJoinHovered = buttons.some(button => button.isHovered(mouseX, mouseY) && button.hoverPriority === "join");

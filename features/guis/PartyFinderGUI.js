@@ -65,7 +65,7 @@ function updatePageButtons() {
         let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
         let joinX = layoutData.partyBoxX + (layoutData.partyBoxWidth / 1.21)
         let joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
-        let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, "partyInfo").onClick(() => {
+        let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, "partyInfo", true).onClick(() => {
             ChatLib.chat(`Leader: ${party.leaderName}`)
         }); 
         // let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, "join", () => {
