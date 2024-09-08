@@ -5,6 +5,7 @@ import { request } from "../../../requestV2";
 const PartyFinderGUI = new Gui()
 const CreatePartyGUI = new Gui()
 const HdwiGUI = new Gui()
+const PartyInfoGUI = new Gui()
 let currentPage = 1
 let pageCount = 0 
 let onlineUsers = 0
@@ -21,6 +22,7 @@ PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
 CreatePartyGUI.registerDraw(createPartyRender);
 HdwiGUI.registerDraw(hdwiRender);
+PartyInfoGUI.registerDraw();
 
 function getPartyFinderData(refresh = false) {
     getActiveUsers(true, (userCount) => {
@@ -52,7 +54,6 @@ function getPartyFinderData(refresh = false) {
 
 function updatePageButtons() {
     let layoutData = getLayoutData()
-    let guiScaleData = getGuiScaleData()
     let startIndex = (currentPage - 1) * 6;
     let endIndex = startIndex + 6;
     let partiesToDisplay = partyList.slice(startIndex, endIndex);
@@ -62,7 +63,7 @@ function updatePageButtons() {
 
     partiesToDisplay.forEach((party, index) => {
         let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
-        let joinX = layoutData.partyBoxX + layoutData.partyBoxWidth - 100 * guiScaleData.joinXcomp; 
+        let joinX = layoutData.partyBoxX + (layoutData.partyBoxWidth / 1.21)
         let joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
         let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, "partyInfo", (button) => {
             ChatLib.chat(`Leader: ${party.leaderName}`)
@@ -173,30 +174,6 @@ const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, "", (butt
     PartyFinderGUI.open()
 });
 
-
-function getGuiScaleData() {
-    let guiScale = Client.settings.video.getGuiScale();
-    let partyCountComp;
-    let joinXcomp;
-    let memberYcomp;
-    if (guiScale === 1) {
-        partyCountComp = 1.85;
-        joinXcomp = 2;
-        memberYcomp = 1.5;
-    } else if (guiScale === 3) {
-        partyCountComp = 0.65;
-        joinXcomp = 0.672;
-        memberYcomp = 0.5;
-    } else {
-        partyCountComp = 1;
-        joinXcomp = 1;
-        memberYcomp = 1;
-    }
-    return {
-        partyCountComp, joinXcomp, memberYcomp
-    }
-}
-
 function getLayoutData() {
     let displayX = Renderer.screen.getWidth()
     let displayY = Renderer.screen.getHeight()
@@ -248,6 +225,9 @@ function getLayoutData() {
     let createPartyWidth = displayX * 0.095
     let createPartyHeight = displayY * 0.04
 
+    let joinPartyWidth = displayX * 0.095
+    let joinPartyHeight = displayY * 0.04
+
     let partyBoxWidth = pfListWidth
     let partyBoxHeight = pfListHeight / 6
     let partyBoxX = pfListX
@@ -265,7 +245,8 @@ function getLayoutData() {
         pageNextX, pageNextY, pageNextWidth, pageNextHeight,
         createPartyX, createPartyY, createPartyWidth, createPartyHeight,
         pageCountX, pageCountY,
-        partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY
+        partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
+        joinPartyWidth, joinPartyHeight
     }
 }
 
@@ -293,15 +274,15 @@ function partyFinderRender() {
             button.draw(Client.getMouseX(), Client.getMouseY(), allButtons);
         });
         joinButtons.forEach((button) => {
-            if (button) {}
-            button.draw(Client.getMouseX(), Client.getMouseY(), allButtons);
+            button.customize({
+                width: layoutData.joinPartyWidth, height: layoutData.joinPartyHeight
+            }).draw(Client.getMouseX(), Client.getMouseY(), allButtons);
         });
         partiesToDisplay.forEach((party, index) => {
             let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
             let row1y = partyBoxY + (layoutData.partyBoxHeight / 5.5)
             let row2y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 2
             let row3y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 3
-            // rect(color(20, 20, 20, 240), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight);
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
             const leaderText = new TextClass(color(255, 255, 255, 255), layoutData.partyBoxX + 5, row1y, `Leader: ${party.leaderName}`, 1, false).draw()
             const membersText = new TextClass(color(255, 255, 255, 255), layoutData.partyBoxX + 5, row2y, `Members: ${party.partymembers}/${maxMembers}`, 1, false).draw()
