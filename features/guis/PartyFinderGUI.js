@@ -149,32 +149,32 @@ function drawButtonsHdwi(layoutData) {
     }).draw(mouseX, mouseY)
 }
 
-const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, "").onClick(() => {
+const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true).onClick(() => {
     HdwiGUI.open()
 });
-const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, "").onClick(() => {
+const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true).onClick(() => {
     getPartyFinderData(true)
 });
-const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, "").onClick(() => {
+const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true).onClick(() => {
     if (currentPage > 1) {
         currentPage -= 1
         updatePageButtons()
     }
 });
-const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, "").onClick(() => {
+const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true).onClick(() => {
     if (currentPage < pageCount) {
         currentPage += 1
         updatePageButtons()
     }
 });
-const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, "").onClick(() => {
+const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true).onClick(() => {
     CreatePartyGUI.open()
 });
-const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, "").onClick(() => {
+const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true).onClick(() => {
     createParty()
     PartyFinderGUI.open()
 });
-const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, "").onClick(() => {
+const backButton = new Button(0, 0, 90, 20, "Back", false, true, true).onClick(() => {
     PartyFinderGUI.open()
 });
 
