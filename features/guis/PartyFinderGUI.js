@@ -22,7 +22,7 @@ PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
 CreatePartyGUI.registerDraw(createPartyRender);
 HdwiGUI.registerDraw(hdwiRender);
-PartyInfoGUI.registerDraw();
+// PartyInfoGUI.registerDraw();
 
 function getPartyFinderData(refresh = false) {
     getActiveUsers(true, (userCount) => {
@@ -65,10 +65,14 @@ function updatePageButtons() {
         let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
         let joinX = layoutData.partyBoxX + (layoutData.partyBoxWidth / 1.21)
         let joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
-        let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, "partyInfo", (button) => {
+        let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, "partyInfo").onClick(() => {
             ChatLib.chat(`Leader: ${party.leaderName}`)
-        });
-        let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, "join", (button) => {
+        }); 
+        // let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, "join", () => {
+        //     ChatLib.chat(`Joining party led by ${party.leaderName}`);
+        //     print("Joining party led by " + party.leaderName)
+        // });
+        let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, "join").onClick(() => {
             ChatLib.chat(`Joining party led by ${party.leaderName}`);
             print("Joining party led by " + party.leaderName)
         });
@@ -145,32 +149,32 @@ function drawButtonsHdwi(layoutData) {
     }).draw(mouseX, mouseY)
 }
 
-const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, "", (button) => {
+const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, "").onClick(() => {
     HdwiGUI.open()
 });
-const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, "", (button) => {
+const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, "").onClick(() => {
     getPartyFinderData(true)
 });
-const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, "", (button) => {
+const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, "").onClick(() => {
     if (currentPage > 1) {
         currentPage -= 1
         updatePageButtons()
     }
 });
-const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, "", (button) => {
+const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, "").onClick(() => {
     if (currentPage < pageCount) {
         currentPage += 1
         updatePageButtons()
     }
 });
-const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, "", (button) => {
+const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, "").onClick(() => {
     CreatePartyGUI.open()
 });
-const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, "", (button) => {
+const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, "").onClick(() => {
     createParty()
     PartyFinderGUI.open()
 });
-const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, "", (button) => {
+const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, "").onClick(() => {
     PartyFinderGUI.open()
 });
 

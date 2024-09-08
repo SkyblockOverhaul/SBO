@@ -910,7 +910,7 @@ export class TextClass {
 }
 
 export class Button {
-    constructor(x, y, width, height, text, rightClick, outlined, background, hoverPriority, onClick) {
+    constructor(x, y, width, height, text, rightClick, outlined, background, hoverPriority) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -920,12 +920,12 @@ export class Button {
         this.outlined = outlined;
         this.background = background;
         this.hoverPriority = hoverPriority;
-        this.onClick = onClick;
         this.isHovering = false;
         this.lastScale = undefined;
         this.originalWidth = width;
         this.originalHeight = height;
         this.lastScreenSize = undefined;
+        this.action = undefined;
 
         this.textWidth = undefined;
         this.originalTextWidth = Renderer.getStringWidth(text);
@@ -937,11 +937,16 @@ export class Button {
         this.outlineColor = color(255, 255, 255, 255);
     }
 
+    onClick(action) {
+        this.action = action;
+        return this;
+    }
+
     isClicked(mouseX, mouseY, button) {
         if (mouseX >= this.x && mouseX <= this.x + this.width && 
             mouseY >= this.y && mouseY <= this.y + this.height) {
             if (button == 0 || (button == 1 && this.rightClick)) {
-                this.onClick(button);
+                this.action();
                 return true;
             }
         }
