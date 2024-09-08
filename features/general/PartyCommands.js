@@ -194,6 +194,15 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!feather":
+        case "!feathers":
+            if(!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                setTimeout(() => {
+                    ChatLib.command("pc Feathers: " + dianaTrackerMayor["items"]["Griffin Feather"])
+                }, 200)
+            }
+            break
         case "!mob":
         case "!mobs":
             if(!settings.dianaPartyCommands) break;
