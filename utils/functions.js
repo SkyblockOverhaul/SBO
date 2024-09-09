@@ -1029,7 +1029,6 @@ export class Button {
         this.textX = this.x + (this.width - width) / 2
         this.textY = this.y + (this.height - height) / 2;
     }
-    // text erst nach dem erstellen skalieren was x/y angeht wichtig!!!
 
     draw(mouseX, mouseY, buttons = []) {
         if (this.updateScaling)
