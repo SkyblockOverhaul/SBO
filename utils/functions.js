@@ -962,7 +962,6 @@ export class Button {
         this.action = undefined;
 
         this.textWidth = undefined;
-        this.originalTextWidth = Renderer.getStringWidth(text);
         this.textColor = color(255, 255, 255, 255);
         this.textScale = 1;
         this.textX = this.x + (this.width - this.textWidth) / 2;
@@ -1015,21 +1014,32 @@ export class Button {
             else if (guiScale == 3) {
                 this.width = this.originalWidth * 0.66;
                 this.height = this.originalHeight * 0.66;
-                this.textWidth = this.originalTextWidth * 0.4;
                 this.textX = this.x + (this.width - this.textWidth) / 2;
                 this.textY = this.y + (this.height / 2);
             }
             else {
                 this.width = this.originalWidth;
                 this.height = this.originalHeight;
-                this.textWidth = this.originalTextWidth;
-                this.textX = this.x + (this.width - this.textWidth) / 2;
-                this.textY = this.y + (this.height / 2) * 0.65;
             }
             this.lastScale = guiScale;
         }
     }
 
+    updateTextDimensions(width, height) {
+        let guiScale = Client.settings.video.getGuiScale();
+        if (guiScale == 1) {
+            this.textX = this.x + (this.width - width) / 2
+            this.textY = this.y + (this.height - height) / 2;
+        }
+        else if (guiScale == 3) {
+            this.textX = this.x + (this.width - width) / 2;
+            this.textY = this.y + (this.height - height) / 2;
+        }
+        else {
+            this.textX = this.x + (this.width - width) / 2;
+            this.textY = this.y + (this.height - height) / 2;
+        }
+    }
     // text erst nach dem erstellen skalieren was x/y angeht wichtig!!!
 
     draw(mouseX, mouseY, buttons = []) {
@@ -1053,7 +1063,7 @@ export class Button {
         if (this.outlined)     
             drawRectangleOutline(this.outlineColor, this.x, this.y, this.width, this.height, 1);
         this.textObject.draw();
-        // ChatLib.chat(this.textObject.width);
+        this.updateTextDimensions(this.textObject.width, this.textObject.height);
         this.textObject.setX(this.textX).setY(this.textY)
         return this;
     }
