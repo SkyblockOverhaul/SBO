@@ -943,7 +943,7 @@ export class TextClass {
 }
 
 export class Button {
-    constructor(x, y, width, height, text, rightClick, outlined, background, hoverPriority = "", updateScaling = true) {
+    constructor(x, y, width, height, text, rightClick, outlined, background, color, hoverPriority = "", updateScaling = true) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -952,6 +952,7 @@ export class Button {
         this.rightClick = rightClick;
         this.outlined = outlined;
         this.background = background;
+        this.color = color;
         this.hoverPriority = hoverPriority;
         this.updateScaling = updateScaling
         this.isHovering = false;

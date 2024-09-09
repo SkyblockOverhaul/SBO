@@ -303,7 +303,7 @@ function partyFinderRender() {
         });
         joinButtons.forEach((button) => {
             button.customize({
-                width: layoutData.joinPartyWidth, height: layoutData.joinPartyHeight
+                width: layoutData.joinPartyWidth, height: layoutData.joinPartyHeight,
             }).draw(Client.getMouseX(), Client.getMouseY(), allButtons);
         });
         partiesToDisplay.forEach((party, index) => {
@@ -320,7 +320,7 @@ function partyFinderRender() {
 
     pfText.draw().setX(layoutData.titleX).setY(layoutData.titleY).setText("Diana Party Finder")
     onlineUserText.draw().setX(layoutData.onlineUserX).setY(layoutData.onlineUserY).setText(`Online User: ${onlineUsers}`)
-    let partyCountX = onlineUserText.width + layoutData.onlineUserX + 2
+    let partyCountX = onlineUserText.width + layoutData.onlineUserX + 10
     partyCountText.draw().setX(partyCountX).setY(layoutData.partyCountY).setText(`Party Count: ${partyCount}`)
     pageCountText.draw().setX(layoutData.pageCountX).setY(layoutData.pageCountY).setText(`Page ${currentPage}/${pageCount}`)
     drawButtonsMain(layoutData);
