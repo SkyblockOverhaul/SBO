@@ -9,7 +9,7 @@ export function getMobsToDisplay() {
     return names;
 }
 
-registerWhen(register("chat", (woah) => {
+registerWhen(register("chat", (woah, skytils) => {
     if (checkDiana()) {
         if(settings.inquisDetect) {
             ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
@@ -20,7 +20,7 @@ registerWhen(register("chat", (woah) => {
             }, 5000);
         }
     }
-}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!&r"), () => settings.inquisDetect || settings.announceKill);
+}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!${skytils}"), () => settings.inquisDetect || settings.announceKill);
 
 let Mobs = [];
 let inqs = [];
