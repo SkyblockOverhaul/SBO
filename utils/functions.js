@@ -1026,19 +1026,8 @@ export class Button {
     }
 
     updateTextDimensions(width, height) {
-        let guiScale = Client.settings.video.getGuiScale();
-        if (guiScale == 1) {
-            this.textX = this.x + (this.width - width) / 2
-            this.textY = this.y + (this.height - height) / 2;
-        }
-        else if (guiScale == 3) {
-            this.textX = this.x + (this.width - width) / 2;
-            this.textY = this.y + (this.height - height) / 2;
-        }
-        else {
-            this.textX = this.x + (this.width - width) / 2;
-            this.textY = this.y + (this.height - height) / 2;
-        }
+        this.textX = this.x + (this.width - width) / 2
+        this.textY = this.y + (this.height - height) / 2;
     }
     // text erst nach dem erstellen skalieren was x/y angeht wichtig!!!
 
