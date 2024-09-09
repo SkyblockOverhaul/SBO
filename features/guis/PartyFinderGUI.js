@@ -93,6 +93,7 @@ PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (pageBackButton.isClicked(mouseX, mouseY, button)) return;
     if (pageNextButton.isClicked(mouseX, mouseY, button)) return;
     if (createPartyButton.isClicked(mouseX, mouseY, button)) return;
+    if (deQueueButton.isClicked(mouseX, mouseY, button)) return;
     for (let joinButton of joinButtons) {
         if (joinButton.isClicked(mouseX, mouseY, button)) {
             return;
@@ -132,6 +133,10 @@ function drawButtonsMain(layoutData) {
     createPartyButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
         width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
+    }).draw(mouseX, mouseY)
+    deQueueButton.customize({
+        x: layoutData.deQueueX, y: layoutData.deQueueY,
+        width: layoutData.deQueueWidth, height: layoutData.deQueueHeight
     }).draw(mouseX, mouseY)
 }
 function drawButtonsCreate(layoutData) {
@@ -176,6 +181,9 @@ const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true).
 });
 const backButton = new Button(0, 0, 90, 20, "Back", false, true, true).onClick(() => {
     PartyFinderGUI.open()
+});
+const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true).onClick(() => {
+    ChatLib.chat("Dequeueing")
 });
 
 function getLayoutData() {
@@ -229,6 +237,11 @@ function getLayoutData() {
     let createPartyWidth = displayX * 0.095
     let createPartyHeight = displayY * 0.04
 
+    let deQueueX = (pfWindowX + pfWindowWidth) * 0.77
+    let deQueueY = (pfWindowY + pfWindowHeight) * 0.945
+    let deQueueWidth = displayX * 0.07
+    let deQueueHeight = displayY * 0.04
+
     let joinPartyWidth = displayX * 0.095
     let joinPartyHeight = displayY * 0.04
 
@@ -250,7 +263,8 @@ function getLayoutData() {
         createPartyX, createPartyY, createPartyWidth, createPartyHeight,
         pageCountX, pageCountY,
         partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
-        joinPartyWidth, joinPartyHeight
+        joinPartyWidth, joinPartyHeight,
+        deQueueX, deQueueY, deQueueWidth, deQueueHeight
     }
 }
 
