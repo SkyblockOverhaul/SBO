@@ -925,6 +925,21 @@ export class TextClass {
         this.object.setString(text);
         return this;
     }
+
+    setColor(color) {
+        this.color = color;
+        return this;
+    }
+
+    setScale(scale) {
+        this.scale = scale;
+        return this;
+    }
+
+    setShadow(shadow) {
+        this.shadow = shadow;
+        return this;
+    }
 }
 
 export class Button {
