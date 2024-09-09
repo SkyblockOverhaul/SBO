@@ -968,7 +968,7 @@ export class Button {
         this.textY = (this.y + this.height / 2) - 4;
         this.bgColor = color(0, 0, 0, 150);
         this.outlineColor = color(255, 255, 255, 255);
-        this.textObject = new TextClass(this.textColor, this.textX, this.textY, this.text, this.textScale, false);
+        this.textObject = new TextClass(this.textColor, 0, 0, "", this.textScale, false);
     }
 
     onClick(action) {
@@ -1050,7 +1050,7 @@ export class Button {
         rect(bgColor, this.x, this.y, this.width, this.height);
         if (this.outlined)     
             drawRectangleOutline(this.outlineColor, this.x, this.y, this.width, this.height, 1);
-        this.textObject.draw();
+        this.textObject.draw().setText(this.text);
         this.updateTextDimensions(this.textObject.width, this.textObject.height);
         this.textObject.setX(this.textX).setY(this.textY)
         return this;
