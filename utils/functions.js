@@ -1023,11 +1023,13 @@ export class Button {
             }
             this.lastScale = guiScale;
         }
+        return this;
     }
 
     updateTextDimensions(width, height) {
         this.textX = this.x + (this.width - width) / 2
         this.textY = this.y + (this.height - height) / 2;
+        return this;
     }
 
     draw(mouseX, mouseY, buttons = []) {
