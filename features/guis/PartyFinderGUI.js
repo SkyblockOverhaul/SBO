@@ -198,7 +198,7 @@ function getLayoutData() {
     let onlineUserX = titleX
     let onlineUserY = pfWindowY * 1.4
 
-    let partyCountX = (pfWindowX + pfWindowWidth) * 0.37
+    let partyCountX = pfWindowX + pfWindowWidth
     let partyCountY = pfWindowY * 1.4
 
     let pageCountX = (pfWindowX + pfWindowWidth) * 0.6
@@ -254,6 +254,16 @@ function getLayoutData() {
     }
 }
 
+const pfText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1.75, true)
+const onlineUserText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
+const partyCountText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
+const pageCountText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
+const leaderText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
+const membersText = new TextClass(color(255, 255, 255, 255), 0 + 5, 0, ``, 1, false)
+const partyReqs = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
+
+
+
 function partyFinderRender() {
     let layoutData = getLayoutData()
 
@@ -288,20 +298,17 @@ function partyFinderRender() {
             let row2y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 2
             let row3y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 3
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
-            const leaderText = new TextClass(color(255, 255, 255, 255), layoutData.partyBoxX + 5, row1y, `Leader: ${party.leaderName}`, 1, false).draw()
-            const membersText = new TextClass(color(255, 255, 255, 255), layoutData.partyBoxX + 5, row2y, `Members: ${party.partymembers}/${maxMembers}`, 1, false).draw()
-            const partyReqs = new TextClass(color(255, 255, 255, 255), layoutData.partyBoxX + 5, row3y, 
-            `Requirements: 
-Eman: ${party.emanreq}, lvl: ${party.lvlreq}`,
-             1, false).draw()
+            leaderText.draw().setX(layoutData.partyBoxX + 5).setY(row1y).setText(`Leader: ${party.leaderName}`)
+            membersText.draw().setX(layoutData.partyBoxX + 5).setY(row2y).setText(`Members: ${party.partymembers}/${maxMembers}`)
+            partyReqs.draw().setX(layoutData.partyBoxX + 5).setY(row3y).setText(`Requirements: \nEman: ${party.emanreq}, lvl: ${party.lvlreq}`)
         });
     }
 
-    const pfText = new TextClass(color(255, 255, 255, 255), layoutData.titleX, layoutData.titleY, "Diana Party Finder", 1.75, true).draw()
-    const onlineUserText = new TextClass(color(255, 255, 255, 255), layoutData.onlineUserX, layoutData.onlineUserY, `Online User: ${onlineUsers}`, 1, false).draw()
-    const partyCountText = new TextClass(color(255, 255, 255, 255), layoutData.partyCountX, layoutData.partyCountY, `Party Count: ${partyCount}`, 1, false).draw()
-    const pageCountText = new TextClass(color(255, 255, 255, 255), layoutData.pageCountX, layoutData.pageCountY, `Page ${currentPage}/${pageCount}`, 1, false).draw()
-
+    pfText.draw().setX(layoutData.titleX).setY(layoutData.titleY).setText("Diana Party Finder")
+    onlineUserText.draw().setX(layoutData.onlineUserX).setY(layoutData.onlineUserY).setText(`Online User: ${onlineUsers}`)
+    let partyCountX = onlineUserText.width + layoutData.onlineUserX + 2
+    partyCountText.draw().setX(partyCountX).setY(layoutData.partyCountY).setText(`Party Count: ${partyCount}`)
+    pageCountText.draw().setX(layoutData.pageCountX).setY(layoutData.pageCountY).setText(`Page ${currentPage}/${pageCount}`)
     drawButtonsMain(layoutData);
 }
 

@@ -878,14 +878,15 @@ export function line(color, x1, y1, x2, y2, thickness) {
 
 export class TextClass {
     constructor(color, x, y, string, scale, shadow) {
-        this.string = string;
+        this.object = new Text(string);
         this.color = color;
         this.x = x;
         this.y = y;
         this.scale = scale;
         this.shadow = shadow;
         this.checked = false;
-        this.lastScreenSize = undefined;
+        this.width = undefined;
+        this.height = undefined;
     }
 
     draw() {
@@ -900,11 +901,28 @@ export class TextClass {
             compensation = guiScale / targetScale;
         }
         let scale = this.scale * compensation;
-        let text = new Text(this.string);
-        text.setColor(this.color);
-        text.setScale(scale);
-        text.setShadow(this.shadow);
-        text.setX(this.x).setY(this.y).draw();
+        this.object.setColor(this.color);
+        this.object.setScale(scale);
+        this.object.setShadow(this.shadow);
+        this.object.setX(this.x).setY(this.y);
+        this.object.draw();
+        this.width = this.object.getWidth();
+        this.height = this.object.getHeight();
+        return this;
+    }
+
+    setX(x) {
+        this.x = x;
+        return this;
+    }
+
+    setY(y) {
+        this.y = y;
+        return this;
+    }
+
+    setText(text) {
+        this.object.setString(text);
         return this;
     }
 }
@@ -936,6 +954,7 @@ export class Button {
         this.textY = (this.y + this.height / 2) - 4;
         this.bgColor = color(0, 0, 0, 150);
         this.outlineColor = color(255, 255, 255, 255);
+        this.textObject = new TextClass(this.textColor, this.textX, this.textY, this.text, this.textScale, false);
     }
 
     onClick(action) {
@@ -996,6 +1015,8 @@ export class Button {
         }
     }
 
+    // text erst nach dem erstellen skalieren was x/y angeht wichtig!!!
+
     draw(mouseX, mouseY, buttons = []) {
         if (this.updateScaling)
             this.updateDimensions();
@@ -1016,9 +1037,9 @@ export class Button {
         rect(bgColor, this.x, this.y, this.width, this.height);
         if (this.outlined)     
             drawRectangleOutline(this.outlineColor, this.x, this.y, this.width, this.height, 1);
-        const text = new TextClass(this.textColor, this.textX, this.textY, this.text, this.textScale, false); 
-        text.draw();
-    
+        this.textObject.draw();
+        // ChatLib.chat(this.textObject.width);
+        this.textObject.setX(this.textX).setY(this.textY)
         return this;
     }
 
