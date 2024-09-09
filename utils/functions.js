@@ -943,7 +943,7 @@ export class TextClass {
 }
 
 export class Button {
-    constructor(x, y, width, height, text, rightClick, outlined, background, color, hoverPriority = "", updateScaling = true) {
+    constructor(x, y, width, height, text, rightClick, outlined, background, Color, hoverPriority = "", updateScaling = true) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -952,7 +952,7 @@ export class Button {
         this.rightClick = rightClick;
         this.outlined = outlined;
         this.background = background;
-        this.color = color;
+        this.color = Color;
         this.hoverPriority = hoverPriority;
         this.updateScaling = updateScaling
         this.isHovering = false;
@@ -963,12 +963,12 @@ export class Button {
         this.action = undefined;
 
         this.textWidth = undefined;
-        this.textColor = color(255, 255, 255, 255);
+        this.textColor = Color;
         this.textScale = 1;
         this.textX = this.x + (this.width - this.textWidth) / 2;
         this.textY = (this.y + this.height / 2) - 4;
         this.bgColor = color(0, 0, 0, 150);
-        this.outlineColor = color(255, 255, 255, 255);
+        this.outlineColor = Color;
         this.textObject = new TextClass(this.textColor, 0, 0, "", this.textScale, false);
     }
 
@@ -1080,6 +1080,80 @@ export class Button {
         if (options.textX) this.textX = this.textX * options.textX;
         if (options.textY) this.textY = this.textY * options.textY;
         return this;
+    }
+}
+
+
+export function getLayoutDataPartyFinder() {
+    let displayX = Renderer.screen.getWidth()
+    let displayY = Renderer.screen.getHeight()
+
+    let pfWindowWidth = displayX * 0.6
+    let pfWindowHeight = displayY * 0.8
+    let pfWindowX = (displayX - pfWindowWidth) / 2
+    let pfWindowY = (displayY - pfWindowHeight) / 2
+
+    let pfListWidth = pfWindowWidth
+    let pfListHeight = pfWindowHeight * 0.85
+    let pfListX = pfWindowX + (pfWindowWidth - pfListWidth) / 2
+    let pfListY = pfWindowY + (pfWindowHeight - pfListHeight) / 2
+
+    let titleX = pfWindowX * 1.05
+    let titleY = pfWindowY * 1.1
+
+    let onlineUserX = titleX
+    let onlineUserY = pfWindowY * 1.4
+    let partyCountX = pfWindowX + pfWindowWidth
+
+    let pageCountX = (pfWindowX + pfWindowWidth) * 0.6
+    let pageCountY = (pfWindowY + pfWindowHeight) * 0.95
+
+    let hdwiX = (pfWindowX + pfWindowWidth) * 0.869
+    let hdwiY = pfWindowY * 1.1
+    let hdwiWidth = displayX * 0.095
+
+    let refreshX = (pfWindowX + pfWindowWidth) * 0.77
+    let refreshWidth = displayX * 0.07
+
+    let pageBackX = (pfWindowY + pfWindowWidth) * 0.334
+    let pageBackWidth = displayX * 0.05
+
+    let pageNextX = (pfWindowY + pfWindowWidth) * 0.43
+    let pageNextWidth = displayX * 0.05
+
+    let createPartyX = (pfWindowX + pfWindowWidth) * 0.869
+    let createPartyY = (pfWindowY + pfWindowHeight) * 0.945
+    let createPartyWidth = displayX * 0.095
+
+    let deQueueX = (pfWindowX + pfWindowWidth) * 0.77
+    let deQueueWidth = displayX * 0.07
+
+    let joinPartyWidth = displayX * 0.095
+
+    let partyBoxWidth = pfListWidth
+    let partyBoxHeight = pfListHeight / 6
+    let partyBoxX = pfListX
+    let partyBoxY = pfListY
+
+    let buttonHeight1 = displayY * 0.04
+    let buttonHeight2 = displayY * 0.05
+
+    return {
+        displayX, displayY,
+        pfWindowWidth, pfWindowHeight, pfWindowX, pfWindowY,
+        pfListWidth, pfListHeight, pfListX, pfListY,
+        titleX, titleY,
+        onlineUserX, onlineUserY, partyCountX,
+        pageCountX, pageCountY,
+        hdwiX, hdwiY, hdwiWidth,
+        refreshX, refreshWidth,
+        createPartyX, createPartyY, createPartyWidth,
+        pageBackX, pageBackWidth,
+        pageNextX, pageNextWidth,
+        deQueueX, deQueueWidth,
+        joinPartyWidth,
+        partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
+        buttonHeight1, buttonHeight2
     }
 }
 

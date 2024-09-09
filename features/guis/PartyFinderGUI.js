@@ -1,5 +1,5 @@
-import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers } from "../../utils/functions";
-import { createParty, getAllParties } from "../Diana/PartyFinder";
+import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData } from "../../utils/functions";
+import { createParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
 const PartyFinderGUI = new Gui()
@@ -13,7 +13,8 @@ let partyCount = 0
 let partyList = []
 let joinButtons = []
 let partyInfoButtons = []
-let allButtons = []
+let allPartyButtons = []
+let buttonsPfwindow = []
 let maxMembers = 6
 let startDisplayWidth = Renderer.screen.getWidth()
 let startDisplayHeight = Renderer.screen.getHeight()
@@ -22,7 +23,6 @@ PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
 CreatePartyGUI.registerDraw(createPartyRender);
 HdwiGUI.registerDraw(hdwiRender);
-// PartyInfoGUI.registerDraw();
 
 function getPartyFinderData(refresh = false) {
     getActiveUsers(true, (userCount) => {
@@ -59,27 +59,23 @@ function updatePageButtons() {
     let partiesToDisplay = partyList.slice(startIndex, endIndex);
     joinButtons = []
     partyInfoButtons = []
-    allButtons = []
+    allPartyButtons = []
 
     partiesToDisplay.forEach((party, index) => {
         let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
-        let joinX = layoutData.partyBoxX + (layoutData.partyBoxWidth / 1.21)
+        let joinX = layoutData.hdwiX
         let joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
-        let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, "partyInfo", false).onClick(() => {
+        let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, color(255,255,255,255), "partyInfo", false).onClick(() => {
             ChatLib.chat(`Leader: ${party.leaderName}`)
         }); 
-        // let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, "join", () => {
-        //     ChatLib.chat(`Joining party led by ${party.leaderName}`);
-        //     print("Joining party led by " + party.leaderName)
-        // });
-        let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, "join").onClick(() => {
+        let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, color(0,255,0,255), "join").onClick(() => {
             ChatLib.chat(`Joining party led by ${party.leaderName}`);
             print("Joining party led by " + party.leaderName)
         }).updateDimensions();
         joinButtons.push(joinButton);
         partyInfoButtons.push(partyInfoButton);
-        allButtons.push(joinButton);
-        allButtons.push(partyInfoButton);
+        allPartyButtons.push(joinButton);
+        allPartyButtons.push(partyInfoButton);
     });
 }
  
@@ -88,22 +84,8 @@ PartyFinderGUI.registerOpened(() => {
 });
 
 PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
-    if (hdiwButton.isClicked(mouseX, mouseY, button)) return;
-    if (refreshButton.isClicked(mouseX, mouseY, button)) return;
-    if (pageBackButton.isClicked(mouseX, mouseY, button)) return;
-    if (pageNextButton.isClicked(mouseX, mouseY, button)) return;
-    if (createPartyButton.isClicked(mouseX, mouseY, button)) return;
-    if (deQueueButton.isClicked(mouseX, mouseY, button)) return;
-    for (let joinButton of joinButtons) {
-        if (joinButton.isClicked(mouseX, mouseY, button)) {
-            return;
-        }
-    }
-    for (let partyInfoButton of partyInfoButtons) {
-        if (partyInfoButton.isClicked(mouseX, mouseY, button)) {
-            return;
-        }
-    }
+    if (buttonClicked(mouseX, mouseY, button, buttonsPfwindow)) return;
+    if (buttonClickedList(mouseX, mouseY, button, allPartyButtons)) return;
 });
 CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
@@ -112,166 +94,108 @@ HdwiGUI.registerClicked((mouseX, mouseY, button) => {
     if (backButton.isClicked(mouseX, mouseY, button)) return;
 });
 
+function buttonClicked(mouseX, mouseY, Button, buttons) {
+    for (let button of buttons) {
+        if (button.isClicked(mouseX, mouseY, Button)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function buttonClickedList(mouseX, mouseY, Button, list) {
+    for (let button of list) {
+        if (button.isClicked(mouseX, mouseY, Button)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function drawButtonsMain(layoutData) {
     const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
     hdiwButton.customize({
         x: layoutData.hdwiX, y: layoutData.hdwiY,
-        width: layoutData.hdwiWidth, height: layoutData.hdwiHeight
+        width: layoutData.hdwiWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
     refreshButton.customize({
-        x: layoutData.refreshX, y: layoutData.refreshY,
-        width: layoutData.refreshWidth, height: layoutData.refreshHeight
+        x: layoutData.refreshX, y: layoutData.hdwiY,
+        width: layoutData.refreshWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
     pageBackButton.customize({
-        x: layoutData.pageBackX, y: layoutData.pageBackY,
-        width: layoutData.pageBackWidth, height: layoutData.pageBackHeight
+        x: layoutData.pageBackX, y: layoutData.createPartyY,
+        width: layoutData.pageBackWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
     pageNextButton.customize({
-        x: layoutData.pageNextX, y: layoutData.pageNextY,
-        width: layoutData.pageNextWidth, height: layoutData.pageNextHeight
+        x: layoutData.pageNextX, y: layoutData.createPartyY,
+        width: layoutData.pageNextWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
     createPartyButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
-        width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
+        width: layoutData.createPartyWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
     deQueueButton.customize({
-        x: layoutData.deQueueX, y: layoutData.deQueueY,
-        width: layoutData.deQueueWidth, height: layoutData.deQueueHeight
+        x: layoutData.deQueueX, y: layoutData.createPartyY,
+        width: layoutData.deQueueWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
 }
 function drawButtonsCreate(layoutData) {
     const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
     submitPartyButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
-        width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
+        width: layoutData.createPartyWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
 }
 function drawButtonsHdwi(layoutData) {
     const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
     backButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
-        width: layoutData.createPartyWidth, height: layoutData.createPartyHeight
+        width: layoutData.createPartyWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
 }
 
-const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true).onClick(() => {
+const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, color(255,165,0,255)).onClick(() => {
     HdwiGUI.open()
 });
-const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true).onClick(() => {
+buttonsPfwindow.push(hdiwButton)
+const refreshButton = new Button(0, 0, 90, 20, "Refresh", false, true, true, color(0,196,255,255)).onClick(() => {
     getPartyFinderData(true)
 });
-const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true).onClick(() => {
+buttonsPfwindow.push(refreshButton)
+const pageBackButton = new Button(0, 0, 90, 20, "<=", false, true, true, color(0,196,255,255)).onClick(() => {
     if (currentPage > 1) {
         currentPage -= 1
         updatePageButtons()
     }
 });
-const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true).onClick(() => {
+buttonsPfwindow.push(pageBackButton)
+const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, color(0,196,255,255)).onClick(() => {
     if (currentPage < pageCount) {
         currentPage += 1
         updatePageButtons()
     }
 });
-const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true).onClick(() => {
+buttonsPfwindow.push(pageNextButton)
+const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, color(0,196,255,255)).onClick(() => {
     CreatePartyGUI.open()
 });
-const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true).onClick(() => {
+buttonsPfwindow.push(createPartyButton)
+const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true, color(255,0,0,255)).onClick(() => {
+    ChatLib.chat("Dequeueing")
+});
+buttonsPfwindow.push(deQueueButton)
+const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, color(255,255,255,255)).onClick(() => {
     createParty()
     PartyFinderGUI.open()
 });
-const backButton = new Button(0, 0, 90, 20, "Back", false, true, true).onClick(() => {
+const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, color(255,255,255,255)).onClick(() => {
     PartyFinderGUI.open()
 });
-const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true).onClick(() => {
-    ChatLib.chat("Dequeueing")
-});
-
-function getLayoutData() {
-    let displayX = Renderer.screen.getWidth()
-    let displayY = Renderer.screen.getHeight()
-
-    let pfWindowWidth = displayX * 0.6
-    let pfWindowHeight = displayY * 0.8
-    let pfWindowX = (displayX - pfWindowWidth) / 2
-    let pfWindowY = (displayY - pfWindowHeight) / 2
-
-    let pfListWidth = pfWindowWidth
-    let pfListHeight = pfWindowHeight * 0.85
-    let pfListX = pfWindowX + (pfWindowWidth - pfListWidth) / 2
-    let pfListY = pfWindowY + (pfWindowHeight - pfListHeight) / 2
-
-    let titleX = pfWindowX * 1.05
-    let titleY = pfWindowY * 1.1
-
-    let onlineUserX = titleX
-    let onlineUserY = pfWindowY * 1.4
-
-    let partyCountX = pfWindowX + pfWindowWidth
-    let partyCountY = pfWindowY * 1.4
-
-    let pageCountX = (pfWindowX + pfWindowWidth) * 0.6
-    let pageCountY = (pfWindowY + pfWindowHeight) * 0.95
-
-    let hdwiX = (pfWindowX + pfWindowWidth) * 0.869
-    let hdwiY = pfWindowY * 1.1
-    let hdwiWidth = displayX * 0.095
-    let hdwiHeight = displayY * 0.04
-
-    let refreshX = (pfWindowX + pfWindowWidth) * 0.77
-    let refreshY = pfWindowY * 1.1
-    let refreshWidth = displayX * 0.07
-    let refreshHeight = displayY * 0.04
-
-    let pageBackX = (pfWindowY + pfWindowWidth) * 0.334
-    let pageBackY = (pfWindowY + pfWindowHeight) * 0.945
-    let pageBackWidth = displayX * 0.05
-    let pageBackHeight = displayY * 0.04
-
-    let pageNextX = (pfWindowY + pfWindowWidth) * 0.43
-    let pageNextY = (pfWindowY + pfWindowHeight) * 0.945
-    let pageNextWidth = displayX * 0.05
-    let pageNextHeight = displayY * 0.04
-
-    let createPartyX = (pfWindowX + pfWindowWidth) * 0.869
-    let createPartyY = (pfWindowY + pfWindowHeight) * 0.945
-    let createPartyWidth = displayX * 0.095
-    let createPartyHeight = displayY * 0.04
-
-    let deQueueX = (pfWindowX + pfWindowWidth) * 0.77
-    let deQueueY = (pfWindowY + pfWindowHeight) * 0.945
-    let deQueueWidth = displayX * 0.07
-    let deQueueHeight = displayY * 0.04
-
-    let joinPartyWidth = displayX * 0.095
-    let joinPartyHeight = displayY * 0.04
-
-    let partyBoxWidth = pfListWidth
-    let partyBoxHeight = pfListHeight / 6
-    let partyBoxX = pfListX
-    let partyBoxY = pfListY
-
-    return {
-        displayX, displayY, 
-        pfWindowWidth, pfWindowHeight, pfWindowX, pfWindowY, 
-        pfListWidth, pfListHeight, pfListX, pfListY,
-        titleX, titleY, onlineUserX, onlineUserY,
-        hdwiX, hdwiY, hdwiWidth, hdwiHeight,
-        partyCountX, partyCountY,
-        refreshX, refreshY, refreshWidth, refreshHeight,
-        pageBackX, pageBackY, pageBackWidth, pageBackHeight,
-        pageNextX, pageNextY, pageNextWidth, pageNextHeight,
-        createPartyX, createPartyY, createPartyWidth, createPartyHeight,
-        pageCountX, pageCountY,
-        partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
-        joinPartyWidth, joinPartyHeight,
-        deQueueX, deQueueY, deQueueWidth, deQueueHeight
-    }
-}
 
 const pfText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1.75, true)
-const onlineUserText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
-const partyCountText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
-const pageCountText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
+const onlineUserText = new TextClass(color(233, 233, 233, 255), 0, 0, ``, 1, false)
+const partyCountText = new TextClass(color(233, 233, 233, 255), 0, 0, ``, 1, false)
+const pageCountText = new TextClass(color(233, 233, 233, 255), 0, 0, ``, 1, false)
 const leaderText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
 const membersText = new TextClass(color(255, 255, 255, 255), 0 + 5, 0, ``, 1, false)
 const partyReqs = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
@@ -299,12 +223,12 @@ function partyFinderRender() {
         const endIndex = startIndex + 6;
         const partiesToDisplay = partyList.slice(startIndex, endIndex);
         partyInfoButtons.forEach((button) => {
-            button.draw(Client.getMouseX(), Client.getMouseY(), allButtons);
+            button.draw(Client.getMouseX(), Client.getMouseY(), allPartyButtons);
         });
         joinButtons.forEach((button) => {
             button.customize({
-                width: layoutData.joinPartyWidth, height: layoutData.joinPartyHeight,
-            }).draw(Client.getMouseX(), Client.getMouseY(), allButtons);
+                width: layoutData.joinPartyWidth, height: layoutData.buttonHeight2,
+            }).draw(Client.getMouseX(), Client.getMouseY(), allPartyButtons);
         });
         partiesToDisplay.forEach((party, index) => {
             let partyBoxY = layoutData.partyBoxY + (layoutData.partyBoxHeight * index)
@@ -321,7 +245,7 @@ function partyFinderRender() {
     pfText.draw().setX(layoutData.titleX).setY(layoutData.titleY).setText("Diana Party Finder")
     onlineUserText.draw().setX(layoutData.onlineUserX).setY(layoutData.onlineUserY).setText(`Online User: ${onlineUsers}`)
     let partyCountX = onlineUserText.width + layoutData.onlineUserX + 10
-    partyCountText.draw().setX(partyCountX).setY(layoutData.partyCountY).setText(`Party Count: ${partyCount}`)
+    partyCountText.draw().setX(partyCountX).setY(layoutData.onlineUserY).setText(`Party Count: ${partyCount}`)
     pageCountText.draw().setX(layoutData.pageCountX).setY(layoutData.pageCountY).setText(`Page ${currentPage}/${pageCount}`)
     drawButtonsMain(layoutData);
 }
