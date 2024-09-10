@@ -22,6 +22,7 @@ let startDisplayHeight = Renderer.screen.getHeight()
 PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
 CreatePartyGUI.registerDraw(createPartyRender);
+PartyInfoGUI.registerDraw(partyInfoRender);
 HdwiGUI.registerDraw(hdwiRender);
 
 function getPartyFinderData(refresh = false) {
@@ -66,7 +67,7 @@ function updatePageButtons() {
         let joinX = layoutData.hdwiX
         let joinY = partyBoxY + (layoutData.partyBoxHeight / 4);  
         let partyInfoButton = new Button(layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, "", false, true, true, color(255,255,255,255), "partyInfo", false).onClick(() => {
-            ChatLib.chat(`Leader: ${party.leaderName}`)
+            openPartyInfo(party)
         }); 
         let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, color(0,255,0,255), "join").onClick(() => {
             ChatLib.chat(`Joining party led by ${party.leaderName}`);
@@ -77,6 +78,12 @@ function updatePageButtons() {
         allPartyButtons.push(joinButton);
         allPartyButtons.push(partyInfoButton);
     });
+}
+
+let currentPartyInfo
+function openPartyInfo(party) {
+    PartyInfoGUI.open()
+    currentPartyInfo = party
 }
  
 PartyFinderGUI.registerOpened(() => {
@@ -91,6 +98,9 @@ CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
 });
 HdwiGUI.registerClicked((mouseX, mouseY, button) => {
+    if (backButton.isClicked(mouseX, mouseY, button)) return;
+});
+PartyInfoGUI.registerClicked((mouseX, mouseY, button) => {
     if (backButton.isClicked(mouseX, mouseY, button)) return;
 });
 
@@ -147,6 +157,13 @@ function drawButtonsCreate(layoutData) {
     }).draw(mouseX, mouseY)
 }
 function drawButtonsHdwi(layoutData) {
+    const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
+    backButton.customize({
+        x: layoutData.createPartyX, y: layoutData.createPartyY,
+        width: layoutData.createPartyWidth, height: layoutData.buttonHeight1
+    }).draw(mouseX, mouseY)
+}
+function drawButtonsPartyInfo(layoutData) {
     const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
     backButton.customize({
         x: layoutData.createPartyX, y: layoutData.createPartyY,
@@ -264,9 +281,33 @@ function hdwiRender() {
     drawButtonsHdwi(layoutData);
 }
 
+function partyInfoRender() {
+    let layoutData = getLayoutData()
+    rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
+    outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
+    Renderer.drawString(`Leader: ${currentPartyInfo.leaderName}`, layoutData.partyBoxX + 5, layoutData.partyBoxY + (layoutData.partyBoxHeight / 5.5));
+    drawButtonsPartyInfo(layoutData)
+}
+
 function partyFinderClose() {
     currentPage = 1
 }
+
+PartyInfoGUI.registerKeyTyped((char, keyCode) => {
+    if (keyCode === Keyboard.KEY_ESCAPE) {
+        PartyFinderGUI.open()
+    }
+});
+CreatePartyGUI.registerKeyTyped((char, keyCode) => {
+    if (keyCode === Keyboard.KEY_ESCAPE) {
+        PartyFinderGUI.open()
+    }
+});
+HdwiGUI.registerKeyTyped((char, keyCode) => {
+    if (keyCode === Keyboard.KEY_ESCAPE) {
+        PartyFinderGUI.open()
+    }
+});
 
 register("command", () => {
     currentPage = 1
