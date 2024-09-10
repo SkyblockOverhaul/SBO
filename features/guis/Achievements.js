@@ -109,7 +109,7 @@ function drawTitleAndSubtitle(startY, startX) {
 function drawFilterDropdown(filterButtonWidth, filterButtonHeight, filterY, filterTextY, filterTextX, filterX) {
     Renderer.drawRect(Renderer.color(0, 0, 0, 150), filterX, filterY, filterButtonWidth, filterButtonHeight);
     Renderer.drawString("Filter: " + filterType.charAt(0).toUpperCase() + filterType.slice(1), filterTextX, filterTextY);
-    drawRectangleOutline(filterX, filterY, filterButtonWidth, filterButtonHeight, Renderer.color(255, 255, 255, 255), 1);
+    drawRectangleOutline(Renderer.color(255, 255, 255, 255), filterX, filterY, filterButtonWidth, filterButtonHeight, 1);
 }
 
 function getFilteredAchievements() {
@@ -157,12 +157,8 @@ function achievementRender() {
 
         let borderColor = achievement.isUnlocked() ? Renderer.color(0, 255, 0, 255) : Renderer.color(255, 0, 0, 255);
         let thickness = 1;
-        
-        Renderer.drawLine(borderColor, x, y, x + boxWidth, y, thickness);
-        Renderer.drawLine(borderColor, x, y, x, y + boxHeight, thickness);
-        Renderer.drawLine(borderColor, x + boxWidth, y, x + boxWidth, y + boxHeight, thickness);
-        Renderer.drawLine(borderColor, x, y + boxHeight, x + boxWidth, y + boxHeight, thickness);
 
+        drawRectangleOutline(borderColor, x, y, boxWidth, boxHeight, thickness);
         Renderer.drawString(`${achievement.getDisplayName()}`, x + 5, y + 5);
         Renderer.drawString(`&7${achievement.getDescription()}`, x + 5, y + 15);
         Renderer.drawString(`${achievement.color}${achievement.rarity}`, x + 5, y + boxHeight - 10);
@@ -170,11 +166,11 @@ function achievementRender() {
 
     Renderer.drawRect(Renderer.color(0, 0, 0, 150), startX, buttonYPos, buttonWidth, buttonHeight);
     Renderer.drawString("<-", startX + 10, buttonTextY + 2);
-    drawRectangleOutline(startX, buttonYPos, buttonWidth, buttonHeight, Renderer.color(255, 255, 255, 255), 1);
+    drawRectangleOutline(Renderer.color(255, 255, 255, 255), startX, buttonYPos, buttonWidth, buttonHeight, 1);
     
     Renderer.drawRect(Renderer.color(0, 0, 0, 150), startX + totalWidth - buttonWidth, buttonYPos, buttonWidth, buttonHeight);
     Renderer.drawString("->", startX + totalWidth - buttonWidth + 10, buttonTextY + 2);
-    drawRectangleOutline(startX + totalWidth - buttonWidth, buttonYPos, buttonWidth, buttonHeight, Renderer.color(255, 255, 255, 255), 1);
+    drawRectangleOutline(Renderer.color(255, 255, 255, 255), startX + totalWidth - buttonWidth, buttonYPos, buttonWidth, buttonHeight, 1);
 
     Renderer.drawString(`Page ${currentPage + 1} of ${Math.ceil(achievementsToDisplay.length / achievementsPerPage)}`, startX, startY + totalHeight + 7);
 }

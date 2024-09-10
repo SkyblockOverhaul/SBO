@@ -548,22 +548,27 @@ function updateItemValues() {
 }
 
 let activeUsers = undefined
-function getActiveUsers() {
+export function getActiveUsers(useCallback = false, callback = null) {
     request({
         url: "https://api.skyblockoverhaul.com/activeUsers",
         json: true
-    }).then((response)=>{
+    }).then((response) => {
         activeUsers = response.activeUsers;
-        if (activeUsers == undefined) {
+
+        if (activeUsers === undefined) {
             print("active users undefined");
             activeUsers = 0;
         }
-        ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
-    }).catch((error)=>{
+
+        if (useCallback && callback) {
+            callback(activeUsers);
+        } else {
+            ChatLib.chat("&6[SBO] &aActive user: &e" + activeUsers);
+        }
+    }).catch((error) => {
         console.error("An error occurred: " + error);
     });
 }
-
 
 register("command", () => {
     getActiveUsers();
@@ -784,6 +789,7 @@ export function getNumberColor(number, range) {
 
 export function getGriffinItemColor(item) {
     if (item != 0) {
+        if (!item) return "";
         let name = item.replace("PET_ITEM_", "");
         name = toTitleCase(name.replaceAll("_", " "));
         switch (name) {
@@ -834,9 +840,345 @@ export function matchLvlToColor(lvl) {
     }
 }
 
-export function drawRectangleOutline(x, y, width, height, color, thickness) {
-    Renderer.drawLine(color, x, y, x + width, y, thickness);
-    Renderer.drawLine(color, x, y, x, y + height, thickness);
-    Renderer.drawLine(color, x, y + height, x + width, y + height, thickness);
-    Renderer.drawLine(color, x + width, y, x + width, y + height, thickness);
+// gui functions/classes
+export function drawRectangleOutline(color, x, y, width, height, thickness) {
+    Renderer.drawLine(color, x , y, x + width, y, thickness); // Top Line
+    Renderer.drawLine(color, x, y, x, y + height, thickness); // Left Line
+    Renderer.drawLine(color, x , y + height, x + width, y + height, thickness); // Bottom Line
+    Renderer.drawLine(color, x + width, y, x + width, y + height, thickness); // Right Line
+}
+
+export function roundRect(color, x, y, width, height, radius) {
+    radius = Math.min(radius, width / 2, height / 2);
+
+    rect(color, x + radius, y + radius, width - 2 * radius, height - 2 * radius);
+
+    rect(color, x + radius, y, width - 2 * radius, radius); // Top rectangle
+    rect(color, x + radius, y + height - radius, width - 2 * radius, radius); // Bottom rectangle
+    rect(color, x, y + radius, radius, height - 2 * radius); // Left rectangle
+    rect(color, x + width - radius, y + radius, radius, height - 2 * radius); // Right rectangle
+
+    Renderer.drawCircle(color, x + radius, y + radius, radius, 100, 5); // Top-left corner
+    Renderer.drawCircle(color, x + width - radius, y + radius, radius, 100, 5); // Top-right corner
+    Renderer.drawCircle(color, x + width - radius, y + height - radius, radius, 100, 5); // Bottom-right corner
+    Renderer.drawCircle(color, x + radius, y + height - radius, radius, 100, 5); // Bottom-left corner
+}
+
+export function rect(color, x, y, width, height) {
+    Renderer.drawRect(color, x, y, width, height);
+}
+
+export function color(r, g, b, a) {
+    return Renderer.color(r, g, b, a)
+}
+
+export function line(color, x1, y1, x2, y2, thickness) {
+    Renderer.drawLine(color, x1, y1, x2, y2, thickness)
+}
+
+export class TextClass {
+    constructor(color, x, y, string, scale, shadow) {
+        this.object = new Text(string);
+        this.color = color;
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.shadow = shadow;
+        this.checked = false;
+        this.width = undefined;
+        this.height = undefined;
+    }
+
+    draw() {
+        let guiScale = Client.settings.video.getGuiScale();
+        let compensation;
+        if (guiScale === 1) {
+            compensation = 1.9;
+        } else if (guiScale === 3) {
+            compensation = 0.66;
+        } else {
+            const targetScale = 2.0;
+            compensation = guiScale / targetScale;
+        }
+        let scale = this.scale * compensation;
+        this.object.setColor(this.color);
+        this.object.setScale(scale);
+        this.object.setShadow(this.shadow);
+        this.object.setX(this.x).setY(this.y);
+        this.object.draw();
+        this.width = this.object.getWidth();
+        this.height = this.object.getHeight();
+        return this;
+    }
+
+    setX(x) {
+        this.x = x;
+        return this;
+    }
+
+    setY(y) {
+        this.y = y;
+        return this;
+    }
+
+    setText(text) {
+        this.object.setString(text);
+        return this;
+    }
+
+    setColor(color) {
+        this.color = color;
+        return this;
+    }
+
+    setScale(scale) {
+        this.scale = scale;
+        return this;
+    }
+
+    setShadow(shadow) {
+        this.shadow = shadow;
+        return this;
+    }
+}
+
+export class Button {
+    constructor(x, y, width, height, text, rightClick, outlined, background, Color, hoverPriority = "", updateScaling = true) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.text = text;
+        this.rightClick = rightClick;
+        this.outlined = outlined;
+        this.background = background;
+        this.color = Color;
+        this.hoverPriority = hoverPriority;
+        this.updateScaling = updateScaling
+        this.isHovering = false;
+        this.lastScale = undefined;
+        this.originalWidth = width;
+        this.originalHeight = height;
+        this.lastScreenSize = undefined;
+        this.action = undefined;
+
+        this.textWidth = undefined;
+        this.textColor = Color;
+        this.textScale = 1;
+        this.textX = this.x + (this.width - this.textWidth) / 2;
+        this.textY = (this.y + this.height / 2) - 4;
+        this.bgColor = color(0, 0, 0, 150);
+        this.outlineColor = Color;
+        this.textObject = new TextClass(this.textColor, 0, 0, "", this.textScale, false);
+    }
+
+    onClick(action) {
+        this.action = action;
+        return this;
+    }
+
+    isClicked(mouseX, mouseY, button) {
+        if (mouseX >= this.x && mouseX <= this.x + this.width && 
+            mouseY >= this.y && mouseY <= this.y + this.height) {
+            if (button == 0 || (button == 1 && this.rightClick)) {
+                this.action();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isHovered(mouseX, mouseY) {
+        return (
+            mouseX >= this.x && 
+            mouseX <= this.x + this.width && 
+            mouseY >= this.y && 
+            mouseY <= this.y + this.height
+        );
+    }
+
+    updateDimensions() {
+        let guiScale = Client.settings.video.getGuiScale();
+        let displayX = Renderer.screen.getWidth();
+        let displayY = Renderer.screen.getHeight();
+        if (this.lastScreenSize !== displayX + displayY) {
+            this.lastScale = undefined;
+            this.lastScreenSize = displayX + displayY;
+        }
+        if (this.lastScale !== guiScale) {
+            if (guiScale == 1) {
+                this.width = this.originalWidth * 2;
+                this.height = this.originalHeight * 2;
+                this.textX = this.x + (this.width / 2) * 0.05;
+                this.textY = this.y + (this.height / 2) * 0.35;
+            }
+            else if (guiScale == 3) {
+                this.width = this.originalWidth * 0.66;
+                this.height = this.originalHeight * 0.66;
+                this.textX = this.x + (this.width - this.textWidth) / 2;
+                this.textY = this.y + (this.height / 2);
+            }
+            else {
+                this.width = this.originalWidth;
+                this.height = this.originalHeight;
+            }
+            this.lastScale = guiScale;
+        }
+        return this;
+    }
+
+    updateTextDimensions(width, height) {
+        this.textX = this.x + (this.width - width) / 2
+        this.textY = this.y + (this.height - height) / 2;
+        return this;
+    }
+
+    draw(mouseX, mouseY, buttons = []) {
+        if (this.updateScaling)
+            this.updateDimensions();
+    
+        let isAnyJoinHovered = buttons.some(button => button.isHovered(mouseX, mouseY) && button.hoverPriority === "join");
+        if (this.hoverPriority === "join") {
+            this.isHovering = this.isHovered(mouseX, mouseY);
+        } else if (this.hoverPriority === "partyInfo" && !isAnyJoinHovered) {
+            this.isHovering = this.isHovered(mouseX, mouseY);
+        } else if (this.hoverPriority === "") {
+            this.isHovering = this.isHovered(mouseX, mouseY);
+        }
+        else {
+            this.isHovering = false;
+        }
+        let bgColor = this.isHovering ? color(255, 255, 255, 150) : this.bgColor;
+        if (!this.background) bgColor = this.isHovering ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
+        rect(bgColor, this.x, this.y, this.width, this.height);
+        if (this.outlined)     
+            drawRectangleOutline(this.outlineColor, this.x, this.y, this.width, this.height, 1);
+        this.textObject.draw().setText(this.text);
+        this.updateTextDimensions(this.textObject.width, this.textObject.height);
+        this.textObject.setX(this.textX).setY(this.textY)
+        return this;
+    }
+
+    customize(options) {
+        if (options.textColor) this.textColor = options.textColor;
+        if (options.textScale) this.textScale = options.textScale;
+        if (options.bgColor) this.bgColor = options.bgColor;
+        if (options.outlineColor) this.outlineColor = options.outlineColor;
+        if (options.text) this.text = options.text;
+        if (options.width) {
+            this.width = options.width;
+            this.originalWidth = options.width;
+        }
+        if (options.height) {
+            this.height = options.height;
+            this.originalHeight = options.height;
+        }
+        if (options.x) this.x = options.x;
+        if (options.y) this.y = options.y;
+        if (this.hoverPriority !== "partyInfo")
+            this.updateDimensions();
+        if (options.textX) this.textX = this.textX * options.textX;
+        if (options.textY) this.textY = this.textY * options.textY;
+        return this;
+    }
+}
+
+
+export function getLayoutDataPartyFinder() {
+    let displayX = Renderer.screen.getWidth()
+    let displayY = Renderer.screen.getHeight()
+
+    let pfWindowWidth = displayX * 0.6
+    let pfWindowHeight = displayY * 0.8
+    let pfWindowX = (displayX - pfWindowWidth) / 2
+    let pfWindowY = (displayY - pfWindowHeight) / 2
+
+    let pfListWidth = pfWindowWidth
+    let pfListHeight = pfWindowHeight * 0.85
+    let pfListX = pfWindowX + (pfWindowWidth - pfListWidth) / 2
+    let pfListY = pfWindowY + (pfWindowHeight - pfListHeight) / 2
+
+    let titleX = pfWindowX * 1.05
+    let titleY = pfWindowY * 1.1
+
+    let onlineUserX = titleX
+    let onlineUserY = pfWindowY * 1.4
+    let partyCountX = pfWindowX + pfWindowWidth
+
+    let pageCountX = (pfWindowX + pfWindowWidth) * 0.6
+    let pageCountY = (pfWindowY + pfWindowHeight) * 0.95
+
+    let hdwiX = (pfWindowX + pfWindowWidth) * 0.869
+    let hdwiY = pfWindowY * 1.1
+    let hdwiWidth = displayX * 0.095
+
+    let refreshX = (pfWindowX + pfWindowWidth) * 0.77
+    let refreshWidth = displayX * 0.07
+
+    let pageBackX = (pfWindowY + pfWindowWidth) * 0.334
+    let pageBackWidth = displayX * 0.05
+
+    let pageNextX = (pfWindowY + pfWindowWidth) * 0.43
+    let pageNextWidth = displayX * 0.05
+
+    let createPartyX = (pfWindowX + pfWindowWidth) * 0.869
+    let createPartyY = (pfWindowY + pfWindowHeight) * 0.945
+    let createPartyWidth = displayX * 0.095
+
+    let deQueueX = (pfWindowX + pfWindowWidth) * 0.77
+    let deQueueWidth = displayX * 0.07
+
+    let joinPartyWidth = displayX * 0.095
+
+    let partyBoxWidth = pfListWidth
+    let partyBoxHeight = pfListHeight / 6
+    let partyBoxX = pfListX
+    let partyBoxY = pfListY
+
+    let buttonHeight1 = displayY * 0.04
+    let buttonHeight2 = displayY * 0.05
+
+    return {
+        displayX, displayY,
+        pfWindowWidth, pfWindowHeight, pfWindowX, pfWindowY,
+        pfListWidth, pfListHeight, pfListX, pfListY,
+        titleX, titleY,
+        onlineUserX, onlineUserY, partyCountX,
+        pageCountX, pageCountY,
+        hdwiX, hdwiY, hdwiWidth,
+        refreshX, refreshWidth,
+        createPartyX, createPartyY, createPartyWidth,
+        pageBackX, pageBackWidth,
+        pageNextX, pageNextWidth,
+        deQueueX, deQueueWidth,
+        joinPartyWidth,
+        partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
+        buttonHeight1, buttonHeight2
+    }
+}
+
+let dianaStats = undefined;
+export function getDianaStats() {
+    if (dianaStats == undefined) {
+        loadDianaStats(true, (stats) => {
+            return stats;
+        });
+    }
+    else {
+        return dianaStats;
+    }
+}
+
+function loadDianaStats(useCallback = false, callback = null) {
+    request({
+        url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
+        json: true
+    }).then((response) => {
+        dianaStats = response[0];
+        if (useCallback && callback) {
+            callback(dianaStats);
+        } 
+    }).catch((error) => {
+        console.error("An error occurred: " + error);
+    });
 }

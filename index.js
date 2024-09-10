@@ -19,6 +19,7 @@ import "./features/general/CrownTracker";
 import "./features/Diana/DianaAchievements";
 import "./features/guis/Achievements";
 import "./features/guis/PastDianaEvents";
+import "./features/guis/PartyFinderGUI";
 import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
@@ -59,7 +60,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.3.9" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.0" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return

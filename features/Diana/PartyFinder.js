@@ -189,3 +189,212 @@ register("chat", (player) => {
         new TextComponent("&6[SBO] &eClick to check player").setClick("run_command", "/sbocheck " + player).setHover("show_text", "/sbocheck " + player).chat();
     }, 50);
 }).setCriteria("&dFrom ${player}&r&7: &r&d&lBoop!&r");
+
+let creatingParty = false;
+let updateBool = false;
+let createPartyTimeStamp = 0;
+export function createParty() {
+    print("Creating Party");
+    creatingParty = true;
+    sendPartyRequest();
+    createPartyTimeStamp = Date.now();
+}
+// "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+let inQueue = false;
+let partyList = [];
+export function getAllParties(useCallback = false, callback = null) { 
+    request({
+        url: api + "/getAllParties",
+        json: true
+    }).then((response)=> {
+        partyList = response.Parties;
+        if (partyList.length == 0) {
+            ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
+        }
+        if (useCallback && callback) {
+            callback(partyList);
+        }
+    }).catch((error)=> {
+        if (error.detail) {
+            ChatLib.chat("&6[SBO] &4Error2: " + error.detail);
+        } else {
+            console.error(JSON.stringify(error));
+            ChatLib.chat("&6[SBO] &4Unexpected error occurred while getting all parties");
+        }
+        return [];
+    });
+}
+
+function sendJoinRequest(partyLeader) {
+    let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
+    ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
+}
+
+function removePartyFromQueue() {
+    if (inQueue) {
+        request({
+            url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),
+            json: true
+        }).then((response)=> {
+            inQueue = false;
+            ChatLib.chat("&6[SBO] &eYou have been removed from the queue");
+        }).catch((error)=> {
+            if (error.detail) {
+                ChatLib.chat("&6[SBO] &4Error3: " + error.detail);
+            } else {
+                console.error(JSON.stringify(error));
+                ChatLib.chat("&6[SBO] &4Unexpected error occurred while removing party from queue");
+            }
+        });
+    }
+}
+
+function updatePartyInQueue() {
+    if (inQueue) {
+        updateBool = true;
+    }
+}
+
+let lastUpdated = 0;
+register("step", () => {
+    if (inQueue) {
+        // 4 minutes
+        if (Date.now() - lastUpdated > 240000) {
+            lastUpdated = Date.now();
+            request({
+                url: api + "/queueUpdate?leaderId=" + Player.getUUID().replaceAll("-", ""),
+                json: true
+            }).catch((error)=> {
+                inQueue = false;
+                if (error.detail) {
+                    ChatLib.chat("&6[SBO] &4Error4: " + error.detail);
+                } else {
+                    console.error(JSON.stringify(error));
+                    ChatLib.chat("&6[SBO] &4Unexpected error occurred while updating queue");
+                }
+            });
+        }
+    }
+}).setFps(1);
+
+partyDisbanded = [ 
+    /^.+ &r&ehas disbanded the party!&r$/,
+    /^&cThe party was disbanded because all invites expired and the party was empty.&r$/,
+    /^&eYou left the party.&r$/,
+    /^You are not currently in a party\.$/,
+    /^You have been kicked from the party by .+$/
+]
+leaderMessages = [
+    /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
+    /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
+]
+memberJoined = [
+    /^(.+) &r&ejoined the party.&r$/,
+    /^(.+) &r&einvited &r.+ &r&eto the party! They have &r&c60 &r&eseconds to accept.&r$/,
+    /^&eYou have joined &r(.+)'[s]? &r&eparty!&r$/,
+    /^&dParty Finder &r&f> &r(.+) &r&ejoined the dungeon group! \(&r&b.+&r&e\)&r$/
+]
+memberLeft = [
+    /^(.+) &r&ehas been removed from the party.&r$/,
+    /^(.+) &r&ehas left the party.&r$/,
+    /^(.+) was removed from your party because they disconnected.$/,
+    /^Kicked (.+) because they were offline.$/
+]
+register("chat", (event) => {
+    if (inQueue) {
+        let formatted = ChatLib.getChatMessage(event, true)
+        leaderMessages.forEach(regex => {
+            let match = formatted.match(regex)
+            if (match) removePartyFromQueue()
+        })
+        partyDisbanded.forEach(regex => {
+            let match = formatted.match(regex)
+            if (match) removePartyFromQueue()
+        })
+        memberJoined.forEach(regex => {
+            let match = formatted.match(regex)
+            if (match) updatePartyInQueue()
+        })
+        memberLeft.forEach(regex => {
+            let match = formatted.match(regex)
+            if (match) updatePartyInQueue()
+        })
+    }
+})
+
+register("chat", (player, id, event) => {
+    cancel(event);
+    if (inQueue) {
+        // join request message
+        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+        new Message(
+            new TextComponent(`&6[SBO] &b${player} &ewants to join your party.\n`),
+            new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite " + player).setHover("show_text", "&a/p invite " + player),
+            new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck " + player).setHover("show_text", "&eCheck " + player)
+        ).chat();
+        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+    }
+}).setCriteria("&dFrom ${player}&r&7: &r&7[SBO] join party request - ${id}");
+
+register("gameUnload", () => {
+    if (inQueue) {
+        removePartyFromQueue();
+    }
+})
+
+register("serverDisconnect", () => {
+    if (inQueue) {
+        removePartyFromQueue();
+    }
+})
+
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    let party = [];
+    Object.keys(partyInfo).forEach(key => {
+        if (partyInfo[key] == "LEADER") {
+            party.unshift(key);
+        } else {
+            party.push(key);
+        }
+    })
+    if (party.length == 0) party.push(Player.getUUID());
+
+    if (creatingParty) {
+        creatingParty = false;
+        if (party[0] != Player.getUUID() && party.length > 1) {
+            ChatLib.chat("&6[SBO] &eYou are not the party leader. Only party leader can queue with the party.");
+            return;
+        }
+        request({
+            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+            json: true
+        }).then((response)=> {
+            let timeTaken = Date.now() - createPartyTimeStamp;
+            ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
+            inQueue = true; 
+        }).catch((error)=> {
+            if (error.detail) {
+                ChatLib.chat("&6[SBO] &4Error1: " + error.detail);
+            } else {
+                console.error(JSON.stringify(error));
+                ChatLib.chat("&6[SBO] &4Unexpected error occurred while creating party");
+            }
+        });
+    }
+    if (updateBool) {
+        updateBool = false;
+        request({
+            url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", ""),
+            json: true
+        }).catch((error)=> {
+            inQueue = false;
+            if (error.detail) {
+                ChatLib.chat("&6[SBO] &4Error4: " + error.detail);
+            } else {
+                console.error(JSON.stringify(error));
+                ChatLib.chat("&6[SBO] &4Unexpected error occurred while updating queue");
+            }
+        });
+    }
+})

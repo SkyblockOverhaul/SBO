@@ -190,7 +190,7 @@ function pastDianaEventsRender() {
         Renderer.drawStringWithShadow(`&aItems`, startX + 10, boxY + 8);
     }
     Renderer.drawLine(lineColor, startX, boxY + 23, startX + boxWidth, boxY + 23, 1);
-    drawRectangleOutline(startX, boxY, boxWidth, boxHeight, lineColor, 1);
+    drawRectangleOutline(lineColor, startX, boxY, boxWidth, boxHeight, 1);
     let itemYPos = boxY + 30;
     drawItems(event, startX, itemYPos);
     
@@ -207,7 +207,7 @@ function pastDianaEventsRender() {
         Renderer.drawStringWithShadow(`&aMobs`, mobsX + 10, boxY + 8);
     }
     Renderer.drawLine(lineColor, mobsX, boxY + 23, mobsX + boxWidth, boxY + 23, 1);
-    drawRectangleOutline(mobsX, boxY, boxWidth, boxHeight, lineColor, 1);
+    drawRectangleOutline(lineColor, mobsX, boxY, boxWidth, boxHeight, 1);
     let mobYPos = boxY + 30;
     drawMobs(event, mobsX, mobYPos);
 
@@ -218,7 +218,7 @@ function pastDianaEventsRender() {
     Renderer.scale(scale, scale);
     Renderer.drawString("<-", adjustedX, adjustedY);
     Renderer.scale(1, 1);
-    drawRectangleOutline(prevButtonX, boxY, buttonWidth, buttonHeight, lineColor, 1);
+    drawRectangleOutline(lineColor, prevButtonX, boxY, buttonWidth, buttonHeight, 1);
     
     let nextButtonX = startX + totalWidth + buttonSpacing;
     adjustedX = (nextButtonX + 10) / scale;
@@ -226,16 +226,16 @@ function pastDianaEventsRender() {
     Renderer.scale(scale, scale);
     Renderer.drawString("->", adjustedX, adjustedY);
     Renderer.scale(1, 1);
-    drawRectangleOutline(nextButtonX, boxY, buttonWidth, buttonHeight, lineColor, 1);
+    drawRectangleOutline(lineColor, nextButtonX, boxY, buttonWidth, buttonHeight, 1);
 
 
     if (guiScale === 1) {
         Renderer.drawRect(Renderer.color(0, 0, 0, 150), startX, titleY + boxHeight + 7, buttonWidth + 73, buttonHeight);
-        drawRectangleOutline(startX, titleY + boxHeight + 7, buttonWidth + 73, buttonHeight, Renderer.color(255, 0, 0, 255), 1);
+        drawRectangleOutline(Renderer.color(255, 0, 0, 255), startX, titleY + boxHeight + 7, buttonWidth + 73, buttonHeight, 1);
     }
     else {
         Renderer.drawRect(Renderer.color(0, 0, 0, 150), startX, titleY + boxHeight + 7, buttonWidth + 43, buttonHeight);
-        drawRectangleOutline(startX, titleY + boxHeight + 7, buttonWidth + 43, buttonHeight, Renderer.color(255, 0, 0, 255), 1);
+        drawRectangleOutline(Renderer.color(255, 0, 0, 255), startX, titleY + boxHeight + 7, buttonWidth + 43, buttonHeight, 1);
     }
     adjustedX = (startX + 5) / scale;
     adjustedY = (titleY + boxHeight + 13) / scale;
@@ -440,17 +440,17 @@ function confirmDeleteRender() {
     let centerY = (displayY - boxHeight) / 2;
 
     Renderer.drawRect(boxColor, centerX, centerY, boxWidth, boxHeight);
-    drawRectangleOutline(centerX, centerY, boxWidth, boxHeight, textColor, 1);
+    drawRectangleOutline(textColor, centerX, centerY, boxWidth, boxHeight, 1);
 
     Renderer.drawStringWithShadow("Do you want to delete event " + deleteYear + "?", centerX + 10, centerY + 10);
     
     Renderer.drawRect(buttonColor, centerX + 20, centerY + 60, buttonWidth, buttonHeight);
     Renderer.drawString("Yes", centerX + 30, centerY + 66);
-    drawRectangleOutline(centerX + 20, centerY + 60, buttonWidth, buttonHeight, textColor, 1);
+    drawRectangleOutline(textColor, centerX + 20, centerY + 60, buttonWidth, buttonHeight, 1);
     
     Renderer.drawRect(buttonColor, centerX + 110, centerY + 60, buttonWidth, buttonHeight);
     Renderer.drawString("No", centerX + 120, centerY + 66);
-    drawRectangleOutline(centerX + 110, centerY + 60, buttonWidth, buttonHeight, textColor, 1);
+    drawRectangleOutline(textColor, centerX + 110, centerY + 60, buttonWidth, buttonHeight, 1);
 }
 
 function deleteEvent() {

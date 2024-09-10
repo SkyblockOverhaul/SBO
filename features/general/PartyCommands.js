@@ -123,7 +123,7 @@ register("chat", (player, message) => {
             break;
         case "!c":
         case "!carrot":
-            if(settings.carrotCommand) {
+            if(settings.PartyCommands && settings.carrotCommand) {
                 setTimeout(() => {
                     ChatLib.command("pc " + carrot[Math.floor(Math.random() * carrot.length)]);
                 },100)
@@ -191,6 +191,15 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 setTimeout(() => {
                     ChatLib.command("pc Sticks: " + dianaTrackerMayor["items"]["Daedalus Stick"] + " (" + calcPercentOne(dianaTrackerMayor, "Daedalus Stick", "Minotaur") + "%)")
+                }, 200)
+            }
+            break
+        case "!feather":
+        case "!feathers":
+            if(!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                setTimeout(() => {
+                    ChatLib.command("pc Feathers: " + dianaTrackerMayor["items"]["Griffin Feather"])
                 }, 200)
             }
             break

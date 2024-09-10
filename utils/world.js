@@ -15,9 +15,11 @@ export function getZone() { return zone }; // Exported function to get the curre
 
 // Function to find the current zone (e.g., Hub, Dungeon, Kuudra)
 export function findZone() {
-    let zoneLine = Scoreboard.getLines().find((line) => line.getName().includes("⏣"));
+    let lines = Scoreboard.getLines();
+    if (!lines) return "None";
+    let zoneLine = lines.find((line) => line && line.getName().includes("⏣"));
     // Rift has a different symbol
-    if (zoneLine === undefined) zoneLine = Scoreboard.getLines().find((line) => line.getName().includes("ф"));
+    if (zoneLine === undefined) zoneLine = lines.find((line) => line.getName().includes("ф"));
     return zoneLine === undefined ? "None" : zoneLine.getName().removeFormatting();
 }
 

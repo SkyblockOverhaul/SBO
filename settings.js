@@ -348,7 +348,7 @@ class Settings {
         subcategory: "Other",
     })
     resetCustomChimMessage() {
-        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&l{drop}! &b{mf} &b#{amount}";
+        this.customChimMessage = "&6[SBO] &6&lRARE DROP! &d&lChimera! &b{mf} &b#{amount}}";
     }
 
     // Loot Announcer
@@ -939,7 +939,7 @@ class Settings {
     itsAlwaysDiana = false;
     @SwitchProperty({
         name: 'Always in Skyblock',
-        description: 'you are always in skblock, just for trolls and debug',
+        description: 'you are always in skyblock, just for trolls and debug',
         category: 'Debug',
     })
     alwaysInSkyblock = false;
