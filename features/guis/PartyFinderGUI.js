@@ -309,7 +309,7 @@ HdwiGUI.registerKeyTyped((char, keyCode) => {
     }
 });
 
-// register("command", () => {
-//     currentPage = 1
-//     PartyFinderGUI.open()
-// }).setName("sbopartyfinder").setAliases("sbopf")
+register("command", () => {
+    currentPage = 1
+    PartyFinderGUI.open()
+}).setName("sbopartyfinder").setAliases("sbopf")
