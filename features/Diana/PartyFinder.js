@@ -253,7 +253,6 @@ function removePartyFromQueue() {
 function updatePartyInQueue() {
     if (inQueue) {
         updateBool = true;
-        // sendPartyRequest();
     }
 }
 
@@ -324,17 +323,6 @@ register("chat", (event) => {
     }
 })
 
-register("command", () => {
-    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
-    // new Message(
-    //     new TextComponent(`&6[SBO] &bD4rkSwift &ewants to join your party.\n`),
-    //     new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite D4rkSwift").setHover("show_text", "&a/p invite D4rkSwift"),
-    //     new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck D4rkSwift").setHover("show_text", "&eCheck D4rkSwift")
-    // ).chat();
-    // ChatLib.chat(ChatLib.getChatBreak("&b-"))
-    sendJoinRequest("RolexDE");
-}).setName("testjoinmessage");
-
 register("chat", (player, id, event) => {
     cancel(event);
     if (inQueue) {
@@ -374,10 +362,6 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
 
     if (creatingParty) {
         creatingParty = false;
-        // if (party.length == 0) {
-        //     ChatLib.chat("&6[SBO] &eNo party members found. try join a party");
-        //     return;
-        // }
         if (party[0] != Player.getUUID() && party.length > 1) {
             ChatLib.chat("&6[SBO] &eYou are not the party leader. Only party leader can queue with the party.");
             return;
