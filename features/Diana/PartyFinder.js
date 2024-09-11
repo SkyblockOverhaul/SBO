@@ -377,7 +377,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             json: true
         }).then((response)=> {
             let timeTaken = Date.now() - createPartyTimeStamp;
-            ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms");
+            ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
             inQueue = true; 
         }).catch((error)=> {
             if (error.detail) {
