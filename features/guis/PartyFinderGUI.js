@@ -254,6 +254,13 @@ const leaderText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
 const membersText = new TextClass(color(255, 255, 255, 255), 0 + 5, 0, ``, 1, false)
 const partyReqs = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
 
+function drawCheckBoxesMain(param = {}) {
+    let layoutData = getLayoutData()
+    emanCheckBox.draw().setText("Eman9")
+    .setX(param.x).setY(layoutData.pfWindowY * 1.15)
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
+}
+
 const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), () => {
     filterPartyList()
 });
@@ -312,9 +319,7 @@ function partyFinderRender() {
     pageCountText.draw().setX(layoutData.pageCountX).setY(layoutData.pageCountY).setText(`Page ${currentPage}/${pageCount}`)
     drawButtonsMain(layoutData);
     let checkBoxX = pfText.width + layoutData.titleX + 20
-    emanCheckBox.draw().setText("Eman9")
-    .setX(checkBoxX).setY(layoutData.pfWindowY * 1.15)
-    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
+    drawCheckBoxesMain({x: checkBoxX})
 }
 
 function createPartyRender() {
