@@ -1083,6 +1083,69 @@ export class Button {
     }
 }
 
+export class CheckBox {
+    constructor(x, y, width, height, text, outlineColor, textColor, action) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.text = text;
+        this.outlineColor = outlineColor;
+        this.textColor = textColor;
+        this.checked = false;
+        this.action = action;
+
+        this.textSize = 1.0;
+        this.textWidth = undefined;
+        this.textHeight = undefined;
+    }
+
+    isClicked(mouseX, mouseY) {
+        if (mouseX >= this.x && mouseX <= this.x + this.textWidth + 5 + this.width &&
+            mouseY >= this.y && mouseY <= this.y + this.height) {
+            this.checked = !this.checked;
+            this.action(this.checked);
+            return true;
+        }
+        return false;
+    }
+
+    draw() {
+        let bgColor = this.checked ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
+        let textObject = new TextClass(this.textColor, this.x, this.y, this.text, this.textSize, false);
+        textObject.draw();
+        this.textWidth = textObject.width;
+        this.textHeight = textObject.height;
+        rect(bgColor, this.x + this.textWidth + 5, this.y, this.width, this.height); 
+        drawRectangleOutline(this.outlineColor, this.x + this.textWidth + 5, this.y, this.width, this.height, 1);
+        return this;
+    }
+
+    setWidth(width) {
+        this.width = width;
+        return this;
+    }
+
+    setHeight(height) {
+        this.height = height;
+        return this;
+    }
+
+    setX(x) {
+        this.x = x;
+        return this;
+    }
+
+    setY(y) {
+        this.y = y;
+        return this;
+    }
+
+    setText(text) {
+        this.text = text;
+        return this;
+    }
+}
 
 export function getLayoutDataPartyFinder() {
     let displayX = Renderer.screen.getWidth()
@@ -1138,6 +1201,9 @@ export function getLayoutDataPartyFinder() {
     let buttonHeight1 = displayY * 0.04
     let buttonHeight2 = displayY * 0.05
 
+    let checkBoxHeight = displayY * 0.011
+    let checkBoxWidth = displayX * 0.007
+
     return {
         displayX, displayY,
         pfWindowWidth, pfWindowHeight, pfWindowX, pfWindowY,
@@ -1153,7 +1219,8 @@ export function getLayoutDataPartyFinder() {
         deQueueX, deQueueWidth,
         joinPartyWidth,
         partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
-        buttonHeight1, buttonHeight2
+        buttonHeight1, buttonHeight2,
+        checkBoxHeight, checkBoxWidth
     }
 }
 

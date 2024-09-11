@@ -1,4 +1,4 @@
-import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData } from "../../utils/functions";
+import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox } from "../../utils/functions";
 import { createParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
@@ -10,6 +10,8 @@ let currentPage = 1
 let pageCount = 0 
 let onlineUsers = 0
 let partyCount = 0
+let originalPartyList = [];
+let checkBoxList = []
 let partyList = []
 let joinButtons = []
 let partyInfoButtons = []
@@ -25,25 +27,43 @@ CreatePartyGUI.registerDraw(createPartyRender);
 PartyInfoGUI.registerDraw(partyInfoRender);
 HdwiGUI.registerDraw(hdwiRender);
 
+const filters = {
+    "Eman9": (party) => party.emanreq >= 9
+};
+
+function filterPartyList() {
+    partyList = [...originalPartyList];
+    checkBoxList.forEach((checkBox) => {
+        if (checkBox.checked) {
+            let filterFunction = filters[checkBox.text];
+            if (filterFunction) {
+                partyList = partyList.filter(filterFunction);
+            }
+        }
+    });
+    updatePageButtons();
+}
+
 function getPartyFinderData(refresh = false) {
     getActiveUsers(true, (userCount) => {
-        onlineUsers = userCount
+        onlineUsers = userCount;
     });
     request({
         url: "https://api.skyblockoverhaul.com/getAllParties",
         json: true
-    }).then((response)=> {
-        partyList = response.Parties;
-        if (partyList.length == 0) {
+    }).then((response) => {
+        originalPartyList = response.Parties;
+        partyList = [...originalPartyList];
+        if (partyList.length === 0) {
             ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
-        }
-        else {
+        } else {
             partyCount = partyList.length;
             pageCount = Math.ceil(partyCount / 6);
-            updatePageButtons()
-            if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.")
+            filterPartyList();
+            updatePageButtons();
+            if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.");
         }
-    }).catch((error)=> {
+    }).catch((error) => {
         if (error.detail) {
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
         } else {
@@ -93,6 +113,7 @@ PartyFinderGUI.registerOpened(() => {
 PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (buttonClicked(mouseX, mouseY, button, buttonsPfwindow)) return;
     if (buttonClickedList(mouseX, mouseY, button, allPartyButtons)) return;
+    if (emanCheckBox.isClicked(mouseX, mouseY)) return;
 });
 CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
@@ -217,7 +238,10 @@ const leaderText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
 const membersText = new TextClass(color(255, 255, 255, 255), 0 + 5, 0, ``, 1, false)
 const partyReqs = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
 
-
+const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), () => {
+    filterPartyList()
+});
+checkBoxList.push(emanCheckBox)
 
 function partyFinderRender() {
     let layoutData = getLayoutData()
@@ -262,9 +286,13 @@ function partyFinderRender() {
     pfText.draw().setX(layoutData.titleX).setY(layoutData.titleY).setText("Diana Party Finder")
     onlineUserText.draw().setX(layoutData.onlineUserX).setY(layoutData.onlineUserY).setText(`Online User: ${onlineUsers}`)
     let partyCountX = onlineUserText.width + layoutData.onlineUserX + 10
-    partyCountText.draw().setX(partyCountX).setY(layoutData.onlineUserY).setText(`Party Count: ${partyCount}`)
+    partyCountText.draw().setX(partyCountX).setY(layoutData.onlineUserY).setText(`Partys: ${partyCount}`)
     pageCountText.draw().setX(layoutData.pageCountX).setY(layoutData.pageCountY).setText(`Page ${currentPage}/${pageCount}`)
     drawButtonsMain(layoutData);
+    let checkBoxX = pfText.width + layoutData.titleX + 20
+    emanCheckBox.draw().setText("Eman9")
+    .setX(checkBoxX).setY(layoutData.pfWindowY * 1.15)
+    .setHeight(7).setWidth(7);
 }
 
 function createPartyRender() {
