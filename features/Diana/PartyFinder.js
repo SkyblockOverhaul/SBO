@@ -231,7 +231,7 @@ function sendJoinRequest(partyLeader) {
     ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
 }
 
-function removePartyFromQueue() {
+export function removePartyFromQueue() {
     if (inQueue) {
         request({
             url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),

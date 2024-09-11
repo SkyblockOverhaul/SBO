@@ -1,5 +1,5 @@
 import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox } from "../../utils/functions";
-import { createParty } from "../Diana/PartyFinder";
+import { createParty, removePartyFromQueue } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
 const PartyFinderGUI = new Gui()
@@ -219,7 +219,8 @@ const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, 
 });
 buttonsPfwindow.push(createPartyButton)
 const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true, color(255,0,0,255)).onClick(() => {
-    ChatLib.chat("Dequeueing")
+    removePartyFromQueue()
+    getPartyFinderData(true)
 });
 buttonsPfwindow.push(deQueueButton)
 const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, color(255,255,255,255)).onClick(() => {
