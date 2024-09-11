@@ -1,5 +1,5 @@
 import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox } from "../../utils/functions";
-import { createParty, removePartyFromQueue } from "../Diana/PartyFinder";
+import { createParty, removePartyFromQueue, getInQueue } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
 const PartyFinderGUI = new Gui()
@@ -62,7 +62,7 @@ function getPartyFinderData(refresh = false) {
             filterPartyList();
             updatePageButtons();
             if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.");
-        }
+        }     
     }).catch((error) => {
         if (error.detail) {
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
@@ -113,7 +113,7 @@ PartyFinderGUI.registerOpened(() => {
 PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (buttonClicked(mouseX, mouseY, button, buttonsPfwindow)) return;
     if (buttonClickedList(mouseX, mouseY, button, allPartyButtons)) return;
-    if (emanCheckBox.isClicked(mouseX, mouseY)) return;
+    if (checkBoxClicked(mouseX, mouseY, button, checkBoxList)) return;
 });
 CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
@@ -137,6 +137,15 @@ function buttonClicked(mouseX, mouseY, Button, buttons) {
 function buttonClickedList(mouseX, mouseY, Button, list) {
     for (let button of list) {
         if (button.isClicked(mouseX, mouseY, Button)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function checkBoxClicked(mouseX, mouseY, button, checkBoxes) {
+    for (let checkBox of checkBoxes) {
+        if (checkBox.isClicked(mouseX, mouseY, button)) {
             return true;
         }
     }
@@ -218,9 +227,15 @@ const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, 
     CreatePartyGUI.open()
 });
 buttonsPfwindow.push(createPartyButton)
+let dequeued
 const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true, color(255,0,0,255)).onClick(() => {
-    removePartyFromQueue()
-    getPartyFinderData(true)
+    if (getInQueue()) {
+        removePartyFromQueue(true, (response) => {
+            dequeued = response
+            if (dequeued)
+                getPartyFinderData()
+        });
+    }
 });
 buttonsPfwindow.push(deQueueButton)
 const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, color(255,255,255,255)).onClick(() => {
@@ -243,6 +258,12 @@ const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), col
     filterPartyList()
 });
 checkBoxList.push(emanCheckBox)
+const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), () => {
+
+});
+const looting5CheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), () => {
+
+});
 
 function partyFinderRender() {
     let layoutData = getLayoutData()
@@ -293,7 +314,7 @@ function partyFinderRender() {
     let checkBoxX = pfText.width + layoutData.titleX + 20
     emanCheckBox.draw().setText("Eman9")
     .setX(checkBoxX).setY(layoutData.pfWindowY * 1.15)
-    .setHeight(7).setWidth(7);
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
 }
 
 function createPartyRender() {

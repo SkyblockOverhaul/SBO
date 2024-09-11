@@ -1098,19 +1098,52 @@ export class CheckBox {
         this.textSize = 1.0;
         this.textWidth = undefined;
         this.textHeight = undefined;
+        this.lastScale = undefined;
+        this.lastScreenSize = undefined;
+        this.originalWidth = width;
+        this.originalHeight = height;
     }
 
-    isClicked(mouseX, mouseY) {
+    isClicked(mouseX, mouseY, button) {
         if (mouseX >= this.x && mouseX <= this.x + this.textWidth + 5 + this.width &&
             mouseY >= this.y && mouseY <= this.y + this.height) {
-            this.checked = !this.checked;
-            this.action(this.checked);
-            return true;
+            if (button == 0) {
+                this.checked = !this.checked;
+                this.action(this.checked);
+                return true;
+            }
         }
         return false;
     }
 
+    updateDimensions() {
+        let guiScale = Client.settings.video.getGuiScale();
+        let displayX = Renderer.screen.getWidth();
+        let displayY = Renderer.screen.getHeight();
+        if (this.lastScreenSize !== displayX + displayY) {
+            this.lastScale = undefined;
+            this.lastScreenSize = displayX + displayY;
+        }
+        if (this.lastScale !== guiScale) {
+            if (guiScale == 1) {
+                this.width = this.originalWidth * 2;
+                this.height = this.originalHeight * 2;
+            }
+            else if (guiScale == 3) {
+                this.width = this.originalWidth * 1;
+                this.height = this.originalHeight * 1;
+            }
+            else {
+                this.width = this.originalWidth;
+                this.height = this.originalHeight;
+            }
+            this.lastScale = guiScale;
+        }
+        return this;
+    }
+
     draw() {
+        this.updateDimensions();
         let bgColor = this.checked ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
         let textObject = new TextClass(this.textColor, this.x, this.y, this.text, this.textSize, false);
         textObject.draw();
@@ -1123,11 +1156,13 @@ export class CheckBox {
 
     setWidth(width) {
         this.width = width;
+        this.originalWidth = width;
         return this;
     }
 
     setHeight(height) {
         this.height = height;
+        this.originalHeight = height;
         return this;
     }
 
@@ -1201,8 +1236,8 @@ export function getLayoutDataPartyFinder() {
     let buttonHeight1 = displayY * 0.04
     let buttonHeight2 = displayY * 0.05
 
-    let checkBoxHeight = displayY * 0.011
-    let checkBoxWidth = displayX * 0.007
+    let checkBoxHeight = displayY * 0.00974
+    let checkBoxWidth = displayX * 0.00548
 
     return {
         displayX, displayY,

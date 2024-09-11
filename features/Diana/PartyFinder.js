@@ -200,6 +200,9 @@ export function createParty() {
     createPartyTimeStamp = Date.now();
 }
 // "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+export function getInQueue() {
+    return inQueue;
+}
 let inQueue = false;
 let partyList = [];
 export function getAllParties(useCallback = false, callback = null) { 
@@ -231,7 +234,7 @@ function sendJoinRequest(partyLeader) {
     ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
 }
 
-export function removePartyFromQueue() {
+export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
         request({
             url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),
@@ -239,6 +242,9 @@ export function removePartyFromQueue() {
         }).then((response)=> {
             inQueue = false;
             ChatLib.chat("&6[SBO] &eYou have been removed from the queue");
+            if (useCallback && callback) {
+                callback(true);
+            }
         }).catch((error)=> {
             if (error.detail) {
                 ChatLib.chat("&6[SBO] &4Error3: " + error.detail);
