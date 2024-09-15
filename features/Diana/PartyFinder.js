@@ -228,7 +228,7 @@ export function getAllParties(useCallback = false, callback = null) {
     });
 }
 
-function sendJoinRequest(partyLeader) {
+export function sendJoinRequest(partyLeader) {
     let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
     ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
@@ -236,11 +236,11 @@ function sendJoinRequest(partyLeader) {
 
 export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
+        inQueue = false;
         request({
             url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),
             json: true
         }).then((response)=> {
-            inQueue = false;
             ChatLib.chat("&6[SBO] &eYou have been removed from the queue");
             if (useCallback && callback) {
                 callback(true);
@@ -256,9 +256,17 @@ export function removePartyFromQueue(useCallback = false, callback = null) {
     }
 }
 
+let requestSend = false;
 function updatePartyInQueue() {
     if (inQueue) {
         updateBool = true;
+        requestSend = false;
+        setTimeout(() => {
+            if (updateBool && !requestSend) { // because skytils sends request to mod api after every party member join/leave
+                requestSend = true;
+                sendPartyRequest();
+            }
+        }, 500);
     }
 }
 
@@ -297,7 +305,6 @@ leaderMessages = [
 ]
 memberJoined = [
     /^(.+) &r&ejoined the party.&r$/,
-    /^(.+) &r&einvited &r.+ &r&eto the party! They have &r&c60 &r&eseconds to accept.&r$/,
     /^&eYou have joined &r(.+)'[s]? &r&eparty!&r$/,
     /^&dParty Finder &r&f> &r(.+) &r&ejoined the dungeon group! \(&r&b.+&r&e\)&r$/
 ]
@@ -388,8 +395,9 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             }
         });
     }
-    if (updateBool) {
+    if (updateBool && inQueue) {
         updateBool = false;
+        ChatLib.chat("&6[SBO] &eUpdating party members in queue...");
         request({
             url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", ""),
             json: true
