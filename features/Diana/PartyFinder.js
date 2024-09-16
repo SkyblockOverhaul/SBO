@@ -348,7 +348,6 @@ register("chat", (toFrom, player, id, event) => {
         ).chat();
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
     }
-    if (toFrom == "To") cancel(event);
 }).setCriteria("&d${toFrom} ${player}&r&7: &r&7[SBO] join party request - ${id}");
 
 register("gameUnload", () => {
