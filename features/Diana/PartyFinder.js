@@ -336,9 +336,9 @@ register("chat", (event) => {
     }
 })
 
-register("chat", (player, id, event) => {
+register("chat", (toFrom, player, id, event) => {
     cancel(event);
-    if (inQueue) {
+    if (inQueue && toFrom == "From") {
         // join request message
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
         new Message(
@@ -348,7 +348,8 @@ register("chat", (player, id, event) => {
         ).chat();
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
     }
-}).setCriteria("&dFrom ${player}&r&7: &r&7[SBO] join party request - ${id}");
+    if (toFrom == "To") cancel(event);
+}).setCriteria("&d${toFrom} ${player}&r&7: &r&7[SBO] join party request - ${id}");
 
 register("gameUnload", () => {
     if (inQueue) {
