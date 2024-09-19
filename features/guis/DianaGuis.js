@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { registerWhen, data, dianaTimerlist} from "../../utils/variables";
+import { registerWhen, data, dianaTimerlist, pastDianaEvents} from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, 
     getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit, setBurrowsPerHour 
 } from "../../utils/functions";
@@ -98,6 +98,7 @@ export function statsOverlay() {
     let message = `${YELLOW}${BOLD}Diana Stats Tracker
 ${GRAY}- ${LIGHT_PURPLE}Mobs since Inq: ${AQUA}${data.mobsSinceInq}
 ${GRAY}- ${LIGHT_PURPLE}Inqs since Chimera: ${AQUA}${data.inqsSinceChim}
+${GRAY}- ${LIGHT_PURPLE}Inqs since Chimera &7[&bLS&7]: ${AQUA}${data.inqsSinceLsChim}
 ${GRAY}- ${GOLD}Minos since Stick: ${AQUA}${formatNumberCommas(data.minotaursSinceStick)}
 ${GRAY}- ${DARK_PURPLE}Champs since Relic: ${AQUA}${formatNumberCommas(data.champsSinceRelic)}`
     dianaStatsOverlay.setLines([dianaStatsText.setText(message)]);
@@ -195,6 +196,7 @@ register("tick", () => {
     }
 });
 
+let totalEventsLine = new OverlayTextLine("", true);
 export function itemOverlay() {
     lootMessageLines = [];
     let viewSetting = settings.dianaLootTrackerView;    
@@ -231,7 +233,10 @@ export function itemOverlay() {
         resetSessionButton.setText(`&cReset Session`);
     })
     if (viewSetting == 3) lootMessageLines.push(resetSessionButton);
-
+    if (viewSetting == 1) {
+        totalEventsLine.setText(`${YELLOW}Total Events: ${AQUA}${pastDianaEvents.events.length}`);
+        lootMessageLines.push(totalEventsLine);
+    }
     overlayLootTracker.setLines(lootMessageLines);
 }
 // .quick_status.buyPrice -> selloffer / instabuy

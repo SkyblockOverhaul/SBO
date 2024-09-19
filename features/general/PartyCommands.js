@@ -258,7 +258,7 @@ register("chat", (player, message) => {
                     case "bookls":
                     case "lootsharechim":
                         setTimeout(() => {
-                            ChatLib.command("pc Inqs since lootshare chim: " + data.inqsSinceChimLs)
+                            ChatLib.command("pc Inqs since lootshare chim: " + data.inqsSinceLsChim)
                         }, 200)
                         break
                 }
