@@ -1,5 +1,5 @@
 import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox } from "../../utils/functions";
-import { createParty, removePartyFromQueue, getInQueue } from "../Diana/PartyFinder";
+import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
 const PartyFinderGUI = new Gui()
@@ -92,6 +92,7 @@ function updatePageButtons() {
         let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, color(0,255,0,255), "join").onClick(() => {
             ChatLib.chat(`Joining party led by ${party.leaderName}`);
             print("Joining party led by " + party.leaderName)
+            sendJoinRequest(party.leaderName)
         }).updateDimensions();
         joinButtons.push(joinButton);
         partyInfoButtons.push(partyInfoButton);
