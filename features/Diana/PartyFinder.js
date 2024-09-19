@@ -236,11 +236,11 @@ export function sendJoinRequest(partyLeader) {
     let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
     ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
-    playersSendRequest.push(partyLeader);
+    playersSendRequest.push(partyLeader.toLowerCase().trim());
 }
 
 register("chat", (player) => {
-    player = getplayername(player);
+    player = getplayername(player).toLowerCase().trim();
     ChatLib.chat("&6[SBO] &eJoining party: " + player);
     if (inQueue && playersSendRequest.includes(player)) {
         ChatLib.chat("&6[SBO] &eJoining party: dwadw" );
