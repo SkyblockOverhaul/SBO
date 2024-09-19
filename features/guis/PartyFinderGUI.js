@@ -1,5 +1,5 @@
-import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber, isInParty } from "../../utils/functions";
-import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest } from "../Diana/PartyFinder";
+import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
+import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
 const PartyFinderGUI = new Gui()
@@ -98,7 +98,6 @@ function updatePageButtons() {
             openPartyInfo(party)
         }); 
         let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, color(0,255,0,255), "join").onClick(() => {
-            print(isInParty())
             if (!getInQueue() && !isInParty()) {
                 sendJoinRequest(party.leaderName)
             }
