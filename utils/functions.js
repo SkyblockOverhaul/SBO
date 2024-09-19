@@ -115,8 +115,7 @@ export function checkIfInSkyblock() {
     inSkyblockBool = (settings.alwaysInSkyblock || Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK"));
     lines = Scoreboard.getLines();
     if (lines[0] != undefined) {
-    onAlpha = lines[0].toString().toLowerCase().includes("alpha")
-
+        onAlpha = lines[0].toString().toLowerCase().includes("alpha")
     } else {
         onAlpha = false;
     }
