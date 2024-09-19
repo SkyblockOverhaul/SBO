@@ -241,9 +241,9 @@ export function sendJoinRequest(partyLeader) {
 
 register("chat", (player) => {
     player = getplayername(player);
-    ChatLib.chat("&6[SBO] &eJoining party: dwad ");
+    ChatLib.chat("&6[SBO] &eJoining party: " + player);
     if (inQueue && playersSendRequest.includes(player)) {
-        ChatLib.chat("&6[SBO] &eJoining party: " + player);
+        ChatLib.chat("&6[SBO] &eJoining party: dwadw" );
 
         playersSendRequest = [];
         ChatLib.command("p accept " + player);
