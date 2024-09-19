@@ -242,10 +242,8 @@ export function sendJoinRequest(partyLeader) {
 
 register("chat", (player) => {
     player = getplayername(player).toLowerCase().trim();
-    ChatLib.chat("&6[SBO] &eJoining party: " + player);
     if (playersSendRequest.includes(player)) {
-        ChatLib.chat("&6[SBO] &eJoining party: dwadw" );
-
+        ChatLib.chat("&6[SBO] &eJoining party: " + player);
         playersSendRequest = [];
         ChatLib.command("p accept " + player);
     }
@@ -336,6 +334,16 @@ export function isInParty() {
     return inParty;
 }
 
+let partyCount = 0;
+function trackMemberCount(number) {
+    if (inQueue) {
+        partyCount = partyCount + number; 
+        if (partyCount >= 5) ChatLib.chat("&6[SBO] &eYour party is full. You have 6 members in your party.");
+        // ChatLib.chat("&6[SBO] &eParty members count: " + partyCount);
+    }
+}
+        
+
 register("chat", (event) => {
     let formatted = ChatLib.getChatMessage(event, true)
     leaderMessages.forEach(regex => {
@@ -349,6 +357,7 @@ register("chat", (event) => {
         let match = formatted.match(regex)
         if (match) {
             removePartyFromQueue()
+            partyCount = 0;
             inParty = false;
         }
     })
@@ -356,6 +365,7 @@ register("chat", (event) => {
         let match = formatted.match(regex)
         if (match) {
             updatePartyInQueue()
+            trackMemberCount(1);
             inParty = true;
         }
     })
@@ -363,25 +373,30 @@ register("chat", (event) => {
         let match = formatted.match(regex)
         if (match) {
             updatePartyInQueue()
+            trackMemberCount(-1);
             inParty = true;
+            
         }
     })
 })
 
+
 register("chat", (toFrom, player, id, event) => {
     if (inQueue && toFrom.includes("From")) {
         // join request message
-        if (!settings.autoInvite) {
-            ChatLib.chat(ChatLib.getChatBreak("&b-"))
-            new Message(
-                new TextComponent(`&6[SBO] &b${player} &ewants to join your party.\n`),
-                new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite " + player).setHover("show_text", "&a/p invite " + player),
-                new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck " + player).setHover("show_text", "&eCheck " + player)
-            ).chat();
-            ChatLib.chat(ChatLib.getChatBreak("&b-"))
-        } else {
-            ChatLib.chat("&6[SBO] &eSending invite to " + player);
-            ChatLib.command("p invite " + player);
+        if (partyCount < 6) {
+            if (settings.autoInvite) {
+                ChatLib.chat("&6[SBO] &eSending invite to " + player);
+                ChatLib.command("p invite " + player);
+            } else {
+                ChatLib.chat(ChatLib.getChatBreak("&b-"))
+                new Message(
+                    new TextComponent(`&6[SBO] &b${player} &ewants to join your party.\n`),
+                    new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite " + player).setHover("show_text", "&a/p invite " + player),
+                    new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck " + player).setHover("show_text", "&eCheck " + player)
+                ).chat();
+                ChatLib.chat(ChatLib.getChatBreak("&b-"))
+            }
         }
     }
     cancel(event);
@@ -409,11 +424,15 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         }
     })
     if (party.length == 0) party.push(Player.getUUID());
-
+    partyCount = party.length;
     if (creatingParty) {
         creatingParty = false;
         if (party[0] != Player.getUUID() && party.length > 1) {
             ChatLib.chat("&6[SBO] &eYou are not the party leader. Only party leader can queue with the party.");
+            return;
+        }
+        if (party.length > 5) {
+            ChatLib.chat("&6[SBO] &eParty members limit reached. You can only queue with up to 5 members.");
             return;
         }
         request({
@@ -434,6 +453,11 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     }
     if (updateBool && inQueue) {
         updateBool = false;
+        if (party.length > 5) {
+            ChatLib.chat("&6[SBO] &eYour party is full and removed from the queue.");
+            removePartyFromQueue();
+            return;
+        }
         ChatLib.chat("&6[SBO] &eUpdating party members in queue...");
         request({
             url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", ""),

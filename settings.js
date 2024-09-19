@@ -897,6 +897,14 @@ class Settings {
     })
     achievementVolume = 50;
 
+    // Partyfinder
+    @SwitchProperty({
+        name: 'Auto Invite For Partyfinder',
+        description: 'Auto invites players that send you a join request with partyfinder',
+        category: 'Partyfinder',
+    })
+    autoInvite = false;
+
     // Debug
     @SelectorProperty({
         name: "Test Property Sound",

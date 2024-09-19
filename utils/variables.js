@@ -114,6 +114,8 @@ export let data = new PogObject("SBO", {
     "backTrack": false,
     "achievementFilter": "Rarity",
     "achievementFix1": false,
+    "dianaStats": {},
+    "dianaStatsUpdated": 0,
 }, "SboData.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {

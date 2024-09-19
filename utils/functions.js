@@ -1429,6 +1429,14 @@ export function getDianaStats() {
 }
 
 function loadDianaStats(useCallback = false, callback = null) {
+    // 10 minutes
+    if (data.dianaStatsUpdated && Date.now() - data.dianaStatsUpdated < 600000) {
+        dianaStats = data.dianaStats;
+        if (useCallback && callback) {
+            callback(dianaStats);
+        }
+        return;
+    }
     request({
         url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
         json: true
@@ -1441,3 +1449,35 @@ function loadDianaStats(useCallback = false, callback = null) {
         console.error("An error occurred: " + error);
     });
 }
+
+class SboTimeoutFunction {
+    static timeoutList = [];
+    constructor(func, timeout) {
+        this.func = func;
+        this.timeout = timeout;
+        this.timestamp = Date.now();
+        this.id = SboTimeoutFunction.timeoutList.length;
+        SboTimeoutFunction.timeoutList.push(this);
+    }
+
+    clearTimeout() {
+        SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
+    }
+}
+
+register("step", () => {
+    SboTimeoutFunction.timeoutList.forEach((timeout) => {
+        if (Date.now() - timeout.timestamp >= timeout.timeout) {
+            timeout.func();
+            timeout.clearTimeout();
+        }
+    });
+}).setFps(6);
+
+register("command", () => {
+    let timeoutStarted = Date.now();
+    new SboTimeoutFunction(() => {
+        ChatLib.chat("timeout");
+        ChatLib.chat("Time passed: " + (Date.now() - timeoutStarted) + "ms");
+    }, 1000);
+}).setName("sbotimeout");
