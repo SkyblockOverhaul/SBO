@@ -798,11 +798,12 @@ export function getNumberColor(number, range) {
     }
 }
 
-export function getGriffinItemColor(item) {
+export function getGriffinItemColor(item, noColors = false) {
     if (item != 0) {
         if (!item) return "";
         let name = item.replace("PET_ITEM_", "");
         name = toTitleCase(name.replaceAll("_", " "));
+        if (noColors) return name;
         switch (name) {
             case "Four Eyed Fish":
                 return "&5" + name;
@@ -849,6 +850,140 @@ export function matchLvlToColor(lvl) {
     } else {
         return "&7" + lvl;
     }
+}
+
+export function matchDianaKillsToColor(kills) {
+    if (kills >= 200000) {
+        return "&6" + formatNumberCommas(kills);
+    }
+    else if (kills >= 150000) {
+        return "&e" + formatNumberCommas(kills);
+    }
+    else if (kills >= 100000) {
+        return "&c" + formatNumberCommas(kills);
+    }
+    else if (kills >= 75000) {
+        return "&d" + formatNumberCommas(kills);
+    }
+    else if (kills >= 50000) {
+        return "&9" + formatNumberCommas(kills);
+    }
+    else if (kills >= 25000) {
+        return "&a" + formatNumberCommas(kills);
+    }
+    else if (kills >= 10000) {
+        return "&2" + formatNumberCommas(kills);
+    }
+    else {
+        return "&7" + formatNumberCommas(kills);
+    }
+}
+
+export function formatPlayerInfo(playerInfo) {
+    let formattedInfo = ""
+    const order = [
+        "name",
+        "sbLvl",
+        "uuid",
+        "emanLvl",
+        "clover",
+        "daxeLootingLvl",
+        "daxeChimLvl",
+        "griffinItem",
+        "griffinRarity",
+        "mythosKills",
+        "killLeaderboard",
+        "magicalPower",
+        "missingEnrichments",
+        "enrichments",
+        "warnings"
+    ];
+
+    let sortedEntries = Object.entries(playerInfo)
+        .sort(([key1], [key2]) => order.indexOf(key1) - order.indexOf(key2));
+
+    sortedEntries.forEach(([key, value]) => {
+        switch (key) {
+            case "eman9":
+                return
+            case "mythosKills":
+                key = "Diana Kills"
+                value = matchDianaKillsToColor(value)
+                break;
+            case "daxeLootingLvl":
+                if (value === -1) return
+                key = "Looting"
+                value = getNumberColor(value, 5)
+                break;
+            case "daxeChimLvl":
+                if (value === 0) return
+                key = "Chimera"
+                value = getNumberColor(value, 5)
+                break;
+            case "emanLvl":
+                if (value === 0) return
+                key = "Eman Level"
+                value = getNumberColor(value, 9)
+                break;
+            case "invApi":
+                return
+            case "killLeaderboard":
+                key = "Leaderboard"
+                value =  "&7#&b" + value
+                break;
+            case "griffinItem":
+                key = "Griffin Item"
+                value = getGriffinItemColor(value)
+                break;
+            case "sbLvl":
+                key = "Level"
+                value = matchLvlToColor(value)
+                break;
+            case "looting5daxe":
+                return
+            case "griffinRarity":
+                key = "Griffin Rarity"
+                value = getRarity(toTitleCase(value))
+                break;
+            case "magicalPower":
+                key = "Magic Power"
+                value = "&b" + value
+                break;
+            case "missingEnrichments":
+                key = "Missing Enrichments"
+                value = "&b" + value
+                break;
+            case "warnings":
+                value = value.map((warning) => {
+                    return warning.replace("Warning: ", "")
+                }).join(", ")
+                break;
+            case "uuid":
+                value = "&7" + value
+                break;
+            case "name":
+                value = "&b" + value
+                break;
+            case "enrichments":
+                value = "&b" + value
+                break;
+        }
+        switch (value) {
+            case true:
+                value = "&a✓"
+                break;
+            case false:
+                value = "&c✗"
+                break;
+        }
+        key = toTitleCase(key)
+        if (key === "Warnings") {
+            formattedInfo += `&9${key}&7: \n&7${value}\n\n`
+        } else {
+            formattedInfo += `&9${key}&7: &r${value}\n\n`
+        }
+    })
+    return formattedInfo
 }
 
 // gui functions/classes
@@ -972,6 +1107,7 @@ export class Button {
         this.originalHeight = height;
         this.lastScreenSize = undefined;
         this.action = undefined;
+        this.hoverAction = undefined;
 
         this.textWidth = undefined;
         this.textColor = Color;
@@ -1000,12 +1136,18 @@ export class Button {
     }
 
     isHovered(mouseX, mouseY) {
-        return (
-            mouseX >= this.x && 
-            mouseX <= this.x + this.width && 
-            mouseY >= this.y && 
-            mouseY <= this.y + this.height
-        );
+        let wasHovering = this.isHovering;
+        this.isHovering = (mouseX >= this.x && mouseX <= this.x + this.width &&
+                           mouseY >= this.y && mouseY <= this.y + this.height);
+        if (this.isHovering && !wasHovering && this.hoverAction) {
+            this.hoverAction();
+        }
+        return this.isHovering;
+    }
+
+    onHover(action) {
+        this.hoverAction = action;
+        return this;
     }
 
     updateDimensions() {
@@ -1244,6 +1386,9 @@ export function getLayoutDataPartyFinder() {
     let partyBoxX = pfListX
     let partyBoxY = pfListY
 
+    let partyBackButtoX = (pfWindowX + pfWindowWidth) * 0.864
+
+
     let buttonHeight1 = displayY * 0.04
     let buttonHeight2 = displayY * 0.05
 
@@ -1266,7 +1411,8 @@ export function getLayoutDataPartyFinder() {
         joinPartyWidth,
         partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
         buttonHeight1, buttonHeight2,
-        checkBoxHeight, checkBoxWidth
+        checkBoxHeight, checkBoxWidth,
+        partyBackButtoX
     }
 }
 

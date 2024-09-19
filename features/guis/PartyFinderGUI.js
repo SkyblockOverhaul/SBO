@@ -1,4 +1,4 @@
-import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
+import { drawRectangleOutline as outline, rect, formatPlayerInfo, color,  line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
@@ -103,9 +103,9 @@ function updatePageButtons() {
             }
             else {
                 if (getInQueue()) ChatLib.chat("&6[SBO] &eYou are already in queue.")
-                if (isInParty() && !getInQueue) ChatLib.chat("&6[SBO] &eYou are already in a party.")
+                if (isInParty()) ChatLib.chat("&6[SBO] &eYou are already in a party.")
             }
-        }).updateDimensions();
+        }).updateDimensions()
         joinButtons.push(joinButton);
         partyInfoButtons.push(partyInfoButton);
         allPartyButtons.push(joinButton);
@@ -113,13 +113,22 @@ function updatePageButtons() {
     });
 }
 
-let currentPartyInfo
+let currentMemberList = []
 function openPartyInfo(party) {
+    currentMemberList = []
     PartyInfoGUI.open()
-    currentPartyInfo = party
+    party.partyinfo.forEach((memberObject) => {
+        let memberButton = new Button(0, 0, 90, 20, memberObject.name, false, true, true, color(255,255,255,255))
+        let object = {
+            button: memberButton,
+            memberObject: memberObject
+        }
+        currentMemberList.push(object)
+    })
 }
  
 PartyFinderGUI.registerOpened(() => {
+    textObject.setText("")
     getPartyFinderData()
 });
 
@@ -209,7 +218,7 @@ function drawButtonsHdwi(layoutData) {
 function drawButtonsPartyInfo(layoutData) {
     const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
     backButton.customize({
-        x: layoutData.createPartyX, y: layoutData.createPartyY,
+        x: layoutData.partyBackButtoX, y: layoutData.createPartyY,
         width: layoutData.createPartyWidth, height: layoutData.buttonHeight1
     }).draw(mouseX, mouseY)
 }
@@ -373,11 +382,25 @@ function hdwiRender() {
     drawButtonsHdwi(layoutData);
 }
 
+let textObject = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
 function partyInfoRender() {
     let layoutData = getLayoutData()
     rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
     outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
-    Renderer.drawString(`Leader: ${currentPartyInfo.leaderName}`, layoutData.partyBoxX + 5, layoutData.partyBoxY + (layoutData.partyBoxHeight / 5.5));
+    rect(color(0, 0, 0, 155), layoutData.partyBoxX + layoutData.pfListWidth / 2, layoutData.partyBoxY, layoutData.partyBoxWidth / 2.1, layoutData.pfListHeight);
+    outline(color(0, 173, 255, 255), layoutData.partyBoxX + layoutData.pfListWidth / 2, layoutData.partyBoxY, layoutData.partyBoxWidth / 2.1, layoutData.pfListHeight, 1);
+    currentMemberList.forEach((member, index) => {
+        let memberButton = member.button
+        let memberObject = member.memberObject
+        memberButton.customize({
+            x: layoutData.partyBoxX + 20, y: (layoutData.partyBoxY + 10) + (layoutData.partyBoxHeight * 6 / 5 * index),
+            width: layoutData.partyBoxWidth / 2.2, height: layoutData.partyBoxHeight / 6 * 5
+        }).draw(Client.getMouseX(), Client.getMouseY(), allPartyButtons).onHover(() => {
+            let text = formatPlayerInfo(memberObject)
+            textObject.setText(text).setX(layoutData.partyBoxX + layoutData.pfListWidth / 2 + 20).setY(layoutData.partyBoxY + 20)
+        });
+    })
+    textObject.draw()
     drawButtonsPartyInfo(layoutData)
 }
 
