@@ -90,8 +90,6 @@ function updatePageButtons() {
             openPartyInfo(party)
         }); 
         let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, color(0,255,0,255), "join").onClick(() => {
-            ChatLib.chat(`Joining party led by ${party.leaderName}`);
-            print("Joining party led by " + party.leaderName)
             sendJoinRequest(party.leaderName)
         }).updateDimensions();
         joinButtons.push(joinButton);
