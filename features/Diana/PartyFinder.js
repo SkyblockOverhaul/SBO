@@ -3,6 +3,7 @@ import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRa
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
+import settings from "../../settings";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -330,24 +331,41 @@ memberLeft = [
     /^(.+) was removed from your party because they disconnected.$/,
     /^Kicked (.+) because they were offline.$/
 ]
+let inParty = false;
+export function isInParty() {
+    return inParty;
+}
+
 register("chat", (event) => {
     if (inQueue) {
         let formatted = ChatLib.getChatMessage(event, true)
         leaderMessages.forEach(regex => {
             let match = formatted.match(regex)
-            if (match) removePartyFromQueue()
+            if (match) {
+                removePartyFromQueue()
+                inParty = true;
+            }
         })
         partyDisbanded.forEach(regex => {
             let match = formatted.match(regex)
-            if (match) removePartyFromQueue()
+            if (match) {
+                removePartyFromQueue()
+                inParty = false;
+            }
         })
         memberJoined.forEach(regex => {
             let match = formatted.match(regex)
-            if (match) updatePartyInQueue()
+            if (match) {
+                updatePartyInQueue()
+                inParty = true;
+            }
         })
         memberLeft.forEach(regex => {
             let match = formatted.match(regex)
-            if (match) updatePartyInQueue()
+            if (match) {
+                updatePartyInQueue()
+                inParty = true;
+            }
         })
     }
 })
@@ -355,13 +373,18 @@ register("chat", (event) => {
 register("chat", (toFrom, player, id, event) => {
     if (inQueue && toFrom.includes("From")) {
         // join request message
-        ChatLib.chat(ChatLib.getChatBreak("&b-"))
-        new Message(
-            new TextComponent(`&6[SBO] &b${player} &ewants to join your party.\n`),
-            new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite " + player).setHover("show_text", "&a/p invite " + player),
-            new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck " + player).setHover("show_text", "&eCheck " + player)
-        ).chat();
-        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+        if (!settings.autoInvite) {
+            ChatLib.chat(ChatLib.getChatBreak("&b-"))
+            new Message(
+                new TextComponent(`&6[SBO] &b${player} &ewants to join your party.\n`),
+                new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite " + player).setHover("show_text", "&a/p invite " + player),
+                new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck " + player).setHover("show_text", "&eCheck " + player)
+            ).chat();
+            ChatLib.chat(ChatLib.getChatBreak("&b-"))
+        } else {
+            ChatLib.chat("&6[SBO] &eSending invite to " + player);
+            ChatLib.command("p invite " + player);
+        }
     }
     cancel(event);
 }).setCriteria("&d${toFrom} ${player}&r&7: &r&7[SBO] join party request - ${id}");
