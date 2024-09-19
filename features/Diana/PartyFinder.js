@@ -197,8 +197,11 @@ register("chat", (player) => {
 let creatingParty = false;
 let updateBool = false;
 let createPartyTimeStamp = 0;
+let inQueue = false;
 export function createParty() {
-    if (inQueue) {
+    if (!inQueue) {
+        inQueue = true;
+        print("creating party");
         creatingParty = true;
         sendPartyRequest();
         createPartyTimeStamp = Date.now();
@@ -210,7 +213,6 @@ export function createParty() {
 export function getInQueue() {
     return inQueue;
 }
-let inQueue = false;
 let partyList = [];
 export function getAllParties(useCallback = false, callback = null) { 
     request({
@@ -446,6 +448,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
             inQueue = true; 
         }).catch((error)=> {
+            inQueue = false;
             if (error.detail) {
                 ChatLib.chat("&6[SBO] &4Error1: " + error.detail);
             } else {
