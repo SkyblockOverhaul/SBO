@@ -240,13 +240,13 @@ export function sendJoinRequest(partyLeader) {
 }
 
 register("chat", (player) => {
-    player = player.removeFormatting()
+    player = getplayername(player);
     if (inQueue && playersSendRequest.includes(player)) {
         playersSendRequest = [];
         ChatLib.chat("&6[SBO] &eJoined party: " + player);
         ChatLib.command("p accept " + player);
     }
-}).setCriteria("dwaawdaw");
+}).setCriteria("${player} &r&ehas invited you to join their party!");
 
 export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
