@@ -1,4 +1,4 @@
-import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
+import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber, isInParty } from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
@@ -28,7 +28,10 @@ PartyInfoGUI.registerDraw(partyInfoRender);
 HdwiGUI.registerDraw(hdwiRender);
 
 const filters = {
-    "Eman9": (party) => party.emanreq >= 9
+    "Eman9": (party) => {
+        const requirements = party.reqs;
+        return requirements.eman9 === true;
+    },
 };
 
 function filterPartyList() {
@@ -41,6 +44,11 @@ function filterPartyList() {
             }
         }
     });
+    partyCount = partyList.length;
+    pageCount = Math.ceil(partyCount / 6);
+    if (currentPage > pageCount) {
+        currentPage = pageCount;
+    }
     updatePageButtons();
 }
 
@@ -90,7 +98,14 @@ function updatePageButtons() {
             openPartyInfo(party)
         }); 
         let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, color(0,255,0,255), "join").onClick(() => {
-            sendJoinRequest(party.leaderName)
+            print(isInParty())
+            if (!getInQueue() && !isInParty()) {
+                sendJoinRequest(party.leaderName)
+            }
+            else {
+                if (getInQueue()) ChatLib.chat("&6[SBO] &eYou are already in queue.")
+                if (isInParty() && !getInQueue) ChatLib.chat("&6[SBO] &eYou are already in a party.")
+            }
         }).updateDimensions();
         joinButtons.push(joinButton);
         partyInfoButtons.push(partyInfoButton);
