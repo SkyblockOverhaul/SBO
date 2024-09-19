@@ -106,8 +106,19 @@ export function getSBUUID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("uuid") || null;
 }
 
+let onAlpha = false;
+export function isOnAlpha() {
+    return onAlpha;
+}
+
 export function checkIfInSkyblock() {
     inSkyblockBool = (settings.alwaysInSkyblock || Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK"));
+    lines = Scoreboard.getLines();
+    if (lines[0] != undefined) {
+        onAlpha = lines[0].toString().toLowerCase().includes("alpha")
+    } else {
+        onAlpha = false;
+    }
     return inSkyblockBool;
 }
 
