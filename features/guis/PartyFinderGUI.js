@@ -1,10 +1,14 @@
 import { drawRectangleOutline as outline, rect, formatPlayerInfo, color,  line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
+import ElementUtils from "../../../DocGuiLib/core/Element"
+import TextInputElement from "../../../DocGuiLib/elements/TextInput";
+import HandleGui from "../../../DocGuiLib/core/Gui";
+import { UIBlock, PixelConstraint } from "../../../Elementa"
 
 const PartyFinderGUI = new Gui()
-const CreatePartyGUI = new Gui()
 const HdwiGUI = new Gui()
+const CreatePartyGUI = new HandleGui("data/DefaultColors.json", "sbo")
 const PartyInfoGUI = new Gui()
 let currentPage = 1
 let pageCount = 0 
@@ -23,7 +27,7 @@ let startDisplayHeight = Renderer.screen.getHeight()
 
 PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
-CreatePartyGUI.registerDraw(createPartyRender);
+CreatePartyGUI.registers.onDraw(createPartyRender);
 PartyInfoGUI.registerDraw(partyInfoRender);
 HdwiGUI.registerDraw(hdwiRender);
 
@@ -137,7 +141,7 @@ PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (buttonClickedList(mouseX, mouseY, button, allPartyButtons)) return;
     if (checkBoxClicked(mouseX, mouseY, button, checkBoxList)) return;
 });
-CreatePartyGUI.registerClicked((mouseX, mouseY, button) => {
+CreatePartyGUI.registers.onMouseClick((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
 });
 HdwiGUI.registerClicked((mouseX, mouseY, button) => {
@@ -246,7 +250,9 @@ const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, color
 });
 buttonsPfwindow.push(pageNextButton)
 const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, color(0,196,255,255)).onClick(() => {
-    CreatePartyGUI.open()
+    SbLevel.textInput.setText("")
+    SbLevel.text = ""
+    CreatePartyGUI.ctGui.open()
 });
 buttonsPfwindow.push(createPartyButton)
 let dequeued
@@ -261,6 +267,7 @@ const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true, col
 });
 buttonsPfwindow.push(deQueueButton)
 const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, color(255,255,255,255)).onClick(() => {
+    print(SbLevel.getText())
     createParty()
     PartyFinderGUI.open()
 });
@@ -370,7 +377,10 @@ function requiremtnsFormat(requirements) {
 
 function createPartyRender() {
     let layoutData = getLayoutData()
-    rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
+    createPartyBlock.setX(new PixelConstraint(layoutData.pfWindowX))
+    createPartyBlock.setY(new PixelConstraint(layoutData.pfWindowY))
+    createPartyBlock.setWidth(new PixelConstraint(layoutData.pfWindowWidth))
+    createPartyBlock.setHeight(new PixelConstraint(layoutData.pfWindowHeight))
     outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
     drawButtonsCreate(layoutData);
 }
@@ -408,14 +418,22 @@ function partyFinderClose() {
     currentPage = 1
 }
 
+function filterTextInput(object) {
+    let text = object.text
+    text = text.replace(/[^0-9]/g, "")
+    object.textInput.setText(text)
+    object.text = text
+}
+
 PartyInfoGUI.registerKeyTyped((char, keyCode) => {
     if (keyCode === Keyboard.KEY_ESCAPE) {
         PartyFinderGUI.open()
     }
 });
-CreatePartyGUI.registerKeyTyped((char, keyCode) => {
+CreatePartyGUI.registers.onKeyType((char, keyCode) => {
+    filterTextInput(SbLevel)
     if (keyCode === Keyboard.KEY_ESCAPE) {
-        PartyFinderGUI.open()
+        PartyFinderGUI.open();
     }
 });
 HdwiGUI.registerKeyTyped((char, keyCode) => {
@@ -423,6 +441,17 @@ HdwiGUI.registerKeyTyped((char, keyCode) => {
         PartyFinderGUI.open()
     }
 });
+
+let createLayoutData = getLayoutData()
+let createPartyColor = ElementUtils.getJavaColor([80, 80, 80, 245])
+let createPartyBlock = new UIBlock(createPartyColor)
+    .setX(new PixelConstraint(createLayoutData.pfWindowX))
+    .setY(new PixelConstraint(createLayoutData.pfWindowY))
+    .setWidth(new PixelConstraint(createLayoutData.pfWindowWidth))
+    .setHeight(new PixelConstraint(createLayoutData.pfWindowHeight))
+    .setChildOf(CreatePartyGUI.window)
+let SbLevel = new TextInputElement("", 10, 10, 12, 5)
+SbLevel._create().setChildOf(createPartyBlock)
 
 register("command", () => {
     currentPage = 1
