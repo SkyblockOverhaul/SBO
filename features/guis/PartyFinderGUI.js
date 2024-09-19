@@ -1,4 +1,4 @@
-import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox } from "../../utils/functions";
+import { drawRectangleOutline as outline, rect, color, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 
@@ -306,10 +306,12 @@ function partyFinderRender() {
             let row1y = partyBoxY + (layoutData.partyBoxHeight / 5.5)
             let row2y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 2
             let row3y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 3
+            let requirements = requiremtnsFormat(party.reqs)
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
             leaderText.draw().setX(layoutData.partyBoxX + 5).setY(row1y).setText(`Leader: ${party.leaderName}`)
             membersText.draw().setX(layoutData.partyBoxX + 5).setY(row2y).setText(`Members: ${party.partymembers}/${maxMembers}`)
-            partyReqs.draw().setX(layoutData.partyBoxX + 5).setY(row3y).setText(`Requirements: \nEman: ${party.emanreq}, lvl: ${party.lvlreq}`)
+            // partyReqs.draw().setX(layoutData.partyBoxX + 5).setY(row3y).setText(`Requirements: \nEman: ${party.emanreq}, lvl: ${party.lvlreq}`)
+            partyReqs.draw().setX(layoutData.partyBoxX + 5).setY(row3y).setText(`Requirements: \n${requirements}`)
         });
     }
 
@@ -321,6 +323,28 @@ function partyFinderRender() {
     drawButtonsMain(layoutData);
     let checkBoxX = pfText.width + layoutData.titleX + 20
     drawCheckBoxesMain({x: checkBoxX})
+}
+
+function requiremtnsFormat(requirements) {
+    let reqsText = ""
+    Object.entries(requirements).forEach(([key, value]) => {
+        switch (key) {
+            case "eman9":
+                if (value === "false") return;
+                key = "eman9"
+                value = ""
+                break;
+            case "kills":
+                value = formatNumber(value)
+        }
+        if (value === "") {
+            reqsText += `${key}, `
+        } else {
+            reqsText += `${key}: ${value}, `
+        }
+    })
+    reqsText = reqsText.slice(0, -2)
+    return reqsText
 }
 
 function createPartyRender() {
