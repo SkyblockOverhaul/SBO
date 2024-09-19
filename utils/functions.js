@@ -1,7 +1,7 @@
 import { request } from "../../requestV2";
 import settings, { getcustomSounds } from "../settings";
 import { HypixelModAPI } from "./../../HypixelModAPI";
-import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
+import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
 import { getWorld } from "./world";
 
 // geklaut von coleweight for drawline
