@@ -199,8 +199,7 @@ let updateBool = false;
 let createPartyTimeStamp = 0;
 let inQueue = false;
 export function createParty() {
-    if (!inQueue) {
-        inQueue = true;
+    if (!creatingParty) {
         print("creating party");
         creatingParty = true;
         sendPartyRequest();
