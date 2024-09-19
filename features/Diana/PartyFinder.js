@@ -241,12 +241,14 @@ export function sendJoinRequest(partyLeader) {
 
 register("chat", (player) => {
     player = getplayername(player);
+    ChatLib.chat("&6[SBO] &eJoining party: dwad ");
     if (inQueue && playersSendRequest.includes(player)) {
+        ChatLib.chat("&6[SBO] &eJoining party: " + player);
+
         playersSendRequest = [];
-        ChatLib.chat("&6[SBO] &eJoined party: " + player);
         ChatLib.command("p accept " + player);
     }
-}).setCriteria("${player} &r&ehas invited you to join their party!");
+}).setCriteria("${player} &r&ehas invited you to join their party!").setContains();
 
 export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
