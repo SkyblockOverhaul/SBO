@@ -231,11 +231,22 @@ export function getAllParties(useCallback = false, callback = null) {
     });
 }
 
+let playersSendRequest = [];
 export function sendJoinRequest(partyLeader) {
     let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
     ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
+    playersSendRequest.push(partyLeader);
 }
+
+register("chat", (player) => {
+    player = player.removeFormatting()
+    if (inQueue && playersSendRequest.includes(player)) {
+        playersSendRequest = [];
+        ChatLib.chat("&6[SBO] &eJoined party: " + player);
+        ChatLib.command("p accept " + player);
+    }
+}).setCriteria("dwaawdaw");
 
 export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
@@ -340,8 +351,7 @@ register("chat", (event) => {
 })
 
 register("chat", (toFrom, player, id, event) => {
-    cancel(event);
-    if (inQueue && toFrom == "From") {
+    if (inQueue && toFrom.includes("From")) {
         // join request message
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
         new Message(
@@ -351,6 +361,7 @@ register("chat", (toFrom, player, id, event) => {
         ).chat();
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
     }
+    cancel(event);
 }).setCriteria("&d${toFrom} ${player}&r&7: &r&7[SBO] join party request - ${id}");
 
 register("gameUnload", () => {
