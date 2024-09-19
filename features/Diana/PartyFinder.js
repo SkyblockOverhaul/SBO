@@ -231,11 +231,22 @@ export function getAllParties(useCallback = false, callback = null) {
     });
 }
 
+let playersSendRequest = [];
 export function sendJoinRequest(partyLeader) {
     let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
     ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
+    playersSendRequest.push(partyLeader);
 }
+
+register("chat", (player) => {
+    player = player.removeFormatting()
+    if (inQueue && playersSendRequest.includes(player)) {
+        playersSendRequest = [];
+        ChatLib.chat("&6[SBO] &eJoined party: " + player);
+        ChatLib.command("p accept " + player);
+    }
+}).setCriteria("dwaawdaw");
 
 export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
