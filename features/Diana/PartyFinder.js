@@ -198,10 +198,13 @@ let creatingParty = false;
 let updateBool = false;
 let createPartyTimeStamp = 0;
 export function createParty() {
-    print("Creating Party");
-    creatingParty = true;
-    sendPartyRequest();
-    createPartyTimeStamp = Date.now();
+    if (inQueue) {
+        creatingParty = true;
+        sendPartyRequest();
+        createPartyTimeStamp = Date.now();
+    } else {
+        ChatLib.chat("&6[SBO] &eYou are already in queue.");
+    }
 }
 // "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
 export function getInQueue() {
