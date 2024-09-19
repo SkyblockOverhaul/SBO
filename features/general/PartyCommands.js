@@ -250,6 +250,17 @@ register("chat", (player, message) => {
                             ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
                         }, 200)
                         break
+                    case "lschim":
+                    case "chimls":
+                    case "lschimera":
+                    case "chimerals":
+                    case "lsbook":
+                    case "bookls":
+                    case "lootsharechim":
+                        setTimeout(() => {
+                            ChatLib.command("pc Inqs since lootshare chim: " + data.inqsSinceChimLs)
+                        }, 200)
+                        break
                 }
                 
             }

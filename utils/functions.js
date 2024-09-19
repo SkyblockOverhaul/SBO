@@ -163,13 +163,14 @@ registerWhen(register("guiOpened", () => {
 
 let dianaMobNames = ["Minos Inquisitor", "Minotaur", "Iron Golem", "Ocelot", "Minos Champion", "Zombie"];
 
-function trackLsInq(tracker, amount) {
+function trackLsInq(tracker) {
     if (tracker["mobs"]["Minos Inquisitor Ls"] != null) {
-        tracker["mobs"]["Minos Inquisitor Ls"] += amount;
+        tracker["mobs"]["Minos Inquisitor Ls"] += 1;
     }
     else {
-        tracker["mobs"]["Minos Inquisitor Ls"] = amount;
+        tracker["mobs"]["Minos Inquisitor Ls"] = 1;
     }
+    data.inqsSinceLsChim += 1;
     tracker.save();
 }
 let hasTrackedInq = false;
@@ -177,9 +178,9 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
     if (gotLootShare() && entityName == "Minos Inquisitor" && !hasTrackedInq) {
-        trackLsInq(trackerMayor, 1);
-        trackLsInq(trackerSession, 1);
-        trackLsInq(trackerTotal, 1);
+        trackLsInq(trackerMayor);
+        trackLsInq(trackerSession);
+        trackLsInq(trackerTotal);
         hasTrackedInq = true;
         setTimeout(() => {
             hasTrackedInq = false;

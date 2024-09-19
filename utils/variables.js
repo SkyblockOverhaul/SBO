@@ -95,6 +95,7 @@ export let data = new PogObject("SBO", {
     "inqsSinceChim": 0,
     "minotaursSinceStick": 0,
     "champsSinceRelic": 0,
+    "inqsSinceLsChim": 0,
     "trackerMigration": false,
     "avgChimMagicFind": 0,
     "avgStickMagicFind": 0,
