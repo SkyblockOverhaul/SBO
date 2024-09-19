@@ -337,37 +337,35 @@ export function isInParty() {
 }
 
 register("chat", (event) => {
-    if (inQueue) {
-        let formatted = ChatLib.getChatMessage(event, true)
-        leaderMessages.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) {
-                removePartyFromQueue()
-                inParty = true;
-            }
-        })
-        partyDisbanded.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) {
-                removePartyFromQueue()
-                inParty = false;
-            }
-        })
-        memberJoined.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) {
-                updatePartyInQueue()
-                inParty = true;
-            }
-        })
-        memberLeft.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) {
-                updatePartyInQueue()
-                inParty = true;
-            }
-        })
-    }
+    let formatted = ChatLib.getChatMessage(event, true)
+    leaderMessages.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            removePartyFromQueue()
+            inParty = true;
+        }
+    })
+    partyDisbanded.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            removePartyFromQueue()
+            inParty = false;
+        }
+    })
+    memberJoined.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            updatePartyInQueue()
+            inParty = true;
+        }
+    })
+    memberLeft.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            updatePartyInQueue()
+            inParty = true;
+        }
+    })
 })
 
 register("chat", (toFrom, player, id, event) => {
