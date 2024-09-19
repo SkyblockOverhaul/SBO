@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
-import { checkDaxeEnchants, getSBID } from "../../utils/functions";
+import { checkDaxeEnchants, getSBID, isOnAlpha } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -246,6 +246,7 @@ function unlockAchievements(override=false) {
 }
 
 export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
+    if (isOnAlpha()) return;
     let totalChimera = 0;
     if (item == "Chimera") {
         if ("ChimeraLs" in mayorTracker) {
@@ -308,6 +309,7 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
 }
 
 export function trackSinceMob() {
+    if (isOnAlpha()) return;
     if (data["mobsSinceInq"] >= 250 && data["mobsSinceInq"] < 500) {
         achievementsToUnlock.push(31);
     } else if (data["mobsSinceInq"] >= 500 && data["mobsSinceInq"] < 1000) {
@@ -339,6 +341,7 @@ export function trackSinceMob() {
 }
 
 export function trackMagicFind(magicFind, chimera=false) {
+    if (isOnAlpha()) return;
     if (magicFind >= 300 && magicFind < 400) {
         achievementsToUnlock.push(39);
     } else if (magicFind >= 400 && magicFind < 500) {
@@ -358,6 +361,7 @@ export function trackMagicFind(magicFind, chimera=false) {
 }
 
 function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, catKills) {
+    if (isOnAlpha()) return;
     if (gaiaKills >= 3000) {
         achievementsToUnlock.push(50);
     } else if (gaiaKills != 0) Achievement.lockById(50);
@@ -383,6 +387,7 @@ function trackBeKills(gaiaKills, champKills, hunterKills, inqKills, minoKills, c
 }
 
 function dAxeAchivementCheck() {
+    if (isOnAlpha()) return;
     let dAxeEnchants = checkDaxeEnchants();
     if (!dAxeEnchants[0] && !dAxeEnchants[1] && !dAxeEnchants[2]) return;
     if (dAxeEnchants[0]) {
@@ -401,6 +406,7 @@ function dAxeAchivementCheck() {
 }
 
 function getKillsFromLore(item) {
+    if (isOnAlpha()) return;
     if (item == null) return 0;
     let lore = item.getLore();
     let kills = 0;
@@ -414,6 +420,7 @@ function getKillsFromLore(item) {
 }
 
 function getSlayerLvlFromLore(item) {
+    if (isOnAlpha()) return;
     if (item == null) return 0;
     let lore = item.getLore();
     let slayerLvl = 0;
