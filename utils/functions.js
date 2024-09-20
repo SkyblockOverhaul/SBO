@@ -54,6 +54,7 @@ function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth)
     GlStateManager.func_179126_j()
     GlStateManager.func_179132_a(true)
     GlStateManager.func_179084_k()
+    GL11.glLineWidth(2);
 }
 
 export function getClosest(origin, positions) {
@@ -1517,9 +1518,9 @@ register("command", () => {
     print(getDianaStats())
 }).setName("sbotimeout");
 
-export function requirementsFormat(requirements) {
+export function requirementsFormat(requirements, myStats) {
     let reqsText = ""
-    let myReqs = getDianaStats()
+    let myReqs = myStats
     if (myReqs === undefined) {
         myReqs = {
             "eman9": false,

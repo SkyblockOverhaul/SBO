@@ -399,7 +399,7 @@ function partyFinderRender() {
             let row1y = partyBoxY + (layoutData.partyBoxHeight / 5.5)
             let row2y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 2
             let row3y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 3
-            let requirements = requirementsFormat(party.reqs)
+            let requirements = requirementsFormat(party.reqs, dianaStats)
             let pMmMcolor = pMmMColor(party.partymembers)
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
             leaderText.draw().setX(layoutData.partyBoxX + 5).setY(row1y).setText(`&b${party.leaderName}'s Party`)
