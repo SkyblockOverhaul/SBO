@@ -14,7 +14,7 @@ function getPartyInfo(party) {
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
     }).then((response)=> {
-        if (response.success) {
+        if (response.Success) {
             let timeTaken = Date.now() - firstTimeStamp;
             ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
             printPartyInfo(response.PartyInfo)
@@ -175,7 +175,7 @@ function checkPlayer(player) {
         url: api + "/partyInfo?party=" + playerName,
         json: true
     }).then((response)=> {
-        if (response.success) {
+        if (response.Success) {
             printCheckedPlayer(response.PartyInfo)
         } else {
             ChatLib.chat("&6[SBO] &4Error: " + response.Error);
@@ -271,6 +271,8 @@ export function sendJoinRequest(partyLeader, partyReqs) {
         ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
         ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
         playersSendRequest.push(partyLeader.toLowerCase().trim());
+    } else {
+        ChatLib.chat("&6[SBO] &eYou don't meet the requirements to join this party");
     }
 }
 
@@ -478,7 +480,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
         }).then((response)=> {
-            if (response.success) {
+            if (response.Success) {
                 let timeTaken = Date.now() - createPartyTimeStamp;
                 ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
                 inQueue = true; 
@@ -504,7 +506,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
         }).then((response)=> {
-            if (response.success) {
+            if (response.Success) {
                 let timeTaken = Date.now() - createPartyTimeStamp;
                 ChatLib.chat("&6[SBO] &eParty in queue updated successfully  " + timeTaken + "ms");
             } else {
