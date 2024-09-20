@@ -127,7 +127,7 @@ function updatePageButtons() {
         }); 
         let joinButton = new Button(joinX, joinY, 90, 20, "Join Party", false, true, true, color(0,255,0,255), "join").onClick(() => {
             if (!getInQueue() && !isInParty()) {
-                sendJoinRequest(party.leaderName)
+                sendJoinRequest(party.leaderName, party.reqs)
             }
             else {
                 if (getInQueue()) ChatLib.chat("&6[SBO] &eYou are already in queue.")
@@ -300,6 +300,7 @@ const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, false, true,
     let reqs = getRequirements()
     let reqsString = ""
     Object.entries(reqs).forEach(([key, value]) => {
+        print(`key: ${key}, value: ${value}`)
         if (key === "MVP+") key = "mvpplus"
         if (value === 0 || value === false) return;
         if (value === true) value = ""

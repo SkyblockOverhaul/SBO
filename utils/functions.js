@@ -1520,6 +1520,15 @@ register("command", () => {
 export function requirementsFormat(requirements, myStats) {
     let reqsText = ""
     let myReqs = myStats
+    if (myReqs === undefined) {
+        myReqs = {
+            "eman9": false,
+            "sbLvl": 0,
+            "mvp+": false,
+            "looting5daxe": false,
+            "mythosKills": 0
+        }
+    }
     Object.entries(requirements).forEach(([key, value]) => {
         switch (key) {
             case "eman9":
