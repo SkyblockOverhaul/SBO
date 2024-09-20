@@ -308,7 +308,13 @@ const partyReqs = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
 function drawCheckBoxesMain(param = {}) {
     let layoutData = getLayoutData()
     emanCheckBox.draw().setText("Eman9")
-    .setX(param.x).setY(layoutData.pfWindowY * 1.15)
+    .setX(param.x).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 50)
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
+    mvpPlusCheckBox.draw().setText("MVP+")
+    .setX(param.x).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 20)
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
+    looting5CheckBox.draw().setText("Looting 5")
+    .setX(param.x + emanCheckBox.width + emanCheckBox.textWidth + 20).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 50)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
 }
 
@@ -319,9 +325,11 @@ checkBoxList.push(emanCheckBox)
 const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
     filterPartyList()
 });
+checkBoxList.push(mvpPlusCheckBox)
 const looting5CheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
     filterPartyList()
 });
+checkBoxList.push(looting5CheckBox)
 
 function partyFinderRender() {
     let layoutData = getLayoutData()
@@ -406,11 +414,11 @@ checkBoxListCreate.push(looting5box)
 checkBoxListCreate.push(mvpPlusBox)
 
 function drawCheckBoxesCreate(layoutData) {
-    eman9ReqsBox.draw().setText("Eman9").setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 2.3)
+    eman9ReqsBox.draw().setText("Eman9").setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 2)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
-    looting5box.draw().setText("Looting 5").setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.75)
+    looting5box.draw().setText("Looting 5").setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.66)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
-    mvpPlusBox.draw().setText("MVP+").setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.4)
+    mvpPlusBox.draw().setText("MVP+").setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.4)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
 }
 
@@ -420,8 +428,8 @@ function createPartyRender() {
     createPartyBlock.setY(new PixelConstraint(layoutData.createWindowY))
     createPartyBlock.setWidth(new PixelConstraint(layoutData.createWindowWidth))
     createPartyBlock.setHeight(new PixelConstraint(layoutData.createWindowHeight))
-    dianaKillsText.draw().setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 7).setText("Diana Kills")
-    sbLevelText.draw().setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 3.5).setText("Skyblock Level")
+    dianaKillsText.draw().setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 20).setText("Diana Kills")
+    sbLevelText.draw().setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 4).setText("Skyblock Level")
     drawCheckBoxesCreate(layoutData)
     drawButtonsCreate(layoutData);
     line(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createPartyButtonY, layoutData.createWindowX + layoutData.createWindowWidth, layoutData.createPartyButtonY, 1);
@@ -508,13 +516,15 @@ let createPartyBlock = new UIBlock(createPartyColor)
     .setWidth(new PixelConstraint(createLayoutData.createWindowWidth))
     .setHeight(new PixelConstraint(createLayoutData.createWindowHeight))
     .setChildOf(CreatePartyGUI.window)
-let SbLevel = new TextInputElement("", 34, 25, 18, 12)
+let SbLevel = new TextInputElement("", 0, 33, 0, 12)
 SbLevel.onMouseEnterEvent(() => {}, true);
 SbLevel._create().setChildOf(createPartyBlock)
+SbLevel.bgBox.setWidth((100).percent())
 inputFields["SbLevel"] = SbLevel
-let DianaKills = new TextInputElement("", 25, 11, 18, 12)
+let DianaKills = new TextInputElement("", 0, 11, 0, 12)
 DianaKills.onMouseEnterEvent(() => {}, true);
 DianaKills._create().setChildOf(createPartyBlock)
+DianaKills.bgBox.setWidth((100).percent())
 inputFields["DianaKills"] = DianaKills
 register("command", () => {
     currentPage = 1

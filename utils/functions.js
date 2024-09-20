@@ -1356,7 +1356,7 @@ export function getLayoutDataPartyFinder() {
     let pfWindowY = (displayY - pfWindowHeight) / 2
 
     let createWindowWidth = displayX * 0.2
-    let createWindowHeight = displayY * 0.2
+    let createWindowHeight = displayY * 0.33
     let createWindowX = (displayX - createWindowWidth) / 2
     let createWindowY = (displayY - createWindowHeight) / 2
 
@@ -1408,8 +1408,8 @@ export function getLayoutDataPartyFinder() {
     let buttonHeight1 = displayY * 0.04
     let buttonHeight2 = displayY * 0.05
 
-    let checkBoxHeight = displayY * 0.00974
-    let checkBoxWidth = displayX * 0.00548
+    let checkBoxHeight = displayY * 0.012
+    let checkBoxWidth = displayX * 0.0063
 
     let cbCreateHeight = displayY * 0.012
     let cbCreateWidth = displayX * 0.007
