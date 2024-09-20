@@ -343,9 +343,12 @@ function trackMemberCount(number) {
     if (inQueue) {
         partyCount = partyCount + number; 
         setTimeout(() => {
-            if (partyCount >= 6) ChatLib.chat("&6[SBO] &eYour party is full. You have 6 members in your party.");
+            // ChatLib.chat("&6[SBO] &eParty members count: " + partyCount);
+            if (partyCount >= 6) {      
+                ChatLib.chat("&6[SBO] &eYour party is full and removed from the queue.");
+                removePartyFromQueue();
+            }
         }, 150);
-        // ChatLib.chat("&6[SBO] &eParty members count: " + partyCount);
     }
 }
         
@@ -460,11 +463,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     }
     if (updateBool && inQueue) {
         updateBool = false;
-        if (party.length > 5) {
-            ChatLib.chat("&6[SBO] &eYour party is full and removed from the queue.");
-            removePartyFromQueue();
-            return;
-        }
+        if (party.length > 5) return;
         ChatLib.chat("&6[SBO] &eUpdating party members in queue...");
         request({
             url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", ""),
