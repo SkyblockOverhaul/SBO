@@ -16,6 +16,7 @@ let onlineUsers = 0
 let partyCount = 0
 let originalPartyList = [];
 let checkBoxList = []
+let checkBoxListCreate = []
 let partyList = []
 let joinButtons = []
 let partyInfoButtons = []
@@ -136,6 +137,11 @@ PartyFinderGUI.registerOpened(() => {
     getPartyFinderData()
 });
 
+CreatePartyGUI.registers.onOpen(() => {
+    clearInputFields(inputFields)
+    clearCheckBoxes(checkBoxListCreate)
+});
+
 PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
     if (buttonClicked(mouseX, mouseY, button, buttonsPfwindow)) return;
     if (buttonClickedList(mouseX, mouseY, button, allPartyButtons)) return;
@@ -143,6 +149,7 @@ PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
 });
 CreatePartyGUI.registers.onMouseClick((mouseX, mouseY, button) => {
     if (submitPartyButton.isClicked(mouseX, mouseY, button)) return;
+    if (checkBoxClicked(mouseX, mouseY, button, checkBoxListCreate)) return;
 });
 HdwiGUI.registerClicked((mouseX, mouseY, button) => {
     if (backButton.isClicked(mouseX, mouseY, button)) return;
@@ -208,8 +215,8 @@ function drawButtonsMain(layoutData) {
 function drawButtonsCreate(layoutData) {
     const [mouseX, mouseY] = [Client.getMouseX(), Client.getMouseY()]
     submitPartyButton.customize({
-        x: layoutData.createPartyX, y: layoutData.createPartyY,
-        width: layoutData.createPartyWidth, height: layoutData.buttonHeight1
+        x: layoutData.createWindowX, y: layoutData.createPartyButtonY,
+        width: layoutData.createWindowWidth, height: layoutData.createPartyButtonHeight
     }).draw(mouseX, mouseY)
 }
 function drawButtonsHdwi(layoutData) {
@@ -250,8 +257,6 @@ const pageNextButton = new Button(20, 20, 90, 20, "=>", false, true, true, color
 });
 buttonsPfwindow.push(pageNextButton)
 const createPartyButton = new Button(0, 0, 90, 20, "Create Party", false, true, true, color(0,196,255,255)).onClick(() => {
-    SbLevel.textInput.setText("")
-    SbLevel.text = ""
     CreatePartyGUI.ctGui.open()
 });
 buttonsPfwindow.push(createPartyButton)
@@ -266,14 +271,31 @@ const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true, col
     }
 });
 buttonsPfwindow.push(deQueueButton)
-const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, true, true, color(255,255,255,255)).onClick(() => {
-    print(SbLevel.getText())
+const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, false, true, color(255,255,255,255)).onClick(() => {
+    let reqs = getRequirements()
+    Object.entries(reqs).forEach(([key, value]) => {
+        // print key: value \n
+        print(`${key}: ${value}`)
+    })
     createParty()
     PartyFinderGUI.open()
 });
 const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, color(255,255,255,255)).onClick(() => {
     PartyFinderGUI.open()
 });
+
+function getRequirements() {
+    let reqs = {}
+    Object.entries(inputFields).forEach(([key, object]) => {
+        let text = object.text
+        if (text === "") reqs[key] = 0
+        else reqs[key] = text
+    })
+    checkBoxListCreate.forEach((checkBox) => {
+        reqs[checkBox.text.replace(" ","")] = checkBox.checked
+    })
+    return reqs
+}
 
 const pfText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1.75, true)
 const onlineUserText = new TextClass(color(233, 233, 233, 255), 0, 0, ``, 1, false)
@@ -290,15 +312,15 @@ function drawCheckBoxesMain(param = {}) {
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
 }
 
-const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), () => {
+const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
     filterPartyList()
 });
 checkBoxList.push(emanCheckBox)
-const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), () => {
-
+const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
+    filterPartyList()
 });
-const looting5CheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), () => {
-
+const looting5CheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
+    filterPartyList()
 });
 
 function partyFinderRender() {
@@ -374,15 +396,36 @@ function requiremtnsFormat(requirements) {
     reqsText = reqsText.slice(0, -2)
     return reqsText
 }
+let dianaKillsText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
+let sbLevelText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
+let looting5box = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
+let eman9ReqsBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
+let mvpPlusBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
+checkBoxListCreate.push(eman9ReqsBox)
+checkBoxListCreate.push(looting5box)
+checkBoxListCreate.push(mvpPlusBox)
+
+function drawCheckBoxesCreate(layoutData) {
+    eman9ReqsBox.draw().setText("Eman9").setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 2.3)
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
+    looting5box.draw().setText("Looting 5").setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.75)
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
+    mvpPlusBox.draw().setText("MVP+").setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.4)
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
+}
 
 function createPartyRender() {
     let layoutData = getLayoutData()
-    createPartyBlock.setX(new PixelConstraint(layoutData.pfWindowX))
-    createPartyBlock.setY(new PixelConstraint(layoutData.pfWindowY))
-    createPartyBlock.setWidth(new PixelConstraint(layoutData.pfWindowWidth))
-    createPartyBlock.setHeight(new PixelConstraint(layoutData.pfWindowHeight))
-    outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
+    createPartyBlock.setX(new PixelConstraint(layoutData.createWindowX))
+    createPartyBlock.setY(new PixelConstraint(layoutData.createWindowY))
+    createPartyBlock.setWidth(new PixelConstraint(layoutData.createWindowWidth))
+    createPartyBlock.setHeight(new PixelConstraint(layoutData.createWindowHeight))
+    dianaKillsText.draw().setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 7).setText("Diana Kills")
+    sbLevelText.draw().setX(layoutData.createWindowX + 10).setY(layoutData.createWindowY + layoutData.createWindowHeight / 3.5).setText("Skyblock Level")
+    drawCheckBoxesCreate(layoutData)
     drawButtonsCreate(layoutData);
+    line(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createPartyButtonY, layoutData.createWindowX + layoutData.createWindowWidth, layoutData.createPartyButtonY, 1);
+    outline(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createWindowY, layoutData.createWindowWidth, layoutData.createWindowHeight, 1);
 }
 
 function hdwiRender() {
@@ -418,11 +461,26 @@ function partyFinderClose() {
     currentPage = 1
 }
 
-function filterTextInput(object) {
-    let text = object.text
-    text = text.replace(/[^0-9]/g, "")
-    object.textInput.setText(text)
-    object.text = text
+function filterTextInput(list) {
+    Object.entries(list).forEach(([key, object]) => {
+        let text = object.text
+        text = text.replace(/[^0-9]/g, "")
+        object.textInput.setText(text)
+        object.text = text
+    })
+}
+
+function clearInputFields(dict) {
+    Object.entries(dict).forEach(([key, object]) => {
+        object.textInput.setText("")
+        object.text = ""
+    })
+}
+
+function clearCheckBoxes(list) {
+    list.forEach((checkBox) => {
+        checkBox.checked = false
+    })
 }
 
 PartyInfoGUI.registerKeyTyped((char, keyCode) => {
@@ -431,7 +489,7 @@ PartyInfoGUI.registerKeyTyped((char, keyCode) => {
     }
 });
 CreatePartyGUI.registers.onKeyType((char, keyCode) => {
-    filterTextInput(SbLevel)
+    filterTextInput(inputFields)
     if (keyCode === Keyboard.KEY_ESCAPE) {
         PartyFinderGUI.open();
     }
@@ -441,18 +499,23 @@ HdwiGUI.registerKeyTyped((char, keyCode) => {
         PartyFinderGUI.open()
     }
 });
-
+let inputFields = {}
 let createLayoutData = getLayoutData()
 let createPartyColor = ElementUtils.getJavaColor([80, 80, 80, 245])
 let createPartyBlock = new UIBlock(createPartyColor)
-    .setX(new PixelConstraint(createLayoutData.pfWindowX))
-    .setY(new PixelConstraint(createLayoutData.pfWindowY))
-    .setWidth(new PixelConstraint(createLayoutData.pfWindowWidth))
-    .setHeight(new PixelConstraint(createLayoutData.pfWindowHeight))
+    .setX(new PixelConstraint(createLayoutData.createWindowX))
+    .setY(new PixelConstraint(createLayoutData.createWindowY))
+    .setWidth(new PixelConstraint(createLayoutData.createWindowWidth))
+    .setHeight(new PixelConstraint(createLayoutData.createWindowHeight))
     .setChildOf(CreatePartyGUI.window)
-let SbLevel = new TextInputElement("", 10, 10, 12, 5)
+let SbLevel = new TextInputElement("", 34, 25, 18, 12)
+SbLevel.onMouseEnterEvent(() => {}, true);
 SbLevel._create().setChildOf(createPartyBlock)
-
+inputFields["SbLevel"] = SbLevel
+let DianaKills = new TextInputElement("", 25, 11, 18, 12)
+DianaKills.onMouseEnterEvent(() => {}, true);
+DianaKills._create().setChildOf(createPartyBlock)
+inputFields["DianaKills"] = DianaKills
 register("command", () => {
     currentPage = 1
     PartyFinderGUI.open()

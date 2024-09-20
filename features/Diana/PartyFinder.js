@@ -201,7 +201,6 @@ let inQueue = false;
 export function createParty() {
     if (!inQueue) {
         inQueue = true;
-        print("creating party");
         creatingParty = true;
         sendPartyRequest();
         createPartyTimeStamp = Date.now();

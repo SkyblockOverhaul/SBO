@@ -1238,7 +1238,7 @@ export class Button {
 }
 
 export class CheckBox {
-    constructor(x, y, width, height, text, outlineColor, textColor, action) {
+    constructor(x, y, width, height, text, outlineColor, textColor, textScale = 1) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -1246,10 +1246,10 @@ export class CheckBox {
         this.text = text;
         this.outlineColor = outlineColor;
         this.textColor = textColor;
-        this.checked = false;
-        this.action = action;
+        this.textScale = textScale;
 
-        this.textSize = 1.0;
+        this.checked = false;
+        this.action = undefined;
         this.textWidth = undefined;
         this.textHeight = undefined;
         this.lastScale = undefined;
@@ -1258,12 +1258,18 @@ export class CheckBox {
         this.originalHeight = height;
     }
 
+    onClick(action) {
+        this.action = action;
+        return this;
+    }
+
     isClicked(mouseX, mouseY, button) {
         if (mouseX >= this.x && mouseX <= this.x + this.textWidth + 5 + this.width &&
             mouseY >= this.y && mouseY <= this.y + this.height) {
             if (button == 0) {
                 this.checked = !this.checked;
-                this.action(this.checked);
+                if (this.action)
+                    this.action();
                 return true;
             }
         }
@@ -1299,7 +1305,7 @@ export class CheckBox {
     draw() {
         this.updateDimensions();
         let bgColor = this.checked ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
-        let textObject = new TextClass(this.textColor, this.x, this.y, this.text, this.textSize, false);
+        let textObject = new TextClass(this.textColor, this.x, this.y, this.text, this.textScale, false);
         textObject.draw();
         this.textWidth = textObject.width;
         this.textHeight = textObject.height;
@@ -1344,6 +1350,11 @@ export function getLayoutDataPartyFinder() {
     let pfWindowHeight = displayY * 0.8
     let pfWindowX = (displayX - pfWindowWidth) / 2
     let pfWindowY = (displayY - pfWindowHeight) / 2
+
+    let createWindowWidth = displayX * 0.2
+    let createWindowHeight = displayY * 0.2
+    let createWindowX = (displayX - createWindowWidth) / 2
+    let createWindowY = (displayY - createWindowHeight) / 2
 
     let pfListWidth = pfWindowWidth
     let pfListHeight = pfWindowHeight * 0.85
@@ -1396,6 +1407,12 @@ export function getLayoutDataPartyFinder() {
     let checkBoxHeight = displayY * 0.00974
     let checkBoxWidth = displayX * 0.00548
 
+    let cbCreateHeight = displayY * 0.012
+    let cbCreateWidth = displayX * 0.007
+
+    let createPartyButtonHeight = createWindowHeight * 0.15
+    let createPartyButtonY = createWindowY + createWindowHeight * 0.85
+
     return {
         displayX, displayY,
         pfWindowWidth, pfWindowHeight, pfWindowX, pfWindowY,
@@ -1413,7 +1430,10 @@ export function getLayoutDataPartyFinder() {
         partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
         buttonHeight1, buttonHeight2,
         checkBoxHeight, checkBoxWidth,
-        partyBackButtoX
+        partyBackButtoX,
+        cbCreateHeight, cbCreateWidth,
+        createWindowWidth, createWindowHeight, createWindowX, createWindowY,
+        createPartyButtonHeight, createPartyButtonY
     }
 }
 
