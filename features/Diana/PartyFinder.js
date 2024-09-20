@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
@@ -14,9 +14,14 @@ function getPartyInfo(party) {
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
     }).then((response)=> {
-        let timeTaken = Date.now() - firstTimeStamp;
-        ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
-        printPartyInfo(response.PartyInfo)
+        if (response.success) {
+            let timeTaken = Date.now() - firstTimeStamp;
+            ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
+            printPartyInfo(response.PartyInfo)
+        }
+        else {
+            ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+        }
     }).catch((error)=> {
         if (error.detail) {
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
@@ -170,7 +175,11 @@ function checkPlayer(player) {
         url: api + "/partyInfo?party=" + playerName,
         json: true
     }).then((response)=> {
-        printCheckedPlayer(response.PartyInfo)
+        if (response.success) {
+            printCheckedPlayer(response.PartyInfo)
+        } else {
+            ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+        }
     }).catch((error)=> {
         if (error.detail) {
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
@@ -238,12 +247,31 @@ export function getAllParties(useCallback = false, callback = null) {
     });
 }
 
+function checkIfPlayerMeetsReqs(player, reqs) {
+    if (reqs.lvl && player.sbLvl < reqs.lvl) {
+        return false;
+    }
+    if (reqs.eman9 && !player.eman9) {
+        return false;
+    }
+    if (reqs.kills && player.mythosKills < reqs.kills) {
+        return false;
+    }
+    if (reqs.looting5 && !player.looting5daxe) {
+        return false;
+    }
+    return true;
+}
+
 let playersSendRequest = [];
-export function sendJoinRequest(partyLeader) {
-    let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
-    ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
-    playersSendRequest.push(partyLeader.toLowerCase().trim());
+export function sendJoinRequest(partyLeader, partyReqs) {
+    let playerInfo = getDianaStats();
+    if (checkIfPlayerMeetsReqs(playerInfo, partyReqs)) {
+        let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
+        ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
+        playersSendRequest.push(partyLeader.toLowerCase().trim());
+    }
 }
 
 register("chat", (player) => {
@@ -450,9 +478,14 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
         }).then((response)=> {
-            let timeTaken = Date.now() - createPartyTimeStamp;
-            ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
-            inQueue = true; 
+            if (response.success) {
+                let timeTaken = Date.now() - createPartyTimeStamp;
+                ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
+                inQueue = true; 
+            } else {
+                ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+                inQueue = false;
+            }
         }).catch((error)=> {
             inQueue = false;
             if (error.detail) {
@@ -470,6 +503,13 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         request({
             url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
+        }).then((response)=> {
+            if (response.success) {
+                let timeTaken = Date.now() - createPartyTimeStamp;
+                ChatLib.chat("&6[SBO] &eParty in queue updated successfully  " + timeTaken + "ms");
+            } else {
+                ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+            }
         }).catch((error)=> {
             inQueue = false;
             if (error.detail) {
