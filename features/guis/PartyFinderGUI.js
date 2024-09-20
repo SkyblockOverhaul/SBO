@@ -146,7 +146,7 @@ function openPartyInfo(party) {
     currentMemberList = []
     PartyInfoGUI.open()
     party.partyinfo.forEach((memberObject) => {
-        let memberButton = new Button(0, 0, 90, 20, memberObject.name, false, true, true, color(255,255,255,255))
+        let memberButton = new Button(0, 0, 90, 20, memberObject.name, false, true, true, color(255,255,255,255), "", true, 2)
         let object = {
             button: memberButton,
             memberObject: memberObject
