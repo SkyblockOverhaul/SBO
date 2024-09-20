@@ -1,7 +1,7 @@
 import { request } from "../../requestV2";
 import settings, { getcustomSounds } from "../settings";
 import { HypixelModAPI } from "./../../HypixelModAPI";
-import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
+import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, mainCheckboxes } from "./variables";
 import { getWorld } from "./world";
 
 /**
@@ -1242,7 +1242,7 @@ export class Button {
 }
 
 export class CheckBox {
-    constructor(x, y, width, height, text, outlineColor, textColor, textScale = 1) {
+    constructor(x, y, width, height, text, outlineColor, textColor, dataField = undefined, textScale = 1) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -1251,8 +1251,10 @@ export class CheckBox {
         this.outlineColor = outlineColor;
         this.textColor = textColor;
         this.textScale = textScale;
+        this.dataField = dataField;
 
-        this.checked = false;
+        this.dataObject = mainCheckboxes;
+        this.checked = this.dataObject[this.dataField] !== undefined ? this.dataObject[this.dataField] : false;
         this.action = undefined;
         this.textWidth = undefined;
         this.textHeight = undefined;
@@ -1272,6 +1274,10 @@ export class CheckBox {
             mouseY >= this.y && mouseY <= this.y + this.height) {
             if (button == 0) {
                 this.checked = !this.checked;
+                if (this.dataField) {
+                    this.dataObject[this.dataField] = this.checked;
+                    this.dataObject.save();
+                }
                 if (this.action)
                     this.action();
                 return true;
@@ -1356,7 +1362,7 @@ export function getLayoutDataPartyFinder() {
     let pfWindowY = (displayY - pfWindowHeight) / 2
 
     let createWindowWidth = displayX * 0.2
-    let createWindowHeight = displayY * 0.2
+    let createWindowHeight = displayY * 0.33
     let createWindowX = (displayX - createWindowWidth) / 2
     let createWindowY = (displayY - createWindowHeight) / 2
 
@@ -1408,8 +1414,8 @@ export function getLayoutDataPartyFinder() {
     let buttonHeight1 = displayY * 0.04
     let buttonHeight2 = displayY * 0.05
 
-    let checkBoxHeight = displayY * 0.00974
-    let checkBoxWidth = displayX * 0.00548
+    let checkBoxHeight = displayY * 0.012
+    let checkBoxWidth = displayX * 0.0063
 
     let cbCreateHeight = displayY * 0.012
     let cbCreateWidth = displayX * 0.007
