@@ -1459,10 +1459,14 @@ export function getDianaStats() {
     }
 }
 
+let loadingDianaStats = false;
 function loadDianaStats(useCallback = false, callback = null) {
     // 10 minutes
+    if (loadingDianaStats) return;
+    loadingDianaStats = true;
     if (data.dianaStatsUpdated && Date.now() - data.dianaStatsUpdated < 600000) {
         dianaStats = data.dianaStats;
+        loadingDianaStats = false;
         if (useCallback && callback) {
             callback(dianaStats);
         }
@@ -1476,6 +1480,7 @@ function loadDianaStats(useCallback = false, callback = null) {
         data.dianaStats = dianaStats;
         data.dianaStatsUpdated = Date.now();
         data.save();	
+        loadingDianaStats = false;
         if (useCallback && callback) {
             callback(dianaStats);
         } 
