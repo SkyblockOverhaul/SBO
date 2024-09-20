@@ -1516,3 +1516,92 @@ register("command", () => {
     }, 1000);
     print(getDianaStats())
 }).setName("sbotimeout");
+
+export function requirementsFormat(requirements, myStats) {
+    let reqsText = ""
+    let myReqs = myStats
+    Object.entries(requirements).forEach(([key, value]) => {
+        switch (key) {
+            case "eman9":
+                if (myReqs["eman9"] === true) {
+                    key = "&aeman9"
+                }
+                else {
+                    key = "&ceman9"
+                }
+                value = ""
+                break;
+            case "kills":
+                if (myReqs["mythosKills"] >= value) {
+                    key = `&a${key}`
+                    value = `&a${formatNumber(value)}`
+                }
+                else {
+                    key = `&c${key}`
+                    value = `&c${formatNumber(value)}`
+                }
+                break;
+            case "lvl":
+                if (myReqs["sbLvl"] >= value) {
+                    key = `&a${key}`
+                    value = `&a${formatNumber(value)}`
+                }
+                else {
+                    key = `&c${key}`
+                    value = `&c${formatNumber(value)}`
+                }
+                break;
+            // case "mvpplus":
+            //     if (myReqs["mvp+"] === true) {
+            //         key = "&amvp+"
+            //     }
+            //     else {
+            //         key = "&cmvp+"
+            //     }
+            //     value = ""
+            //     break;
+            case "looting5":
+                if (myReqs["looting5daxe"] === true) {
+                    key = "&alooting5"
+                }
+                else {
+                    key = "&clooting5"
+                }
+                value = ""
+                break;
+        }
+        if (value === "") {
+            reqsText += `${key}&r&7, &r`
+        } else {
+            reqsText += `${key}&r&7:&r ${value}&r&7, &r`
+        }
+    })
+    reqsText = reqsText.slice(0, -2)
+    return reqsText
+}
+
+export function pMmMColor(partymembers) {
+    let strColor = undefined
+    if (partymembers < 4) {
+        strColor = color(0, 255, 0, 255)
+    }
+    else {
+        strColor = color(255, 165, 0, 255)
+    }
+    return strColor
+}
+
+export function filterTextInput(list) {
+    Object.entries(list).forEach(([key, object]) => {
+        let text = object.text
+        text = text.replace(/[^0-9]/g, "")
+        if (key === "lvl") {
+            if (text.length > 3) text = text.slice(0, 3)
+        }
+        if (key === "kills") {
+            if (text.length > 6) text = text.slice(0, 6)
+        }
+        object.textInput.setText(text)
+        object.text = text
+    })
+}

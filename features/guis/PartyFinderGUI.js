@@ -1,10 +1,13 @@
-import { drawRectangleOutline as outline, rect, formatPlayerInfo, color, getDianaStats, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
+import { drawRectangleOutline as outline, rect, formatPlayerInfo, color, getDianaStats, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, 
+    CheckBox, formatNumber, isInSkyblock, pMmMColor, requirementsFormat, filterTextInput
+} from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 import ElementUtils from "../../../DocGuiLib/core/Element"
 import TextInputElement from "../../../DocGuiLib/elements/TextInput";
 import HandleGui from "../../../DocGuiLib/core/Gui";
 import { UIBlock, PixelConstraint } from "../../../Elementa"
+import { isDataLoaded } from "../../utils/checkData";
 
 const PartyFinderGUI = new Gui()
 const HdwiGUI = new Gui()
@@ -22,7 +25,6 @@ let joinButtons = []
 let partyInfoButtons = []
 let allPartyButtons = []
 let buttonsPfwindow = []
-let maxMembers = 6
 let startDisplayWidth = Renderer.screen.getWidth()
 let startDisplayHeight = Renderer.screen.getHeight()
 
@@ -44,6 +46,16 @@ const filters = {
     "Looting 5": (party) => {
         const requirements = party.reqs;
         return requirements.looting5 === true;
+    },
+    "canIjoin": (party) => {
+        const requirements = party.reqs;
+        let myReqs = dianaStats
+        if (myReqs === undefined) return false;
+        if (requirements.eman9 && !myReqs["eman9"]) return false;
+        if (requirements.looting5 && myReqs["daxeLootingLvl"] !== 5) return false;
+        if (requirements.lvl && myReqs["sbLvl"] < requirements.lvl) return false;
+        if (requirements.kills && myReqs["mythosKills"] < requirements.kills) return false;
+        return true;
     }
 };
 
@@ -143,10 +155,10 @@ function openPartyInfo(party) {
     })
 }
  
+let dianaStats
 PartyFinderGUI.registerOpened(() => {
     textObject.setText("")
-    let dianaStats = getDianaStats()
-    print(dianaStats)
+    dianaStats = getDianaStats()
     getPartyFinderData()
 });
 
@@ -286,11 +298,14 @@ const deQueueButton = new Button(0, 0, 90, 20, "Dequeue", false, true, true, col
 buttonsPfwindow.push(deQueueButton)
 const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, false, true, color(255,255,255,255)).onClick(() => {
     let reqs = getRequirements()
+    let reqsString = ""
     Object.entries(reqs).forEach(([key, value]) => {
-        // print key: value \n
-        print(`${key}: ${value}`)
+        if (key === "MVP+") key = "mvpplus"
+        if (value === 0 || value === false) return;
+        if (value === true) value = ""
+        reqsString += `${key}${value},`.toLowerCase()
     })
-    createParty()
+    createParty(reqsString)
     PartyFinderGUI.open()
 });
 const backButton = new Button(0, 0, 90, 20, "Back", false, true, true, color(255,255,255,255)).onClick(() => {
@@ -384,12 +399,12 @@ function partyFinderRender() {
             let row1y = partyBoxY + (layoutData.partyBoxHeight / 5.5)
             let row2y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 2
             let row3y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 3
-            let requirements = requiremtnsFormat(party.reqs)
+            let requirements = requirementsFormat(party.reqs, dianaStats)
+            let pMmMcolor = pMmMColor(party.partymembers)
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
-            leaderText.draw().setX(layoutData.partyBoxX + 5).setY(row1y).setText(`Leader: ${party.leaderName}`)
-            membersText.draw().setX(layoutData.partyBoxX + 5).setY(row2y).setText(`Members: ${party.partymembers}/${maxMembers}`)
-            // partyReqs.draw().setX(layoutData.partyBoxX + 5).setY(row3y).setText(`Requirements: \nEman: ${party.emanreq}, lvl: ${party.lvlreq}`)
-            partyReqs.draw().setX(layoutData.partyBoxX + 5).setY(row3y).setText(`Requirements: \n${requirements}`)
+            leaderText.draw().setX(layoutData.partyBoxX + 5).setY(row1y).setText(`&b${party.leaderName}'s Party`)
+            membersText.draw().setX(layoutData.partyBoxX + 5).setY(row2y).setText(`&9Members: &r${party.partymembers}/6`).setColor(pMmMcolor)
+            partyReqs.draw().setX(layoutData.partyBoxX + 5).setY(row3y).setText(`&9Requirements: &r\n${requirements}`)
         });
     }
 
@@ -403,27 +418,6 @@ function partyFinderRender() {
     drawCheckBoxesMain({x: checkBoxX})
 }
 
-function requiremtnsFormat(requirements) {
-    let reqsText = ""
-    Object.entries(requirements).forEach(([key, value]) => {
-        switch (key) {
-            case "eman9":
-                if (value === "false") return;
-                key = "eman9"
-                value = ""
-                break;
-            case "kills":
-                value = formatNumber(value)
-        }
-        if (value === "") {
-            reqsText += `${key}, `
-        } else {
-            reqsText += `${key}: ${value}, `
-        }
-    })
-    reqsText = reqsText.slice(0, -2)
-    return reqsText
-}
 let dianaKillsText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
 let sbLevelText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
 let looting5box = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
@@ -489,15 +483,6 @@ function partyFinderClose() {
     currentPage = 1
 }
 
-function filterTextInput(list) {
-    Object.entries(list).forEach(([key, object]) => {
-        let text = object.text
-        text = text.replace(/[^0-9]/g, "")
-        object.textInput.setText(text)
-        object.text = text
-    })
-}
-
 function clearInputFields(dict) {
     Object.entries(dict).forEach(([key, object]) => {
         object.textInput.setText("")
@@ -540,13 +525,16 @@ let SbLevel = new TextInputElement("", 0, 33, 0, 12)
 SbLevel.onMouseEnterEvent(() => {}, true);
 SbLevel._create().setChildOf(createPartyBlock)
 SbLevel.bgBox.setWidth((100).percent())
-inputFields["SbLevel"] = SbLevel
+inputFields["lvl"] = SbLevel
 let DianaKills = new TextInputElement("", 0, 11, 0, 12)
 DianaKills.onMouseEnterEvent(() => {}, true);
 DianaKills._create().setChildOf(createPartyBlock)
 DianaKills.bgBox.setWidth((100).percent())
-inputFields["DianaKills"] = DianaKills
+inputFields["kills"] = DianaKills
+
 register("command", () => {
-    currentPage = 1
-    PartyFinderGUI.open()
+    if (isDataLoaded() && isInSkyblock()) {
+        currentPage = 1
+        PartyFinderGUI.open()
+    }   
 }).setName("sbopartyfinder").setAliases("sbopf")
