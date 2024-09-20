@@ -342,7 +342,9 @@ let partyCount = 0;
 function trackMemberCount(number) {
     if (inQueue) {
         partyCount = partyCount + number; 
-        if (partyCount >= 5) ChatLib.chat("&6[SBO] &eYour party is full. You have 6 members in your party.");
+        setTimeout(() => {
+            if (partyCount >= 6) ChatLib.chat("&6[SBO] &eYour party is full. You have 6 members in your party.");
+        }, 150);
         // ChatLib.chat("&6[SBO] &eParty members count: " + partyCount);
     }
 }
