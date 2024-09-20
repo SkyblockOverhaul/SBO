@@ -4,11 +4,17 @@ import { HypixelModAPI } from "./../../HypixelModAPI";
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
 import { getWorld } from "./world";
 
-// geklaut von coleweight for drawline
-if(!GlStateManager) {
-    let GL11=Java.type("org.lwjgl.opengl.GL11")
-    let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
-}
+/**
+ * @param {number} x - x coordinate
+ * @param {number} y - y coordinate
+ * @param {number} z - z coordinate 
+ * @param {number} red - red color value [0-255] 
+ * @param {number} green - green color value [0-255]
+ * @param {number} blue - blue color value [0-255]
+ * @param {number} alpha - alpha value [0-255]
+ * @param {number} type - type of trace, calc is centering the line on the block
+ * @param {number} lineWidth - width of the line
+ */
 export function trace (x, y, z, red, green, blue, alpha, type, lineWidth) {
     if (type === "calc")
     {
@@ -24,7 +30,7 @@ export function trace (x, y, z, red, green, blue, alpha, type, lineWidth) {
             z = parseFloat(z) - 0.5;
         }
     }
-    if(Player.isSneaking())
+    if (Player.isSneaking())
         drawLine(Player.getRenderX(), Player.getRenderY() + 1.54, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
     else
         drawLine(Player.getRenderX(), Player.getRenderY() + 1.62, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
@@ -32,24 +38,22 @@ export function trace (x, y, z, red, green, blue, alpha, type, lineWidth) {
 
 function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth)
 {
-    GL11.glBlendFunc(770,771)
-    GL11.glEnable(GL11.GL_BLEND)
+    GlStateManager.func_179112_b(770,771)
+    GlStateManager.func_179147_l()
     GL11.glLineWidth(lineWidth)
-    GL11.glDisable(GL11.GL_TEXTURE_2D)
-    GL11.glDisable(GL11.GL_DEPTH_TEST)
-    GL11.glDepthMask(false)
-    GlStateManager.func_179094_E()
+    GlStateManager.func_179090_x()
+    GlStateManager.func_179097_i()
+    GlStateManager.func_179132_a(false)
 
     Tessellator.begin(GL11.GL_LINE_STRIP).colorize(red, green, blue, alpha)
     Tessellator.pos(x1, y1, z1).tex(0, 0)
     Tessellator.pos(x2, y2, z2).tex(0, 0)
     Tessellator.draw()
 
-    GlStateManager.func_179121_F()
-    GL11.glEnable(GL11.GL_TEXTURE_2D)
-    GL11.glEnable(GL11.GL_DEPTH_TEST)
-    GL11.glDepthMask(true)
-    GL11.glDisable(GL11.GL_BLEND)
+    GlStateManager.func_179098_w()
+    GlStateManager.func_179126_j()
+    GlStateManager.func_179132_a(true)
+    GlStateManager.func_179084_k()
 }
 
 export function getClosest(origin, positions) {
