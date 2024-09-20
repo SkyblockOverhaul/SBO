@@ -445,7 +445,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             return;
         }
         request({
-            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=lvl300,eman9,kills10000,looting5,mvp+",
             json: true
         }).then((response)=> {
             let timeTaken = Date.now() - createPartyTimeStamp;
@@ -466,7 +466,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         if (party.length > 5) return;
         ChatLib.chat("&6[SBO] &eUpdating party members in queue...");
         request({
-            url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", ""),
+            url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=lvl300,eman9,kills10000,looting5,mvp+",
             json: true
         }).catch((error)=> {
             inQueue = false;
