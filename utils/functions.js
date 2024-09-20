@@ -1517,9 +1517,9 @@ register("command", () => {
     print(getDianaStats())
 }).setName("sbotimeout");
 
-export function requirementsFormat(requirements, myStats) {
+export function requirementsFormat(requirements) {
     let reqsText = ""
-    let myReqs = myStats
+    let myReqs = getDianaStats()
     if (myReqs === undefined) {
         myReqs = {
             "eman9": false,
