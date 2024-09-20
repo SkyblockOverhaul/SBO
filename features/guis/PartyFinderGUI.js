@@ -1,4 +1,4 @@
-import { drawRectangleOutline as outline, rect, formatPlayerInfo, color,  line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
+import { drawRectangleOutline as outline, rect, formatPlayerInfo, color, getDianaStats, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, CheckBox, formatNumber } from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
 import ElementUtils from "../../../DocGuiLib/core/Element"
@@ -37,6 +37,14 @@ const filters = {
         const requirements = party.reqs;
         return requirements.eman9 === true;
     },
+    "MVP+": (party) => {
+        const requirements = party.reqs;
+        return requirements.mvpplus === true;
+    },
+    "Looting 5": (party) => {
+        const requirements = party.reqs;
+        return requirements.looting5 === true;
+    }
 };
 
 function filterPartyList() {
@@ -53,6 +61,9 @@ function filterPartyList() {
     pageCount = Math.ceil(partyCount / 6);
     if (currentPage > pageCount) {
         currentPage = pageCount;
+    }
+    else if (currentPage < 1) {
+        currentPage = 1;
     }
     updatePageButtons();
 }
@@ -134,6 +145,8 @@ function openPartyInfo(party) {
  
 PartyFinderGUI.registerOpened(() => {
     textObject.setText("")
+    let dianaStats = getDianaStats()
+    print(dianaStats)
     getPartyFinderData()
 });
 
@@ -316,20 +329,27 @@ function drawCheckBoxesMain(param = {}) {
     looting5CheckBox.draw().setText("Looting 5")
     .setX(param.x + emanCheckBox.width + emanCheckBox.textWidth + 20).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 50)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
+    canIJoinCheckBox.draw().setText("Can I Join")
+    .setX(param.x + emanCheckBox.width + emanCheckBox.textWidth + 20).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 20)
+    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
 }
 
-const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
+const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "eman9").onClick(() => {
     filterPartyList()
 });
 checkBoxList.push(emanCheckBox)
-const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
+const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "mvpplus").onClick(() => {
     filterPartyList()
 });
 checkBoxList.push(mvpPlusCheckBox)
-const looting5CheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255)).onClick(() => {
+const looting5CheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "looting5").onClick(() => {
     filterPartyList()
 });
 checkBoxList.push(looting5CheckBox)
+const canIJoinCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "canIjoin").onClick(() => {
+    filterPartyList()
+});
+checkBoxList.push(canIJoinCheckBox)
 
 function partyFinderRender() {
     let layoutData = getLayoutData()
