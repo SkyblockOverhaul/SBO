@@ -1466,7 +1466,10 @@ function loadDianaStats(useCallback = false, callback = null) {
         url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
         json: true
     }).then((response) => {
-        dianaStats = response[0];
+        dianaStats = response.PartyInfo[0];
+        data.dianaStats = dianaStats;
+        data.dianaStatsUpdated = Date.now();
+        data.save();	
         if (useCallback && callback) {
             callback(dianaStats);
         } 
@@ -1505,4 +1508,5 @@ register("command", () => {
         ChatLib.chat("timeout");
         ChatLib.chat("Time passed: " + (Date.now() - timeoutStarted) + "ms");
     }, 1000);
+    print(getDianaStats())
 }).setName("sbotimeout");
