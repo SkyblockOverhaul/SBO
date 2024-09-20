@@ -1,5 +1,5 @@
 import { drawRectangleOutline as outline, rect, formatPlayerInfo, color, getDianaStats, line, TextClass, Button, getActiveUsers, getLayoutDataPartyFinder as getLayoutData, 
-    CheckBox, formatNumber, isInSkyblock, pMmMColor, requirementsFormat, filterTextInput
+    CheckBox, isInSkyblock, pMmMColor, requirementsFormat, filterTextInput
 } from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
 import { request } from "../../../requestV2";
@@ -300,7 +300,6 @@ const submitPartyButton = new Button(0, 0, 90, 20, "Create", false, false, true,
     let reqs = getRequirements()
     let reqsString = ""
     Object.entries(reqs).forEach(([key, value]) => {
-        print(`key: ${key}, value: ${value}`)
         if (key === "MVP+") key = "mvpplus"
         if (value === 0 || value === false) return;
         if (value === true) value = ""
@@ -400,7 +399,7 @@ function partyFinderRender() {
             let row1y = partyBoxY + (layoutData.partyBoxHeight / 5.5)
             let row2y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 2
             let row3y = partyBoxY + (layoutData.partyBoxHeight / 5.5) * 3
-            let requirements = requirementsFormat(party.reqs, dianaStats)
+            let requirements = requirementsFormat(party.reqs)
             let pMmMcolor = pMmMColor(party.partymembers)
             outline(color(0, 173, 255, 255), layoutData.partyBoxX, partyBoxY, layoutData.partyBoxWidth, layoutData.partyBoxHeight, 1);
             leaderText.draw().setX(layoutData.partyBoxX + 5).setY(row1y).setText(`&b${party.leaderName}'s Party`)
