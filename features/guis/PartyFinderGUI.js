@@ -47,15 +47,15 @@ const filters = {
         const requirements = party.reqs;
         return requirements.looting5 === true;
     },
-    "canIjoin": (party) => {
+    "Can I Join": (party) => {
         const requirements = party.reqs;
         let myReqs = dianaStats
-        if (myReqs === undefined) return false;
-        if (requirements.eman9 && !myReqs["eman9"]) return false;
-        if (requirements.looting5 && myReqs["daxeLootingLvl"] !== 5) return false;
-        if (requirements.lvl && myReqs["sbLvl"] < requirements.lvl) return false;
-        if (requirements.kills && myReqs["mythosKills"] < requirements.kills) return false;
-        return true;
+        return (
+            (requirements.lvl === undefined || myReqs.sbLvl >= requirements.lvl) &&
+            (requirements.kills === undefined || myReqs.mythosKills >= requirements.kills) &&
+            (requirements.eman9 === undefined || myReqs.eman9 === requirements.eman9) &&
+            (requirements.looting5 === undefined || myReqs.looting5daxe === requirements.looting5)
+        );
     }
 };
 
