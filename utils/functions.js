@@ -934,6 +934,7 @@ export function formatPlayerInfo(playerInfo) {
             case "invApi":
                 return
             case "killLeaderboard":
+                if (value >= 100) return
                 key = "Leaderboard"
                 value =  "&7#&b" + value
                 break;

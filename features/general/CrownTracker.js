@@ -278,6 +278,7 @@ registerWhen(register("step", () => {
 register("command", () => {
     data.totalCrownCoinsGained = 0;
     data.totalCrownCoinsSession = 0;
+    data.totalCrownCoins = 0;
     data.lastCrownCoins = 0;
     data.ghostKills = 0;
     data.sorrowDrops = 0;
