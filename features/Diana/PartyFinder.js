@@ -1,8 +1,9 @@
 import { request } from "../../../requestV2";
-import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
+import settings from "../../settings";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -13,9 +14,14 @@ function getPartyInfo(party) {
         url: api + "/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
         json: true
     }).then((response)=> {
-        let timeTaken = Date.now() - firstTimeStamp;
-        ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
-        printPartyInfo(response.PartyInfo)
+        if (response.Success) {
+            let timeTaken = Date.now() - firstTimeStamp;
+            ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
+            printPartyInfo(response.PartyInfo)
+        }
+        else {
+            ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+        }
     }).catch((error)=> {
         if (error.detail) {
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
@@ -89,8 +95,11 @@ function printCheckedPlayer(playerinfo) {
     (playerinfo.looting5daxe ? "&a✓" : "&4✗") + 
     "&r&9│ &r&eKills&r&f: &r&6" + 
     (playerinfo.mythosKills / 1000).toFixed(2) + "k")
-    .setClick("run_command", "/p " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name).chat();
-    new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
+    .setClick("run_command", "/pv " + playerinfo.name).setHover("show_text", "/pv " + playerinfo.name).chat();
+    new Message(
+        new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details"),
+        new TextComponent(" &7[&eClick To invite&7]").setClick("run_command", "/p invite " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name),
+    ).chat();
     if (playerinfo.name == Player.getName()) {
         trackWithCheckPlayer(playerinfo);
     }
@@ -166,7 +175,11 @@ function checkPlayer(player) {
         url: api + "/partyInfo?party=" + playerName,
         json: true
     }).then((response)=> {
-        printCheckedPlayer(response.PartyInfo)
+        if (response.Success) {
+            printCheckedPlayer(response.PartyInfo)
+        } else {
+            ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+        }
     }).catch((error)=> {
         if (error.detail) {
             ChatLib.chat("&6[SBO] &4Error: " + error.detail);
@@ -193,14 +206,23 @@ register("chat", (player) => {
 let creatingParty = false;
 let updateBool = false;
 let createPartyTimeStamp = 0;
-export function createParty() {
-    print("Creating Party");
-    creatingParty = true;
-    sendPartyRequest();
-    createPartyTimeStamp = Date.now();
+let inQueue = false;
+let partyReqs = ""
+export function createParty(reqs) {
+    if (!inQueue) {
+        partyReqs = reqs
+        inQueue = true;
+        creatingParty = true;
+        sendPartyRequest();
+        createPartyTimeStamp = Date.now();
+    } else {
+        ChatLib.chat("&6[SBO] &eYou are already in queue.");
+    }
 }
 // "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
-let inQueue = false;
+export function getInQueue() {
+    return inQueue;
+}
 let partyList = [];
 export function getAllParties(useCallback = false, callback = null) { 
     request({
@@ -225,20 +247,55 @@ export function getAllParties(useCallback = false, callback = null) {
     });
 }
 
-function sendJoinRequest(partyLeader) {
-    let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
-    ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
+function checkIfPlayerMeetsReqs(player, reqs) {
+    if (reqs.lvl && player.sbLvl < reqs.lvl) {
+        return false;
+    }
+    if (reqs.eman9 && !player.eman9) {
+        return false;
+    }
+    if (reqs.kills && player.mythosKills < reqs.kills) {
+        return false;
+    }
+    if (reqs.looting5 && !player.looting5daxe) {
+        return false;
+    }
+    return true;
 }
 
-function removePartyFromQueue() {
+let playersSendRequest = [];
+export function sendJoinRequest(partyLeader, partyReqs) {
+    let playerInfo = getDianaStats();
+    if (checkIfPlayerMeetsReqs(playerInfo, partyReqs)) {
+        let generatedUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        ChatLib.chat("&6[SBO] &eSending join request to " + partyLeader);
+        ChatLib.command("msg " + partyLeader + " [SBO] join party request - id:" + generatedUUID + " - " + generatedUUID.length)
+        playersSendRequest.push(partyLeader.toLowerCase().trim());
+    } else {
+        ChatLib.chat("&6[SBO] &eYou don't meet the requirements to join this party");
+    }
+}
+
+register("chat", (player) => {
+    player = getplayername(player).toLowerCase().trim();
+    if (playersSendRequest.includes(player)) {
+        ChatLib.chat("&6[SBO] &eJoining party: " + player);
+        playersSendRequest = [];
+        ChatLib.command("p accept " + player);
+    }
+}).setCriteria("${player} &r&ehas invited you to join their party!").setContains();
+
+export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
+        inQueue = false;
         request({
             url: api + "/unqueueParty?leaderId=" + Player.getUUID().replaceAll("-", ""),
             json: true
         }).then((response)=> {
-            inQueue = false;
             ChatLib.chat("&6[SBO] &eYou have been removed from the queue");
+            if (useCallback && callback) {
+                callback(true);
+            }
         }).catch((error)=> {
             if (error.detail) {
                 ChatLib.chat("&6[SBO] &4Error3: " + error.detail);
@@ -250,9 +307,17 @@ function removePartyFromQueue() {
     }
 }
 
+let requestSend = false;
 function updatePartyInQueue() {
     if (inQueue) {
         updateBool = true;
+        requestSend = false;
+        setTimeout(() => {
+            if (updateBool && !requestSend) { // because skytils sends request to mod api after every party member join/leave
+                requestSend = true;
+                sendPartyRequest();
+            }
+        }, 500);
     }
 }
 
@@ -291,7 +356,6 @@ leaderMessages = [
 ]
 memberJoined = [
     /^(.+) &r&ejoined the party.&r$/,
-    /^(.+) &r&einvited &r.+ &r&eto the party! They have &r&c60 &r&eseconds to accept.&r$/,
     /^&eYou have joined &r(.+)'[s]? &r&eparty!&r$/,
     /^&dParty Finder &r&f> &r(.+) &r&ejoined the dungeon group! \(&r&b.+&r&e\)&r$/
 ]
@@ -301,41 +365,83 @@ memberLeft = [
     /^(.+) was removed from your party because they disconnected.$/,
     /^Kicked (.+) because they were offline.$/
 ]
-register("chat", (event) => {
+let inParty = false;
+export function isInParty() {
+    return inParty;
+}
+
+let partyCount = 0;
+function trackMemberCount(number) {
     if (inQueue) {
-        let formatted = ChatLib.getChatMessage(event, true)
-        leaderMessages.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) removePartyFromQueue()
-        })
-        partyDisbanded.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) removePartyFromQueue()
-        })
-        memberJoined.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) updatePartyInQueue()
-        })
-        memberLeft.forEach(regex => {
-            let match = formatted.match(regex)
-            if (match) updatePartyInQueue()
-        })
+        partyCount = partyCount + number; 
+        setTimeout(() => {
+            // ChatLib.chat("&6[SBO] &eParty members count: " + partyCount);
+            if (partyCount >= 6) {      
+                ChatLib.chat("&6[SBO] &eYour party is full and removed from the queue.");
+                removePartyFromQueue();
+            }
+        }, 150);
     }
+}
+        
+
+register("chat", (event) => {
+    let formatted = ChatLib.getChatMessage(event, true)
+    leaderMessages.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            removePartyFromQueue()
+            inParty = true;
+        }
+    })
+    partyDisbanded.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            removePartyFromQueue()
+            partyCount = 0;
+            inParty = false;
+        }
+    })
+    memberJoined.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            updatePartyInQueue()
+            trackMemberCount(1);
+            inParty = true;
+        }
+    })
+    memberLeft.forEach(regex => {
+        let match = formatted.match(regex)
+        if (match) {
+            updatePartyInQueue()
+            trackMemberCount(-1);
+            inParty = true;
+            
+        }
+    })
 })
 
-register("chat", (player, id, event) => {
-    cancel(event);
-    if (inQueue) {
+
+register("chat", (toFrom, player, id, event) => {
+    if (inQueue && toFrom.includes("From")) {
         // join request message
-        ChatLib.chat(ChatLib.getChatBreak("&b-"))
-        new Message(
-            new TextComponent(`&6[SBO] &b${player} &ewants to join your party.\n`),
-            new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite " + player).setHover("show_text", "&a/p invite " + player),
-            new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck " + player).setHover("show_text", "&eCheck " + player)
-        ).chat();
-        ChatLib.chat(ChatLib.getChatBreak("&b-"))
+        if (partyCount < 6) {
+            if (settings.autoInvite) {
+                ChatLib.chat("&6[SBO] &eSending invite to " + player);
+                ChatLib.command("p invite " + player);
+            } else {
+                ChatLib.chat(ChatLib.getChatBreak("&b-"))
+                new Message(
+                    new TextComponent(`&6[SBO] &b${player} &ewants to join your party.\n`),
+                    new TextComponent(`&7[&aAccept&7]`).setClick("run_command", "/p invite " + player).setHover("show_text", "&a/p invite " + player),
+                    new TextComponent(` &7[&eCheck Player&7]`).setClick("run_command", "/sbocheck " + player).setHover("show_text", "&eCheck " + player)
+                ).chat();
+                ChatLib.chat(ChatLib.getChatBreak("&b-"))
+            }
+        }
     }
-}).setCriteria("&dFrom ${player}&r&7: &r&7[SBO] join party request - ${id}");
+    cancel(event);
+}).setCriteria("&d${toFrom} ${player}&r&7: &r&7[SBO] join party request - ${id}");
 
 register("gameUnload", () => {
     if (inQueue) {
@@ -359,21 +465,31 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         }
     })
     if (party.length == 0) party.push(Player.getUUID());
-
+    partyCount = party.length;
     if (creatingParty) {
         creatingParty = false;
         if (party[0] != Player.getUUID() && party.length > 1) {
             ChatLib.chat("&6[SBO] &eYou are not the party leader. Only party leader can queue with the party.");
             return;
         }
+        if (party.length > 5) {
+            ChatLib.chat("&6[SBO] &eParty members limit reached. You can only queue with up to 5 members.");
+            return;
+        }
         request({
-            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", ""),
+            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
         }).then((response)=> {
-            let timeTaken = Date.now() - createPartyTimeStamp;
-            ChatLib.chat("&6[SBO] &eParty members checked in " + timeTaken + "ms");
-            inQueue = true; 
+            if (response.Success) {
+                let timeTaken = Date.now() - createPartyTimeStamp;
+                ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
+                inQueue = true; 
+            } else {
+                ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+                inQueue = false;
+            }
         }).catch((error)=> {
+            inQueue = false;
             if (error.detail) {
                 ChatLib.chat("&6[SBO] &4Error1: " + error.detail);
             } else {
@@ -382,11 +498,20 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             }
         });
     }
-    if (updateBool) {
+    if (updateBool && inQueue) {
         updateBool = false;
+        if (party.length > 5) return;
+        ChatLib.chat("&6[SBO] &eUpdating party members in queue...");
         request({
-            url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", ""),
+            url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
+        }).then((response)=> {
+            if (response.Success) {
+                let timeTaken = Date.now() - createPartyTimeStamp;
+                ChatLib.chat("&6[SBO] &eParty in queue updated successfully  " + timeTaken + "ms");
+            } else {
+                ChatLib.chat("&6[SBO] &4Error: " + response.Error);
+            }
         }).catch((error)=> {
             inQueue = false;
             if (error.detail) {

@@ -1,5 +1,5 @@
 import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
-import { initializeGuiSettings, getKuudraItems, getBazaarItems } from "./functions";
+import { initializeGuiSettings, getKuudraItems, getBazaarItems, getDianaStats } from "./functions";
 import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents } from "./variables";
 import settings from "../settings";
 import { unlockAchievement } from "../features/Diana/DianaAchievements";
@@ -27,6 +27,7 @@ let dataLoadReg = register("step", () => {
             new TextComponent("&6[SBO] &aDo you want to backtrack your Diana Achievements?").setClick("run_command", "/sbobacktrackachivements").setHover("show_text", "&7Click to backtrack your Achievements").chat();
             data.backTrack = true;
         }
+        getDianaStats();
         dataLoadReg.unregister();
     }
 }).setFps(1);
@@ -41,7 +42,7 @@ function checkAllCriteria() {
     let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;
-    let check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
+    // let check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
     let check8 = (trackerTotal !== undefined && trackerMayor !== undefined && trackerSession !== undefined);
     let check9 = false;
     if (check8 && check5) {
@@ -50,7 +51,7 @@ function checkAllCriteria() {
         checkPastDianaEvents();
     }
     
-    if (check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9) {
+    if (check1 && check2 && check3 && check4 && check5 && check6 && check8 && check9) {
         return true;
     }
     return false;

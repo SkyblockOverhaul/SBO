@@ -7,9 +7,13 @@ let currentPage = 0;
 let showConfirmDelete = false;
 let deleteYear = 0;
 let deletePage = 0;
+let pastDianaEventsList;
 
 PastDianaEventsGui.registerDraw(pastDianaEventsRender);
 PastDianaEventsGui.registerClosed(onClose);
+PastDianaEventsGui.registerOpened(() => {
+    pastDianaEventsList = processDianaEvents();
+});
 ConfirmDeleteGui.registerDraw(confirmDeleteRender);
 ConfirmDeleteGui.registerClosed(onCloseConfirmDelete);
 
@@ -18,7 +22,7 @@ function processDianaEvents() {
     if (events.length === 0) {
         return [];
     }
-    return events;
+    return [...events].reverse();
 }
 
 function layoutData() {
@@ -85,7 +89,7 @@ function layoutData() {
 
 
 function calculateBoxHeight() {
-    const events = processDianaEvents();
+    const events = pastDianaEventsList;
     if (events.length === 0) return 300;
 
     let itemHeight = 16;
@@ -136,7 +140,7 @@ function drawTitle() {
 }
 
 function pastDianaEventsRender() {
-    const events = processDianaEvents();
+    let events = pastDianaEventsList;
     const layout = layoutData();
     let { displayX, boxWidth, startX, boxY, titleY, buttonWidth, buttonHeight, boxHeight, totalWidth, buttonSpacing, buttonTextY } = layout;
 
@@ -469,7 +473,7 @@ function deleteEvent() {
 }
 
 PastDianaEventsGui.registerClicked((mouseX, mouseY, button) => {
-    const events = processDianaEvents();
+    let events = pastDianaEventsList;
     const layout = layoutData();
     let { startX, buttonWidth, buttonHeight, buttonSpacing, totalWidth, titleY, boxHeight } = layout;
 

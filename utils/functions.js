@@ -1,14 +1,20 @@
 import { request } from "../../requestV2";
 import settings, { getcustomSounds } from "../settings";
 import { HypixelModAPI } from "./../../HypixelModAPI";
-import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal } from "./variables";
+import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, mainCheckboxes } from "./variables";
 import { getWorld } from "./world";
 
-// geklaut von coleweight for drawline
-if(!GlStateManager) {
-    let GL11=Java.type("org.lwjgl.opengl.GL11")
-    let GlStateManager=Java.type("net.minecraft.client.renderer.GlStateManager")
-}
+/**
+ * @param {number} x - x coordinate
+ * @param {number} y - y coordinate
+ * @param {number} z - z coordinate 
+ * @param {number} red - red color value [0-255] 
+ * @param {number} green - green color value [0-255]
+ * @param {number} blue - blue color value [0-255]
+ * @param {number} alpha - alpha value [0-255]
+ * @param {number} type - type of trace, calc is centering the line on the block
+ * @param {number} lineWidth - width of the line
+ */
 export function trace (x, y, z, red, green, blue, alpha, type, lineWidth) {
     if (type === "calc")
     {
@@ -24,7 +30,7 @@ export function trace (x, y, z, red, green, blue, alpha, type, lineWidth) {
             z = parseFloat(z) - 0.5;
         }
     }
-    if(Player.isSneaking())
+    if (Player.isSneaking())
         drawLine(Player.getRenderX(), Player.getRenderY() + 1.54, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
     else
         drawLine(Player.getRenderX(), Player.getRenderY() + 1.62, Player.getRenderZ(), x, y, z, red, green, blue, alpha, lineWidth)
@@ -32,24 +38,23 @@ export function trace (x, y, z, red, green, blue, alpha, type, lineWidth) {
 
 function drawLine (x1, y1, z1, x2, y2, z2, red, green, blue, alpha, lineWidth)
 {
-    GL11.glBlendFunc(770,771)
-    GL11.glEnable(GL11.GL_BLEND)
+    GlStateManager.func_179112_b(770,771)
+    GlStateManager.func_179147_l()
     GL11.glLineWidth(lineWidth)
-    GL11.glDisable(GL11.GL_TEXTURE_2D)
-    GL11.glDisable(GL11.GL_DEPTH_TEST)
-    GL11.glDepthMask(false)
-    GlStateManager.func_179094_E()
+    GlStateManager.func_179090_x()
+    GlStateManager.func_179097_i()
+    GlStateManager.func_179132_a(false)
 
     Tessellator.begin(GL11.GL_LINE_STRIP).colorize(red, green, blue, alpha)
     Tessellator.pos(x1, y1, z1).tex(0, 0)
     Tessellator.pos(x2, y2, z2).tex(0, 0)
     Tessellator.draw()
 
-    GlStateManager.func_179121_F()
-    GL11.glEnable(GL11.GL_TEXTURE_2D)
-    GL11.glEnable(GL11.GL_DEPTH_TEST)
-    GL11.glDepthMask(true)
-    GL11.glDisable(GL11.GL_BLEND)
+    GlStateManager.func_179098_w()
+    GlStateManager.func_179126_j()
+    GlStateManager.func_179132_a(true)
+    GlStateManager.func_179084_k()
+    GL11.glLineWidth(2);
 }
 
 export function getClosest(origin, positions) {
@@ -106,8 +111,19 @@ export function getSBUUID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("uuid") || null;
 }
 
+let onAlpha = false;
+export function isOnAlpha() {
+    return onAlpha;
+}
+
 export function checkIfInSkyblock() {
     inSkyblockBool = (settings.alwaysInSkyblock || Scoreboard.getTitle()?.removeFormatting().includes("SKYBLOCK"));
+    lines = Scoreboard.getLines();
+    if (lines[0] != undefined) {
+        onAlpha = lines[0].toString().toLowerCase().includes("alpha")
+    } else {
+        onAlpha = false;
+    }
     return inSkyblockBool;
 }
 
@@ -152,13 +168,14 @@ registerWhen(register("guiOpened", () => {
 
 let dianaMobNames = ["Minos Inquisitor", "Minotaur", "Iron Golem", "Ocelot", "Minos Champion", "Zombie"];
 
-function trackLsInq(tracker, amount) {
+function trackLsInq(tracker) {
     if (tracker["mobs"]["Minos Inquisitor Ls"] != null) {
-        tracker["mobs"]["Minos Inquisitor Ls"] += amount;
+        tracker["mobs"]["Minos Inquisitor Ls"] += 1;
     }
     else {
-        tracker["mobs"]["Minos Inquisitor Ls"] = amount;
+        tracker["mobs"]["Minos Inquisitor Ls"] = 1;
     }
+    data.inqsSinceLsChim += 1;
     tracker.save();
 }
 let hasTrackedInq = false;
@@ -166,9 +183,9 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
     let dist = entity.distanceTo(Player.getPlayer());
     entityName = entity.getName().toString();
     if (gotLootShare() && entityName == "Minos Inquisitor" && !hasTrackedInq) {
-        trackLsInq(trackerMayor, 1);
-        trackLsInq(trackerSession, 1);
-        trackLsInq(trackerTotal, 1);
+        trackLsInq(trackerMayor);
+        trackLsInq(trackerSession);
+        trackLsInq(trackerTotal);
         hasTrackedInq = true;
         setTimeout(() => {
             hasTrackedInq = false;
@@ -787,11 +804,12 @@ export function getNumberColor(number, range) {
     }
 }
 
-export function getGriffinItemColor(item) {
+export function getGriffinItemColor(item, noColors = false) {
     if (item != 0) {
         if (!item) return "";
         let name = item.replace("PET_ITEM_", "");
         name = toTitleCase(name.replaceAll("_", " "));
+        if (noColors) return name;
         switch (name) {
             case "Four Eyed Fish":
                 return "&5" + name;
@@ -838,6 +856,141 @@ export function matchLvlToColor(lvl) {
     } else {
         return "&7" + lvl;
     }
+}
+
+export function matchDianaKillsToColor(kills) {
+    if (kills >= 200000) {
+        return "&6" + formatNumberCommas(kills);
+    }
+    else if (kills >= 150000) {
+        return "&e" + formatNumberCommas(kills);
+    }
+    else if (kills >= 100000) {
+        return "&c" + formatNumberCommas(kills);
+    }
+    else if (kills >= 75000) {
+        return "&d" + formatNumberCommas(kills);
+    }
+    else if (kills >= 50000) {
+        return "&9" + formatNumberCommas(kills);
+    }
+    else if (kills >= 25000) {
+        return "&a" + formatNumberCommas(kills);
+    }
+    else if (kills >= 10000) {
+        return "&2" + formatNumberCommas(kills);
+    }
+    else {
+        return "&7" + formatNumberCommas(kills);
+    }
+}
+
+export function formatPlayerInfo(playerInfo) {
+    let formattedInfo = ""
+    const order = [
+        "name",
+        "sbLvl",
+        "uuid",
+        "emanLvl",
+        "clover",
+        "daxeLootingLvl",
+        "daxeChimLvl",
+        "griffinItem",
+        "griffinRarity",
+        "mythosKills",
+        "killLeaderboard",
+        "magicalPower",
+        "missingEnrichments",
+        "enrichments",
+        "warnings"
+    ];
+
+    let sortedEntries = Object.entries(playerInfo)
+        .sort(([key1], [key2]) => order.indexOf(key1) - order.indexOf(key2));
+
+    sortedEntries.forEach(([key, value]) => {
+        switch (key) {
+            case "eman9":
+                return
+            case "mythosKills":
+                key = "Diana Kills"
+                value = matchDianaKillsToColor(value)
+                break;
+            case "daxeLootingLvl":
+                if (value === -1) return
+                key = "Looting"
+                value = getNumberColor(value, 5)
+                break;
+            case "daxeChimLvl":
+                if (value === 0) return
+                key = "Chimera"
+                value = getNumberColor(value, 5)
+                break;
+            case "emanLvl":
+                if (value === 0) return
+                key = "Eman Level"
+                value = getNumberColor(value, 9)
+                break;
+            case "invApi":
+                return
+            case "killLeaderboard":
+                if (value >= 100) return
+                key = "Leaderboard"
+                value =  "&7#&b" + value
+                break;
+            case "griffinItem":
+                key = "Griffin Item"
+                value = getGriffinItemColor(value)
+                break;
+            case "sbLvl":
+                key = "Level"
+                value = matchLvlToColor(value)
+                break;
+            case "looting5daxe":
+                return
+            case "griffinRarity":
+                key = "Griffin Rarity"
+                value = getRarity(toTitleCase(value))
+                break;
+            case "magicalPower":
+                key = "Magic Power"
+                value = "&b" + value
+                break;
+            case "missingEnrichments":
+                key = "Missing Enrichments"
+                value = "&b" + value
+                break;
+            case "warnings":
+                value = value.map((warning) => {
+                    return warning.replace("Warning: ", "")
+                }).join(", ")
+                break;
+            case "uuid":
+                value = "&7" + value
+                break;
+            case "name":
+                value = "&b" + value
+                break;
+            case "enrichments":
+                value = "&b" + value
+                break;
+        }
+        switch (value) {
+            case true:
+                value = "&a✓"
+                break;
+            case false:
+                value = "&c✗"
+                break;
+        }
+        key = toTitleCase(key)
+        if (key === "Warnings") {
+            formattedInfo += `&9${key}&7: \n&7${value}\n\n`
+        } else {
+            formattedInfo += `&9${key}&7: &r${value}\n\n`
+        }
+    })
+    return formattedInfo
 }
 
 // gui functions/classes
@@ -943,7 +1096,7 @@ export class TextClass {
 }
 
 export class Button {
-    constructor(x, y, width, height, text, rightClick, outlined, background, Color, hoverPriority = "", updateScaling = true) {
+    constructor(x, y, width, height, text, rightClick, outlined, background, Color, hoverPriority = "", updateScaling = true, textScale = 1) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -961,10 +1114,11 @@ export class Button {
         this.originalHeight = height;
         this.lastScreenSize = undefined;
         this.action = undefined;
+        this.hoverAction = undefined;
 
         this.textWidth = undefined;
         this.textColor = Color;
-        this.textScale = 1;
+        this.textScale = textScale
         this.textX = this.x + (this.width - this.textWidth) / 2;
         this.textY = (this.y + this.height / 2) - 4;
         this.bgColor = color(0, 0, 0, 150);
@@ -989,12 +1143,18 @@ export class Button {
     }
 
     isHovered(mouseX, mouseY) {
-        return (
-            mouseX >= this.x && 
-            mouseX <= this.x + this.width && 
-            mouseY >= this.y && 
-            mouseY <= this.y + this.height
-        );
+        let wasHovering = this.isHovering;
+        this.isHovering = (mouseX >= this.x && mouseX <= this.x + this.width &&
+                           mouseY >= this.y && mouseY <= this.y + this.height);
+        if (this.isHovering && !wasHovering && this.hoverAction) {
+            this.hoverAction();
+        }
+        return this.isHovering;
+    }
+
+    onHover(action) {
+        this.hoverAction = action;
+        return this;
     }
 
     updateDimensions() {
@@ -1083,6 +1243,116 @@ export class Button {
     }
 }
 
+export class CheckBox {
+    constructor(x, y, width, height, text, outlineColor, textColor, dataField = undefined, textScale = 1) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.text = text;
+        this.outlineColor = outlineColor;
+        this.textColor = textColor;
+        this.textScale = textScale;
+        this.dataField = dataField;
+
+        this.dataObject = mainCheckboxes;
+        this.checked = this.dataObject[this.dataField] !== undefined ? this.dataObject[this.dataField] : false;
+        this.action = undefined;
+        this.textWidth = undefined;
+        this.textHeight = undefined;
+        this.lastScale = undefined;
+        this.lastScreenSize = undefined;
+        this.originalWidth = width;
+        this.originalHeight = height;
+    }
+
+    onClick(action) {
+        this.action = action;
+        return this;
+    }
+
+    isClicked(mouseX, mouseY, button) {
+        if (mouseX >= this.x && mouseX <= this.x + this.textWidth + 5 + this.width &&
+            mouseY >= this.y && mouseY <= this.y + this.height) {
+            if (button == 0) {
+                this.checked = !this.checked;
+                if (this.dataField) {
+                    this.dataObject[this.dataField] = this.checked;
+                    this.dataObject.save();
+                }
+                if (this.action)
+                    this.action();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    updateDimensions() {
+        let guiScale = Client.settings.video.getGuiScale();
+        let displayX = Renderer.screen.getWidth();
+        let displayY = Renderer.screen.getHeight();
+        if (this.lastScreenSize !== displayX + displayY) {
+            this.lastScale = undefined;
+            this.lastScreenSize = displayX + displayY;
+        }
+        if (this.lastScale !== guiScale) {
+            if (guiScale == 1) {
+                this.width = this.originalWidth * 2;
+                this.height = this.originalHeight * 2;
+            }
+            else if (guiScale == 3) {
+                this.width = this.originalWidth * 1;
+                this.height = this.originalHeight * 1;
+            }
+            else {
+                this.width = this.originalWidth;
+                this.height = this.originalHeight;
+            }
+            this.lastScale = guiScale;
+        }
+        return this;
+    }
+
+    draw() {
+        this.updateDimensions();
+        let bgColor = this.checked ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
+        let textObject = new TextClass(this.textColor, this.x, this.y, this.text, this.textScale, false);
+        textObject.draw();
+        this.textWidth = textObject.width;
+        this.textHeight = textObject.height;
+        rect(bgColor, this.x + this.textWidth + 5, this.y, this.width, this.height); 
+        drawRectangleOutline(this.outlineColor, this.x + this.textWidth + 5, this.y, this.width, this.height, 1);
+        return this;
+    }
+
+    setWidth(width) {
+        this.width = width;
+        this.originalWidth = width;
+        return this;
+    }
+
+    setHeight(height) {
+        this.height = height;
+        this.originalHeight = height;
+        return this;
+    }
+
+    setX(x) {
+        this.x = x;
+        return this;
+    }
+
+    setY(y) {
+        this.y = y;
+        return this;
+    }
+
+    setText(text) {
+        this.text = text;
+        return this;
+    }
+}
 
 export function getLayoutDataPartyFinder() {
     let displayX = Renderer.screen.getWidth()
@@ -1092,6 +1362,11 @@ export function getLayoutDataPartyFinder() {
     let pfWindowHeight = displayY * 0.8
     let pfWindowX = (displayX - pfWindowWidth) / 2
     let pfWindowY = (displayY - pfWindowHeight) / 2
+
+    let createWindowWidth = displayX * 0.2
+    let createWindowHeight = displayY * 0.33
+    let createWindowX = (displayX - createWindowWidth) / 2
+    let createWindowY = (displayY - createWindowHeight) / 2
 
     let pfListWidth = pfWindowWidth
     let pfListHeight = pfWindowHeight * 0.85
@@ -1135,8 +1410,20 @@ export function getLayoutDataPartyFinder() {
     let partyBoxX = pfListX
     let partyBoxY = pfListY
 
+    let partyBackButtoX = (pfWindowX + pfWindowWidth) * 0.864
+
+
     let buttonHeight1 = displayY * 0.04
     let buttonHeight2 = displayY * 0.05
+
+    let checkBoxHeight = displayY * 0.012
+    let checkBoxWidth = displayX * 0.0063
+
+    let cbCreateHeight = displayY * 0.012
+    let cbCreateWidth = displayX * 0.007
+
+    let createPartyButtonHeight = createWindowHeight * 0.15
+    let createPartyButtonY = createWindowY + createWindowHeight * 0.85
 
     return {
         displayX, displayY,
@@ -1153,7 +1440,12 @@ export function getLayoutDataPartyFinder() {
         deQueueX, deQueueWidth,
         joinPartyWidth,
         partyBoxWidth, partyBoxHeight, partyBoxX, partyBoxY,
-        buttonHeight1, buttonHeight2
+        buttonHeight1, buttonHeight2,
+        checkBoxHeight, checkBoxWidth,
+        partyBackButtoX,
+        cbCreateHeight, cbCreateWidth,
+        createWindowWidth, createWindowHeight, createWindowX, createWindowY,
+        createPartyButtonHeight, createPartyButtonY
     }
 }
 
@@ -1169,16 +1461,163 @@ export function getDianaStats() {
     }
 }
 
+let loadingDianaStats = false;
 function loadDianaStats(useCallback = false, callback = null) {
+    // 10 minutes
+    if (loadingDianaStats) return;
+    loadingDianaStats = true;
+    if (data.dianaStatsUpdated && Date.now() - data.dianaStatsUpdated < 600000) {
+        dianaStats = data.dianaStats;
+        loadingDianaStats = false;
+        if (useCallback && callback) {
+            callback(dianaStats);
+        }
+        return;
+    }
     request({
         url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
         json: true
     }).then((response) => {
-        dianaStats = response[0];
+        dianaStats = response.PartyInfo[0];
+        data.dianaStats = dianaStats;
+        data.dianaStatsUpdated = Date.now();
+        data.save();	
+        loadingDianaStats = false;
         if (useCallback && callback) {
             callback(dianaStats);
         } 
     }).catch((error) => {
         console.error("An error occurred: " + error);
     });
+}
+
+class SboTimeoutFunction {
+    static timeoutList = [];
+    constructor(func, timeout) {
+        this.func = func;
+        this.timeout = timeout;
+        this.timestamp = Date.now();
+        this.id = SboTimeoutFunction.timeoutList.length;
+        SboTimeoutFunction.timeoutList.push(this);
+    }
+
+    clearTimeout() {
+        SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
+    }
+}
+
+register("step", () => {
+    SboTimeoutFunction.timeoutList.forEach((timeout) => {
+        if (Date.now() - timeout.timestamp >= timeout.timeout) {
+            timeout.func();
+            timeout.clearTimeout();
+        }
+    });
+}).setFps(6);
+
+register("command", () => {
+    let timeoutStarted = Date.now();
+    new SboTimeoutFunction(() => {
+        ChatLib.chat("timeout");
+        ChatLib.chat("Time passed: " + (Date.now() - timeoutStarted) + "ms");
+    }, 1000);
+    print(getDianaStats())
+}).setName("sbotimeout");
+
+export function requirementsFormat(requirements, myStats) {
+    let reqsText = ""
+    let myReqs = myStats
+    if (myReqs === undefined) {
+        myReqs = {
+            "eman9": false,
+            "sbLvl": 0,
+            "mvp+": false,
+            "looting5daxe": false,
+            "mythosKills": 0
+        }
+    }
+    Object.entries(requirements).forEach(([key, value]) => {
+        switch (key) {
+            case "eman9":
+                if (myReqs["eman9"] === true) {
+                    key = "&aeman9"
+                }
+                else {
+                    key = "&ceman9"
+                }
+                value = ""
+                break;
+            case "kills":
+                if (myReqs["mythosKills"] >= value) {
+                    key = `&a${key}`
+                    value = `&a${formatNumber(value)}`
+                }
+                else {
+                    key = `&c${key}`
+                    value = `&c${formatNumber(value)}`
+                }
+                break;
+            case "lvl":
+                if (myReqs["sbLvl"] >= value) {
+                    key = `&a${key}`
+                    value = `&a${formatNumber(value)}`
+                }
+                else {
+                    key = `&c${key}`
+                    value = `&c${formatNumber(value)}`
+                }
+                break;
+            // case "mvpplus":
+            //     if (myReqs["mvp+"] === true) {
+            //         key = "&amvp+"
+            //     }
+            //     else {
+            //         key = "&cmvp+"
+            //     }
+            //     value = ""
+            //     break;
+            case "looting5":
+                if (myReqs["looting5daxe"] === true) {
+                    key = "&alooting5"
+                }
+                else {
+                    key = "&clooting5"
+                }
+                value = ""
+                break;
+        }
+        if (value === "") {
+            reqsText += `${key}&r&7, &r`
+        } else {
+            reqsText += `${key}&r&7:&r ${value}&r&7, &r`
+        }
+    })
+    reqsText = reqsText.slice(0, -2)
+    return reqsText
+}
+
+export function pMmMColor(partymembers) {
+    let strColor = undefined
+    if (partymembers < 4) {
+        strColor = color(0, 255, 0, 255)
+    }
+    else {
+        strColor = color(255, 165, 0, 255)
+    }
+    return strColor
+}
+
+export function filterTextInput(list) {
+    Object.entries(list).forEach(([key, object]) => {
+        let text = object.text
+        text = text.replace(/[^0-9]/g, "")
+        if (key === "lvl") {
+            if (text.length > 3) text = text.slice(0, 3)
+        }
+        if (key === "kills") {
+            if (text.length > 6) text = text.slice(0, 6)
+        }
+        object.textInput.setText(text)
+        object.text = text
+    })
 }
