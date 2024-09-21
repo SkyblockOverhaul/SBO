@@ -46,6 +46,7 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sbolockachievements &7- &eLocks all Achievements (needs confirmation)")
                 ChatLib.chat("&7> &a/sbopde &7- &eOpens the Past Diana Events GUI")
                 ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
+                ChatLib.chat("&7> &a/sbopf &7- &eOpens the PartyFinder GUI")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -92,9 +93,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a- Added reset session button for Diana tracker in inventory`)
-    ChatLib.chat(`&7> &a- Diana PartyFinder Changes! Part 1 of 2`)
-    ChatLib.chat(`&7> &a- Fixed many other small bugs`)
+    ChatLib.chat(`&7> &a- Diana PartyFinder inital Release! Part 2 of 2 (/sbopf)`)
+    ChatLib.chat(`&7> &a- Fixed small bugs`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
