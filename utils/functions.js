@@ -1316,7 +1316,7 @@ export class CheckBox {
 
     draw() {
         this.updateDimensions();
-        let bgColor = this.checked ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
+        let bgColor = this.checked ? color(0,196,255,150) : color(0, 0, 0, 0);
         let textObject = new TextClass(this.textColor, this.x, this.y, this.text, this.textScale, false);
         textObject.draw();
         this.textWidth = textObject.width;

@@ -461,6 +461,8 @@ function createPartyRender() {
 let privateMessageTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Enabling private Messages:", 1.5, true)
 let privateMessageGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "/settings -> Social Settings -> Set Private Message privacy to None", 1.25, false)
 let privateMessageSubTitle = new TextClass(color(200, 200, 200, 255), 0, 0, "It's essential to see party join requests", 1.25, false)
+let reqsRefreshTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Updating Requirements:", 1.5, true)
+let reqsRefreshGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "do /ct reload to update ur requirements (could take 10mins!)", 1.25, false)
 function helpRender() {
     let layoutData = getLayoutData()
     rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
@@ -469,6 +471,8 @@ function helpRender() {
     privateMessageTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10)
     privateMessageGuide.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height)
     privateMessageSubTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height + privateMessageGuide.height)
+    reqsRefreshTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height + privateMessageGuide.height + privateMessageSubTitle.height)
+    reqsRefreshGuide.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height + privateMessageGuide.height + privateMessageSubTitle.height + reqsRefreshTitle.height)
 }
 
 let textObject = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
