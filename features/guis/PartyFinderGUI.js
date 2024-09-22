@@ -453,7 +453,7 @@ function createPartyRender() {
     drawButtonsCreate(layoutData);
     line(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createPartyButtonY, layoutData.createWindowX + layoutData.createWindowWidth, layoutData.createPartyButtonY, 1);
     outline(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createWindowY, layoutData.createWindowWidth, layoutData.createWindowHeight, 1);
-    hintText.draw().setX(submitPartyButton.x + 5).setY(submitPartyButton.y - hintText.height - 5)
+    hintText.draw().setX(submitPartyButton.x + 5).setY(submitPartyButton.y - hintText.height)
 }
 let privateMessageTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Enabling private Messages:", 1.5, true)
 let privateMessageGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "/settings -> Social Settings -> Set Private Message privacy to None", 1.25, false)
