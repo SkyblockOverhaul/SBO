@@ -223,29 +223,6 @@ export function createParty(reqs) {
 export function getInQueue() {
     return inQueue;
 }
-let partyList = [];
-export function getAllParties(useCallback = false, callback = null) { 
-    request({
-        url: api + "/getAllParties",
-        json: true
-    }).then((response)=> {
-        partyList = response.Parties;
-        if (partyList.length == 0) {
-            ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
-        }
-        if (useCallback && callback) {
-            callback(partyList);
-        }
-    }).catch((error)=> {
-        if (error.detail) {
-            ChatLib.chat("&6[SBO] &4Error2: " + error.detail);
-        } else {
-            console.error(JSON.stringify(error));
-            ChatLib.chat("&6[SBO] &4Unexpected error occurred while getting all parties");
-        }
-        return [];
-    });
-}
 
 function checkIfPlayerMeetsReqs(player, reqs) {
     if (reqs.lvl && player.sbLvl < reqs.lvl) {
