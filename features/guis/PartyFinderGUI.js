@@ -440,8 +440,7 @@ function drawCheckBoxesCreate(layoutData) {
     // .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
 }
 
-const hintTextTitle = new TextClass(color(255, 77, 77, 255), 0, 0, `Important! `, 1.5, false)
-const hintText = new TextClass(color(255, 77, 77, 255), 0, 0, `Enable private messages (guide in Help)`, 1.5, false)
+const hintText = new TextClass(color(233, 233, 233, 255), 0, 0, `Note: enable private messages (guide in Help)`, 1, false)
 function createPartyRender() {
     let layoutData = getLayoutData()
     createPartyBlock.setX(new PixelConstraint(layoutData.createWindowX))
@@ -455,8 +454,7 @@ function createPartyRender() {
     line(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createPartyButtonY, layoutData.createWindowX + layoutData.createWindowWidth, layoutData.createPartyButtonY, 1);
     outline(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createWindowY, layoutData.createWindowWidth, layoutData.createWindowHeight, 1);
     //draw hint text above widnow
-    hintText.draw().setX(layoutData.createWindowX).setY(layoutData.createWindowY - hintTextTitle.height)
-    hintTextTitle.draw().setX(layoutData.createWindowX).setY(layoutData.createWindowY - (hintTextTitle.height + hintText.height))
+    hintText.draw().setX(submitPartyButton.x + 5).setY(submitPartyButton.y - hintText.height)
 }
 let privateMessageTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Enabling private Messages:", 1.5, true)
 let privateMessageGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "/settings -> Social Settings -> Set Private Message privacy to None", 1.25, false)
