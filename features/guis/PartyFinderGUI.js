@@ -136,7 +136,7 @@ function updatePageButtons() {
                 let leaderCheck = party.leaderName === Player.getName()
                 if (getInQueue() && !isInParty() && !leaderCheck) ChatLib.chat("&6[SBO] &eYou are already in queue.")
                 if (isInParty() && !getInQueue() && !leaderCheck) ChatLib.chat("&6[SBO] &eYou are already in a party.")
-                if (Player.getName() === party.leaderName) ChatLib.chat("&6[SBO] &eYou can't join your own party.")
+                if (leaderCheck()) ChatLib.chat("&6[SBO] &eYou can't join your own party.")
             }
         }).updateDimensions()
         joinButtons.push(joinButton);
