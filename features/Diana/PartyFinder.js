@@ -4,6 +4,7 @@ import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
 import settings from "../../settings";
+import { data } from "../../utils/variables";
 
 let api = "https://api.skyblockoverhaul.com";
 
