@@ -92,6 +92,8 @@ function getPartyFinderData(refresh = false) {
         originalPartyList = response.Parties;
         partyList = [...originalPartyList];
         if (partyList.length === 0) {
+            partyCount = partyList.length;
+            pageCount = Math.ceil(partyCount / 6);
             ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
         } else {
             partyCount = partyList.length;
