@@ -32,7 +32,7 @@ PartyFinderGUI.registerDraw(partyFinderRender);
 PartyFinderGUI.registerClosed(partyFinderClose);
 CreatePartyGUI.registers.onDraw(createPartyRender);
 PartyInfoGUI.registerDraw(partyInfoRender);
-HdwiGUI.registerDraw(hdwiRender);
+HdwiGUI.registerDraw(helpRender);
 
 const filters = {
     "Eman9": (party) => {
@@ -50,6 +50,7 @@ const filters = {
     "Can I Join": (party) => {
         const requirements = party.reqs;
         let myReqs = dianaStats
+        if (myReqs === undefined) return false;
         return (
             (requirements.lvl === undefined || myReqs.sbLvl >= requirements.lvl) &&
             (requirements.kills === undefined || myReqs.mythosKills >= requirements.kills) &&
@@ -91,6 +92,8 @@ function getPartyFinderData(refresh = false) {
         originalPartyList = response.Parties;
         partyList = [...originalPartyList];
         if (partyList.length === 0) {
+            partyCount = partyList.length;
+            pageCount = Math.ceil(partyCount / 6);
             ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
         } else {
             partyCount = partyList.length;
@@ -259,7 +262,7 @@ function drawButtonsPartyInfo(layoutData) {
     }).draw(mouseX, mouseY)
 }
 
-const hdiwButton = new Button(0, 0, 90, 20, "How does it Work", false, true, true, color(255,165,0,255)).onClick(() => {
+const hdiwButton = new Button(0, 0, 90, 20, "Help", false, true, true, color(255,165,0,255)).onClick(() => {
     HdwiGUI.open()
 });
 buttonsPfwindow.push(hdiwButton)
@@ -332,20 +335,19 @@ const pageCountText = new TextClass(color(233, 233, 233, 255), 0, 0, ``, 1, fals
 const leaderText = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
 const membersText = new TextClass(color(255, 255, 255, 255), 0 + 5, 0, ``, 1, false)
 const partyReqs = new TextClass(color(255, 255, 255, 255), 0, 0, ``, 1, false)
-
 function drawCheckBoxesMain(param = {}) {
     let layoutData = getLayoutData()
     emanCheckBox.draw().setText("Eman9")
     .setX(param.x).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 50)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
-    mvpPlusCheckBox.draw().setText("MVP+")
-    .setX(param.x).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 20)
-    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
+    // mvpPlusCheckBox.draw().setText("MVP+")
+    // .setX(param.x).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 20)
+    // .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
     looting5CheckBox.draw().setText("Looting 5")
     .setX(param.x + emanCheckBox.width + emanCheckBox.textWidth + 20).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 50)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
     canIJoinCheckBox.draw().setText("Can I Join")
-    .setX(param.x + emanCheckBox.width + emanCheckBox.textWidth + 20).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 20)
+    .setX(param.x).setY(layoutData.pfWindowY + layoutData.pfWindowHeight / 20)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth);
 }
 
@@ -353,10 +355,10 @@ const emanCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), col
     filterPartyList()
 });
 checkBoxList.push(emanCheckBox)
-const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "mvpplus").onClick(() => {
-    filterPartyList()
-});
-checkBoxList.push(mvpPlusCheckBox)
+// const mvpPlusCheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "mvpplus").onClick(() => {
+//     filterPartyList()
+// });
+// checkBoxList.push(mvpPlusCheckBox)
 const looting5CheckBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "looting5").onClick(() => {
     filterPartyList()
 });
@@ -422,20 +424,22 @@ let dianaKillsText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false
 let sbLevelText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
 let looting5box = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
 let eman9ReqsBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
-let mvpPlusBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
+// let mvpPlusBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
 checkBoxListCreate.push(eman9ReqsBox)
 checkBoxListCreate.push(looting5box)
-checkBoxListCreate.push(mvpPlusBox)
+// checkBoxListCreate.push(mvpPlusBox)
 
 function drawCheckBoxesCreate(layoutData) {
     eman9ReqsBox.draw().setText("Eman9").setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 2)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
     looting5box.draw().setText("Looting 5").setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.66)
     .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
-    mvpPlusBox.draw().setText("MVP+").setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.4)
-    .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
+    // mvpPlusBox.draw().setText("MVP+").setX(layoutData.createWindowX * 1.012).setY(layoutData.createWindowY + layoutData.createWindowHeight / 1.4)
+    // .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
 }
 
+const hintTextTitle = new TextClass(color(255, 77, 77, 255), 0, 0, `Important! `, 1.5, false)
+const hintText = new TextClass(color(255, 77, 77, 255), 0, 0, `Enable private messages (guide in Help)`, 1.5, false)
 function createPartyRender() {
     let layoutData = getLayoutData()
     createPartyBlock.setX(new PixelConstraint(layoutData.createWindowX))
@@ -448,13 +452,21 @@ function createPartyRender() {
     drawButtonsCreate(layoutData);
     line(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createPartyButtonY, layoutData.createWindowX + layoutData.createWindowWidth, layoutData.createPartyButtonY, 1);
     outline(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createWindowY, layoutData.createWindowWidth, layoutData.createWindowHeight, 1);
+    //draw hint text above widnow
+    hintText.draw().setX(layoutData.createWindowX).setY(layoutData.createWindowY - hintTextTitle.height)
+    hintTextTitle.draw().setX(layoutData.createWindowX).setY(layoutData.createWindowY - (hintTextTitle.height + hintText.height))
 }
-
-function hdwiRender() {
+let privateMessageTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Enabling private Messages:", 1.5, true)
+let privateMessageGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "/settings -> Social Settings -> Set Private Message privacy to None", 1.25, false)
+let privateMessageSubTitle = new TextClass(color(200, 200, 200, 255), 0, 0, "It's essential to see party join requests", 1.25, false)
+function helpRender() {
     let layoutData = getLayoutData()
     rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
     outline(color(0, 173, 255, 255), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight, 1);
     drawButtonsHdwi(layoutData);
+    privateMessageTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10)
+    privateMessageGuide.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height)
+    privateMessageSubTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height + privateMessageGuide.height)
 }
 
 let textObject = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
