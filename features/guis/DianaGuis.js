@@ -248,6 +248,7 @@ function getLootMessage(lootViewSetting) {
     const offertType = ["Instasell", "Sell Offer"][settings.bazaarSettingDiana];
     let lootTracker = getTracker(lootViewSetting);
     let mayorTracker = getTracker(2);
+    let sessionTracker = getTracker(3);
     let percentDict = calcPercent(lootTracker, "loot");
 
 
@@ -369,9 +370,16 @@ function getLootMessage(lootViewSetting) {
         // overlay.gui.drawHoveringString(hovertext, 0, 0)
         GuiUtils.drawHoveringText(hovertext, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     }));
-    function getTotalValue(mayorOnly = false) {
+    function getTotalValue(mayorOnly = false, sessionOnly = false) {
         let totalValue = 0;
-        if(mayorOnly) {
+        if (sessionOnly) {
+            for (let item of itemData) {
+                totalValue += getPrice(item, sessionTracker);
+            }
+            totalValue += lootTracker["items"]["coins"];
+            return totalValue;
+        }
+        else if(mayorOnly) {
             for (let item of itemData) {
                 totalValue += getPrice(item, mayorTracker);
             }
@@ -392,14 +400,27 @@ function getLootMessage(lootViewSetting) {
     let timePassed = timer.getHourTime(); // in hours 
     let profitPerHour = 0;
     let profitPerBurrow = 0;
+    let profitText = [];
     if (timePassed != "NaN" && timePassed != 0) {
-        profitPerHour = formatNumber((getTotalValue(true) / timePassed).toFixed()) // in coins
-        profitPerBurrow = formatNumber((getTotalValue(true) / lootTracker["items"]["Total Burrows"]).toFixed()) // in coins
+        switch (lootViewSetting) {
+            case 1:
+                profitPerHour = formatNumber((getTotalValue(false, false) / timePassed).toFixed())
+                profitPerBurrow = formatNumber((getTotalValue(false, false) / lootTracker["items"]["Total Burrows"]).toFixed())
+                break;
+            case 2:
+                profitPerHour = formatNumber((getTotalValue(true) / timePassed).toFixed())
+                profitPerBurrow = formatNumber((getTotalValue(true) / mayorTracker["items"]["Total Burrows"]).toFixed())
+                break;
+            case 3:
+                profitPerHour = formatNumber((getTotalValue(false, true) / timePassed).toFixed()) // in coins
+                profitPerBurrow = formatNumber((getTotalValue(false, true) / sessionTracker["items"]["Total Burrows"]).toFixed())
+                break;
+        }
+        profitText = [
+            `§6${profitPerHour} coins/hour`,
+            `§6${profitPerBurrow} coins/burrow`
+        ].map(item => item.toString()); // Explicitly convert each element to a string
     }
-    let profitText = [
-        `§6${profitPerHour} coins/hour`,
-        `§6${profitPerBurrow} coins/burrow`
-    ].map(item => item.toString()); // Explicitly convert each element to a string
     totalProfitLine.onHover((overlay) => {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
