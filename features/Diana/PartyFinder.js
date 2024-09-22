@@ -96,12 +96,17 @@ function printCheckedPlayer(playerinfo) {
     "&r&9│ &r&eKills&r&f: &r&6" + 
     (playerinfo.mythosKills / 1000).toFixed(2) + "k")
     .setClick("run_command", "/pv " + playerinfo.name).setHover("show_text", "/pv " + playerinfo.name).chat();
-    new Message(
-        new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details"),
-        new TextComponent(" &7[&eClick To invite&7]").setClick("run_command", "/p invite " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name),
-    ).chat();
+
     if (playerinfo.name == Player.getName()) {
         trackWithCheckPlayer(playerinfo);
+        new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
+        data.dianaStats = playerinfo;
+    }
+    else {
+        new Message(
+            new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details"),
+            new TextComponent(" &7[&eClick To invite&7]").setClick("run_command", "/p invite " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name),
+        ).chat();
     }
 }
 
