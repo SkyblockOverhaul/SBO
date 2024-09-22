@@ -6,7 +6,7 @@ import { request } from "../../../requestV2";
 import ElementUtils from "../../../DocGuiLib/core/Element"
 import TextInputElement from "../../../DocGuiLib/elements/TextInput";
 import HandleGui from "../../../DocGuiLib/core/Gui";
-import { UIBlock, PixelConstraint, UIText } from "../../../Elementa"
+import { UIBlock, PixelConstraint } from "../../../Elementa"
 import { isDataLoaded } from "../../utils/checkData";
 
 const PartyFinderGUI = new Gui()
@@ -440,6 +440,7 @@ function drawCheckBoxesCreate(layoutData) {
     // .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
 }
 
+const hintText = new TextClass(color(233, 233, 233, 255), 0, 0, `Enable private messages (guide in Help)`, 1, false)
 function createPartyRender() {
     let layoutData = getLayoutData()
     createPartyBlock.setX(new PixelConstraint(layoutData.createWindowX))
@@ -452,6 +453,7 @@ function createPartyRender() {
     drawButtonsCreate(layoutData);
     line(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createPartyButtonY, layoutData.createWindowX + layoutData.createWindowWidth, layoutData.createPartyButtonY, 1);
     outline(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createWindowY, layoutData.createWindowWidth, layoutData.createWindowHeight, 1);
+    hintText.draw().setX(submitPartyButton.x + 5).setY(submitPartyButton.y - hintText.height - 5)
 }
 let privateMessageTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Enabling private Messages:", 1.5, true)
 let privateMessageGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "/settings -> Social Settings -> Set Private Message privacy to None", 1.25, false)
@@ -544,11 +546,6 @@ DianaKills.onMouseEnterEvent(() => {}, true);
 DianaKills._create().setChildOf(createPartyBlock)
 DianaKills.bgBox.setWidth((100).percent())
 inputFields["kills"] = DianaKills
-let hintText = new UIText("Note: Enable private messages (guide in Help)")
-    .setX((2).percent())
-    .setY((80).percent())
-    .setColor(ElementUtils.getJavaColor([233, 233, 233, 255]))
-    .setChildOf(createPartyBlock)
 
 register("command", () => {
     if (isDataLoaded() && isInSkyblock()) {
