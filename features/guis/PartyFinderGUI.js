@@ -440,7 +440,7 @@ function drawCheckBoxesCreate(layoutData) {
     // .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
 }
 
-const hintText = new TextClass(color(233, 233, 233, 255), 0, 0, `Enable private messages (guide in Help)`, 1, false)
+const hintText = new TextClass(color(233, 233, 233, 255), 0, 0, `Enable private messages (guide in Help)`, 0.9, false)
 function createPartyRender() {
     let layoutData = getLayoutData()
     createPartyBlock.setX(new PixelConstraint(layoutData.createWindowX))
