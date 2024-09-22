@@ -2,7 +2,7 @@ import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } fro
 import { initializeGuiSettings, getKuudraItems, getBazaarItems, getDianaStats } from "./functions";
 import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents } from "./variables";
 import settings from "../settings";
-import { unlockAchievement } from "../features/Diana/DianaAchievements";
+import { unlockAchievement, trackWithCheckPlayer } from "../features/Diana/DianaAchievements";
 
 // check if data is loaded and time is set //
 export let trackerFileLocation  = "./dianaTracker";
@@ -27,7 +27,11 @@ let dataLoadReg = register("step", () => {
             new TextComponent("&6[SBO] &aDo you want to backtrack your Diana Achievements?").setClick("run_command", "/sbobacktrackachivements").setHover("show_text", "&7Click to backtrack your Achievements").chat();
             data.backTrack = true;
         }
-        getDianaStats();
+        getDianaStats(true, (playerinfo) => {
+            if (playerinfo.name == Player.getName()) {
+                trackWithCheckPlayer(playerinfo);
+            }
+        });
         dataLoadReg.unregister();
     }
 }).setFps(1);
