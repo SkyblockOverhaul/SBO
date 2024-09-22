@@ -500,14 +500,15 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     }
     if (updateBool && inQueue) {
         updateBool = false;
-        if (party.length > 5) return;
+        let updatePartyTimeStamp = Date.now();
+        if (party.length > 5 || party.length < 2) return;
         ChatLib.chat("&6[SBO] &eUpdating party members in queue...");
         request({
             url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
         }).then((response)=> {
             if (response.Success) {
-                let timeTaken = Date.now() - createPartyTimeStamp;
+                let timeTaken = Date.now() - updatePartyTimeStamp;
                 ChatLib.chat("&6[SBO] &eParty in queue updated successfully  " + timeTaken + "ms");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);
