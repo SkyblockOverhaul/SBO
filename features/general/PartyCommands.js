@@ -313,6 +313,19 @@ register("command", (args1, args2, ...args) => {
     ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + formatChanceAsPercentage(relicChanceLs) + formatChanceAsFraction(relicChanceLs) + " &7[MF:" + magicfind + "]")
 }).setName("sbodropchance").setAliases("sbodc")
 
+register("command", () => {
+    ChatLib.chat("&6[SBO] &eDiana party commands:")
+    ChatLib.chat("&7> !chim")
+    ChatLib.chat("&7> !stick")
+    ChatLib.chat("&7> !relic")
+    ChatLib.chat("&7> !feathers")
+    ChatLib.chat("&7> !profit")
+    ChatLib.chat("&7> !playtime")
+    ChatLib.chat("&7> !mobs")
+    ChatLib.chat("&7> !burrows")
+    ChatLib.chat("&7> !since (chim, chimls, relic, stick, inq)")
+}).setName("sbopartycommands").setAliases("sbopcom")
+
 function getChance(magicfind, looting, lootshare = false) { 
 
     const chimBaseChance = 0.01;

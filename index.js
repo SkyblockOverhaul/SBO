@@ -47,6 +47,7 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sbopde &7- &eOpens the Past Diana Events GUI")
                 ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
                 ChatLib.chat("&7> &a/sbopf &7- &eOpens the PartyFinder GUI")
+                ChatLib.chat("&7> &a/sbopartycommands &7- &eDisplays all diana partycommands")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
