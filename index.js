@@ -47,6 +47,7 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sbopde &7- &eOpens the Past Diana Events GUI")
                 ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
                 ChatLib.chat("&7> &a/sbopf &7- &eOpens the PartyFinder GUI")
+                ChatLib.chat("&7> &a/sbopartycommands &7- &eDisplays all diana partycommands")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -61,7 +62,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.4.1" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.2" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -93,7 +94,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a- Diana PartyFinder inital Release! Part 2 of 2 (/sbopf)`)
+    ChatLib.chat(`&7> &a- Added /sbopartycommands to see all diana commands`)
+    ChatLib.chat(`&7> &a- Added mobs/hr`)
     ChatLib.chat(`&7> &a- Fixed small bugs`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 

@@ -754,6 +754,7 @@ let dianaMayorTotalProfit = 0;
 let dianaMayorOfferType
 let profitPerHour = 0;
 let burrowsPerHour = 0;
+let mobsPerHour = 0;
 
 export function getBurrowsPerHour() {
     return burrowsPerHour;
@@ -761,6 +762,14 @@ export function getBurrowsPerHour() {
 
 export function setBurrowsPerHour(burrows) {
     burrowsPerHour = burrows;
+}
+
+export function getMobsPerHour() {
+    return mobsPerHour;
+}
+
+export function setMobsPerHour(mobs) {
+    mobsPerHour = mobs;
 }
 
 export function getDianaMayorTotalProfitAndOfferType() {
@@ -1316,7 +1325,7 @@ export class CheckBox {
 
     draw() {
         this.updateDimensions();
-        let bgColor = this.checked ? color(255, 255, 255, 150) : color(0, 0, 0, 0);
+        let bgColor = this.checked ? color(0,196,255,150) : color(0, 0, 0, 0);
         let textObject = new TextClass(this.textColor, this.x, this.y, this.text, this.textScale, false);
         textObject.draw();
         this.textWidth = textObject.width;
@@ -1450,45 +1459,38 @@ export function getLayoutDataPartyFinder() {
 }
 
 let dianaStats = undefined;
-export function getDianaStats() {
-    if (dianaStats == undefined) {
-        loadDianaStats(true, (stats) => {
-            return stats;
-        });
-    }
-    else {
+let loadingDianaStats = false;
+export function getDianaStats(useCallback = false, callback = null) {
+    if (loadingDianaStats) return;
+    if (dianaStats != undefined) {
         return dianaStats;
     }
-}
-
-let loadingDianaStats = false;
-function loadDianaStats(useCallback = false, callback = null) {
-    // 10 minutes
-    if (loadingDianaStats) return;
-    loadingDianaStats = true;
-    if (data.dianaStatsUpdated && Date.now() - data.dianaStatsUpdated < 600000) {
-        dianaStats = data.dianaStats;
-        loadingDianaStats = false;
-        if (useCallback && callback) {
-            callback(dianaStats);
+    else {
+        loadingDianaStats = true;
+        if (data.dianaStatsUpdated && Date.now() - data.dianaStatsUpdated < 600000) { // 10 minutes
+            dianaStats = data.dianaStats;
+            loadingDianaStats = false;
+            if (useCallback && callback) {
+                callback(dianaStats);
+            }
+            return;
         }
-        return;
+        request({
+            url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
+            json: true
+        }).then((response) => {
+            dianaStats = response.PartyInfo[0];
+            data.dianaStats = dianaStats;
+            data.dianaStatsUpdated = Date.now();
+            data.save();	
+            loadingDianaStats = false;
+            if (useCallback && callback) {
+                callback(dianaStats);
+            } 
+        }).catch((error) => {
+            console.error("An error occurred while loding Diana Stats: " + error);
+        });
     }
-    request({
-        url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
-        json: true
-    }).then((response) => {
-        dianaStats = response.PartyInfo[0];
-        data.dianaStats = dianaStats;
-        data.dianaStatsUpdated = Date.now();
-        data.save();	
-        loadingDianaStats = false;
-        if (useCallback && callback) {
-            callback(dianaStats);
-        } 
-    }).catch((error) => {
-        console.error("An error occurred: " + error);
-    });
 }
 
 class SboTimeoutFunction {
@@ -1515,14 +1517,14 @@ register("step", () => {
     });
 }).setFps(6);
 
-register("command", () => {
-    let timeoutStarted = Date.now();
-    new SboTimeoutFunction(() => {
-        ChatLib.chat("timeout");
-        ChatLib.chat("Time passed: " + (Date.now() - timeoutStarted) + "ms");
-    }, 1000);
-    print(getDianaStats())
-}).setName("sbotimeout");
+// register("command", () => {
+//     let timeoutStarted = Date.now();
+//     new SboTimeoutFunction(() => {
+//         ChatLib.chat("timeout");
+//         ChatLib.chat("Time passed: " + (Date.now() - timeoutStarted) + "ms");
+//     }, 1000);
+//     print(getDianaStats())
+// }).setName("sbotimeout");
 
 export function requirementsFormat(requirements, myStats) {
     let reqsText = ""

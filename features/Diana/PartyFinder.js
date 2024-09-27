@@ -4,6 +4,7 @@ import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
 import settings from "../../settings";
+import { data } from "../../utils/variables";
 
 let api = "https://api.skyblockoverhaul.com";
 
@@ -96,12 +97,17 @@ function printCheckedPlayer(playerinfo) {
     "&r&9│ &r&eKills&r&f: &r&6" + 
     (playerinfo.mythosKills / 1000).toFixed(2) + "k")
     .setClick("run_command", "/pv " + playerinfo.name).setHover("show_text", "/pv " + playerinfo.name).chat();
-    new Message(
-        new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details"),
-        new TextComponent(" &7[&eClick To invite&7]").setClick("run_command", "/p invite " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name),
-    ).chat();
+
     if (playerinfo.name == Player.getName()) {
         trackWithCheckPlayer(playerinfo);
+        new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
+        data.dianaStats = playerinfo;
+    }
+    else {
+        new Message(
+            new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details"),
+            new TextComponent(" &7[&eClick To invite&7]").setClick("run_command", "/p invite " + playerinfo.name).setHover("show_text", "/p " + playerinfo.name),
+        ).chat();
     }
 }
 
@@ -222,29 +228,6 @@ export function createParty(reqs) {
 // "http://127.0.0.1:8000/createParty?uuids=" + party.join(",").replaceAll("-", ""),
 export function getInQueue() {
     return inQueue;
-}
-let partyList = [];
-export function getAllParties(useCallback = false, callback = null) { 
-    request({
-        url: api + "/getAllParties",
-        json: true
-    }).then((response)=> {
-        partyList = response.Parties;
-        if (partyList.length == 0) {
-            ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
-        }
-        if (useCallback && callback) {
-            callback(partyList);
-        }
-    }).catch((error)=> {
-        if (error.detail) {
-            ChatLib.chat("&6[SBO] &4Error2: " + error.detail);
-        } else {
-            console.error(JSON.stringify(error));
-            ChatLib.chat("&6[SBO] &4Unexpected error occurred while getting all parties");
-        }
-        return [];
-    });
 }
 
 function checkIfPlayerMeetsReqs(player, reqs) {
@@ -500,14 +483,15 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     }
     if (updateBool && inQueue) {
         updateBool = false;
-        if (party.length > 5) return;
+        let updatePartyTimeStamp = Date.now();
+        if (party.length > 5 || party.length < 2) return;
         ChatLib.chat("&6[SBO] &eUpdating party members in queue...");
         request({
             url: api + "/queuePartyUpdate?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
             json: true
         }).then((response)=> {
             if (response.Success) {
-                let timeTaken = Date.now() - createPartyTimeStamp;
+                let timeTaken = Date.now() - updatePartyTimeStamp;
                 ChatLib.chat("&6[SBO] &eParty in queue updated successfully  " + timeTaken + "ms");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);

@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -172,7 +172,8 @@ register("chat", (player, message) => {
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(() => {
-                    ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"] + " (" + getBurrowsPerHour(dianaTrackerMayor) + "/h)")
+                    let burrowsPerHourText = isNaN(getBurrowsPerHour()) ? "" : " (" + getBurrowsPerHour() + "/h)";
+                    ChatLib.command("pc Burrows: " + dianaTrackerMayor["items"]["Total Burrows"] + burrowsPerHourText)
                 }, 200)
             }
             break
@@ -208,7 +209,8 @@ register("chat", (player, message) => {
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(() => {
-                    ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"])
+                    let mobsPerHourText = isNaN(getMobsPerHour()) ? "" : " (" + getMobsPerHour() + "/h)";
+                    ChatLib.command("pc Mobs: " + dianaTrackerMayor["mobs"]["TotalMobs"] + mobsPerHourText)
                 }, 200)
             }
             break
@@ -312,6 +314,19 @@ register("command", (args1, args2, ...args) => {
     ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + formatChanceAsPercentage(stickChanceLs) + formatChanceAsFraction(stickChanceLs) + " &7[MF:" + magicfind + "]")
     ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + formatChanceAsPercentage(relicChanceLs) + formatChanceAsFraction(relicChanceLs) + " &7[MF:" + magicfind + "]")
 }).setName("sbodropchance").setAliases("sbodc")
+
+register("command", () => {
+    ChatLib.chat("&6[SBO] &eDiana party commands:")
+    ChatLib.chat("&7> &a!chim")
+    ChatLib.chat("&7> &a!stick")
+    ChatLib.chat("&7> &a!relic")
+    ChatLib.chat("&7> &a!feathers")
+    ChatLib.chat("&7> &a!profit")
+    ChatLib.chat("&7> &a!playtime")
+    ChatLib.chat("&7> &a!mobs")
+    ChatLib.chat("&7> &a!burrows")
+    ChatLib.chat("&7> &a!since (chim, chimls, relic, stick, inq)")
+}).setName("sbopartycommands").setAliases("sbopcom")
 
 function getChance(magicfind, looting, lootshare = false) { 
 

@@ -92,7 +92,9 @@ function getPartyFinderData(refresh = false) {
         originalPartyList = response.Parties;
         partyList = [...originalPartyList];
         if (partyList.length === 0) {
-            ChatLib.chat("&6[SBO] &eNo parties found. Try again later.");
+            partyCount = partyList.length;
+            pageCount = Math.ceil(partyCount / 6);
+            if (refresh) ChatLib.chat("&6[SBO] &eRefreshed.");
         } else {
             partyCount = partyList.length;
             pageCount = Math.ceil(partyCount / 6);
@@ -131,8 +133,10 @@ function updatePageButtons() {
                 sendJoinRequest(party.leaderName, party.reqs)
             }
             else {
-                if (getInQueue()) ChatLib.chat("&6[SBO] &eYou are already in queue.")
-                if (isInParty()) ChatLib.chat("&6[SBO] &eYou are already in a party.")
+                let leaderCheck = party.leaderName === Player.getName()
+                if (getInQueue() && !isInParty() && !leaderCheck) ChatLib.chat("&6[SBO] &eYou are already in queue.")
+                if (isInParty() && !getInQueue() && !leaderCheck) ChatLib.chat("&6[SBO] &eYou are already in a party.")
+                if (leaderCheck()) ChatLib.chat("&6[SBO] &eYou can't join your own party.")
             }
         }).updateDimensions()
         joinButtons.push(joinButton);
@@ -436,8 +440,7 @@ function drawCheckBoxesCreate(layoutData) {
     // .setHeight(layoutData.checkBoxHeight).setWidth(layoutData.checkBoxWidth)
 }
 
-const hintTextTitle = new TextClass(color(255, 77, 77, 255), 0, 0, `Important! `, 1.5, false)
-const hintText = new TextClass(color(255, 77, 77, 255), 0, 0, `Enable private messages (guide in Help)`, 1.5, false)
+const hintText = new TextClass(color(233, 233, 233, 255), 0, 0, `Enable private messages (guide in Help)`, 0.9, false)
 function createPartyRender() {
     let layoutData = getLayoutData()
     createPartyBlock.setX(new PixelConstraint(layoutData.createWindowX))
@@ -450,13 +453,13 @@ function createPartyRender() {
     drawButtonsCreate(layoutData);
     line(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createPartyButtonY, layoutData.createWindowX + layoutData.createWindowWidth, layoutData.createPartyButtonY, 1);
     outline(color(0, 173, 255, 255), layoutData.createWindowX, layoutData.createWindowY, layoutData.createWindowWidth, layoutData.createWindowHeight, 1);
-    //draw hint text above widnow
-    hintText.draw().setX(layoutData.createWindowX).setY(layoutData.createWindowY - hintTextTitle.height)
-    hintTextTitle.draw().setX(layoutData.createWindowX).setY(layoutData.createWindowY - (hintTextTitle.height + hintText.height))
+    hintText.draw().setX(submitPartyButton.x + 5).setY(submitPartyButton.y - hintText.height)
 }
 let privateMessageTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Enabling private Messages:", 1.5, true)
 let privateMessageGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "/settings -> Social Settings -> Set Private Message privacy to None", 1.25, false)
 let privateMessageSubTitle = new TextClass(color(200, 200, 200, 255), 0, 0, "It's essential to see party join requests", 1.25, false)
+let reqsRefreshTitle = new TextClass(color(255, 255, 255, 255), 0, 0, "Updating Requirements:", 1.5, true)
+let reqsRefreshGuide = new TextClass(color(200, 200, 200, 255), 0, 0, "do /ct reload to update ur requirements (could take 10mins!)", 1.25, false)
 function helpRender() {
     let layoutData = getLayoutData()
     rect(color(80, 80, 80, 245), layoutData.pfWindowX, layoutData.pfWindowY, layoutData.pfWindowWidth, layoutData.pfWindowHeight);
@@ -465,6 +468,8 @@ function helpRender() {
     privateMessageTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10)
     privateMessageGuide.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height)
     privateMessageSubTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height + privateMessageGuide.height)
+    reqsRefreshTitle.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height + privateMessageGuide.height + privateMessageSubTitle.height)
+    reqsRefreshGuide.draw().setX(layoutData.pfWindowX + 10).setY(layoutData.pfWindowY + 10 + privateMessageTitle.height + privateMessageGuide.height + privateMessageSubTitle.height + reqsRefreshTitle.height)
 }
 
 let textObject = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
