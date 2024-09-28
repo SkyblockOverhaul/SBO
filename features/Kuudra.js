@@ -88,24 +88,24 @@ class ItemString {
 // }).setFps(1), () => getWorld() == "Kuudra" && settings.attributeValueOverlay);
 
 let tier = 0;
-registerWhen(
-    register("step", () => {
-      let scoreBoardLines = Scoreboard.getLines();
-      if (scoreBoardLines != undefined) {
-        scoreBoardLines.forEach((line) => {
-          let lineString = String(line);
-          let cleanLine = lineString.replace(/§[0-9a-f]/g, "").trim();
 
-          if (cleanLine.includes("Kuudra's") && cleanLine.includes("Hollow")) {
-            let match = cleanLine.match(/(T(\d+))/);
-            if (match) {
-              tier = parseInt(match[1]);
-              print(tier);
-            }
+registerWhen(register("step", () => {
+    let scoreBoardLines = Scoreboard.getLines();
+    if (scoreBoardLines !== undefined) {
+      scoreBoardLines.forEach((line) => {
+        let lineString = String(line);
+        let cleanLine = lineString.replace(/§[0-9a-f]/g, "").trim();
+
+        if (cleanLine.includes("Kuudra's") && cleanLine.includes("Hollow")) {
+          let match = cleanLine.match(/T(\d+)/);
+          if (match) {
+            tier = parseInt(match[1], 10); 
+            print(tier);
           }
-        });
-      }
-}).setFps(1), () => getWorld() == "Kuudra" && settings.attributeValueOverlay);
+        }
+      });
+    }
+  }).setFps(1), () => getWorld() === "Kuudra" && settings.attributeValueOverlay);
 
 registerWhen(register("guiMouseClick", (x, y, button, gui) => {
     setTimeout(() => {
