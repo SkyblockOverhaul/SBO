@@ -68,22 +68,43 @@ class ItemString {
         
     }
 }
+// let tier = 0;
+// let cooldown = false;
+// registerWhen(register("step", () => {
+//     if (!cooldown) {
+//         cooldown = true;
+//         let scoreBoardLines = Scoreboard.getLines();
+//         if (scoreBoardLines != undefined) {
+//             if (scoreBoardLines[scoreBoardLines.length - 4] != undefined) {
+//                 let tierString = `${scoreBoardLines[scoreBoardLines.length - 4]}`;
+//                 tier = parseInt(tierString.slice(-2, -1));
+//                 print(tier);
+//             }
+//         }
+//         setTimeout(() => {
+//             cooldown = false;
+//         }, 30000);
+//     }
+// }).setFps(1), () => getWorld() == "Kuudra" && settings.attributeValueOverlay);
+
 let tier = 0;
-let cooldown = false;
-registerWhen(register("step", () => {
-    if (!cooldown) {
-        cooldown = true;
-        let scoreBoardLines = Scoreboard.getLines();
-        if (scoreBoardLines != undefined) {
-            if (scoreBoardLines[scoreBoardLines.length - 4] != undefined) {
-                let tierString = `${scoreBoardLines[scoreBoardLines.length - 4]}`;
-                tier = parseInt(tierString.slice(-2, -1));
+registerWhen(
+    register("step", () => {
+      let scoreBoardLines = Scoreboard.getLines();
+      if (scoreBoardLines != undefined) {
+        scoreBoardLines.forEach((line) => {
+          let lineString = String(line);
+          let cleanLine = lineString.replace(/§[0-9a-f]/g, "").trim();
+
+          if (cleanLine.includes("Kuudra's") && cleanLine.includes("Hollow")) {
+            let match = cleanLine.match(/(T(\d+))/);
+            if (match) {
+              tier = parseInt(match[1]);
+              print(tier);
             }
-        }
-        setTimeout(() => {
-            cooldown = false;
-        }, 30000);
-    }
+          }
+        });
+      }
 }).setFps(1), () => getWorld() == "Kuudra" && settings.attributeValueOverlay);
 
 registerWhen(register("guiMouseClick", (x, y, button, gui) => {
