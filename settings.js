@@ -668,6 +668,18 @@ class Settings {
         options: ['Instabuy','Buy Offer'],
     })
     keySetting = 0;
+    // @TextProperty({
+    //     name: 'Enter Your Reputation',
+    //     description: 'Enter your reputation for key price calculation',
+    //     category: 'Kuudra',
+    // })
+    // factionReputation = "0";
+    @SwitchProperty({
+        name: 'Kuudra Key Discount',
+        description: 'Enable this if you have 12k reputation for the 20% discount on keys',
+        category: 'Kuudra',
+    })
+    keyDiscount = false;
     @SelectorProperty({
         name: 'Kuudra Pet Rarity',
         description: 'Set the rarity of your pet for essence perk',

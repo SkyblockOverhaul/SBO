@@ -5,14 +5,15 @@ import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
 import { OverlayTextLine, SboOverlay } from "./../utils/overlays";
 
-// let kuudraOverlayObj = newOverlay("kuudraOverlay", "attributeValueOverlay", "kuudraExample", "post", "KuudraValueLoc");
 let kuudraOverlay = new SboOverlay("kuudraOverlay", "attributeValueOverlay", "post", "KuudraValueLoc", "kuudraExample", true, ["GuiChest"])
-let kuudraOverlayText = new OverlayTextLine("")
-// let kuudraOverlaywww = kuudraOverlayObj.overlay
-
+let kuudraOverlayText = new OverlayTextLine("");
 
 let kuudraItems = undefined;
 let bazaarItems = undefined;    
+
+function getKeyDiscount(price) {
+    return settings.keyDiscount ? price * 0.8 : price;
+}
 
 function getKeyPrice(tier) {
     let value = 0;
@@ -28,19 +29,19 @@ function getKeyPrice(tier) {
     // default value is 0 cases 1-5
     switch(tier) {
         case 1:
-            value = 200000 + avgMaterialPrice * 2;
+            value = getKeyDiscount(200000) + avgMaterialPrice * 2;
             break;
         case 2:
-            value = 400000 + avgMaterialPrice * 6;
+            value = getKeyDiscount(400000) + avgMaterialPrice * 6;
             break;
         case 3:
-            value = 750000 + avgMaterialPrice * 20;
+            value = getKeyDiscount(750000) + avgMaterialPrice * 20;
             break;
         case 4:
-            value = 1500000 + avgMaterialPrice * 60;
+            value = getKeyDiscount(1500000) + avgMaterialPrice * 60;
             break;
         case 5:
-            value = 3000000 + avgMaterialPrice * 120;
+            value = getKeyDiscount(3000000) + avgMaterialPrice * 120;
             break;
         default:
             value = 0;
