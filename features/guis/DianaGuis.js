@@ -1,7 +1,8 @@
 import settings from "../../settings";
 import { registerWhen, data, dianaTimerlist, pastDianaEvents} from "../../utils/variables";
 import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, 
-    getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit, setBurrowsPerHour 
+    getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit, setBurrowsPerHour,
+    setMobsPerHour 
 } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
@@ -142,6 +143,7 @@ function createMobLine(name, color, shortName, extra, mobTracker, percentDict) {
 function getMobMassage(setting) {
     const mobTrackerType = ["Total", "Event", "Session"][setting - 1];
     let mobTracker = getTracker(setting);
+    let mayorTracker = getTracker(2);
     let percentDict = calcPercent(mobTracker, "mobs");
     let mobLines = [];
     
@@ -161,8 +163,13 @@ function getMobMassage(setting) {
         mobLines.push(createMobLine(mob.name, mob.color, mob.shortName, mob.extra, mobTracker, percentDict));
     }
 
-    let totalText = `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])}`;
-    let totalLine = new OverlayTextLine(totalText, true);
+    //mobs/hr
+    let mobsPerHour = mobTracker["mobs"]["TotalMobs"] / dianaTimerlist[setting - 1].getHourTime();
+    let mobsPerHourMayor = mayorTracker["mobs"]["TotalMobs"] / dianaTimerlist[1].getHourTime();
+    setMobsPerHour(mobsPerHourMayor.toFixed());
+    let mobsPerHourText = isNaN(mobsPerHour) ? "" : `${GRAY}[${AQUA}${mobsPerHour.toFixed(2)}${GRAY}/${AQUA}hr${GRAY}]`;
+    let totalText = `${GRAY}- ${GRAY}Total Mobs: ${AQUA}${formatNumberCommas(mobTracker["mobs"]["TotalMobs"])} ${mobsPerHourText}`;
+    let totalLine = new OverlayTextLine(totalText, true, true);
     mobLines.push(totalLine);
 
     return mobLines;
@@ -343,10 +350,13 @@ function getLootMessage(lootViewSetting) {
         lootLines.push(createLootLine(item));
     }
 
-    let totalBurrows = new OverlayTextLine(`${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])}`, true, true);
     let totalCoinsText = new OverlayTextLine(`${GOLD}Total Coins: ${AQUA}${formatNumber(lootTracker["items"]["coins"])}`, true, true)
     let burrowsPerHour = lootTracker["items"]["Total Burrows"] / dianaTimerlist[lootViewSetting - 1].getHourTime();
-    setBurrowsPerHour(burrowsPerHour.toFixed());
+    let burrowsPerHourMayor = mayorTracker["items"]["Total Burrows"] / dianaTimerlist[1].getHourTime();
+    let burrowsPerHourText = isNaN(burrowsPerHour) ? "" : `${GRAY}[${AQUA}${burrowsPerHour.toFixed(2)}${GRAY}/${AQUA}hr${GRAY}]`;
+    let totalBurrows = new OverlayTextLine(`${GRAY}Total Burrows: ${AQUA}${formatNumberCommas(lootTracker["items"]["Total Burrows"])} ${burrowsPerHourText}`, true, true);
+    lootLines.push(totalBurrows);
+    setBurrowsPerHour(burrowsPerHourMayor.toFixed());
 
     let treasure = formatNumber(lootTracker["items"]["coins"] - lootTracker["items"]["fishCoins"] - lootTracker["items"]["scavengerCoins"]).toString();
     let fourEyedFish = formatNumber(lootTracker["items"]["fishCoins"]).toString();
@@ -357,14 +367,6 @@ function getLootMessage(lootViewSetting) {
         `§6Four-Eyed Fish: §b${fourEyedFish}`, 
         `§6Scavenger: §b${scavenger}`
     ].map(item => item.toString()); 
-
-    let burrowHover = [
-        `§6Burrows per hour: §b${burrowsPerHour.toFixed(2)}`,
-    ].map(item => item.toString());
-    lootLines.push(totalBurrows.onHover((overlay) => {
-        // overlay.gui.drawHoveringString(hovertext, 0, 0)
-        GuiUtils.drawHoveringText(burrowHover, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
-    }));
 
     lootLines.push(totalCoinsText.onHover((overlay) => {
         // overlay.gui.drawHoveringString(hovertext, 0, 0)

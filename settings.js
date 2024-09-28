@@ -268,11 +268,20 @@ class Settings {
     inquisDetect = true;
     @TextProperty({
         name: "Send Text On Inq Spawn",
-        description: "Sends a text on inq spawn 5 seconds after spawn",
+        description: "Sends a text on inq spawn 5 seconds after spawn, use {since} for mobs since inq, {chance} for inq chance",
         category: "Diana",
-        subcategory: "Other",
+        subcategory: "InqMessage",
     })
-    announceKill = "";
+    announceKilltext = "";
+    @ButtonProperty({
+        name: "Send Test Inq Message",
+        description: "Sends a test inq message in chat",
+        category: "Diana",
+        subcategory: "InqMessage",
+    })
+    testInqMessage() {
+        ChatLib.command("sboinqmsgtest", true);
+    }
     @SwitchProperty({
         name: "Highlight Inquis",
         description: "Highlights inquisitor.",

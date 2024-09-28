@@ -754,6 +754,7 @@ let dianaMayorTotalProfit = 0;
 let dianaMayorOfferType
 let profitPerHour = 0;
 let burrowsPerHour = 0;
+let mobsPerHour = 0;
 
 export function getBurrowsPerHour() {
     return burrowsPerHour;
@@ -761,6 +762,14 @@ export function getBurrowsPerHour() {
 
 export function setBurrowsPerHour(burrows) {
     burrowsPerHour = burrows;
+}
+
+export function getMobsPerHour() {
+    return mobsPerHour;
+}
+
+export function setMobsPerHour(mobs) {
+    mobsPerHour = mobs;
 }
 
 export function getDianaMayorTotalProfitAndOfferType() {
