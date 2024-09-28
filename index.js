@@ -94,10 +94,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a- Added /sbopartycommands to see all diana commands`)
-    ChatLib.chat(`&7> &a- Added {since}, {chance} for Send Text On Inq spawn, dont forget to update ur message cause it got cleared`)
-    ChatLib.chat(`&7> &a- Added mobs/hr`)
-    ChatLib.chat(`&7> &a- Fixed small bugs`)
+    ChatLib.chat(`&7> &a- Fixed that the kuudra key price was NaN`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
