@@ -163,7 +163,7 @@ export function getAllowedToTrackSacks() {
 }
 
 registerWhen(register("guiOpened", () => {
-    new SboTimeoutFunction(() => {
+    setTimeout(() => {
         if (Player.getContainer() != undefined) {
             if (Player.getContainer().getName() == "Sack of Sacks") {
                 allowedToTrackSacks = false;
@@ -193,7 +193,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerSession);
         trackLsInq(trackerTotal);
         hasTrackedInq = true;
-        new SboTimeoutFunction(() => {
+        setTimeout(() => {
             hasTrackedInq = false;
         }, 4000);
     }
@@ -202,10 +202,10 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             state2.entityDeathOccurred = true;
-            new SboTimeoutFunction(() => {
+            setTimeout(() => {
                 state.entityDeathOccurred = false;
             }, 2000);
-            new SboTimeoutFunction(() => {
+            setTimeout(() => {
                 state2.entityDeathOccurred = false;
             }, 4000);
         }
@@ -331,7 +331,7 @@ export function gotLootShare() {
 let lootShareBool = false;
 register("chat" , (player) => {
     lootShareBool = true;
-    new SboTimeoutFunction(() => {
+    setTimeout(() => {
         lootShareBool = false;
     }, 2000);
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
@@ -461,7 +461,7 @@ register("worldUnload", () => {
 });
 
 register("worldLoad", () => {
-    new SboTimeoutFunction(() => {
+    setTimeout(() => {
         worldLoaded = true;
     }, 1000);
 });
@@ -532,7 +532,7 @@ register("step", () => {
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
-        new SboTimeoutFunction(() => {
+        setTimeout(() => {
             updateing = false;
         }, 300000);
     }

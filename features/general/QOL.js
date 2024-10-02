@@ -208,7 +208,7 @@ registerWhen(register("tick", () => {
         if (settings.goldenFishNotification) {
             ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
             for (let i = 0; i < 6; i++) {
-                new SboTimeoutFunction(() => {
+                setTimeout(() => {
                     World.playSound("random.levelup", 100, 1);
                 }, i * 500);
             }
@@ -321,7 +321,7 @@ registerWhen(register("tick", () => {
     } 
     if (flareClicked) {
         flareClicked = false
-        new SboTimeoutFunction(() => {
+        setTimeout(() => {
             findFlare()
         }, 500);
     }
