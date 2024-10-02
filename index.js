@@ -95,6 +95,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &a- Fixed that the kuudra key price was NaN`)
+    ChatLib.chat(`&7> &a- Fixed Deleting past events`)
     ChatLib.chat(`&7> &a- Added a setting for the 20% reputation discount in the key shop`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
