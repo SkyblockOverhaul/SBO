@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, trace, formatTimeMinSec, SboTimeoutFunction } from "../../utils/functions";
+import { getplayername, trace, formatTimeMinSec, SboTimeoutFunction, getTextureID } from "../../utils/functions";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
@@ -313,19 +313,34 @@ registerWhen(register("tick", () => {
         }, 500);
     }
 }), () => settings.flareTimer);
+
 const flareHeads = {
-    "61e9be2-b0ff-4e13-b067-8a657cde652c": "WARNING",
-    "b1ad72b-80b2-4d40-904f-8ee5992b0770": "SOS",
+    "ewogICJ0aW1lc3RhbXAiIDogMTY0NjY4NzMwNjIyMywKICAicHJvZmlsZUlkIiA6ICI0MWQzYWJjMmQ3NDk0MDBjOTA5MGQ1NDM0ZDAzODMxYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJNZWdha2xvb24iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjJlMmJmNmMxZWMzMzAyNDc5MjdiYTYzNDc5ZTU4NzJhYzY2YjA2OTAzYzg2YzgyYjUyZGFjOWYxYzk3MTQ1OCIKICAgIH0KICB9Cn0=": "&aWarning Flare",
+    "ewogICJ0aW1lc3RhbXAiIDogMTY0NjY4NzM0NzQ4OSwKICAicHJvZmlsZUlkIiA6ICI0MWQzYWJjMmQ3NDk0MDBjOTA5MGQ1NDM0ZDAzODMxYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJNZWdha2xvb24iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzAwNjJjYzk4ZWJkYTcyYTZhNGI4OTc4M2FkY2VmMjgxNWI0ODNhMDFkNzNlYTg3YjNkZjc2MDcyYTg5ZDEzYiIKICAgIH0KICB9Cn0=": "&5SOS Flare",
+    "45c263b-dd4f-4426-9e93-e69cb33dae17": "&9Alert Flare"
 }
 
 register("step", () => {
     World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((rocket) => {
-        let headName = new EntityLivingBase(rocket.getEntity()).getItemInSlot(4)?.getName()?.removeFormatting()
-        if (headName != undefined && headName != "Head") {
-            ChatLib.chat(headName);
+        let headItem = new EntityLivingBase(rocket.getEntity()).getItemInSlot(4)
+        let headNbt = headItem?.getNBT()
+
+        if (headNbt != undefined) {
+            if (getTextureID(headNbt)) {
+                ChatLib.chat(getTextureID(headNbt))
+
+                // headName = headName.split("'s")[0]
+                // print(headName)
+                // if (flareHeads[headName] != undefined) {
+                //     print(flareHeads[headName])
+                // } else {
+                //     print(headName)
+                // }
+            }
         }
     })
 }).setFps(1);
+// {id:"minecraft:skull",Count:1b,tag:{SkullOwner:{Id:"57a4c8dc-9b8e-3d41-80da-a608901a6147",Properties:{textures:[0:{Value:"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjk2OTIzYWQyNDczMTAwMDdmNmFlNWQzMjZkODQ3YWQ1Mzg2NGNmMTZjMzU2NWExODFkYzhlNmIyMGJlMjM4NyJ9fX0="}]}}},Damage:3s} (57)
 
 registerWhen(register("playerInteract", (action, pos) => {
     let item = Player.getHeldItem()

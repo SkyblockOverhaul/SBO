@@ -111,6 +111,12 @@ export function getSBUUID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("uuid") || null;
 }
 
+export function getTextureID(item) {
+    let props = item?.getCompoundTag("tag")?.getCompoundTag("SkullOwner")?.getCompoundTag("Properties")?.toObject()
+    if (props == undefined) return null;
+    return props.textures[0]?.Value || null;
+}
+
 let onAlpha = false;
 export function isOnAlpha() {
     return onAlpha;
