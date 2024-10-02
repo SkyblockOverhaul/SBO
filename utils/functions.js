@@ -113,8 +113,8 @@ export function getSBUUID(item) {
 
 export function getTextureID(item) {
     let props = item?.getCompoundTag("tag")?.getCompoundTag("SkullOwner")?.getCompoundTag("Properties")?.toObject()
-    if (props == undefined) return null;
-    return props.textures[0]?.Value || null;
+    if (!props?.textures) return null;
+    return JSON.parse(new java.lang.String(java.util.Base64.getDecoder().decode(props.textures[0]?.Value)))["textures"]["SKIN"]["url"].split("/texture/")[1]
 }
 
 let onAlpha = false;
