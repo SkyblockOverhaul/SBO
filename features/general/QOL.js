@@ -308,11 +308,24 @@ registerWhen(register("tick", () => {
     } 
     if (flareClicked) {
         flareClicked = false
-        setTimeout(() => {
+        new SboTimeoutFunction(() => {
             findFlare()
         }, 500);
     }
 }), () => settings.flareTimer);
+const flareHeads = {
+    "61e9be2-b0ff-4e13-b067-8a657cde652c": "WARNING",
+    "b1ad72b-80b2-4d40-904f-8ee5992b0770": "SOS",
+}
+
+register("step", () => {
+    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((rocket) => {
+        let headName = new EntityLivingBase(rocket.getEntity()).getItemInSlot(4)?.getName()?.removeFormatting()
+        if (headName != undefined && headName != "Head") {
+            ChatLib.chat(headName);
+        }
+    })
+}).setFps(1);
 
 registerWhen(register("playerInteract", (action, pos) => {
     let item = Player.getHeldItem()
