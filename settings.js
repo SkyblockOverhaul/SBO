@@ -589,6 +589,12 @@ class Settings {
         category: 'Quality of Life',
     })
     copyChatMessage = false;
+    @SwitchProperty({
+        name: 'Flare Tracker',
+        description: 'Tracks the flare you placed (works with all flares)',
+        category: 'Quality of Life',
+    })
+    flareTimer = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
@@ -668,6 +674,12 @@ class Settings {
         options: ['Instabuy','Buy Offer'],
     })
     keySetting = 0;
+    @SwitchProperty({
+        name: 'Kuudra Key Discount',
+        description: 'Enable this if you have 12k reputation for the 20% discount on keys',
+        category: 'Kuudra',
+    })
+    keyDiscount = false;
     @SelectorProperty({
         name: 'Kuudra Pet Rarity',
         description: 'Set the rarity of your pet for essence perk',
