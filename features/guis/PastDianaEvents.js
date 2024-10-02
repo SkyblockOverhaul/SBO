@@ -89,7 +89,7 @@ function layoutData() {
 
 
 function calculateBoxHeight() {
-    const events = pastDianaEventsList;
+    const events = pastDianaEventsList
     if (events.length === 0) return 300;
 
     let itemHeight = 16;
@@ -458,7 +458,7 @@ function confirmDeleteRender() {
 }
 
 function deleteEvent() {
-    const events = pastDianaEvents.events;
+    const events = pastDianaEventsList;
     if (events.length === 0) return;
 
     events.splice(deletePage, 1);
@@ -467,7 +467,7 @@ function deleteEvent() {
         deletePage = events.length - 1;
     }
 
-    pastDianaEvents.events = events;
+    pastDianaEvents.events = [...events].reverse();
     pastDianaEvents.save();
     showConfirmDelete = false;
 }
