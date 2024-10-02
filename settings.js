@@ -595,6 +595,12 @@ class Settings {
         category: 'Quality of Life',
     })
     flareTimer = false;
+    @SwitchProperty({
+        name: 'Flare Expire Soon Alert',
+        description: 'Alerts you when your flare expires soon with a title',
+        category: 'Quality of Life',
+    })
+    flareExpireAlert = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",

@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, trace, formatTimeMinSec, SboTimeoutFunction, getTextureID } from "../../utils/functions";
+import { getplayername, trace, formatTimeMinSec, SboTimeoutFunction, getTextureID, isInSkyblock } from "../../utils/functions";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
@@ -110,18 +110,20 @@ registerWhen(register("chat", (player, command) => {
 
 let lampOn = false;
 registerWhen(register("packetReceived", (packet, event) => { 
-    if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
-        const blockPos =  new BlockPos(packet.func_179827_b());
-        const blockState = packet.func_180728_a();
-        if (blockState == "minecraft:lit_redstone_lamp") {
-            if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
-                createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
-                lampOn = true;
+    if (isInSkyblock()) {
+        if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
+            const blockPos =  new BlockPos(packet.func_179827_b());
+            const blockState = packet.func_180728_a();
+            if (blockState == "minecraft:lit_redstone_lamp") {
+                if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
+                    createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
+                    lampOn = true;
+                }
             }
-        }
-        else if (blockState == "minecraft:redstone_lamp") {
-            removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
-            lampOn = false;
+            else if (blockState == "minecraft:redstone_lamp") {
+                removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
+                lampOn = false;
+            }
         }
     }
 }).setFilteredClass(net.minecraft.network.play.server.S23PacketBlockChange), () => settings.carnivalLamp);
@@ -263,6 +265,7 @@ let flareType = ""
 let flareTimer = 0
 let warningSent = false
 let flareClicked = false
+let flareEntity = undefined
 function resetFlare() {
     if (flareTimer == 0) return
     flareType = ""
@@ -270,6 +273,7 @@ function resetFlare() {
     warningSent = false
     flareClicked = false
     flareOverlay.renderGui = false
+    flareEntity = undefined
     flareLine.setText("&5SOS Flare: &b3m 0s")
     ChatLib.chat("&6[SBO] &eFlare has expired")
 }
@@ -292,18 +296,28 @@ function findFlare() {
         ChatLib.chat("&6[SBO] &eFlare has been found")
         warningSent = false
         flareOverlay.renderGui = true
+        flareEntity = flareObj[0]
     }
 }
 
 registerWhen(register("tick", () => {
-    if (flareTimer != 0) {
-        flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)))
-        if (!warningSent && Date.now() - flareTimer > 160000) { // 2 minutes 40 seconds
-            ChatLib.chat("&6[SBO] &eFlare will expire in 20 seconds")
-            warningSent = true
-        }
-        if (Date.now() - flareTimer > 180000) { // 3 minutes
-            resetFlare();
+    if (flareTimer != 0 || bestRandomFlare != "") {
+        if (flareScore[flareType] >= flareScore[bestRandomFlare]) {
+            const player = Player.getPlayer()
+            let rangeText = flareEntity.distanceTo(player) <= 40 ? "&7(&ain range&7)" : "&7(&cout of range&7)"
+            flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)) + " " + rangeText)
+            if (!warningSent && Date.now() - flareTimer > 160000) { // 2 minutes 40 seconds
+                ChatLib.chat("&6[SBO] &eFlare will expire in 20 seconds")
+                warningSent = true
+                if (settings.flareExpireAlert) {
+                    Client.showTitle("&cFlare Expires In 20 Seconds", "", 0, 40, 20);
+                }
+            }
+            if (Date.now() - flareTimer > 180000) { // 3 minutes
+                resetFlare();
+            }
+        } else {
+            flareLine.setText(bestRandomFlare + ": &bin range")
         }
     } 
     if (flareClicked) {
@@ -315,38 +329,59 @@ registerWhen(register("tick", () => {
 }), () => settings.flareTimer);
 
 const flareHeads = {
-    "ewogICJ0aW1lc3RhbXAiIDogMTY0NjY4NzMwNjIyMywKICAicHJvZmlsZUlkIiA6ICI0MWQzYWJjMmQ3NDk0MDBjOTA5MGQ1NDM0ZDAzODMxYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJNZWdha2xvb24iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjJlMmJmNmMxZWMzMzAyNDc5MjdiYTYzNDc5ZTU4NzJhYzY2YjA2OTAzYzg2YzgyYjUyZGFjOWYxYzk3MTQ1OCIKICAgIH0KICB9Cn0=": "&aWarning Flare",
-    "ewogICJ0aW1lc3RhbXAiIDogMTY0NjY4NzM0NzQ4OSwKICAicHJvZmlsZUlkIiA6ICI0MWQzYWJjMmQ3NDk0MDBjOTA5MGQ1NDM0ZDAzODMxYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJNZWdha2xvb24iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzAwNjJjYzk4ZWJkYTcyYTZhNGI4OTc4M2FkY2VmMjgxNWI0ODNhMDFkNzNlYTg3YjNkZjc2MDcyYTg5ZDEzYiIKICAgIH0KICB9Cn0=": "&5SOS Flare",
-    "45c263b-dd4f-4426-9e93-e69cb33dae17": "&9Alert Flare"
+    "c0062cc98ebda72a6a4b89783adcef2815b483a01d73ea87b3df76072a89d13b": "&5SOS Flare",
+    "9d2bf9864720d87fd06b84efa80b795c48ed539b16523c3b1f1990b40c003f6b": "&9Alert Flare",
+    "22e2bf6c1ec330247927ba63479e5872ac66b06903c86c82b52dac9f1c971458": "&aWarning Flare"
 }
 
+const flareScore = {
+    "&5SOS Flare": 3,
+    "&9Alert Flare": 2,
+    "&aWarning Flare": 1,
+    "": 0
+}
+
+let randomFlares = []
+let bestRandomFlare = ""
 register("step", () => {
-    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach((rocket) => {
-        let headItem = new EntityLivingBase(rocket.getEntity()).getItemInSlot(4)
-        let headNbt = headItem?.getNBT()
+    if (isInSkyblock()) {
+        randomFlares = []
+        const player = Player.getPlayer()
+        World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(flare => flare.distanceTo(player) <= 40).forEach((rocket) => {
+            let headItem = new EntityLivingBase(rocket.getEntity()).getItemInSlot(4)
+            let headNbt = headItem?.getNBT()
 
-        if (headNbt != undefined) {
-            if (getTextureID(headNbt)) {
-                ChatLib.chat(getTextureID(headNbt))
-
-                // headName = headName.split("'s")[0]
-                // print(headName)
-                // if (flareHeads[headName] != undefined) {
-                //     print(flareHeads[headName])
-                // } else {
-                //     print(headName)
-                // }
+            if (headNbt != undefined) {
+                if (flareHeads[getTextureID(headNbt)]) {
+                    ChatLib.chat(flareHeads[getTextureID(headNbt)])
+                    randomFlares.push(flareHeads[getTextureID(headNbt)])
+                }
+            }
+        })
+        bestRandomFlare = ""
+        if (randomFlares.length != 0) {
+            flareOverlay.renderGui = true
+            for (let i = 0; i < randomFlares.length; i++) {
+                if (flareScore[randomFlares[i]] > flareScore[bestRandomFlare]) {
+                    bestRandomFlare = randomFlares[i]
+                }
             }
         }
-    })
+        else {
+            if (flareTimer == 0) {
+                flareOverlay.renderGui = false
+            }
+        }
+    }
 }).setFps(1);
+
 // {id:"minecraft:skull",Count:1b,tag:{SkullOwner:{Id:"57a4c8dc-9b8e-3d41-80da-a608901a6147",Properties:{textures:[0:{Value:"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjk2OTIzYWQyNDczMTAwMDdmNmFlNWQzMjZkODQ3YWQ1Mzg2NGNmMTZjMzU2NWExODFkYzhlNmIyMGJlMjM4NyJ9fX0="}]}}},Damage:3s} (57)
 
 registerWhen(register("playerInteract", (action, pos) => {
     let item = Player.getHeldItem()
     if (item == null) return
     if (item.getName().includes("Flare") && action.toString().includes('RIGHT_CLICK') && !flareClicked) {
-        flareType = item.getName()
+        flareType = item.getName().replace("§", "&")
         flareClicked = true
     }
 }), () => settings.flareTimer);
