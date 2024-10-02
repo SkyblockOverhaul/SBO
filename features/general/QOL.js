@@ -292,7 +292,6 @@ function findFlare() {
     const flareObj = World.getAllEntitiesOfType(EntityFireworkRocket).filter(flare => flare.distanceTo(player) <= 40)
     if (flareObj.length > 0) {
         flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000))
-        ChatLib.chat("&6[SBO] &eFlare has been found")
         warningSent = false
         flareOverlay.renderGui = true
         flareEntity = flareObj[0]
