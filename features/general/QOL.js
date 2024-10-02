@@ -302,7 +302,7 @@ function findFlare() {
 
 registerWhen(register("tick", () => {
     if (flareTimer != 0 || bestRandomFlare != "") {
-        if (flareScore[flareType] >= flareScore[bestRandomFlare]) {
+        if (flareScore[flareType] >= flareScore[bestRandomFlare] && flareTimer != 0) {
             const player = Player.getPlayer()
             let rangeText = flareEntity.distanceTo(player) <= 40 ? "&7(&ain range&7)" : "&7(&cout of range&7)"
             flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)) + " " + rangeText)
