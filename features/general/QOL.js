@@ -344,32 +344,30 @@ const flareScore = {
 let randomFlares = []
 let bestRandomFlare = ""
 registerWhen(register("step", () => {
-    if (isInSkyblock()) {
-        randomFlares = []
-        const player = Player.getPlayer()
-        World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(flare => flare.distanceTo(player) <= 40).forEach((flare) => {
-            let headItem = new EntityLivingBase(flare.getEntity()).getItemInSlot(4)
-            let headNbt = headItem?.getNBT()
+    randomFlares = []
+    const player = Player.getPlayer()
+    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(flare => flare.distanceTo(player) <= 40).forEach((flare) => {
+        let headItem = new EntityLivingBase(flare.getEntity()).getItemInSlot(4)
+        let headNbt = headItem?.getNBT()
 
-            if (headNbt != undefined) {
-                if (flareHeads[getTextureID(headNbt)]) {
-                    randomFlares.push(flareHeads[getTextureID(headNbt)])
-                }
-            }
-        })
-        bestRandomFlare = ""
-        if (randomFlares.length != 0) {
-            flareOverlay.renderGui = true
-            for (let i = 0; i < randomFlares.length; i++) {
-                if (flareScore[randomFlares[i]] > flareScore[bestRandomFlare]) {
-                    bestRandomFlare = randomFlares[i]
-                }
+        if (headNbt != undefined) {
+            if (flareHeads[getTextureID(headNbt)]) {
+                randomFlares.push(flareHeads[getTextureID(headNbt)])
             }
         }
-        else {
-            if (flareTimer == 0) {
-                flareOverlay.renderGui = false
+    })
+    bestRandomFlare = ""
+    if (randomFlares.length != 0) {
+        flareOverlay.renderGui = true
+        for (let i = 0; i < randomFlares.length; i++) {
+            if (flareScore[randomFlares[i]] > flareScore[bestRandomFlare]) {
+                bestRandomFlare = randomFlares[i]
             }
+        }
+    }
+    else {
+        if (flareTimer == 0) {
+            flareOverlay.renderGui = false
         }
     }
 }).setFps(1), () => settings.flareTimer);
