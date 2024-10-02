@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, trace, formatTimeMinSec } from "../../utils/functions";
+import { getplayername, trace, formatTimeMinSec, SboTimeoutFunction } from "../../utils/functions";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
@@ -206,7 +206,7 @@ registerWhen(register("tick", () => {
         if (settings.goldenFishNotification) {
             ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
             for (let i = 0; i < 6; i++) {
-                setTimeout(() => {
+                new SboTimeoutFunction(() => {
                     World.playSound("random.levelup", 100, 1);
                 }, i * 500);
             }
@@ -253,3 +253,72 @@ registerWhen(register("chat", (rarity) => {
 registerWhen(register("chat", () => {
     ChatLib.chat("&6[SBO] &eA Golden Fish has spawned")
 }).setCriteria("You spot a Golden Fish surface from beneath the lava!"), () => settings.goldenFishTimer && getWorld() == "Crimson Isle");
+
+let flareOverlay = new SboOverlay("Flare", "flareTimer", "render", "FlareLoc")
+let flareLine = new OverlayTextLine("&5SOS Flare: &b3m 0s")
+flareOverlay.renderGui = false
+flareOverlay.setLines([flareLine])
+
+let flareType = ""
+let flareTimer = 0
+let warningSent = false
+let flareClicked = false
+function resetFlare() {
+    if (flareTimer == 0) return
+    flareType = ""
+    flareTimer = 0
+    warningSent = false
+    flareClicked = false
+    flareOverlay.renderGui = false
+    flareLine.setText("&5SOS Flare: &b3m 0s")
+    ChatLib.chat("&6[SBO] &eFlare has expired")
+}
+
+registerWhen(register("worldUnload", () => {
+    resetFlare();
+    resetGoldenFish();
+}), () => settings.flareTimer || settings.goldenFishTimer);
+registerWhen(register("chat", () => {
+    resetFlare();
+}).setCriteria("&r&eYour flare disappeared because you were too far away!&r"), () => settings.flareTimer);
+
+const EntityFireworkRocket = Java.type("net.minecraft.entity.item.EntityFireworkRocket");
+function findFlare() {
+    const player = Player.getPlayer()
+    const flareObj = World.getAllEntitiesOfType(EntityFireworkRocket).filter(flare => flare.distanceTo(player) <= 40)
+    if (flareObj.length) {
+        flareTimer = Date.now()
+        flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000))
+        ChatLib.chat("&6[SBO] &eFlare has been found")
+        warningSent = false
+        flareOverlay.renderGui = true
+    }
+}
+
+registerWhen(register("tick", () => {
+    if (flareTimer != 0) {
+        flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)))
+        if (!warningSent && Date.now() - flareTimer > 160000) { // 2 minutes 40 seconds
+            ChatLib.chat("&6[SBO] &eFlare will expire in 20 seconds")
+            warningSent = true
+        }
+        if (Date.now() - flareTimer > 180000) { // 3 minutes
+            resetFlare();
+        }
+    } 
+    if (flareClicked) {
+        flareClicked = false
+        setTimeout(() => {
+            findFlare()
+        }, 500);
+    }
+}), () => settings.flareTimer);
+
+registerWhen(register("playerInteract", (action, pos) => {
+    let item = Player.getHeldItem()
+    if (item == null) return
+    if (item.getName().includes("Flare") && action.toString().includes('RIGHT_CLICK') && !flareClicked) {
+        flareType = item.getName()
+        flareClicked = true
+    }
+}), () => settings.flareTimer);

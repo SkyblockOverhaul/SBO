@@ -157,7 +157,7 @@ export function getAllowedToTrackSacks() {
 }
 
 registerWhen(register("guiOpened", () => {
-    setTimeout(() => {
+    new SboTimeoutFunction(() => {
         if (Player.getContainer() != undefined) {
             if (Player.getContainer().getName() == "Sack of Sacks") {
                 allowedToTrackSacks = false;
@@ -187,7 +187,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerSession);
         trackLsInq(trackerTotal);
         hasTrackedInq = true;
-        setTimeout(() => {
+        new SboTimeoutFunction(() => {
             hasTrackedInq = false;
         }, 4000);
     }
@@ -196,10 +196,10 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             state2.entityDeathOccurred = true;
-            setTimeout(() => {
+            new SboTimeoutFunction(() => {
                 state.entityDeathOccurred = false;
             }, 2000);
-            setTimeout(() => {
+            new SboTimeoutFunction(() => {
                 state2.entityDeathOccurred = false;
             }, 4000);
         }
@@ -325,7 +325,7 @@ export function gotLootShare() {
 let lootShareBool = false;
 register("chat" , (player) => {
     lootShareBool = true;
-    setTimeout(() => {
+    new SboTimeoutFunction(() => {
         lootShareBool = false;
     }, 2000);
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
@@ -353,6 +353,7 @@ export function initializeGuiSettings() {
         PickupLogLoc: { "x": 2, "y": 2, "s": 1 },
         CrownLoc: { "x": 15, "y": 435, "s": 1 },
         GoldenFishLoc: { "x": 15, "y": 50, "s": 1 },   
+        FlareLoc: { "x": 170, "y": 150, "s": 1 },
     };
 }
 
@@ -454,7 +455,7 @@ register("worldUnload", () => {
 });
 
 register("worldLoad", () => {
-    setTimeout(() => {
+    new SboTimeoutFunction(() => {
         worldLoaded = true;
     }, 1000);
 });
@@ -525,7 +526,7 @@ register("step", () => {
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
-        setTimeout(() => {
+        new SboTimeoutFunction(() => {
             updateing = false;
         }, 300000);
     }
@@ -1493,7 +1494,7 @@ export function getDianaStats(useCallback = false, callback = null) {
     }
 }
 
-class SboTimeoutFunction {
+export class SboTimeoutFunction {
     static timeoutList = [];
     constructor(func, timeout) {
         this.func = func;
@@ -1516,15 +1517,6 @@ register("step", () => {
         }
     });
 }).setFps(6);
-
-// register("command", () => {
-//     let timeoutStarted = Date.now();
-//     new SboTimeoutFunction(() => {
-//         ChatLib.chat("timeout");
-//         ChatLib.chat("Time passed: " + (Date.now() - timeoutStarted) + "ms");
-//     }, 1000);
-//     print(getDianaStats())
-// }).setName("sbotimeout");
 
 export function requirementsFormat(requirements, myStats) {
     let reqsText = ""

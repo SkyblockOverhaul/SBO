@@ -589,6 +589,12 @@ class Settings {
         category: 'Quality of Life',
     })
     copyChatMessage = false;
+    @SwitchProperty({
+        name: 'Flare Tracker',
+        description: 'Tracks the flare you placed (works with all flares)',
+        category: 'Quality of Life',
+    })
+    flareTimer = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
