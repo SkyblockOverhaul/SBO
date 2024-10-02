@@ -291,12 +291,12 @@ function findFlare() {
     const player = Player.getPlayer()
     const flareObj = World.getAllEntitiesOfType(EntityFireworkRocket).filter(flare => flare.distanceTo(player) <= 40)
     if (flareObj.length) {
-        flareTimer = Date.now()
         flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000))
         ChatLib.chat("&6[SBO] &eFlare has been found")
         warningSent = false
         flareOverlay.renderGui = true
         flareEntity = flareObj[0]
+        flareTimer = Date.now()
     }
 }
 
@@ -347,13 +347,12 @@ register("step", () => {
     if (isInSkyblock()) {
         randomFlares = []
         const player = Player.getPlayer()
-        World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(flare => flare.distanceTo(player) <= 40).forEach((rocket) => {
-            let headItem = new EntityLivingBase(rocket.getEntity()).getItemInSlot(4)
+        World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(flare => flare.distanceTo(player) <= 40).forEach((flare) => {
+            let headItem = new EntityLivingBase(flare.getEntity()).getItemInSlot(4)
             let headNbt = headItem?.getNBT()
 
             if (headNbt != undefined) {
                 if (flareHeads[getTextureID(headNbt)]) {
-                    ChatLib.chat(flareHeads[getTextureID(headNbt)])
                     randomFlares.push(flareHeads[getTextureID(headNbt)])
                 }
             }
