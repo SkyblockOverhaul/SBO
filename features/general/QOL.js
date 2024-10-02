@@ -208,7 +208,7 @@ registerWhen(register("tick", () => {
         if (settings.goldenFishNotification) {
             ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
             for (let i = 0; i < 6; i++) {
-                setTimeout(() => {
+                new SboTimeoutFunction(() => {
                     World.playSound("random.levelup", 100, 1);
                 }, i * 500);
             }
@@ -321,7 +321,7 @@ registerWhen(register("tick", () => {
     } 
     if (flareClicked) {
         flareClicked = false
-        setTimeout(() => {
+        new SboTimeoutFunction(() => {
             findFlare()
         }, 500);
     }
@@ -342,7 +342,7 @@ const flareScore = {
 
 let randomFlares = []
 let bestRandomFlare = ""
-register("step", () => {
+registerWhen(register("step", () => {
     if (isInSkyblock()) {
         randomFlares = []
         const player = Player.getPlayer()
@@ -371,9 +371,7 @@ register("step", () => {
             }
         }
     }
-}).setFps(1);
-
-// {id:"minecraft:skull",Count:1b,tag:{SkullOwner:{Id:"57a4c8dc-9b8e-3d41-80da-a608901a6147",Properties:{textures:[0:{Value:"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjk2OTIzYWQyNDczMTAwMDdmNmFlNWQzMjZkODQ3YWQ1Mzg2NGNmMTZjMzU2NWExODFkYzhlNmIyMGJlMjM4NyJ9fX0="}]}}},Damage:3s} (57)
+}).setFps(1), () => settings.flareTimer);
 
 registerWhen(register("playerInteract", (action, pos) => {
     let item = Player.getHeldItem()
