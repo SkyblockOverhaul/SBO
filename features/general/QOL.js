@@ -301,10 +301,11 @@ function findFlare() {
 
 registerWhen(register("tick", () => {
     if (flareTimer != 0 || bestRandomFlare != "") {
-        if (flareScore[flareType] >= flareScore[bestRandomFlare] && flareTimer != 0) {
-            const player = Player.getPlayer()
-            let rangeText = flareEntity.distanceTo(player) <= 40 ? "&7(&ain range&7)" : "&7(&cout of range&7)"
-            flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)) + " " + rangeText)
+        let inRange = false
+        if (flareTimer != 0) inRange = flareEntity.distanceTo(Player.getPlayer()) <= 40
+        if (flareScore[flareType] >= flareScore[bestRandomFlare] && inRange) {
+            let rangeText = inRange ? " &7(&ain range&7)" : " &7(&cout of range&7)"
+            flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)) + rangeText)
             if (!warningSent && Date.now() - flareTimer > 160000) { // 2 minutes 40 seconds
                 ChatLib.chat("&6[SBO] &eFlare will expire in 20 seconds")
                 warningSent = true
