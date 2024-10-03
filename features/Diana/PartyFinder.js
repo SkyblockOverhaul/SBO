@@ -36,7 +36,7 @@ function getPartyInfo(party) {
 // message to check party when joining a party
 register("chat", (party) => {
     if (checkDiana(true)) {
-        new SboTimeoutFunction(() => {
+        setTimeout(() => {
             new TextComponent("&6[SBO] &eClick to check party members").setClick("run_command", "/sbocheckp").setHover("show_text", "/sbocheckp").chat();
         }, 100);
     }
@@ -202,7 +202,7 @@ register("command", (args1, ...args) => {
 }).setName("sbocheck").setAliases("sboc");;
 
 register("chat", (player) => {
-    new SboTimeoutFunction(() => {
+    setTimeout(() => {
         player = player.removeFormatting()
         player = getplayername(player)
         new TextComponent("&6[SBO] &eClick to check player").setClick("run_command", "/sbocheck " + player).setHover("show_text", "/sbocheck " + player).chat();
@@ -298,7 +298,7 @@ function updatePartyInQueue() {
     if (inQueue) {
         updateBool = true;
         requestSend = false;
-        new SboTimeoutFunction(() => {
+        setTimeout(() => {
             if (updateBool && !requestSend) { // because skytils sends request to mod api after every party member join/leave
                 requestSend = true;
                 sendPartyRequest();
@@ -360,7 +360,7 @@ function trackMemberCount(number) {
     partyCount = partyCount + number;
     if (inQueue) {
         if (partyCount >= 6) {      
-            new SboTimeoutFunction(() => {
+            setTimeout(() => {
                 ChatLib.chat("&6[SBO] &eYour party is full and removed from the queue.");
                 removePartyFromQueue();
             }, 150);
@@ -369,7 +369,7 @@ function trackMemberCount(number) {
     else if (checkDiana()) {
         if (partyCount < 6 && partyReqs != "" && !requeue) {
             requeue = true;
-            new SboTimeoutFunction(() => {
+            setTimeout(() => {
                 new TextComponent("&6[SBO] &eClick to requeue party with your last used requirements").setClick("run_command", "/sboqueue").setHover("show_text", "/sboqueue").chat();
             }, 150);
         }
