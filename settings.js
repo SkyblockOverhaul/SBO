@@ -81,6 +81,7 @@ class Settings {
         this.addDependency('Chim Message Test','Chim Message');
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
         this.addDependency('Flare Expire Soon Alert','Flare Tracker');
+        this.addDependency('Hide Own Flare When Not In Range','Flare Tracker');
 
     } 
     //-----------Diana Burrows----------------
@@ -603,6 +604,12 @@ class Settings {
         category: 'Quality of Life',
     })
     flareExpireAlert = false;
+    @SwitchProperty({
+        name: 'Hide Own Flare When Not In Range',
+        description: 'Hides your own flare when your not in range of it',
+        category: 'Quality of Life',
+    })
+    notInRangeSetting = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
