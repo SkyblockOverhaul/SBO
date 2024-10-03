@@ -78,7 +78,9 @@ class Settings {
         this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
         this.addDependency('Custom Chim Message Text','Chim Message');
         this.addDependency('Reset Custom Chim Message','Chim Message');
+        this.addDependency('Chim Message Test','Chim Message');
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
+        this.addDependency('Flare Expire Soon Alert','Flare Tracker');
 
     } 
     //-----------Diana Burrows----------------
@@ -589,6 +591,18 @@ class Settings {
         category: 'Quality of Life',
     })
     copyChatMessage = false;
+    @SwitchProperty({
+        name: 'Flare Tracker',
+        description: 'Tracks the flare you placed (works with all flares)',
+        category: 'Quality of Life',
+    })
+    flareTimer = false;
+    @SwitchProperty({
+        name: 'Flare Expire Soon Alert',
+        description: 'Alerts you when your flare expires soon with a title',
+        category: 'Quality of Life',
+    })
+    flareExpireAlert = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",
@@ -668,6 +682,12 @@ class Settings {
         options: ['Instabuy','Buy Offer'],
     })
     keySetting = 0;
+    @SwitchProperty({
+        name: 'Kuudra Key Discount',
+        description: 'Enable this if you have 12k reputation for the 20% discount on keys',
+        category: 'Kuudra',
+    })
+    keyDiscount = false;
     @SelectorProperty({
         name: 'Kuudra Pet Rarity',
         description: 'Set the rarity of your pet for essence perk',

@@ -111,6 +111,12 @@ export function getSBUUID(item) {
     return item?.getNBT()?.getCompoundTag("tag")?.getCompoundTag("ExtraAttributes")?.getString("uuid") || null;
 }
 
+export function getTextureID(item) {
+    let props = item?.getCompoundTag("tag")?.getCompoundTag("SkullOwner")?.getCompoundTag("Properties")?.toObject()
+    if (!props?.textures) return null;
+    return JSON.parse(new java.lang.String(java.util.Base64.getDecoder().decode(props.textures[0]?.Value)))["textures"]["SKIN"]["url"].split("/texture/")[1]
+}
+
 let onAlpha = false;
 export function isOnAlpha() {
     return onAlpha;
@@ -353,6 +359,7 @@ export function initializeGuiSettings() {
         PickupLogLoc: { "x": 2, "y": 2, "s": 1 },
         CrownLoc: { "x": 15, "y": 435, "s": 1 },
         GoldenFishLoc: { "x": 15, "y": 50, "s": 1 },   
+        FlareLoc: { "x": 170, "y": 150, "s": 1 },
     };
 }
 
@@ -1493,7 +1500,7 @@ export function getDianaStats(useCallback = false, callback = null) {
     }
 }
 
-class SboTimeoutFunction {
+export class SboTimeoutFunction {
     static timeoutList = [];
     constructor(func, timeout) {
         this.func = func;
@@ -1516,15 +1523,6 @@ register("step", () => {
         }
     });
 }).setFps(6);
-
-// register("command", () => {
-//     let timeoutStarted = Date.now();
-//     new SboTimeoutFunction(() => {
-//         ChatLib.chat("timeout");
-//         ChatLib.chat("Time passed: " + (Date.now() - timeoutStarted) + "ms");
-//     }, 1000);
-//     print(getDianaStats())
-// }).setName("sbotimeout");
 
 export function requirementsFormat(requirements, myStats) {
     let reqsText = ""

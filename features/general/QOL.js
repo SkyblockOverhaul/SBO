@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, trace, formatTimeMinSec } from "../../utils/functions";
+import { getplayername, trace, formatTimeMinSec, SboTimeoutFunction, getTextureID, isInSkyblock } from "../../utils/functions";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
@@ -110,18 +110,20 @@ registerWhen(register("chat", (player, command) => {
 
 let lampOn = false;
 registerWhen(register("packetReceived", (packet, event) => { 
-    if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
-        const blockPos =  new BlockPos(packet.func_179827_b());
-        const blockState = packet.func_180728_a();
-        if (blockState == "minecraft:lit_redstone_lamp") {
-            if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
-                createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
-                lampOn = true;
+    if (isInSkyblock()) {
+        if (getZone().replaceAll(" ", "").replaceAll(/[^a-zA-Z]/g, "") == "Carnival") {
+            const blockPos =  new BlockPos(packet.func_179827_b());
+            const blockState = packet.func_180728_a();
+            if (blockState == "minecraft:lit_redstone_lamp") {
+                if (blockPos.getX() != -101 && blockPos.getY() != 70 && blockPos.getZ() != 14) {
+                    createWorldWaypoint("", blockPos.getX() +1, blockPos.getY() +1, blockPos.getZ(), 255, 0, 0, true, false, false);
+                    lampOn = true;
+                }
             }
-        }
-        else if (blockState == "minecraft:redstone_lamp") {
-            removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
-            lampOn = false;
+            else if (blockState == "minecraft:redstone_lamp") {
+                removeWorldWaypoint(blockPos.getX()+1, blockPos.getY() +1, blockPos.getZ());
+                lampOn = false;
+            }
         }
     }
 }).setFilteredClass(net.minecraft.network.play.server.S23PacketBlockChange), () => settings.carnivalLamp);
@@ -206,7 +208,7 @@ registerWhen(register("tick", () => {
         if (settings.goldenFishNotification) {
             ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
             for (let i = 0; i < 6; i++) {
-                setTimeout(() => {
+                new SboTimeoutFunction(() => {
                     World.playSound("random.levelup", 100, 1);
                 }, i * 500);
             }
@@ -253,3 +255,126 @@ registerWhen(register("chat", (rarity) => {
 registerWhen(register("chat", () => {
     ChatLib.chat("&6[SBO] &eA Golden Fish has spawned")
 }).setCriteria("You spot a Golden Fish surface from beneath the lava!"), () => settings.goldenFishTimer && getWorld() == "Crimson Isle");
+
+let flareOverlay = new SboOverlay("Flare", "flareTimer", "render", "FlareLoc")
+let flareLine = new OverlayTextLine("&5SOS Flare: &b3m 0s")
+flareOverlay.renderGui = false
+flareOverlay.setLines([flareLine])
+
+let flareType = ""
+let flareTimer = 0
+let warningSent = false
+let flareClicked = false
+let flareEntity = undefined
+function resetFlare() {
+    if (flareTimer == 0) return
+    flareType = ""
+    flareTimer = 0
+    warningSent = false
+    flareClicked = false
+    flareOverlay.renderGui = false
+    flareEntity = undefined
+    flareLine.setText("&5SOS Flare: &b3m 0s")
+    ChatLib.chat("&6[SBO] &eFlare has expired")
+}
+
+registerWhen(register("worldUnload", () => {
+    resetFlare();
+    resetGoldenFish();
+}), () => settings.flareTimer || settings.goldenFishTimer);
+registerWhen(register("chat", () => {
+    resetFlare();
+}).setCriteria("&r&eYour flare disappeared because you were too far away!&r"), () => settings.flareTimer);
+
+const EntityFireworkRocket = Java.type("net.minecraft.entity.item.EntityFireworkRocket");
+function findFlare() {
+    const player = Player.getPlayer()
+    const flareObj = World.getAllEntitiesOfType(EntityFireworkRocket).filter(flare => flare.distanceTo(player) <= 40)
+    if (flareObj.length > 0) {
+        flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000))
+        warningSent = false
+        flareOverlay.renderGui = true
+        flareEntity = flareObj[0]
+        flareTimer = Date.now()
+    }
+}
+
+registerWhen(register("tick", () => {
+    if (flareTimer != 0 || bestRandomFlare != "") {
+        if (flareScore[flareType] >= flareScore[bestRandomFlare] && flareTimer != 0) {
+            const rangeText = flareEntity.distanceTo(Player.getPlayer()) <= 40 ? "&7(&ain range&7)" : "&7(&cout of range&7)"
+            flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)) + " " + rangeText)
+            if (!warningSent && Date.now() - flareTimer > 160000) { // 2 minutes 40 seconds
+                ChatLib.chat("&6[SBO] &eFlare will expire in 20 seconds")
+                warningSent = true
+                if (settings.flareExpireAlert) {
+                    Client.showTitle("&cFlare Expires In 20 Seconds", "", 0, 40, 20);
+                }
+            }
+            if (Date.now() - flareTimer > 180000) { // 3 minutes
+                resetFlare();
+            }
+        } else {
+            flareLine.setText(bestRandomFlare + ": &bin range")
+        }
+    } 
+    if (flareClicked) {
+        flareClicked = false
+        new SboTimeoutFunction(() => {
+            findFlare()
+        }, 500);
+    }
+}), () => settings.flareTimer);
+
+const flareHeads = {
+    "c0062cc98ebda72a6a4b89783adcef2815b483a01d73ea87b3df76072a89d13b": "&5SOS Flare",
+    "9d2bf9864720d87fd06b84efa80b795c48ed539b16523c3b1f1990b40c003f6b": "&9Alert Flare",
+    "22e2bf6c1ec330247927ba63479e5872ac66b06903c86c82b52dac9f1c971458": "&aWarning Flare"
+}
+
+const flareScore = {
+    "&5SOS Flare": 3,
+    "&9Alert Flare": 2,
+    "&aWarning Flare": 1,
+    "": 0
+}
+
+let randomFlares = []
+let bestRandomFlare = ""
+registerWhen(register("step", () => {
+    randomFlares = []
+    const player = Player.getPlayer()
+    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(flare => flare.distanceTo(player) <= 40).forEach((flare) => {
+        let headItem = new EntityLivingBase(flare.getEntity()).getItemInSlot(4)
+        let headNbt = headItem?.getNBT()
+
+        if (headNbt != undefined) {
+            if (flareHeads[getTextureID(headNbt)]) {
+                randomFlares.push(flareHeads[getTextureID(headNbt)])
+            }
+        }
+    })
+    bestRandomFlare = ""
+    if (randomFlares.length != 0) {
+        flareOverlay.renderGui = true
+        for (let i = 0; i < randomFlares.length; i++) {
+            if (flareScore[randomFlares[i]] > flareScore[bestRandomFlare]) {
+                bestRandomFlare = randomFlares[i]
+            }
+        }
+    }
+    else {
+        if (flareTimer == 0) {
+            flareOverlay.renderGui = false
+        }
+    }
+}).setFps(1), () => settings.flareTimer);
+
+registerWhen(register("playerInteract", (action, pos) => {
+    let item = Player.getHeldItem()
+    if (item == null) return
+    if (item.getName().includes("Flare") && action.toString().includes('RIGHT_CLICK') && !flareClicked) {
+        flareType = item.getName().replace("§", "&")
+        flareClicked = true
+    }
+}), () => settings.flareTimer);
