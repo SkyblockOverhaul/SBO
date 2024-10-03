@@ -80,6 +80,7 @@ class Settings {
         this.addDependency('Reset Custom Chim Message','Chim Message');
         this.addDependency('Chim Message Test','Chim Message');
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
+        this.addDependency('Flare Expire Soon Alert','Flare Tracker');
 
     } 
     //-----------Diana Burrows----------------
