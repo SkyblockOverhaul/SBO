@@ -217,10 +217,9 @@ let inQueue = false;
 let partyReqs = ""
 let requeue = false;
 export function createParty(reqs) {
-    if (!inQueue) {
+    if (!creatingParty) {
         partyReqs = reqs
         requeue = false;
-        inQueue = true;
         creatingParty = true;
         sendPartyRequest();
         createPartyTimeStamp = Date.now();
@@ -316,6 +315,12 @@ register("step", () => {
             request({
                 url: api + "/queueUpdate?leaderId=" + Player.getUUID().replaceAll("-", ""),
                 json: true
+            }).then((response)=> {
+                if (!response.Success) {
+                    ChatLib.chat("&6[SBO] &4" + response.Error);
+                    inQueue = false;
+                    inParty = false;
+                }
             }).catch((error)=> {
                 inQueue = false;
                 if (error.detail) {
