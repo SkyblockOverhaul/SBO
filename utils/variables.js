@@ -112,7 +112,6 @@ export let data = new PogObject("SBO", {
     "ghostKills" : 0,
     "sorrowDrops" : 0,
     "crownOneMilCoins" : 0,
-    "backTrack": false,
     "achievementFilter": "Rarity",
     "achievementFix1": false,
     "dianaStats": {},
