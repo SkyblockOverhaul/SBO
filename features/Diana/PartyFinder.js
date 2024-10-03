@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats, SboTimeoutFunction } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
@@ -36,7 +36,7 @@ function getPartyInfo(party) {
 // message to check party when joining a party
 register("chat", (party) => {
     if (checkDiana(true)) {
-        setTimeout(() => {
+        new SboTimeoutFunction(() => {
             new TextComponent("&6[SBO] &eClick to check party members").setClick("run_command", "/sbocheckp").setHover("show_text", "/sbocheckp").chat();
         }, 100);
     }
@@ -202,21 +202,24 @@ register("command", (args1, ...args) => {
 }).setName("sbocheck").setAliases("sboc");;
 
 register("chat", (player) => {
-    setTimeout(() => {
+    new SboTimeoutFunction(() => {
         player = player.removeFormatting()
         player = getplayername(player)
         new TextComponent("&6[SBO] &eClick to check player").setClick("run_command", "/sbocheck " + player).setHover("show_text", "/sbocheck " + player).chat();
     }, 50);
 }).setCriteria("&dFrom ${player}&r&7: &r&d&lBoop!&r");
 
+
 let creatingParty = false;
 let updateBool = false;
 let createPartyTimeStamp = 0;
 let inQueue = false;
 let partyReqs = ""
+let requeue = false;
 export function createParty(reqs) {
     if (!inQueue) {
         partyReqs = reqs
+        requeue = false;
         inQueue = true;
         creatingParty = true;
         sendPartyRequest();
@@ -295,7 +298,7 @@ function updatePartyInQueue() {
     if (inQueue) {
         updateBool = true;
         requestSend = false;
-        setTimeout(() => {
+        new SboTimeoutFunction(() => {
             if (updateBool && !requestSend) { // because skytils sends request to mod api after every party member join/leave
                 requestSend = true;
                 sendPartyRequest();
@@ -326,28 +329,27 @@ register("step", () => {
     }
 }).setFps(1);
 
-partyDisbanded = [ 
+const partyDisbanded = [ 
     /^.+ &r&ehas disbanded the party!&r$/,
-    /^&cThe party was disbanded because all invites expired and the party was empty.&r$/,
+    /^&cThe party was disbanded because (.+)$/,
     /^&eYou left the party.&r$/,
-    /^You are not currently in a party\.$/,
-    /^You have been kicked from the party by .+$/
-]
-leaderMessages = [
+    /^&cYou are not currently in a party\.$/,
+    /^&eYou have been kicked from the party by .+$/
+] 
+const leaderMessages = [
     /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
     /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
 ]
-memberJoined = [
+const memberJoined = [
     /^(.+) &r&ejoined the party.&r$/,
-    /^&eYou have joined &r(.+)'[s]? &r&eparty!&r$/,
-    /^&dParty Finder &r&f> &r(.+) &r&ejoined the dungeon group! \(&r&b.+&r&e\)&r$/
+    /^&eYou have joined &r(.+)'[s]? &r&eparty!&r$/
 ]
-memberLeft = [
+const memberLeft = [
     /^(.+) &r&ehas been removed from the party.&r$/,
     /^(.+) &r&ehas left the party.&r$/,
-    /^(.+) was removed from your party because they disconnected.$/,
-    /^Kicked (.+) because they were offline.$/
-]
+    /^(.+) &r&ewas removed from your party because they disconnected.&r$/,
+    /^&eKicked (.+) because they were offline.&r$/
+] 
 let inParty = false;
 export function isInParty() {
     return inParty;
@@ -355,18 +357,29 @@ export function isInParty() {
 
 let partyCount = 0;
 function trackMemberCount(number) {
+    partyCount = partyCount + number;
     if (inQueue) {
-        partyCount = partyCount + number; 
-        setTimeout(() => {
-            // ChatLib.chat("&6[SBO] &eParty members count: " + partyCount);
-            if (partyCount >= 6) {      
+        if (partyCount >= 6) {      
+            new SboTimeoutFunction(() => {
                 ChatLib.chat("&6[SBO] &eYour party is full and removed from the queue.");
                 removePartyFromQueue();
-            }
-        }, 150);
+            }, 150);
+        }
+    }
+    else if (checkDiana()) {
+        if (partyCount < 6 && partyReqs != "" && !requeue) {
+            requeue = true;
+            new SboTimeoutFunction(() => {
+                new TextComponent("&6[SBO] &eClick to requeue party with your last used requirements").setClick("run_command", "/sboqueue").setHover("show_text", "/sboqueue").chat();
+            }, 150);
+        }
     }
 }
-        
+
+register("command", () => {
+    createParty(partyReqs);
+}).setName("sboqueue");
+
 
 register("chat", (event) => {
     let formatted = ChatLib.getChatMessage(event, true)
@@ -399,7 +412,6 @@ register("chat", (event) => {
             updatePartyInQueue()
             trackMemberCount(-1);
             inParty = true;
-            
         }
     })
 })
