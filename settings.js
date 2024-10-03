@@ -78,6 +78,7 @@ class Settings {
         this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
         this.addDependency('Custom Chim Message Text','Chim Message');
         this.addDependency('Reset Custom Chim Message','Chim Message');
+        this.addDependency('Chim Message Test','Chim Message');
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
 
     } 
