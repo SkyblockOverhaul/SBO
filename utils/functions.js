@@ -185,7 +185,6 @@ function trackLsInq(tracker) {
     else {
         tracker["mobs"]["Minos Inquisitor Ls"] = 1;
     }
-    data.inqsSinceLsChim += 1;
     tracker.save();
 }
 let hasTrackedInq = false;
@@ -196,6 +195,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerMayor);
         trackLsInq(trackerSession);
         trackLsInq(trackerTotal);
+        data.inqsSinceLsChim += 1;
         hasTrackedInq = true;
         sboSetTimeout(() => {
             hasTrackedInq = false;
