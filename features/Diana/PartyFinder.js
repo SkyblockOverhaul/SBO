@@ -509,7 +509,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         }).then((response)=> {
             if (response.Success) {
                 let timeTaken = Date.now() - updatePartyTimeStamp;
-                ChatLib.chat("&6[SBO] &eParty in queue updated successfully  " + timeTaken + "ms");
+                ChatLib.chat("&6[SBO] &eParty in queue updated successfully " + timeTaken + "ms");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);
             }
