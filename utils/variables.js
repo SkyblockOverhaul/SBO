@@ -122,8 +122,15 @@ export let mainCheckboxes = new PogObject("../../../config", {
     "eman9": false,
     "looting5": false,
     "mvpplus": false,
-    "canIjoin": false
+    "canIjoin": false,
+    "l5ReqCreate": false,
+    "eman9ReqCreate": false,
 }, "sbo_mainCheckboxes.json");
+
+export let mainInputFields = new PogObject("../../../config", {
+    "kills": "",
+    "lvl": "",
+}, "sbo_mainInputFields.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
     "events": []
@@ -326,6 +333,7 @@ dianaTrackerSession.save();
 dianaTrackerMayor.save();
 pastDianaEvents.save();
 mainCheckboxes.save();
+mainInputFields.save();
 
 export function checkMayorTracker() {
     if (dianaTrackerMayor.year < getDateMayorElected().getFullYear()) {  
@@ -657,6 +665,7 @@ register("gameUnload", () => {
     pastDianaEvents.save();
     achievementsData.save();
     mainCheckboxes.save();
+    mainInputFields.save();
 });
 
 export function checkPastDianaEvents() {
