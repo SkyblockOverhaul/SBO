@@ -1,5 +1,5 @@
 import settings from "../settings";
-import { loadGuiSettings, printDev, saveGuiSettings } from "../utils/functions";
+import { loadGuiSettings, printDev, saveGuiSettings, sboSetTimeout } from "../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../utils/constants";
 import { registerWhen } from "./variables";
 
@@ -28,7 +28,7 @@ register('guiClosed', (gui) => {
 
 register('guiOpened', () => {
     guiOpened = true;
-    setTimeout(() => {
+    sboSetTimeout(() => {
         if (Client == undefined) return;
         if (Client.currentGui == undefined) return;
         if (Client.currentGui.get() == null) return;

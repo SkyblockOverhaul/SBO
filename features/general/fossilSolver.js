@@ -1,4 +1,4 @@
-import { drawRect } from "./../../utils/functions";
+import { drawRect, sboSetTimeout } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
 import { OverlayTextLine, SboOverlay } from "../../utils/overlays";
@@ -334,7 +334,7 @@ registerWhen(register("tick", () => {
     // if (check2) {
     //     if (check1) {
     //         check1 = false;
-    //         setTimeout(() => {
+    //         sboSetTimeout(() => {
     //             check1 = true;
     //         }, 100);
     //     }
@@ -379,7 +379,7 @@ register("guiMouseClick", (_, __, ___, gui) => {
     clickedSlot = gui?.getSlotUnderMouse()?.field_75222_d;
     if (middleBool) return;
     middleBool = true;
-    setTimeout(() => {
+    sboSetTimeout(() => {
         middleBool = false;
     }, 50);
 })

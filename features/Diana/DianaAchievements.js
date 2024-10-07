@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
-import { checkDaxeEnchants, getSBID, isOnAlpha } from "../../utils/functions";
+import { checkDaxeEnchants, getSBID, isOnAlpha, sboSetTimeout } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -12,6 +12,7 @@ rarityColorDict = {
     "Common": "&f",
     "Impossible": "&4"
 }
+
 export class Achievement {
     static list = [];
     static achievementsUnlocked = 0;
@@ -34,7 +35,7 @@ export class Achievement {
         if (this.requirement && !this.requirement.isUnlocked()) {
             
             this.requirement.check();
-            setTimeout(() => {
+            sboSetTimeout(() => {
                 this.unlock();
             }, 1000 * this.timeout);
         } else this.unlock();
@@ -234,7 +235,7 @@ function unlockAchievements(override=false) {
         let achievement = achievementsToUnlock.shift();
         if (achievementsData[achievement] == undefined) {
             unlockAchievement(achievement);
-            setTimeout(() => {
+            sboSetTimeout(() => {
                 unlockAchievements(true);
             }, 2000);
         } else {
@@ -433,7 +434,7 @@ function getSlayerLvlFromLore(item) {
 }
 
 register("guiOpened", (event) => {
-    setTimeout(() => {
+    sboSetTimeout(() => {
         const container = Player.getContainer();
         if (container == null) return;
         if (container == undefined) return;

@@ -114,7 +114,11 @@ export function getSBUUID(item) {
 export function getTextureID(item) {
     let props = item?.getCompoundTag("tag")?.getCompoundTag("SkullOwner")?.getCompoundTag("Properties")?.toObject()
     if (!props?.textures) return null;
-    return JSON.parse(new java.lang.String(java.util.Base64.getDecoder().decode(props.textures[0]?.Value)))["textures"]["SKIN"]["url"].split("/texture/")[1]
+    try {
+        return JSON.parse(new java.lang.String(java.util.Base64.getDecoder().decode(props.textures[0]?.Value)))["textures"]["SKIN"]["url"].split("/texture/")[1]
+    } catch (e) {
+        return null;
+    }
 }
 
 let onAlpha = false;
@@ -163,7 +167,7 @@ export function getAllowedToTrackSacks() {
 }
 
 registerWhen(register("guiOpened", () => {
-    setTimeout(() => {
+    sboSetTimeout(() => {
         if (Player.getContainer() != undefined) {
             if (Player.getContainer().getName() == "Sack of Sacks") {
                 allowedToTrackSacks = false;
@@ -193,7 +197,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerSession);
         trackLsInq(trackerTotal);
         hasTrackedInq = true;
-        setTimeout(() => {
+        sboSetTimeout(() => {
             hasTrackedInq = false;
         }, 4000);
     }
@@ -202,10 +206,10 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             state2.entityDeathOccurred = true;
-            setTimeout(() => {
+            sboSetTimeout(() => {
                 state.entityDeathOccurred = false;
             }, 2000);
-            setTimeout(() => {
+            sboSetTimeout(() => {
                 state2.entityDeathOccurred = false;
             }, 4000);
         }
@@ -331,7 +335,7 @@ export function gotLootShare() {
 let lootShareBool = false;
 register("chat" , (player) => {
     lootShareBool = true;
-    setTimeout(() => {
+    sboSetTimeout(() => {
         lootShareBool = false;
     }, 2000);
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
@@ -461,7 +465,7 @@ register("worldUnload", () => {
 });
 
 register("worldLoad", () => {
-    setTimeout(() => {
+    sboSetTimeout(() => {
         worldLoaded = true;
     }, 1000);
 });
@@ -532,7 +536,7 @@ register("step", () => {
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
-        setTimeout(() => {
+        sboSetTimeout(() => {
             updateing = false;
         }, 300000);
     }
@@ -1500,29 +1504,48 @@ export function getDianaStats(useCallback = false, callback = null) {
     }
 }
 
-export class SboTimeoutFunction {
-    static timeoutList = [];
-    constructor(func, timeout) {
-        this.func = func;
-        this.timeout = timeout;
-        this.timestamp = Date.now();
-        this.id = SboTimeoutFunction.timeoutList.length;
-        SboTimeoutFunction.timeoutList.push(this);
-    }
+// export class SboTimeoutFunction {
+//     static timeoutList = [];
+//     constructor(func, timeout) {
+//         this.func = func;
+//         this.timeout = timeout;
+//         this.timestamp = Date.now();
+//         this.id = SboTimeoutFunction.timeoutList.length;
+//         SboTimeoutFunction.timeoutList.push(this);
+//     }
 
-    clearTimeout() {
-        SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
-    }
+//     clearTimeout() {
+//         SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
+//     }
+// }
+
+// register("step", () => {
+//     SboTimeoutFunction.timeoutList.forEach((timeout) => {
+//         if (Date.now() - timeout.timestamp >= timeout.timeout) {
+//             timeout.func();
+//             timeout.clearTimeout();
+//         }
+//     });
+// }).setFps(6);
+
+const Runnable = Java.type("java.lang.Runnable");
+const Executors = Java.type("java.util.concurrent.Executors");
+const TimeUnit = Java.type("java.util.concurrent.TimeUnit");
+const scheduler = Executors.newSingleThreadScheduledExecutor();
+export function sboSetTimeout(callback, delay, ...args) {
+    args = args || [];
+
+    const timer = scheduler.schedule(
+        new JavaAdapter(Runnable, {
+            run: function() {
+                callback(...args);
+            }
+        }),
+        delay,
+        TimeUnit.MILLISECONDS
+    );
+    return timer;
 }
-
-register("step", () => {
-    SboTimeoutFunction.timeoutList.forEach((timeout) => {
-        if (Date.now() - timeout.timestamp >= timeout.timeout) {
-            timeout.func();
-            timeout.clearTimeout();
-        }
-    });
-}).setFps(6);
 
 export function requirementsFormat(requirements, myStats) {
     let reqsText = ""
