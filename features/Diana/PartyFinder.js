@@ -382,6 +382,7 @@ function trackMemberCount(number) {
 }
 
 register("command", () => {
+    ChatLib.chat("&6[SBO] &eRequeuing party with last used requirements...");
     createParty(partyReqs);
 }).setName("sboqueue");
 
