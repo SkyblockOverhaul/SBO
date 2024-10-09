@@ -167,7 +167,7 @@ export function getAllowedToTrackSacks() {
 }
 
 registerWhen(register("guiOpened", () => {
-    sboSetTimeout(() => {
+    setTimeout(() => {
         if (Player.getContainer() != undefined) {
             if (Player.getContainer().getName() == "Sack of Sacks") {
                 allowedToTrackSacks = false;
@@ -197,7 +197,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerTotal);
         data.inqsSinceLsChim += 1;
         hasTrackedInq = true;
-        sboSetTimeout(() => {
+        setTimeout(() => {
             hasTrackedInq = false;
         }, 4000);
     }
@@ -206,10 +206,10 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             state2.entityDeathOccurred = true;
-            sboSetTimeout(() => {
+            setTimeout(() => {
                 state.entityDeathOccurred = false;
             }, 2000);
-            sboSetTimeout(() => {
+            setTimeout(() => {
                 state2.entityDeathOccurred = false;
             }, 4000);
         }
@@ -335,7 +335,7 @@ export function gotLootShare() {
 let lootShareBool = false;
 register("chat" , (player) => {
     lootShareBool = true;
-    sboSetTimeout(() => {
+    setTimeout(() => {
         lootShareBool = false;
     }, 2000);
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
@@ -465,7 +465,7 @@ register("worldUnload", () => {
 });
 
 register("worldLoad", () => {
-    sboSetTimeout(() => {
+    setTimeout(() => {
         worldLoaded = true;
     }, 1000);
 });
@@ -536,7 +536,7 @@ register("step", () => {
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
-        sboSetTimeout(() => {
+        setTimeout(() => {
             updateing = false;
         }, 300000);
     }
@@ -1532,7 +1532,7 @@ const Runnable = Java.type("java.lang.Runnable");
 const Executors = Java.type("java.util.concurrent.Executors");
 const TimeUnit = Java.type("java.util.concurrent.TimeUnit");
 const scheduler = Executors.newSingleThreadScheduledExecutor();
-export function sboSetTimeout(callback, delay, ...args) {
+export function setTimeout(callback, delay, ...args) {
     args = args || [];
 
     const timer = scheduler.schedule(

@@ -3,7 +3,7 @@ import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
-import { isInSkyblock, isWorldLoaded, playCustomSound, sboSetTimeout, toTitleCase, trace } from '../../utils/functions';
+import { isInSkyblock, isWorldLoaded, playCustomSound, setTimeout, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
@@ -75,7 +75,7 @@ export function removeBurrowWaypointBySmoke(x, y, z) {
 }
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
-    sboSetTimeout(() => {
+    setTimeout(() => {
         Waypoints.shift();
     }, seconds*1000);
 } 
@@ -231,7 +231,7 @@ warpKey.registerKeyPress(() => {
         if (warpPlayer) {
             ChatLib.command("warp " + closestWarp);
             tryWarp = true;
-            sboSetTimeout(() => {
+            setTimeout(() => {
                 tryWarp = false;
             }, 2000);
         }
@@ -247,7 +247,7 @@ inquisWarpKey.registerKeyPress(() => {
             if (warpPlayer) {
                 ChatLib.command("warp " + closestWarp);
                 tryWarp = true;
-                sboSetTimeout(() => {
+                setTimeout(() => {
                     tryWarp = false;
                 }, 2000);
             }
@@ -384,7 +384,7 @@ registerWhen(register("chat", (player, spacing, x, y, z, event) => {
         if (isInq) {
             if(settings.inqHighlight || settings.inqCircle && checkDiana()) {
                 highlighInquis = true;
-                sboSetTimeout(() => {
+                setTimeout(() => {
                     highlighInquis = false;
                 }, 80000); // 80 seconds so it only unregisters after inq is 100% dead cause it despawns after 75 secs
             }

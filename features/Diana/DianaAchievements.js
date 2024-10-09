@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
-import { checkDaxeEnchants, getSBID, isOnAlpha, sboSetTimeout } from "../../utils/functions";
+import { checkDaxeEnchants, getSBID, isOnAlpha, setTimeout } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -35,7 +35,7 @@ export class Achievement {
         if (this.requirement && !this.requirement.isUnlocked()) {
             
             this.requirement.check();
-            sboSetTimeout(() => {
+            setTimeout(() => {
                 this.unlock();
             }, 1000 * this.timeout);
         } else this.unlock();
@@ -173,7 +173,7 @@ new Achievement(38, "Real Diana non", "Download SBO", "Divine");
 new Achievement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "Uncommon");
 new Achievement(40, "Bleesed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
 new Achievement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
-new Achievement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
+new Achievement(42, "The principle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
 
 new Achievement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
 new Achievement(44, "Magic Find is overrated", "Drop a Chimera, under 200 Magic Find", "Epic");
@@ -235,7 +235,7 @@ function unlockAchievements(override=false) {
         let achievement = achievementsToUnlock.shift();
         if (achievementsData[achievement] == undefined) {
             unlockAchievement(achievement);
-            sboSetTimeout(() => {
+            setTimeout(() => {
                 unlockAchievements(true);
             }, 2000);
         } else {
@@ -434,7 +434,7 @@ function getSlayerLvlFromLore(item) {
 }
 
 register("guiOpened", (event) => {
-    sboSetTimeout(() => {
+    setTimeout(() => {
         const container = Player.getContainer();
         if (container == null) return;
         if (container == undefined) return;

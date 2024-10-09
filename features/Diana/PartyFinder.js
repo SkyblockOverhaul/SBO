@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats, sboSetTimeout } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats, setTimeout } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";

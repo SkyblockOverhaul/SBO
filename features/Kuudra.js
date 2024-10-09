@@ -1,5 +1,5 @@
 import { getWorld } from "../utils/world";
-import { toTitleCase, drawRect, getKuudraItems, getBazaarItems, getBazaarPriceKuudra, formatNumber, sboSetTimeout } from "./../utils/functions";
+import { toTitleCase, drawRect, getKuudraItems, getBazaarItems, getBazaarPriceKuudra, formatNumber, setTimeout } from "./../utils/functions";
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";
@@ -95,14 +95,14 @@ registerWhen(register("worldUnload", () => {
 }), () => settings.attributeValueOverlay);
 
 registerWhen(register("guiMouseClick", (x, y, button, gui) => {
-    sboSetTimeout(() => {
+    setTimeout(() => {
         readContainerItems();
     }, 400);
 }), () => settings.attributeValueOverlay);
 
 let chestItems = [];
 registerWhen(register("guiOpened", () => {
-    sboSetTimeout(() => {
+    setTimeout(() => {
         readContainerItems();
     }, 300);
 }), () => settings.attributeValueOverlay);

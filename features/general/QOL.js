@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, trace, formatTimeMinSec, sboSetTimeout, getTextureID, isInSkyblock } from "../../utils/functions";
+import { getplayername, trace, formatTimeMinSec, setTimeout, getTextureID, isInSkyblock } from "../../utils/functions";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
@@ -208,7 +208,7 @@ registerWhen(register("tick", () => {
         if (settings.goldenFishNotification) {
             ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
             for (let i = 0; i < 6; i++) {
-                sboSetTimeout(() => {
+                setTimeout(() => {
                     World.playSound("random.levelup", 100, 1);
                 }, i * 500);
             }
@@ -326,7 +326,7 @@ registerWhen(register("tick", () => {
     } 
     if (flareClicked) {
         flareClicked = false
-        sboSetTimeout(() => {
+        setTimeout(() => {
             findFlare()
         }, 700);
     }
