@@ -128,8 +128,8 @@ export let mainCheckboxes = new PogObject("../../../config", {
 }, "sbo_mainCheckboxes.json");
 
 export let mainInputFields = new PogObject("../../../config", {
-    "kills": "",
-    "lvl": "",
+    "kills": "0",
+    "lvl": "0",
 }, "sbo_mainInputFields.json");
 
 export let pastDianaEvents = new PogObject("../../../config", {
