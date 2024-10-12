@@ -1547,6 +1547,10 @@ export function setTimeout(callback, delay, ...args) {
     return timer;
 }
 
+export function cancelTimeout(timer) {
+    timer.cancel(true);
+}
+
 export function requirementsFormat(requirements, myStats) {
     let reqsText = ""
     let myReqs = myStats

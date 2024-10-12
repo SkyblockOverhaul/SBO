@@ -328,7 +328,7 @@ registerWhen(register("tick", () => {
         flareClicked = false
         setTimeout(() => {
             findFlare()
-        }, 700);
+        }, 400);
     }
 }), () => settings.flareTimer);
 

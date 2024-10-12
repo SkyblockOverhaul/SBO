@@ -171,7 +171,7 @@ new Achievement(37, "No more Diana", "100 Inquisitors since Chimera", "Divine", 
 new Achievement(38, "Real Diana non", "Download SBO", "Divine"); 
 
 new Achievement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "Uncommon");
-new Achievement(40, "Bleesed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
+new Achievement(40, "Blessed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
 new Achievement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
 new Achievement(42, "The principle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
 
