@@ -448,7 +448,7 @@ registerWhen(register("step", () => {
             waypoint[4] = "";
         });
     }
-}).setFps(2), () => settings.dianaBurrowGuess);;
+}).setFps(3), () => settings.dianaBurrowGuess);;
 
 
 

@@ -120,7 +120,7 @@ export class Achievement {
 }
 
 // Raritys: Impossible, Divine, Mythic, Legendary, Epic, Rare, Uncommon, Common
-// good names: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?, "Magic Find is a lie", "Magic Find is a scam", "Magic Find is a cosmectic", "Magic Find is a myth" 
+// good names: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?, "Magic Find is a lie", "Magic Find is a scam", "Magic Find is a cosmetic", "Magic Find is a myth" 
 new Achievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic");  
 new Achievement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine"); 
 new Achievement(3, "Back-to-Back Stick", "Get 2 Sticks in a row", "Divine");   
