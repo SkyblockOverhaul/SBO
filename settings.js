@@ -70,7 +70,7 @@ class Settings {
         this.addDependency('Attribute Shards For Chest Profit','Attribute Value Overlay');
         this.addDependency('Distance For Remove','Remove Guess');
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
-        this.addDependency('Bridge Bot Name','Formated Bridge Bot');
+        this.addDependency('Bridge Bot Name','Formatted Bridge Bot');
         this.addDependency('Four-Eyed Fish','Diana Tracker');
         this.addDependency('Show Price Title','Loot Screen Announcer');
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
@@ -81,6 +81,7 @@ class Settings {
         this.addDependency('Chim Message Test','Chim Message');
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
         this.addDependency('Flare Expire Soon Alert','Flare Tracker');
+        this.addDependency('Hide Own Flare When Not In Range','Flare Tracker');
 
     } 
     //-----------Diana Burrows----------------
@@ -100,14 +101,14 @@ class Settings {
     dianaBurrowWarp = true;
     @SwitchProperty({
         name: "Diana Burrow Detect",
-        description: "Detects diana burrows | to reset waypoints /sboclearburrows",
+        description: "Detects Diana burrows | to reset waypoints /sboclearburrows",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
     dianaBurrowDetect = true;
     @TextProperty({
         name: "Warp Block Difference",
-        description: "Increase it to set the diffrence when player warps (inq/burrow warp)",
+        description: "Increase it to set the difference when player warps (inq/burrow warp)",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
@@ -116,14 +117,14 @@ class Settings {
     // --- Diana Tracker ---
     @SwitchProperty({
         name: "Diana Tracker",
-        description: "Tracks your diana loot and mob kills (you need to have Settings -> Personal -> Chat -> Sacks Notifications enabled for Gold and Iron to work)",
+        description: "Tracks your Diana loot and mob kills (you need to have Settings -> Personal -> Chat -> Sacks Notifications enabled for Gold and Iron to work)",
         category: "Diana",
         subcategory: "Diana Tracker",
     })
     dianaTracker = true;
     @SelectorProperty({
         name: "Mob View",
-        description: "Shows your diana mob kills /sboguis to move the counter",
+        description: "Shows your Diana mob kills /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Total", "Event", "Session"]
@@ -131,7 +132,7 @@ class Settings {
     dianaMobTrackerView = 0;
     @SelectorProperty({
         name: "Loot View",
-        description: "Shows your diana loot /sboguis to move the counter",
+        description: "Shows your Diana loot /sboguis to move the counter",
         category: "Diana",
         subcategory: "Diana Tracker",
         options: ["OFF", "Total", "Event", "Session"]
@@ -157,7 +158,7 @@ class Settings {
         category: "Diana",
         subcategory: "Diana Tracker",
     })
-    sendSinceMassage = false;
+    sendSinceMessage = false;
     @SwitchProperty({
         name: "Avg Magic Find Tracker",
         description: "Shows your avg magic find for sticks and chimeras",
@@ -194,7 +195,7 @@ class Settings {
     inqWaypoints = true;
     @SwitchProperty({
         name: 'All Waypoints Are Inqs',
-        description: 'all the waypoints are inquisitor waypoints in hub during diana',
+        description: 'all the waypoints are inquisitor waypoints in hub during Diana',
         category: 'Diana',
         subcategory: 'Diana Waypoints',
     })
@@ -445,7 +446,7 @@ class Settings {
     //--Diana Party Commands--
     @SwitchProperty({
         name: 'Diana Party Commands',
-        description: 'Enable diana party commands (!chim, !inq, !relic, !stick, !since, !burrow, !mob) (note: you need to have diana tracker enabled)',
+        description: 'Enable Diana party commands (!chim, !inq, !relic, !stick, !since, !burrow, !mob) (note: you need to have Diana tracker enabled)',
         category: 'Party Commands',
         subcategory: 'Party Commands',
     })
@@ -490,8 +491,8 @@ class Settings {
     // blazeLootTrackerView = 0;
     // Quality of Life
     @SwitchProperty({
-        name: 'Formated Bridge Bot',
-        description: 'Format bridge bot messages (that are like this "Guild > birgeBot: player: message")',
+        name: 'Formatted Bridge Bot',
+        description: 'Format bridge bot messages (that are like this "Guild > bridgeBot: player: message")',
         category: 'Quality of Life',
     })
     formatBridgeBot = false;
@@ -521,7 +522,7 @@ class Settings {
     jacobHider = false;
     @SwitchProperty({
         name: 'Clean Diana Chat',
-        description: 'Hides all spammy diana messages',
+        description: 'Hides all spammy Diana messages',
         category: 'Quality of Life',
     })
     cleanDianaChat = false;
@@ -603,6 +604,12 @@ class Settings {
         category: 'Quality of Life',
     })
     flareExpireAlert = false;
+    @SwitchProperty({
+        name: 'Hide Own Flare When Not In Range',
+        description: 'Hides your own flare when your not in range of it',
+        category: 'Quality of Life',
+    })
+    notInRangeSetting = false;
     // General
     @ButtonProperty({
         name: "Move GUIs",

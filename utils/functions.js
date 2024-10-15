@@ -114,7 +114,11 @@ export function getSBUUID(item) {
 export function getTextureID(item) {
     let props = item?.getCompoundTag("tag")?.getCompoundTag("SkullOwner")?.getCompoundTag("Properties")?.toObject()
     if (!props?.textures) return null;
-    return JSON.parse(new java.lang.String(java.util.Base64.getDecoder().decode(props.textures[0]?.Value)))["textures"]["SKIN"]["url"].split("/texture/")[1]
+    try {
+        return JSON.parse(new java.lang.String(java.util.Base64.getDecoder().decode(props.textures[0]?.Value)))["textures"]["SKIN"]["url"].split("/texture/")[1]
+    } catch (e) {
+        return null;
+    }
 }
 
 let onAlpha = false;
@@ -181,7 +185,6 @@ function trackLsInq(tracker) {
     else {
         tracker["mobs"]["Minos Inquisitor Ls"] = 1;
     }
-    data.inqsSinceLsChim += 1;
     tracker.save();
 }
 let hasTrackedInq = false;
@@ -192,6 +195,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerMayor);
         trackLsInq(trackerSession);
         trackLsInq(trackerTotal);
+        data.inqsSinceLsChim += 1;
         hasTrackedInq = true;
         setTimeout(() => {
             hasTrackedInq = false;
@@ -1500,29 +1504,52 @@ export function getDianaStats(useCallback = false, callback = null) {
     }
 }
 
-export class SboTimeoutFunction {
-    static timeoutList = [];
-    constructor(func, timeout) {
-        this.func = func;
-        this.timeout = timeout;
-        this.timestamp = Date.now();
-        this.id = SboTimeoutFunction.timeoutList.length;
-        SboTimeoutFunction.timeoutList.push(this);
-    }
+// export class SboTimeoutFunction {
+//     static timeoutList = [];
+//     constructor(func, timeout) {
+//         this.func = func;
+//         this.timeout = timeout;
+//         this.timestamp = Date.now();
+//         this.id = SboTimeoutFunction.timeoutList.length;
+//         SboTimeoutFunction.timeoutList.push(this);
+//     }
 
-    clearTimeout() {
-        SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
-    }
+//     clearTimeout() {
+//         SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
+//     }
+// }
+
+// register("step", () => {
+//     SboTimeoutFunction.timeoutList.forEach((timeout) => {
+//         if (Date.now() - timeout.timestamp >= timeout.timeout) {
+//             timeout.func();
+//             timeout.clearTimeout();
+//         }
+//     });
+// }).setFps(6);
+
+const Runnable = Java.type("java.lang.Runnable");
+const Executors = Java.type("java.util.concurrent.Executors");
+const TimeUnit = Java.type("java.util.concurrent.TimeUnit");
+const scheduler = Executors.newSingleThreadScheduledExecutor();
+export function setTimeout(callback, delay, ...args) {
+    args = args || [];
+
+    const timer = scheduler.schedule(
+        new JavaAdapter(Runnable, {
+            run: function() {
+                callback(...args);
+            }
+        }),
+        delay,
+        TimeUnit.MILLISECONDS
+    );
+    return timer;
 }
 
-register("step", () => {
-    SboTimeoutFunction.timeoutList.forEach((timeout) => {
-        if (Date.now() - timeout.timestamp >= timeout.timeout) {
-            timeout.func();
-            timeout.clearTimeout();
-        }
-    });
-}).setFps(6);
+export function cancelTimeout(timer) {
+    timer.cancel(true);
+}
 
 export function requirementsFormat(requirements, myStats) {
     let reqsText = ""

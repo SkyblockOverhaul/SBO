@@ -29,7 +29,7 @@ export function dianaLootCounter(item, amount) {
             }
             if (checkBool) {
                 if (item == "MINOS_RELIC") {
-                    if(settings.sendSinceMassage) {
+                    if(settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     if (data.champsSinceRelic == 1) {
@@ -244,6 +244,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
             case "Minos Inquisitor":
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
+            
                 if(settings.sendSinceMassage) {
                     let currentTime = Date.now();
                     let timeDiff = currentTime - data.lastInqDate;
@@ -291,7 +292,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage)));
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
@@ -331,7 +332,7 @@ registerWhen(register("chat", (drop, event) => {
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare()) {
-                    if (settings.sendSinceMassage) {
+                    if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceLsChim} &r&eInquisitors to get a lootshare Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceLsChim} Inquisitors to get a lootshare Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     data.inqsSinceLsChim = 0;
@@ -359,7 +360,7 @@ registerWhen(register("chat", (drop, event) => {
                     if (settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
                     }
-                    if (settings.sendSinceMassage) {
+                    if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     if (b2bChim && data.inqsSinceChim == 1) {
@@ -399,7 +400,7 @@ registerWhen(register("chat", (drop, event) => {
                         }
                     }
                 }
-                if (settings.sendSinceMassage) {
+                if (settings.sendSinceMessage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
                 if (b2bStick && data.minotaursSinceStick == 1) {
@@ -429,7 +430,7 @@ registerWhen(register("chat", (drop, event) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.chimMessageBool));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool));
 
 // refresh overlay //
 let tempSettingLoot = -1;

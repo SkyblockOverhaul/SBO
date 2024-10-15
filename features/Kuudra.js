@@ -1,5 +1,5 @@
 import { getWorld } from "../utils/world";
-import { toTitleCase, drawRect, getKuudraItems, getBazaarItems, getBazaarPriceKuudra, formatNumber } from "./../utils/functions";
+import { toTitleCase, drawRect, getKuudraItems, getBazaarItems, getBazaarPriceKuudra, formatNumber, setTimeout } from "./../utils/functions";
 import { attributeShorts, allowedItemIds, ahIds, bazaarIds } from "./../utils/constants";
 import settings from "./../settings";
 import { registerWhen } from "./../utils/variables";

@@ -2,6 +2,7 @@ import { drawRectangleOutline as outline, rect, formatPlayerInfo, color, getDian
     CheckBox, isInSkyblock, pMmMColor, requirementsFormat, filterTextInput
 } from "../../utils/functions";
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
+import { mainInputFields } from "../../utils/variables";
 import { request } from "../../../requestV2";
 import ElementUtils from "../../../DocGuiLib/core/Element"
 import TextInputElement from "../../../DocGuiLib/elements/TextInput";
@@ -168,8 +169,11 @@ PartyFinderGUI.registerOpened(() => {
 });
 
 CreatePartyGUI.registers.onOpen(() => {
-    clearInputFields(inputFields)
-    clearCheckBoxes(checkBoxListCreate)
+    loadInputFieldState()
+});
+
+CreatePartyGUI.registers.onClose(() => {
+    saveInputFieldState()
 });
 
 PartyFinderGUI.registerClicked((mouseX, mouseY, button) => {
@@ -330,6 +334,21 @@ function getRequirements() {
     return reqs
 }
 
+function loadInputFieldState() {
+    Object.entries(inputFields).forEach(([key, object]) => {
+        object.text = mainInputFields[key]
+        object.textInput.setText(mainInputFields[key])
+    })
+    mainInputFields.save()
+}
+
+function saveInputFieldState() {
+    Object.entries(inputFields).forEach(([key, object]) => {
+        mainInputFields[key] = object.text
+    })
+    mainInputFields.save()
+}
+
 const pfText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1.75, true)
 const onlineUserText = new TextClass(color(233, 233, 233, 255), 0, 0, ``, 1, false)
 const partyCountText = new TextClass(color(233, 233, 233, 255), 0, 0, ``, 1, false)
@@ -424,8 +443,8 @@ function partyFinderRender() {
 
 let dianaKillsText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
 let sbLevelText = new TextClass(color(255, 255, 255, 255), 0, 0, "", 1, false)
-let looting5box = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
-let eman9ReqsBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
+let looting5box = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "l5ReqCreate")
+let eman9ReqsBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), "eman9ReqCreate")
 // let mvpPlusBox = new CheckBox(0, 0, 0, 0, "", color(255, 255, 255, 255), color(255, 255, 255, 255), 1)
 checkBoxListCreate.push(eman9ReqsBox)
 checkBoxListCreate.push(looting5box)
@@ -498,29 +517,16 @@ function partyFinderClose() {
     currentPage = 1
 }
 
-function clearInputFields(dict) {
-    Object.entries(dict).forEach(([key, object]) => {
-        object.textInput.setText("")
-        object.text = ""
-    })
-}
-
-function clearCheckBoxes(list) {
-    list.forEach((checkBox) => {
-        checkBox.checked = false
-    })
-}
-
 PartyInfoGUI.registerKeyTyped((char, keyCode) => {
     if (keyCode === Keyboard.KEY_ESCAPE) {
         PartyFinderGUI.open()
     }
 });
 CreatePartyGUI.registers.onKeyType((char, keyCode) => {
-    filterTextInput(inputFields)
-    if (keyCode === Keyboard.KEY_ESCAPE) {
+    if (keyCode !== Keyboard.KEY_ESCAPE)
+        filterTextInput(inputFields)
+    if (keyCode === Keyboard.KEY_ESCAPE) 
         PartyFinderGUI.open();
-    }
 });
 HdwiGUI.registerKeyTyped((char, keyCode) => {
     if (keyCode === Keyboard.KEY_ESCAPE) {
