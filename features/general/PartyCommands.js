@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout, formatTimeMinSec } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -219,7 +219,7 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 if(args1 == undefined) {
                     setTimeout(() => {
-                        ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
+                        ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq + " [" + formatTime(Date.now() - data.lastInqDate) + "]")
                     }, 200)
                     return;
                 }
@@ -249,7 +249,7 @@ register("chat", (player, message) => {
                     case "inqs":
                     case "inquisitor":
                         setTimeout(() => {
-                            ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
+                            ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq + " [" + formatTime(Date.now() - data.lastInqDate) + "]")
                         }, 200)
                         break
                     case "lschim":
