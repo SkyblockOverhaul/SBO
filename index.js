@@ -98,6 +98,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&aChangelog:`)
     ChatLib.chat(`&7> &a- Maybe fixed the party commands delayed problem. (if it still happens, please report it)`)
     ChatLib.chat(`&7> &a- Added some party finder chat feedback`)
+    ChatLib.chat(`&7> &a- Changed the "Took # Mobs to get an Inquis" message. (thanks to RaiTaki)`)
     ChatLib.chat(`&7> &a- Fixed some typos`)
     ChatLib.chat(`&7> &a- Some small fixes for party finder`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
