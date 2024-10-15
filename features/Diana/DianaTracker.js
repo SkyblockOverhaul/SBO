@@ -29,7 +29,7 @@ export function dianaLootCounter(item, amount) {
             }
             if (checkBool) {
                 if (item == "MINOS_RELIC") {
-                    if(settings.sendSinceMassage) {
+                    if(settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.champsSinceRelic} &r&eChampions to get a Relic!`).setClick("run_command", `/ct copy [SBO] Took ${data.champsSinceRelic} Champions to get a Relic!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     if (data.champsSinceRelic == 1) {
@@ -244,9 +244,24 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
             case "Minos Inquisitor":
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
+            
                 if(settings.sendSinceMassage) {
-                    new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get a Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get a Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                    let currentTime = Date.now();
+                    let timeDiff = currentTime - data.lastInqDate;
+                    let hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                    let minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                    let seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+                    let timeString = `${hours}h ${minutes}m ${seconds}s`;
+
+                    if(data.lastInqDate && data.lastInqDate !== 0) {
+                        new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${timeString}&e to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs and ${timeString} to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                    }
+                    else {
+                        new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                    }
                 }
+                data.lastInqDate = Date.now();
+
                 if (b2bInq && data.mobsSinceInq == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
                     unlockAchievement(7) // b2b2b inq
@@ -277,7 +292,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage)));
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage)));
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
@@ -317,7 +332,7 @@ registerWhen(register("chat", (drop, event) => {
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare()) {
-                    if (settings.sendSinceMassage) {
+                    if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceLsChim} &r&eInquisitors to get a lootshare Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceLsChim} Inquisitors to get a lootshare Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     data.inqsSinceLsChim = 0;
@@ -345,7 +360,7 @@ registerWhen(register("chat", (drop, event) => {
                     if (settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
                     }
-                    if (settings.sendSinceMassage) {
+                    if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
                     if (b2bChim && data.inqsSinceChim == 1) {
@@ -378,14 +393,14 @@ registerWhen(register("chat", (drop, event) => {
                                 data.last10StickMagicFind.shift();
                             }
                             data.last10StickMagicFind.push(magicFind);
-                        
+
                             let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
                             data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
                             avgMagicFindOverlay();
                         }
                     }
                 }
-                if (settings.sendSinceMassage) {
+                if (settings.sendSinceMessage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
                 if (b2bStick && data.minotaursSinceStick == 1) {
@@ -415,7 +430,7 @@ registerWhen(register("chat", (drop, event) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMassage || settings.dianaAvgMagicFind || settings.chimMessageBool));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool));
 
 // refresh overlay //
 let tempSettingLoot = -1;
@@ -480,8 +495,8 @@ function importDianaTracker(type, profileName, importType) {
     if (type == "sh") {
         ChatLib.chat("&6[SBO] &aImporting from SkyHanni...");
         let shConfig = JSON.parse(FileLib.read("./config/skyhanni/config.json"));
-        let activePlayer = shConfig.storage.players[Player.getUUID()] 
-        let activeProfile = activePlayer.profiles[profileName]; 
+        let activePlayer = shConfig.storage.players[Player.getUUID()]
+        let activeProfile = activePlayer.profiles[profileName];
         let dianaShTracker = activeProfile.diana
         if (shConfig == undefined) {
             ChatLib.chat("&6[SBO] &cSkyHanni not found. cant import tracker");
@@ -546,7 +561,7 @@ function importDianaTracker(type, profileName, importType) {
             if (translateDictSt[item]) itemKey = translateDictSt[item];
             transferData("items", item, itemKey, dianaStTracker.items[item], importType);
         });
-        
+
         Object.keys(dianaStTracker.mobs).forEach((mob) => {
             let itemKey = mob;
             if (translateDictSt[mob]) itemKey = translateDictSt[mob];
@@ -604,7 +619,7 @@ register("command", (args1, ...args) => {
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
         ChatLib.chat("&aFrom which mod do you want to import your Diana tracker?");
         new TextComponent("&bSkyHanni, click here").setClick("run_command", "/dianatrackerimportcheck sh " + args1).setHover("show_text", "Click Me").chat();
-        new TextComponent("&bSkytils, click here").setClick("run_command", "/dianatrackerimportcheck st " + args1).setHover("show_text", "Click Me").chat();  
+        new TextComponent("&bSkytils, click here").setClick("run_command", "/dianatrackerimportcheck st " + args1).setHover("show_text", "Click Me").chat();
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
     } else {
         ChatLib.chat("&6[SBO] &eEnter your Profile name to import your Diana tracker. /sboimporttracker <profilename>");
@@ -630,7 +645,7 @@ register("command", (args1, args2, args3, ...args) => {
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
         if (args3 == "overwrite") {
             ChatLib.chat("&aAre you sure you want to overwrite your diana tracker? (Total, Mayor, Session)");
-        } 
+        }
         else if (args3 == "add") {
             ChatLib.chat("&aAre you sure you want to add the imported tracker to your diana tracker? (Total, Mayor, Session)");
         }

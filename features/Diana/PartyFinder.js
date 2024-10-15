@@ -1,5 +1,5 @@
 import { request } from "../../../requestV2";
-import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats, SboTimeoutFunction } from "../../utils/functions";
+import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats, setTimeout } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
@@ -382,6 +382,7 @@ function trackMemberCount(number) {
 }
 
 register("command", () => {
+    ChatLib.chat("&6[SBO] &eRequeuing party with last used requirements...");
     createParty(partyReqs);
 }).setName("sboqueue");
 
@@ -484,6 +485,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
                 let timeTaken = Date.now() - createPartyTimeStamp;
                 ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
                 inQueue = true; 
+                if (inParty) ChatLib.command("pc [SBO] Party now in queue.");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);
                 inQueue = false;
@@ -509,7 +511,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         }).then((response)=> {
             if (response.Success) {
                 let timeTaken = Date.now() - updatePartyTimeStamp;
-                ChatLib.chat("&6[SBO] &eParty in queue updated successfully  " + timeTaken + "ms");
+                ChatLib.chat("&6[SBO] &eParty in queue updated successfully " + timeTaken + "ms");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);
             }

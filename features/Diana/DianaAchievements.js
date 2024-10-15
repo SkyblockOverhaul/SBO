@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
-import { checkDaxeEnchants, getSBID, isOnAlpha } from "../../utils/functions";
+import { checkDaxeEnchants, getSBID, isOnAlpha, setTimeout } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -12,6 +12,7 @@ rarityColorDict = {
     "Common": "&f",
     "Impossible": "&4"
 }
+
 export class Achievement {
     static list = [];
     static achievementsUnlocked = 0;
@@ -119,7 +120,7 @@ export class Achievement {
 }
 
 // Raritys: Impossible, Divine, Mythic, Legendary, Epic, Rare, Uncommon, Common
-// good names: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?, "Magic Find is a lie", "Magic Find is a scam", "Magic Find is a cosmectic", "Magic Find is a myth" 
+// good names: Seek Help, Life Choices?, Time Well Spent?, The Endless Grind, Is This Real Life?, "Magic Find is a lie", "Magic Find is a scam", "Magic Find is a cosmetic", "Magic Find is a myth" 
 new Achievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic");  
 new Achievement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine"); 
 new Achievement(3, "Back-to-Back Stick", "Get 2 Sticks in a row", "Divine");   
@@ -170,9 +171,9 @@ new Achievement(37, "No more Diana", "100 Inquisitors since Chimera", "Divine", 
 new Achievement(38, "Real Diana non", "Download SBO", "Divine"); 
 
 new Achievement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "Uncommon");
-new Achievement(40, "Bleesed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
+new Achievement(40, "Blessed by fortune", "Get a Diana drop with 400 Magic Find", "Epic", 39);
 new Achievement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
-new Achievement(42, "The pinnacle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
+new Achievement(42, "The principle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
 
 new Achievement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
 new Achievement(44, "Magic Find is overrated", "Drop a Chimera, under 200 Magic Find", "Epic");

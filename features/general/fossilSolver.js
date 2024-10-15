@@ -1,4 +1,4 @@
-import { drawRect } from "./../../utils/functions";
+import { drawRect, setTimeout } from "./../../utils/functions";
 import { indexDict, indexDictReverse, allFigures } from "./../../utils/constants";
 import { registerWhen } from "./../../utils/variables";
 import { OverlayTextLine, SboOverlay } from "../../utils/overlays";

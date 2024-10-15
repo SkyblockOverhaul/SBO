@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, trace, formatTimeMinSec, SboTimeoutFunction, getTextureID, isInSkyblock } from "../../utils/functions";
+import { getplayername, trace, formatTimeMinSec, setTimeout, getTextureID, isInSkyblock } from "../../utils/functions";
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
@@ -208,7 +208,7 @@ registerWhen(register("tick", () => {
         if (settings.goldenFishNotification) {
             ChatLib.chat("&6[SBO] &eYou have not thrown your Lava Rod in over 2 minutes and 30 seconds")
             for (let i = 0; i < 6; i++) {
-                new SboTimeoutFunction(() => {
+                setTimeout(() => {
                     World.playSound("random.levelup", 100, 1);
                 }, i * 500);
             }
@@ -301,8 +301,10 @@ function findFlare() {
 
 registerWhen(register("tick", () => {
     if (flareTimer != 0 || bestRandomFlare != "") {
-        if (flareScore[flareType] >= flareScore[bestRandomFlare] && flareTimer != 0) {
-            const rangeText = flareEntity.distanceTo(Player.getPlayer()) <= 40 ? "&7(&ain range&7)" : "&7(&cout of range&7)"
+        let inRange = false
+        if (flareTimer != 0) inRange = flareEntity.distanceTo(Player.getPlayer()) <= 40;
+        if (flareScore[flareType] >= flareScore[bestRandomFlare] && flareTimer != 0 && (!settings.notInRangeSetting || inRange)) {
+            const rangeText = inRange ? "&7(&ain range&7)" : "&7(&cout of range&7)"
             flareLine.setText(flareType + ": &b" + formatTimeMinSec(180000 - (Date.now() - flareTimer)) + " " + rangeText)
             if (!warningSent && Date.now() - flareTimer > 160000) { // 2 minutes 40 seconds
                 ChatLib.chat("&6[SBO] &eFlare will expire in 20 seconds")
@@ -315,14 +317,18 @@ registerWhen(register("tick", () => {
                 resetFlare();
             }
         } else {
-            flareLine.setText(bestRandomFlare + ": &bin range")
+            if (bestRandomFlare != "") {
+                flareLine.setText(bestRandomFlare + ": &bin range")
+            } else {
+                flareLine.setText("")
+            }
         }
     } 
     if (flareClicked) {
         flareClicked = false
-        new SboTimeoutFunction(() => {
+        setTimeout(() => {
             findFlare()
-        }, 500);
+        }, 400);
     }
 }), () => settings.flareTimer);
 

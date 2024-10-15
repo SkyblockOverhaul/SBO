@@ -3,7 +3,7 @@ import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
-import { isInSkyblock, isWorldLoaded, playCustomSound, toTitleCase, trace } from '../../utils/functions';
+import { isInSkyblock, isWorldLoaded, playCustomSound, setTimeout, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
 import { getFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
@@ -75,10 +75,9 @@ export function removeBurrowWaypointBySmoke(x, y, z) {
 }
 
 function removeWaypointAfterDelay(Waypoints, seconds) {
-    // remove wayspoints older than 30 seconds
     setTimeout(() => {
         Waypoints.shift();
-    }, seconds*1000); // 30
+    }, seconds*1000);
 } 
 
 function numberToBurrowType(number) {
@@ -449,7 +448,7 @@ registerWhen(register("step", () => {
             waypoint[4] = "";
         });
     }
-}).setFps(2), () => settings.dianaBurrowGuess);;
+}).setFps(3), () => settings.dianaBurrowGuess);;
 
 
 
