@@ -62,7 +62,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.4.3" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.4" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -73,6 +73,8 @@ const downloadMsgReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&aThanks for importing &6SBO`)
     ChatLib.chat(`&7> &ayou can open the settings with /sbo`)
+    ChatLib.chat(`&7> &athe party finder with /sbopf`)
+    ChatLib.chat(`&7> &aa list of useful commands with /sbo help`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.downloadMsg = true
@@ -94,11 +96,11 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a- Added a setting for the 20% reputation discount in the key shop`)
-    ChatLib.chat(`&7> &a- Added Flare tracker in QOL`)
-    ChatLib.chat(`&7> &a- Fixed Important PartyFinder Bug`)
-    ChatLib.chat(`&7> &a- Fixed that the kuudra key price was NaN`)
-    ChatLib.chat(`&7> &a- Fixed Deleting past events`)
+    ChatLib.chat(`&7> &a- Maybe fixed the party commands delayed problem. (if it still happens, please report it)`)
+    ChatLib.chat(`&7> &a- Added some party finder chat feedback`)
+    ChatLib.chat(`&7> &a- Changed the "Took # Mobs to get an Inquis" message. (thanks to RaiTaki)`)
+    ChatLib.chat(`&7> &a- Fixed some typos`)
+    ChatLib.chat(`&7> &a- Some small fixes for party finder`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
