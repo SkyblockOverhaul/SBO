@@ -116,6 +116,7 @@ export let data = new PogObject("SBO", {
     "achievementFix1": false,
     "dianaStats": {},
     "dianaStatsUpdated": 0,
+    "lastInqDate": 0,
 }, "SboData.json");
 
 export let mainCheckboxes = new PogObject("../../../config", {
