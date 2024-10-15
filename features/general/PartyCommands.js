@@ -1,5 +1,13 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout, formatTimeMinSec } from "../../utils/functions";
+import {
+    getplayername,
+    formatTime,
+    getDianaMayorTotalProfitAndOfferType,
+    calcPercentOne,
+    getBurrowsPerHour,
+    getMobsPerHour,
+    formatTimeMinSec
+} from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -114,7 +122,7 @@ register("chat", (player, message) => {
                 setTimeout(() => {
                     ChatLib.command("p " + message[0].slice(1) + " " + message[1])
                 },100)
-                }
+            }
             else if (settings.PartyCommands && settings.MoteCommand) {
                 setTimeout(() => {
                     ChatLib.command("p " + message[0].slice(1) + " " + getplayername(player))
@@ -219,7 +227,12 @@ register("chat", (player, message) => {
             if (settings.dianaTracker) {
                 if(args1 == undefined) {
                     setTimeout(() => {
-                        ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq + " [" + formatTime(Date.now() - data.lastInqDate) + "]")
+                        if(data.lastInqDate == undefined || data.lastInqDate !== 0) {
+                            let timeFormatted = formatTime(Date.now() - data.lastInqDate)
+                            ChatLib.command(`pc Mobs since inq: ${data.mobsSinceInq} [${timeFormatted}]`)
+                        }else{
+                            ChatLib.command(`pc Mobs since inq: ${data.mobsSinceInq}`)
+                        }
                     }, 200)
                     return;
                 }
@@ -249,7 +262,12 @@ register("chat", (player, message) => {
                     case "inqs":
                     case "inquisitor":
                         setTimeout(() => {
-                            ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq + " [" + formatTime(Date.now() - data.lastInqDate) + "]")
+                            if(data.lastInqDate == undefined || data.lastInqDate !== 0) {
+                                let timeFormatted = formatTime(Date.now() - data.lastInqDate)
+                                ChatLib.command(`pc Mobs since inq: ${data.mobsSinceInq} [${timeFormatted}]`)
+                            }else{
+                                ChatLib.command(`pc Mobs since inq: ${data.mobsSinceInq}`)
+                            }
                         }, 200)
                         break
                     case "lschim":
@@ -264,7 +282,7 @@ register("chat", (player, message) => {
                         }, 200)
                         break
                 }
-                
+
             }
             break
         case "!playtime":
@@ -328,7 +346,7 @@ register("command", () => {
     ChatLib.chat("&7> &a!since (chim, chimls, relic, stick, inq)")
 }).setName("sbopartycommands").setAliases("sbopcom")
 
-function getChance(magicfind, looting, lootshare = false) { 
+function getChance(magicfind, looting, lootshare = false) {
 
     const chimBaseChance = 0.01;
     const stickBaseChance = 0.0008;
