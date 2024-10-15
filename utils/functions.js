@@ -743,22 +743,17 @@ export function formatTime(milliseconds) {
     if (minutes > 0 || hours > 0 || days > 0) {
         formattedTime += `${minutes}m `;
     }
-    if (minutes < 1 && hours == 0 && days == 0) {
-        formattedTime += `${seconds}s `;
-    }
+    formattedTime += `${seconds}s`;
 
     return formattedTime.trim();
 }
 
 export function formatTimeMinSec(milliseconds) {
     const totalSeconds = parseInt(milliseconds / 1000);
-    const totalMinutes = parseInt(totalSeconds / 60);
-    const minutes = totalMinutes % 60;
+    const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
 
-    let formattedTime = `${minutes}m ${seconds}s`;
-
-    return formattedTime;
+    return `${minutes}m ${seconds}s`;
 }
 
 let dianaMayorTotalProfit = 0;
