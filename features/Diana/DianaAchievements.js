@@ -249,13 +249,12 @@ function unlockAchievements(override=false) {
 export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
     if (isOnAlpha()) return;
     let totalChimera = 0;
-    if (item == "Chimera") {
-        if ("ChimeraLs" in mayorTracker) {
-            totalChimera = mayorTracker["Chimera"] + mayorTracker["ChimeraLs"];
-        } else {
-            totalChimera = mayorTracker["Chimera"];
-        }
+    if ("ChimeraLs" in mayorTracker) {
+        totalChimera = mayorTracker["Chimera"] + mayorTracker["ChimeraLs"];
+    } else {
+        totalChimera = mayorTracker["Chimera"];
     }
+
 
     if (mayorTracker["Total Burrows"] >= 5000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 10000) {
         achievementsToUnlock.push(18);
@@ -281,27 +280,27 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
         achievementsToUnlock.push(27);
     }
     
-    if (mayorTracker["MINOS_RELIC"] >= 1 && item == "MINOS_RELIC") {
+    if (mayorTracker["MINOS_RELIC"] >= 1) {
         achievementsToUnlock.push(16);
     }
 
-    if (mayorTracker["Daedalus Stick"] >= 1 && item == "Daedalus Stick" && mayorTracker["Daedalus Stick"] < 7) {
+    if (mayorTracker["Daedalus Stick"] >= 1 && mayorTracker["Daedalus Stick"] < 7) {
         achievementsToUnlock.push(14);
-    } else if (mayorTracker["Daedalus Stick"] >= 7 && item == "Daedalus Stick") {
+    } else if (mayorTracker["Daedalus Stick"] >= 7) {
         achievementsToUnlock.push(8);
     }
 
-    if (totalChimera >= 1 && item == "Chimera" && totalChimera < 16) {
+    if (totalChimera >= 1 && totalChimera < 16) {
         achievementsToUnlock.push(12);
-    } else if (totalChimera >= 16 && item == "Chimera" && totalChimera < 32) {
+    } else if (totalChimera >= 16 && totalChimera < 32) {
         achievementsToUnlock.push(9);
-    } else if (totalChimera >= 32 && item == "Chimera") {
+    } else if (totalChimera >= 32) {
         achievementsToUnlock.push(11);
     }
 
-    if (mayorTracker["ChimeraLs"] >= 1 && item == "ChimeraLs" && mayorTracker["ChimeraLs"] < 16) {
+    if (mayorTracker["ChimeraLs"] >= 1 && mayorTracker["ChimeraLs"] < 16) {
         achievementsToUnlock.push(13);
-    } else if (mayorTracker["ChimeraLs"] >= 16 && item == "ChimeraLs") {
+    } else if (mayorTracker["ChimeraLs"] >= 16) {
         achievementsToUnlock.push(10);
     }
     if (!backtrack) {

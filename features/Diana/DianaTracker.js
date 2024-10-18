@@ -244,21 +244,18 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
             case "Minos Inquisitor":
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
-            
-                if(settings.sendSinceMassage) {
-                    let currentTime = Date.now();
-                    let timeDiff = currentTime - data.lastInqDate;
-                    let hours = Math.floor(timeDiff / (1000 * 60 * 60));
-                    let minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                    let seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-                    let timeString = `${hours}h ${minutes}m ${seconds}s`;
+                let currentTime = Date.now();
+                let timeDiff = currentTime - data.lastInqDate;
+                let hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                let minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+                let timeString = `${hours}h ${minutes}m ${seconds}s`;
 
-                    if(data.lastInqDate && data.lastInqDate !== 0) {
-                        new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${timeString}&e to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs and ${timeString} to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
-                    }
-                    else {
-                        new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
-                    }
+                if(data.lastInqDate && data.lastInqDate !== 0) {
+                    new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${timeString}&e to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs and ${timeString} to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                }
+                else {
+                    new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
                 }
                 data.lastInqDate = Date.now();
 
