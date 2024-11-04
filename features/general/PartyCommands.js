@@ -186,6 +186,14 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!chimls":
+            if (!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                percent = parseFloat((dianaTrackerMayor["items"]["ChimeraLs"] / dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2));
+                setTimeout(() => {
+                    ChatLib.command("pc Chimera LS: " + dianaTrackerMayor["items"]["ChimeraLs"] + " (" + percent + "%)")
+                }, 200)
+            }
         case "!stick":
         case "!sticks":
             if(!settings.dianaPartyCommands) break;
