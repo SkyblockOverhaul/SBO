@@ -341,7 +341,7 @@ const partyDisbanded = [
     /^&cYou are not currently in a party\.$/,
     /^&eYou have been kicked from the party by .+$/
 ] 
-const leaderMessages = [
+const leaderMessages = [ // promoted to party leader message missing
     /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
     /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
 ]

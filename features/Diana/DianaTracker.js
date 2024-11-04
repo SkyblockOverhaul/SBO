@@ -332,7 +332,9 @@ registerWhen(register("chat", (drop, event) => {
                     if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceLsChim} &r&eInquisitors to get a lootshare Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceLsChim} Inquisitors to get a lootshare Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
-                    data.inqsSinceLsChim = 0;
+                    setTimeout(() => {
+                        data.inqsSinceLsChim = 0;
+                    }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
                     if (replaceChimMessage) {
