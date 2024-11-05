@@ -82,6 +82,7 @@ class Settings {
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
         this.addDependency('Flare Expire Soon Alert','Flare Tracker');
         this.addDependency('Hide Own Flare When Not In Range','Flare Tracker');
+        this.addDependency('Advanced Diana Burrow Guess','Diana Burrow Guess');
 
     } 
     //-----------Diana Burrows----------------
@@ -92,6 +93,13 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowGuess = true;
+    @SwitchProperty({
+        name: "Advanced Diana Burrow Guess",
+        description: "Make an initial guess based on the color of the arrow that appears after digging up a burrow",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    dianaAdvancedBurrowGuess = true;
     @SwitchProperty({
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow. set your keybind in controls",
