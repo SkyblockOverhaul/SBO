@@ -75,6 +75,7 @@ class Settings {
         this.addDependency('Show Price Title','Loot Screen Announcer');
         this.addDependency('Inquis Lootshare Cylinder','Inquis Lootshare Circle');
         this.addDependency('Diana Burrow Warp','Diana Burrow Guess');
+        this.addDependency('Dont warp if a burrow is nearby','Diana Burrow Warp');
         this.addDependency('Carnival Zombie Line','Carnival Zombie Helper');
         this.addDependency('Custom Chim Message Text','Chim Message');
         this.addDependency('Reset Custom Chim Message','Chim Message');
@@ -82,7 +83,7 @@ class Settings {
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
         this.addDependency('Flare Expire Soon Alert','Flare Tracker');
         this.addDependency('Hide Own Flare When Not In Range','Flare Tracker');
-        this.addDependency('Advanced Diana Burrow Guess','Diana Burrow Guess');
+        this.addDependency('Burrow Guess Alternative','Diana Burrow Guess');
 
     } 
     //-----------Diana Burrows----------------
@@ -94,12 +95,12 @@ class Settings {
     })
     dianaBurrowGuess = true;
     @SwitchProperty({
-        name: "Advanced Diana Burrow Guess",
-        description: "Make an initial guess based on the color of the arrow that appears after digging up a burrow",
+        name: "Burrow Guess Alternative",
+        description: "[WIP] Makes a guess based on the arrow that spawns when you finished a burrow and the color it shows",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
-    dianaAdvancedBurrowGuess = true;
+    dianaAdvancedBurrowGuess = false;
     @SwitchProperty({
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow. set your keybind in controls",
