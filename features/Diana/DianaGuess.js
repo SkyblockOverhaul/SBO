@@ -1,7 +1,6 @@
 import settings from "../../settings";
 import { checkDiana } from "../../utils/checkDiana";
 import { registerWhen } from "../../utils/variables";
-import { coloredArmorStands, getLastInteractedPos } from "./DianaBurrows";
 
 let lastDing = 0;
 let lastDingPitch = 0;
@@ -17,8 +16,6 @@ let dingIndex = 0;
 let dingSlope = [];
 let distance2 = null;
 let finalLocation = null;
-let hasMadeInitialGuess = false;
-let hasMadeManualGuess = false;
 
 export function getFinalLocation() {
     return finalLocation;
@@ -39,14 +36,11 @@ function onWorldChange() {
     dingSlope = [];
     finalLocation = null;
     gY = 0;
-    hasMadeManualGuess = false;
-    hasMadeInitialGuess = false;
 }
 
 function onPlaySound(pos, name, volume, pitch, categoryName, event) {
     if (!isEnabled()) return;
     if (name !== "note.harp") return;
-    hasMadeManualGuess = true;
 
     if (lastDing === 0) {
         firstPitch = pitch;
@@ -149,7 +143,6 @@ function onReceiveParticle(particle, type, event) {
     if (!isEnabled()) return;
     const type = particle.toString();
     if (!type.startsWith("SparkFX")) return;
-    hasMadeManualGuess = true;
     const currLoc = new SboVec(particle.getX(), particle.getY(), particle.getZ());
 
     let run = false;
@@ -329,52 +322,6 @@ class SboVec {
         return this.z;
     }
 }
-
-function basicallyEqual(a, b) {
-    return Math.abs(a.x - b.x) <= 1 && a.y == b.y && Math.abs(a.z - b.z) <= 1;
-}
-
-function tryToMakeInitialGuess() {
-    if (hasMadeManualGuess || hasMadeInitialGuess) return;
-    const enumerator = Object.keys(coloredArmorStands);
-    enumerator.forEach(id => {
-        const armorStand = World.getWorld().func_73045_a(id);
-        if (armorStand === null) return;
-        const CTArmorStand = new Entity(armorStand);
-        const armorStandPos = CTArmorStand.getPos();
-        const lastInteractedPos = getLastInteractedPos();
-        if (!lastInteractedPos || !basicallyEqual(armorStandPos, lastInteractedPos)) return;
-
-        const type = coloredArmorStands[id];
-        let multiplier;
-        switch(type) {
-            case "FAR":
-                multiplier = 350;
-                break;
-            case "MEDIUM":
-                multiplier = 200;
-                break;
-            case "CLOSE":
-                multiplier = 50;
-                break;
-        }
-        const directionVec = new SboVec(-Math.sin(CTArmorStand.getYaw() * Math.PI / 180), 0, Math.cos(CTArmorStand.getYaw() * Math.PI / 180));
-        finalLocation = new SboVec(lastInteractedPos.x, lastInteractedPos.y, lastInteractedPos.z).add(directionVec.multiply(multiplier));
-        hasMadeInitialGuess = true;
-        return;
-    });
-}
-
-
-registerWhen(register("tick", () => {
-    if (!isEnabled()) return;
-    tryToMakeInitialGuess();
-}), () => settings.dianaAdvancedBurrowGuess);
-
-registerWhen(register("chat", (burrow) => {
-    hasMadeManualGuess = false;
-    hasMadeInitialGuess = false;
-}).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => settings.dianaAdvancedBurrowGuess);
 
 
 registerWhen(register("worldUnload", () => {
