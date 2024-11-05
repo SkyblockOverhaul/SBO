@@ -349,10 +349,10 @@ function tryToMakeInitialGuess() {
         let multiplier;
         switch(type) {
             case "FAR":
-                multiplier = 300;
+                multiplier = 350;
                 break;
             case "MEDIUM":
-                multiplier = 150;
+                multiplier = 200;
                 break;
             case "CLOSE":
                 multiplier = 50;
