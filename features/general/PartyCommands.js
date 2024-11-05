@@ -187,6 +187,12 @@ register("chat", (player, message) => {
             }
             break
         case "!chimls":
+        case "!chimerals":
+        case "!bookls":
+        case "!lschim":
+        case "!lsbook":
+        case "!lootsharechim":
+        case "!lschimera":
             if (!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 percent = parseFloat((dianaTrackerMayor["items"]["ChimeraLs"] / dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2));
