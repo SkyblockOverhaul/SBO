@@ -95,11 +95,11 @@ class Settings {
     dianaBurrowGuess = true;
     @SwitchProperty({
         name: "Advanced Diana Burrow Guess",
-        description: "Make an initial guess based on the color of the arrow that appears after digging up a burrow",
+        description: "[WIP] Makes a guess based on the arrow that spawns when you finished a burrow and the color it shows",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
-    dianaAdvancedBurrowGuess = true;
+    dianaAdvancedBurrowGuess = false;
     @SwitchProperty({
         name: "Diana Burrow Warp",
         description: "Warp to the closest burrow. set your keybind in controls",
@@ -107,6 +107,13 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     dianaBurrowWarp = true;
+    @SwitchProperty({
+        name: "Dont warp if a burrow is nearby",
+        description: "Doesnt warp you if a burrow is nearby",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    dontWarpIfBurrowNearby = false;
     @SwitchProperty({
         name: "Diana Burrow Detect",
         description: "Detects Diana burrows | to reset waypoints /sboclearburrows",

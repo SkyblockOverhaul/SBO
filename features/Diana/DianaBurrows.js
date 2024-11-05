@@ -234,7 +234,6 @@ registerWhen(register("packetReceived", (packet) => {
     const x = packet.func_149220_d();
     const y = packet.func_149226_e();
     const z = packet.func_149225_f();
-
     arrowArmorStands.forEach(armorStand => {
         const id = armorStand.getEntity().func_145782_y()
         if (coloredArmorStands[id] !== undefined) return;
