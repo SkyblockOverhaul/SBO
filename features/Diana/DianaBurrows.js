@@ -1,3 +1,9 @@
+export const coloredArmorStands = {};
+let lastInteractedPos = null;
+export function getLastInteractedPos() {
+    return lastInteractedPos;
+}
+
 import { registerWhen } from "../../utils/variables";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
@@ -76,6 +82,30 @@ const ParticleTypes = {
         parseFloat(packet.func_149224_h()).toFixed(1) == 0.4 &&
         parseFloat(packet.func_149223_i()).toFixed(1) == 0.5
     ),
+    FAR: new ParticleType(packet =>
+        packet.func_179749_a().toString() == "REDSTONE" &&
+        parseInt(packet.func_149222_k()) == 0 &&
+        parseInt(packet.func_149227_j()) == 1 &&
+        parseInt(packet.func_149221_g()) == 1 &&
+        parseFloat(packet.func_149224_h()).toPrecision(1) == 0 &&
+        parseInt(packet.func_149223_i()) == 0
+    ),
+    MEDIUM: new ParticleType(packet =>
+        packet.func_179749_a().toString() == "REDSTONE" &&
+        parseInt(packet.func_149222_k()) == 0 &&
+        parseInt(packet.func_149227_j()) == 1 &&
+        parseInt(packet.func_149221_g()) == 1 &&
+        parseFloat(packet.func_149224_h()).toPrecision(1) == 1 &&
+        parseInt(packet.func_149223_i()) == 0
+    ),
+    CLOSE: new ParticleType(packet =>
+        packet.func_179749_a().toString() == "REDSTONE" &&
+        parseInt(packet.func_149222_k()) == 0 &&
+        parseInt(packet.func_149227_j()) == 1 &&
+        parseInt(packet.func_149221_g()) == 0 &&
+        parseFloat(packet.func_149224_h()).toPrecision(1) == 0.5 &&
+        parseInt(packet.func_149223_i()) == 0
+    )
 };
 
 function getParticleType(packet) {
@@ -120,7 +150,7 @@ class Burrow extends Diggable {
 }
 
 let burrows = {};
-let burrowshistory = new EvictingQueue(2);
+const burrowsHistory = new EvictingQueue(2);
 
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
@@ -129,7 +159,7 @@ function burrowDetect(packet) {
     if (!particleType) return;
     const pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
     const posstring = pos.getX() + " " + pos.getY() + " " + pos.getZ(); 
-    if (burrowshistory.contains(posstring)) return;
+    if (burrowsHistory.contains(posstring)) return;
     
     if (!burrows[posstring]) {
         burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
@@ -163,7 +193,7 @@ function removeBurrowBySmoke(x, y, z) {
 function resetBurrows() {
     setBurrowWaypoints([]);
     burrows = {};
-    burrowshistory.clear();
+    burrowsHistory.clear();
 }
 
 let removePos = null;
@@ -173,9 +203,58 @@ function refreshBurrows() {
     burrows = result.burrows;
     let removedBurrow = result.removedBurrow;
     if (removedBurrow != null) {
-        burrowshistory.add(removedBurrow);
+        burrowsHistory.add(removedBurrow);
     }
 }
+
+const isCloseEnough = (entity, x, y, z) => {
+    const entityX = entity.getX();
+    const entityY = entity.getY();
+    const entityZ = entity.getZ();
+    return Math.abs(entityX - x) <= 2 && Math.abs(entityY - y) <= 3 && Math.abs(entityZ - z) <= 2;
+}
+
+const ItemStack = Java.type("net.minecraft.item.ItemStack");
+const MCItem = Java.type("net.minecraft.item.Item");
+let arrowArmorStands = [];
+registerWhen(register("tick", () => {
+    arrowArmorStands = World.getAllEntitiesOfType(Java.type("net.minecraft.entity.item.EntityArmorStand")).filter(armorStand => {
+        const heldItemStack = armorStand.getEntity().func_71124_b(0);
+        if (heldItemStack === null) return;
+        const item = new Item(heldItemStack);
+        const isArrow = item.equals(new Item(new ItemStack(MCItem.func_150899_d(262), 1)));
+        return isArrow;
+    });
+}), () => settings.dianaAdvancedBurrowGuess && getWorld() == "Hub");
+
+registerWhen(register("packetReceived", (packet) => {
+    const particleType = getParticleType(packet);
+    if (particleType !== "FAR" && particleType !== "MEDIUM" && particleType !== "CLOSE") return;
+
+    const x = packet.func_149220_d();
+    const y = packet.func_149226_e();
+    const z = packet.func_149225_f();
+
+    arrowArmorStands.forEach(armorStand => {
+        const id = armorStand.getEntity().func_145782_y()
+        if (coloredArmorStands[id] !== undefined) return;
+
+        if (!isCloseEnough(armorStand, x, y, z)) return;
+        coloredArmorStands[id] = particleType;
+    });
+}).setFilteredClass(S2APacketParticles), () => settings.dianaAdvancedBurrowGuess && getWorld() == "Hub");
+
+// Delete colored armor stands that no longer exist
+registerWhen(register("step", () => {
+    const enumerator = Object.keys(coloredArmorStands);
+    enumerator.forEach(id => {
+        const armorStand = World.getWorld().func_73045_a(id);
+        if (armorStand === null) {
+            delete coloredArmorStands[id];
+            return;
+        }
+    });
+}).setFps(1), () => settings.dianaAdvancedBurrowGuess && getWorld == "Hub");
 
 registerWhen(register("chat", (burrow) => {
     refreshBurrows();
@@ -246,6 +325,7 @@ registerWhen(register("packetSent", (packet, event) => {
         }
         if (burrows[x + " " + (y-1) + " " + z]) {
             removePos = new BlockPos(x, y, z);
+            lastInteractedPos = new BlockPos(x, y - 1, z);
         }   
     }
     
@@ -265,6 +345,7 @@ registerWhen(register("playerInteract", (action, pos) => {
         }
         if (burrows[x + " " + y + " " + z]) {
             removePos = new BlockPos(x, (parseInt(y) + 1), z);
+            lastInteractedPos = new BlockPos(x, y, z);
         }   
     }
 }), () => settings.dianaBurrowDetect && getWorld() == "Hub");
