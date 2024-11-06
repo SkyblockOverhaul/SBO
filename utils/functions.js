@@ -451,8 +451,8 @@ export function getplayername(player) {
         }                           // #BanNons
     }
     name = player.substring(num+2).removeFormatting()
-    name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '')
-return name
+    name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '').trim()
+    return name
 }
 
 export function isWorldLoaded() {
