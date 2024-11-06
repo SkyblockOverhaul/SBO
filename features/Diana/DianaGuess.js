@@ -46,7 +46,6 @@ function onWorldChange() {
 function onPlaySound(pos, name, volume, pitch, categoryName, event) {
     if (!isEnabled()) return;
     if (name !== "note.harp") return;
-    hasMadeManualGuess = true;
 
     if (lastDing === 0) {
         firstPitch = pitch;
@@ -149,7 +148,6 @@ function onReceiveParticle(particle, type, event) {
     if (!isEnabled()) return;
     const type = particle.toString();
     if (!type.startsWith("SparkFX")) return;
-    hasMadeManualGuess = true;
     const currLoc = new SboVec(particle.getX(), particle.getY(), particle.getZ());
 
     let run = false;
@@ -242,6 +240,7 @@ function onReceiveParticle(particle, type, event) {
                         print("partical: SBO finalLocation has nan values");
                     }
                     else {
+                        hasMadeManualGuess = true;
                         
                         //createDianaGuess(finalLocation.getX(), gY, finalLocation.getZ());
                     }
