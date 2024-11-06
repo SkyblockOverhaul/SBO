@@ -364,6 +364,7 @@ export function initializeGuiSettings() {
         CrownLoc: { "x": 15, "y": 435, "s": 1 },
         GoldenFishLoc: { "x": 15, "y": 50, "s": 1 },   
         FlareLoc: { "x": 170, "y": 150, "s": 1 },
+        InquisLoc: { "x": 40, "y": 22, "s": 1 },
     };
 }
 

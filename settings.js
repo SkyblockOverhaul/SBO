@@ -154,6 +154,14 @@ class Settings {
         options: ["OFF", "Total", "Event", "Session"]
     })
     dianaLootTrackerView = 0;
+    // @SwitchProperty({
+    //     name: "Inquis Tracker",
+    //     description: "Tracks your Inquisitor Loot",
+    //     category: "Diana",
+    //     subcategory: "Diana Tracker",
+    //     options: ["OFF", "Total", "Event", "Session"]
+    // })
+    // inquisTracker = 0;
     @SwitchProperty({
         name: "Four-Eyed Fish",
         description: "Set if you have a Four-Eyed Fish on your griffin pet",
