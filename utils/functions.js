@@ -1649,3 +1649,22 @@ export function filterTextInput(list) {
         object.text = text
     })
 }
+
+let scheduleTasks = [];
+function scheduleTickTask(tickdelay, fn) {
+    scheduleTasks.push({remainingTicks: tickdelay, fn});
+}
+
+register("packetReceived", (packet) => {
+    if (packet.func_148890_d() > 0) return;
+
+    for (let i = scheduleTasks.length - 1; i >= 0; i--) {
+        let task = scheduleTasks[i];
+        task.remainingTicks--;
+
+        if (task.remainingTicks <= 0) {
+            task.fn();
+            scheduleTasks.splice(i, 1);
+        }
+    }
+}).setFilteredClass(net.minecraft.network.play.server.S32PacketConfirmTransaction);
