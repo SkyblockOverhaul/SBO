@@ -97,7 +97,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a- Added a new Experimental guess wich uses the arrwos and there particle color from the dug up burrow to guess the next burrow`)
+    ChatLib.chat(`&7> &a- Added a new Experimental guess wich uses the arrwos and there particle color from the dug up burrow to guess the next burrow (thx to @KaasPeer)`)
     ChatLib.chat(`&7> &a- Added an aoption to not warp when a burrow is nearby (dont warp if a burrow is nearby)`)
     ChatLib.chat(`&7> &a- Added !chimls as an extra PartyCommand`)
     ChatLib.chat(`&7> &a- Added a command to undo the tracker import (/sboimporttrackerundo)`)
