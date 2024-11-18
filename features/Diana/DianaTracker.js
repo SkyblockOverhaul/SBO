@@ -313,25 +313,6 @@ registerWhen(register("chat", (coins) => {
     }
 }).setCriteria("&r&6&lWow! &r&eYou dug out &r&6${coins} coins&r&e!&r"), () => getWorld() === "Hub" && settings.dianaTracker);
 
-register("command", () => {
-    data.last10ChimMagicFind = [];
-    data.avgChimMagicFind = 0;
-    data.last10StickMagicFind = [];
-    data.avgStickMagicFind = 0;
-    data.save();
-    avgMagicFindOverlay();
-}).setName("sboresetavgmftracker");
-
-register("command", () => {
-    data.mobsSinceInq = 0;
-    data.inqsSinceChim = 0;
-    data.minotaursSinceStick = 0;
-    data.champsSinceRelic = 0;
-    data.inqsSinceLsChim = 0;
-    data.save();
-    statsOverlay();
-}).setName("sboresetstatstracker");
-
 registerWhen(register("chat", (drop, event) => {
     if (isDataLoaded() && checkDiana() && isInSkyblock()) {
         let magicFind = getMagicFind(drop);
@@ -649,3 +630,22 @@ register("command", () => {
         mobOverlay();
     }
 }).setName("sboimporttrackerundo");
+
+register("command", () => {
+    data.last10ChimMagicFind = [];
+    data.avgChimMagicFind = 0;
+    data.last10StickMagicFind = [];
+    data.avgStickMagicFind = 0;
+    data.save();
+    avgMagicFindOverlay();
+}).setName("sboresetavgmftracker");
+
+register("command", () => {
+    data.mobsSinceInq = 0;
+    data.inqsSinceChim = 0;
+    data.minotaursSinceStick = 0;
+    data.champsSinceRelic = 0;
+    data.inqsSinceLsChim = 0;
+    data.save();
+    statsOverlay();
+}).setName("sboresetstatstracker");
