@@ -49,6 +49,8 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
                 ChatLib.chat("&7> &a/sbopf &7- &eOpens the PartyFinder GUI")
                 ChatLib.chat("&7> &a/sbopartycommands &7- &eDisplays all diana partycommands")
+                ChatLib.chat("&7> &a/sboresetavgmftracker &7- &eResets the avg mf tracker")
+                ChatLib.chat("&7> &a/sboresetstatstracker &7- &eResets the stats tracker")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -101,6 +103,8 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(`&7> &7- &aAdded an option to not warp when a burrow is nearby (dont warp if a burrow is nearby)`)
     ChatLib.chat(`&7> &7- &aAdded !chimls as an extra PartyCommand`)
     ChatLib.chat(`&7> &7- &aAdded a command to undo the tracker import (/sboimporttrackerundo)`)
+    ChatLib.chat(`&7> &7- &aAdded a command to reset Avg Mf tracker (/sboresetavgmftracker)`)
+    ChatLib.chat(`&7> &7- &aAdded a command to reset stats tracker (/sboresetstatstracker)`)
     ChatLib.chat(`&7> &7- &aRemoved skytils tracker import`)
     ChatLib.chat(`&7> &7- &aSome small bugfixes as always`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
