@@ -393,7 +393,7 @@ register("chat", (event) => {
         let match = formatted.match(regex)
         if (match) {
             removePartyFromQueue()
-            inParty = true;
+            // inParty = true;
         }
     })
     partyDisbanded.forEach(regex => {
