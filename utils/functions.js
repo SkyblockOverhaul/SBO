@@ -364,6 +364,7 @@ export function initializeGuiSettings() {
         CrownLoc: { "x": 15, "y": 435, "s": 1 },
         GoldenFishLoc: { "x": 15, "y": 50, "s": 1 },   
         FlareLoc: { "x": 170, "y": 150, "s": 1 },
+        InquisLoc: { "x": 40, "y": 22, "s": 1 },
     };
 }
 
@@ -451,8 +452,8 @@ export function getplayername(player) {
         }                           // #BanNons
     }
     name = player.substring(num+2).removeFormatting()
-    name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '')
-return name
+    name = name.replaceAll(/[^a-zA-Z0-9_]/g, '').replaceAll(' ', '').trim()
+    return name
 }
 
 export function isWorldLoaded() {

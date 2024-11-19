@@ -39,6 +39,7 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (or: /sboc <player>)")
                 ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
                 ChatLib.chat("&7> &a/sboimporttracker <profilename> &7- &eImport skyhanni/skytils tracker")
+                ChatLib.chat("&7> &a/sboimporttrackerundo &7- &eUndo the tracker import")
                 ChatLib.chat("&7> &a/sbodc &7- &eDiana dropchances")
                 ChatLib.chat("&7> &a/sbopartyblacklist &7- &eParty commands blacklisting")
                 ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack achievements")
@@ -48,6 +49,8 @@ register("command", (args1, ...args) => {
                 ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
                 ChatLib.chat("&7> &a/sbopf &7- &eOpens the PartyFinder GUI")
                 ChatLib.chat("&7> &a/sbopartycommands &7- &eDisplays all diana partycommands")
+                ChatLib.chat("&7> &a/sboresetavgmftracker &7- &eResets the avg mf tracker")
+                ChatLib.chat("&7> &a/sboresetstatstracker &7- &eResets the stats tracker")
                 break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
@@ -62,7 +65,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.4.4" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.6" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -96,11 +99,14 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &a- Maybe fixed the party commands delayed problem. (if it still happens, please report it)`)
-    ChatLib.chat(`&7> &a- Added some party finder chat feedback`)
-    ChatLib.chat(`&7> &a- Changed the "Took # Mobs to get an Inquis" message. (thanks to RaiTaki)`)
-    ChatLib.chat(`&7> &a- Fixed some typos`)
-    ChatLib.chat(`&7> &a- Some small fixes for party finder`)
+    ChatLib.chat(`&7> &7- &aAdded a new Experimental guess wich uses the arrwos and there particle color from the dug up burrow to guess the next burrow (thx to @KaasPeer)`)
+    ChatLib.chat(`&7> &7- &aAdded an option to not warp when a burrow is nearby (dont warp if a burrow is nearby)`)
+    ChatLib.chat(`&7> &7- &aAdded !chimls as an extra PartyCommand`)
+    ChatLib.chat(`&7> &7- &aAdded a command to undo the tracker import (/sboimporttrackerundo)`)
+    ChatLib.chat(`&7> &7- &aAdded a command to reset Avg Mf tracker (/sboresetavgmftracker)`)
+    ChatLib.chat(`&7> &7- &aAdded a command to reset stats tracker (/sboresetstatstracker)`)
+    ChatLib.chat(`&7> &7- &aRemoved skytils tracker import`)
+    ChatLib.chat(`&7> &7- &aSome small bugfixes as always`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion

@@ -341,7 +341,7 @@ const partyDisbanded = [
     /^&cYou are not currently in a party\.$/,
     /^&eYou have been kicked from the party by .+$/
 ] 
-const leaderMessages = [
+const leaderMessages = [ // promoted to party leader message missing
     /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
     /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
 ]
@@ -393,7 +393,7 @@ register("chat", (event) => {
         let match = formatted.match(regex)
         if (match) {
             removePartyFromQueue()
-            inParty = true;
+            // inParty = true;
         }
     })
     partyDisbanded.forEach(regex => {
@@ -427,6 +427,8 @@ register("chat", (toFrom, player, id, event) => {
     if (inQueue && toFrom.includes("From")) {
         // join request message
         if (partyCount < 6) {
+            player = getplayername(player);
+            print(player);
             if (settings.autoInvite) {
                 ChatLib.chat("&6[SBO] &eSending invite to " + player);
                 ChatLib.command("p invite " + player);

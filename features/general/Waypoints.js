@@ -259,7 +259,7 @@ let closestWarp = undefined;
 let warpPlayer = false;
 let closestDistance = Infinity;
 function getClosestWarp(x, y, z) {
-    let closestPlayerdistance = Math.sqrt(
+    const closestPlayerdistance = Math.sqrt(
         (Player.getLastX() - x)**2 +
         (Player.getLastY() - y)**2 +
         (Player.getLastZ() - z)**2
@@ -307,13 +307,17 @@ function getClosestWarp(x, y, z) {
     settings.warpDiff = settings.warpDiff.replace(/\D/g, '');
     let warpDiff = parseInt(settings.warpDiff);
 
-    if (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff)) {
+    const warpConditions = {
+        condition1: Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff),
+        condition2: (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff) &&
+                    Math.round(getClosestBurrow(formattedBurrow)[1]) > 60) || inqWaypoints.length > 0
+    };
+    
+    if (settings.dontWarpIfBurrowNearby ? warpConditions.condition2 : warpConditions.condition1) {
         warpPlayer = true;
-    }
-    else {
+    } else {
         warpPlayer = false;
     }
-
     if (warpPlayer) {
         return closestWarp;
     }

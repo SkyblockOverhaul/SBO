@@ -8,6 +8,7 @@ import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackSinceMob, unlockAchievement, trackAchievementsItem, achievementItems, trackMagicFind } from "./DianaAchievements";
+import { getDateMayorElected, getSkyblockDate } from "../../utils/mayor";
 
 // todo: 
 // todo end
@@ -332,7 +333,9 @@ registerWhen(register("chat", (drop, event) => {
                     if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceLsChim} &r&eInquisitors to get a lootshare Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceLsChim} Inquisitors to get a lootshare Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
-                    data.inqsSinceLsChim = 0;
+                    setTimeout(() => {
+                        data.inqsSinceLsChim = 0;
+                    }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
                     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
                     if (replaceChimMessage) {
@@ -471,152 +474,119 @@ const translateDictSh = {
     "MINOS_HUNTER": "Minos Hunter"
 };
 
-const translateDictSt = {
-    "COINS": "coins",
-    "GRIFFIN_FEATHER": "Griffin Feather",
-    "CROWN_OF_GREED": "Crown of Greed",
-    "WASHED_UP_SOUVENIR": "Washed-up Souvenir",
-    "ENCHANTED_BOOK-ULTIMATE_CHIMERA-1": "Chimera",
-    "DAEDALUS_STICK": "Daedalus Stick",
-    "MINOS_INQUISITOR": "Minos Inquisitor",
-    "MINOS_CHAMPION": "Minos Champion",
-    "MINOTAUR": "Minotaur",
-    "GAIA_CONSTRUCT": "Gaia Construct",
-    "SIAMESE_LYNXES": "Siamese Lynxes",
-    "MINOS_HUNTER": "Minos Hunter"
-};
-
 let totalImportedMobs = 0;
-function importDianaTracker(type, profileName, importType) {
+let oldTracker = {
+    mayor: {},
+    total: {},
+    session: {}
+}
+let importedATracker = false;
+function importDianaTracker(profileName, importType) {
     totalImportedMobs = 0;
-    if (type == "sh") {
-        ChatLib.chat("&6[SBO] &aImporting from SkyHanni...");
-        let shConfig = JSON.parse(FileLib.read("./config/skyhanni/config.json"));
-        let activePlayer = shConfig.storage.players[Player.getUUID()]
-        let activeProfile = activePlayer.profiles[profileName];
-        let dianaShTracker = activeProfile.diana
-        if (shConfig == undefined) {
-            ChatLib.chat("&6[SBO] &cSkyHanni not found. cant import tracker");
-            return;
-        }
-        if (activePlayer == undefined || activeProfile == undefined) {
-            ChatLib.chat("&6[SBO] &cProfile not found. Please check if the profile name is correct.");
-            return;
-        }
-        if (importType == "overwrite") {
-            resetTracker("total");
-            resetTracker("mayor");
-            resetTracker("session");
-        }
-
-        Object.keys(dianaShTracker.dianaProfitTracker.items).forEach((item) => {
-            let itemKey = item;
-            if (translateDictSh[item]) itemKey = translateDictSh[item];
-            transferData("items", item, itemKey, dianaShTracker.dianaProfitTracker.items[item].totalAmount, importType);
-        });
-
-        Object.keys(dianaShTracker.mythologicalMobTracker.count).forEach((mob) => {
-            let itemKey = mob;
-            if (translateDictSh[mob]) itemKey = translateDictSh[mob];
-            transferData("mobs", mob, itemKey, dianaShTracker.mythologicalMobTracker.count[mob], importType);
-        });
-        if (importType == "overwrite") {
-            trackerMayor.mobs["TotalMobs"] = totalImportedMobs;
-            trackerTotal.mobs["TotalMobs"] = totalImportedMobs;
-            trackerSession.mobs["TotalMobs"] = totalImportedMobs;
-
-            trackerMayor.items["Total Burrows"] = activeProfile.diana.dianaProfitTracker.burrowsDug;
-            trackerTotal.items["Total Burrows"] = activeProfile.diana.dianaProfitTracker.burrowsDug;
-            trackerSession.items["Total Burrows"] = activeProfile.diana.dianaProfitTracker.burrowsDug;
-        }
-        else if (importType == "add") {
-            trackerMayor.mobs["TotalMobs"] += totalImportedMobs;
-            trackerTotal.mobs["TotalMobs"] += totalImportedMobs;
-            trackerSession.mobs["TotalMobs"] += totalImportedMobs;
-
-            trackerMayor.items["Total Burrows"] += activeProfile.diana.dianaProfitTracker.burrowsDug;
-            trackerTotal.items["Total Burrows"] += activeProfile.diana.dianaProfitTracker.burrowsDug;
-            trackerSession.items["Total Burrows"] += activeProfile.diana.dianaProfitTracker.burrowsDug;
-        }
-        ChatLib.chat("&6[SBO] &aTracker imported!");
+    ChatLib.chat("&6[SBO] &aImporting from SkyHanni...");
+    let shConfig = JSON.parse(FileLib.read("./config/skyhanni/config.json"));
+    if (shConfig == undefined) {
+        ChatLib.chat("&6[SBO] &cSkyHanni not found. cant import tracker");
+        return;
     }
-    else if (type == "st") {
-        ChatLib.chat("&6[SBO] &aImporting from Skytils...");
-        let dianaStTracker = JSON.parse(FileLib.read("./config/skytils/trackers/mythological.json"));
-        if (dianaStTracker == undefined) {
-            ChatLib.chat("&6[SBO] &cSkytils not found. cant import tracker");
-            return;
-        }
-        if (importType == "overwrite") {
-            resetTracker("total");
-            resetTracker("mayor");
-            resetTracker("session");
-        }
-
-        Object.keys(dianaStTracker.items).forEach((item) => {
-            let itemKey = item;
-            if (translateDictSt[item]) itemKey = translateDictSt[item];
-            transferData("items", item, itemKey, dianaStTracker.items[item], importType);
-        });
-
-        Object.keys(dianaStTracker.mobs).forEach((mob) => {
-            let itemKey = mob;
-            if (translateDictSt[mob]) itemKey = translateDictSt[mob];
-            transferData("mobs", mob, itemKey, dianaStTracker.mobs[mob], importType);
-        });
-
-        if (importType == "overwrite") {
-            trackerMayor.mobs["TotalMobs"] = totalImportedMobs;
-            trackerTotal.mobs["TotalMobs"] = totalImportedMobs;
-            trackerSession.mobs["TotalMobs"] = totalImportedMobs;
-
-            trackerMayor.items["Total Burrows"] = dianaStTracker.dug;
-            trackerTotal.items["Total Burrows"] = dianaStTracker.dug;
-            trackerSession.items["Total Burrows"] = dianaStTracker.dug;
-        }
-        ChatLib.chat("&6[SBO] &aTracker imported!");
+    let activePlayer = shConfig.storage.players[Player.getUUID()]
+    if (activePlayer == undefined) {
+        ChatLib.chat("&6[SBO] &cPlayer not found in skyhanni config.");
+        return;
     }
+    let activeProfile = activePlayer.profiles[profileName.toLowerCase()];
+    if (activeProfile == undefined) {
+        ChatLib.chat("&6[SBO] &cProfile not found. Please check if the profile name is correct.");
+        return;
+    }
+    let dianaShTracker = activeProfile.diana
+    
+    oldTracker.mayor = JSON.parse(JSON.stringify(trackerMayor))
+    oldTracker.total = JSON.parse(JSON.stringify(trackerTotal))
+    oldTracker.session = JSON.parse(JSON.stringify(trackerSession))
+    importedATracker = true;
+    if (importType == "overwrite") {
+        resetTracker("total");
+        resetTracker("mayor");
+        resetTracker("session");
+    }
+
+    transferTracker("items", importType, trackerTotal, dianaShTracker.dianaProfitTracker);
+    transferTracker("mobs", importType, trackerTotal, dianaShTracker.mythologicalMobTracker.count);
+
+    if (dianaShTracker.dianaProfitTrackerPerElectionSeason) {
+        if (dianaShTracker.dianaProfitTrackerPerElectionSeason[getDateMayorElected().getFullYear()]) {
+            transferTracker("items", importType, trackerMayor, dianaShTracker.dianaProfitTrackerPerElectionSeason[getDateMayorElected().getFullYear()-1]);
+        }
+    }
+    if (dianaShTracker.mythologicalMobTrackerPerElectionSeason) {
+        if (dianaShTracker.mythologicalMobTrackerPerElectionSeason[getDateMayorElected().getFullYear()]) {
+            transferTracker("mobs", importType, trackerMayor, dianaShTracker.mythologicalMobTrackerPerElectionSeason[getDateMayorElected().getFullYear()-1].count);
+        }
+    }
+    ChatLib.chat("&6[SBO] &aTracker imported!");
+    new TextComponent("&7[&bTo revert back to your old tracker, click here&7]").setClick("run_command", "/sboimporttrackerundo").setHover("show_text", "Click Me").chat();
     trackerMayor.save();
     trackerTotal.save();
     itemOverlay();
     mobOverlay();
 }
 
-function transferData(type, item, itemKey, ammount, importType) {
+function transferData(type, itemKey, ammount, importType, tracker) {
     if (type == "items") {
         if (importType == "overwrite") {
-            trackerMayor.items[itemKey] = ammount;
-            trackerTotal.items[itemKey] = ammount;
-            trackerSession.items[itemKey] = ammount;
+            tracker.items[itemKey] = ammount;
         }
         else if (importType == "add") {
-            trackerMayor.items[itemKey] += ammount;
-            trackerTotal.items[itemKey] += ammount;
-            trackerSession.items[itemKey] += ammount;
+            tracker.items[itemKey] += ammount;
         }
     }
     else if (type == "mobs") {
         if (importType == "overwrite") {
-            trackerMayor.mobs[itemKey] = ammount;
-            trackerTotal.mobs[itemKey] = ammount;
-            trackerSession.mobs[itemKey] = ammount;
+            tracker.mobs[itemKey] = ammount;
         }
         else if (importType == "add") {
-            trackerMayor.mobs[itemKey] += ammount;
-            trackerTotal.mobs[itemKey] += ammount;
-            trackerSession.mobs[itemKey] += ammount;
+            tracker.mobs[itemKey] += ammount;
         }
         totalImportedMobs += ammount;
     }
 }
 
+function transferTracker(type, importType, toTracker, fromTracker) { 
+    totalImportedMobs = 0;
+    if (type == "mobs") {
+        Object.keys(fromTracker).forEach((item) => {
+            let itemKey = item;
+            if (translateDictSh[item]) itemKey = translateDictSh[item];
+            transferData(type, itemKey, fromTracker[item], importType, toTracker);
+        });
+
+        if (importType == "overwrite") {
+            toTracker.mobs["TotalMobs"] = totalImportedMobs;
+        } else {
+            toTracker.mobs["TotalMobs"] += totalImportedMobs;
+        }
+    } else {
+        Object.keys(fromTracker.items).forEach((item) => {
+            let itemKey = item;
+            if (translateDictSh[item]) itemKey = translateDictSh[item];
+            transferData(type, itemKey, fromTracker.items[item].totalAmount, importType, toTracker);
+        });
+
+        if (importType == "overwrite") {
+            toTracker.items["Total Burrows"] = fromTracker.burrowsDug
+        } else {
+            toTracker.items["Total Burrows"] += fromTracker.burrowsDug
+        }
+    }
+}
 
 register("command", (args1, ...args) => {
     if (args1 != undefined) {
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
-        ChatLib.chat("&aFrom which mod do you want to import your Diana tracker?");
-        new TextComponent("&bSkyHanni, click here").setClick("run_command", "/dianatrackerimportcheck sh " + args1).setHover("show_text", "Click Me").chat();
-        new TextComponent("&bSkytils, click here").setClick("run_command", "/dianatrackerimportcheck st " + args1).setHover("show_text", "Click Me").chat();
+        ChatLib.chat("&aDo you want to overwrite or add on top of your current diana tracker");
+        new TextComponent("&7[&bTo overwrite, click here&7]").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " overwrite").setHover("show_text", "Click Me").chat();
+        new TextComponent("&7[&bTo add to your tracker, click here&7]").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " add").setHover("show_text", "Click Me").chat();
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
     } else {
         ChatLib.chat("&6[SBO] &eEnter your Profile name to import your Diana tracker. /sboimporttracker <profilename>");
@@ -626,38 +596,56 @@ register("command", (args1, ...args) => {
 register("command", (args1, args2, ...args) => {
     if (args1 != undefined && args2 != undefined) {
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
-        if (args1 == "sh")  ChatLib.chat("&a&lSkyHanni:");
-        else if (args1 == "st") ChatLib.chat("&a&lSkytils:");
-        ChatLib.chat("&aDo you want to overwrite or add on top of your current diana tracker");
-        new TextComponent("&bTo overwrite, click here").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " " + args2 + " overwrite").setHover("show_text", "Click Me").chat();
-        new TextComponent("&bTo add to your tracker, click here").setClick("run_command", "/dianatrackerimportcheck2 " + args1 + " " + args2 + " add").setHover("show_text", "Click Me").chat();
-        ChatLib.chat(ChatLib.getChatBreak("&b-"))
-    } else {
-        ChatLib.chat("&6[SBO] &cInvalid arguments. use /sboimporttracker <profilename>");
-    }
-}).setName("dianatrackerimportcheck");
-
-register("command", (args1, args2, args3, ...args) => {
-    if (args1 != undefined && args2 != undefined && args3 != undefined) {
-        ChatLib.chat(ChatLib.getChatBreak("&b-"))
-        if (args3 == "overwrite") {
+        if (args2 == "overwrite") {
             ChatLib.chat("&aAre you sure you want to overwrite your diana tracker? (Total, Mayor, Session)");
         }
-        else if (args3 == "add") {
+        else if (args2 == "add") {
             ChatLib.chat("&aAre you sure you want to add the imported tracker to your diana tracker? (Total, Mayor, Session)");
         }
-        new TextComponent("&bYES").setClick("run_command", "/dianatrackerimporttracker " + args1 + " " + args2 + " " + args3).setHover("show_text", "Click Me").chat();
+        new TextComponent("&7[&bYES&7]").setClick("run_command", "/dianatrackerimporttracker " + args1 + " " + args2).setHover("show_text", "Click Me").chat();
         ChatLib.chat(ChatLib.getChatBreak("&b-"))
     } else {
         ChatLib.chat("&6[SBO] &cInvalid arguments. use /sboimporttracker <profilename>");
     }
 }).setName("dianatrackerimportcheck2");
 
-register("command", (args1, args2, args3, ...args) => {
-    if (args1 != undefined && args2 != undefined && args3 != undefined) {
-        importDianaTracker(args1, args2, args3);
+register("command", (args1, args2, ...args) => {
+    if (args1 != undefined && args2 != undefined) {
+        importDianaTracker(args1, args2);
     }
     else {
         ChatLib.chat("&6[SBO] &cInvalid arguments. use /sboimporttracker <profilename>");
     }
 }).setName("dianatrackerimporttracker");
+
+register("command", () => {
+    if (importedATracker) {
+        ChatLib.chat("&6[SBO] &aReverted back to your old tracker.");
+        trackerMayor = Object.assign(trackerMayor, oldTracker.mayor);
+        trackerTotal = Object.assign(trackerTotal, oldTracker.total);
+        trackerSession = Object.assign(trackerSession, oldTracker.session);
+        trackerMayor.save();
+        trackerTotal.save();
+        itemOverlay();
+        mobOverlay();
+    }
+}).setName("sboimporttrackerundo");
+
+register("command", () => {
+    data.last10ChimMagicFind = [];
+    data.avgChimMagicFind = 0;
+    data.last10StickMagicFind = [];
+    data.avgStickMagicFind = 0;
+    data.save();
+    avgMagicFindOverlay();
+}).setName("sboresetavgmftracker");
+
+register("command", () => {
+    data.mobsSinceInq = 0;
+    data.inqsSinceChim = 0;
+    data.minotaursSinceStick = 0;
+    data.champsSinceRelic = 0;
+    data.inqsSinceLsChim = 0;
+    data.save();
+    statsOverlay();
+}).setName("sboresetstatstracker");

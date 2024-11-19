@@ -25,7 +25,7 @@ export function findZone() {
 
 registerWhen(register("step", () => {
     zone = findZone();
-}), () => true);
+}).setFps(1), () => true);
 
 // Function to find the current world and register/unregister features based on the world
 function findWorld() {

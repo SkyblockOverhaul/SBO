@@ -186,6 +186,20 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!chimls":
+        case "!chimerals":
+        case "!bookls":
+        case "!lschim":
+        case "!lsbook":
+        case "!lootsharechim":
+        case "!lschimera":
+            if (!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                percent = parseFloat((dianaTrackerMayor["items"]["ChimeraLs"] / dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2));
+                setTimeout(() => {
+                    ChatLib.command("pc Chimera LS: " + dianaTrackerMayor["items"]["ChimeraLs"] + " (" + percent + "%)")
+                }, 200)
+            }
         case "!stick":
         case "!sticks":
             if(!settings.dianaPartyCommands) break;
@@ -318,6 +332,7 @@ register("command", (args1, args2, ...args) => {
 register("command", () => {
     ChatLib.chat("&6[SBO] &eDiana party commands:")
     ChatLib.chat("&7> &a!chim")
+    ChatLib.chat("&7> &a!chimls")
     ChatLib.chat("&7> &a!stick")
     ChatLib.chat("&7> &a!relic")
     ChatLib.chat("&7> &a!feathers")
