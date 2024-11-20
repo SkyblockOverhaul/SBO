@@ -25,6 +25,28 @@ import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 import settings from "./settings";
 
+const commands = [
+    {cmd: "sbo", description: "Open the settings"},
+    {cmd: "sbo help", description: "Show this message"},
+    {cmd: "sboguis", description: "Open the GUIs and move them around (or: /sbomoveguis)"},
+    {cmd: "sboclearburrows", description: "Clear all burrow waypoints (or: /sbocb)"},
+    {cmd: "sbocheck <player>", description: "Check a player (or: /sboc <player>)"},
+    {cmd: "sbocheckp", description: "Check your party (alias /sbocp)"},
+    {cmd: "sboimporttracker <profilename>", description: "Import skyhanni/skytils tracker"},
+    {cmd: "sboimporttrackerundo", description: "Undo the tracker import"},
+    {cmd: "sbodc", description: "Diana dropchances"},
+    {cmd: "sbopartyblacklist", description: "Party commands blacklisting"},
+    {cmd: "sbobacktrackachivements", description: "Backtrack achievements"},
+    {cmd: "sboachievements", description: "Opens the achievements GUI"},
+    {cmd: "sbolockachievements", description: "Locks all Achievements (needs confirmation)"},
+    {cmd: "sbopde", description: "Opens the Past Diana Events GUI"},
+    {cmd: "sboactiveuser", description: "Shows the active user of the mod"},
+    {cmd: "sbopf", description: "Opens the PartyFinder GUI"},
+    {cmd: "sbopartycommands", description: "Displays all diana partycommands"},
+    {cmd: "sboresetavgmftracker", description: "Resets the avg mf tracker"},
+    {cmd: "sboresetstatstracker", description: "Resets the stats tracker"},
+];
+
 register("command", (args1, ...args) => {
     if (args1 == undefined) {
         settings.openGUI()
@@ -32,26 +54,12 @@ register("command", (args1, ...args) => {
         switch (args1.toLowerCase()) { 
             case "help":
                 ChatLib.chat("&6[SBO] &eCommands:")
-                ChatLib.chat("&7> &a/sbo &7- &eOpen the settings")
-                ChatLib.chat("&7> &a/sbo help &7- &eShow this message")
-                ChatLib.chat("&7> &a/sboguis &7- &eOpen the GUIs and move them around (or: /sbomoveguis)")
-                ChatLib.chat("&7> &a/sboclearburrows &7- &eClear all burrow waypoints (or: /sbocb)")
-                ChatLib.chat("&7> &a/sbocheck <player> &7- &eCheck a player (or: /sboc <player>)")
-                ChatLib.chat("&7> &a/sbocheckp &7- &eCheck your party (alias /sbocp)")
-                ChatLib.chat("&7> &a/sboimporttracker <profilename> &7- &eImport skyhanni/skytils tracker")
-                ChatLib.chat("&7> &a/sboimporttrackerundo &7- &eUndo the tracker import")
-                ChatLib.chat("&7> &a/sbodc &7- &eDiana dropchances")
-                ChatLib.chat("&7> &a/sbopartyblacklist &7- &eParty commands blacklisting")
-                ChatLib.chat("&7> &a/sbobacktrackachivements &7- &eBacktrack achievements")
-                ChatLib.chat("&7> &a/sboachievements &7- &eOpens the achievements GUI")
-                ChatLib.chat("&7> &a/sbolockachievements &7- &eLocks all Achievements (needs confirmation)")
-                ChatLib.chat("&7> &a/sbopde &7- &eOpens the Past Diana Events GUI")
-                ChatLib.chat("&7> &a/sboactiveuser &7- &eShows the active user of the mod")
-                ChatLib.chat("&7> &a/sbopf &7- &eOpens the PartyFinder GUI")
-                ChatLib.chat("&7> &a/sbopartycommands &7- &eDisplays all diana partycommands")
-                ChatLib.chat("&7> &a/sboresetavgmftracker &7- &eResets the avg mf tracker")
-                ChatLib.chat("&7> &a/sboresetstatstracker &7- &eResets the stats tracker")
-                break;
+                commands.forEach(({ cmd, description }) => {
+                    let text = new TextComponent("&7> &a/" + cmd + " &7- &e" + description)
+                    .setClick("run_command", "/" + cmd)
+                    .setHover("show_text", `&7Click to run &a/${cmd}`)
+                    text.chat()
+                }); break;
             default:
                 ChatLib.chat("&6[SBO] &eUnknown command. Use /sbo help for a list of commands")
                 break;

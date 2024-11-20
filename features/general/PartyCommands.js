@@ -27,7 +27,7 @@ const carrot = [
 
 register("command", (args1, args2, ...args) => {
     if(args1 == undefined) {
-        ChatLib.chat("&6[SBO] &aPlease use /sbopartycommands <command>")
+        ChatLib.chat("&6[SBO] &aPlease use /sbopartyblacklist <command>")
         ChatLib.chat("&6[SBO] &eadd <playername>")
         ChatLib.chat("&6[SBO] &eremove <playername>")
         ChatLib.chat("&6[SBO] &elist")
