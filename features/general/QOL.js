@@ -251,6 +251,9 @@ function calculatePercentage(timeInMillis, minTime, maxTime) {
 registerWhen(register("chat", (rarity) => {
     resetGoldenFish();
 }).setCriteria("TROPHY FISH! You caught a Golden Fish ${rarity}"), () => settings.goldenFishTimer && getWorld() == "Crimson Isle"); 
+registerWhen(register("chat", () => {
+    resetGoldenFish();
+}).setCriteria("&r&9The &r&6Golden Fish &r&9swims back beneath the lava...&r"), () => settings.goldenFishTimer && getWorld() == "Crimson Isle");
 
 registerWhen(register("chat", () => {
     ChatLib.chat("&6[SBO] &eA Golden Fish has spawned")
