@@ -302,33 +302,50 @@ register("chat", (player, message) => {
     }
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")
 
-register("command", (args1, args2, ...args) => {
-    if(args1 == undefined) {
-        ChatLib.chat("&6[SBO] &4Please provide the magic find value and looting value!")
-        ChatLib.chat("&6[SBO] &eUsage: /sbodropchance <magic find> <looting>")
+register("command", (magicFindArg, lootingArg) => {
+    const prefix = "&6[SBO]";
+    const usageMessage = `${prefix} &eUsage: /sbodropchance <magic find> <looting>`;
+    if (!magicFindArg || !lootingArg) {
+        ChatLib.chat(`${prefix} &4Please provide both the magic find and looting values!`);
+        ChatLib.chat(usageMessage);
         return;
     }
-    if(args2 == undefined) {
-        ChatLib.chat("&6[SBO] &4Please provide the looting value!")
-        ChatLib.chat("&6[SBO] &eUsage: /sbodropchance <magic find> <looting>")
+    const magicFind = parseInt(magicFindArg);
+    const looting = parseInt(lootingArg);
+    if (magicFind < 0 || looting < 0) {
+        ChatLib.chat(`${prefix} &4Please provide positive numbers!`);
+        ChatLib.chat(usageMessage);
         return;
     }
-    if(parseInt(args1) < 0 || parseInt(args2) < 0) {
-        ChatLib.chat("&6[SBO] &4Please provide a positive number!")
-        ChatLib.chat("&6[SBO] &eUsage: /sbodropchance <magic find> <looting>")
-        return;
+    const formatChances = (chance, label) => `${formatChanceAsPercentage(chance)}${formatChanceAsFraction(chance)} ${label}`;
+    const [chimChance, stickChance, relicChance] = getChance(magicFind, looting);
+    const [chimChanceLs, stickChanceLs, relicChanceLs] = getChance(magicFind, looting, true);
+    const chances = [
+        { name: "Chimera", chance: chimChance, label: getMagicFindAndLooting(magicFind, looting) },
+        { name: "Stick", chance: stickChance, label: getMagicFindAndLooting(magicFind, looting) },
+        { name: "Relic", chance: relicChance, label: getMagicFindAndLooting(magicFind, looting) },
+        { name: "Chimera", chance: chimChanceLs, label: `&7[MF:${magicFind}]`, ls: true },
+        { name: "Stick", chance: stickChanceLs, label: `&7[MF:${magicFind}]`, ls: true },
+        { name: "Relic", chance: relicChanceLs, label: `&7[MF:${magicFind}]`, ls: true },
+    ];
+    chances.forEach(({ name, chance, label, ls }) => {
+        const lsPrefix = ls ? "&7[&bLS&7] " : "";
+        ChatLib.chat(`${prefix} ${lsPrefix}&e${name} Chance: &b${formatChances(chance, label)}`);
+    });
+}).setName("sbodropchance").setAliases("sbodc");
+
+function getChance(magicFind, looting, lootshare = false) {
+    const baseChances = { chim: 0.01, stick: 0.0008, relic: 0.0002 };
+    const multiplier = 1 + magicFind / 100;
+
+    if (lootshare) {
+        const factor = multiplier / 5;
+        return Object.values(baseChances).map(base => base * factor);
     }
-    let magicfind = parseInt(args1);
-    let looting = parseInt(args2);
-    let [chimChance, stickChance, relicChance] = getChance(magicfind, looting);
-    let [chimChanceLs, stickChanceLs, relicChanceLs] = getChance(magicfind, looting, true);
-    ChatLib.chat("&6[SBO] &eChimera Chance: &b" + formatChanceAsPercentage(chimChance) + formatChanceAsFraction(chimChance) + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &eStick Chance: &b" + formatChanceAsPercentage(stickChance) + formatChanceAsFraction(stickChance) + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &eRelic Chance: &b" + formatChanceAsPercentage(relicChance) + formatChanceAsFraction(relicChance) + getMagicFindAndLooting(magicfind, looting))
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eChimera Chance: &b" + formatChanceAsPercentage(chimChanceLs) + formatChanceAsFraction(chimChanceLs) + " &7[MF:" + magicfind + "]")
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eStick Chance: &b" + formatChanceAsPercentage(stickChanceLs) + formatChanceAsFraction(stickChanceLs) + " &7[MF:" + magicfind + "]")
-    ChatLib.chat("&6[SBO] &7[&bLS&7] &eRelic Chance: &b" + formatChanceAsPercentage(relicChanceLs) + formatChanceAsFraction(relicChanceLs) + " &7[MF:" + magicfind + "]")
-}).setName("sbodropchance").setAliases("sbodc")
+
+    const lootingMultiplier = 1 + looting * 0.15;
+    return Object.values(baseChances).map(base => base * multiplier * lootingMultiplier);
+}
 
 register("command", () => {
     ChatLib.chat("&6[SBO] &eDiana party commands:")
@@ -343,26 +360,6 @@ register("command", () => {
     ChatLib.chat("&7> &a!burrows")
     ChatLib.chat("&7> &a!since (chim, chimls, relic, stick, inq)")
 }).setName("sbopartycommands").setAliases("sbopcom")
-
-function getChance(magicfind, looting, lootshare = false) { 
-
-    const chimBaseChance = 0.01;
-    const stickBaseChance = 0.0008;
-    const relicBaseChance = 0.0002;
-
-    if(lootshare) {
-        let chimChanceLs = (chimBaseChance * (1 + magicfind / 100)) / 5;
-        let stickChanceLs = (stickBaseChance * (1 + magicfind / 100)) / 5;
-        let relicChanceLs = (relicBaseChance * (1 + magicfind / 100)) / 5;
-        return [chimChanceLs, stickChanceLs, relicChanceLs];
-    }
-    else{
-        let chimChance = chimBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-        let stickChance = stickBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-        let relicChance = relicBaseChance * (1 + magicfind / 100) * (1 + looting * 0.15);
-        return [chimChance, stickChance, relicChance];
-    }
-}
 
 function formatChanceAsPercentage(chance) {
     return (chance * 100).toFixed(2) + "%";

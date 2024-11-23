@@ -34,6 +34,12 @@ class EvictingQueue {
 }
 
 const S2APacketParticles = net.minecraft.network.play.server.S2APacketParticles
+const getParticleName = packet => packet.func_179749_a();
+const getParticleCount = packet => parseInt(packet.func_149222_k());
+const getParticleSpeed = packet => parseFloat(packet.func_149227_j());
+const getXOffset = packet => parseFloat(packet.func_149221_g());
+const getYOffset = packet => parseFloat(packet.func_149224_h());
+const getZOffset = packet => parseFloat(packet.func_149223_i());
 
 class ParticleType {
     constructor(typeCheck) {
@@ -43,68 +49,68 @@ class ParticleType {
 
 const ParticleTypes = {
     EMPTY: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "CRIT_MAGIC" &&
-        parseInt(packet.func_149222_k()) == 4 &&
-        parseFloat(packet.func_149227_j()).toFixed(2) == 0.01 &&
-        parseFloat(packet.func_149221_g()).toFixed(1) == 0.5 &&
-        parseFloat(packet.func_149224_h()).toFixed(1) == 0.1 &&
-        parseFloat(packet.func_149223_i()).toFixed(1) == 0.5
+        getParticleName(packet).toString() == "CRIT_MAGIC" &&
+        getParticleCount(packet) == 4 &&
+        getParticleSpeed(packet).toFixed(2) == 0.01 &&
+        getXOffset(packet).toFixed(1) == 0.5 &&
+        getYOffset(packet).toFixed(1) == 0.1 &&
+        getZOffset(packet).toFixed(1) == 0.5
     ),
     MOB: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "CRIT" &&
-        parseInt(packet.func_149222_k()) == 3 &&
-        parseFloat(packet.func_149227_j()).toFixed(2) == 0.01 &&
-        parseFloat(packet.func_149221_g()).toFixed(2) == 0.5 &&
-        parseFloat(packet.func_149224_h()).toFixed(1) == 0.1 &&
-        parseFloat(packet.func_149223_i()).toFixed(2) == 0.5
+        getParticleName(packet).toString() == "CRIT" &&
+        getParticleCount(packet) == 3 &&
+        getParticleSpeed(packet).toFixed(2) == 0.01 &&
+        getXOffset(packet).toFixed(2) == 0.5 &&
+        getYOffset(packet).toFixed(1) == 0.1 &&
+        getZOffset(packet).toFixed(2) == 0.5
     ),
     TREASURE: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "DRIP_LAVA" &&
-        parseInt(packet.func_149222_k()) == 2 &&
-        parseFloat(packet.func_149227_j()).toFixed(2) == 0.01 &&
-        parseFloat(packet.func_149221_g()).toFixed(2) == 0.35 &&
-        parseFloat(packet.func_149224_h()).toFixed(1) == 0.1 &&
-        parseFloat(packet.func_149223_i()).toFixed(2) == 0.35
+        getParticleName(packet).toString() == "DRIP_LAVA" &&
+        getParticleCount(packet) == 2 &&
+        getParticleSpeed(packet).toFixed(2) == 0.01 &&
+        getXOffset(packet).toFixed(2) == 0.35 &&
+        getYOffset(packet).toFixed(1) == 0.1 &&
+        getZOffset(packet).toFixed(2) == 0.35
     ),
     FOOTSTEP: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "FOOTSTEP" &&
-        parseInt(packet.func_149222_k()) == 1 &&
-        parseInt(packet.func_149227_j()) == 0 &&
-        parseFloat(packet.func_149221_g().toFixed(2)) == 0.05 &&
-        parseInt(packet.func_149224_h()) == 0 &&
-        parseFloat(packet.func_149223_i().toFixed(2)) == 0.05
+        getParticleName(packet).toString() == "FOOTSTEP" &&
+        getParticleCount(packet) == 1 &&
+        getParticleSpeed(packet) == 0 &&
+        getXOffset(packet).toFixed(2) == 0.05 &&
+        getYOffset(packet) == 0 &&
+        getZOffset(packet).toFixed(2) == 0.05
     ),
     ENCHANT: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "ENCHANTMENT_TABLE" &&
-        parseInt(packet.func_149222_k()) == 5 &&
-        parseFloat(packet.func_149227_j()).toFixed(2) == 0.05 &&
-        parseFloat(packet.func_149221_g()).toFixed(1) == 0.5 &&
-        parseFloat(packet.func_149224_h()).toFixed(1) == 0.4 &&
-        parseFloat(packet.func_149223_i()).toFixed(1) == 0.5
+        getParticleName(packet).toString() == "ENCHANTMENT_TABLE" &&
+        getParticleCount(packet) == 5 &&
+        getParticleSpeed(packet).toFixed(2) == 0.05 &&
+        getXOffset(packet).toFixed(1) == 0.5 &&
+        getYOffset(packet).toFixed(1) == 0.4 &&
+        getZOffset(packet).toFixed(1) == 0.5
     ),
     FAR: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "REDSTONE" &&
-        parseInt(packet.func_149222_k()) == 0 &&
-        parseInt(packet.func_149227_j()) == 1 &&
-        parseInt(packet.func_149221_g()) == 1 &&
-        parseFloat(packet.func_149224_h()).toPrecision(1) == 0 &&
-        parseInt(packet.func_149223_i()) == 0
+        getParticleName(packet).toString() == "REDSTONE" &&
+        getParticleCount(packet) == 0 &&
+        getParticleSpeed(packet) == 1 &&
+        getXOffset(packet) == 1 &&
+        getYOffset(packet).toPrecision(1) == 0 &&
+        getZOffset(packet) == 0
     ),
     MEDIUM: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "REDSTONE" &&
-        parseInt(packet.func_149222_k()) == 0 &&
-        parseInt(packet.func_149227_j()) == 1 &&
-        parseInt(packet.func_149221_g()) == 1 &&
-        parseFloat(packet.func_149224_h()).toPrecision(1) == 1 &&
-        parseInt(packet.func_149223_i()) == 0
+        getParticleName(packet).toString() == "REDSTONE" &&
+        getParticleCount(packet) == 0 &&
+        getParticleSpeed(packet) == 1 &&
+        getXOffset(packet) == 1 &&
+        getYOffset(packet).toPrecision(1) == 1 &&
+        getZOffset(packet) == 0
     ),
     CLOSE: new ParticleType(packet =>
-        packet.func_179749_a().toString() == "REDSTONE" &&
-        parseInt(packet.func_149222_k()) == 0 &&
-        parseInt(packet.func_149227_j()) == 1 &&
-        parseInt(packet.func_149221_g()) == 0 &&
-        parseFloat(packet.func_149224_h()).toPrecision(1) == 0.5 &&
-        parseInt(packet.func_149223_i()) == 0
+        getParticleName(packet).toString() == "REDSTONE" &&
+        getParticleCount(packet) == 0 &&
+        getParticleSpeed(packet) == 1 &&
+        getXOffset(packet) == 0 &&
+        getYOffset(packet).toPrecision(1) == 0.5 &&
+        getZOffset(packet) == 0
     )
 };
 
