@@ -200,6 +200,7 @@ register("chat", (player, message) => {
                     ChatLib.command("pc Chimera LS: " + dianaTrackerMayor["items"]["ChimeraLs"] + " (" + percent + "%)")
                 }, 200)
             }
+            break
         case "!stick":
         case "!sticks":
             if(!settings.dianaPartyCommands) break;
