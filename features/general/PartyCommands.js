@@ -303,18 +303,16 @@ register("chat", (player, message) => {
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")
 
 register("command", (magicFindArg, lootingArg) => {
-    const prefix = "&6[SBO]";
-    const usageMessage = `${prefix} &eUsage: /sbodropchance <magic find> <looting>`;
     if (!magicFindArg || !lootingArg) {
-        ChatLib.chat(`${prefix} &4Please provide both the magic find and looting values!`);
-        ChatLib.chat(usageMessage);
+        ChatLib.chat(`&6[SBO] &4Please provide both the magic find and looting values!`);
+        ChatLib.chat(`&6[SBO] &eUsage: /sbodropchance <magic find> <looting>`);
         return;
     }
     const magicFind = parseInt(magicFindArg);
     const looting = parseInt(lootingArg);
     if (magicFind < 0 || looting < 0) {
-        ChatLib.chat(`${prefix} &4Please provide positive numbers!`);
-        ChatLib.chat(usageMessage);
+        ChatLib.chat(`&6[SBO] &4Please provide positive numbers!`);
+        ChatLib.chat(`&6[SBO] &eUsage: /sbodropchance <magic find> <looting>`);
         return;
     }
     const formatChances = (chance, label) => `${formatChanceAsPercentage(chance)}${formatChanceAsFraction(chance)} ${label}`;
@@ -330,7 +328,7 @@ register("command", (magicFindArg, lootingArg) => {
     ];
     chances.forEach(({ name, chance, label, ls }) => {
         const lsPrefix = ls ? "&7[&bLS&7] " : "";
-        ChatLib.chat(`${prefix} ${lsPrefix}&e${name} Chance: &b${formatChances(chance, label)}`);
+        ChatLib.chat(`&6[SBO] ${lsPrefix}&e${name} Chance: &b${formatChances(chance, label)}`);
     });
 }).setName("sbodropchance").setAliases("sbodc");
 
