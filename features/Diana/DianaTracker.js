@@ -47,6 +47,10 @@ export function dianaLootCounter(item, amount) {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
                     }
+                    if (settings.lootAnnouncerParty) {
+                        ChatLib.command("pc [SBO] RARE DROP! Minos Relic!");
+
+                    }
                     playCustomSound(settings.relicSound, settings.relicVolume);
                 }
                 for (let i in rareDrops.values()) {
@@ -342,6 +346,13 @@ registerWhen(register("chat", (drop, event) => {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
                     }
+                    if (settings.lootAnnouncerParty) {
+                        if (replaceChimMessage) {
+                            ChatLib.command("pc " + customChimMessage);
+                        } else {
+                            ChatLib.command("pc [SBO] RARE DROP! Chimera!");
+                        }
+                    }
                 }
                 else {
                     if (magicFind > 0) trackMagicFind(magicFind, true);
@@ -378,6 +389,13 @@ registerWhen(register("chat", (drop, event) => {
                     if (replaceChimMessage) {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
+                    }
+                    if (settings.lootAnnouncerParty) {
+                        if (replaceChimMessage) {
+                            ChatLib.command("pc " + customChimMessage);
+                        } else {
+                            ChatLib.command("pc [SBO] RARE DROP! Chimera!");
+                        }
                     }
                 }
                 break;
@@ -421,6 +439,9 @@ registerWhen(register("chat", (drop, event) => {
                     else {
                         Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                     }
+                }
+                if (settings.lootAnnouncerParty) {
+                    ChatLib.command("pc [SBO] RARE DROP! Daedalus Stick!");
                 }
 
                 playCustomSound(settings.stickSound, settings.stickVolume);
