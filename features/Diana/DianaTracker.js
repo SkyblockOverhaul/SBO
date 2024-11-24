@@ -350,7 +350,7 @@ registerWhen(register("chat", (drop, event) => {
                         if (replaceChimMessage) {
                             ChatLib.command("pc " + customChimMessage);
                         } else {
-                            ChatLib.command("pc [SBO] RARE DROP! Chimera!");
+                            ChatLib.command("pc [SBO] RARE DROP! Chimera!" + "(+" + magicFind + "%" + " ✯ Magic Find)");
                         }
                     }
                 }
@@ -394,7 +394,7 @@ registerWhen(register("chat", (drop, event) => {
                         if (replaceChimMessage) {
                             ChatLib.command("pc " + customChimMessage);
                         } else {
-                            ChatLib.command("pc [SBO] RARE DROP! Chimera!");
+                            ChatLib.command("pc [SBO] RARE DROP! Chimera!" + "(+" + magicFind + "%" + " ✯ Magic Find)");
                         }
                     }
                 }
@@ -441,7 +441,7 @@ registerWhen(register("chat", (drop, event) => {
                     }
                 }
                 if (settings.lootAnnouncerParty) {
-                    ChatLib.command("pc [SBO] RARE DROP! Daedalus Stick!");
+                    ChatLib.command("pc [SBO] RARE DROP! Daedalus Stick!" + "(+" + magicFind + "%" + " ✯ Magic Find)");
                 }
 
                 playCustomSound(settings.stickSound, settings.stickVolume);
