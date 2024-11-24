@@ -441,7 +441,7 @@ registerWhen(register("chat", (drop, event) => {
                     }
                 }
                 if (settings.lootAnnouncerParty) {
-                    ChatLib.command("pc [SBO] RARE DROP! Chimera!");
+                    ChatLib.command("pc [SBO] RARE DROP! Daedalus Stick!");
                 }
 
                 playCustomSound(settings.stickSound, settings.stickVolume);
