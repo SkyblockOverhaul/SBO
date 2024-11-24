@@ -409,13 +409,13 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerPrice = true;
-    lootAnnouncerParty = false;
     @SwitchProperty({
         name: 'Loot Party Announcer',
         description: 'Announce chimera/stick/relic to party',
         category: 'Diana',
         subcategory: 'Loot Announcer',
     })
+    lootAnnouncerParty = false;
 
     //Party Commands
     @SwitchProperty({
