@@ -321,7 +321,7 @@ registerWhen(register("chat", (drop, event) => {
     if (isDataLoaded() && checkDiana() && isInSkyblock()) {
         let magicFind = getMagicFind(drop);
         let mfPrefix = "";
-        if (magicFind > 0) mfPrefix = "(+" + magicFind + "%" + " ✯ Magic Find)";
+        if (magicFind > 0) mfPrefix = " (+" + magicFind + "%" + " ✯ Magic Find)";
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
