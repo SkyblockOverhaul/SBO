@@ -10,11 +10,11 @@ export function getMobsToDisplay() {
     return names;
 }
 
-function checkSendInqMsg() {
+function checkSendInqMsg(since) {
     let text = settings.announceKilltext;
     if (text != "") {
         if (text.includes("{since}")) {
-            let since = data.mobsSinceInq
+
             text = text.replace(/{since}/g, since);
         }
         if (text.includes("{chance}")) {
@@ -29,12 +29,13 @@ function checkSendInqMsg() {
 
 registerWhen(register("chat", (woah, skytils) => {
     if (checkDiana()) {
+        let since = data.mobsSinceInq
         if(settings.inquisDetect) {
             ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
         }
         if(settings.announceKilltext !== "") {
             setTimeout(function() {
-                let [send, text] = checkSendInqMsg();
+                let [send, text] = checkSendInqMsg(since);
                 if (send) {
                     ChatLib.command("pc " + text);
                 }
@@ -44,7 +45,7 @@ registerWhen(register("chat", (woah, skytils) => {
 }).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!${skytils}"), () => settings.inquisDetect || settings.announceKilltext);
 
 register("command", () => {
-    let [send, text] = checkSendInqMsg();
+    let [send, text] = checkSendInqMsg(data.mobsSinceInq);
     if (send) {
         ChatLib.chat(text);
     }
