@@ -333,6 +333,18 @@ registerWhen(register("chat", (drop, event) => {
                         Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                     }
                 }
+                let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                if (replaceChimMessage) {
+                    cancel(event)
+                    ChatLib.chat(customChimMessage);
+                }
+                if (settings.lootAnnouncerParty) {
+                    if (replaceChimMessage) {
+                        ChatLib.command("pc " + customChimMessage);
+                    } else {
+                        ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
+                    }
+                }
 
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare()) {
@@ -343,18 +355,6 @@ registerWhen(register("chat", (drop, event) => {
                         data.inqsSinceLsChim = 0;
                     }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
-                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if (replaceChimMessage) {
-                        cancel(event)
-                        ChatLib.chat(customChimMessage);
-                    }
-                    if (settings.lootAnnouncerParty) {
-                        if (replaceChimMessage) {
-                            ChatLib.command("pc " + customChimMessage);
-                        } else {
-                            ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
-                        }
-                    }
                 }
                 else {
                     if (magicFind > 0) trackMagicFind(magicFind, true);
@@ -387,18 +387,6 @@ registerWhen(register("chat", (drop, event) => {
                     }
 
                     data.inqsSinceChim = 0;
-                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if (replaceChimMessage) {
-                        cancel(event)
-                        ChatLib.chat(customChimMessage);
-                    }
-                    if (settings.lootAnnouncerParty) {
-                        if (replaceChimMessage) {
-                            ChatLib.command("pc " + customChimMessage);
-                        } else {
-                            ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
-                        }
-                    }
                 }
                 break;
             case "Daedalus Stick":
