@@ -136,63 +136,6 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     warpDiff = "10";
-    @SwitchProperty({
-        name: "Use Individual Warp Penalties",
-        description: "Enables you to set an individual distance penalty for each warp, if you want to favor certain warps over others",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    individualWarpPenalties = false;
-    @NumberProperty({
-        name: "Hub Warp Penalty",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    hubWarpPenalty = 0;
-    @NumberProperty({
-        name: "Crypt Warp Penalty",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    cryptWarpPenalty = 0;
-    @NumberProperty({
-        name: "Wizard Warp Penalty",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    wizardWarpPenalty = 0;
-    @NumberProperty({
-        name: "Stonks Warp Penalty",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    stonksWarpPenalty = 0;
-    @NumberProperty({
-        name: "Castle Warp Penalty",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    castleWarpPenalty = 0;
-    @NumberProperty({
-        name: "Dark Auction Warp Penalty",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    darkAuctionWarpPenalty = 0;
-    @NumberProperty({
-        name: "Museum Warp Penalty",
-        category: "Diana",
-        subcategory: "Warps",
-        min: 0, max: 50, increment: 10
-    })
-    museumWarpPenalty = 0;
 
     // --- Diana Tracker ---
     @SwitchProperty({
@@ -1020,6 +963,65 @@ class Settings {
         max: 100
     })
     achievementVolume = 50;
+
+    // Individual Warp Penalties
+    @SwitchProperty({
+        name: "Use Individual Warp Penalties",
+        description: "Enables you to set an individual distance penalty for each warp, if you want to favor certain warps over others",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    individualWarpPenalties = false;
+    @NumberProperty({
+        name: "Hub Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    hubWarpPenalty = 0;
+    @NumberProperty({
+        name: "Crypt Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    cryptWarpPenalty = 0;
+    @NumberProperty({
+        name: "Wizard Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    wizardWarpPenalty = 0;
+    @NumberProperty({
+        name: "Stonks Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    stonksWarpPenalty = 0;
+    @NumberProperty({
+        name: "Castle Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    castleWarpPenalty = 0;
+    @NumberProperty({
+        name: "Dark Auction Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    darkAuctionWarpPenalty = 0;
+    @NumberProperty({
+        name: "Museum Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    museumWarpPenalty = 0;
 
     // Partyfinder
     @SwitchProperty({
