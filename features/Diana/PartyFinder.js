@@ -428,7 +428,6 @@ register("chat", (toFrom, player, id, event) => {
         // join request message
         if (partyCount < 6) {
             player = getplayername(player);
-            print(player);
             if (settings.autoInvite) {
                 ChatLib.chat("&6[SBO] &eSending invite to " + player);
                 ChatLib.command("p invite " + player);
