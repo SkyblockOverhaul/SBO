@@ -1,20 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import {
-    isInSkyblock,
-    toTitleCase,
-    gotLootShare,
-    getAllowedToTrackSacks,
-    playCustomSound,
-    calcPercent,
-    mobDeath4SecsTrue,
-    getBazaarPriceDiana,
-    getDianaAhPrice,
-    formatNumber,
-    getMagicFind,
-    mobDeathEntityName
-} from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, mobDeathEntityName } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -351,7 +338,6 @@ registerWhen(register("chat", (drop, event) => {
                         Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                     }
                 }
-
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare()) {
                     if (settings.sendSinceMessage) {
@@ -361,18 +347,6 @@ registerWhen(register("chat", (drop, event) => {
                         data.inqsSinceLsChim = 0;
                     }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
-                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if (replaceChimMessage) {
-                        cancel(event)
-                        ChatLib.chat(customChimMessage);
-                    }
-                    if (settings.lootAnnouncerParty || settings.inquisAnnouncerParty) {
-                        if (replaceChimMessage) {
-                            ChatLib.command("pc " + customChimMessage);
-                        } else {
-                            ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
-                        }
-                    }
                 }
                 else {
                     if (magicFind > 0) trackMagicFind(magicFind, true);
@@ -405,17 +379,17 @@ registerWhen(register("chat", (drop, event) => {
                     }
 
                     data.inqsSinceChim = 0;
-                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                }
+                let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                if (replaceChimMessage) {
+                    cancel(event)
+                    ChatLib.chat(customChimMessage);
+                }
+                if (settings.lootAnnouncerParty || settings.inquisAnnouncerParty) {
                     if (replaceChimMessage) {
-                        cancel(event)
-                        ChatLib.chat(customChimMessage);
-                    }
-                    if (settings.lootAnnouncerParty || settings.inquisAnnouncerParty) {
-                        if (replaceChimMessage) {
-                            ChatLib.command("pc " + customChimMessage);
-                        } else {
-                            ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
-                        }
+                        ChatLib.command("pc " + customChimMessage.removeFormatting());
+                    } else {
+                        ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
                     }
                 }
                 break;
