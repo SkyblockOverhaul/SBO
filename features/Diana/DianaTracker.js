@@ -1,7 +1,20 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind } from '../../utils/functions';
+import {
+    isInSkyblock,
+    toTitleCase,
+    gotLootShare,
+    getAllowedToTrackSacks,
+    playCustomSound,
+    calcPercent,
+    mobDeath4SecsTrue,
+    getBazaarPriceDiana,
+    getDianaAhPrice,
+    formatNumber,
+    getMagicFind,
+    mobDeathEntityName
+} from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -65,6 +78,11 @@ export function dianaLootCounter(item, amount) {
                         }
                         if (settings.lootAnnouncerChat) {
                             ChatLib.chat("&6[SBO] &r&6&lRARE DROP! " + color + tempString);
+                        }
+                        if (settings.inquisAnnouncerParty) {
+                            if (mobDeathEntityName() === "Minos Inquisitor") {
+                                ChatLib.command("pc [SBO] RARE DROP! " + tempString)
+                            }
                         }
                         if (item != "MINOS_RELIC") {
                             playCustomSound(settings.sprSound, settings.sprVolume);
