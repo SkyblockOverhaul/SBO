@@ -382,7 +382,7 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 if (settings.lootAnnouncerParty) {
                     if (replaceChimMessage) {
-                        ChatLib.command("pc " + customChimMessage);
+                        ChatLib.command("pc " + customChimMessage.removeFormatting());
                     } else {
                         ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
                     }
