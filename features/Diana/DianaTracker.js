@@ -366,7 +366,7 @@ registerWhen(register("chat", (drop, event) => {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
                     }
-                    if (settings.lootAnnouncerParty) {
+                    if (settings.lootAnnouncerParty || settings.inquisAnnouncerParty) {
                         if (replaceChimMessage) {
                             ChatLib.command("pc " + customChimMessage);
                         } else {
@@ -410,7 +410,7 @@ registerWhen(register("chat", (drop, event) => {
                         cancel(event)
                         ChatLib.chat(customChimMessage);
                     }
-                    if (settings.lootAnnouncerParty) {
+                    if (settings.lootAnnouncerParty || settings.inquisAnnouncerParty) {
                         if (replaceChimMessage) {
                             ChatLib.command("pc " + customChimMessage);
                         } else {
