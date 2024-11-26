@@ -159,7 +159,13 @@ export function mobDeath2SecsTrue() {
 // return 4sec long true if entity death occurred //
 export function mobDeath4SecsTrue() {
     return state2.entityDeathOccurred;
-}   
+}
+
+// return entity name of recently died mob
+let entityDeathName = "";
+export function mobDeathEntityName() {
+    return entityDeathName;
+}
 
 let allowedToTrackSacks = false;
 export function getAllowedToTrackSacks() {
@@ -206,8 +212,10 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             state2.entityDeathOccurred = true;
+            entityDeathName = entityName.trim();
             setTimeout(() => {
                 state.entityDeathOccurred = false;
+                entityDeathName = "";
             }, 2000);
             setTimeout(() => {
                 state2.entityDeathOccurred = false;
