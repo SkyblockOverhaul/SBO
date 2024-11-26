@@ -338,7 +338,7 @@ const partyDisbanded = [
     /^.+ &r&ehas disbanded the party!&r$/,
     /^&cThe party was disbanded because (.+)$/,
     /^&eYou left the party.&r$/,
-    /^&cYou are not currently in a party\.$/,
+    /^&cYou are not currently in a party\.$/, // not working
     /^&eYou have been kicked from the party by .+$/
 ] 
 const leaderMessages = [ // promoted to party leader message missing
@@ -469,13 +469,14 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     if (party.length == 0) party.push(Player.getUUID());
     partyCount = party.length;
     if (creatingParty) {
-        creatingParty = false;
         if (party[0] != Player.getUUID() && party.length > 1) {
             ChatLib.chat("&6[SBO] &eYou are not the party leader. Only party leader can queue with the party.");
+            creatingParty = false;
             return;
         }
         if (party.length > 5) {
             ChatLib.chat("&6[SBO] &eParty members limit reached. You can only queue with up to 5 members.");
+            creatingParty = false;
             return;
         }
         request({
@@ -486,13 +487,16 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
                 let timeTaken = Date.now() - createPartyTimeStamp;
                 ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
                 inQueue = true; 
+                creatingParty = false;
                 if (inParty) ChatLib.command("pc [SBO] Party now in queue.");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);
                 inQueue = false;
+                creatingParty = false;
             }
         }).catch((error)=> {
             inQueue = false;
+            creatingParty = false;
             if (error.detail) {
                 ChatLib.chat("&6[SBO] &4Error1: " + error.detail);
             } else {

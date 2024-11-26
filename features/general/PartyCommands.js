@@ -160,6 +160,7 @@ register("chat", (player, message) => {
         case "!inq":
         case "!inqs":
         case "!inquisitor":
+        case "!inquis":
             if(!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(() => {
@@ -263,6 +264,7 @@ register("chat", (player, message) => {
                     case "inq":
                     case "inqs":
                     case "inquisitor":
+                    case "inquis":
                         setTimeout(() => {
                             ChatLib.command("pc Mobs since inq: " + data.mobsSinceInq)
                         }, 200)
