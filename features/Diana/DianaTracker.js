@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -262,20 +262,16 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
 
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
-                let currentTime = Date.now();
-                let timeDiff = currentTime - data.lastInqDate;
-                let hours = Math.floor(timeDiff / (1000 * 60 * 60));
-                let minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                let seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-                let timeString = `${hours}h ${minutes}m ${seconds}s`;
-
+                
+                let playtimeSinceInq = formatTimeMinSec(trackerTotal["items"]["totalTime"] - data.lastInqDate);
+                let msg = `&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${playtimeSinceInq}&e to get an Inquis!`;
                 if(data.lastInqDate && data.lastInqDate !== 0) {
-                    new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${timeString}&e to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs and ${timeString} to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                    new TextComponent(msg).setClick("run_command", "/ct copy " + msg).setHover("show_text", "&eClick To Copy").chat();
                 }
                 else {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
                 }
-                data.lastInqDate = Date.now();
+                data.lastInqDate = trackerTotal["items"]["totalTime"];
 
                 if (b2bInq && data.mobsSinceInq == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")

@@ -659,12 +659,12 @@ register("guiClosed", (event) => {
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
-    data.save();
-    dianaTrackerTotal.save();
-    dianaTrackerSession.save();
-    dianaTrackerMayor.save();
-    pastDianaEvents.save();
-    achievementsData.save();
+    // data.save();
+    // dianaTrackerTotal.save();
+    // dianaTrackerSession.save();
+    // dianaTrackerMayor.save();
+    // pastDianaEvents.save();
+    // achievementsData.save();
     mainCheckboxes.save();
     mainInputFields.save();
 });

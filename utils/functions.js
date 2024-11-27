@@ -753,13 +753,10 @@ export function formatTime(milliseconds) {
 
 export function formatTimeMinSec(milliseconds) {
     const totalSeconds = parseInt(milliseconds / 1000);
-    const totalMinutes = parseInt(totalSeconds / 60);
-    const minutes = totalMinutes % 60;
+    const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
 
-    let formattedTime = `${minutes}m ${seconds}s`;
-
-    return formattedTime;
+    return `${minutes}m ${seconds}s`;
 }
 
 let dianaMayorTotalProfit = 0;
@@ -1504,30 +1501,6 @@ export function getDianaStats(useCallback = false, callback = null) {
         });
     }
 }
-
-// export class SboTimeoutFunction {
-//     static timeoutList = [];
-//     constructor(func, timeout) {
-//         this.func = func;
-//         this.timeout = timeout;
-//         this.timestamp = Date.now();
-//         this.id = SboTimeoutFunction.timeoutList.length;
-//         SboTimeoutFunction.timeoutList.push(this);
-//     }
-
-//     clearTimeout() {
-//         SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
-//     }
-// }
-
-// register("step", () => {
-//     SboTimeoutFunction.timeoutList.forEach((timeout) => {
-//         if (Date.now() - timeout.timestamp >= timeout.timeout) {
-//             timeout.func();
-//             timeout.clearTimeout();
-//         }
-//     });
-// }).setFps(6);
 
 const Runnable = Java.type("java.lang.Runnable");
 const Executors = Java.type("java.util.concurrent.Executors");

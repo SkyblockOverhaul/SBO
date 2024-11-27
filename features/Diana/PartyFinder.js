@@ -102,6 +102,7 @@ function printCheckedPlayer(playerinfo) {
         trackWithCheckPlayer(playerinfo);
         new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
         data.dianaStats = playerinfo;
+        data.save();
     }
     else {
         new Message(
