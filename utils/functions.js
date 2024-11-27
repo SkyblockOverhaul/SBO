@@ -1649,3 +1649,20 @@ export function filterTextInput(list) {
         object.text = text
     })
 }
+
+export function checkSendInqMsg(since) {
+    let text = settings.announceKilltext;
+    if (text != "") {
+        if (text.includes("{since}")) {
+
+            text = text.replace(/{since}/g, since);
+        }
+        if (text.includes("{chance}")) {
+            let chance = calcPercentOne(trackerMayor, "Minos Inquisitor")
+            text = text.replace(/{chance}/g, chance);
+        }
+        return [true, text];
+    } else {
+        return [false, ""];
+    }
+}

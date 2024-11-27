@@ -4,45 +4,11 @@ import { getWorld } from "../../utils/world";
 import { mythosMobHpOverlay } from "./../guis/DianaGuis";
 import { checkDiana } from "../../utils/checkDiana";
 import RenderLibV2 from "../../../RenderLibV2";
-import { data, dianaTrackerMayor } from "../../utils/variables";
-import { calcPercentOne } from "../../utils/functions";
+import { data } from "../../utils/variables";
+import { checkSendInqMsg } from "../../utils/functions";
 export function getMobsToDisplay() {
     return names;
 }
-
-function checkSendInqMsg(since) {
-    let text = settings.announceKilltext;
-    if (text != "") {
-        if (text.includes("{since}")) {
-
-            text = text.replace(/{since}/g, since);
-        }
-        if (text.includes("{chance}")) {
-            let chance = calcPercentOne(dianaTrackerMayor, "Minos Inquisitor")
-            text = text.replace(/{chance}/g, chance);
-        }
-        return [true, text];
-    } else {
-        return [false, ""];
-    }
-}
-
-registerWhen(register("chat", (woah, skytils) => {
-    if (checkDiana()) {
-        let since = data.mobsSinceInq
-        if(settings.inquisDetect) {
-            ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
-        }
-        if(settings.announceKilltext !== "") {
-            setTimeout(function() {
-                let [send, text] = checkSendInqMsg(since);
-                if (send) {
-                    ChatLib.command("pc " + text);
-                }
-            }, 5000);
-        }
-    }
-}).setCriteria("&r&c&l${woah} &r&eYou dug out a &r&2Minos Inquisitor&r&e!${skytils}"), () => settings.inquisDetect || settings.announceKilltext);
 
 register("command", () => {
     let [send, text] = checkSendInqMsg(data.mobsSinceInq);
@@ -50,7 +16,6 @@ register("command", () => {
         ChatLib.chat(text);
     }
 }).setName("sboinqmsgtest");
-
 
 let Mobs = [];
 let inqs = [];

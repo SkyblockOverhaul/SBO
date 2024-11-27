@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -247,6 +247,19 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
+                let since = data.mobsSinceInq;
+                if (settings.inquisDetect) {
+                    ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+                }
+                if (settings.announceKilltext !== "") {
+                    setTimeout(function () {
+                        let [send, text] = checkSendInqMsg(since);
+                        if (send) {
+                            ChatLib.command("pc " + text);
+                        }
+                    }, 5000);
+                }
+
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
                 let currentTime = Date.now();
@@ -274,9 +287,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
                     b2bInq = true;
                 }
                 if (data.inqsSinceChim == 2) b2bChim = false;
-                setTimeout(() => {
-                    data.mobsSinceInq = 0;
-                }, 100);
+                data.mobsSinceInq = 0;
                 break;
             case "Minos Champion":
                 data.champsSinceRelic += 1;
@@ -295,7 +306,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage)));
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || settings.inquisDetect || settings.announceKilltext || (settings.dianaStatsTracker || settings.sendSinceMessage)));
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
