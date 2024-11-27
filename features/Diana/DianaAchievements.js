@@ -261,15 +261,15 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
     }
 
 
-    if (mayorTracker["Total Burrows"] >= 5000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 10000) {
+    if (mayorTracker["Total Burrows"] >= 5000 && mayorTracker["Total Burrows"] < 10000) {
         achievementsToUnlock.push(18);
-    } else if (mayorTracker["Total Burrows"] >= 10000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 15000) {
+    } else if (mayorTracker["Total Burrows"] >= 10000 && mayorTracker["Total Burrows"] < 15000) {
         achievementsToUnlock.push(19);
-    } else if (mayorTracker["Total Burrows"] >= 15000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 20000) {
+    } else if (mayorTracker["Total Burrows"] >= 15000 && mayorTracker["Total Burrows"] < 20000) {
         achievementsToUnlock.push(20);
-    } else if (mayorTracker["Total Burrows"] >= 20000 && item == "Total Burrows" && mayorTracker["Total Burrows"] < 25000) {
+    } else if (mayorTracker["Total Burrows"] >= 20000 && mayorTracker["Total Burrows"] < 25000) {
         achievementsToUnlock.push(21);
-    } else if (mayorTracker["Total Burrows"] >= 25000 && item == "Total Burrows") {
+    } else if (mayorTracker["Total Burrows"] >= 25000) {
         achievementsToUnlock.push(22);
     }
 
