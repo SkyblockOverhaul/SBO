@@ -342,19 +342,23 @@ export function trackSinceMob() {
 
 export function trackMagicFind(magicFind, chimera=false) {
     if (isOnAlpha()) return;
-    if (magicFind >= 300 && magicFind < 400) {
+    if (magicFind >= 300) {
         achievementsToUnlock.push(39);
-    } else if (magicFind >= 400 && magicFind < 500) {
+    }
+    if (magicFind >= 400) {
         achievementsToUnlock.push(40);
-    } else if (magicFind >= 500 && magicFind < 600) {
+    }
+    if (magicFind >= 500) {
         achievementsToUnlock.push(41);
-    } else if (magicFind >= 600) {
+    }
+    if (magicFind >= 600) {
         achievementsToUnlock.push(42);
     }
 
     if (magicFind < 100 && chimera) {
         achievementsToUnlock.push(43);
-    } else if (magicFind < 200 && chimera) {
+    }
+    if (magicFind < 200 && chimera) {
         achievementsToUnlock.push(44);
     }
     unlockAchievements();
