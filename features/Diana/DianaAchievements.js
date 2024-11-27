@@ -16,14 +16,14 @@ rarityColorDict = {
 export class Achievement {
     static list = [];
     static achievementsUnlocked = 0;
-    constructor(id, name, description, rarity, requirement=false, timeout=1, hidden=false) {
+    constructor(id, name, description, rarity, previousId=false, timeout=1, hidden=false) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.rarity = rarity;
         this.color = rarityColorDict[rarity];
-        if (requirement) this.requirement = Achievement.list.find(achievement => achievement.id == requirement);
-        else this.requirement = requirement;
+        if (previousId) this.previousId = Achievement.list.find(achievement => achievement.id == previousId);
+        else this.previousId = previousId;
         this.timeout = timeout;
         this.hidden = hidden;
         this.unlocked = false;
@@ -32,9 +32,8 @@ export class Achievement {
     }
 
     check() {
-        if (this.requirement && !this.requirement.isUnlocked()) {
-            
-            this.requirement.check();
+        if (this.previousId && !this.previousId.isUnlocked()) {
+            this.previousId.check();
             setTimeout(() => {
                 this.unlock();
             }, 1000 * this.timeout);
@@ -175,8 +174,8 @@ new Achievement(40, "Blessed by fortune", "Get a Diana drop with 400 Magic Find"
 new Achievement(41, "Greed knows no bounds", "Get a Diana drop with 500 Magic Find", "Mythic", 40, 2);
 new Achievement(42, "The principle of luck", "Get a Diana drop with 600 Magic Find", "Divine", 41, 3); 
 
-new Achievement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary"); 
 new Achievement(44, "Magic Find is overrated", "Drop a Chimera, under 200 Magic Find", "Epic");
+new Achievement(43, "I don't need Magic Find", "Drop a Chimera, under 100 Magic Find", "Legendary", 44); 
 
 new Achievement(45, "Inquisitor Slayer", "Max the Inquisitor Bestiary", "Epic");
 new Achievement(46, "Minotaur Slayer", "Max the Minotaur Bestiary", "Legendary");
@@ -203,10 +202,16 @@ new Achievement(62, "Mom look i am on the leaderboard", "Top 100 on the kills le
 new Achievement(63, "So this is what addiction feels like", "Top 50 on the kills leaderboard", "Mythic", 62);
 new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divine", 63, 2);
 
+new Achievement(66, "Back-to-Back LS Chimera", "Get 2 Lootshare Chimera in a row", "Divine"); 
+new Achievement(67, "b2b2b LS Chimera", "Get 3 Lootshare Chimera in a row", "Impossible", 66); 
+
+new Achievement(68, "Dedicated Digger", "Get 300 burrows/hour (5h playtime)", "Uncommon");
+new Achievement(69, "Shovel Expert", "Get 400 burrows/hour (5h playtime)", "Epic", 68);
+new Achievement(70, "Burrow Maniac", "Get 500 burrows/hour (5h playtime)", "Legendary", 69, 2);
+new Achievement(71, "You macro right?", "Get 550 burrows/hour (5h playtime)", "Impossible", 70, 3, true);
+
 // new Achievement(65, "oh baybe it's a triple", "Get 3 drops from a single Inquisitor", "Epic", false, 1, true); 
-// new Achivement(28, "Where Chimera?", "Get all other drops from an Inquisitor", "Legendary");
-
-
+// new Achivement(28, "Where Chimera?", "Get all other drops from one Inquisitor expect Chimera", "Legendary");
 
 export function unlockAchievement(id) {
     if (achievementsData[id] != undefined) return;
@@ -550,6 +555,7 @@ checkDaxeAchievements.register();
 const achievementCheck = register("step", () => {
     if (!data.achievementFix1) {
         data.achievementFix1 = true;
+        data.save();
         let buggedAchievements = [2, 7, 39, 40, 41, 42, 43, 44];
         let lockedAchievement = false;
         buggedAchievements.forEach(achievement => {

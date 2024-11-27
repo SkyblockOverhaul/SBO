@@ -14,8 +14,6 @@ import { getDateMayorElected, getSkyblockDate } from "../../utils/mayor";
 // todo end
 
 // track items with pickuplog //
-let b2bStick = false;
-let b2bChim = false;
 export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
@@ -112,7 +110,7 @@ export function trackItem(item, category, amount) {
 
         if (category === "mobs") {
             data.mobsSinceInq += 1;
-            if (data.mobsSinceInq == 2) b2bInq = false;
+            if (data.mobsSinceInq == 2) data.b2bInq = false;
         }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
@@ -242,7 +240,6 @@ registerWhen(register("chat", (waste, event) => {
 }).setCriteria("&r&7Warping${waste}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
 // mob tracker
-let b2bInq = false;
 registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
@@ -262,7 +259,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
 
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
-                
+
                 let playtimeSinceInq = formatTimeMinSec(trackerTotal["items"]["totalTime"] - data.lastInqDate);
                 let msg = `&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${playtimeSinceInq}&e to get an Inquis!`;
                 if(data.lastInqDate && data.lastInqDate !== 0) {
@@ -273,16 +270,16 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
                 }
                 data.lastInqDate = trackerTotal["items"]["totalTime"];
 
-                if (b2bInq && data.mobsSinceInq == 1) {
+                if (data.b2bInq && data.mobsSinceInq == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
                     unlockAchievement(7) // b2b2b inq
                 }
-                if (data.mobsSinceInq == 1 && !b2bInq) {
+                if (data.mobsSinceInq == 1 && !data.b2bInq) {
                     ChatLib.chat("&6[SBO] &cb2b Inquisitor!")
                     unlockAchievement(6) // b2b inq
-                    b2bInq = true;
+                    data.b2bInq = true;
                 }
-                if (data.inqsSinceChim == 2) b2bChim = false;
+                if (data.inqsSinceChim == 2) data.b2bChim = false;
                 data.mobsSinceInq = 0;
                 break;
             case "Minos Champion":
@@ -291,7 +288,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
                 break;
             case "Minotaur":
                 data.minotaursSinceStick += 1;
-                if (data.minotaursSinceStick == 2) b2bStick = false;
+                if (data.minotaursSinceStick == 2) data.b2bStick = false;
                 trackItem(mob, "mobs", 1);
                 break;
             case "Minos Hunter":
@@ -350,6 +347,15 @@ registerWhen(register("chat", (drop, event) => {
                         data.inqsSinceLsChim = 0;
                     }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
+                    if (data.b2bChimLs && data.inqsSinceLsChim == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b2b Lootshare Chimera!")
+                        unlockAchievement(67) // b2b2b ls chim
+                    }
+                    if (data.inqsSinceLsChim == 1 && !data.b2bChimLs) {
+                        ChatLib.chat("&6[SBO] &cb2b Lootshare Chimera!")
+                        data.b2bChimLs = true;
+                        unlockAchievement(66) // b2b ls chim
+                    }
                 }
                 else {
                     if (magicFind > 0) trackMagicFind(magicFind, true);
@@ -371,13 +377,13 @@ registerWhen(register("chat", (drop, event) => {
                     if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
-                    if (b2bChim && data.inqsSinceChim == 1) {
+                    if (data.b2bChim && data.inqsSinceChim == 1) {
                         ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
                         unlockAchievement(2) // b2b2b chim
                     }
-                    if (data.inqsSinceChim == 1 && !b2bChim) {
+                    if (data.inqsSinceChim == 1 && !data.b2bChim) {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
-                        b2bChim = true;
+                        data.b2bChim = true;
                         unlockAchievement(1) // b2b chim
                     }
 
@@ -418,13 +424,13 @@ registerWhen(register("chat", (drop, event) => {
                 if (settings.sendSinceMessage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
-                if (b2bStick && data.minotaursSinceStick == 1) {
+                if (data.b2bStick && data.minotaursSinceStick == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
                     unlockAchievement(4) // b2b2b stick
                 }
-                if (data.minotaursSinceStick == 1 && !b2bStick) {
+                if (data.minotaursSinceStick == 1 && !data.b2bStick) {
                     ChatLib.chat("&6[SBO] &cb2b Daedalus Stick!")
-                    b2bStick = true;
+                    data.b2bStick = true;
                     unlockAchievement(3) // b2b stick
                 }
 

@@ -196,6 +196,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerSession);
         trackLsInq(trackerTotal);
         data.inqsSinceLsChim += 1;
+        if (data.inqsSinceLsChim >= 2) data.b2bChimLsInq = false;
         hasTrackedInq = true;
         setTimeout(() => {
             hasTrackedInq = false;
