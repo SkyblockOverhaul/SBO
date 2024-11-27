@@ -274,8 +274,9 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
                     b2bInq = true;
                 }
                 if (data.inqsSinceChim == 2) b2bChim = false;
-
-                data.mobsSinceInq = 0;        
+                setTimeout(() => {
+                    data.mobsSinceInq = 0;
+                }, 100);
                 break;
             case "Minos Champion":
                 data.champsSinceRelic += 1;

@@ -222,7 +222,7 @@ register("chat", (player, message) => {
             break
         case "!mob":
         case "!mobs":
-            if(!settings.dianaPartyCommands) break;
+            if (!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 setTimeout(() => {
                     let mobsPerHourText = isNaN(getMobsPerHour()) ? "" : " (" + getMobsPerHour() + "/h)";
@@ -230,8 +230,16 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!mf":
+        case "!magicfind":
+            if (!settings.dianaPartyCommands) break;
+            if (!settings.dianaAvgMagicFind) break
+            setTimeout(() => {
+                ChatLib.command(`pc Chims (${data.avgChimMagicFind}% ✯) Sticks (${data.avgStickMagicFind}% ✯)`)
+            }, 200)
+            break
         case "!since":
-            if(!settings.dianaPartyCommands) break;
+            if (!settings.dianaPartyCommands) break;
             if (settings.dianaTracker) {
                 if(args1 == undefined) {
                     setTimeout(() => {
