@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { achievementsData, data, pastDianaEvents } from "../../utils/variables";
-import { checkDaxeEnchants, getSBID, isOnAlpha, setTimeout } from "../../utils/functions";
+import { calcBurrowsPerHour, checkDaxeEnchants, getSBID, isOnAlpha, setTimeout } from "../../utils/functions";
 
 rarityColorDict = {
     "Divine": "&b",
@@ -308,10 +308,26 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
     } else if (mayorTracker["ChimeraLs"] >= 16) {
         achievementsToUnlock.push(10);
     }
+
+    if (item == "Total Burrows") {
+        const burrowsPerHour = calcBurrowsPerHour(mayorTracker["Total Burrows"], mayorTracker["mayorTime"]);
+        if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour < 300) {
+            achievementsToUnlock.push(68);
+        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour < 400) {
+            achievementsToUnlock.push(69);
+        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour < 500) {
+            achievementsToUnlock.push(70);
+        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 550) {
+            achievementsToUnlock.push(71);
+        }
+    }
+    
     if (!backtrack) {
         unlockAchievements();
     }
 }
+
+
 
 export function trackSinceMob() {
     if (isOnAlpha()) return;

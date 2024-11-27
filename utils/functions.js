@@ -1640,3 +1640,8 @@ export function checkSendInqMsg(since) {
         return [false, ""];
     }
 }
+
+export function calcBurrowsPerHour(burrows, playtime) { // playtime in milliseconds
+    let burrowsPerHour = burrows / (playtime / 3600000);
+    return burrowsPerHour;
+}
