@@ -643,9 +643,9 @@ export function getDianaAhPrice(itemId) {
 export function getPrice(item, tracker = undefined) {
     if (tracker) {
         if (item.bazaarKey) {
-            return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"][item.key];
+            return getBazaarPriceDiana(item.bazaarKey) * tracker["items"][item.key];
         } else if (item.ahKey) {
-            return getDianaAhPrice(item.ahKey) * mayorTracker["items"][item.key];
+            return getDianaAhPrice(item.ahKey) * tracker["items"][item.key];
         }
         return 0;
     }

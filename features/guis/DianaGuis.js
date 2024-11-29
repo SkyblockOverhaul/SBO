@@ -349,7 +349,7 @@ function getLootMessage(lootViewSetting) {
         totalValue += tracker["items"]["coins"];
         return totalValue;
     }
-    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
+    let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue(lootTracker))}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
     const timer = dianaTimerlist[lootViewSetting - 1];
     let timePassed = timer.getHourTime();
@@ -370,7 +370,7 @@ function getLootMessage(lootViewSetting) {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
     let mayorValue = getTotalValue(mayorTracker);
-    setDianaMayorTotalProfit(formatNumber(mayorValue), offertType, mayorValue / mayorTracker["items"]["mayorTime"]);
+    setDianaMayorTotalProfit(formatNumber(mayorValue), offertType, formatNumber((mayorValue / (mayorTracker["items"]["mayorTime"] / 3600000)).toFixed()));
     lootLines.push(totalProfitLine);
 
     return lootLines;
