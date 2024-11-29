@@ -103,7 +103,7 @@ class Settings {
     dianaAdvancedBurrowGuess = false;
     @SwitchProperty({
         name: "Diana Burrow Warp",
-        description: "Warp to the closest burrow. set your keybind in controls",
+        description: "Warp close to the guess. set your keybind in controls",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
