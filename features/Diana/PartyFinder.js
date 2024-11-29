@@ -335,14 +335,14 @@ register("step", () => {
     }
 }).setFps(1);
 
-const partyDisbanded = [ 
+const partyDisbanded = [
     /^.+ &r&ehas disbanded the party!&r$/,
     /^&cThe party was disbanded because (.+)$/,
     /^&eYou left the party.&r$/,
-    /^&cYou are not currently in a party\.$/, // not working
+    /^&cYou are not currently in a party.&r$/,
     /^&eYou have been kicked from the party by .+$/
 ] 
-const leaderMessages = [ // promoted to party leader message missing
+const leaderMessages = [
     /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
     /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
 ]
@@ -394,7 +394,6 @@ register("chat", (event) => {
         let match = formatted.match(regex)
         if (match) {
             removePartyFromQueue()
-            // inParty = true;
         }
     })
     partyDisbanded.forEach(regex => {
