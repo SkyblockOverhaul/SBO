@@ -344,7 +344,8 @@ const partyDisbanded = [
 ] 
 const leaderMessages = [
     /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
-    /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
+    /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/,
+    /^(.+) &r&e has promoted &r(.+) &r&eto Party Leader&r$/
 ]
 const memberJoined = [
     /^(.+) &r&ejoined the party.&r$/,
