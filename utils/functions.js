@@ -640,6 +640,17 @@ export function getDianaAhPrice(itemId) {
     return dianaItems[itemId].price;
 }
 
+export function getPrice(item, tracker = undefined) {
+    if (tracker) {
+        if (item.bazaarKey) {
+            return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"][item.key];
+        } else if (item.ahKey) {
+            return getDianaAhPrice(item.ahKey) * mayorTracker["items"][item.key];
+        }
+        return 0;
+    }
+}
+
 export function formatNumber(number) {
     if(number == undefined) return 0;
     if (number >= 1000000000) {
@@ -1642,6 +1653,5 @@ export function checkSendInqMsg(since) {
 }
 
 export function calcBurrowsPerHour(burrows, playtime) { // playtime in milliseconds
-    let burrowsPerHour = burrows / (playtime / 3600000);
-    return burrowsPerHour;
+    return (burrows / (playtime / 3600000)).toFixed(2);
 }

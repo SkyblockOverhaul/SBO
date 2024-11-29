@@ -1,6 +1,6 @@
 import settings from "../../settings";
 import { registerWhen, data, dianaTimerlist, pastDianaEvents} from "../../utils/variables";
-import { playerHasSpade, getBazaarPriceDiana,  getDianaAhPrice, formatNumber, formatNumberCommas, 
+import { playerHasSpade, getPrice, formatNumber, formatNumberCommas, 
     getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit, setBurrowsPerHour,
     setMobsPerHour 
 } from "../../utils/functions";
@@ -276,39 +276,8 @@ function getLootMessage(lootViewSetting) {
         { name: "Enchanted Iron", key: "ENCHANTED_IRON", color: BLUE, bazaarKey: "ENCHANTED_IRON", format: true }
     ];
 
-    function getPrice(item, mayorTracker = undefined) {
-        if(mayorTracker) {
-            if (item.bazaarKey) {
-                if (item.name === "Chimera") {
-                    return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["Chimera"];
-                }
-                else if (item.name === "ChimeraLs") {
-                    return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"]["ChimeraLs"];
-                }
-                return getBazaarPriceDiana(item.bazaarKey) * mayorTracker["items"][item.key];
-            } else if (item.ahKey) {
-                return getDianaAhPrice(item.ahKey) * mayorTracker["items"][item.key];
-            }
-            return 0;
-        }
-        else{
-            if (item.bazaarKey) {
-                if (item.name === "Chimera") {
-                    return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["Chimera"]
-                }
-                else if (item.name === "ChimeraLs") {
-                    return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"]["ChimeraLs"];
-                }
-                return getBazaarPriceDiana(item.bazaarKey) * lootTracker["items"][item.key];
-            } else if (item.ahKey) {
-                return getDianaAhPrice(item.ahKey) * lootTracker["items"][item.key];
-            }
-            return 0;
-        }
-    }
-
     function createLootLine(item) {
-        const price = formatNumber(getPrice(item));
+        const price = formatNumber(getPrice(item, lootTracker));
         const itemAmount = item.format ? formatNumber(lootTracker["items"][item.key]) : formatNumberCommas(lootTracker["items"][item.key]);
         let percent = undefined;
         let text = "";
@@ -372,52 +341,26 @@ function getLootMessage(lootViewSetting) {
         // overlay.gui.drawHoveringString(hovertext, 0, 0)
         GuiUtils.drawHoveringText(hovertext, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     }));
-    function getTotalValue(mayorOnly = false, sessionOnly = false) {
+    function getTotalValue(tracker) {
         let totalValue = 0;
-        if (sessionOnly) {
-            for (let item of itemData) {
-                totalValue += getPrice(item, sessionTracker);
-            }
-            totalValue += lootTracker["items"]["coins"];
-            return totalValue;
+        for (let item of itemData) {
+            totalValue += getPrice(item, tracker);
         }
-        else if(mayorOnly) {
-            for (let item of itemData) {
-                totalValue += getPrice(item, mayorTracker);
-            }
-            totalValue += mayorTracker["items"]["coins"];
-            return totalValue;
-        }
-        else {
-            for (let item of itemData) {
-                totalValue += getPrice(item);
-            }
-            totalValue += lootTracker["items"]["coins"];
-            return totalValue;
-        }
+        totalValue += tracker["items"]["coins"];
+        return totalValue;
     }
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue())}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
     const timer = dianaTimerlist[lootViewSetting - 1];
-    let timePassed = timer.getHourTime(); // in hours 
+    let timePassed = timer.getHourTime();
     let profitPerHour = 0;
     let profitPerBurrow = 0;
     let profitText = [];
     if (timePassed != "NaN" && timePassed != 0) {
-        switch (lootViewSetting) {
-            case 1:
-                profitPerHour = formatNumber((getTotalValue(false, false) / timePassed).toFixed())
-                profitPerBurrow = formatNumber((getTotalValue(false, false) / lootTracker["items"]["Total Burrows"]).toFixed())
-                break;
-            case 2:
-                profitPerHour = formatNumber((getTotalValue(true) / timePassed).toFixed())
-                profitPerBurrow = formatNumber((getTotalValue(true) / mayorTracker["items"]["Total Burrows"]).toFixed())
-                break;
-            case 3:
-                profitPerHour = formatNumber((getTotalValue(false, true) / timePassed).toFixed()) // in coins
-                profitPerBurrow = formatNumber((getTotalValue(false, true) / sessionTracker["items"]["Total Burrows"]).toFixed())
-                break;
-        }
+        let value = getTotalValue(lootTracker);
+        profitPerHour = formatNumber((value / timePassed).toFixed())
+        profitPerBurrow = formatNumber((value / lootTracker["items"]["Total Burrows"]).toFixed())
+
         profitText = [
             `§6${profitPerHour} coins/hour`,
             `§6${profitPerBurrow} coins/burrow`
@@ -426,7 +369,8 @@ function getLootMessage(lootViewSetting) {
     totalProfitLine.onHover((overlay) => {
         GuiUtils.drawHoveringText(profitText, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     });
-    setDianaMayorTotalProfit(formatNumber(getTotalValue(true)), offertType, profitPerHour);
+    let mayorValue = getTotalValue(mayorTracker);
+    setDianaMayorTotalProfit(formatNumber(mayorValue), offertType, mayorValue / mayorTracker["items"]["mayorTime"]);
     lootLines.push(totalProfitLine);
 
     return lootLines;
