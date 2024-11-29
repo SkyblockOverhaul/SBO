@@ -205,10 +205,11 @@ new Achievement(64, "Diana is my life", "Top 10 on the kills leaderboard", "Divi
 new Achievement(66, "Back-to-Back LS Chimera", "Get 2 Lootshare Chimera in a row", "Divine"); 
 new Achievement(67, "b2b2b LS Chimera", "Get 3 Lootshare Chimera in a row", "Impossible", 66); 
 
-new Achievement(68, "Dedicated Digger", "Get 300 burrows/hour (5h playtime)", "Uncommon");
-new Achievement(69, "Shovel Expert", "Get 400 burrows/hour (5h playtime)", "Epic", 68);
-new Achievement(70, "Burrow Maniac", "Get 500 burrows/hour (5h playtime)", "Legendary", 69, 2);
-new Achievement(71, "You macro right?", "Get 550 burrows/hour (5h playtime)", "Impossible", 70, 3, true);
+new Achievement(68, "Dedicated Digger", "Get 300 burrows/hour (5h playtime)", "Uncommon");t
+new Achievement(69, "Burrow Enthusiast", "Get 360 burrows/hour (5h playtime)", "Epic", 68);
+new Achievement(70, "Shovel Expert", "Get 420 burrows/hour (5h playtime)", "Legendary", 69, 2);
+new Achievement(71, "Burrow Maniac", "Get 480 burrows/hour (5h playtime)", "Divine", 70, 3);
+new Achievement(72, "Nice macro!", "Get 550 burrows/hour (5h playtime)", "Impossible", 71, 4, true);
 
 // new Achievement(65, "oh baybe it's a triple", "Get 3 drops from a single Inquisitor", "Epic", false, 1, true); 
 // new Achivement(28, "Where Chimera?", "Get all other drops from one Inquisitor expect Chimera", "Legendary");
