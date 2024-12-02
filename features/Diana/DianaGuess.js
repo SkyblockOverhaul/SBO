@@ -335,8 +335,7 @@ function basicallyEqual(a, b) {
 
 function tryToMakeInitialGuess() {
     if (hasMadeManualGuess || hasMadeInitialGuess) return;
-    const enumerator = Object.keys(coloredArmorStands);
-    enumerator.forEach(id => {
+    Object.keys(coloredArmorStands).forEach(id => {
         const armorStand = World.getWorld().func_73045_a(id);
         if (armorStand === null) return;
         const CTArmorStand = new Entity(armorStand);
