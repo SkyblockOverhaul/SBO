@@ -552,6 +552,12 @@ class Settings {
     })
     jacobHider = false;
     @SwitchProperty({
+        name: 'Hide Radio Weak Message',
+        description: 'Hides the radio weak message',
+        category: 'Quality of Life',
+    })
+    hideRadioWeak = false;
+    @SwitchProperty({
         name: 'Clean Diana Chat',
         description: 'Hides all spammy Diana messages',
         category: 'Quality of Life',
