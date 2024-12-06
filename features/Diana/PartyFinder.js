@@ -93,7 +93,7 @@ function printCheckedPlayer(playerinfo) {
     new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
     "&r&9│ &r&eLvL&r&f: &r&6" + matchLvlToColor(playerinfo.sbLvl) + 
     "&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + 
-    (playerinfo.looting5daxe ? "&a✓" : "&4✗") + 
+    (playerinfo.invApi ? (playerinfo.looting5daxe ? "&a✓" : "&4✗") : "&4?") + 
     "&r&9│ &r&eKills&r&f: &r&6" + 
     (playerinfo.mythosKills / 1000).toFixed(2) + "k")
     .setClick("run_command", "/pv " + playerinfo.name).setHover("show_text", "/pv " + playerinfo.name).chat();
