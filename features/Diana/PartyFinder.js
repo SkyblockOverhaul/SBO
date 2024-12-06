@@ -170,7 +170,6 @@ register("command", () => {
     ChatLib.chat("&6[SBO] &aCopied to Clipboard");
 }).setName("buttonforsbotocopystats");
 
-
 function checkPlayer(player) {
     let playerName = player;
     if (!playerName) {
@@ -271,6 +270,7 @@ register("chat", (player) => {
     }
 }).setCriteria("${player} &r&ehas invited you to join their party!").setContains();
 
+let ghostParty = false;
 export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
         inQueue = false;
@@ -290,7 +290,9 @@ export function removePartyFromQueue(useCallback = false, callback = null) {
                 ChatLib.chat("&6[SBO] &4Unexpected error occurred while removing party from queue");
             }
         });
-    }
+    } else if (creatingParty) {
+        ghostParty = true;
+    }   
 }
 
 let requestSend = false;
@@ -489,6 +491,10 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
                 ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
                 inQueue = true; 
                 creatingParty = false;
+                if (ghostParty) {
+                    removePartyFromQueue();
+                    ghostParty = false;
+                }
                 if (inParty) ChatLib.command("pc [SBO] Party now in queue.");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);
