@@ -73,7 +73,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.4.6" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.7" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -107,14 +107,12 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &7- &aAdded a new Experimental guess wich uses the arrwos and there particle color from the dug up burrow to guess the next burrow (thx to @KaasPeer)`)
-    ChatLib.chat(`&7> &7- &aAdded an option to not warp when a burrow is nearby (dont warp if a burrow is nearby)`)
-    ChatLib.chat(`&7> &7- &aAdded !chimls as an extra PartyCommand`)
-    ChatLib.chat(`&7> &7- &aAdded a command to undo the tracker import (/sboimporttrackerundo)`)
-    ChatLib.chat(`&7> &7- &aAdded a command to reset Avg Mf tracker (/sboresetavgmftracker)`)
-    ChatLib.chat(`&7> &7- &aAdded a command to reset stats tracker (/sboresetstatstracker)`)
-    ChatLib.chat(`&7> &7- &aRemoved skytils tracker import`)
-    ChatLib.chat(`&7> &7- &aSome small bugfixes as always`)
+    ChatLib.chat(`&7> &7- &aAdded new Achiements`)
+    ChatLib.chat(`&7> &7- &aAdded auto announce rare diana drops to party`)
+    ChatLib.chat(`&7> &7- &aAdded !mf / !magicfind command`)
+    ChatLib.chat(`&7> &7- &aAdded radio is weak hider`)
+    ChatLib.chat(`&7> &7- &aChanged the time since inq to playtime`)
+    ChatLib.chat(`&7> &7- &aSome fixes`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
