@@ -93,7 +93,7 @@ function printCheckedPlayer(playerinfo) {
     new TextComponent("&6[SBO] &eName&r&f: &r&b" + playerinfo.name + 
     "&r&9│ &r&eLvL&r&f: &r&6" + matchLvlToColor(playerinfo.sbLvl) + 
     "&r&9│ &r&eEman 9&r&f: &r&f" + (playerinfo.eman9 ? "&r&a✓" : "&4✗") + "&r&9│ &r&el5 Daxe&r&f: " + 
-    (playerinfo.looting5daxe ? "&a✓" : "&4✗") + 
+    (playerinfo.invApi ? (playerinfo.looting5daxe ? "&a✓" : "&4✗") : "&4?") + 
     "&r&9│ &r&eKills&r&f: &r&6" + 
     (playerinfo.mythosKills / 1000).toFixed(2) + "k")
     .setClick("run_command", "/pv " + playerinfo.name).setHover("show_text", "/pv " + playerinfo.name).chat();
@@ -102,6 +102,7 @@ function printCheckedPlayer(playerinfo) {
         trackWithCheckPlayer(playerinfo);
         new TextComponent("&7[&3Extra Stats&7]").setClick("run_command", "/extrastatsbuttonforsbo").setHover("show_text", "Click for more details").chat();
         data.dianaStats = playerinfo;
+        data.save();
     }
     else {
         new Message(
@@ -168,7 +169,6 @@ register("command", () => {
     ChatLib.command("ct copy " + messageString.removeFormatting(), true);
     ChatLib.chat("&6[SBO] &aCopied to Clipboard");
 }).setName("buttonforsbotocopystats");
-
 
 function checkPlayer(player) {
     let playerName = player;
@@ -270,6 +270,7 @@ register("chat", (player) => {
     }
 }).setCriteria("${player} &r&ehas invited you to join their party!").setContains();
 
+let ghostParty = false;
 export function removePartyFromQueue(useCallback = false, callback = null) {
     if (inQueue) {
         inQueue = false;
@@ -289,7 +290,9 @@ export function removePartyFromQueue(useCallback = false, callback = null) {
                 ChatLib.chat("&6[SBO] &4Unexpected error occurred while removing party from queue");
             }
         });
-    }
+    } else if (creatingParty) {
+        ghostParty = true;
+    }   
 }
 
 let requestSend = false;
@@ -334,16 +337,17 @@ register("step", () => {
     }
 }).setFps(1);
 
-const partyDisbanded = [ 
+const partyDisbanded = [
     /^.+ &r&ehas disbanded the party!&r$/,
     /^&cThe party was disbanded because (.+)$/,
     /^&eYou left the party.&r$/,
-    /^&cYou are not currently in a party\.$/,
+    /^&cYou are not currently in a party.&r$/,
     /^&eYou have been kicked from the party by .+$/
 ] 
-const leaderMessages = [ // promoted to party leader message missing
+const leaderMessages = [
     /^&eYou have joined &r(.+)'s* &r&eparty!&r$/,
-    /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/
+    /^&eThe party was transferred to &r(.+) &r&eby &r.+&r$/,
+    /^(.+) &r&e has promoted &r(.+) &r&eto Party Leader&r$/
 ]
 const memberJoined = [
     /^(.+) &r&ejoined the party.&r$/,
@@ -393,7 +397,6 @@ register("chat", (event) => {
         let match = formatted.match(regex)
         if (match) {
             removePartyFromQueue()
-            // inParty = true;
         }
     })
     partyDisbanded.forEach(regex => {
@@ -428,7 +431,6 @@ register("chat", (toFrom, player, id, event) => {
         // join request message
         if (partyCount < 6) {
             player = getplayername(player);
-            print(player);
             if (settings.autoInvite) {
                 ChatLib.chat("&6[SBO] &eSending invite to " + player);
                 ChatLib.command("p invite " + player);
@@ -470,13 +472,14 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
     if (party.length == 0) party.push(Player.getUUID());
     partyCount = party.length;
     if (creatingParty) {
-        creatingParty = false;
         if (party[0] != Player.getUUID() && party.length > 1) {
             ChatLib.chat("&6[SBO] &eYou are not the party leader. Only party leader can queue with the party.");
+            creatingParty = false;
             return;
         }
         if (party.length > 5) {
             ChatLib.chat("&6[SBO] &eParty members limit reached. You can only queue with up to 5 members.");
+            creatingParty = false;
             return;
         }
         request({
@@ -487,13 +490,20 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
                 let timeTaken = Date.now() - createPartyTimeStamp;
                 ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
                 inQueue = true; 
+                creatingParty = false;
+                if (ghostParty) {
+                    removePartyFromQueue();
+                    ghostParty = false;
+                }
                 if (inParty) ChatLib.command("pc [SBO] Party now in queue.");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);
                 inQueue = false;
+                creatingParty = false;
             }
         }).catch((error)=> {
             inQueue = false;
+            creatingParty = false;
             if (error.detail) {
                 ChatLib.chat("&6[SBO] &4Error1: " + error.detail);
             } else {

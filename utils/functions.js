@@ -196,6 +196,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         trackLsInq(trackerSession);
         trackLsInq(trackerTotal);
         data.inqsSinceLsChim += 1;
+        if (data.inqsSinceLsChim >= 2) data.b2bChimLsInq = false;
         hasTrackedInq = true;
         setTimeout(() => {
             hasTrackedInq = false;
@@ -639,6 +640,17 @@ export function getDianaAhPrice(itemId) {
     return dianaItems[itemId].price;
 }
 
+export function getPrice(item, tracker = undefined) {
+    if (tracker) {
+        if (item.bazaarKey) {
+            return getBazaarPriceDiana(item.bazaarKey) * tracker["items"][item.key];
+        } else if (item.ahKey) {
+            return getDianaAhPrice(item.ahKey) * tracker["items"][item.key];
+        }
+        return 0;
+    }
+}
+
 export function formatNumber(number) {
     if(number == undefined) return 0;
     if (number >= 1000000000) {
@@ -753,13 +765,10 @@ export function formatTime(milliseconds) {
 
 export function formatTimeMinSec(milliseconds) {
     const totalSeconds = parseInt(milliseconds / 1000);
-    const totalMinutes = parseInt(totalSeconds / 60);
-    const minutes = totalMinutes % 60;
+    const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
 
-    let formattedTime = `${minutes}m ${seconds}s`;
-
-    return formattedTime;
+    return `${minutes}m ${seconds}s`;
 }
 
 let dianaMayorTotalProfit = 0;
@@ -1505,30 +1514,6 @@ export function getDianaStats(useCallback = false, callback = null) {
     }
 }
 
-// export class SboTimeoutFunction {
-//     static timeoutList = [];
-//     constructor(func, timeout) {
-//         this.func = func;
-//         this.timeout = timeout;
-//         this.timestamp = Date.now();
-//         this.id = SboTimeoutFunction.timeoutList.length;
-//         SboTimeoutFunction.timeoutList.push(this);
-//     }
-
-//     clearTimeout() {
-//         SboTimeoutFunction.timeoutList = SboTimeoutFunction.timeoutList.filter((timeout) => timeout.id !== this.id);
-//     }
-// }
-
-// register("step", () => {
-//     SboTimeoutFunction.timeoutList.forEach((timeout) => {
-//         if (Date.now() - timeout.timestamp >= timeout.timeout) {
-//             timeout.func();
-//             timeout.clearTimeout();
-//         }
-//     });
-// }).setFps(6);
-
 const Runnable = Java.type("java.lang.Runnable");
 const Executors = Java.type("java.util.concurrent.Executors");
 const TimeUnit = Java.type("java.util.concurrent.TimeUnit");
@@ -1648,4 +1633,25 @@ export function filterTextInput(list) {
         object.textInput.setText(text)
         object.text = text
     })
+}
+
+export function checkSendInqMsg(since) {
+    let text = settings.announceKilltext;
+    if (text != "") {
+        if (text.includes("{since}")) {
+
+            text = text.replace(/{since}/g, since);
+        }
+        if (text.includes("{chance}")) {
+            let chance = calcPercentOne(trackerMayor, "Minos Inquisitor")
+            text = text.replace(/{chance}/g, chance);
+        }
+        return [true, text];
+    } else {
+        return [false, ""];
+    }
+}
+
+export function calcBurrowsPerHour(burrows, playtime) { // playtime in milliseconds
+    return (burrows / (playtime / 3600000)).toFixed(2);
 }

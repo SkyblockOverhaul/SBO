@@ -103,7 +103,7 @@ class Settings {
     dianaAdvancedBurrowGuess = false;
     @SwitchProperty({
         name: "Diana Burrow Warp",
-        description: "Warp to the closest burrow. set your keybind in controls",
+        description: "Warp close to the guess. set your keybind in controls",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
@@ -409,6 +409,13 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerPrice = true;
+    @SwitchProperty({
+        name: 'Loot Party Announcer',
+        description: 'Announce chimera/stick/relic to party',
+        category: 'Diana',
+        subcategory: 'Loot Announcer',
+    })
+    lootAnnouncerParty = false;
 
     //Party Commands
     @SwitchProperty({
@@ -544,6 +551,12 @@ class Settings {
         category: 'Quality of Life',
     })
     jacobHider = false;
+    @SwitchProperty({
+        name: 'Hide Radio Weak Message',
+        description: 'Hides the radio weak message',
+        category: 'Quality of Life',
+    })
+    hideRadioWeak = false;
     @SwitchProperty({
         name: 'Clean Diana Chat',
         description: 'Hides all spammy Diana messages',

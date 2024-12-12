@@ -117,6 +117,10 @@ export let data = new PogObject("SBO", {
     "dianaStats": {},
     "dianaStatsUpdated": 0,
     "lastInqDate": 0,
+    "b2bStick": false,
+    "b2bChim": false,
+    "b2bChimLs": false,
+    "b2bInq": false,
 }, "SboData.json");
 
 export let mainCheckboxes = new PogObject("../../../config", {
@@ -659,12 +663,12 @@ register("guiClosed", (event) => {
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
-    data.save();
-    dianaTrackerTotal.save();
-    dianaTrackerSession.save();
-    dianaTrackerMayor.save();
-    pastDianaEvents.save();
-    achievementsData.save();
+    // data.save();
+    // dianaTrackerTotal.save();
+    // dianaTrackerSession.save();
+    // dianaTrackerMayor.save();
+    // pastDianaEvents.save();
+    // achievementsData.save();
     mainCheckboxes.save();
     mainInputFields.save();
 });

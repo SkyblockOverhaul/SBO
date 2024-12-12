@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, calcPercent, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
 import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -14,8 +14,6 @@ import { getDateMayorElected, getSkyblockDate } from "../../utils/mayor";
 // todo end
 
 // track items with pickuplog //
-let b2bStick = false;
-let b2bChim = false;
 export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
@@ -46,6 +44,10 @@ export function dianaLootCounter(item, amount) {
                         else {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
+                    }
+                    if (settings.lootAnnouncerParty) {
+                        ChatLib.command("pc [SBO] RARE DROP! Minos Relic!");
+
                     }
                     playCustomSound(settings.relicSound, settings.relicVolume);
                 }
@@ -108,7 +110,7 @@ export function trackItem(item, category, amount) {
 
         if (category === "mobs") {
             data.mobsSinceInq += 1;
-            if (data.mobsSinceInq == 2) b2bInq = false;
+            if (data.mobsSinceInq == 2) data.b2bInq = false;
         }
         trackOne(trackerMayor, item, category, "Mayor", amount);
         trackOne(trackerSession, item, category, "Session", amount);
@@ -238,40 +240,47 @@ registerWhen(register("chat", (waste, event) => {
 }).setCriteria("&r&7Warping${waste}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
 
 // mob tracker
-let b2bInq = false;
 registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
+                let since = data.mobsSinceInq;
+                if (settings.inquisDetect) {
+                    ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+                }
+                if (settings.announceKilltext !== "") {
+                    setTimeout(function () {
+                        let [send, text] = checkSendInqMsg(since);
+                        if (send) {
+                            ChatLib.command("pc " + text);
+                        }
+                    }, 5000);
+                }
+
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
-                let currentTime = Date.now();
-                let timeDiff = currentTime - data.lastInqDate;
-                let hours = Math.floor(timeDiff / (1000 * 60 * 60));
-                let minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                let seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-                let timeString = `${hours}h ${minutes}m ${seconds}s`;
 
+                let playtimeSinceInq = formatTimeMinSec(trackerTotal["items"]["totalTime"] - data.lastInqDate);
+                let msg = `&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${playtimeSinceInq}&e to get an Inquis!`;
                 if(data.lastInqDate && data.lastInqDate !== 0) {
-                    new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs and &c${timeString}&e to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs and ${timeString} to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
+                    new TextComponent(msg).setClick("run_command", "/ct copy " + msg).setHover("show_text", "&eClick To Copy").chat();
                 }
                 else {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.mobsSinceInq} &r&eMobs to get an Inquis!`).setClick("run_command", `/ct copy [SBO] Took ${data.mobsSinceInq} Mobs to get an Inquis!`).setHover("show_text", "&eClick To Copy").chat();
                 }
-                data.lastInqDate = Date.now();
+                data.lastInqDate = trackerTotal["items"]["totalTime"];
 
-                if (b2bInq && data.mobsSinceInq == 1) {
+                if (data.b2bInq && data.mobsSinceInq == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Inquisitor!")
                     unlockAchievement(7) // b2b2b inq
                 }
-                if (data.mobsSinceInq == 1 && !b2bInq) {
+                if (data.mobsSinceInq == 1 && !data.b2bInq) {
                     ChatLib.chat("&6[SBO] &cb2b Inquisitor!")
                     unlockAchievement(6) // b2b inq
-                    b2bInq = true;
+                    data.b2bInq = true;
                 }
-                if (data.inqsSinceChim == 2) b2bChim = false;
-
-                data.mobsSinceInq = 0;        
+                if (data.inqsSinceChim == 2) data.b2bChim = false;
+                data.mobsSinceInq = 0;
                 break;
             case "Minos Champion":
                 data.champsSinceRelic += 1;
@@ -279,7 +288,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
                 break;
             case "Minotaur":
                 data.minotaursSinceStick += 1;
-                if (data.minotaursSinceStick == 2) b2bStick = false;
+                if (data.minotaursSinceStick == 2) data.b2bStick = false;
                 trackItem(mob, "mobs", 1);
                 break;
             case "Minos Hunter":
@@ -290,7 +299,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage)));
+}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || settings.inquisDetect || settings.announceKilltext || (settings.dianaStatsTracker || settings.sendSinceMessage)));
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
@@ -316,6 +325,8 @@ registerWhen(register("chat", (coins) => {
 registerWhen(register("chat", (drop, event) => {
     if (isDataLoaded() && checkDiana() && isInSkyblock()) {
         let magicFind = getMagicFind(drop);
+        let mfPrefix = "";
+        if (magicFind > 0) mfPrefix = " (+" + magicFind + "%" + " ✯ Magic Find)";
         drop = drop.slice(2, 16); // 8 statt 16 für potato und carrot
         switch (drop) {
             case "Enchanted Book":
@@ -327,7 +338,6 @@ registerWhen(register("chat", (drop, event) => {
                         Client.Companion.showTitle(`&d&lChimera!`, "", 0, 25, 35);
                     }
                 }
-
                 playCustomSound(settings.chimSound, settings.chimVolume);
                 if (gotLootShare()) {
                     if (settings.sendSinceMessage) {
@@ -337,10 +347,14 @@ registerWhen(register("chat", (drop, event) => {
                         data.inqsSinceLsChim = 0;
                     }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
-                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
-                    if (replaceChimMessage) {
-                        cancel(event)
-                        ChatLib.chat(customChimMessage);
+                    if (data.b2bChimLs && data.inqsSinceLsChim == 1) {
+                        ChatLib.chat("&6[SBO] &cb2b2b Lootshare Chimera!")
+                        unlockAchievement(67) // b2b2b ls chim
+                    }
+                    if (data.inqsSinceLsChim == 1 && !data.b2bChimLs) {
+                        ChatLib.chat("&6[SBO] &cb2b Lootshare Chimera!")
+                        data.b2bChimLs = true;
+                        unlockAchievement(66) // b2b ls chim
                     }
                 }
                 else {
@@ -363,21 +377,28 @@ registerWhen(register("chat", (drop, event) => {
                     if (settings.sendSinceMessage) {
                         new TextComponent(`&6[SBO] &r&eTook &r&c${data.inqsSinceChim} &r&eInquisitors to get a Chimera!`).setClick("run_command", `/ct copy [SBO] Took ${data.inqsSinceChim} Inquisitors to get a Chimera!`).setHover("show_text", "&eClick To Copy").chat();
                     }
-                    if (b2bChim && data.inqsSinceChim == 1) {
+                    if (data.b2bChim && data.inqsSinceChim == 1) {
                         ChatLib.chat("&6[SBO] &cb2b2b Chimera!")
                         unlockAchievement(2) // b2b2b chim
                     }
-                    if (data.inqsSinceChim == 1 && !b2bChim) {
+                    if (data.inqsSinceChim == 1 && !data.b2bChim) {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
-                        b2bChim = true;
+                        data.b2bChim = true;
                         unlockAchievement(1) // b2b chim
                     }
 
                     data.inqsSinceChim = 0;
-                    let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                }
+                let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(magicFind);
+                if (replaceChimMessage) {
+                    cancel(event)
+                    ChatLib.chat(customChimMessage);
+                }
+                if (settings.lootAnnouncerParty) {
                     if (replaceChimMessage) {
-                        cancel(event)
-                        ChatLib.chat(customChimMessage);
+                        ChatLib.command("pc " + customChimMessage.removeFormatting());
+                    } else {
+                        ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
                     }
                 }
                 break;
@@ -403,13 +424,13 @@ registerWhen(register("chat", (drop, event) => {
                 if (settings.sendSinceMessage) {
                     new TextComponent(`&6[SBO] &r&eTook &r&c${data.minotaursSinceStick} &r&eMinotaurs to get a Daedalus Stick!`).setClick("run_command", `/ct copy [SBO] Took ${data.minotaursSinceStick} Minotaurs to get a Daedalus Stick!`).setHover("show_text", "&eClick To Copy").chat();
                 }
-                if (b2bStick && data.minotaursSinceStick == 1) {
+                if (data.b2bStick && data.minotaursSinceStick == 1) {
                     ChatLib.chat("&6[SBO] &cb2b2b Daedalus Stick!")
                     unlockAchievement(4) // b2b2b stick
                 }
-                if (data.minotaursSinceStick == 1 && !b2bStick) {
+                if (data.minotaursSinceStick == 1 && !data.b2bStick) {
                     ChatLib.chat("&6[SBO] &cb2b Daedalus Stick!")
-                    b2bStick = true;
+                    data.b2bStick = true;
                     unlockAchievement(3) // b2b stick
                 }
 
@@ -421,6 +442,9 @@ registerWhen(register("chat", (drop, event) => {
                     else {
                         Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                     }
+                }
+                if (settings.lootAnnouncerParty) {
+                    ChatLib.command("pc [SBO] RARE DROP! Daedalus Stick!" + mfPrefix);
                 }
 
                 playCustomSound(settings.stickSound, settings.stickVolume);
