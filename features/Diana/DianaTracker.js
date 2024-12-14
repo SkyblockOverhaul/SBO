@@ -155,7 +155,7 @@ function trackOne(tracker, item, category, type, amount) {
 }
 
 function checkCustomChimMessage(magicFind) {
-    let text = settings.customChimMessage;
+    let text = settings.customChimMessage.trim();
     if (!settings.chimMessageBool) return [false, ""];
     if (text != "") {
         if (text.includes("{mf}")) {
