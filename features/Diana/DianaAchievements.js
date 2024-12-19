@@ -312,14 +312,16 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
 
     if (item == "Total Burrows") {
         const burrowsPerHour = calcBurrowsPerHour(mayorTracker["Total Burrows"], mayorTracker["mayorTime"]);
-        if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 300 && burrowsPerHour < 400) {
+        if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 300 && burrowsPerHour < 360) {
             achievementsToUnlock.push(68);
-        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 400 && burrowsPerHour < 500) {
+        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 360 && burrowsPerHour < 420) {
             achievementsToUnlock.push(69);
-        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 500 && burrowsPerHour < 550) {
+        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 420 && burrowsPerHour < 480) {
             achievementsToUnlock.push(70);
-        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 550) {
+        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 480 && burrowsPerHour < 550) {
             achievementsToUnlock.push(71);
+        } else if (mayorTracker["mayorTime"] >= 18000000 && burrowsPerHour >= 550) {
+            achievementsToUnlock.push(72);
         }
     }
 
