@@ -508,19 +508,20 @@ let importedATracker = false;
 function importDianaTracker(profileName, importType) {
     totalImportedMobs = 0;
     ChatLib.chat("&6[SBO] &aImporting from SkyHanni...");
+    new TextComponent("&7[&bTo revert back to your old tracker, click here&7]").setClick("run_command", "/sboimporttrackerundo").setHover("show_text", "Click Me").chat();
     let shConfig = JSON.parse(FileLib.read("./config/skyhanni/config.json"));
     if (shConfig == undefined) {
-        ChatLib.chat("&6[SBO] &cSkyHanni not found. cant import tracker");
+        ChatLib.chat("&6[SBO] &cSkyHanni not found. Cant import tracker. Make sure you have the newest version of SkyHanni.");
         return;
     }
     let activePlayer = shConfig.storage.players[Player.getUUID()]
     if (activePlayer == undefined) {
-        ChatLib.chat("&6[SBO] &cPlayer not found in skyhanni config.");
+        ChatLib.chat("&6[SBO] &cPlayer not found in skyhanni config. Make sure you have the newest version of SkyHanni.");
         return;
     }
     let activeProfile = activePlayer.profiles[profileName.toLowerCase()];
     if (activeProfile == undefined) {
-        ChatLib.chat("&6[SBO] &cProfile not found. Please check if the profile name is correct.");
+        ChatLib.chat("&6[SBO] &cProfile not found. Please check if the profile name is correct. Make sure you have the newest version of SkyHanni.");
         return;
     }
     let dianaShTracker = activeProfile.diana
@@ -529,29 +530,32 @@ function importDianaTracker(profileName, importType) {
     oldTracker.total = JSON.parse(JSON.stringify(trackerTotal))
     oldTracker.session = JSON.parse(JSON.stringify(trackerSession))
     importedATracker = true;
+
+    if (dianaShTracker.profitTracker == undefined) {
+        ChatLib.chat("&6[SBO] &cNo tracker found for this profile. Make sure you have the newest version of SkyHanni.");
+        return;
+    }
+
     if (importType == "overwrite") {
         resetTracker("total");
         resetTracker("mayor");
         resetTracker("session");
     }
 
-    transferTracker("items", importType, trackerTotal, dianaShTracker.dianaProfitTracker);
+    transferTracker("items", importType, trackerTotal, dianaShTracker.profitTracker);
     transferTracker("mobs", importType, trackerTotal, dianaShTracker.mythologicalMobTracker.count);
 
-    if (dianaShTracker.dianaProfitTrackerPerElectionSeason) {
-        if (dianaShTracker.dianaProfitTrackerPerElectionSeason[getDateMayorElected().getFullYear()]) {
-            transferTracker("items", importType, trackerMayor, dianaShTracker.dianaProfitTrackerPerElectionSeason[getDateMayorElected().getFullYear()-1]);
+    if (dianaShTracker.profitTrackerPerElection) {
+        if (dianaShTracker.profitTrackerPerElection[getDateMayorElected().getFullYear()-1]) {
+            transferTracker("items", importType, trackerMayor, dianaShTracker.profitTrackerPerElection[getDateMayorElected().getFullYear()-1]);
         }
     }
-    if (dianaShTracker.mythologicalMobTrackerPerElectionSeason) {
-        if (dianaShTracker.mythologicalMobTrackerPerElectionSeason[getDateMayorElected().getFullYear()]) {
-            transferTracker("mobs", importType, trackerMayor, dianaShTracker.mythologicalMobTrackerPerElectionSeason[getDateMayorElected().getFullYear()-1].count);
+    if (dianaShTracker.mythologicalMobTrackerPerElection) {
+        if (dianaShTracker.mythologicalMobTrackerPerElection[getDateMayorElected().getFullYear()-1]) {
+            transferTracker("mobs", importType, trackerMayor, dianaShTracker.mythologicalMobTrackerPerElection[getDateMayorElected().getFullYear()-1].count);
         }
     }
     ChatLib.chat("&6[SBO] &aTracker imported!");
-    new TextComponent("&7[&bTo revert back to your old tracker, click here&7]").setClick("run_command", "/sboimporttrackerundo").setHover("show_text", "Click Me").chat();
-    trackerMayor.save();
-    trackerTotal.save();
     itemOverlay();
     mobOverlay();
 }
@@ -603,6 +607,8 @@ function transferTracker(type, importType, toTracker, fromTracker) {
             toTracker.items["Total Burrows"] += fromTracker.burrowsDug
         }
     }
+    trackerMayor.save();
+    trackerTotal.save();
 }
 
 register("command", (args1, ...args) => {
