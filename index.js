@@ -32,7 +32,7 @@ const commands = [
     {cmd: "sboclearburrows", description: "Clear all burrow waypoints (or: /sbocb)"},
     {cmd: "sbocheck <player>", description: "Check a player (or: /sboc <player>)"},
     {cmd: "sbocheckp", description: "Check your party (alias /sbocp)"},
-    {cmd: "sboimporttracker <profilename>", description: "Import skyhanni/skytils tracker"},
+    {cmd: "sboimporttracker <profilename>", description: "Import skyhanni tracker"},
     {cmd: "sboimporttrackerundo", description: "Undo the tracker import"},
     {cmd: "sbodc", description: "Diana dropchances"},
     {cmd: "sbopartyblacklist", description: "Party commands blacklisting"},
@@ -73,7 +73,7 @@ register("worldLoad", () => {
 });
 
 // dowload msg beispiel
-const newVersion = "0.4.7" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.8" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -107,12 +107,9 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &7- &aAdded new Achiements`)
-    ChatLib.chat(`&7> &7- &aAdded auto announce rare diana drops to party`)
-    ChatLib.chat(`&7> &7- &aAdded !mf / !magicfind command`)
-    ChatLib.chat(`&7> &7- &aAdded radio is weak hider`)
-    ChatLib.chat(`&7> &7- &aChanged the time since inq to playtime`)
-    ChatLib.chat(`&7> &7- &aSome fixes`)
+    ChatLib.chat(`&7> &7- &aAdded a setting to disable dark auction warp`)
+    ChatLib.chat(`&7> &7- &aFixed that importing tracker from skyhanni doesn't work`)
+    ChatLib.chat(`&7> &7- &aFixed a bug with achievements having the wrong requirements`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion

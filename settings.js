@@ -355,6 +355,13 @@ class Settings {
     })
     stonksWarp = false;
     @SwitchProperty({
+        name: "Add Dark Auction Warp",
+        description: "Adds a warp point /warp da",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    darkAuctionWarp = true;
+    @SwitchProperty({
         name: "Chim Message",
         description: "Enables custom chim message",
         category: "Diana",

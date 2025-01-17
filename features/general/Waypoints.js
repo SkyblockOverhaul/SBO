@@ -291,6 +291,14 @@ function getClosestWarp(x, y, z) {
         delete hubWarps.stonks;
     }
 
+    if (settings.darkAuctionWarp) {
+        if (hubWarps.da == undefined) {
+            hubWarps.da = {x: 92, y: 75, z: 174, unlocked: true}
+        }
+    } else {
+        delete hubWarps.da;
+    }
+
     for (let warp in hubWarps) {
         if (hubWarps[warp].unlocked) {
             let distance = Math.sqrt(
