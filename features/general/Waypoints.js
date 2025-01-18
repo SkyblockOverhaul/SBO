@@ -217,11 +217,15 @@ function closestWarpString(x, y, z) {
 
 let guessWaypointString = "";
 let hubWarps = {
-    castle: {x: -250, y: 130, z: 45, unlocked: true},
-    da: {x: 92, y: 75, z: 174, unlocked: true},
-    hub: {x: -3, y: 70, z: -70, unlocked: true},
-    museum: {x: -76, y: 76, z: 81, unlocked: true},
+    castle: {x: -250, y: 130, z: 45, unlocked: true, penalty: settings.castleWarpPenalty},
+    da: {x: 92, y: 75, z: 174, unlocked: true, penalty: settings.darkAuctionWarpPenalty},
+    hub: {x: -3, y: 70, z: -70, unlocked: true, penalty: settings.hubWarpPenalty},
+    museum: {x: -76, y: 76, z: 81, unlocked: true, penalty: settings.museumWarpPenalty},
 };
+settings.registerListener("Castle Warp Penalty", (value) => hubWarps.castle.penalty = value);
+settings.registerListener("Dark Auction Warp Penalty", (value) => hubWarps.da.penalty = value);
+settings.registerListener("Hub Warp Penalty", (value) => hubWarps.hub.penalty = value);
+settings.registerListener("Museum Warp Penalty", (value) => hubWarps.museum.penalty = value);
 
 const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
@@ -272,21 +276,21 @@ function getClosestWarp(x, y, z) {
             delete hubWarps.crypt;
             break;
         case 1:
-            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true}
+            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true, penalty: settings.wizardWarpPenalty}
             delete hubWarps.crypt;
             break;
         case 2:
-            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true}
+            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true, penalty: settings.cryptWarpPenalty}
             delete hubWarps.wizard;
             break;
         case 3:
-            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true}
-            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true}
+            hubWarps.wizard = {x: 42, y: 122, z: 69, unlocked: true, penalty: settings.wizardWarpPenalty}
+            hubWarps.crypt = {x: -161, y: 61, z: -99, unlocked: true, penalty: settings.cryptWarpPenalty}
             break;
     }
 
     if (settings.stonksWarp) {
-        hubWarps.stonks = {x: -53, y: 72, z: -53, unlocked: true}
+        hubWarps.stonks = {x: -53, y: 72, z: -53, unlocked: true, penalty: settings.stonksWarpPenalty}
     } else {
         delete hubWarps.stonks;
     }
@@ -314,6 +318,7 @@ function getClosestWarp(x, y, z) {
     }
     settings.warpDiff = settings.warpDiff.replace(/\D/g, '');
     let warpDiff = parseInt(settings.warpDiff);
+    if (settings.individualWarpPenalties) warpDiff += hubWarps[closestWarp].penalty;
 
     const warpConditions = {
         condition1: Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff),
