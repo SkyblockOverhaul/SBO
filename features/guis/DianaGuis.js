@@ -188,10 +188,10 @@ function getTimerMessage(viewSetting) {
     }
 }
 
+let PAUSED = false;
 register("tick", () => {
     if (timerOverlayLine) {
         let viewSetting = settings.dianaLootTrackerView;
-        let PAUSED = false;
         if (settings.dianaLootTrackerView == 0) {
             viewSetting = 1;
         }
