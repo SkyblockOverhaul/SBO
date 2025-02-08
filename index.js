@@ -107,9 +107,7 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &7- &aAdded a setting to disable dark auction warp`)
-    ChatLib.chat(`&7> &7- &aFixed that importing tracker from skyhanni doesn't work`)
-    ChatLib.chat(`&7> &7- &aFixed a bug with achievements having the wrong requirements`)
+    ChatLib.chat(`&7> &aAdded: &ePaused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused`)
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion

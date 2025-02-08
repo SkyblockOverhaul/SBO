@@ -178,7 +178,7 @@ let lootMessageLines = [];
 let timerOverlayLine = null;
 
 function getTimerMessage(viewSetting) {
-    const timer = dianaTimerlist[viewSetting - 1];
+    let timer = dianaTimerlist[viewSetting - 1];
     if (timer === undefined) return "00:00:00";
     if (timer.trackerObject.items[timer.dataFieldName] === undefined) return formatTime(timer.getElapsedTime());
     if (timer.trackerObject.items[timer.dataFieldName] > 0) {
@@ -191,6 +191,7 @@ function getTimerMessage(viewSetting) {
 register("tick", () => {
     if (timerOverlayLine) {
         let viewSetting = settings.dianaLootTrackerView;
+        let PAUSED = false;
         if (settings.dianaLootTrackerView == 0) {
             viewSetting = 1;
         }
@@ -198,7 +199,14 @@ register("tick", () => {
             timerOverlayLine.button = true;
             timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
         } else {
-            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)}`);
+            if (dianaTimerlist[viewSetting - 1].running) {
+                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)}`);
+                PAUSED = false;
+            }
+            else if (!PAUSED) {
+                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)} &7[&cPAUSED&7]`);
+                PAUSED = true;
+            }
         }
     }
 });
