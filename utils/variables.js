@@ -99,6 +99,8 @@ export let data = new PogObject("SBO", {
     "trackerMigration": false,
     "avgChimMagicFind": 0,
     "avgStickMagicFind": 0,
+    "highestChimMagicFind": 0,
+    "highestStickMagicFind": 0,
     "last10ChimMagicFind": [],
     "last10StickMagicFind": [],
     "hideTrackerLines": [],
