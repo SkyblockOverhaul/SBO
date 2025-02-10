@@ -1,9 +1,9 @@
-
 // Importing constants and utility functions from other files
 import { delay } from "./threads";
 import { getDateMayorElected, setNewMayorBool } from "./mayor";
 // Importing the PogObject class from another file named "PogData"
 import PogObject from "../../PogData";
+import FU from "../../FileUtilities/main";
 
 
 // initialize tracker //
@@ -81,8 +81,13 @@ export function initializeTrackerMayor() {
     return tempTracker;
 }
 
-
 // --- PERSISTENT DATA ---
+// sbo config folder
+let configFolderPath = "./config/sbo";
+if (!FU.exists(configFolderPath)) {
+    console.log("Creating sbo folder");
+    FU.newDirectory(configFolderPath);
+}
 
 // Initializing a persistent data object using the PogObject class
 export const resetVersion = "0.1.3"; // change this to the new version for config.toml reset
@@ -97,6 +102,7 @@ export let data = new PogObject("SBO", {
     "champsSinceRelic": 0,
     "inqsSinceLsChim": 0,
     "trackerMigration": false,
+    "trackerMigration2": false,
     "avgChimMagicFind": 0,
     "avgStickMagicFind": 0,
     "last10ChimMagicFind": [],
@@ -123,23 +129,7 @@ export let data = new PogObject("SBO", {
     "b2bInq": false,
 }, "SboData.json");
 
-export let mainCheckboxes = new PogObject("../../../config", {
-    "eman9": false,
-    "looting5": false,
-    "mvpplus": false,
-    "canIjoin": false,
-    "l5ReqCreate": false,
-    "eman9ReqCreate": false,
-}, "sbo_mainCheckboxes.json");
 
-export let mainInputFields = new PogObject("../../../config", {
-    "kills": "0",
-    "lvl": "0",
-}, "sbo_mainInputFields.json");
-
-export let pastDianaEvents = new PogObject("../../../config", {
-    "events": []
-}, "pastDianaEvents.json");
 
 
 let oldMayorTracker = {};
@@ -197,7 +187,51 @@ if (!data.trackerMigration) {
     }
 }
 
-export let dianaTrackerTotal = new PogObject("../../../config", {
+let sboFiles = [
+    "sbo_mainCheckboxes.json",
+    "sbo_mainInputFields.json",
+    "SboData.json",
+    "pastDianaEvents.json",
+    "sbo_achievements.json",
+    "dianaTrackerTotal.json",
+    "dianaTrackerSession.json",
+    "dianaTrackerMayor.json"
+];
+
+
+if (!data.trackerMigration2) {
+    if (FU.exists("./config/dianaTrackerTotal.json")) {
+        console.log("Old tracker exists");
+        for (let file of sboFiles) {
+            if (FU.exists("./config/" + file)) {
+                console.log("Moving " + file);
+                FU.moveFile("./config/" + file, "./config/sbo/" + file);
+            }
+        }
+    }
+    data.trackerMigration2 = true;
+    data.save();
+}
+
+export let mainCheckboxes = new PogObject("../../../config/sbo", {
+    "eman9": false,
+    "looting5": false,
+    "mvpplus": false,
+    "canIjoin": false,
+    "l5ReqCreate": false,
+    "eman9ReqCreate": false,
+}, "sbo_mainCheckboxes.json");
+
+export let mainInputFields = new PogObject("../../../config/sbo", {
+    "kills": "0",
+    "lvl": "0",
+}, "sbo_mainInputFields.json");
+
+export let pastDianaEvents = new PogObject("../../../config/sbo", {
+    "events": []
+}, "pastDianaEvents.json");
+
+export let dianaTrackerTotal = new PogObject("../../../config/sbo", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -231,7 +265,7 @@ export let dianaTrackerTotal = new PogObject("../../../config", {
     }
 }, "dianaTrackerTotal.json");
 
-export let dianaTrackerSession = new PogObject("../../../config", {
+export let dianaTrackerSession = new PogObject("../../../config/sbo", {
     items: {
         "coins": 0,
         "Griffin Feather": 0,
@@ -265,7 +299,7 @@ export let dianaTrackerSession = new PogObject("../../../config", {
     }
 }, "dianaTrackerSession.json");
 
-export let dianaTrackerMayor = new PogObject("../../../config", {
+export let dianaTrackerMayor = new PogObject("../../../config/sbo", {
     year: 0,
     items: {
         "coins": 0,
@@ -300,7 +334,7 @@ export let dianaTrackerMayor = new PogObject("../../../config", {
     }
 }, "dianaTrackerMayor.json");
 
-export let achievementsData = new PogObject("../../../config", {
+export let achievementsData = new PogObject("../../../config/sbo", {
     "unlocked": []
 }, "sbo_achievements.json");
 
