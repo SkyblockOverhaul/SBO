@@ -180,18 +180,22 @@ let timerOverlayLine = null;
 function getTimerMessage(viewSetting) {
     let timer = dianaTimerlist[viewSetting - 1];
     if (timer === undefined) return "00:00:00";
-    if (timer.trackerObject.items[timer.dataFieldName] === undefined) return formatTime(timer.getElapsedTime());
-    if (timer.trackerObject.items[timer.dataFieldName] > 0) {
-        return formatTime(timer.trackerObject.items[timer.dataFieldName]);
+    
+    let elapsedTime;
+    if (timer.trackerObject.items[timer.dataFieldName] === undefined) {
+        elapsedTime = timer.getElapsedTime();
+    } else if (timer.trackerObject.items[timer.dataFieldName] > 0) {
+        elapsedTime = timer.trackerObject.items[timer.dataFieldName];
     } else {
-        return formatTime(timer.getElapsedTime());
+        elapsedTime = timer.getElapsedTime();
     }
+    
+    return timer.running ? formatTime(elapsedTime) : `${formatTime(elapsedTime)} &7[&cPAUSED&7]`;
 }
 
 register("tick", () => {
     if (timerOverlayLine) {
         let viewSetting = settings.dianaLootTrackerView;
-        let PAUSED = false;
         if (settings.dianaLootTrackerView == 0) {
             viewSetting = 1;
         }
@@ -199,14 +203,7 @@ register("tick", () => {
             timerOverlayLine.button = true;
             timerOverlayLine.setText("&7&m" + timerOverlayLine.text.getString().removeFormatting());
         } else {
-            if (dianaTimerlist[viewSetting - 1].running) {
-                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)}`);
-                PAUSED = false;
-            }
-            else if (!PAUSED) {
-                timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)} &7[&cPAUSED&7]`);
-                PAUSED = true;
-            }
+            timerOverlayLine.setText(`&ePlaytime: &b${getTimerMessage(viewSetting)}`);
         }
     }
 });
