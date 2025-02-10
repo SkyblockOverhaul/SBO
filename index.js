@@ -25,6 +25,8 @@ import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 import settings from "./settings";
 
+// import "./features/Diana/mobDetectTest";
+
 const commands = [
     {cmd: "sbo", description: "Open the settings"},
     {cmd: "sbo help", description: "Show this message"},
@@ -45,6 +47,11 @@ const commands = [
     {cmd: "sbopartycommands", description: "Displays all diana partycommands"},
     {cmd: "sboresetavgmftracker", description: "Resets the avg mf tracker"},
     {cmd: "sboresetstatstracker", description: "Resets the stats tracker"},
+];
+
+const changelog = [
+    {header: "Added", description: "Paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
+    {header: "Added", description: "!stats <playername> party command"},
 ];
 
 register("command", (args1, ...args) => {
@@ -107,7 +114,9 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &aAdded: &ePaused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused`)
+    changelog.forEach(({ header, description }) => {
+        ChatLib.chat(`&7> &a${header}: &e${description}`)
+    });
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion
