@@ -25,7 +25,7 @@ function cleanName(rawName) {
     return rawName.removeFormatting().replace(/[^a-zA-Z\s]/g, "").trim();
 }
 
-function trackEntity(uuid, mob, dictionary, entityTypeCheck) {
+function trackEntity(uuid, mob, dictionary, entityTypeCheck, entityClasses) {
     if (entityTypeCheck(cleanName(mob.getName()))) {
         if (!dictionary[uuid]) {
             dictionary[uuid] = {
@@ -42,19 +42,28 @@ function trackEntity(uuid, mob, dictionary, entityTypeCheck) {
             data.y = mob.getY();
             data.z = mob.getZ();
             data.lastSeen = Date.now();
-            
-            let closestEntity = World.getAllEntitiesOfType(net.minecraft.entity.monster.EntityZombie)
-                .find(z => z.distanceTo(mob) < 3);
-            
-            if (closestEntity) {
-                data.trackedEntity = closestEntity;
-                data.x = closestEntity.getX();
-                data.y = closestEntity.getY();
-                data.z = closestEntity.getZ();
+
+            if (!data.trackedEntity) {
+                for (let entityClass of entityClasses) {
+                    let foundEntity = World.getAllEntitiesOfType(entityClass)
+                        .find(entity => entity.distanceTo(mob) < 3);
+
+                    if (foundEntity) {
+                        data.trackedEntity = foundEntity;
+                        break;
+                    }
+                }
+            }
+
+            if (data.trackedEntity) {
+                data.x = data.trackedEntity.getX();
+                data.y = data.trackedEntity.getY();
+                data.z = data.trackedEntity.getZ();
             }
         }
     }
 }
+
 
 function updateTrackedEntities(trackedEntities, seenUUIDs) {
     for (let uuid in trackedEntities) {
@@ -76,6 +85,12 @@ function updateTrackedEntities(trackedEntities, seenUUIDs) {
     }
 }
 
+const dianaEntityList = [
+    net.minecraft.entity.monster.EntityZombie,
+    net.minecraft.entity.passive.EntityIronGolem,
+    net.minecraft.entity.passive.EntityOcelot
+];
+
 registerWhen(register("step", () => {
     if (checkDiana()) {
         let seenUUIDs = new Set();
@@ -84,8 +99,9 @@ registerWhen(register("step", () => {
             let uuid = armorStand.getUUID();
             seenUUIDs.add(uuid);
             
-            trackEntity(uuid, armorStand, TrackedInqs, (name) => name.includes("Inquisitor"));  
-            trackEntity(uuid, armorStand, TrackedMobs, (name) => (name.includes("Exalted") || name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0"));
+            trackEntity(uuid, armorStand, TrackedInqs, (name) => name.includes("Golden"), [net.minecraft.entity.monster.EntityZombie]);  
+            trackEntity(uuid, armorStand, TrackedMobs, (name) => (name.includes("Exalted") || 
+            name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0"), dianaEntityList);
         });
         
         updateTrackedEntities(TrackedInqs, seenUUIDs);
@@ -115,7 +131,7 @@ export const inqHighlightRegister = register("renderWorld", () => {
         }
     });
 });
-inqHighlightRegister.unregister();
+// inqHighlightRegister.unregister();
 
 registerWhen(register("step", () => {
     if (checkDiana()) {
