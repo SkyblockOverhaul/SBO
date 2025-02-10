@@ -85,7 +85,6 @@ export function initializeTrackerMayor() {
 // sbo config folder
 let configFolderPath = "./config/sbo";
 if (!FU.exists(configFolderPath)) {
-    console.log("Creating sbo folder");
     FU.newDirectory(configFolderPath);
 }
 
@@ -203,10 +202,8 @@ let sboFiles = [
 
 if (!data.trackerMigration2) {
     if (FU.exists("./config/dianaTrackerTotal.json")) {
-        console.log("Old tracker exists");
         for (let file of sboFiles) {
             if (FU.exists("./config/" + file)) {
-                console.log("Moving " + file);
                 FU.moveFile("./config/" + file, "./config/sbo/" + file);
             }
         }
