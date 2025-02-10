@@ -46,7 +46,11 @@ function trackEntity(uuid, mob, dictionary, entityTypeCheck, entityClasses) {
             if (!data.trackedEntity) {
                 for (let entityClass of entityClasses) {
                     let foundEntity = World.getAllEntitiesOfType(entityClass)
-                        .find(entity => entity.distanceTo(mob) < 3);
+                    .find(entity => 
+                        entity.distanceTo(mob) < 3 && 
+                        Math.abs(entity.getX() - mob.getX()) <= 0.5 && 
+                        Math.abs(entity.getZ() - mob.getZ()) <= 0.5
+                    );
 
                     if (foundEntity) {
                         data.trackedEntity = foundEntity;
@@ -99,7 +103,7 @@ registerWhen(register("step", () => {
             let uuid = armorStand.getUUID();
             seenUUIDs.add(uuid);
             
-            trackEntity(uuid, armorStand, TrackedInqs, (name) => name.includes("Inquisitor"), [net.minecraft.entity.monster.EntityZombie]);  
+            trackEntity(uuid, armorStand, TrackedInqs, (name) => name.includes("Inquisitor"), dianaEntityList);  
             trackEntity(uuid, armorStand, TrackedMobs, (name) => (name.includes("Exalted") || 
             name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0"), dianaEntityList);
         });
@@ -107,7 +111,7 @@ registerWhen(register("step", () => {
         updateTrackedEntities(TrackedInqs, seenUUIDs);
         updateTrackedEntities(TrackedMobs, seenUUIDs);
     }
-}).setFps(6), () => settings.mythosMobHp || settings.inqHighlight || settings.inqCircle && getWorld() === "Hub");
+}).setFps(8), () => settings.mythosMobHp || settings.inqHighlight || settings.inqCircle && getWorld() === "Hub");
 
 export const inqHighlightRegister = register("renderWorld", () => {
     Object.values(TrackedInqs).forEach((mob) => {

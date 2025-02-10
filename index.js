@@ -1,6 +1,7 @@
 /// <reference types="../CTAutocomplete" />
 import "./features/Diana/DianaBurrows";
 import "./features/Kuudra";
+// import "./features/Diana/mobDetectTest";
 import "./features/Diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
@@ -24,8 +25,6 @@ import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
 import settings from "./settings";
-
-// import "./features/Diana/mobDetectTest";
 
 const commands = [
     {cmd: "sbo", description: "Open the settings"},
