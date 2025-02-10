@@ -99,7 +99,7 @@ registerWhen(register("step", () => {
             let uuid = armorStand.getUUID();
             seenUUIDs.add(uuid);
             
-            trackEntity(uuid, armorStand, TrackedInqs, (name) => name.includes("Golden"), [net.minecraft.entity.monster.EntityZombie]);  
+            trackEntity(uuid, armorStand, TrackedInqs, (name) => name.includes("Inquisitor"), [net.minecraft.entity.monster.EntityZombie]);  
             trackEntity(uuid, armorStand, TrackedMobs, (name) => (name.includes("Exalted") || 
             name.includes("Stalwart")) && !name.split(" ")[2].startsWith("0"), dianaEntityList);
         });
@@ -131,7 +131,7 @@ export const inqHighlightRegister = register("renderWorld", () => {
         }
     });
 });
-// inqHighlightRegister.unregister();
+inqHighlightRegister.unregister();
 
 registerWhen(register("step", () => {
     if (checkDiana()) {
