@@ -1,7 +1,6 @@
 /// <reference types="../CTAutocomplete" />
 import "./features/Diana/DianaBurrows";
 import "./features/Kuudra";
-// import "./features/Diana/mobDetectTest";
 import "./features/Diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
