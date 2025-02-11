@@ -4,6 +4,7 @@ import {
     @CheckboxProperty,
     Color,
     @ColorProperty,
+    @NumberProperty,
     @PercentSliderProperty,
     @SelectorProperty,
     @SwitchProperty,
@@ -83,8 +84,14 @@ class Settings {
         this.addDependency('Golden Fish Notification','Golden Fish Timer');
         this.addDependency('Flare Expire Soon Alert','Flare Tracker');
         this.addDependency('Hide Own Flare When Not In Range','Flare Tracker');
-        this.addDependency('Burrow Guess Alternative','Diana Burrow Guess');
-
+        this.addDependency('Initial Burrow Guess','Diana Burrow Guess');
+        this.addDependency('Hub Warp Penalty', 'Use Individual Warp Penalties');
+        this.addDependency('Crypt Warp Penalty', 'Use Individual Warp Penalties');
+        this.addDependency('Wizard Warp Penalty', 'Use Individual Warp Penalties');
+        this.addDependency('Stonks Warp Penalty', 'Use Individual Warp Penalties');
+        this.addDependency('Castle Warp Penalty', 'Use Individual Warp Penalties');
+        this.addDependency('Dark Auction Warp Penalty', 'Use Individual Warp Penalties');
+        this.addDependency('Museum Warp Penalty', 'Use Individual Warp Penalties');
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
@@ -95,8 +102,8 @@ class Settings {
     })
     dianaBurrowGuess = true;
     @SwitchProperty({
-        name: "Burrow Guess Alternative",
-        description: "[WIP] Makes a guess based on the arrow that spawns when you finished a burrow and the color it shows",
+        name: "Initial Burrow Guess",
+        description: "[WIP] Makes an initial guess based on the color of the arrow that spawns when you finished a burrow. Useful for when you want to warp before making an accurate guess",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
@@ -976,6 +983,65 @@ class Settings {
         max: 100
     })
     achievementVolume = 50;
+
+    // Individual Warp Penalties
+    @SwitchProperty({
+        name: "Use Individual Warp Penalties",
+        description: "Enables you to set an individual distance penalty for each warp, if you want to favor certain warps over others",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    individualWarpPenalties = false;
+    @NumberProperty({
+        name: "Hub Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    hubWarpPenalty = 0;
+    @NumberProperty({
+        name: "Crypt Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    cryptWarpPenalty = 0;
+    @NumberProperty({
+        name: "Wizard Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    wizardWarpPenalty = 0;
+    @NumberProperty({
+        name: "Stonks Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    stonksWarpPenalty = 0;
+    @NumberProperty({
+        name: "Castle Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    castleWarpPenalty = 0;
+    @NumberProperty({
+        name: "Dark Auction Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    darkAuctionWarpPenalty = 0;
+    @NumberProperty({
+        name: "Museum Warp Penalty",
+        category: "Customization",
+        subcategory: "Warp Penalties",
+        min: 0, max: 50, increment: 10
+    })
+    museumWarpPenalty = 0;
 
     // Partyfinder
     @SwitchProperty({

@@ -252,8 +252,7 @@ registerWhen(register("packetReceived", (packet) => {
 
 // Delete colored armor stands that no longer exist
 registerWhen(register("step", () => {
-    const enumerator = Object.keys(coloredArmorStands);
-    enumerator.forEach(id => {
+    Object.keys(coloredArmorStands).forEach(id => {
         const armorStand = World.getWorld().func_73045_a(id);
         if (armorStand === null) {
             delete coloredArmorStands[id];
@@ -294,7 +293,7 @@ register("step", () => {
             createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
         } 
     }
-}).setFps(4);
+}).setFps(20);
 
 registerWhen(register("packetReceived", (packet) => {
     packettype = packet.func_179749_a().toString()
