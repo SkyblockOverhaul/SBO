@@ -454,7 +454,7 @@ registerWhen(register("chat", (drop, event) => {
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool)));
 
 // refresh overlay //
 let tempSettingLoot = -1;
