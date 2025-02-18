@@ -54,6 +54,7 @@ class Settings {
         // this.addDependency("Checkbox", "Do action!!!")
         this.addDependency("Mob View", "Diana Tracker");
         this.addDependency("Loot View", "Diana Tracker");
+        this.addDependency("Inquis Loot Tracker", "Diana Tracker");
         this.addDependency('Warp Party','Party Commands');
         this.addDependency('Allinvite','Party Commands');
         this.addDependency('Party Transfer','Party Commands');
@@ -162,14 +163,6 @@ class Settings {
         options: ["OFF", "Total", "Event", "Session"]
     })
     inquisTracker = 0;
-    // @SwitchProperty({
-    //     name: "Inquis Tracker",
-    //     description: "Tracks your Inquisitor Loot",
-    //     category: "Diana",
-    //     subcategory: "Diana Tracker",
-    //     options: ["OFF", "Total", "Event", "Session"]
-    // })
-    // inquisTracker = 0;
     @SwitchProperty({
         name: "Four-Eyed Fish",
         description: "Set if you have a Four-Eyed Fish on your griffin pet",
