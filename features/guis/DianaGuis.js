@@ -458,14 +458,14 @@ function getInquisMessage(viewSetting) {
             if (line.button) {
                 line.button = false;
                 line.setText(text);
-                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.name);
+                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line !== `${item.name} inquis`);
             } else {
                 line.button = true;
                 line.setText("&7&m" + line.text.getString().removeFormatting());
-                data.hideTrackerLines.push(item.name);
+                data.hideTrackerLines.push(`${item.name} inquis`);
             }
         });
-        if (data.hideTrackerLines.includes(item.name)) {
+        if (data.hideTrackerLines.includes(`${item.name} inquis`)) {
             line.button = true;
             line.setText("&7&m" + line.text.getString().removeFormatting());
         }
