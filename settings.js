@@ -431,6 +431,13 @@ class Settings {
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerParty = false;
+    @SwitchProperty({
+        name: 'Inquis Loot Party Announcer',
+        description: 'Announce inquisitor loot to party (Shelmet/Plushie/Remedies)',
+        category: 'Diana',
+        subcategory: 'Loot Announcer',
+    })
+    inquisLootAnnouncerParty = false;
 
     //Party Commands
     @SwitchProperty({

@@ -213,7 +213,6 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
     if (entityName == "Minos Inquisitor") {
         if (dist < 30) {
             state3.entityDeathOccurred = true;
-            print("Inq death");
             setTimeout(() => {
                 state3.entityDeathOccurred = false;
             }, 2000);

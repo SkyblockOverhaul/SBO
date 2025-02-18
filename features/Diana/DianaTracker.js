@@ -82,11 +82,19 @@ export function dianaLootCounter(item, amount) {
                             else {
                                 trackItem(item, "inquis", amount);
                             }
+                            announceLootToParty(item);
                         }
                     }
                 }
             }
         }
+    }
+}
+
+function announceLootToParty(item) {
+    if (settings.inquisLootAnnouncerParty) {
+        let itemname = item.replace("_LS", "").replace("_", " ").toTitleCase();
+        ChatLib.command("pc [SBO] RARE DROP! " + itemname);
     }
 }
 
@@ -574,6 +582,7 @@ function importDianaTracker(profileName, importType) {
     ChatLib.chat("&6[SBO] &aTracker imported!");
     itemOverlay();
     mobOverlay();
+    inquisOverlay();
 }
 
 function transferData(type, itemKey, ammount, importType, tracker) {
@@ -674,6 +683,7 @@ register("command", () => {
         trackerTotal.save();
         itemOverlay();
         mobOverlay();
+        inquisOverlay();
     }
 }).setName("sboimporttrackerundo");
 
