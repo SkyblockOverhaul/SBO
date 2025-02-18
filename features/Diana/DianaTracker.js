@@ -84,7 +84,9 @@ export function dianaLootCounter(item, amount) {
                                     trackItem(item, "inquis", amount);
                                 }
                             }
-                            announceLootToParty(item);
+                            setTimeout(() => {
+                                announceLootToParty(item);
+                            }, 250);
                         }
                     }
                 }
