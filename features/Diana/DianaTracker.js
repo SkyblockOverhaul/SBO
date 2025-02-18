@@ -1,8 +1,8 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
-import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, inquisDeathTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
+import { itemOverlay, mobOverlay, inquisOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
@@ -17,6 +17,11 @@ import { getDateMayorElected, getSkyblockDate } from "../../utils/mayor";
 export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
+    let lsIdsDict = {
+        "DWARF_TURTLE_SHELMET": "DWARF_TURTLE_SHELMET_LS",
+        "CROCHET_TIGER_PLUSHIE": "CROCHET_TIGER_PLUSHIE_LS",
+        "ANTIQUE_REMEDIES": "ANTIQUE_REMEDIES_LS",
+    }
     let checkBool = true;
     if (mobDeath2SecsTrue() || gotLootShare()) {
         if (checkDiana()) {
@@ -70,6 +75,14 @@ export function dianaLootCounter(item, amount) {
                         if (settings.dianaTracker) {
                             trackItem(item, "items", amount);
                         }
+                        if (settings.inquisTracker && inquisDeathTrue()) {
+                            if (gotLootShare()) {
+                                trackItem(lsIdsDict[item], "inquis", amount);
+                            }
+                            else {
+                                trackItem(item, "inquis", amount);
+                            }
+                        }
                     }
                 }
             }
@@ -118,6 +131,7 @@ export function trackItem(item, category, amount) {
 
         itemOverlay();
         mobOverlay();
+        inquisOverlay();
         statsOverlay();
         avgMagicFindOverlay();
         data.save();
@@ -194,6 +208,7 @@ register("command", () => {
     trackerSession.save();
     itemOverlay();
     mobOverlay();
+    inquisOverlay();
 }).setName("sboresetsession");
     
 // total burrow tracker //
@@ -475,6 +490,7 @@ let firstLoadReg = register("tick", () => {
     if (isInSkyblock() && isDataLoaded()) {
         itemOverlay();
         mobOverlay();
+        inquisOverlay();
         statsOverlay();
         avgMagicFindOverlay();
         mythosMobHpOverlay([]);

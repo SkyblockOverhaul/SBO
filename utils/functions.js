@@ -151,6 +151,10 @@ let state2 = {
     entityDeathOccurred: false
 }
 
+let state3 = {
+    entityDeathOccurred: false
+}
+
 // return 2sec long true if entity death occurred //
 export function mobDeath2SecsTrue() {
     return state.entityDeathOccurred;
@@ -159,7 +163,11 @@ export function mobDeath2SecsTrue() {
 // return 4sec long true if entity death occurred //
 export function mobDeath4SecsTrue() {
     return state2.entityDeathOccurred;
-}   
+}
+
+export function inquisDeathTrue() {
+    return state3.entityDeathOccurred;
+}
 
 let allowedToTrackSacks = false;
 export function getAllowedToTrackSacks() {
@@ -201,6 +209,15 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         setTimeout(() => {
             hasTrackedInq = false;
         }, 4000);
+    }
+    if (entityName == "Minos Inquisitor") {
+        if (dist < 30) {
+            state3.entityDeathOccurred = true;
+            print("Inq death");
+            setTimeout(() => {
+                state3.entityDeathOccurred = false;
+            }, 2000);
+        }
     }
     if (dianaMobNames.includes(entityName.trim())) {
         if (dist < 30 ) {
@@ -692,10 +709,19 @@ export function getPurse() {
 export function calcPercent(trackerToCalc, type) {
     if (trackerToCalc == undefined) return;
     percentDict = {};
-    if(type == "mobs") {
+    if (type == "mobs") {
         for (let mob in trackerToCalc["mobs"]) {
             percentDict[mob] = parseFloat((trackerToCalc["mobs"][mob] / trackerToCalc["mobs"]["TotalMobs"] * 100).toFixed(2));
         }
+        return percentDict;
+    }
+    else if (type == "inquis") {
+        percentDict["DWARF_TURTLE_SHELMET"] = parseFloat((trackerToCalc["inquis"]["DWARF_TURTLE_SHELMET"] / trackerToCalc["mobs"]["Minos Inquisitor"] * 100).toFixed(2));
+        percentDict["CROCHET_TIGER_PLUSHIE"] = parseFloat((trackerToCalc["inquis"]["CROCHET_TIGER_PLUSHIE"] / trackerToCalc["mobs"]["Minos Inquisitor"] * 100).toFixed(2));
+        percentDict["ANTIQUE_REMEDIES"] = parseFloat((trackerToCalc["inquis"]["ANTIQUE_REMEDIES"] / trackerToCalc["mobs"]["Minos Inquisitor"] * 100).toFixed(2));
+        percentDict["DWARF_TURTLE_SHELMET_LS"] = parseFloat((trackerToCalc["inquis"]["DWARF_TURTLE_SHELMET_LS"] / trackerToCalc["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2));
+        percentDict["CROCHET_TIGER_PLUSHIE_LS"] = parseFloat((trackerToCalc["inquis"]["CROCHET_TIGER_PLUSHIE_LS"] / trackerToCalc["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2));
+        percentDict["ANTIQUE_REMEDIES_LS"] = parseFloat((trackerToCalc["inquis"]["ANTIQUE_REMEDIES_LS"] / trackerToCalc["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2));
         return percentDict;
     }
     else {

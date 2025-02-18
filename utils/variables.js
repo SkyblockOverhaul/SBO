@@ -38,6 +38,14 @@ export function initializeTracker() {
             "Minos Hunter": 0,
             "TotalMobs": 0,
             "Minos Inquisitor Ls": 0
+        },
+        inquis: {
+            "DWARF_TURTLE_SHELMET": 0,
+            "CROCHET_TIGER_PLUSHIE": 0,
+            "ANTIQUE_REMEDIES": 0,
+            "DWARF_TURTLE_SHELMET_LS": 0,
+            "CROCHET_TIGER_PLUSHIE_LS": 0,
+            "ANTIQUE_REMEDIES_LS": 0
         }
     };
     return tempTracker;
@@ -76,6 +84,14 @@ export function initializeTrackerMayor() {
             "Minos Hunter": 0,
             "TotalMobs": 0,
             "Minos Inquisitor Ls": 0
+        },
+        inquis: {
+            "DWARF_TURTLE_SHELMET": 0,
+            "CROCHET_TIGER_PLUSHIE": 0,
+            "ANTIQUE_REMEDIES": 0,
+            "DWARF_TURTLE_SHELMET_LS": 0,
+            "CROCHET_TIGER_PLUSHIE_LS": 0,
+            "ANTIQUE_REMEDIES_LS": 0
         }
     };
     return tempTracker;
@@ -261,6 +277,14 @@ export let dianaTrackerTotal = new PogObject("../../../config/sbo", {
         "Minos Hunter": 0,
         "TotalMobs": 0,
         "Minos Inquisitor Ls": 0
+    },
+    inquis: {
+        "DWARF_TURTLE_SHELMET": 0,
+        "CROCHET_TIGER_PLUSHIE": 0,
+        "ANTIQUE_REMEDIES": 0,
+        "DWARF_TURTLE_SHELMET_LS": 0,
+        "CROCHET_TIGER_PLUSHIE_LS": 0,
+        "ANTIQUE_REMEDIES_LS": 0
     }
 }, "dianaTrackerTotal.json");
 
@@ -295,6 +319,14 @@ export let dianaTrackerSession = new PogObject("../../../config/sbo", {
         "Minos Hunter": 0,
         "TotalMobs": 0,
         "Minos Inquisitor Ls": 0
+    },
+    inquis: {
+        "DWARF_TURTLE_SHELMET": 0,
+        "CROCHET_TIGER_PLUSHIE": 0,
+        "ANTIQUE_REMEDIES": 0,
+        "DWARF_TURTLE_SHELMET_LS": 0,
+        "CROCHET_TIGER_PLUSHIE_LS": 0,
+        "ANTIQUE_REMEDIES_LS": 0
     }
 }, "dianaTrackerSession.json");
 
@@ -330,6 +362,14 @@ export let dianaTrackerMayor = new PogObject("../../../config/sbo", {
         "Minos Hunter": 0,
         "TotalMobs": 0,
         "Minos Inquisitor Ls": 0
+    },
+    inquis: {
+        "DWARF_TURTLE_SHELMET": 0,
+        "CROCHET_TIGER_PLUSHIE": 0,
+        "ANTIQUE_REMEDIES": 0,
+        "DWARF_TURTLE_SHELMET_LS": 0,
+        "CROCHET_TIGER_PLUSHIE_LS": 0,
+        "ANTIQUE_REMEDIES_LS": 0
     }
 }, "dianaTrackerMayor.json");
 

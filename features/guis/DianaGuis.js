@@ -398,6 +398,93 @@ export function mythosMobHpOverlay(mobNamesWithHp) {
     mythosHpOverlay.setLines([mythosHpText.setText(message)]);
 }
 
+let inquisTracker = new SboOverlay("inquisTracker", "dianaTracker", "inventory", "InquisLoc", "", true);
+let buttonChangeInquisView = new OverlayButton("&eChange View", true, true, true, true)
+buttonChangeInquisView.onClick(() => {
+    settings.inquisTracker += 1;
+    if (settings.inquisTracker > 3) {
+        settings.inquisTracker = 1;
+    }
+    inquisOverlay();
+})
+buttonChangeInquisView.onMouseEnter(() => {
+    buttonChangeInquisView.setText(`&e&nChange View`);
+})
+buttonChangeInquisView.onMouseLeave(() => {
+    buttonChangeInquisView.setText(`&eChange View`);
+})
+
+let inquisLines = [];
+export function inquisOverlay() {
+    inquisLines = [];
+    let viewSetting = settings.inquisTracker;
+    if (settings.inquisTracker == 0) {
+        viewSetting = 1;
+    }
+    inquisLines = getInquisMessage(viewSetting);
+    inquisTracker.setLines(inquisLines);
+}
+
+function getInquisMessage(viewSetting) {
+    const inquisTrackerType = ["Total", "Event", "Session"][viewSetting - 1];
+    let inquisTracker = getTracker(viewSetting);
+    let percentDict = calcPercent(inquisTracker, "inquis");
+
+    const inquisData = [
+        { name: "Turtle Shelmet", key: "DWARF_TURTLE_SHELMET", color: DARK_GREEN, hasPercent: true },
+        { name: "Tiger Plushie", key: "CROCHET_TIGER_PLUSHIE", color: DARK_GREEN, hasPercent: true },
+        { name: "Antique Remedies", key: "ANTIQUE_REMEDIES", color: DARK_GREEN, hasPercent: true },
+        { name: "Turtle Shelmet &7[&bLS&7]", key: "DWARF_TURTLE_SHELMET_LS", color: BLUE, hasPercent: true },
+        { name: "Tiger Plushie &7[&bLS&7]", key: "CROCHET_TIGER_PLUSHIE_LS", color: BLUE, hasPercent: true },
+        { name: "Antique Remedies &7[&bLS&7]", key: "ANTIQUE_REMEDIES_LS", color: BLUE, hasPercent: true },
+    ];
+
+    function createInquisLine(item) {
+        const itemAmount = formatNumberCommas(inquisTracker["inquis"][item.key]);
+        let percent = undefined;
+        let text = "";
+        if (item.hasPercent) {
+            percent = item.hasPercent ? percentDict[item.key] : "";
+        }
+        text = `${item.color}${item.name}: ${AQUA}${itemAmount}`;
+
+        if (percent) {
+            if (percent.toString() !== "NaN") {
+                text += ` ${GRAY}(${AQUA}${percent}%${GRAY})`;
+            }
+        }
+
+        let line = new OverlayButton(text, true, false, true, true).onClick(() => {
+            if (line.button) {
+                line.button = false;
+                line.setText(text);
+                data.hideTrackerLines = data.hideTrackerLines.filter((line) => line != item.name);
+            } else {
+                line.button = true;
+                line.setText("&7&m" + line.text.getString().removeFormatting());
+                data.hideTrackerLines.push(item.name);
+            }
+        });
+        if (data.hideTrackerLines.includes(item.name)) {
+            line.button = true;
+            line.setText("&7&m" + line.text.getString().removeFormatting());
+        }
+        return line;
+    }
+
+    let inquisLines = [];
+    inquisLines.push(buttonChangeInquisView);
+    inquisLines.push(new OverlayTextLine(`${YELLOW}${BOLD}Inquis Loot Tracker ${GRAY}(${YELLOW}${inquisTrackerType}${GRAY})`, true));
+
+    for (let item of inquisData) {
+        inquisLines.push(createInquisLine(item));
+    }
+
+    return inquisLines;
+}
+
+
+
 registerWhen(register("step", () => {
     if (playerHasSpade() || checkDiana()) {
         if (settings.dianaLootTrackerView > 0) {
@@ -410,6 +497,12 @@ registerWhen(register("step", () => {
         } else {
             overlayMobTracker.renderGui = false;
         }
+        if (settings.inquisTracker > 0) {
+            inquisTracker.renderGui = true;
+        }
+        else {
+            inquisTracker.renderGui = false;
+        }
         dianaStatsOverlay.renderGui = true;
         dianaAvgMagicFindOverlay.renderGui = true;
     }
@@ -419,7 +512,7 @@ registerWhen(register("step", () => {
         dianaStatsOverlay.renderGui = false;
         dianaAvgMagicFindOverlay.renderGui = false;
     }
-}).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind);
+}).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind || settings.inquisTracker);
 
 register('guiClosed', (gui) => {
     gui = gui.toString();

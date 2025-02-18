@@ -154,6 +154,14 @@ class Settings {
         options: ["OFF", "Total", "Event", "Session"]
     })
     dianaLootTrackerView = 0;
+    @SelectorProperty({
+        name: "Inquis Loot Tracker",
+        description: "Shows your Inquisitor Loot so you see how lucky/unlucky you are (Shelmet/Plushie/Remedies)",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+        options: ["OFF", "Total", "Event", "Session"]
+    })
+    inquisTracker = 0;
     // @SwitchProperty({
     //     name: "Inquis Tracker",
     //     description: "Tracks your Inquisitor Loot",
