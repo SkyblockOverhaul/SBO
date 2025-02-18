@@ -511,6 +511,7 @@ registerWhen(register("step", () => {
         overlayLootTracker.renderGui = false;
         dianaStatsOverlay.renderGui = false;
         dianaAvgMagicFindOverlay.renderGui = false;
+        inquisTracker.renderGui = false;
     }
 }).setFps(1), () => settings.dianaTracker || settings.dianaStatsTracker || settings.dianaAvgMagicFind || settings.inquisTracker);
 
