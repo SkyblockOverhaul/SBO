@@ -8,6 +8,7 @@ import { registerWhen } from "../../utils/variables";
 import { getFinalLocation, getLastGuessTime, setFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
+import { SboVec } from "../../utils/helper";
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -116,7 +117,6 @@ class AxisAlignedBB {
     }
 }
 let guessRemovedAt = {x: 10000, y: 10000, z: 10000};
-let guessRemovedAt2 = {x: 10000, y: 10000, z: 10000};
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distanceRaw, xSign, zSign = 0;
@@ -207,12 +207,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         }
 
         if (type == "Guess") {
-            if (guessRemovedAt2.x == wp[0][1] && guessRemovedAt2.y == wp[0][2] && guessRemovedAt2.z == wp[0][3]) {
-                guessRemovedAt = {x: waypoint[1], y: waypoint[2], z: waypoint[3]};
-                guessWaypoint = undefined;
-            } else {
-                formattedGuess.push(wp);
-            }
+            formattedGuess.push(wp);
         }
         else if (type == "Normal" || type == "world") {
             formatted.push(wp);
@@ -221,8 +216,10 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             formattedBurrow.push(wp);
             if (formattedGuess.length == 0) return;
             if (formattedGuess[0][0][1] == wp[0][1] && formattedGuess[0][0][2] == wp[0][2] && formattedGuess[0][0][3] == wp[0][3]) {
+                if (finalLocation.distanceToPlayer() >= 80) return; 
+                guessRemovedAt = {x: finalLocation.x, y: finalLocation.y, z: finalLocation.z};
                 setFinalLocation(null);
-                guessRemovedAt2 = {x: wp[0][1], y: wp[0][2], z: wp[0][3]};
+                guessWaypoint = undefined;
             }
         }
     });
@@ -251,8 +248,8 @@ let hubWarps = {
 let closestWarpGuess = undefined;
 let closestWarpInq = undefined;
 let warpedTo = ""
-const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
+const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 warpKey.registerKeyPress(() => {
     if (settings.dianaBurrowWarp && finalLocation != null) { 
         if (settings.warpDelay && Date.now() - getLastGuessTime() < settings.warpDelayTime) return;
@@ -379,7 +376,6 @@ register("chat" , (player) => {
         return !waypoint[0].includes(player.removeFormatting()) && !isWithin20BlockRadius(waypoint[1], waypoint[2], waypoint[3]);
     });
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
-// &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 
 // check waypoint
 let highlighInquis = false;
@@ -396,18 +392,9 @@ register("step", () => {
         // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
     }
 }).setFps(1);
-// ping that dont work
-// &r&9Party &8> &b[MVP&3+&b] EightLight89620&f: &rx: 145, y: 72, z: -2 | Minos Inquisitor spawned at [ ⏣ Wilderness ]!&r
-// because:
 
 registerWhen(register("chat", (player, spacing, x, y, z, event) => {
     if (isWorldLoaded()) {
-        // if (x == "&rx:") {
-        //     // get x y z from message like this &r&9Party &8> &b[MVP&3+&b] EightLight89620&f: &rx: 145, y: 72, z: -2 | Minos Inquisitor spawned at [ ⏣ Wilderness ]!&r
-        //     message = new Message(event)
-        //     print(message)
-        //     messageParts = message.getMessageParts();
-        // }
         if (checkDiana() && settings.allWaypointsAreInqs) {
             isInq = true;
         }
@@ -501,7 +488,10 @@ registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
     if (finalLocation != null && lastWaypoint != finalLocation) {
-        if (finalLocation.x == guessRemovedAt.x && finalLocation.y == guessRemovedAt.y && finalLocation.z == guessRemovedAt.z) return;
+        if (finalLocation.x == guessRemovedAt.x && finalLocation.y == guessRemovedAt.y && finalLocation.z == guessRemovedAt.z && finalLocation.distanceToPlayer() < 80) {
+            setFinalLocation(null);
+            return;
+        }
         guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
         formatWaypoints([guessWaypoint], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, "Guess");
         lastWaypoint = guessWaypoint;
