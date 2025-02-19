@@ -195,22 +195,21 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
                 wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
             else
                 wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+            if (xSign == 1) xSign = 0;
+            if (zSign == 1) zSign = 0;
+            wp[1] = [x + xSign, y - 1, z + zSign];
         }
         else {
             aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
             x = aabb.minX + (aabb.maxX - aabb.minX) / 2;
             y = aabb.minY + (aabb.maxY - aabb.minY) / 2;
             z = aabb.minZ + (aabb.maxZ - aabb.minZ) / 2;
-            ChatLib.chat(x + " " + y + " " + z);
             wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x, y - 0.5, z, distanceRaw, beam, distancBool];
-
-            wp[1] = [x, y, z];
+            wp[1] = [x - 0.5, y - 1, z - 0.5];
         }
 
         // Aligns the beam correctly based on which quadrant it is in
-        if (xSign == 1) xSign = 0;
-        if (zSign == 1) zSign = 0;
-        wp[1] = [x + xSign, y - 1, z + zSign];
+
 
         if (type == "Guess") {
             formattedGuess.push(wp);
@@ -223,10 +222,6 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         }
     });
 }
-
-
-
-
 
 let warpString = "";
 function closestWarpString(x, y, z) {
