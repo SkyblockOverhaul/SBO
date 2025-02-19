@@ -204,7 +204,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             x = aabb.minX + (aabb.maxX - aabb.minX) / 2;
             y = aabb.minY + (aabb.maxY - aabb.minY) / 2;
             z = aabb.minZ + (aabb.maxZ - aabb.minZ) / 2;
-            wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x, y - 0.5, z, distanceRaw, beam, distancBool];
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x, y - 0.5, z, distanceRaw, beam, distancBool];
             wp[1] = [x - 0.5, y - 1, z - 0.5];
         }
 
@@ -534,9 +534,16 @@ function renderBurrowLines() {
     }
     if (guessWaypoint != null && settings.guessLine && inqWaypoints.length == 0) {
         if(getFinalLocation() === null) return;
+        x = guessWaypoint[1];
+        y = guessWaypoint[2];
+        z = guessWaypoint[3];
+        aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
+        x = (aabb.minX + (aabb.maxX - aabb.minX) / 2) 
+        y = (aabb.minY + (aabb.maxY - aabb.minY) / 2) + 0.5
+        z = (aabb.minZ + (aabb.maxZ - aabb.minZ) / 2) 
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
-        if (burrowDistance > 60 && guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) > parseInt(settings.removeGuessDistance)) {
-            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "calc", parseInt(settings.burrowLineWidth));
+        if (burrowDistance > 60 && guessDistance(x, y, z) > parseInt(settings.removeGuessDistance)) {
+            trace(x, y, z, settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "", parseInt(settings.burrowLineWidth));
         }
     }
 }

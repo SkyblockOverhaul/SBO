@@ -19,9 +19,6 @@ let distance2 = null;
 let finalLocation = null;
 let hasMadeInitialGuess = false;
 let hasMadeManualGuess = false;
-let distMultiplierHistory = [];
-let locs = [];
-let gY = 0;
 
 export function getFinalLocation() {
     return finalLocation;
@@ -44,8 +41,6 @@ function onWorldChange() {
     gY = 0;
     hasMadeManualGuess = false;
     hasMadeInitialGuess = false;
-    distMultiplierHistory = [];
-    locs = [];
 }
 
 function onPlaySound(pos, name, volume, pitch, categoryName, event) {
@@ -58,7 +53,9 @@ function onPlaySound(pos, name, volume, pitch, categoryName, event) {
 
     lastDing = Date.now();
 
+
     if (pitch < lastDingPitch) {
+        
         firstPitch = pitch;
         dingIndex = 0;
         dingSlope = [];
@@ -83,39 +80,42 @@ function onPlaySound(pos, name, volume, pitch, categoryName, event) {
     }
 
     dingIndex++;
-    if (dingIndex > 1) dingSlope.push(pitch - lastDingPitch);
-    if (dingSlope.length > 20) dingSlope.shift();
+
+    if (dingIndex > 1) {
+        dingSlope.push(pitch - lastDingPitch);
+    }
+
+    if (dingSlope.length > 20) {
+        dingSlope.shift();
+    }
+
 
     let slope = dingSlope.length ? dingSlope.reduce((a, b) => a + b) / dingSlope.length : 0.0;
-    lastSoundPoint = { x: pos.getX(), y: pos.getY(), z: pos.getZ() };
+    lastSoundPoint = {x: pos.getX(), y: pos.getY(), z: pos.getZ()};
     lastDingPitch = pitch;
 
-    if (!lastParticlePoint2 || !particlePoint || !firstParticlePoint) return;
 
-    // Improved distance calculation
-    distance2 = (1.85 / Math.abs(slope)) * Math.hypot(
-        firstParticlePoint.getX() - pos.getX(),
-        firstParticlePoint.getZ() - pos.getZ()
-    );
-    distance2 = Math.min(Math.max(distance2, 15), 320);
 
-    if (isNaN(distance2) || !isFinite(distance2)) {
-        console.debug("Invalid distance2 detected, resetting calculation");
+    if (lastParticlePoint2 === null || particlePoint === null || firstParticlePoint === null) {
+        return;
+    }
+
+    distance2 = Math.E / slope - Math.hypot(firstParticlePoint.getX() - pos.getX(), firstParticlePoint.getY() - pos.getY(), firstParticlePoint.getZ() - pos.getZ());
+
+    if (distance2 > 1000) {
         distance2 = null;
         guessPoint = null;
+
+        // workaround: returning if the distance is too big
         return;
     }
 
     const lineDist = lastParticlePoint2.distance(particlePoint);
+
     distance = distance2;
     const changesHelp = particlePoint.subtract(lastParticlePoint2);
     let changes = [changesHelp.x, changesHelp.y, changesHelp.z];
     changes = changes.map(o => o / lineDist);
-
-    if (changes.some(coord => Math.abs(coord) > 10)) {
-        console.debug("Abnormal direction vector detected");
-        return;
-    }
 
     lastSoundPoint && (guessPoint = new SboVec(
         lastSoundPoint.x + changes[0] * distance,
@@ -125,53 +125,43 @@ function onPlaySound(pos, name, volume, pitch, categoryName, event) {
 }
 
 function solveEquasionThing(x, y) {
+
     let a =
-        (-y[0] * x[1] * x[0] -
-            y[1] * x[1] * x[2] +
-            y[1] * x[1] * x[0] +
-            x[1] * x[2] * y[2] +
-            x[0] * x[2] * y[0] -
-            x[0] * x[2] * y[2]) /
-        (x[1] * y[0] -
-            x[1] * y[2] +
-            x[0] * y[2] -
-            y[0] * x[2] +
-            y[1] * x[2] -
-            y[1] * x[0]);
+      (-y[0] * x[1] * x[0] -
+        y[1] * x[1] * x[2] +
+        y[1] * x[1] * x[0] +
+        x[1] * x[2] * y[2] +
+        x[0] * x[2] * y[0] -
+        x[0] * x[2] * y[2]) /
+      (x[1] * y[0] -
+        x[1] * y[2] +
+        x[0] * y[2] -
+        y[0] * x[2] +
+        y[1] * x[2] -
+        y[1] * x[0]);
     let b = ((y[0] - y[1]) * (x[0] + a) * (x[1] + a)) / (x[1] - x[0]);
     let c = y[0] - b / (x[0] + a);
     return [a, b, c];
-}
+  }
 
 function onReceiveParticle(particle, type, event) {
     if (!isEnabled()) return;
-    const particleType = particle.toString();
-    if (!particleType.startsWith("SparkFX")) return;
+    const type = particle.toString();
+    if (!type.startsWith("SparkFX")) return;
     const currLoc = new SboVec(particle.getX(), particle.getY(), particle.getZ());
 
     let run = false;
     if (lastSoundPoint != null) {
-        run = (Math.abs(currLoc.getX() - lastSoundPoint.x) < 2 &&
-            Math.abs(currLoc.getY() - lastSoundPoint.y) < 0.5 &&
-            Math.abs(currLoc.getZ() - lastSoundPoint.z) < 2);
+        run = (Math.abs(currLoc.getX() - lastSoundPoint.x) < 2 && Math.abs(currLoc.getY() - lastSoundPoint.y) < 0.5 && Math.abs(currLoc.getZ() - lastSoundPoint.z) < 2);
     }
-
     if (run) {
-        if ((locs.length < 100 && locs.length === 0) ||
-            (particle.getX() + particle.getY() + particle.getZ() !== locs[locs.length - 1][0] + locs[locs.length - 1][1] + locs[locs.length - 1][2])) {
-
+        if (locs.length < 100 && locs.length === 0 || particle.getX() + particle.getY() + particle.getZ() !== locs[locs.length - 1][0] + locs[locs.length - 1][1] + locs[locs.length - 1][2] ) {
             let distMultiplier = 1.0;
-            if (locs.length > 4) {
-                const recentDists = [];
-                for (let i = 1; i < 4; i++) {
-                    recentDists.push(locs[i].distance(locs[i - 1]));
-                }
-                const predictedDist = recentDists.reduce((a, b) => a + b) / recentDists.length;
-                const actualDist = currLoc.distance(locs[locs.length - 1]);
+            if (locs.length > 2) {
+                const predictedDist = 0.06507 * locs.length + 0.259;
+                const lastPos = locs[locs.length - 1];
+                const actualDist = currLoc.distance(lastPos);
                 distMultiplier = actualDist / predictedDist;
-                distMultiplier = 0.3 * distMultiplier + 0.7 * (distMultiplierHistory[distMultiplierHistory.length - 1] || 1);
-                distMultiplierHistory.push(distMultiplier);
-                if (distMultiplierHistory.length > 5) distMultiplierHistory.shift();
             }
 
             locs.push(currLoc);
@@ -179,27 +169,23 @@ function onReceiveParticle(particle, type, event) {
                 let slopeThing = locs.map((a, i) => {
                     if (i === 0) return;
                     let lastLoc = locs[i - 1];
-                    let dx = a.getX() - lastLoc.getX();
-                    let dz = a.getZ() - lastLoc.getZ();
-                    return Math.atan2(dx, dz + 0.0001);
-                }).filter(x => x !== undefined);
-
-                if (slopeThing.length < 5) return;
-                let [a, b, c] = solveEquasionThing(
-                    [slopeThing.length - 5, slopeThing.length - 3, slopeThing.length - 1],
-                    [slopeThing[slopeThing.length - 5], slopeThing[slopeThing.length - 3], slopeThing[slopeThing.length - 1]]
-                );
+                    let currLoc = a;
+                    return Math.atan(
+                      (currLoc.getX() - lastLoc.getX()) / (currLoc.getZ() - lastLoc.getZ())
+                    );
+                  });
+                let [a, b, c] = solveEquasionThing([slopeThing.length - 5, slopeThing.length - 3, slopeThing.length - 1], [slopeThing[slopeThing.length - 5], slopeThing[slopeThing.length - 3], slopeThing[slopeThing.length - 1]]);
 
                 const pr1 = [];
                 const pr2 = [];
+
                 const start = slopeThing.length - 1;
-                const lastPos = locs[start].clone();
-                const lastPos2 = locs[start].clone();
+                const lastPos = locs[start].clone().multiply(1);
+                const lastPos2 = locs[start].clone().multiply(1);
 
                 let distCovered = 0.0;
-                const ySpeed = (locs[locs.length - 1].x - locs[locs.length - 2].x) /
-                    Math.hypot(locs[locs.length - 1].x - locs[locs.length - 2].x, locs[locs.length - 1].z - locs[locs.length - 2].x);
 
+                const ySpeed = (locs[locs.length - 1].x - locs[locs.length - 2].x) / Math.hypot(locs[locs.length - 1].x - locs[locs.length - 2].x, locs[locs.length - 1].z - locs[locs.length - 2].x);
                 for (let i = start + 1; distCovered < distance2 && i < 10000; i++) {
                     const y = b / (i + a) + c;
                     const dist = distMultiplier * (0.06507 * i + 0.259);
@@ -207,59 +193,94 @@ function onReceiveParticle(particle, type, event) {
                     const xOff = dist * Math.sin(y);
                     const zOff = dist * Math.cos(y);
                     const density = 5;
-
                     for (let o = 0; o <= density; o++) {
                         lastPos.x += xOff / density;
                         lastPos.z += zOff / density;
+
                         lastPos.y += ySpeed * dist / density;
                         lastPos2.y += ySpeed * dist / density;
+
                         lastPos2.x -= xOff / density;
                         lastPos2.z -= zOff / density;
 
                         pr1.push(lastPos.clone());
                         pr2.push(lastPos2.clone());
 
-                        if (lastSoundPoint) {
-                            distCovered = Math.hypot(lastPos.x - lastSoundPoint.x, lastPos.z - lastSoundPoint.z);
-                        }
+                        lastSoundPoint && (distCovered = Math.hypot(lastPos.x - lastSoundPoint.x, lastPos.z - lastSoundPoint.z));
 
                         if (distCovered > distance2) break;
                     }
                 }
-
                 if (!pr1.length) return;
                 const p1 = pr1[pr1.length - 1];
                 const p2 = pr2[pr2.length - 1];
-
                 if (guessPoint) {
                     let d1 = (p1.x - guessPoint.x) ** 2 + (p1.z - guessPoint.z) ** 2;
                     let d2 = (p2.x - guessPoint.x) ** 2 + (p2.z - guessPoint.z) ** 2;
-                    finalLocation = new SboVec(
-                        Math.floor(d1 < d2 ? p1.x : p2.x),
-                        255.0,
-                        Math.floor(d1 < d2 ? p1.z : p2.z)
-                    );
-
-                    GetNewY();
-                    if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {
-                        console.log("SBO: Invalid finalLocation detected");
+                    if (d1 < d2) {
+                        finalLocation = new SboVec(Math.floor(p1.x), 255.0, Math.floor(p1.z));
                     } else {
+                        finalLocation = new SboVec(Math.floor(p2.x), 255.0, Math.floor(p2.z));
+                    }
+                    
+                    gY = 131;
+                    while (gY > 70) {
+                        let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());
+                        let blockType = block.getType().getID();
+                        if (blockType === 2 || blockType === 3) {
+                            break;
+                        }
+                        gY--;
+                    }
+                    
+                    finalLocation.y = gY + 3;
+
+                    // check if finallocation has nan values
+                    if (isNaN(finalLocation.getX()) || isNaN(finalLocation.getY()) || isNaN(finalLocation.getZ())) {
+                        print("partical: SBO finalLocation has nan values");
+                    }
+                    else {
                         hasMadeManualGuess = true;
+                        
+                        //createDianaGuess(finalLocation.getX(), gY, finalLocation.getZ());
                     }
                 }
             }
         }
 
-        if (!lastParticlePoint) firstParticlePoint = currLoc.clone();
-        if (lastParticlePoint) lastParticlePoint2 = lastParticlePoint;
+        if (!lastParticlePoint) {
+            firstParticlePoint = currLoc.clone();
+        }
+
+        if (lastParticlePoint) {
+            lastParticlePoint2 = lastParticlePoint;
+        }
         lastParticlePoint = particlePoint;
+
         particlePoint = currLoc.clone();
+
+        if (!lastParticlePoint2 || !firstParticlePoint || !distance2 || !lastSoundPoint) return;
+
+        const lineDist = lastParticlePoint2.distance(particlePoint);
+
+        distance = distance2;
+
+        const changesHelp = particlePoint.subtract(lastParticlePoint2);
+        let changes = [changesHelp.x, changesHelp.y, changesHelp.z];
+        changes = changes.map(o => o / lineDist);
+
+        lastParticlePoint && (guessPoint = new SboVec(
+            lastParticlePoint.x + changes[0] * distance,
+            lastParticlePoint.y + changes[1] * distance,
+            lastParticlePoint.z + changes[2] * distance
+        ));
     }
 }
 
 function isEnabled() {
     return checkDiana();
 }
+
 
 class SboVec {
     constructor(x, y, z) {
@@ -269,7 +290,10 @@ class SboVec {
     }
 
     distance(other) {
-        return Math.hypot(this.x - other.x, this.y - other.y, this.z - other.z);
+        const dx = other.x - this.x;
+        const dy = other.y - this.y;
+        const dz = other.z - this.z;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     add(other) {
@@ -288,9 +312,21 @@ class SboVec {
         return new SboVec(this.x, this.y, this.z);
     }
 
-    getX() { return this.x; }
-    getY() { return this.y; }
-    getZ() { return this.z; }
+    equals(other) {
+        return this.x === other.x && this.y === other.y && this.z === other.z;
+    }
+
+    getX() {
+        return this.x;
+    }
+
+    getY() {
+        return this.y;
+    }
+
+    getZ() {
+        return this.z;
+    }
 }
 
 function basicallyEqual(a, b) {
@@ -299,59 +335,37 @@ function basicallyEqual(a, b) {
 
 function tryToMakeInitialGuess() {
     if (hasMadeManualGuess || hasMadeInitialGuess) return;
-    Object.keys(coloredArmorStands).forEach(id => {
+    const enumerator = Object.keys(coloredArmorStands);
+    enumerator.forEach(id => {
         const armorStand = World.getWorld().func_73045_a(id);
-        if (!armorStand) return;
+        if (armorStand === null) return;
         const CTArmorStand = new Entity(armorStand);
         const armorStandPos = CTArmorStand.getPos();
         const lastInteractedPos = getLastInteractedPos();
         if (!lastInteractedPos || !basicallyEqual(armorStandPos, lastInteractedPos)) return;
 
         const type = coloredArmorStands[id];
-        let multiplier = { "FAR": 320, "MEDIUM": 200, "CLOSE": 50 }[type];
-        const directionVec = new SboVec(
-            -Math.sin(CTArmorStand.getYaw() * Math.PI / 180),
-            0,
-            Math.cos(CTArmorStand.getYaw() * Math.PI / 180)
-        );
-        finalLocation = new SboVec(lastInteractedPos.x, lastInteractedPos.y, lastInteractedPos.z)
-            .add(directionVec.multiply(multiplier));
+        let multiplier;
+        switch(type) {
+            case "FAR":
+                multiplier = 320;
+                break;
+            case "MEDIUM":
+                multiplier = 200;
+                break;
+            case "CLOSE":
+                multiplier = 50;
+                break;
+        }
+        const directionVec = new SboVec(-Math.sin(CTArmorStand.getYaw() * Math.PI / 180), 0, Math.cos(CTArmorStand.getYaw() * Math.PI / 180));
+        finalLocation = new SboVec(lastInteractedPos.x, lastInteractedPos.y, lastInteractedPos.z).add(directionVec.multiply(multiplier));
         hasMadeInitialGuess = true;
+        return;
     });
 }
 
-function GetNewY() {
-    if (!finalLocation) return;
-    
-    const scanHeight = 131;
-    const blockPos = new BlockPos(finalLocation.x, scanHeight, finalLocation.z);
-    
-    for (let y = scanHeight; y > 70; y--) {
-        blockPos.y = y;
-        const block = World.getBlockAt(blockPos);
-        const belowBlock = World.getBlockAt(blockPos.x, y - 1, blockPos.z);
-        
-        if (block.getType().getID() === 0 && 
-            (belowBlock.getType().getID() === 2 || belowBlock.getType().getID() === 3)) {
-            finalLocation.y = y + 1;
-            return;
-        }
-    }
-    
-    let gY = 131;
-    while (gY > 70) {
-        let block = World.getBlockAt(finalLocation.x, gY, finalLocation.z);
-        if (block.getType().getID() === 2 || block.getType().getID() === 3) {
-            finalLocation.y = gY + 3;
-            return;
-        }
-        gY--;
-    }
-}
 
-// Registrierungen
 registerWhen(register("tick", () => {
-    if (!isEnabled()) return;
     tryToMakeInitialGuess();
 }), () => settings.dianaAdvancedBurrowGuess);
 
@@ -360,19 +374,46 @@ registerWhen(register("chat", (burrow) => {
     hasMadeInitialGuess = false;
 }).setCriteria("&r&eYou dug out a Griffin Burrow! &r&7${burrow}&r"), () => settings.dianaAdvancedBurrowGuess);
 
-registerWhen(register("worldUnload", onWorldChange), () => settings.dianaBurrowGuess);
-registerWhen(register("worldLoad", onWorldChange), () => settings.dianaBurrowGuess);
-registerWhen(register("gameLoad", onWorldChange), () => settings.dianaBurrowGuess);
+registerWhen(register("worldUnload", () => {
+    onWorldChange()
+}), () => settings.dianaBurrowGuess);
+registerWhen(register("worldLoad", () => {
+    onWorldChange()
+}), () => settings.dianaBurrowGuess);
+registerWhen(register("gameLoad", () => {
+    onWorldChange()
+}), () => settings.dianaBurrowGuess);
 
 registerWhen(register("soundPlay", (pos, name, volume, pitch, categoryName, event) => {
-    onPlaySound(pos, name, volume, pitch, categoryName, event);
+    onPlaySound(pos, name, volume, pitch, categoryName, event)
 }), () => settings.dianaBurrowGuess);
 
 registerWhen(register("spawnParticle", (particle, type, event) => {
-    onReceiveParticle(particle, type, event);
+    onReceiveParticle(particle, type, event)
 }), () => settings.dianaBurrowGuess);
 
 registerWhen(register("step", () => {
-    if (!checkDiana()) onWorldChange();
-    else GetNewY();
+    if (!checkDiana()) {
+        onWorldChange();
+    }
+    else {
+        GetNewY();
+    }
 }).setFps(1), () => settings.dianaBurrowGuess);
+
+
+function GetNewY() {
+    if(!finalLocation) return;
+    if(World.getWorld().func_175668_a(new (Java.type('net.minecraft.util.BlockPos'))(finalLocation.x, finalLocation.y, finalLocation.z), false)) {
+        gY = 131;
+        while (gY > 70) {
+            let block = World.getBlockAt(finalLocation.getX(), gY, finalLocation.getZ());
+            let blockType = block.getType().getID();
+            if (blockType === 2 || blockType === 3) {
+                break;
+            }
+            gY--;
+        }
+        finalLocation.y = gY + 3;
+    }
+}
