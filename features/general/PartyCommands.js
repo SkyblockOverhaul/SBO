@@ -157,6 +157,10 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!inqls":
+        case "!inqsls":
+        case "!inquisitorls":
+        case "!inquisls":
         case "!lsinq":
         case "!lsinqs":
         case "!lsinquisitor":
