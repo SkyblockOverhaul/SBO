@@ -97,7 +97,7 @@ export function dianaLootCounter(item, amount) {
 
 function announceLootToParty(item) {
     if (settings.inquisLootAnnouncerParty) {
-        let itemname = item.replace("_LS", "").replace("_", " ");
+        let itemname = item.replace("_LS", "").replaceAll("_", " ");
         itemname = toTitleCase(itemname);
         ChatLib.command("pc [SBO] RARE DROP! " + itemname);
     }
