@@ -15,9 +15,6 @@ export function getPatcherWaypoints() {
 };
 
 let inqWaypoints = [];
-export function getInqWaypoints() { 
-    return inqWaypoints 
-};
 
 let burrowWaypoints = [];
 export function getBurrowWaypoints() {
@@ -234,7 +231,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
 function closestWarpString(x, y, z) {
     let warpString = "";
     closestWarp = getClosestWarp(x, y, z);
-    if (closestWarp == "no warp") {
+    if (!closestWarp) {
         warpString = "";
     }
     else {
@@ -259,8 +256,8 @@ let tryWarp = false;
 warpKey.registerKeyPress(() => {
     if (settings.dianaBurrowWarp && finalLocation != null) { 
         if (settings.warpDelay && Date.now() - getLastGuessTime() < settings.warpDelayTime) return;
-        if (warpPlayer && !tryWarp) {
-            closestWarpGuess = getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z, "guess");
+        closestWarpGuess = getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z, "guess");
+        if (closestWarpGuess && !tryWarp) {
             ChatLib.command("warp " + closestWarpGuess);
             warpedTo = closestWarpGuess;
             tryWarp = true;
@@ -274,10 +271,9 @@ warpKey.registerKeyPress(() => {
 const inquisWarpKey = new Keybind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 inquisWarpKey.registerKeyPress(() => {
     if (settings.inqWarpKey) {
-        warps = getInqWaypoints();
-        if (warps.length > 0) {
-            closestWarpInq = getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3], "inq");
-            if (warpPlayer) {
+        if (inqWaypoints.length > 0) {
+            closestWarpInq = getClosestWarp(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], "inq");
+            if (closestWarpInq && !tryWarp) {
                 ChatLib.command("warp " + closestWarpInq);
                 warpedTo = closestWarpInq;
                 tryWarp = true;
@@ -290,7 +286,7 @@ inquisWarpKey.registerKeyPress(() => {
 });
 
 
-let warpPlayer = false;
+
 let closestDistance = Infinity;
 function getClosestWarp(x, y, z, type) {
     let closestWarp = "";
@@ -357,20 +353,14 @@ function getClosestWarp(x, y, z, type) {
 
     const warpConditions = {
         condition1: Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff),
-        condition2: (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff) &&
-                    Math.round(getClosestBurrow(formattedBurrow)[1]) > 60) || inqWaypoints.length > 0
+        condition2: (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff) && (Math.round(getClosestBurrow(formattedBurrow)[1]) > 60 || inqWaypoints.length > 0))
     };
     
     if (settings.dontWarpIfBurrowNearby ? warpConditions.condition2 : warpConditions.condition1) {
-        warpPlayer = true;
-    } else {
-        warpPlayer = false;
-    }
-    if (warpPlayer) {
         return closestWarp;
     }
     else {
-        return "no warp";
+        return false;
     }
 }
 // check if player got loot share //
