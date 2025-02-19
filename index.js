@@ -50,6 +50,11 @@ const commands = [
 const changelog = [
     {header: "Added", description: "Paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
     {header: "Added", description: "!stats <playername> party command"},
+    {header: "Added", description: "A more Precise Guess"},
+    {header: "Added", description: "Inquis Loot Tracker (Shelmets/Plushies/Remedies)"},
+    {header: "Added", description: "Inquis Loot Party Announcer (Shelmets/Plushies/Remedies)"},
+    {header: "Fixed", description: "Warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
+    {header: "Some", description: "other small bug fixes"},
 ];
 
 register("command", (args1, ...args) => {
