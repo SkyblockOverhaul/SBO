@@ -54,7 +54,10 @@ class SboVec {
     }
 
     roundLocationToBlock() {
-        return new SboVec(Math.round(this.x), Math.round(this.y), Math.round(this.z));
+        const x = Math.round(this.x - 0.499999);
+        const y = Math.round(this.y - 0.499999);
+        const z = Math.round(this.z - 0.499999);
+        return new SboVec(x, y, z);
     }
 
     toCleanString() {
@@ -194,11 +197,16 @@ class PolynomialFitter {
 }
 
 let finalLocation = null;
+let fixCoords = null;
 let hasMadeInitialGuess = false;
 let hasMadeManualGuess = false;
 
 export function getFinalLocation() {
     return finalLocation;
+}
+
+export function getFixCoords() {
+    return fixCoords;
 }
 
 let stopGuessing = false;
@@ -240,6 +248,7 @@ class PreciseGuessBurrow {
         if (!guessPosition) return;
 
         finalLocation = guessPosition.down(0.5).roundLocationToBlock();
+        fixCoords = guessPosition.toDoubleArray()
         hasMadeManualGuess = true;
     }
 
@@ -259,15 +268,11 @@ class PreciseGuessBurrow {
         });
 
         const coefficients = fitters.map(fitter => fitter.fit());
-        print(`Coefficients: ${coefficients.map(c => c.map(v => v))}`);
         const startPointDerivative = SboVec.fromArray(coefficients.map(c => c[1]));
-        print(`Start point derivative: ${startPointDerivative.toCleanString()}`);
 
         const pitch = this.getPitchFromDerivative(startPointDerivative);
-        print(`guess Pitch: ${pitch}`);
         const controlPointDistance = Math.sqrt(24 * Math.sin(pitch - Math.PI) + 25);
         const t = (3 * controlPointDistance) / startPointDerivative.length();
-        print(`t: ${t}`);
         const result = coefficients.map((coeff, i) => {
             return coeff[0] + coeff[1] * t + coeff[2] * Math.pow(t, 2) + coeff[3] * Math.pow(t, 3);
         });
@@ -307,7 +312,6 @@ class PreciseGuessBurrow {
         this.lastDianaSpade = Date.now();
         const eyeHeight = Player.isSneaking() ? 1.54 : 1.62;
         this.spadeUsePosition = new SboVec(Player.getX(),  Player.getY() + eyeHeight,  Player.getZ());
-        print(`Spade use position: ${this.spadeUsePosition.toCleanString()}`);
         stopGuessing = false;
     }
 }
