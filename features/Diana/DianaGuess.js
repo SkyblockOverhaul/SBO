@@ -234,19 +234,14 @@ class PreciseGuessBurrow {
         
         if (this.particleLocations.length === 0) {
             const distance = this.spadeUsePosition ? this.spadeUsePosition.distance(currLoc) : 10.0;
-            if (distance > 1.1555) {
-                print("Distance too far " + distance);
-                return;
-            } 
+            if (distance > 1.1555) return;
+
             this.particleLocations.push(currLoc);
             return;
         }
 
         const distToLast = this.particleLocations[this.particleLocations.length - 1].distance(currLoc);
-        if (distToLast === 0.0 || distToLast > 3.0)  {
-            print("DstToLast " + distToLast);
-            return;
-        }
+        if (distToLast === 0.0 || distToLast > 3.0) return;
         this.particleLocations.push(currLoc);
 
         const guessPosition = this.guessBurrowLocation();
@@ -310,10 +305,7 @@ class PreciseGuessBurrow {
     onUseSpade(event) {
         let item = Player.getHeldItem()
         if (item == null) return
-        if (!item.getName().includes("Spade") || !event.toString().includes('RIGHT_CLICK')){
-            print("Not a spade")
-            return
-        };
+        if (!item.getName().includes("Spade") || !event.toString().includes('RIGHT_CLICK')) return;
         if (Date.now() - this.lastLavaParticle < 500) return;
         if (Date.now() - this.lastDianaSpade < 100) return;
         this.particleLocations = [];
