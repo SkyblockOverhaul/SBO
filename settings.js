@@ -1082,14 +1082,14 @@ class Settings {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://skyblockoverhaul.com/"));
     }
     @ButtonProperty({
-        name: "SoopyV2",
-        description: "(Diana guess, Mob HP)",
+        name: "Skyhanni",
+        description: "Diana guess",
         placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })
     openSoopyV2() {
-        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/SoopyV2"));
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://github.com/hannibal002/SkyHanni/tree/beta"));
     }
     @ButtonProperty({
         name: "VolcAddons",
