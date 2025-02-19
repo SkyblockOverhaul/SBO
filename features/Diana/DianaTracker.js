@@ -84,9 +84,7 @@ export function dianaLootCounter(item, amount) {
                                     trackItem(item, "inquis", amount);
                                 }
                             }
-                            setTimeout(() => {
-                                announceLootToParty(item);
-                            }, 250);
+                            announceLootToParty(item);
                         }
                     }
                 }
@@ -95,11 +93,28 @@ export function dianaLootCounter(item, amount) {
     }
 }
 
+let lootAnnounceBuffer = [];
+let lootAnnounceTimeout = null;
 function announceLootToParty(item) {
     if (settings.inquisLootAnnouncerParty) {
         let itemname = item.replace("_LS", "").replaceAll("_", " ");
         itemname = toTitleCase(itemname);
-        ChatLib.command("pc [SBO] RARE DROP! " + itemname);
+        lootAnnounceBuffer.push(itemname);
+      
+        if (!lootAnnounceTimeout) {
+            lootAnnounceTimeout = setTimeout(() => {
+                sendLootAnnouncement();
+                lootAnnounceTimeout = null;
+            }, 500);
+        }
+    }
+}
+  
+function sendLootAnnouncement() {
+    if (lootAnnounceBuffer.length > 0) {
+        let msg = lootAnnounceBuffer.join(", ");
+        lootAnnounceBuffer = [];
+        ChatLib.command("pc [SBO] RARE DROP! " + msg);
     }
 }
 
