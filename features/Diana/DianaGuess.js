@@ -241,6 +241,8 @@ class PreciseGuessBurrow {
             //     print("Distance too far " + distance);
             //     return;
             // } 
+            const eyeHeight = Player.isSneaking() ? 1.54 : 1.62;
+            this.spadeUsePosition = new SboVec(Player.getX(),  Player.getY() + eyeHeight,  Player.getZ());
             this.particleLocations.push(currLoc);
             return;
         }
@@ -315,8 +317,6 @@ class PreciseGuessBurrow {
         if (Date.now() - lastGuessTime < 100) return;
         this.particleLocations = [];
         lastGuessTime = Date.now();
-        const eyeHeight = Player.isSneaking() ? 1.54 : 1.62;
-        this.spadeUsePosition = new SboVec(Player.getX(),  Player.getY() + eyeHeight,  Player.getZ());
     }
 }
 const preciseGuess = new PreciseGuessBurrow();
