@@ -5,7 +5,7 @@ import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, setTimeout, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
-import { getFinalLocation } from "../Diana/DianaGuess";
+import { getFinalLocation, getFixCoords } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 
@@ -105,6 +105,17 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzch
     }
 }
 
+class AxisAlignedBB {
+    constructor(minX, minY, minZ, maxX, maxY, maxZ) {
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
+    }
+}
+
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distanceRaw, xSign, zSign = 0;
@@ -178,16 +189,29 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             xSign = x == 0 ? 1 : Math.sign(x);
             zSign = z == 0 ? 1 : Math.sign(z);
         }
+        
+        if (type != "Guess") {
+            if (distancBool)
+                wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+            else
+                wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+        }
+        else {
+            aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
+            x = aabb.minX + (aabb.maxX - aabb.minX) / 2;
+            y = aabb.minY + (aabb.maxY - aabb.minY) / 2;
+            z = aabb.minZ + (aabb.maxZ - aabb.minZ) / 2;
+            ChatLib.chat(x + " " + y + " " + z);
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x, y - 0.5, z, distanceRaw, beam, distancBool];
 
-        if (distancBool)
-            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
-        else
-            wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+            wp[1] = [x, y, z];
+        }
+
         // Aligns the beam correctly based on which quadrant it is in
         if (xSign == 1) xSign = 0;
         if (zSign == 1) zSign = 0;
         wp[1] = [x + xSign, y - 1, z + zSign];
-        
+
         if (type == "Guess") {
             formattedGuess.push(wp);
         }
@@ -199,6 +223,8 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         }
     });
 }
+
+
 
 
 
@@ -470,8 +496,9 @@ let finalLocation = undefined;
 registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
+    let fixCoords = getFixCoords();
     if (finalLocation != null && lastWaypoint != finalLocation) {
-        guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
+        guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString, fixCoords];
         formatWaypoints([guessWaypoint], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, "Guess");
         lastWaypoint = guessWaypoint;
     }
