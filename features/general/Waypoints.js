@@ -113,6 +113,9 @@ class AxisAlignedBB {
         this.maxX = maxX;
         this.maxY = maxY;
         this.maxZ = maxZ;
+        this.x = minX + (maxX - minX) / 2;
+        this.y = minY + (maxY - minY) / 2;
+        this.z = minZ + (maxZ - minZ) / 2;
     }
 }
 
@@ -201,15 +204,9 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         }
         else {
             aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
-            x = aabb.minX + (aabb.maxX - aabb.minX) / 2;
-            y = aabb.minY + (aabb.maxY - aabb.minY) / 2;
-            z = aabb.minZ + (aabb.maxZ - aabb.minZ) / 2;
-            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x, y - 0.5, z, distanceRaw, beam, distancBool];
-            wp[1] = [x - 0.5, y - 1, z - 0.5];
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, aabb.x, aabb.y - 0.5, aabb.z, distanceRaw, beam, distancBool];
+            wp[1] = [aabb.x - 0.5, aabb.y - 1, aabb.z - 0.5];
         }
-
-        // Aligns the beam correctly based on which quadrant it is in
-
 
         if (type == "Guess") {
             formattedGuess.push(wp);
@@ -538,12 +535,10 @@ function renderBurrowLines() {
         y = guessWaypoint[2];
         z = guessWaypoint[3];
         aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
-        x = (aabb.minX + (aabb.maxX - aabb.minX) / 2) 
-        y = (aabb.minY + (aabb.maxY - aabb.minY) / 2) + 0.5
-        z = (aabb.minZ + (aabb.maxZ - aabb.minZ) / 2) 
+        aab.y = + 0.5;
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
-        if (burrowDistance > 60 && guessDistance(x, y, z) > parseInt(settings.removeGuessDistance)) {
-            trace(x, y, z, settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "", parseInt(settings.burrowLineWidth));
+        if (burrowDistance > 60 && guessDistance(aabb.x, aabb.y, aabb.z) > parseInt(settings.removeGuessDistance)) {
+            trace(aabb.x, aabb.y, aabb.z, settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "", parseInt(settings.burrowLineWidth));
         }
     }
 }
