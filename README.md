@@ -122,3 +122,6 @@ _-Other-_
   + /sbopde Opens the Past Diana Events GUI
 + Active User
   + /sboactiveuser Shows the active user of the mod
+
+  **-- Contributors --**
+ -*Ty ugo635 (JudgementCorePls) for your contribution*
