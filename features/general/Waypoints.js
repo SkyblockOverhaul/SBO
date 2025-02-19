@@ -5,7 +5,7 @@ import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, setTimeout, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
-import { getFinalLocation, getFixCoords } from "../Diana/DianaGuess";
+import { getFinalLocation, getLastGuessTime, setFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 
@@ -118,7 +118,8 @@ class AxisAlignedBB {
         this.z = minZ + (maxZ - minZ) / 2;
     }
 }
-
+let guessRemovedAt = {x: 10000, y: 10000, z: 10000};
+let guessRemovedAt2 = {x: 10000, y: 10000, z: 10000};
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distanceRaw, xSign, zSign = 0;
@@ -209,13 +210,23 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         }
 
         if (type == "Guess") {
-            formattedGuess.push(wp);
+            if (guessRemovedAt2.x == wp[0][1] && guessRemovedAt2.y == wp[0][2] && guessRemovedAt2.z == wp[0][3]) {
+                guessRemovedAt = {x: waypoint[1], y: waypoint[2], z: waypoint[3]};
+                guessWaypoint = undefined;
+            } else {
+                formattedGuess.push(wp);
+            }
         }
         else if (type == "Normal" || type == "world") {
             formatted.push(wp);
         }
         else if (type == "Burrow") {
             formattedBurrow.push(wp);
+            if (formattedGuess.length == 0) return;
+            if (formattedGuess[0][0][1] == wp[0][1] && formattedGuess[0][0][2] == wp[0][2] && formattedGuess[0][0][3] == wp[0][3]) {
+                setFinalLocation(null);
+                guessRemovedAt2 = {x: wp[0][1], y: wp[0][2], z: wp[0][3]};
+            }
         }
     });
 }
@@ -244,9 +255,9 @@ let hubWarps = {
 const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
 warpKey.registerKeyPress(() => {
-    if (settings.dianaBurrowWarp && finalLocation != null) {
-        getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z);
-        if (warpPlayer) {
+    if (settings.dianaBurrowWarp && finalLocation != null) { 
+        if (Date.now() - getLastGuessTime() < 1000) return;
+        if (warpPlayer && !tryWarp) {
             ChatLib.command("warp " + closestWarp);
             tryWarp = true;
             setTimeout(() => {
@@ -488,9 +499,9 @@ let finalLocation = undefined;
 registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
-    let fixCoords = getFixCoords();
     if (finalLocation != null && lastWaypoint != finalLocation) {
-        guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString, fixCoords];
+        if (finalLocation.x == guessRemovedAt.x && finalLocation.y == guessRemovedAt.y && finalLocation.z == guessRemovedAt.z) return;
+        guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
         formatWaypoints([guessWaypoint], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, "Guess");
         lastWaypoint = guessWaypoint;
     }
@@ -506,6 +517,7 @@ registerWhen(register("step", () => {
     formatWaypoints(inqWaypoints, 1, 0.84, 0); 
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
     formatWaypoints(worldWaypoints, 0, 0, 0, "world");
+    
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 registerWhen(register("renderWorld", () => { 

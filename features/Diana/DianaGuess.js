@@ -61,7 +61,7 @@ class SboVec {
     }
 
     toCleanString() {
-        return `${this.x}, ${this.y}, ${this.z}`;
+        return `${this.x.toFixed(2)}, ${this.y.toFixed(2)}, ${this.z.toFixed(2)}`;
     }
 
     toDoubleArray() {
@@ -197,7 +197,7 @@ class PolynomialFitter {
 }
 
 let finalLocation = null;
-let fixCoords = null;
+let lastGuessTime = 0;
 let hasMadeInitialGuess = false;
 let hasMadeManualGuess = false;
 
@@ -205,16 +205,18 @@ export function getFinalLocation() {
     return finalLocation;
 }
 
-export function getFixCoords() {
-    return fixCoords;
+export function setFinalLocation(location) {
+    finalLocation = location;
 }
 
-let stopGuessing = false;
+export function getLastGuessTime() {
+    return lastGuessTime;
+}
+
 class PreciseGuessBurrow {
     constructor() {
         this.particleLocations = [];
         this.guessPoint = null;
-        this.lastDianaSpade = 0;
         this.lastLavaParticle = 0;
         this.spadeUsePosition = null;
     }
@@ -224,12 +226,13 @@ class PreciseGuessBurrow {
         this.particleLocations = [];
         hasMadeManualGuess = false;
         hasMadeInitialGuess = false;
+        finalLocation = null;
     }
 
     onReceiveParticle(packet) {
         if (packet.func_179749_a() != 'DRIP_LAVA' || parseInt(packet.func_149222_k()) != 2 || parseFloat(packet.func_149227_j()).toFixed(1) != -0.5) return;
         const currLoc = new SboVec(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f());
-        if (Date.now() - this.lastDianaSpade > 3000) return;
+        if (Date.now() - lastGuessTime > 3000) return;
         this.lastLavaParticle = Date.now();
         
         if (this.particleLocations.length === 0) {
@@ -309,12 +312,11 @@ class PreciseGuessBurrow {
         if (item == null) return
         if (!item.getName().includes("Spade") || !event.toString().includes('RIGHT_CLICK')) return;
         if (Date.now() - this.lastLavaParticle < 500) return;
-        if (Date.now() - this.lastDianaSpade < 100) return;
+        if (Date.now() - lastGuessTime < 100) return;
         this.particleLocations = [];
-        this.lastDianaSpade = Date.now();
+        lastGuessTime = Date.now();
         const eyeHeight = Player.isSneaking() ? 1.54 : 1.62;
         this.spadeUsePosition = new SboVec(Player.getX(),  Player.getY() + eyeHeight,  Player.getZ());
-        stopGuessing = false;
     }
 }
 const preciseGuess = new PreciseGuessBurrow();

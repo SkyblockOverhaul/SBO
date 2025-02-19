@@ -188,6 +188,9 @@ function burrowDetect(packet) {
             burrows[posstring][0].type = 2;
             break;
     }
+    if (burrows[posstring][0].type != undefined) {
+        createBurrowWaypoints(burrows[posstring][0].type, burrows[posstring][1].x, burrows[posstring][1].y +1, burrows[posstring][1].z, [], burrows[posstring][2]);
+    }
 }
 
 function removeBurrowBySmoke(x, y, z) {
@@ -288,13 +291,13 @@ register("chat", () => {
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
 }).setCriteria("&r&6Poof! &r&eYou have cleared your griffin burrows!&r")
 
-register("step", () => {
-    for (let key in burrows) {
-        if (burrows[key][0].type != undefined) {
-            createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
-        } 
-    }
-}).setFps(4);
+// register("step", () => {
+//     for (let key in burrows) {
+//         if (burrows[key][0].type != undefined) {
+//             createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
+//         } 
+//     }
+// }).setFps(4);
 
 registerWhen(register("packetReceived", (packet) => {
     packettype = packet.func_179749_a().toString()
