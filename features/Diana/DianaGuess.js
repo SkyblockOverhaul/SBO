@@ -259,15 +259,15 @@ class PreciseGuessBurrow {
         });
 
         const coefficients = fitters.map(fitter => fitter.fit());
-        print(`Coefficients: ${coefficients.map(c => c.map(v => v.toFixed(2)))}`);
+        print(`Coefficients: ${coefficients.map(c => c.map(v => v))}`);
         const startPointDerivative = SboVec.fromArray(coefficients.map(c => c[1]));
         print(`Start point derivative: ${startPointDerivative.toCleanString()}`);
 
         const pitch = this.getPitchFromDerivative(startPointDerivative);
-        print(`guess Pitch: ${pitch.toFixed(2)}`);
+        print(`guess Pitch: ${pitch}`);
         const controlPointDistance = Math.sqrt(24 * Math.sin(pitch - Math.PI) + 25);
         const t = (3 * controlPointDistance) / startPointDerivative.length();
-        print(`t: ${t.toFixed(2)}`);
+        print(`t: ${t}`);
         const result = coefficients.map((coeff, i) => {
             return coeff[0] + coeff[1] * t + coeff[2] * Math.pow(t, 2) + coeff[3] * Math.pow(t, 3);
         });
