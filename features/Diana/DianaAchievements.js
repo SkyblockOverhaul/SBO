@@ -331,7 +331,7 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
         unlockAchievements();
     }
 
-    if (mayorTracker["Daedalus Stick"] >= 1 && (mayorTracker["Chimera"]+mayorTracker["ChimeraLs"]) >= 2) {
+    if (mayorTracker["Daedalus Stick"] >= 1 && (mayorTracker["Chimera"] + mayorTracker["ChimeraLs"]) >= 2) {
         achievementsToUnlock.push(73);
     }
 
