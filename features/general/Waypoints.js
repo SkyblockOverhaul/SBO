@@ -231,11 +231,10 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     });
 }
 
-let warpString = "";
 function closestWarpString(x, y, z) {
+    let warpString = "";
     closestWarp = getClosestWarp(x, y, z);
     if (closestWarp == "no warp") {
-        closestWarp = "";
         warpString = "";
     }
     else {
@@ -252,13 +251,18 @@ let hubWarps = {
     museum: {x: -76, y: 76, z: 81, unlocked: true},
 };
 
+let closestWarpGuess = undefined;
+let closestWarpInq = undefined;
+let warpedTo = ""
 const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 let tryWarp = false;
 warpKey.registerKeyPress(() => {
     if (settings.dianaBurrowWarp && finalLocation != null) { 
-        if (Date.now() - getLastGuessTime() < 1000) return;
+        if (settings.warpDelay && Date.now() - getLastGuessTime() < settings.warpDelayTime) return;
         if (warpPlayer && !tryWarp) {
-            ChatLib.command("warp " + closestWarp);
+            closestWarpGuess = getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z, "guess");
+            ChatLib.command("warp " + closestWarpGuess);
+            warpedTo = closestWarpGuess;
             tryWarp = true;
             setTimeout(() => {
                 tryWarp = false;
@@ -272,9 +276,10 @@ inquisWarpKey.registerKeyPress(() => {
     if (settings.inqWarpKey) {
         warps = getInqWaypoints();
         if (warps.length > 0) {
-            getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
+            closestWarpInq = getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3], "inq");
             if (warpPlayer) {
-                ChatLib.command("warp " + closestWarp);
+                ChatLib.command("warp " + closestWarpInq);
+                warpedTo = closestWarpInq;
                 tryWarp = true;
                 setTimeout(() => {
                     tryWarp = false;
@@ -284,10 +289,11 @@ inquisWarpKey.registerKeyPress(() => {
     }
 });
 
-let closestWarp = undefined;
+
 let warpPlayer = false;
 let closestDistance = Infinity;
-function getClosestWarp(x, y, z) {
+function getClosestWarp(x, y, z, type) {
+    let closestWarp = "";
     const closestPlayerdistance = Math.sqrt(
         (Player.getLastX() - x)**2 +
         (Player.getLastY() - y)**2 +
@@ -337,6 +343,11 @@ function getClosestWarp(x, y, z) {
             );
             if (distance < closestDistance) {
                 closestDistance = distance;
+                if (type == "guess") {
+                    closestWarpGuess = warp;
+                } else if (type == "inq") {
+                    closestWarpInq = warp;
+                }
                 closestWarp = warp;
             }
         }
@@ -465,8 +476,8 @@ registerWhen(register("chat", (player, spacing, x, y, z, event) => {
 
 registerWhen(register("chat", () => {
     if (tryWarp) {
-        ChatLib.chat("§6[SBO] §4Warp " + toTitleCase(closestWarp) + " is not unlocked!")
-        hubWarps[closestWarp].unlocked = false;
+        ChatLib.chat("§6[SBO] §4Warp " + toTitleCase(warpedTo) + " is not unlocked!")
+        hubWarps[warpedTo].unlocked = false;
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r"), () => settings.inqWarpKey);
 // wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
