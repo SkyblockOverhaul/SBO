@@ -157,6 +157,20 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!inqls":
+        case "!inqsls":
+        case "!inquisitorls":
+        case "!inquisls":
+        case "!lsinq":
+        case "!lsinqs":
+        case "!lsinquisitor":
+        case "!lsinquis":
+            if (settings.dianaTracker) {
+                setTimeout(() => {
+                    ChatLib.command("pc Inquisitor LS: " + dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] + " (" + calcPercentOne(dianaTrackerMayor, "Minos Inquisitor Ls") + "%)")
+                }, 200)
+            }
+            break
         case "!inq":
         case "!inqs":
         case "!inquisitor":
