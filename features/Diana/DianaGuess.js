@@ -58,7 +58,7 @@ class SboVec {
     }
 
     toCleanString() {
-        return `${this.x.toFixed(1)}, ${this.y.toFixed(1)}, ${this.z.toFixed(1)}`;
+        return `${this.x}, ${this.y}, ${this.z}`;
     }
 
     toDoubleArray() {
