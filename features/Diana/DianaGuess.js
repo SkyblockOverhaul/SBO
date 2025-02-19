@@ -218,7 +218,6 @@ class PreciseGuessBurrow {
         this.particleLocations = [];
         this.guessPoint = null;
         this.lastLavaParticle = 0;
-        this.spadeUsePosition = null;
     }
 
     onWorldChange() {
@@ -236,13 +235,6 @@ class PreciseGuessBurrow {
         this.lastLavaParticle = Date.now();
         
         if (this.particleLocations.length === 0) {
-            // const distance = this.spadeUsePosition ? this.spadeUsePosition.distance(currLoc) : 10.0;
-            // if (distance > 1.1555) {
-            //     print("Distance too far " + distance);
-            //     return;
-            // } 
-            const eyeHeight = Player.isSneaking() ? 1.54 : 1.62;
-            this.spadeUsePosition = new SboVec(Player.getX(),  Player.getY() + eyeHeight,  Player.getZ());
             this.particleLocations.push(currLoc);
             return;
         }
