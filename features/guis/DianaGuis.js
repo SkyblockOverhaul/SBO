@@ -446,7 +446,7 @@ function getInquisMessage(viewSetting) {
         if (item.hasPercent) {
             percent = item.hasPercent ? percentDict[item.key] : "";
         }
-        text = `${item.color}${item.name}: ${AQUA}${itemAmount}`;
+        text = `&7- ${item.color}${item.name}: ${AQUA}${itemAmount}`;
 
         if (percent) {
             if (percent.toString() !== "NaN") {
