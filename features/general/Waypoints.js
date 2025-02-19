@@ -535,7 +535,7 @@ function renderBurrowLines() {
         y = guessWaypoint[2];
         z = guessWaypoint[3];
         aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
-        aab.y = + 0.5;
+        aabb.y = aabb.y + 0.5;
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
         if (burrowDistance > 60 && guessDistance(aabb.x, aabb.y, aabb.z) > parseInt(settings.removeGuessDistance)) {
             trace(aabb.x, aabb.y, aabb.z, settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "", parseInt(settings.burrowLineWidth));
