@@ -229,6 +229,7 @@ class PreciseGuessBurrow {
     onReceiveParticle(packet) {
         if (packet.func_179749_a() != 'DRIP_LAVA' || parseInt(packet.func_149222_k()) != 2 || parseFloat(packet.func_149227_j()).toFixed(1) != -0.5) return;
         const currLoc = new SboVec(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f());
+        print("Lava particle received");
         if (Date.now() - this.lastDianaSpade > 3000) return;
         this.lastLavaParticle = Date.now();
         
@@ -239,13 +240,16 @@ class PreciseGuessBurrow {
             this.particleLocations.push(currLoc);
             return;
         }
+        print("Particle added");
 
         const distToLast = this.particleLocations[this.particleLocations.length - 1].distance(currLoc);
         if (distToLast === 0.0 || distToLast > 3.0) return;
+        print("Particle distance checked");
         this.particleLocations.push(currLoc);
 
         const guessPosition = this.guessBurrowLocation();
         if (!guessPosition) return;
+        print("Guess position found");
 
         finalLocation = guessPosition.down(0.5).roundLocationToBlock();
         fixCoords = guessPosition.toDoubleArray()
@@ -308,6 +312,7 @@ class PreciseGuessBurrow {
         if (!item.getName().includes("Spade") || !event.toString().includes('RIGHT_CLICK')) return;
         if (Date.now() - this.lastLavaParticle < 500) return;
         if (Date.now() - this.lastDianaSpade < 100) return;
+        print("Spade used");
         this.particleLocations = [];
         this.lastDianaSpade = Date.now();
         const eyeHeight = Player.isSneaking() ? 1.54 : 1.62;
