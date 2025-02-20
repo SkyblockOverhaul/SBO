@@ -10,6 +10,7 @@ import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
 import { printDev } from "../../utils/functions";
 import { createBurrowWaypoints, removeBurrowWaypoint, removeBurrowWaypointBySmoke, setBurrowWaypoints } from "../general/Waypoints";
+import { getFinalLocation, setFinalLocation } from "./DianaGuess";
 
 class EvictingQueue {
     constructor(capacity) {
@@ -214,6 +215,7 @@ function refreshBurrows() {
     if (removedBurrow != null) {
         burrowsHistory.add(removedBurrow);
     }
+    if (getFinalLocation() != null && getFinalLocation().distanceTo(removePos) < 2) setFinalLocation(null);
 }
 
 const isCloseEnough = (entity, x, y, z) => {
@@ -291,14 +293,6 @@ register("chat", () => {
     ChatLib.chat("§6[SBO] §4Burrow Waypoints Cleared!§r")
 }).setCriteria("&r&6Poof! &r&eYou have cleared your griffin burrows!&r")
 
-// register("step", () => {
-//     for (let key in burrows) {
-//         if (burrows[key][0].type != undefined) {
-//             createBurrowWaypoints(burrows[key][0].type, burrows[key][1].x, burrows[key][1].y +1, burrows[key][1].z, [], burrows[key][2]);
-//         } 
-//     }
-// }).setFps(4);
-
 registerWhen(register("packetReceived", (packet) => {
     packettype = packet.func_179749_a().toString()
     if(packettype == "SMOKE_LARGE") {
@@ -332,7 +326,7 @@ registerWhen(register("packetSent", (packet, event) => {
         if (pos.getZ() < 0) {
             z = z + 1;
         }
-        if (burrows[x + " " + (y-1) + " " + z]) {
+        if (burrows[x + " " + (y-1) + " " + z] || (getFinalLocation() != null && getFinalLocation().distanceTo(new BlockPos(x, y, z)) < 2)) {
             removePos = new BlockPos(x, y, z);
             lastInteractedPos = new BlockPos(x, y - 1, z);
         }
