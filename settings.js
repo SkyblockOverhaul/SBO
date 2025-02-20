@@ -145,9 +145,9 @@ class Settings {
         category: "Diana",
         subcategory: "Diana Burrows",
         min: 0,
-        max: 2000
+        max: 1200
     })
-    warpDelayTime = 1000;
+    warpDelayTime = 800;
 
     // --- Diana Tracker ---
     @SwitchProperty({
