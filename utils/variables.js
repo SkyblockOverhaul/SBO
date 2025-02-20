@@ -764,6 +764,47 @@ export function checkPastDianaEvents() {
     pastDianaEvents.save();
 }
 
+let File = Java.type("java.io.File");
+let FileInputStream = Java.type("java.io.FileInputStream");
+let FileOutputStream = Java.type("java.io.FileOutputStream");
+let ZipEntry = Java.type("java.util.zip.ZipEntry");
+let ZipOutputStream = Java.type("java.util.zip.ZipOutputStream");
+let ArrayClass = Java.type("java.lang.reflect.Array");
+let ByteType = Java.type("java.lang.Byte").TYPE;
+
+function addFolderToZip(folder, parentPath, zipOut) {
+    let files = folder.listFiles();
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        let zipName = parentPath + file.getName();
+        if (file.isDirectory()) {
+            zipOut.putNextEntry(new ZipEntry(zipName + "/"));
+            zipOut.closeEntry();
+            addFolderToZip(file, zipName + "/", zipOut);
+        } else {
+            let fis = new FileInputStream(file);
+            zipOut.putNextEntry(new ZipEntry(zipName));
+            let buffer = ArrayClass.newInstance(ByteType, 1024);
+            let bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                zipOut.write(buffer, 0, bytesRead);
+            }
+            fis.close();
+            zipOut.closeEntry();
+        }
+    }
+}
+
+function zipFolder(folderPath, zipFilePath) {
+    let folder = new File(folderPath);
+    let fileOut = new FileOutputStream(zipFilePath);
+    let zipOut = new ZipOutputStream(fileOut);
+    addFolderToZip(folder, "", zipOut);
+    zipOut.close();
+    fileOut.close();
+}
+
 function backUpData() {
     let date = new Date();
     let dateString = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
@@ -788,4 +829,6 @@ function backUpData() {
         }
         FU.delete(oldest);
     }
+    zipFolder("./config/sbo/backup/" + folderName, "./config/sbo/backup/" + folderName + ".zip");
+    FU.delete("./config/sbo/backup/" + folderName);
 }
