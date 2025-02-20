@@ -55,6 +55,7 @@ const changelog = [
     {header: "Added", description: "Inquis Loot Party Announcer (Shelmets/Plushies/Remedies)"},
     {header: "Added", description: "Backup folder for all the data"},
     {header: "Added", description: "Designated folder for config files in minecraft config folder"},
+    {header: "Added", description: "Setting: Remove Guess When Burrow"},
     {header: "Fixed", description: "Warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
     {header: "Some", description: "other small bug fixes"},
 ];

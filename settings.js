@@ -444,18 +444,11 @@ class Settings {
     lootAnnouncerPrice = true;
     @SwitchProperty({
         name: 'Loot Party Announcer',
-        description: 'Announce chimera/stick/relic to party',
+        description: 'Announce (Chimera/Stick/Relic) and inquisitor (Shelmet/Plushie/Remedies) to party',
         category: 'Diana',
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerParty = false;
-    @SwitchProperty({
-        name: 'Inquis Loot Party Announcer',
-        description: 'Announce inquisitor loot to party (Shelmet/Plushie/Remedies)',
-        category: 'Diana',
-        subcategory: 'Loot Announcer',
-    })
-    inquisLootAnnouncerParty = false;
 
     //Party Commands
     @SwitchProperty({
