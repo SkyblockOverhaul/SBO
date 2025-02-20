@@ -251,6 +251,13 @@ class Settings {
     })
     inqWarpKey = true;
     @SwitchProperty({
+        name: 'Remove Guess When Burrow',
+        description: 'Removes guess when a burrow spawns on the guess',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+    })
+    removeGuessWhenBurrow = false;
+    @SwitchProperty({
         name: 'Remove Guess',
         description: 'Removes guess when getting close to it',
         category: 'Diana',
