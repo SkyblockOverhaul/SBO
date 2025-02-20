@@ -104,7 +104,6 @@ function announceLootToParty(item, customMsg = null, replaceChimMessage = false)
 
     if (replaceChimMessage) {
         ChatLib.command("pc " + itemname);
-        return;
     }
 
     lootAnnounceBuffer.push(itemname);
@@ -112,7 +111,7 @@ function announceLootToParty(item, customMsg = null, replaceChimMessage = false)
         lootAnnounceTimeout = setTimeout(() => {
             sendLootAnnouncement();
             lootAnnounceTimeout = null;
-        }, 500);
+        }, 1000);
     }
 }
   
