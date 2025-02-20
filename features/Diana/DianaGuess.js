@@ -143,7 +143,6 @@ export function getLastGuessTime() {
 class PreciseGuessBurrow {
     constructor() {
         this.particleLocations = [];
-        this.particleLocations2 = [];
         this.guessPoint = null;
         this.lastLavaParticle = 0;
     }
@@ -151,7 +150,6 @@ class PreciseGuessBurrow {
     onWorldChange() {
         this.guessPoint = null;
         this.particleLocations = [];
-        this.particleLocations2 = [];
         hasMadeManualGuess = false;
         hasMadeInitialGuess = false;
         finalLocation = null;
@@ -169,27 +167,8 @@ class PreciseGuessBurrow {
         }
 
         const distToLast = this.particleLocations[this.particleLocations.length - 1].distanceTo(currLoc);
-        let distToLast2 = -1;
-        if (this.particleLocations2.length > 0) distToLast2 = this.particleLocations2[this.particleLocations2.length - 1].distanceTo(currLoc);
-        if (distToLast === 0.0) return;
-        if (this.particleLocations2.length === 0) {
-            if (distToLast > 3) {
-                this.particleLocations2 = this.particleLocations;
-                this.particleLocations = [];
-                this.particleLocations.push(currLoc); 
-                return;
-            } else {
-                this.particleLocations.push(currLoc);
-            }
-        } else {
-            if (distToLast > 3) {
-                this.particleLocations2.push(currLoc);
-                return;
-            } else if (distToLast2 > 3) {
-                this.particleLocations.push(currLoc);
-            }
-        }
-
+        if (distToLast > 3 || distToLast == 0.0) return;
+        this.particleLocations.push(currLoc);
 
         const guessPosition = this.guessBurrowLocation();
         if (!guessPosition) return;
@@ -250,13 +229,16 @@ class PreciseGuessBurrow {
         return guessPitch;
     }
 
-    onUseSpade(event) {
+    onUseSpade(action, event) {
         let item = Player.getHeldItem()
         if (item == null) return
-        if (!item.getName().includes("Spade") || !event.toString().includes('RIGHT_CLICK')) return;
+        if (!item.getName().includes("Spade") || !action.toString().includes('RIGHT_CLICK')) return;
         if (Date.now() - lastGuessTime < 3000) return;
+        if (Date.now() - this.lastLavaParticle < 200) {
+            cancel(event);
+            return;
+        }
         this.particleLocations = [];
-        this.particleLocations2 = [];
         lastGuessTime = Date.now();
     }
 }
@@ -298,8 +280,8 @@ function tryToMakeInitialGuess() {
 }
 
 
-register("playerInteract", (action) => {
-    preciseGuess.onUseSpade(action);
+register("playerInteract", (action, pos, event) => {
+    preciseGuess.onUseSpade(action, event);
 });
 
 registerWhen(register("worldUnload", () => {

@@ -256,7 +256,7 @@ class Settings {
         category: 'Diana',
         subcategory: 'Diana Waypoints',
     })
-    removeGuessWhenBurrow = false;
+    removeGuessWhenBurrow = true;
     @SwitchProperty({
         name: 'Remove Guess',
         description: 'Removes guess when getting close to it',
