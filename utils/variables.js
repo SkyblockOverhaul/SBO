@@ -764,13 +764,13 @@ export function checkPastDianaEvents() {
     pastDianaEvents.save();
 }
 
-let File = Java.type("java.io.File");
-let FileInputStream = Java.type("java.io.FileInputStream");
-let FileOutputStream = Java.type("java.io.FileOutputStream");
-let ZipEntry = Java.type("java.util.zip.ZipEntry");
-let ZipOutputStream = Java.type("java.util.zip.ZipOutputStream");
-let ArrayClass = Java.type("java.lang.reflect.Array");
-let ByteType = Java.type("java.lang.Byte").TYPE;
+const File = Java.type("java.io.File");
+const FileInputStream = Java.type("java.io.FileInputStream");
+const FileOutputStream = Java.type("java.io.FileOutputStream");
+const ZipEntry = Java.type("java.util.zip.ZipEntry");
+const ZipOutputStream = Java.type("java.util.zip.ZipOutputStream");
+const ArrayClass = Java.type("java.lang.reflect.Array");
+const ByteType = Java.type("java.lang.Byte").TYPE;
 
 function addFolderToZip(folder, parentPath, zipOut) {
     let files = folder.listFiles();
@@ -819,6 +819,9 @@ function backUpData() {
     FileLib.write("./config/sbo/backup/" + folderName + "/pastDianaEvents.json", JSON.stringify(pastDianaEvents, null, 4));
     FileLib.write("./config/sbo/backup/" + folderName + "/sbo_achievements.json", JSON.stringify(achievementsData, null, 4));
 
+    zipFolder("./config/sbo/backup/" + folderName, "./config/sbo/backup/" + folderName + ".zip");
+    FU.delete("./config/sbo/backup/" + folderName);
+
     let files = FU.listFiles("./config/sbo/backup");
     if (files.length > 5) {
         let oldest = files[0];
@@ -829,6 +832,4 @@ function backUpData() {
         }
         FU.delete(oldest);
     }
-    zipFolder("./config/sbo/backup/" + folderName, "./config/sbo/backup/" + folderName + ".zip");
-    FU.delete("./config/sbo/backup/" + folderName);
 }
