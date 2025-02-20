@@ -211,7 +211,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         }, 4000);
     }
     if (entityName == "Minos Inquisitor") {
-        if (dist < 30) {
+        if (dist <= 30) {
             state3.entityDeathOccurred = true;
             setTimeout(() => {
                 state3.entityDeathOccurred = false;
@@ -219,7 +219,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         }
     }
     if (dianaMobNames.includes(entityName.trim())) {
-        if (dist < 30 ) {
+        if (dist <= 30 ) {
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             state2.entityDeathOccurred = true;
