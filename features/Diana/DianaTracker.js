@@ -107,13 +107,12 @@ function announceLootToParty(item, customMsg = null, replaceChimMessage = false)
     }
     else {
         lootAnnounceBuffer.push(itemname);
-    }
-    
-    if (!lootAnnounceTimeout) {
-        lootAnnounceTimeout = setTimeout(() => {
-            sendLootAnnouncement();
-            lootAnnounceTimeout = null;
-        }, 1000);
+        if (!lootAnnounceTimeout) {
+            lootAnnounceTimeout = setTimeout(() => {
+                sendLootAnnouncement();
+                lootAnnounceTimeout = null;
+            }, 1000);
+        }
     }
 }
   
