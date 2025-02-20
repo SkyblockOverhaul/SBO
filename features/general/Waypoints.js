@@ -216,7 +216,7 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             formattedBurrow.push(wp);
             if (formattedGuess.length == 0) return;
             if (formattedGuess[0][0][1] == wp[0][1] && formattedGuess[0][0][2] == wp[0][2] && formattedGuess[0][0][3] == wp[0][3]) {
-                if (finalLocation.distanceToPlayer() >= 80) return; 
+                if (finalLocation.distanceTo(Player) >= 80) return; 
                 guessRemovedAt = {x: finalLocation.x, y: finalLocation.y, z: finalLocation.z};
                 setFinalLocation(null);
                 guessWaypoint = undefined;
@@ -488,7 +488,7 @@ registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
     if (finalLocation != null && lastWaypoint != finalLocation) {
-        if (finalLocation.x == guessRemovedAt.x && finalLocation.y == guessRemovedAt.y && finalLocation.z == guessRemovedAt.z && finalLocation.distanceToPlayer() < 80) {
+        if (finalLocation.x == guessRemovedAt.x && finalLocation.y == guessRemovedAt.y && finalLocation.z == guessRemovedAt.z && finalLocation.distanceTo(Player) < 80) {
             setFinalLocation(null);
             return;
         }

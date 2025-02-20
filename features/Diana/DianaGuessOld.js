@@ -110,7 +110,7 @@ function onPlaySound(pos, name, volume, pitch, categoryName, event) {
         return;
     }
 
-    const lineDist = lastParticlePoint2.distance(particlePoint);
+    const lineDist = lastParticlePoint2.distanceTo(particlePoint);
 
     distance = distance2;
     const changesHelp = particlePoint.subtract(lastParticlePoint2);
@@ -160,7 +160,7 @@ function onReceiveParticle(particle, type, event) {
             if (locs.length > 2) {
                 const predictedDist = 0.06507 * locs.length + 0.259;
                 const lastPos = locs[locs.length - 1];
-                const actualDist = currLoc.distance(lastPos);
+                const actualDist = currLoc.distanceTo(lastPos);
                 distMultiplier = actualDist / predictedDist;
             }
 
@@ -261,7 +261,7 @@ function onReceiveParticle(particle, type, event) {
 
         if (!lastParticlePoint2 || !firstParticlePoint || !distance2 || !lastSoundPoint) return;
 
-        const lineDist = lastParticlePoint2.distance(particlePoint);
+        const lineDist = lastParticlePoint2.distanceTo(particlePoint);
 
         distance = distance2;
 

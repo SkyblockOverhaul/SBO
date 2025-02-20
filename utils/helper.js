@@ -5,17 +5,10 @@ export class SboVec {
         this.z = z;
     }
 
-    distance(other) {
-        const dx = other.x - this.x;
-        const dy = other.y - this.y;
-        const dz = other.z - this.z;
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
-
-    distanceToPlayer() {
-        const dx = Player.getX() - this.x;
-        const dy = Player.getY() - this.y;
-        const dz = Player.getZ() - this.z;
+    distanceTo(other) {
+        const dx = other.getX() - this.x;
+        const dy = other.getY() - this.y;
+        const dz = other.getZ() - this.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
