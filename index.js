@@ -53,6 +53,8 @@ const changelog = [
     {header: "Added", description: "A more Precise Guess"},
     {header: "Added", description: "Inquis Loot Tracker (Shelmets/Plushies/Remedies)"},
     {header: "Added", description: "Inquis Loot Party Announcer (Shelmets/Plushies/Remedies)"},
+    {header: "Added", description: "Backup folder for all the data"},
+    {header: "Added", description: "Designated folder for config files in minecraft config folder"},
     {header: "Fixed", description: "Warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
     {header: "Some", description: "other small bug fixes"},
 ];
@@ -82,7 +84,6 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-// dowload msg beispiel
 const newVersion = "0.4.8" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
@@ -105,7 +106,6 @@ const downloadMsgReg = register("step", () => {
     downloadMsgReg.unregister()
 }).setFps(1)
 
-// changelog beispiel
 const changeLogReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
