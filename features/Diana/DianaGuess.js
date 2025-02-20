@@ -158,8 +158,8 @@ class PreciseGuessBurrow {
     onReceiveParticle(packet) {
         if (packet.func_179749_a() != 'DRIP_LAVA' || parseInt(packet.func_149222_k()) != 2 || parseFloat(packet.func_149227_j()).toFixed(1) != -0.5) return;
         const currLoc = new SboVec(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f());
-        if (Date.now() - lastGuessTime > 3000) return;
         this.lastLavaParticle = Date.now();
+        if (Date.now() - lastGuessTime > 3000) return;
         
         if (this.particleLocations.length === 0) {
             this.particleLocations.push(currLoc);
@@ -233,11 +233,11 @@ class PreciseGuessBurrow {
         let item = Player.getHeldItem()
         if (item == null) return
         if (!item.getName().includes("Spade") || !action.toString().includes('RIGHT_CLICK')) return;
-        if (Date.now() - lastGuessTime < 3000) return;
         if (Date.now() - this.lastLavaParticle < 200) {
             cancel(event);
             return;
         }
+        if (Date.now() - lastGuessTime < 3000) return;
         this.particleLocations = [];
         lastGuessTime = Date.now();
     }
