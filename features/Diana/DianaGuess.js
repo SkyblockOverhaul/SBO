@@ -2,80 +2,7 @@ import settings from "../../settings";
 import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { coloredArmorStands, getLastInteractedPos } from "./DianaBurrows";
-
-export class SboVec {
-    constructor(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
-    distanceTo(other) {
-        const dx = other.getX() - this.x;
-        const dy = other.getY() - this.y;
-        const dz = other.getZ() - this.z;
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
-
-    add(other) {
-        return new SboVec(this.x + other.x, this.y + other.y, this.z + other.z);
-    }
-
-    subtract(other) {
-        return new SboVec(this.x - other.x, this.y - other.y, this.z - other.z);
-    }
-
-    multiply(d) {
-        return new SboVec(this.x * d, this.y * d, this.z * d);
-    }
-
-    clone() {
-        return new SboVec(this.x, this.y, this.z);
-    }
-
-    equals(other) {
-        return this.x === other.x && this.y === other.y && this.z === other.z;
-    }
-
-    getX() {
-        return this.x;
-    }
-
-    getY() {
-        return this.y;
-    }
-
-    getZ() {
-        return this.z;
-    }
-
-    down(amount) {
-        return new SboVec(this.x, this.y - amount, this.z);
-    }
-
-    roundLocationToBlock() {
-        const x = Math.round(this.x - 0.499999);
-        const y = Math.round(this.y - 0.499999);
-        const z = Math.round(this.z - 0.499999);
-        return new SboVec(x, y, z);
-    }
-
-    toCleanString() {
-        return `${this.x.toFixed(2)}, ${this.y.toFixed(2)}, ${this.z.toFixed(2)}`;
-    }
-
-    toDoubleArray() {
-        return [this.x, this.y, this.z];
-    }
-
-    static fromArray(arr) {
-        return new SboVec(arr[0], arr[1], arr[2]);
-    }
-
-    length() {
-        return Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2);
-    }
-}
+import { SboVec } from "../../utils/helper";
 
 class Matrix {
     constructor(data) {
@@ -216,6 +143,7 @@ export function getLastGuessTime() {
 class PreciseGuessBurrow {
     constructor() {
         this.particleLocations = [];
+        this.particleLocations2 = [];
         this.guessPoint = null;
         this.lastLavaParticle = 0;
     }
@@ -223,6 +151,7 @@ class PreciseGuessBurrow {
     onWorldChange() {
         this.guessPoint = null;
         this.particleLocations = [];
+        this.particleLocations2 = [];
         hasMadeManualGuess = false;
         hasMadeInitialGuess = false;
         finalLocation = null;
@@ -240,14 +169,32 @@ class PreciseGuessBurrow {
         }
 
         const distToLast = this.particleLocations[this.particleLocations.length - 1].distanceTo(currLoc);
-        if (distToLast === 0.0 || distToLast > 3.0) return;
-        this.particleLocations.push(currLoc);
+        let distToLast2 = -1;
+        if (this.particleLocations2.length > 0) distToLast2 = this.particleLocations2[this.particleLocations2.length - 1].distanceTo(currLoc);
+        if (distToLast === 0.0) return;
+        if (this.particleLocations2.length === 0) {
+            if (distToLast > 3) {
+                this.particleLocations2 = this.particleLocations;
+                this.particleLocations = [];
+                this.particleLocations.push(currLoc); 
+                return;
+            } else {
+                this.particleLocations.push(currLoc);
+            }
+        } else {
+            if (distToLast > 3) {
+                this.particleLocations2.push(currLoc);
+                return;
+            } else if (distToLast2 > 3) {
+                this.particleLocations.push(currLoc);
+            }
+        }
+
 
         const guessPosition = this.guessBurrowLocation();
         if (!guessPosition) return;
 
         finalLocation = guessPosition.down(0.5).roundLocationToBlock();
-        fixCoords = guessPosition.toDoubleArray()
         hasMadeManualGuess = true;
     }
 
@@ -285,7 +232,7 @@ class PreciseGuessBurrow {
         let guessPitch = pitchRadians;
         let windowMin = -Math.PI / 2;
         let windowMax = Math.PI / 2;
-        let epsilon = 1e-6;  // Toleranz für Gleitkommazahlen
+        let epsilon = 1e-6;
         
         for (let i = 0; i < 100; i++) {
             let resultPitch = Math.atan2(Math.sin(guessPitch) - 0.75, Math.cos(guessPitch));
@@ -310,6 +257,7 @@ class PreciseGuessBurrow {
         if (!item.getName().includes("Spade") || !event.toString().includes('RIGHT_CLICK')) return;
         if (Date.now() - lastGuessTime < 3000) return;
         this.particleLocations = [];
+        this.particleLocations2 = [];
         lastGuessTime = Date.now();
     }
 }
