@@ -214,7 +214,7 @@ class PreciseGuessBurrow {
         
         for (let i = 0; i < 100; i++) {
             let resultPitch = Math.atan2(Math.sin(guessPitch) - 0.75, Math.cos(guessPitch));
-
+            
             if (Math.abs(resultPitch - pitchRadians) < epsilon) {
                 return guessPitch;
             }

@@ -8,7 +8,6 @@ import { registerWhen } from "../../utils/variables";
 import { getFinalLocation, getLastGuessTime, setFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
-import { SboVec } from "../../utils/helper";
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -60,6 +59,13 @@ export function removeBurrowWaypoint(pos, burrows) {
     return {burrows: burrows, removedBurrow: removedBurrowstring};
 }
 
+export function removeInqWaypoint(x, y, z) {
+    for (let i = 0; i < inqWaypoints.length; i++) {
+        if (inqWaypoints[i][1] == x && inqWaypoints[i][2] == y && inqWaypoints[i][3] == z) {
+            inqWaypoints.splice(i, 1);
+        }
+    }
+}
 
 export function removeBurrowWaypointBySmoke(x, y, z) {
     let removedBurrowstring = null;

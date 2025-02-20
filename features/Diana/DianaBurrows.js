@@ -9,7 +9,7 @@ import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
 import { printDev } from "../../utils/functions";
-import { createBurrowWaypoints, removeBurrowWaypoint, removeBurrowWaypointBySmoke, setBurrowWaypoints } from "../general/Waypoints";
+import { createBurrowWaypoints, removeBurrowWaypoint, removeBurrowWaypointBySmoke, removeInqWaypoint, setBurrowWaypoints } from "../general/Waypoints";
 import { getFinalLocation, setFinalLocation } from "./DianaGuess";
 
 class EvictingQueue {
@@ -330,6 +330,7 @@ registerWhen(register("packetSent", (packet, event) => {
             removePos = new BlockPos(x, y, z);
             lastInteractedPos = new BlockPos(x, y - 1, z);
         }
+        removeInqWaypoint(x, y, z);
     }
     
 }).setFilteredClass(C07PacketPlayerDigging), () => settings.dianaBurrowDetect && getWorld() == "Hub");
