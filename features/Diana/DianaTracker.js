@@ -110,7 +110,7 @@ function announceLootToParty(item, customMsg = null, replaceChimMessage = false)
     lootAnnounceBuffer.push(itemname);
     if (!lootAnnounceTimeout) {
         lootAnnounceTimeout = setTimeout(() => {
-            sendLootAnnouncement(replaceChimMessage);
+            sendLootAnnouncement();
             lootAnnounceTimeout = null;
         }, 500);
     }
