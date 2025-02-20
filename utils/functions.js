@@ -790,10 +790,13 @@ export function formatTime(milliseconds) {
 
 export function formatTimeMinSec(milliseconds) {
     const totalSeconds = parseInt(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
+    const totalMinutes = parseInt(totalSeconds / 60);
+    const totalHours = parseInt(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
     const seconds = totalSeconds % 60;
+    const hours = totalHours % 24;
 
-    return `${minutes}m ${seconds}s`;
+    return `${hours > 0 ? hours + "h " : ""}${minutes > 0 ? minutes + "m " : ""}${seconds}s`;
 }
 
 let dianaMayorTotalProfit = 0;
