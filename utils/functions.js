@@ -1680,3 +1680,47 @@ export function checkSendInqMsg(since) {
 export function calcBurrowsPerHour(burrows, playtime) { // playtime in milliseconds
     return (burrows / (playtime / 3600000)).toFixed(2);
 }
+
+let File = Java.type("java.io.File");
+let FileInputStream = Java.type("java.io.FileInputStream");
+let FileOutputStream = Java.type("java.io.FileOutputStream");
+let ZipEntry = Java.type("java.util.zip.ZipEntry");
+let ZipOutputStream = Java.type("java.util.zip.ZipOutputStream");
+let ArrayClass = Java.type("java.lang.reflect.Array");
+let ByteType = Java.type("java.lang.Byte").TYPE;
+
+function addFolderToZip(folder, parentPath, zipOut) {
+    let files = folder.listFiles();
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        let zipName = parentPath + file.getName();
+        if (file.isDirectory()) {
+            zipOut.putNextEntry(new ZipEntry(zipName + "/"));
+            zipOut.closeEntry();
+            addFolderToZip(file, zipName + "/", zipOut);
+        } else {
+            let fis = new FileInputStream(file);
+            zipOut.putNextEntry(new ZipEntry(zipName));
+            let buffer = ArrayClass.newInstance(ByteType, 1024);
+            let bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                zipOut.write(buffer, 0, bytesRead);
+            }
+            fis.close();
+            zipOut.closeEntry();
+        }
+    }
+}
+
+function zipFolder(folderPath, zipFilePath) {
+    let folder = new File(folderPath);
+    let fileOut = new FileOutputStream(zipFilePath);
+    let zipOut = new ZipOutputStream(fileOut);
+    addFolderToZip(folder, "", zipOut);
+    zipOut.close();
+    fileOut.close();
+}
+// links input folder -- rechts output path
+zipFolder("C:/Users/Kilian/Downloads/testeZip", "C:/Users/Kilian/Downloads/testeZip.zip");
+
