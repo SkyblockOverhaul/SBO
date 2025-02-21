@@ -219,6 +219,12 @@ function checkCustomChimMessage(magicFind) {
             let amount = trackerMayor["items"]["Chimera"] + trackerMayor["items"]["ChimeraLs"];
             text = text.replace(/{amount}/g, amount);
         }
+
+        if (text.includes("{percentage}")) {
+            let percentage = (trackerMayor["items"]["Chimera"] / (trackerMayor["mobs"]["Minos Inquisitor"])) * 100;
+            text = text.replace(/{percentage}/g, percentage.toFixed(2) + "%");
+        }
+
         return [true, text];
     } else {
         return [false, ""];
@@ -227,7 +233,7 @@ function checkCustomChimMessage(magicFind) {
 
 register("command", () => {
     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(400);
-    if(replaceChimMessage) {
+    if (replaceChimMessage) {
         ChatLib.chat(customChimMessage);
     }
 }).setName("sbochimtest");
