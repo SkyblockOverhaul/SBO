@@ -335,7 +335,7 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
         achievementsToUnlock.push(73);
     }
 
-    if (mayorTracker["Daedalus Stick"] >= 1 && mayorTracker["Relic"] >= 2) {
+    if (mayorTracker["Daedalus Stick"] >= 1 && mayorTracker["MINOS_RELIC"] >= 2) {
         achievementsToUnlock.push(74);
     }
 }
