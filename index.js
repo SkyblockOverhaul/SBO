@@ -36,7 +36,7 @@ const commands = [
     {cmd: "sboimporttrackerundo", description: "Undo the tracker import"},
     {cmd: "sbodc", description: "Diana dropchances"},
     {cmd: "sbopartyblacklist", description: "Party commands blacklisting"},
-    {cmd: "sbobacktrackachivements", description: "Backtrack achievements"},
+    {cmd: "sbobacktrackachievements", description: "Backtrack achievements"},
     {cmd: "sboachievements", description: "Opens the achievements GUI"},
     {cmd: "sbolockachievements", description: "Locks all Achievements (needs confirmation)"},
     {cmd: "sbopde", description: "Opens the Past Diana Events GUI"},
