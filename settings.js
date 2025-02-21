@@ -396,7 +396,7 @@ class Settings {
     chimMessageBool = false;
     @TextProperty({
         name: "Custom Chim Message Text",
-        description: 'use: {mf} for MagicFind, {amount} for drop Amount this event.',
+        description: 'use: {mf} for MagicFind, {amount} for drop Amount this event and {percentage} for chimera/inquis ratio.',
         category: "Diana",
         subcategory: "Other",
     })

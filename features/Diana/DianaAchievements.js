@@ -211,6 +211,8 @@ new Achievement(69, "Burrow Enthusiast", "Get 360 burrows/hour (5h playtime)", "
 new Achievement(70, "Shovel Expert", "Get 420 burrows/hour (5h playtime)", "Legendary", 69, 2);
 new Achievement(71, "Burrow Maniac", "Get 480 burrows/hour (5h playtime)", "Divine", 70, 3);
 new Achievement(72, "Nice macro!", "Get 550 burrows/hour (5h playtime)", "Impossible", 71, 4, true);
+new Achievement(73, "Can I craft a Chimera sword now?", "Get 1 stick & 2 chimeras in 1 event", "Epic");
+new Achievement(74, "Can I craft a Relic sword now?", "Get 1 stick & 2 relics in 1 event", "Legendary");
 
 // new Achievement(73, "Runic Fortune", "Get a Chimera from a Runic Inquisitor", "Legendary");
 
@@ -334,6 +336,14 @@ export function trackAchievementsItem(mayorTracker, item, backtrack=false) {
 
     if (!backtrack) {
         unlockAchievements();
+    }
+
+    if (mayorTracker["Daedalus Stick"] >= 1 && (mayorTracker["Chimera"] + mayorTracker["ChimeraLs"]) >= 2) {
+        achievementsToUnlock.push(73);
+    }
+
+    if (mayorTracker["Daedalus Stick"] >= 1 && mayorTracker["Relic"] >= 2) {
+        achievementsToUnlock.push(74);
     }
 }
 
