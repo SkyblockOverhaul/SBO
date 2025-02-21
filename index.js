@@ -48,16 +48,17 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Added", description: "Paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
+    {header: "Added", description: "paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
     {header: "Added", description: "!stats <playername> party command"},
-    {header: "Added", description: "A more Precise Guess"},
-    {header: "Added", description: "Inquis Loot Tracker (Shelmets/Plushies/Remedies)"},
-    {header: "Added", description: "Inquis Loot Party Announcer (Shelmets/Plushies/Remedies)"},
-    {header: "Added", description: "Backup folder for all the data"},
+    {header: "Added", description: "a more Precise Guess"},
+    {header: "Added", description: "inquis Loot Tracker (Shelmets/Plushies/Remedies)"},
+    {header: "Added", description: "inquis Loot Party Announcer (Shelmets/Plushies/Remedies)"},
+    {header: "Added", description: "vackup folder for all the data"},
     {header: "Added", description: "Designated folder for config files in minecraft config folder"},
+    {header: "Added", description: "being able to remove the inq waypoint with the spade"},
     {header: "Added", description: "{percentage} for custom chimera message"},
-    {header: "Added", description: "Setting: Remove Guess When Burrow"},
-    {header: "Fixed", description: "Warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
+    {header: "Added", description: "setting: Remove Guess When Burrow"},
+    {header: "Fixed", description: "warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
     {header: "Some", description: "other small bug fixes"},
 ];
 
