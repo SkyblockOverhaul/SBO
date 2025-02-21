@@ -103,6 +103,9 @@ let configFolderPath = "./config/sbo";
 if (!FU.exists(configFolderPath)) {
     FU.newDirectory(configFolderPath);
 }
+if (!FU.exists("./config/sbo/backup")) {
+    FU.newDirectory("./config/sbo/backup");
+}
 
 // Initializing a persistent data object using the PogObject class
 export const resetVersion = "0.1.3"; // change this to the new version for config.toml reset
@@ -744,6 +747,7 @@ register("gameUnload", () => {
     // achievementsData.save();
     mainCheckboxes.save();
     mainInputFields.save();
+    backUpData();
 });
 
 export function checkPastDianaEvents() {
@@ -758,4 +762,74 @@ export function checkPastDianaEvents() {
     }
     pastDianaEvents.events = tempEvents;
     pastDianaEvents.save();
+}
+
+const File = Java.type("java.io.File");
+const FileInputStream = Java.type("java.io.FileInputStream");
+const FileOutputStream = Java.type("java.io.FileOutputStream");
+const ZipEntry = Java.type("java.util.zip.ZipEntry");
+const ZipOutputStream = Java.type("java.util.zip.ZipOutputStream");
+const ArrayClass = Java.type("java.lang.reflect.Array");
+const ByteType = Java.type("java.lang.Byte").TYPE;
+
+function addFolderToZip(folder, parentPath, zipOut) {
+    let files = folder.listFiles();
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        let zipName = parentPath + file.getName();
+        if (file.isDirectory()) {
+            zipOut.putNextEntry(new ZipEntry(zipName + "/"));
+            zipOut.closeEntry();
+            addFolderToZip(file, zipName + "/", zipOut);
+        } else {
+            let fis = new FileInputStream(file);
+            zipOut.putNextEntry(new ZipEntry(zipName));
+            let buffer = ArrayClass.newInstance(ByteType, 1024);
+            let bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                zipOut.write(buffer, 0, bytesRead);
+            }
+            fis.close();
+            zipOut.closeEntry();
+        }
+    }
+}
+
+function zipFolder(folderPath, zipFilePath) {
+    let folder = new File(folderPath);
+    let fileOut = new FileOutputStream(zipFilePath);
+    let zipOut = new ZipOutputStream(fileOut);
+    addFolderToZip(folder, "", zipOut);
+    zipOut.close();
+    fileOut.close();
+}
+
+function backUpData() {
+    let date = new Date();
+    let dateString = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+    let timeString = date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
+    let folderName = "SBOBackup_" + dateString + "_" + timeString;
+    FU.newDirectory("./config/sbo/backup/" + folderName);
+
+    FileLib.write("./config/sbo/backup/" + folderName + "/data.json", JSON.stringify(data, null, 4));
+    FileLib.write("./config/sbo/backup/" + folderName + "/dianaTrackerTotal.json", JSON.stringify(dianaTrackerTotal, null, 4));
+    FileLib.write("./config/sbo/backup/" + folderName + "/dianaTrackerSession.json", JSON.stringify(dianaTrackerSession, null, 4));
+    FileLib.write("./config/sbo/backup/" + folderName + "/dianaTrackerMayor.json", JSON.stringify(dianaTrackerMayor, null, 4));
+    FileLib.write("./config/sbo/backup/" + folderName + "/pastDianaEvents.json", JSON.stringify(pastDianaEvents, null, 4));
+    FileLib.write("./config/sbo/backup/" + folderName + "/sbo_achievements.json", JSON.stringify(achievementsData, null, 4));
+
+    zipFolder("./config/sbo/backup/" + folderName, "./config/sbo/backup/" + folderName + ".zip");
+    FU.delete("./config/sbo/backup/" + folderName);
+
+    let files = FU.listFiles("./config/sbo/backup");
+    if (files.length > 5) {
+        let oldest = files[0];
+        for (let file of files) {
+            if (FU.getLastModifiedTime(file) < FU.getLastModifiedTime(oldest)) {
+                oldest = file;
+            }
+        }
+        FU.delete(oldest);
+    }
 }

@@ -50,10 +50,7 @@ export function dianaLootCounter(item, amount) {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
                     }
-                    if (settings.lootAnnouncerParty) {
-                        ChatLib.command("pc [SBO] RARE DROP! Minos Relic!");
-
-                    }
+                    announceLootToParty(item);
                     playCustomSound(settings.relicSound, settings.relicVolume);
                 }
                 for (let i in rareDrops.values()) {
@@ -84,9 +81,7 @@ export function dianaLootCounter(item, amount) {
                                     trackItem(item, "inquis", amount);
                                 }
                             }
-                            setTimeout(() => {
-                                announceLootToParty(item);
-                            }, 250);
+                            announceLootToParty(item);
                         }
                     }
                 }
@@ -95,11 +90,37 @@ export function dianaLootCounter(item, amount) {
     }
 }
 
-function announceLootToParty(item) {
-    if (settings.inquisLootAnnouncerParty) {
-        let itemname = item.replace("_LS", "").replaceAll("_", " ");
+let lootAnnounceBuffer = [];
+let lootAnnounceTimeout = null;
+function announceLootToParty(item, customMsg = null, replaceChimMessage = false) {
+    if (!settings.lootAnnouncerParty) return;
+    let itemname = item.replace("_LS", "").replaceAll("_", " ");
+    if (customMsg) {
+        itemname = customMsg;
+    } 
+    else {
         itemname = toTitleCase(itemname);
-        ChatLib.command("pc [SBO] RARE DROP! " + itemname);
+    } 
+
+    if (replaceChimMessage) {
+        ChatLib.command("pc " + itemname);
+    }
+    else {
+        lootAnnounceBuffer.push(itemname);
+        if (!lootAnnounceTimeout) {
+            lootAnnounceTimeout = setTimeout(() => {
+                sendLootAnnouncement();
+                lootAnnounceTimeout = null;
+            }, 1000);
+        }
+    }
+}
+  
+function sendLootAnnouncement() {
+    if (lootAnnounceBuffer.length > 0) {
+        let msg = lootAnnounceBuffer.join(", ");
+        lootAnnounceBuffer = [];
+        ChatLib.command("pc [SBO] RARE DROP! " + msg);
     }
 }
 
@@ -428,12 +449,10 @@ registerWhen(register("chat", (drop, event) => {
                     cancel(event)
                     ChatLib.chat(customChimMessage);
                 }
-                if (settings.lootAnnouncerParty) {
-                    if (replaceChimMessage) {
-                        ChatLib.command("pc " + customChimMessage.removeFormatting());
-                    } else {
-                        ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
-                    }
+                if (replaceChimMessage) {
+                    announceLootToParty("Chimera!", customChimMessage.removeFormatting(), true);
+                } else {
+                    announceLootToParty("Chimera!", "Chimera!" + mfPrefix);
                 }
                 break;
             case "Daedalus Stick":
@@ -477,11 +496,10 @@ registerWhen(register("chat", (drop, event) => {
                         Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                     }
                 }
-                if (settings.lootAnnouncerParty) {
-                    ChatLib.command("pc [SBO] RARE DROP! Daedalus Stick!" + mfPrefix);
-                }
 
+                announceLootToParty("Daedalus Stick!", "Daedalus Stick!" + mfPrefix);
                 playCustomSound(settings.stickSound, settings.stickVolume);
+
                 if (settings.dianaTracker) {
                     trackItem(drop, "items", 1);
                 }

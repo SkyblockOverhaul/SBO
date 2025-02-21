@@ -210,8 +210,8 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             hasTrackedInq = false;
         }, 4000);
     }
-    if (entityName == "Minos Inquisitor") {
-        if (dist < 30) {
+    if (dianaMobNames[0].includes(entityName.trim())) {
+        if (dist <= 30) {
             state3.entityDeathOccurred = true;
             setTimeout(() => {
                 state3.entityDeathOccurred = false;
@@ -219,7 +219,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
         }
     }
     if (dianaMobNames.includes(entityName.trim())) {
-        if (dist < 30 ) {
+        if (dist <= 30 ) {
             allowedToTrackSacks = true;
             state.entityDeathOccurred = true;
             state2.entityDeathOccurred = true;
@@ -790,10 +790,13 @@ export function formatTime(milliseconds) {
 
 export function formatTimeMinSec(milliseconds) {
     const totalSeconds = parseInt(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
+    const totalMinutes = parseInt(totalSeconds / 60);
+    const totalHours = parseInt(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
     const seconds = totalSeconds % 60;
+    const hours = totalHours % 24;
 
-    return `${minutes}m ${seconds}s`;
+    return `${hours > 0 ? hours + "h " : ""}${minutes > 0 ? minutes + "m " : ""}${seconds}s`;
 }
 
 let dianaMayorTotalProfit = 0;

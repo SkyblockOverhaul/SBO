@@ -85,12 +85,14 @@ class Settings {
         this.addDependency('Flare Expire Soon Alert','Flare Tracker');
         this.addDependency('Hide Own Flare When Not In Range','Flare Tracker');
         this.addDependency('Burrow Guess Alternative','Diana Burrow Guess');
+        this.addDependency('Warp only after <X>ms','Diana Burrow Warp');
+        this.addDependency('Warp Delay','Warp only after <X>ms');
 
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
-        description: "Guess the burrow location",
+        description: "Guess the burrow location. Needs Driping Lava Partciles and set /particlequality to Extreme for more accuracy",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
@@ -130,6 +132,22 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     warpDiff = "10";
+    @SwitchProperty({
+        name: "Warp only after <X>ms",
+        description: "Waits before warping so the guess is more precise set it to ur own preference",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    warpDelay = false;
+    @SliderProperty({
+        name: "Warp Delay",
+        description: "Set the delay in ms",
+        category: "Diana",
+        subcategory: "Diana Burrows",
+        min: 0,
+        max: 1200
+    })
+    warpDelayTime = 800;
 
     // --- Diana Tracker ---
     @SwitchProperty({
@@ -232,6 +250,13 @@ class Settings {
         subcategory: 'Diana Waypoints',
     })
     inqWarpKey = true;
+    @SwitchProperty({
+        name: 'Remove Guess When Burrow',
+        description: 'Removes guess when a burrow spawns on the guess',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+    })
+    removeGuessWhenBurrow = true;
     @SwitchProperty({
         name: 'Remove Guess',
         description: 'Removes guess when getting close to it',
@@ -419,18 +444,11 @@ class Settings {
     lootAnnouncerPrice = true;
     @SwitchProperty({
         name: 'Loot Party Announcer',
-        description: 'Announce chimera/stick/relic to party',
+        description: 'Announce (Chimera/Stick/Relic) and inquisitor (Shelmet/Plushie/Remedies) to party',
         category: 'Diana',
         subcategory: 'Loot Announcer',
     })
     lootAnnouncerParty = false;
-    @SwitchProperty({
-        name: 'Inquis Loot Party Announcer',
-        description: 'Announce inquisitor loot to party (Shelmet/Plushie/Remedies)',
-        category: 'Diana',
-        subcategory: 'Loot Announcer',
-    })
-    inquisLootAnnouncerParty = false;
 
     //Party Commands
     @SwitchProperty({

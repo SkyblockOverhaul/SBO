@@ -48,8 +48,18 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Added", description: "Paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
+    {header: "Added", description: "paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
     {header: "Added", description: "!stats <playername> party command"},
+    {header: "Added", description: "a more Precise Guess"},
+    {header: "Added", description: "inquis Loot Tracker (Shelmets/Plushies/Remedies)"},
+    {header: "Added", description: "backup folder for all the data"},
+    {header: "Added", description: "Designated folder for config files in minecraft config folder"},
+    {header: "Added", description: "being able to remove the inq waypoint with the spade"},
+    {header: "Added", description: "{percentage} for custom chimera message"},
+    {header: "Added", description: "setting: Remove Guess When Burrow"},
+    {header: "Updated", description: "loot Party Announcer for (Shelmets/Plushies/Remedies) those 3 are only announced foor inq loot tho"},
+    {header: "Fixed", description: "warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
+    {header: "Some", description: "other small bug fixes"},
 ];
 
 register("command", (args1, ...args) => {
@@ -77,7 +87,6 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-// dowload msg beispiel
 const newVersion = "0.4.8" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
@@ -100,7 +109,6 @@ const downloadMsgReg = register("step", () => {
     downloadMsgReg.unregister()
 }).setFps(1)
 
-// changelog beispiel
 const changeLogReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
