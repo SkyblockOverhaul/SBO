@@ -210,7 +210,7 @@ registerWhen(register("entityDeath", (entity) => { // geht noch nicht weil er re
             hasTrackedInq = false;
         }, 4000);
     }
-    if (entityName == "Minos Inquisitor") {
+    if (dianaMobNames[0].includes(entityName.trim())) {
         if (dist <= 30) {
             state3.entityDeathOccurred = true;
             setTimeout(() => {
