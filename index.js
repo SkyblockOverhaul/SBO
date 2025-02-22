@@ -48,6 +48,7 @@ const commands = [
 ];
 
 const changelog = [
+    {header: "Changed", description: "Better burrow guessing logic - thanks to @SkyHanni and @bloxigus for developing it"},
     {header: "Added", description: "paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
     {header: "Added", description: "!stats <playername> party command"},
     {header: "Added", description: "a more Precise Guess"},
