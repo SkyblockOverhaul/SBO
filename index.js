@@ -59,6 +59,7 @@ const changelog = [
     {header: "Added", description: "setting: Remove Guess When Burrow"},
     {header: "Updated", description: "loot Party Announcer for (Shelmets/Plushies/Remedies) those 3 are only announced foor inq loot tho"},
     {header: "Fixed", description: "warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
+    {header: "Fixed", description: "Sometimes the partyfinder says that you dont meet the requirements even tho you do"},
     {header: "Some", description: "other small bug fixes"},
 ];
 
