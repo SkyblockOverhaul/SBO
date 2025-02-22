@@ -210,7 +210,7 @@ class PreciseGuessBurrow {
         let guessPitch = pitchRadians;
         let windowMin = -Math.PI / 2;
         let windowMax = Math.PI / 2;
-        let epsilon = 1e-8;
+        let epsilon = 1e-7;
         
         for (let i = 0; i < 100; i++) {
             let resultPitch = Math.atan2(Math.sin(guessPitch) - 0.75, Math.cos(guessPitch));
@@ -280,9 +280,9 @@ function tryToMakeInitialGuess() {
 }
 
 
-register("playerInteract", (action, pos, event) => {
+registerWhen(register("playerInteract", (action, pos, event) => {
     preciseGuess.onUseSpade(action, event);
-});
+}), () => settings.dianaBurrowGuess);
 
 registerWhen(register("worldUnload", () => {
     preciseGuess.onWorldChange();
