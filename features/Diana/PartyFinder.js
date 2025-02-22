@@ -170,19 +170,24 @@ register("command", () => {
     ChatLib.chat("&6[SBO] &aCopied to Clipboard");
 }).setName("buttonforsbotocopystats");
 
-function checkPlayer(player) {
+function checkPlayer(player, refreshData) {
     let playerName = player;
     if (!playerName) {
         ChatLib.chat("&6[SBO] &ePlease provide a player name to check.");
         return;
     }
-    ChatLib.chat("&6[SBO] &eChecking Player: " + playerName);
+    if (!refreshData) ChatLib.chat("&6[SBO] &eChecking Player: " + playerName);
     request({
         url: api + "/partyInfo?party=" + playerName,
         json: true
     }).then((response)=> {
         if (response.Success) {
-            printCheckedPlayer(response.PartyInfo)
+            if (playerName == Player.getName()) {
+                data.dianaStats = response.PartyInfo[0];
+                data.save();
+            }
+            if (refreshData) return;
+            printCheckedPlayer(response.PartyInfo);
         } else {
             ChatLib.chat("&6[SBO] &4Error: " + response.Error);
         }
@@ -198,7 +203,7 @@ function checkPlayer(player) {
 
 register("command", (args1, ...args) => {
     if (args1 == undefined) args1 = Player.getName();
-    checkPlayer(args1);
+    checkPlayer(args1, false);
 }).setName("sbocheck").setAliases("sboc");;
 
 register("chat", (player) => {
@@ -425,7 +430,6 @@ register("chat", (event) => {
     })
 })
 
-
 register("chat", (toFrom, player, id, event) => {
     if (inQueue && toFrom.includes("From")) {
         // join request message
@@ -447,6 +451,12 @@ register("chat", (toFrom, player, id, event) => {
     }
     cancel(event);
 }).setCriteria("&d${toFrom} ${player}&r&7: &r&7[SBO] join party request - ${id}");
+
+register("chat", (profile, event) => {
+    setTimeout(() => {
+        checkPlayer(Player.getName(), true);
+    }, 10000);
+}).setCriteria("&r&7Switching to profile ${profile}&r");
 
 register("gameUnload", () => {
     if (inQueue) {
