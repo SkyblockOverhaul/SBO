@@ -280,9 +280,9 @@ function tryToMakeInitialGuess() {
 }
 
 
-register("playerInteract", (action, pos, event) => {
+registerWhen(register("playerInteract", (action, pos, event) => {
     preciseGuess.onUseSpade(action, event);
-});
+}), () => settings.dianaBurrowGuess);
 
 registerWhen(register("worldUnload", () => {
     preciseGuess.onWorldChange();
