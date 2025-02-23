@@ -354,7 +354,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || settings.inquisDetect || settings.announceKilltext || (settings.dianaStatsTracker || settings.sendSinceMessage)));
+}).setCriteria("${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || settings.inquisDetect || settings.announceKilltext || (settings.dianaStatsTracker || settings.sendSinceMessage)));
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
