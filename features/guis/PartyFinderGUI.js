@@ -4,7 +4,7 @@ import { drawRectangleOutline as outline, rect, formatPlayerInfo, color, getDian
 import { createParty, removePartyFromQueue, getInQueue, sendJoinRequest, isInParty } from "../Diana/PartyFinder";
 import { mainInputFields } from "../../utils/variables";
 import { request } from "../../../requestV2";
-import ElementUtils from "../../../DocGuiLib/core/Element"
+import GuiHandler from "./GuiHandler";
 import TextInputElement from "../../../DocGuiLib/elements/TextInput";
 import HandleGui from "../../../DocGuiLib/core/Gui";
 import { UIBlock, PixelConstraint } from "../../../Elementa"
@@ -535,7 +535,7 @@ HdwiGUI.registerKeyTyped((char, keyCode) => {
 });
 let inputFields = {}
 let createLayoutData = getLayoutData()
-let createPartyColor = ElementUtils.getJavaColor([80, 80, 80, 245])
+let createPartyColor = GuiHandler.Color([80, 80, 80, 245])
 let createPartyBlock = new UIBlock(createPartyColor)
     .setX(new PixelConstraint(createLayoutData.createWindowX))
     .setY(new PixelConstraint(createLayoutData.createWindowY))

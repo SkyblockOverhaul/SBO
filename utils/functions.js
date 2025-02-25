@@ -1683,3 +1683,55 @@ export function checkSendInqMsg(since) {
 export function calcBurrowsPerHour(burrows, playtime) { // playtime in milliseconds
     return (burrows / (playtime / 3600000)).toFixed(2);
 }
+
+export function calcTotalProfit(item, amount) {
+    let totalProfit = 0;
+    switch (item) {
+        case "Coins":
+            totalProfit += amount;
+            break;
+        case "Griffin Feather":
+            totalProfit += getBazaarPriceDiana("GRIFFIN_FEATHER") * amount;
+            break;
+        case "Ancient Claws":
+            totalProfit += getBazaarPriceDiana("ANCIENT_CLAW") * amount;
+            break;
+        case "Enchanted Ancient Claws":
+            totalProfit += getBazaarPriceDiana("ENCHANTED_ANCIENT_CLAW") * amount;
+            break;
+        case "Enchanted Gold":
+            totalProfit += getBazaarPriceDiana("ENCHANTED_GOLD") * amount;
+            break;
+        case "Enchanted Iron":
+            totalProfit += getBazaarPriceDiana("ENCHANTED_IRON") * amount;
+            break;
+        case "Chimera":
+            totalProfit += getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * amount;
+            break;
+        case "Minos Relic":
+            totalProfit += getDianaAhPrice("MINOS_RELIC") * amount;
+            break;
+        case "Daedalus Stick":
+            totalProfit += getBazaarPriceDiana("DAEDALUS_STICK") * amount;
+            break;
+        case "Crown of Greed":
+            totalProfit += getDianaAhPrice("CROWN_OF_GREED") * amount;
+            break;
+        case "Washed-up Souvenir":
+            totalProfit += getDianaAhPrice("WASHED_UP_SOUVENIR") * amount;
+            break;
+        case "Dwarf Turtle Shelmet":
+            totalProfit += getDianaAhPrice("DWARF_TURTLE_SHELMET") * amount;
+            break;
+        case "Crochet Tiger Plushie":
+            totalProfit += getDianaAhPrice("CROCHET_TIGER_PLUSHIE") * amount;
+            break;
+        case "Antique Remedies":
+            totalProfit += getDianaAhPrice("ANTIQUE_REMEDIES") * amount;
+            break;
+        case "Chimerals":
+            totalProfit += getBazaarPriceDiana("ENCHANTMENT_ULTIMATE_CHIMERA_1") * amount;
+            break;
+    }
+    return totalProfit;
+}
