@@ -1,8 +1,8 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
-import { itemOverlay, mobOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, inquisDeathTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
+import { itemOverlay, mobOverlay, inquisOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
 import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, initializeTracker, dianaTimerlist } from "../../utils/variables";
@@ -17,6 +17,11 @@ import { getDateMayorElected, getSkyblockDate } from "../../utils/mayor";
 export function dianaLootCounter(item, amount) {
     let rareDrops = ["&9DWARF_TURTLE_SHELMET", "&5CROCHET_TIGER_PLUSHIE", "&5ANTIQUE_REMEDIES", "&5MINOS_RELIC"]; //  "&5ROTTEN_FLESH"
     let countThisIds = ["ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD", "ENCHANTED_IRON"]
+    let lsIdsDict = {
+        "DWARF_TURTLE_SHELMET": "DWARF_TURTLE_SHELMET_LS",
+        "CROCHET_TIGER_PLUSHIE": "CROCHET_TIGER_PLUSHIE_LS",
+        "ANTIQUE_REMEDIES": "ANTIQUE_REMEDIES_LS",
+    }
     let checkBool = true;
     if (mobDeath2SecsTrue() || gotLootShare()) {
         if (checkDiana()) {
@@ -45,10 +50,7 @@ export function dianaLootCounter(item, amount) {
                             Client.showTitle(`&5&lMinos Relic!`, "", 0, 25, 35);
                         }
                     }
-                    if (settings.lootAnnouncerParty) {
-                        ChatLib.command("pc [SBO] RARE DROP! Minos Relic!");
-
-                    }
+                    announceLootToParty(item);
                     playCustomSound(settings.relicSound, settings.relicVolume);
                 }
                 for (let i in rareDrops.values()) {
@@ -70,10 +72,55 @@ export function dianaLootCounter(item, amount) {
                         if (settings.dianaTracker) {
                             trackItem(item, "items", amount);
                         }
+                        if (inquisDeathTrue()) {
+                            if (settings.inquisTracker) {
+                                if (gotLootShare()) {
+                                    trackItem(lsIdsDict[item], "inquis", amount);
+                                }
+                                else {
+                                    trackItem(item, "inquis", amount);
+                                }
+                            }
+                            announceLootToParty(item);
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+let lootAnnounceBuffer = [];
+let lootAnnounceTimeout = null;
+function announceLootToParty(item, customMsg = null, replaceChimMessage = false) {
+    if (!settings.lootAnnouncerParty) return;
+    let itemname = item.replace("_LS", "").replaceAll("_", " ");
+    if (customMsg) {
+        itemname = customMsg;
+    } 
+    else {
+        itemname = toTitleCase(itemname);
+    } 
+
+    if (replaceChimMessage) {
+        ChatLib.command("pc " + itemname);
+    }
+    else {
+        lootAnnounceBuffer.push(itemname);
+        if (!lootAnnounceTimeout) {
+            lootAnnounceTimeout = setTimeout(() => {
+                sendLootAnnouncement();
+                lootAnnounceTimeout = null;
+            }, 1000);
+        }
+    }
+}
+  
+function sendLootAnnouncement() {
+    if (lootAnnounceBuffer.length > 0) {
+        let msg = lootAnnounceBuffer.join(", ");
+        lootAnnounceBuffer = [];
+        ChatLib.command("pc [SBO] RARE DROP! " + msg);
     }
 }
 
@@ -118,6 +165,7 @@ export function trackItem(item, category, amount) {
 
         itemOverlay();
         mobOverlay();
+        inquisOverlay();
         statsOverlay();
         avgMagicFindOverlay();
         data.save();
@@ -171,6 +219,12 @@ function checkCustomChimMessage(magicFind) {
             let amount = trackerMayor["items"]["Chimera"] + trackerMayor["items"]["ChimeraLs"];
             text = text.replace(/{amount}/g, amount);
         }
+
+        if (text.includes("{percentage}")) {
+            let percentage = (trackerMayor["items"]["Chimera"] / (trackerMayor["mobs"]["Minos Inquisitor"])) * 100;
+            text = text.replace(/{percentage}/g, percentage.toFixed(2) + "%");
+        }
+
         return [true, text];
     } else {
         return [false, ""];
@@ -179,7 +233,7 @@ function checkCustomChimMessage(magicFind) {
 
 register("command", () => {
     let [replaceChimMessage, customChimMessage] = checkCustomChimMessage(400);
-    if(replaceChimMessage) {
+    if (replaceChimMessage) {
         ChatLib.chat(customChimMessage);
     }
 }).setName("sbochimtest");
@@ -194,6 +248,7 @@ register("command", () => {
     trackerSession.save();
     itemOverlay();
     mobOverlay();
+    inquisOverlay();
 }).setName("sboresetsession");
     
 // total burrow tracker //
@@ -299,7 +354,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
         }
     }
     if (settings.cleanDianaChat) cancel(event);
-}).setCriteria("&r&c&l${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || settings.inquisDetect || settings.announceKilltext || (settings.dianaStatsTracker || settings.sendSinceMessage)));
+}).setCriteria("${woah} &r&eYou dug ${arev}&r&2${mob}&r&e!${skytils}"), () => getWorld() === "Hub" && (settings.dianaTracker || settings.inquisDetect || settings.announceKilltext || (settings.dianaStatsTracker || settings.sendSinceMessage)));
 
 // track items from chat //
 registerWhen(register("chat", (drop) => {
@@ -394,12 +449,10 @@ registerWhen(register("chat", (drop, event) => {
                     cancel(event)
                     ChatLib.chat(customChimMessage);
                 }
-                if (settings.lootAnnouncerParty) {
-                    if (replaceChimMessage) {
-                        ChatLib.command("pc " + customChimMessage.removeFormatting());
-                    } else {
-                        ChatLib.command("pc [SBO] RARE DROP! Chimera!" + mfPrefix);
-                    }
+                if (replaceChimMessage) {
+                    announceLootToParty("Chimera!", customChimMessage.removeFormatting(), true);
+                } else {
+                    announceLootToParty("Chimera!", "Chimera!" + mfPrefix);
                 }
                 break;
             case "Daedalus Stick":
@@ -443,18 +496,17 @@ registerWhen(register("chat", (drop, event) => {
                         Client.Companion.showTitle(`&6&lDaedalus Stick!`, "", 0, 25, 35);
                     }
                 }
-                if (settings.lootAnnouncerParty) {
-                    ChatLib.command("pc [SBO] RARE DROP! Daedalus Stick!" + mfPrefix);
-                }
 
+                announceLootToParty("Daedalus Stick!", "Daedalus Stick!" + mfPrefix);
                 playCustomSound(settings.stickSound, settings.stickVolume);
+
                 if (settings.dianaTracker) {
                     trackItem(drop, "items", 1);
                 }
                 break;
         }
     }
-}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool));
+}).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool)));
 
 // refresh overlay //
 let tempSettingLoot = -1;
@@ -475,6 +527,7 @@ let firstLoadReg = register("tick", () => {
     if (isInSkyblock() && isDataLoaded()) {
         itemOverlay();
         mobOverlay();
+        inquisOverlay();
         statsOverlay();
         avgMagicFindOverlay();
         mythosMobHpOverlay([]);
@@ -558,6 +611,7 @@ function importDianaTracker(profileName, importType) {
     ChatLib.chat("&6[SBO] &aTracker imported!");
     itemOverlay();
     mobOverlay();
+    inquisOverlay();
 }
 
 function transferData(type, itemKey, ammount, importType, tracker) {
@@ -658,6 +712,7 @@ register("command", () => {
         trackerTotal.save();
         itemOverlay();
         mobOverlay();
+        inquisOverlay();
     }
 }).setName("sboimporttrackerundo");
 

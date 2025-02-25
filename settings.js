@@ -54,6 +54,7 @@ class Settings {
         // this.addDependency("Checkbox", "Do action!!!")
         this.addDependency("Mob View", "Diana Tracker");
         this.addDependency("Loot View", "Diana Tracker");
+        this.addDependency("Inquis Loot Tracker", "Diana Tracker");
         this.addDependency('Warp Party','Party Commands');
         this.addDependency('Allinvite','Party Commands');
         this.addDependency('Party Transfer','Party Commands');
@@ -84,12 +85,14 @@ class Settings {
         this.addDependency('Flare Expire Soon Alert','Flare Tracker');
         this.addDependency('Hide Own Flare When Not In Range','Flare Tracker');
         this.addDependency('Burrow Guess Alternative','Diana Burrow Guess');
+        this.addDependency('Warp only after <X>ms','Diana Burrow Warp');
+        this.addDependency('Warp Delay','Warp only after <X>ms');
 
     } 
     //-----------Diana Burrows----------------
     @SwitchProperty({
         name: "Diana Burrow Guess",
-        description: "Guess the burrow location",
+        description: "Guess the burrow location. Needs Driping Lava Partciles and set /particlequality to Extreme for more accuracy",
         category: "Diana",
         subcategory: "Diana Burrows"
     })
@@ -129,6 +132,22 @@ class Settings {
         subcategory: "Diana Burrows"
     })
     warpDiff = "10";
+    @SwitchProperty({
+        name: "Warp only after <X>ms",
+        description: "Waits before warping so the guess is more precise set it to ur own preference",
+        category: "Diana",
+        subcategory: "Diana Burrows"
+    })
+    warpDelay = false;
+    @SliderProperty({
+        name: "Warp Delay",
+        description: "Set the delay in ms",
+        category: "Diana",
+        subcategory: "Diana Burrows",
+        min: 0,
+        max: 1200
+    })
+    warpDelayTime = 800;
 
     // --- Diana Tracker ---
     @SwitchProperty({
@@ -154,14 +173,14 @@ class Settings {
         options: ["OFF", "Total", "Event", "Session"]
     })
     dianaLootTrackerView = 0;
-    // @SwitchProperty({
-    //     name: "Inquis Tracker",
-    //     description: "Tracks your Inquisitor Loot",
-    //     category: "Diana",
-    //     subcategory: "Diana Tracker",
-    //     options: ["OFF", "Total", "Event", "Session"]
-    // })
-    // inquisTracker = 0;
+    @SelectorProperty({
+        name: "Inquis Loot Tracker",
+        description: "Shows your Inquisitor Loot so you see how lucky/unlucky you are (Shelmet/Plushie/Remedies)",
+        category: "Diana",
+        subcategory: "Diana Tracker",
+        options: ["OFF", "Total", "Event", "Session"]
+    })
+    inquisTracker = 0;
     @SwitchProperty({
         name: "Four-Eyed Fish",
         description: "Set if you have a Four-Eyed Fish on your griffin pet",
@@ -231,6 +250,13 @@ class Settings {
         subcategory: 'Diana Waypoints',
     })
     inqWarpKey = true;
+    @SwitchProperty({
+        name: 'Remove Guess When Burrow',
+        description: 'Removes guess when a burrow spawns on the guess',
+        category: 'Diana',
+        subcategory: 'Diana Waypoints',
+    })
+    removeGuessWhenBurrow = true;
     @SwitchProperty({
         name: 'Remove Guess',
         description: 'Removes guess when getting close to it',
@@ -370,7 +396,7 @@ class Settings {
     chimMessageBool = false;
     @TextProperty({
         name: "Custom Chim Message Text",
-        description: 'use: {mf} for MagicFind, {amount} for drop Amount this event.',
+        description: 'use: {mf} for MagicFind, {amount} for drop Amount this event and {percentage} for chimera/inquis ratio.',
         category: "Diana",
         subcategory: "Other",
     })
@@ -418,7 +444,7 @@ class Settings {
     lootAnnouncerPrice = true;
     @SwitchProperty({
         name: 'Loot Party Announcer',
-        description: 'Announce chimera/stick/relic to party',
+        description: 'Announce (Chimera/Stick/Relic) and inquisitor (Shelmet/Plushie/Remedies) to party',
         category: 'Diana',
         subcategory: 'Loot Announcer',
     })
@@ -1074,14 +1100,14 @@ class Settings {
         java.awt.Desktop.getDesktop().browse(new java.net.URI("https://skyblockoverhaul.com/"));
     }
     @ButtonProperty({
-        name: "SoopyV2",
-        description: "(Diana guess, Mob HP)",
+        name: "Skyhanni",
+        description: "Diana guess",
         placeholder: "Click Me",
         category: "Credits/Infos",
         subcategory: "Credits",
     })
     openSoopyV2() {
-        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://www.chattriggers.com/modules/v/SoopyV2"));
+        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://github.com/hannibal002/SkyHanni/tree/beta"));
     }
     @ButtonProperty({
         name: "VolcAddons",

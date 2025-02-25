@@ -36,7 +36,7 @@ const commands = [
     {cmd: "sboimporttrackerundo", description: "Undo the tracker import"},
     {cmd: "sbodc", description: "Diana dropchances"},
     {cmd: "sbopartyblacklist", description: "Party commands blacklisting"},
-    {cmd: "sbobacktrackachivements", description: "Backtrack achievements"},
+    {cmd: "sbobacktrackachievements", description: "Backtrack achievements"},
     {cmd: "sboachievements", description: "Opens the achievements GUI"},
     {cmd: "sbolockachievements", description: "Locks all Achievements (needs confirmation)"},
     {cmd: "sbopde", description: "Opens the Past Diana Events GUI"},
@@ -45,6 +45,23 @@ const commands = [
     {cmd: "sbopartycommands", description: "Displays all diana partycommands"},
     {cmd: "sboresetavgmftracker", description: "Resets the avg mf tracker"},
     {cmd: "sboresetstatstracker", description: "Resets the stats tracker"},
+];
+
+const changelog = [
+    {header: "Changed", description: "Better burrow guessing logic - thanks to @SkyHanni and @bloxigus for developing it"},
+    {header: "Added", description: "paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
+    {header: "Added", description: "!stats <playername> party command"},
+    {header: "Added", description: "a more Precise Guess"},
+    {header: "Added", description: "inquis Loot Tracker (Shelmets/Plushies/Remedies)"},
+    {header: "Added", description: "backup folder for all the data"},
+    {header: "Added", description: "Designated folder for config files in minecraft config folder"},
+    {header: "Added", description: "being able to remove the inq waypoint with the spade"},
+    {header: "Added", description: "{percentage} for custom chimera message"},
+    {header: "Added", description: "setting: Remove Guess When Burrow"},
+    {header: "Updated", description: "loot Party Announcer for (Shelmets/Plushies/Remedies) those 3 are only announced foor inq loot tho"},
+    {header: "Fixed", description: "warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
+    {header: "Fixed", description: "Sometimes the partyfinder says that you dont meet the requirements even tho you do"},
+    {header: "Some", description: "other small bug fixes"},
 ];
 
 register("command", (args1, ...args) => {
@@ -72,8 +89,7 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-// dowload msg beispiel
-const newVersion = "0.4.8" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.9" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -95,7 +111,6 @@ const downloadMsgReg = register("step", () => {
     downloadMsgReg.unregister()
 }).setFps(1)
 
-// changelog beispiel
 const changeLogReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
@@ -107,9 +122,9 @@ const changeLogReg = register("step", () => {
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
     ChatLib.chat(`&6[SBO] &r&bVersion &e${newVersion}&r`)
     ChatLib.chat(`&aChangelog:`)
-    ChatLib.chat(`&7> &7- &aAdded a setting to disable dark auction warp`)
-    ChatLib.chat(`&7> &7- &aFixed that importing tracker from skyhanni doesn't work`)
-    ChatLib.chat(`&7> &7- &aFixed a bug with achievements having the wrong requirements`)
+    changelog.forEach(({ header, description }) => {
+        ChatLib.chat(`&7> &a${header}: &e${description}`)
+    });
     ChatLib.chat(ChatLib.getChatBreak("&b-"))
 
     data.changelogVersion = newVersion

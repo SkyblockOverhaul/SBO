@@ -157,6 +157,20 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!inqls":
+        case "!inqsls":
+        case "!inquisitorls":
+        case "!inquisls":
+        case "!lsinq":
+        case "!lsinqs":
+        case "!lsinquisitor":
+        case "!lsinquis":
+            if (settings.dianaTracker) {
+                setTimeout(() => {
+                    ChatLib.command("pc Inquisitor LS: " + dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] + " (" + calcPercentOne(dianaTrackerMayor, "Minos Inquisitor Ls") + "%)")
+                }, 200)
+            }
+            break
         case "!inq":
         case "!inqs":
         case "!inquisitor":
@@ -309,6 +323,34 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!stats":
+            if (!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                if (args1 != undefined) {
+                    let playerName = Player.getName().toLowerCase().trim();
+                    args1 = args1.toLowerCase().trim();
+                    switch (args1) {
+                        case playerName:
+                            let stats = getPlayerStats();
+                            const statsArray = [
+                                `Playtime: ${stats.playtime}`,
+                                `Profit: ${stats.profit[0]} - ${stats.profit[2]}/h`,
+                                `Burrows: ${stats.burrows} (${stats.burrowsPerHour}/h)`,
+                                `Mobs Spawned: ${stats.totalMobs} (${stats.mobsPerHour}/h)`,
+                                `Inquisitors: ${stats.inquisitors} (${stats.inqPercentage})`,
+                                `Loot Shared Inqs: ${stats.lsInqs}`,
+                                `Chimeras: ${stats.chimeraDrops} (${stats.chimeraDropRate}) - LS: ${stats.chimeraLSDrops} (${stats.chimeraLSDropRate})`,
+                                `Daedalus Sticks: ${stats.sticksDropped} (${stats.stickDropRate})`,
+                                `Minos Relics: ${stats.relicsDropped} (${stats.relicDropRate})`
+                            ];
+                            let statsMessage = statsArray.join(" - ");
+                            setTimeout(() => {
+                                ChatLib.command("pc " + statsMessage)
+                            }, 200)
+                            break;
+                    }
+                }
+            }
     }
 }).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")
 
@@ -366,6 +408,7 @@ register("command", () => {
     ChatLib.chat("&7> &a!playtime")
     ChatLib.chat("&7> &a!mobs")
     ChatLib.chat("&7> &a!burrows")
+    ChatLib.chat("&7> &a!stats <playername>")
     ChatLib.chat("&7> &a!since (chim, chimls, relic, stick, inq)")
 }).setName("sbopartycommands").setAliases("sbopcom")
 
@@ -380,3 +423,44 @@ function formatChanceAsFraction(chance) {
 function getMagicFindAndLooting(magicfind, looting) {
     return " &7[MF:" + magicfind + "] [L:" + looting + "]"
 }
+
+function getPlayerStats() {
+    const stats = {
+        playtime: formatTime(dianaTrackerMayor.items.mayorTime),
+        profit: getDianaMayorTotalProfitAndOfferType(),
+        burrows: dianaTrackerMayor["items"]["Total Burrows"],
+        burrowsPerHour: getBurrowsPerHour(),
+        totalMobs: dianaTrackerMayor["mobs"]["TotalMobs"],
+        mobsPerHour: getMobsPerHour(),
+        inquisitors: dianaTrackerMayor["mobs"]["Minos Inquisitor"],
+        inqPercentage: calcPercentOne(dianaTrackerMayor, "Minos Inquisitor") + "%",
+        lsInqs: dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"],
+        chimeraDrops: dianaTrackerMayor["items"]["Chimera"],
+        chimeraDropRate: calcPercentOne(dianaTrackerMayor, "Chimera", "Minos Inquisitor") + "%",
+        chimeraLSDrops: dianaTrackerMayor["items"]["ChimeraLs"],
+        chimeraLSDropRate: parseFloat((dianaTrackerMayor["items"]["ChimeraLs"] / dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2)) + "%",
+        sticksDropped: dianaTrackerMayor["items"]["Daedalus Stick"],
+        stickDropRate: calcPercentOne(dianaTrackerMayor, "Daedalus Stick", "Minotaur") + "%",
+        relicsDropped: dianaTrackerMayor["items"]["MINOS_RELIC"],
+        relicDropRate: calcPercentOne(dianaTrackerMayor, "MINOS_RELIC", "Minos Champion") + "%"
+    };
+    return stats;
+}
+
+register("chat", (rank, player, playtime, profit, profitHr, burrow, burrowPerHour, mobs, mobsPerHour, inquis, 
+    inqPercentage, lsInq, chimeraDrops, chimeraDropRate, chimeraLSDrops, chimeraLSDropRate, sticksDropped, 
+    sticksDropRate, relicsDropped, relicsDropRate, event) => {
+    let statsMessage = [
+        `&9Party &8> &b${rank} ${player}&f:`,
+        `&ePlaytime: &b${playtime}`,
+        `&aBurrows: &b${burrow} &7(${burrowPerHour}/h)`,
+        `&aMobs Spawned: &b${mobs} &7(${mobsPerHour}/h)`,
+        `&dInquisitors: &b${inquis} &7(${inqPercentage}) &6LS: &b${lsInq}`,
+        `&dChimeras: &b${chimeraDrops} &7(${chimeraDropRate}) &6LS: &b${chimeraLSDrops} &7(${chimeraLSDropRate})`,
+        `&6Daedalus Sticks: &b${sticksDropped} &7${sticksDropRate}`,
+        `&5Minos Relics: &b${relicsDropped} &7${relicsDropRate}`,
+        `&6Profit: &b${profit} &7(${profitHr})`
+    ].join("\n");
+    ChatLib.chat(statsMessage)
+    cancel(event);
+}).setCriteria("&r&9Party &8> ${rank} ${player}&f: &rPlaytime: ${playtime} - Profit: ${profit} - ${profitHr} - Burrows: ${burrow} (${burrowPerHour}/h) - Mobs Spawned: ${mobs} (${mobsPerHour}/h) - Inquisitors: ${inquis} (${inqPercentage}) - Loot Shared Inqs: ${lsInq} - Chimeras: ${chimeraDrops} (${chimeraDropRate}) - LS: ${chimeraLSDrops} (${chimeraLSDropRate}) - Daedalus Sticks: ${sticksDropped} ${sticksDropRate} - Minos Relics: ${relicsDropped} ${relicsDropRate}&r");

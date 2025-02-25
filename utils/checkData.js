@@ -36,9 +36,9 @@ let dataLoadReg = register("step", () => {
 let dataLoaded = false;
 function checkAllCriteria() {
     checkDataLoaded();
-    let check1 = FileLib.exists("../../../config", trackerFileLocation  + "Total.json");
-    let check2 = FileLib.exists("../../../config", trackerFileLocation  + "Mayor.json");
-    let check3 = FileLib.exists("../../../config", trackerFileLocation  + "Session.json");
+    let check1 = FileLib.exists("../../../config/sbo", trackerFileLocation  + "Total.json");
+    let check2 = FileLib.exists("../../../config/sbo", trackerFileLocation  + "Mayor.json");
+    let check3 = FileLib.exists("../../../config/sbo", trackerFileLocation  + "Session.json");
     let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;

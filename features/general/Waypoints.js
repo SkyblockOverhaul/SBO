@@ -5,7 +5,7 @@ import { Keybind } from "../../../KeybindFix"
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, setTimeout, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
-import { getFinalLocation } from "../Diana/DianaGuess";
+import { getFinalLocation, getLastGuessTime, setFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 
@@ -15,9 +15,6 @@ export function getPatcherWaypoints() {
 };
 
 let inqWaypoints = [];
-export function getInqWaypoints() { 
-    return inqWaypoints 
-};
 
 let burrowWaypoints = [];
 export function getBurrowWaypoints() {
@@ -62,6 +59,13 @@ export function removeBurrowWaypoint(pos, burrows) {
     return {burrows: burrows, removedBurrow: removedBurrowstring};
 }
 
+export function removeInqWaypoint(x, y, z) {
+    for (let i = 0; i < inqWaypoints.length; i++) {
+        if (inqWaypoints[i][1] == x && inqWaypoints[i][2] == y && inqWaypoints[i][3] == z) {
+            inqWaypoints.splice(i, 1);
+        }
+    }
+}
 
 export function removeBurrowWaypointBySmoke(x, y, z) {
     let removedBurrowstring = null;
@@ -105,6 +109,20 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzch
     }
 }
 
+class AxisAlignedBB {
+    constructor(minX, minY, minZ, maxX, maxY, maxZ) {
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
+        this.x = minX + (maxX - minX) / 2;
+        this.y = minY + (maxY - minY) / 2;
+        this.z = minZ + (maxZ - minZ) / 2;
+    }
+}
+let guessRemovedAt = {x: 10000, y: 10000, z: 10000};
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distanceRaw, xSign, zSign = 0;
@@ -178,16 +196,22 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
             xSign = x == 0 ? 1 : Math.sign(x);
             zSign = z == 0 ? 1 : Math.sign(z);
         }
-
-        if (distancBool)
-            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
-        else
-            wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
-        // Aligns the beam correctly based on which quadrant it is in
-        if (xSign == 1) xSign = 0;
-        if (zSign == 1) zSign = 0;
-        wp[1] = [x + xSign, y - 1, z + zSign];
         
+        if (type != "Guess") {
+            if (distancBool)
+                wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+            else
+                wp[0] = [`${waypoint[0]}§7${waypoint[4]}`, x + 0.5*xSign, y - 1, z + 0.5*zSign, distanceRaw, beam, distancBool];
+            if (xSign == 1) xSign = 0;
+            if (zSign == 1) zSign = 0;
+            wp[1] = [x + xSign, y - 1, z + zSign];
+        }
+        else {
+            aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
+            wp[0] = [`${waypoint[0]}§7${waypoint[4]} §b[${distance}]`, aabb.x, aabb.y - 0.5, aabb.z, distanceRaw, beam, distancBool];
+            wp[1] = [aabb.x - 0.5, aabb.y - 1, aabb.z - 0.5];
+        }
+
         if (type == "Guess") {
             formattedGuess.push(wp);
         }
@@ -196,17 +220,22 @@ function formatWaypoints(waypoints, r, g, b, type = "Normal") {
         }
         else if (type == "Burrow") {
             formattedBurrow.push(wp);
+            if (formattedGuess.length == 0) return;
+            if (formattedGuess[0][0][1] == wp[0][1] && formattedGuess[0][0][2] == wp[0][2] && formattedGuess[0][0][3] == wp[0][3]) {
+                if (!settings.removeGuessWhenBurrow) return;
+                if (finalLocation.distanceTo(Player) >= 80) return; 
+                guessRemovedAt = {x: finalLocation.x, y: finalLocation.y, z: finalLocation.z};
+                setFinalLocation(null);
+                guessWaypoint = undefined;
+            }
         }
     });
 }
 
-
-
-let warpString = "";
 function closestWarpString(x, y, z) {
+    let warpString = "";
     closestWarp = getClosestWarp(x, y, z);
-    if (closestWarp == "no warp") {
-        closestWarp = "";
+    if (!closestWarp) {
         warpString = "";
     }
     else {
@@ -223,13 +252,18 @@ let hubWarps = {
     museum: {x: -76, y: 76, z: 81, unlocked: true},
 };
 
-const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
+let closestWarpGuess = undefined;
+let closestWarpInq = undefined;
+let warpedTo = ""
 let tryWarp = false;
+const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 warpKey.registerKeyPress(() => {
-    if (settings.dianaBurrowWarp && finalLocation != null) {
-        getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z);
-        if (warpPlayer) {
-            ChatLib.command("warp " + closestWarp);
+    if (settings.dianaBurrowWarp && finalLocation != null) { 
+        if (settings.warpDelay && Date.now() - getLastGuessTime() < settings.warpDelayTime) return;
+        closestWarpGuess = getClosestWarp(finalLocation.x, finalLocation.y, finalLocation.z, "guess");
+        if (closestWarpGuess && !tryWarp) {
+            ChatLib.command("warp " + closestWarpGuess);
+            warpedTo = closestWarpGuess;
             tryWarp = true;
             setTimeout(() => {
                 tryWarp = false;
@@ -241,11 +275,11 @@ warpKey.registerKeyPress(() => {
 const inquisWarpKey = new Keybind("Iqnuis Warp", Keyboard.KEY_NONE, "SkyblockOverhaul");
 inquisWarpKey.registerKeyPress(() => {
     if (settings.inqWarpKey) {
-        warps = getInqWaypoints();
-        if (warps.length > 0) {
-            getClosestWarp(warps[warps.length - 1][1], warps[warps.length - 1][2], warps[warps.length - 1][3]);
-            if (warpPlayer) {
-                ChatLib.command("warp " + closestWarp);
+        if (inqWaypoints.length > 0) {
+            closestWarpInq = getClosestWarp(inqWaypoints[inqWaypoints.length - 1][1], inqWaypoints[inqWaypoints.length - 1][2], inqWaypoints[inqWaypoints.length - 1][3], "inq");
+            if (closestWarpInq && !tryWarp) {
+                ChatLib.command("warp " + closestWarpInq);
+                warpedTo = closestWarpInq;
                 tryWarp = true;
                 setTimeout(() => {
                     tryWarp = false;
@@ -255,10 +289,11 @@ inquisWarpKey.registerKeyPress(() => {
     }
 });
 
-let closestWarp = undefined;
-let warpPlayer = false;
+
+
 let closestDistance = Infinity;
-function getClosestWarp(x, y, z) {
+function getClosestWarp(x, y, z, type) {
+    let closestWarp = "";
     const closestPlayerdistance = Math.sqrt(
         (Player.getLastX() - x)**2 +
         (Player.getLastY() - y)**2 +
@@ -308,6 +343,11 @@ function getClosestWarp(x, y, z) {
             );
             if (distance < closestDistance) {
                 closestDistance = distance;
+                if (type == "guess") {
+                    closestWarpGuess = warp;
+                } else if (type == "inq") {
+                    closestWarpInq = warp;
+                }
                 closestWarp = warp;
             }
         }
@@ -317,20 +357,14 @@ function getClosestWarp(x, y, z) {
 
     const warpConditions = {
         condition1: Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff),
-        condition2: (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff) &&
-                    Math.round(getClosestBurrow(formattedBurrow)[1]) > 60) || inqWaypoints.length > 0
+        condition2: (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff) && (Math.round(getClosestBurrow(formattedBurrow)[1]) > 60 || inqWaypoints.length > 0))
     };
     
     if (settings.dontWarpIfBurrowNearby ? warpConditions.condition2 : warpConditions.condition1) {
-        warpPlayer = true;
-    } else {
-        warpPlayer = false;
-    }
-    if (warpPlayer) {
         return closestWarp;
     }
     else {
-        return "no warp";
+        return false;
     }
 }
 // check if player got loot share //
@@ -349,7 +383,6 @@ register("chat" , (player) => {
         return !waypoint[0].includes(player.removeFormatting()) && !isWithin20BlockRadius(waypoint[1], waypoint[2], waypoint[3]);
     });
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
-// &r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r&6D4rkSwift&r&f!&r
 
 // check waypoint
 let highlighInquis = false;
@@ -366,18 +399,9 @@ register("step", () => {
         // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
     }
 }).setFps(1);
-// ping that dont work
-// &r&9Party &8> &b[MVP&3+&b] EightLight89620&f: &rx: 145, y: 72, z: -2 | Minos Inquisitor spawned at [ ⏣ Wilderness ]!&r
-// because:
 
 registerWhen(register("chat", (player, spacing, x, y, z, event) => {
     if (isWorldLoaded()) {
-        // if (x == "&rx:") {
-        //     // get x y z from message like this &r&9Party &8> &b[MVP&3+&b] EightLight89620&f: &rx: 145, y: 72, z: -2 | Minos Inquisitor spawned at [ ⏣ Wilderness ]!&r
-        //     message = new Message(event)
-        //     print(message)
-        //     messageParts = message.getMessageParts();
-        // }
         if (checkDiana() && settings.allWaypointsAreInqs) {
             isInq = true;
         }
@@ -436,8 +460,8 @@ registerWhen(register("chat", (player, spacing, x, y, z, event) => {
 
 registerWhen(register("chat", () => {
     if (tryWarp) {
-        ChatLib.chat("§6[SBO] §4Warp " + toTitleCase(closestWarp) + " is not unlocked!")
-        hubWarps[closestWarp].unlocked = false;
+        ChatLib.chat("§6[SBO] §4Warp " + toTitleCase(warpedTo) + " is not unlocked!")
+        hubWarps[warpedTo].unlocked = false;
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r"), () => settings.inqWarpKey);
 // wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
@@ -471,6 +495,10 @@ registerWhen(register("step", () => {
     formattedGuess = [];
     finalLocation = getFinalLocation();
     if (finalLocation != null && lastWaypoint != finalLocation) {
+        if (finalLocation.x == guessRemovedAt.x && finalLocation.y == guessRemovedAt.y && finalLocation.z == guessRemovedAt.z && finalLocation.distanceTo(Player) < 80) {
+            setFinalLocation(null);
+            return;
+        }
         guessWaypoint = [`Guess`, finalLocation.x, finalLocation.y, finalLocation.z, guessWaypointString];
         formatWaypoints([guessWaypoint], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, "Guess");
         lastWaypoint = guessWaypoint;
@@ -487,6 +515,7 @@ registerWhen(register("step", () => {
     formatWaypoints(inqWaypoints, 1, 0.84, 0); 
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
     formatWaypoints(worldWaypoints, 0, 0, 0, "world");
+    
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 registerWhen(register("renderWorld", () => { 
@@ -512,9 +541,14 @@ function renderBurrowLines() {
     }
     if (guessWaypoint != null && settings.guessLine && inqWaypoints.length == 0) {
         if(getFinalLocation() === null) return;
+        x = guessWaypoint[1];
+        y = guessWaypoint[2];
+        z = guessWaypoint[3];
+        aabb = new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
+        aabb.y = aabb.y + 0.5;
         let [closestBurrow, burrowDistance] = getClosestBurrow(formattedBurrow);
-        if (burrowDistance > 60 && guessDistance(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3]) > parseInt(settings.removeGuessDistance)) {
-            trace(guessWaypoint[1], guessWaypoint[2], guessWaypoint[3], settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "calc", parseInt(settings.burrowLineWidth));
+        if (burrowDistance > 60 && guessDistance(aabb.x, aabb.y, aabb.z) > parseInt(settings.removeGuessDistance)) {
+            trace(aabb.x, aabb.y, aabb.z, settings.guessColor.getRed()/255, settings.guessColor.getGreen()/255, settings.guessColor.getBlue()/255, 0.7, "", parseInt(settings.burrowLineWidth));
         }
     }
 }
