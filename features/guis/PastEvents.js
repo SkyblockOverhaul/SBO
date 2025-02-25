@@ -391,13 +391,19 @@ function showFullEventDetails(eventData, totalProfit) {
     new UIText("Items:")
         .setX((2).percent())
         .setY((itemsY).percent())
+        .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
     for (let key in eventData.items) {
-        new UIText(key + ": " + eventData.items[key])
+        let itemName = key.replaceAll("_", " ");
+        itemName = toTitleCase(itemName);
+        itemName = replaceNames(itemName);
+        let amount = replaceKey(itemName, eventData.items[key]);
+        new UIText(itemName + ": " + amount)
             .setX((2).percent())
             .setY((itemsY).percent())
+            .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(itemsContainer);
         itemsY += lineHeight;
     }
@@ -411,13 +417,19 @@ function showFullEventDetails(eventData, totalProfit) {
     new UIText("Mobs:")
         .setX((2).percent())
         .setY((mobsY).percent())
+        .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(mobsContainer);
     mobsY += lineHeight;
 
     for (let key in eventData.mobs) {
-        new UIText(key + ": " + eventData.mobs[key])
+        let mobName = key.replaceAll("_", " ");
+        mobName = toTitleCase(mobName);
+        mobName = replaceNames(mobName);
+        let amount = replaceKey(mobName, eventData.mobs[key]);
+        new UIText(mobName + ": " + amount)
             .setX((2).percent())
             .setY((mobsY).percent())
+            .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(mobsContainer);
         mobsY += lineHeight;
     }
@@ -512,13 +524,19 @@ function showTotalOverview() {
     new UIText("Items:")
         .setX((2).percent())
         .setY((itemsY).percent())
+        .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
     for (let key in dianaTrackerTotal.items) {
-        new UIText(key + ": " + dianaTrackerTotal.items[key])
+        let itemName = key.replaceAll("_", " ");
+        itemName = toTitleCase(itemName);
+        itemName = replaceNames(itemName);
+        let amount = replaceKey(itemName, dianaTrackerTotal.items[key]);
+        new UIText(itemName + ": " + amount)
             .setX((2).percent())
             .setY((itemsY).percent())
+            .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(itemsContainer);
         itemsY += lineHeight;
     }
@@ -532,12 +550,18 @@ function showTotalOverview() {
     new UIText("Mobs:")
         .setX((2).percent())
         .setY((mobsY).percent())
+        .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(mobsContainer);
     mobsY += lineHeight;
     for (let key in dianaTrackerTotal.mobs) {
-        new UIText(key + ": " + dianaTrackerTotal.mobs[key])
+        let mobName = key.replaceAll("_", " ");
+        mobName = toTitleCase(mobName);
+        mobName = replaceNames(mobName)
+        let amount = replaceKey(mobName, dianaTrackerTotal.mobs[key]);
+        new UIText(mobName + ": " + amount)
             .setX((2).percent())
             .setY((mobsY).percent())
+            .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(mobsContainer);
         mobsY += lineHeight;
     }
@@ -676,3 +700,30 @@ register("command", () => {
     initMainUI();
     pastEventsCtGui.open();
 }).setName("sbopastdianaevents").setAliases("sbopde");
+
+function replaceNames(item) {
+    switch (item) {
+        case "Totaltime":
+        case "Mayortime":
+            return "Playtime";
+        case "Total Burrows":
+            return "Burrows";
+        case "Totalmobs":
+            return "Mobs";
+        case "Scavengercoins":
+            return "Coins";
+        case "Fishcoins":
+            return "Four-Eyed Fish";
+        default:
+            return item;
+    }
+}
+
+function replaceKey(item, key) {
+    switch (item) {
+        case "Playtime":
+            return formatTime(key);
+        default:
+            return formatNumber(key);
+    }
+}
