@@ -9,4 +9,12 @@ export default class GuiHandler {
     static percentToPixel(percent, value) {
         return (percent / 100) * value
     }
+
+    static addHoverEffect(comp, baseColor, hoverColor = [50, 50, 50, 200]) {
+        comp.onMouseEnter((comp, event) => {
+            comp.setColor(GuiHandler.Color(hoverColor));
+        }).onMouseLeave((comp, event) => {
+            comp.setColor(GuiHandler.Color(baseColor));
+        });
+    }
 }

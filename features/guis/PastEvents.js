@@ -123,7 +123,7 @@ function initMainUI() {
             .setY(((padding + indexWithinPage * (eventBlockHeight + padding))).percent())
             .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
             .setChildOf(eventContainer);
-        addHoverEffect(eventBlock, [0, 0, 0, 0]);
+        GuiHandler.addHoverEffect(eventBlock, [0, 0, 0, 0]);
         let extraBlock = new UIBlock(GuiHandler.Color([0, 0, 0, 0]))
             .setWidth((8).percent())
             .setHeight((eventBlockHeight).percent())
@@ -138,7 +138,7 @@ function initMainUI() {
             .setX((0).percent())
             .setY((0).percent())
             .setChildOf(extraBlock);
-        addHoverEffect(deleteBlock, [0, 0, 0, 0]);
+        GuiHandler.addHoverEffect(deleteBlock, [0, 0, 0, 0]);
         let delteButton = new UIText("Delete")
             .setX((25).percent())
             .setY((40).percent())
@@ -215,7 +215,7 @@ function initMainUI() {
         .setY((0).percent())
         .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
         .setChildOf(navContainer);
-        addHoverEffect(totalEventsContainer, [0, 0, 0, 150]);
+        GuiHandler.addHoverEffect(totalEventsContainer, [0, 0, 0, 150]);
     new UIText("Total Overview")
         .setX((37).percent())
         .setY((40).percent())
@@ -244,7 +244,7 @@ function initMainUI() {
             .setY((0).percent())
             .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
             .setChildOf(navContainer);
-        addHoverEffect(prevButton, [20, 20, 20, 255]);
+        GuiHandler.addHoverEffect(prevButton, [20, 20, 20, 255]);
         new UIText("Prev")
             .setX((45).percent())
             .setY((40).percent())
@@ -273,7 +273,7 @@ function initMainUI() {
             .setY((0).percent())
             .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
             .setChildOf(navContainer);
-        addHoverEffect(nextButton, [20, 20, 20, 255]);
+        GuiHandler.addHoverEffect(nextButton, [20, 20, 20, 255]);
         new UIText("Next")
             .setX((45).percent())
             .setY((40).percent())
@@ -605,7 +605,7 @@ function openDeleteConfirmation(event, eventIndex) {
         .setY((60).percent())
         .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
         .setChildOf(confirmContainer);
-    addHoverEffect(yesButton, [0, 200, 0, 255]);
+    GuiHandler.addHoverEffect(yesButton, [0, 200, 0, 255]);
     new UIText("Yes")
         .setX((40).percent())
         .setY((40).percent())
@@ -618,7 +618,7 @@ function openDeleteConfirmation(event, eventIndex) {
         .setY((60).percent())
         .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
         .setChildOf(confirmContainer);
-    addHoverEffect(noButton, [200, 0, 0, 255]);
+    GuiHandler.addHoverEffect(noButton, [200, 0, 0, 255]);
     new UIText("No")
         .setX((40).percent())
         .setY((40).percent())
@@ -670,14 +670,6 @@ function openDeleteConfirmation(event, eventIndex) {
     });
     
     deleteCtGui.open();
-}
-
-function addHoverEffect(comp, baseColor, hoverColor = [50, 50, 50, 200]) {
-    comp.onMouseEnter((comp, event) => {
-        comp.setColor(GuiHandler.Color(hoverColor));
-    }).onMouseLeave((comp, event) => {
-        comp.setColor(GuiHandler.Color(baseColor));
-    });
 }
 
 register("command", () => {
