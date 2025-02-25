@@ -667,6 +667,7 @@ function openDeleteConfirmation(event, eventIndex) {
             let originalIndex = pastDianaEvents.events.length - 1 - eventIndex;
             pastDianaEvents.events.splice(originalIndex, 1);
             deleteCtGui.close();
+            pastDianaEvents.save();
             initMainUI();
             pastEventsCtGui.open();
             return true;
