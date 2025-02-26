@@ -23,6 +23,7 @@ pastEventsRegisters.onMouseClick((mouseX, mouseY, button) => {
 });
 
 pastEventsRegisters.onOpen(() => {
+    currentPage = 0;
     initMainUI();
 });
 
@@ -410,7 +411,7 @@ function showTotalOverview() {
     new UIWrappedText("Total Overview")
         .setX((1).percent())
         .setY((6).percent())
-        .setWidth((20).percent())
+        .setWidth((100).percent())
         .setTextScale((1.5).pixels())
         .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(contentContainer);
