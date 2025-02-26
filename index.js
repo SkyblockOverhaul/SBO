@@ -14,11 +14,10 @@ import "./features/slayer/BlazeSlayer";
 import "./utils/overlays";
 import "./features/Diana/PartyFinder";
 import "./features/general/QOL";
-import "./features/guis/SlayerGuis";
 import "./features/general/CrownTracker";
 import "./features/Diana/DianaAchievements";
 import "./features/guis/Achievements";
-import "./features/guis/PastDianaEvents";
+import "./features/guis/PastEvents";
 import "./features/guis/PartyFinderGUI";
 import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
@@ -48,6 +47,7 @@ const commands = [
 ];
 
 const changelog = [
+    {header: "Changed", description: "Better burrow guessing logic - thanks to @SkyHanni and @bloxigus for developing it"},
     {header: "Added", description: "paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
     {header: "Added", description: "!stats <playername> party command"},
     {header: "Added", description: "a more Precise Guess"},
@@ -88,7 +88,7 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-const newVersion = "0.4.8" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.4.9" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
