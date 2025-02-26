@@ -20,6 +20,18 @@ export default class GuiHandler {
         });
     }
 
+    /**
+     * @param {string} text // The text of the button
+     * @param {number} x // The x position of the button
+     * @param {number} y // The y position of the button
+     * @param {number} width // The width of the button
+     * @param {number} height // The height of the button
+     * @param {string} color // The color of the button
+     * @param {string} textColor // The color of the text
+     * @param {boolean} outline // If the button should have an outline
+     * @param {UIBlock} comp // The component the button should be a child of
+     * @param {boolean} wrapped // If the text should be wrapped
+     */
     static Button = class {
         constructor(text, x, y, width, height, color, textColor = false, outline = false, comp = false, wrapped = false) {
             this.text = text;
@@ -63,7 +75,6 @@ export default class GuiHandler {
             );
         }
         
-
         _create() {
             this.Object
                 .setX(this.x)

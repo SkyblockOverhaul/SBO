@@ -78,9 +78,8 @@ function initMainUI() {
         }
         let indexWithinPage = i - startIndex;
         
-        // Erstelle nun einen Event-Button als Container, anstatt eines reinen UIBlocks:
         let eventButton = new GuiHandler.Button(
-            "", // Kein Standardtext – der Button dient nur als Container
+            "",
             (padding).percent(),
             ((padding + indexWithinPage * (eventBlockHeight + padding))).percent(),
             (85).percent(),
@@ -92,7 +91,6 @@ function initMainUI() {
         );
         GuiHandler.addHoverEffect(eventButton.Object, [0, 0, 0, 0]);
         
-        // Füge alle Texte als Kinder des Buttons hinzu:
         new UIText("Year: " + event.year)
             .setX((2).percent())
             .setY((10).percent())
@@ -130,7 +128,6 @@ function initMainUI() {
         });
         clickableElements.push(eventButton);
         
-        // Ersetze den bisherigen "Delete"-Block durch die neue Button-Klasse:
         let deleteButton = new GuiHandler.Button(
             "Delete",
             (90).percent(),
@@ -158,7 +155,6 @@ function initMainUI() {
         .enableEffect(new OutlineEffect(GuiHandler.Color([0, 0, 0, 150]), 1))
         .setChildOf(background);
     
-    // Ersetze den Total Overview-Button:
     let totalOverviewButton = new GuiHandler.Button(
         "Total Overview",
         (31).percent(),
@@ -178,7 +174,6 @@ function initMainUI() {
     clickableElements.push(totalOverviewButton);
         
     if (currentPage > 0 && eventsData.length > maxEventsPerPage) {
-        // Ersetze den Prev-Button:
         let prevButton = new GuiHandler.Button(
             "Prev",
             (0).percent(),
@@ -199,7 +194,6 @@ function initMainUI() {
         clickableElements.push(prevButton);
     }
     if (endIndex < eventsData.length) {
-        // Ersetze den Next-Button:
         let nextButton = new GuiHandler.Button(
             "Next",
             (70).percent(),
@@ -270,7 +264,7 @@ function showFullEventDetails(eventData, totalProfit) {
         .setY((bgY).percent())
         .setChildOf(detailsWindow)
 
-    let margin = 3; // %
+    let margin = 3;
     let contentContainer = new UIBlock(GuiHandler.Color([0, 0, 0, 0]))
         .setWidth((100 - 2 * margin).percent())
         .setHeight((100 - 2 * margin).percent())
@@ -538,7 +532,6 @@ function openDeleteConfirmation(event, eventIndex) {
         .setY((20).percent())
         .setChildOf(confirmContainer);
     
-    // Ersetze den Yes-Button:
     let yesButton = new GuiHandler.Button(
         "Yes",
         (8).percent(),
@@ -562,7 +555,6 @@ function openDeleteConfirmation(event, eventIndex) {
     });
     deleteClickableElements.push(yesButton);
     
-    // Ersetze den No-Button:
     let noButton = new GuiHandler.Button(
         "No",
         (52).percent(),
