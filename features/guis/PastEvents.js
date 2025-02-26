@@ -16,7 +16,7 @@ let currentPage = 0;
 pastEventsRegisters.onMouseClick((mouseX, mouseY, button) => {
     for (let elem of clickableElements) {
         if (elem.isClicked(mouseX, mouseY)) {
-            elem.click(mouseX, mouseY, button);
+            elem.click();
             return true;
         }
     }
@@ -123,7 +123,7 @@ function initMainUI() {
             .setColor(GuiHandler.Color([255, 255, 85, 255]))
             .setChildOf(eventButton.Object);
 
-        eventButton.setOnClick((mouseX, mouseY, button) => {
+        eventButton.setOnClick(() => {
             showFullEventDetails(event, totalProfit);
             return true;
         });
@@ -141,7 +141,7 @@ function initMainUI() {
             eventContainer
         );
         GuiHandler.addHoverEffect(deleteButton.Object, [0, 0, 0, 0]);
-        deleteButton.setOnClick((mouseX, mouseY, button) => {
+        deleteButton.setOnClick(() => {
             openDeleteConfirmation(event, i);
             return true;
         });
@@ -168,7 +168,7 @@ function initMainUI() {
         navContainer
     );
     GuiHandler.addHoverEffect(totalOverviewButton.Object, [0, 0, 0, 150]);
-    totalOverviewButton.setOnClick((mouseX, mouseY, button) => {
+    totalOverviewButton.setOnClick(() => {
         showTotalOverview();
         return true;
     });
@@ -187,7 +187,7 @@ function initMainUI() {
             navContainer
         );
         GuiHandler.addHoverEffect(prevButton.Object, [20, 20, 20, 255]);
-        prevButton.setOnClick((mouseX, mouseY, button) => {
+        prevButton.setOnClick(() => {
             currentPage--;
             initMainUI();
             return true;
@@ -207,7 +207,7 @@ function initMainUI() {
             navContainer
         );
         GuiHandler.addHoverEffect(nextButton.Object, [20, 20, 20, 255]);
-        nextButton.setOnClick((mouseX, mouseY, button) => {
+        nextButton.setOnClick(() => {
             currentPage++;
             initMainUI();
             return true;
@@ -499,7 +499,7 @@ let deleteRegisters = deleteGui.registers;
 deleteRegisters.onMouseClick((mouseX, mouseY, button) => {
     for (let elem of deleteClickableElements) {
         if (elem.isClicked(mouseX, mouseY)) {
-            elem.click(mouseX, mouseY, button);
+            elem.click();
             return true;
         }
     }
@@ -545,7 +545,7 @@ function openDeleteConfirmation(event, eventIndex) {
         confirmContainer
     );
     GuiHandler.addHoverEffect(yesButton.Object, [0, 200, 0, 255]);
-    yesButton.setOnClick((mouseX, mouseY, button) => {
+    yesButton.setOnClick(() => {
         let originalIndex = pastDianaEvents.events.length - 1 - eventIndex;
         pastDianaEvents.events.splice(originalIndex, 1);
         deleteCtGui.close();
@@ -568,7 +568,7 @@ function openDeleteConfirmation(event, eventIndex) {
         confirmContainer
     );
     GuiHandler.addHoverEffect(noButton.Object, [200, 0, 0, 255]);
-    noButton.setOnClick((mouseX, mouseY, button) => {
+    noButton.setOnClick(() => {
         deleteCtGui.close();
         pastEventsCtGui.open();
         return true;
@@ -579,7 +579,6 @@ function openDeleteConfirmation(event, eventIndex) {
 }
 
 register("command", () => {
-    initMainUI();
     pastEventsCtGui.open();
 }).setName("sbopastdianaevents").setAliases("sbopde");
 
