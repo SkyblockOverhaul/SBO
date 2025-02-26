@@ -28,8 +28,8 @@ export default class GuiHandler {
      * @param {number} height // The height of the button
      * @param {string} color // The color of the button
      * @param {string} textColor // The color of the text
-     * @param {boolean} outline // If the button should have an outline
-     * @param {UIBlock} comp // The component the button should be a child of
+     * @param {...} outline // The outline of the button
+     * @param {...} comp // The component the button should be a child of
      * @param {boolean} wrapped // If the text should be wrapped
      */
     static Button = class {
