@@ -1,6 +1,6 @@
 import GuiHandler from "./GuiHandler";
 import HandleGui from "../../../DocGuiLib/core/Gui";
-import { UIBlock, UIText, UIWrappedText, OutlineEffect } from "../../../Elementa";
+import { UIBlock, UIText, UIWrappedText, OutlineEffect, CenterConstraint } from "../../../Elementa";
 import { pastDianaEvents, dianaTrackerTotal } from "../../utils/variables";
 import { calcTotalProfit, formatNumber, formatTime, toTitleCase } from "../../utils/functions";
 
@@ -10,18 +10,13 @@ let pastEventsCtGui = pastEventsGui.ctGui;
 let pastEventsRegisters = pastEventsGui.registers;
 
 let clickableElements = [];
+let deleteClickableElements = [];
 let currentPage = 0; 
 
 pastEventsRegisters.onMouseClick((mouseX, mouseY, button) => {
     for (let elem of clickableElements) {
-        let abs = elem.getAbsolute();
-        if (
-            mouseX >= abs.x &&
-            mouseX <= abs.x + abs.width &&
-            mouseY >= abs.y &&
-            mouseY <= abs.y + abs.height
-        ) {
-            elem.onClick(mouseX, mouseY, button);
+        if (elem.isClicked(mouseX, mouseY)) {
+            elem.click(mouseX, mouseY, button);
             return true;
         }
     }
@@ -37,40 +32,6 @@ function processDianaEvents() {
         return [];
     }
     return [...events].reverse();
-}
-
-function getScreenSize() {
-    return { width: Renderer.screen.getWidth(), height: Renderer.screen.getHeight() };
-}
-
-function getMainContainerAbsolute() {
-    let { width, height } = getScreenSize();
-    return {
-        x: GuiHandler.percentToPixel(20, width),
-        y: GuiHandler.percentToPixel(10, height),
-        width: GuiHandler.percentToPixel(65, width),
-        height: GuiHandler.percentToPixel(70, height)
-    };
-}
-
-function getEventBlockAbsolute(indexWithinPage, paddingPercent, eventBlockHeightPercent, blockWidthPercent) {
-    let parent = getMainContainerAbsolute();
-    return {
-        x: parent.x + (paddingPercent / 100) * parent.width,
-        y: parent.y + ((paddingPercent + indexWithinPage * (eventBlockHeightPercent + paddingPercent)) / 100) * parent.height,
-        width: parent.width * (blockWidthPercent / 100),
-        height: parent.height * (eventBlockHeightPercent / 100)
-    };
-}
-
-function getDeleteButtonAbsolute(indexWithinPage, paddingPercent, eventBlockHeightPercent) {
-    let container = getMainContainerAbsolute();
-    return {
-       x: container.x + container.width * 0.9, 
-       y: container.y + ((paddingPercent + indexWithinPage * (eventBlockHeightPercent + paddingPercent)) / 100) * container.height,
-       width: container.width * 0.08,
-       height: container.height * eventBlockHeightPercent / 100
-    };
 }
 
 // === MAIN GUI ===
@@ -108,96 +69,85 @@ function initMainUI() {
         let totalChims = chims + chimsLs;
         let playtime = event.items["mayorTime"] || 0;
         playtime = formatTime(playtime);
-        for (let i = 0; i < itemsArray.length; i++) {
-            let item = itemsArray[i][0];
-            let amount = itemsArray[i][1];
+        for (let j = 0; j < itemsArray.length; j++) {
+            let item = itemsArray[j][0];
+            let amount = itemsArray[j][1];
             let itemName = item.replaceAll("_", " ");
             itemName = toTitleCase(itemName);
             totalProfit += calcTotalProfit(itemName, amount);
         }
         let indexWithinPage = i - startIndex;
-        let eventBlock = new UIBlock(GuiHandler.Color([0, 0, 0, 0]))
-            .setWidth((85).percent())
-            .setHeight((eventBlockHeight).percent())
-            .setX((padding).percent())
-            .setY(((padding + indexWithinPage * (eventBlockHeight + padding))).percent())
-            .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
-            .setChildOf(eventContainer);
-        GuiHandler.addHoverEffect(eventBlock, [0, 0, 0, 0]);
-        let extraBlock = new UIBlock(GuiHandler.Color([0, 0, 0, 0]))
-            .setWidth((8).percent())
-            .setHeight((eventBlockHeight).percent())
-            .setX((90).percent())
-            .setY(((padding + indexWithinPage * (eventBlockHeight + padding))).percent())
-            .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
-            .setChildOf(eventContainer);
-
-        let deleteBlock = new UIBlock(GuiHandler.Color([0, 0, 0, 0]))
-            .setWidth((100).percent())
-            .setHeight((100).percent())
-            .setX((0).percent())
-            .setY((0).percent())
-            .setChildOf(extraBlock);
-        GuiHandler.addHoverEffect(deleteBlock, [0, 0, 0, 0]);
-        let delteButton = new UIText("Delete")
-            .setX((25).percent())
-            .setY((40).percent())
-            .setColor(GuiHandler.Color([255, 0, 0, 255]))
-            .setChildOf(deleteBlock);
-
-            (function(event, eventIndex, indexWithinPage) {
-                clickableElements.push({
-                    getAbsolute: function() {
-                        return getDeleteButtonAbsolute(indexWithinPage, padding, eventBlockHeight);
-                    },
-                    onClick: function(mouseX, mouseY, button) {
-                        openDeleteConfirmation(event, eventIndex);
-                        return true;
-                    }
-                });
-            })(event, i, indexWithinPage);
-
-
+        
+        // Erstelle nun einen Event-Button als Container, anstatt eines reinen UIBlocks:
+        let eventButton = new GuiHandler.Button(
+            "", // Kein Standardtext – der Button dient nur als Container
+            (padding).percent(),
+            ((padding + indexWithinPage * (eventBlockHeight + padding))).percent(),
+            (85).percent(),
+            (eventBlockHeight).percent(),
+            [0, 0, 0, 0],
+            null,
+            new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1),
+            eventContainer
+        );
+        GuiHandler.addHoverEffect(eventButton.Object, [0, 0, 0, 0]);
+        
+        // Füge alle Texte als Kinder des Buttons hinzu:
         new UIText("Year: " + event.year)
             .setX((2).percent())
             .setY((10).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
-            .setChildOf(eventBlock);
+            .setChildOf(eventButton.Object);
         new UIText("Chimeras: " + totalChims)
             .setX((2).percent())
             .setY((40).percent())
             .setColor(GuiHandler.Color([255, 85, 255, 255]))
-            .setChildOf(eventBlock);
+            .setChildOf(eventButton.Object);
         new UIText("Total Profit: " + formatNumber(totalProfit))
             .setX((2).percent())
             .setY((70).percent())
             .setColor(GuiHandler.Color([255, 170, 0, 255]))
-            .setChildOf(eventBlock);
+            .setChildOf(eventButton.Object);
         new UIText("Burrows: " + (formatNumber(event.items["Total Burrows"]) || ""))
             .setX((25).percent())
             .setY((10).percent())
             .setColor(GuiHandler.Color([170, 170, 170, 255]))
-            .setChildOf(eventBlock);
+            .setChildOf(eventButton.Object);
         new UIText("Mobs: " + (formatNumber(event.mobs.TotalMobs) || ""))
             .setX((25).percent())
             .setY((40).percent())
             .setColor(GuiHandler.Color([170, 170, 170, 255]))
-            .setChildOf(eventBlock);
+            .setChildOf(eventButton.Object);
         new UIText("Playtime: " + playtime)
             .setX((25).percent())
             .setY((70).percent())
             .setColor(GuiHandler.Color([255, 255, 85, 255]))
-            .setChildOf(eventBlock);
+            .setChildOf(eventButton.Object);
 
-        clickableElements.push({
-            getAbsolute: function() {
-                return getEventBlockAbsolute(indexWithinPage, padding, eventBlockHeight, 85);
-            },
-            onClick: function(mouseX, mouseY, button) {
-                showFullEventDetails(event, totalProfit);
-                return true;
-            }
+        eventButton.setOnClick((mouseX, mouseY, button) => {
+            showFullEventDetails(event, totalProfit);
+            return true;
         });
+        clickableElements.push(eventButton);
+        
+        // Ersetze den bisherigen "Delete"-Block durch die neue Button-Klasse:
+        let deleteButton = new GuiHandler.Button(
+            "Delete",
+            (90).percent(),
+            ((padding + indexWithinPage * (eventBlockHeight + padding))).percent(),
+            (8).percent(),
+            (eventBlockHeight).percent(),
+            [0, 0, 0, 0],
+            [255, 0, 0, 255],
+            new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1),
+            eventContainer
+        );
+        GuiHandler.addHoverEffect(deleteButton.Object, [0, 0, 0, 0]);
+        deleteButton.setOnClick((mouseX, mouseY, button) => {
+            openDeleteConfirmation(event, i);
+            return true;
+        });
+        clickableElements.push(deleteButton);
     }
     
     let navContainer = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
@@ -208,93 +158,67 @@ function initMainUI() {
         .enableEffect(new OutlineEffect(GuiHandler.Color([0, 0, 0, 150]), 1))
         .setChildOf(background);
     
-    let totalEventsContainer = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
-        .setWidth((38).percent())
-        .setHeight((100).percent())
-        .setX((31).percent())
-        .setY((0).percent())
-        .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
-        .setChildOf(navContainer);
-        GuiHandler.addHoverEffect(totalEventsContainer, [0, 0, 0, 150]);
-    new UIText("Total Overview")
-        .setX((37).percent())
-        .setY((40).percent())
-        .setColor(GuiHandler.Color([255, 170, 0, 255]))
-        .setChildOf(totalEventsContainer);
-    clickableElements.push({
-        getAbsolute: function() {
-            let s = getScreenSize();
-            let containerX = GuiHandler.percentToPixel(20, s.width);
-            let containerY = GuiHandler.percentToPixel(82, s.height);
-            let containerWidth = GuiHandler.percentToPixel(65, s.width);
-            let containerHeight = GuiHandler.percentToPixel(5, s.height);
-            return { x: containerX + containerWidth * 0.3, y: containerY, width: containerWidth * 0.4, height: containerHeight };
-        },
-        onClick: function(mouseX, mouseY, button) {
-            showTotalOverview();
-            return true;
-        }
+    // Ersetze den Total Overview-Button:
+    let totalOverviewButton = new GuiHandler.Button(
+        "Total Overview",
+        (31).percent(),
+        (0).percent(),
+        (38).percent(),
+        (100).percent(),
+        [0, 0, 0, 150],
+        [255, 170, 0, 255],
+        new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1),
+        navContainer
+    );
+    GuiHandler.addHoverEffect(totalOverviewButton.Object, [0, 0, 0, 150]);
+    totalOverviewButton.setOnClick((mouseX, mouseY, button) => {
+        showTotalOverview();
+        return true;
     });
+    clickableElements.push(totalOverviewButton);
         
     if (currentPage > 0 && eventsData.length > maxEventsPerPage) {
-        let prevButton = new UIBlock(GuiHandler.Color([20, 20, 20, 255]))
-            .setWidth((30).percent())
-            .setHeight((100).percent())
-            .setX((0).percent())
-            .setY((0).percent())
-            .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
-            .setChildOf(navContainer);
-        GuiHandler.addHoverEffect(prevButton, [20, 20, 20, 255]);
-        new UIText("Prev")
-            .setX((45).percent())
-            .setY((40).percent())
-            .setChildOf(prevButton);
-        clickableElements.push({
-            getAbsolute: function() {
-                let s = getScreenSize();
-                let containerX = GuiHandler.percentToPixel(20, s.width);
-                let containerY = GuiHandler.percentToPixel(82, s.height);
-                let containerWidth = GuiHandler.percentToPixel(65, s.width);
-                let containerHeight = GuiHandler.percentToPixel(5, s.height);
-                return { x: containerX, y: containerY, width: containerWidth * 0.3, height: containerHeight };
-            },
-            onClick: function(mouseX, mouseY, button) {
-                currentPage--;
-                initMainUI();
-                return true;
-            }
+        // Ersetze den Prev-Button:
+        let prevButton = new GuiHandler.Button(
+            "Prev",
+            (0).percent(),
+            (0).percent(),
+            (30).percent(),
+            (100).percent(),
+            [20, 20, 20, 255],
+            false,
+            new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1),
+            navContainer
+        );
+        GuiHandler.addHoverEffect(prevButton.Object, [20, 20, 20, 255]);
+        prevButton.setOnClick((mouseX, mouseY, button) => {
+            currentPage--;
+            initMainUI();
+            return true;
         });
+        clickableElements.push(prevButton);
     }
     if (endIndex < eventsData.length) {
-        let nextButton = new UIBlock(GuiHandler.Color([20, 20, 20, 255]))
-            .setWidth((30).percent())
-            .setHeight((100).percent())
-            .setX((70).percent())
-            .setY((0).percent())
-            .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
-            .setChildOf(navContainer);
-        GuiHandler.addHoverEffect(nextButton, [20, 20, 20, 255]);
-        new UIText("Next")
-            .setX((45).percent())
-            .setY((40).percent())
-            .setChildOf(nextButton);
-        clickableElements.push({
-            getAbsolute: function() {
-                let s = getScreenSize();
-                let containerX = GuiHandler.percentToPixel(20, s.width);
-                let containerY = GuiHandler.percentToPixel(82, s.height);
-                let containerWidth = GuiHandler.percentToPixel(65, s.width);
-                let containerHeight = GuiHandler.percentToPixel(5, s.height);
-                return { x: containerX + containerWidth * 0.7, y: containerY, width: containerWidth * 0.3, height: containerHeight };
-            },
-            onClick: function(mouseX, mouseY, button) {
-                currentPage++;
-                initMainUI();
-                return true;
-            }
+        // Ersetze den Next-Button:
+        let nextButton = new GuiHandler.Button(
+            "Next",
+            (70).percent(),
+            (0).percent(),
+            (30).percent(),
+            (100).percent(),
+            [20, 20, 20, 255],
+            false,
+            new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1),
+            navContainer
+        );
+        GuiHandler.addHoverEffect(nextButton.Object, [20, 20, 20, 255]);
+        nextButton.setOnClick((mouseX, mouseY, button) => {
+            currentPage++;
+            initMainUI();
+            return true;
         });
+        clickableElements.push(nextButton);
     }
-
 }
 
 // === DETAIL GUI ===
@@ -517,7 +441,7 @@ function showTotalOverview() {
     let mobsContainer = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
         .setWidth((48).percent())
         .setHeight((colHeight).percent())
-        .setX((52).percent()) // 48 + 4 = 52 (% Abstand)
+        .setX((52).percent())
         .setY((0).percent())
         .enableEffect(new OutlineEffect(GuiHandler.Color([255, 255, 255, 255]), 1))
         .setChildOf(columnsContainer);
@@ -548,7 +472,7 @@ function showTotalOverview() {
         .setColor(GuiHandler.Color([255, 170, 0, 255]))
         .setChildOf(itemsContainer);
 
-        let mobsY = 4;
+    let mobsY = 4;
     new UIText("Mobs:")
         .setX((2).percent())
         .setY((mobsY).percent())
@@ -571,8 +495,6 @@ function showTotalOverview() {
     detailsCtGui.open();
 }
 
-
-
 // === DELETE GUI ===
 let deleteGui = new HandleGui("data/DefaultColors.json", "deleteGui");
 let deleteWindow = deleteGui.window;
@@ -580,20 +502,13 @@ let deleteCtGui = deleteGui.ctGui;
 let deleteRegisters = deleteGui.registers;
 
 deleteRegisters.onMouseClick((mouseX, mouseY, button) => {
-    for (let elem of clickableElements) {
-        let abs = elem.getAbsolute();
-        if (
-            mouseX >= abs.x &&
-            mouseX <= abs.x + abs.width &&
-            mouseY >= abs.y &&
-            mouseY <= abs.y + abs.height
-        ) {
-            elem.onClick(mouseX, mouseY, button);
+    for (let elem of deleteClickableElements) {
+        if (elem.isClicked(mouseX, mouseY)) {
+            elem.click(mouseX, mouseY, button);
             return true;
         }
     }
 });
-
 
 function openDeleteConfirmation(event, eventIndex) {
     deleteWindow.clearChildren();
@@ -619,82 +534,53 @@ function openDeleteConfirmation(event, eventIndex) {
         .setChildOf(background);
     
     new UIWrappedText("Are you sure you want to delete the event?")
-        .setX((8).percent())
+        .setX(new CenterConstraint())
         .setY((20).percent())
-        .setWidth((90).percent())
         .setChildOf(confirmContainer);
     
-    let yesButton = new UIBlock(GuiHandler.Color([0, 200, 0, 255]))
-        .setWidth((40).percent())
-        .setHeight((20).percent())
-        .setX((8).percent())
-        .setY((60).percent())
-        .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
-        .setChildOf(confirmContainer);
-    GuiHandler.addHoverEffect(yesButton, [0, 200, 0, 255]);
-    new UIText("Yes")
-        .setX((40).percent())
-        .setY((40).percent())
-        .setChildOf(yesButton);
+    // Ersetze den Yes-Button:
+    let yesButton = new GuiHandler.Button(
+        "Yes",
+        (8).percent(),
+        (60).percent(),
+        (40).percent(),
+        (20).percent(),
+        [0, 200, 0, 255],
+        false,
+        new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1),
+        confirmContainer
+    );
+    GuiHandler.addHoverEffect(yesButton.Object, [0, 200, 0, 255]);
+    yesButton.setOnClick((mouseX, mouseY, button) => {
+        let originalIndex = pastDianaEvents.events.length - 1 - eventIndex;
+        pastDianaEvents.events.splice(originalIndex, 1);
+        deleteCtGui.close();
+        pastDianaEvents.save();
+        initMainUI();
+        pastEventsCtGui.open();
+        return true;
+    });
+    deleteClickableElements.push(yesButton);
     
-    let noButton = new UIBlock(GuiHandler.Color([200, 0, 0, 255]))
-        .setWidth((38).percent())
-        .setHeight((20).percent())
-        .setX((52).percent())
-        .setY((60).percent())
-        .enableEffect(new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1))
-        .setChildOf(confirmContainer);
-    GuiHandler.addHoverEffect(noButton, [200, 0, 0, 255]);
-    new UIText("No")
-        .setX((40).percent())
-        .setY((40).percent())
-        .setChildOf(noButton);
-
-    clickableElements = [];
-    clickableElements.push({
-        getAbsolute: function() {
-            let s = getScreenSize();
-            let absX = GuiHandler.percentToPixel(containerX, s.width);
-            let absY = GuiHandler.percentToPixel(containerY, s.height);
-            let absWidth = GuiHandler.percentToPixel(containerWidth, s.width);
-            let absHeight = GuiHandler.percentToPixel(containerHeight, s.height);
-            return {
-                x: absX + GuiHandler.percentToPixel(8, absWidth),
-                y: absY + GuiHandler.percentToPixel(60, absHeight),
-                width: GuiHandler.percentToPixel(40, absWidth),
-                height: GuiHandler.percentToPixel(20, absHeight)
-            };
-        },
-        onClick: function(mouseX, mouseY, button) {
-            let originalIndex = pastDianaEvents.events.length - 1 - eventIndex;
-            pastDianaEvents.events.splice(originalIndex, 1);
-            deleteCtGui.close();
-            pastDianaEvents.save();
-            initMainUI();
-            pastEventsCtGui.open();
-            return true;
-        }
+    // Ersetze den No-Button:
+    let noButton = new GuiHandler.Button(
+        "No",
+        (52).percent(),
+        (60).percent(),
+        (38).percent(),
+        (20).percent(),
+        [200, 0, 0, 255],
+        false,
+        new OutlineEffect(GuiHandler.Color([85, 255, 255, 255]), 1),
+        confirmContainer
+    );
+    GuiHandler.addHoverEffect(noButton.Object, [200, 0, 0, 255]);
+    noButton.setOnClick((mouseX, mouseY, button) => {
+        deleteCtGui.close();
+        pastEventsCtGui.open();
+        return true;
     });
-    clickableElements.push({
-        getAbsolute: function() {
-            let s = getScreenSize();
-            let absX = GuiHandler.percentToPixel(containerX, s.width);
-            let absY = GuiHandler.percentToPixel(containerY, s.height);
-            let absWidth = GuiHandler.percentToPixel(containerWidth, s.width);
-            let absHeight = GuiHandler.percentToPixel(containerHeight, s.height);
-            return {
-                x: absX + GuiHandler.percentToPixel(52, absWidth),
-                y: absY + GuiHandler.percentToPixel(60, absHeight),
-                width: GuiHandler.percentToPixel(40, absWidth),
-                height: GuiHandler.percentToPixel(20, absHeight)
-            };
-        },
-        onClick: function(mouseX, mouseY, button) {
-            deleteCtGui.close();
-            pastEventsCtGui.open();
-            return true;
-        }
-    });
+    deleteClickableElements.push(noButton);
     
     deleteCtGui.open();
 }
