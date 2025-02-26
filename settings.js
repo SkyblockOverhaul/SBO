@@ -61,6 +61,7 @@ class Settings {
         this.addDependency('Promote/Demote','Party Commands');
         this.addDependency('Ask Carrot','Party Commands');
         this.addDependency('Inq Warp Key','Detect Inq Cords');
+        this.addDependency('Copy Inquisitor Coords','Share Inquisitor');
         // this.addDependency('Blaze View','Blaze Tracker');
         this.addDependency('Max Displayed Items','Attribute Value Overlay')
         this.addDependency('Select Displayed Lines','Attribute Value Overlay');
@@ -217,7 +218,7 @@ class Settings {
         subcategory: "Diana Tracker",
     })
     resetTrackerSession() {
-       ChatLib.command("sboresetsession", true);
+        ChatLib.command("sboresetsession", true);
     }
     @SelectorProperty({
         name: "Bazaar Setting Diana",
@@ -314,11 +315,18 @@ class Settings {
     mythosMobHp = false;
     @SwitchProperty({
         name: "Share Inquisitor",
-        description: "Sends cords for inquisitor in party message (patcher format).",
+        description: "Sends coords for inquisitor in party message (patcher format).",
         category: "Diana",
         subcategory: "Other",
     })
     inquisDetect = true;
+    @SwitchProperty({
+        name: "Copy Inquisitor Coords",
+        description: "Copy coords for inquisitors (patcher format).",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    inquisDetectCopy = false;
     @TextProperty({
         name: "Send Text On Inq Spawn",
         description: "Sends a text on inq spawn 5 seconds after spawn, use {since} for mobs since inq, {chance} for inq chance",
