@@ -13,7 +13,7 @@ let clickableElements = [];
 let deleteClickableElements = [];
 let currentPage = 0; 
 
-pastEventsRegisters.onMouseClick((mouseX, mouseY, button) => {
+pastEventsRegisters.onMouseClick((mouseX, mouseY) => {
     for (let elem of clickableElements) {
         if (elem.isClicked(mouseX, mouseY)) {
             elem.click();
@@ -142,7 +142,7 @@ function initMainUI() {
         );
         GuiHandler.addHoverEffect(deleteButton.Object, [0, 0, 0, 0]);
         deleteButton.setOnClick(() => {
-            openDeleteConfirmation(event, i);
+            openDeleteConfirmation(i);
             return true;
         });
         clickableElements.push(deleteButton);
@@ -496,7 +496,7 @@ let deleteWindow = deleteGui.window;
 let deleteCtGui = deleteGui.ctGui;
 let deleteRegisters = deleteGui.registers;
 
-deleteRegisters.onMouseClick((mouseX, mouseY, button) => {
+deleteRegisters.onMouseClick((mouseX, mouseY) => {
     for (let elem of deleteClickableElements) {
         if (elem.isClicked(mouseX, mouseY)) {
             elem.click();
@@ -505,7 +505,7 @@ deleteRegisters.onMouseClick((mouseX, mouseY, button) => {
     }
 });
 
-function openDeleteConfirmation(event, eventIndex) {
+function openDeleteConfirmation(eventIndex) {
     deleteWindow.clearChildren();
     
     let background = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
