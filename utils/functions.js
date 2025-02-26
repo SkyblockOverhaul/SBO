@@ -1693,9 +1693,11 @@ export function calcTotalProfit(item, amount) {
         case "Griffin Feather":
             totalProfit += getBazaarPriceDiana("GRIFFIN_FEATHER") * amount;
             break;
+        case "Ancient Claw":
         case "Ancient Claws":
             totalProfit += getBazaarPriceDiana("ANCIENT_CLAW") * amount;
             break;
+        case "Enchanted Ancient Claw":
         case "Enchanted Ancient Claws":
             totalProfit += getBazaarPriceDiana("ENCHANTED_ANCIENT_CLAW") * amount;
             break;
@@ -1714,6 +1716,7 @@ export function calcTotalProfit(item, amount) {
         case "Daedalus Stick":
             totalProfit += getBazaarPriceDiana("DAEDALUS_STICK") * amount;
             break;
+        case "Crown Of Greed":
         case "Crown of Greed":
             totalProfit += getDianaAhPrice("CROWN_OF_GREED") * amount;
             break;

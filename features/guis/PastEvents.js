@@ -443,7 +443,9 @@ function showTotalOverview() {
 
     let totalProfit = 0;
     for (let key in dianaTrackerTotal.items) {
-        totalProfit += calcTotalProfit(key, dianaTrackerTotal.items[key]);
+        let itemName = key.replaceAll("_", " ");
+        itemName = toTitleCase(itemName);
+        totalProfit += calcTotalProfit(itemName, dianaTrackerTotal.items[key]);
     }
 
     let itemsCount = Object.keys(dianaTrackerTotal.items).length + 1;
@@ -708,11 +710,11 @@ function replaceNames(item) {
         case "Mayortime":
             return "Playtime";
         case "Total Burrows":
-            return "Burrows";
+            return "Total Burrows";
         case "Totalmobs":
-            return "Mobs";
+            return "Total Mobs";
         case "Scavengercoins":
-            return "Coins";
+            return "Scavenger";
         case "Fishcoins":
             return "Four-Eyed Fish";
         default:
