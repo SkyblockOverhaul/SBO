@@ -2,6 +2,7 @@ import { CenterConstraint, UIBlock, UIText, UIWrappedText } from "../../../Eleme
 
 export default class GuiHandler {
     static JavaColor = java.awt.Color
+    static myComponentList = []
 
     static Color(color = [255, 255, 255, 255]) {
         const [r, g, b, a] = color
@@ -13,6 +14,7 @@ export default class GuiHandler {
     }
 
     static addHoverEffect(comp, baseColor, hoverColor = [50, 50, 50, 200]) {
+        GuiHandler.myComponentList.push([comp, baseColor, hoverColor]);
         comp.onMouseEnter((comp, event) => {
             comp.setColor(GuiHandler.Color(hoverColor));
         }).onMouseLeave((comp, event) => {
@@ -99,3 +101,26 @@ export default class GuiHandler {
         }
     }    
 }
+
+// === Fixes Overlapping Hover Effects ===
+
+// register("tick", () => {
+//     const hoveredComponents = GuiHandler.myComponentList.filter(
+//         ([comp, baseColor, hoverColor]) => comp.isHovered()
+//     );
+
+//     let topComp = null;
+//     if (hoveredComponents.length > 0) {
+//         topComp = hoveredComponents.reduce((prev, curr) => {
+//             return curr[0].depth() > prev[0].depth() ? curr : prev;
+//         })[0];
+//     }
+
+//     GuiHandler.myComponentList.forEach(([comp, baseColor, hoverColor]) => {
+//         if (comp.isHovered() && comp === topComp) {
+//             comp.setColor(GuiHandler.Color(hoverColor));
+//         } else {
+//             comp.setColor(GuiHandler.Color(baseColor));
+//         }
+//     });
+// });

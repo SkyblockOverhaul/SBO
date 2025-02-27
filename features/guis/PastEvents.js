@@ -39,6 +39,7 @@ function processDianaEvents() {
 function initMainUI() {
     pastEventsWindow.clearChildren();
     clickableElements = [];
+    GuiHandler.myComponentList = [];
     
     let background = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
         .setWidth((100).percent())
@@ -230,6 +231,7 @@ detailsRegisters.onClose(() => {
 function showFullEventDetails(eventData, totalProfit) {
     clickableElements = [];
     detailsWindow.clearChildren();
+    GuiHandler.myComponentList = [];
 
     let itemsCount = Object.keys(eventData.items).length + 1;
     let mobsCount = Object.keys(eventData.mobs).length + 1;
@@ -359,6 +361,7 @@ function showFullEventDetails(eventData, totalProfit) {
 function showTotalOverview() {
     clickableElements = [];
     detailsWindow.clearChildren();
+    GuiHandler.myComponentList = [];
 
     let totalProfit = 0;
     for (let key in dianaTrackerTotal.items) {
@@ -507,6 +510,7 @@ deleteRegisters.onMouseClick((mouseX, mouseY) => {
 
 function openDeleteConfirmation(eventIndex) {
     deleteWindow.clearChildren();
+    GuiHandler.myComponentList = [];
     
     let background = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
         .setWidth((100).percent())
