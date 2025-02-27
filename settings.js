@@ -322,7 +322,7 @@ class Settings {
     inquisDetect = true;
     @SwitchProperty({
         name: "Copy Inquisitor Coords",
-        description: "Copy coords for inquisitors (patcher format).",
+        description: "Copy coords for inquisitors (patcher format) mainly for muted player.",
         category: "Diana",
         subcategory: "Other",
     })
