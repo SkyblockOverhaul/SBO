@@ -8,22 +8,9 @@ let pastEventsGui = new HandleGui("data/DefaultColors.json", "sbo");
 let pastEventsWindow = pastEventsGui.window;
 let pastEventsCtGui = pastEventsGui.ctGui;
 let pastEventsRegisters = pastEventsGui.registers;
-
-let clickableElements = [];
-let deleteClickableElements = [];
 let currentPage = 0; 
 
-pastEventsRegisters.onMouseClick((mouseX, mouseY) => {
-    for (let elem of clickableElements) {
-        if (elem.isClicked(mouseX, mouseY)) {
-            elem.click();
-            return true;
-        }
-    }
-});
-
 pastEventsRegisters.onOpen(() => {
-    currentPage = 0;
     initMainUI();
 });
 
@@ -38,7 +25,6 @@ function processDianaEvents() {
 // === MAIN GUI ===
 function initMainUI() {
     pastEventsWindow.clearChildren();
-    clickableElements = [];
     GuiHandler.myComponentList = [];
     
     let background = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
@@ -128,7 +114,6 @@ function initMainUI() {
             showFullEventDetails(event, totalProfit);
             return true;
         });
-        clickableElements.push(eventButton);
         
         let deleteButton = new GuiHandler.Button(
             "Delete",
@@ -146,7 +131,6 @@ function initMainUI() {
             openDeleteConfirmation(i);
             return true;
         });
-        clickableElements.push(deleteButton);
     }
     
     let navContainer = new UIBlock(GuiHandler.Color([0, 0, 0, 150]))
@@ -173,7 +157,6 @@ function initMainUI() {
         showTotalOverview();
         return true;
     });
-    clickableElements.push(totalOverviewButton);
         
     if (currentPage > 0 && eventsData.length > maxEventsPerPage) {
         let prevButton = new GuiHandler.Button(
@@ -193,7 +176,6 @@ function initMainUI() {
             initMainUI();
             return true;
         });
-        clickableElements.push(prevButton);
     }
     if (endIndex < eventsData.length) {
         let nextButton = new GuiHandler.Button(
@@ -213,7 +195,6 @@ function initMainUI() {
             initMainUI();
             return true;
         });
-        clickableElements.push(nextButton);
     }
 }
 
@@ -229,7 +210,6 @@ detailsRegisters.onClose(() => {
 });
 
 function showFullEventDetails(eventData, totalProfit) {
-    clickableElements = [];
     detailsWindow.clearChildren();
     GuiHandler.myComponentList = [];
 
@@ -359,7 +339,6 @@ function showFullEventDetails(eventData, totalProfit) {
 }
 
 function showTotalOverview() {
-    clickableElements = [];
     detailsWindow.clearChildren();
     GuiHandler.myComponentList = [];
 
@@ -497,16 +476,6 @@ function showTotalOverview() {
 let deleteGui = new HandleGui("data/DefaultColors.json", "deleteGui");
 let deleteWindow = deleteGui.window;
 let deleteCtGui = deleteGui.ctGui;
-let deleteRegisters = deleteGui.registers;
-
-deleteRegisters.onMouseClick((mouseX, mouseY) => {
-    for (let elem of deleteClickableElements) {
-        if (elem.isClicked(mouseX, mouseY)) {
-            elem.click();
-            return true;
-        }
-    }
-});
 
 function openDeleteConfirmation(eventIndex) {
     deleteWindow.clearChildren();
@@ -558,7 +527,6 @@ function openDeleteConfirmation(eventIndex) {
         pastEventsCtGui.open();
         return true;
     });
-    deleteClickableElements.push(yesButton);
     
     let noButton = new GuiHandler.Button(
         "No",
@@ -577,12 +545,12 @@ function openDeleteConfirmation(eventIndex) {
         pastEventsCtGui.open();
         return true;
     });
-    deleteClickableElements.push(noButton);
     
     deleteCtGui.open();
 }
 
 register("command", () => {
+    currentPage = 0;
     pastEventsCtGui.open();
 }).setName("sbopastdianaevents").setAliases("sbopde");
 

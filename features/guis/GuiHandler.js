@@ -50,31 +50,20 @@ export default class GuiHandler {
             this.Object = new UIBlock();
             this.textObject = wrapped ? new UIWrappedText(text) : new UIText(text);
             this._create();
+            this._registers();
         }
         
         setOnClick(callback) {
             this.callback = callback;
             return this;
         }
-        
-        click(mouseX, mouseY, button) {
-            if (typeof this.callback === "function") {
-                return this.callback(mouseX, mouseY, button);
-            }
-            return false;
-        }
-        
-        isClicked(mouseX, mouseY) {
-            const absX = this.Object.getLeft();
-            const absY = this.Object.getTop();
-            const absWidth = this.Object.getWidth();
-            const absHeight = this.Object.getHeight();
-            return (
-                mouseX >= absX &&
-                mouseX <= absX + absWidth &&
-                mouseY >= absY &&
-                mouseY <= absY + absHeight
-            );
+
+        _registers() {
+            this.Object.onMouseClick((comp, event) => {
+                if (this.callback) {
+                    this.callback();
+                }
+            });
         }
         
         _create() {
@@ -99,7 +88,7 @@ export default class GuiHandler {
                 this.textObject.setColor(GuiHandler.Color(this.textColor))
             }
         }
-    }    
+    }   
 }
 
 // === Fixes Overlapping Hover Effects ===
