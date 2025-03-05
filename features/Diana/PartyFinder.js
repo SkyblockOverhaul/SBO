@@ -147,7 +147,7 @@ register("command", () => {
         
         messageString += "\n&3Misc&7: " +
             "\n&7- &9Enderman Slayer&7: " + getNumberColor(lastCheckedPlayer.emanLvl, 9) +
-            "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills) + (lastCheckedPlayer.killLeaderboard <= 100 ? " &7(#" + lastCheckedPlayer.killLeaderboard + ")" : "");
+            "\n&7- &9Diana Kills&7: &b" + formatNumberCommas(lastCheckedPlayer.mythosKills) + (lastCheckedPlayer.killLeaderboard <= 1000 ? " &7(#" + lastCheckedPlayer.killLeaderboard + ")" : "");
 
         if (lastCheckedPlayer.clover) 
             messageString += "\n&7- &9Clover&7: &a✓";
@@ -170,7 +170,7 @@ register("command", () => {
     ChatLib.chat("&6[SBO] &aCopied to Clipboard");
 }).setName("buttonforsbotocopystats");
 
-function checkPlayer(player, refreshData) {
+function checkPlayer(player, refreshData, readCache = true) {
     let playerName = player;
     if (!playerName) {
         ChatLib.chat("&6[SBO] &ePlease provide a player name to check.");
@@ -178,7 +178,7 @@ function checkPlayer(player, refreshData) {
     }
     if (!refreshData) ChatLib.chat("&6[SBO] &eChecking Player: " + playerName);
     request({
-        url: api + "/partyInfo?party=" + playerName,
+        url: api + "/partyInfo?party=" + playerName + "&readcache=" + readCache,
         json: true
     }).then((response)=> {
         if (response.Success) {
@@ -214,12 +214,12 @@ register("chat", (player) => {
     }, 50);
 }).setCriteria("&dFrom ${player}&r&7: &r&d&lBoop!&r");
 
-
 let creatingParty = false;
 let updateBool = false;
 let createPartyTimeStamp = 0;
 let inQueue = false;
 let partyReqs = ""
+let partyReqsObj = {}
 let requeue = false;
 export function createParty(reqs) {
     if (!creatingParty) {
@@ -430,14 +430,36 @@ register("chat", (event) => {
     })
 })
 
+function invitePlayerIfMeetsReqs(player) {
+    request({
+        url: api + "/partyInfo?party=" + player,
+        json: true
+    }).then((response)=> {
+        if (response.Success) {
+            let playerInfo = response.PartyInfo[0];
+            if (checkIfPlayerMeetsReqs(playerInfo, partyReqsObj)) {
+                ChatLib.chat("&6[SBO] &eSending invite to " + player);
+                ChatLib.command("p invite " + player);
+            } 
+        } else {
+            console.error("&6[SBO] &4Error: " + response.Error);
+        }
+    }).catch((error)=> {
+        if (error.detail) {
+            console.error("&6[SBO] &4Error: " + error.detail);
+        } else {
+            console.error("&6[SBO] &4Unexpected error occurred while checking player: " + player); 
+            console.error(JSON.stringify(error));
+        }
+    });
+}
+
 register("chat", (toFrom, player, id, event) => {
     if (inQueue && toFrom.includes("From")) {
-        // join request message
         if (partyCount < 6) {
             player = getplayername(player);
             if (settings.autoInvite) {
-                ChatLib.chat("&6[SBO] &eSending invite to " + player);
-                ChatLib.command("p invite " + player);
+                invitePlayerIfMeetsReqs(player);
             } else {
                 ChatLib.chat(ChatLib.getChatBreak("&b-"))
                 new Message(
@@ -454,7 +476,7 @@ register("chat", (toFrom, player, id, event) => {
 
 register("chat", (profile, event) => {
     setTimeout(() => {
-        checkPlayer(Player.getName(), true);
+        checkPlayer(Player.getName(), true, false);
     }, 10000);
 }).setCriteria("&r&7Switching to profile ${profile}&r");
 
@@ -492,12 +514,14 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
             creatingParty = false;
             return;
         }
+        let note = "diA.na%20gam,in-in_g!?!0123456789wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
         request({
-            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs,
+            url: api + "/createParty?uuids=" + party.join(",").replaceAll("-", "") + "&reqs=" + partyReqs + "&note=" + note,
             json: true
         }).then((response)=> {
             if (response.Success) {
                 let timeTaken = Date.now() - createPartyTimeStamp;
+                partyReqsObj = response.PartyReqs;
                 ChatLib.chat("&6[SBO] &eParty created successfully in " + timeTaken + "ms \n&6[SBO] &eRefresh to see the party in the list");
                 inQueue = true; 
                 creatingParty = false;
@@ -533,6 +557,7 @@ HypixelModAPI.on("partyInfo", (partyInfo) => {
         }).then((response)=> {
             if (response.Success) {
                 let timeTaken = Date.now() - updatePartyTimeStamp;
+                partyReqsObj = response.PartyReqs;
                 ChatLib.chat("&6[SBO] &eParty in queue updated successfully " + timeTaken + "ms");
             } else {
                 ChatLib.chat("&6[SBO] &4Error: " + response.Error);

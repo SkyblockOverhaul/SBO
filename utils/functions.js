@@ -1525,7 +1525,7 @@ export function getDianaStats(useCallback = false, callback = null) {
             return;
         }
         request({
-            url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", ""),
+            url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", "") + "&readcache=false",
             json: true
         }).then((response) => {
             dianaStats = response.PartyInfo[0];
