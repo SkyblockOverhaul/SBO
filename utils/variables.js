@@ -686,7 +686,21 @@ let openVA = false;
  * @param {Trigger} trigger - The trigger to be added.
  * @param {function} dependency - The function representing the dependency of the trigger.
  */
+
 export function registerWhen(trigger, dependency) {
+    // Wandelt die Funktion in einen String um
+    const dependencyStr = dependency.toString();
+
+    // Extrahiert alle "settings.<feldname>"-Einträge (match gibt ein Array oder null zurück)
+    const matches = dependencyStr.match(/settings\.(\w+)/g) || [];
+
+    // Entfernt "settings." und speichert eindeutige Feldnamen
+    const fieldnames = [...new Set(matches.map(match => match.split('.')[1]))];
+    for (let fieldname of fieldnames) {
+        // Fügt die Funktion als Trigger hinzu
+        print("Registering trigger for " + fieldname);
+    }
+
     registers.push([trigger.unregister(), dependency, false]);
 }
 

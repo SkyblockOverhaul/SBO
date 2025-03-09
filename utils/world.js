@@ -23,9 +23,9 @@ export function findZone() {
     return zoneLine === undefined ? "None" : zoneLine.getName().removeFormatting();
 }
 
-registerWhen(register("step", () => {
+register("step", () => {
     zone = findZone();
-}).setFps(1), () => true);
+}).setFps(1);
 
 // Function to find the current world and register/unregister features based on the world
 function findWorld() {
