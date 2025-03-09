@@ -813,60 +813,6 @@ export function setDianaMayorTotalProfit(profit, offerType, profitHour) {
     profitPerHour = profitHour;
 }
 
-export function getRarity(item){
-    switch (item.toLowerCase().trim()) {
-        case "common":
-            return "&f" + item;
-        case "uncommon":
-            return "&a" + item;
-        case "rare":
-            return "&9" + item;
-        case "epic":
-            return "&5" + item;
-        case "legendary":
-            return "&6" + item;
-        case "mythic":
-            return "&d" + item;
-        default:
-            return "&7";
-    }
-}
-
-export function getNumberColor(number, range) {
-    if (number === range) {
-        return "&c" + number;
-    }
-    else if (number === range - 1) {
-        return "&6" + number;
-    }
-    else {
-        return "&9" + number;
-    }
-}
-
-export function getGriffinItemColor(item, noColors = false) {
-    if (item == 0 || !item) return "";
-    let name = item.replace("PET_ITEM_", "");
-    name = toTitleCase(name.replaceAll("_", " "));
-    if (noColors) return name;
-    switch (name) {
-        case "Four Eyed Fish":
-            return "&5" + name;
-        case "Dwarf Turtle Shelmet":
-            return "&a" + name;
-        case "Crochet Tiger Plushie":
-            return "&5" + name;
-        case "Antique Remedies":
-            return "&5" + name;
-        case "Lucky Clover":
-            return "&a" + name;
-        case "Minos Relic":
-            return "&5" + name;
-        default:
-            return "&7" + name;
-    }
-}
-
 export function getMagicFind(mf) {
     let magicFindMatch = mf.match(/\+(&r&b)?(\d+)%/);
     let magicFind = parseInt((magicFindMatch ? magicFindMatch[2] : 0));

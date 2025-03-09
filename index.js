@@ -15,6 +15,7 @@ import "./utils/overlays";
 import "./features/general/QOL";
 import "./features/general/CrownTracker";
 import "./features/Diana/DianaAchievements";
+import "./features/Diana/PartyFinder";
 import "./features/guis/Achievements";
 import "./features/guis/PastEvents";
 import "./features/general/TestFeatures";
