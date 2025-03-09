@@ -292,7 +292,7 @@ registerWhen(register("chat", (time, event) => {
 
 registerWhen(register("chat", (waste, event) => {
     cancel(event);
-}).setCriteria("&r&7Warping${waste}"), () => settings.cleanDianaChat && settings.warping || settings.waste);
+}).setCriteria("&r&7Warping${waste}"), () => settings.cleanDianaChat);
 
 // mob tracker
 registerWhen(register("chat", (woah, arev, mob, skytils, event) => {

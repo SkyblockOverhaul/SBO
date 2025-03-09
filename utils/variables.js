@@ -4,6 +4,7 @@ import { getDateMayorElected, setNewMayorBool } from "./mayor";
 // Importing the PogObject class from another file named "PogData"
 import PogObject from "../../PogData";
 import FU from "../../FileUtilities/main";
+import settings from "../settings";
 
 
 // initialize tracker //
@@ -676,9 +677,20 @@ register("serverDisconnect" , () => {
 
 // --- TRIGGER CONTROL ---
 
+function getPropertyName(name) {
+    if (settings.__config_props__[name]) {
+        try {
+            return settings.__config_props__[name].getName();
+        }
+        catch (e) {
+            return null;
+        }
+    }
+}
+
 // An array to store registered triggers and their dependencies
 let registers = [];
-let openVA = false;
+let registerListeners = {};
 
 /**
  * Adds a trigger with its associated dependency to the list of registered triggers.
@@ -697,14 +709,22 @@ export function registerWhen(trigger, dependency) {
     // Entfernt "settings." und speichert eindeutige Feldnamen
     const fieldnames = [...new Set(matches.map(match => match.split('.')[1]))];
     for (let fieldname of fieldnames) {
-        // Fügt die Funktion als Trigger hinzu
-        print("Registering trigger for " + fieldname);
+        let propName = getPropertyName(fieldname);
+        if (!propName) throw new Error(`PropertyName for ${fieldname} not found in settings. ${propName}`);
+        if (!registerListeners[propName]) {
+            registerListeners[propName] = true;
+            settings.registerListener(propName, bool => {
+                if (bool && dependency) trigger.register();
+                else trigger.unregister();
+                print("Registering " + propName + " " + bool);
+            });
+        }
+
     }
 
     registers.push([trigger.unregister(), dependency, false]);
 }
 
-// Updates trigger registrations based on world or GUI changes
 export function setRegisters() {
     registers.forEach(trigger => {
         if ((!trigger[1]() && trigger[2]) || !Scoreboard.getTitle().removeFormatting().includes("SKYBLOCK")) {
@@ -716,22 +736,11 @@ export function setRegisters() {
         }
     });
 }
-delay(() => setRegisters(), 1000);
 
-/**
- * Marks that the SBO GUI has been opened.
- */
-export function opened() {
-    openVA = true;
-}
+// setTimeout(() => {
+//     setRegisters();
+// }, 1000);
 
-// Event handler for GUI settings close.
-register("guiClosed", (event) => {
-    // || event.toString().includes("JSGui")
-    if (event.toString().includes("vigilance")) {
-        setRegisters()
-    }
-});
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
