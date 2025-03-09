@@ -5,6 +5,8 @@ import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
 import { data } from "../../utils/variables";
 
+let api = "https://api.skyblockoverhaul.com";
+
 let firstTimeStamp = 0;
 function getPartyInfo(party) {
     firstTimeStamp = Date.now();
