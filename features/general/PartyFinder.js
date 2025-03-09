@@ -1,4 +1,3 @@
-@ -1,575 +0,0 @@
 import { request } from "../../../requestV2";
 import { formatNumberCommas, getplayername, sendPartyRequest, toTitleCase, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, getDianaStats, setTimeout } from "../../utils/functions";
 import { HypixelModAPI } from "./../../../HypixelModAPI";
