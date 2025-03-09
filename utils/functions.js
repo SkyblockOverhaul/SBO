@@ -1,6 +1,5 @@
 import { request } from "../../requestV2";
 import settings, { getcustomSounds } from "../settings";
-import { HypixelModAPI } from "./../../HypixelModAPI";
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
 import { getWorld } from "./world";
 
@@ -97,11 +96,6 @@ export function mobAnnouncement(chat,mob,x,y,z) {
     const area = zone === undefined ? "None" : zone.getName().removeFormatting();
 
     ChatLib.command(`pc x: ${x} y: ${y} z: ${z} | ${mob} found at ${area}!`);
-}
-
-let partyMembersUuids = [];
-export function getPartyMembersUuids() {
-    return partyMembersUuids;
 }
 
 export function getSBID(item) {
@@ -516,18 +510,6 @@ register("command", () => {
     playCustomSound(customSounds[settings.customSound], settings.customVolume);
 }).setName("playsbotestsound");
 
-// party detection
-HypixelModAPI.on("partyInfo", (partyInfo) => {
-    partyMembersUuids = [];
-    Object.keys(partyInfo).forEach(key => {
-        partyMembersUuids.push(key);
-    })
-})
-
-export function sendPartyRequest() {
-    HypixelModAPI.requestPartyInfo();
-}
-
 let lastUpdate = 0;
 let updateing = false;
 let kuudraItems = undefined;
@@ -831,10 +813,113 @@ export function setDianaMayorTotalProfit(profit, offerType, profitHour) {
     profitPerHour = profitHour;
 }
 
+export function getRarity(item){
+    switch (item.toLowerCase().trim()) {
+        case "common":
+            return "&f" + item;
+        case "uncommon":
+            return "&a" + item;
+        case "rare":
+            return "&9" + item;
+        case "epic":
+            return "&5" + item;
+        case "legendary":
+            return "&6" + item;
+        case "mythic":
+            return "&d" + item;
+        default:
+            return "&7";
+    }
+}
+
+export function getNumberColor(number, range) {
+    if (number === range) {
+        return "&c" + number;
+    }
+    else if (number === range - 1) {
+        return "&6" + number;
+    }
+    else {
+        return "&9" + number;
+    }
+}
+
+export function getGriffinItemColor(item, noColors = false) {
+    if (item == 0 || !item) return "";
+    let name = item.replace("PET_ITEM_", "");
+    name = toTitleCase(name.replaceAll("_", " "));
+    if (noColors) return name;
+    switch (name) {
+        case "Four Eyed Fish":
+            return "&5" + name;
+        case "Dwarf Turtle Shelmet":
+            return "&a" + name;
+        case "Crochet Tiger Plushie":
+            return "&5" + name;
+        case "Antique Remedies":
+            return "&5" + name;
+        case "Lucky Clover":
+            return "&a" + name;
+        case "Minos Relic":
+            return "&5" + name;
+        default:
+            return "&7" + name;
+    }
+}
+
 export function getMagicFind(mf) {
     let magicFindMatch = mf.match(/\+(&r&b)?(\d+)%/);
     let magicFind = parseInt((magicFindMatch ? magicFindMatch[2] : 0));
     return magicFind;
+}
+
+export function matchLvlToColor(lvl) {
+    if (lvl >= 480) {
+        return "&4" + lvl;
+    } else if (lvl >= 440) {
+        return "&c" + lvl;
+    } else if (lvl >= 400) {
+        return "&6" + lvl;
+    } else if (lvl >= 360) {
+        return "&5" + lvl;
+    } else if (lvl >= 320) {
+        return "&d" + lvl;
+    } else if (lvl >= 280) {
+        return "&9" + lvl;
+    } else if (lvl >= 240) {
+        return "&3" + lvl;
+    } else if (lvl >= 200) {
+        return "&b" + lvl;
+    } else {
+        return "&7" + lvl;
+    }
+}
+
+export function matchDianaKillsToColor(kills) {
+    if (kills >= 200000) {
+        return "&6" + formatNumberCommas(kills);
+    }
+    else if (kills >= 150000) {
+        return "&e" + formatNumberCommas(kills);
+    }
+    else if (kills >= 100000) {
+        return "&c" + formatNumberCommas(kills);
+    }
+    else if (kills >= 75000) {
+        return "&d" + formatNumberCommas(kills);
+    }
+    else if (kills >= 50000) {
+        return "&9" + formatNumberCommas(kills);
+    }
+    else if (kills >= 25000) {
+        return "&a" + formatNumberCommas(kills);
+    }
+    else if (kills >= 10000) {
+        return "&2" + formatNumberCommas(kills);
+    }
+    else {
+        return "&7" + formatNumberCommas(kills);
+    }
 }
 
 // gui functions/classes

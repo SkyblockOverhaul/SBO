@@ -1,5 +1,5 @@
 import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
-import { initializeGuiSettings, getKuudraItems, getBazaarItems, getDianaStats } from "./functions";
+import { initializeGuiSettings, getDianaStats } from "./functions";
 import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents } from "./variables";
 import settings from "../settings";
 import { unlockAchievement, trackWithCheckPlayer } from "../features/Diana/DianaAchievements";
