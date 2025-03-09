@@ -208,8 +208,6 @@ if (!data.trackerMigration) {
 }
 
 let sboFiles = [
-    "sbo_mainCheckboxes.json",
-    "sbo_mainInputFields.json",
     "SboData.json",
     "pastDianaEvents.json",
     "sbo_achievements.json",
@@ -230,20 +228,6 @@ if (!data.trackerMigration2) {
     data.trackerMigration2 = true;
     data.save();
 }
-
-export let mainCheckboxes = new PogObject("../../../config/sbo", {
-    "eman9": false,
-    "looting5": false,
-    "mvpplus": false,
-    "canIjoin": false,
-    "l5ReqCreate": false,
-    "eman9ReqCreate": false,
-}, "sbo_mainCheckboxes.json");
-
-export let mainInputFields = new PogObject("../../../config/sbo", {
-    "kills": "0",
-    "lvl": "0",
-}, "sbo_mainInputFields.json");
 
 export let pastDianaEvents = new PogObject("../../../config/sbo", {
     "events": []
@@ -413,8 +397,6 @@ dianaTrackerTotal.save();
 dianaTrackerSession.save();
 dianaTrackerMayor.save();
 pastDianaEvents.save();
-mainCheckboxes.save();
-mainInputFields.save();
 
 export function checkMayorTracker() {
     if (dianaTrackerMayor.year < getDateMayorElected().getFullYear()) {  
@@ -745,8 +727,6 @@ register("gameUnload", () => {
     // dianaTrackerMayor.save();
     // pastDianaEvents.save();
     // achievementsData.save();
-    mainCheckboxes.save();
-    mainInputFields.save();
     backUpData();
 });
 
