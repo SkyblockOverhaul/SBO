@@ -30,6 +30,7 @@ function refreshLegionOverlay() {
 
 registerWhen(register("step", () => {
     refreshLegionOverlay();
+    ChatLib.chat("legion")
 }).setFps(1), () => settings.legionOverlay);
 
 function disctanceToPlayer(player) {

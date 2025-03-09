@@ -714,12 +714,10 @@ export function registerWhen(trigger, dependency) {
         if (!registerListeners[propName]) {
             registerListeners[propName] = true;
             settings.registerListener(propName, bool => {
-                if (bool && dependency) trigger.register();
-                else trigger.unregister();
-                print("Registering " + propName + " " + bool);
+                if (dependency()) {trigger.register(), print("register: " + trigger.toString(), dependency());}
+                else trigger.unregister(), print("unregister: " + trigger.toString(), dependency());
             });
         }
-
     }
 
     registers.push([trigger.unregister(), dependency, false]);
