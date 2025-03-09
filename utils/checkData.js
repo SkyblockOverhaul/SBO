@@ -1,6 +1,6 @@
 import { getDateMayorElected, getNewMayorAtDate, getSkyblockDate, getMayor } from "./mayor";
 import { initializeGuiSettings, getDianaStats } from "./functions";
-import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents } from "./variables";
+import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents, setListener } from "./variables";
 import settings from "../settings";
 import { unlockAchievement, trackWithCheckPlayer } from "../features/Diana/DianaAchievements";
 
@@ -28,6 +28,7 @@ let dataLoadReg = register("step", () => {
                 trackWithCheckPlayer(playerinfo);
             }
         });
+        setListener();
         dataLoadReg.unregister();
     }
 }).setFps(1);

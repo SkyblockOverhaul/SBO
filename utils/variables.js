@@ -689,7 +689,7 @@ function getPropertyName(name) {
 }
 
 // An array to store registered triggers and their dependencies
-let registers = [];
+let worldRegisters = [];
 let registerListeners = {};
 
 /**
@@ -697,57 +697,65 @@ let registerListeners = {};
  *
  * @param {Trigger} trigger - The trigger to be added.
  * @param {function} dependency - The function representing the dependency of the trigger.
+ * @param {string} context - The context of the dependency. (Optional)
  */
-
-export function registerWhen(trigger, dependency) {
-    // Wandelt die Funktion in einen String um
+export function registerWhen(trigger, dependency, context = null) {
     const dependencyStr = dependency.toString();
 
-    // Extrahiert alle "settings.<feldname>"-Einträge (match gibt ein Array oder null zurück)
     const matches = dependencyStr.match(/settings\.(\w+)/g) || [];
 
-    // Entfernt "settings." und speichert eindeutige Feldnamen
-    const fieldnames = [...new Set(matches.map(match => match.split('.')[1]))];
-    for (let fieldname of fieldnames) {
-        let propName = getPropertyName(fieldname);
-        if (!propName) throw new Error(`PropertyName for ${fieldname} not found in settings. ${propName}`);
-        if (!registerListeners[propName]) {
-            registerListeners[propName] = true;
-            settings.registerListener(propName, bool => {
-                if (dependency()) {trigger.register(), print("register: " + trigger.toString(), dependency());}
-                else trigger.unregister(), print("unregister: " + trigger.toString(), dependency());
-            });
+    let fieldnames = [...new Set(matches.map(match => match.split('.')[1]))];
+
+    if (context) fieldnames.push(context);  
+
+    if (dependencyStr.includes("getWorld(")) worldRegisters.push([trigger, dependency]);
+
+    let propnames = fieldnames.map(fieldname => getPropertyName(fieldname));
+    
+    propnames.forEach(propname => {
+        if (registerListeners[propname]) {
+            registerListeners[propname].push([trigger.unregister(), dependency]);
         }
-    }
-
-    registers.push([trigger.unregister(), dependency, false]);
-}
-
-export function setRegisters() {
-    registers.forEach(trigger => {
-        if ((!trigger[1]() && trigger[2]) || !Scoreboard.getTitle().removeFormatting().includes("SKYBLOCK")) {
-            trigger[0].unregister();
-            trigger[2] = false;
-        } else if (trigger[1]() && !trigger[2]) {
-            trigger[0].register();
-            trigger[2] = true;
+        else {
+            registerListeners[propname] = [[trigger.unregister(), dependency]];
         }
     });
 }
 
-// setTimeout(() => {
-//     setRegisters();
-// }, 1000);
+function setTrigger(trigger) {
+    if (trigger[1]()) {
+        trigger[0].register();
+    }
+    else {
+        trigger[0].unregister();
+    }
+}
 
+export function setListener() {
+    Object.keys(registerListeners).forEach(propname => {
+        let triggers = registerListeners[propname];
+        settings.registerListener(propname, bool => {
+            triggers.forEach(trigger => {
+                setTimeout(() => {
+                    setTrigger(trigger);
+                }, 300);
+            });
+        });
+        triggers.forEach(trigger => {
+            setTrigger(trigger);
+        });
+        
+    });
+}
+
+export function setWorldRegisters() {
+    worldRegisters.forEach(trigger => {
+        setTrigger(trigger);
+    });
+}
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
-    // data.save();
-    // dianaTrackerTotal.save();
-    // dianaTrackerSession.save();
-    // dianaTrackerMayor.save();
-    // pastDianaEvents.save();
-    // achievementsData.save();
     backUpData();
 });
 
