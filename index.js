@@ -12,14 +12,12 @@ import "./features/guis/BobberCounter";
 import "./features/guis/LegionCounter";
 import "./features/slayer/BlazeSlayer";
 import "./utils/overlays";
-import "./features/Diana/PartyFinder";
 import "./features/general/QOL";
-import "./features/guis/SlayerGuis";
 import "./features/general/CrownTracker";
 import "./features/Diana/DianaAchievements";
+import "./features/Diana/PartyCheck";
 import "./features/guis/Achievements";
-import "./features/guis/PastDianaEvents";
-import "./features/guis/PartyFinderGUI";
+import "./features/guis/PastEvents";
 import "./features/general/TestFeatures";
 import { data, registerWhen } from "./utils/variables";
 import { isDataLoaded } from "./utils/checkData";
@@ -48,20 +46,9 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Changed", description: "Better burrow guessing logic - thanks to @SkyHanni and @bloxigus for developing it"},
-    {header: "Added", description: "paused to the playtime gui if its paused cause some ppl dont seem to undertsand when its paused"},
-    {header: "Added", description: "!stats <playername> party command"},
-    {header: "Added", description: "a more Precise Guess"},
-    {header: "Added", description: "inquis Loot Tracker (Shelmets/Plushies/Remedies)"},
-    {header: "Added", description: "backup folder for all the data"},
-    {header: "Added", description: "Designated folder for config files in minecraft config folder"},
-    {header: "Added", description: "being able to remove the inq waypoint with the spade"},
-    {header: "Added", description: "{percentage} for custom chimera message"},
-    {header: "Added", description: "setting: Remove Guess When Burrow"},
-    {header: "Updated", description: "loot Party Announcer for (Shelmets/Plushies/Remedies) those 3 are only announced foor inq loot tho"},
-    {header: "Fixed", description: "warping logic fixes: always able to warp on inq, locking the wrong warp if not available"},
-    {header: "Fixed", description: "Sometimes the partyfinder says that you dont meet the requirements even tho you do"},
-    {header: "Some", description: "other small bug fixes"},
+    {header: "Added", description: "the new PartyFinder Gui wich is its own Module now"},
+    {header: "Changed", description: "the new Achievements Gui so it works with all gui scales (hopefully)"},
+    {header: "Removed", description: "All of the partyfinder logic cause its now in its own module"},
 ];
 
 register("command", (args1, ...args) => {
@@ -89,7 +76,7 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-const newVersion = "0.4.9" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.5.0" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return

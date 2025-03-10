@@ -292,7 +292,7 @@ registerWhen(register("chat", (time, event) => {
 
 registerWhen(register("chat", (waste, event) => {
     cancel(event);
-}).setCriteria("&r&7Warping${waste}"), () => getWorld() === "Hub" && settings.cleanDianaChat);
+}).setCriteria("&r&7Warping${waste}"), () => settings.cleanDianaChat);
 
 // mob tracker
 registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
@@ -302,6 +302,9 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
                 let since = data.mobsSinceInq;
                 if (settings.inquisDetect) {
                     ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+                    if (settings.inquisDetectCopy) {
+                        ChatLib.command("ct copy x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+                    }
                 }
                 if (settings.announceKilltext !== "") {
                     setTimeout(function () {

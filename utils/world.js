@@ -1,9 +1,5 @@
 import { delay } from "./threads"; // Importing delay function for asynchronous operations
-import { registerWhen, setRegisters } from "./variables"; // Importing setRegisters function from the variables file
-
-export function setPlayer() {
-    player = Player.asPlayerMP().getEntity();
-};
+import { registerWhen, setWorldRegisters } from "./variables"; // Importing setRegisters function from the variables file
 
 let world = undefined; // Variable to store the current world
 export function getWorld() { return world }; // Exported function to get the current world
@@ -23,9 +19,9 @@ export function findZone() {
     return zoneLine === undefined ? "None" : zoneLine.getName().removeFormatting();
 }
 
-registerWhen(register("step", () => {
+register("step", () => {
     zone = findZone();
-}).setFps(1), () => true);
+}).setFps(1);
 
 // Function to find the current world and register/unregister features based on the world
 function findWorld() {
@@ -39,8 +35,7 @@ function findWorld() {
         zone = findZone();
         if (zone.includes("Catac")) {
             world = "Catacombs";
-            setRegisters();
-            setPlayer();
+            setWorldRegisters();
         }
         else {
             delay(() => findWorld(), 1000);
@@ -58,8 +53,7 @@ function findWorld() {
         }
 
         // Register/unregister features for the current world
-        setRegisters();
-        setPlayer();
+        setWorldRegisters();
     }
 }
 

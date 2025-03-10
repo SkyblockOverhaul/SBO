@@ -116,7 +116,6 @@
 - **Crown Tracker:** Monitor your crown of avarice coins (with optional ghost mode and reset functionality).
 
 ### Additional Features
-- **Partyfinder Auto-Invite:** Automatically invite players via partyfinder requests.
 - **Debug Options:** Enable test features or force SkyBlock state for troubleshooting.
 - **Credits & Infos:** Direct links to our Discord, GitHub, Patreon, Website, and partner projects for support and further information.
 

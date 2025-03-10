@@ -396,7 +396,7 @@ export class SboOverlay {
                     // Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
                 }
             }
-        }), () => settings[this.setting]);
+        }), () => settings[this.setting], this.setting);
 
         registerWhen(register("postGuiRender", () => {
             if ((this.renderGui || editGui.isOpen()) && this.type == "post") {
@@ -409,13 +409,13 @@ export class SboOverlay {
                     // Renderer.drawRect(Renderer.color(0, 0, 0, 100), this.X, this.Y, Renderer.getStringWidth(this.longestString) * this.scale + this.offsetX, 10 * this.scale * this.stringCount + this.offsetY);
                 }
             }
-        }), () => settings[this.setting]);
+        }), () => settings[this.setting], this.setting);
 
         registerWhen(register("guiRender", () => {
             if ((this.renderGui || editGui.isOpen()) && (this.type == "inventory" && isInInventory)) {
                 drawText(this)
             }
-        }), () => settings[this.setting]);
+        }), () => settings[this.setting], this.setting);
 
         registerWhen(register("guiKey", (char, keyCode, gui, event) => {
             if (editGui.isOpen() ) {
@@ -441,7 +441,7 @@ export class SboOverlay {
                     saveGuiSettings(guiSettings);
                 }
             }
-        }), () => settings[this.setting]);
+        }), () => settings[this.setting], this.setting);
         
         registerWhen(register("tick", () => {
             if (this.renderGui) {
@@ -470,7 +470,7 @@ export class SboOverlay {
                     });
                 }
             }
-        }), () => settings[this.setting]) && this.hoverable;
+        }), () => settings[this.setting], this.setting);
         
         registerWhen(register("guiMouseClick" , (cx, cy, button, gui) => {
             if (this.renderGui) {
@@ -482,7 +482,7 @@ export class SboOverlay {
                     });
                 }
             }
-        }), () => settings[this.setting]);
+        }), () => settings[this.setting], this.setting);
 
         loadSettings(this);
     }

@@ -4,6 +4,7 @@ import { getDateMayorElected, setNewMayorBool } from "./mayor";
 // Importing the PogObject class from another file named "PogData"
 import PogObject from "../../PogData";
 import FU from "../../FileUtilities/main";
+import settings from "../settings";
 
 
 // initialize tracker //
@@ -208,8 +209,6 @@ if (!data.trackerMigration) {
 }
 
 let sboFiles = [
-    "sbo_mainCheckboxes.json",
-    "sbo_mainInputFields.json",
     "SboData.json",
     "pastDianaEvents.json",
     "sbo_achievements.json",
@@ -230,20 +229,6 @@ if (!data.trackerMigration2) {
     data.trackerMigration2 = true;
     data.save();
 }
-
-export let mainCheckboxes = new PogObject("../../../config/sbo", {
-    "eman9": false,
-    "looting5": false,
-    "mvpplus": false,
-    "canIjoin": false,
-    "l5ReqCreate": false,
-    "eman9ReqCreate": false,
-}, "sbo_mainCheckboxes.json");
-
-export let mainInputFields = new PogObject("../../../config/sbo", {
-    "kills": "0",
-    "lvl": "0",
-}, "sbo_mainInputFields.json");
 
 export let pastDianaEvents = new PogObject("../../../config/sbo", {
     "events": []
@@ -413,8 +398,6 @@ dianaTrackerTotal.save();
 dianaTrackerSession.save();
 dianaTrackerMayor.save();
 pastDianaEvents.save();
-mainCheckboxes.save();
-mainInputFields.save();
 
 export function checkMayorTracker() {
     if (dianaTrackerMayor.year < getDateMayorElected().getFullYear()) {  
@@ -694,59 +677,85 @@ register("serverDisconnect" , () => {
 
 // --- TRIGGER CONTROL ---
 
+function getPropertyName(name) {
+    if (settings.__config_props__[name]) {
+        try {
+            return settings.__config_props__[name].getName();
+        }
+        catch (e) {
+            return null;
+        }
+    }
+}
+
 // An array to store registered triggers and their dependencies
-let registers = [];
-let openVA = false;
+let worldRegisters = [];
+let registerListeners = {};
 
 /**
  * Adds a trigger with its associated dependency to the list of registered triggers.
  *
  * @param {Trigger} trigger - The trigger to be added.
  * @param {function} dependency - The function representing the dependency of the trigger.
+ * @param {string} context - The context of the dependency. (Optional)
  */
-export function registerWhen(trigger, dependency) {
-    registers.push([trigger.unregister(), dependency, false]);
-}
+export function registerWhen(trigger, dependency, context = null) {
+    const dependencyStr = dependency.toString();
 
-// Updates trigger registrations based on world or GUI changes
-export function setRegisters() {
-    registers.forEach(trigger => {
-        if ((!trigger[1]() && trigger[2]) || !Scoreboard.getTitle().removeFormatting().includes("SKYBLOCK")) {
-            trigger[0].unregister();
-            trigger[2] = false;
-        } else if (trigger[1]() && !trigger[2]) {
-            trigger[0].register();
-            trigger[2] = true;
+    const matches = dependencyStr.match(/settings\.(\w+)/g) || [];
+
+    let fieldnames = [...new Set(matches.map(match => match.split('.')[1]))];
+
+    if (context) fieldnames.push(context);  
+
+    if (dependencyStr.includes("getWorld(")) worldRegisters.push([trigger, dependency]);
+
+    let propnames = fieldnames.map(fieldname => getPropertyName(fieldname));
+    
+    propnames.forEach(propname => {
+        if (registerListeners[propname]) {
+            registerListeners[propname].push([trigger.unregister(), dependency]);
+        }
+        else {
+            registerListeners[propname] = [[trigger.unregister(), dependency]];
         }
     });
 }
-delay(() => setRegisters(), 1000);
 
-/**
- * Marks that the SBO GUI has been opened.
- */
-export function opened() {
-    openVA = true;
+function setTrigger(trigger) {
+    if (trigger[1]()) {
+        trigger[0].register();
+    }
+    else {
+        trigger[0].unregister();
+    }
 }
 
-// Event handler for GUI settings close.
-register("guiClosed", (event) => {
-    // || event.toString().includes("JSGui")
-    if (event.toString().includes("vigilance")) {
-        setRegisters()
-    }
-});
+export function setListener() {
+    Object.keys(registerListeners).forEach(propname => {
+        let triggers = registerListeners[propname];
+        settings.registerListener(propname, bool => {
+            triggers.forEach(trigger => {
+                setTimeout(() => {
+                    setTrigger(trigger);
+                }, 300);
+            });
+        });
+        triggers.forEach(trigger => {
+            setTrigger(trigger);
+        });
+        
+    });
+}
+
+export function setWorldRegisters() {
+    worldRegisters.forEach(trigger => {
+        setTrigger(trigger);
+    });
+}
 
 // Saving data to persistent storage upon game unload
 register("gameUnload", () => {
-    // data.save();
-    // dianaTrackerTotal.save();
-    // dianaTrackerSession.save();
-    // dianaTrackerMayor.save();
-    // pastDianaEvents.save();
-    // achievementsData.save();
-    mainCheckboxes.save();
-    mainInputFields.save();
     backUpData();
 });
 

@@ -2,7 +2,7 @@
   "name": "SBO",
   "creator": "RolexDE, D4rkswift",
   "description": "SBO is the ultimate diana mod for diana nons! FPS friendly, and packed with QOL features!",
-  "version": "0.4.9",
+  "version": "0.5.0",
   "entry": "index.js",
   "requires": [
     "requestV2",
@@ -13,6 +13,7 @@
     "HypixelModAPI",
     "FileUtilities",
     "KeybindFix",
-    "DocGuiLib"
+    "DocGuiLib",
+    "SBOPF"
   ]
 }
