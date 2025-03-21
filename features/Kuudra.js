@@ -389,17 +389,11 @@ function getAttributePrice(itemId, attribute, lvl) {
                     }
                     return (kuudraItems[itemId][attribute + "_" + i].price * (2**counter)) * valueModifier;
                 }
-                else {
-                    console.log("attribute: " + attribute + " " + i + " price: not found");
-                
-                }
             }
-            console.log("attribute: " + attribute + " " + lvl + " price: not found");
             return 0;
         }
     }
     else {
-        console.log("itemId: " + itemId + " price: not found");
         return 0;
     }
 }
@@ -409,7 +403,6 @@ function getAhPrice(itemId) {
         return kuudraItems["OTHER"][itemId].price;
     }
     else {
-        console.log("itemId: " + itemId + " price: not found");
         return 0;
     }    
 }
