@@ -3,16 +3,19 @@ import { setTimeout, checkSendInqMsg, getParty } from "../../utils/functions";
 import socket from "../../../SBOSOCKET";
 import { data, registerWhen } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
+import { getParty } from "../../../SBOPF/Main/PartyFinder";
 
 let playerIsMuted = false;
 let sendPing = false;
 function sendInqPingSocket() {
     let party = getParty();
     if (party.length == 0) return;
+    let playerUuid = Player.getUUID();
+    party = party.filter(uuid => uuid !== playerUuid);
     sendPing = false;
     let serverId = TabList.getNames().find(tab => tab.includes("Server:")).split("Server: ")[1].split(" ")[0].removeFormatting();
     socket.send("inqPing", { 
-        owner: Player.getDisplayName().getText(),
+        displayName: Player.getDisplayName().getText(),
         uuids: party,
         coords: {
             x: Math.round(Player.getX()),
