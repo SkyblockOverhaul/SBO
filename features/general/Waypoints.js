@@ -634,6 +634,7 @@ function componentToHex(c) {
     return hex.length == 1 ? "0" + hex : hex;
 }
 
+socket.addEvent("inqPing")
 socket.on("inqPing", (d) => {
     const data = d.data;
     if (!data.coords || !data.owner) return;
