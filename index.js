@@ -46,9 +46,7 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Added", description: "the new PartyFinder Gui wich is its own Module now"},
-    {header: "Changed", description: "the new Achievements Gui so it works with all gui scales (hopefully)"},
-    {header: "Removed", description: "All of the partyfinder logic cause its now in its own module"},
+    {header: "Added", description: "Muted player support (inquis Pings only for now)"},
 ];
 
 register("command", (args1, ...args) => {
