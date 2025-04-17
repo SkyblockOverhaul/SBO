@@ -22,12 +22,12 @@ function sendInqPingSocket() {
     ChatLib.chat("&6[SBO] &eInquisitor Ping Sent per Server!");
 }
 
-registerWhen(register("chat", (expire) => {
+registerWhen(register("chat", (trash, expire) => {
     if (!checkDiana()) return;
     if (playerIsMuted) return;
     playerIsMuted = true;
     if (sendPing) sendInqPingSocket();
-}).setCriteria("&r&7Your mute will expire ${expire}"), settings.inquisDetect);
+}).setCriteria("${trash}&7Your mute will expire ${expire}"), settings.inquisDetect);
 
 export function onInqSpawn() {
     let since = data.mobsSinceInq;
