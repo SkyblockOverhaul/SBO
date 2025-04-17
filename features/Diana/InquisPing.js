@@ -14,8 +14,12 @@ function sendInqPingSocket() {
     party = party.filter(uuid => uuid !== playerUuid);
     sendPing = false;
     let serverId = TabList.getNames().find(tab => tab.includes("Server:")).split("Server: ")[1].split(" ")[0].removeFormatting();
+    displayName = Player.getDisplayName().getText()
+    lvlString = displayName.split("[")[1].split("]")[0];
     socket.send("inqPing", { 
-        displayName: Player.getDisplayName().getText(),
+        rankColor: displayName.split(" ")[1].substring(0, 2),
+        lvlColor: lvlString.substring(0, 2),
+        lvl: lvlString.removeFormatting(),
         uuids: party,
         coords: {
             x: Math.round(Player.getX()),

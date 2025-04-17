@@ -641,12 +641,9 @@ socket.on("inqPing", (d) => {
     if (settings.inqWaypoints && checkDiana()) {
         let serverId = TabList.getNames().find(tab => tab.includes("Server:")).split("Server: ")[1].split(" ")[0].removeFormatting();
         if (data.server != serverId) return;
-        print("display" + data.displayName);
-        print("owner " + data.owner);
-        print(data.displayName.split(" ")[1].removeFormatting())
         if (data.owner != data.displayName.split(" ")[1].removeFormatting()) return;
         inqWaypoints.push([data.displayName, data.coords.x, data.coords.y, data.coords.z, closestWarpString(data.coords.x, data.coords.y, data.coords.z), Date.now()]);
         playCustomSound(settings.inqSound, settings.inqVolume);
-        Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, data.owner, 0, 90, 20);
+        Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, data.displayName, 0, 90, 20);
     }
 })
