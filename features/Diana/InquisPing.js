@@ -1,8 +1,8 @@
-import settings from "../../settings.js";
+import settings from "../../settings";
 import { setTimeout, checkSendInqMsg, getParty } from "../../utils/functions";
 import socket from "../../../SBOSOCKET";
-import { data, registerWhen } from "../../utils/variables.js";
-import { checkDiana } from "../../utils/checkDiana.js";
+import { data, registerWhen } from "../../utils/variables";
+import { checkDiana } from "../../utils/checkDiana";
 
 let playerIsMuted = false;
 let sendPing = false;
