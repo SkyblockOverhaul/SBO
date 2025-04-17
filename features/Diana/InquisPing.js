@@ -1,9 +1,8 @@
 import settings from "../../settings";
-import { setTimeout, checkSendInqMsg } from "../../utils/functions";
+import { setTimeout, checkSendInqMsg, getParty } from "../../utils/functions";
 import socket from "../../../SBOSOCKET";
 import { data, registerWhen } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
-import { getParty } from "../../../SBOPF/Main/PartyFinder";
 
 let playerIsMuted = false;
 let sendPing = false;

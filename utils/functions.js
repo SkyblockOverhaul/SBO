@@ -1064,3 +1064,17 @@ export function calcTotalProfit(item, amount) {
     }
     return totalProfit;
 }
+
+export function getParty() {
+    return party;
+}
+
+let party = [];
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    party = [];
+    Object.keys(partyInfo).forEach(key => {
+        if (key != Player.getUUID()) {
+            party.push(key);
+        }
+    })
+});
