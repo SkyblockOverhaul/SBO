@@ -10,8 +10,6 @@ function sendInqPingSocket() {
     let party = getParty();
     if (party.length == 0) return;
     sendPing = false;
-    let serverId = TabList.getNames().find((line) => line.startsWith(' Server:'));
-    print(serverId.substring(serverId.lastIndexOf(' ') + 1))
     socket.send("inqPing", { 
         owner: Player.getDisplayName().getText(),
         uuids: party,
