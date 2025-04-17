@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { setTimeout, checkSendInqMsg, getParty } from "../../utils/functions";
+import { setTimeout, checkSendInqMsg } from "../../utils/functions";
 import socket from "../../../SBOSOCKET";
 import { data, registerWhen } from "../../utils/variables";
 import { checkDiana } from "../../utils/checkDiana";
