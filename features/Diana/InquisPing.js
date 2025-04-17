@@ -11,7 +11,6 @@ function sendInqPingSocket() {
     if (party.length == 0) return;
     sendPing = false;
     let serverId = TabList.getNames().find(tab => tab.includes("Server:")).split("Server: ")[1].split(" ")[0].removeFormatting();
-    print(serverId);
     socket.send("inqPing", { 
         owner: Player.getDisplayName().getText(),
         uuids: party,
