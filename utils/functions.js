@@ -1072,7 +1072,6 @@ export function getParty() {
 let party = [];
 HypixelModAPI.on("partyInfo", (partyInfo) => {
     party = [];
-    print("party")
     Object.keys(partyInfo).forEach(key => {
         if (key != Player.getUUID()) {
             party.push(key);
