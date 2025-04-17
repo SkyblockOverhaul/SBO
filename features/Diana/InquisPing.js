@@ -10,6 +10,8 @@ function sendInqPingSocket() {
     let party = getParty();
     if (party.length == 0) return;
     sendPing = false;
+    let serverId = TabList.getNames().find(tab => tab.includes("Server:")).split("Server: ")[1].split(" ")[0].removeFormatting();
+    print(serverId);
     socket.send("inqPing", { 
         owner: Player.getDisplayName().getText(),
         uuids: party,
@@ -17,7 +19,8 @@ function sendInqPingSocket() {
             x: Math.round(Player.getX()),
             y: Math.round(Player.getY()),
             z: Math.round(Player.getZ())
-        }
+        },
+        server: serverId,
     });
     ChatLib.chat("&6[SBO] &eInquisitor Ping Sent per Server!");
 }
