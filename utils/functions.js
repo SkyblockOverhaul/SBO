@@ -2,6 +2,7 @@ import { request } from "../../requestV2";
 import settings, { getcustomSounds } from "../settings";
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
 import { getWorld } from "./world";
+import { HypixelModAPI } from "../../HypixelModAPI";
 
 /**
  * @param {number} x - x coordinate
@@ -1063,3 +1064,18 @@ export function calcTotalProfit(item, amount) {
     }
     return totalProfit;
 }
+
+export function getParty() {
+    return party;
+}
+
+let party = [];
+HypixelModAPI.on("partyInfo", (partyInfo) => {
+    party = [];
+    print("party")
+    Object.keys(partyInfo).forEach(key => {
+        if (key != Player.getUUID()) {
+            party.push(key);
+        }
+    })
+});

@@ -9,6 +9,7 @@ import { dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSessio
 import { checkDiana } from "../../utils/checkDiana";
 import { trackSinceMob, unlockAchievement, trackAchievementsItem, achievementItems, trackMagicFind } from "./DianaAchievements";
 import { getDateMayorElected, getSkyblockDate } from "../../utils/mayor";
+import { onInqSpawn } from "./InquisPing";
 
 // todo: 
 // todo end
@@ -299,22 +300,7 @@ registerWhen(register("chat", (woah, arev, mob, skytils, event) => {
     if (isDataLoaded() && isInSkyblock()) {
         switch (mob) {
             case "Minos Inquisitor":
-                let since = data.mobsSinceInq;
-                if (settings.inquisDetect) {
-                    ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
-                    if (settings.inquisDetectCopy) {
-                        ChatLib.command("ct copy x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
-                    }
-                }
-                if (settings.announceKilltext !== "") {
-                    setTimeout(function () {
-                        let [send, text] = checkSendInqMsg(since);
-                        if (send) {
-                            ChatLib.command("pc " + text);
-                        }
-                    }, 5000);
-                }
-
+                onInqSpawn();
                 data.inqsSinceChim += 1;
                 trackItem(mob, "mobs", 1);
 

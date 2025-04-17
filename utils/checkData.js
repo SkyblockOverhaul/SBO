@@ -3,6 +3,7 @@ import { initializeGuiSettings, getDianaStats } from "./functions";
 import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents, setListener } from "./variables";
 import settings from "../settings";
 import { unlockAchievement, trackWithCheckPlayer } from "../features/Diana/DianaAchievements";
+import { HypixelModAPI } from "../../HypixelModAPI";
 
 // check if data is loaded and time is set //
 export let trackerFileLocation  = "./dianaTracker";
@@ -29,6 +30,7 @@ let dataLoadReg = register("step", () => {
             }
         });
         setListener();
+        HypixelModAPI.requestPartyInfo();
         dataLoadReg.unregister();
     }
 }).setFps(1);
