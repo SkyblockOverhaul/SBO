@@ -40,7 +40,7 @@ registerWhen(register("chat", (trash, expire) => {
 export function onInqSpawn() {
     let since = data.mobsSinceInq;
     if (settings.inquisDetectCopy) {
-        ChatLib.command("ct copy x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+        ChatLib.command("ct copy x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()), true);
     }
 
     if (settings.inquisDetect) {
@@ -61,3 +61,15 @@ export function onInqSpawn() {
         }, 5000);
     }
 }
+
+register("command", () => {
+    playerIsMuted = true;
+    if (settings.inquisDetect) {
+        if (!playerIsMuted) {
+            ChatLib.command("pc x: " + Math.round(Player.getLastX()) + ", " + "y: " + Math.round(Player.getLastY()) + ", " + "z: " + Math.round(Player.getLastZ()));
+            sendPing = true;
+        } else {
+            sendInqPingSocket();
+        }
+    }
+}).setName("sbotestsocketinqping");
