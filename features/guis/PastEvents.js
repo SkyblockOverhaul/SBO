@@ -16,11 +16,10 @@ pastEventsRegisters.onOpen(() => {
 
 function processDianaEvents() {
     let events = pastDianaEvents.events;
-    if (events.length === 0) {
-        return [];
-    }
-    return [...events].reverse();
+    if (events.length === 0) return [];
+    return [...events].map((event, index) => ({ ...event, originalIndex: index })).reverse();
 }
+
 
 // === MAIN GUI ===
 function initMainUI() {
@@ -128,7 +127,8 @@ function initMainUI() {
         );
         GuiHandler.addHoverEffect(deleteButton.Object, [0, 0, 0, 0]);
         deleteButton.setOnClick(() => {
-            openDeleteConfirmation(i);
+            let originalIndex = event.originalIndex;
+            openDeleteConfirmation(originalIndex);
             return true;
         });
     }
@@ -519,8 +519,7 @@ function openDeleteConfirmation(eventIndex) {
     );
     GuiHandler.addHoverEffect(yesButton.Object, [0, 200, 0, 255]);
     yesButton.setOnClick(() => {
-        let originalIndex = pastDianaEvents.events.length - 1 - eventIndex;
-        pastDianaEvents.events.splice(originalIndex, 1);
+        pastDianaEvents.events.splice(eventIndex, 1);
         deleteCtGui.close();
         pastDianaEvents.save();
         initMainUI();

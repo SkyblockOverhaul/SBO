@@ -40,6 +40,7 @@ const commands = [
     {cmd: "sbopde", description: "Opens the Past Diana Events GUI"},
     {cmd: "sboactiveuser", description: "Shows the active user of the mod"},
     {cmd: "sbopf", description: "Opens the PartyFinder GUI"},
+    {cmd: "sbosocket", description: "Shows socket help/commands"},
     {cmd: "sbopartycommands", description: "Displays all diana partycommands"},
     {cmd: "sboresetavgmftracker", description: "Resets the avg mf tracker"},
     {cmd: "sboresetstatstracker", description: "Resets the stats tracker"},
@@ -47,6 +48,7 @@ const commands = [
 
 const changelog = [
     {header: "Added", description: "Muted player support (inquis Pings only for now)"},
+    {header: "Fixed", description: "Past Diana events delete button deleting the wrong event"},
 ];
 
 register("command", (args1, ...args) => {
@@ -74,7 +76,7 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-const newVersion = "0.5.0" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.5.2" // hier neue version eintragen wenn changelog angezeigt werden soll
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
