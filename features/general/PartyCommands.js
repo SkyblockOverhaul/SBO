@@ -102,9 +102,9 @@ register("chat", (player, message) => {
                         ChatLib.command("p transfer " + message[1])
                     },100)
             }
-            else if(settings.PartyCommands && settings.TransferCommand && Player.getName() != getplayername(player)) {
+            else if(settings.PartyCommands && settings.TransferCommand && Player.getName() != playername) {
                 setTimeout(() => {
-                    ChatLib.command("p transfer " + getplayername(player))
+                    ChatLib.command("p transfer " + playername)
                 },100)
             }
             break;
@@ -114,10 +114,10 @@ register("chat", (player, message) => {
                 setTimeout(() => {
                     ChatLib.command("p " + message[0].slice(1) + " " + message[1])
                 },100)
-                }
-            else if (settings.PartyCommands && settings.MoteCommand && getplayername(player)!=Player.getName()) {
+            }
+            else if (settings.PartyCommands && settings.MoteCommand && Player.getName() != playername) {
                 setTimeout(() => {
-                    ChatLib.command("p " + message[0].slice(1) + " " + getplayername(player))
+                    ChatLib.command("p " + message[0].slice(1) + " " + playername)
                 },100)
             }
             break;
