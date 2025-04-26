@@ -352,7 +352,7 @@ register("chat", (player, message) => {
                 }
             }
     }
-}).setCriteria("&r&9Party &8> ${player}&f: &r${message}&r")
+}).setCriteria("&r&9Party &8> ${player}&r${message}&r")
 
 register("command", (magicFindArg, lootingArg) => {
     if (!magicFindArg || !lootingArg) {
@@ -463,4 +463,4 @@ register("chat", (rank, player, playtime, profit, profitHr, burrow, burrowPerHou
     ].join("\n");
     ChatLib.chat(statsMessage)
     cancel(event);
-}).setCriteria("&r&9Party&8> ${rank} ${player}&f: &rPlaytime: ${playtime} - Profit: ${profit} - ${profitHr} - Burrows: ${burrow} (${burrowPerHour}/h) - Mobs Spawned: ${mobs} (${mobsPerHour}/h) - Inquisitors: ${inquis} (${inqPercentage}) - Loot Shared Inqs: ${lsInq} - Chimeras: ${chimeraDrops} (${chimeraDropRate}) - LS: ${chimeraLSDrops} (${chimeraLSDropRate}) - Daedalus Sticks: ${sticksDropped} ${sticksDropRate} - Minos Relics: ${relicsDropped} ${relicsDropRate}&r");
+}).setCriteria("&r&9Party &8> ${rank} ${player}&f: &rPlaytime: ${playtime} - Profit: ${profit} - ${profitHr} - Burrows: ${burrow} (${burrowPerHour}/h) - Mobs Spawned: ${mobs} (${mobsPerHour}/h) - Inquisitors: ${inquis} (${inqPercentage}) - Loot Shared Inqs: ${lsInq} - Chimeras: ${chimeraDrops} (${chimeraDropRate}) - LS: ${chimeraLSDrops} (${chimeraLSDropRate}) - Daedalus Sticks: ${sticksDropped} ${sticksDropRate} - Minos Relics: ${relicsDropped} ${relicsDropRate}&r");
