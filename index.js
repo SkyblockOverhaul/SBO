@@ -47,7 +47,6 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Added", description: "Muted player support (inquis Pings only for now)"},
     {header: "Removed", description: "Muted support (caused to many issues)"},
 ];
 
