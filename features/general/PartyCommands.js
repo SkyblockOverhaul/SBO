@@ -71,7 +71,8 @@ register("command", (args1, args2, ...args) => {
 }).setName("sbopartyblacklist")
 
 register("chat", (player, message) => {
-    message = message.split(" ");
+    message=message.removeFormatting()
+    message = message.split(" ")
     let playername = getplayername(player)
     if (data.partyBlacklist.includes(playername.toLowerCase())) return;
     let args1 = message[1] ? message[1].toLowerCase() : undefined;
