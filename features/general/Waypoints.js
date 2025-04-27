@@ -1,5 +1,4 @@
 import renderBeaconBeam from "../../../BeaconBeam/index";
-import socket from "../../../SBOSOCKET";
 import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { Keybind } from "../../../KeybindFix"
@@ -633,17 +632,3 @@ function componentToHex(c) {
     let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
-
-socket.addEvent("inqPing")
-socket.on("inqPing", (d) => {
-    const data = d.data;
-    if (!data.coords || !data.owner) return;
-    if (settings.inqWaypoints && checkDiana()) {
-        let serverId = TabList.getNames().find(tab => tab.includes("Server:")).split("Server: ")[1].split(" ")[0].removeFormatting();
-        if (data.server != serverId) return;
-        if (data.owner != data.displayName.split(" ")[1].removeFormatting()) return;
-        inqWaypoints.push([data.displayName, data.coords.x, data.coords.y, data.coords.z, closestWarpString(data.coords.x, data.coords.y, data.coords.z), Date.now()]);
-        playCustomSound(settings.inqSound, settings.inqVolume);
-        Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, data.displayName, 0, 90, 20);
-    }
-})

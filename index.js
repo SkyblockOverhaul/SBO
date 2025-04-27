@@ -47,8 +47,7 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Added", description: "Muted player support (inquis Pings only for now)"},
-    {header: "Fixed", description: "Past Diana events delete button deleting the wrong event"},
+    {header: "Removed", description: "Muted support (caused to many issues)"},
 ];
 
 register("command", (args1, ...args) => {
