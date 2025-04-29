@@ -1,6 +1,6 @@
 import GuiHandler from "./GuiHandler";
 import HandleGui from "../../../DocGuiLib/core/Gui";
-import { UIBlock, UIText, UIWrappedText, OutlineEffect, CenterConstraint } from "../../../Elementa";
+import { UIBlock, UIText, UIWrappedText, OutlineEffect, CenterConstraint, SiblingConstraint } from "../../../Elementa";
 import { pastDianaEvents, dianaTrackerTotal } from "../../utils/variables";
 import { calcTotalProfit, formatNumber, formatTime, toTitleCase } from "../../utils/functions";
 
@@ -209,6 +209,52 @@ detailsRegisters.onClose(() => {
     detailsWindow.clearChildren();
 });
 
+function getPercentageDict(obj) {
+    return {
+        "Griffin Feather": [true, obj.items["Total Burrows"]],
+        "Crown of Greed": [true, obj.items["Total Burrows"]],
+        "Washed-up Souvenir": [true, obj.items["Total Burrows"]],
+        "Chimera": [true, obj.mobs["Minos Inquisitor"]],
+        "ChimeraLs": [true, obj.mobs["Minos Inquisitor Ls"]],
+        "Daedalus Stick": [true, obj.mobs["Minotaur"]],
+        "DWARF_TURTLE_SHELMET": [true, obj.mobs["TotalMobs"]],
+        "CROCHET_TIGER_PLUSHIE": [true, obj.mobs["TotalMobs"]],
+        "ANTIQUE_REMEDIES": [true, obj.mobs["TotalMobs"]],
+        "ENCHANTED_ANCIENT_CLAW": [false, ""],
+        "ANCIENT_CLAW": [false, ""],
+        "MINOS_RELIC": [true, obj.mobs["Minos Champion"]],
+        "ENCHANTED_GOLD": [false, ""],
+        "ENCHANTED_IRON": [false, ""],
+        "coins": [false, ""],
+        "Total Burrows": [false, ""],
+        "scavengerCoins": [false, ""],
+        "fishCoins": [false, ""],
+        "mayorTime": [false, ""],
+
+        "Minos Inquisitor": [true, obj.mobs["TotalMobs"]],
+        "Minos Inquisitor Ls": [true, obj.mobs["TotalMobs"]],
+        "Minos Champion": [true, obj.mobs["TotalMobs"]],
+        "Minotaur": [true, obj.mobs["TotalMobs"]],
+        "Gaia Construct": [true, obj.mobs["TotalMobs"]],
+        "Siamese Lynxes": [true, obj.mobs["TotalMobs"]],
+        "Minos Hunter": [true, obj.mobs["TotalMobs"]],
+        "TotalMobs": [false, ""],
+    };
+}
+
+function getOrderedMob(obj) {
+    return {
+        "Minos Inquisitor": obj.mobs["Minos Inquisitor"],
+        "Minos Inquisitor Ls": obj.mobs["Minos Inquisitor Ls"],
+        "Minos Champion": obj.mobs["Minos Champion"],
+        "Minotaur": obj.mobs["Minotaur"],
+        "Gaia Construct": obj.mobs["Gaia Construct"],
+        "Siamese Lynxes": obj.mobs["Siamese Lynxes"],
+        "Minos Hunter": obj.mobs["Minos Hunter"],
+        "TotalMobs": obj.mobs["TotalMobs"]
+    };
+}
+
 function showFullEventDetails(eventData, totalProfit) {
     detailsWindow.clearChildren();
     GuiHandler.myComponentList = [];
@@ -296,18 +342,30 @@ function showFullEventDetails(eventData, totalProfit) {
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
+    const hasPercentage = getPercentageDict(eventData);
+    
     for (let key in eventData.items) {
         let itemName = key.replaceAll("_", " ");
         itemName = toTitleCase(itemName);
         itemName = replaceNames(itemName);
         let amount = replaceKey(itemName, eventData.items[key]);
-        new UIText(itemName + ": " + amount)
-            .setX((2).percent())
-            .setY((itemsY).percent())
-            .setColor(GuiHandler.Color([0, 255, 0, 255]))
-            .setChildOf(itemsContainer);
-        itemsY += lineHeight;
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (amount / hasPercentage[key][1]) * 100;
+            new UIText(itemName + ": " + amount)
+                .setX((2).percent())
+                .setY((itemsY).percent())
+                .setColor(GuiHandler.Color([0, 255, 0, 255]))
+                .setChildOf(itemsContainer);
+            
+            new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+                .setX((new SiblingConstraint(1)))
+                .setY((itemsY).percent())
+                .setColor(GuiHandler.Color([255, 0, 0, 255]))
+                .setChildOf(itemsContainer);
+
+            itemsY += lineHeight;
     }
+
     new UIText("Total Profit: " + formatNumber(totalProfit))
         .setX((2).percent())
         .setY((itemsY).percent())
@@ -320,18 +378,29 @@ function showFullEventDetails(eventData, totalProfit) {
         .setY((mobsY).percent())
         .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(mobsContainer);
+
     mobsY += lineHeight;
 
-    for (let key in eventData.mobs) {
+    let orderedMob = getOrderedMob(eventData);
+    for (let key in orderedMob) {
         let mobName = key.replaceAll("_", " ");
         mobName = toTitleCase(mobName);
         mobName = replaceNames(mobName);
         let amount = replaceKey(mobName, eventData.mobs[key]);
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (amount / hasPercentage[key][1]) * 100;
         new UIText(mobName + ": " + amount)
             .setX((2).percent())
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(mobsContainer);
+        
+        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+            .setX((new SiblingConstraint(1)))
+            .setY((mobsY).percent())
+            .setColor(GuiHandler.Color([255, 0, 0, 255]))
+            .setChildOf(mobsContainer);
+
         mobsY += lineHeight;
     }
 
@@ -431,16 +500,27 @@ function showTotalOverview() {
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
+    const hasPercentage = getPercentageDict(dianaTrackerTotal);
+
     for (let key in dianaTrackerTotal.items) {
         let itemName = key.replaceAll("_", " ");
         itemName = toTitleCase(itemName);
         itemName = replaceNames(itemName);
         let amount = replaceKey(itemName, dianaTrackerTotal.items[key]);
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
         new UIText(itemName + ": " + amount)
             .setX((2).percent())
             .setY((itemsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(itemsContainer);
+
+        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+            .setX((new SiblingConstraint(1)))
+            .setY((itemsY).percent())
+            .setColor(GuiHandler.Color([255, 0, 0, 255]))
+            .setChildOf(itemsContainer);
+            
         itemsY += lineHeight;
     }
     new UIText("Total Profit: " + formatNumber(totalProfit))
@@ -456,16 +536,28 @@ function showTotalOverview() {
         .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(mobsContainer);
     mobsY += lineHeight;
-    for (let key in dianaTrackerTotal.mobs) {
+
+    let orderedMob = getOrderedMob(dianaTrackerTotal);
+
+    for (let key in orderedMob) {
         let mobName = key.replaceAll("_", " ");
         mobName = toTitleCase(mobName);
-        mobName = replaceNames(mobName)
+        mobName = replaceNames(mobName);
         let amount = replaceKey(mobName, dianaTrackerTotal.mobs[key]);
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.mobs[key] / hasPercentage[key][1]) * 100;
         new UIText(mobName + ": " + amount)
             .setX((2).percent())
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(mobsContainer);
+
+        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+            .setX((new SiblingConstraint(1)))
+            .setY((mobsY).percent())
+            .setColor(GuiHandler.Color([255, 0, 0, 255]))
+            .setChildOf(mobsContainer);
+
         mobsY += lineHeight;
     }
 
