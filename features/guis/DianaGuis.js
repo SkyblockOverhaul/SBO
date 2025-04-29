@@ -89,9 +89,9 @@ let dianaAvgMagicFindOverlay = new SboOverlay("dianaAvgMagicFind", "dianaAvgMagi
 let dianaAvgMagicFindText = new OverlayTextLine("", true);
 
 export function avgMagicFindOverlay() {
-    let message = `${YELLOW}${BOLD}Diana Magic Find ${GRAY}(${YELLOW}${BOLD}Avg${GRAY})
-${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${data.avgChimMagicFind}%
-${GRAY}- ${GOLD}Sticks: ${AQUA}${data.avgStickMagicFind}%`
+    let message = `${YELLOW}${BOLD}Diana Magic Find
+${GRAY}- ${LIGHT_PURPLE}Chimera: ${AQUA}${data.highestChimMagicFind}%
+${GRAY}- ${GOLD}Sticks: ${AQUA}${data.highestStickMagicFind}%`
     dianaAvgMagicFindOverlay.setLines([dianaAvgMagicFindText.setText(message)]);
 }
 

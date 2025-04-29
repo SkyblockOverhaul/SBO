@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout, formatNumber } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor } from "../../utils/variables";
 
@@ -227,6 +227,14 @@ register("chat", (player, message) => {
                 }, 200)
             }
             break
+        case "!coins":
+        case "!coin":
+            if(!settings.dianaPartyCommands) break;
+            if (settings.dianaTracker) {
+                setTimeout(() => {
+                    ChatLib.command("pc Coins: " + formatNumber(dianaTrackerMayor["items"]["coins"]))
+                }, 200)
+            }
         case "!mob":
         case "!mobs":
             if (settings.dianaTracker && settings.dianaPartyCommands) {
@@ -238,9 +246,9 @@ register("chat", (player, message) => {
             break
         case "!mf":
         case "!magicfind":
-            if (!settings.dianaAvgMagicFind && settings.dianaPartyCommands) break
+            if (!settings.dianaPartyCommands) break
             setTimeout(() => {
-                ChatLib.command(`pc Chims (${data.avgChimMagicFind}% ✯) Sticks (${data.avgStickMagicFind}% ✯)`)
+                ChatLib.command(`pc Chims (${data.highestChimMagicFind}% ✯) Sticks (${data.highestStickMagicFind}% ✯)`)
             }, 200)
             break
         case "!since":
