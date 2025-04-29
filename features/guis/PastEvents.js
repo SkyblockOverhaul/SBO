@@ -209,6 +209,52 @@ detailsRegisters.onClose(() => {
     detailsWindow.clearChildren();
 });
 
+function getPercentageDict(obj) {
+    return {
+        "Griffin Feather": [true, obj.items["Total Burrows"]],
+        "Crown of Greed": [true, obj.items["Total Burrows"]],
+        "Washed-up Souvenir": [true, obj.items["Total Burrows"]],
+        "Chimera": [true, obj.mobs["Minos Inquisitor"]],
+        "ChimeraLs": [true, obj.mobs["Minos Inquisitor Ls"]],
+        "Daedalus Stick": [true, obj.mobs["Minotaur"]],
+        "DWARF_TURTLE_SHELMET": [true, obj.mobs["TotalMobs"]],
+        "CROCHET_TIGER_PLUSHIE": [true, obj.mobs["TotalMobs"]],
+        "ANTIQUE_REMEDIES": [true, obj.mobs["TotalMobs"]],
+        "ENCHANTED_ANCIENT_CLAW": [false, ""],
+        "ANCIENT_CLAW": [false, ""],
+        "MINOS_RELIC": [true, obj.mobs["Minos Champion"]],
+        "ENCHANTED_GOLD": [false, ""],
+        "ENCHANTED_IRON": [false, ""],
+        "coins": [false, ""],
+        "Total Burrows": [false, ""],
+        "scavengerCoins": [false, ""],
+        "fishCoins": [false, ""],
+        "mayorTime": [false, ""],
+
+        "Minos Inquisitor": [true, obj.mobs["TotalMobs"]],
+        "Minos Inquisitor Ls": [true, obj.mobs["TotalMobs"]],
+        "Minos Champion": [true, obj.mobs["TotalMobs"]],
+        "Minotaur": [true, obj.mobs["TotalMobs"]],
+        "Gaia Construct": [true, obj.mobs["TotalMobs"]],
+        "Siamese Lynxes": [true, obj.mobs["TotalMobs"]],
+        "Minos Hunter": [true, obj.mobs["TotalMobs"]],
+        "TotalMobs": [false, ""],
+    };
+}
+
+function getOrderedMob(obj) {
+    return {
+        "Minos Inquisitor": obj.mobs["Minos Inquisitor"],
+        "Minos Inquisitor Ls": obj.mobs["Minos Inquisitor Ls"],
+        "Minos Champion": obj.mobs["Minos Champion"],
+        "Minotaur": obj.mobs["Minotaur"],
+        "Gaia Construct": obj.mobs["Gaia Construct"],
+        "Siamese Lynxes": obj.mobs["Siamese Lynxes"],
+        "Minos Hunter": obj.mobs["Minos Hunter"],
+        "TotalMobs": obj.mobs["TotalMobs"]
+    };
+}
+
 function showFullEventDetails(eventData, totalProfit) {
     detailsWindow.clearChildren();
     GuiHandler.myComponentList = [];
@@ -296,36 +342,7 @@ function showFullEventDetails(eventData, totalProfit) {
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
-    const hasPercentage = {
-        "Griffin Feather": [true, eventData.items["Total Burrows"]],
-        "Crown of Greed": [true, eventData.items["Total Burrows"]],
-        "Washed-up Souvenir": [true, eventData.items["Total Burrows"]],
-        "Chimera": [true, eventData.mobs["Minos Inquisitor"]],
-        "ChimeraLs": [true, eventData.mobs["Minos Inquisitor Ls"]],
-        "Daedalus Stick": [true, eventData.mobs["Minotaur"]],
-        "DWARF_TURTLE_SHELMET": [true, eventData.mobs["TotalMobs"]],
-        "CROCHET_TIGER_PLUSHIE": [true, eventData.mobs["TotalMobs"]],
-        "ANTIQUE_REMEDIES": [true, eventData.mobs["TotalMobs"]],
-        "ENCHANTED_ANCIENT_CLAW": [false, ""],
-        "ANCIENT_CLAW": [false, ""],
-        "MINOS_RELIC": [true, eventData.mobs["Minos Champion"]],
-        "ENCHANTED_GOLD": [false, ""],
-        "ENCHANTED_IRON": [false, ""],
-        "coins": [false, ""],
-        "Total Burrows": [false, ""],
-        "scavengerCoins": [false, ""],
-        "fishCoins": [false, ""],
-        "mayorTime": [false, ""],
-
-        "Minos Inquisitor": [true, eventData.mobs["TotalMobs"]],
-        "Minos Inquisitor Ls": [true, eventData.mobs["TotalMobs"]],
-        "Minos Champion": [true, eventData.mobs["TotalMobs"]],
-        "Minotaur": [true, eventData.mobs["TotalMobs"]],
-        "Gaia Construct": [true, eventData.mobs["TotalMobs"]],
-        "Siamese Lynxes": [true, eventData.mobs["TotalMobs"]],
-        "Minos Hunter": [true, eventData.mobs["TotalMobs"]],
-        "TotalMobs": [false, ""],
-    };
+    const hasPercentage = getPercentageDict(eventData);
     
     for (let key in eventData.items) {
         let itemName = key.replaceAll("_", " ");
@@ -364,16 +381,7 @@ function showFullEventDetails(eventData, totalProfit) {
 
     mobsY += lineHeight;
 
-    let orderedMob = {
-        "Minos Inquisitor": eventData.mobs["Minos Inquisitor"],
-        "Minos Inquisitor Ls": eventData.mobs["Minos Inquisitor Ls"],
-        "Minos Champion": eventData.mobs["Minos Champion"],
-        "Minotaur": eventData.mobs["Minotaur"],
-        "Gaia Construct": eventData.mobs["Gaia Construct"],
-        "Siamese Lynxes": eventData.mobs["Siamese Lynxes"],
-        "Minos Hunter": eventData.mobs["Minos Hunter"],
-        "TotalMobs": eventData.mobs["TotalMobs"]
-    }
+    let orderedMob = getOrderedMob(eventData);
     for (let key in orderedMob) {
         let mobName = key.replaceAll("_", " ");
         mobName = toTitleCase(mobName);
@@ -492,36 +500,7 @@ function showTotalOverview() {
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
-    const hasPercentage = {
-        "Griffin Feather": [true, dianaTrackerTotal.items["Total Burrows"]],
-        "Crown of Greed": [true, dianaTrackerTotal.items["Total Burrows"]],
-        "Washed-up Souvenir": [true, dianaTrackerTotal.items["Total Burrows"]],
-        "Chimera": [true, dianaTrackerTotal.mobs["Minos Inquisitor"]],
-        "ChimeraLs": [true, dianaTrackerTotal.mobs["Minos Inquisitor Ls"]],
-        "Daedalus Stick": [true, dianaTrackerTotal.mobs["Minotaur"]],
-        "DWARF_TURTLE_SHELMET": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "CROCHET_TIGER_PLUSHIE": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "ANTIQUE_REMEDIES": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "ENCHANTED_ANCIENT_CLAW": [false, ""],
-        "ANCIENT_CLAW": [false, ""],
-        "MINOS_RELIC": [true, dianaTrackerTotal.mobs["Minos Champion"]],
-        "ENCHANTED_GOLD": [false, ""],
-        "ENCHANTED_IRON": [false, ""],
-        "coins": [false, ""],
-        "Total Burrows": [false, ""],
-        "scavengerCoins": [false, ""],
-        "fishCoins": [false, ""],
-        "totalTime": [false, ""],
-
-        "Minos Inquisitor": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "Minos Inquisitor Ls": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "Minos Champion": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "Minotaur": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "Gaia Construct": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "Siamese Lynxes": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "Minos Hunter": [true, dianaTrackerTotal.mobs["TotalMobs"]],
-        "TotalMobs": [false, ""],
-    };
+    const hasPercentage = getPercentageDict(dianaTrackerTotal);
 
     for (let key in dianaTrackerTotal.items) {
         let itemName = key.replaceAll("_", " ");
@@ -558,16 +537,7 @@ function showTotalOverview() {
         .setChildOf(mobsContainer);
     mobsY += lineHeight;
 
-    let orderedMob = {
-        "Minos Inquisitor": dianaTrackerTotal.mobs["Minos Inquisitor"],
-        "Minos Inquisitor Ls": dianaTrackerTotal.mobs["Minos Inquisitor Ls"],
-        "Minos Champion": dianaTrackerTotal.mobs["Minos Champion"],
-        "Minotaur": dianaTrackerTotal.mobs["Minotaur"],
-        "Gaia Construct": dianaTrackerTotal.mobs["Gaia Construct"],
-        "Siamese Lynxes": dianaTrackerTotal.mobs["Siamese Lynxes"],
-        "Minos Hunter": dianaTrackerTotal.mobs["Minos Hunter"],
-        "TotalMobs": dianaTrackerTotal.mobs["TotalMobs"]
-    }
+    let orderedMob = getOrderedMob(dianaTrackerTotal);
 
     for (let key in orderedMob) {
         let mobName = key.replaceAll("_", " ");
