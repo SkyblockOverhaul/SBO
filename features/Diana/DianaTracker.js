@@ -420,6 +420,9 @@ registerWhen(register("chat", (drop, event) => {
                         data.b2bChim = true;
                         unlockAchievement(1) // b2b chim
                     }
+                    if (data.b2bChim && data.b2bInq) {
+                        unlockAchievement(75) // b2b chim from b2b inq
+                    }
 
                     data.inqsSinceChim = 0;
                 }

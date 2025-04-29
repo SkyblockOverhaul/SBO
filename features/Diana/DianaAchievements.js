@@ -132,7 +132,6 @@ new Achievement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12);
 new Achievement(11, "Chimera VI", "Get 32 Chimera in one event", "Divine", 9, 2); 
 
 new Achievement(13, "First lootshare Chimera", "Lootshare your first Chimera", "Legendary");
-// new Achievement(75, "Back-to-Back Chimera Ls", "Lootshare 2 Chimera in a row", "Legendary");
 new Achievement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Divine", 13);
 
 new Achievement(14, "First Stick", "Get your first Stick", "Uncommon");
@@ -211,8 +210,11 @@ new Achievement(69, "Burrow Enthusiast", "Get 360 burrows/hour (5h playtime)", "
 new Achievement(70, "Shovel Expert", "Get 420 burrows/hour (5h playtime)", "Legendary", 69, 2);
 new Achievement(71, "Burrow Maniac", "Get 480 burrows/hour (5h playtime)", "Divine", 70, 3);
 new Achievement(72, "Nice macro!", "Get 550 burrows/hour (5h playtime)", "Impossible", 71, 4, true);
+
 new Achievement(73, "Can I craft a Chimera sword now?", "Get 1 stick & 2 chimeras in 1 event", "Epic");
 new Achievement(74, "Can I craft a Relic sword now?", "Get 1 stick & 2 relics in 1 event", "Legendary");
+
+new Achievement(75, "b2b king", "Get b2b chimera from b2b inquisitor", "Impossible", false, 1, true);
 
 // new Achievement(73, "Runic Fortune", "Get a Chimera from a Runic Inquisitor", "Legendary");
 
