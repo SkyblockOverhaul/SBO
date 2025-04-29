@@ -296,17 +296,50 @@ function showFullEventDetails(eventData, totalProfit) {
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
+    const hasPercentage = {
+        "Griffin Feather": [true, eventData.items["Total Burrows"]],
+        "Crown of Greed": [true, eventData.items["Total Burrows"]],
+        "Washed-up Souvenir": [true, eventData.items["Total Burrows"]],
+        "Chimera": [true, eventData.mobs["Minos Inquisitor"]],
+        "ChimeraLs": [true, eventData.mobs["Minos Inquisitor Ls"]],
+        "Daedalus Stick": [true, eventData.mobs["Minotaur"]],
+        "DWARF_TURTLE_SHELMET": [true, eventData.mobs["TotalMobs"]],
+        "CROCHET_TIGER_PLUSHIE": [true, eventData.mobs["TotalMobs"]],
+        "ANTIQUE_REMEDIES": [true, eventData.mobs["TotalMobs"]],
+        "ENCHANTED_ANCIENT_CLAW": [false, ""],
+        "ANCIENT_CLAW": [false, ""],
+        "MINOS_RELIC": [true, eventData.mobs["Minos Champion"]],
+        "ENCHANTED_GOLD": [false, ""],
+        "ENCHANTED_IRON": [false, ""],
+        "coins": [false, ""],
+        "Total Burrows": [false, ""],
+        "scavengerCoins": [false, ""],
+        "fishCoins": [false, ""],
+        "mayorTime": [false, ""],
+
+        "Minos Inquisitor": [true, eventData.mobs["TotalMobs"]],
+        "Minos Inquisitor Ls": [true, eventData.mobs["TotalMobs"]],
+        "Minos Champion": [true, eventData.mobs["TotalMobs"]],
+        "Minotaur": [true, eventData.mobs["TotalMobs"]],
+        "Gaia Construct": [true, eventData.mobs["TotalMobs"]],
+        "Siamese Lynxes": [true, eventData.mobs["TotalMobs"]],
+        "Minos Hunter": [true, eventData.mobs["TotalMobs"]],
+        "TotalMobs": [false, ""],
+    };
+    
     for (let key in eventData.items) {
         let itemName = key.replaceAll("_", " ");
         itemName = toTitleCase(itemName);
         itemName = replaceNames(itemName);
         let amount = replaceKey(itemName, eventData.items[key]);
-        new UIText(itemName + ": " + amount)
-            .setX((2).percent())
-            .setY((itemsY).percent())
-            .setColor(GuiHandler.Color([0, 255, 0, 255]))
-            .setChildOf(itemsContainer);
-        itemsY += lineHeight;
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
+            new UIText(itemName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+                .setX((2).percent())
+                .setY((itemsY).percent())
+                .setColor(GuiHandler.Color([0, 255, 0, 255]))
+                .setChildOf(itemsContainer);
+            itemsY += lineHeight;
     }
     new UIText("Total Profit: " + formatNumber(totalProfit))
         .setX((2).percent())
@@ -322,12 +355,24 @@ function showFullEventDetails(eventData, totalProfit) {
         .setChildOf(mobsContainer);
     mobsY += lineHeight;
 
-    for (let key in eventData.mobs) {
+    let orderedMob = {
+        "Minos Inquisitor": eventData.mobs["Minos Inquisitor"],
+        "Minos Inquisitor Ls": eventData.mobs["Minos Inquisitor Ls"],
+        "Minos Champion": eventData.mobs["Minos Champion"],
+        "Minotaur": eventData.mobs["Minotaur"],
+        "Gaia Construct": eventData.mobs["Gaia Construct"],
+        "Siamese Lynxes": eventData.mobs["Siamese Lynxes"],
+        "Minos Hunter": eventData.mobs["Minos Hunter"],
+        "TotalMobs": eventData.mobs["TotalMobs"]
+    }
+    for (let key in orderedMob) {
         let mobName = key.replaceAll("_", " ");
         mobName = toTitleCase(mobName);
         mobName = replaceNames(mobName);
         let amount = replaceKey(mobName, eventData.mobs[key]);
-        new UIText(mobName + ": " + amount)
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
+        new UIText(mobName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
             .setX((2).percent())
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
@@ -431,12 +476,45 @@ function showTotalOverview() {
         .setChildOf(itemsContainer);
     itemsY += lineHeight;
 
+    const hasPercentage = {
+        "Griffin Feather": [true, dianaTrackerTotal.items["Total Burrows"]],
+        "Crown of Greed": [true, dianaTrackerTotal.items["Total Burrows"]],
+        "Washed-up Souvenir": [true, dianaTrackerTotal.items["Total Burrows"]],
+        "Chimera": [true, dianaTrackerTotal.mobs["Minos Inquisitor"]],
+        "ChimeraLs": [true, dianaTrackerTotal.mobs["Minos Inquisitor Ls"]],
+        "Daedalus Stick": [true, dianaTrackerTotal.mobs["Minotaur"]],
+        "DWARF_TURTLE_SHELMET": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "CROCHET_TIGER_PLUSHIE": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "ANTIQUE_REMEDIES": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "ENCHANTED_ANCIENT_CLAW": [false, ""],
+        "ANCIENT_CLAW": [false, ""],
+        "MINOS_RELIC": [true, dianaTrackerTotal.mobs["Minos Champion"]],
+        "ENCHANTED_GOLD": [false, ""],
+        "ENCHANTED_IRON": [false, ""],
+        "coins": [false, ""],
+        "Total Burrows": [false, ""],
+        "scavengerCoins": [false, ""],
+        "fishCoins": [false, ""],
+        "totalTime": [false, ""],
+
+        "Minos Inquisitor": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "Minos Inquisitor Ls": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "Minos Champion": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "Minotaur": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "Gaia Construct": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "Siamese Lynxes": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "Minos Hunter": [true, dianaTrackerTotal.mobs["TotalMobs"]],
+        "TotalMobs": [false, ""],
+    };
+
     for (let key in dianaTrackerTotal.items) {
         let itemName = key.replaceAll("_", " ");
         itemName = toTitleCase(itemName);
         itemName = replaceNames(itemName);
         let amount = replaceKey(itemName, dianaTrackerTotal.items[key]);
-        new UIText(itemName + ": " + amount)
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
+        new UIText(itemName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
             .setX((2).percent())
             .setY((itemsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
@@ -456,12 +534,26 @@ function showTotalOverview() {
         .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(mobsContainer);
     mobsY += lineHeight;
-    for (let key in dianaTrackerTotal.mobs) {
+
+    let orderedMob = {
+        "Minos Inquisitor": dianaTrackerTotal.mobs["Minos Inquisitor"],
+        "Minos Inquisitor Ls": dianaTrackerTotal.mobs["Minos Inquisitor Ls"],
+        "Minos Champion": dianaTrackerTotal.mobs["Minos Champion"],
+        "Minotaur": dianaTrackerTotal.mobs["Minotaur"],
+        "Gaia Construct": dianaTrackerTotal.mobs["Gaia Construct"],
+        "Siamese Lynxes": dianaTrackerTotal.mobs["Siamese Lynxes"],
+        "Minos Hunter": dianaTrackerTotal.mobs["Minos Hunter"],
+        "TotalMobs": dianaTrackerTotal.mobs["TotalMobs"]
+    }
+
+    for (let key in orderedMob) {
         let mobName = key.replaceAll("_", " ");
         mobName = toTitleCase(mobName);
-        mobName = replaceNames(mobName)
+        mobName = replaceNames(mobName);
         let amount = replaceKey(mobName, dianaTrackerTotal.mobs[key]);
-        new UIText(mobName + ": " + amount)
+        let percentage;
+        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
+        new UIText(mobName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
             .setX((2).percent())
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
