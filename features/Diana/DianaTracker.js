@@ -74,13 +74,11 @@ export function dianaLootCounter(item, amount) {
                             trackItem(item, "items", amount);
                         }
                         if (inquisDeathTrue()) {
-                            if (settings.inquisTracker) {
-                                if (gotLootShare()) {
-                                    trackItem(lsIdsDict[item], "inquis", amount);
-                                }
-                                else {
-                                    trackItem(item, "inquis", amount);
-                                }
+                            if (gotLootShare()) {
+                                trackItem(lsIdsDict[item], "inquis", amount);
+                            }
+                            else {
+                                trackItem(item, "inquis", amount);
                             }
                             announceLootToParty(item);
                         }
