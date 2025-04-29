@@ -405,13 +405,7 @@ registerWhen(register("chat", (drop, event) => {
                     if (magicFind > 0) trackMagicFind(magicFind, true);
                     if (settings.dianaAvgMagicFind) {
                         if (magicFind > 0) {
-                            if (data.last10ChimMagicFind.length >= 10) {
-                                data.last10ChimMagicFind.shift();
-                            }
-                            data.last10ChimMagicFind.push(magicFind);
-                        
-                            let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
-                            data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
+                            if (magicFind > data.highestChimMagicFind) data.highestChimMagicFind = parseInt(magicFind);
                             avgMagicFindOverlay();
                         }
                     }
@@ -452,13 +446,7 @@ registerWhen(register("chat", (drop, event) => {
                     if (magicFind > 0) trackMagicFind(magicFind);
                     if (settings.dianaAvgMagicFind) {
                         if (magicFind > 0) {
-                            if (data.last10StickMagicFind.length >= 10) {
-                                data.last10StickMagicFind.shift();
-                            }
-                            data.last10StickMagicFind.push(magicFind);
-
-                            let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
-                            data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
+                            if (magicFind > data.highestStickMagicFind) data.highestStickMagicFind = parseInt(magicFind);
                             avgMagicFindOverlay();
                         }
                     }
@@ -706,10 +694,8 @@ register("command", () => {
 }).setName("sboimporttrackerundo");
 
 register("command", () => {
-    data.last10ChimMagicFind = [];
-    data.avgChimMagicFind = 0;
-    data.last10StickMagicFind = [];
-    data.avgStickMagicFind = 0;
+    data.highestChimMagicFind = 0;
+    data.highestStickMagicFind = 0;
     data.save();
     avgMagicFindOverlay();
 }).setName("sboresetavgmftracker");

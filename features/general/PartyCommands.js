@@ -246,9 +246,9 @@ register("chat", (player, message) => {
             break
         case "!mf":
         case "!magicfind":
-            if (!settings.dianaAvgMagicFind && settings.dianaPartyCommands) break
+            if (!settings.dianaPartyCommands) break
             setTimeout(() => {
-                ChatLib.command(`pc Chims (${data.avgChimMagicFind}% ✯) Sticks (${data.avgStickMagicFind}% ✯)`)
+                ChatLib.command(`pc Chims (${data.highestChimMagicFind}% ✯) Sticks (${data.highestStickMagicFind}% ✯)`)
             }, 200)
             break
         case "!since":
