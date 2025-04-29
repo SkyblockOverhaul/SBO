@@ -1,6 +1,6 @@
 import GuiHandler from "./GuiHandler";
 import HandleGui from "../../../DocGuiLib/core/Gui";
-import { UIBlock, UIText, UIWrappedText, OutlineEffect, CenterConstraint } from "../../../Elementa";
+import { UIBlock, UIText, UIWrappedText, OutlineEffect, CenterConstraint, SiblingConstraint } from "../../../Elementa";
 import { pastDianaEvents, dianaTrackerTotal } from "../../utils/variables";
 import { calcTotalProfit, formatNumber, formatTime, toTitleCase } from "../../utils/functions";
 
@@ -333,14 +333,22 @@ function showFullEventDetails(eventData, totalProfit) {
         itemName = replaceNames(itemName);
         let amount = replaceKey(itemName, eventData.items[key]);
         let percentage;
-        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
-            new UIText(itemName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+        if (hasPercentage[key][1] != "") percentage = (amount / hasPercentage[key][1]) * 100;
+            new UIText(itemName + ": " + amount)
                 .setX((2).percent())
                 .setY((itemsY).percent())
                 .setColor(GuiHandler.Color([0, 255, 0, 255]))
                 .setChildOf(itemsContainer);
+            
+            new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+                .setX((new SiblingConstraint(1)))
+                .setY((itemsY).percent())
+                .setColor(GuiHandler.Color([255, 0, 0, 255]))
+                .setChildOf(itemsContainer);
+
             itemsY += lineHeight;
     }
+
     new UIText("Total Profit: " + formatNumber(totalProfit))
         .setX((2).percent())
         .setY((itemsY).percent())
@@ -353,6 +361,7 @@ function showFullEventDetails(eventData, totalProfit) {
         .setY((mobsY).percent())
         .setColor(GuiHandler.Color([0, 255, 0, 255]))
         .setChildOf(mobsContainer);
+
     mobsY += lineHeight;
 
     let orderedMob = {
@@ -371,12 +380,19 @@ function showFullEventDetails(eventData, totalProfit) {
         mobName = replaceNames(mobName);
         let amount = replaceKey(mobName, eventData.mobs[key]);
         let percentage;
-        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
-        new UIText(mobName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+        if (hasPercentage[key][1] != "") percentage = (amount / hasPercentage[key][1]) * 100;
+        new UIText(mobName + ": " + amount)
             .setX((2).percent())
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(mobsContainer);
+        
+        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+            .setX((new SiblingConstraint(1)))
+            .setY((mobsY).percent())
+            .setColor(GuiHandler.Color([255, 0, 0, 255]))
+            .setChildOf(mobsContainer);
+
         mobsY += lineHeight;
     }
 
@@ -514,11 +530,18 @@ function showTotalOverview() {
         let amount = replaceKey(itemName, dianaTrackerTotal.items[key]);
         let percentage;
         if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
-        new UIText(itemName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+        new UIText(itemName + ": " + amount)
             .setX((2).percent())
             .setY((itemsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(itemsContainer);
+
+        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+            .setX((new SiblingConstraint(1)))
+            .setY((itemsY).percent())
+            .setColor(GuiHandler.Color([255, 0, 0, 255]))
+            .setChildOf(itemsContainer);
+            
         itemsY += lineHeight;
     }
     new UIText("Total Profit: " + formatNumber(totalProfit))
@@ -552,12 +575,19 @@ function showTotalOverview() {
         mobName = replaceNames(mobName);
         let amount = replaceKey(mobName, dianaTrackerTotal.mobs[key]);
         let percentage;
-        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
-        new UIText(mobName + ": " + amount + (hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.mobs[key] / hasPercentage[key][1]) * 100;
+        new UIText(mobName + ": " + amount)
             .setX((2).percent())
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(mobsContainer);
+
+        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+            .setX((new SiblingConstraint(1)))
+            .setY((mobsY).percent())
+            .setColor(GuiHandler.Color([255, 0, 0, 255]))
+            .setChildOf(mobsContainer);
+
         mobsY += lineHeight;
     }
 
