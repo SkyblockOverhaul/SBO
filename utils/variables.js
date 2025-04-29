@@ -122,12 +122,8 @@ export let data = new PogObject("SBO", {
     "inqsSinceLsChim": 0,
     "trackerMigration": false,
     "trackerMigration2": false,
-    "avgChimMagicFind": 0,
-    "avgStickMagicFind": 0,
     "highestChimMagicFind": 0,
     "highestStickMagicFind": 0,
-    "last10ChimMagicFind": [],
-    "last10StickMagicFind": [],
     "hideTrackerLines": [],
     "partyBlacklist": [],
     "crownTimer": 0,
@@ -425,8 +421,8 @@ export function checkMayorTracker() {
             }
         }
         let newTracker = initializeTrackerMayor();
-        data.last10ChimMagicFind = [];
-        data.last10StickMagicFind = [];
+        data.highestChimMagicFind = [];
+        data.highestStickMagicFind = [];
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
         }
