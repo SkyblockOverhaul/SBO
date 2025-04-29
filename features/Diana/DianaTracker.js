@@ -401,11 +401,9 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 else {
                     if (magicFind > 0) trackMagicFind(magicFind, true);
-                    if (settings.dianaAvgMagicFind) {
-                        if (magicFind > 0) {
-                            if (magicFind > data.highestChimMagicFind) data.highestChimMagicFind = parseInt(magicFind);
-                            avgMagicFindOverlay();
-                        }
+                    if (magicFind > 0) {
+                        if (magicFind > data.highestChimMagicFind) data.highestChimMagicFind = parseInt(magicFind);
+                        avgMagicFindOverlay();
                     }
                     if (settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
@@ -442,11 +440,9 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 else{
                     if (magicFind > 0) trackMagicFind(magicFind);
-                    if (settings.dianaAvgMagicFind) {
-                        if (magicFind > 0) {
-                            if (magicFind > data.highestStickMagicFind) data.highestStickMagicFind = parseInt(magicFind);
-                            avgMagicFindOverlay();
-                        }
+                    if (magicFind > 0) {
+                        if (magicFind > data.highestStickMagicFind) data.highestStickMagicFind = parseInt(magicFind);
+                        avgMagicFindOverlay();
                     }
                 }
                 if (settings.sendSinceMessage) {
