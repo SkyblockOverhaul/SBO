@@ -398,12 +398,12 @@ function showFullEventDetails(eventData, totalProfit) {
         let mobName = key.replaceAll("_", " ");
         mobName = toTitleCase(mobName);
         mobName = replaceNames(mobName);
-        let amount = replaceKey(mobName, dianaTrackerTotal.mobs[key]);
+        let amount = replaceKey(mobName, eventData.mobs[key]);
         
         let percentageInfo = hasPercentage.get(key);
         let percentage;
         if (percentageInfo[0] && percentageInfo[1] && percentageInfo[1] != "") {
-            percentage = (dianaTrackerTotal.mobs[key] / percentageInfo[1]) * 100;
+            percentage = (eventData.mobs[key] / percentageInfo[1]) * 100;
         }
         
         new UIText(mobName + ": " + amount)
