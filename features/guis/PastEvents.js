@@ -210,19 +210,19 @@ detailsRegisters.onClose(() => {
 });
 
 function getPercentageDict(obj) {
-    return {
-        "Griffin Feather": [true, obj.items["Total Burrows"]],
-        "Crown of Greed": [true, obj.items["Total Burrows"]],
-        "Washed-up Souvenir": [true, obj.items["Total Burrows"]],
-        "Chimera": [true, obj.mobs["Minos Inquisitor"]],
-        "ChimeraLs": [true, obj.mobs["Minos Inquisitor Ls"]],
-        "Daedalus Stick": [true, obj.mobs["Minotaur"]],
-        "DWARF_TURTLE_SHELMET": [true, obj.mobs["TotalMobs"]],
-        "CROCHET_TIGER_PLUSHIE": [true, obj.mobs["TotalMobs"]],
-        "ANTIQUE_REMEDIES": [true, obj.mobs["TotalMobs"]],
+    let dict = {
+        "Griffin Feather": [true, obj.items["Total Burrows"] || 1],
+        "Crown of Greed": [true, obj.items["Total Burrows"] || 1],
+        "Washed-up Souvenir": [true, obj.items["Total Burrows"] || 1],
+        "Chimera": [true, obj.mobs["Minos Inquisitor"] || 1],
+        "ChimeraLs": [true, obj.mobs["Minos Inquisitor Ls"] || 1],
+        "Daedalus Stick": [true, obj.mobs["Minotaur"] || 1],
+        "DWARF_TURTLE_SHELMET": [true, obj.mobs["TotalMobs"] || 1],
+        "CROCHET_TIGER_PLUSHIE": [true, obj.mobs["TotalMobs"] || 1],
+        "ANTIQUE_REMEDIES": [true, obj.mobs["TotalMobs"] || 1],
         "ENCHANTED_ANCIENT_CLAW": [false, ""],
         "ANCIENT_CLAW": [false, ""],
-        "MINOS_RELIC": [true, obj.mobs["Minos Champion"]],
+        "MINOS_RELIC": [true, obj.mobs["Minos Champion"] || 1],
         "ENCHANTED_GOLD": [false, ""],
         "ENCHANTED_IRON": [false, ""],
         "coins": [false, ""],
@@ -231,15 +231,22 @@ function getPercentageDict(obj) {
         "fishCoins": [false, ""],
         "mayorTime": [false, ""],
 
-        "Minos Inquisitor": [true, obj.mobs["TotalMobs"]],
-        "Minos Inquisitor Ls": [true, obj.mobs["TotalMobs"]],
-        "Minos Champion": [true, obj.mobs["TotalMobs"]],
-        "Minotaur": [true, obj.mobs["TotalMobs"]],
-        "Gaia Construct": [true, obj.mobs["TotalMobs"]],
-        "Siamese Lynxes": [true, obj.mobs["TotalMobs"]],
-        "Minos Hunter": [true, obj.mobs["TotalMobs"]],
+        "Minos Inquisitor": [true, obj.mobs["TotalMobs"] || 1],
+        "Minos Inquisitor Ls": [true, obj.mobs["TotalMobs"] || 1],
+        "Minos Champion": [true, obj.mobs["TotalMobs"] || 1],
+        "Minotaur": [true, obj.mobs["TotalMobs"] || 1],
+        "Gaia Construct": [true, obj.mobs["TotalMobs"] || 1],
+        "Siamese Lynxes": [true, obj.mobs["TotalMobs"] || 1],
+        "Minos Hunter": [true, obj.mobs["TotalMobs"] || 1],
         "TotalMobs": [false, ""],
     };
+
+    // Add a method to safely get values
+    dict.get = function(key) {
+        return this[key] || [false, ""];
+    };
+
+    return dict;
 }
 
 function getOrderedMob(obj) {
@@ -349,21 +356,26 @@ function showFullEventDetails(eventData, totalProfit) {
         itemName = toTitleCase(itemName);
         itemName = replaceNames(itemName);
         let amount = replaceKey(itemName, eventData.items[key]);
+        
+        let percentageInfo = hasPercentage.get(key);
         let percentage;
-        if (hasPercentage[key][1] != "") percentage = (amount / hasPercentage[key][1]) * 100;
-            new UIText(itemName + ": " + amount)
-                .setX((2).percent())
-                .setY((itemsY).percent())
-                .setColor(GuiHandler.Color([0, 255, 0, 255]))
-                .setChildOf(itemsContainer);
+        if (percentageInfo[0] && percentageInfo[1] && percentageInfo[1] != "") {
+            percentage = (eventData.items[key] / percentageInfo[1]) * 100;
+        }
+        
+        new UIText(itemName + ": " + amount)
+            .setX((2).percent())
+            .setY((itemsY).percent())
+            .setColor(GuiHandler.Color([0, 255, 0, 255]))
+            .setChildOf(itemsContainer);
+    
+        new UIText((percentageInfo[0] && percentage !== undefined ? ` (${percentage.toFixed(2)}%)` : ""))
+            .setX((new SiblingConstraint(1)))
+            .setY((itemsY).percent())
+            .setColor(GuiHandler.Color([255, 0, 0, 255]))
+            .setChildOf(itemsContainer);
             
-            new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
-                .setX((new SiblingConstraint(1)))
-                .setY((itemsY).percent())
-                .setColor(GuiHandler.Color([255, 0, 0, 255]))
-                .setChildOf(itemsContainer);
-
-            itemsY += lineHeight;
+        itemsY += lineHeight;
     }
 
     new UIText("Total Profit: " + formatNumber(totalProfit))
@@ -380,27 +392,32 @@ function showFullEventDetails(eventData, totalProfit) {
         .setChildOf(mobsContainer);
 
     mobsY += lineHeight;
-
+    
     let orderedMob = getOrderedMob(eventData);
     for (let key in orderedMob) {
         let mobName = key.replaceAll("_", " ");
         mobName = toTitleCase(mobName);
         mobName = replaceNames(mobName);
-        let amount = replaceKey(mobName, eventData.mobs[key]);
+        let amount = replaceKey(mobName, dianaTrackerTotal.mobs[key]);
+        
+        let percentageInfo = hasPercentage.get(key);
         let percentage;
-        if (hasPercentage[key][1] != "") percentage = (amount / hasPercentage[key][1]) * 100;
+        if (percentageInfo[0] && percentageInfo[1] && percentageInfo[1] != "") {
+            percentage = (dianaTrackerTotal.mobs[key] / percentageInfo[1]) * 100;
+        }
+        
         new UIText(mobName + ": " + amount)
             .setX((2).percent())
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(mobsContainer);
-        
-        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+    
+        new UIText((percentageInfo[0] && percentage !== undefined ? ` (${percentage.toFixed(2)}%)` : ""))
             .setX((new SiblingConstraint(1)))
             .setY((mobsY).percent())
             .setColor(GuiHandler.Color([255, 0, 0, 255]))
             .setChildOf(mobsContainer);
-
+    
         mobsY += lineHeight;
     }
 
@@ -507,15 +524,20 @@ function showTotalOverview() {
         itemName = toTitleCase(itemName);
         itemName = replaceNames(itemName);
         let amount = replaceKey(itemName, dianaTrackerTotal.items[key]);
+        
+        let percentageInfo = hasPercentage.get(key);
         let percentage;
-        if (hasPercentage[key][1] != "") percentage = (dianaTrackerTotal.items[key] / hasPercentage[key][1]) * 100;
+        if (percentageInfo[0] && percentageInfo[1] && percentageInfo[1] != "") {
+            percentage = (dianaTrackerTotal.items[key] / percentageInfo[1]) * 100;
+        }
+        
         new UIText(itemName + ": " + amount)
             .setX((2).percent())
             .setY((itemsY).percent())
             .setColor(GuiHandler.Color([0, 255, 0, 255]))
             .setChildOf(itemsContainer);
-
-        new UIText((hasPercentage[key][0] ? ` (${percentage.toFixed(2)}%)` : ""))
+    
+        new UIText((percentageInfo[0] && percentage !== undefined ? ` (${percentage.toFixed(2)}%)` : ""))
             .setX((new SiblingConstraint(1)))
             .setY((itemsY).percent())
             .setColor(GuiHandler.Color([255, 0, 0, 255]))
