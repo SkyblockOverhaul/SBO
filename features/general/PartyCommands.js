@@ -166,7 +166,7 @@ register("chat", (player, message) => {
         case "!lsinquis":
             if (settings.dianaTracker) {
                 setTimeout(() => {
-                    ChatLib.command("pc Inquisitor LS: " + dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] + " (" + calcPercentOne(dianaTrackerMayor, "Minos Inquisitor Ls") + "%)")
+                    ChatLib.command("pc Inquisitor LS: " + dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"])
                 }, 200)
             }
             break
