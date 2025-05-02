@@ -421,8 +421,6 @@ export function checkMayorTracker() {
             }
         }
         let newTracker = initializeTrackerMayor();
-        data.highestChimMagicFind = [];
-        data.highestStickMagicFind = [];
         for (let key in newTracker) {
             dianaTrackerMayor[key] = newTracker[key];
         }
