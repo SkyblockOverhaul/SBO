@@ -275,8 +275,19 @@ export function readPlayerInventory(type="") {
 // check if item is in hotbar //
 export function checkItemInHotbar(item) {
     if (!worldLoaded) return false;
-    let hotbarItems = readPlayerInventory("hotbar");
+    const hotbarItems = readPlayerInventory("hotbar");
     for (let i in hotbarItems) {
+        if (item == i) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function checkItemInInv(item) {
+    if (!worldLoaded) return false;
+    const playerInv = readPlayerInventory();
+    for (let i in playerInv) {
         if (item == i) {
             return true;
         }
@@ -335,7 +346,7 @@ export function playerHasSpade() {
 
 let spadeBool = false;
 register("step", () => {
-    spadeBool = checkItemInHotbar("ANCESTRAL_SPADE");
+    spadeBool = checkItemInInv("ANCESTRAL_SPADE");
 }).setFps(1)
 
 // return 1sec long true if player got loot share //

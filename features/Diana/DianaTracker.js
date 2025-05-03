@@ -74,13 +74,11 @@ export function dianaLootCounter(item, amount) {
                             trackItem(item, "items", amount);
                         }
                         if (inquisDeathTrue()) {
-                            if (settings.inquisTracker) {
-                                if (gotLootShare()) {
-                                    trackItem(lsIdsDict[item], "inquis", amount);
-                                }
-                                else {
-                                    trackItem(item, "inquis", amount);
-                                }
+                            if (gotLootShare()) {
+                                trackItem(lsIdsDict[item], "inquis", amount);
+                            }
+                            else {
+                                trackItem(item, "inquis", amount);
                             }
                             announceLootToParty(item);
                         }
@@ -403,17 +401,9 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 else {
                     if (magicFind > 0) trackMagicFind(magicFind, true);
-                    if (settings.dianaAvgMagicFind) {
-                        if (magicFind > 0) {
-                            if (data.last10ChimMagicFind.length >= 10) {
-                                data.last10ChimMagicFind.shift();
-                            }
-                            data.last10ChimMagicFind.push(magicFind);
-                        
-                            let sum = data.last10ChimMagicFind.reduce((a, b) => a + b, 0);
-                            data.avgChimMagicFind = parseInt(sum / data.last10ChimMagicFind.length);
-                            avgMagicFindOverlay();
-                        }
+                    if (magicFind > 0) {
+                        if (magicFind > data.highestChimMagicFind) data.highestChimMagicFind = parseInt(magicFind);
+                        avgMagicFindOverlay();
                     }
                     if (settings.dianaTracker) {
                         trackItem("Chimera", "items", 1);
@@ -429,6 +419,9 @@ registerWhen(register("chat", (drop, event) => {
                         ChatLib.chat("&6[SBO] &cb2b Chimera!")
                         data.b2bChim = true;
                         unlockAchievement(1) // b2b chim
+                    }
+                    if (data.b2bChim && data.b2bInq) {
+                        unlockAchievement(75) // b2b chim from b2b inq
                     }
 
                     data.inqsSinceChim = 0;
@@ -450,17 +443,9 @@ registerWhen(register("chat", (drop, event) => {
                 }
                 else{
                     if (magicFind > 0) trackMagicFind(magicFind);
-                    if (settings.dianaAvgMagicFind) {
-                        if (magicFind > 0) {
-                            if (data.last10StickMagicFind.length >= 10) {
-                                data.last10StickMagicFind.shift();
-                            }
-                            data.last10StickMagicFind.push(magicFind);
-
-                            let sum = data.last10StickMagicFind.reduce((a, b) => a + b, 0);
-                            data.avgStickMagicFind = parseInt(sum / data.last10StickMagicFind.length);
-                            avgMagicFindOverlay();
-                        }
+                    if (magicFind > 0) {
+                        if (magicFind > data.highestStickMagicFind) data.highestStickMagicFind = parseInt(magicFind);
+                        avgMagicFindOverlay();
                     }
                 }
                 if (settings.sendSinceMessage) {
@@ -706,10 +691,8 @@ register("command", () => {
 }).setName("sboimporttrackerundo");
 
 register("command", () => {
-    data.last10ChimMagicFind = [];
-    data.avgChimMagicFind = 0;
-    data.last10StickMagicFind = [];
-    data.avgStickMagicFind = 0;
+    data.highestChimMagicFind = 0;
+    data.highestStickMagicFind = 0;
     data.save();
     avgMagicFindOverlay();
 }).setName("sboresetavgmftracker");

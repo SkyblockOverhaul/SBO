@@ -696,7 +696,7 @@ class Settings {
         category: "General",
     })
     sbomoveguis() {
-       ChatLib.command("sboguis", true);
+        ChatLib.command("sboguis", true);
     }
     //guis
     @SwitchProperty({

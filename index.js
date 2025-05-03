@@ -40,10 +40,11 @@ const commands = [
     {cmd: "sbopde", description: "Opens the Past Diana Events GUI"},
     {cmd: "sboactiveuser", description: "Shows the active user of the mod"},
     {cmd: "sbopf", description: "Opens the PartyFinder GUI"},
-    {cmd: "sbosocket", description: "Shows socket help/commands"},
     {cmd: "sbopartycommands", description: "Displays all diana partycommands"},
     {cmd: "sboresetavgmftracker", description: "Resets the avg mf tracker"},
     {cmd: "sboresetstatstracker", description: "Resets the stats tracker"},
+    {cmd: "sboKey", description: "Set your sbokey"},
+    {cmd: "sboClearKey", description: "Reset your sbokey"},
 ];
 
 const changelog = [
