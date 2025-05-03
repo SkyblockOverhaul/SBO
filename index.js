@@ -81,7 +81,7 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-const newVersion = "0.5.4 // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.5.4 // hier neue version eintragen wenn changelog angezeigt werden soll";
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
