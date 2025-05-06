@@ -216,6 +216,8 @@ new Achievement(74, "Can I craft a Relic sword now?", "Get 1 stick & 2 relics in
 
 new Achievement(75, "b2b king", "Get b2b chimera from b2b inquisitor", "Impossible", false, 1, true);
 
+new Achievement(77, "From the ashes", "Drop a Phoenix pet from a Diana mob", "Impossible", false, 1, true);
+
 // new Achievement(73, "Runic Fortune", "Get a Chimera from a Runic Inquisitor", "Legendary");
 
 // new Achievement(74, "Runic Luck", "Get a Stick from a Runic Minotaur", "Epic");
