@@ -48,7 +48,12 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Removed", description: "Muted support (caused to many issues)"},
+    {header: "Added", description: "1 new achievement"},
+    {header: "Added", description: "Percentages to the SBO Past Events GUI"},
+    {header: "Added", description: "!coins party command"},
+    {header: "Changed", description: "AVG MF tracker now tracks your highest MF"},
+    {header: "Changed", description: "Spade detection now checks the entire inventory instead of just the hotbar (prevents chims not being tracked due to different playstyles)"},
+    {header: "Removed", description: "The % symbol previously shown after the text in !lsinquis"},
 ];
 
 register("command", (args1, ...args) => {
@@ -76,7 +81,7 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-const newVersion = "0.5.2" // hier neue version eintragen wenn changelog angezeigt werden soll
+const newVersion = "0.5.4 // hier neue version eintragen wenn changelog angezeigt werden soll";
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return
