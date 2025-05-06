@@ -815,7 +815,7 @@ function backUpData() {
     let folderName = "SBOBackup_" + dateString + "_" + timeString;
     FU.newDirectory("./config/sbo/backup/" + folderName);
 
-    FileLib.write("./config/sbo/backup/" + folderName + "/data.json", JSON.stringify(data, null, 4));
+    FileLib.write("./config/sbo/backup/" + folderName + "/sboData.json", JSON.stringify(data, null, 4));
     FileLib.write("./config/sbo/backup/" + folderName + "/dianaTrackerTotal.json", JSON.stringify(dianaTrackerTotal, null, 4));
     FileLib.write("./config/sbo/backup/" + folderName + "/dianaTrackerSession.json", JSON.stringify(dianaTrackerSession, null, 4));
     FileLib.write("./config/sbo/backup/" + folderName + "/dianaTrackerMayor.json", JSON.stringify(dianaTrackerMayor, null, 4));
