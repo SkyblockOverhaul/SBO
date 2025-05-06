@@ -49,11 +49,7 @@ const commands = [
 
 const changelog = [
     {header: "Added", description: "1 new achievement"},
-    {header: "Added", description: "Percentages to the SBO Past Events GUI"},
-    {header: "Added", description: "!coins party command"},
-    {header: "Changed", description: "AVG MF tracker now tracks your highest MF"},
-    {header: "Changed", description: "Spade detection now checks the entire inventory instead of just the hotbar (prevents chims not being tracked due to different playstyles)"},
-    {header: "Removed", description: "The % symbol previously shown after the text in !lsinquis"},
+    {header: "Removed", description: "1 unused setting"},
 ];
 
 register("command", (args1, ...args) => {
