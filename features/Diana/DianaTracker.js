@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, inquisDeathTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, inquisDeathTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec, getplayername } from '../../utils/functions';
 import { itemOverlay, mobOverlay, inquisOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -481,6 +481,12 @@ registerWhen(register("chat", (drop, event) => {
         }
     }
 }).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool)));
+
+register("chat", (wow, player, idk) => {
+    if (!mobDeath2SecsTrue()) return;
+    if (Player.getName() != getplayername(player)) return;
+    if (isDataLoaded() && isInSkyblock() && checkDiana()) unlockAchievement(77); // phoenix pet
+}).setCriteria("${wow} ${player} &r&efound a &r&cPhoenix &r&epet!${idk}")
 
 // refresh overlay //
 let tempSettingLoot = -1;
