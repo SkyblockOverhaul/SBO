@@ -1,4 +1,4 @@
-import { request } from "../../requestV2";
+import { fetch } from "../../tska/polyfill/Fetch";
 import settings, { getcustomSounds } from "../settings";
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
 import { getWorld } from "./world";
@@ -555,8 +555,7 @@ register("step", () => {
 }).setFps(1);
 
 function updateItemValues() {
-    request({
-        url: "https://api.skyblockoverhaul.com/ahItems",
+    fetch("https://api.skyblockoverhaul.com/ahItems", {
         json: true
     }).then((response)=>{
         kuudraItems = response[0];
@@ -573,8 +572,7 @@ function updateItemValues() {
         console.error("An error occurred: " + error);
     });
 
-    request({
-        url: "https://api.hypixel.net/skyblock/bazaar?product",
+    fetch("https://api.hypixel.net/skyblock/bazaar?product", {
         json: true
     }).then((response)=>{
         bazaarItems = response;
@@ -589,8 +587,7 @@ function updateItemValues() {
 
 let activeUsers = undefined
 export function getActiveUsers(useCallback = false, callback = null) {
-    request({
-        url: "https://api.skyblockoverhaul.com/activeUsers",
+    fetch("https://api.skyblockoverhaul.com/activeUsers", {
         json: true
     }).then((response) => {
         activeUsers = response.activeUsers;
@@ -976,8 +973,7 @@ export function getDianaStats(useCallback = false, callback = null) {
             }
             return;
         }
-        request({
-            url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", "") + "&readcache=false",
+        fetch("https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", "") + "&readcache=false", {
             json: true
         }).then((response) => {
             dianaStats = response.PartyInfo[0];
