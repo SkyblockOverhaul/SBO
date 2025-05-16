@@ -1,9 +1,8 @@
-import renderBeaconBeam from "../../../BeaconBeam/index";
+import { Render3D } from "../../../tska/rendering/Render3D";
 import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { checkDiana } from "../../utils/checkDiana";
-import { isInSkyblock, isWorldLoaded, playCustomSound } from "../../utils/functions";
-
+import { isInSkyblock, isWorldLoaded, playCustomSound, trace } from "../../utils/functions";
 
 const Color = Java.type("java.awt.Color");
 
@@ -18,20 +17,38 @@ let hubWarps = {
 };
 
 // one centered waypoint class to replace the old waypoint system
-class Waypoints {
-    static timedWaypoints = [];
+/**
+ * @class Waypoints
+ * @description A class to create and manage waypoints in the game.
+ * @param {string} text - The text to display on the waypoint.
+ * @param {number} x - The x coordinate of the waypoint.
+ * @param {number} y - The y coordinate of the waypoint.
+ * @param {number} z - The z coordinate of the waypoint.
+ * @param {number} r - The red color component of the waypoint.
+ * @param {number} g - The green color component of the waypoint.
+ * @param {number} b - The blue color component of the waypoint.
+ * @param {number} [ttl=0] - The time to live for the waypoint in seconds.
+ * @param {string} [type="normal"] - The type of the waypoint for customization.
+ * @param {boolean} [line=false] - Whether to draw a line to the waypoint.
+ * @param {boolean} [beam=true] - Whether to draw a beam at the waypoint.
+ * @param {boolean} [distance=true] - Whether to display the distance in meters (blocks) to the waypoint.
+ */
+export class Waypoint {
     static waypoints = {}
-    static guess = undefined;
-    constructor(text, x, y, z, r, g, b, type = "normal", ttl = 0, line = false, beam = true, distance = true) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    static guessWp = undefined;
+    constructor(text, x, y, z, r, g, b, ttl = 0, type = "Normal", line = false, beam = true, distance = true) {
+        this.x = parseFloat(x);
+        this.y = parseFloat(y);
+        this.z = parseFloat(z);
         this.r = r;
         this.g = g;
         this.b = b;
+        this.alpha = 0.5;
         this.line = line;
         this.beam = beam;
         this.distance = distance;
+        
+        this.creation = Date.now();
         this.text = text;
         this.ttl = ttl; // time to live in seconds
         this.type = type;
@@ -39,7 +56,9 @@ class Waypoints {
         // format variables
         this.formatted = false;
         this.distanceRaw = 0;
-        this.distance = 0;
+        this.distanceText = "";
+        this.formattedText = "";
+        
         this.xSign = 0;
         this.zSign = 0;
         this.warp = false;
@@ -47,9 +66,13 @@ class Waypoints {
         this.fx = 0;
         this.fz = 0;
 
-        if (this.ttl > 0) Waypoints.timedWaypoints.push(this);
-        if (!Waypoints.waypoints[type]) Waypoints.waypoints[type] = [];
-        Waypoints.waypoints[type].push(this);
+        if (this.type != "Guess") {
+            if (!Waypoint.waypoints[type]) Waypoint.waypoints[type] = [];
+            Waypoint.waypoints[type].push(this);
+        } else {
+            Waypoint.guessWp = this;
+        }
+        this.format();
     }
 
     getDistanceTo(waypoint) {
@@ -147,6 +170,7 @@ class Waypoints {
                 this.b = settings.treasureColor.getBlue()/255;
                 break;
         }
+        this.formattedText = `${this.text}§7 ${this.distanceText}`;
 
         if (this.x > 0) {
             this.xSign = 1;
@@ -159,23 +183,30 @@ class Waypoints {
         } else if (this.z < 0) {
             this.zSign = -1;
         }
+        this.fx = this.x + (this.xSign * 0.5);
+        this.fz = this.z + (this.zSign * 0.5);
     }
 
     formatGuess() {
         this.warp = this.getClosestwarp();
         if (this.warp) {
-            this.text = `${this.text}§7${this.warp} §b[${this.distance}]`;
+            this.formattedText = `${this.text}§7${this.warp} ${this.distanceText}`;
         } else {
-            this.text = `${this.text}§7 §b[${this.distance}]`;
+            this.formattedText = `${this.text}§7 ${this.distanceText}`;
         }
 
         let center = this.getCenter();
-        this.text = `${this.text}§7${this.text} §b[${this.distance}]`;
+        this.fx = center.x;
+        this.fz = center.z;
     }
 
     format() {
         this.distanceRaw = this.getDistanceToPlayer();
-        this.distance = Math.round(this.distanceRaw) + "m";
+        if (this.distance) {
+            this.distanceText = `§b[${Math.round(this.distanceRaw)}m]`;
+        } else {
+            this.distanceText = "";
+        }
 
         if (this.distanceRaw >= 230) {
             this.fx = Player.getX() + (this.x - Player.getX()) * (230 / this.distanceRaw);
@@ -192,32 +223,61 @@ class Waypoints {
         } else {
             this.xSign = this.fx == 0 ? 1 : Math.sign(this.fx);
             this.zSign = this.fz == 0 ? 1 : Math.sign(this.fz);
+            this.fx = this.fx + (this.xSign * 0.5);
+            this.fz = this.fz + (this.zSign * 0.5);
+            this.formattedText = `${this.text}§7 ${this.distanceText}`;
         }
+
         this.formatted = true;
+    }
+
+    renderLine() {
+        trace(this.fx, this.y, this.fz, this.r, this.g, this.b, this.alpha, "", parseInt(settings.burrowLineWidth));
     }
         
     render() {
         if (!this.formatted) return;
         let removeAtDistance = 10;
-        let alpha = 0.5;
-        // if (this.distanceRaw <= settings.removeGuessDistance && this.type == "guess" && settings.removeGuess) return;
-        if (!settings.removeGuess && this.type == "guess") {
+        if (this.distanceRaw <= settings.removeGuessDistance && this.type == "Guess" && settings.removeGuess) return;
+        if (!settings.removeGuess && this.type == "Guess") {
             removeAtDistance = 0;
         }
 
-        RenderLibV2.drawInnerEspBoxV2(this.fx, this.y + 1, this.fz, 1, 1, 1, this.r, this.g, this.b, alpha/2, true);
-        // print(`&6[SBO] &r&b${this.text} &7[${this.distance}] &7[${this.fx}, ${this.y}, ${this.fz}] &7[rgb: ${this.r}, ${this.g}, ${this.b}]`);
+        RenderLibV2.drawInnerEspBoxV2(this.fx, this.y - 1, this.fz, 1, 1, 1, this.r, this.g, this.b, this.alpha/2, true);
 
         let hexCodeString = javaColorToHex(new Color(this.r, this.g, this.b));
-        if (this.text != "" && this.text != "§7") {
-            Tessellator.drawString(this.text, this.fx, this.y + 1.5, this.fz, parseInt(hexCodeString, 16), true);
+        if (this.formattedText != "" && this.formattedText != "§7") {
+            Tessellator.drawString(this.formattedText, this.fx, this.y + 0.5, this.fz, parseInt(hexCodeString, 16), true);
         }
         if (this.distanceRaw >= removeAtDistance && this.beam) {
-            renderBeaconBeam(this.fx, this.y + 1, this.fz, this.r, this.g, this.b, alpha, false);
+            Render3D.renderBeaconBeam(this.fx - 0.5, this.y, this.fz - 0.5, this.r*255, this.g*255, this.b*255, this.alpha*255, true);
         }
 
+        if (this.line) this.renderLine()
     }
 
+    remove() {
+        Waypoint.waypoints[this.type].splice(Waypoint.waypoints[this.type].indexOf(this), 1);
+        if (this.type == "Guess") {
+            Waypoint.guessWp = undefined;
+        }
+    }
+
+    static forEachWaypoint(callback) {
+        Object.keys(Waypoint.waypoints).forEach((type) => {
+            Waypoint.waypoints[type].forEach((waypoint) => {
+                callback(waypoint);
+            });
+        });
+    }
+
+    static removeAtPos(x, y, z) {
+        Waypoint.forEachWaypoint(waypoint => {
+            if (waypoint.x == x && waypoint.y == y && waypoint.z == z && waypoint.type != "Guess" && waypoint.type != "burrow") {
+                waypoint.remove();
+            }
+        });
+    }
 }
 
 register("chat", (player, spacing, x, y, z, event) => {
@@ -251,39 +311,40 @@ register("chat", (player, spacing, x, y, z, event) => {
             if (z.split(" ").length > 1) {
                 z = z.split(" ")[0];
             }
-            new Waypoints(player, x, y, z, 1, 0.84, 0);
+            new Waypoint(player, x, y, z, 1, 0.84, 0, 45, "inq");
         }
     } else {
         if (settings.patcherWaypoints) {
             if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
-                new Waypoints(player, x, y, z, 0, 0.2, 1);
+                new Waypoint(player, x, y, z, 0, 0.2, 1, 30);
             }
         }
     }
 }).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}");
 
-
-register("step", () => {
+registerWhen(register("step", () => {
     if (!isInSkyblock() && !isWorldLoaded()) return;
-    Object.keys(Waypoints.waypoints).forEach((type) => {
-        Waypoints.waypoints[type].forEach((waypoint) => {
-            if (waypoint.ttl > 0 && Date.now() - waypoint.time > waypoint.ttl * 1000) {
-                Waypoints.waypoints[type].splice(Waypoints.waypoints[type].indexOf(waypoint), 1);
-            }
-            waypoint.format();
-        });
+    Waypoint.forEachWaypoint((waypoint) => {
+        if (waypoint.ttl > 0 && Date.now() - waypoint.creation > waypoint.ttl * 1000) {
+            waypoint.remove();
+            return;
+        }
+        waypoint.format();
     });
-}).setFps(5);
+}).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
-
-register("renderWorld", () => { 
+registerWhen(register("step", () => {
     if (!isInSkyblock() && !isWorldLoaded()) return;
-    Object.keys(Waypoints.waypoints).forEach((type) => {
-        Waypoints.waypoints[type].forEach((waypoint) => {
-            waypoint.render();
-        });
+    if (Waypoint.guessWp) Waypoint.guessWp.format();
+}).setFps(20), () => settings.dianaBurrowGuess);
+        
+registerWhen(register("renderWorld", () => { 
+    if (!isInSkyblock() && !isWorldLoaded()) return;
+    Waypoint.forEachWaypoint((waypoint) => {
+        waypoint.render();
     });
-})
+    if (Waypoint.guessWp) Waypoint.guessWp.render();
+}), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 function javaColorToHex(javaColor) {
     // Extract RGB components

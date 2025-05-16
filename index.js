@@ -5,6 +5,7 @@ import "./features/Diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
 import "./features/general/Waypoints";
+import "./features/general/NewWaypoints";
 import "./features/general/fossilSolver";
 import "./features/general/messageHider";
 import "./features/general/pickuplog";

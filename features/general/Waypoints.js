@@ -1,4 +1,4 @@
-import renderBeaconBeam from "../../../BeaconBeam/index";
+import { Render3D } from "../../../tska/rendering/Render3D";
 import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { Keybind } from "../../../tska/shared/Keybind"
@@ -8,6 +8,8 @@ import { registerWhen } from "../../utils/variables";
 import { getFinalLocation, getLastGuessTime, setFinalLocation } from "../Diana/DianaGuess";
 import { Color } from '../../../Vigilance';
 import { inqHighlightRegister } from "../Diana/DianaMobDetect";
+
+const renderBeaconBeam = Render3D.renderBeaconBeam;
 
 let patcherWaypoints = [];
 export function getPatcherWaypoints() { 
@@ -400,63 +402,63 @@ register("step", () => {
     }
 }).setFps(1);
 
-registerWhen(register("chat", (player, spacing, x, y, z, event) => {
-    if (isWorldLoaded()) {
-        if (checkDiana() && settings.allWaypointsAreInqs) {
-            isInq = true;
-        }
-        else {
-            isInq = !z.includes(" ");
-        }
-        const bracketIndex = player.indexOf('[') - 2;
-        const channel = player.substring(0, bracketIndex);
-        // channel.includes("Guild") || channel.includes("Party") || channel.includes("Co-op")
-        if (channel.includes("Guild")) return;
-        if (bracketIndex >= 0)
-            player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
-        else
-            player = player.replaceAll('&', '§');
+// registerWhen(register("chat", (player, spacing, x, y, z, event) => {
+//     if (isWorldLoaded()) {
+//         if (checkDiana() && settings.allWaypointsAreInqs) {
+//             isInq = true;
+//         }
+//         else {
+//             isInq = !z.includes(" ");
+//         }
+//         const bracketIndex = player.indexOf('[') - 2;
+//         const channel = player.substring(0, bracketIndex);
+//         // channel.includes("Guild") || channel.includes("Party") || channel.includes("Co-op")
+//         if (channel.includes("Guild")) return;
+//         if (bracketIndex >= 0)
+//             player = player.replaceAll('&', '§').substring(bracketIndex, player.length);
+//         else
+//             player = player.replaceAll('&', '§');
 
-        if (isInq) {
-            if(settings.inqHighlight || settings.inqCircle && checkDiana()) {
-                highlighInquis = true;
-                setTimeout(() => {
-                    highlighInquis = false;
-                }, 80000); // 80 seconds so it only unregisters after inq is 100% dead cause it despawns after 75 secs
-            }
-            if(settings.inqWaypoints && checkDiana()) {
-                Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
-                playCustomSound(settings.inqSound, settings.inqVolume);
-                z = z.replace("&r", "");
-                // check if waypoint is from player
+//         if (isInq) {
+//             if(settings.inqHighlight || settings.inqCircle && checkDiana()) {
+//                 highlighInquis = true;
+//                 setTimeout(() => {
+//                     highlighInquis = false;
+//                 }, 80000); // 80 seconds so it only unregisters after inq is 100% dead cause it despawns after 75 secs
+//             }
+//             if(settings.inqWaypoints && checkDiana()) {
+//                 Client.showTitle(`&r&6&l<&b&l&kO&6&l> &b&lINQUISITOR! &6&l<&b&l&kO&6&l>`, player, 0, 90, 20);
+//                 playCustomSound(settings.inqSound, settings.inqVolume);
+//                 z = z.replace("&r", "");
+//                 // check if waypoint is from player
                 
-                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
-                    if (z.split(" ").length > 1) {
-                        z = z.split(" ")[0];
-                    }
-                    // print(player + " " + x + " " + y + " " + z);
-                    inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
-                }
-            }
-            else{
-                z = z.replace("&r", "");
-                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
-                    patcherWaypoints.push([player, x, y, z, ""]);
-                    removeWaypointAfterDelay(patcherWaypoints, 30);
-                }
-            }
-        }
-        else {
-            if(settings.patcherWaypoints) {
-                z = z.split(" ")[0];
-                if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
-                    patcherWaypoints.push([player, x, y, z, ""]);
-                    removeWaypointAfterDelay(patcherWaypoints, 30);
-                }
-            }
-        }
-    }
-}).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherWaypoints || settings.inqWaypoints || settings.inqHighlight || settings.inqCircle);
+//                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
+//                     if (z.split(" ").length > 1) {
+//                         z = z.split(" ")[0];
+//                     }
+//                     // print(player + " " + x + " " + y + " " + z);
+//                     inqWaypoints.push([player, x, y, z, closestWarpString(x, y, z), Date.now()]);
+//                 }
+//             }
+//             else{
+//                 z = z.replace("&r", "");
+//                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+//                     patcherWaypoints.push([player, x, y, z, ""]);
+//                     removeWaypointAfterDelay(patcherWaypoints, 30);
+//                 }
+//             }
+//         }
+//         else {
+//             if(settings.patcherWaypoints) {
+//                 z = z.split(" ")[0];
+//                 if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 2 || settings.hideOwnWaypoints == 3))) {
+//                     patcherWaypoints.push([player, x, y, z, ""]);
+//                     removeWaypointAfterDelay(patcherWaypoints, 30);
+//                 }
+//             }
+//         }
+//     }
+// }).setCriteria("${player}&f${spacing}x: ${x}, y: ${y}, z: ${z}"), () => settings.patcherWaypoints || settings.inqWaypoints || settings.inqHighlight || settings.inqCircle);
 
 registerWhen(register("chat", () => {
     if (tryWarp) {
