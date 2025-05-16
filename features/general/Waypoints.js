@@ -1,7 +1,7 @@
 import renderBeaconBeam from "../../../BeaconBeam/index";
 import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
-import { Keybind } from "../../../KeybindFix"
+import { Keybind } from "../../../tska/shared/Keybind"
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, setTimeout, toTitleCase, trace } from '../../utils/functions';
 import { registerWhen } from "../../utils/variables";
