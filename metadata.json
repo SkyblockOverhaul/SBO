@@ -5,10 +5,8 @@
   "version": "0.5.4",
   "entry": "index.js",
   "requires": [
-    "requestV2",
     "Vigilance",
     "PogData",
-    "BeaconBeam",
     "RenderLibV2",
     "HypixelModAPI",
     "FileUtilities",

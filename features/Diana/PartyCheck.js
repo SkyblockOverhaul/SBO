@@ -1,4 +1,4 @@
-import { request } from "../../../requestV2";
+import { fetch } from "../../../tska/polyfill/Fetch";
 import { formatNumberCommas, getplayername, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, setTimeout } from "../../utils/functions";
 import { HypixelModAPI } from "../../../HypixelModAPI";
 import { checkDiana } from "../../utils/checkDiana";
@@ -8,8 +8,7 @@ import { data } from "../../utils/variables";
 let firstTimeStamp = 0;
 function getPartyInfo(party) {
     firstTimeStamp = Date.now();
-    request({
-        url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
+    fetch("https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""), {
         json: true
     }).then((response)=> {
         if (response.Success) {
@@ -174,8 +173,7 @@ function checkPlayer(player, refreshData, readCache = true) {
         return;
     }
     if (!refreshData) ChatLib.chat("&6[SBO] &eChecking Player: " + playerName);
-    request({
-        url: "https://api.skyblockoverhaul.com/partyInfo?party=" + playerName + "&readcache=" + readCache,
+    fetch("https://api.skyblockoverhaul.com/partyInfo?party=" + playerName + "&readcache=" + readCache, {
         json: true
     }).then((response)=> {
         if (response.Success) {
