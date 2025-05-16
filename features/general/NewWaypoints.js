@@ -3,6 +3,7 @@ import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, trace } from "../../utils/functions";
+import { registerWhen } from "../../utils/variables";
 
 const Color = Java.type("java.awt.Color");
 
