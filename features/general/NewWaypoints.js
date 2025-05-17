@@ -37,7 +37,7 @@ let hubWarps = {
 export class Waypoint {
     static waypoints = {}
     static guessWp = undefined;
-    constructor(text, x, y, z, r, g, b, ttl = 0, type = "Normal", line = false, beam = true, distance = true) {
+    constructor(text, x, y, z, r, g, b, ttl = 0, type = "normal", line = false, beam = true, distance = true) {
         this.x = parseFloat(x);
         this.y = parseFloat(y);
         this.z = parseFloat(z);
@@ -52,7 +52,7 @@ export class Waypoint {
         this.creation = Date.now();
         this.text = text;
         this.ttl = ttl; // time to live in seconds
-        this.type = type;
+        this.type = type.toLowerCase();
 
         // format variables
         this.formatted = false;
@@ -67,7 +67,7 @@ export class Waypoint {
         this.fx = 0;
         this.fz = 0;
 
-        if (this.type != "Guess") {
+        if (this.type != "guess") {
             if (!Waypoint.waypoints[type]) Waypoint.waypoints[type] = [];
             Waypoint.waypoints[type].push(this);
         } else {
@@ -140,12 +140,10 @@ export class Waypoint {
         settings.warpDiff = settings.warpDiff.replace(/\D/g, '');
         let warpDiff = parseInt(settings.warpDiff);
 
-        const warpConditions = {
-            condition1: Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff),
-            condition2: (Math.round(parseInt(closestPlayerdistance)) > Math.round(parseInt(closestDistance) + warpDiff) && (Math.round(getClosestBurrow(formattedBurrow)[1]) > 60 || inqWaypoints.length > 0))
-        };
+        const condition1 = parseInt(closestPlayerdistance) > (closestDistance + warpDiff);
+        const condition2 = condition1 && (Waypoint.getClosestWaypoint("burrow")[1] > 60 || Waypoint.getWaypointsOfType("inq").length > 0);
 
-        if (settings.dontWarpIfBurrowNearby ? warpConditions.condition2 : warpConditions.condition1) {
+        if (settings.dontWarpIfBurrowNearby ? condition2 : condition1) {
             return closestWarp;
         }
         else {
@@ -217,9 +215,9 @@ export class Waypoint {
             this.fz = this.z;
         }
 
-        if (this.type == "Burrow") {
+        if (this.type == "burrow") {
             this.formatBurrow();
-        } else if (this.type == "Guess") {
+        } else if (this.type == "guess") {
             this.formatGuess();
         } else {
             this.xSign = this.fx == 0 ? 1 : Math.sign(this.fx);
@@ -239,8 +237,8 @@ export class Waypoint {
     render() {
         if (!this.formatted) return;
         let removeAtDistance = 10;
-        if (this.distanceRaw <= settings.removeGuessDistance && this.type == "Guess" && settings.removeGuess) return;
-        if (!settings.removeGuess && this.type == "Guess") {
+        if (this.distanceRaw <= settings.removeGuessDistance && this.type == "guess" && settings.removeGuess) return;
+        if (!settings.removeGuess && this.type == "guess") {
             removeAtDistance = 0;
         }
 
@@ -258,9 +256,10 @@ export class Waypoint {
     }
 
     remove() {
-        Waypoint.waypoints[this.type].splice(Waypoint.waypoints[this.type].indexOf(this), 1);
-        if (this.type == "Guess") {
+        if (this.type == "guess") {
             Waypoint.guessWp = undefined;
+        } else {
+            Waypoint.waypoints[this.type].splice(Waypoint.waypoints[this.type].indexOf(this), 1);
         }
     }
 
@@ -274,12 +273,65 @@ export class Waypoint {
 
     static removeAtPos(x, y, z) {
         Waypoint.forEachWaypoint(waypoint => {
-            if (waypoint.x == x && waypoint.y == y && waypoint.z == z && waypoint.type != "Guess" && waypoint.type != "burrow") {
+            if (waypoint.x == x && waypoint.y == y && waypoint.z == z && waypoint.type != "guess" && waypoint.type != "burrow") {
                 waypoint.remove();
             }
         });
     }
+
+    static getClosestWaypoint(type) {
+        let closest = null;
+        let closestDistance = Infinity;
+        Waypoint.forEachType(type, (waypoint) => {
+            let distance = waypoint.getDistanceToPlayer();
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closest = waypoint;
+            }
+        });
+        return [closest, closestDistance];
+    }
+
+    static forEachType(type, callback) {
+        type = type.toLowerCase();
+        if (type == "guess") {
+            if (Waypoint.guessWp) {
+                callback(Waypoint.guessWp);
+            }
+            return;
+        } else {
+            if (Waypoint.waypoints[type]) {
+                Waypoint.waypoints[type].forEach((waypoint) => {
+                    callback(waypoint);
+                });
+            }
+        }
+    }
+
+    static removeWithinDistance(type, distance) {
+        Waypoint.forEachType(type, (waypoint) => {
+            if (waypoint.getDistanceToPlayer() <= distance) {
+                waypoint.remove();
+            }
+        });
+    }
+
+    static getWaypointsOfType(type) {
+        type = type.toLowerCase();
+        if (type == "guess") {
+            return Waypoint.guessWp;
+        } else {
+            if (Waypoint.waypoints[type]) {
+                return Waypoint.waypoints[type];
+            }
+        }
+        return [];
+    }
 }
+
+register("chat", (player) => {
+    Waypoint.removeWithinDistance("inq", 20);
+}).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 
 register("chat", (player, spacing, x, y, z, event) => {
     if (!isWorldLoaded()) return;
