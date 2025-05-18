@@ -203,6 +203,7 @@ export class Waypoint {
         this.fx = center.x;
         this.fz = center.z;
 
+        if (!this.hidden && Waypoint.waypointExists("burrow", this.x, this.y, this.z)) this.hide();
     }
 
     format() {
@@ -250,7 +251,7 @@ export class Waypoint {
 
     render() {
         if (!this.formatted) return;
-        if (!this.hidden) return;
+        if (this.hidden) return;
         let removeAtDistance = 10;
         if (this.distanceRaw <= settings.removeGuessDistance && this.type == "guess" && settings.removeGuess) return;
         if (!settings.removeGuess && this.type == "guess") {
@@ -283,7 +284,6 @@ export class Waypoint {
         Waypoint.guessWp.x = SboVec.getX();
         Waypoint.guessWp.y = SboVec.getY();
         Waypoint.guessWp.z = SboVec.getZ();
-        if (Waypoint.waypointExists("burrow", this.x, this.y, this.z)) this.hide();
         Waypoint.guessWp.format();
     }
 
