@@ -3,6 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { coloredArmorStands, getLastInteractedPos } from "./DianaBurrows";
 import { SboVec } from "../../utils/helper";
+import { Waypoint } from "../general/NewWaypoints";
 
 class Matrix {
     constructor(data) {
@@ -173,6 +174,7 @@ class PreciseGuessBurrow {
         const guessPosition = this.guessBurrowLocation();
         if (!guessPosition) return;
         finalLocation = guessPosition.down(0.5).roundLocationToBlock();
+        updateGuess
         hasMadeManualGuess = true;
     }
 

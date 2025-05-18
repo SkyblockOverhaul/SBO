@@ -36,7 +36,7 @@ let hubWarps = {
  */
 export class Waypoint {
     static waypoints = {}
-    static guessWp = undefined;
+    static guessWp = new Waypoint("Guess", 0, 0, 0, 0, 0, 0, 0, "guess", false, true, true);
     constructor(text, x, y, z, r, g, b, ttl = 0, type = "normal", line = false, beam = true, distance = true) {
         this.x = parseFloat(x);
         this.y = parseFloat(y);
@@ -48,6 +48,7 @@ export class Waypoint {
         this.line = line;
         this.beam = beam;
         this.distance = distance;
+        this.hidden = false;
         
         this.creation = Date.now();
         this.text = text;
@@ -193,10 +194,15 @@ export class Waypoint {
         } else {
             this.formattedText = `${this.text}§7 ${this.distanceText}`;
         }
-
+        this.line = settings.guessLine;
+        this.r = settings.guessColor.getRed()/255;
+        this.g = settings.guessColor.getGreen()/255;
+        this.b = settings.guessColor.getBlue()/255;
+        
         let center = this.getCenter();
         this.fx = center.x;
         this.fz = center.z;
+
     }
 
     format() {
@@ -233,9 +239,18 @@ export class Waypoint {
     renderLine() {
         trace(this.fx, this.y, this.fz, this.r, this.g, this.b, this.alpha, "", parseInt(settings.burrowLineWidth));
     }
-        
+       
+    hide() {
+        this.hidden = true
+    }
+
+    show() {
+        this.hidden = false
+    }
+
     render() {
         if (!this.formatted) return;
+        if (!this.hidden) return;
         let removeAtDistance = 10;
         if (this.distanceRaw <= settings.removeGuessDistance && this.type == "guess" && settings.removeGuess) return;
         if (!settings.removeGuess && this.type == "guess") {
@@ -257,10 +272,29 @@ export class Waypoint {
 
     remove() {
         if (this.type == "guess") {
-            Waypoint.guessWp = undefined;
+            this.hidden = true;
         } else {
             Waypoint.waypoints[this.type].splice(Waypoint.waypoints[this.type].indexOf(this), 1);
         }
+    }
+
+    static updateGuess(SboVec) {
+        Waypoint.guessWp.show();
+        Waypoint.guessWp.x = SboVec.getX();
+        Waypoint.guessWp.y = SboVec.getY();
+        Waypoint.guessWp.z = SboVec.getZ();
+        if (Waypoint.waypointExists("burrow", this.x, this.y, this.z)) this.hide();
+        Waypoint.guessWp.format();
+    }
+
+    static waypointExists(type, x, y, z) {
+        let exists = false;
+        Waypoint.forEachType(type, (waypoint) => {
+            if (waypoint.x == x && waypoint.y == y && waypoint.z == z) {
+                exists = true;
+            }
+        });
+        return exists;
     }
 
     static forEachWaypoint(callback) {
@@ -295,10 +329,7 @@ export class Waypoint {
     static forEachType(type, callback) {
         type = type.toLowerCase();
         if (type == "guess") {
-            if (Waypoint.guessWp) {
-                callback(Waypoint.guessWp);
-            }
-            return;
+            if (Waypoint.guessWp) callback(Waypoint.guessWp);
         } else {
             if (Waypoint.waypoints[type]) {
                 Waypoint.waypoints[type].forEach((waypoint) => {
@@ -310,9 +341,7 @@ export class Waypoint {
 
     static removeWithinDistance(type, distance) {
         Waypoint.forEachType(type, (waypoint) => {
-            if (waypoint.getDistanceToPlayer() <= distance) {
-                waypoint.remove();
-            }
+            if (waypoint.getDistanceToPlayer() <= distance) waypoint.remove();
         });
     }
 
@@ -321,9 +350,7 @@ export class Waypoint {
         if (type == "guess") {
             return Waypoint.guessWp;
         } else {
-            if (Waypoint.waypoints[type]) {
-                return Waypoint.waypoints[type];
-            }
+            if (Waypoint.waypoints[type]) return Waypoint.waypoints[type];
         }
         return [];
     }
@@ -400,18 +427,15 @@ registerWhen(register("renderWorld", () => {
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 function javaColorToHex(javaColor) {
-    // Extract RGB components
     let red = javaColor.getRed();
     let green = javaColor.getGreen();
     let blue = javaColor.getBlue();
 
-    // Convert RGB to hexadecimal
     let hex = "0x" + componentToHex(red) + componentToHex(green) + componentToHex(blue);
 
     return hex;
 }
 
-// Helper function to convert a single color component to hexadecimal
 function componentToHex(c) {
     let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
