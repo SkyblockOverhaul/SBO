@@ -174,7 +174,7 @@ class PreciseGuessBurrow {
         const guessPosition = this.guessBurrowLocation();
         if (!guessPosition) return;
         finalLocation = guessPosition.down(0.5).roundLocationToBlock();
-        updateGuess
+        Waypoint.updateGuess(finalLocation);
         hasMadeManualGuess = true;
     }
 
