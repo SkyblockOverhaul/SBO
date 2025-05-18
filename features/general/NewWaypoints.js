@@ -36,7 +36,7 @@ let hubWarps = {
  */
 export class Waypoint {
     static waypoints = {}
-    static guessWp = new Waypoint("Guess", 0, 0, 0, 0, 0, 0, 0, "guess", false, true, true);
+    static guessWp = undefined;
     constructor(text, x, y, z, r, g, b, ttl = 0, type = "normal", line = false, beam = true, distance = true) {
         this.x = parseFloat(x);
         this.y = parseFloat(y);
@@ -355,6 +355,7 @@ export class Waypoint {
         return [];
     }
 }
+Waypoint.guessWp = new Waypoint("Guess", 0, 0, 0, 0, 0, 0, 0, "guess", false, true, true);
 
 register("chat", (player) => {
     Waypoint.removeWithinDistance("inq", 20);
