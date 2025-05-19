@@ -355,7 +355,7 @@ export class Waypoint {
         return [];
     }
 }
-Waypoint.guessWp = new Waypoint("Guess", 0, 0, 0, 0, 0, 0, 0, "guess", false, true, true);
+Waypoint.guessWp = new Waypoint("Guess", 0, 0, 0, 0, 0, 0, 0, "guess", false, true, true).hide();
 
 register("chat", (player) => {
     Waypoint.removeWithinDistance("inq", 20);
