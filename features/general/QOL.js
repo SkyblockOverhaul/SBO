@@ -3,7 +3,7 @@ import { getplayername, trace, formatTimeMinSec, setTimeout, getTextureID, isInS
 import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import { createWorldWaypoint, removeWorldWaypoint } from "./Waypoints";
-import RenderLib from "../../../RenderLib";
+import RenderLibV2 from "../../../RenderLibV2";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
 
 // register dragon wings for golden dragon nest
@@ -168,7 +168,7 @@ registerWhen(register("renderWorld", () => {
             }
         }
         if (bestMob != undefined) {
-            RenderLib.drawEspBox(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 1, 2, 1, 0, 0, 1, 1, false)
+            RenderLibV2.drawEspBoxV2(bestMob.getRenderX(), bestMob.getRenderY(), bestMob.getRenderZ(), 1, 2, 1, 0, 0, 1, 1, false)
             if (!lampOn && settings.CarnivalZombieLine) {
                 trace(bestMob.getRenderX(), bestMob.getRenderY() + 1, bestMob.getRenderZ(), 0, 0, 1, 0.7, "", 2);
             }

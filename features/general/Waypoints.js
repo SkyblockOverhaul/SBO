@@ -1,5 +1,5 @@
 import { Render3D } from "../../../tska/rendering/Render3D";
-import RenderLib from "../../../RenderLib";
+import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { Keybind } from "../../../tska/shared/Keybind"
 import { checkDiana } from "../../utils/checkDiana";
@@ -80,7 +80,7 @@ export function removeBurrowWaypointBySmoke(x, y, z) {
     return removedBurrowstring;
 }
 
-function removeWaypointAfterDelay(Waypoints, seconds) { // in new
+function removeWaypointAfterDelay(Waypoints, seconds) {
     setTimeout(() => {
         Waypoints.shift();
     }, seconds*1000);
@@ -111,7 +111,7 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzch
     }
 }
 
-class AxisAlignedBB { // in new (getCenter)
+class AxisAlignedBB {
     constructor(minX, minY, minZ, maxX, maxY, maxZ) {
         this.minX = minX;
         this.minY = minY;
@@ -125,7 +125,7 @@ class AxisAlignedBB { // in new (getCenter)
     }
 }
 let guessRemovedAt = {x: 10000, y: 10000, z: 10000};
-function formatWaypoints(waypoints, r, g, b, type = "Normal") { // in new zum teil
+function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
     let x, y, z, distanceRaw, xSign, zSign = 0;
 
@@ -247,7 +247,7 @@ function closestWarpString(x, y, z) {
 }
 
 let guessWaypointString = "";
-let hubWarps = { // in new
+let hubWarps = {
     castle: {x: -250, y: 130, z: 45, unlocked: true},
     da: {x: 92, y: 75, z: 174, unlocked: true},
     hub: {x: -3, y: 70, z: -70, unlocked: true},
@@ -294,7 +294,7 @@ inquisWarpKey.registerKeyPress(() => {
 
 
 let closestDistance = Infinity;
-function getClosestWarp(x, y, z, type) { // in new
+function getClosestWarp(x, y, z, type) {
     let closestWarp = "";
     const closestPlayerdistance = Math.sqrt(
         (Player.getLastX() - x)**2 +
@@ -370,7 +370,7 @@ function getClosestWarp(x, y, z, type) { // in new
     }
 }
 // check if player got loot share //
-register("chat" , (player) => { // in new
+register("chat" , (player) => {
     let playerX = Player.getX();
     let playerY = Player.getY();
     let playerZ = Player.getZ();
@@ -388,21 +388,21 @@ register("chat" , (player) => { // in new
 
 // check waypoint
 let highlighInquis = false;
-register("step", () => { 
+register("step", () => {
     if (highlighInquis && (settings.inqHighlight || settings.inqCircle)) { 
         inqHighlightRegister.register(); 
     }
     else { 
         inqHighlightRegister.unregister(); 
     }
-    if (isWorldLoaded()) { // in new
+    if (isWorldLoaded()) {
         // remvoe each waypoint thats older than 45 seconds
         inqWaypoints = inqWaypoints.filter(([_, _, _, _, _, time]) => Date.now() - time < 45000);
         // patcherWaypoints = patcherWaypoints.filter(([_, _, _, _, time]) => Date.now() - time < 30000);
     }
 }).setFps(1);
 
-// registerWhen(register("chat", (player, spacing, x, y, z, event) => { // in new
+// registerWhen(register("chat", (player, spacing, x, y, z, event) => {
 //     if (isWorldLoaded()) {
 //         if (checkDiana() && settings.allWaypointsAreInqs) {
 //             isInq = true;
@@ -520,7 +520,7 @@ registerWhen(register("step", () => {
     
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
-registerWhen(register("renderWorld", () => {  
+registerWhen(register("renderWorld", () => { 
     if (isInSkyblock()) {
         renderWaypoint(formatted);
         renderWaypoint(formattedBurrow);
@@ -591,7 +591,7 @@ function getClosestBurrow(formattedBurrow) {
     return [closestBurrow, closestDistance];
 }
 
-function renderWaypoint(waypoints) { // in new
+function renderWaypoint(waypoints) {
     if (!waypoints.length) return;
 
     waypoints.forEach((waypoint) => {
@@ -604,8 +604,8 @@ function renderWaypoint(waypoints) { // in new
         if (!settings.removeGuess && box[0].includes("Guess")) {
             removeAtDistance = 0;
         }
-        // RenderLib.drawEspBox(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
-        RenderLib.drawInnerEspBox(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], alpha/2, true);
+        // RenderLibV2.drawEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], 1, true);
+        RenderLibV2.drawInnerEspBoxV2(box[1], box[2], box[3], 1, 1, 1, rgb[0], rgb[1], rgb[2], alpha/2, true);
         let hexCodeString = javaColorToHex(new Color(rgb[0], rgb[1], rgb[2]));
         if (box[0] != "" && box[0] != "§7") {
             Tessellator.drawString(box[0], box[1], box[2] + 1.5, box[3], parseInt(hexCodeString, 16), true);
@@ -617,7 +617,7 @@ function renderWaypoint(waypoints) { // in new
     });
 }
 
-function javaColorToHex(javaColor) { // in new
+function javaColorToHex(javaColor) {
     // Extract RGB components
     let red = javaColor.getRed();
     let green = javaColor.getGreen();
@@ -630,7 +630,7 @@ function javaColorToHex(javaColor) { // in new
 }
 
 // Helper function to convert a single color component to hexadecimal
-function componentToHex(c) { // in new
+function componentToHex(c) {
     let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }

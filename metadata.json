@@ -7,7 +7,7 @@
   "requires": [
     "Vigilance",
     "PogData",
-    "RenderLib",
+    "RenderLibV2",
     "HypixelModAPI",
     "FileUtilities",
     "tska",

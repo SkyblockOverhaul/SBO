@@ -1,5 +1,5 @@
 import { Render3D } from "../../../tska/rendering/Render3D";
-import RenderLib from "../../../RenderLib";
+import RenderLibV2 from "../../../RenderLibV2";
 import settings from "../../settings";
 import { checkDiana } from "../../utils/checkDiana";
 import { isInSkyblock, isWorldLoaded, playCustomSound, trace } from "../../utils/functions";
@@ -258,7 +258,7 @@ export class Waypoint {
             removeAtDistance = 0;
         }
 
-        RenderLib.drawInnerEspBox(this.fx, this.y - 1, this.fz, 1, 1, 1, this.r, this.g, this.b, this.alpha/2, true);
+        RenderLibV2.drawInnerEspBoxV2(this.fx, this.y - 1, this.fz, 1, 1, 1, this.r, this.g, this.b, this.alpha/2, true);
 
         let hexCodeString = javaColorToHex(new Color(this.r, this.g, this.b));
         if (this.formattedText != "" && this.formattedText != "§7") {

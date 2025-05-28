@@ -3,7 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { mythosMobHpOverlay } from "../guis/DianaGuis";
 import { checkDiana } from "../../utils/checkDiana";
-import RenderLib from "../../../RenderLib";
+import RenderLibV2 from "../../../RenderLibV2";
 import { data } from "../../utils/variables";
 import { checkSendInqMsg } from "../../utils/functions";
 export function getMobsToDisplay() {
@@ -124,7 +124,7 @@ export const inqHighlightRegister = register("renderWorld", () => {
         let alpha = settings.inqColor.getAlpha() / 255;
 
         if (settings.inqHighlight) {
-            RenderLib.drawEspBox(mob.x, mob.y + yOffset, mob.z, 1, 2, 1, red, green, blue, alpha, false);
+            RenderLibV2.drawEspBoxV2(mob.x, mob.y + yOffset, mob.z, 1, 2, 1, red, green, blue, alpha, false);
         }
         if (settings.inqCircle) {
             let height = 0.6;
@@ -133,7 +133,7 @@ export const inqHighlightRegister = register("renderWorld", () => {
                 height = 50;
                 y = 50;
             }
-            RenderLib.drawCyl(mob.x, y, mob.z, 30, 30, height, 120, 1, 0, 90, 90, red, green, blue, alpha, false, false);
+            RenderLibV2.drawCyl(mob.x, y, mob.z, 30, 30, height, 120, 1, 0, 90, 90, red, green, blue, alpha, false, false);
         }
     });
 });
