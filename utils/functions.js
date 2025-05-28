@@ -2,7 +2,7 @@ import { fetch } from "../../tska/polyfill/Fetch";
 import settings, { getcustomSounds } from "../settings";
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
 import { getWorld } from "./world";
-import { HypixelModAPI } from "../../HypixelModAPI";
+import HypixelModAPI from "../../tska/api/ModAPI";
 
 /**
  * @param {number} x - x coordinate
@@ -1077,7 +1077,7 @@ export function getParty() {
 }
 
 let party = [];
-HypixelModAPI.on("partyInfo", (partyInfo) => {
+HypixelModAPI.on("partyinfo", (partyInfo) => {
     party = [];
     Object.keys(partyInfo).forEach(key => {
         if (key != Player.getUUID()) {

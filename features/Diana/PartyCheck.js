@@ -1,6 +1,6 @@
 import { fetch } from "../../../tska/polyfill/Fetch";
 import { formatNumberCommas, getplayername, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, setTimeout } from "../../utils/functions";
-import { HypixelModAPI } from "../../../HypixelModAPI";
+import HypixelModAPI from "../../../tska/api/ModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
 import { data } from "../../utils/variables";
@@ -41,7 +41,7 @@ register("chat", (party) => {
 // command to check party members
 let checkPartyBool = false;
 const partyLimit = 6;
-HypixelModAPI.on("partyInfo", (partyInfo) => {
+HypixelModAPI.on("partyinfo", (partyInfo) => {
     if (!checkPartyBool) return;
     checkPartyBool = false;
     let party = [];
