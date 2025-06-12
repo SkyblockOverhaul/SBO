@@ -101,12 +101,12 @@ export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzch
     if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
         if (burrowWaypoints.length > 0) {
             if (burrowWaypoints.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) return; 
-            burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
+            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
             playCustomSound(settings.burrowSound, settings.burrowVolume);   
         }
         else {
             playCustomSound(settings.burrowSound, settings.burrowVolume);
-            burrowWaypoints.push([numberToBurrowType(burrowType), x, y, z, "", xyzcheck]);
+            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
         }
     }
 }
@@ -513,20 +513,20 @@ let formattedBurrow = [];
 registerWhen(register("step", () => {
     formatted = [];
     formattedBurrow = []
-    formatWaypoints(patcherWaypoints, 0, 0.2, 1); 
-    formatWaypoints(inqWaypoints, 1, 0.84, 0); 
+    // formatWaypoints(patcherWaypoints, 0, 0.2, 1); 
+    // formatWaypoints(inqWaypoints, 1, 0.84, 0); 
     formatWaypoints(burrowWaypoints, 0, 0, 0, "Burrow");
-    formatWaypoints(worldWaypoints, 0, 0, 0, "world");
+    // formatWaypoints(worldWaypoints, 0, 0, 0, "world");
     
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 
 registerWhen(register("renderWorld", () => { 
     if (isInSkyblock()) {
-        renderWaypoint(formatted);
+        // renderWaypoint(formatted);
         renderWaypoint(formattedBurrow);
-        renderWaypoint(formattedGuess);
-        renderBurrowLines();
-        renderWaypointLines();
+        // renderWaypoint(formattedGuess);
+        // renderBurrowLines();
+        // renderWaypointLines();
     }
 }), () =>  settings.dianaBurrowDetect || settings.dianaBurrowGuess || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
 

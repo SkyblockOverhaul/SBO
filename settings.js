@@ -373,14 +373,21 @@ class Settings {
     inqCylinder = false;
 
 
-    @SelectorProperty({
-        name: "Add Warps",
-        description: "Adds warp points for burrow warp",
+
+    @SwitchProperty({
+        name: "Add Wizard Warp",
+        description: "Adds a warp point /warp wizard",
         category: "Diana",
         subcategory: "Other",
-        options: ["None", "Wizard", "Crypt", "Both"]
     })
-    dianaAddWarps = 0;
+    wizardWarp = false;
+    @SwitchProperty({
+        name: "Add Crypt Warp",
+        description: "Adds a warp point /warp crypt",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    cryptWarp = false;
     @SwitchProperty({
         name: "Add Stonks Warp",
         description: "Adds a warp point /warp stonks",

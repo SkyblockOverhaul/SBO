@@ -9,13 +9,16 @@ const Color = Java.type("java.awt.Color");
 
 let hubWarps = {
     castle: {x: -250, y: 130, z: 45, unlocked: true},
-    da: {x: 92, y: 75, z: 174, unlocked: true},
     hub: {x: -3, y: 70, z: -70, unlocked: true},
     museum: {x: -76, y: 76, z: 81, unlocked: true},
-    wizard: {x: 42, y: 122, z: 69, unlocked: true},
-    crypt: {x: -161, y: 61, z: -99, unlocked: true},
-    stonks: {x: -53, y: 72, z: -53, unlocked: true},
 };
+
+let additionalWarps = {
+    wizard: {x: 42, y: 122, z: 69, unlocked: true, setting: "wizardWarp"},
+    crypt: {x: -161, y: 61, z: -99, unlocked: true, setting: "cryptWarp"},
+    stonks: {x: -53, y: 72, z: -53, unlocked: true, setting: "stonksWarp"},
+    da: {x: 92, y: 75, z: 174, unlocked: true, setting: "darkAuctionWarp"},
+}
 
 // one centered waypoint class to replace the old waypoint system
 /**
@@ -41,6 +44,7 @@ export class Waypoint {
         this.x = parseFloat(x);
         this.y = parseFloat(y);
         this.z = parseFloat(z);
+        this.blockPos = new BlockPos(this.x, this.y, this.z).down();
         this.r = r;
         this.g = g;
         this.b = b;
@@ -55,7 +59,6 @@ export class Waypoint {
         this.ttl = ttl; // time to live in seconds
         this.type = type.toLowerCase();
 
-        // format variables
         this.formatted = false;
         this.distanceRaw = 0;
         this.distanceText = "";
@@ -67,12 +70,12 @@ export class Waypoint {
 
         this.fx = 0;
         this.fz = 0;
+        this.fy = this.y; // Ensure fy is initialized to y
+        this.pos = undefined
 
         if (this.type != "guess") {
             if (!Waypoint.waypoints[type]) Waypoint.waypoints[type] = [];
             Waypoint.waypoints[type].push(this);
-        } else {
-            Waypoint.guessWp = this;
         }
         this.format();
     }
@@ -110,18 +113,12 @@ export class Waypoint {
         );
         let closestDistance = Infinity;
 
-        if (settings.stonksWarp) {
-            hubWarps.stonks = {x: -53, y: 72, z: -53, unlocked: true}
-        } else {
-            delete hubWarps.stonks;
-        }
-
-        if (settings.darkAuctionWarp) {
-            if (hubWarps.da == undefined) {
-                hubWarps.da = {x: 92, y: 75, z: 174, unlocked: true}
+        for (let warp in additionalWarps) {
+            if (settings[additionalWarps[warp].setting] && additionalWarps[warp].unlocked) {
+                hubWarps[warp] = additionalWarps[warp];
+            } else {
+                delete hubWarps[warp];
             }
-        } else {
-            delete hubWarps.da;
         }
 
         for (let warp in hubWarps) {
@@ -153,44 +150,29 @@ export class Waypoint {
     }
 
     formatBurrow() {
-        switch (this.text) {
-            case "Start":
-                this.r = settings.startColor.getRed()/255;
-                this.g = settings.startColor.getGreen()/255;
-                this.b = settings.startColor.getBlue()/255;
-                break;
-            case "Mob":
-                this.r = settings.mobColor.getRed()/255;
-                this.g = settings.mobColor.getGreen()/255;
-                this.b = settings.mobColor.getBlue()/255;
-                break;
-            case "Treasure":
-                this.r = settings.treasureColor.getRed()/255;
-                this.g = settings.treasureColor.getGreen()/255;
-                this.b = settings.treasureColor.getBlue()/255;
-                break;
-        }
         this.formattedText = `${this.text}§7 ${this.distanceText}`;
-
-        if (this.x > 0) {
+        const newX = this.blockPos.getX();
+        const newZ = this.blockPos.getZ();
+        if (newX > 0) {
             this.xSign = 1;
-        } else if (this.x < 0) {
+        } else if (newX < 0) {
             this.xSign = -1;
         }
 
-        if (this.z > 0) {
+        if (newZ > 0) {
             this.zSign = 1;
-        } else if (this.z < 0) {
+        } else if (newZ < 0) {
             this.zSign = -1;
         }
-        this.fx = this.x + (this.xSign * 0.5);
-        this.fz = this.z + (this.zSign * 0.5);
+        this.fx = newX + (this.xSign * 0.5);
+        this.fz = newZ + (this.zSign * 0.5);
+        this.fy = this.blockPos.getY() + 1;
     }
 
     formatGuess() {
         this.warp = this.getClosestwarp();
         if (this.warp) {
-            this.formattedText = `${this.text}§7${this.warp} ${this.distanceText}`;
+            this.formattedText = `${this.text}§7 (warp ${this.warp}) ${this.distanceText}`;
         } else {
             this.formattedText = `${this.text}§7 ${this.distanceText}`;
         }
@@ -202,8 +184,9 @@ export class Waypoint {
         let center = this.getCenter();
         this.fx = center.x;
         this.fz = center.z;
+        this.fy = this.y;
 
-        if (!this.hidden && Waypoint.waypointExists("burrow", this.x, this.y, this.z)) this.hide();
+        if (!this.hidden && Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz)) this.hide();
     }
 
     format() {
@@ -217,9 +200,11 @@ export class Waypoint {
         if (this.distanceRaw >= 230) {
             this.fx = Player.getX() + (this.x - Player.getX()) * (230 / this.distanceRaw);
             this.fz = Player.getZ() + (this.z - Player.getZ()) * (230 / this.distanceRaw);
+            this.fy = this.y;
         } else {
             this.fx = this.x;
             this.fz = this.z;
+            this.fy = this.y;
         }
 
         if (this.type == "burrow") {
@@ -231,6 +216,7 @@ export class Waypoint {
             this.zSign = this.fz == 0 ? 1 : Math.sign(this.fz);
             this.fx = this.fx + (this.xSign * 0.5);
             this.fz = this.fz + (this.zSign * 0.5);
+            this.fy = this.y;
             this.formattedText = `${this.text}§7 ${this.distanceText}`;
         }
 
@@ -238,15 +224,17 @@ export class Waypoint {
     }
 
     renderLine() {
-        trace(this.fx, this.y, this.fz, this.r, this.g, this.b, this.alpha, "", parseInt(settings.burrowLineWidth));
+        trace(this.fx, this.fy, this.fz, this.r, this.g, this.b, this.alpha, "", parseInt(settings.burrowLineWidth));
     }
        
     hide() {
         this.hidden = true
+        return this
     }
 
     show() {
         this.hidden = false
+        return this
     }
 
     render() {
@@ -258,14 +246,14 @@ export class Waypoint {
             removeAtDistance = 0;
         }
 
-        RenderLibV2.drawInnerEspBoxV2(this.fx, this.y - 1, this.fz, 1, 1, 1, this.r, this.g, this.b, this.alpha/2, true);
+        RenderLibV2.drawInnerEspBoxV2(this.fx, this.fy - 1, this.fz, 1, 1, 1, this.r, this.g, this.b, this.alpha/2, true);
 
         let hexCodeString = javaColorToHex(new Color(this.r, this.g, this.b));
         if (this.formattedText != "" && this.formattedText != "§7") {
-            Tessellator.drawString(this.formattedText, this.fx, this.y + 0.5, this.fz, parseInt(hexCodeString, 16), true);
+            Tessellator.drawString(this.formattedText, this.fx, this.fy + 0.5, this.fz, parseInt(hexCodeString, 16), true);
         }
         if (this.distanceRaw >= removeAtDistance && this.beam) {
-            Render3D.renderBeaconBeam(this.fx - 0.5, this.y, this.fz - 0.5, this.r*255, this.g*255, this.b*255, this.alpha*255, true);
+            Render3D.renderBeaconBeam(this.fx - 0.5, this.fy, this.fz - 0.5, this.r*255, this.g*255, this.b*255, this.alpha*255, true);
         }
 
         if (this.line) this.renderLine()
@@ -282,7 +270,7 @@ export class Waypoint {
     static updateGuess(SboVec) {
         Waypoint.guessWp.show();
         Waypoint.guessWp.x = SboVec.getX();
-        Waypoint.guessWp.y = SboVec.getY();
+        Waypoint.guessWp.y = SboVec.getY() + 1;
         Waypoint.guessWp.z = SboVec.getZ();
         Waypoint.guessWp.format();
     }
@@ -290,8 +278,9 @@ export class Waypoint {
     static waypointExists(type, x, y, z) {
         let exists = false;
         Waypoint.forEachType(type, (waypoint) => {
-            if (waypoint.x == x && waypoint.y == y && waypoint.z == z) {
+            if (waypoint.fx == x && waypoint.fy == y && waypoint.fz == z) {
                 exists = true;
+                return false;
             }
         });
         return exists;
@@ -343,6 +332,15 @@ export class Waypoint {
         Waypoint.forEachType(type, (waypoint) => {
             if (waypoint.getDistanceToPlayer() <= distance) waypoint.remove();
         });
+    }
+
+    static removeAllOfType(type) {
+        type = type.toLowerCase();
+        if (type == "guess") {
+            if (Waypoint.guessWp) Waypoint.guessWp.hide();
+        } else {
+            Waypoint.waypoints[type] = [];
+        }
     }
 
     static getWaypointsOfType(type) {
