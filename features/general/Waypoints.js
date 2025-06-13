@@ -104,19 +104,21 @@ export class Waypoint {
     }
 
     formatBurrow() {
-        const newX = this.blockPos.getX();
-        const newZ = this.blockPos.getZ();
-        if (newX > 0) {
+        if (this.x > 0) {
             this.xSign = 1;
-        } else if (newX < 0) {
+        } else if (this.x < 0) {
             this.xSign = -1;
         }
 
-        if (newZ > 0) {
+        if (this.z > 0) {
             this.zSign = 1;
-        } else if (newZ < 0) {
+        } else if (this.z < 0) {
             this.zSign = -1;
         }
+        
+        const newX = this.blockPos.getX();
+        const newZ = this.blockPos.getZ();
+
         this.fx = newX + (this.xSign * 0.5);
         this.fz = newZ + (this.zSign * 0.5);
         this.fy = this.blockPos.getY() + 1;
