@@ -9,7 +9,6 @@ import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
 import { Waypoint } from "../general/NewWaypoints";
-import { getFinalLocation, setFinalLocation } from "./DianaGuess";
 
 class EvictingQueue {
     constructor(capacity) {
@@ -123,25 +122,14 @@ function getParticleType(packet) {
     return null;
 }
 
-class Diggable {
-    constructor(x, y, z, type) {
+class Burrow {
+    constructor(x, y, z, hasFootstep, hasEnchant, type) {
         x = x;
         y = y;
         z = z;
         type = type;
-        blockPos = new BlockPos(x, y, z);
-    }
-}
-
-class Burrow extends Diggable {
-    constructor(x, y, z, hasFootstep, hasEnchant, type) {
-        super(x, y, z, type);
         hasFootstep = hasFootstep;
         hasEnchant = hasEnchant;
-    }
-
-    static fromVec3(vec3, hasFootstep, hasEnchant, type) {
-        return new Burrow(vec3.x, vec3.y, vec3.z, hasFootstep, hasEnchant, type);
     }
 }
 
@@ -207,7 +195,7 @@ function burrowDetect(packet) {
     }
 }
 
-function removeBurrowWaypoint(x, y, z) { // working
+function removeBurrowWaypoint(x, y, z) {
     const posstring = x + " " + (y - 1) + " " + z;
     if (!burrows[posstring] || !burrows[posstring][3]) return;
     burrows[posstring][3].remove();
@@ -215,9 +203,7 @@ function removeBurrowWaypoint(x, y, z) { // working
 }
 
 function resetBurrows() {
-    Object.keys(burrows).forEach(key => {
-        if (burrows[key][3]) burrows[key][3].remove();
-    });
+    Waypoint.removeAllOfType("burrow");
     burrows = {};
     burrowsHistory.clear();
 }
@@ -226,7 +212,7 @@ let removePos = null;
 function refreshBurrows() {
     if (removePos == null) return;
     removeBurrowWaypoint(removePos.getX(), removePos.getY(), removePos.getZ());
-    if (Waypoint.guessWp.getDistanceTo(removePos) < 2) Waypoint.guessWp.hide();
+    if (Waypoint.guessWp.distanceTo(removePos) < 2) Waypoint.guessWp.hide();
 }
 
 const isCloseEnough = (entity, x, y, z) => {
@@ -337,8 +323,9 @@ registerWhen(register("packetSent", (packet, event) => {
         if (pos.getZ() < 0) {
             z = z + 1;
         }
-        if (burrows[x + " " + (y-1) + " " + z] || (getFinalLocation() != null && getFinalLocation().distanceTo(new BlockPos(x, y, z)) < 2)) {
-            removePos = new BlockPos(x, y, z);
+        let removePosNew = new BlockPos(x, y, z);
+        if (burrows[x + " " + (y-1) + " " + z] || Waypoint.guessWp.distanceTo(removePosNew) < 2) {
+            removePos = removePosNew;
             lastInteractedPos = new BlockPos(x, y - 1, z);
         }
         Waypoint.removeAtPos(x, y, z);

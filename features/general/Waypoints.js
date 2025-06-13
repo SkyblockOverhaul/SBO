@@ -11,22 +11,6 @@ import { inqHighlightRegister } from "../Diana/DianaMobDetect";
 
 const renderBeaconBeam = Render3D.renderBeaconBeam;
 
-let patcherWaypoints = [];
-export function getPatcherWaypoints() { 
-    return patcherWaypoints 
-};
-
-let inqWaypoints = [];
-
-let burrowWaypoints = [];
-export function getBurrowWaypoints() {
-    return burrowWaypoints;
-}
-
-export function setBurrowWaypoints(burrows) {
-    burrowWaypoints = burrows;
-}
-
 let worldWaypoints = [];
 export function createWorldWaypoint(name, x, y, z, r, g, b, line = false, beam = true, distance = true) {
     // check if x y z are already in worldWaypoints
@@ -37,93 +21,7 @@ export function createWorldWaypoint(name, x, y, z, r, g, b, line = false, beam =
 export function removeWorldWaypoint(x, y, z) {
     worldWaypoints = worldWaypoints.filter(([_, wx, wy, wz]) => wx !== x || wy !== y || wz !== z);
 }
-    
-register("worldUnload", () => {
-    worldWaypoints = [];
-})
 
-
-export function removeBurrowWaypoint(pos, burrows) {
-    let x = pos.getX();
-    let y = pos.getY();
-    let z = pos.getZ();
-    let removedBurrowstring = null;
-
-    for (let i = 0; i < burrowWaypoints.length; i++) {
-        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-            removedBurrowstring = x + " " + (y - 1) + " " + z; 
-            burrowWaypoints.splice(i, 1);
-        }
-    }
-    // burrows = burrows.filter(([_, bx, by, bz]) => bx !== closetburrow[1] || by !== closetburrow[2] || bz !== closetburrow[3] );
-    const posstring = `${x} ${y-1} ${z}`;
-    delete burrows[posstring];
-    return {burrows: burrows, removedBurrow: removedBurrowstring};
-}
-
-export function removeInqWaypoint(x, y, z) {
-    for (let i = 0; i < inqWaypoints.length; i++) {
-        if (inqWaypoints[i][1] == x && inqWaypoints[i][2] == y && inqWaypoints[i][3] == z) {
-            inqWaypoints.splice(i, 1);
-        }
-    }
-}
-
-export function removeBurrowWaypointBySmoke(x, y, z) {
-    let removedBurrowstring = null;
-    for (let i = 0; i < burrowWaypoints.length; i++) {
-        if (burrowWaypoints[i][1] == x && burrowWaypoints[i][2] == y && burrowWaypoints[i][3] == z) {
-            removedBurrowstring = x + " " + (y - 1) + " " + z;
-            burrowWaypoints.splice(i, 1);
-        }
-    }
-    return removedBurrowstring;
-}
-
-function removeWaypointAfterDelay(Waypoints, seconds) {
-    setTimeout(() => {
-        Waypoints.shift();
-    }, seconds*1000);
-} 
-
-function numberToBurrowType(number) {
-    switch (number) {
-        case 0:
-            return "Start";
-        case 1:
-            return "Mob";
-        case 2:
-            return "Treasure";
-    }
-}
-
-export function createBurrowWaypoints(burrowType, x, y, z, burrowshistory, xyzcheck) {
-    if (!burrowshistory.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) {
-        if (burrowWaypoints.length > 0) {
-            if (burrowWaypoints.some(([type, xb, yb, zb]) => xb === x && yb === y && zb === z)) return; 
-            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
-            playCustomSound(settings.burrowSound, settings.burrowVolume);   
-        }
-        else {
-            playCustomSound(settings.burrowSound, settings.burrowVolume);
-            burrowWaypoints.push([burrowType, x, y, z, "", xyzcheck]);
-        }
-    }
-}
-
-class AxisAlignedBB {
-    constructor(minX, minY, minZ, maxX, maxY, maxZ) {
-        this.minX = minX;
-        this.minY = minY;
-        this.minZ = minZ;
-        this.maxX = maxX;
-        this.maxY = maxY;
-        this.maxZ = maxZ;
-        this.x = minX + (maxX - minX) / 2;
-        this.y = minY + (maxY - minY) / 2;
-        this.z = minZ + (maxZ - minZ) / 2;
-    }
-}
 let guessRemovedAt = {x: 10000, y: 10000, z: 10000};
 function formatWaypoints(waypoints, r, g, b, type = "Normal") {
     if (!waypoints.length) return;
@@ -369,22 +267,6 @@ function getClosestWarp(x, y, z, type) {
         return false;
     }
 }
-// check if player got loot share //
-register("chat" , (player) => {
-    let playerX = Player.getX();
-    let playerY = Player.getY();
-    let playerZ = Player.getZ();
-    function isWithin20BlockRadius(x, y, z) {
-        let dx = x - playerX;
-        let dy = y - playerY;
-        let dz = z - playerZ;
-        let distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        return distance <= 20;
-    }
-    inqWaypoints = inqWaypoints.filter((waypoint) => {
-        return !waypoint[0].includes(player.removeFormatting()) && !isWithin20BlockRadius(waypoint[1], waypoint[2], waypoint[3]);
-    });
-}).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 
 // check waypoint
 let highlighInquis = false;
@@ -467,28 +349,6 @@ registerWhen(register("chat", () => {
     }
 }).setCriteria("&r&cYou haven't unlocked this fast travel destination!&r"), () => settings.inqWarpKey);
 // wenn scroll ulocked dann diese message &r&eYou may now Fast Travel to &r&aSkyBlock Hub &r&7- &r&bCrypts&r&e!&r
-
-registerWhen(register("step", () => { 
-    if (isWorldLoaded() && settings.dianaBurrowWarp) {
-        if (finalLocation != null) {
-            guessWaypointString = closestWarpString(finalLocation.x, finalLocation.y, finalLocation.z);
-        }
-        // same for inquis waypoints
-        if (settings.inqWaypoints) {
-            inqWaypoints.forEach((waypoint) => {
-                waypoint[4] = closestWarpString(waypoint[1], waypoint[2], waypoint[3]);
-            });
-        }
-    }
-    else {
-        guessWaypointString = "";   
-        inqWaypoints.forEach((waypoint) => {
-            waypoint[4] = "";
-        });
-    }
-}).setFps(3), () => settings.dianaBurrowGuess);;
-
-
 
 let lastWaypoint = undefined;
 let guessWaypoint = undefined;
