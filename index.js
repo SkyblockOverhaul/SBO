@@ -6,7 +6,7 @@ import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
 import "./features/Diana/DianaGuess";
 import "./features/Diana/DianaWarp";
-import "./features/general/NewWaypoints";
+import "./features/general/Waypoints";
 import "./features/general/fossilSolver";
 import "./features/general/messageHider";
 import "./features/general/pickuplog";

@@ -1,6 +1,6 @@
 import { getLastGuessTime } from "./DianaGuess";
 import { Keybind } from "../../../tska/shared/Keybind"
-import { Waypoint, lockWarp } from "../general/NewWaypoints";
+import { Waypoint, lockWarp } from "../general/Waypoints";
 import settings from "../../settings";
 import { toTitleCase, setTimeout } from "../../utils/functions";
 

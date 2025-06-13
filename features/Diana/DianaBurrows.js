@@ -8,7 +8,7 @@ import { registerWhen } from "../../utils/variables";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
-import { Waypoint } from "../general/NewWaypoints";
+import { Waypoint } from "../general/Waypoints";
 
 class EvictingQueue {
     constructor(capacity) {

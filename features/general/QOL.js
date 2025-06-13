@@ -4,7 +4,7 @@ import { registerWhen, timerCrown, data } from "../../utils/variables";
 import { getWorld, getZone } from "../../utils/world";
 import RenderLibV2 from "../../../RenderLibV2";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
-import { Waypoint } from "./NewWaypoints";
+import { Waypoint } from "./Waypoints";
 
 // register dragon wings for golden dragon nest
 let found = false;

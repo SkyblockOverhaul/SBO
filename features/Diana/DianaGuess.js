@@ -3,7 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { coloredArmorStands, getLastInteractedPos } from "./DianaBurrows";
 import { SboVec } from "../../utils/helper";
-import { Waypoint } from "../general/NewWaypoints";
+import { Waypoint } from "../general/Waypoints";
 
 class Matrix {
     constructor(data) {
