@@ -323,7 +323,6 @@ export class Waypoint {
 
     static removeAllOfType(type) {
         type = type.toLowerCase();
-        print(`Removing all waypoints of type ${type}`);
         Waypoint.waypoints[type] = [];
     }
 
