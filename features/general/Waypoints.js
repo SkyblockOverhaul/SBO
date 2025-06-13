@@ -43,6 +43,7 @@ let additionalWarps = {
 export class Waypoint {
     static waypoints = {}
     static guessWp = undefined;
+    static closestBurrow = [undefined, 1000];
     constructor(text, x, y, z, r, g, b, ttl = 0, type = "normal", line = false, beam = true, distance = true) {
         this.x = parseFloat(x);
         this.y = parseFloat(y);
@@ -61,13 +62,14 @@ export class Waypoint {
         
         this.creation = Date.now();
         this.text = text;
-        this.ttl = ttl; // time to live in seconds
+        this.ttl = ttl;
         this.type = type.toLowerCase();
 
         this.formatted = false;
         this.distanceRaw = 0;
         this.distanceText = "";
         this.formattedText = "";
+        this.burrowNearby = false;
         
         this.xSign = 0;
         this.zSign = 0;
@@ -101,16 +103,7 @@ export class Waypoint {
         );
     }
 
-    getCenter() {
-        return {
-            x: this.fx + ((this.fx + 1) - this.fx) / 2,
-            y: this.y + ((this.y + 1) - this.y) / 2,
-            z: this.fz + ((this.fz + 1) - this.fz) / 2
-        };
-    }
-
     formatBurrow() {
-        this.formattedText = `${this.text}§7${this.distanceText}`;
         const newX = this.blockPos.getX();
         const newZ = this.blockPos.getZ();
         if (newX > 0) {
@@ -127,30 +120,17 @@ export class Waypoint {
         this.fx = newX + (this.xSign * 0.5);
         this.fz = newZ + (this.zSign * 0.5);
         this.fy = this.blockPos.getY() + 1;
-
-        if (Waypoint.getClosestWaypoint("burrow")[0] == this) {
-            this.line = true;
-        } else {
-            this.line = false;
-        }
     }
 
     formatGuess() {
-        this.warp = Waypoint.getClosestwarp(this);
-        if (this.warp) {
-            this.formattedText = `${this.text}§7 (warp ${this.warp})${this.distanceText}`;
-        } else {
-            this.formattedText = `${this.text}§7${this.distanceText}`;
-        }
-        this.line = settings.guessLine;
+        this.line = settings.guessLine && Waypoint.closestBurrow[1] > 60;
         this.r = settings.guessColor.getRed()/255;
         this.g = settings.guessColor.getGreen()/255;
         this.b = settings.guessColor.getBlue()/255;
         this.hexCodeString = javaColorToHex(settings.guessColor);
         
-        let center = this.getCenter();
-        this.fx = center.x;
-        this.fz = center.z;
+        this.fx = this.x + 0.5;
+        this.fz = this.z + 0.5;
         this.fy = this.y;
 
         if (!this.hidden && Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz)) this.hide();
@@ -164,30 +144,43 @@ export class Waypoint {
             this.distanceText = "";
         }
 
-        if (this.distanceRaw >= 230) {
-            this.fx = Player.getX() + (this.x - Player.getX()) * (230 / this.distanceRaw);
-            this.fz = Player.getZ() + (this.z - Player.getZ()) * (230 / this.distanceRaw);
-            this.fy = this.y;
-        } else {
-            this.fx = this.x;
-            this.fz = this.z;
-            this.fy = this.y;
-        }
+        this.setWarpText();
 
         if (this.type == "burrow") {
             this.formatBurrow();
         } else if (this.type == "guess") {
             this.formatGuess();
         } else {
-            this.xSign = this.fx == 0 ? 1 : Math.sign(this.fx);
-            this.zSign = this.fz == 0 ? 1 : Math.sign(this.fz);
-            this.fx = this.fx + (this.xSign * 0.5);
-            this.fz = this.fz + (this.zSign * 0.5);
+            this.xSign = this.x == 0 ? 1 : Math.sign(this.x);
+            this.zSign = this.z == 0 ? 1 : Math.sign(this.z);
+            this.fx = this.x + (this.xSign * 0.5);
+            this.fz = this.z + (this.zSign * 0.5);
             this.fy = this.y;
-            this.formattedText = `${this.text}§7${this.distanceText}`;
         }
 
+        if (this.distanceRaw >= 230) {
+            this.fx = Player.getX() + (this.fx - Player.getX()) * (230 / this.distanceRaw);
+            this.fz = Player.getZ() + (this.fz - Player.getZ()) * (230 / this.distanceRaw);
+        } 
+
         this.formatted = true;
+    }
+
+    setWarpText() {
+        this.warp = false;
+        const inqWaypoints = Waypoint.getWaypointsOfType("inq");
+        if (this.type == "guess") {
+            this.warp = Waypoint.getClosestWarp(this);
+        }
+        else if (this.type == "inq" && inqWaypoints[inqWaypoints.length - 1] == this) {
+            this.warp = Waypoint.getClosestWarp(this);
+        }
+       
+        if (this.warp) {
+            this.formattedText = `${this.text}§7 (warp ${this.warp})${this.distanceText}`;
+        } else {
+            this.formattedText = `${this.text}${this.distanceText}`;
+        }
     }
 
     renderLine() {
@@ -225,25 +218,25 @@ export class Waypoint {
     }
 
     remove() {
+        if (Waypoint.closestBurrow[0] == this) Waypoint.closestBurrow = [undefined, 1000];
         Waypoint.waypoints[this.type].splice(Waypoint.waypoints[this.type].indexOf(this), 1);
     }
 
-    static getClosestwarp(waypoint) {
+    static getClosestWarp(waypoint) {
         let closestWarp = "";
         const closestPlayerdistance = waypoint.distanceToPlayer();
         let closestDistance = Infinity;
 
+        const availableWarps = { ...hubWarps };
         for (let warp in additionalWarps) {
             if (settings[additionalWarps[warp].setting] && additionalWarps[warp].unlocked) {
-                hubWarps[warp] = additionalWarps[warp];
-            } else {
-                delete hubWarps[warp];
+                availableWarps[warp] = additionalWarps[warp];
             }
         }
 
-        for (let warp in hubWarps) {
-            if (hubWarps[warp].unlocked) {
-                let distance = waypoint.distanceTo(hubWarps[warp]);
+        for (let warp in availableWarps) {
+            if (availableWarps[warp].unlocked) {
+                let distance = waypoint.distanceTo(availableWarps[warp]);
                 if (distance < closestDistance) {
                     closestDistance = distance;
                     closestWarp = warp;
@@ -255,7 +248,7 @@ export class Waypoint {
         let warpDiff = parseInt(settings.warpDiff);
 
         const condition1 = parseInt(closestPlayerdistance) > (closestDistance + warpDiff);
-        const condition2 = condition1 && (Waypoint.getClosestWaypoint("burrow")[1] > 60 || Waypoint.getWaypointsOfType("inq").length > 0);
+        const condition2 = condition1 && (Waypoint.closestBurrow[1] > 60 || Waypoint.getWaypointsOfType("inq").length > 0);
 
         if (settings.dontWarpIfBurrowNearby ? condition2 : condition1) {
             return closestWarp;
@@ -378,9 +371,6 @@ register("chat", (player, spacing, x, y, z, event) => {
         playCustomSound(settings.inqSound, settings.inqVolume);
 
         if (!(player.includes(Player.getName()) && (settings.hideOwnWaypoints == 1 || settings.hideOwnWaypoints == 3))) {
-            if (z.split(" ").length > 1) {
-                z = z.split(" ")[0];
-            }
             new Waypoint(player, x, y, z, 1, 0.84, 0, 45, "inq");
         }
     } else {
@@ -394,11 +384,14 @@ register("chat", (player, spacing, x, y, z, event) => {
 
 registerWhen(register("step", () => {
     if (!isInSkyblock() && !isWorldLoaded()) return;
+    Waypoint.closestBurrow = Waypoint.getClosestWaypoint("burrow");
     Waypoint.forEachWaypoint((waypoint) => {
         if (waypoint.ttl > 0 && Date.now() - waypoint.creation > waypoint.ttl * 1000) {
             waypoint.remove();
             return;
         }
+
+        waypoint.line = Waypoint.closestBurrow[0] == waypoint;
         waypoint.format();
     });
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);

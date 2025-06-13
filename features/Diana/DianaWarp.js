@@ -12,7 +12,7 @@ const warpKey = new Keybind("Burrow Warp", Keyboard.KEY_NONE, "SkyblockOverhaul"
 warpKey.registerKeyPress(() => {
     if (!settings.dianaBurrowWarp) return;
     if (settings.warpDelay && Date.now() - getLastGuessTime() < settings.warpDelayTime) return;
-    closestWarpGuess = Waypoint.getClosestwarp(Waypoint.guessWp);
+    closestWarpGuess = Waypoint.getClosestWarp(Waypoint.guessWp);
     if (closestWarpGuess && !tryWarp) {
         warpedTo = closestWarpGuess;
         tryWarp = true;
@@ -30,7 +30,7 @@ inquisWarpKey.registerKeyPress(() => {
     const inqWaypoints = Waypoint.getWaypointsOfType("inq");
     if (inqWaypoints.length == 0) return;
 
-    closestWarpInq = Waypoint.getClosestWarp(inqWaypoints[0]);
+    closestWarpInq = Waypoint.getClosestWarp(inqWaypoints[inqWaypoints.length - 1]);
     if (closestWarpInq && !tryWarp) {
         warpedTo = closestWarpInq;
         tryWarp = true;

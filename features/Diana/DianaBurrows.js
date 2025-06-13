@@ -324,7 +324,7 @@ registerWhen(register("packetSent", (packet, event) => {
             z = z + 1;
         }
         let removePosNew = new BlockPos(x, y, z);
-        if (burrows[x + " " + (y-1) + " " + z] || Waypoint.guessWp.distanceTo(removePosNew) < 2) {
+        if (burrows[x + " " + (y-1) + " " + z]) {
             removePos = removePosNew;
             lastInteractedPos = new BlockPos(x, y - 1, z);
         }
