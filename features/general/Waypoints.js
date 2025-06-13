@@ -51,6 +51,8 @@ export class Waypoint {
         this.r = r;
         this.g = g;
         this.b = b;
+        this.hexCodeString = javaColorToHex(new Color(this.r, this.g, this.b));
+
         this.alpha = 0.5;
         this.line = line;
         this.beam = beam;
@@ -125,6 +127,12 @@ export class Waypoint {
         this.fx = newX + (this.xSign * 0.5);
         this.fz = newZ + (this.zSign * 0.5);
         this.fy = this.blockPos.getY() + 1;
+
+        if (Waypoint.getClosestWaypoint("burrow")[0] == this) {
+            this.line = true;
+        } else {
+            this.line = false;
+        }
     }
 
     formatGuess() {
@@ -138,6 +146,7 @@ export class Waypoint {
         this.r = settings.guessColor.getRed()/255;
         this.g = settings.guessColor.getGreen()/255;
         this.b = settings.guessColor.getBlue()/255;
+        this.hexCodeString = javaColorToHex(settings.guessColor);
         
         let center = this.getCenter();
         this.fx = center.x;
@@ -200,15 +209,13 @@ export class Waypoint {
         if (this.hidden) return;
         let removeAtDistance = 10;
         if (this.distanceRaw <= settings.removeGuessDistance && this.type == "guess" && settings.removeGuess) return;
-        if (!settings.removeGuess && this.type == "guess") {
-            removeAtDistance = 0;
-        }
+
+        if (!settings.removeGuess && this.type == "guess")  removeAtDistance = 0;
 
         RenderLibV2.drawInnerEspBoxV2(this.fx, this.fy - 1, this.fz, 1, 1, 1, this.r, this.g, this.b, this.alpha/2, true);
 
-        let hexCodeString = javaColorToHex(new Color(this.r, this.g, this.b));
         if (this.formattedText != "" && this.formattedText != "§7") {
-            Tessellator.drawString(this.formattedText, this.fx, this.fy + 0.5, this.fz, parseInt(hexCodeString, 16), true);
+            Tessellator.drawString(this.formattedText, this.fx, this.fy + 0.5, this.fz, parseInt(this.hexCodeString, 16), true);
         }
         if (this.distanceRaw >= removeAtDistance && this.beam) {
             Render3D.renderBeaconBeam(this.fx - 0.5, this.fy, this.fz - 0.5, this.r*255, this.g*255, this.b*255, this.alpha*255, true);
@@ -399,7 +406,7 @@ registerWhen(register("step", () => {
 registerWhen(register("step", () => {
     if (!isInSkyblock() && !isWorldLoaded()) return;
     if (Waypoint.guessWp) Waypoint.guessWp.format();
-}).setFps(20), () => settings.dianaBurrowGuess);
+}).setFps(10), () => settings.dianaBurrowGuess);
         
 registerWhen(register("renderWorld", () => { 
     if (!isInSkyblock() && !isWorldLoaded()) return;
