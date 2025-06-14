@@ -148,6 +148,11 @@ export class Waypoint {
 
         this.setWarpText();
 
+        if (this.type == "inq") {
+            const inqWaypoints = Waypoint.getWaypointsOfType("inq");
+            this.line = inqWaypoints[inqWaypoints.length - 1] == this && settings.inqLine;
+        }
+
         if (this.type == "burrow") {
             this.formatBurrow();
         } else if (this.type == "guess") {
