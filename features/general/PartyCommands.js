@@ -1,7 +1,7 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout, formatNumber } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout, formatNumber, getTotalValue } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
-import { data, dianaTrackerMayor } from "../../utils/variables";
+import { data, dianaTrackerMayor, dianaTrackerTotal } from "../../utils/variables";
 
 const carrot = [
     "As I see it, Carrot",
@@ -423,25 +423,33 @@ function getMagicFindAndLooting(magicfind, looting) {
     return " &7[MF:" + magicfind + "] [L:" + looting + "]"
 }
 
-function getPlayerStats() {
+function getPlayerStats(total = true) {
+    const tracker = total ? dianaTrackerTotal : dianaTrackerMayor;
+    const playtimeType = total ? "totalTime" : "mayorTime";
+    const playtime = tracker.items[playtimeType];
+    const playTimeHrs = (playtime / 3600000).toFixed(2);
+    const burrowsPerHour = tracker.items["Total Burrows"] / playTimeHrs;
+    const mobsPerHour = tracker.mobs["TotalMobs"] / playTimeHrs;
+    const totalValue = getTotalValue(tracker);
+    const profit = [formatNumber(totalValue), ["Instasell", "Sell Offer"][settings.bazaarSettingDiana], formatNumber(totalValue / playTimeHrs)];
     const stats = {
-        playtime: formatTime(dianaTrackerMayor.items.mayorTime),
-        profit: getDianaMayorTotalProfitAndOfferType(),
-        burrows: dianaTrackerMayor["items"]["Total Burrows"],
-        burrowsPerHour: getBurrowsPerHour(),
-        totalMobs: dianaTrackerMayor["mobs"]["TotalMobs"],
-        mobsPerHour: getMobsPerHour(),
-        inquisitors: dianaTrackerMayor["mobs"]["Minos Inquisitor"],
-        inqPercentage: calcPercentOne(dianaTrackerMayor, "Minos Inquisitor") + "%",
-        lsInqs: dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"],
-        chimeraDrops: dianaTrackerMayor["items"]["Chimera"],
-        chimeraDropRate: calcPercentOne(dianaTrackerMayor, "Chimera", "Minos Inquisitor") + "%",
-        chimeraLSDrops: dianaTrackerMayor["items"]["ChimeraLs"],
-        chimeraLSDropRate: parseFloat((dianaTrackerMayor["items"]["ChimeraLs"] / dianaTrackerMayor["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2)) + "%",
-        sticksDropped: dianaTrackerMayor["items"]["Daedalus Stick"],
-        stickDropRate: calcPercentOne(dianaTrackerMayor, "Daedalus Stick", "Minotaur") + "%",
-        relicsDropped: dianaTrackerMayor["items"]["MINOS_RELIC"],
-        relicDropRate: calcPercentOne(dianaTrackerMayor, "MINOS_RELIC", "Minos Champion") + "%"
+        playtime: formatTime(playtime),
+        profit: profit,
+        burrows: tracker["items"]["Total Burrows"],
+        burrowsPerHour: parseFloat(burrowsPerHour.toFixed(2)),
+        totalMobs: tracker["mobs"]["TotalMobs"],
+        mobsPerHour: parseFloat(mobsPerHour.toFixed(2)),
+        inquisitors: tracker["mobs"]["Minos Inquisitor"],
+        inqPercentage: calcPercentOne(tracker, "Minos Inquisitor") + "%",
+        lsInqs: tracker["mobs"]["Minos Inquisitor Ls"],
+        chimeraDrops: tracker["items"]["Chimera"],
+        chimeraDropRate: calcPercentOne(tracker, "Chimera", "Minos Inquisitor") + "%",
+        chimeraLSDrops: tracker["items"]["ChimeraLs"],
+        chimeraLSDropRate: parseFloat((tracker["items"]["ChimeraLs"] / tracker["mobs"]["Minos Inquisitor Ls"] * 100).toFixed(2)) + "%",
+        sticksDropped: tracker["items"]["Daedalus Stick"],
+        stickDropRate: calcPercentOne(tracker, "Daedalus Stick", "Minotaur") + "%",
+        relicsDropped: tracker["items"]["MINOS_RELIC"],
+        relicDropRate: calcPercentOne(tracker, "MINOS_RELIC", "Minos Champion") + "%"
     };
     return stats;
 }
