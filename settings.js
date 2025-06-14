@@ -876,6 +876,17 @@ class Settings {
     })
     slotColor = Color.RED;
 
+    // custom
+    @SliderProperty({
+        name: "Waypoint Text Size",
+        description: "Set the size of the waypoint text",
+        category: "Customization",
+        subcategory: "Waypoint",
+        min: 5,
+        max: 20
+    })
+    waypointTextSize = 10;
+
     //Crown Tracker
     @SwitchProperty({
         name: "Crown Tracker",

@@ -215,7 +215,7 @@ export class Waypoint {
         RenderLibV2.drawInnerEspBoxV2(this.fx, this.fy - 1, this.fz, 1, 1, 1, this.r, this.g, this.b, this.alpha/2, true);
 
         if (this.formattedText != "" && this.formattedText != "§7") {
-            Tessellator.drawString(this.formattedText, this.fx, this.fy + 0.5, this.fz, parseInt(this.hexCodeString, 16), true);
+            Tessellator.drawString(this.formattedText, this.fx, this.fy + 0.5, this.fz, parseInt(this.hexCodeString, 16), true, settings.waypointTextSize/10);
         }
         if (this.distanceRaw >= removeAtDistance && this.beam) {
             Render3D.renderBeaconBeam(this.fx - 0.5, this.fy, this.fz - 0.5, this.r*255, this.g*255, this.b*255, this.alpha*255, true);
