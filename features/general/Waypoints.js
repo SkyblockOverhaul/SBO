@@ -12,7 +12,6 @@ export function lockWarp(warp) {
 }
 
 let hubWarps = {
-    castle: {x: -250, y: 130, z: 45, unlocked: true},
     hub: {x: -3, y: 70, z: -70, unlocked: true},
     museum: {x: -76, y: 76, z: 81, unlocked: true},
 };
@@ -22,6 +21,7 @@ let additionalWarps = {
     crypt: {x: -161, y: 61, z: -99, unlocked: true, setting: "cryptWarp"},
     stonks: {x: -53, y: 72, z: -53, unlocked: true, setting: "stonksWarp"},
     da: {x: 92, y: 75, z: 174, unlocked: true, setting: "darkAuctionWarp"},
+    castle: {x: -250, y: 130, z: 45, unlocked: true, setting: "castleWarp"},
 }
 
 /**

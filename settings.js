@@ -403,6 +403,13 @@ class Settings {
     })
     darkAuctionWarp = true;
     @SwitchProperty({
+        name: "Add Castle Warp",
+        description: "Adds a warp point /warp castle",
+        category: "Diana",
+        subcategory: "Other",
+    })
+    castleWarp = true;
+    @SwitchProperty({
         name: "Chim Message",
         description: "Enables custom chim message",
         category: "Diana",
