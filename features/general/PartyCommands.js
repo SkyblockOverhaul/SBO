@@ -1,5 +1,5 @@
 import settings from "../../settings";
-import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout, formatNumber, getTotalValue } from "../../utils/functions";
+import { getplayername, formatTime, getDianaMayorTotalProfitAndOfferType, calcPercentOne, getBurrowsPerHour, getMobsPerHour, setTimeout, formatNumber, getTotalValue, formatNumberCommas } from "../../utils/functions";
 import { tpsCommand } from "../../utils/tps";
 import { data, dianaTrackerMayor, dianaTrackerTotal } from "../../utils/variables";
 
@@ -439,7 +439,7 @@ function getPlayerStats(total = false) {
         mobsPerHour: parseFloat(mobsPerHour.toFixed(2)),
         inquisitors: tracker["mobs"]["Minos Inquisitor"],
         inqPercentage: calcPercentOne(tracker, "Minos Inquisitor") + "%",
-        lsInqs: tracker["mobs"]["Minos Inquisitor Ls"],
+        lsInqs: formatNumberCommas(tracker["mobs"]["Minos Inquisitor Ls"]),
         chimeraDrops: tracker["items"]["Chimera"],
         chimeraDropRate: calcPercentOne(tracker, "Chimera", "Minos Inquisitor") + "%",
         chimeraLSDrops: tracker["items"]["ChimeraLs"],
