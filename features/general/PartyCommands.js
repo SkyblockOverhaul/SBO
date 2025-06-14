@@ -330,22 +330,20 @@ register("chat", (player, message) => {
                     args1 = args1.toLowerCase().trim();
                     switch (args1) {
                         case playerName:
-                            let stats = getPlayerStats();
-                            const statsArray = [
-                                `Playtime: ${stats.playtime}`,
-                                `Profit: ${stats.profit[0]} - ${stats.profit[2]}/h`,
-                                `Burrows: ${stats.burrows} (${stats.burrowsPerHour}/h)`,
-                                `Mobs: ${stats.totalMobs} (${stats.mobsPerHour}/h)`,
-                                `Inquisitors: ${stats.inquisitors} (${stats.inqPercentage})`,
-                                `LS Inqs: ${stats.lsInqs}`,
-                                `Chimeras: ${stats.chimeraDrops} (${stats.chimeraDropRate}) - LS: ${stats.chimeraLSDrops} (${stats.chimeraLSDropRate})`,
-                                `Sticks: ${stats.sticksDropped} (${stats.stickDropRate})`,
-                                `Relics: ${stats.relicsDropped} (${stats.relicDropRate})`
-                            ];
-                            let statsMessage = statsArray.join(" - ");
-                            setTimeout(() => {
-                                ChatLib.command("pc " + statsMessage)
-                            }, 200)
+                            sendPlayerStats();
+                            break;
+                    }
+                }
+            }
+        case "!totalstat":
+        case "!totalstats":
+            if (settings.dianaTracker && settings.dianaPartyCommands) {
+                if (args1 != undefined) {
+                    let playerName = Player.getName().toLowerCase().trim();
+                    args1 = args1.toLowerCase().trim();
+                    switch (args1) {
+                        case playerName:
+                            sendPlayerStats(true);
                             break;
                     }
                 }
@@ -423,7 +421,7 @@ function getMagicFindAndLooting(magicfind, looting) {
     return " &7[MF:" + magicfind + "] [L:" + looting + "]"
 }
 
-function getPlayerStats(total = true) {
+function getPlayerStats(total = false) {
     const tracker = total ? dianaTrackerTotal : dianaTrackerMayor;
     const playtimeType = total ? "totalTime" : "mayorTime";
     const playtime = tracker.items[playtimeType];
@@ -452,6 +450,25 @@ function getPlayerStats(total = true) {
         relicDropRate: calcPercentOne(tracker, "MINOS_RELIC", "Minos Champion") + "%"
     };
     return stats;
+}
+
+function sendPlayerStats(total = false) {
+    let stats = getPlayerStats(total);
+    const statsArray = [
+        `Playtime: ${stats.playtime}`,
+        `Profit: ${stats.profit[0]} - ${stats.profit[2]}/h`,
+        `Burrows: ${stats.burrows} (${stats.burrowsPerHour}/h)`,
+        `Mobs: ${stats.totalMobs} (${stats.mobsPerHour}/h)`,
+        `Inquisitors: ${stats.inquisitors} (${stats.inqPercentage})`,
+        `LS Inqs: ${stats.lsInqs}`,
+        `Chimeras: ${stats.chimeraDrops} (${stats.chimeraDropRate}) - LS: ${stats.chimeraLSDrops} (${stats.chimeraLSDropRate})`,
+        `Sticks: ${stats.sticksDropped} (${stats.stickDropRate})`,
+        `Relics: ${stats.relicsDropped} (${stats.relicDropRate})`
+    ];
+    let statsMessage = statsArray.join(" - ");
+    setTimeout(() => {
+        ChatLib.command("pc " + statsMessage)
+    }, 200)
 }
 
 register("chat", (rank, player, playtime, profit, profitHr, burrow, burrowPerHour, mobs, mobsPerHour, inquis, 
