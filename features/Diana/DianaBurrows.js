@@ -212,7 +212,8 @@ let removePos = null;
 function refreshBurrows() {
     if (removePos == null) return;
     removeBurrowWaypoint(removePos.getX(), removePos.getY(), removePos.getZ());
-    if (Waypoint.guessWp.distanceTo(removePos) < 2) Waypoint.guessWp.hide();
+    const playerPos = { x: Player.getX(), y: Player.getY(), z: Player.getZ() };
+    if (Waypoint.guessWp.distanceTo(playerPos) < 4) Waypoint.guessWp.hide();
 }
 
 const isCloseEnough = (entity, x, y, z) => {

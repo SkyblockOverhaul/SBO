@@ -125,7 +125,7 @@ export class Waypoint {
     }
 
     formatGuess() {
-        this.line = settings.guessLine && Waypoint.closestBurrow[1] > 60;
+        this.line = settings.guessLine && Waypoint.closestBurrow[1] > 60 && Waypoint.getWaypointsOfType("inq").length > 0;
         this.r = settings.guessColor.getRed()/255;
         this.g = settings.guessColor.getGreen()/255;
         this.b = settings.guessColor.getBlue()/255;
@@ -398,7 +398,7 @@ registerWhen(register("step", () => {
             return;
         }
 
-        waypoint.line = Waypoint.closestBurrow[0] == waypoint;
+        waypoint.line = Waypoint.closestBurrow[0] == waypoint && settings.burrowLine && Waypoint.closestBurrow[1] <= 60;
         waypoint.format();
     });
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
