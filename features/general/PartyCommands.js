@@ -335,12 +335,12 @@ register("chat", (player, message) => {
                                 `Playtime: ${stats.playtime}`,
                                 `Profit: ${stats.profit[0]} - ${stats.profit[2]}/h`,
                                 `Burrows: ${stats.burrows} (${stats.burrowsPerHour}/h)`,
-                                `Mobs Spawned: ${stats.totalMobs} (${stats.mobsPerHour}/h)`,
+                                `Mobs: ${stats.totalMobs} (${stats.mobsPerHour}/h)`,
                                 `Inquisitors: ${stats.inquisitors} (${stats.inqPercentage})`,
-                                `Loot Shared Inqs: ${stats.lsInqs}`,
+                                `LS Inqs: ${stats.lsInqs}`,
                                 `Chimeras: ${stats.chimeraDrops} (${stats.chimeraDropRate}) - LS: ${stats.chimeraLSDrops} (${stats.chimeraLSDropRate})`,
-                                `Daedalus Sticks: ${stats.sticksDropped} (${stats.stickDropRate})`,
-                                `Minos Relics: ${stats.relicsDropped} (${stats.relicDropRate})`
+                                `Sticks: ${stats.sticksDropped} (${stats.stickDropRate})`,
+                                `Relics: ${stats.relicsDropped} (${stats.relicDropRate})`
                             ];
                             let statsMessage = statsArray.join(" - ");
                             setTimeout(() => {
@@ -435,9 +435,9 @@ function getPlayerStats(total = true) {
     const stats = {
         playtime: formatTime(playtime),
         profit: profit,
-        burrows: tracker["items"]["Total Burrows"],
+        burrows: formatNumber(tracker["items"]["Total Burrows"]),
         burrowsPerHour: parseFloat(burrowsPerHour.toFixed(2)),
-        totalMobs: tracker["mobs"]["TotalMobs"],
+        totalMobs: formatNumber(tracker["mobs"]["TotalMobs"]),
         mobsPerHour: parseFloat(mobsPerHour.toFixed(2)),
         inquisitors: tracker["mobs"]["Minos Inquisitor"],
         inqPercentage: calcPercentOne(tracker, "Minos Inquisitor") + "%",
@@ -461,13 +461,13 @@ register("chat", (rank, player, playtime, profit, profitHr, burrow, burrowPerHou
         `&9Party &8> &b${rank} ${player}&f:`,
         `&ePlaytime: &b${playtime}`,
         `&aBurrows: &b${burrow} &7(${burrowPerHour}/h)`,
-        `&aMobs Spawned: &b${mobs} &7(${mobsPerHour}/h)`,
+        `&aMobs: &b${mobs} &7(${mobsPerHour}/h)`,
         `&dInquisitors: &b${inquis} &7(${inqPercentage}) &6LS: &b${lsInq}`,
         `&dChimeras: &b${chimeraDrops} &7(${chimeraDropRate}) &6LS: &b${chimeraLSDrops} &7(${chimeraLSDropRate})`,
-        `&6Daedalus Sticks: &b${sticksDropped} &7${sticksDropRate}`,
-        `&5Minos Relics: &b${relicsDropped} &7${relicsDropRate}`,
+        `&6Sticks: &b${sticksDropped} &7${sticksDropRate}`,
+        `&5Relics: &b${relicsDropped} &7${relicsDropRate}`,
         `&6Profit: &b${profit} &7(${profitHr})`
     ].join("\n");
     ChatLib.chat(statsMessage)
     cancel(event);
-}).setCriteria("&r&9Party &8> ${rank} ${player}&f: &rPlaytime: ${playtime} - Profit: ${profit} - ${profitHr} - Burrows: ${burrow} (${burrowPerHour}/h) - Mobs Spawned: ${mobs} (${mobsPerHour}/h) - Inquisitors: ${inquis} (${inqPercentage}) - Loot Shared Inqs: ${lsInq} - Chimeras: ${chimeraDrops} (${chimeraDropRate}) - LS: ${chimeraLSDrops} (${chimeraLSDropRate}) - Daedalus Sticks: ${sticksDropped} ${sticksDropRate} - Minos Relics: ${relicsDropped} ${relicsDropRate}&r");
+}).setCriteria("&r&9Party &8> ${rank} ${player}&f: &rPlaytime: ${playtime} - Profit: ${profit} - ${profitHr} - Burrows: ${burrow} (${burrowPerHour}/h) - Mobs: ${mobs} (${mobsPerHour}/h) - Inquisitors: ${inquis} (${inqPercentage}) - LS Inqs: ${lsInq} - Chimeras: ${chimeraDrops} (${chimeraDropRate}) - LS: ${chimeraLSDrops} (${chimeraLSDropRate}) - Sticks: ${sticksDropped} ${sticksDropRate} - Relics: ${relicsDropped} ${relicsDropRate}&r");
