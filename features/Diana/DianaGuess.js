@@ -275,6 +275,7 @@ function tryToMakeInitialGuess() {
         }
         const directionVec = new SboVec(-Math.sin(CTArmorStand.getYaw() * Math.PI / 180), 0, Math.cos(CTArmorStand.getYaw() * Math.PI / 180));
         finalLocation = new SboVec(lastInteractedPos.x, lastInteractedPos.y, lastInteractedPos.z).add(directionVec.multiply(multiplier));
+        Waypoint.updateGuess(finalLocation);
         hasMadeInitialGuess = true;
         return;
     });

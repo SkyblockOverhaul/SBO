@@ -398,7 +398,7 @@ registerWhen(register("step", () => {
             return;
         }
 
-        waypoint.line = Waypoint.closestBurrow[0] == waypoint && settings.burrowLine && Waypoint.closestBurrow[1] <= 60;
+        waypoint.line = Waypoint.closestBurrow[0] == waypoint && settings.burrowLine && Waypoint.closestBurrow[1] <= 60 && Waypoint.getWaypointsOfType("inq").length == 0;
         waypoint.format();
     });
 }).setFps(5), () => settings.dianaBurrowDetect || settings.findDragonNest || settings.inqWaypoints || settings.patcherWaypoints);
