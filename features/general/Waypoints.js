@@ -137,7 +137,7 @@ export class Waypoint {
 
         let result = Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz);
         if (result[0]) {
-            if (burrowWaypoint.distanceToPlayer() < 60) {
+            if (result[1].distanceToPlayer() < 60) {
                 this.hidden = true;
             } else {
                 this.hidden = false;
