@@ -135,11 +135,12 @@ export class Waypoint {
         this.fz = this.z + 0.5;
         this.fy = this.y;
 
-        let reuslt = Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz);
+        let result = Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz);
         if (result[0]) {
-            const burrowWaypoint = result[1];
             if (burrowWaypoint.distanceToPlayer() < 60) {
                 this.hidden = true;
+            } else {
+                this.hidden = false;
             }
         }
     }
@@ -359,7 +360,7 @@ export class Waypoint {
 Waypoint.guessWp = new Waypoint("Guess", 0, 0, 0, 0, 0, 0, 0, "guess", false, true, true).hide();
 
 register("chat", (player) => {
-    Waypoint.removeWithinDistance("inq", 20);
+    Waypoint.removeWithinDistance("inq", 30);
 }).setCriteria("&r&e&lLOOT SHARE &r&r&r&fYou received loot for assisting &r${player}&r&f!&r");
 
 register("worldUnload", () => {
