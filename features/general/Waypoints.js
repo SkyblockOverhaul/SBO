@@ -136,7 +136,7 @@ export class Waypoint {
         this.fy = this.y;
 
         let reuslt = Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz);
-        this.hidden = reuslt[0] && this.distanceTo(reuslt[1]) < 60
+        if (reuslt[0]) this.hidden = reuslt[0] && this.distanceTo(reuslt[1]) < 60;
     }
 
     format() {
