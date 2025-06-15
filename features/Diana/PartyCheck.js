@@ -41,7 +41,7 @@ register("chat", (party) => {
 // command to check party members
 let checkPartyBool = false;
 const partyLimit = 6;
-HypixelModAPI.on("partyinfo", (partyInfo) => {
+HypixelModAPI.on("partyinfo", (inparty, partyInfo) => {
     if (!checkPartyBool) return;
     checkPartyBool = false;
     let party = [];

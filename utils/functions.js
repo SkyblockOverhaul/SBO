@@ -1105,7 +1105,7 @@ export function getParty() {
 }
 
 let party = [];
-HypixelModAPI.on("partyinfo", (partyInfo) => {
+HypixelModAPI.on("partyinfo", (inparty, partyInfo) => {
     party = [];
     Object.keys(partyInfo).forEach(key => {
         if (key != Player.getUUID()) {
