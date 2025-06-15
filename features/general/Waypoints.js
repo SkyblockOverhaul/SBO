@@ -135,7 +135,8 @@ export class Waypoint {
         this.fz = this.z + 0.5;
         this.fy = this.y;
 
-        if (!this.hidden && Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz)) this.hide();
+        let reuslt = Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz);
+        this.hidden = reuslt[0] && this.distanceTo(reuslt[1]) < 60
     }
 
     format() {
@@ -275,13 +276,15 @@ export class Waypoint {
 
     static waypointExists(type, x, y, z) {
         let exists = false;
+        let wp = undefined;
         Waypoint.forEachType(type, (waypoint) => {
             if (waypoint.fx == x && waypoint.fy == y && waypoint.fz == z) {
                 exists = true;
+                wp = waypoint;
                 return false;
             }
         });
-        return exists;
+        return [exists, wp];
     }
 
     static forEachWaypoint(callback) {
