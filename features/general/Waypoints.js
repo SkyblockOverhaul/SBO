@@ -136,7 +136,12 @@ export class Waypoint {
         this.fy = this.y;
 
         let reuslt = Waypoint.waypointExists("burrow", this.fx, this.fy, this.fz);
-        if (reuslt[0]) this.hidden = reuslt[0] && this.distanceTo(reuslt[1]) < 60;
+        if (result[0]) {
+            const burrowWaypoint = result[1];
+            if (burrowWaypoint.distanceToPlayer() < 60) {
+                this.hidden = true;
+            }
+        }
     }
 
     format() {
@@ -326,8 +331,17 @@ export class Waypoint {
     }
 
     static removeWithinDistance(type, distance) {
-        Waypoint.forEachType(type, (waypoint) => {
-            if (waypoint.distanceToPlayer() <= distance) waypoint.remove();
+        type = type.toLowerCase();
+        if (!Waypoint.waypoints[type]) return;
+
+        Waypoint.waypoints[type] = Waypoint.waypoints[type].filter(waypoint => {
+            if (waypoint.distanceToPlayer() <= distance) {
+                if (Waypoint.closestBurrow[0] === waypoint) {
+                    Waypoint.closestBurrow = [undefined, 1000];
+                }
+                return false;
+            }
+            return true;
         });
     }
 
