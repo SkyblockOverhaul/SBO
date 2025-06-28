@@ -389,11 +389,11 @@ registerWhen(register("chat", (drop, event) => {
                         data.inqsSinceLsChim = 0;
                     }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
-                    if (data.b2bChimLs && data.inqsSinceLsChim == 1) {
+                    if (data.b2bChimLs && data.inqsSinceLsChim == 0) {
                         ChatLib.chat("&6[SBO] &cb2b2b Lootshare Chimera!")
                         unlockAchievement(67) // b2b2b ls chim
                     }
-                    if (data.inqsSinceLsChim == 1 && !data.b2bChimLs) {
+                    if (data.inqsSinceLsChim == 0 && !data.b2bChimLs) {
                         ChatLib.chat("&6[SBO] &cb2b Lootshare Chimera!")
                         data.b2bChimLs = true;
                         unlockAchievement(66) // b2b ls chim
