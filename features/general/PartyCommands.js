@@ -235,6 +235,7 @@ register("chat", (player, message) => {
                     ChatLib.command("pc Coins: " + formatNumber(dianaTrackerMayor["items"]["coins"]))
                 }, 200)
             }
+            break
         case "!mob":
         case "!mobs":
             if (settings.dianaTracker && settings.dianaPartyCommands) {
