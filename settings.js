@@ -29,7 +29,7 @@ let customSounds = ["none"];
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer','Kuudra','Mining', 'Partyfinder','Party Commands','Customization','Quality of Life','Debug','Credits/Infos'];
+        const categories = ['General','Diana','Slayer','Kuudra','Mining','Party Commands','Customization','Quality of Life','Debug','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
