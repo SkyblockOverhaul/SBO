@@ -1,6 +1,5 @@
 /// <reference types="../CTAutocomplete" />
 import "./features/Diana/DianaBurrows";
-import "./features/Kuudra";
 import "./features/Diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
@@ -58,6 +57,7 @@ const changelog = [
     {header: "Changed", description: "The way waypoints are rendered"},
     {header: "Changed", description: "some required modules to different ones to reduce the amount of modules required"},
     {header: "removed", description: "1 unused setting"},
+    {header: "removed", description: "kuudra attribute value overlay (cause hypixel reworked attributes)"},
 ];
 
 register("command", (args1, ...args) => {

@@ -29,7 +29,7 @@ let customSounds = ["none"];
         // or a positive number if b should be sorted before a.
 
         // In this case, we can put Not general! to be above general.
-        const categories = ['General','Diana','Slayer','Kuudra','Mining','Party Commands','Customization','Quality of Life','Debug','Credits/Infos'];
+        const categories = ['General','Diana','Slayer','Mining','Party Commands','Customization','Quality of Life','Debug','Credits/Infos'];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -63,13 +63,6 @@ class Settings {
         this.addDependency('Inq Warp Key','Detect Inq Cords');
         this.addDependency('Copy Inquisitor Coords','Share Inquisitor');
         // this.addDependency('Blaze View','Blaze Tracker');
-        this.addDependency('Max Displayed Items','Attribute Value Overlay')
-        this.addDependency('Select Displayed Lines','Attribute Value Overlay');
-        this.addDependency('Bazaar Setting Kuudra','Attribute Value Overlay');
-        this.addDependency('Key Price','Attribute Value Overlay');
-        this.addDependency('Kuudra Pet Rarity','Attribute Value Overlay');
-        this.addDependency('Kuudra Pet Level','Attribute Value Overlay');
-        this.addDependency('Attribute Shards For Chest Profit','Attribute Value Overlay');
         this.addDependency('Distance For Remove','Remove Guess');
         this.addDependency('Highlight All Possible Fossils','Fossil Solver');
         this.addDependency('Bridge Bot Name','Formatted Bridge Bot');
@@ -743,69 +736,6 @@ class Settings {
         options: ["OFF", "Inq Waypoints", "Patcher Waypoints", "Both Waypoints"]
     })
     hideOwnWaypoints = 0;
-
-    // Kuudra
-    // ---ProfitHud---
-    @SwitchProperty({
-        name: 'Attribute Value Overlay',
-        description: 'Displays value of attributes in chests and profit for kuudra chest. /sboguis to move the overlay',
-        category: 'Kuudra',
-    })
-    attributeValueOverlay = false;
-    @SliderProperty({
-        name: 'Max Displayed Items',
-        description: 'Max amount of items displayed in the overlay',
-        category: 'Kuudra',
-        min: 1,
-        max: 20
-    })
-    maxDisplayedItems = 15;
-    @SelectorProperty({
-        name: 'Select Displayed Lines',
-        description: 'Select if attributes are displayed in one or two lines',
-        category: 'Kuudra',
-        options: ['two lines','one line'],
-    })
-    lineSetting = 0;
-    @SelectorProperty({
-        name: 'Bazaar Setting Kuudra',
-        description: 'Bazaar setting for instasell/sell offer',
-        category: 'Kuudra',
-        options: ['Instasell','Sell Offer'],
-    })
-    bazaarSetting = 0;
-    @SelectorProperty({
-        name: 'Key Price',
-        description: 'Use instabuy/buy offer for materials',
-        category: 'Kuudra',
-        options: ['Instabuy','Buy Offer'],
-    })
-    keySetting = 0;
-    @SwitchProperty({
-        name: 'Kuudra Key Discount',
-        description: 'Enable this if you have 12k reputation for the 20% discount on keys',
-        category: 'Kuudra',
-    })
-    keyDiscount = false;
-    @SelectorProperty({
-        name: 'Kuudra Pet Rarity',
-        description: 'Set the rarity of your pet for essence perk',
-        category: 'Kuudra',
-        options: ['Legendary','Epic','Rare','Uncommon','Common','None'],
-    })
-    kuudraPet = 0;
-    @TextProperty({
-        name: 'Kuudra Pet Level',
-        description: 'Set the level of your pet for essence perk',
-        category: 'Kuudra',
-    })
-    kuudraPetLevel = "100";
-    @SwitchProperty({
-        name: 'Attribute Shards For Chest Profit',
-        description: 'Use attribute shards for chest profit calculation',
-        category: 'Kuudra',
-    })
-    attributeShards = false;
 
     // Mining
     @SwitchProperty({

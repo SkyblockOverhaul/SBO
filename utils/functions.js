@@ -380,7 +380,6 @@ export function initializeGuiSettings() {
         MythosHpLoc: { "x": 400, "y": 50, "s": 1 },
         EffectsLoc: { "x": 10, "y": 200, "s": 1 },
         BlazeLoc: { "x": 10, "y": 10, "s": 1 },
-        KuudraValueLoc: { "x": 10, "y": 10, "s": 1 },
         fossilLoc: { "x": 275, "y": 185, "s": 1 },
         LegionLoc: { "x": 10, "y": 310, "s": 1 },
         StatsLoc: { "x": 15, "y": 290, "s": 1 },
@@ -526,13 +525,8 @@ register("command", () => {
 
 let lastUpdate = 0;
 let updateing = false;
-let kuudraItems = undefined;
 let dianaItems = undefined;
 let bazaarItems = undefined;
-
-export function getKuudraItems() {
-    return kuudraItems;
-}
 
 export function getDianaItems() {
     return dianaItems;
@@ -546,7 +540,6 @@ register("step", () => {
     // update every 5 minutes
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
-        // print("updating kuudra items with api");
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
@@ -560,12 +553,7 @@ function updateItemValues() {
     fetch("https://api.skyblockoverhaul.com/ahItems", {
         json: true
     }).then((response)=>{
-        kuudraItems = response[0];
         dianaItems = response[1];
-        if (kuudraItems == undefined) {
-            print("kuudra items undefined");
-            kuudraItems = {};
-        }
         if (dianaItems == undefined) {
             print("diana items undefined");
             dianaItems = {};
@@ -612,19 +600,6 @@ export function getActiveUsers(useCallback = false, callback = null) {
 register("command", () => {
     getActiveUsers();
 }).setName("sboactiveuser");
-
-export function getBazaarPriceKuudra(itemId) {
-    if (bazaarItems == undefined) return 0;
-    if (bazaarItems.success == false) return 0;
-    let product = bazaarItems.products[itemId];
-    if (product == undefined) return 0;
-    if (settings.bazaarSetting == 0) {
-        return product.quick_status.sellPrice;
-    }
-    else {
-        return product.quick_status.buyPrice;
-    }
-}
 
 export function getBazaarPriceDiana(itemId) {
     if (bazaarItems == undefined) return 0;

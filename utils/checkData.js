@@ -45,7 +45,6 @@ function checkAllCriteria() {
     let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;
-    // let check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
     let check8 = (trackerTotal !== undefined && trackerMayor !== undefined && trackerSession !== undefined);
     let check9 = false;
     if (check8 && check5) {
