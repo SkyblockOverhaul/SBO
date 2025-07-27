@@ -51,7 +51,7 @@ const commands = [
 
 const changelog = [
     {header: "Added", description: "new setting to change the waypoint text size"},
-    {header: "Added", description: "new party command /totalstats <playername>"},
+    {header: "Added", description: "new party command !totalstats <playername>"},
     {header: "Added", description: "new secret achievement"},
     {header: "Added", description: "new setting to disable the castle warp if needed"},
     {header: "Changed", description: "a setting that added warps to the guess warp (make sure the warps you use are enabled in the settings)"},
