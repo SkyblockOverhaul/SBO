@@ -2,7 +2,7 @@ import settings from "../../settings";
 import { registerWhen, data, dianaTimerlist, pastDianaEvents} from "../../utils/variables";
 import { playerHasSpade, getPrice, formatNumber, formatNumberCommas, 
     getTracker, calcPercent, drawRect, formatTime, setDianaMayorTotalProfit, setBurrowsPerHour,
-    setMobsPerHour 
+    setMobsPerHour, getTotalValue, itemData 
 } from "../../utils/functions";
 import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../../utils/constants";
 import { SboOverlay, OverlayTextLine, OverlayButton, hoverText } from "../../utils/overlays";
@@ -263,24 +263,6 @@ function getLootMessage(lootViewSetting) {
     let sessionTracker = getTracker(3);
     let percentDict = calcPercent(lootTracker, "loot");
 
-
-    const itemData = [
-        { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
-        { name: "Chimera &7[&bLS&7]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
-        { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
-        { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
-        { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
-        { name: "Souvenir", key: "Washed-up Souvenir", color: GOLD, ahKey: "WASHED_UP_SOUVENIR" },
-        { name: "Griffin Feather", key: "Griffin Feather", color: GOLD, bazaarKey: "GRIFFIN_FEATHER" },
-        { name: "Turtle Shelmet", key: "DWARF_TURTLE_SHELMET", color: DARK_GREEN, ahKey: "DWARF_TURTLE_SHELMET" },
-        { name: "Tiger Plushie", key: "CROCHET_TIGER_PLUSHIE", color: DARK_GREEN, ahKey: "CROCHET_TIGER_PLUSHIE" },
-        { name: "Antique Remedies", key: "ANTIQUE_REMEDIES", color: DARK_GREEN, ahKey: "ANTIQUE_REMEDIES" },
-        { name: "Ancient Claws", key: "ANCIENT_CLAW", color: BLUE, bazaarKey: "ANCIENT_CLAW", format: true },
-        { name: "Enchanted Claws", key: "ENCHANTED_ANCIENT_CLAW", color: BLUE, bazaarKey: "ENCHANTED_ANCIENT_CLAW" },
-        { name: "Enchanted Gold", key: "ENCHANTED_GOLD", color: BLUE, bazaarKey: "ENCHANTED_GOLD", format: true },
-        { name: "Enchanted Iron", key: "ENCHANTED_IRON", color: BLUE, bazaarKey: "ENCHANTED_IRON", format: true }
-    ];
-
     function createLootLine(item) {
         const price = formatNumber(getPrice(item, lootTracker));
         const itemAmount = item.format ? formatNumber(lootTracker["items"][item.key]) : formatNumberCommas(lootTracker["items"][item.key]);
@@ -346,14 +328,6 @@ function getLootMessage(lootViewSetting) {
         // overlay.gui.drawHoveringString(hovertext, 0, 0)
         GuiUtils.drawHoveringText(hovertext, Client.getMouseX(), Client.getMouseY(), Renderer.screen.getWidth(), Renderer.screen.getHeight(), -1, Renderer.getFontRenderer());
     }));
-    function getTotalValue(tracker) {
-        let totalValue = 0;
-        for (let item of itemData) {
-            totalValue += getPrice(item, tracker);
-        }
-        totalValue += tracker["items"]["coins"];
-        return totalValue;
-    }
     let totalProfitText = `${YELLOW}Total Profit: ${AQUA}${formatNumber(getTotalValue(lootTracker))}`;
     let totalProfitLine = new OverlayTextLine(totalProfitText, true, true);
     const timer = dianaTimerlist[lootViewSetting - 1];

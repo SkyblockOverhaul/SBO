@@ -1,8 +1,10 @@
-import { request } from "../../requestV2";
+import { fetch } from "../../tska/polyfill/Fetch";
 import settings, { getcustomSounds } from "../settings";
+import { YELLOW, BOLD, GOLD, DARK_GREEN, LIGHT_PURPLE, DARK_PURPLE, GREEN, DARK_GRAY, GRAY, WHITE, AQUA, ITALIC, BLUE, UNDERLINE} from "../utils/constants";
+
 import { registerWhen, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data } from "./variables";
 import { getWorld } from "./world";
-import { HypixelModAPI } from "../../HypixelModAPI";
+import HypixelModAPI from "../../tska/api/ModAPI";
 
 /**
  * @param {number} x - x coordinate
@@ -378,7 +380,6 @@ export function initializeGuiSettings() {
         MythosHpLoc: { "x": 400, "y": 50, "s": 1 },
         EffectsLoc: { "x": 10, "y": 200, "s": 1 },
         BlazeLoc: { "x": 10, "y": 10, "s": 1 },
-        KuudraValueLoc: { "x": 10, "y": 10, "s": 1 },
         fossilLoc: { "x": 275, "y": 185, "s": 1 },
         LegionLoc: { "x": 10, "y": 310, "s": 1 },
         StatsLoc: { "x": 15, "y": 290, "s": 1 },
@@ -524,13 +525,8 @@ register("command", () => {
 
 let lastUpdate = 0;
 let updateing = false;
-let kuudraItems = undefined;
 let dianaItems = undefined;
 let bazaarItems = undefined;
-
-export function getKuudraItems() {
-    return kuudraItems;
-}
 
 export function getDianaItems() {
     return dianaItems;
@@ -544,7 +540,6 @@ register("step", () => {
     // update every 5 minutes
     if (updateing) return;
     if (Date.now() - lastUpdate > 300000 || lastUpdate == 0) {
-        // print("updating kuudra items with api");
         updateing = true;
         lastUpdate = Date.now();
         updateItemValues()
@@ -555,16 +550,10 @@ register("step", () => {
 }).setFps(1);
 
 function updateItemValues() {
-    request({
-        url: "https://api.skyblockoverhaul.com/ahItems",
+    fetch("https://api.skyblockoverhaul.com/ahItems", {
         json: true
     }).then((response)=>{
-        kuudraItems = response[0];
         dianaItems = response[1];
-        if (kuudraItems == undefined) {
-            print("kuudra items undefined");
-            kuudraItems = {};
-        }
         if (dianaItems == undefined) {
             print("diana items undefined");
             dianaItems = {};
@@ -573,8 +562,7 @@ function updateItemValues() {
         console.error("An error occurred: " + error);
     });
 
-    request({
-        url: "https://api.hypixel.net/skyblock/bazaar?product",
+    fetch("https://api.hypixel.net/skyblock/bazaar?product", {
         json: true
     }).then((response)=>{
         bazaarItems = response;
@@ -589,8 +577,7 @@ function updateItemValues() {
 
 let activeUsers = undefined
 export function getActiveUsers(useCallback = false, callback = null) {
-    request({
-        url: "https://api.skyblockoverhaul.com/activeUsers",
+    fetch("https://api.skyblockoverhaul.com/activeUsers", {
         json: true
     }).then((response) => {
         activeUsers = response.activeUsers;
@@ -613,19 +600,6 @@ export function getActiveUsers(useCallback = false, callback = null) {
 register("command", () => {
     getActiveUsers();
 }).setName("sboactiveuser");
-
-export function getBazaarPriceKuudra(itemId) {
-    if (bazaarItems == undefined) return 0;
-    if (bazaarItems.success == false) return 0;
-    let product = bazaarItems.products[itemId];
-    if (product == undefined) return 0;
-    if (settings.bazaarSetting == 0) {
-        return product.quick_status.sellPrice;
-    }
-    else {
-        return product.quick_status.buyPrice;
-    }
-}
 
 export function getBazaarPriceDiana(itemId) {
     if (bazaarItems == undefined) return 0;
@@ -815,7 +789,7 @@ export function setMobsPerHour(mobs) {
     mobsPerHour = mobs;
 }
 
-export function getDianaMayorTotalProfitAndOfferType() {
+export function getDianaMayorTotalProfitAndOfferType(total = false) {
     return [dianaMayorTotalProfit, dianaMayorOfferType, profitPerHour];
 }
 
@@ -823,6 +797,32 @@ export function setDianaMayorTotalProfit(profit, offerType, profitHour) {
     dianaMayorTotalProfit = profit;
     dianaMayorOfferType = offerType;
     profitPerHour = profitHour;
+}
+
+export const itemData = [
+    { name: "Chimera", key: "Chimera", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+    { name: "Chimera &7[&bLS&7]", key: "ChimeraLs", color: LIGHT_PURPLE, bazaarKey: "ENCHANTMENT_ULTIMATE_CHIMERA_1", hasPercent: true},
+    { name: "Minos Relic", key: "MINOS_RELIC", color: DARK_PURPLE, ahKey: "MINOS_RELIC", hasPercent: true },
+    { name: "Daedalus Stick", key: "Daedalus Stick", color: GOLD, bazaarKey: "DAEDALUS_STICK", hasPercent: true },
+    { name: "Crown of Greed", key: "Crown of Greed", color: GOLD, ahKey: "CROWN_OF_GREED" },
+    { name: "Souvenir", key: "Washed-up Souvenir", color: GOLD, ahKey: "WASHED_UP_SOUVENIR" },
+    { name: "Griffin Feather", key: "Griffin Feather", color: GOLD, bazaarKey: "GRIFFIN_FEATHER" },
+    { name: "Turtle Shelmet", key: "DWARF_TURTLE_SHELMET", color: DARK_GREEN, ahKey: "DWARF_TURTLE_SHELMET" },
+    { name: "Tiger Plushie", key: "CROCHET_TIGER_PLUSHIE", color: DARK_GREEN, ahKey: "CROCHET_TIGER_PLUSHIE" },
+    { name: "Antique Remedies", key: "ANTIQUE_REMEDIES", color: DARK_GREEN, ahKey: "ANTIQUE_REMEDIES" },
+    { name: "Ancient Claws", key: "ANCIENT_CLAW", color: BLUE, bazaarKey: "ANCIENT_CLAW", format: true },
+    { name: "Enchanted Claws", key: "ENCHANTED_ANCIENT_CLAW", color: BLUE, bazaarKey: "ENCHANTED_ANCIENT_CLAW" },
+    { name: "Enchanted Gold", key: "ENCHANTED_GOLD", color: BLUE, bazaarKey: "ENCHANTED_GOLD", format: true },
+    { name: "Enchanted Iron", key: "ENCHANTED_IRON", color: BLUE, bazaarKey: "ENCHANTED_IRON", format: true }
+];
+
+export function getTotalValue(tracker) {
+    let totalValue = 0;
+    for (let item of itemData) {
+        totalValue += getPrice(item, tracker);
+    }
+    totalValue += tracker["items"]["coins"];
+    return totalValue;
 }
 
 export function getRarity(item){
@@ -976,8 +976,7 @@ export function getDianaStats(useCallback = false, callback = null) {
             }
             return;
         }
-        request({
-            url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", "") + "&readcache=false",
+        fetch("https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + Player.getUUID().replaceAll("-", "") + "&readcache=false", {
             json: true
         }).then((response) => {
             dianaStats = response.PartyInfo[0];
@@ -1081,7 +1080,7 @@ export function getParty() {
 }
 
 let party = [];
-HypixelModAPI.on("partyInfo", (partyInfo) => {
+HypixelModAPI.on("partyinfo", (inparty, partyInfo) => {
     party = [];
     Object.keys(partyInfo).forEach(key => {
         if (key != Player.getUUID()) {

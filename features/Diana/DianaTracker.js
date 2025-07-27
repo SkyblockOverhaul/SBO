@@ -1,7 +1,7 @@
 import settings from "../../settings";
 import { checkMayorTracker, data, initializeTrackerMayor, registerWhen, resetTracker } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
-import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, inquisDeathTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec } from '../../utils/functions';
+import { isInSkyblock, toTitleCase, gotLootShare, getAllowedToTrackSacks, playCustomSound, checkSendInqMsg, mobDeath4SecsTrue, inquisDeathTrue, getBazaarPriceDiana, getDianaAhPrice, formatNumber, getMagicFind, formatTimeMinSec, getplayername } from '../../utils/functions';
 import { itemOverlay, mobOverlay, inquisOverlay, mythosMobHpOverlay, statsOverlay, avgMagicFindOverlay } from "../guis/DianaGuis";
 import { mobDeath2SecsTrue } from "../../utils/functions";
 import { isDataLoaded } from "../../utils/checkData";
@@ -389,11 +389,11 @@ registerWhen(register("chat", (drop, event) => {
                         data.inqsSinceLsChim = 0;
                     }, 50);
                     trackItem("ChimeraLs", "items", 1); // ls chim
-                    if (data.b2bChimLs && data.inqsSinceLsChim == 1) {
+                    if (data.b2bChimLs && data.inqsSinceLsChim == 0) {
                         ChatLib.chat("&6[SBO] &cb2b2b Lootshare Chimera!")
                         unlockAchievement(67) // b2b2b ls chim
                     }
-                    if (data.inqsSinceLsChim == 1 && !data.b2bChimLs) {
+                    if (data.inqsSinceLsChim == 0 && !data.b2bChimLs) {
                         ChatLib.chat("&6[SBO] &cb2b Lootshare Chimera!")
                         data.b2bChimLs = true;
                         unlockAchievement(66) // b2b ls chim
@@ -481,6 +481,12 @@ registerWhen(register("chat", (drop, event) => {
         }
     }
 }).setCriteria("&r&6&lRARE DROP! &r${drop}"), () => getWorld() === "Hub" && (settings.dianaTracker || (settings.dianaStatsTracker || settings.sendSinceMessage || settings.dianaAvgMagicFind || settings.chimMessageBool)));
+
+register("chat", (wow, player, idk) => {
+    if (!mobDeath2SecsTrue()) return;
+    if (Player.getName() != getplayername(player)) return;
+    if (isDataLoaded() && isInSkyblock() && checkDiana()) unlockAchievement(77); // phoenix pet
+}).setCriteria("${wow} ${player} &r&efound a &r&cPhoenix &r&epet!${idk}")
 
 // refresh overlay //
 let tempSettingLoot = -1;

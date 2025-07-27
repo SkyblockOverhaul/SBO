@@ -1,6 +1,6 @@
-import { request } from "../../../requestV2";
+import { fetch } from "../../../tska/polyfill/Fetch";
 import { formatNumberCommas, getplayername, getRarity, getNumberColor, getGriffinItemColor, matchLvlToColor, setTimeout } from "../../utils/functions";
-import { HypixelModAPI } from "../../../HypixelModAPI";
+import HypixelModAPI from "../../../tska/api/ModAPI";
 import { checkDiana } from "../../utils/checkDiana";
 import { trackWithCheckPlayer } from "./DianaAchievements";
 import { data } from "../../utils/variables";
@@ -8,8 +8,7 @@ import { data } from "../../utils/variables";
 let firstTimeStamp = 0;
 function getPartyInfo(party) {
     firstTimeStamp = Date.now();
-    request({
-        url: "https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""),
+    fetch("https://api.skyblockoverhaul.com/partyInfoByUuids?uuids=" + party.join(",").replaceAll("-", ""), {
         json: true
     }).then((response)=> {
         if (response.Success) {
@@ -42,7 +41,7 @@ register("chat", (party) => {
 // command to check party members
 let checkPartyBool = false;
 const partyLimit = 6;
-HypixelModAPI.on("partyInfo", (partyInfo) => {
+HypixelModAPI.on("partyinfo", (inparty, partyInfo) => {
     if (!checkPartyBool) return;
     checkPartyBool = false;
     let party = [];
@@ -174,8 +173,7 @@ function checkPlayer(player, refreshData, readCache = true) {
         return;
     }
     if (!refreshData) ChatLib.chat("&6[SBO] &eChecking Player: " + playerName);
-    request({
-        url: "https://api.skyblockoverhaul.com/partyInfo?party=" + playerName + "&readcache=" + readCache,
+    fetch("https://api.skyblockoverhaul.com/partyInfo?party=" + playerName + "&readcache=" + readCache, {
         json: true
     }).then((response)=> {
         if (response.Success) {

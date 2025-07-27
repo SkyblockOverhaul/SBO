@@ -3,7 +3,7 @@ import { initializeGuiSettings, getDianaStats } from "./functions";
 import { checkMayorTracker, dianaTrackerMayor as trackerMayor, dianaTrackerSession as trackerSession, dianaTrackerTotal as trackerTotal, data, checkPastDianaEvents, setListener } from "./variables";
 import settings from "../settings";
 import { unlockAchievement, trackWithCheckPlayer } from "../features/Diana/DianaAchievements";
-import { HypixelModAPI } from "../../HypixelModAPI";
+import HypixelModAPI from "../../tska/api/ModAPI";
 
 // check if data is loaded and time is set //
 export let trackerFileLocation  = "./dianaTracker";
@@ -45,7 +45,6 @@ function checkAllCriteria() {
     let check4 = FileLib.exists("SBO", "guiSettings.json");
     let check5 = (getDateMayorElected() !== undefined  && getNewMayorAtDate() !== undefined && getSkyblockDate() !== undefined);
     let check6 = getMayor() !== undefined;
-    // let check7 = (getKuudraItems() !== undefined && getBazaarItems() !== undefined);
     let check8 = (trackerTotal !== undefined && trackerMayor !== undefined && trackerSession !== undefined);
     let check9 = false;
     if (check8 && check5) {

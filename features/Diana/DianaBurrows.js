@@ -8,9 +8,7 @@ import { registerWhen } from "../../utils/variables";
 import settings from "../../settings";
 import { getWorld } from "../../utils/world";
 import { checkDiana } from "../../utils/checkDiana";
-import { printDev } from "../../utils/functions";
-import { createBurrowWaypoints, removeBurrowWaypoint, removeBurrowWaypointBySmoke, removeInqWaypoint, setBurrowWaypoints } from "../general/Waypoints";
-import { getFinalLocation, setFinalLocation } from "./DianaGuess";
+import { Waypoint } from "../general/Waypoints";
 
 class EvictingQueue {
     constructor(capacity) {
@@ -124,41 +122,41 @@ function getParticleType(packet) {
     return null;
 }
 
-class Diggable {
-    constructor(x, y, z, type) {
+class Burrow {
+    constructor(x, y, z, hasFootstep, hasEnchant, type) {
         x = x;
         y = y;
         z = z;
         type = type;
-        blockPos = new BlockPos(x, y, z);
-    }
-
-    get waypointText() {
-        switch (type) {
-            case 0: return '§aStart (Particle)';
-            case 1: return '§cMob (Particle)';
-            case 2: return '§6Treasure (Particle)';
-            default: return 'Burrow (Particle)';
-        }
-    }
-
-}
-
-class Burrow extends Diggable {
-    constructor(x, y, z, hasFootstep, hasEnchant, type) {
-        super(x, y, z, type);
         hasFootstep = hasFootstep;
         hasEnchant = hasEnchant;
     }
+}
 
-    static fromVec3(vec3, hasFootstep, hasEnchant, type) {
-        return new Burrow(vec3.x, vec3.y, vec3.z, hasFootstep, hasEnchant, type);
+function getRGB(type) {
+    let r, g, b;
+    switch (type) {
+        case "Start":
+            r = settings.startColor.getRed()/255;
+            g = settings.startColor.getGreen()/255;
+            b = settings.startColor.getBlue()/255;
+            break;
+        case "Mob":
+            r = settings.mobColor.getRed()/255;
+            g = settings.mobColor.getGreen()/255;
+            b = settings.mobColor.getBlue()/255;
+            break;
+        case "Treasure":
+            r = settings.treasureColor.getRed()/255;
+            g = settings.treasureColor.getGreen()/255;
+            b = settings.treasureColor.getBlue()/255;
+            break;
     }
+    return [r, g, b];
 }
 
 let burrows = {};
 const burrowsHistory = new EvictingQueue(2);
-
 function burrowDetect(packet) {
     typename = packet.func_179749_a().toString();
     if (typename != "FOOTSTEP" && typename != "CRIT_MAGIC" && typename != "CRIT" && typename != "DRIP_LAVA" && typename != "ENCHANTMENT_TABLE") return;
@@ -169,9 +167,9 @@ function burrowDetect(packet) {
     if (burrowsHistory.contains(posstring)) return;
     
     if (!burrows[posstring]) {
-        burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()]];
+        burrows[posstring] = [new Burrow(pos.x, pos.y, pos.z, null), { x : pos.x, y : pos.y, z : pos.z }, [packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()], undefined];
     }
-
+    
     switch (particleType) {
         case "FOOTSTEP":
             burrows[posstring][0].hasFootstep = true;
@@ -180,42 +178,42 @@ function burrowDetect(packet) {
             burrows[posstring][0].hasEnchant = true;
             break;
         case "EMPTY":
-            burrows[posstring][0].type = 0;
+            burrows[posstring][0].type = "Start";
             break;
         case "MOB":
-            burrows[posstring][0].type = 1;
+            burrows[posstring][0].type = "Mob";
             break;
         case "TREASURE":
-            burrows[posstring][0].type = 2;
+            burrows[posstring][0].type = "Treasure";
             break;
     }
     if (burrows[posstring][0].type != undefined) {
-        createBurrowWaypoints(burrows[posstring][0].type, burrows[posstring][1].x, burrows[posstring][1].y +1, burrows[posstring][1].z, [], burrows[posstring][2]);
+        if (burrows[posstring][3]) return;
+        burrowsHistory.add(posstring);
+        let rgb = getRGB(burrows[posstring][0].type);
+        burrows[posstring][3] = new Waypoint(burrows[posstring][0].type, packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f(), rgb[0], rgb[1], rgb[2], 0, "burrow") 
     }
 }
 
-function removeBurrowBySmoke(x, y, z) {
-    let removedBurrow = removeBurrowWaypointBySmoke(x, y, z);
+function removeBurrowWaypoint(x, y, z) {
     const posstring = x + " " + (y - 1) + " " + z;
+    if (!burrows[posstring] || !burrows[posstring][3]) return;
+    burrows[posstring][3].remove();
     delete burrows[posstring];
 }
 
 function resetBurrows() {
-    setBurrowWaypoints([]);
+    Waypoint.removeAllOfType("burrow");
     burrows = {};
     burrowsHistory.clear();
 }
 
 let removePos = null;
 function refreshBurrows() {
-    if(removePos == null) return;
-    result = removeBurrowWaypoint(removePos, burrows);
-    burrows = result.burrows;
-    let removedBurrow = result.removedBurrow;
-    if (removedBurrow != null) {
-        burrowsHistory.add(removedBurrow);
-    }
-    if (getFinalLocation() != null && getFinalLocation().distanceTo(removePos) < 2) setFinalLocation(null);
+    if (removePos == null) return;
+    removeBurrowWaypoint(removePos.getX(), removePos.getY(), removePos.getZ());
+    const playerPos = { x: Player.getX(), y: Player.getY(), z: Player.getZ() };
+    if (Waypoint.guessWp.distanceTo(playerPos) < 4) Waypoint.guessWp.hide();
 }
 
 const isCloseEnough = (entity, x, y, z) => {
@@ -295,17 +293,18 @@ register("chat", () => {
 
 registerWhen(register("packetReceived", (packet) => {
     packettype = packet.func_179749_a().toString()
-    if(packettype == "SMOKE_LARGE") {
+    if (packettype == "SMOKE_LARGE") {
         packetSpeed = parseFloat(packet.func_149227_j()).toFixed(2)
-        if(packetSpeed == 0.01) {
+        if (packetSpeed == 0.01) {
             pos = new BlockPos(packet.func_149220_d(), packet.func_149226_e(), packet.func_149225_f()).down();
             x = pos.getX();
             y = pos.getY();
             z = pos.getZ();
             if (!checkDiana()) return;
-            removeBurrowBySmoke(x, (parseInt(y) + 1), z);
+            removeBurrowWaypoint(x, (parseInt(y) + 1), z);
         }
     }
+
     burrowDetect(packet)    
 }).setFilteredClass(S2APacketParticles), () => settings.dianaBurrowDetect && getWorld() == "Hub");
 
@@ -314,8 +313,7 @@ const C07PacketPlayerDigging = net.minecraft.network.play.client.C07PacketPlayer
 registerWhen(register("packetSent", (packet, event) => {
     let action = packet.func_180762_c()
     let pos = new BlockPos(packet.func_179715_a()).down()
-    // print("Action: " + action + " Pos: " + pos)
-    if(action == C07PacketPlayerDigging.Action.START_DESTROY_BLOCK) {
+    if (action == C07PacketPlayerDigging.Action.START_DESTROY_BLOCK) {
         let x = pos.getX();
         let y = pos.getY() +2;
         let z = pos.getZ();
@@ -326,11 +324,12 @@ registerWhen(register("packetSent", (packet, event) => {
         if (pos.getZ() < 0) {
             z = z + 1;
         }
-        if (burrows[x + " " + (y-1) + " " + z] || (getFinalLocation() != null && getFinalLocation().distanceTo(new BlockPos(x, y, z)) < 2)) {
-            removePos = new BlockPos(x, y, z);
+        let removePosNew = new BlockPos(x, y, z);
+        if (burrows[x + " " + (y-1) + " " + z]) {
+            removePos = removePosNew;
             lastInteractedPos = new BlockPos(x, y - 1, z);
         }
-        removeInqWaypoint(x, y, z);
+        Waypoint.removeAtPos(x, y, z);
     }
     
 }).setFilteredClass(C07PacketPlayerDigging), () => settings.dianaBurrowDetect && getWorld() == "Hub");

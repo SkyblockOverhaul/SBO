@@ -3,6 +3,7 @@ import { registerWhen } from "../../utils/variables";
 import { getWorld } from "../../utils/world";
 import { coloredArmorStands, getLastInteractedPos } from "./DianaBurrows";
 import { SboVec } from "../../utils/helper";
+import { Waypoint } from "../general/Waypoints";
 
 class Matrix {
     constructor(data) {
@@ -173,6 +174,7 @@ class PreciseGuessBurrow {
         const guessPosition = this.guessBurrowLocation();
         if (!guessPosition) return;
         finalLocation = guessPosition.down(0.5).roundLocationToBlock();
+        Waypoint.updateGuess(finalLocation);
         hasMadeManualGuess = true;
     }
 
@@ -273,6 +275,7 @@ function tryToMakeInitialGuess() {
         }
         const directionVec = new SboVec(-Math.sin(CTArmorStand.getYaw() * Math.PI / 180), 0, Math.cos(CTArmorStand.getYaw() * Math.PI / 180));
         finalLocation = new SboVec(lastInteractedPos.x, lastInteractedPos.y, lastInteractedPos.z).add(directionVec.multiply(multiplier));
+        Waypoint.updateGuess(finalLocation);
         hasMadeInitialGuess = true;
         return;
     });

@@ -1,9 +1,10 @@
 /// <reference types="../CTAutocomplete" />
 import "./features/Diana/DianaBurrows";
-import "./features/Kuudra";
 import "./features/Diana/DianaMobDetect";
 import "./features/general/CopyMessage";
 import "./features/general/PartyCommands";
+import "./features/Diana/DianaGuess";
+import "./features/Diana/DianaWarp";
 import "./features/general/Waypoints";
 import "./features/general/fossilSolver";
 import "./features/general/messageHider";
@@ -48,12 +49,15 @@ const commands = [
 ];
 
 const changelog = [
-    {header: "Added", description: "1 new achievement"},
-    {header: "Added", description: "Percentages to the SBO Past Events GUI"},
-    {header: "Added", description: "!coins party command"},
-    {header: "Changed", description: "AVG MF tracker now tracks your highest MF"},
-    {header: "Changed", description: "Spade detection now checks the entire inventory instead of just the hotbar (prevents chims not being tracked due to different playstyles)"},
-    {header: "Removed", description: "The % symbol previously shown after the text in !lsinquis"},
+    {header: "Added", description: "new setting to change the waypoint text size"},
+    {header: "Added", description: "new party command !totalstats <playername>"},
+    {header: "Added", description: "new secret achievement"},
+    {header: "Added", description: "new setting to disable the castle warp if needed"},
+    {header: "Changed", description: "a setting that added warps to the guess warp (make sure the warps you use are enabled in the settings)"},
+    {header: "Changed", description: "The way waypoints are rendered"},
+    {header: "Changed", description: "some required modules to different ones to reduce the amount of modules required"},
+    {header: "removed", description: "1 unused setting"},
+    {header: "removed", description: "kuudra attribute value overlay (cause hypixel reworked attributes)"},
 ];
 
 register("command", (args1, ...args) => {
@@ -81,7 +85,7 @@ register("worldLoad", () => {
     Client.showTitle("", "", 0, 40, 20);
 });
 
-const newVersion = "0.5.4 // hier neue version eintragen wenn changelog angezeigt werden soll";
+const newVersion = "1.0.0" // hier neue version eintragen wenn changelog angezeigt werden soll;
 const downloadMsgReg = register("step", () => {
     if (!World.isLoaded()) return
     if (!isDataLoaded()) return

@@ -1,4 +1,4 @@
-import { request } from "../../requestV2";
+import { fetch } from "../../tska/polyfill/Fetch";
 
 /**
  * Gets the array of mayor's perks.
@@ -64,11 +64,10 @@ let mayorApiError = false;
 let apiLastUpdated = undefined;
 let minister = undefined;
 let ministerPerk = undefined;
-function getYearMayorRequestV2() {
+function getYearMayor() {
     mayor = undefined;
     perks = new Set([]);
-    request({
-        url: "https://api.hypixel.net/resources/skyblock/election",
+    fetch("https://api.hypixel.net/resources/skyblock/election", {
         json: true
     }).then((response)=>{
         apiLastUpdated = response.lastUpdated;
@@ -155,7 +154,7 @@ register("step", () => {
             if ((mayor === undefined || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
                 // ChatLib.chat("&cRefreshing mayor"); 
                 refreshingMayor = true;
-                getYearMayorRequestV2(); 
+                getYearMayor(); 
                 newMayor = false;
                 // check if mayor is not old mayor
                 if (apiLastUpdated != undefined) {
