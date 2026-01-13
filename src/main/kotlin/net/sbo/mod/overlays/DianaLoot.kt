@@ -4,7 +4,6 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.minecraft.util.Formatting.*
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
@@ -36,24 +35,6 @@ object DianaLoot {
         },
         lineBreak = false
     )
-
-    val exportToClipboard: OverlayTextLine = OverlayUtils.createClickableTextLine(
-        text = "${YELLOW}Export to Clipboard",
-        hoverText = "$YELLOW${UNDERLINE}Export to Clipboard",
-        defaultText = "${YELLOW}Export to Clipboard",
-        onClick = {
-            val sb = StringBuilder()
-            val lines = overlay.getLines()
-            for (line in lines) {
-                sb.append(line.text.removeFormatting()).append("\n")
-            }
-            copyToClipboard(sb.toString().trimEnd())
-        }
-    )
-
-    private fun copyToClipboard(text: String) {
-        mc.keyboard.clipboard = text
-    }
 
     val delimiter = OverlayTextLine(" | ", linebreak = false)
 
@@ -127,7 +108,6 @@ object DianaLoot {
     fun onGuiClose(event: GuiCloseEvent) {
         if (event.screen.title.string == CRAFTING_GUI_TITLE) {
             overlay.removeLines(listOf(changeView, delimiter, changeSellType, resetSession))
-            overlay.removeLines(listOf(exportToClipboard, delimiter, changeSellType, resetSession))
         }
     }
 
@@ -243,7 +223,7 @@ object DianaLoot {
         changeSellType.text = sellTypeText
 
         if (screenOpen) {
-            lines.addAll(listOf(exportToClipboard, changeView, delimiter, changeSellType))
+            lines.addAll(listOf(changeView, delimiter, changeSellType))
         }
     }
 
