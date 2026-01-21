@@ -10,6 +10,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.getSecondsPassed
 import net.sbo.mod.utils.Helper.lastCocoon
 import net.sbo.mod.utils.Helper.lastInqDeath
@@ -271,7 +272,7 @@ object DianaMobDetect {
             RareDianaMob.INQ.display -> {
                 Diana.announceInqText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceInqText[0]) }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceInqText[0], "inq")) }
                     }
                 }
             }
@@ -279,7 +280,7 @@ object DianaMobDetect {
             RareDianaMob.SPHINX.display -> {
                 Diana.announceSphinxText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceSphinxText[0]) }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")) }
                     }
                 }
             }
@@ -287,7 +288,7 @@ object DianaMobDetect {
             RareDianaMob.MANTI.display -> {
                 Diana.announceMantiText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceMantiText[0]) }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")) }
                     }
                 }
             }
@@ -295,7 +296,7 @@ object DianaMobDetect {
             RareDianaMob.KING.display -> {
                 Diana.announceKingText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceKingText[0]) }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceKingText[0], "king")) }
                     }
                 }
             }

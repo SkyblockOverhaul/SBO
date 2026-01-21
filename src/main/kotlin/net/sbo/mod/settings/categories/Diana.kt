@@ -2,6 +2,7 @@ package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
+import net.minecraft.text.Text
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.utils.Helper
@@ -462,10 +463,10 @@ object Diana : CategoryKt("Diana") {
             text = "Send Test"
             description = "Sends all test messages for the Rare Mob spawn message"
             onClick {
-                Chat.chat("Inq Message: " + announceInqText[0])
-                Chat.chat("Sphinx Message: " + announceSphinxText[0])
-                Chat.chat("Manti Message: " + announceMantiText[0])
-                Chat.chat("King Message: " + announceKingText[0])
+                Chat.chat("Inq Message: " + Helper.getSpawnMessage(announceInqText[0], "inq"))
+                Chat.chat("Sphinx Message: " + Helper.getSpawnMessage(announceSphinxText[0], "sphinx"))
+                Chat.chat("Manti Message: " + Helper.getSpawnMessage(announceMantiText[0], "manti"))
+                Chat.chat("King Message: " + Helper.getSpawnMessage(announceKingText[0], "king"))
             }
         }
     }

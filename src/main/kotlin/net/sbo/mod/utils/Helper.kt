@@ -19,6 +19,7 @@ import net.sbo.mod.utils.data.DianaMobsData
 import net.sbo.mod.utils.data.npcSellValueMap
 import net.sbo.mod.utils.data.HypixelBazaarResponse
 import net.sbo.mod.utils.data.Item
+import net.sbo.mod.utils.data.SboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
@@ -482,6 +483,39 @@ object Helper {
         }
     }
 
+    fun getSpawnMessage(message: String, mob: String): String {
+        println("Default msg %s mob %s".format(message, mob))
+        val mobs = SboDataObject.dianaTrackerMayor.mobs
+        val sboData = SboData()
+        val msg = message
+
+        when (mob.lowercase()) {
+            "minos inquisitor", "inq" -> {
+                val since = sboData.mobsSinceInq
+                val percentage = if (mobs.MINOS_INQUISITOR != 0) mobs.TOTAL_MOBS / mobs.MINOS_INQUISITOR else 0 // Meant to make the test message work in case it's 0
+                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+            }
+
+            "king minos", "king" -> {
+                val since = sboData.mobsSinceKing
+                val percentage = if (mobs.KING_MINOS != 0) mobs.TOTAL_MOBS / mobs.KING_MINOS else 0
+                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+            }
+
+            "sphinx" -> {
+                val since = sboData.mobsSinceSphinx
+                val percentage = if (mobs.SPHINX != 0) mobs.TOTAL_MOBS / mobs.SPHINX else 0
+                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+            }
+
+            "manticore", "manti" -> {
+                val since = sboData.mobsSinceManti
+                val percentage = if (mobs.MANTICORE != 0) mobs.TOTAL_MOBS / mobs.MANTICORE else 0
+                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+            }
+            else -> return ""
+        }
+    }
 
     fun toTitleCase(input: String): String {
         return input.lowercase().replaceFirstChar { char -> char.uppercase() }
