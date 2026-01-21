@@ -19,6 +19,8 @@ jobs:
           distribution: 'microsoft'
       - name: setup gradle
         uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: false
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build

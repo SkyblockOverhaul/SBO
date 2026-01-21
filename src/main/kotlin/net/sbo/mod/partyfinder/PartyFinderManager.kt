@@ -1,6 +1,7 @@
 package net.sbo.mod.partyfinder
 
 import gg.essential.universal.utils.toFormattedString
+import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
 import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.events.Register
@@ -37,7 +38,7 @@ object PartyFinderManager {
     private var updateBool = false
     private var requeue = false
     private var ghostParty = false
-    private var usedPf = false
+    var usedPf = false
 
     private var partySize = 0
     private var partyMemberCount = 0
@@ -87,6 +88,7 @@ object PartyFinderManager {
 
         Register.command("sbodequeue") {
             if (inQueue) {
+                usedPf = false
                 removePartyFromQueue()
             } else {
                 Chat.chat("§6[SBO] §4You are not in a party queue.")
@@ -173,8 +175,8 @@ object PartyFinderManager {
             updateParty()
         }
 
-        HypixelModApi.onError { packetId ->
-            if (packetId == "party_info") {
+        HypixelModApi.onError { packet ->
+            if (packet.id == PartyInfoS2CPacket.ID) {
                 creatingParty
                 updateBool = false
             }

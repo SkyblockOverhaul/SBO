@@ -157,11 +157,15 @@ object DianaLoot {
         val totalAmount = amountBase + amountLs
         val priceLs = Helper.getItemPriceFormatted(itemNameLs.replace("_LS", ""), amountLs)
         val priceCombined = Helper.getItemPriceFormatted(itemNameBase, totalAmount)
+        val percent = data.dropMobId?.let { dropId ->
+            calcPercentOne(tracker.items, tracker.mobs, itemNameBase, dropId)
+        }
+        val percentText = percent?.let { " $GRAY($AQUA${it}%$GRAY)" } ?: ""
         val percentLs = data.dropMobLsId?.let { dropLsId ->
             calcPercentOne(tracker.items, tracker.mobs, itemNameLs, dropLsId)
         }
         val percentLsText = percentLs?.let { " $GRAY($AQUA${it}%$GRAY)" } ?: ""
-        val baseText = "$GOLD$priceCombined $GRAY| ${data.color}${data.name}: $AQUA${Helper.formatNumber(amountBase, true)}"
+        val baseText = "$GOLD$priceCombined $GRAY| ${data.color}${data.name}: $AQUA${Helper.formatNumber(amountBase, true)}$percentText"
         val lsText = "$GOLD$priceLs $GRAY| ${data.color}${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${Helper.formatNumber(amountLs, true)}$percentLsText"
         val combinedText = "$baseText $GRAY[${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(amountLs, true)}$GRAY]"
 

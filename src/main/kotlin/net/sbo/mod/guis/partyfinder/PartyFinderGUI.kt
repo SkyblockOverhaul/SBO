@@ -291,6 +291,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     private fun unqueueParty() {
         if (PartyFinderManager.inQueue) {
+            PartyFinderManager.usedPf = false
             removePartyFromQueue { success ->
                 Window.enqueueRenderOperation {
                     updateCurrentPartyList(true)

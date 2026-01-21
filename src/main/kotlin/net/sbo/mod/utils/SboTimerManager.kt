@@ -70,6 +70,7 @@ object SboTimerManager {
     ) {
         companion object {
             val timerList = mutableListOf<SBOTimer>()
+            val fieldCache = mutableMapOf<Pair<Any, String>, Field>()
         }
 
         private var startTime: Long = 0
@@ -85,10 +86,18 @@ object SboTimerManager {
         }
 
         private fun getField(obj: Any, fieldName: String): Field? {
+            val key = obj to fieldName
+
+            val cached = SBOTimer.fieldCache[key]
+            if (cached != null) {
+                return cached
+            }
+
             return try {
-                val field = obj.javaClass.getDeclaredField(fieldName)
-                field.isAccessible = true
-                field
+                obj.javaClass
+                    .getDeclaredField(fieldName)
+                    .apply { isAccessible = true }
+                    .also { SBOTimer.fieldCache[key] = it }
             } catch (e: NoSuchFieldException) {
                 SBOKotlin.logger.warn("Field '$fieldName' not found in object of class '${obj.javaClass.name}'", e)
                 null

@@ -112,7 +112,6 @@ object DianaTracker {
     }
 
     fun trackWithPickuplog(item: Item) {
-        SBOKotlin.logger.info("debug trackWithPickuplog: itemid: |${item.itemId}|, ItemName: |${item.name}|, count: |${item.count}|, timestamp now ${System.currentTimeMillis()}, timestamp of item: |${item.creation}|, item age (senconds): |${Helper.getSecondsPassed(item.creation)}|s")
         sleep (1000) {
             if (Helper.getSecondsPassed(item.creation) > 5) return@sleep
 //            if (!dianaMobDiedRecently(3)) return@sleep
@@ -146,7 +145,7 @@ object DianaTracker {
 
     fun trackScavengerCoins(amount: Long) {
         if (amount <= 0) return
-        if (!dianaMobDiedRecently(4) && !gotLootShareRecently(4)) return
+        if (!dianaMobDiedRecently(4)) return
         if (!checkDiana()) return
         if (amount > 150000 || !allowScavTracking) return
         trackItem("SCAVENGER_COINS", amount.toInt())
@@ -534,7 +533,6 @@ object DianaTracker {
                     } else {
                         announceLootToParty("Brain Food!", "Brain Food!$mfPrefix")
                     }
-
                 }
                 drop.contains("Daedalus Stick") -> {
                     playCustomSound(Customization.stickSound[0], Customization.stickVolume)
@@ -665,6 +663,7 @@ object DianaTracker {
         if (customMsg != null) msg = customMsg.removeFormatting()
 
         if (replaceDropMessage) {
+            if (customMsg != null) Chat.chat(customMsg)
             Chat.command("pc $msg")
         } else {
             lootAnnouncerBuffer.add(msg)

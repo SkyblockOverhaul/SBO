@@ -151,15 +151,13 @@ object ArrowGuessBurrow {
     }
 
     private fun findline(): List<SboVec> {
-        val locationsSnapshot = locations.toSet()
-
-        for (location in locationsSnapshot) {
+        for (location in locations) {
             val line = mutableListOf<SboVec>()
             val visited = mutableSetOf<SboVec>()
             line.add(location)
             visited.add(location)
 
-            if (extendLine(line, visited, locationsSnapshot, SHAFT_LENGTH, PARTICLE_DETECTION_TOLERANCE)) {
+            if (extendLine(line, visited, locations, SHAFT_LENGTH, PARTICLE_DETECTION_TOLERANCE)) {
                 return line.toList()
             }
         }
@@ -267,14 +265,14 @@ object ArrowGuessBurrow {
         if (allGuesses.isEmpty()) return
         val player = SBOKotlin.mc.player ?: return
         val hasSpade = InventoryUtils.isItemHeld("SPADE", 1.seconds)
-        val burrowLocations = BurrowDetector.burrows.values.map { it.waypoint?.pos ?: SboVec(0.0, 0.0, 0.0) }.toSet()
+        val burrowLocations = BurrowDetector.burrows.values.map { it.waypoint?.pos ?: SboVec(0.0, 0.0, 0.0) }
         //#if MC >= 1.21.9
         //$$ val playerPos = player.entityPos.toSboVec()
         //#else
         val playerPos = player.pos.toSboVec()
         //#endif
 
-        for (guess in allGuesses.toList()) {
+        for (guess in allGuesses) {
             if (guess == null) continue
             val current = guess.getCurrent()
             if (!isBlockValid(current)) {

@@ -24,7 +24,7 @@
 	},
 	"license": "Apache License 2.0",
 	"icon": "assets/sbo-kotlin/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"client": [
 			{

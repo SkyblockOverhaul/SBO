@@ -26,6 +26,7 @@ import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.DianaMobDetect
+import net.sbo.mod.diana.DianaTracker.announceLootToParty
 import net.sbo.mod.diana.RareMobHighlight
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
@@ -106,10 +107,6 @@ object SBOKotlin {
 			mc.send{
 				mc.setScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
 			}
-		}
-
-		Register.command("test", "Test Command", "tester") { args ->
-			SoundHandler.playCustomSound("buzzer", 100f)
 		}
 
 		Guis.register()

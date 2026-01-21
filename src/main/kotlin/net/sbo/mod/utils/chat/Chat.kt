@@ -28,7 +28,9 @@ object Chat {
      * @param string The message to display in the chat.
      */
     fun chat(string: String) {
-        mc.inGameHud.chatHud.addMessage(Text.of(string))
+        mc.execute {
+            mc.inGameHud.chatHud.addMessage(Text.of(string))
+        }
     }
 
     /**
@@ -36,7 +38,9 @@ object Chat {
      * @param text The message to display in the chat.
      */
     fun chat(text: Text) {
-        mc.inGameHud.chatHud.addMessage(text)
+        mc.execute {
+            mc.inGameHud.chatHud.addMessage(text)
+        }
     }
 
     /**
@@ -71,7 +75,9 @@ object Chat {
                 .withHoverEvent(hoverEvent)
         )
 
-        mc.inGameHud.chatHud.addMessage(styledText)
+        mc.execute {
+            mc.inGameHud.chatHud.addMessage(styledText)
+        }
     }
 
     /**
@@ -97,7 +103,9 @@ object Chat {
                 .withHoverEvent(hoverEvent)
         )
 
-        mc.inGameHud.chatHud.addMessage(styledText)
+        mc.execute {
+            mc.inGameHud.chatHud.addMessage(styledText)
+        }
     }
 
     /**
@@ -114,7 +122,9 @@ object Chat {
             combinedText.append(component)
         }
 
-        mc.inGameHud.chatHud.addMessage(combinedText)
+        mc.execute {
+            mc.inGameHud.chatHud.addMessage(combinedText)
+        }
     }
 
     /**

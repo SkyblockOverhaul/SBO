@@ -1,15 +1,45 @@
 package net.sbo.mod.utils.overlay
 
+import net.sbo.mod.SBOKotlin.mc
+
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.font.TextRenderer
+
+import net.minecraft.text.OrderedText
+import net.minecraft.text.Text
 
 import java.awt.Color
 
 class OverlayTextLine(
-    var text: String,
+    text: String,
     var shadow: Boolean = true,
     var linebreak: Boolean = true
 ) {
+    private var orderedText: OrderedText = Text.of(text).asOrderedText() // to avoid nullable OrderedText?
+
+    private var cachedWidth: Int = -1 // filler value used to differenate non-init vs actual width
+        private get() {
+            val isInit = field != -1 // check if actual width
+
+            if (isInit) {
+                return field
+            }
+
+            val width = mc.textRenderer!!.getWidth(orderedText)
+            field = width
+
+            return field
+        }
+
+    var text: String = text
+        set(value) {
+            field = value
+
+            // update cached values when text changes
+            orderedText = Text.of(value).asOrderedText()
+            cachedWidth = mc.textRenderer?.getWidth(orderedText) ?: -1 // textRenderer is null at init time
+        }
+
     var mouseEnterAction: (() -> Unit)? = null
     var mouseLeaveAction: (() -> Unit)? = null
     var hoverAction: ((drawContext: DrawContext, textRenderer: TextRenderer) -> Unit)? = null
@@ -17,7 +47,7 @@ class OverlayTextLine(
     var isHovered: Boolean = false
     var x: Int = 0
     var y: Int = 0
-    private var width: Int = 0
+    var width: Int = 0
     private var height: Int = 0
     var renderDebugBox: Boolean = false
     private var condition: () -> Boolean = { true }
@@ -89,7 +119,7 @@ class OverlayTextLine(
     }
 
     private fun isMouseOver(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: TextRenderer, scale: Float): Boolean {
-        val textWidth = textRenderer.getWidth(text) * scale
+        val textWidth = cachedWidth * scale
         val textHeight = (textRenderer.fontHeight + 1) * scale - 1
 
         return mouseX >= x && mouseX <= x + textWidth && mouseY >= y && mouseY <= y + textHeight
@@ -120,13 +150,13 @@ class OverlayTextLine(
 
         this.x = x
         this.y = y
-        this.width = textRenderer.getWidth(text)
+        this.width = cachedWidth
         this.height = textRenderer.fontHeight
 
         if (renderDebugBox) {
             drawContext.fill(x, y, x + width, y + height + 1, Color(128, 128, 128, 130).rgb)
         }
 
-        drawContext.drawText(textRenderer, text, x, y, -1, shadow)
+        drawContext.drawText(textRenderer, orderedText, x, y, -1, shadow)
     }
 }

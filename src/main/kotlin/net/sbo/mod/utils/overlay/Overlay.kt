@@ -183,7 +183,7 @@ class Overlay(
                 currentY += textRenderer.fontHeight + 1
                 currentX = (x / scale)
             } else {
-                currentX += textRenderer.getWidth(line.text)
+                currentX += line.width
             }
         }
 

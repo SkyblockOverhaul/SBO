@@ -13,7 +13,9 @@ import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import java.io.File
 import java.io.FileReader
+import java.io.Writer
 import java.io.FileWriter
+import java.io.BufferedWriter
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -380,7 +382,7 @@ object SboDataObject {
     )
 
     private fun <T> saveToFolder(folder: File, data: T, fileName: String) {
-        FileWriter(File(folder, fileName)).use { writer ->
+        writerForFile(File(folder, fileName)).use { writer ->
             gson.toJson(data, writer)
         }
     }
@@ -424,9 +426,19 @@ object SboDataObject {
             modConfigDir.mkdirs()
         }
         val dataFile = File(modConfigDir, fileName)
-        FileWriter(dataFile).use { writer ->
+        writerForFile(dataFile).use { writer ->
             gson.toJson(data, writer)
         }
+    }
+
+    /**
+     * Obtains a writer suitable for writing to the given file.
+     * The returned writer is buffered by default, which avoids repeated write syscalls.
+     *
+     * @return A writer suitable for writing to the given file.
+     */
+    fun writerForFile(file: File): Writer {
+        return BufferedWriter(FileWriter(file))
     }
 
     /**

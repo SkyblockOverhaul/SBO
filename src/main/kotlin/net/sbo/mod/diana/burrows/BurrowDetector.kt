@@ -7,6 +7,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.collection.EvictingQueue
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent

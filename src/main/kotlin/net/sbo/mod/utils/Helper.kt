@@ -253,12 +253,14 @@ object Helper {
         return builder.toString().trim()
     }
 
+    private val COLOR_REGEX: Regex = Regex("§.")
+
     fun String.removeFormatting(): String {
-        return this.replace(Regex("§."), "")
+        return this.replace(COLOR_REGEX, "")
     }
 
     fun Text.removeFormatting(): String {
-        return this.string.replace(Regex("§."), "")
+        return this.string.replace(COLOR_REGEX, "")
     }
 
     fun matchLvlToColor(lvl: Int): String {
@@ -354,7 +356,8 @@ object Helper {
                 val customData = stack.get(DataComponentTypes.CUSTOM_DATA)
                 var id: String
                 var item: Item
-                val sbId = ItemUtils.getSBID(customData)
+                val nbt = customData?.copyNbt()
+                val sbId = ItemUtils.getSBID(customData, nbt)
                 // print for debugging the lore lines
                 var isChimera = false
                 if (sbId == "ENCHANTED_BOOK") {
@@ -370,18 +373,18 @@ object Helper {
                 if (!isChimera) {
                     item = Item(
                         sbId,
-                        ItemUtils.getUUID(customData),
+                        ItemUtils.getUUID(customData, nbt),
                         ItemUtils.getDisplayName(stack),
-                        ItemUtils.getTimestamp(customData),
+                        ItemUtils.getTimestamp(customData, nbt),
                         stack.count
                     )
                     id = if (item.itemUUID != "") item.itemUUID else item.itemId
                 } else {
                     item = Item(
                         "CHIMERA",
-                        ItemUtils.getUUID(customData),
+                        ItemUtils.getUUID(customData, nbt),
                         "§d§lChimera",
-                        ItemUtils.getTimestamp(customData),
+                        ItemUtils.getTimestamp(customData, nbt),
                         stack.count
                     )
                     id = "CHIMERA"
@@ -451,9 +454,9 @@ object Helper {
 
         val resultText = info.template
             .replace("{amount}", info.totalAmount.toString())
-            .replace("{percentage}", "%.2f".format(info.percentage))
-            .replace("{mf}", magicFind.toString())
-            .replace("&", "§")
+            .replace("{percentage}", "%.2f".format(info.percentage) + "%")
+            .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
+            .replace('&', '§')
 
         return Pair(true, resultText)
     }
@@ -553,30 +556,31 @@ object Helper {
     fun getItemPrice(sbId: String, amount: Int = 1): Long {
         val id = when {
             sbId == "CHIMERA" -> "ENCHANTMENT_ULTIMATE_CHIMERA_1"
-            sbId.endsWith("_SHARD") -> "${sbId.substringAfterLast('_')}_${sbId.substringBeforeLast('_')}"
-            sbId.endsWith("_DYE") -> "${sbId.substringAfterLast('_')}_${sbId.substringBeforeLast('_')}"
+            sbId.endsWith("_SHARD") || sbId.endsWith("_DYE") -> {
+                val suffix = sbId.substringAfterLast('_')   // "SHARD"
+                val name = sbId.substringBeforeLast('_')   // "WITHER"
+                "${suffix}_${name}"
+            }
             else -> sbId
         }
-        var ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
-        if (npcSellValueMap.containsKey(id)) {
-            val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
-            if (npcPrice > ahPrice) {
-                ahPrice = npcPrice
-            }
-        }
 
+        val bzProduct = priceDataBazaar?.products?.get(id)
         val bazaarPrice = if (Diana.bazaarSettingDiana == Diana.SettingDiana.INSTASELL) {
-            priceDataBazaar?.products?.get(id)?.quick_status?.sellPrice
-        }
-        else {
-            priceDataBazaar?.products?.get(id)?.quick_status?.buyPrice
+            bzProduct?.quick_status?.sellPrice
+        } else {
+            bzProduct?.quick_status?.buyPrice
         }
 
-        return when {
-            ahPrice != 0.0 -> (ahPrice * amount).roundToLong()
-            bazaarPrice != null -> (bazaarPrice * amount).roundToLong()
-            else -> 0L
+        if (bazaarPrice != null && bazaarPrice > 0.0) {
+            return (bazaarPrice * amount).roundToLong()
         }
+
+        val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
+        val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
+
+        val bestUnitPrice = if (npcPrice > ahPrice) npcPrice else ahPrice
+
+        return (bestUnitPrice * amount).roundToLong()
     }
 
     fun getItemPriceFormatted(sbId: String, amount: Int = 1): String {

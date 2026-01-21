@@ -248,7 +248,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Enables custom chim message")
     }
 
-    var customChimMessage by strings("&6[SBO] &6&lRARE DROP! &dChimera! &b{mf} &b#{amount}") {
+    var customChimMessage by strings("&6[SBO] &6&lRARE DROP! &dChimera! &b+{mf} ✯ Magic Find &b#{amount}") {
         this.name = Literal("Custom Chim Message Text")
         this.description = Literal("use: {mf} for MagicFind, {amount} for drop Amount this event and {percentage} for chimera/inquis ratio.")
     }
@@ -258,7 +258,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Enables custom Manti-Core message (core/manti)")
     }
 
-    var customCoreMessage by strings("&6[SBO] &6&lRARE DROP! &6Manti-Core! &b{mf} &b#{amount}") {
+    var customCoreMessage by strings("&6[SBO] &6&lRARE DROP! &6Manti-Core! &b+{mf} ✯ Magic Find &b#{amount}") {
         this.name = Literal("Custom Manti-Core Message Text")
         this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for core/manti ratio.")
     }
@@ -268,7 +268,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Enables custom Fateful Stinger message (stinger/manti)")
     }
 
-    var customStingerMessage by strings("&6[SBO] &6&lRARE DROP! &dFateful Stinger! &b{mf} &b#{amount}") {
+    var customStingerMessage by strings("&6[SBO] &6&lRARE DROP! &dFateful Stinger! &b+{mf} ✯ Magic Find &b#{amount}") {
         this.name = Literal("Custom Fateful Stinger Message Text")
         this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for stinger/manti ratio.")
     }
@@ -278,7 +278,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Enables custom Brain Food message (food/sphinx)")
     }
 
-    var customBfMessage by strings("&6[SBO] &6&lRARE DROP! &5Brain Food! &b{mf} &b#{amount}") {
+    var customBfMessage by strings("&6[SBO] &6&lRARE DROP! &5Brain Food! &b+{mf} ✯ Magic Find &b#{amount}") {
         this.name = Literal("Custom Brain Food Message Text")
         this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for food/sphinx ratio.")
     }
@@ -288,7 +288,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Enables custom Shimmering Wool message (wool/king)")
     }
 
-    var customWoolMessage by strings("&6[SBO] &6&lRARE DROP! &6Shimmering Wool! &b{mf} &b#{amount}") {
+    var customWoolMessage by strings("&6[SBO] &6&lRARE DROP! &6Shimmering Wool! &b+{mf} ✯ Magic Find &b#{amount}") {
         this.name = Literal("Custom Shimmering Wool Message Text")
         this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for wool/king ratio.")
     }

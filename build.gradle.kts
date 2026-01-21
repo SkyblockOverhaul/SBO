@@ -19,6 +19,7 @@ repositories {
     maven("https://repo.essential.gg/repository/maven-public")
     maven("https://maven.teamresourceful.com/repository/maven-public/")
     maven("https://maven.terraformersmc.com/")
+    maven("https://maven.azureaaron.net/releases")
     maven("https://api.modrinth.com/maven")
 }
 
@@ -33,8 +34,7 @@ dependencies {
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
     modImplementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
-    modImplementation("net.hypixel:mod-api:${property("modapi.version")}")
-    modImplementation(include("maven.modrinth:hypixel-mod-api:${property("modapifabric.version")}")!!)
+    modImplementation(include("net.azureaaron:hm-api:${property("hmapi.version")}")!!)
     modImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.5:${property("rconfig.version.1.21.5")}")!!)
 
     // modImplementation(include("xyz.meowing:vexel-${mcData}:${property("vexel.version")}")!!)
