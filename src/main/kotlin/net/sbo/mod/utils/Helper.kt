@@ -485,7 +485,7 @@ object Helper {
 
     fun getSpawnMessage(message: String, mob: String): String {
         val mobs = SboDataObject.dianaTrackerMayor.mobs
-        val sboData = SboData()
+        val sboData = SboDataObject.sboData
         val msg = message
 
         when (mob.lowercase()) {
