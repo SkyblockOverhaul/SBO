@@ -274,7 +274,8 @@ object DianaMobDetect {
             RareDianaMob.INQ.display -> {
                 Diana.announceInqText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceInqText[0], "inq")) }
+                        val message = Helper.getSpawnMessage(Diana.announceInqText[0], "inq")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
                     }
                 }
             }
@@ -282,7 +283,8 @@ object DianaMobDetect {
             RareDianaMob.SPHINX.display -> {
                 Diana.announceSphinxText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")) }
+                        val message = Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
                     }
                 }
             }
@@ -290,7 +292,8 @@ object DianaMobDetect {
             RareDianaMob.MANTI.display -> {
                 Diana.announceMantiText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")) }
+                        val message = Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
                     }
                 }
             }
@@ -298,7 +301,8 @@ object DianaMobDetect {
             RareDianaMob.KING.display -> {
                 Diana.announceKingText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Helper.getSpawnMessage(Diana.announceKingText[0], "king")) }
+                        val message = Helper.getSpawnMessage(Diana.announceKingText[0], "king")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
                     }
                 }
             }
