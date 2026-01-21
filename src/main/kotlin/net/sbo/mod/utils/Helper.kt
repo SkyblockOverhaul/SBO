@@ -491,25 +491,25 @@ object Helper {
         when (mob.lowercase()) {
             "minos inquisitor", "inq" -> {
                 val since = sboData.mobsSinceInq
-                val percentage = if (mobs.MINOS_INQUISITOR != 0) mobs.TOTAL_MOBS / mobs.MINOS_INQUISITOR else 0 // Meant to make the test message work in case it's 0
+                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.MINOS_INQUISITOR * 100) / mobs.TOTAL_MOBS else 0 // Meant to make the test message work in case it's 0
                 return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
             }
 
             "king minos", "king" -> {
                 val since = sboData.mobsSinceKing
-                val percentage = if (mobs.KING_MINOS != 0) mobs.TOTAL_MOBS / mobs.KING_MINOS else 0
+                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.KING_MINOS * 100) / mobs.TOTAL_MOBS else 0
                 return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
             }
 
             "sphinx" -> {
                 val since = sboData.mobsSinceSphinx
-                val percentage = if (mobs.SPHINX != 0) mobs.TOTAL_MOBS / mobs.SPHINX else 0
+                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.SPHINX * 100) / mobs.TOTAL_MOBS else 0
                 return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
             }
 
             "manticore", "manti" -> {
                 val since = sboData.mobsSinceManti
-                val percentage = if (mobs.MANTICORE != 0) mobs.TOTAL_MOBS / mobs.MANTICORE else 0
+                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.MANTICORE * 100) / mobs.TOTAL_MOBS else 0
                 return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
             }
             else -> return ""
