@@ -484,7 +484,6 @@ object Helper {
     }
 
     fun getSpawnMessage(message: String, mob: String): String {
-        println("Default msg %s mob %s".format(message, mob))
         val mobs = SboDataObject.dianaTrackerMayor.mobs
         val sboData = SboData()
         val msg = message
