@@ -453,6 +453,7 @@ object Helper {
             .replace("{amount}", info.totalAmount.toString())
             .replace("{percentage}", "%.2f".format(info.percentage))
             .replace("{mf}", magicFind.toString())
+            .replace("&", "§")
 
         return Pair(true, resultText)
     }
@@ -485,32 +486,34 @@ object Helper {
 
     fun getSpawnMessage(message: String, mob: String): String {
         val mobs = SboDataObject.dianaTrackerMayor.mobs
+        val items = SboDataObject.dianaTrackerMayor.items
         val sboData = SboDataObject.sboData
         val msg = message
+
+        val kingPercent = calcPercentOne(items, mobs, "KING_MINOS")
+        val manticorePercent = calcPercentOne(items, mobs, "MANTICORE")
+        val inqPercent = calcPercentOne(items, mobs, "MINOS_INQUISITOR")
+        val sphinxPercent = calcPercentOne(items, mobs, "SPHINX")
 
         when (mob.lowercase()) {
             "minos inquisitor", "inq" -> {
                 val since = sboData.mobsSinceInq
-                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.MINOS_INQUISITOR * 100) / mobs.TOTAL_MOBS else 0 // Meant to make the test message work in case it's 0
-                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+                return msg.replace("{since}", since.toString()).replace("{chance}", inqPercent)
             }
 
             "king minos", "king" -> {
                 val since = sboData.mobsSinceKing
-                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.KING_MINOS * 100) / mobs.TOTAL_MOBS else 0
-                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+                return msg.replace("{since}", since.toString()).replace("{chance}", kingPercent)
             }
 
             "sphinx" -> {
                 val since = sboData.mobsSinceSphinx
-                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.SPHINX * 100) / mobs.TOTAL_MOBS else 0
-                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+                return msg.replace("{since}", since.toString()).replace("{chance}", sphinxPercent)
             }
 
             "manticore", "manti" -> {
                 val since = sboData.mobsSinceManti
-                val percentage = if (mobs.TOTAL_MOBS != 0) (mobs.MANTICORE * 100) / mobs.TOTAL_MOBS else 0
-                return msg.replace("{since}", since.toString()).replace("{chance}", percentage.toString())
+                return msg.replace("{since}", since.toString()).replace("{chance}", manticorePercent)
             }
             else -> return ""
         }
