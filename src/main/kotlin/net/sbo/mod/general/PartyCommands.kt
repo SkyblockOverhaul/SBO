@@ -68,7 +68,7 @@ object PartyCommands {
             Chat.chat("§7> §a!mobs")
             Chat.chat("§7> §a!burrows")
             Chat.chat("§7> §a!stats <playername>")
-            Chat.chat("§7> §a!since (chim, chimls, relic, stick, inq)")
+            Chat.chat("§7> §a!since (chim, chimls, relic, stick, inq, king, manti)")
         }
     }
 
@@ -433,3 +433,4 @@ object PartyCommands {
     }
 
 }
+
