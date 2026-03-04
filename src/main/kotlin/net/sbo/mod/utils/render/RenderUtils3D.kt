@@ -21,6 +21,11 @@ import net.sbo.mod.settings.categories.Diana
 //$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 //#endif
 
+//#if MC > 1.21.10
+//$$ import net.minecraft.world.debug.gizmo.GizmoDrawing
+//$$ import net.minecraft.util.math.Box
+//#endif
+
 object RenderUtils3D {
     fun renderWaypoint(
         context: WorldRenderContext,
@@ -37,9 +42,6 @@ object RenderUtils3D {
         drawFilledBox(
             context,
             pos,
-            1.0,
-            1.0,
-            1.0,
             colorComponents,
             alpha,
             throughWalls
@@ -94,13 +96,26 @@ object RenderUtils3D {
     fun drawFilledBox(
         context: WorldRenderContext,
         pos: SboVec,
-        width: Double,
-        height: Double,
-        depth: Double,
         colorComponents: FloatArray,
         alpha: Float,
         throughWalls: Boolean
     ) {
+        //#if MC > 1.21.10
+        //$$ val r = (colorComponents[0].coerceIn(0f, 1f) * 255).toInt()
+        //$$ val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
+        //$$ val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
+        //$$ val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
+        //$$ val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
+        //$$ val bPos = pos.toBlockPos().toImmutable()
+        //$$ if (throughWalls) {
+        //$$     GizmoDrawing.box(Box.enclosing(bPos, bPos), DrawStyle.filled(argbColor)).ignoreOcclusion()
+        //$$ } else {
+        //$$     GizmoDrawing.box(Box.enclosing(bPos, bPos), DrawStyle.filled(argbColor))
+        //$$ }
+        //#else
+        val width = 1.0
+        val height = 1.0
+        val depth = 1.0
         context.pushPop {
             val cameraPos = context.getCamera().pos
             translate(pos.x + 0.5 - cameraPos.x, pos.y - cameraPos.y, pos.z + 0.5 - cameraPos.z)
@@ -124,8 +139,8 @@ object RenderUtils3D {
                 maxX, maxY, maxZ,
                 colorComponents[0], colorComponents[1], colorComponents[2], alpha
             )
-
         }
+        //#endif
     }
 
     /**
@@ -415,10 +430,15 @@ object RenderUtils3D {
     }
 
     private inline fun MatrixStack.withLineWidth(lineWidth: Float, function: MatrixStack.() -> Unit) {
+        //TODO find 1.21.11 compatible way of line width
+        //#if MC > 1.21.10
+        //$$ function()
+        //#else
         val prevLineWidth = RenderSystem.getShaderLineWidth()
         RenderSystem.lineWidth(lineWidth)
         function()
         RenderSystem.lineWidth(prevLineWidth)
+        //#endif
     }
 
     private inline fun MatrixStack.pushPop(function: MatrixStack.() -> Unit) {
