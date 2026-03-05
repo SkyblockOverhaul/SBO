@@ -248,11 +248,17 @@ object RenderUtils3D {
                 buffer.vertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
                     .normal(matrixEntry, nx, ny, nz)
                     .color(color[0], color[1], color[2], alpha)
+                    //#if MC > 1.21.10
+                    //$$ .lineWidth(lineWidth)
+                    //#endif
 
 
                 buffer.vertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
                     .normal(matrixEntry, nx, ny, nz)
                     .color(color[0], color[1], color[2], alpha)
+                    //#if MC > 1.21.10
+                    //$$ .lineWidth(lineWidth)
+                    //#endif
             }
         }
     }
@@ -430,7 +436,6 @@ object RenderUtils3D {
     }
 
     private inline fun MatrixStack.withLineWidth(lineWidth: Float, function: MatrixStack.() -> Unit) {
-        //TODO find 1.21.11 compatible way of line width
         //#if MC > 1.21.10
         //$$ function()
         //#else
