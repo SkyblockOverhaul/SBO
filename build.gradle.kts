@@ -27,6 +27,29 @@ toolkitMultiversion {
     moveBuildsToRootProject.set(true)
 }
 
+tasks.named<ProcessResources>("processResources") {
+    val fabricLoaderVersion = mcData.dependencies.fabric.fabricLoaderVersion
+    val fabricApiVersion = mcData.dependencies.fabric.fabricApiVersion
+    val fabricLanguageKotlinVersion = mcData.dependencies.fabric.fabricLanguageKotlinVersion
+    val javaVersionMajor = mcData.version.javaVersion.majorVersion
+
+    inputs.property("fabric_loader_version", fabricLoaderVersion)
+    inputs.property("fabric_api_version", fabricApiVersion)
+    inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
+    inputs.property("java_version_major", javaVersionMajor)
+
+    filesMatching("fabric.mod.json") {
+        expand(
+            mapOf(
+                "fabric_loader_version" to fabricLoaderVersion,
+                "fabric_api_version" to fabricApiVersion,
+                "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
+                "java_version_major" to javaVersionMajor
+            ) + inputs.properties
+        )
+    }
+}
+
 dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${mcData.dependencies.fabric.fabricLanguageKotlinVersion}")
 
