@@ -35,6 +35,7 @@
 	"mixins": [
 		"mixins.sbo-kotlin.json"
 	],
+	"accessWidener": "sbo-kotlin.accesswidener",
 	"depends": {
 		"fabricloader": ">=${fabric_loader_version}",
 		"minecraft": ">=${mc_version}",
