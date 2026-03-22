@@ -15,17 +15,17 @@ data class WarpPoint(
 )
 
 val hubWarps: Map<String, WarpPoint> = mapOf(
-    "hub" to WarpPoint(SboVec(-3.0, 70.0, -70.0), true),
-    "museum" to WarpPoint(SboVec(-76.0, 76.0, 81.0), true)
+    "hub" to WarpPoint(SboVec(0.50, 77.00, -0.50), true)
 )
 
 val additionalHubWarps: Map<String, WarpPoint> = mapOf(
-    "castle" to WarpPoint(SboVec(-250.0, 130.0, 45.0), true, "castleWarp"),
-    "wizard" to WarpPoint(SboVec(42.0, 122.0, 69.0), true, "wizardWarp"),
-    "crypt" to WarpPoint(SboVec(-161.0, 61.0, -99.0), true, "cryptWarp"),
-    "stonks" to WarpPoint(SboVec(-53.0, 72.0, -53.0), true, "stonksWarp"),
-    "da" to WarpPoint(SboVec(92.0, 75.0, 174.0), true, "darkAuctionWarp"),
-    "taylor" to WarpPoint(SboVec(22.0, 71.0, -42.0), true, "taylorWarp")
+    "castle" to WarpPoint(SboVec(-250.00, 130.00, 45.00), true, "castleWarp"),
+    "wizard" to WarpPoint(SboVec(44.50, 119.00, 93.50), true, "wizardWarp"),
+    "crypt" to WarpPoint(SboVec(-160.50, 62.00, -106.50), true, "cryptWarp"),
+    "stonks" to WarpPoint(SboVec(-36.50, 70.00, -81.50), true, "stonksWarp"),
+    "da" to WarpPoint(SboVec(91.50, 75.00, 173.50), true, "darkAuctionWarp"),
+    "taylor" to WarpPoint(SboVec(29.50, 73.00, -41.50), true, "taylorWarp"),
+    "museum" to WarpPoint(SboVec(29.50, 72.00, 1.50), true, "museumWarp")
 )
 
 enum class AdditionalHubWarps {
@@ -34,5 +34,6 @@ enum class AdditionalHubWarps {
     CRYPT,
     STONKS,
     DA,
-    TAYLOR
+    TAYLOR,
+    Museum
 }

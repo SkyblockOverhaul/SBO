@@ -2,6 +2,7 @@ package net.sbo.mod.utils
 
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
@@ -13,23 +14,17 @@ object SboTimerManager {
     val timerMayor = SBOTimer(
         name = "Mayor",
         inactiveTimeLimit = 1.5f,
-        trackerObject = SboDataObject.dianaTrackerMayor,
-        dataFieldName = "TIME",
-        dataFieldClass = "items"
+        tracker = SboDataObject.dianaTrackerMayor
     )
     val timerTotal = SBOTimer(
         name = "Total",
         inactiveTimeLimit = 1.5f,
-        trackerObject = SboDataObject.dianaTrackerTotal,
-        dataFieldName = "TIME",
-        dataFieldClass = "items"
+        tracker = SboDataObject.dianaTrackerTotal
     )
     val timerSession = SBOTimer(
         name = "Session",
         inactiveTimeLimit = 1.5f,
-        trackerObject = SboDataObject.dianaTrackerSession,
-        dataFieldName = "TIME",
-        dataFieldClass = "items"
+        tracker = SboDataObject.dianaTrackerSession
     )
 
     fun init() {
@@ -64,13 +59,10 @@ object SboTimerManager {
     class SBOTimer(
         val name: String,
         inactiveTimeLimit: Float,
-        private val trackerObject: Any,
-        private val dataFieldName: String,
-        private val dataFieldClass: String? = null
+        private val tracker: DianaTracker
     ) {
         companion object {
             val timerList = mutableListOf<SBOTimer>()
-            val fieldCache = mutableMapOf<Pair<Any, String>, Field>()
         }
 
         private var startTime: Long = 0
@@ -85,51 +77,6 @@ object SboTimerManager {
             timerList.add(this)
         }
 
-        private fun getField(obj: Any, fieldName: String): Field? {
-            val key = obj to fieldName
-
-            val cached = SBOTimer.fieldCache[key]
-            if (cached != null) {
-                return cached
-            }
-
-            return try {
-                obj.javaClass
-                    .getDeclaredField(fieldName)
-                    .apply { isAccessible = true }
-                    .also { SBOTimer.fieldCache[key] = it }
-            } catch (e: NoSuchFieldException) {
-                SBOKotlin.logger.warn("Field '$fieldName' not found in object of class '${obj.javaClass.name}'", e)
-                null
-            }
-        }
-
-        private fun setLongField(obj: Any, fieldName: String, value: Long) {
-            val field = getField(obj, fieldName)
-            if (field != null) {
-                field.set(obj, value)
-            } else {
-                SBOKotlin.logger.warn("Field '$fieldName' not found in object of class '${obj.javaClass.name}'")
-            }
-        }
-
-        private fun getLongField(obj: Any, fieldName: String): Long {
-            val field = getField(obj, fieldName)
-            if (field != null) {
-                return field.getLong(obj)
-            }
-            return 0
-        }
-
-        private fun getTargetObject(): Any? {
-            return if (dataFieldClass != null) {
-                val field = getField(trackerObject, dataFieldClass)
-                field?.get(trackerObject)
-            } else {
-                trackerObject
-            }
-        }
-
         /**
          * Starts the timer.
          */
@@ -137,9 +84,8 @@ object SboTimerManager {
             if (running || startedOnce) return
 
             startTime = System.currentTimeMillis()
-            val target = getTargetObject() ?: return
 
-            val storedTime = getLongField(target, dataFieldName)
+            val storedTime = tracker.items.TIME
             if (storedTime > 0) {
                 elapsedTime = storedTime
             }
@@ -159,9 +105,7 @@ object SboTimerManager {
             if (System.currentTimeMillis() - lastActivityTime > INACTIVITY_LIMIT) {
                 pause()
                 if (!inactivityFlag) {
-                    val target = getTargetObject() ?: return
-                    val currentTime = getLongField(target, dataFieldName)
-                    setLongField(target, dataFieldName, currentTime - INACTIVITY_LIMIT)
+                    tracker.items.TIME = tracker.items.TIME - INACTIVITY_LIMIT
                     inactivityFlag = true
                 }
             }
@@ -175,8 +119,7 @@ object SboTimerManager {
             val now = System.currentTimeMillis()
             elapsedTime += now - startTime
             startTime = now
-            val target = getTargetObject() ?: return
-            setLongField(target, dataFieldName, elapsedTime)
+            tracker.items.TIME = elapsedTime
         }
 
         /**
@@ -210,8 +153,7 @@ object SboTimerManager {
             startedOnce = false
             elapsedTime = 0
             startTime = 0
-            val target = getTargetObject() ?: return
-            setLongField(target, dataFieldName, 0)
+            tracker.items.TIME = 0
             stopInactivityCheck()
         }
 
@@ -219,8 +161,7 @@ object SboTimerManager {
          * Returns the elapsed time in hours.
          */
         fun getHourTime(): Double {
-            val target = getTargetObject() ?: return 0.0
-            val millisecondTime = getLongField(target, dataFieldName)
+            val millisecondTime = tracker.items.TIME
             val formattedString = String.format(Locale.US, "%.6f", millisecondTime / 3600000.0)
             return formattedString.toDouble()
         }

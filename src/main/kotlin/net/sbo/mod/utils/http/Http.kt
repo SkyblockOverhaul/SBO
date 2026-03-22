@@ -16,7 +16,7 @@ object Http {
     val jsonParser = Json { ignoreUnknownKeys = true }
     private const val CONNECT_TIMEOUT = 10000
     private const val READ_TIMEOUT = 10000
-    private const val USER_AGENT = "SBO-Kotlin-Mod/1.21.5"
+    private const val USER_AGENT = "SBO-Kotlin-Mod/1.21"
 
     /**
      * Sends an asynchronous HTTP GET request.

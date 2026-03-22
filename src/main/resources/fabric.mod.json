@@ -1,4 +1,5 @@
 {
+    "schemaVersion": 1,
 	"custom": {
 		"modmenu": {
 			"update_checker": true,
@@ -9,11 +10,10 @@
 			}
 		}
 	},
-	"schemaVersion": 1,
 	"id": "${mod_id}",
 	"version": "${mod_version}",
 	"name": "${mod_name}",
-	"description": "SBO is the ultimate diana mod for diana nons! FPS friendly, and packed with QOL features!",
+	"description": "${mod_description}",
 	"authors": [
 		"D4rkSwift/Saotzuri",
 		"RolexDE"
@@ -28,18 +28,19 @@
 	"entrypoints": {
 		"client": [
 			{
-				"value": "net.sbo.mod.SBOKotlin::onInitializeClient"
+				"value": "${mod_group}.SBOKotlin::onInitializeClient"
 			}
 		]
 	},
 	"mixins": [
 		"mixins.sbo-kotlin.json"
 	],
+	"accessWidener": "sbo-kotlin.accesswidener",
 	"depends": {
-		"fabricloader": ">=0.16.14",
-		"minecraft": "~${minor_mc_version}",
-		"java": ">=21",
-		"fabric-api": "*",
-		"fabric-language-kotlin": "*"
+		"fabricloader": ">=${fabric_loader_version}",
+		"minecraft": ">=${mc_version}",
+		"java": ">=${java_version_major}",
+		"fabric-api": ">=${fabric_api_version}",
+		"fabric-language-kotlin": ">=${fabric_language_kotlin_version}"
 	}
 }

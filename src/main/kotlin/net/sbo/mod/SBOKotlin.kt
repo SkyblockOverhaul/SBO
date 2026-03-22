@@ -75,7 +75,9 @@ object SBOKotlin {
 			.map { it.metadata.version.friendlyString }
 			.orElse("unknown")
 
-		mcVersion = FabricLoader.getInstance().rawGameVersion
+		mcVersion = FabricLoader.getInstance().getModContainer("minecraft")
+			.map { it.metadata.version.friendlyString }
+			.orElse("unknown")
 
 
 

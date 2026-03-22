@@ -19,6 +19,7 @@ import net.sbo.mod.utils.data.DianaMobsData
 import net.sbo.mod.utils.data.npcSellValueMap
 import net.sbo.mod.utils.data.HypixelBazaarResponse
 import net.sbo.mod.utils.data.Item
+import net.sbo.mod.utils.data.SboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
@@ -486,6 +487,40 @@ object Helper {
         }
     }
 
+    fun getSpawnMessage(message: String, mob: String): String {
+        val mobs = SboDataObject.dianaTrackerMayor.mobs
+        val items = SboDataObject.dianaTrackerMayor.items
+        val sboData = SboDataObject.sboData
+        val msg = message
+
+        val kingPercent = calcPercentOne(items, mobs, "KING_MINOS")
+        val manticorePercent = calcPercentOne(items, mobs, "MANTICORE")
+        val inqPercent = calcPercentOne(items, mobs, "MINOS_INQUISITOR")
+        val sphinxPercent = calcPercentOne(items, mobs, "SPHINX")
+
+        when (mob.lowercase()) {
+            "minos inquisitor", "inq" -> {
+                val since = sboData.mobsSinceInq
+                return msg.replace("{since}", since.toString()).replace("{chance}", inqPercent)
+            }
+
+            "king minos", "king" -> {
+                val since = sboData.mobsSinceKing
+                return msg.replace("{since}", since.toString()).replace("{chance}", kingPercent)
+            }
+
+            "sphinx" -> {
+                val since = sboData.mobsSinceSphinx
+                return msg.replace("{since}", since.toString()).replace("{chance}", sphinxPercent)
+            }
+
+            "manticore", "manti" -> {
+                val since = sboData.mobsSinceManti
+                return msg.replace("{since}", since.toString()).replace("{chance}", manticorePercent)
+            }
+            else -> return ""
+        }
+    }
 
     fun toTitleCase(input: String): String {
         return input.lowercase().replaceFirstChar { char -> char.uppercase() }
