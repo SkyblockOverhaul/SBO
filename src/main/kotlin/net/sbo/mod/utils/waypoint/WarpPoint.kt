@@ -35,5 +35,5 @@ enum class AdditionalHubWarps {
     STONKS,
     DA,
     TAYLOR,
-    Museum
+    MUSEUM
 }

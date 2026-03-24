@@ -87,6 +87,7 @@ object Diana : CategoryKt("Diana") {
     init {
         separator {
             this.title = "Diana Warp"
+            this.description = "You must configure the warp keys from vanilla Minecraft settings, under (ESC) -> Options -> Controls -> Key Binds... scroll till you find SBO - Keybinds and configure it from there."
         }
     }
 
