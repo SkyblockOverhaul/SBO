@@ -206,8 +206,10 @@ class Overlay(
 
         //#if MC > 1.21.10
         //$$ drawContext.drawStrokedRectangle(x, y, width, height, Color(255, 0, 0, 170).rgb)
+        //#elseif MC > 1.21.9
+        //$$ drawContext.drawStrokedRectangle(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
         //#else
-        drawContext.drawStrokedRectangle(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
+        drawContext.drawBorder(x, y, width, height, Color(255, 0, 0, 170).rgb)
         //#endif
     }
 }
