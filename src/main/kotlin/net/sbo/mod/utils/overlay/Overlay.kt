@@ -174,7 +174,7 @@ class Overlay(
             drawContext.drawText(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.fontHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
-        if (isOverOverlay(mouseX, mouseY, totalWidth, totalHeight) && Helper.currentScreen is OverlayEditScreen) {
+        if (Helper.currentScreen is OverlayEditScreen && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
