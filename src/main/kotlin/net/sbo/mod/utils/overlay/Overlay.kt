@@ -152,13 +152,8 @@ class Overlay(
         if (!condition()) return
         val textRenderer = mc.textRenderer ?: return
 
-        //#if MC >= 1.21.7
-        //$$ drawContext.matrices.pushMatrix()
-        //$$ drawContext.matrices.scale(scale, scale)
-        //#else
-        drawContext.matrices.push()
-        drawContext.matrices.scale(scale, scale, 1.0f)
-        //#endif
+        drawContext.matrices.pushMatrix()
+        drawContext.matrices.scale(scale, scale)
 
         var currentY = (y / scale)
         var currentX = (x / scale)
@@ -187,18 +182,10 @@ class Overlay(
             }
         }
 
-        //#if MC >= 1.21.7
-        //$$ drawContext.matrices.popMatrix()
-        //#else
-        drawContext.matrices.pop()
-        //#endif
+        drawContext.matrices.popMatrix()
     }
 
     private fun drawDebugBox(drawContext: DrawContext, x: Int, y: Int, width: Int, height: Int) {
-        //#if MC >= 1.21.9
-        //$$ drawContext.drawStrokedRectangle(x, y, width, height, Color(255, 0, 0, 170).rgb)
-        //#else
-        drawContext.drawBorder(x, y, width, height, Color(255, 0, 0, 170).rgb)
-        //#endif
+        drawContext.drawStrokedRectangle(x, y, width, height, Color(255, 0, 0, 170).rgb)
     }
 }

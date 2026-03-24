@@ -24,7 +24,7 @@ public class PlayerInteractMixin {
     private void onInteractItem(CallbackInfoReturnable<ActionResult> cir) {
         if (client.player != null) {
             PlayerInteractEvent event = new PlayerInteractEvent(
-                    "useItem", null, client.player, client.player.getWorld(), false
+                    "useItem", null, client.player, client.player.getEntityWorld(), false
             );
             SBOEvent.INSTANCE.emit(event);
 
@@ -39,7 +39,7 @@ public class PlayerInteractMixin {
     private void onInteractBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         if (hand == Hand.MAIN_HAND) {
             PlayerInteractEvent event = new PlayerInteractEvent(
-                    "useBlock", hitResult.getBlockPos(), player, player.getWorld(), false
+                    "useBlock", hitResult.getBlockPos(), player, player.getEntityWorld(), false
             );
             SBOEvent.INSTANCE.emit(event);
 

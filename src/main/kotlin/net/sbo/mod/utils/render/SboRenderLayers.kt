@@ -104,9 +104,6 @@ object SboRenderLayers {
             .texture(
                 RenderPhase.Texture(
                     BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
                     false
                 )
             )
@@ -129,9 +126,6 @@ object SboRenderLayers {
             .texture(
                 RenderPhase.Texture(
                     BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
                     false
                 )
             )
@@ -155,9 +149,6 @@ object SboRenderLayers {
             .texture(
                 RenderPhase.Texture(
                     BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
                     false
                 )
             )
@@ -181,9 +172,6 @@ object SboRenderLayers {
             .texture(
                 RenderPhase.Texture(
                     BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
                     false
                 )
             )

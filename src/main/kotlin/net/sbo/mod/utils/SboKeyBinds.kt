@@ -8,19 +8,13 @@ import net.minecraft.client.util.InputUtil
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
-//#if MC >= 1.21.9
-//$$ import net.minecraft.util.Identifier
-//#endif
+import net.minecraft.util.Identifier
 
 object SboKeyBinds {
 
     private data class KeyPressState(var isHeldDown: Boolean = false, var lastActivation: Long = 0)
     private val keyStates = mutableMapOf<KeyBinding, KeyPressState>()
-    //#if MC >= 1.21.9
-    //$$ private val SBO_CATEGORY = KeyBinding.Category(Identifier.of("sbo-kotlin", "keybinds"))
-    //#else
-    private val SBO_CATEGORY = "key.category.sbo-kotlin.keybinds"
-    //#endif
+    private val SBO_CATEGORY = KeyBinding.Category(Identifier.of("sbo-kotlin", "keybinds"))
 
     fun init() {
         register()
