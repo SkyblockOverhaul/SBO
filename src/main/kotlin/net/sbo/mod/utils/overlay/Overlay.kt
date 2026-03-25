@@ -163,15 +163,18 @@ class Overlay(
         var currentY = (y / scale)
         var currentX = (x / scale)
 
-        val totalWidth = getTotalWidth()
-        val totalHeight = getTotalHeight()
+        // We don't need thread safety as we are in method-local context
+        // Making these vars lazy ensures they are only computed when needed (e.g not computed if both of the if conditions below are false)
+        // and only computed once when both of the if conditions are true.
+        val totalWidth by lazy(LazyThreadSafetyMode.NONE) { getTotalWidth() }
+        val totalHeight by lazy(LazyThreadSafetyMode.NONE) { getTotalHeight() }
 
         if (selected) {
             drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
             drawContext.drawText(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.fontHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
-        if (isOverOverlay(mouseX, mouseY, totalWidth, totalHeight) && Helper.currentScreen is OverlayEditScreen) {
+        if (Helper.currentScreen is OverlayEditScreen && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
@@ -195,8 +198,16 @@ class Overlay(
     }
 
     private fun drawDebugBox(drawContext: DrawContext, x: Int, y: Int, width: Int, height: Int) {
-        //#if MC >= 1.21.9
+        // Multiply everything by scale so that the box renders correctly when scale != 1.0F
+        val scaledX = (x * scale).toInt()
+        val scaledY = (y * scale).toInt()
+        val scaledWidth = (width * scale).toInt()
+        val scaledHeight = (height * scale).toInt()
+
+        //#if MC > 1.21.10
         //$$ drawContext.drawStrokedRectangle(x, y, width, height, Color(255, 0, 0, 170).rgb)
+        //#elseif MC > 1.21.9
+        //$$ drawContext.drawStrokedRectangle(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
         //#else
         drawContext.drawBorder(x, y, width, height, Color(255, 0, 0, 170).rgb)
         //#endif
