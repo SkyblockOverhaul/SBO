@@ -21,7 +21,11 @@ object SboRenderPipelines {
     val LINES: RenderPipeline = RenderPipelines.register(
         RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(RenderPipelines.RENDERTYPE_LINES_SNIPPET))
             .withLocation(SBOKotlin.id("pipeline/line_strip"))
+            //#if MC > 1.21.10
+            //$$ .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH, DrawMode.LINES)
+            //#else
             .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL, DrawMode.LINES)
+            //#endif
             .withCull(false)
             .withBlend(BlendFunction.TRANSLUCENT)
             .withDepthWrite(true)
@@ -33,7 +37,11 @@ object SboRenderPipelines {
         RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(RenderPipelines.RENDERTYPE_LINES_SNIPPET))
             .withLocation(SBOKotlin.id("pipeline/line_through_walls"))
             .withShaderDefine("shad")
+            //#if MC > 1.21.10
+            //$$ .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH, DrawMode.LINES)
+            //#else
             .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL, DrawMode.LINES)
+            //#endif
             .withCull(false)
             .withBlend(BlendFunction.TRANSLUCENT)
             .withDepthWrite(false)
