@@ -429,7 +429,7 @@ object Helper {
     }
 
     fun checkDiana(): Boolean {
-        val diana = (Debug.itsAlwaysDiana || ((Mayor.perks.contains("Mythological Ritual") || Mayor.mayor == "Jerry" || Mayor.mayor == "Aura") && hasSpade && World.getWorld() == "Hub"))
+        val diana = (Debug.itsAlwaysDiana || (((Mayor.perks.contains("Mythological Ritual") || Mayor.ministerPerk == "Mythological Ritual") || Mayor.mayor == "Jerry" || Mayor.mayor == "Aura") && hasSpade && World.getWorld() == "Hub"))
         return diana
     }
 
