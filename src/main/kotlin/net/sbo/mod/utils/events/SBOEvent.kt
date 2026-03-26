@@ -68,8 +68,9 @@ object SBOEvent {
          * Chat Message Event
          * Fired when a chat message is received.
          */
-        ClientReceiveMessageEvents.GAME.register { message, signed ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
             emit(ChatMessageEvent(message, signed))
+            true
         }
         /**
          * Chat Message Allow Event
