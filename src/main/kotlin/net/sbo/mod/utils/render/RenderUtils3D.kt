@@ -17,9 +17,7 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.ColorHelper
 import net.sbo.mod.settings.categories.Diana
 
-//#if MC > 1.21.9
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-//#endif
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 
 //#if MC > 1.21.10
 //$$ import net.minecraft.world.debug.gizmo.GizmoDrawing
@@ -281,11 +279,7 @@ object RenderUtils3D {
 
         val consumers = ctx.consumers()
         val wolrd = mc.world ?: return
-        //#if MC > 1.21.9
         val partialTicks = mc.renderTickCounter.getTickProgress(true)
-        //#else
-        //$$ val partialTicks = ctx.tickCounter().getTickProgress(true)
-        //#endif
         val cam = ctx.getCamera().pos
         val beamColor = floatArrayOf(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f)
 
@@ -419,19 +413,11 @@ object RenderUtils3D {
     }
 
     private fun WorldRenderContext.getCamera(): Camera {
-        //#if MC > 1.21.9
-        //$$ return gameRenderer().camera
-        //#else
-        return camera()
-        //#endif
+        return gameRenderer().camera
     }
 
     private inline fun WorldRenderContext.pushPop(function: MatrixStack.() -> Unit) {
-        //#if MC > 1.21.9
-        //$$ val matrix = matrices()!!
-        //#else
-        val matrix = matrixStack()!!
-        //#endif
+        val matrix = matrices()!!
         matrix.pushPop(function)
     }
 

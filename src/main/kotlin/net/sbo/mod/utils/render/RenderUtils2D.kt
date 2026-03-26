@@ -18,18 +18,10 @@ object RenderUtils2D {
 
         val textLines = text.split("\n").map { Text.of(it) }
 
-        //#if MC >= 1.21.7
-        //$$ drawContext.matrices.pushMatrix()
-        //#else
-        drawContext.matrices.push()
-        //#endif
+        drawContext.matrices.pushMatrix()
 
         drawContext.drawTooltip(textRenderer, textLines, x.toInt(), y.toInt())
 
-        //#if MC >= 1.21.7
-        //$$ drawContext.matrices.popMatrix()
-        //#else
-        drawContext.matrices.pop()
-        //#endif
+        drawContext.matrices.popMatrix()
     }
 }

@@ -110,33 +110,23 @@ object SBOEvent {
             /** GUI Mouse Click Event
              * Fired before a mouse click is processed in a GUI screen.
              */
-            //#if MC >= 1.21.9
-            //$$ ScreenMouseEvents.beforeMouseClick(screen).register { s, click ->
-            //$$    val mouseX = click.x
-            //$$    val mouseY = click.y
-            //$$    val button = click.buttonInfo().button
-            //#else
-            ScreenMouseEvents.beforeMouseClick(screen).register { s, mouseX, mouseY, button ->
-            //#endif
+            ScreenMouseEvents.beforeMouseClick(screen).register { s, click ->
+                val mouseX = click.x
+                val mouseY = click.y
+                val button = click.buttonInfo().button
                 emit(GuiMouseClickBefore(s, mouseX, mouseY, button))
             }
 
             /** GUI Mouse Click Event
              * Fired after a mouse click is processed in a GUI screen.
              */
-            //#if MC >= 1.21.9
-            //$$ ScreenMouseEvents.afterMouseClick(screen).register { s, click, consumed ->
-            //$$    val mouseX = click.x
-            //$$    val mouseY = click.y
-            //$$    val button = click.buttonInfo().button
-            //$$    emit(GuiMouseClickAfter(s, mouseX, mouseY, button))
-            //$$    consumed
-            //$$ }
-            //#else
-            ScreenMouseEvents.afterMouseClick(screen).register { s, mouseX, mouseY, button ->
+            ScreenMouseEvents.afterMouseClick(screen).register { s, click, consumed ->
+                val mouseX = click.x
+                val mouseY = click.y
+                val button = click.buttonInfo().button
                 emit(GuiMouseClickAfter(s, mouseX, mouseY, button))
+                consumed
             }
-            //#endif
         }
 
         /**

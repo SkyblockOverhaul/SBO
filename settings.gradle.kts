@@ -28,8 +28,6 @@ rootProject.buildFileName = "root.gradle.kts"
 include("event-processor")
 
 listOf(
-    "1.21.5-fabric",
-    "1.21.7-fabric",
     "1.21.10-fabric",
     "1.21.11-fabric"
 ).forEach { version ->

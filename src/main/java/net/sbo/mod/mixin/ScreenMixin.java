@@ -3,6 +3,7 @@ package net.sbo.mod.mixin;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.input.KeyInput;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.guis.GuiKeyEvent;
 import net.sbo.mod.utils.events.impl.guis.GuiRenderEvent;
@@ -23,9 +24,10 @@ public abstract class ScreenMixin {
     }
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
-    public void onKeyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
+    public void onKeyPressed(KeyInput input, CallbackInfoReturnable<Boolean> cir) {
         MinecraftClient client = MinecraftClient.getInstance();
         Screen screen = (Screen)(Object)this;
+        int keyCode = input.key();
         SBOEvent.INSTANCE.emit(new GuiKeyEvent(client, screen, keyCode, cir));
     }
 }

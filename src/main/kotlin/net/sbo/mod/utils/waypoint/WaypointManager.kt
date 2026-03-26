@@ -25,13 +25,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.iterator
 import kotlin.math.roundToInt
 import kotlin.text.get
-//#if MC > 1.21.9
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
-//#else
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
-//#endif
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 
 object WaypointManager {
     var guessWp: Waypoint? = null
@@ -180,11 +175,7 @@ object WaypointManager {
             guessWp?.format(rareWp, closestBurrow.second, shouldLegacyHaveLine)
         }
 
-        //#if MC >= 1.21.9
-        //$$ WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
-        //#else
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(WaypointRenderer)
-        //#endif
+        WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
     }
 
     @SboEvent
