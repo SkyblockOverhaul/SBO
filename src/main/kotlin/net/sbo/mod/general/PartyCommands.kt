@@ -57,18 +57,28 @@ object PartyCommands {
 
     fun partyCommands() {
         Register.command("sbopartycommands", "sbopcom") {
-            Chat.chat("§6[SBO] §eDiana party commands:")
-            Chat.chat("§7> §a!chim")
-            Chat.chat("§7> §a!chimls")
-            Chat.chat("§7> §a!stick")
-            Chat.chat("§7> §a!relic")
-            Chat.chat("§7> §a!feathers")
-            Chat.chat("§7> §a!profit")
-            Chat.chat("§7> §a!playtime")
-            Chat.chat("§7> §a!mobs")
-            Chat.chat("§7> §a!burrows")
-            Chat.chat("§7> §a!stats <playername>")
-            Chat.chat("§7> §a!since (chim, chimls, relic, stick, inq, king, manti)")
+            help()
+        }
+    }
+
+    val helpCommands = listOf(
+        "!chim",
+        "!chimls",
+        "!stick",
+        "!relic",
+        "!feathers",
+        "!profit",
+        "!playtime",
+        "!mobs",
+        "!burrows",
+        "!stats <playername>",
+        "!since (chim, chimls, relic, stick, inq, king, manti, core, corels, wool, woolls)"
+    )
+
+    fun help() {
+        Chat.chat("§6[SBO] §eDiana party commands:")
+        helpCommands.forEach {
+            Chat.chat("§7> §a$it")
         }
     }
 
@@ -427,7 +437,16 @@ object PartyCommands {
                         }
                     }
                 }
+                "!help" -> {
+                    if (!settings.dianaPartyCommands) return@onChatMessage
+                    sleep(200) {
+                        help() // will work for people with SBO
 
+                        // Also send in party chat in case someone is curious what diana party commands SBO has without having SBO
+                        val commands = helpCommands.joinToString(",")
+                        Chat.command("pc Available diana party commands: $commands")
+                    }
+                }
             }
         }
     }
