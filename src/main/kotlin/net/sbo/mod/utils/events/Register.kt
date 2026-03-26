@@ -77,7 +77,7 @@ object Register {
         noFormatting: Boolean = false,
         action: (message: Text, matchResult: MatchResult) -> Unit
     ) {
-        ClientReceiveMessageEvents.GAME.register { message, _ ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, _ ->
             var text = message.formattedString()
 
             if (noFormatting) text = text.removeFormatting()
@@ -85,6 +85,8 @@ object Register {
             regex.find(text)?.let { result ->
                 action(message, result)
             }
+
+            true
         }
     }
 
