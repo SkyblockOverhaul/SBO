@@ -1,5 +1,10 @@
 import java.nio.charset.StandardCharsets
 import dev.deftu.gradle.utils.version.MinecraftVersions
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     java
@@ -26,6 +31,28 @@ loom {
     }
 }
 
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        val args = mutableListOf<String>()
+        args.addAll(freeCompilerArgs.get())
+
+        args.addAll(
+            listOf(
+                "-Xbackend-threads=0", // 0 means use 1 thread per core. Default value is 1 which is single threaded and doesn't scale, often bottlenecks compilation
+                "-jvm-default=no-compatibility", // this not a library mod or API, no need to generate additional DefaultImpls classes (which is bigger jar size and more compile time)
+            )
+        )
+
+        freeCompilerArgs = args
+    }
+}
+
+kotlin {
+    // This improves build performance as it supports incremental compilation among other things with the BTA API
+    @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
+    compilerVersion = "2.2.10"
+}
+
 repositories {
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://repo.essential.gg/repository/maven-public")
@@ -40,9 +67,6 @@ toolkitMultiversion {
 }
 
 tasks.withType<JavaCompile> {
-  options.release.set(21)
-  options.compilerArgs.addAll(listOf("-Xlint:all,-processing", "-g", "-parameters"))
-
   options.encoding = StandardCharsets.UTF_8.toString()
 }
 
