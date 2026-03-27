@@ -77,7 +77,7 @@ object SBOKotlin {
 
 		mcVersion = FabricLoader.getInstance().getModContainer("minecraft")
 			.map { it.metadata.version.friendlyString }
-			.orElse("unknown")
+			.orElse("unknown-test-build-time-after-changing-kotlin-source")
 
 
 
