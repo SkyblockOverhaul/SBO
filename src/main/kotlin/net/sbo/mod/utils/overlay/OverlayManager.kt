@@ -47,16 +47,16 @@ object OverlayManager {
 
     @SboEvent
     fun onRender(event: RenderEvent) {
-        render(event.context,  mc.currentScreen?.title?.string ?: "")
+        render(event.context, mc.currentScreen)
     }
 
-    fun render(drawContext: DrawContext, renderScreen: String = "") {
+    fun render(drawContext: DrawContext, renderScreen: Screen? = null) {
         if (!World.isInSkyblock()) return
         val scaleFactor = mc.window.scaleFactor
         val mouseX = mc.mouse.x / scaleFactor
         val mouseY = mc.mouse.y / scaleFactor
         for (overlay in overlays.toList()) {
-            if (renderScreen == "" && !mc.options.playerListKey.isPressed && !mc.options.hudHidden)
+            if (renderScreen == null && !mc.options.playerListKey.isPressed && !mc.options.hudHidden)
                 overlay.render(drawContext, mouseX, mouseY)
         }
     }
@@ -67,7 +67,7 @@ object OverlayManager {
         val mouseX = mc.mouse.x / scaleFactor
         val mouseY = mc.mouse.y / scaleFactor
         for (overlay in overlays.toList()) {
-            if (renderScreen.title.string in overlay.allowedGuis && !mc.options.hudHidden)
+            if (overlay.allowedScreens.any { it(renderScreen) } && !mc.options.hudHidden)
                 overlay.render(drawContext, mouseX, mouseY)
         }
     }

@@ -2,6 +2,9 @@ package net.sbo.mod.overlays
 
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.overlay.Overlay
+import net.sbo.mod.utils.overlay.isCraftingScreenOpen
+import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
+import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.minecraft.util.Formatting.*
 import net.sbo.mod.SBOKotlin.mc
@@ -22,7 +25,7 @@ import java.util.concurrent.TimeUnit
 object DianaLoot {
     private var isSellTypeHovered = false
     val timerLine: OverlayTextLine = OverlayTextLine("")
-    val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf("Chat screen", "Crafting"))
+    val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
 
     val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
@@ -102,23 +105,19 @@ object DianaLoot {
         Register.onTick(1) { updateTimerText() }
     }
 
-    private const val CRAFTING_GUI_TITLE = "Crafting"
-
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
-        if (event.screen.title.string == CRAFTING_GUI_TITLE) {
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
             overlay.removeLines(listOf(changeView, delimiter, changeSellType, resetSession))
         }
     }
 
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
-        if (event.screen.title.string == CRAFTING_GUI_TITLE) {
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
             updateLines(isCraftingOpen = true)
         }
     }
-
-    private fun isCraftingScreenOpen(): Boolean = mc.currentScreen?.title?.string == CRAFTING_GUI_TITLE
 
     fun hideLine(name: String) {
         if (!isCraftingScreenOpen()) return
@@ -140,7 +139,7 @@ object DianaLoot {
         val line = OverlayTextLine(formattedText).onClick { hideLine(itemName) }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(mc.currentScreen?.title?.string != CRAFTING_GUI_TITLE && SBOConfigBundle.sboData.hideTrackerLines.contains(itemName))
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && SBOConfigBundle.sboData.hideTrackerLines.contains(itemName))
                 meetsZeroValueCondition && meetsManualHideCondition
             }
         if (SBOConfigBundle.sboData.hideTrackerLines.contains(itemName)) {
@@ -172,7 +171,7 @@ object DianaLoot {
         val line = OverlayTextLine(combinedText).onClick { hideLine(itemNameBase) }
             .setCondition {
                 val meetsZeroValueCondition = totalAmount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(mc.currentScreen?.title?.string != CRAFTING_GUI_TITLE && SBOConfigBundle.sboData.hideTrackerLines.contains(itemNameBase))
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && SBOConfigBundle.sboData.hideTrackerLines.contains(itemNameBase))
                 meetsZeroValueCondition && meetsManualHideCondition
             }
             .onHover { drawContext, textRenderer ->
