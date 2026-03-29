@@ -130,6 +130,10 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             }
 
             val leftPercents = mutableListOf(
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SHIMMERING_WOOL", "KING_MINOS")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SHIMMERING_WOOL_LS", "KING_MINOS_LS")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTI_CORE", "MANTICORE")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTI_CORE_LS", "MANTICORE_LS")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"CHIMERA", "MINOS_INQUISITOR")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"CHIMERA_LS", "MINOS_INQUISITOR_LS")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_RELIC", "MINOS_CHAMPION")}%§7)",
@@ -137,10 +141,15 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             )
 
             val leftData = mutableListOf(
-                "§dChimeras: ${Helper.formatNumber(data.items.CHIMERA,true)} ${leftPercents[0]}",
-                "§dChimeras (LS): ${Helper.formatNumber(data.items.CHIMERA_LS,true)} ${leftPercents[1]}",
-                "§5Relics: ${Helper.formatNumber(data.items.MINOS_RELIC,true)} ${leftPercents[2]}",
-                "§6Sticks: ${Helper.formatNumber(data.items.DAEDALUS_STICK,true)} ${leftPercents[3]}",
+                "§cDyes: ${Helper.formatNumber(data.items.MYTHOLOGICAL_DYE,true)}",
+                "§cWools: ${Helper.formatNumber(data.items.SHIMMERING_WOOL,true)} ${leftPercents[0]}",
+                "§cWools (LS): ${Helper.formatNumber(data.items.SHIMMERING_WOOL_LS,true)} ${leftPercents[1]}",
+                "§cManti-cores: ${Helper.formatNumber(data.items.MANTI_CORE,true)} ${leftPercents[2]}",
+                "§cManti-cores (LS): ${Helper.formatNumber(data.items.MANTI_CORE_LS,true)} ${leftPercents[3]}",
+                "§dChimeras: ${Helper.formatNumber(data.items.CHIMERA,true)} ${leftPercents[4]}",
+                "§dChimeras (LS): ${Helper.formatNumber(data.items.CHIMERA_LS,true)} ${leftPercents[5]}",
+                "§5Relics: ${Helper.formatNumber(data.items.MINOS_RELIC,true)} ${leftPercents[6]}",
+                "§6Sticks: ${Helper.formatNumber(data.items.DAEDALUS_STICK,true)} ${leftPercents[7]}",
                 "§6Treasure: ${Helper.formatNumber(data.items.COINS - (data.items.FISH_COINS + data.items.SCAVENGER_COINS))}",
                 "§6Fish Coins: ${ Helper.formatNumber(data.items.FISH_COINS)}",
                 "§6Scavenger: ${ Helper.formatNumber(data.items.SCAVENGER_COINS)}",
@@ -163,6 +172,10 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             createBlock(leftData, 0)
 
             val rightPercents = mutableListOf(
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"KING_MINOS")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"KING_MINOS_LS")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTICORE")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTICORE_LS")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_INQUISITOR")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_INQUISITOR_LS")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_CHAMPION")}%§7)",
@@ -173,13 +186,17 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             )
 
             val rightData = mutableListOf(
-                "§dInquisitors: ${Helper.formatNumber(data.mobs.MINOS_INQUISITOR,true)} ${rightPercents[0]}",
-                "§dInquisitors (LS): ${Helper.formatNumber(data.mobs.MINOS_INQUISITOR_LS,true)} ${rightPercents[1]}",
-                "§5Champions: ${Helper.formatNumber(data.mobs.MINOS_CHAMPION,true)} ${rightPercents[2]}",
-                "§6Minotaurs: ${Helper.formatNumber(data.mobs.MINOTAUR,true)} ${rightPercents[3]}",
-                "§2Gaias: ${Helper.formatNumber(data.mobs.GAIA_CONSTRUCT,true)} ${rightPercents[4]}",
-                "§2Siamese: ${Helper.formatNumber(data.mobs.SIAMESE_LYNXES,true)} ${rightPercents[5]}",
-                "§2Hunters: ${Helper.formatNumber(data.mobs.MINOS_HUNTER,true)} ${rightPercents[6]}",
+                "§cKings: ${Helper.formatNumber(data.mobs.KING_MINOS,true)} ${rightPercents[0]}",
+                "§cKings (LS): ${Helper.formatNumber(data.mobs.KING_MINOS_LS,true)} ${rightPercents[1]}",
+                "§cMantis: ${Helper.formatNumber(data.mobs.MANTICORE,true)} ${rightPercents[2]}",
+                "§cMantis (LS): ${Helper.formatNumber(data.mobs.MANTICORE_LS,true)} ${rightPercents[3]}",
+                "§dInquisitors: ${Helper.formatNumber(data.mobs.MINOS_INQUISITOR,true)} ${rightPercents[4]}",
+                "§dInquisitors (LS): ${Helper.formatNumber(data.mobs.MINOS_INQUISITOR_LS,true)} ${rightPercents[5]}",
+                "§5Champions: ${Helper.formatNumber(data.mobs.MINOS_CHAMPION,true)} ${rightPercents[6]}",
+                "§6Minotaurs: ${Helper.formatNumber(data.mobs.MINOTAUR,true)} ${rightPercents[7]}",
+                "§2Gaias: ${Helper.formatNumber(data.mobs.GAIA_CONSTRUCT,true)} ${rightPercents[8]}",
+                "§2Siamese: ${Helper.formatNumber(data.mobs.SIAMESE_LYNXES,true)} ${rightPercents[9]}",
+                "§2Hunters: ${Helper.formatNumber(data.mobs.MINOS_HUNTER,true)} ${rightPercents[10]}",
                 "§eTotal Mobs: ${Helper.formatNumber(data.mobs.TOTAL_MOBS)}"
             )
             createBlock(rightData, 52)
@@ -231,6 +248,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             UIText("§6Total Profit: ${Helper.formatNumber(DianaLoot.totalProfit(event))}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.ORANGE) childOf leftText
 
             UIText("§dChimeras: ${(event.items.CHIMERA + event.items.CHIMERA_LS)}").constrain { x=0.pixels;y=0.pixels;textScale=0.9.pixels }.setColor(Color.CYAN) childOf rightText
+            UIText("§cWools: ${(event.items.SHIMMERING_WOOL + event.items.SHIMMERING_WOOL_LS)}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.RED) childOf rightText
             UIText("§7Burrows: ${Helper.formatNumber(event.items.TOTAL_BURROWS)}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.LIGHT_GRAY) childOf rightText
             UIText("§7Mobs: ${Helper.formatNumber(event.mobs.TOTAL_MOBS)}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.LIGHT_GRAY) childOf rightText
 
@@ -255,7 +273,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             detailsButton.onMouseEnter { detailsButton.setColor(Color(0,0,60)) }
             detailsButton.onMouseLeave { detailsButton.setColor(Color(0,0,40)) }
             detailsButton.onMouseClick {
-                toggleOverlay(event, "Event Details: ${event.year}")
+                toggleOverlay(event, "Event Details: Year ${event.year}")
             }
 
             val deleteOutline = UIRoundedRectangle(5f).constrain {
