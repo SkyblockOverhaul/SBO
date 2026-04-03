@@ -1,12 +1,34 @@
 package net.sbo.mod.utils.overlay
 
+import net.minecraft.screen.PlayerScreenHandler
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screen.ChatScreen
+import net.minecraft.client.gui.screen.ingame.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.data.OverlayValues
 import net.sbo.mod.utils.data.SboDataObject.overlayData
 import java.awt.Color
+
+fun isCraftingScreenOpen(): Boolean {
+    return CRAFTING_PLAYER_INVENTORY_FILTER(mc.currentScreen)
+}
+
+val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean {
+    return screen is ChatScreen
+}
+
+val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean {
+    if (screen !is InventoryScreen) return false
+
+    val handler = screen.screenHandler
+
+    if (handler !is PlayerScreenHandler) return false // PlayerScreenHandler extends AbstractCraftingScreenHandler, but checking AbstractCraftingScreenHandler will also match the full 3x3 crafting inventory.
+
+    return true // could also check for handler.slots.size == 46 but checking for PlayerScreenHandler seems to work already. 46 is because 27 inventory slots, 9 hotbar slots, 4 armor slots, 4 crafting input slots, 1 crafting output slot and 1 offhand/shield slot, totalling 46. when a chest/large chest (which hypixel uses for menus) is open, only the 27 inventory slots + the chest size is considered; so .size in these cases are 63 (regular chest) or 90 (double chest), because 27 inventory + 9 hotbar + 27 chest, and 27 inventory + 9 hotbar + 54 double chest (which is 27*2).
+}
 
 /**
  * Represents an overlay that can display text lines on the screen.
@@ -16,14 +38,14 @@ import java.awt.Color
  * @property x The x-coordinate of the overlay.
  * @property y The y-coordinate of the overlay.
  * @property scale The scale of the overlay, default is 1.0f.
- * @property allowedGuis The list of GUI names where the overlay is allowed to render.
+ * @property allowedScreens The list of screens where the overlay is allowed to render.
  */
 class Overlay(
     var name: String,
     var x: Float,
     var y: Float,
     var scale: Float = 1.0f,
-    var allowedGuis: List<String> = listOf("Chat screen"),
+    val allowedScreens: List<(screen: Screen?) -> Boolean> = listOf(CHAT_SCREEN_FILTER),
     var exampleView: List<OverlayTextLine> = listOf()
 ) {
     private var lines = mutableListOf<OverlayTextLine>()
@@ -89,7 +111,7 @@ class Overlay(
 
     fun overlayClicked(mouseX: Double, mouseY: Double) {
         if (!World.isInSkyblock()) return
-        if (Helper.getGuiName() !in allowedGuis) return
+        if (!allowedScreens.any { it(mc.currentScreen) }) return
         val textRenderer = mc.textRenderer ?: return
         if (!isOverOverlay(mouseX, mouseY)) return
 
@@ -173,9 +195,11 @@ class Overlay(
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
+        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.currentScreen) } }
+
         for (line in getLines()) {
             if (!line.checkCondition()) continue
-            if (Helper.getGuiName() in allowedGuis) line.updateMouseInteraction(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale, drawContext)
+            if (shouldRender) line.updateMouseInteraction(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale, drawContext)
             line.draw(drawContext, currentX.toInt(), currentY.toInt(), textRenderer)
             if (line.linebreak) {
                 currentY += textRenderer.fontHeight + 1

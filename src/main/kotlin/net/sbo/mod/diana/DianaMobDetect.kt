@@ -50,8 +50,8 @@ object DianaMobDetect {
     private val defeated = mutableSetOf<Int>()
     private val warned = mutableSetOf<Int>()
 
-    private val mobHpOverlay: Overlay = Overlay("mythosMobHp", 10f, 10f, 1f, listOf("Chat screen"), OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
-    private val noShurikenOverlay: Overlay = Overlay("noShuriken", 10f, 10f, 3f, listOf("Chat screen"), OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
+    private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, scale = 1f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
+    private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
     internal enum class RareDianaMob(val display: String) {
         INQ("Minos Inquisitor"),

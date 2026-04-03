@@ -6,6 +6,9 @@ package net.sbo.mod.overlays
 */
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.overlay.Overlay
+import net.sbo.mod.utils.overlay.isCraftingScreenOpen
+import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
+import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.minecraft.util.Formatting.*
 import net.sbo.mod.SBOKotlin.mc
@@ -21,7 +24,7 @@ import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
 
 object DianaMobs {
-    val overlay = Overlay("Diana Mobs", 10f, 10f, 1f, listOf("Chat screen", "Crafting")).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
+    val overlay = Overlay("Diana Mobs", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
     val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {
             Diana.mobTracker = Diana.mobTracker.next()
@@ -41,21 +44,21 @@ object DianaMobs {
 
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
-        if (event.screen.title.string == "Crafting") {
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
             overlay.removeLine(changeView)
         }
     }
 
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
-        if (event.screen.title.string == "Crafting") {
-            updateLines("CraftingOpen")
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
+            updateLines(true)
         }
     }
 
     fun createLine(name: String, formattedText: String, amount: Int) : OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick {
-            if (mc.currentScreen?.title?.string != "Crafting") return@onClick
+            if (!isCraftingScreenOpen()) return@onClick
             if (SBOConfigBundle.sboData.hideTrackerLines.contains(name)) {
                 SBOConfigBundle.sboData.hideTrackerLines.remove(name)
             } else {
@@ -65,7 +68,7 @@ object DianaMobs {
         }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(mc.currentScreen?.title?.string != "Crafting" && SBOConfigBundle.sboData.hideTrackerLines.contains(name))
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && SBOConfigBundle.sboData.hideTrackerLines.contains(name))
                 meetsZeroValueCondition && meetsManualHideCondition
             }
         if (SBOConfigBundle.sboData.hideTrackerLines.contains(name)) {
@@ -74,7 +77,7 @@ object DianaMobs {
         return line
     }
 
-    fun updateLines(screen: String = "") {
+    fun updateLines(isCraftingOpen: Boolean = false) {
         val lines = mutableListOf<OverlayTextLine>()
         val type = Diana.mobTracker
         val tracker = when (type) {
@@ -103,7 +106,7 @@ object DianaMobs {
             BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
         } else 0.0
 
-        if (screen == "CraftingOpen" || mc.currentScreen?.title?.string == "Crafting") {
+        if (isCraftingOpen || isCraftingScreenOpen()) {
             lines.add(changeView)
         }
 
