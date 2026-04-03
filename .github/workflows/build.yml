@@ -5,6 +5,7 @@
 
 name: build
 permissions:
+  contents: read
   pull-requests: write
 on: [pull_request, push]
 
@@ -32,7 +33,7 @@ jobs:
       - name: build
         run: ./gradlew build --scan
       - name: capture build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Artifacts
           path: build/versions/
