@@ -71,6 +71,7 @@ object PartyCommands {
         "!playtime",
         "!mobs",
         "!burrows",
+        "!mf",
         "!stats <playername>",
         "!since (chim, chimls, relic, stick, inq, king, manti, core, corels, wool, woolls)"
     )

@@ -276,4 +276,51 @@ object Customization : CategoryKt("Customization") {
         this.range = 0.0f..1.0f
         this.slider = true
     }
+
+    fun resetSoundCustomizationToDefaults() {
+        Customization.rareMobSound = arrayOf("exporb")
+        Customization.rareMobVolume = 1.0f
+
+        Customization.inqSound = arrayOf("")
+        Customization.inqVolume = 1.0f
+
+        Customization.sphinxSound = arrayOf("")
+        Customization.sphinxVolume = 1.0f
+
+        Customization.kingSound = arrayOf("")
+        Customization.kingVolume = 1.0f
+
+        Customization.mantiSound = arrayOf("")
+        Customization.mantiVolume = 1.0f
+
+        Customization.cocoonSound = arrayOf("")
+        Customization.cocoonVolume = 1.0f
+
+        Customization.burrowSound = arrayOf("")
+        Customization.burrowVolume = 1.0f
+
+        Customization.chimSound = arrayOf("")
+        Customization.chimVolume = 1.0f
+
+        Customization.bfSound = arrayOf("")
+        Customization.bfVolume = 1.0f
+
+        Customization.coreSound = arrayOf("")
+        Customization.coreVolume = 1.0f
+
+        Customization.stingerSound = arrayOf("")
+        Customization.stingerVolume = 1.0f
+
+        Customization.woolSound = arrayOf("")
+        Customization.woolVolume = 1.0f
+
+        Customization.relicSound = arrayOf("")
+        Customization.relicVolume = 1.0f
+
+        Customization.stickSound = arrayOf("")
+        Customization.stickVolume = 1.0f
+
+        Customization.sprSound = arrayOf("")
+        Customization.sprVolume = 1.0f
+    }
 }

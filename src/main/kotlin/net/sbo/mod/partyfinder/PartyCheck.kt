@@ -1,6 +1,7 @@
 package net.sbo.mod.partyfinder
 
 import net.sbo.mod.SBOKotlin.API_URL
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.Helper
@@ -87,7 +88,9 @@ object PartyCheck {
                 }
             }
             .error { error ->
-                Chat.chat("§6[SBO] §eError checking party members: ${error.message ?: "Unknown error"}")
+                logger.error("Error whilst checking party members", error) // print full error with stacktrace to logs
+
+                Chat.chat("§6[SBO] §eError checking party members: ${error.message ?: "Unknown error"}. More information might be available in your logs!")
             }
     }
 
