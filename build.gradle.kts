@@ -19,11 +19,11 @@ plugins {
 }
 
 loom {
-    if (mcData.version == MinecraftVersions.VERSION_1_21_11) {
-        // Temporarily disabled because of build failure on 1.21.11:
-        // java.lang.IllegalStateException: Javadoc provided by mod (fabric-content-registries-v0) must be have an intermediary source namespace
-        enableModProvidedJavadoc = false
+    // Temporarily disabled because of build failure on 1.21.11 (and 1.21.10 when syncing in IDEA):
+    // java.lang.IllegalStateException: Javadoc provided by mod (fabric-content-registries-v0) must be have an intermediary source namespace
+    enableModProvidedJavadoc = false
 
+    if (mcData.version == MinecraftVersions.VERSION_1_21_11) {
         // Some stuff were made private / package-private in 1.21.11, so we need this.
         accessWidenerPath = file("src/main/resources/sbo-kotlin.accesswidener")
     }
