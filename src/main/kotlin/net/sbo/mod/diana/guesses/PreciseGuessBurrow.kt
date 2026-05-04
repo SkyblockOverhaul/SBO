@@ -1,7 +1,7 @@
 package net.sbo.mod.diana.guesses
 
-import net.minecraft.network.packet.s2c.play.ParticleS2CPacket
-import net.minecraft.particle.ParticleTypes
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
+import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -40,9 +40,9 @@ object PreciseGuessBurrow {
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
         val packet = event.packet
-        if (packet !is ParticleS2CPacket) return
+        if (packet !is ClientboundLevelParticlesPacket) return
         if (!Diana.dianaBurrowGuess || World.getWorld() != "Hub") return
-        if (packet.parameters.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.speed != -0.5f) return
+        if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)
         this.lastLavaParticle = System.currentTimeMillis()
         if (System.currentTimeMillis() - lastGuessTime > 1000) return
@@ -70,9 +70,9 @@ object PreciseGuessBurrow {
         val action = event.action
         if (action != "useItem" && action != "useBlock") return
         val player = SBOKotlin.mc.player
-        val item = player?.mainHandStack
+        val item = player?.mainHandItem
         if (item?.isEmpty == true) return
-        if (item == null || !item.name.string.contains("Spade")) return
+        if (item == null || !item.hoverName.string.contains("Spade")) return
         if (System.currentTimeMillis() - this.lastLavaParticle < 200) {
             event.isCanceled = true
             return

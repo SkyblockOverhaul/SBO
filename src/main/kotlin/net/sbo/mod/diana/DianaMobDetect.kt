@@ -1,11 +1,11 @@
 package net.sbo.mod.diana
 
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.ProfileComponent
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.decoration.ArmorStandEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.ResolvableProfile
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.decoration.ArmorStand
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
@@ -45,8 +45,8 @@ object DianaMobDetect {
     private val COCOON_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1ODMxMjMyODkwNTMsInByb2ZpbGVJZCI6IjkxZjA0ZmU5MGYzNjQzYjU4ZjIwZTMzNzVmODZkMzllIiwicHJvZmlsZU5hbWUiOiJTdG9ybVN0b3JteSIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNlYjBlZDhmYzIyNzJiM2QzZDgyMDY3NmQ1MmEzOGU3YjJlOGRhOGM2ODdhMjMzZTBkYWJhYTE2YzBlOTZkZiJ9fX0="
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
-    private val unconfirmed = mutableMapOf<Int, Pair<ArmorStandEntity, Long>>()
-    private val tracked = mutableMapOf<Int, ArmorStandEntity>()
+    private val unconfirmed = mutableMapOf<Int, Pair<ArmorStand, Long>>()
+    private val tracked = mutableMapOf<Int, ArmorStand>()
     private val defeated = mutableSetOf<Int>()
     private val warned = mutableSetOf<Int>()
 
@@ -83,7 +83,7 @@ object DianaMobDetect {
         mobHpOverlay.init()
         noShurikenOverlay.init()
         Register.onTick(1) {
-            val world = mc.world ?: return@onTick
+            val world = mc.level ?: return@onTick
             val player = mc.player ?: return@onTick
             val overlayLines = mutableListOf<OverlayTextLine>()
 
@@ -94,7 +94,7 @@ object DianaMobDetect {
                 val (id, data) = unconfirmedIterator.next()
                 val (entity, spawnTime) = data
 
-                val entityWorld = entity.entityWorld
+                val entityWorld = entity.level()
                 if (!entity.isAlive || entityWorld != world) {
                     unconfirmedIterator.remove()
                     continue
@@ -110,13 +110,13 @@ object DianaMobDetect {
                 else if (now - spawnTime > NAME_CHECK_TIMEOUT_MS) unconfirmedIterator.remove()
             }
 
-            var closestStarlessMob: ArmorStandEntity? = null
+            var closestStarlessMob: ArmorStand? = null
             var closestDistanceSq = Double.MAX_VALUE
             val trackedIterator = tracked.iterator()
             while (trackedIterator.hasNext()) {
                 val (id, armorStand) = trackedIterator.next()
 
-                val entityWorld = armorStand.entityWorld
+                val entityWorld = armorStand.level()
                 if (!armorStand.isAlive || entityWorld != world) {
                     trackedIterator.remove()
                     defeated.remove(id)
@@ -143,20 +143,20 @@ object DianaMobDetect {
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
-        if (event.entity is ArmorStandEntity) {
+        if (event.entity is ArmorStand) {
             unconfirmed[event.entity.id] = event.entity to System.currentTimeMillis()
         }
     }
 
     @SboEvent
     fun onEntityUnload(event: EntityUnloadEvent) {
-        if (event.entity is ArmorStandEntity) {
+        if (event.entity is ArmorStand) {
             tracked.remove(event.entity.id)
             defeated.remove(event.entity.id)
         }
     }
 
-    private fun checkDianaMob(entity: ArmorStandEntity, id: Int) : OverlayTextLine? {
+    private fun checkDianaMob(entity: ArmorStand, id: Int) : OverlayTextLine? {
         val name = entity.customName?.formattedString() ?: entity.name.formattedString()
         if (name.isEmpty() || name == "Armor Stand") return null
         if (!name.contains("§2✿", ignoreCase = true)) return null
@@ -173,12 +173,12 @@ object DianaMobDetect {
     }
 
     private fun checkStarlessMob(
-        entity: ArmorStandEntity,
+        entity: ArmorStand,
         id: Int,
-        player: PlayerEntity,
-        currentClosest: ArmorStandEntity?,
+        player: Player,
+        currentClosest: ArmorStand?,
         currentDistanceSq: Double
-    ): Pair<ArmorStandEntity?, Double> {
+    ): Pair<ArmorStand?, Double> {
         if (id in defeated) return currentClosest to currentDistanceSq
         val name = entity.customName?.formattedString() ?: entity.name.formattedString()
         val mobType = RareDianaMob.fromName(name) ?: return currentClosest to currentDistanceSq
@@ -196,7 +196,7 @@ object DianaMobDetect {
         val health = parseHealthFromName(name)
         if (health != null && health <= 0.0) return currentClosest to currentDistanceSq
 
-        val distSq = player.squaredDistanceTo(entity)
+        val distSq = player.distanceToSqr(entity)
         return if (distSq < currentDistanceSq) {
             entity to distSq
         } else {
@@ -204,18 +204,18 @@ object DianaMobDetect {
         }
     }
 
-    private fun checkCocoon(entity: ArmorStandEntity) {
+    private fun checkCocoon(entity: ArmorStand) {
         if (World.getWorld() != "Hub") return
         val recentDeath = listOf(lastInqDeath, lastKingDeath, lastSphinxDeath, lastMantiDeath)
             .any { getSecondsPassed(it) < DEATH_WINDOW_SECONDS }
 
         if (!recentDeath) return
-        val head: ItemStack = entity.getEquippedStack(EquipmentSlot.HEAD)
+        val head: ItemStack = entity.getItemBySlot(EquipmentSlot.HEAD)
 
         if (head.isEmpty) return
         if (head.item.toString() != "minecraft:player_head") return
-        val profileComponent: ProfileComponent? = head.get(DataComponentTypes.PROFILE)
-        val texture: String? = profileComponent?.getGameProfile()?.properties?.get("textures")?.firstOrNull()?.value
+        val profileComponent: ResolvableProfile? = head.get(DataComponents.PROFILE)
+        val texture: String? = profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value
 
         if (texture == null) return
         val now = System.currentTimeMillis()

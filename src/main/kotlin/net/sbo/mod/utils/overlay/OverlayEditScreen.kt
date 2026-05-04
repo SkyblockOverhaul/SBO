@@ -1,27 +1,27 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.network.chat.Component
 import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.data.SboDataObject.overlayData
 import org.lwjgl.glfw.GLFW
-import net.minecraft.client.gui.Click
-import net.minecraft.client.input.KeyInput
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.input.KeyEvent
 
-class OverlayEditScreen : Screen(Text.literal("SBO_Overlay_Editor")) {
+class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     private var selectedOverlay: Overlay? = null
     private var isDragging = false
     private var lastMouseX = 0.0
     private var lastMouseY = 0.0
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
         super.render(context, mouseX, mouseY, delta)
-        this.renderDarkening(context)
+        this.renderMenuBackground(context)
         OverlayManager.render(context)
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val mouseX = click.x
         val mouseY = click.y
         val button = click.buttonInfo().button
@@ -44,7 +44,7 @@ class OverlayEditScreen : Screen(Text.literal("SBO_Overlay_Editor")) {
         return super.mouseClicked(click, doubled)
     }
 
-    override fun mouseDragged(click: Click, deltaX: Double, deltaY: Double): Boolean {
+    override fun mouseDragged(click: MouseButtonEvent, deltaX: Double, deltaY: Double): Boolean {
         if (isDragging && selectedOverlay != null) {
             selectedOverlay?.x = (selectedOverlay?.x ?: 0f) + deltaX.toFloat()
             overlayData.overlays[selectedOverlay!!.name]?.x = selectedOverlay?.x ?: 0f
@@ -55,7 +55,7 @@ class OverlayEditScreen : Screen(Text.literal("SBO_Overlay_Editor")) {
         return super.mouseDragged(click, deltaX, deltaY)
     }
 
-    override fun mouseReleased(click: Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         val button = click.buttonInfo().button
         if (button == 0) {
             isDragging = false
@@ -73,7 +73,7 @@ class OverlayEditScreen : Screen(Text.literal("SBO_Overlay_Editor")) {
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyInput: KeyInput): Boolean {
+    override fun keyPressed(keyInput: KeyEvent): Boolean {
         val keyCode = keyInput.key
         selectedOverlay?.let {
             val step = 1f

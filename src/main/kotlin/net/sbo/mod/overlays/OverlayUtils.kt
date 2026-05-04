@@ -1,14 +1,14 @@
 package net.sbo.mod.overlays
 
-import net.minecraft.util.Formatting
-import net.minecraft.util.Formatting.UNDERLINE
+import net.minecraft.ChatFormatting
+import net.minecraft.ChatFormatting.UNDERLINE
 import net.sbo.mod.utils.overlay.OverlayTextLine
 
 object OverlayUtils {
     data class LootItemData(
         val id: String,
         val name: String,
-        val color: Formatting,
+        val color: ChatFormatting,
         val combined: Boolean = false,
         val dropMobId: String? = null,
         val dropMobLsId: String? = null,

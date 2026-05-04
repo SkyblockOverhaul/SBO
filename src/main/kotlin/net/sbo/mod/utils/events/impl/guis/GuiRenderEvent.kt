@@ -1,8 +1,8 @@
 package net.sbo.mod.utils.events.impl.guis
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.GuiGraphics
 
 /**
  * Event fired when a GUI is rendered.
@@ -14,9 +14,9 @@ import net.minecraft.client.gui.DrawContext
  * @param delta The partial tick time.
  */
 class GuiRenderEvent(
-    val client: MinecraftClient,
+    val client: Minecraft,
     val screen: Screen,
-    val context: DrawContext,
+    val context: GuiGraphics,
     val mouseX: Int,
     val mouseY: Int,
     val delta: Float

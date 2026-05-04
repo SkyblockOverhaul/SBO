@@ -1,10 +1,10 @@
 accessWidener v1 named
 
 # Chat Width (Private in 1.21.11)
-accessible method net/minecraft/client/gui/hud/ChatHud getWidth ()I
+accessible method net/minecraft/client/gui/components/ChatComponent getWidth ()I
 
 # Camera Position (Private in 1.21.11)
-accessible field net/minecraft/client/render/Camera pos Lnet/minecraft/util/math/Vec3d;
+accessible field net/minecraft/client/Camera position Lnet/minecraft/world/phys/Vec3;
 
 # RenderLayer Creation (Package-Private in 1.21.11)
-accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
+accessible method net/minecraft/client/renderer/RenderType of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/renderer/RenderType;

@@ -3,7 +3,7 @@ package net.sbo.mod.overlays
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import net.minecraft.util.Formatting.*
+import net.minecraft.ChatFormatting.*
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.SboDataObject.sboData
 

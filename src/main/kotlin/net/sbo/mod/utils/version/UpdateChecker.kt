@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.version
 
-import net.minecraft.util.Util
+import net.minecraft.Util
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.Http
@@ -49,7 +49,7 @@ object UpdateChecker {
         Chat.clickableChat(
             "§6[SBO] §eUpdate available: §a${latestVersion} §b[Click]",
             "§eOpen Version on Modrinth"
-        ) { Util.getOperatingSystem().open(versionUrl) }
+        ) { Util.platform.openUri(versionUrl) }
         Chat.chat(breakLine)
     }
 }

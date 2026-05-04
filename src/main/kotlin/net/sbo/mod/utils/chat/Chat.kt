@@ -1,11 +1,11 @@
 package net.sbo.mod.utils.chat
 
 import net.sbo.mod.SBOKotlin.mc
-import net.minecraft.text.Text
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Style
-import net.minecraft.util.Formatting
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Style
+import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.events.ClickActionManager
 
 object Chat {
@@ -17,9 +17,9 @@ object Chat {
      */
     fun command(command: String) {
         if (!command.startsWith("/")) {
-            mc.player?.networkHandler?.sendChatMessage("/$command")
+            mc.player?.connection?.sendChat("/$command")
         } else {
-            mc.player?.networkHandler?.sendChatMessage(command)
+            mc.player?.connection?.sendChat(command)
         }
     }
 
@@ -29,7 +29,7 @@ object Chat {
      */
     fun chat(string: String) {
         mc.execute {
-            mc.inGameHud.chatHud.addMessage(Text.of(string))
+            mc.gui.chat.addMessage(Component.nullToEmpty(string))
         }
     }
 
@@ -37,9 +37,9 @@ object Chat {
      * Shows a local chat message only visible to the player.
      * @param text The message to display in the chat.
      */
-    fun chat(text: Text) {
+    fun chat(text: Component) {
         mc.execute {
-            mc.inGameHud.chatHud.addMessage(text)
+            mc.gui.chat.addMessage(text)
         }
     }
 
@@ -48,7 +48,7 @@ object Chat {
      * @param message The message to send.
      */
     fun say(message: String) {
-        mc.networkHandler?.sendChatMessage(message)
+        mc.connection?.sendChat(message)
     }
 
     /**
@@ -64,19 +64,19 @@ object Chat {
         onClick: () -> Unit,
     ) {
         val actionId = ClickActionManager.registerAction(onClick)
-        val hoverText = Text.literal(hover).formatted(Formatting.YELLOW)
+        val hoverText = Component.literal(hover).withStyle(ChatFormatting.YELLOW)
 
         val clickEvent = ClickEvent.RunCommand("/__sbo_run_clickable_action $actionId")
         val hoverEvent = HoverEvent.ShowText(hoverText)
 
-        val styledText = Text.literal(message).setStyle(
+        val styledText = Component.literal(message).setStyle(
             Style.EMPTY
                 .withClickEvent(clickEvent)
                 .withHoverEvent(hoverEvent)
         )
 
         mc.execute {
-            mc.inGameHud.chatHud.addMessage(styledText)
+            mc.gui.chat.addMessage(styledText)
         }
     }
 
@@ -92,19 +92,19 @@ object Chat {
         hover: String,
         command: String
     ) {
-        val hoverText = Text.literal(hover).formatted(Formatting.YELLOW)
+        val hoverText = Component.literal(hover).withStyle(ChatFormatting.YELLOW)
 
         val clickEvent = ClickEvent.RunCommand(command)
         val hoverEvent = HoverEvent.ShowText(hoverText)
 
-        val styledText = Text.literal(message).setStyle(
+        val styledText = Component.literal(message).setStyle(
             Style.EMPTY
                 .withClickEvent(clickEvent)
                 .withHoverEvent(hoverEvent)
         )
 
         mc.execute {
-            mc.inGameHud.chatHud.addMessage(styledText)
+            mc.gui.chat.addMessage(styledText)
         }
     }
 
@@ -113,17 +113,17 @@ object Chat {
      * This is useful for combining multiple Text objects into one message.
      * @param textComponents The list of Text components to combine and send.
      */
-    fun chat(vararg textComponents: Text) {
+    fun chat(vararg textComponents: Component) {
         if (textComponents.isEmpty()) return
 
-        val combinedText = Text.literal("")
+        val combinedText = Component.literal("")
 
         textComponents.forEach { component ->
             combinedText.append(component)
         }
 
         mc.execute {
-            mc.inGameHud.chatHud.addMessage(combinedText)
+            mc.gui.chat.addMessage(combinedText)
         }
     }
 
@@ -138,13 +138,13 @@ object Chat {
         message: String,
         hover: String? = null,
         command: String? = null
-    ): Text {
-        val styledText = Text.literal(message).setStyle(
+    ): Component {
+        val styledText = Component.literal(message).setStyle(
             Style.EMPTY
         )
 
         if (hover != null) {
-            val hoverText = Text.literal(hover).formatted(Formatting.YELLOW)
+            val hoverText = Component.literal(hover).withStyle(ChatFormatting.YELLOW)
             styledText.style = styledText.style.withHoverEvent(HoverEvent.ShowText(hoverText))
         }
 
@@ -165,9 +165,9 @@ object Chat {
         if (separator.isEmpty()) {
             return ""
         }
-        val textRenderer = mc.textRenderer
-        val chatWidth = mc.inGameHud.chatHud.width
-        val separatorWidth = textRenderer.getWidth(separator)
+        val textRenderer = mc.font
+        val chatWidth = mc.gui.chat.width
+        val separatorWidth = textRenderer.width(separator)
 
         if (separatorWidth <= 0) {
             return ""

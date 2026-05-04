@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
-import net.minecraft.util.ActionResult
+import net.minecraft.world.InteractionResult
 import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
@@ -136,7 +136,7 @@ object SBOEvent {
          */
         AttackEntityCallback.EVENT.register { player, world, hand, entity, hitResult ->
             emit(EntitiyHitEvent(player, world, hand, entity, hitResult))
-            ActionResult.PASS
+            InteractionResult.PASS
         }
     }
 
