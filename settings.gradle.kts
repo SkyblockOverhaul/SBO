@@ -1,5 +1,8 @@
 pluginManagement {
     repositories {
+        gradlePluginPortal()
+        mavenCentral()
+
         maven("https://maven.deftu.dev/releases")
         maven("https://maven.deftu.dev/snapshots")
 
@@ -11,11 +14,6 @@ pluginManagement {
         maven("https://maven.terraformersmc.com/")
         maven("https://repo.essential.gg/repository/maven-public")
         maven("https://server.bbkr.space/artifactory/libs-release/")
-
-        mavenLocal()
-        mavenCentral()
-
-        gradlePluginPortal()
     }
 
     plugins {
