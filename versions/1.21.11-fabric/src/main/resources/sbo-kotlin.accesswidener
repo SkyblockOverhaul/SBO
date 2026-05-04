@@ -7,4 +7,4 @@ accessible method net/minecraft/client/gui/components/ChatComponent getWidth ()I
 accessible field net/minecraft/client/Camera position Lnet/minecraft/world/phys/Vec3;
 
 # RenderLayer Creation (Package-Private in 1.21.11)
-accessible method net/minecraft/client/renderer/RenderType of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/renderer/RenderType;
+accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
