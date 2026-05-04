@@ -23,7 +23,7 @@
 		"sources": "https://github.com/SkyblockOverhaul/SBO-Kotlin"
 	},
 	"license": "Apache License 2.0",
-	"icon": "assets/sbo-kotlin/icon.png",
+	"icon": "assets/sbo/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [
