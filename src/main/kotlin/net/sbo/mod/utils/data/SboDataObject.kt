@@ -18,8 +18,6 @@ import java.io.FileWriter
 import java.io.BufferedWriter
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import java.util.concurrent.Executors
@@ -27,6 +25,8 @@ import java.util.concurrent.ExecutorService
 import kotlin.collections.iterator
 import kotlin.concurrent.thread
 import kotlin.reflect.KMutableProperty1
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 object SboDataObject {
     @JvmField
@@ -316,13 +316,65 @@ object SboDataObject {
 
     private fun zipFolder(folderToZip: File, zipFilePath: File) {
         ZipOutputStream(FileOutputStream(zipFilePath)).use { zos ->
+            val basePath = folderToZip.toPath()
+
             folderToZip.walk().filter { it.isFile }.forEach { file ->
-                val entry = ZipEntry(file.name)
-                zos.putNextEntry(entry)
+                val entryName = basePath.relativize(file.toPath()).toString()
+
+                zos.putNextEntry(ZipEntry(entryName))
+
                 FileInputStream(file).use { fis ->
                     fis.copyTo(zos)
                 }
+
                 zos.closeEntry()
+            }
+        }
+    }
+
+    private val backupRegex = Regex("SBOBackup_\\d{8}_\\d{6}")
+
+    private fun cleanupBrokenBackups(modName: String, backupDir: File) {
+        val files = backupDir.listFiles() ?: return
+
+        val grouped = files.groupBy { file ->
+            when {
+                file.name.endsWith(".zip") -> file.name.removeSuffix(".zip")
+                file.name.endsWith(".zip.part") -> file.name.removeSuffix(".zip.part")
+                file.isDirectory -> file.name
+                else -> file.name
+            }
+        }
+
+        grouped.forEach { (base, group) ->
+            val zip = group.find { it.isFile && it.name == "$base.zip" }
+            val part = group.find { it.isFile && it.name == "$base.zip.part" }
+            val folder = group.find { it.isDirectory && it.name == base }
+
+            val zipInvalid = zip != null && zip.length() == 0L
+            val zipMissing = zip == null
+            val folderExists = folder != null
+
+            try {
+                when {
+                    part != null -> {
+                        SBOKotlin.logger.warn("[$modName] Removing leftover .part for $base")
+                        part.delete()
+                    }
+
+                    zipInvalid -> {
+                        SBOKotlin.logger.warn("[$modName] Removing empty/corrupt zip for $base")
+                        zip.delete()
+                        if (folderExists) folder.deleteRecursively()
+                    }
+
+                    zipMissing && folderExists -> {
+                        SBOKotlin.logger.warn("[$modName] Removing orphan folder for $base (no zip)")
+                        folder.deleteRecursively()
+                    }
+                }
+            } catch (e: Exception) {
+                SBOKotlin.logger.error("[$modName] Failed cleanup for backup $base", e)
             }
         }
     }
@@ -331,11 +383,11 @@ object SboDataObject {
         try {
             val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
             val backupDir = File(modConfigDir, "backup")
-            if (!backupDir.exists()) {
-                backupDir.mkdirs()
-            }
 
-            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+            backupDir.mkdirs()
+            cleanupBrokenBackups(modName, backupDir)
+
+            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
             val tempBackupDir = File(backupDir, "SBOBackup_$timestamp")
             tempBackupDir.mkdirs()
 
@@ -350,13 +402,57 @@ object SboDataObject {
             saveToFolder(tempBackupDir, bundle.partyFinderData, "partyFinderData.json")
             saveToFolder(tempBackupDir, bundle.overlayData, "overlayData.json")
 
+            if (!tempBackupDir.exists() || tempBackupDir.listFiles()?.isEmpty() == true) {
+                throw IOException("Backup temp directory not properly created")
+            }
+
             val zipFile = File(backupDir, "SBOBackup_$timestamp.zip")
-            zipFolder(tempBackupDir, zipFile)
+            val tempZipFile = File(backupDir, "SBOBackup_$timestamp.zip.part")
+
+            try {
+                zipFolder(tempBackupDir, tempZipFile)
+
+                val isValid = tempZipFile.exists() && tempZipFile.length() > 0L
+
+                if (isValid) {
+                    if (zipFile.exists()) {
+                        zipFile.delete()
+                    }
+                    try {
+                        Files.move(
+                            tempZipFile.toPath(),
+                            zipFile.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.ATOMIC_MOVE
+                        )
+                    } catch (e: AtomicMoveNotSupportedException) {
+                        // Supported on all major OS unless trying to move to a different partition or drive
+                        // The most likely culprit would be that MC was installed to a OneDrive sync folder
+                        // Fallbacking to regular move should be OK here at this point.
+                        val success = tempZipFile.renameTo(zipFile)
+                        if (!success) {
+                            throw IOException("Failed to rename temp zip to final zip")
+                        }
+                    }
+                } else {
+                    SBOKotlin.logger.error("[$modName] Backup zip was invalid, deleting temp file.")
+                    tempZipFile.delete()
+                    return
+                }
+            } catch (e: Exception) {
+                SBOKotlin.logger.error("[$modName] Zip creation failed, cleaning up temp zip.", e)
+                tempZipFile.delete()
+                return
+            }
 
             tempBackupDir.deleteRecursively()
             SBOKotlin.logger.info("[$modName] Created new backup: ${zipFile.name}")
 
-            val existingBackups = backupDir.listFiles { _, name -> name.endsWith(".zip") }?.toList() ?: emptyList()
+            val existingBackups = backupDir.listFiles { file ->
+                file.isFile &&
+                file.extension == "zip" &&
+                file.length() > 0L
+            }?.toList() ?: emptyList()
             if (existingBackups.size > MAX_BACKUPS) {
                 val oldestBackup = existingBackups.minByOrNull { it.lastModified() }
                 oldestBackup?.let {
