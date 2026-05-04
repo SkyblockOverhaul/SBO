@@ -19,14 +19,12 @@ plugins {
 }
 
 loom {
-    if (mcData.version == MinecraftVersions.VERSION_1_21_11) {
-        // Temporarily disabled because of build failure on 1.21.11:
-        // java.lang.IllegalStateException: Javadoc provided by mod (fabric-content-registries-v0) must be have an intermediary source namespace
-        enableModProvidedJavadoc = false
+    // Temporarily disabled because of build failure on latest versions:
+    // java.lang.IllegalStateException: Javadoc provided by mod (fabric-content-registries-v0) must be have an intermediary source namespace
+    enableModProvidedJavadoc = false
 
-        // Some stuff were made private / package-private in 1.21.11, so we need this.
-        accessWidenerPath = file("src/main/resources/sbo-kotlin.accesswidener")
-    }
+    // Some stuff were made private / package-private in later versions, so we need this.
+    accessWidenerPath = file("src/main/resources/sbo-kotlin.accesswidener")
 }
 
 tasks.withType<KotlinJvmCompile>().configureEach {
@@ -103,11 +101,11 @@ dependencies {
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
     modImplementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
-    modImplementation(include("net.azureaaron:hm-api:${property("hmapi.version")}")!!)
 
     // modImplementation(include("xyz.meowing:vexel-${mcData}:${property("vexel.version")}")!!)
     when (mcData.version) {
         MinecraftVersions.VERSION_1_21_11 -> {
+            modImplementation(include("net.azureaaron:hm-api:${property("hmapi.version.1.21.11")}")!!)
             modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
             modImplementation("com.terraformersmc:modmenu:${property("modmenu.version.1.21.11")}")
             modImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.11:${property("rconfig.version.1.21.11")}")!!)
@@ -116,6 +114,7 @@ dependencies {
             compileOnly("maven.modrinth:iris:${property("iris.version.1.21.11")}+1.21.11-fabric")
         }
         MinecraftVersions.VERSION_1_21_10 -> {
+            modImplementation(include("net.azureaaron:hm-api:${property("hmapi.version.1.21.10")}")!!)
             modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
             modImplementation("com.terraformersmc:modmenu:${property("modmenu.version.1.21.10")}")
             modImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.9:${property("rconfig.version.1.21.10")}")!!) // .9 works on .10
