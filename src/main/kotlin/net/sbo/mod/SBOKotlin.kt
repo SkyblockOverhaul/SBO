@@ -57,8 +57,7 @@ object SBOKotlin {
 
 	const val API_URL: String = "https://api.skyblockoverhaul.com"
 
-
-	internal const val MOD_ID = "sbo-kotlin"
+	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
 	val configurator = Configurator(MOD_ID)
