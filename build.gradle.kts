@@ -79,10 +79,34 @@ tasks.named<ProcessResources>("processResources") {
     val fabricLanguageKotlinVersion = mcData.dependencies.fabric.fabricLanguageKotlinVersion
     val javaVersionMajor = mcData.version.javaVersion.majorVersion
 
+    val elementaVersion = project.property("elementa.version")
+    val hmApiVersion = when (mcData.version) {
+        MinecraftVersions.VERSION_1_21_11 -> project.property("hmapi.version.1.21.11")
+        MinecraftVersions.VERSION_1_21_10 -> project.property("hmapi.version.1.21.10")
+        else -> throw AssertionError("build.gradle.kts needs updating for ${mcData.version}")
+    }
+    val resourcefulConfigVersion = when (mcData.version) {
+        MinecraftVersions.VERSION_1_21_11 -> project.property("rconfig.version.1.21.11")
+        MinecraftVersions.VERSION_1_21_10 -> project.property("rconfig.version.1.21.10")
+        else -> throw AssertionError("build.gradle.kts needs updating for ${mcData.version}")
+    }
+    val resourcefulConfigKtVersion = when (mcData.version) {
+        MinecraftVersions.VERSION_1_21_11 -> project.property("rconfigkt.version.1.21.11")
+        MinecraftVersions.VERSION_1_21_10 -> project.property("rconfigkt.version.1.21.10")
+        else -> throw AssertionError("build.gradle.kts needs updating for ${mcData.version}")
+    }
+    val universalCraftVersion = project.property("uc.version")
+
     inputs.property("fabric_loader_version", fabricLoaderVersion)
     inputs.property("fabric_api_version", fabricApiVersion)
     inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
     inputs.property("java_version_major", javaVersionMajor)
+
+    inputs.property("elementa_version", elementaVersion)
+    inputs.property("hm_api_version", hmApiVersion)
+    inputs.property("resourcefulconfig_version", resourcefulConfigVersion)
+    inputs.property("resourcefulconfigkt_version", resourcefulConfigKtVersion)
+    inputs.property("universalcraft_version", universalCraftVersion)
 
     filesMatching("fabric.mod.json") {
         expand(
@@ -90,7 +114,13 @@ tasks.named<ProcessResources>("processResources") {
                 "fabric_loader_version" to fabricLoaderVersion,
                 "fabric_api_version" to fabricApiVersion,
                 "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
-                "java_version_major" to javaVersionMajor
+                "java_version_major" to javaVersionMajor,
+
+                "elementa_version" to elementaVersion,
+                "hm_api_version" to hmApiVersion,
+                "resourcefulconfig_version" to resourcefulConfigVersion,
+                "resourcefulconfigkt_version" to resourcefulConfigKtVersion,
+                "universalcraft_version" to universalCraftVersion
             ) + inputs.properties
         )
     }
@@ -123,7 +153,7 @@ dependencies {
             modImplementation(include("gg.essential:universalcraft-1.21.9-fabric:${property("uc.version")}")!!)
             compileOnly("maven.modrinth:iris:${property("iris.version.1.21.10")}+1.21.10-fabric")
         }
-        else -> {}
+        else -> throw AssertionError("build.gradle.kts needs updating for ${mcData.version}")
     }
 
     implementation(project(":event-processor"))
@@ -133,6 +163,6 @@ dependencies {
 tasks.findByName("preprocessCode")?.apply {
     when (mcData.version) {
         MinecraftVersions.VERSION_1_21_11 -> dependsOn(":1.21.10-fabric:kspKotlin")
-        else -> {}
+        else -> throw AssertionError("build.gradle.kts needs updating for ${mcData.version}")
     }
 }

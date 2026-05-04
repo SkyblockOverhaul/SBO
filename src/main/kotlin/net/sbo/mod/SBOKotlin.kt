@@ -51,7 +51,9 @@ import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.version.UpdateChecker
 
-object SBOKotlin {
+import net.fabricmc.api.ClientModInitializer
+
+object SBOKotlin : ClientModInitializer {
 	@JvmField
 	val mc: MinecraftClient = MinecraftClient.getInstance()
 
@@ -69,8 +71,7 @@ object SBOKotlin {
 
 	fun id(path: String): Identifier = Identifier.of(MOD_ID, path)
 
-	@JvmStatic
-	fun onInitializeClient() {
+	override fun onInitializeClient() {
 		version = FabricLoader.getInstance().getModContainer(MOD_ID)
 			.map { it.metadata.version.friendlyString }
 			.orElse("unknown")
