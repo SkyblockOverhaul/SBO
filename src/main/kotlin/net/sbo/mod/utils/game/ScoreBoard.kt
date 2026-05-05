@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.game
 
 import net.sbo.mod.SBOKotlin
-import net.minecraft.scoreboard.*
+import net.minecraft.world.scores.*
 import java.lang.String.CASE_INSENSITIVE_ORDER
 
 object ScoreBoard {
@@ -16,7 +16,7 @@ object ScoreBoard {
      * @return A list of formatted strings representing the scoreboard entries.
      */
     fun getLines(): List<String> {
-        val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return emptyList()
+        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return emptyList()
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return emptyList()
 
         return scoreboard.listPlayerScores(objective)
@@ -36,7 +36,7 @@ object ScoreBoard {
     }
 
     fun getTitle(): String {
-        val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return "Unknown Scoreboard"
+        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return "Unknown Scoreboard"
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
         return objective.displayName.string
     }

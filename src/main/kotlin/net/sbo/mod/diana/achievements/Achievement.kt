@@ -40,12 +40,12 @@ class Achievement(
         if (this.rarity == "Divine" || this.rarity == "Impossible" || this.rarity == "Celestial") {
             Helper.showTitle("§kd§r $color$name §kd§r", "§aAchievement Unlocked!", 0, 50, 20)
             Chat.chat(textComponent("§6[SBO] §aAchievement Unlocked §7>> $color§kd§r $color$name §kd§r", "$hiddenExtra§a$description"))
-            mc.level?.playSound(player, player?.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0f, 1.0f)
+            mc.level?.playSound(player, player?.blockPosition()!!, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0f, 1.0f)
 
         } else {
             Helper.showTitle("$color$name", "§aAchievement Unlocked!", 0, 50, 20)
             Chat.chat(textComponent("§6[SBO] §aAchievement Unlocked §7>> $color$name", "$hiddenExtra§a$description"))
-            mc.level?.playSound(player, player?.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0f, 1.0f)
+            mc.level?.playSound(player, player?.blockPosition()!!, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0f, 1.0f)
         }
     }
 

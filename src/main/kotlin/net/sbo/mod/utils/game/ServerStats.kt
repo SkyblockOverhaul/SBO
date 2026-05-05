@@ -20,7 +20,7 @@ object ServerStats {
     fun onPacketReceive(event: PacketReceiveEvent) {
         when (event.packet) {
             is ClientboundSetTimePacket -> {
-                val currentTime = Util.millis
+                val currentTime = Util.getMillis()
                 if (prevTime != 0L) {
                     val deltaTime = currentTime - prevTime
                     avargeTps = (20000f / max(1, deltaTime)).coerceIn(0f, 20f)

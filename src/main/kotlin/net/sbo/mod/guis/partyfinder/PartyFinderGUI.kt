@@ -155,7 +155,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         super.onScreenClose()
         partyCache = mutableMapOf() // clear party cache on close
         if (mc.options.guiScale().get() != 2 || guiScale == null) return
-        mc.options.guiScale().set(guiScale) // restore original gui scale
+        mc.options.guiScale().set(guiScale!!) // restore original gui scale
         guiScale = null
     }
 
@@ -992,7 +992,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.platform.openUri("https://discord.gg/QvM6b9jsJD")
+                Util.getPlatform().openUri("https://discord.gg/QvM6b9jsJD")
             }
         discord.textObject.setTextScale(getTextScale())
         discord.uiObject.addChild(GuiHandler.UILine(
@@ -1021,7 +1021,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.platform.openUri("https://github.com/SkyblockOverhaul/SBO-Kotlin")
+                Util.getPlatform().openUri("https://github.com/SkyblockOverhaul/SBO-Kotlin")
             }
         github.textObject.setTextScale(getTextScale())
         github.uiObject.addChild(GuiHandler.UILine(
@@ -1050,7 +1050,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.platform.openUri("https://www.patreon.com/Skyblock_Overhaul")
+                Util.getPlatform().openUri("https://www.patreon.com/Skyblock_Overhaul")
             }
         patreon.textObject.setTextScale(getTextScale())
         patreon.uiObject.addChild(GuiHandler.UILine(

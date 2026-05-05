@@ -89,7 +89,7 @@ object Helper {
 
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
-        val dist = event.entity.distanceTo(mc.player)
+        val dist = event.entity.distanceTo(mc.player!!)
         when {
             event.name.contains("Minos Inquisitor") -> {
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {

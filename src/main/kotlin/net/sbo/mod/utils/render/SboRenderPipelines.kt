@@ -19,10 +19,10 @@ object SboRenderPipelines {
     )
 
     val LINES: RenderPipeline = RenderPipelines.register(
-        RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(RenderPipelines.LINES_SNIPPET))
+        RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(SBOKotlin.id("pipeline/line_strip"))
             //#if MC > 1.21.10
-            //$$ .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH, DrawMode.LINES)
+            //$$ .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, Mode.LINES)
             //#else
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, Mode.LINES)
             //#endif
@@ -34,11 +34,11 @@ object SboRenderPipelines {
     )
 
     val LINES_THROUGH_WALLS: RenderPipeline = RenderPipelines.register(
-        RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(RenderPipelines.LINES_SNIPPET))
+        RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(SBOKotlin.id("pipeline/line_through_walls"))
             .withShaderDefine("shad")
             //#if MC > 1.21.10
-            //$$ .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH, DrawMode.LINES)
+            //$$ .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, Mode.LINES)
             //#else
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, Mode.LINES)
             //#endif

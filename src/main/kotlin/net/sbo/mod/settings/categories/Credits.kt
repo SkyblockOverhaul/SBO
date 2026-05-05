@@ -11,7 +11,7 @@ object Credits : CategoryKt("Credits") {
             description = "Diana guess (bloxigus)"
             text = "Open"
             onClick {
-                Util.platform.openUri("https://github.com/hannibal002/SkyHanni")
+                Util.getPlatform().openUri("https://github.com/hannibal002/SkyHanni")
             }
         }
 

@@ -3,7 +3,10 @@ package net.sbo.mod.utils.render
 import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.*
 import net.minecraft.client.gui.Font
-import net.minecraft.client.render.*
+import net.minecraft.client.renderer.*
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.Camera
+import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
@@ -20,8 +23,9 @@ import net.sbo.mod.settings.categories.Diana
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 
 //#if MC > 1.21.10
-//$$ import net.minecraft.world.debug.gizmo.GizmoDrawing
-//$$ import net.minecraft.util.math.Box
+//$$ import 	net.minecraft.gizmos.Gizmos
+//$$ import 	net.minecraft.gizmos.GizmoStyle
+//$$ import net.minecraft.world.phys.AABB
 //#endif
 
 object RenderUtils3D {
@@ -104,11 +108,11 @@ object RenderUtils3D {
         //$$ val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
         //$$ val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
         //$$ val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
-        //$$ val bPos = pos.toBlockPos().toImmutable()
+        //$$ val bPos = pos.toBlockPos().immutable()
         //$$ if (throughWalls) {
-        //$$     GizmoDrawing.box(Box.enclosing(bPos, bPos), DrawStyle.filled(argbColor)).ignoreOcclusion()
+        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
         //$$ } else {
-        //$$     GizmoDrawing.box(Box.enclosing(bPos, bPos), DrawStyle.filled(argbColor))
+        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor))
         //$$ }
         //#else
         val width = 1.0
@@ -247,7 +251,7 @@ object RenderUtils3D {
                     .setNormal(matrixEntry, nx, ny, nz)
                     .setColor(color[0], color[1], color[2], alpha)
                     //#if MC > 1.21.10
-                    //$$ .lineWidth(lineWidth)
+                    //$$ .setLineWidth(lineWidth)
                     //#endif
 
 
@@ -255,7 +259,7 @@ object RenderUtils3D {
                     .setNormal(matrixEntry, nx, ny, nz)
                     .setColor(color[0], color[1], color[2], alpha)
                     //#if MC > 1.21.10
-                    //$$ .lineWidth(lineWidth)
+                    //$$ .setLineWidth(lineWidth)
                     //#endif
             }
         }

@@ -6,8 +6,8 @@ import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.util.TriState
 import java.util.OptionalDouble
 //#if MC > 1.21.10
-//$$ import net.minecraft.client.render.RenderSetup
-//$$ import net.minecraft.client.render.LayeringTransform
+//$$ import net.minecraft.client.renderer.rendertype.RenderSetup
+//$$ import net.minecraft.client.renderer.rendertype.LayeringTransform
 //#else
 import net.minecraft.client.renderer.RenderStateShard
 //#endif
@@ -18,9 +18,9 @@ object SboRenderLayers {
         "sbo/filled_box",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(RenderPipelines.DEBUG_FILLED_BOX)
-        //$$     .layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-        //$$     .translucent()
-        //$$     .build()
+        //$$     .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
         //#else
         RenderType.TRANSIENT_BUFFER_SIZE,
         false,
@@ -37,9 +37,9 @@ object SboRenderLayers {
         "sbo/filled_box_through_walls",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(SboRenderPipelines.FILLED_BOX_THROUGH_WALLS)
-        //$$     .layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-        //$$     .translucent()
-        //$$     .build()
+        //$$     .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
         //#else
         RenderType.TRANSIENT_BUFFER_SIZE,
         false,
@@ -56,8 +56,8 @@ object SboRenderLayers {
         "lines",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(SboRenderPipelines.LINES)
-        //$$     .translucent()
-        //$$     .build()
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
         //#else
         RenderType.TRANSIENT_BUFFER_SIZE,
         false,
@@ -75,8 +75,8 @@ object SboRenderLayers {
         "sbo/lines_through_walls",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(SboRenderPipelines.LINES_THROUGH_WALLS)
-        //$$     .translucent()
-        //$$     .build()
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
         //#else
         RenderType.TRANSIENT_BUFFER_SIZE,
         false,
@@ -93,8 +93,8 @@ object SboRenderLayers {
         "beacon_beam_opaque",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_OPAQUE)
-        //$$     .texture("Sampler0", BeaconBlockEntityRenderer.BEAM_TEXTURE)
-        //$$     .build()
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .createRenderSetup()
         //#else
         1536,
         false,
@@ -115,8 +115,8 @@ object SboRenderLayers {
         "beacon_beam_opaque_through_walls",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_OPAQUE_THROUGH_WALLS)
-        //$$     .texture("Sampler0", BeaconBlockEntityRenderer.BEAM_TEXTURE)
-        //$$     .build()
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .createRenderSetup()
         //#else
         1536,
         false,
@@ -137,9 +137,9 @@ object SboRenderLayers {
         "beacon_beam_translucent",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_TRANSLUCENT)
-        //$$     .texture("Sampler0", BeaconBlockEntityRenderer.BEAM_TEXTURE)
-        //$$     .translucent()
-        //$$     .build()
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
         //#else
         1536,
         false,
@@ -160,9 +160,9 @@ object SboRenderLayers {
         "devonian_beacon_beam_translucent_esp",
         //#if MC > 1.21.10
         //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS)
-        //$$     .texture("Sampler0", BeaconBlockEntityRenderer.BEAM_TEXTURE)
-        //$$     .translucent()
-        //$$     .build()
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
         //#else
         1536,
         false,

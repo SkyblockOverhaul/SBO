@@ -220,7 +220,7 @@ class Overlay(
         val scaledHeight = (height * scale).toInt()
 
         //#if MC > 1.21.10
-        //$$ drawContext.drawStrokedRectangle(x, y, width, height, Color(255, 0, 0, 170).rgb)
+        //$$ drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
         //#else
         drawContext.submitOutline(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
         //#endif
