@@ -21,13 +21,7 @@ val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean {
 }
 
 val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean {
-    if (screen !is InventoryScreen) return false
-
-    val handler = screen.menu
-
-    if (handler !is InventoryMenu) return false // PlayerScreenHandler extends AbstractCraftingScreenHandler, but checking AbstractCraftingScreenHandler will also match the full 3x3 crafting inventory.
-
-    return true // could also check for handler.slots.size == 46 but checking for PlayerScreenHandler seems to work already. 46 is because 27 inventory slots, 9 hotbar slots, 4 armor slots, 4 crafting input slots, 1 crafting output slot and 1 offhand/shield slot, totalling 46. when a chest/large chest (which hypixel uses for menus) is open, only the 27 inventory slots + the chest size is considered; so .size in these cases are 63 (regular chest) or 90 (double chest), because 27 inventory + 9 hotbar + 27 chest, and 27 inventory + 9 hotbar + 54 double chest (which is 27*2).
+    return screen is InventoryScreen
 }
 
 /**
