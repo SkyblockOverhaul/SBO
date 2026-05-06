@@ -51,14 +51,15 @@ import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.version.UpdateChecker
 
-object SBOKotlin {
+import net.fabricmc.api.ClientModInitializer
+
+object SBOKotlin : ClientModInitializer {
 	@JvmField
 	val mc: MinecraftClient = MinecraftClient.getInstance()
 
 	const val API_URL: String = "https://api.skyblockoverhaul.com"
 
-
-	internal const val MOD_ID = "sbo-kotlin"
+	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
 	val configurator = Configurator(MOD_ID)
@@ -69,8 +70,7 @@ object SBOKotlin {
 
 	fun id(path: String): Identifier = Identifier.of(MOD_ID, path)
 
-	@JvmStatic
-	fun onInitializeClient() {
+	override fun onInitializeClient() {
 		version = FabricLoader.getInstance().getModContainer(MOD_ID)
 			.map { it.metadata.version.friendlyString }
 			.orElse("unknown")
