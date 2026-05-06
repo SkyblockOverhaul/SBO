@@ -1,5 +1,7 @@
 package net.sbo.mod.settings.categories
 
+import net.sbo.mod.SBOKotlin
+import net.sbo.mod.utils.data.SboDataObject
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import gg.essential.universal.UDesktop
 import net.fabricmc.loader.api.FabricLoader
@@ -8,15 +10,17 @@ import java.io.File
 
 object Customization : CategoryKt("Customization") {
     val ALL_SOUNDS_FILENAMES: List<String> = try {
-        val path = "${FabricLoader.getInstance().configDir}/sbo/sounds"
-        val directory = File(path)
-        if (directory.exists() && directory.isDirectory) {
+        val directory = File(File(FabricLoader.getInstance().configDir.toFile(), SboDataObject.dataDir), "sounds")
+        directory.mkdirs()
+
+        if (directory.isDirectory) {
             directory.listFiles { file -> file.extension == "ogg" }
                 ?.map { it.nameWithoutExtension }
                 ?.sorted()
                 ?: emptyList()
         } else {
-            println("Directory not found or is not a directory: $path")
+            SBOKotlin.logger.warn("Sounds directory was a file, expected directory at: $directory")
+            SBOKotlin.logger.warn("You should delete and re-create it as a directory and put the sounds under that directory.")
             emptyList()
         }
     } catch (e: Exception) {

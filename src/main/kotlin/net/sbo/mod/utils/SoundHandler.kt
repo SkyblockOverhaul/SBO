@@ -1,5 +1,7 @@
 package net.sbo.mod.utils
 
+import net.sbo.mod.utils.data.SboDataObject
+
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.SharedConstants
 import net.minecraft.client.sound.PositionedSoundInstance
@@ -19,7 +21,7 @@ object SoundHandler {
     private val generatedPackDir: File
 
     init {
-        val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), "SBO").apply { mkdirs() }
+        val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), SboDataObject.dataDir).apply { mkdirs() }
         soundDir = File(modConfigDir, "sounds").apply { mkdirs() }
 
         val packsDir = File(FabricLoader.getInstance().gameDir.toFile(), "resourcepacks").apply { mkdirs() }
