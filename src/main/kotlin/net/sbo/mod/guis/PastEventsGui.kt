@@ -346,7 +346,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
                 confirmButton.onMouseClick {
                     pastDianaEventsData.events = pastDianaEventsData.events.filterNot { it.year == event.year }
                     renderEvents()
-                    SboDataObject.save("SBO", pastDianaEventsData, "pastDianaEvents.json")
+                    SboDataObject.save(SboDataObject.dataDir, pastDianaEventsData, "pastDianaEvents.json")
                     confirmOverlayOutline.hide()
                 }
 

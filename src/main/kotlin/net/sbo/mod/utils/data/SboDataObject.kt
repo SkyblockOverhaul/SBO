@@ -20,6 +20,14 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.io.IOException
+import java.nio.file.Path
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.nio.file.FileVisitResult
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.AtomicMoveNotSupportedException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import java.util.concurrent.Executors
@@ -70,8 +78,187 @@ object SboDataObject {
 //            .factory() // virtual threads are daemon by default
 //    )
 
+    private val caseSensitive by lazy { isCaseSensitive(FabricLoader.getInstance().configDir.toFile().toPath()) }
+    val dataDir by lazy { normalizeConfigDir("sbo", FabricLoader.getInstance().configDir.toFile().toPath(), "SBO", "sbo", caseSensitive).fileName.toString() }
+
+    private fun isCaseSensitive(baseDir: Path): Boolean {
+        val tempDir = try {
+            Files.createTempDirectory(baseDir, "case_test_")
+        } catch (_: IOException) {
+            return true // safest fallback if unsure
+        }
+
+        val fileName = "test_${System.nanoTime()}"
+        val upper = tempDir.resolve(fileName.uppercase())
+        val lower = tempDir.resolve(fileName.lowercase())
+
+        return try {
+            Files.createFile(upper)
+            !Files.exists(lower)
+        } catch (_: IOException) {
+            true
+        } finally {
+            try { Files.deleteIfExists(upper) } catch (_: IOException) {}
+            try { Files.deleteIfExists(lower) } catch (_: IOException) {}
+            try { Files.deleteIfExists(tempDir) } catch (_: IOException) {}
+        }
+    }
+
+    private fun mergeDirectories(modName: String, from: Path, to: Path): Boolean {
+        var success = true
+
+        Files.walkFileTree(from, object : SimpleFileVisitor<Path>() {
+            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
+                val targetDir = to.resolve(from.relativize(dir))
+                try {
+                    Files.createDirectories(targetDir)
+                } catch (e: IOException) {
+                    SBOKotlin.logger.error("[$modName] Failed to create directory: $targetDir", e)
+                    success = false
+                }
+                return FileVisitResult.CONTINUE
+            }
+
+            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                val targetFile = to.resolve(from.relativize(file))
+                try {
+                    if (!Files.exists(targetFile)) {
+                        Files.move(file, targetFile)
+                    } else {
+                        SBOKotlin.logger.warn("[$modName] Skipping existing file: $targetFile")
+                    }
+                } catch (e: IOException) {
+                    SBOKotlin.logger.error("[$modName] Failed to move file: $file", e)
+                    success = false
+                }
+                return FileVisitResult.CONTINUE
+            }
+        })
+
+        return success
+    }
+
+    private fun isEffectivelyEmpty(dir: Path): Boolean {
+        if (!Files.isDirectory(dir)) return true
+
+        Files.newDirectoryStream(dir).use { stream ->
+            for (path in stream) {
+                return if (Files.isDirectory(path)) {
+                    isEffectivelyEmpty(path)
+                } else {
+                    false // file exists - not empty
+                }
+            }
+        }
+
+        return true
+    }
+
+    private fun deleteRecursively(modName: String, dir: Path) {
+        Files.walkFileTree(dir, object : SimpleFileVisitor<Path>() {
+            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                try {
+                    Files.deleteIfExists(file)
+                } catch (e: IOException) {
+                    SBOKotlin.logger.error("[$modName] Failed to delete file: $file", e)
+                }
+                return FileVisitResult.CONTINUE
+            }
+
+            override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+                try {
+                    Files.deleteIfExists(dir)
+                } catch (e: IOException) {
+                    SBOKotlin.logger.error("[$modName] Failed to delete directory: $dir", e)
+                }
+                return FileVisitResult.CONTINUE
+            }
+        })
+    }
+
+    private fun cleanupIfSafe(modName: String, dir: Path, success: Boolean) {
+        if (success) {
+            if (isEffectivelyEmpty(dir)) {
+                deleteRecursively(modName, dir)
+                SBOKotlin.logger.info("[$modName] Cleaned up leftover $dir safely")
+            } else {
+                SBOKotlin.logger.info("[$modName] Migration succeeded but not cleaning up $dir due to leftover files.")
+            }
+        } else {
+            SBOKotlin.logger.warn("[$modName] Migration failed, not deleting $dir")
+        }
+    }
+
+    private fun normalizeConfigDir(modName: String, baseDir: Path, oldName: String, newName: String, caseSensitive: Boolean): Path {
+        val oldDir = baseDir.resolve(oldName)
+        val newDir = baseDir.resolve(newName)
+
+        try {
+            if (caseSensitive) {
+                // Linux/macOS style: both directories can exist separately
+                if (Files.isDirectory(oldDir)) {
+                    Files.createDirectories(newDir)
+
+                    val success = mergeDirectories(modName, oldDir, newDir)
+                    cleanupIfSafe(modName, oldDir, success)
+                    SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir")
+                }
+            } else {
+                // Windows: case-insensitive, normalize folder name if needed
+                if (Files.isDirectory(oldDir)) {
+                    try {
+                        if (Files.exists(newDir)) {
+                            if (!Files.isDirectory(newDir)) {
+                                SBOKotlin.logger.error("[$modName] Expected directory but found file: $newDir")
+                                throw RuntimeException("$newDir is a file but supposed to be a directory")
+                            } else {
+                                val success = mergeDirectories(modName, oldDir, newDir)
+                                cleanupIfSafe(modName, oldDir, success)
+                                SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir")
+                            }
+                        } else {
+                            val tempDir = Files.createTempDirectory(baseDir, "${newName}_tmp_")
+                            try {
+                                Files.move(oldDir, tempDir)
+                                Files.move(tempDir, newDir)
+                                SBOKotlin.logger.info("[$modName] Renamed config folder from $oldDir to $newDir")
+                            } catch (e: IOException) {
+                                SBOKotlin.logger.error("[$modName] Failed during rename via temp dir", e)
+                                // Attempt rollback (best effort)
+                                if (Files.exists(tempDir)) {
+                                    try {
+                                        if (!Files.exists(oldDir)) {
+                                            Files.move(tempDir, oldDir)
+                                        } else {
+                                            // fallback: merge back if needed
+                                            val rollbackSuccess = mergeDirectories(modName, tempDir, oldDir)
+                                            if (rollbackSuccess && isEffectivelyEmpty(tempDir)) {
+                                                deleteRecursively(modName, tempDir)
+                                            } else {
+                                                SBOKotlin.logger.warn("[$modName] Rollback incomplete, not deleting $tempDir")
+                                            }
+                                        }
+                                    } catch (rollbackError: IOException) {
+                                        SBOKotlin.logger.warn("[$modName] Rollback failed for $tempDir", rollbackError)
+                                    }
+                                }
+                                throw e
+                            }
+                        }
+                    } catch (e: IOException) {
+                        SBOKotlin.logger.warn("[$modName] Failed to normalize case for $oldDir", e)
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            SBOKotlin.logger.error("[$modName] Failed to normalize config directory: ${e.message}", e)
+        }
+
+        return newDir
+    }
+
     fun init() {
-        SBOConfigBundle = loadAllData("SBO")
+        SBOConfigBundle = loadAllData(dataDir)
         sboData = SBOConfigBundle.sboData
         achievementsData = SBOConfigBundle.achievementsData
         pastDianaEventsData = SBOConfigBundle.pastDianaEventsData
@@ -81,22 +268,18 @@ object SboDataObject {
         pfConfigState = SBOConfigBundle.partyFinderConfigState
         partyFinderData = SBOConfigBundle.partyFinderData
         overlayData = SBOConfigBundle.overlayData
-        saveAllDataThreaded("SBO")
+        saveAllDataThreaded(dataDir)
         savePeriodically(5)
     }
 
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
-        saveAndBackupAllDataThreaded("SBO")
+        saveAndBackupAllDataThreaded(dataDir)
     }
-
-
 
     fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
-        if (!modConfigDir.exists()) {
-            modConfigDir.mkdirs()
-        }
+        modConfigDir.mkdirs()
         val dataFile = File(modConfigDir, fileName)
 
         if (!dataFile.exists()) {
@@ -370,15 +553,15 @@ object SboDataObject {
     }
 
     val configMapforSave = mapOf(
-        "SboData" to Pair({ save("SBO", sboData, "SboData.json") }, sboData),
-        "AchievementsData" to Pair({ save("SBO", achievementsData, "sbo_achievements.json") }, achievementsData),
-        "PastDianaEventsData" to Pair({ save("SBO", pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
-        "DianaTrackerTotalData" to Pair({ save("SBO", dianaTrackerTotal, "dianaTrackerTotal.json") }, dianaTrackerTotal),
-        "DianaTrackerSessionData" to Pair({ save("SBO", dianaTrackerSession, "dianaTrackerSession.json") }, dianaTrackerSession),
-        "DianaTrackerMayorData" to Pair({ save("SBO", dianaTrackerMayor, "dianaTrackerMayor.json") }, dianaTrackerMayor),
-        "PartyFinderConfigState" to Pair({ save("SBO", pfConfigState, "partyFinderConfigState.json") }, pfConfigState),
-        "PartyFinderData" to Pair({ save("SBO", partyFinderData, "partyFinderData.json") }, partyFinderData),
-        "OverlayData" to Pair({ save("SBO", overlayData, "overlayData.json") }, overlayData)
+        "SboData" to Pair({ save(dataDir, sboData, "SboData.json") }, sboData),
+        "AchievementsData" to Pair({ save(dataDir, achievementsData, "sbo_achievements.json") }, achievementsData),
+        "PastDianaEventsData" to Pair({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
+        "DianaTrackerTotalData" to Pair({ save(dataDir, dianaTrackerTotal, "dianaTrackerTotal.json") }, dianaTrackerTotal),
+        "DianaTrackerSessionData" to Pair({ save(dataDir, dianaTrackerSession, "dianaTrackerSession.json") }, dianaTrackerSession),
+        "DianaTrackerMayorData" to Pair({ save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json") }, dianaTrackerMayor),
+        "PartyFinderConfigState" to Pair({ save(dataDir, pfConfigState, "partyFinderConfigState.json") }, pfConfigState),
+        "PartyFinderData" to Pair({ save(dataDir, partyFinderData, "partyFinderData.json") }, partyFinderData),
+        "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData)
     )
 
     private fun <T> saveToFolder(folder: File, data: T, fileName: String) {
@@ -416,15 +599,13 @@ object SboDataObject {
      */
     fun savePeriodically(interval: Int) {
         Register.onTick(20 * 60 * interval) { client ->
-            saveAllDataThreaded("SBO")
+            saveAllDataThreaded(dataDir)
         }
     }
 
     fun <T> save(modName: String, data: T, fileName: String) {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
-        if (!modConfigDir.exists()) {
-            modConfigDir.mkdirs()
-        }
+        modConfigDir.mkdirs()
         val dataFile = File(modConfigDir, fileName)
         writerForFile(dataFile).use { writer ->
             gson.toJson(data, writer)
@@ -455,9 +636,9 @@ object SboDataObject {
 
     fun saveTrackerData() {
         DATA_SAVER_EXECUTOR.execute {
-            save("SBO", dianaTrackerTotal, "dianaTrackerTotal.json")
-            save("SBO", dianaTrackerSession, "dianaTrackerSession.json")
-            save("SBO", dianaTrackerMayor, "dianaTrackerMayor.json")
+            save(dataDir, dianaTrackerTotal, "dianaTrackerTotal.json")
+            save(dataDir, dianaTrackerSession, "dianaTrackerSession.json")
+            save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json")
             SBOKotlin.logger.debug("[SBO] Diana Tracker data saved successfully.")
         }
     }
