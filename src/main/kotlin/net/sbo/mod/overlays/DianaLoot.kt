@@ -346,7 +346,6 @@ object DianaLoot {
             Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
             Diana.Tracker.EVENT -> SboTimerManager.timerMayor
             Diana.Tracker.SESSION -> SboTimerManager.timerSession
-            else -> return
         }
 
         val formattedTime = Helper.formatTime(tracker.items.TIME)
