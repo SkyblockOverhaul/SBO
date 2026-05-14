@@ -10,7 +10,7 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import net.minecraft.util.Formatting.*
+import net.minecraft.ChatFormatting.*
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne

@@ -10,10 +10,10 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
-import net.minecraft.client.toast.SystemToast
-import net.minecraft.text.Text
-import net.minecraft.text.Style
-import net.minecraft.util.Formatting
+import net.minecraft.client.gui.components.toasts.SystemToast
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
+import net.minecraft.ChatFormatting
 
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
@@ -30,10 +30,13 @@ object Guis {
                 Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
                 return
             }
-            mc.getToastManager().add(SystemToast.create(mc, SystemToast.Type.PERIODIC_NOTIFICATION, Text.literal("SBO").setStyle(Style.EMPTY.withColor(Formatting.GOLD)), Text.literal("Join skyblock before opening Party Finder!").setStyle(Style.EMPTY.withColor(Formatting.RED))))
+            mc.getToastManager().addToast(
+                SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("SBO").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.GOLD)), Component.literal("Join skyblock before opening Party Finder!").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.RED))))
             return
         }
-        mc.send {
+        mc.schedule {
             if (partyFinderGui == null) {
                 partyFinderGui = PartyFinderGUI()
             }
@@ -48,7 +51,7 @@ object Guis {
         }
 
         Register.command("sboachievements") {
-            mc.send {
+            mc.schedule {
                 if (achievementsGui == null) {
                     achievementsGui = AchievementsGUI()
                 }
@@ -57,7 +60,7 @@ object Guis {
         }
 
         Register.command("sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
-            mc.send {
+            mc.schedule {
                 if (pastEventsGui == null) {
                     pastEventsGui = PastEventsGui()
                 }

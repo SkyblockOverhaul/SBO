@@ -2,7 +2,7 @@ package net.sbo.mod.settings
 
 import com.teamresourceful.resourcefulconfig.api.types.options.TranslatableValue
 import com.teamresourceful.resourcefulconfigkt.api.ConfigKt
-import net.minecraft.util.Util
+import net.minecraft.Util
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.settings.categories.Diana
@@ -29,7 +29,7 @@ object Settings : ConfigKt("sbo/config") {
             description = "Opens the GitHub releases page"
             text = "Open"
             onClick {
-                Util.getOperatingSystem().open("https://github.com/SkyblockOverhaul/SBO-Kotlin/releases")
+                Util.getPlatform().openUri("https://github.com/SkyblockOverhaul/SBO-Kotlin/releases")
             }
         }
 
@@ -38,7 +38,7 @@ object Settings : ConfigKt("sbo/config") {
             description = "Get support and updates on Discord"
             text = "Join"
             onClick {
-                Util.getOperatingSystem().open("https://discord.gg/QvM6b9jsJD")
+                Util.getPlatform().openUri("https://discord.gg/QvM6b9jsJD")
             }
         }
 
@@ -47,7 +47,7 @@ object Settings : ConfigKt("sbo/config") {
             description = "Support our development and keep the server running ☕"
             text = "Support"
             onClick {
-                Util.getOperatingSystem().open("https://www.patreon.com/Skyblock_Overhaul")
+                Util.getPlatform().openUri("https://www.patreon.com/Skyblock_Overhaul")
             }
         }
 
@@ -56,7 +56,7 @@ object Settings : ConfigKt("sbo/config") {
             description = "Explore our website for tracking Magic Find upgrades"
             text = "Visit"
             onClick {
-                Util.getOperatingSystem().open("https://skyblockoverhaul.com/")
+                Util.getPlatform().openUri("https://skyblockoverhaul.com/")
             }
         }
 

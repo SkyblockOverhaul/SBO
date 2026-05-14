@@ -1,10 +1,10 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.screen.PlayerScreenHandler
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.ChatScreen
-import net.minecraft.client.gui.screen.ingame.InventoryScreen
+import net.minecraft.world.inventory.InventoryMenu
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.game.World
@@ -13,7 +13,7 @@ import net.sbo.mod.utils.data.SboDataObject.overlayData
 import java.awt.Color
 
 fun isCraftingScreenOpen(): Boolean {
-    return CRAFTING_PLAYER_INVENTORY_FILTER(mc.currentScreen)
+    return CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
 }
 
 val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean {
@@ -21,13 +21,7 @@ val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean {
 }
 
 val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean {
-    if (screen !is InventoryScreen) return false
-
-    val handler = screen.screenHandler
-
-    if (handler !is PlayerScreenHandler) return false // PlayerScreenHandler extends AbstractCraftingScreenHandler, but checking AbstractCraftingScreenHandler will also match the full 3x3 crafting inventory.
-
-    return true // could also check for handler.slots.size == 46 but checking for PlayerScreenHandler seems to work already. 46 is because 27 inventory slots, 9 hotbar slots, 4 armor slots, 4 crafting input slots, 1 crafting output slot and 1 offhand/shield slot, totalling 46. when a chest/large chest (which hypixel uses for menus) is open, only the 27 inventory slots + the chest size is considered; so .size in these cases are 63 (regular chest) or 90 (double chest), because 27 inventory + 9 hotbar + 27 chest, and 27 inventory + 9 hotbar + 54 double chest (which is 27*2).
+    return screen is InventoryScreen
 }
 
 /**
@@ -111,8 +105,8 @@ class Overlay(
 
     fun overlayClicked(mouseX: Double, mouseY: Double) {
         if (!World.isInSkyblock()) return
-        if (!allowedScreens.any { it(mc.currentScreen) }) return
-        val textRenderer = mc.textRenderer ?: return
+        if (!allowedScreens.any { it(mc.screen) }) return
+        val textRenderer = mc.font ?: return
         if (!isOverOverlay(mouseX, mouseY)) return
 
         var currentY = y / scale
@@ -123,31 +117,31 @@ class Overlay(
             line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale)
 
             if (line.linebreak) {
-                currentY += textRenderer.fontHeight + 1
+                currentY += textRenderer.lineHeight + 1
                 currentX = x / scale
             } else {
-                currentX += textRenderer.getWidth(line.text) / scale
+                currentX += textRenderer.width(line.text) / scale
             }
         }
     }
 
     fun getTotalHeight(): Int {
-        val textRenderer = mc.textRenderer ?: return 0
+        val textRenderer = mc.font ?: return 0
         var totalHeight = 0
         for (line in getLines()) {
             if (line.linebreak && line.checkCondition()) {
-                totalHeight += textRenderer.fontHeight + 1
+                totalHeight += textRenderer.lineHeight + 1
             }
         }
         return totalHeight
     }
 
     fun getTotalWidth(): Int {
-        val textRenderer = mc.textRenderer ?: return 0
+        val textRenderer = mc.font ?: return 0
         var maxWidth = 0
         var currentWidth = 0
         for (line in getLines()) {
-            currentWidth += textRenderer.getWidth(line.text)
+            currentWidth += textRenderer.width(line.text)
             if (line.linebreak) {
                 if (currentWidth > maxWidth) {
                     maxWidth = currentWidth
@@ -170,12 +164,12 @@ class Overlay(
         return mouseX >= x && mouseX <= x + totalWidth && mouseY >= y && mouseY <= y + totalHeight
     }
 
-    fun render(drawContext: DrawContext, mouseX: Double, mouseY: Double) {
+    fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
         if (!condition()) return
-        val textRenderer = mc.textRenderer ?: return
+        val textRenderer = mc.font ?: return
 
-        drawContext.matrices.pushMatrix()
-        drawContext.matrices.scale(scale, scale)
+        drawContext.pose().pushMatrix()
+        drawContext.pose().scale(scale, scale)
 
         var currentY = (y / scale)
         var currentX = (x / scale)
@@ -188,31 +182,31 @@ class Overlay(
 
         if (selected) {
             drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
-            drawContext.drawText(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.fontHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
+            drawContext.drawString(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
         if (Helper.currentScreen is OverlayEditScreen && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
-        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.currentScreen) } }
+        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.screen) } }
 
         for (line in getLines()) {
             if (!line.checkCondition()) continue
             if (shouldRender) line.updateMouseInteraction(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale, drawContext)
             line.draw(drawContext, currentX.toInt(), currentY.toInt(), textRenderer)
             if (line.linebreak) {
-                currentY += textRenderer.fontHeight + 1
+                currentY += textRenderer.lineHeight + 1
                 currentX = (x / scale)
             } else {
                 currentX += line.width
             }
         }
 
-        drawContext.matrices.popMatrix()
+        drawContext.pose().popMatrix()
     }
 
-    private fun drawDebugBox(drawContext: DrawContext, x: Int, y: Int, width: Int, height: Int) {
+    private fun drawDebugBox(drawContext: GuiGraphics, x: Int, y: Int, width: Int, height: Int) {
         // Multiply everything by scale so that the box renders correctly when scale != 1.0F
         val scaledX = (x * scale).toInt()
         val scaledY = (y * scale).toInt()
@@ -220,9 +214,9 @@ class Overlay(
         val scaledHeight = (height * scale).toInt()
 
         //#if MC > 1.21.10
-        //$$ drawContext.drawStrokedRectangle(x, y, width, height, Color(255, 0, 0, 170).rgb)
+        //$$ drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
         //#else
-        drawContext.drawStrokedRectangle(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
+        drawContext.submitOutline(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
         //#endif
     }
 }

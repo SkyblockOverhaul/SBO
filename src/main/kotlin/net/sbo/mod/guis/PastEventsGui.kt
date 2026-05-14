@@ -39,7 +39,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
         initMainUI()
         window.onKeyType { typedChar, keyCode ->
             if (keyCode == UKeyboard.KEY_ESCAPE) {
-                mc.send {
+                mc.schedule {
                     displayScreen(null)
                 }
             }

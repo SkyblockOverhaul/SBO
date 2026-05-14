@@ -130,7 +130,7 @@ dependencies {
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    modImplementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
+    implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
 
     // modImplementation(include("xyz.meowing:vexel-${mcData}:${property("vexel.version")}")!!)
     when (mcData.version) {

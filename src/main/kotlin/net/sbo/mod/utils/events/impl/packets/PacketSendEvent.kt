@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.events.impl.packets
 
-import net.minecraft.network.packet.Packet
+import net.minecraft.network.protocol.Packet
 
 /**
  * Called when the client receives any packet from the server.

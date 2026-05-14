@@ -7,9 +7,9 @@
   "package": "net.sbo.mod.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "GameMenuScreenMixin",
+    "PauseScreenMixin",
     "GameRenderMixin",
-    "MinecraftClientMixin",
+    "MinecraftMixin",
     "PacketMixin",
     "PlayerInteractMixin",
     "ScreenHandlerSlotUpdateS2CPacketMixin",

@@ -31,7 +31,7 @@ object General : CategoryKt("General") {
             text = "Move GUI's"
             description = "Opens Gui Move Menu you can use /sboguis too"
             onClick {
-                mc.send {
+                mc.schedule {
                     mc.setScreen(OverlayEditScreen())
                 }
             }

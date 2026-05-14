@@ -1,21 +1,21 @@
 package net.sbo.mod.utils.chat
 
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Style
-import net.minecraft.text.TextColor
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.TextColor
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import java.util.*
 
 object ChatUtils {
-    private val colorToFormatChar: Map<TextColor, Formatting> = Formatting.entries.mapNotNull { format ->
-        TextColor.fromFormatting(format)?.let { it to format }
+    private val colorToFormatChar: Map<TextColor, ChatFormatting> = ChatFormatting.entries.mapNotNull { format ->
+        TextColor.fromLegacyFormat(format)?.let { it to format }
     }.toMap()
 
     private fun getColorFormatChar(color: TextColor): Char? {
         val formatting = colorToFormatChar[color]
-        return formatting?.code
+        return formatting?.char
     }
 
     private fun Style.getFormatCodes() = buildString {
@@ -28,7 +28,7 @@ object ChatUtils {
         if (this@getFormatCodes.isObfuscated) append("§k")
     }
 
-    fun Text.formattedString(): String {
+    fun Component.formattedString(): String {
         val builder = StringBuilder()
 
         this.visit(
@@ -42,7 +42,7 @@ object ChatUtils {
         return builder.toString()
     }
 
-    internal fun Text.getShowTextHoverEvent(): HoverEvent? {
+    internal fun Component.getShowTextHoverEvent(): HoverEvent? {
         val hover = this.style?.hoverEvent ?: return null
         if (hover is HoverEvent.ShowText) {
             return HoverEvent.ShowText(hover.value())
@@ -50,15 +50,15 @@ object ChatUtils {
         return null
     }
 
-    internal fun String.toStyledText(click: ClickEvent?, hover: HoverEvent?): Text {
-        return Text.literal(this).setStyle(
+    internal fun String.toStyledText(click: ClickEvent?, hover: HoverEvent?): Component {
+        return Component.literal(this).setStyle(
             Style.EMPTY
                 .withClickEvent(click)
                 .withHoverEvent(hover)
         )
     }
 
-    internal fun Text.toClickableText(command: String): Text {
+    internal fun Component.toClickableText(command: String): Component {
         val content = this.formattedString()
         val hover = this.getShowTextHoverEvent()
         val click = ClickEvent.RunCommand(command)

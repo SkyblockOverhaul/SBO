@@ -1,6 +1,6 @@
 package net.sbo.mod.utils
 
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.math.SboVec
 import java.util.UUID
@@ -12,7 +12,7 @@ object Player {
     }
 
     fun getUUIDString(): String {
-        return mc.player?.uuidAsString ?: ""
+        return mc.player?.stringUUID ?: ""
     }
 
     fun getUUID(): UUID {

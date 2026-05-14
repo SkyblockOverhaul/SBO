@@ -22,7 +22,7 @@ import gg.essential.elementa.dsl.percent
 import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.universal.UKeyboard
-import net.minecraft.util.Util
+import net.minecraft.Util
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.pages.CustomPage
@@ -112,7 +112,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
         window.onKeyType { typedChar, keyCode ->
             if (keyCode == UKeyboard.KEY_ESCAPE) {
-                mc.send {
+                mc.schedule {
                     displayScreen(null)
                 }
             }
@@ -146,16 +146,16 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         closeCpWindow()
         closeFilterWindow()
 
-        if (mc.options.guiScale.value == 2) return
-        guiScale = mc.options.guiScale.value
-        mc.options.guiScale.value = 2 // this is a workaround for text scaling
+        if (mc.options.guiScale().get() == 2) return
+        guiScale = mc.options.guiScale().get()
+        mc.options.guiScale().set(2) // this is a workaround for text scaling
     }
 
     override fun onScreenClose() {
         super.onScreenClose()
         partyCache = mutableMapOf() // clear party cache on close
-        if (mc.options.guiScale.value != 2 || guiScale == null) return
-        mc.options.guiScale.value = guiScale // restore original gui scale
+        if (mc.options.guiScale().get() != 2 || guiScale == null) return
+        mc.options.guiScale().set(guiScale!!) // restore original gui scale
         guiScale = null
     }
 
@@ -877,7 +877,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     private fun settings() {
-        mc.send{
+        mc.schedule {
             displayScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
         }
     }
@@ -992,7 +992,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.getOperatingSystem().open("https://discord.gg/QvM6b9jsJD")
+                Util.getPlatform().openUri("https://discord.gg/QvM6b9jsJD")
             }
         discord.textObject.setTextScale(getTextScale())
         discord.uiObject.addChild(GuiHandler.UILine(
@@ -1021,7 +1021,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.getOperatingSystem().open("https://github.com/SkyblockOverhaul/SBO-Kotlin")
+                Util.getPlatform().openUri("https://github.com/SkyblockOverhaul/SBO-Kotlin")
             }
         github.textObject.setTextScale(getTextScale())
         github.uiObject.addChild(GuiHandler.UILine(
@@ -1050,7 +1050,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.getOperatingSystem().open("https://www.patreon.com/Skyblock_Overhaul")
+                Util.getPlatform().openUri("https://www.patreon.com/Skyblock_Overhaul")
             }
         patreon.textObject.setTextScale(getTextScale())
         patreon.uiObject.addChild(GuiHandler.UILine(

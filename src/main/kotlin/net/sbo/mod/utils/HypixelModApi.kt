@@ -87,7 +87,7 @@ object HypixelModApi {
     }
 
     private fun onErrorPacket(packet: ErrorS2CPacket) {
-        if (packet.id == LocationUpdateS2CPacket.ID) {
+        if (packet.type() == LocationUpdateS2CPacket.ID) {
             isOnSkyblock = false
             mode = ""
         }

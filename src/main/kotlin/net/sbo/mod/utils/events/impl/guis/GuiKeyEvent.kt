@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.events.impl.guis
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
 /**
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
  * @param cir The callback info returnable to control the event flow.
  */
 class GuiKeyEvent(
-    val client: MinecraftClient,
+    val client: Minecraft,
     val screen: Screen,
     val key: Int,
     val cir: CallbackInfoReturnable<Boolean>

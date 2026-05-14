@@ -1,7 +1,7 @@
 package net.sbo.mod.diana.burrows
 
-import net.minecraft.network.packet.s2c.play.ParticleS2CPacket
-import net.minecraft.util.math.BlockPos
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
+import net.minecraft.core.BlockPos
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.settings.categories.Customization
@@ -12,7 +12,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
-import net.minecraft.particle.ParticleTypes as MCParticleTypes
+import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 import net.sbo.mod.utils.waypoint.Waypoint
 import java.awt.Color
 import net.sbo.mod.utils.waypoint.WaypointManager
@@ -60,11 +60,11 @@ object BurrowDetector {
     @SboEvent
     fun onParticleReceive(event: PacketReceiveEvent) {
         val packet = event.packet
-        if (packet !is ParticleS2CPacket) return
+        if (packet !is ClientboundLevelParticlesPacket) return
         if (!Diana.dianaBurrowDetect) return
         if (World.getWorld() != "Hub") return
 
-        if (packet.parameters.type == MCParticleTypes.LARGE_SMOKE && packet.speed == 0.01f && packet.offsetX == 0.0f && packet.offsetY == 0.0f && packet.offsetZ == 0.0f) {
+        if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down(1.0)
             WaypointManager.removeWaypointAt(pos, "burrow")
             WaypointManager.removeWaypointAt(pos, "rareMob")
@@ -81,7 +81,7 @@ object BurrowDetector {
         }
     }
 
-    private fun burrowDetect(packet: ParticleS2CPacket) {
+    private fun burrowDetect(packet: ClientboundLevelParticlesPacket) {
         val particleType = ParticleTypes.getParticleType(packet) ?: return
         val pos = SboVec(packet.x, packet.y - 1.0, packet.z).roundLocationToBlock()
         val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"

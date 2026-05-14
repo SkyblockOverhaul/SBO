@@ -1,9 +1,9 @@
 package net.sbo.mod.utils.game
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.item.ItemStack
-import net.minecraft.registry.Registries
+import net.minecraft.client.Minecraft
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.registries.BuiltInRegistries
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import kotlin.time.Duration
@@ -23,8 +23,8 @@ object InventoryUtils {
         }
     }
 
-    private fun trackHeldItemDuration(client: MinecraftClient) {
-        val stack = client.player?.mainHandStack ?: ItemStack.EMPTY
+    private fun trackHeldItemDuration(client: Minecraft) {
+        val stack = client.player?.mainHandItem ?: ItemStack.EMPTY
 
         val newItemId = getInternalName(stack)
         val now = System.currentTimeMillis()
@@ -47,11 +47,11 @@ object InventoryUtils {
     fun getInternalName(stack: ItemStack): String {
         if (stack.isEmpty) return "AIR"
 
-        val customData = stack.get(DataComponentTypes.CUSTOM_DATA)
+        val customData = stack.get(DataComponents.CUSTOM_DATA)
         val sbId = ItemUtils.getSBID(customData)
         if (sbId.isNotEmpty()) return sbId
 
-        return Registries.ITEM.getId(stack.item).toString()
+        return BuiltInRegistries.ITEM.getKey(stack.item).toString()
     }
 
     /**
