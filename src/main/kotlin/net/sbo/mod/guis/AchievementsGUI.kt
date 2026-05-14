@@ -26,7 +26,7 @@ import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.utils.data.SboDataObject
 import java.awt.Color
 import kotlin.math.floor
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
 import net.sbo.mod.SBOKotlin.mc
 
 class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
@@ -62,7 +62,7 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
 
         window.onKeyType { typedChar, keyCode ->
             if (keyCode == UKeyboard.KEY_ESCAPE) {
-                mc.send {
+                mc.schedule {
                     displayScreen(null)
                 }
             }
@@ -338,7 +338,8 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
             val posY = spacingY + (row * (achievementBoxHeight + spacingY))
             lastY = posY
             val borderColor = if (achievement.isUnlocked(true)) Color(0, 255, 0) else Color(255, 0, 0)
-            val achievementColor =  if (achievement.rarity != "Celestial") Color(Formatting.byCode(achievement.color[1])?.colorValue ?: 0xFFFFFF) else Color(0x7D00FF)
+            val achievementColor =  if (achievement.rarity != "Celestial") Color(
+                ChatFormatting.getByCode(achievement.color[1])?.color ?: 0xFFFFFF) else Color(0x7D00FF)
 
             val roundedOutline = UIRoundedRectangle(5f).constrain {
                 x = posX.pixels

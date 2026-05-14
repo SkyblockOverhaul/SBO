@@ -1,13 +1,13 @@
 package net.sbo.mod.utils.game
 
 import net.sbo.mod.SBOKotlin
-import net.minecraft.scoreboard.*
+import net.minecraft.world.scores.*
 import java.lang.String.CASE_INSENSITIVE_ORDER
 
 object ScoreBoard {
-    private val COMPARATOR: Comparator<ScoreboardEntry> = Comparator.comparing { obj: ScoreboardEntry -> obj.value() }
+    private val COMPARATOR: Comparator<PlayerScoreEntry> = Comparator.comparing { obj: PlayerScoreEntry -> obj.value() }
         .reversed()
-        .thenComparing({ obj: ScoreboardEntry -> obj.owner() }, CASE_INSENSITIVE_ORDER)
+        .thenComparing({ obj: PlayerScoreEntry -> obj.owner() }, CASE_INSENSITIVE_ORDER)
 
     /**
      * Retrieves the lines from the scoreboard sidebar.
@@ -16,17 +16,17 @@ object ScoreBoard {
      * @return A list of formatted strings representing the scoreboard entries.
      */
     fun getLines(): List<String> {
-        val scoreboard = SBOKotlin.mc.world?.scoreboard ?: return emptyList()
-        val objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR) ?: return emptyList()
+        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return emptyList()
+        val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return emptyList()
 
-        return scoreboard.getScoreboardEntries(objective)
-            .filter { entry -> entry?.owner != null && !entry.hidden() }
+        return scoreboard.listPlayerScores(objective)
+            .filter { entry -> entry?.owner != null && !entry.isHidden }
             .sortedWith(COMPARATOR)
             .take(15)
             .map { entry ->
-                Team.decorateName(
-                    scoreboard.getScoreHolderTeam(entry.owner()),
-                    entry.name()
+                PlayerTeam.formatNameForTeam(
+                    scoreboard.getPlayersTeam(entry.owner()),
+                    entry.ownerName()
                 ).string
             }
             .map { decoratedText ->
@@ -36,8 +36,8 @@ object ScoreBoard {
     }
 
     fun getTitle(): String {
-        val scoreboard = SBOKotlin.mc.world?.scoreboard ?: return "Unknown Scoreboard"
-        val objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR) ?: return "No Objective"
+        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return "Unknown Scoreboard"
+        val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
         return objective.displayName.string
     }
 }

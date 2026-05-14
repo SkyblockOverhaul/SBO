@@ -1,8 +1,8 @@
 package net.sbo.mod.utils.waypoint
 
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
-import net.minecraft.client.world.ClientWorld
-import net.minecraft.util.math.BlockPos
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.core.BlockPos
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.render.WaypointRenderer
@@ -61,7 +61,7 @@ object WaypointManager {
         ) { message, match ->
             val channel = match.groups["channel"]?.value ?: "Unknown"
             val player = match.groups["playerName"]?.value ?: "Unknown"
-            val world = SBOKotlin.mc.world ?: return@onChatMessage
+            val world = SBOKotlin.mc.level ?: return@onChatMessage
 
             val x = match.groups["x"]?.value?.toIntOrNull() ?: 0
             var y = match.groups["y"]?.value?.toIntOrNull() ?: 0
@@ -449,10 +449,10 @@ object WaypointManager {
         }
     }
 
-    fun findBlock(world: ClientWorld, x: Int, y: Int, z: Int): Int {
+    fun findBlock(world: ClientLevel, x: Int, y: Int, z: Int): Int {
         val originalY = y
         var currentY = y
-        while (currentY > world.bottomY) {
+        while (currentY > world.minY) {
             val pos = BlockPos(x, currentY, z)
             val blockState = world.getBlockState(pos)
             if (!blockState.isAir) {

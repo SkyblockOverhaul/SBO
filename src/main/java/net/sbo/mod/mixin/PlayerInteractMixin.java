@@ -1,11 +1,11 @@
 package net.sbo.mod.mixin;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,37 +14,37 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ClientPlayerInteractionManager.class)
+@Mixin(MultiPlayerGameMode.class)
 public class PlayerInteractMixin {
 
     @Unique
-    private final MinecraftClient client = MinecraftClient.getInstance();
+    private final Minecraft client = Minecraft.getInstance();
 
-    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
-    private void onInteractItem(CallbackInfoReturnable<ActionResult> cir) {
+    @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
+    private void onInteractItem(CallbackInfoReturnable<InteractionResult> cir) {
         if (client.player != null) {
             PlayerInteractEvent event = new PlayerInteractEvent(
-                    "useItem", null, client.player, client.player.getEntityWorld(), false
+                    "useItem", null, client.player, client.player.level(), false
             );
             SBOEvent.INSTANCE.emit(event);
 
             if (event.isCanceled()) {
-                cir.setReturnValue(ActionResult.FAIL);
+                cir.setReturnValue(InteractionResult.FAIL);
                 cir.cancel();
             }
         }
     }
 
-    @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
-    private void onInteractBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-        if (hand == Hand.MAIN_HAND) {
+    @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
+    private void onInteractBlock(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
+        if (hand == InteractionHand.MAIN_HAND) {
             PlayerInteractEvent event = new PlayerInteractEvent(
-                    "useBlock", hitResult.getBlockPos(), player, player.getEntityWorld(), false
+                    "useBlock", hitResult.getBlockPos(), player, player.level(), false
             );
             SBOEvent.INSTANCE.emit(event);
 
             if (event.isCanceled()) {
-                cir.setReturnValue(ActionResult.FAIL);
+                cir.setReturnValue(InteractionResult.FAIL);
                 cir.cancel();
             }
         }

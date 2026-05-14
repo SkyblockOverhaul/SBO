@@ -3,9 +3,9 @@ package net.sbo.mod
 import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.MinecraftClient
-import net.minecraft.util.Identifier
-import net.minecraft.util.Util
+import net.minecraft.client.Minecraft
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.Util
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.utils.waypoint.WaypointManager
@@ -55,7 +55,7 @@ import net.fabricmc.api.ClientModInitializer
 
 object SBOKotlin : ClientModInitializer {
 	@JvmField
-	val mc: MinecraftClient = MinecraftClient.getInstance()
+	val mc: Minecraft = Minecraft.getInstance()
 
 	const val API_URL: String = "https://api.skyblockoverhaul.com"
 
@@ -68,7 +68,7 @@ object SBOKotlin : ClientModInitializer {
 	lateinit var version: String
 	lateinit var mcVersion: String
 
-	fun id(path: String): Identifier = Identifier.of(MOD_ID, path)
+	fun id(path: String): ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, path)
 
 	override fun onInitializeClient() {
 		version = FabricLoader.getInstance().getModContainer(MOD_ID)
@@ -106,7 +106,7 @@ object SBOKotlin : ClientModInitializer {
 		// load Main Features
 		PartyCommands.init()
 		Register.command("sbo") {
-			mc.send{
+			mc.schedule {
 				mc.setScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
 			}
 		}

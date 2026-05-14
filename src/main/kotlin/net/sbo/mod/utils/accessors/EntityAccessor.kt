@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.accessors
 
-import net.minecraft.entity.Entity
-import net.minecraft.util.Formatting
+import net.minecraft.world.entity.Entity
+import net.minecraft.ChatFormatting
 import java.awt.Color
 
 /**
@@ -16,14 +16,14 @@ internal interface EntityAccessor {
 
 // Extension property to easily toggle custom glowing
 var Entity.isSboGlowing: Boolean
-    get() = this.isGlowing
+    get() = this.isCurrentlyGlowing
     set(value) {
         (this as? EntityAccessor)?.`sbo$setGlowing`(value)
     }
 
 // Extension property to set the color
 var Entity.sboGlowingColor: Int
-    get() = this.teamColorValue
+    get() = this.teamColor
     set(value) {
         (this as? EntityAccessor)?.`sbo$setGlowingColor`(value)
     }

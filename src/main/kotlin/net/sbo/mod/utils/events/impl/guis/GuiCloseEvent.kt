@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.events.impl.guis
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 
 /**
  * Event fired when a GUI screen is closed.
@@ -11,7 +11,7 @@ import net.minecraft.client.gui.screen.Screen
  * @param scaledHeight The height of the screen in scaled pixels.
  */
 class GuiCloseEvent(
-    val client: MinecraftClient,
+    val client: Minecraft,
     val screen: Screen,
     val scaledWidth: Int,
     val scaledHeight: Int

@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.math
 
-import net.minecraft.util.math.Box
+import net.minecraft.world.phys.AABB
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -36,7 +36,7 @@ object RaycastUtils {
      * The entry point may be behind the ray origin if the ray starts inside the box.
      * Returns null if the ray points away from the box or misses it entirely.
      */
-    fun intersectAABBWithRay(aabb: Box, ray: Ray): Pair<SboVec, SboVec>? {
+    fun intersectAABBWithRay(aabb: AABB, ray: Ray): Pair<SboVec, SboVec>? {
         val aabbMin = SboVec(aabb.minX, aabb.minY, aabb.minZ).toDoubleArray()
         val aabbMax = SboVec(aabb.maxX, aabb.maxY, aabb.maxZ).toDoubleArray()
 

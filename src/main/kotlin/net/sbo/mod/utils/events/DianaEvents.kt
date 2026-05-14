@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.events
 
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -22,9 +22,9 @@ object DianaEvents {
     @SboEvent
     fun onPlayerActionSend(event: PacketSendEvent) {
         val packet = event.packet
-        if (packet !is PlayerActionC2SPacket) return
+        if (packet !is ServerboundPlayerActionPacket) return
         if (World.getWorld() != "Hub") return
-        if (packet.action != PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) return
+        if (packet.action != ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) return
 
         val posString = "${packet.pos.x} ${packet.pos.y} ${packet.pos.z}"
         if (BurrowDetector.burrows.containsKey(posString)) {
@@ -48,9 +48,9 @@ object DianaEvents {
         if (action != "useBlock") return
         if (World.getWorld() != "Hub") return
         val player = SBOKotlin.mc.player
-        val item = player?.mainHandStack
+        val item = player?.mainHandItem
         if (item?.isEmpty == true) return
-        if (item == null || !item.name.string.contains("Spade")) return
+        if (item == null || !item.hoverName.string.contains("Spade")) return
         if (event.pos ==  null) return
 
         val posString = "${event.pos.x} ${event.pos.y} ${event.pos.z}"

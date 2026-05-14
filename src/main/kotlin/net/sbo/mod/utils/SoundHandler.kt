@@ -4,11 +4,11 @@ import net.sbo.mod.utils.data.SboDataObject
 
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.SharedConstants
-import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.resource.ResourceType
-import net.minecraft.sound.SoundEvent
-import net.minecraft.util.Identifier
-import net.minecraft.util.InvalidIdentifierException
+import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.server.packs.PackType
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.ResourceLocationException
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.SBOKotlin.logger
@@ -43,7 +43,7 @@ object SoundHandler {
 
     private fun currentResourcePackFormat(): Int {
         return try {
-            SharedConstants.getGameVersion().packVersion(ResourceType.CLIENT_RESOURCES).major()
+            SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES).major()
         } catch (_: Throwable) {
             48
         }
@@ -121,12 +121,12 @@ object SoundHandler {
     }
 
     fun playCustomSound(sound: String, volume: Float, pitch: Float = 1f) {
-        val packManager = mc.resourcePackManager
+        val packManager = mc.resourcePackRepository
         val packId = "file/SBO Custom Sounds Data Pack"
 
         val id = try {
-            Identifier.of(MOD_ID, sound.lowercase())
-        } catch (invalidIdentifierError: InvalidIdentifierException) {
+            ResourceLocation.fromNamespaceAndPath(MOD_ID, sound.lowercase())
+        } catch (invalidIdentifierError: ResourceLocationException) {
             Customization.resetSoundCustomizationToDefaults()
 
             Chat.chat("§6[SBO] §cYou had an error with your custom sound configuration, your custom sound settings will automatically reset to protect from crashes. More information might be available in your logs.")
@@ -135,9 +135,9 @@ object SoundHandler {
             return
         }
 
-        val event = SoundEvent.of(id)
+        val event = SoundEvent.createVariableRangeEvent(id)
 
-        if (!packManager.enabledIds.contains(packId) && sound.isNotEmpty()) Chat.chat("§6[SBO] §cCustom sound pack is not enabled. Please enable it in the resource packs menu.")
-        mc.soundManager.play(PositionedSoundInstance.master(event, pitch, volume))
+        if (!packManager.selectedIds.contains(packId) && sound.isNotEmpty()) Chat.chat("§6[SBO] §cCustom sound pack is not enabled. Please enable it in the resource packs menu.")
+        mc.soundManager.play(SimpleSoundInstance.forUI(event, pitch, volume))
     }
 }

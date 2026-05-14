@@ -6,7 +6,7 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import net.minecraft.util.Formatting.*
+import net.minecraft.ChatFormatting.*
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
@@ -175,9 +175,9 @@ object DianaLoot {
                 meetsZeroValueCondition && meetsManualHideCondition
             }
             .onHover { drawContext, textRenderer ->
-                val scaleFactor = mc.window.scaleFactor
-                val mouseX = mc.mouse.x / scaleFactor
-                val mouseY = mc.mouse.y / scaleFactor
+                val scaleFactor = mc.window.guiScale
+                val mouseX = mc.mouseHandler.xpos() / scaleFactor
+                val mouseY = mc.mouseHandler.ypos() / scaleFactor
 
                 RenderUtils2D.drawHoveringString(
                     drawContext,
@@ -287,9 +287,9 @@ object DianaLoot {
     private fun createCoinLine(tracker: DianaTracker): OverlayTextLine {
         return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}")
             .onHover { drawContext, textRenderer ->
-                val scaleFactor = mc.window.scaleFactor
-                val mouseX = mc.mouse.x / scaleFactor
-                val mouseY = mc.mouse.y / scaleFactor
+                val scaleFactor = mc.window.guiScale
+                val mouseX = mc.mouseHandler.xpos() / scaleFactor
+                val mouseY = mc.mouseHandler.ypos() / scaleFactor
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$YELLOW${BOLD}Coin Break Down:\n" +
                             "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
@@ -303,9 +303,9 @@ object DianaLoot {
         val pphText = if (profitPerHr == "NaN" || profitPerHr == "0.0") "" else "$GRAY[$AQUA$profitPerHr$GRAY/${AQUA}hr$GRAY]"
         return OverlayTextLine("${YELLOW}Total Profit: $AQUA${Helper.formatNumber(totalProfitValue)} $pphText")
             .onHover { drawContext, textRenderer ->
-                val scaleFactor = mc.window.scaleFactor
-                val mouseX = mc.mouse.x / scaleFactor
-                val mouseY = mc.mouse.y / scaleFactor
+                val scaleFactor = mc.window.guiScale
+                val mouseX = mc.mouseHandler.xpos() / scaleFactor
+                val mouseY = mc.mouseHandler.ypos() / scaleFactor
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$GOLD$profitPerHr coins/hr\n" +
                             "$GOLD$profitPerBurrow coins/burrow",

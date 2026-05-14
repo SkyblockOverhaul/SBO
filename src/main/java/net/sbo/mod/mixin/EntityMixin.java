@@ -1,6 +1,6 @@
 package net.sbo.mod.mixin;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.sbo.mod.utils.accessors.EntityAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,7 +20,7 @@ public class EntityMixin implements EntityAccessor {
     private boolean sbo$glowingThisFrame = false;
 
     @Inject(
-            method = "getTeamColorValue",
+            method = "getTeamColor",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -32,7 +32,7 @@ public class EntityMixin implements EntityAccessor {
     }
 
     @Inject(
-            method = "isGlowing",
+            method = "isCurrentlyGlowing",
             at = @At("HEAD"),
             cancellable = true
     )

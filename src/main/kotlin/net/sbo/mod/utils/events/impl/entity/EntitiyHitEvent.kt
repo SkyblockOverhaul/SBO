@@ -1,10 +1,10 @@
 package net.sbo.mod.utils.events.impl.entity
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.util.Hand
-import net.minecraft.world.World
-import net.minecraft.util.hit.EntityHitResult
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.level.Level
+import net.minecraft.world.phys.EntityHitResult
 
 /**
  * Called when a player hits an entity.
@@ -15,9 +15,9 @@ import net.minecraft.util.hit.EntityHitResult
  * @param hitResult The result of the hit.
  */
 class EntitiyHitEvent (
-    val player: PlayerEntity,
-    val world: World,
-    val hand: Hand,
+    val player: Player,
+    val world: Level,
+    val hand: InteractionHand,
     val entity: Entity,
     val hitResult: EntityHitResult?
 )

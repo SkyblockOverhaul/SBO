@@ -176,7 +176,7 @@ object PartyFinderManager {
         }
 
         HypixelModApi.onError { packet ->
-            if (packet.id == PartyInfoS2CPacket.ID) {
+            if (packet.type() == PartyInfoS2CPacket.ID) {
                 creatingParty
                 updateBool = false
             }

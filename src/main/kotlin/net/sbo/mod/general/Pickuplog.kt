@@ -1,6 +1,6 @@
 package net.sbo.mod.general
 
-import net.minecraft.text.HoverEvent
+import net.minecraft.network.chat.HoverEvent
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.settings.categories.QOL
