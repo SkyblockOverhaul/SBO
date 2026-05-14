@@ -29,7 +29,7 @@ object Mayor {
 
     fun init() {
         refreshMayorData()
-        Register.onTick(20) {
+        Register.onTick(20 * 60) {
             refreshMayorData()
         }
     }
