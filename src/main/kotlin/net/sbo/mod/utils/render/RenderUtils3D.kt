@@ -185,7 +185,7 @@ object RenderUtils3D {
             val textWidth = textRenderer.width(text)
             val xOffset = -textWidth / 2f
 
-            val consumers = context.consumers()!!
+            val consumers = context.consumers()
 
             val layerType = if (throughWalls) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
 
@@ -227,7 +227,7 @@ object RenderUtils3D {
 
             translate(cameraPos.reverse())
 
-            val consumers = context.consumers()!!
+            val consumers = context.consumers()
             val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot, camera.yRot))
             val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
@@ -291,7 +291,7 @@ object RenderUtils3D {
             translate(vec.x - cam.x, (vec.y + 1.0) - cam.y, vec.z - cam.z)
 
             renderBeam(
-                consumers!!,
+                consumers,
                 partialTicks,
                 wolrd.gameTime,
                 Color(beamColor[0], beamColor[1], beamColor[2]).rgb,
@@ -421,7 +421,7 @@ object RenderUtils3D {
     }
 
     private inline fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
-        val matrix = matrices()!!
+        val matrix = matrices()
         matrix.pushPop(function)
     }
 

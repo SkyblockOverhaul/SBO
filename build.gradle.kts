@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.2.21"
+    kotlin("plugin.serialization") version "2.3.21"
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools")
     id("dev.deftu.gradle.tools.resources")
@@ -15,7 +15,7 @@ plugins {
     id("dev.deftu.gradle.tools.shadow")
     id("dev.deftu.gradle.tools.minecraft.loom")
     id("dev.deftu.gradle.tools.minecraft.releases")
-    id("com.google.devtools.ksp") version "2.3.6"
+    id("com.google.devtools.ksp") version "2.3.7"
 }
 
 loom {
@@ -46,7 +46,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 kotlin {
     // This improves build performance as it supports incremental compilation among other things with the BTA API
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
-    compilerVersion = "2.2.10"
+    compilerVersion = "2.3.0"
 }
 
 repositories {
@@ -63,12 +63,19 @@ toolkitMultiversion {
 }
 
 tasks.withType<JavaCompile> {
+  options.release = 21
   options.encoding = StandardCharsets.UTF_8.toString()
 }
 
 tasks.withType<AbstractArchiveTask> {
   isReproducibleFileOrder = true
   isPreserveFileTimestamps = false
+}
+
+tasks.matching { it.name.contains("Test") }.configureEach {
+    // One of the tasks create problems since preprocessTestCode reads output of kspTestKotlin without depending on it
+    // We don't have any tests anyway; so this OK to disable to workaround the error.
+    enabled = false
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -93,7 +100,7 @@ tasks.named<ProcessResources>("processResources") {
         MinecraftVersions.VERSION_1_21_10 -> project.property("rconfigkt.version.1.21.10")
         else -> throw AssertionError("build.gradle.kts needs updating for ${mcData.version}")
     }
-    val universalCraftVersion = project.property("uc.version")
+    val universalCraftVersion = project.property("universalcraft.version")
 
     inputs.property("fabric_loader_version", fabricLoaderVersion)
     inputs.property("fabric_api_version", fabricApiVersion)
@@ -125,7 +132,7 @@ tasks.named<ProcessResources>("processResources") {
 }
 
 dependencies {
-    modImplementation("net.fabricmc:fabric-language-kotlin:${mcData.dependencies.fabric.fabricLanguageKotlinVersion}")
+    implementation("net.fabricmc:fabric-language-kotlin:${mcData.dependencies.fabric.fabricLanguageKotlinVersion}")
 
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
@@ -140,7 +147,7 @@ dependencies {
             modImplementation("com.terraformersmc:modmenu:${property("modmenu.version.1.21.11")}")
             modImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.11:${property("rconfig.version.1.21.11")}")!!)
             modImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.11:${property("rconfigkt.version.1.21.11")}")!!)
-            modImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("uc.version")}")!!)
+            modImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${property("iris.version.1.21.11")}+1.21.11-fabric")
         }
         MinecraftVersions.VERSION_1_21_10 -> {
@@ -149,7 +156,7 @@ dependencies {
             modImplementation("com.terraformersmc:modmenu:${property("modmenu.version.1.21.10")}")
             modImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.9:${property("rconfig.version.1.21.10")}")!!) // .9 works on .10
             modImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.5:${property("rconfigkt.version.1.21.10")}")!!)  // .5 works on .10
-            modImplementation(include("gg.essential:universalcraft-1.21.9-fabric:${property("uc.version")}")!!)
+            modImplementation(include("gg.essential:universalcraft-1.21.9-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${property("iris.version.1.21.10")}+1.21.10-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for ${mcData.version}")

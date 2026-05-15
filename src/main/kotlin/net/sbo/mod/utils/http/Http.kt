@@ -11,12 +11,13 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.jsonArray
 
+import net.minecraft.SharedConstants
 
 object Http {
     val jsonParser = Json { ignoreUnknownKeys = true }
     private const val CONNECT_TIMEOUT = 10000
     private const val READ_TIMEOUT = 10000
-    private const val USER_AGENT = "SBO-Kotlin-Mod/1.21"
+    private val USER_AGENT = "SBO-Kotlin-Mod/" + SharedConstants.getCurrentVersion().name()
 
     /**
      * Sends an asynchronous HTTP GET request.
