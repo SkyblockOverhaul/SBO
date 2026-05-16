@@ -1,56 +1,56 @@
 {
-    "schemaVersion": 1,
-	"custom": {
-		"modmenu": {
-			"update_checker": true,
-			"links": {
-				"Website": "https://skyblockoverhaul.com/",
-				"Patreon": "https://www.patreon.com/Skyblock_Overhaul",
-				"Discord Link": "https://discord.gg/QvM6b9jsJD"
-			}
-		}
-	},
-	"id": "${mod_id}",
-	"version": "${mod_version}",
-	"name": "${mod_name}",
-	"description": "${mod_description}",
-	"authors": [
-		"D4rkSwift/Saotzuri",
-		"RolexDE"
-	],
-	"contact": {
-		"homepage": "https://skyblockoverhaul.com/",
-		"sources": "https://github.com/SkyblockOverhaul/SBO-Kotlin",
-		"issues": "https://github.com/SkyblockOverhaul/SBO-Kotlin/issues"
-	},
-	"license": "Apache License 2.0",
-	"icon": "assets/sbo/icon.png",
-	"environment": "client",
-    "entrypoints": {
-      "client": [
-        {
-          "adapter": "kotlin",
-          "value": "${mod_group}.SBOKotlin"
-        }
-      ]
-    },
-    "mixins": [
-      {
-        "config": "sbo-kotlin.mixins.json",
-        "environment": "client"
+  "schemaVersion": 1,
+  "custom": {
+    "modmenu": {
+      "update_checker": true,
+      "links": {
+        "Website": "https://skyblockoverhaul.com/",
+        "Patreon": "https://www.patreon.com/Skyblock_Overhaul",
+        "Discord Link": "https://discord.gg/QvM6b9jsJD"
       }
-    ],
-	"accessWidener": "sbo-kotlin.accesswidener",
-	"depends": {
-		"fabricloader": ">=${fabric_loader_version}",
-		"minecraft": ">=${mc_version}",
-		"java": ">=${java_version_major}",
-		"fabric-api": ">=${fabric_api_version}",
-		"fabric-language-kotlin": ">=${fabric_language_kotlin_version}",
-		"elementa": ">=${elementa_version}",
-		"hm-api": ">=${hm_api_version}",
-		"resourcefulconfig": ">=${resourcefulconfig_version}",
-		"resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
-		"universalcraft": ">=${universalcraft_version}"
-	}
+    }
+  },
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "D4rkSwift/Saotzuri",
+    "RolexDE"
+  ],
+  "contact": {
+    "homepage": "https://skyblockoverhaul.com/",
+    "sources": "https://github.com/SkyblockOverhaul/SBO-Kotlin",
+    "issues": "https://github.com/SkyblockOverhaul/SBO-Kotlin/issues"
+  },
+  "license": "Apache License 2.0",
+  "icon": "assets/sbo/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "${mod_group}.SBOKotlin"
+      }
+    ]
+  },
+  "mixins": [
+    {
+      "config": "sbo-kotlin.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "accessWidener": "sbo-kotlin.accesswidener",
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": ">=${mc_version}",
+    "java": ">=${java_version_major}",
+    "fabric-api": ">=${fabric_api_version}",
+    "fabric-language-kotlin": ">=${fabric_language_kotlin_version}",
+    "elementa": ">=${elementa_version}",
+    "hm-api": ">=${hm_api_version}",
+    "resourcefulconfig": ">=${resourcefulconfig_version}",
+    "resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
+    "universalcraft": ">=${universalcraft_version}"
+  }
 }

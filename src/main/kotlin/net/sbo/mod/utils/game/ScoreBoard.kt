@@ -20,7 +20,7 @@ object ScoreBoard {
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return emptyList()
 
         return scoreboard.listPlayerScores(objective)
-            .filter { entry -> entry?.owner != null && !entry.isHidden }
+            .filter { entry -> !entry.isHidden }
             .sortedWith(COMPARATOR)
             .take(15)
             .map { entry ->

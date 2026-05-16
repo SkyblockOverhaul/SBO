@@ -106,7 +106,7 @@ class Overlay(
     fun overlayClicked(mouseX: Double, mouseY: Double) {
         if (!World.isInSkyblock()) return
         if (!allowedScreens.any { it(mc.screen) }) return
-        val textRenderer = mc.font ?: return
+        val textRenderer = mc.font
         if (!isOverOverlay(mouseX, mouseY)) return
 
         var currentY = y / scale
@@ -126,7 +126,7 @@ class Overlay(
     }
 
     fun getTotalHeight(): Int {
-        val textRenderer = mc.font ?: return 0
+        val textRenderer = mc.font
         var totalHeight = 0
         for (line in getLines()) {
             if (line.linebreak && line.checkCondition()) {
@@ -137,7 +137,7 @@ class Overlay(
     }
 
     fun getTotalWidth(): Int {
-        val textRenderer = mc.font ?: return 0
+        val textRenderer = mc.font
         var maxWidth = 0
         var currentWidth = 0
         for (line in getLines()) {
@@ -166,7 +166,7 @@ class Overlay(
 
     fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
         if (!condition()) return
-        val textRenderer = mc.font ?: return
+        val textRenderer = mc.font
 
         drawContext.pose().pushMatrix()
         drawContext.pose().scale(scale, scale)

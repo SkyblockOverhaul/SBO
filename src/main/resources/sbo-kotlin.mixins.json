@@ -5,7 +5,7 @@
     "minVersion": "0.5.0"
   },
   "package": "net.sbo.mod.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_${java_version_major}",
   "client": [
     "PauseScreenMixin",
     "GameRenderMixin",

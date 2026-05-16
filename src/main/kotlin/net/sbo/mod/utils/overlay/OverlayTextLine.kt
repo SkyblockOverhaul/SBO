@@ -25,7 +25,7 @@ class OverlayTextLine(
                 return field
             }
 
-            val width = mc.font!!.width(orderedText)
+            val width = mc.font.width(orderedText)
             field = width
 
             return field
@@ -37,7 +37,7 @@ class OverlayTextLine(
 
             // update cached values when text changes
             orderedText = Component.nullToEmpty(value).visualOrderText
-            cachedWidth = mc.font?.width(orderedText) ?: -1 // textRenderer is null at init time
+            cachedWidth = mc.font.width(orderedText)
         }
 
     var mouseEnterAction: (() -> Unit)? = null
