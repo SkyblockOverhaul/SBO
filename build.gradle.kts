@@ -2,6 +2,7 @@ import java.nio.charset.StandardCharsets
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
     java
@@ -107,8 +108,22 @@ repositories {
     maven("https://api.modrinth.com/maven")
 }
 
-toolkitMultiversion {
-    moveBuildsToRootProject.set(true)
+afterEvaluate {
+    val newBuildDestinationDirectory by lazy {
+        rootProject.layout.buildDirectory.asFile.get().resolve("versions")
+    }
+
+    tasks {
+        jar {
+            destinationDirectory.set(newBuildDestinationDirectory)
+        }
+
+        if ("26.1-fabric" != project.name) {
+            named<RemapJarTask>("remapJar") {
+                destinationDirectory.set(newBuildDestinationDirectory)
+            }
+        }
+    }
 }
 
 tasks.withType<JavaCompile> {
