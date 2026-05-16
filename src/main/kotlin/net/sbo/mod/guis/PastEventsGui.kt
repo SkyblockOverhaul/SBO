@@ -236,7 +236,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             eventBlock.setColor(Color(10,10,10,255))
 
             val leftText = UIBlock().constrain {
-                x = 10.pixels; y = 10.pixels; width = SubtractiveConstraint(ChildBasedSizeConstraint(), 40.pixels); height = ChildBasedSizeConstraint()
+                x = 10.pixels; y = 10.pixels; width = ChildBasedSizeConstraint(); height = ChildBasedSizeConstraint()
             }.setColor(Color(0,0,0,0)) childOf eventBlock
 
             val rightText = UIBlock().constrain {
