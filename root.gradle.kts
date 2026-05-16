@@ -1,5 +1,4 @@
 plugins {
-    id("dev.deftu.gradle.multiversion-root")
     id("gg.essential.loom") version "1.15.50" apply false
     id("dev.deftu.gradle.multiversion-root") version "2.73.0"
 }
