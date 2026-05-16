@@ -49,7 +49,12 @@ bloom {
         replacement("override fun render(", "override fun extractRenderState(")
         replacement("super.render(", "super.extractRenderState(")
         replacement("this.renderMenuBackground", "this.extractMenuBackground")
-        replacement("method = \"render\"", "method = \"extractRenderState\"")
+
+        // Render --> Extract (Hacky way to fix Mixins, too lazy for versioned Mixins)
+        replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")
+        replacement("Lnet/minecraft/client/gui/Gui;render(", "Lnet/minecraft/client/gui/Gui;extractRenderState(")
+        replacement("@Inject(method = \"render\", at = @At(value = \"INVOKE\", target = ", "@Inject(method = \"extractGui\", at = @At(value = \"INVOKE\", target = ")
+        replacement("private void afterHudRender(DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
 
         // drawString --> text
         replacement("drawContext.drawString(", "drawContext.text(")
