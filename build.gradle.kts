@@ -49,6 +49,7 @@ bloom {
         replacement("override fun render(", "override fun extractRenderState(")
         replacement("super.render(", "super.extractRenderState(")
         replacement("this.renderMenuBackground", "this.extractMenuBackground")
+        replacement("method = \"render\"", "method = \"extractRenderState\"")
 
         // drawString --> text
         replacement("drawContext.drawString(", "drawContext.text(")
