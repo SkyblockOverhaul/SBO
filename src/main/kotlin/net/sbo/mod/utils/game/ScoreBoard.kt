@@ -9,6 +9,8 @@ object ScoreBoard {
         .reversed()
         .thenComparing({ obj: PlayerScoreEntry -> obj.owner() }, CASE_INSENSITIVE_ORDER)
 
+    private val FORMATTING_REGEX: Regex = "§[^a-f0-9]".toRegex()
+
     /**
      * Retrieves the lines from the scoreboard sidebar.
      * It returns a list of formatted strings representing the scoreboard entries.
@@ -30,7 +32,7 @@ object ScoreBoard {
                 ).string
             }
             .map { decoratedText ->
-                decoratedText.replace("§[^a-f0-9]".toRegex(), "")
+                decoratedText.replace(FORMATTING_REGEX, "")
             }
             .asReversed()
     }

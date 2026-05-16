@@ -33,13 +33,18 @@ class OverlayTextLine(
 
     var text: String = text
         set(value) {
-            field = value
+            val oldValue = field
+            val newValue = value
 
-            // update cached values when text changes
-            orderedText = Component.nullToEmpty(value).visualOrderText
+            // update cached values only when the actual text changes
+            if (newValue != oldValue) {
+                field = newValue
 
-            @Suppress("UNNECESSARY_SAFE_CALL") // the warning is wrong; game crashes with NPE if we remove the safe call - font is definitely nullable in this specific code path.
-            cachedWidth = mc.font?.width(orderedText) ?: -1 // textRenderer is null at init time
+                orderedText = Component.nullToEmpty(value).visualOrderText
+
+                @Suppress("UNNECESSARY_SAFE_CALL") // the warning is wrong; game crashes with NPE if we remove the safe call - font is definitely nullable in this specific code path.
+                cachedWidth = mc.font?.width(orderedText) ?: -1 // textRenderer is null at init time
+            }
         }
 
     var mouseEnterAction: (() -> Unit)? = null

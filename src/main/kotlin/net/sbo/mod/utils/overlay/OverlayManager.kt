@@ -55,7 +55,7 @@ object OverlayManager {
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor
-        for (overlay in overlays.toList()) {
+        for (overlay in overlays) {
             if (renderScreen == null && !mc.options.keyPlayerList.isDown && !mc.options.hideGui)
                 overlay.render(drawContext, mouseX, mouseY)
         }
@@ -66,7 +66,7 @@ object OverlayManager {
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor
-        for (overlay in overlays.toList()) {
+        for (overlay in overlays) {
             if (overlay.allowedScreens.any { it(renderScreen) } && !mc.options.hideGui)
                 overlay.render(drawContext, mouseX, mouseY)
         }
