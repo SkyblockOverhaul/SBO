@@ -43,7 +43,7 @@ object ChatUtils {
     }
 
     internal fun Component.getShowTextHoverEvent(): HoverEvent? {
-        val hover = this.style?.hoverEvent ?: return null
+        val hover = this.style.hoverEvent ?: return null
         if (hover is HoverEvent.ShowText) {
             return HoverEvent.ShowText(hover.value())
         }

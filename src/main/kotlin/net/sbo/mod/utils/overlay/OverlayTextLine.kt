@@ -25,7 +25,7 @@ class OverlayTextLine(
                 return field
             }
 
-            val width = mc.font!!.width(orderedText)
+            val width = mc.font.width(orderedText)
             field = width
 
             return field
@@ -37,6 +37,8 @@ class OverlayTextLine(
 
             // update cached values when text changes
             orderedText = Component.nullToEmpty(value).visualOrderText
+
+            @Suppress("UNNECESSARY_SAFE_CALL") // the warning is wrong; game crashes with NPE if we remove the safe call - font is definitely nullable in this specific code path.
             cachedWidth = mc.font?.width(orderedText) ?: -1 // textRenderer is null at init time
         }
 

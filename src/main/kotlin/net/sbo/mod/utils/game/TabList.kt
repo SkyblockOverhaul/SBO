@@ -33,7 +33,7 @@ object TabList {
 
             val displayName = entry.tabListDisplayName
             val profile = entry.profile
-            val profileName = profile?.name?.let { Component.literal(it) }
+            val profileName = profile.name?.let { Component.literal(it) }
 
             val text = displayName ?: profileName ?: continue
             tabLines.add(text.string.trim())
