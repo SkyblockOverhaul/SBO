@@ -525,7 +525,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                     width = 90.percent()
                     height = 100.percent()
                 }.setColor(Color(0, 0, 0, 0))
-                    .addChild(UIWrappedText("&bNote: &7" + party.note).constrain {
+                    .addChild(UIWrappedText("&bNote: &7" + party.note.replace("%20", " ")).constrain {
                         x = 0.pixels
                         y = CenterConstraint()
                         width = 100.percent()
