@@ -78,7 +78,7 @@ object Helper {
         }
 
         Register.onTick(20) { // maybe better way to register this
-            hasSpade = playerHasItem("ANCESTRAL_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("DEIFIC_SPADE")
+            hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
         }
 
         Register.onTick(20 * 60 * 5) {
@@ -428,10 +428,9 @@ object Helper {
         return false
     }
 
-    fun checkDiana(): Boolean {
-        val diana = (Debug.itsAlwaysDiana || (((Mayor.perks.contains("Mythological Ritual") || Mayor.ministerPerk == "Mythological Ritual") || Mayor.mayor == "Jerry" || Mayor.mayor == "Aura") && hasSpade && World.getWorld() == "Hub"))
-        return diana
-    }
+    private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
+
+    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && Helper.hasMythologicalRitualActive() && World.getWorld() == "Hub"
 
     fun getGuiName(): String {
         return currentScreen?.title?.string ?: ""

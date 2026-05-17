@@ -100,7 +100,7 @@ object DianaMobDetect {
                     continue
                 }
 
-                checkCocoon(entity)
+                checkCocoon(entity, now)
 
                 val name = entity.customName?.formattedString() ?: entity.name.formattedString()
                 if (name.contains("§2✿", ignoreCase = true)) {
@@ -204,7 +204,7 @@ object DianaMobDetect {
         }
     }
 
-    private fun checkCocoon(entity: ArmorStand) {
+    private fun checkCocoon(entity: ArmorStand, now: Long) {
         if (World.getWorld() != "Hub") return
         val recentDeath = listOf(lastInqDeath, lastKingDeath, lastSphinxDeath, lastMantiDeath)
             .any { getSecondsPassed(it) < DEATH_WINDOW_SECONDS }
@@ -218,7 +218,6 @@ object DianaMobDetect {
         val texture: String? = profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value
 
         if (texture == null) return
-        val now = System.currentTimeMillis()
         if (texture == COCOON_TEXTURE && lastCocoon + COCOON_COOLDOWN_MS < now) {
             lastCocoon = now
             if (Diana.announceCocoon) {

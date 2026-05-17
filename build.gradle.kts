@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import net.fabricmc.loom.task.RemapJarTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     java
@@ -10,7 +11,6 @@ plugins {
     kotlin("plugin.serialization") version "2.3.21"
     id("gg.essential.loom") version "1.15.50"
     id("dev.deftu.gradle.multiversion")
-    id("dev.deftu.gradle.tools")
     id("dev.deftu.gradle.tools.bloom")
     id("com.google.devtools.ksp") version "2.3.7"
 }
@@ -114,6 +114,8 @@ repositories {
     maven("https://api.modrinth.com/maven")
 }
 
+val jarName = project.property("mod.name").toString() + "-" + project.property("mod.version").toString() + "+" + project.name
+
 afterEvaluate {
     val newBuildDestinationDirectory by lazy {
         rootProject.layout.buildDirectory.asFile.get().resolve("versions")
@@ -122,11 +124,13 @@ afterEvaluate {
     tasks {
         jar {
             destinationDirectory.set(newBuildDestinationDirectory)
+            archiveBaseName.set(jarName)
         }
 
         if ("26.1-fabric" != project.name) {
             named<RemapJarTask>("remapJar") {
                 destinationDirectory.set(newBuildDestinationDirectory)
+                archiveBaseName.set(jarName)
             }
         }
     }
@@ -135,6 +139,10 @@ afterEvaluate {
 tasks.withType<JavaCompile> {
   options.release = Integer.parseInt(versionedProperty("java.version"))
   options.encoding = StandardCharsets.UTF_8.toString()
+}
+
+tasks.withType<KotlinJvmCompile> {
+    compilerOptions.jvmTarget.set(JvmTarget.fromTarget(versionedProperty("java.version")))
 }
 
 tasks.withType<AbstractArchiveTask> {

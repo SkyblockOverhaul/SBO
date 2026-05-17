@@ -7,7 +7,7 @@ import java.util.UUID
 
 object Player {
     fun getLastPosition(): SboVec {
-        val player = mc.player ?: return SboVec(0.0, 0.0, 0.0)
+        val player = mc.player ?: return SboVec.ZERO
         return SboVec(player.x, player.y, player.z)
     }
 

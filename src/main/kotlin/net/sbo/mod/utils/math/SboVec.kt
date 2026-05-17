@@ -112,6 +112,8 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
     fun scale(scalar: Double): SboVec = SboVec(scalar * x, scalar * y, scalar * z)
 
     companion object {
+        val ZERO: SboVec = BlockPos.ZERO.toSboVec()
+
         fun fromArray(arr: List<Double>): SboVec {
             require(arr.size >= 3) { "Array must contain at least 3 elements for x, y, z." }
             return SboVec(arr[0], arr[1], arr[2])

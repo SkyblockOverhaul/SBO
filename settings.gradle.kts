@@ -6,19 +6,11 @@ pluginManagement {
         maven("https://maven.deftu.dev/releases")
         maven("https://maven.deftu.dev/snapshots")
 
-        maven("https://jitpack.io/")
         maven("https://maven.fabricmc.net")
         maven("https://maven.architectury.dev/")
         maven("https://maven.minecraftforge.net")
 
-        maven("https://maven.terraformersmc.com/")
         maven("https://repo.essential.gg/repository/maven-public")
-        maven("https://server.bbkr.space/artifactory/libs-release/")
-    }
-
-    plugins {
-        kotlin("jvm") version("2.3.21")
-        id("dev.deftu.gradle.multiversion-root") version("2.73.0")
     }
 }
 

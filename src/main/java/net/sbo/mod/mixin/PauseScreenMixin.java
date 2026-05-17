@@ -25,10 +25,10 @@ public abstract class PauseScreenMixin extends Screen {
         PauseScreen self = (PauseScreen)(Object)this;
 
         Button button = Button.builder(Component.literal("SBO"), b -> SBOKotlin.mc.schedule(() -> {
-            if (Guis.INSTANCE.getAchievementsGui$SBO() == null) {
-                Guis.INSTANCE.setAchievementsGui$SBO(new AchievementsGUI());
+            if (Guis.INSTANCE.getAchievementsGui() == null) {
+                Guis.INSTANCE.setAchievementsGui(new AchievementsGUI());
             }
-            UScreen.displayScreen(Guis.INSTANCE.getAchievementsGui$SBO());
+            UScreen.displayScreen(Guis.INSTANCE.getAchievementsGui());
         })).bounds(self.width / 2 + 104, self.height / 4 + 32, 30, 20).build();
 
         this.addRenderableWidget(button);

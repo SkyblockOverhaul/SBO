@@ -18,7 +18,7 @@ import net.minecraft.ChatFormatting
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
-    internal var achievementsGui: AchievementsGUI? = null
+    public var achievementsGui: AchievementsGUI? = null
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
