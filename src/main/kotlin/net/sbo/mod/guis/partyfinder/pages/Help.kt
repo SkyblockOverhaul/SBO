@@ -38,7 +38,7 @@ class Help(private val parent: PartyFinderGUI) {
                             "   ・ Enable private Messages!\n\n" +
                             "   ・ /settings -> Social Settings.\n\n" +
                             "・ Requirements don't update?\n\n" +
-                            "   ・ Wait 10mins and do /ct reload.\n\n" +
+                            "   ・ Wait 10mins and make sure you have all API enabled in SkyBlock settings.\n\n" +
                             "・ Text or Icons too small or too big?\n\n" +
                             "   ・ Open party finder settings\n\n" +
                             "・ Not seeing your party in the list?\n\n" +

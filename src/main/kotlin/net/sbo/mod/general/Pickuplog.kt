@@ -1,6 +1,6 @@
 package net.sbo.mod.general
 
-import net.minecraft.text.HoverEvent
+import net.minecraft.network.chat.HoverEvent
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.settings.categories.QOL
@@ -11,6 +11,8 @@ import net.sbo.mod.utils.data.Item
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.InventorySlotUpdateEvent
 import net.sbo.mod.utils.overlay.Overlay
+import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
+import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import java.util.regex.Pattern
@@ -26,7 +28,7 @@ object Pickuplog {
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
-    private val overlay: Overlay = Overlay("pickuplog", 5f, 5f, 1f, listOf("Chat screen", "Crafting"), OverlayExamples.pickupLogExample)
+    private val overlay: Overlay = Overlay("pickuplog", 5f, 5f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER), OverlayExamples.pickupLogExample)
 
     private val itemsShowAdded: MutableList<MutableMap<String, OverlayLineData>> = mutableListOf()
     private val itemsShowRemoved: MutableList<MutableMap<String, OverlayLineData>> = mutableListOf()

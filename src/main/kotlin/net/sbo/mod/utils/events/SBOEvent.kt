@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
-import net.minecraft.util.ActionResult
+import net.minecraft.world.InteractionResult
 import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
@@ -68,8 +68,9 @@ object SBOEvent {
          * Chat Message Event
          * Fired when a chat message is received.
          */
-        ClientReceiveMessageEvents.GAME.register { message, signed ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
             emit(ChatMessageEvent(message, signed))
+            true
         }
         /**
          * Chat Message Allow Event
@@ -110,33 +111,23 @@ object SBOEvent {
             /** GUI Mouse Click Event
              * Fired before a mouse click is processed in a GUI screen.
              */
-            //#if MC >= 1.21.9
-            //$$ ScreenMouseEvents.beforeMouseClick(screen).register { s, click ->
-            //$$    val mouseX = click.x
-            //$$    val mouseY = click.y
-            //$$    val button = click.buttonInfo().button
-            //#else
-            ScreenMouseEvents.beforeMouseClick(screen).register { s, mouseX, mouseY, button ->
-            //#endif
+            ScreenMouseEvents.beforeMouseClick(screen).register { s, click ->
+                val mouseX = click.x
+                val mouseY = click.y
+                val button = click.buttonInfo().button
                 emit(GuiMouseClickBefore(s, mouseX, mouseY, button))
             }
 
             /** GUI Mouse Click Event
              * Fired after a mouse click is processed in a GUI screen.
              */
-            //#if MC >= 1.21.9
-            //$$ ScreenMouseEvents.afterMouseClick(screen).register { s, click, consumed ->
-            //$$    val mouseX = click.x
-            //$$    val mouseY = click.y
-            //$$    val button = click.buttonInfo().button
-            //$$    emit(GuiMouseClickAfter(s, mouseX, mouseY, button))
-            //$$    consumed
-            //$$ }
-            //#else
-            ScreenMouseEvents.afterMouseClick(screen).register { s, mouseX, mouseY, button ->
+            ScreenMouseEvents.afterMouseClick(screen).register { s, click, consumed ->
+                val mouseX = click.x
+                val mouseY = click.y
+                val button = click.buttonInfo().button
                 emit(GuiMouseClickAfter(s, mouseX, mouseY, button))
+                consumed
             }
-            //#endif
         }
 
         /**
@@ -145,7 +136,7 @@ object SBOEvent {
          */
         AttackEntityCallback.EVENT.register { player, world, hand, entity, hitResult ->
             emit(EntitiyHitEvent(player, world, hand, entity, hitResult))
-            ActionResult.PASS
+            InteractionResult.PASS
         }
     }
 

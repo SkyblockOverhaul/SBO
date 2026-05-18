@@ -2,9 +2,9 @@ package net.sbo.mod.utils.game
 
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
-import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket
-import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket
-import net.minecraft.util.Util
+import net.minecraft.network.protocol.game.ClientboundLoginPacket
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket
+import net.minecraft.Util
 import kotlin.math.max
 
 object ServerStats {
@@ -19,8 +19,8 @@ object ServerStats {
     @SboEvent
     fun onPacketReceive(event: PacketReceiveEvent) {
         when (event.packet) {
-            is WorldTimeUpdateS2CPacket -> {
-                val currentTime = Util.getMeasuringTimeMs()
+            is ClientboundSetTimePacket -> {
+                val currentTime = Util.getMillis()
                 if (prevTime != 0L) {
                     val deltaTime = currentTime - prevTime
                     avargeTps = (20000f / max(1, deltaTime)).coerceIn(0f, 20f)
@@ -28,7 +28,7 @@ object ServerStats {
                 prevTime = currentTime
             }
 
-            is GameJoinS2CPacket -> {
+            is ClientboundLoginPacket -> {
                 avargeTps = 20f
                 prevTime = 0L
             }

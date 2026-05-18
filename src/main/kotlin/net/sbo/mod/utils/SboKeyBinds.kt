@@ -2,55 +2,49 @@ package net.sbo.mod.utils
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.util.InputUtil
+import net.minecraft.client.Minecraft
+import net.minecraft.client.KeyMapping
+import com.mojang.blaze3d.platform.InputConstants
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
-//#if MC >= 1.21.9
-//$$ import net.minecraft.util.Identifier
-//#endif
+import net.minecraft.resources.ResourceLocation
 
 object SboKeyBinds {
 
     private data class KeyPressState(var isHeldDown: Boolean = false, var lastActivation: Long = 0)
-    private val keyStates = mutableMapOf<KeyBinding, KeyPressState>()
-    //#if MC >= 1.21.9
-    //$$ private val SBO_CATEGORY = KeyBinding.Category(Identifier.of("sbo-kotlin", "keybinds"))
-    //#else
-    private val SBO_CATEGORY = "key.category.sbo-kotlin.keybinds"
-    //#endif
+    private val keyStates = mutableMapOf<KeyMapping, KeyPressState>()
+    private val SBO_CATEGORY = KeyMapping.Category(ResourceLocation.fromNamespaceAndPath("sbo-kotlin", "keybinds"))
 
     fun init() {
         register()
         registerKeyBindListener()
     }
 
-    val guessWarpKey: KeyBinding = KeyBinding(
+    val guessWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.guess_warp",
-        InputUtil.Type.KEYSYM,
+        InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val inqWarpKey: KeyBinding = KeyBinding(
+    val inqWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.inq_warp",
-        InputUtil.Type.KEYSYM,
+        InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val generalWarpKey: KeyBinding = KeyBinding(
+    val generalWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.general_warp",
-        InputUtil.Type.KEYSYM,
+        InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val sendCoordsKey: KeyBinding = KeyBinding(
+    val sendCoordsKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.send_coords",
-        InputUtil.Type.KEYSYM,
+        InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
@@ -62,14 +56,14 @@ object SboKeyBinds {
         KeyBindingHelper.registerKeyBinding(sendCoordsKey)
     }
 
-    private fun handlePressAction(keyBinding: KeyBinding, action: () -> Unit) {
+    private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {
         handlePressAction(keyBinding, 0L, action)
     }
 
-    private fun handlePressAction(keyBinding: KeyBinding, cooldownMillis: Long, action: () -> Unit) {
+    private fun handlePressAction(keyBinding: KeyMapping, cooldownMillis: Long, action: () -> Unit) {
         val state = keyStates.getOrPut(keyBinding) { KeyPressState() }
 
-        if (keyBinding.wasPressed()) {
+        if (keyBinding.consumeClick()) {
             val currentTime = System.currentTimeMillis()
             if (!state.isHeldDown && currentTime - state.lastActivation > cooldownMillis) {
                 action()
@@ -82,7 +76,7 @@ object SboKeyBinds {
     }
 
     fun registerKeyBindListener() {
-        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { client: MinecraftClient ->
+        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { client: Minecraft ->
             handlePressAction(guessWarpKey) {
                 WaypointManager.warpToGuess()
             }

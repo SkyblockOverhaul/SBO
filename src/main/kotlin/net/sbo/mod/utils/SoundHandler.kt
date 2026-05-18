@@ -1,14 +1,19 @@
 package net.sbo.mod.utils
 
+import net.sbo.mod.utils.data.SboDataObject
+
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.SharedConstants
-import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.resource.ResourceType
-import net.minecraft.sound.SoundEvent
-import net.minecraft.util.Identifier
+import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.server.packs.PackType
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.ResourceLocationException
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.settings.categories.Customization
 import java.io.File
 
 object SoundHandler {
@@ -16,7 +21,7 @@ object SoundHandler {
     private val generatedPackDir: File
 
     init {
-        val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), "SBO").apply { mkdirs() }
+        val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), SboDataObject.dataDir).apply { mkdirs() }
         soundDir = File(modConfigDir, "sounds").apply { mkdirs() }
 
         val packsDir = File(FabricLoader.getInstance().gameDir.toFile(), "resourcepacks").apply { mkdirs() }
@@ -38,13 +43,7 @@ object SoundHandler {
 
     private fun currentResourcePackFormat(): Int {
         return try {
-            //#if MC >= 1.21.9
-            //$$ SharedConstants.getGameVersion().packVersion(ResourceType.CLIENT_RESOURCES).major()
-            //#elseif MC >= 1.21.7
-            //$$ SharedConstants.getGameVersion().packVersion(ResourceType.CLIENT_RESOURCES)
-            //#else
-            SharedConstants.getGameVersion().getResourceVersion(ResourceType.CLIENT_RESOURCES)
-            //#endif
+            SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES).major()
         } catch (_: Throwable) {
             48
         }
@@ -86,34 +85,18 @@ object SoundHandler {
 
         val packFormat = currentResourcePackFormat()
         val packMcmeta = File(generatedPackDir, "pack.mcmeta")
-        //#if MC >= 1.21.9
-        //$$ packMcmeta.writeText(
-            //$$ """
-            //$$ {
-              //$$ "pack": {
-                //$$ "description": "SBO Custom Sounds",
-                //$$ "pack_format": $packFormat,
-                //$$ "min_format": 65,
-                //$$ "max_format": 999
-              //$$ }
-            //$$ }
-            //$$ """.trimIndent()
-        //$$ )
-        //#else
         packMcmeta.writeText(
             """
             {
               "pack": {
                 "description": "SBO Custom Sounds",
                 "pack_format": $packFormat,
-                "supported_formats": {
-                  "resource": [1, 999]
-                }
+                "min_format": 65,
+                "max_format": 999
               }
             }
             """.trimIndent()
         )
-        //#endif
         writePackIcon()
         println("[$MOD_ID] Generated dynamic soundpack at: ${generatedPackDir.absolutePath}")
     }
@@ -138,12 +121,23 @@ object SoundHandler {
     }
 
     fun playCustomSound(sound: String, volume: Float, pitch: Float = 1f) {
-        val packManager = mc.resourcePackManager
+        val packManager = mc.resourcePackRepository
         val packId = "file/SBO Custom Sounds Data Pack"
-        val id = Identifier.of(MOD_ID, sound.lowercase())
-        val event = SoundEvent.of(id)
 
-        if (!packManager.enabledIds.contains(packId) && sound.isNotEmpty()) Chat.chat("§6[SBO] §cCustom sound pack is not enabled. Please enable it in the resource packs menu.")
-        mc.soundManager.play(PositionedSoundInstance.master(event, pitch, volume))
+        val id = try {
+            ResourceLocation.fromNamespaceAndPath(MOD_ID, sound.lowercase())
+        } catch (invalidIdentifierError: ResourceLocationException) {
+            Customization.resetSoundCustomizationToDefaults()
+
+            Chat.chat("§6[SBO] §cYou had an error with your custom sound configuration, your custom sound settings will automatically reset to protect from crashes. More information might be available in your logs.")
+            logger.error("Error with the user supplied custom sound ID", invalidIdentifierError) // print full error with stacktrace to logs
+
+            return
+        }
+
+        val event = SoundEvent.createVariableRangeEvent(id)
+
+        if (!packManager.selectedIds.contains(packId) && sound.isNotEmpty()) Chat.chat("§6[SBO] §cCustom sound pack is not enabled. Please enable it in the resource packs menu.")
+        mc.soundManager.play(SimpleSoundInstance.forUI(event, pitch, volume))
     }
 }

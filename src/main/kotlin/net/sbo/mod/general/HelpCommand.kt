@@ -1,10 +1,10 @@
 package net.sbo.mod.general
 
-import net.minecraft.text.ClickEvent.RunCommand
-import net.minecraft.text.HoverEvent.ShowText
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.network.chat.ClickEvent.RunCommand
+import net.minecraft.network.chat.HoverEvent.ShowText
+import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
@@ -36,9 +36,9 @@ object HelpCommand {
 
     fun init() {
         Register.command("sbohelp") {
-            val headerText = Text.literal("[SBO] ")
-                .formatted(Formatting.GOLD)
-                .append(Text.literal("Commands:").formatted(Formatting.YELLOW))
+            val headerText = Component.literal("[SBO] ")
+                .withStyle(ChatFormatting.GOLD)
+                .append(Component.literal("Commands:").withStyle(ChatFormatting.YELLOW))
 
             Chat.chat(headerText)
 
@@ -48,17 +48,17 @@ object HelpCommand {
 
                 val commandToRun = if (cmd.contains(" ")) cmd.substringBefore(" ") else cmd
 
-                val fullLineText = Text.literal("> ").formatted(Formatting.GRAY)
-                    .append(Text.literal("/$cmd").formatted(Formatting.GREEN))
-                    .append(Text.literal(" - ").formatted(Formatting.GRAY))
-                    .append(Text.literal(description).formatted(Formatting.YELLOW))
+                val fullLineText = Component.literal("> ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal("/$cmd").withStyle(ChatFormatting.GREEN))
+                    .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(description).withStyle(ChatFormatting.YELLOW))
 
                 val styledText = fullLineText.setStyle(
                     Style.EMPTY
                         .withClickEvent(RunCommand("/$commandToRun"))
                         .withHoverEvent(
                             ShowText(
-                                Text.literal("Click to run /$commandToRun").formatted(Formatting.GRAY)
+                                Component.literal("Click to run /$commandToRun").withStyle(ChatFormatting.GRAY)
                             )
                         )
                 )

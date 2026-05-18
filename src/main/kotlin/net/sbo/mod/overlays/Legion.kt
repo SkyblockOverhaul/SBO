@@ -1,6 +1,6 @@
 package net.sbo.mod.overlays
 
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.settings.categories.General
@@ -21,8 +21,8 @@ object Legion {
         Register.onTick(20) {
             if (!General.legionOverlay || !World.isInSkyblock()) return@onTick
             val player = mc.player ?: return@onTick
-            val world = mc.world ?: return@onTick
-            val nearbyPlayers = world.players
+            val world = mc.level ?: return@onTick
+            val nearbyPlayers = world.players()
                 .filter { otherPlayer ->
                     otherPlayer != player &&
 
@@ -36,7 +36,7 @@ object Legion {
         }
     }
 
-    fun getPlayerPing(client: MinecraftClient, uuid: UUID): Int {
-        return client.networkHandler?.getPlayerListEntry(uuid)?.latency ?: 0
+    fun getPlayerPing(client: Minecraft, uuid: UUID): Int {
+        return client.connection?.getPlayerInfo(uuid)?.latency ?: 0
     }
 }

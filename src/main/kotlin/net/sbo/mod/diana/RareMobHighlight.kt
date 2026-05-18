@@ -1,7 +1,7 @@
 package net.sbo.mod.diana
 
-import net.minecraft.client.world.ClientWorld
-import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.settings.categories.Diana
@@ -21,18 +21,18 @@ import java.awt.Color
  * and settings, and updates their glow state accordingly.
  */
 object RareMobHighlight {
-    private val rareMobs = mutableSetOf<PlayerEntity>()
+    private val rareMobs = mutableSetOf<Player>()
 
     fun init() {
         Register.onTick(4) {
-            val world = mc.world ?: return@onTick
+            val world = mc.level ?: return@onTick
             world.checkMobGlow()
         }
     }
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
-        if (event.entity is PlayerEntity) {
+        if (event.entity is Player) {
             if (!Diana.HighlightRareMobs) return
             if (event.entity.uuid.version() == 4) return
             if (RareDianaMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) }) {
@@ -43,7 +43,7 @@ object RareMobHighlight {
 
     @SboEvent
     fun onEntityUnload(event: EntityUnloadEvent) {
-        if (event.entity is PlayerEntity) {
+        if (event.entity is Player) {
             if (!Diana.HighlightRareMobs) return
             if (rareMobs.contains(event.entity)) {
                 event.entity.isSboGlowing = false
@@ -52,23 +52,19 @@ object RareMobHighlight {
         }
     }
 
-    private fun ClientWorld.checkMobGlow() {
+    private fun ClientLevel.checkMobGlow() {
         val iterator = rareMobs.iterator()
         while (iterator.hasNext()) {
             val mob = iterator.next()
 
-            //#if MC >= 1.21.9
-            //$$ val entityWorld = mob.entityWorld
-            //#else
-            val entityWorld = mob.world
-            //#endif
+            val entityWorld = mob.level()
             if (!mob.isAlive || entityWorld != this) {
                 mob.isSboGlowing = false
                 iterator.remove()
                 continue
             }
 
-            if (Diana.HighlightRareMobs && mc.player?.canSee(mob) == true && !mob.isInvisible) {
+            if (Diana.HighlightRareMobs && mc.player?.hasLineOfSight(mob) == true && !mob.isInvisible) {
                 mob.isSboGlowing = true
                 mob.setSboGlowColor(Color(Diana.HighlightColor))
             } else {

@@ -2,7 +2,7 @@ package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.utils.Helper
@@ -87,6 +87,7 @@ object Diana : CategoryKt("Diana") {
     init {
         separator {
             this.title = "Diana Warp"
+            this.description = "You must configure the warp keys from vanilla Minecraft settings, under (ESC) -> Options -> Controls -> Key Binds... scroll till you find SBO - Keybinds and configure it from there."
         }
     }
 

@@ -10,11 +10,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import java.awt.Color
 
-//#if MC < 1.21.9
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-//#else
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-//#endif
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 
 /**
  * @class Waypoint

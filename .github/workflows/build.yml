@@ -4,12 +4,12 @@
 # against bad commits.
 
 name: build
-permissions:
-  pull-requests: write
 on: [pull_request, push]
 
 jobs:
   build:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
@@ -17,22 +17,19 @@ jobs:
       - name: setup jdk
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'microsoft'
       - name: setup gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
-          cache-read-only: false
-          add-job-summary-as-pr-comment: 'on-failure'
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
           build-scan-publish: true
           build-scan-terms-of-use-url: 'https://gradle.com/terms-of-service'
           build-scan-terms-of-use-agree: 'yes'
-      - name: make gradle wrapper executable
-        run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build --scan
       - name: capture build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Artifacts
           path: build/versions/

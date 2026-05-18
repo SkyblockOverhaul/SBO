@@ -3,12 +3,12 @@ package net.sbo.mod.overlays
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import net.minecraft.util.Formatting.*
+import net.minecraft.ChatFormatting.*
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.SboDataObject.sboData
 
 object DianaStats {
-    val overlay = Overlay("Diana Stats", 10f, 10f, 1f, listOf("Chat screen")).setCondition { Diana.statsTracker && (Helper.checkDiana() || Helper.hasSpade)}
+    val overlay = Overlay("Diana Stats", 10f, 10f, 1f).setCondition { Diana.statsTracker && (Helper.checkDiana() || Helper.hasSpade)}
 
     fun init() {
         overlay.init()

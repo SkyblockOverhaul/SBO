@@ -1,5 +1,5 @@
 package net.sbo.mod.diana.burrows
 
-import net.minecraft.network.packet.s2c.play.ParticleS2CPacket
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 
-internal data class ParticleCheck(val typeCheck: (packet: ParticleS2CPacket) -> Boolean)
+internal data class ParticleCheck(val typeCheck: (packet: ClientboundLevelParticlesPacket) -> Boolean)

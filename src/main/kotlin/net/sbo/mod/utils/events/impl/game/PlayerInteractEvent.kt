@@ -1,8 +1,8 @@
 package net.sbo.mod.utils.events.impl.game
 
-import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.world.World
-import net.minecraft.util.math.BlockPos
+import net.minecraft.client.player.LocalPlayer
+import net.minecraft.world.level.Level
+import net.minecraft.core.BlockPos
 
 /**
  * Called when the player interacts with the world.
@@ -15,7 +15,7 @@ import net.minecraft.util.math.BlockPos
 class PlayerInteractEvent(
     val action: String,
     val pos: BlockPos?,
-    val player: ClientPlayerEntity,
-    val world: World,
+    val player: LocalPlayer,
+    val world: Level,
     var isCanceled: Boolean = false
 )

@@ -2,11 +2,11 @@ package net.sbo.mod.utils.overlay
 
 import net.sbo.mod.SBOKotlin.mc
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.Font
 
-import net.minecraft.text.OrderedText
-import net.minecraft.text.Text
+import net.minecraft.util.FormattedCharSequence
+import net.minecraft.network.chat.Component
 
 import java.awt.Color
 
@@ -15,7 +15,7 @@ class OverlayTextLine(
     var shadow: Boolean = true,
     var linebreak: Boolean = true
 ) {
-    private var orderedText: OrderedText = Text.of(text).asOrderedText() // to avoid nullable OrderedText?
+    private var orderedText: FormattedCharSequence = Component.nullToEmpty(text).visualOrderText // to avoid nullable OrderedText?
 
     private var cachedWidth: Int = -1 // filler value used to differenate non-init vs actual width
         private get() {
@@ -25,7 +25,7 @@ class OverlayTextLine(
                 return field
             }
 
-            val width = mc.textRenderer!!.getWidth(orderedText)
+            val width = mc.font.width(orderedText)
             field = width
 
             return field
@@ -33,16 +33,23 @@ class OverlayTextLine(
 
     var text: String = text
         set(value) {
-            field = value
+            val oldValue = field
+            val newValue = value
 
-            // update cached values when text changes
-            orderedText = Text.of(value).asOrderedText()
-            cachedWidth = mc.textRenderer?.getWidth(orderedText) ?: -1 // textRenderer is null at init time
+            // update cached values only when the actual text changes
+            if (newValue != oldValue) {
+                field = newValue
+
+                orderedText = Component.nullToEmpty(value).visualOrderText
+
+                @Suppress("UNNECESSARY_SAFE_CALL") // the warning is wrong; game crashes with NPE if we remove the safe call - font is definitely nullable in this specific code path.
+                cachedWidth = mc.font?.width(orderedText) ?: -1 // textRenderer is null at init time
+            }
         }
 
     var mouseEnterAction: (() -> Unit)? = null
     var mouseLeaveAction: (() -> Unit)? = null
-    var hoverAction: ((drawContext: DrawContext, textRenderer: TextRenderer) -> Unit)? = null
+    var hoverAction: ((drawContext: GuiGraphics, textRenderer: Font) -> Unit)? = null
     var clickAction: (() -> Unit)? = null
     var isHovered: Boolean = false
     var x: Int = 0
@@ -85,7 +92,7 @@ class OverlayTextLine(
      * so it should be lightweight to avoid performance issues.
      * @param action The action to execute when the mouse hovers over the text line.
      */
-    fun onHover(action: (drawContext: DrawContext, textRenderer: TextRenderer) -> Unit): OverlayTextLine {
+    fun onHover(action: (drawContext: GuiGraphics, textRenderer: Font) -> Unit): OverlayTextLine {
         hoverAction = action
         return this
     }
@@ -107,25 +114,25 @@ class OverlayTextLine(
         mouseLeaveAction?.invoke()
     }
 
-    private fun hover(drawContext: DrawContext, textRenderer: TextRenderer) {
+    private fun hover(drawContext: GuiGraphics, textRenderer: Font) {
         if (isHovered) hoverAction?.invoke(drawContext, textRenderer)
     }
 
-    fun lineClicked(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: TextRenderer, scale: Float) {
+    fun lineClicked(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float) {
         if (text.isEmpty() || clickAction == null) return
         if (isMouseOver(mouseX, mouseY, x, y, textRenderer, scale)) {
             clickAction?.invoke()
         }
     }
 
-    private fun isMouseOver(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: TextRenderer, scale: Float): Boolean {
+    private fun isMouseOver(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float): Boolean {
         val textWidth = cachedWidth * scale
-        val textHeight = (textRenderer.fontHeight + 1) * scale - 1
+        val textHeight = (textRenderer.lineHeight + 1) * scale - 1
 
         return mouseX >= x && mouseX <= x + textWidth && mouseY >= y && mouseY <= y + textHeight
     }
 
-    fun updateMouseInteraction(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: TextRenderer, scale: Float, drawContext: DrawContext) {
+    fun updateMouseInteraction(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float, drawContext: GuiGraphics) {
         if (text.isEmpty()) return
         if (mouseEnterAction == null && mouseLeaveAction == null && hoverAction == null) {
             return
@@ -145,18 +152,18 @@ class OverlayTextLine(
         }
     }
 
-    fun draw(drawContext: DrawContext, x: Int, y: Int, textRenderer: TextRenderer) {
+    fun draw(drawContext: GuiGraphics, x: Int, y: Int, textRenderer: Font) {
         if (text.isEmpty()) return
 
         this.x = x
         this.y = y
         this.width = cachedWidth
-        this.height = textRenderer.fontHeight
+        this.height = textRenderer.lineHeight
 
         if (renderDebugBox) {
             drawContext.fill(x, y, x + width, y + height + 1, Color(128, 128, 128, 130).rgb)
         }
 
-        drawContext.drawText(textRenderer, orderedText, x, y, -1, shadow)
+        drawContext.drawString(textRenderer, orderedText, x, y, -1, shadow)
     }
 }
