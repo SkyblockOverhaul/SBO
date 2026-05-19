@@ -3,6 +3,7 @@ package net.sbo.mod.utils.game
 import net.sbo.mod.SBOKotlin
 import net.minecraft.world.scores.*
 import java.lang.String.CASE_INSENSITIVE_ORDER
+import net.sbo.mod.utils.events.Register
 
 object ScoreBoard {
     private val COMPARATOR: Comparator<PlayerScoreEntry> = Comparator.comparing { obj: PlayerScoreEntry -> obj.value() }
@@ -11,6 +12,26 @@ object ScoreBoard {
 
     private val FORMATTING_REGEX: Regex = "§[^a-f0-9]".toRegex()
 
+    private var dirty = true
+
+    private var lastLines: List<String> = emptyList()
+    private var lastTitle: String = "Unknown Scoreboard" // dummy
+
+    init {
+        Register.onTick(1) { dirty = true }
+    }
+
+    fun updateScoreboardIfDirty() {
+        if (!dirty) {
+            return
+        }
+
+        lastLines = fetchLines()
+        lastTitle = fetchTitle()
+
+        dirty = false
+    }
+
     /**
      * Retrieves the lines from the scoreboard sidebar.
      * It returns a list of formatted strings representing the scoreboard entries.
@@ -18,6 +39,11 @@ object ScoreBoard {
      * @return A list of formatted strings representing the scoreboard entries.
      */
     fun getLines(): List<String> {
+        updateScoreboardIfDirty()
+        return lastLines
+    }
+
+    private fun fetchLines(): List<String> {
         val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return emptyList()
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return emptyList()
 
@@ -38,6 +64,11 @@ object ScoreBoard {
     }
 
     fun getTitle(): String {
+        updateScoreboardIfDirty()
+        return lastTitle
+    }
+
+    private fun fetchTitle(): String {
         val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return "Unknown Scoreboard"
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
         return objective.displayName.string

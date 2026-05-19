@@ -22,8 +22,10 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.utils.events.Register
 
 object DianaMobs {
+    private var dirty = false
     val overlay = Overlay("Diana Mobs", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
     val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {
@@ -40,6 +42,7 @@ object DianaMobs {
     fun init() {
         overlay.init()
         updateLines()
+        Register.onTick(1) { flushUpdateLines() }
     }
 
     @SboEvent
@@ -52,7 +55,7 @@ object DianaMobs {
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
-            updateLines(true)
+            updateLines()
         }
     }
 
@@ -77,7 +80,15 @@ object DianaMobs {
         return line
     }
 
-    fun updateLines(isCraftingOpen: Boolean = false) {
+    fun updateLines() {
+        dirty = true
+    }
+
+    fun flushUpdateLines() {
+        if (!dirty) {
+            return
+        }
+
         val lines = mutableListOf<OverlayTextLine>()
         val type = Diana.mobTracker
         val tracker = when (type) {
@@ -106,7 +117,7 @@ object DianaMobs {
             BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
         } else 0.0
 
-        if (isCraftingOpen || isCraftingScreenOpen()) {
+        if (isCraftingScreenOpen()) {
             lines.add(changeView)
         }
 
@@ -130,5 +141,7 @@ object DianaMobs {
             )
         )
         overlay.setLines(lines)
+
+        dirty = false
     }
 }

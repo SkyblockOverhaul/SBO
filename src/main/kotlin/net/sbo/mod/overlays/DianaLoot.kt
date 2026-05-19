@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit
 
 object DianaLoot {
     private var isSellTypeHovered = false
+    private var dirty = false
     val timerLine: OverlayTextLine = OverlayTextLine("")
     val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
@@ -103,6 +104,7 @@ object DianaLoot {
         updateLines()
         updateTimerText()
         Register.onTick(1) { updateTimerText() }
+        Register.onTick(1) { flushUpdateLines() }
     }
 
     @SboEvent
@@ -115,7 +117,7 @@ object DianaLoot {
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
-            updateLines(isCraftingOpen = true)
+            updateLines()
         }
     }
 
@@ -192,7 +194,15 @@ object DianaLoot {
         return line
     }
 
-    fun updateLines(isCraftingOpen: Boolean = false) {
+    fun updateLines() {
+        dirty = true
+    }
+
+    fun flushUpdateLines() {
+        if (!dirty) {
+            return
+        }
+
         val lines = mutableListOf<OverlayTextLine>()
         val type = Diana.lootTracker
         val tracker = getDianaTracker(type) ?: run {
@@ -200,11 +210,15 @@ object DianaLoot {
             return
         }
 
+        val isCraftingOpen = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
+
         updateControlLines(lines, isCraftingOpen)
         lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Loot $GRAY($YELLOW${Helper.toTitleCase(type.toString())}$GRAY)"))
         lines.addAll(generateLootLines(tracker))
         lines.addAll(generateStatisticsLines(tracker, type, isCraftingOpen))
         overlay.setLines(lines)
+
+        dirty = false
     }
 
     private fun getDianaTracker(type: Diana.Tracker): DianaTracker? {

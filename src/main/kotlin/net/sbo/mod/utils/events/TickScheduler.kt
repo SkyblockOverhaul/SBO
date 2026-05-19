@@ -1,9 +1,10 @@
 package net.sbo.mod.utils.events
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import java.util.concurrent.CopyOnWriteArrayList
 
 object TickScheduler {
-    val tasks = mutableListOf<ScheduledTask>()
+    val tasks = CopyOnWriteArrayList<ScheduledTask>()
 
     init {
         ClientTickEvents.END_CLIENT_TICK.register {
