@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.http
 
+import net.sbo.mod.SBOKotlin
 import java.net.HttpURLConnection
 import java.net.URI
 import java.util.concurrent.CompletableFuture
@@ -17,7 +18,7 @@ object Http {
     val jsonParser = Json { ignoreUnknownKeys = true }
     private const val CONNECT_TIMEOUT = 10000
     private const val READ_TIMEOUT = 10000
-    private val USER_AGENT = "SBO-Kotlin-Mod/" + SharedConstants.getCurrentVersion().name()
+    private val USER_AGENT = "SBO-Kotlin-Mod/" + SBOKotlin.version + "+" + SharedConstants.getCurrentVersion().name()
 
     /**
      * Sends an asynchronous HTTP GET request.
