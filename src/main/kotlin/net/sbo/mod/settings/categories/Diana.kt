@@ -127,7 +127,7 @@ object Diana : CategoryKt("Diana") {
         button {
             title = "Open Past Events"
             text = "Open Past Events"
-            description = "Opens the Past Events menu, allowing you to see your saved trackers for previous Diana events."
+            description = "Opens the Past Events menu, allowing you to see your saved trackers for previous Diana events. You can also open it by typing the /sbopastevents command."
             onClick {
                 mc.schedule {
                     UScreen.displayScreen(PastEventsGui())
