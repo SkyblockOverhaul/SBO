@@ -9,7 +9,9 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
 import java.awt.Color
-
+import gg.essential.universal.UScreen
+import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.PastEventsGui
 
 object Diana : CategoryKt("Diana") {
     enum class ShareList {
@@ -118,6 +120,19 @@ object Diana : CategoryKt("Diana") {
     init {
         separator {
             this.title = "Diana Tracker"
+        }
+    }
+
+    init {
+        button {
+            title = "Open Past Events"
+            text = "Open Past Events"
+            description = "Opens the Past Events menu, allowing you to see your saved trackers for previous Diana events."
+            onClick {
+                mc.schedule {
+                    UScreen.displayScreen(PastEventsGui())
+                }
+            }
         }
     }
 
