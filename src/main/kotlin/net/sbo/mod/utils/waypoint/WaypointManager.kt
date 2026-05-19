@@ -27,6 +27,7 @@ import kotlin.math.roundToInt
 import kotlin.text.get
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
+import net.sbo.mod.utils.game.World
 
 object WaypointManager {
     var guessWp: Waypoint? = null
@@ -438,7 +439,7 @@ object WaypointManager {
 
     var tryWarp: Boolean = false
     fun executeWarpCommand(warp: String) {
-        if (!checkDiana()) return
+        if (World.getWorld() != "Hub") return
         if (Diana.warpDelay > 0 && System.currentTimeMillis() - PreciseGuessBurrow.lastGuessTime < Diana.warpDelay) return
         if (warp.isNotEmpty() && !tryWarp) {
             tryWarp = true
