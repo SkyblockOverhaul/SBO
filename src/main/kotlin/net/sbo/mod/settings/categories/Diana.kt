@@ -155,7 +155,7 @@ object Diana : CategoryKt("Diana") {
     }
 
     var lootTracker by ObservableEntry(
-        enum(Tracker.OFF) {
+        enum(Tracker.EVENT) {
             this.name = Literal("Loot Tracker")
             this.description = Literal(
                 "Shows your Diana loot, /sboguis to move the overlay\n" +
@@ -237,7 +237,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces relic/shelmet/plushie/remedies in chat")
     }
 
-    var lootAnnouncerScreen by boolean(false) {
+    var lootAnnouncerScreen by boolean(true) {
         this.name = Literal("Loot Screen Announcer")
         this.description = Literal("Announces chimera/stick/relic on screen")
     }
@@ -254,9 +254,9 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
-    var lootAnnouncerParty by boolean(false) {
+    var lootAnnouncerParty by boolean(true) {
         this.name = Literal("Loot Party Announcer")
-        this.description = Literal("Announces chimera/stick/relic and Shelmet/Plushie/Remedies (only when dropped from Inquisitor) in party chat")
+        this.description = Literal("Announces chimera/wool/stinger/food in party chat")
     }
 
     var chimMessageBool by boolean(false) {
@@ -363,7 +363,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("The width of the lines drawn for Diana waypoints")
     }
 
-    var removeGuessDistance by int(0) {
+    var removeGuessDistance by int(8) {
         this.range = 0..20
         this.slider = true
         this.name = Literal("Remove Guess When Close")
@@ -448,12 +448,12 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Sends a text on King spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance")
     }
 
-    var announceCocoon by boolean(false) {
+    var announceCocoon by boolean(true) {
         this.name = Literal("Send Text On Cocoon")
         this.description = Literal("Sends a text on cocoon")
     }
 
-    var cocoonTitle by boolean(false) {
+    var cocoonTitle by boolean(true) {
         this.name = Literal("Show Title On Cocoon")
         this.description = Literal("Shows a title on cocoon")
     }
@@ -463,7 +463,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Sends a title alert when a Rare Mob is below the set HP value in Million (0 to disable)")
     }
 
-    var noShurikenOverlay by boolean(false) {
+    var noShurikenOverlay by boolean(true) {
         this.name = Literal("No Shuriken Overlay")
         this.description = Literal("Shows an overlay when the RareMob has no shuriken applied /sboguis to move it")
     }
