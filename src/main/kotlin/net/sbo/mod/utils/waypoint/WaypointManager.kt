@@ -15,7 +15,6 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.checkDiana
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
