@@ -3,7 +3,6 @@ package net.sbo.mod.settings.categories
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 
 object QOL : CategoryKt("QOL") {
-
     var pickuplogOverlay by boolean(false) {
         this.name = Literal("Pickup Log Overlay")
         this.description = Literal("Displays a pickup log in an overlay like sba. /sboguis to move the overlay")

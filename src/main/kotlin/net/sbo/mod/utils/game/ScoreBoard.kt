@@ -12,24 +12,17 @@ object ScoreBoard {
 
     private val FORMATTING_REGEX: Regex = "§[^a-f0-9]".toRegex()
 
-    private var dirty = true
+    private var linesDirty = true
+    private var titleDirty = true
 
     private var lastLines: List<String> = emptyList()
     private var lastTitle: String = "Unknown Scoreboard" // dummy
 
     init {
-        Register.onTick(1) { dirty = true }
-    }
-
-    fun updateScoreboardIfDirty() {
-        if (!dirty) {
-            return
+        Register.onTick(1) {
+            linesDirty = true
+            titleDirty = true
         }
-
-        lastLines = fetchLines()
-        lastTitle = fetchTitle()
-
-        dirty = false
     }
 
     /**
@@ -39,7 +32,11 @@ object ScoreBoard {
      * @return A list of formatted strings representing the scoreboard entries.
      */
     fun getLines(): List<String> {
-        updateScoreboardIfDirty()
+        if (linesDirty) {
+            lastLines = fetchLines()
+            linesDirty = false
+        }
+
         return lastLines
     }
 
@@ -64,13 +61,18 @@ object ScoreBoard {
     }
 
     fun getTitle(): String {
-        updateScoreboardIfDirty()
+        if (titleDirty) {
+            lastTitle = fetchTitle()
+            titleDirty = false
+        }
+
         return lastTitle
     }
 
     private fun fetchTitle(): String {
         val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return "Unknown Scoreboard"
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
+
         return objective.displayName.string
     }
 }
