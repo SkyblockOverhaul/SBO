@@ -33,7 +33,7 @@ object PartyCommands : CategoryKt("Party Commands") {
         this.description = Literal("Sends your time in party chat (!time)")
     }
 
-    var tpsCommand by boolean(false) {
+    var tpsCommand by boolean(true) {
         this.name = Literal("Check Tps")
         this.description = Literal("Sends the server tps in party chat (!tps)")
     }

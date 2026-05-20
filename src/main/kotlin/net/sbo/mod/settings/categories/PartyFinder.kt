@@ -9,7 +9,7 @@ object PartyFinder : CategoryKt("PartyFinder") {
         this.description = Literal("Auto invites players that send you a join request and meet the party requirements")
     }
 
-    var autoRequeue by boolean(false) {
+    var autoRequeue by boolean(true) {
         this.name = Literal("Auto Requeue")
         this.description = Literal("Automatically requeues the party after a member leaves")
     }
