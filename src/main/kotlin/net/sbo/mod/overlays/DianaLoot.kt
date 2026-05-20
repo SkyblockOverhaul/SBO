@@ -62,12 +62,16 @@ object DianaLoot {
         hoverText = "$RED${UNDERLINE}Reset Session",
         defaultText = "${RED}Reset Session",
         onClick = {
-            SboTimerManager.timerSession.reset()
-            SBOConfigBundle.dianaTrackerSessionData.reset().save()
-            updateLines()
-            DianaMobs.updateLines()
+            DianaLoot.resetSession()
         }
     )
+
+    fun resetSession() {
+        SboTimerManager.timerSession.reset()
+        SBOConfigBundle.dianaTrackerSessionData.reset().save()
+        updateLines()
+        DianaMobs.updateLines()
+    }
 
     private val LOOT_ITEMS = listOf<LootItemData>(
         LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED),

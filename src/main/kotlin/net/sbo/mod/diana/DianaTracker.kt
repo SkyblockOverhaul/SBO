@@ -49,10 +49,8 @@ object DianaTracker {
 
     fun init() {
         Register.command("sboresetsession") {
-            dianaTrackerSession.reset().save()
+            DianaLoot.resetSession()
             Chat.chat("§6[SBO] §aDiana session tracker has been reset.")
-            DianaMobs.updateLines()
-            DianaLoot.updateLines()
         }
 
         Register.command("sboresetmayortracker") {
