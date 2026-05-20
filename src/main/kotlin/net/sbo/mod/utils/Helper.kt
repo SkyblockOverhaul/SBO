@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
@@ -61,7 +62,7 @@ object Helper {
     private var hasTrackedManti: Boolean = false
 
     private var prevInv = mutableMapOf<String, Item>()
-    private var priceDataAh: Map<String, Long> = emptyMap()
+    private var priceDataAh: Map<String, Double> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
 
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
@@ -534,20 +535,51 @@ object Helper {
         return 0
     }
 
+    // a set of relevant items so that we don't populate priceDataAh with all items in the game even whose we would never read the price of - this avoids using more memory than necessary to store the price data on the map
+    private val relevantItems = setOf(
+        "HILT_OF_REVELATIONS",
+        "WASHED_UP_SOUVENIR",
+        "DWARF_TURTLE_SHELMET",
+        "CRETAN_URN",
+        "ANTIQUE_REMEDIES",
+        "CROCHET_TIGER_PLUSHIE",
+        "CROWN_OF_GREED",
+        "DYE_MYTHOLOGICAL",
+        "MINOS_RELIC",
+        "MANTI_CORE",
+        "SHIMMERING_WOOL",
+        "MYTH_THE_FISH"
+    )
+
     fun updateItemPriceInfo() {
-        Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
-            .toJson<List<Map<String, Map<String, Long>>>> { json ->
-                priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
+        Http.sendGetRequest("https://lb.tricked.pro/lowestbins")
+            .toJson<Map<String, Double>> { json ->
+                // this only runs once every 5 minutes so cost of filtering is irrelevant, we also use a set so contains should be O(1)
+                priceDataAh = json.asSequence().filter { (key, _) -> key in relevantItems }.associate { (key, value) -> key to value}
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                if (priceDataAh.isEmpty()) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
+                }
             }
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse> {
                 priceDataBazaar = it
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                if (priceDataBazaar == null) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
+                }
             }
     }
 
@@ -574,7 +606,7 @@ object Helper {
             return (bazaarPrice * amount).roundToLong()
         }
 
-        val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
+        val ahPrice = priceDataAh[id] ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
         val bestUnitPrice = if (npcPrice > ahPrice) npcPrice else ahPrice
