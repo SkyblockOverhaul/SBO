@@ -206,6 +206,10 @@ object WaypointManager {
      * @param context The world render context.
      */
     fun renderAllWaypoints(context: WorldRenderContext) {
+        if (World.getWorld() != "Hub") {
+            return
+        }
+
         this.forEachWaypoint { waypoint ->
             waypoint.render(context)
         }
