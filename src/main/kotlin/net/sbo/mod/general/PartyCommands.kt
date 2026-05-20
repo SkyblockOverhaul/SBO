@@ -1,5 +1,6 @@
 package net.sbo.mod.general
 
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.settings.categories.PartyCommands
 import net.sbo.mod.utils.chat.Chat
@@ -446,6 +447,11 @@ object PartyCommands {
                         // Also send in party chat in case someone is curious what diana party commands SBO has without having SBO
                         val commands = helpCommands.joinToString(",")
                         Chat.command("pc Available diana party commands: $commands")
+                    }
+                }
+                "!version" -> {
+                    sleep(200) {
+                        Chat.command("pc SBO version: ${SBOKotlin.version} | Minecraft version: ${SBOKotlin.mcVersion}")
                     }
                 }
             }
