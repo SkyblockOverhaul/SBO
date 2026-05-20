@@ -458,6 +458,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a title on cocoon")
     }
 
+    var legacyCocoonDetection by boolean(false) {
+        this.name = Literal("Legacy Cocoon Detection")
+        this.description = Literal("Uses egg sac player head texture to detect cocoon instead of the new cocoon chat message when enabled. Only enable if chat detection does not work.")
+    }
+
     var hpAlert by double(0.0) {
         this.name = Literal("HP Alert")
         this.description = Literal("Sends a title alert when a Rare Mob is below the set HP value in Million (0 to disable)")
