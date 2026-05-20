@@ -15,6 +15,7 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.checkDiana
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.World
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -206,6 +207,10 @@ object WaypointManager {
      * @param context The world render context.
      */
     fun renderAllWaypoints(context: WorldRenderContext) {
+        if (World.getWorld() != "Hub") {
+            return
+        }
+
         this.forEachWaypoint { waypoint ->
             waypoint.render(context)
         }
