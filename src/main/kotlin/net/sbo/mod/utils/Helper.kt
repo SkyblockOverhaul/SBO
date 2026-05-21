@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
@@ -540,14 +541,28 @@ object Helper {
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                if (priceDataAh.isEmpty()) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
+                }
             }
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse> {
                 priceDataBazaar = it
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                if (priceDataBazaar == null) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
+                }
             }
     }
 
