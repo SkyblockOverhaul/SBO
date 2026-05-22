@@ -10,7 +10,6 @@ import net.sbo.mod.utils.events.Register
 
 object DianaStats : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Stats", 10f, 10f, 1f).setCondition { Diana.statsTracker && (Helper.checkDiana() || Helper.hasSpade)}
-    private var dirty = false
 
     fun init() {
         overlay.init()

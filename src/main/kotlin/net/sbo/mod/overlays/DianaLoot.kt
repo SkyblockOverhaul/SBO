@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit
 
 object DianaLoot : DirtyFlushableOverlay() {
     private var isSellTypeHovered = false
-    private var dirty = false
     val timerLine: OverlayTextLine = OverlayTextLine("")
     override val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }

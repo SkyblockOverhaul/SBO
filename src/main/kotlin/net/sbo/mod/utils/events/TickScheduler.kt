@@ -10,7 +10,9 @@ object TickScheduler {
         ClientTickEvents.END_CLIENT_TICK.register {
             var remaining = TickScheduler.tasks.size
 
-            while (0 < remaining--) {
+            while (remaining > 0) {
+                remaining--
+
                 val task = TickScheduler.tasks.poll()
                     ?: break
 
