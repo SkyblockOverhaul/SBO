@@ -97,12 +97,12 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
     private fun toggleOverlay(data: DianaTracker, title: String, showTotalLine: Boolean = false) {
         if (overlayOutline == null) {
             overlayOutline = UIRoundedRectangle(12f).constrain {
-                width = 324.pixels; height = 364.pixels; x = CenterConstraint(); y = 20.percent
+                width = 324.pixels; height = 434.pixels; x = CenterConstraint(); y = CenterConstraint()
             } childOf window
             overlayOutline!!.setColor(Color.WHITE)
 
             overlayContent = UIRoundedRectangle(10f).constrain {
-                width = 320.pixels; height = 360.pixels; x = CenterConstraint(); y = CenterConstraint()
+                width = 320.pixels; height = 430.pixels; x = CenterConstraint(); y = CenterConstraint()
             } childOf overlayOutline!!
             overlayContent!!.setColor(Color(25,25,40,230))
         }
@@ -113,7 +113,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
                 .setColor(Color.CYAN) childOf overlayContent!!
 
             val blocksContainer = UIBlock().constrain {
-                x = CenterConstraint(); y = 50.pixels; width = 96.percent; height = 240.pixels
+                x = CenterConstraint(); y = 50.pixels; width = 96.percent; height = 350.pixels
             }.setColor(Color(0,0,0,0)) childOf overlayContent!!
 
             val lineHeight = 14
