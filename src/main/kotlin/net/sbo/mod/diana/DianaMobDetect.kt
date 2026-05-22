@@ -285,7 +285,7 @@ object DianaMobDetect {
                 Diana.announceInqText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceInqText[0], "inq")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
                     }
                 }
             }
@@ -294,7 +294,7 @@ object DianaMobDetect {
                 Diana.announceSphinxText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
                     }
                 }
             }
@@ -303,7 +303,7 @@ object DianaMobDetect {
                 Diana.announceMantiText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
                     }
                 }
             }
@@ -312,7 +312,7 @@ object DianaMobDetect {
                 Diana.announceKingText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceKingText[0], "king")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
                     }
                 }
             }

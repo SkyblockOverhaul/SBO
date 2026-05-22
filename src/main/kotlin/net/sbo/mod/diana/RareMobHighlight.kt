@@ -12,6 +12,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import java.awt.Color
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Highlights rare Diana mobs by making them glow.
@@ -21,7 +22,7 @@ import java.awt.Color
  * and settings, and updates their glow state accordingly.
  */
 object RareMobHighlight {
-    private val rareMobs = mutableSetOf<Player>()
+    private val rareMobs = ConcurrentHashMap.newKeySet<Player>()
 
     fun init() {
         Register.onTick(4) {
@@ -53,18 +54,19 @@ object RareMobHighlight {
     }
 
     private fun ClientLevel.checkMobGlow() {
+        val player = mc.player
         val iterator = rareMobs.iterator()
         while (iterator.hasNext()) {
             val mob = iterator.next()
 
-            val entityWorld = mob.level()
-            if (!mob.isAlive || entityWorld != this) {
+            if (!mob.isAlive || mob.level() != this) {
                 mob.isSboGlowing = false
                 iterator.remove()
                 continue
             }
 
-            if (Diana.HighlightRareMobs && mc.player?.hasLineOfSight(mob) == true && !mob.isInvisible) {
+            val hasLineOfSight = player != null && player.hasLineOfSight(mob)
+            if (Diana.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
                 mob.isSboGlowing = true
                 mob.setSboGlowColor(Color(Diana.HighlightColor))
             } else {
