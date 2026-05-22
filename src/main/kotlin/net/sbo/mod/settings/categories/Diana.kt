@@ -206,6 +206,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, /sboguis to move the overlay")
     }
 
+    var resetSessionOnGameRestart by boolean(false) {
+        this.name = Literal("Reset Session on Game Restart")
+        this.description = Literal("Resets the Diana session tracker when you restart Minecraft")
+    }
+
     var magicFindTracker by boolean(false) {
         this.name = Literal("Magic Find Tracker")
         this.description = Literal("Shows your highest magic find for sticks and chimeras (only after you dropped it once), /sboguis to move the overlay")
@@ -252,6 +257,34 @@ object Diana : CategoryKt("Diana") {
                 lootAnnouncerScreen = true
             }
         }
+    }
+
+    init {
+        separator {
+            this.title = "Title Timings"
+            this.description = "Customize fade-in, display and fade-out ticks for titles"
+        }
+    }
+
+    var rareTitleFadeIn by int(0) {
+        this.name = Literal("Rare Title Fade In")
+        this.description = Literal("Fade-in (ticks) for rare mob titles")
+        this.range = 0..100
+        this.slider = true
+    }
+
+    var rareTitleTime by int(90) {
+        this.name = Literal("Rare Title Time")
+        this.description = Literal("Display time (ticks) for rare mob titles")
+        this.range = 0..100
+        this.slider = true
+    }
+
+    var rareTitleFadeOut by int(20) {
+        this.name = Literal("Rare Title Fade Out")
+        this.description = Literal("Fade-out (ticks) for rare mob titles")
+        this.range = 0..100
+        this.slider = true
     }
 
     var lootAnnouncerParty by boolean(true) {

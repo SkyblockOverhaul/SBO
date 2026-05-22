@@ -24,6 +24,8 @@ import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.events.annotations.SboEvent
+import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.game.World.isInSkyblock
 import net.sbo.mod.utils.data.DianaTracker
@@ -107,6 +109,15 @@ object DianaTracker {
         trackRngDropsWithChat()
         trackShardsWithChat()
         trackMythTheFish()
+    }
+
+    @SboEvent
+    fun onGameClose(event: GameCloseEvent) {
+        if (!Diana.resetSessionOnGameRestart) return
+        dianaTrackerSession.reset().save()
+        DianaMobs.updateLines()
+        DianaLoot.updateLines()
+        SboTimerManager.timerSession.reset()
     }
 
     fun trackWithPickuplog(item: Item) {
