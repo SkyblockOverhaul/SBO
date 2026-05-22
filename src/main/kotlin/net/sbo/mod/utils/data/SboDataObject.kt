@@ -276,7 +276,8 @@ object SboDataObject {
 
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
-        saveAndBackupAllDataThreaded(dataDir)
+        // Game is closing, if we do not block till save is complete, the game might close before save is complete, and so we might do a partial save which corrupts and resets stuff on the next launch.
+        saveAndBackupAllDataThreaded(dataDir, true)
     }
 
     fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
@@ -682,12 +683,16 @@ object SboDataObject {
         }
     }
 
-    fun saveAndBackupAllDataThreaded(modName: String) {
-        DATA_SAVER_EXECUTOR.execute {
+    fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
+        val future = DATA_SAVER_EXECUTOR.submit {
             SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
             SBOKotlin.logger.info("All data saved successfully.")
             createBackup(modName)
+        }
+
+        if (block) {
+            future.get()
         }
     }
 
