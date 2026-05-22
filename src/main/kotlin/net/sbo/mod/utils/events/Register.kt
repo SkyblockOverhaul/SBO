@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.ChatHandler
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
@@ -75,9 +75,9 @@ object Register {
     fun onChatMessage(
         regex: Regex,
         noFormatting: Boolean = false,
-        action: (message: Text, matchResult: MatchResult) -> Unit
+        action: (message: Component, matchResult: MatchResult) -> Unit
     ) {
-        ClientReceiveMessageEvents.GAME.register { message, _ ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, _ ->
             var text = message.formattedString()
 
             if (noFormatting) text = text.removeFormatting()
@@ -85,6 +85,8 @@ object Register {
             regex.find(text)?.let { result ->
                 action(message, result)
             }
+
+            true
         }
     }
 
@@ -98,7 +100,7 @@ object Register {
      */
     fun onChatMessageCancable(
         regex: Pattern,
-        action: (message: Text, matchResult: Matcher) -> Boolean
+        action: (message: Component, matchResult: Matcher) -> Boolean
     ) {
         ChatHandler.registerHandler(regex, action)
     }

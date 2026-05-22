@@ -10,7 +10,7 @@
 
 ## What it does
 
-[SBO] SkyblockOverhaul is a feature‐rich Hypixel Skyblock for Minecraft fabric-1.21.5 designed primarily for the Diana event.
+[SBO] SkyblockOverhaul is a feature‐rich Hypixel Skyblock for Minecraft Fabric 1.21 and 26.1 designed primarily for the Diana event.
 
 ---
 
@@ -78,7 +78,7 @@ Before you begin, you need to have a few things installed:
 
 **1. Install Dependencies**
 * Download the **Fabric API** and **Fabric Language Kotlin** `.jar` files from their respective Modrinth pages.
-* Make sure to download the versions that match your Minecraft version (`1.21.5`).
+* Make sure to download the versions that match your Minecraft version (like `1.21.11`).
 
 **2. Install SkyblockOverhaul**
 

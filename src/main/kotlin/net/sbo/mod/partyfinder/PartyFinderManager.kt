@@ -176,7 +176,7 @@ object PartyFinderManager {
         }
 
         HypixelModApi.onError { packet ->
-            if (packet.id == PartyInfoS2CPacket.ID) {
+            if (packet.type() == PartyInfoS2CPacket.ID) {
                 creatingParty
                 updateBool = false
             }
@@ -251,7 +251,7 @@ object PartyFinderManager {
 
                     Chat.chat("§6[SBO] §eParty created successfully! Time taken: ${timeTaken}ms")
 
-                    if (isInParty) Chat.command("pc [SBO] Party now in queue.")
+                    if (isInParty) Chat.pc("[SBO] Party now in queue.")
                 } else {
                     val errorMessage = response.error ?: "Unknown error"
                     Chat.chat("§6[SBO] §4Failed to create party: ${errorMessage.replace("&", "§")}")

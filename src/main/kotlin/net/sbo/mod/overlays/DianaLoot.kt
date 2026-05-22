@@ -2,8 +2,11 @@ package net.sbo.mod.overlays
 
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.overlay.Overlay
+import net.sbo.mod.utils.overlay.isCraftingScreenOpen
+import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
+import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import net.minecraft.util.Formatting.*
+import net.minecraft.ChatFormatting.*
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
@@ -22,7 +25,7 @@ import java.util.concurrent.TimeUnit
 object DianaLoot {
     private var isSellTypeHovered = false
     val timerLine: OverlayTextLine = OverlayTextLine("")
-    val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf("Chat screen", "Crafting"))
+    val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
 
     val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
@@ -59,15 +62,20 @@ object DianaLoot {
         hoverText = "$RED${UNDERLINE}Reset Session",
         defaultText = "${RED}Reset Session",
         onClick = {
-            SboTimerManager.timerSession.reset()
-            SBOConfigBundle.dianaTrackerSessionData.reset().save()
-            updateLines()
-            DianaMobs.updateLines()
+            DianaLoot.resetSession()
         }
     )
 
+    fun resetSession() {
+        SboTimerManager.timerSession.reset()
+        SBOConfigBundle.dianaTrackerSessionData.reset().save()
+        updateLines()
+        DianaMobs.updateLines()
+    }
+
     private val LOOT_ITEMS = listOf<LootItemData>(
         LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED),
+        LootItemData("MYTH_THE_FISH", "Myth the Fish", RED),
         LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS"),
         LootItemData("MANTI_CORE", "Manti-core", RED, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
         LootItemData("KING_MINOS_SHARD", "King Minos Shard", RED, isRarerDrop = true, dropMobId = "KING_MINOS"),
@@ -102,23 +110,19 @@ object DianaLoot {
         Register.onTick(1) { updateTimerText() }
     }
 
-    private const val CRAFTING_GUI_TITLE = "Crafting"
-
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
-        if (event.screen.title.string == CRAFTING_GUI_TITLE) {
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
             overlay.removeLines(listOf(changeView, delimiter, changeSellType, resetSession))
         }
     }
 
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
-        if (event.screen.title.string == CRAFTING_GUI_TITLE) {
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
             updateLines(isCraftingOpen = true)
         }
     }
-
-    private fun isCraftingScreenOpen(): Boolean = mc.currentScreen?.title?.string == CRAFTING_GUI_TITLE
 
     fun hideLine(name: String) {
         if (!isCraftingScreenOpen()) return
@@ -140,7 +144,7 @@ object DianaLoot {
         val line = OverlayTextLine(formattedText).onClick { hideLine(itemName) }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(mc.currentScreen?.title?.string != CRAFTING_GUI_TITLE && SBOConfigBundle.sboData.hideTrackerLines.contains(itemName))
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && SBOConfigBundle.sboData.hideTrackerLines.contains(itemName))
                 meetsZeroValueCondition && meetsManualHideCondition
             }
         if (SBOConfigBundle.sboData.hideTrackerLines.contains(itemName)) {
@@ -172,13 +176,13 @@ object DianaLoot {
         val line = OverlayTextLine(combinedText).onClick { hideLine(itemNameBase) }
             .setCondition {
                 val meetsZeroValueCondition = totalAmount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(mc.currentScreen?.title?.string != CRAFTING_GUI_TITLE && SBOConfigBundle.sboData.hideTrackerLines.contains(itemNameBase))
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && SBOConfigBundle.sboData.hideTrackerLines.contains(itemNameBase))
                 meetsZeroValueCondition && meetsManualHideCondition
             }
             .onHover { drawContext, textRenderer ->
-                val scaleFactor = mc.window.scaleFactor
-                val mouseX = mc.mouse.x / scaleFactor
-                val mouseY = mc.mouse.y / scaleFactor
+                val scaleFactor = mc.window.guiScale
+                val mouseX = mc.mouseHandler.xpos() / scaleFactor
+                val mouseY = mc.mouseHandler.ypos() / scaleFactor
 
                 RenderUtils2D.drawHoveringString(
                     drawContext,
@@ -288,9 +292,9 @@ object DianaLoot {
     private fun createCoinLine(tracker: DianaTracker): OverlayTextLine {
         return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}")
             .onHover { drawContext, textRenderer ->
-                val scaleFactor = mc.window.scaleFactor
-                val mouseX = mc.mouse.x / scaleFactor
-                val mouseY = mc.mouse.y / scaleFactor
+                val scaleFactor = mc.window.guiScale
+                val mouseX = mc.mouseHandler.xpos() / scaleFactor
+                val mouseY = mc.mouseHandler.ypos() / scaleFactor
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$YELLOW${BOLD}Coin Break Down:\n" +
                             "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
@@ -304,9 +308,9 @@ object DianaLoot {
         val pphText = if (profitPerHr == "NaN" || profitPerHr == "0.0") "" else "$GRAY[$AQUA$profitPerHr$GRAY/${AQUA}hr$GRAY]"
         return OverlayTextLine("${YELLOW}Total Profit: $AQUA${Helper.formatNumber(totalProfitValue)} $pphText")
             .onHover { drawContext, textRenderer ->
-                val scaleFactor = mc.window.scaleFactor
-                val mouseX = mc.mouse.x / scaleFactor
-                val mouseY = mc.mouse.y / scaleFactor
+                val scaleFactor = mc.window.guiScale
+                val mouseX = mc.mouseHandler.xpos() / scaleFactor
+                val mouseY = mc.mouseHandler.ypos() / scaleFactor
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$GOLD$profitPerHr coins/hr\n" +
                             "$GOLD$profitPerBurrow coins/burrow",
@@ -347,7 +351,6 @@ object DianaLoot {
             Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
             Diana.Tracker.EVENT -> SboTimerManager.timerMayor
             Diana.Tracker.SESSION -> SboTimerManager.timerSession
-            else -> return
         }
 
         val formattedTime = Helper.formatTime(tracker.items.TIME)

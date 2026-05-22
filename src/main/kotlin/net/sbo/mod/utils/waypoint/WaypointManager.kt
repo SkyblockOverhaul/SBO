@@ -1,8 +1,8 @@
 package net.sbo.mod.utils.waypoint
 
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
-import net.minecraft.client.world.ClientWorld
-import net.minecraft.util.math.BlockPos
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.core.BlockPos
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.render.WaypointRenderer
@@ -25,13 +25,9 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.iterator
 import kotlin.math.roundToInt
 import kotlin.text.get
-//#if MC > 1.21.9
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
-//#else
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
-//#endif
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
+import net.sbo.mod.utils.game.World
 
 object WaypointManager {
     var guessWp: Waypoint? = null
@@ -56,9 +52,9 @@ object WaypointManager {
         Register.command("sbosendping") { args ->
             val playerPos = Player.getLastPosition()
             if (args.isNotEmpty()) {
-                Chat.command("pc x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | ${args.joinToString(" ")}")
+                Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | ${args.joinToString(" ")}")
             } else
-                Chat.command("pc x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()}")
+                Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()}")
         }
 
         Register.onChatMessage(
@@ -66,7 +62,7 @@ object WaypointManager {
         ) { message, match ->
             val channel = match.groups["channel"]?.value ?: "Unknown"
             val player = match.groups["playerName"]?.value ?: "Unknown"
-            val world = SBOKotlin.mc.world ?: return@onChatMessage
+            val world = SBOKotlin.mc.level ?: return@onChatMessage
 
             val x = match.groups["x"]?.value?.toIntOrNull() ?: 0
             var y = match.groups["y"]?.value?.toIntOrNull() ?: 0
@@ -180,11 +176,7 @@ object WaypointManager {
             guessWp?.format(rareWp, closestBurrow.second, shouldLegacyHaveLine)
         }
 
-        //#if MC >= 1.21.9
-        //$$ WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
-        //#else
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(WaypointRenderer)
-        //#endif
+        WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
     }
 
     @SboEvent
@@ -214,6 +206,10 @@ object WaypointManager {
      * @param context The world render context.
      */
     fun renderAllWaypoints(context: WorldRenderContext) {
+        if (World.getWorld() != "Hub") {
+            return
+        }
+
         this.forEachWaypoint { waypoint ->
             waypoint.render(context)
         }
@@ -447,7 +443,7 @@ object WaypointManager {
 
     var tryWarp: Boolean = false
     fun executeWarpCommand(warp: String) {
-        if (!checkDiana()) return
+        if (World.getWorld() != "Hub" || !Helper.hasSpade) return
         if (Diana.warpDelay > 0 && System.currentTimeMillis() - PreciseGuessBurrow.lastGuessTime < Diana.warpDelay) return
         if (warp.isNotEmpty() && !tryWarp) {
             tryWarp = true
@@ -458,10 +454,10 @@ object WaypointManager {
         }
     }
 
-    fun findBlock(world: ClientWorld, x: Int, y: Int, z: Int): Int {
+    fun findBlock(world: ClientLevel, x: Int, y: Int, z: Int): Int {
         val originalY = y
         var currentY = y
-        while (currentY > world.bottomY) {
+        while (currentY > world.minY) {
             val pos = BlockPos(x, currentY, z)
             val blockState = world.getBlockState(pos)
             if (!blockState.isAir) {

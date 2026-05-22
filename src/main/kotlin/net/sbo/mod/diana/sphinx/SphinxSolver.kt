@@ -1,7 +1,7 @@
 package net.sbo.mod.diana.sphinx
 
-import net.minecraft.client.gui.screen.ChatScreen
-import net.minecraft.text.Text
+import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.network.chat.Component
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -93,7 +93,7 @@ object SphinxSolver {
         }
     }
 
-    private fun Text.createStyledAnswerText(isCorrect: Boolean): Text {
+    private fun Component.createStyledAnswerText(isCorrect: Boolean): Component {
         val newColorCode = if (isCorrect) "§a§n" else "§c"
         val newString = this.formattedString().replace("§f", newColorCode)
         val originalHoverEvent = this.getShowTextHoverEvent()

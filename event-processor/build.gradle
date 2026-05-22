@@ -1,6 +1,16 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'com.google.devtools.ksp' version "2.3.3"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+tasks.withType(KotlinJvmCompile).configureEach {
+    compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
 }
 
 repositories {
@@ -9,6 +19,5 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation "com.google.devtools.ksp:symbol-processing-api:2.3.3"
+    implementation "com.google.devtools.ksp:symbol-processing-api:2.3.7"
 }

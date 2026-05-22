@@ -1,10 +1,11 @@
 package net.sbo.mod.utils
 
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.LoreComponent
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.ItemLore
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
@@ -19,6 +20,7 @@ import net.sbo.mod.utils.data.DianaMobsData
 import net.sbo.mod.utils.data.npcSellValueMap
 import net.sbo.mod.utils.data.HypixelBazaarResponse
 import net.sbo.mod.utils.data.Item
+import net.sbo.mod.utils.data.SboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
@@ -77,7 +79,7 @@ object Helper {
         }
 
         Register.onTick(20) { // maybe better way to register this
-            hasSpade = playerHasItem("ANCESTRAL_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("DEIFIC_SPADE")
+            hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
         }
 
         Register.onTick(20 * 60 * 5) {
@@ -88,7 +90,7 @@ object Helper {
 
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
-        val dist = event.entity.distanceTo(mc.player)
+        val dist = event.entity.distanceTo(mc.player!!)
         when {
             event.name.contains("Minos Inquisitor") -> {
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
@@ -258,7 +260,7 @@ object Helper {
         return this.replace(COLOR_REGEX, "")
     }
 
-    fun Text.removeFormatting(): String {
+    fun Component.removeFormatting(): String {
         return this.string.replace(COLOR_REGEX, "")
     }
 
@@ -337,8 +339,8 @@ object Helper {
     }
 
     fun getCursorItemStack(): ItemStack? {
-        val handler = mc.player?.currentScreenHandler ?: return null
-        return handler.cursorStack
+        val handler = mc.player?.containerMenu ?: return null
+        return handler.carried
     }
 
     fun readPlayerInv(): MutableMap<String, Item> {
@@ -352,10 +354,10 @@ object Helper {
             val stack: ItemStack = inventory[slot]
 
             if (!stack.isEmpty) {
-                val customData = stack.get(DataComponentTypes.CUSTOM_DATA)
+                val customData = stack.get(DataComponents.CUSTOM_DATA)
                 var id: String
                 var item: Item
-                val nbt = customData?.copyNbt()
+                val nbt = customData?.copyTag()
                 val sbId = ItemUtils.getSBID(customData, nbt)
                 // print for debugging the lore lines
                 var isChimera = false
@@ -420,29 +422,28 @@ object Helper {
         val inv = Player.getPlayerInventory()
         for (i in inv.indices) {
             val stack = inv[i]
-            if (!stack.isEmpty && ItemUtils.getSBID(stack.get(DataComponentTypes.CUSTOM_DATA)) == sbId) {
+            if (!stack.isEmpty && ItemUtils.getSBID(stack.get(DataComponents.CUSTOM_DATA)) == sbId) {
                 return true
             }
         }
         return false
     }
 
-    fun checkDiana(): Boolean {
-        val diana = (Debug.itsAlwaysDiana || ((Mayor.perks.contains("Mythological Ritual") || Mayor.mayor == "Jerry" || Mayor.mayor == "Aura") && hasSpade && World.getWorld() == "Hub"))
-        return diana
-    }
+    private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
+
+    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && Helper.hasMythologicalRitualActive() && World.getWorld() == "Hub"
 
     fun getGuiName(): String {
         return currentScreen?.title?.string ?: ""
     }
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
-        mc.inGameHud.apply {
-            setTitleTicks(fadeIn, time, fadeOut)
+        mc.gui.apply {
+            setTimes(fadeIn, time, fadeOut)
             if (title != null)
-                setTitle(net.minecraft.text.Text.of(title))
+                setTitle(net.minecraft.network.chat.Component.nullToEmpty(title))
             if (subtitle != null)
-                setSubtitle(net.minecraft.text.Text.of(subtitle))
+                setSubtitle(net.minecraft.network.chat.Component.nullToEmpty(subtitle))
         }
     }
 
@@ -486,6 +487,40 @@ object Helper {
         }
     }
 
+    fun getSpawnMessage(message: String, mob: String): String {
+        val mobs = SboDataObject.dianaTrackerMayor.mobs
+        val items = SboDataObject.dianaTrackerMayor.items
+        val sboData = SboDataObject.sboData
+        val msg = message
+
+        val kingPercent = calcPercentOne(items, mobs, "KING_MINOS")
+        val manticorePercent = calcPercentOne(items, mobs, "MANTICORE")
+        val inqPercent = calcPercentOne(items, mobs, "MINOS_INQUISITOR")
+        val sphinxPercent = calcPercentOne(items, mobs, "SPHINX")
+
+        when (mob.lowercase()) {
+            "minos inquisitor", "inq" -> {
+                val since = sboData.mobsSinceInq
+                return msg.replace("{since}", since.toString()).replace("{chance}", inqPercent)
+            }
+
+            "king minos", "king" -> {
+                val since = sboData.mobsSinceKing
+                return msg.replace("{since}", since.toString()).replace("{chance}", kingPercent)
+            }
+
+            "sphinx" -> {
+                val since = sboData.mobsSinceSphinx
+                return msg.replace("{since}", since.toString()).replace("{chance}", sphinxPercent)
+            }
+
+            "manticore", "manti" -> {
+                val since = sboData.mobsSinceManti
+                return msg.replace("{since}", since.toString()).replace("{chance}", manticorePercent)
+            }
+            else -> return ""
+        }
+    }
 
     fun toTitleCase(input: String): String {
         return input.lowercase().replaceFirstChar { char -> char.uppercase() }
@@ -506,14 +541,28 @@ object Helper {
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                if (priceDataAh.isEmpty()) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
+                }
             }
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse> {
                 priceDataBazaar = it
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                if (priceDataBazaar == null) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
+                }
             }
     }
 
@@ -610,7 +659,7 @@ object Helper {
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0
 
-        val linesList: List<Text> = stack.get(DataComponentTypes.LORE)?.lines ?: listOf()
+        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: listOf()
 
         for (lineText in linesList) {
             val line = lineText.string

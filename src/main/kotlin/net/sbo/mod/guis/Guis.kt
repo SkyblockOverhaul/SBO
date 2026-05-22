@@ -10,33 +10,48 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
+import net.minecraft.client.gui.components.toasts.SystemToast
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
+import net.minecraft.ChatFormatting
 
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
-    internal var achievementsGui: AchievementsGUI? = null
+    public var achievementsGui: AchievementsGUI? = null
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
     private const val UPDATE_INTERVAL = 300_000L // 5 minutes in ms
 
+    fun openSboPf(calledFromGUI: Boolean = false) {
+        if (!World.isInSkyblock()) {
+            if (!calledFromGUI) {
+                Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
+                return
+            }
+            mc.getToastManager().addToast(
+                SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("SBO").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.GOLD)), Component.literal("Join skyblock before opening Party Finder!").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.RED))))
+            return
+        }
+        mc.schedule {
+            if (partyFinderGui == null) {
+                partyFinderGui = PartyFinderGUI()
+            }
+            UScreen.displayScreen(partyFinderGui!!)
+            SBOEvent.emit(PartyFinderOpenEvent())
+        }
+    }
+
     fun register() {
         Register.command("sbopf") {
-            if (!World.isInSkyblock()) {
-                Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
-                return@command
-            }
-            mc.send {
-                if (partyFinderGui == null) {
-                    partyFinderGui = PartyFinderGUI()
-                }
-                UScreen.displayScreen(partyFinderGui!!)
-                SBOEvent.emit(PartyFinderOpenEvent())
-            }
+            openSboPf()
         }
 
         Register.command("sboachievements") {
-            mc.send {
+            mc.schedule {
                 if (achievementsGui == null) {
                     achievementsGui = AchievementsGUI()
                 }
@@ -45,7 +60,7 @@ object Guis {
         }
 
         Register.command("sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
-            mc.send {
+            mc.schedule {
                 if (pastEventsGui == null) {
                     pastEventsGui = PastEventsGui()
                 }

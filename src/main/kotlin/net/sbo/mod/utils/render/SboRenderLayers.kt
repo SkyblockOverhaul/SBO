@@ -1,136 +1,181 @@
 package net.sbo.mod.utils.render
 
-import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.RenderPhase
-import net.minecraft.client.render.block.entity.BeaconBlockEntityRenderer
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.util.TriState
 import java.util.OptionalDouble
+//#if MC > 1.21.10
+//$$ import net.minecraft.client.renderer.rendertype.RenderSetup
+//$$ import net.minecraft.client.renderer.rendertype.LayeringTransform
+//#else
+import net.minecraft.client.renderer.RenderStateShard
+//#endif
 
 object SboRenderLayers {
     @JvmField
-    val FILLED_BOX: RenderLayer.MultiPhase = RenderLayer.of(
+    val FILLED_BOX: RenderType = RenderType.create(
         "sbo/filled_box",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(RenderPipelines.DEBUG_FILLED_BOX)
+        //$$     .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
+        //#else
+        RenderType.TRANSIENT_BUFFER_SIZE,
         false,
         true,
         RenderPipelines.DEBUG_FILLED_BOX,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .build(false)
+        RenderType.CompositeState.builder()
+            .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
+            .createCompositeState(false)
+        //#endif
     )
 
     @JvmField
-    val FILLED_BOX_THROUGH_WALLS: RenderLayer.MultiPhase = RenderLayer.of(
+    val FILLED_BOX_THROUGH_WALLS: RenderType = RenderType.create(
         "sbo/filled_box_through_walls",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(SboRenderPipelines.FILLED_BOX_THROUGH_WALLS)
+        //$$     .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
+        //#else
+        RenderType.TRANSIENT_BUFFER_SIZE,
         false,
         true,
         SboRenderPipelines.FILLED_BOX_THROUGH_WALLS,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .build(false)
+        RenderType.CompositeState.builder()
+            .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
+            .createCompositeState(false)
+        //#endif
     )
 
     @JvmField
-    val LINES: RenderLayer.MultiPhase = RenderLayer.of(
+    val LINES: RenderType = RenderType.create(
         "lines",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(SboRenderPipelines.LINES)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
+        //#else
+        RenderType.TRANSIENT_BUFFER_SIZE,
         false,
         true,
         SboRenderPipelines.LINES,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .lineWidth(RenderPhase.LineWidth(OptionalDouble.empty()))
-            .build(false)
+        RenderType.CompositeState.builder()
+            .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
+            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
+            .createCompositeState(false)
+        //#endif
     )
 
     @JvmField
-    val LINES_THROUGH_WALLS: RenderLayer.MultiPhase = RenderLayer.of(
+    val LINES_THROUGH_WALLS: RenderType = RenderType.create(
         "sbo/lines_through_walls",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(SboRenderPipelines.LINES_THROUGH_WALLS)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
+        //#else
+        RenderType.TRANSIENT_BUFFER_SIZE,
         false,
         true,
         SboRenderPipelines.LINES_THROUGH_WALLS,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .lineWidth(RenderPhase.LineWidth(OptionalDouble.empty()))
-            .build(false)
+        RenderType.CompositeState.builder()
+            .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
+            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
+            .createCompositeState(false)
+        //#endif
     )
 
-    val BEACON_BEAM_OPAQUE: RenderLayer = RenderLayer.of(
+    val BEACON_BEAM_OPAQUE: RenderType = RenderType.create(
         "beacon_beam_opaque",
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_OPAQUE)
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .createRenderSetup()
+        //#else
         1536,
         false,
         true,
         SboRenderPipelines.BEACON_BEAM_OPAQUE,
-        RenderLayer.MultiPhaseParameters.builder()
-            .texture(
-                RenderPhase.Texture(
-                    BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
+        RenderType.CompositeState.builder()
+            .setTextureState(
+                RenderStateShard.TextureStateShard(
+                    BeaconRenderer.BEAM_LOCATION,
                     false
                 )
             )
-            .build(false)
+            .createCompositeState(false)
+        //#endif
     )
 
-    val BEACON_BEAM_OPAQUE_THROUGH_WALLS: RenderLayer = RenderLayer.of(
+    val BEACON_BEAM_OPAQUE_THROUGH_WALLS: RenderType = RenderType.create(
         "beacon_beam_opaque_through_walls",
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_OPAQUE_THROUGH_WALLS)
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .createRenderSetup()
+        //#else
         1536,
         false,
         true,
         SboRenderPipelines.BEACON_BEAM_OPAQUE_THROUGH_WALLS,
-        RenderLayer.MultiPhaseParameters.builder()
-            .texture(
-                RenderPhase.Texture(
-                    BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
+        RenderType.CompositeState.builder()
+            .setTextureState(
+                RenderStateShard.TextureStateShard(
+                    BeaconRenderer.BEAM_LOCATION,
                     false
                 )
             )
-            .build(false)
+            .createCompositeState(false)
+        //#endif
     )
 
-    val BEACON_BEAM_TRANSLUCENT: RenderLayer = RenderLayer.of(
+    val BEACON_BEAM_TRANSLUCENT: RenderType = RenderType.create(
         "beacon_beam_translucent",
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_TRANSLUCENT)
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
+        //#else
         1536,
         false,
         true,
         SboRenderPipelines.BEACON_BEAM_TRANSLUCENT,
-        RenderLayer.MultiPhaseParameters.builder()
-            .texture(
-                RenderPhase.Texture(
-                    BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
+        RenderType.CompositeState.builder()
+            .setTextureState(
+                RenderStateShard.TextureStateShard(
+                    BeaconRenderer.BEAM_LOCATION,
                     false
                 )
             )
-            .build(false)
+            .createCompositeState(false)
+        //#endif
     )
 
-    val BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS: RenderLayer = RenderLayer.of(
+    val BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS: RenderType = RenderType.create(
         "devonian_beacon_beam_translucent_esp",
+        //#if MC > 1.21.10
+        //$$ RenderSetup.builder(SboRenderPipelines.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS)
+        //$$     .withTexture("Sampler0", BeaconRenderer.BEAM_LOCATION)
+        //$$     .sortOnUpload()
+        //$$     .createRenderSetup()
+        //#else
         1536,
         false,
         true,
         SboRenderPipelines.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS,
-        RenderLayer.MultiPhaseParameters.builder()
-            .texture(
-                RenderPhase.Texture(
-                    BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    //#if MC < 1.21.7
-                    TriState.FALSE,
-                    //#endif
+        RenderType.CompositeState.builder()
+            .setTextureState(
+                RenderStateShard.TextureStateShard(
+                    BeaconRenderer.BEAM_LOCATION,
                     false
                 )
             )
-            .build(false)
+            .createCompositeState(false)
+        //#endif
     )
 }

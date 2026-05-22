@@ -51,10 +51,8 @@ object DianaTracker {
 
     fun init() {
         Register.command("sboresetsession") {
-            dianaTrackerSession.reset().save()
+            DianaLoot.resetSession()
             Chat.chat("§6[SBO] §aDiana session tracker has been reset.")
-            DianaMobs.updateLines()
-            DianaLoot.updateLines()
         }
 
         Register.command("sboresetmayortracker") {
@@ -676,7 +674,7 @@ object DianaTracker {
 
         if (replaceDropMessage) {
             if (customMsg != null) Chat.chat(customMsg)
-            Chat.command("pc $msg")
+            Chat.pc("$msg")
         } else {
             lootAnnouncerBuffer.add(msg)
             if (!lootAnnouncerBool) {
@@ -693,7 +691,7 @@ object DianaTracker {
         if (lootAnnouncerBuffer.isEmpty()) return
         val msg = lootAnnouncerBuffer.joinToString(", ")
         lootAnnouncerBuffer.clear()
-        Chat.command("pc [SBO] RARE DROP! $msg")
+        Chat.pc("[SBO] RARE DROP! $msg")
     }
 
     fun getB2BMessage(itemName: String, streak: Int): String? { // not used yet
@@ -797,7 +795,7 @@ object DianaTracker {
 
     fun trackMythTheFish() {
         Register.onChatMessage(Regex("^(.*?) §eYou just dug out(.*?)$")) { message, matchResult ->
-            if (matchResult.groupValues[1].contains("Myth the Fish")) {
+            if (matchResult.groupValues[2].contains("Myth the Fish")) {
                 onRareDropFromMob("Myth the Fish", false, true, false, 0)
                 unlockAchievement(119)
             }

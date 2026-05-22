@@ -1,15 +1,16 @@
 package net.sbo.mod.diana
 
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.ProfileComponent
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.decoration.ArmorStandEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.ResolvableProfile
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.decoration.ArmorStand
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.getSecondsPassed
 import net.sbo.mod.utils.Helper.lastCocoon
 import net.sbo.mod.utils.Helper.lastInqDeath
@@ -18,7 +19,7 @@ import net.sbo.mod.utils.Helper.lastMantiDeath
 import net.sbo.mod.utils.Helper.lastSphinxDeath
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
-import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.Player as SboPlayer
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
@@ -44,13 +45,13 @@ object DianaMobDetect {
     private val COCOON_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1ODMxMjMyODkwNTMsInByb2ZpbGVJZCI6IjkxZjA0ZmU5MGYzNjQzYjU4ZjIwZTMzNzVmODZkMzllIiwicHJvZmlsZU5hbWUiOiJTdG9ybVN0b3JteSIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNlYjBlZDhmYzIyNzJiM2QzZDgyMDY3NmQ1MmEzOGU3YjJlOGRhOGM2ODdhMjMzZTBkYWJhYTE2YzBlOTZkZiJ9fX0="
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
-    private val unconfirmed = mutableMapOf<Int, Pair<ArmorStandEntity, Long>>()
-    private val tracked = mutableMapOf<Int, ArmorStandEntity>()
+    private val unconfirmed = mutableMapOf<Int, Pair<ArmorStand, Long>>()
+    private val tracked = mutableMapOf<Int, ArmorStand>()
     private val defeated = mutableSetOf<Int>()
     private val warned = mutableSetOf<Int>()
 
-    private val mobHpOverlay: Overlay = Overlay("mythosMobHp", 10f, 10f, 1f, listOf("Chat screen"), OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
-    private val noShurikenOverlay: Overlay = Overlay("noShuriken", 10f, 10f, 3f, listOf("Chat screen"), OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
+    private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, scale = 1f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
+    private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
     internal enum class RareDianaMob(val display: String) {
         INQ("Minos Inquisitor"),
@@ -81,8 +82,19 @@ object DianaMobDetect {
     fun init() {
         mobHpOverlay.init()
         noShurikenOverlay.init()
+        Register.onChatMessage(
+            Regex("^§a§lCAUGHT!.*?You cocooned a (?<name>.+?)!.*$")
+        ) { _, matchResult ->
+            val name = matchResult.groups["name"]?.value ?: return@onChatMessage
+            val rare = RareDianaMob.fromName(name)
+
+            if (rare != null) {
+                // Cocooned a rare mob if rare != null
+                announceCocoon(DetectionType.CHAT_MESSAGE, rare.display)
+            }
+        }
         Register.onTick(1) {
-            val world = mc.world ?: return@onTick
+            val world = mc.level ?: return@onTick
             val player = mc.player ?: return@onTick
             val overlayLines = mutableListOf<OverlayTextLine>()
 
@@ -93,17 +105,13 @@ object DianaMobDetect {
                 val (id, data) = unconfirmedIterator.next()
                 val (entity, spawnTime) = data
 
-                //#if MC >= 1.21.9
-                //$$ val entityWorld = entity.entityWorld
-                //#else
-                val entityWorld = entity.world
-                //#endif
+                val entityWorld = entity.level()
                 if (!entity.isAlive || entityWorld != world) {
                     unconfirmedIterator.remove()
                     continue
                 }
 
-                checkCocoon(entity)
+                checkCocoon(entity, now)
 
                 val name = entity.customName?.formattedString() ?: entity.name.formattedString()
                 if (name.contains("§2✿", ignoreCase = true)) {
@@ -113,17 +121,13 @@ object DianaMobDetect {
                 else if (now - spawnTime > NAME_CHECK_TIMEOUT_MS) unconfirmedIterator.remove()
             }
 
-            var closestStarlessMob: ArmorStandEntity? = null
+            var closestStarlessMob: ArmorStand? = null
             var closestDistanceSq = Double.MAX_VALUE
             val trackedIterator = tracked.iterator()
             while (trackedIterator.hasNext()) {
                 val (id, armorStand) = trackedIterator.next()
 
-                //#if MC >= 1.21.9
-                //$$ val entityWorld = armorStand.entityWorld
-                //#else
-                val entityWorld = armorStand.world
-                //#endif
+                val entityWorld = armorStand.level()
                 if (!armorStand.isAlive || entityWorld != world) {
                     trackedIterator.remove()
                     defeated.remove(id)
@@ -150,20 +154,20 @@ object DianaMobDetect {
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
-        if (event.entity is ArmorStandEntity) {
+        if (event.entity is ArmorStand) {
             unconfirmed[event.entity.id] = event.entity to System.currentTimeMillis()
         }
     }
 
     @SboEvent
     fun onEntityUnload(event: EntityUnloadEvent) {
-        if (event.entity is ArmorStandEntity) {
+        if (event.entity is ArmorStand) {
             tracked.remove(event.entity.id)
             defeated.remove(event.entity.id)
         }
     }
 
-    private fun checkDianaMob(entity: ArmorStandEntity, id: Int) : OverlayTextLine? {
+    private fun checkDianaMob(entity: ArmorStand, id: Int) : OverlayTextLine? {
         val name = entity.customName?.formattedString() ?: entity.name.formattedString()
         if (name.isEmpty() || name == "Armor Stand") return null
         if (!name.contains("§2✿", ignoreCase = true)) return null
@@ -180,12 +184,12 @@ object DianaMobDetect {
     }
 
     private fun checkStarlessMob(
-        entity: ArmorStandEntity,
+        entity: ArmorStand,
         id: Int,
-        player: PlayerEntity,
-        currentClosest: ArmorStandEntity?,
+        player: Player,
+        currentClosest: ArmorStand?,
         currentDistanceSq: Double
-    ): Pair<ArmorStandEntity?, Double> {
+    ): Pair<ArmorStand?, Double> {
         if (id in defeated) return currentClosest to currentDistanceSq
         val name = entity.customName?.formattedString() ?: entity.name.formattedString()
         val mobType = RareDianaMob.fromName(name) ?: return currentClosest to currentDistanceSq
@@ -203,7 +207,7 @@ object DianaMobDetect {
         val health = parseHealthFromName(name)
         if (health != null && health <= 0.0) return currentClosest to currentDistanceSq
 
-        val distSq = player.squaredDistanceTo(entity)
+        val distSq = player.distanceToSqr(entity)
         return if (distSq < currentDistanceSq) {
             entity to distSq
         } else {
@@ -211,35 +215,42 @@ object DianaMobDetect {
         }
     }
 
-    private fun checkCocoon(entity: ArmorStandEntity) {
-        if (World.getWorld() != "Hub") return
+    private fun checkCocoon(entity: ArmorStand, now: Long) {
+        if (!Diana.legacyCocoonDetection || World.getWorld() != "Hub") return
         val recentDeath = listOf(lastInqDeath, lastKingDeath, lastSphinxDeath, lastMantiDeath)
             .any { getSecondsPassed(it) < DEATH_WINDOW_SECONDS }
 
         if (!recentDeath) return
-        val head: ItemStack = entity.getEquippedStack(EquipmentSlot.HEAD)
+        val head: ItemStack = entity.getItemBySlot(EquipmentSlot.HEAD)
 
         if (head.isEmpty) return
         if (head.item.toString() != "minecraft:player_head") return
-        //#if MC >= 1.21.9
-        //$$ val profileComponent: ProfileComponent? = head.get(DataComponentTypes.PROFILE)
-        //$$ val texture: String? = profileComponent?.getGameProfile()?.properties?.get("textures")?.firstOrNull()?.value
-        //#else
-        val profile: ProfileComponent? = head.get(DataComponentTypes.PROFILE)
-        val texture: String? = profile?.properties?.get("textures")?.firstOrNull()?.value
-        //#endif
+        val profileComponent: ResolvableProfile? = head.get(DataComponents.PROFILE)
+        val texture: String? = profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value
 
         if (texture == null) return
-        val now = System.currentTimeMillis()
         if (texture == COCOON_TEXTURE && lastCocoon + COCOON_COOLDOWN_MS < now) {
             lastCocoon = now
-            if (Diana.announceCocoon) {
-                sleep(CHAT_DELAY_MS) { Chat.command("pc Cocoon!") }
-            }
-            if (Diana.cocoonTitle) {
-                showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", null, 10, 40, 10)
-                playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
-            }
+            announceCocoon(DetectionType.TEXTURE)
+        }
+    }
+
+    private enum class DetectionType {
+        TEXTURE, CHAT_MESSAGE
+    }
+
+    private fun announceCocoon(detectionType: DetectionType, mobName: String? = null) {
+        if (detectionType == DetectionType.TEXTURE && !Diana.legacyCocoonDetection) {
+            return
+        }
+
+        if (Diana.announceCocoon) {
+            sleep(CHAT_DELAY_MS) { Chat.pc("" + if (mobName != null) "Cocooned a ${mobName}!" else "Cocoon!") }
+        }
+        if (Diana.cocoonTitle) {
+            val subtitle = if (mobName != null) "§b${mobName}" else null
+            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", subtitle, 10, 40, 10)
+            playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
         }
     }
 
@@ -265,15 +276,16 @@ object DianaMobDetect {
             } ?: return
 
             if (mobType !in Diana.ShareMobs) return
-            val playerPos = Player.getLastPosition()
-            Chat.command("pc x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob")
+            val playerPos = SboPlayer.getLastPosition()
+            Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob")
         }
 
         when (mob) {
             RareDianaMob.INQ.display -> {
                 Diana.announceInqText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceInqText[0]) }
+                        val message = Helper.getSpawnMessage(Diana.announceInqText[0], "inq")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }
@@ -281,7 +293,8 @@ object DianaMobDetect {
             RareDianaMob.SPHINX.display -> {
                 Diana.announceSphinxText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceSphinxText[0]) }
+                        val message = Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }
@@ -289,7 +302,8 @@ object DianaMobDetect {
             RareDianaMob.MANTI.display -> {
                 Diana.announceMantiText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceMantiText[0]) }
+                        val message = Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }
@@ -297,7 +311,8 @@ object DianaMobDetect {
             RareDianaMob.KING.display -> {
                 Diana.announceKingText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc " + Diana.announceKingText[0]) }
+                        val message = Helper.getSpawnMessage(Diana.announceKingText[0], "king")
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }

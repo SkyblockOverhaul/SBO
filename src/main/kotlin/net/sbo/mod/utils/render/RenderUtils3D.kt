@@ -2,23 +2,30 @@ package net.sbo.mod.utils.render
 
 import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.*
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.render.*
-import net.minecraft.util.math.RotationAxis
-import net.minecraft.util.math.Vec3d
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.*
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.Camera
+import com.mojang.blaze3d.vertex.VertexConsumer
+import com.mojang.math.Axis
+import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
-import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.ColorHelper
+import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.util.Mth
+import net.minecraft.util.ARGB
 import net.sbo.mod.settings.categories.Diana
 
-//#if MC > 1.21.9
-//$$ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+
+//#if MC > 1.21.10
+//$$ import 	net.minecraft.gizmos.Gizmos
+//$$ import 	net.minecraft.gizmos.GizmoStyle
+//$$ import net.minecraft.world.phys.AABB
 //#endif
 
 object RenderUtils3D {
@@ -37,9 +44,6 @@ object RenderUtils3D {
         drawFilledBox(
             context,
             pos,
-            1.0,
-            1.0,
-            1.0,
             colorComponents,
             alpha,
             throughWalls
@@ -94,15 +98,28 @@ object RenderUtils3D {
     fun drawFilledBox(
         context: WorldRenderContext,
         pos: SboVec,
-        width: Double,
-        height: Double,
-        depth: Double,
         colorComponents: FloatArray,
         alpha: Float,
         throughWalls: Boolean
     ) {
+        //#if MC > 1.21.10
+        //$$ val r = (colorComponents[0].coerceIn(0f, 1f) * 255).toInt()
+        //$$ val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
+        //$$ val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
+        //$$ val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
+        //$$ val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
+        //$$ val bPos = pos.toBlockPos().immutable()
+        //$$ if (throughWalls) {
+        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
+        //$$ } else {
+        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor))
+        //$$ }
+        //#else
+        val width = 1.0
+        val height = 1.0
+        val depth = 1.0
         context.pushPop {
-            val cameraPos = context.getCamera().pos
+            val cameraPos = context.getCamera().position
             translate(pos.x + 0.5 - cameraPos.x, pos.y - cameraPos.y, pos.z + 0.5 - cameraPos.z)
 
             val consumers = context.consumers()!!
@@ -118,14 +135,14 @@ object RenderUtils3D {
             val minY = 0.0
             val maxY = height
 
-            VertexRendering.drawFilledBox(
+            ShapeRenderer.addChainedFilledBoxVertices(
                 this, buffer,
                 minX, minY, minZ,
                 maxX, maxY, maxZ,
                 colorComponents[0], colorComponents[1], colorComponents[2], alpha
             )
-
         }
+        //#endif
     }
 
     /**
@@ -149,36 +166,36 @@ object RenderUtils3D {
     ) {
         context.pushPop {
             val camera = context.getCamera()
-            val cameraPos = camera.pos
-            val cameraYaw = camera.yaw
-            val cameraPitch = camera.pitch
-            val textRenderer = mc.textRenderer
+            val cameraPos = camera.position
+            val cameraYaw = camera.yRot
+            val cameraPitch = camera.xRot
+            val textRenderer = mc.font
 
-            val textWorldPos = Vec3d(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
+            val textWorldPos = Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
             val distance = cameraPos.distanceTo(textWorldPos)
             val dynamicScale = max(distance, 2.5) * scale
 
             translate(pos.x + 0.5 - cameraPos.x, pos.y + yOffset + - cameraPos.y, pos.z + 0.5 - cameraPos.z)
 
-            multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-cameraYaw))
-            multiply(RotationAxis.POSITIVE_X.rotationDegrees(cameraPitch))
+            mulPose(Axis.YP.rotationDegrees(-cameraYaw))
+            mulPose(Axis.XP.rotationDegrees(cameraPitch))
 
             scale(-dynamicScale.toFloat(), -dynamicScale.toFloat(), dynamicScale.toFloat())
 
-            val textWidth = textRenderer.getWidth(text)
+            val textWidth = textRenderer.width(text)
             val xOffset = -textWidth / 2f
 
-            val consumers = context.consumers()!!
+            val consumers = context.consumers()
 
-            val layerType = if (throughWalls) TextRenderer.TextLayerType.SEE_THROUGH else TextRenderer.TextLayerType.NORMAL
+            val layerType = if (throughWalls) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
 
-            textRenderer.draw(
+            textRenderer.drawInBatch(
                 text,
                 xOffset,
                 0f,
                 color,
                 shadow,
-                peek().positionMatrix,
+                last().pose(),
                 consumers,
                 layerType,
                 0,
@@ -206,20 +223,20 @@ object RenderUtils3D {
     ) {
         context.pushPop {
             val camera = context.getCamera()
-            val cameraPos = camera.pos
+            val cameraPos = camera.position
 
-            translate(cameraPos.negate())
+            translate(cameraPos.reverse())
 
-            val consumers = context.consumers()!!
-            val startPos = cameraPos.add(Vec3d.fromPolar(camera.pitch, camera.yaw))
+            val consumers = context.consumers()
+            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot, camera.yRot))
             val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
             val lineDir = endPos.subtract(startPos)
             val viewDir = startPos.subtract(cameraPos)
 
-            val sideVec = lineDir.crossProduct(viewDir).normalize()
+            val sideVec = lineDir.cross(viewDir).normalize()
 
-            val upVec = sideVec.crossProduct(lineDir).normalize()
+            val upVec = sideVec.cross(lineDir).normalize()
 
             val nx = upVec.x.toFloat()
             val ny = upVec.y.toFloat()
@@ -228,16 +245,22 @@ object RenderUtils3D {
             withLineWidth(lineWidth) {
                 val renderLayer = if (throughWalls) SboRenderLayers.LINES_THROUGH_WALLS else SboRenderLayers.LINES
                 val buffer = consumers.getBuffer(renderLayer)
-                val matrixEntry = peek()
+                val matrixEntry = last()
 
-                buffer.vertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
-                    .normal(matrixEntry, nx, ny, nz)
-                    .color(color[0], color[1], color[2], alpha)
+                buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
+                    .setNormal(matrixEntry, nx, ny, nz)
+                    .setColor(color[0], color[1], color[2], alpha)
+                    //#if MC > 1.21.10
+                    //$$ .setLineWidth(lineWidth)
+                    //#endif
 
 
-                buffer.vertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
-                    .normal(matrixEntry, nx, ny, nz)
-                    .color(color[0], color[1], color[2], alpha)
+                buffer.addVertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
+                    .setNormal(matrixEntry, nx, ny, nz)
+                    .setColor(color[0], color[1], color[2], alpha)
+                    //#if MC > 1.21.10
+                    //$$ .setLineWidth(lineWidth)
+                    //#endif
             }
         }
     }
@@ -259,30 +282,26 @@ object RenderUtils3D {
         if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.removeBeam) return
 
         val consumers = ctx.consumers()
-        val wolrd = mc.world ?: return
-        //#if MC > 1.21.9
-        val partialTicks = mc.renderTickCounter.getTickProgress(true)
-        //#else
-        //$$ val partialTicks = ctx.tickCounter().getTickProgress(true)
-        //#endif
-        val cam = ctx.getCamera().pos
+        val wolrd = mc.level ?: return
+        val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
+        val cam = ctx.getCamera().position
         val beamColor = floatArrayOf(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f)
 
         ctx.pushPop {
             translate(vec.x - cam.x, (vec.y + 1.0) - cam.y, vec.z - cam.z)
 
             renderBeam(
-                consumers!!,
+                consumers,
                 partialTicks,
-                wolrd.time,
+                wolrd.gameTime,
                 Color(beamColor[0], beamColor[1], beamColor[2]).rgb,
                 phase
             )
         }
     }
 
-    private fun MatrixStack.renderBeam(
-        vertices: VertexConsumerProvider,
+    private fun PoseStack.renderBeam(
+        vertices: MultiBufferSource,
         partialTicks: Float,
         worldTime: Long,
         color: Int,
@@ -296,7 +315,7 @@ object RenderUtils3D {
         val outerRadius = 0.25f
         val time = Math.floorMod(worldTime, 40) + partialTicks
         val fixedTime = -time
-        val wavePhase = MathHelper.fractionalPart(fixedTime * 0.2f - MathHelper.floor(fixedTime * 0.1f).toFloat())
+        val wavePhase = Mth.frac(fixedTime * 0.2f - Mth.floor(fixedTime * 0.1f).toFloat())
         val animationStep = -1f + wavePhase
         var renderYOffest = height.toFloat() * heightScale * (0.5f / innerRadius) + animationStep
 
@@ -304,7 +323,7 @@ object RenderUtils3D {
             translate(0.5, 0.0, 0.5)
 
             pushPop {
-                multiply(RotationAxis.POSITIVE_Y.rotationDegrees(time * 2.25f - 45f))
+                mulPose(Axis.YP.rotationDegrees(time * 2.25f - 45f))
 
                 renderBeamLayer(
                     vertices.getBuffer(opaqueLayyer),
@@ -326,7 +345,7 @@ object RenderUtils3D {
 
             renderBeamLayer(
                 vertices.getBuffer(transluscentLayer),
-                ColorHelper.withAlpha(32, color),
+                ARGB.color(32, color),
                 -outerRadius,
                 -outerRadius,
                 outerRadius,
@@ -341,7 +360,7 @@ object RenderUtils3D {
         }
     }
 
-    private fun MatrixStack.renderBeamLayer(
+    private fun PoseStack.renderBeamLayer(
         vertices: VertexConsumer,
         color: Int,
         x1: Float,
@@ -355,7 +374,7 @@ object RenderUtils3D {
         v1: Float,
         v2: Float
     ) {
-        val entry = peek()
+        val entry = last()
         renderBeamFace(entry, vertices, color, x1, z1, x2, z2, v1, v2)
         renderBeamFace(entry, vertices, color, x4, z4, x3, z3, v1, v2)
         renderBeamFace(entry, vertices, color, x2, z2, x4, z4, v1, v2)
@@ -363,7 +382,7 @@ object RenderUtils3D {
     }
 
     private fun renderBeamFace(
-        matrix: MatrixStack.Entry,
+        matrix: PoseStack.Pose,
         vertices: VertexConsumer,
         color: Int,
         x1: Float,
@@ -380,7 +399,7 @@ object RenderUtils3D {
     }
 
     private fun renderBeamVertex(
-        matrix: MatrixStack.Entry,
+        matrix: PoseStack.Pose,
         vertices: VertexConsumer,
         color: Int,
         y: Int,
@@ -390,40 +409,36 @@ object RenderUtils3D {
         v: Float
     ) {
         vertices
-            .vertex(matrix, x, y.toFloat(), z)
-            .color(color)
-            .texture(u, v)
-            .overlay(OverlayTexture.DEFAULT_UV)
-            .light(15728880).normal(matrix, 0f, 1f, 0f)
+            .addVertex(matrix, x, y.toFloat(), z)
+            .setColor(color)
+            .setUv(u, v)
+            .setOverlay(OverlayTexture.NO_OVERLAY)
+            .setLight(15728880).setNormal(matrix, 0f, 1f, 0f)
     }
 
     private fun WorldRenderContext.getCamera(): Camera {
-        //#if MC > 1.21.9
-        //$$ return gameRenderer().camera
-        //#else
-        return camera()
-        //#endif
+        return gameRenderer().mainCamera
     }
 
-    private inline fun WorldRenderContext.pushPop(function: MatrixStack.() -> Unit) {
-        //#if MC > 1.21.9
-        //$$ val matrix = matrices()!!
-        //#else
-        val matrix = matrixStack()!!
-        //#endif
+    private inline fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
+        val matrix = matrices()
         matrix.pushPop(function)
     }
 
-    private inline fun MatrixStack.withLineWidth(lineWidth: Float, function: MatrixStack.() -> Unit) {
+    private inline fun PoseStack.withLineWidth(lineWidth: Float, function: PoseStack.() -> Unit) {
+        //#if MC > 1.21.10
+        //$$ function()
+        //#else
         val prevLineWidth = RenderSystem.getShaderLineWidth()
         RenderSystem.lineWidth(lineWidth)
         function()
         RenderSystem.lineWidth(prevLineWidth)
+        //#endif
     }
 
-    private inline fun MatrixStack.pushPop(function: MatrixStack.() -> Unit) {
-        this.push()
+    private inline fun PoseStack.pushPop(function: PoseStack.() -> Unit) {
+        this.pushPose()
         function()
-        this.pop()
+        this.popPose()
     }
 }

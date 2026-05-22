@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.Screen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
@@ -25,7 +25,7 @@ object OverlayManager {
 //        }
 
         Register.command("sboguis", "sbomoveguis", "sbomove") {
-            mc.send {
+            mc.schedule {
                 mc.setScreen(OverlayEditScreen())
             }
         }
@@ -47,27 +47,27 @@ object OverlayManager {
 
     @SboEvent
     fun onRender(event: RenderEvent) {
-        render(event.context,  mc.currentScreen?.title?.string ?: "")
+        render(event.context, mc.screen)
     }
 
-    fun render(drawContext: DrawContext, renderScreen: String = "") {
+    fun render(drawContext: GuiGraphics, renderScreen: Screen? = null) {
         if (!World.isInSkyblock()) return
-        val scaleFactor = mc.window.scaleFactor
-        val mouseX = mc.mouse.x / scaleFactor
-        val mouseY = mc.mouse.y / scaleFactor
-        for (overlay in overlays.toList()) {
-            if (renderScreen == "" && !mc.options.playerListKey.isPressed && !mc.options.hudHidden)
+        val scaleFactor = mc.window.guiScale
+        val mouseX = mc.mouseHandler.xpos() / scaleFactor
+        val mouseY = mc.mouseHandler.ypos() / scaleFactor
+        for (overlay in overlays) {
+            if (renderScreen == null && !mc.options.keyPlayerList.isDown && !mc.options.hideGui)
                 overlay.render(drawContext, mouseX, mouseY)
         }
     }
 
-    fun postRender(drawContext: DrawContext, renderScreen: Screen) {
+    fun postRender(drawContext: GuiGraphics, renderScreen: Screen) {
         if (!World.isInSkyblock()) return
-        val scaleFactor = mc.window.scaleFactor
-        val mouseX = mc.mouse.x / scaleFactor
-        val mouseY = mc.mouse.y / scaleFactor
-        for (overlay in overlays.toList()) {
-            if (renderScreen.title.string in overlay.allowedGuis && !mc.options.hudHidden)
+        val scaleFactor = mc.window.guiScale
+        val mouseX = mc.mouseHandler.xpos() / scaleFactor
+        val mouseY = mc.mouseHandler.ypos() / scaleFactor
+        for (overlay in overlays) {
+            if (overlay.allowedScreens.any { it(renderScreen) } && !mc.options.hideGui)
                 overlay.render(drawContext, mouseX, mouseY)
         }
     }

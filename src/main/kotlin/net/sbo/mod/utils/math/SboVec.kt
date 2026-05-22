@@ -1,9 +1,9 @@
 package net.sbo.mod.utils.math
 
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin
 import kotlin.math.absoluteValue
 import kotlin.math.floor
@@ -56,8 +56,8 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
         return SboVec(floor(this.x), floor(this.y), floor(this.z))
     }
 
-    fun toVec3d(): Vec3d {
-        return Vec3d(this.x, this.y, this.z)
+    fun toVec3d(): Vec3 {
+        return Vec3(this.x, this.y, this.z)
     }
 
     fun center(): SboVec {
@@ -99,25 +99,27 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
         return (dx * dx + dy * dy + dz * dz)
     }
 
-    fun isInLoadedChunk(): Boolean = SBOKotlin.mc.world?.isPosLoaded(toBlockPos()) ?: false
+    fun isInLoadedChunk(): Boolean = SBOKotlin.mc.level?.isLoaded(toBlockPos()) ?: false
 
     fun toBlockPos(): BlockPos = BlockPos(floor(x).toInt(), floor(y).toInt(), floor(z).toInt())
 
     fun getBlockAt(): Block? = getBlockStateAt()?.block
 
-    fun getBlockStateAt(): BlockState? = SBOKotlin.mc.world?.getBlockState(toBlockPos())
+    fun getBlockStateAt(): BlockState? = SBOKotlin.mc.level?.getBlockState(toBlockPos())
 
     fun dotProduct(other: SboVec): Double = (x * other.x) + (y * other.y) + (z * other.z)
 
     fun scale(scalar: Double): SboVec = SboVec(scalar * x, scalar * y, scalar * z)
 
     companion object {
+        val ZERO: SboVec = BlockPos.ZERO.toSboVec()
+
         fun fromArray(arr: List<Double>): SboVec {
             require(arr.size >= 3) { "Array must contain at least 3 elements for x, y, z." }
             return SboVec(arr[0], arr[1], arr[2])
         }
 
-        fun Vec3d.toSboVec(): SboVec {
+        fun Vec3.toSboVec(): SboVec {
             return SboVec(this.x, this.y, this.z)
         }
 

@@ -1,11 +1,15 @@
 {
   "required": true,
+  "minVersion": "0.8.7",
+  "mixinextras": {
+    "minVersion": "0.5.4"
+  },
   "package": "net.sbo.mod.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_${java_version_major}",
   "client": [
-    "GameMenuScreenMixin",
+    "PauseScreenMixin",
     "GameRenderMixin",
-    "MinecraftClientMixin",
+    "MinecraftMixin",
     "PacketMixin",
     "PlayerInteractMixin",
     "ScreenHandlerSlotUpdateS2CPacketMixin",
@@ -14,5 +18,8 @@
   ],
   "injectors": {
     "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
   }
 }

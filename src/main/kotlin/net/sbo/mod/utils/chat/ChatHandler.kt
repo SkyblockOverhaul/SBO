@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.chat
 
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -22,11 +22,11 @@ object ChatHandler {
         event.isAllowed = processMessage(event.message)
     }
 
-    fun registerHandler(pattern: Pattern, action: (Text, Matcher) -> Boolean) {
+    fun registerHandler(pattern: Pattern, action: (Component, Matcher) -> Boolean) {
         messageHandlers.add(ChatRule(pattern, action))
     }
 
-    fun processMessage(message: Text): Boolean {
+    fun processMessage(message: Component): Boolean {
         val messageString = message.formattedString().replace("§r", "")
         if (Debug.debugMessages && !messageString.contains("❈ Defense")) {
             println("Processing chat message: $messageString")
@@ -47,6 +47,6 @@ object ChatHandler {
 
     private data class ChatRule(
         val pattern: Pattern,
-        val action: (Text, Matcher) -> Boolean
+        val action: (Component, Matcher) -> Boolean
     )
 }

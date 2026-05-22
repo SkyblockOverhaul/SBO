@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.version
 
-import net.minecraft.util.Util
+import net.minecraft.Util
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.Http
@@ -20,7 +20,7 @@ object UpdateChecker {
         val mcVersion = SBOKotlin.mcVersion
         val url = "https://api.modrinth.com/v2/project/$MODRINTH_ID/version?game_versions=%5B%22$mcVersion%22%5D"
 
-        SBOKotlin.logger.info("[SBO] Update-Check gestartet (MC: $mcVersion)")
+        SBOKotlin.logger.info("[SBO] Update check started (MC: $mcVersion)")
 
         Http.sendGetRequest(url).toJson<List<ModrinthVersion>>(ignoreUnknownKeys = true) { versions ->
             val latestEntry = versions.firstOrNull() ?: return@toJson
@@ -33,10 +33,10 @@ object UpdateChecker {
                 latestVersion = rawLatest
                 latestId = latestEntry.id
                 isUpdateAvailable = true
-                SBOKotlin.logger.info("[SBO] Update für $mcVersion gefunden: $rawLatest")
+                SBOKotlin.logger.info("[SBO] Update found for $mcVersion: $rawLatest")
             }
         }.error {
-            SBOKotlin.logger.error("[SBO] Update-Check fehlgeschlagen: ${it.message}")
+            SBOKotlin.logger.error("[SBO] Update check failed: ${it.message}")
         }
     }
 
@@ -49,7 +49,7 @@ object UpdateChecker {
         Chat.clickableChat(
             "§6[SBO] §eUpdate available: §a${latestVersion} §b[Click]",
             "§eOpen Version on Modrinth"
-        ) { Util.getOperatingSystem().open(versionUrl) }
+        ) { Util.getPlatform().openUri(versionUrl) }
         Chat.chat(breakLine)
     }
 }

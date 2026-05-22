@@ -1,10 +1,11 @@
 package net.sbo.mod.utils.game
 
-import net.minecraft.client.network.PlayerListEntry
-import net.minecraft.text.Text
+import net.minecraft.client.multiplayer.PlayerInfo
+import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
 import java.util.Collections
+import java.util.ArrayList
 
 object TabList {
     /**
@@ -26,16 +27,16 @@ object TabList {
      * Updates tab list cache by fetching, filtering and mapping the tab list.
      */
     private fun updateCache() {
-        val tabLines = mutableListOf<String>()
+        val tabEntries = getTabEntries()
+        val tabLines = ArrayList<String>(tabEntries.size)
 
-        for (entry in getTabEntries()) {
+        for (entry in tabEntries) {
             if (entry == null) continue
 
-            val displayName = entry.displayName
+            val displayName = entry.tabListDisplayName
             val profile = entry.profile
-            val profileName = profile?.name?.let { Text.literal(it) }
 
-            val text = displayName ?: profileName ?: continue
+            val text = displayName ?: profile.name?.let { Component.literal(it) } ?: continue
             tabLines.add(text.string.trim())
         }
 
@@ -46,8 +47,8 @@ object TabList {
      * Returns a list of all PlayerListEntry objects from the current tab list.
      * Each PlayerListEntry object contains detailed information about a player.
      */
-    fun getTabEntries(): Collection<PlayerListEntry?> {
-        return mc.player?.networkHandler?.playerList ?: emptyList()
+    fun getTabEntries(): Collection<PlayerInfo?> {
+        return mc.player?.connection?.onlinePlayers ?: emptyList()
     }
 
     /**

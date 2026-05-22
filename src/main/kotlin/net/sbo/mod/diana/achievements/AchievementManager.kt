@@ -3,12 +3,12 @@ package net.sbo.mod.diana.achievements
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.minecraft.client.gui.screen.ingame.HandledScreen
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.NbtComponent
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.CustomData
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
@@ -140,11 +140,11 @@ object AchievementManager {
 
     @SboEvent
     fun onEntityHit(event: EntitiyHitEvent) {
-        if (event.entity !is PlayerEntity) return
+        if (event.entity !is Player) return
         val isRareMob = RareDianaMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
         if (!isRareMob) return
-        if (getDisplayName(event.player.mainHandStack).contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
-        if (getDisplayName(event.player.mainHandStack).contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
+        if (getDisplayName(event.player.mainHandItem).contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
+        if (getDisplayName(event.player.mainHandItem).contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
     }
 
 
@@ -282,22 +282,22 @@ object AchievementManager {
     fun trackBeKills(event: GuiOpenEvent) {
         Helper.sleep(200) {
             val screen = event.screen
-            if (screen !is HandledScreen<*>) return@sleep
+            if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Creatur", ignoreCase = true)) return@sleep
-            val slots = screen.screenHandler.slots
+            val slots = screen.menu.slots
 
-            val bullKills = Helper.getKillsFromLore(slots[10].stack)
-            val gaiaKills = Helper.getKillsFromLore(slots[11].stack)
-            val harpyKills = Helper.getKillsFromLore(slots[12].stack)
-            val kingKills = Helper.getKillsFromLore(slots[13].stack)
-            val mantiKills = Helper.getKillsFromLore(slots[14].stack)
-            val champKills = Helper.getKillsFromLore(slots[15].stack)
-            val hunterKills = Helper.getKillsFromLore(slots[16].stack)
-            val inqKills = Helper.getKillsFromLore(slots[19].stack)
-            val minoKills = Helper.getKillsFromLore(slots[20].stack)
-            val catKills = Helper.getKillsFromLore(slots[21].stack)
-            val sphinxKills = Helper.getKillsFromLore(slots[22].stack)
-            val nymphKills = Helper.getKillsFromLore(slots[23].stack)
+            val bullKills = Helper.getKillsFromLore(slots[10].item)
+            val gaiaKills = Helper.getKillsFromLore(slots[11].item)
+            val harpyKills = Helper.getKillsFromLore(slots[12].item)
+            val kingKills = Helper.getKillsFromLore(slots[13].item)
+            val mantiKills = Helper.getKillsFromLore(slots[14].item)
+            val champKills = Helper.getKillsFromLore(slots[15].item)
+            val hunterKills = Helper.getKillsFromLore(slots[16].item)
+            val inqKills = Helper.getKillsFromLore(slots[19].item)
+            val minoKills = Helper.getKillsFromLore(slots[20].item)
+            val catKills = Helper.getKillsFromLore(slots[21].item)
+            val sphinxKills = Helper.getKillsFromLore(slots[22].item)
+            val nymphKills = Helper.getKillsFromLore(slots[23].item)
 
             val allMaxed = listOf(
                 gaiaKills to 50, inqKills to 45, minoKills to 46,
@@ -323,9 +323,9 @@ object AchievementManager {
     fun trackCarnivalPerks(event: GuiOpenEvent) {
         Helper.sleep(200) {
             val screen = event.screen
-            if (screen !is HandledScreen<*>) return@sleep
+            if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Ritual", ignoreCase = true)) return@sleep
-            val slots = screen.screenHandler.slots
+            val slots = screen.menu.slots
 
             val dmgSlot = slots[11]
             val coinsSlot = slots[12]
@@ -333,16 +333,16 @@ object AchievementManager {
             val trackingSlot = slots[15]
 
             if (
-                dmgSlot.stack.name.removeFormatting().contains("Storied Stinger V") &&
-                coinsSlot.stack.name.removeFormatting().contains("Deadly Greed V") &&
-                mfSlot.stack.name.removeFormatting().contains("Diana's Favor III") &&
-                trackingSlot.stack.name.removeFormatting().contains("Elusive Hunter II")
+                dmgSlot.item.hoverName.removeFormatting().contains("Storied Stinger V") &&
+                coinsSlot.item.hoverName.removeFormatting().contains("Deadly Greed V") &&
+                mfSlot.item.hoverName.removeFormatting().contains("Diana's Favor III") &&
+                trackingSlot.item.hoverName.removeFormatting().contains("Elusive Hunter II")
             ) unlockAchievement(120)
         }
     }
 
     fun trackCOA() {
-        val helmet = mc.player?.inventory?.getStack(39) ?: ItemStack.EMPTY
+        val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
         if (!getDisplayName(helmet).contains("Crown of Avarice")) return
 
         unlockAchievement(121)
@@ -398,16 +398,16 @@ object AchievementManager {
             val player = SBOKotlin.mc.player ?: return@sleep
 
             for (slot in 0..8) {
-                val stack: ItemStack = player.inventory.getStack(slot)
+                val stack: ItemStack = player.inventory.getItem(slot)
                 if (stack.isEmpty) continue
 
-                val displayName: String = stack.name.string.lowercase()
+                val displayName: String = stack.hoverName.string.lowercase()
                 if (!displayName.contains("daedalus")) continue
 
-                val customData: NbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT)
-                val nbt: NbtCompound = customData.copyNbt()
+                val customData: CustomData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                val nbt: CompoundTag = customData.copyTag()
 
-                val enchants: NbtCompound = nbt.getCompound("enchantments").orElse(NbtCompound())
+                val enchants: CompoundTag = nbt.getCompound("enchantments").orElse(CompoundTag())
                 if (enchants.isEmpty) continue
 
                 if (enchants.getInt("ultimate_chimera").orElse(0) == 5) chimV = true

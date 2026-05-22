@@ -31,7 +31,7 @@ object General : CategoryKt("General") {
             text = "Move GUI's"
             description = "Opens Gui Move Menu you can use /sboguis too"
             onClick {
-                mc.send {
+                mc.schedule {
                     mc.setScreen(OverlayEditScreen())
                 }
             }
@@ -50,5 +50,10 @@ object General : CategoryKt("General") {
     var patcherWaypoints by boolean(true) {
         this.name = Literal("Waypoints From Chat")
         this.description = Literal("Creates waypoints from chat messages (format: x: 20, y: 60, z: 80)")
+    }
+
+    var assumeMuted by boolean(false) {
+        this.name = Literal("Assume Muted")
+        this.description = Literal("Assumes you are muted and instead of running /pc to send mod messages always prefers to send them client-side to yourself only.")
     }
 }

@@ -1,14 +1,35 @@
 package net.sbo.mod.utils.chat
 
 import net.sbo.mod.SBOKotlin.mc
-import net.minecraft.text.Text
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Style
-import net.minecraft.util.Formatting
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Style
+import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.events.ClickActionManager
+import net.sbo.mod.settings.categories.General
 
 object Chat {
+
+    /**
+     * Sends a text to party chat via the /pc command, or
+     * sends it locally if the user opted-in to the "Assume Muted"
+     * option for accessibility, so that they can still see the message
+     * and/or possibly copy and share the message in another platform such as Discord.
+     *
+     * @param text The text to send to party chat if possible or otherwise locally.
+     */
+    fun pc(text: String) {
+        if (General.assumeMuted) {
+            // User is muted (or we assume it bc of the opt-in setting thats false by default)
+            // trying send message will show up a huge output about the remaining mute time,
+            // server rules and all that yapping with no other output about the text we want
+            // to send, so send locally instead via the chat method. We can have color since it's regular chat.
+            Chat.chat("§6[SBO] §e${text}")
+        } else {
+            Chat.command("pc ${text}")
+        }
+    }
 
     /**
      * Sends a command to the server.
@@ -17,9 +38,9 @@ object Chat {
      */
     fun command(command: String) {
         if (!command.startsWith("/")) {
-            mc.player?.networkHandler?.sendChatMessage("/$command")
+            mc.player?.connection?.sendChat("/$command")
         } else {
-            mc.player?.networkHandler?.sendChatMessage(command)
+            mc.player?.connection?.sendChat(command)
         }
     }
 
@@ -28,15 +49,19 @@ object Chat {
      * @param string The message to display in the chat.
      */
     fun chat(string: String) {
-        mc.inGameHud.chatHud.addMessage(Text.of(string))
+        mc.execute {
+            mc.gui.chat.addMessage(Component.nullToEmpty(string))
+        }
     }
 
     /**
      * Shows a local chat message only visible to the player.
      * @param text The message to display in the chat.
      */
-    fun chat(text: Text) {
-        mc.inGameHud.chatHud.addMessage(text)
+    fun chat(text: Component) {
+        mc.execute {
+            mc.gui.chat.addMessage(text)
+        }
     }
 
     /**
@@ -44,7 +69,7 @@ object Chat {
      * @param message The message to send.
      */
     fun say(message: String) {
-        mc.networkHandler?.sendChatMessage(message)
+        mc.connection?.sendChat(message)
     }
 
     /**
@@ -60,18 +85,20 @@ object Chat {
         onClick: () -> Unit,
     ) {
         val actionId = ClickActionManager.registerAction(onClick)
-        val hoverText = Text.literal(hover).formatted(Formatting.YELLOW)
+        val hoverText = Component.literal(hover).withStyle(ChatFormatting.YELLOW)
 
         val clickEvent = ClickEvent.RunCommand("/__sbo_run_clickable_action $actionId")
         val hoverEvent = HoverEvent.ShowText(hoverText)
 
-        val styledText = Text.literal(message).setStyle(
+        val styledText = Component.literal(message).setStyle(
             Style.EMPTY
                 .withClickEvent(clickEvent)
                 .withHoverEvent(hoverEvent)
         )
 
-        mc.inGameHud.chatHud.addMessage(styledText)
+        mc.execute {
+            mc.gui.chat.addMessage(styledText)
+        }
     }
 
     /**
@@ -86,18 +113,20 @@ object Chat {
         hover: String,
         command: String
     ) {
-        val hoverText = Text.literal(hover).formatted(Formatting.YELLOW)
+        val hoverText = Component.literal(hover).withStyle(ChatFormatting.YELLOW)
 
         val clickEvent = ClickEvent.RunCommand(command)
         val hoverEvent = HoverEvent.ShowText(hoverText)
 
-        val styledText = Text.literal(message).setStyle(
+        val styledText = Component.literal(message).setStyle(
             Style.EMPTY
                 .withClickEvent(clickEvent)
                 .withHoverEvent(hoverEvent)
         )
 
-        mc.inGameHud.chatHud.addMessage(styledText)
+        mc.execute {
+            mc.gui.chat.addMessage(styledText)
+        }
     }
 
     /**
@@ -105,16 +134,18 @@ object Chat {
      * This is useful for combining multiple Text objects into one message.
      * @param textComponents The list of Text components to combine and send.
      */
-    fun chat(vararg textComponents: Text) {
+    fun chat(vararg textComponents: Component) {
         if (textComponents.isEmpty()) return
 
-        val combinedText = Text.literal("")
+        val combinedText = Component.literal("")
 
         textComponents.forEach { component ->
             combinedText.append(component)
         }
 
-        mc.inGameHud.chatHud.addMessage(combinedText)
+        mc.execute {
+            mc.gui.chat.addMessage(combinedText)
+        }
     }
 
     /**
@@ -128,13 +159,13 @@ object Chat {
         message: String,
         hover: String? = null,
         command: String? = null
-    ): Text {
-        val styledText = Text.literal(message).setStyle(
+    ): Component {
+        val styledText = Component.literal(message).setStyle(
             Style.EMPTY
         )
 
         if (hover != null) {
-            val hoverText = Text.literal(hover).formatted(Formatting.YELLOW)
+            val hoverText = Component.literal(hover).withStyle(ChatFormatting.YELLOW)
             styledText.style = styledText.style.withHoverEvent(HoverEvent.ShowText(hoverText))
         }
 
@@ -155,9 +186,9 @@ object Chat {
         if (separator.isEmpty()) {
             return ""
         }
-        val textRenderer = mc.textRenderer
-        val chatWidth = mc.inGameHud.chatHud.width
-        val separatorWidth = textRenderer.getWidth(separator)
+        val textRenderer = mc.font
+        val chatWidth = mc.gui.chat.width
+        val separatorWidth = textRenderer.width(separator)
 
         if (separatorWidth <= 0) {
             return ""

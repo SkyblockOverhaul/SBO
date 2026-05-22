@@ -1,35 +1,27 @@
 package net.sbo.mod.utils.render
 
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.text.Text
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.network.chat.Component
 
 object RenderUtils2D {
     fun drawHoveringString(
-        drawContext: DrawContext,
+        drawContext: GuiGraphics,
         text: String,
         x: Double,
         y: Double,
-        textRenderer: TextRenderer,
+        textRenderer: Font,
         scale: Float = 1.0f,
         padding: Int = 2
     ) {
         if (text.isEmpty()) return
 
-        val textLines = text.split("\n").map { Text.of(it) }
+        val textLines = text.split("\n").map { Component.nullToEmpty(it) }
 
-        //#if MC >= 1.21.7
-        //$$ drawContext.matrices.pushMatrix()
-        //#else
-        drawContext.matrices.push()
-        //#endif
+        drawContext.pose().pushMatrix()
 
-        drawContext.drawTooltip(textRenderer, textLines, x.toInt(), y.toInt())
+        drawContext.setComponentTooltipForNextFrame(textRenderer, textLines, x.toInt(), y.toInt())
 
-        //#if MC >= 1.21.7
-        //$$ drawContext.matrices.popMatrix()
-        //#else
-        drawContext.matrices.pop()
-        //#endif
+        drawContext.pose().popMatrix()
     }
 }

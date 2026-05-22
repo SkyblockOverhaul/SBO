@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.http
 
+import net.sbo.mod.SBOKotlin
 import java.net.HttpURLConnection
 import java.net.URI
 import java.util.concurrent.CompletableFuture
@@ -11,12 +12,13 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.jsonArray
 
+import net.minecraft.SharedConstants
 
 object Http {
     val jsonParser = Json { ignoreUnknownKeys = true }
     private const val CONNECT_TIMEOUT = 10000
     private const val READ_TIMEOUT = 10000
-    private const val USER_AGENT = "SBO-Kotlin-Mod/1.21.5"
+    private val USER_AGENT = "SBO-Kotlin-Mod/" + SBOKotlin.version + "+" + SharedConstants.getCurrentVersion().name()
 
     /**
      * Sends an asynchronous HTTP GET request.

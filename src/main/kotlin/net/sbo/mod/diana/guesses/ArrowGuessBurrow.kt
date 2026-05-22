@@ -1,10 +1,10 @@
 package net.sbo.mod.diana.guesses
 
-import net.minecraft.block.Blocks
-import net.minecraft.util.math.Box
-import net.minecraft.network.packet.s2c.play.ParticleS2CPacket
-import net.minecraft.particle.DustParticleEffect
-import net.minecraft.particle.ParticleTypes
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.phys.AABB
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
+import net.minecraft.core.particles.DustParticleOptions
+import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
@@ -49,7 +49,7 @@ object ArrowGuessBurrow {
     private const val EPSILON = 1e-6
     private val HUB_BOUNDS_MIN = SboVec(-296.0, 0.0, -272.0)
     private val HUB_BOUNDS_MAX = SboVec(207.0, 256.0, 223.0)
-    private val HUB_BOUNDS: Box = Box(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
+    private val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
     private var spadeTitleShown = false
 
     private val allowedBlocksAboveGround = buildList {
@@ -77,14 +77,14 @@ object ArrowGuessBurrow {
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
         if (!Diana.arrowGuess) return
-        val packet = event.packet as? ParticleS2CPacket ?: return
+        val packet = event.packet as? ClientboundLevelParticlesPacket ?: return
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)
         if (!location.isCloseToLastBurrow()) return
         if(!recentArrowParticles.add(location)) return
 
-        val range = getArrowRange(packet.offsetX, packet.offsetY) ?: return
+        val range = getArrowRange(packet.xDist, packet.yDist) ?: return
         locations.add(location)
         range.processArrowDetection()
     }
@@ -266,11 +266,7 @@ object ArrowGuessBurrow {
         val player = SBOKotlin.mc.player ?: return
         val hasSpade = InventoryUtils.isItemHeld("SPADE", 1.seconds)
         val burrowLocations = BurrowDetector.burrows.values.map { it.waypoint?.pos ?: SboVec(0.0, 0.0, 0.0) }
-        //#if MC >= 1.21.9
-        //$$ val playerPos = player.entityPos.toSboVec()
-        //#else
-        val playerPos = player.pos.toSboVec()
-        //#endif
+        val playerPos = player.position().toSboVec()
 
         for (guess in allGuesses) {
             if (guess == null) continue
@@ -311,7 +307,7 @@ object ArrowGuessBurrow {
         return isGround && isValidBlockAbove
     }
 
-    private fun ParticleS2CPacket.distanceToPlayer(): Double {
+    private fun ClientboundLevelParticlesPacket.distanceToPlayer(): Double {
         val player = SBOKotlin.mc.player ?: return Double.MAX_VALUE
         val dx = this.x - player.x
         val dy = this.y - player.y
@@ -324,18 +320,18 @@ object ArrowGuessBurrow {
         return kotlin.math.round(this * factor) / factor
     }
 
-    private fun Box.isInside(vec: SboVec): Boolean {
+    private fun AABB.isInside(vec: SboVec): Boolean {
         return vec.x > this.minX && vec.x <= this.maxX &&
                 vec.y > this.minY && vec.y <= this.maxY &&
                 vec.z > this.minZ && vec.z <= this.maxZ;
     }
 
-    private fun ParticleS2CPacket.isRelevant() : Boolean {
-        if (this.parameters.type != ParticleTypes.DUST) return false
+    private fun ClientboundLevelParticlesPacket.isRelevant() : Boolean {
+        if (this.particle.type != ParticleTypes.DUST) return false
         if (this.count != 0) return false
-        if (this.speed != 1.0f) return false
-        val parameters = this.parameters
-        return parameters is DustParticleEffect
+        if (this.maxSpeed != 1.0f) return false
+        val parameters = this.particle
+        return parameters is DustParticleOptions
     }
 
     private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) < 5 } ?: false
