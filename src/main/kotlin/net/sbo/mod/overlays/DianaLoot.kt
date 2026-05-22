@@ -63,15 +63,20 @@ object DianaLoot {
         hoverText = "$RED${UNDERLINE}Reset Session",
         defaultText = "${RED}Reset Session",
         onClick = {
-            SboTimerManager.timerSession.reset()
-            SBOConfigBundle.dianaTrackerSessionData.reset().save()
-            updateLines()
-            DianaMobs.updateLines()
+            DianaLoot.resetSession()
         }
     )
 
+    fun resetSession() {
+        SboTimerManager.timerSession.reset()
+        SBOConfigBundle.dianaTrackerSessionData.reset().save()
+        updateLines()
+        DianaMobs.updateLines()
+    }
+
     private val LOOT_ITEMS = listOf<LootItemData>(
         LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED),
+        LootItemData("MYTH_THE_FISH", "Myth the Fish", RED),
         LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS"),
         LootItemData("MANTI_CORE", "Manti-core", RED, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
         LootItemData("KING_MINOS_SHARD", "King Minos Shard", RED, isRarerDrop = true, dropMobId = "KING_MINOS"),

@@ -7,8 +7,29 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
 import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.events.ClickActionManager
+import net.sbo.mod.settings.categories.General
 
 object Chat {
+
+    /**
+     * Sends a text to party chat via the /pc command, or
+     * sends it locally if the user opted-in to the "Assume Muted"
+     * option for accessibility, so that they can still see the message
+     * and/or possibly copy and share the message in another platform such as Discord.
+     *
+     * @param text The text to send to party chat if possible or otherwise locally.
+     */
+    fun pc(text: String) {
+        if (General.assumeMuted) {
+            // User is muted (or we assume it bc of the opt-in setting thats false by default)
+            // trying send message will show up a huge output about the remaining mute time,
+            // server rules and all that yapping with no other output about the text we want
+            // to send, so send locally instead via the chat method. We can have color since it's regular chat.
+            Chat.chat("§6[SBO] §e${text}")
+        } else {
+            Chat.command("pc ${text}")
+        }
+    }
 
     /**
      * Sends a command to the server.

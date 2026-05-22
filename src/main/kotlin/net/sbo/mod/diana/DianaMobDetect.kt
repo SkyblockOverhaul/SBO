@@ -82,6 +82,17 @@ object DianaMobDetect {
     fun init() {
         mobHpOverlay.init()
         noShurikenOverlay.init()
+        Register.onChatMessage(
+            Regex("^§a§lCAUGHT!.*?You cocooned a (?<name>.+?)!.*$")
+        ) { _, matchResult ->
+            val name = matchResult.groups["name"]?.value ?: return@onChatMessage
+            val rare = RareDianaMob.fromName(name)
+
+            if (rare != null) {
+                // Cocooned a rare mob if rare != null
+                announceCocoon(DetectionType.CHAT_MESSAGE, rare.display)
+            }
+        }
         Register.onTick(1) {
             val world = mc.level ?: return@onTick
             val player = mc.player ?: return@onTick
@@ -205,7 +216,7 @@ object DianaMobDetect {
     }
 
     private fun checkCocoon(entity: ArmorStand, now: Long) {
-        if (World.getWorld() != "Hub") return
+        if (!Diana.legacyCocoonDetection || World.getWorld() != "Hub") return
         val recentDeath = listOf(lastInqDeath, lastKingDeath, lastSphinxDeath, lastMantiDeath)
             .any { getSecondsPassed(it) < DEATH_WINDOW_SECONDS }
 
@@ -220,13 +231,26 @@ object DianaMobDetect {
         if (texture == null) return
         if (texture == COCOON_TEXTURE && lastCocoon + COCOON_COOLDOWN_MS < now) {
             lastCocoon = now
-            if (Diana.announceCocoon) {
-                sleep(CHAT_DELAY_MS) { Chat.command("pc Cocoon!") }
-            }
-            if (Diana.cocoonTitle) {
-                showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", null, 10, 40, 10)
-                playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
-            }
+            announceCocoon(DetectionType.TEXTURE)
+        }
+    }
+
+    private enum class DetectionType {
+        TEXTURE, CHAT_MESSAGE
+    }
+
+    private fun announceCocoon(detectionType: DetectionType, mobName: String? = null) {
+        if (detectionType == DetectionType.TEXTURE && !Diana.legacyCocoonDetection) {
+            return
+        }
+
+        if (Diana.announceCocoon) {
+            sleep(CHAT_DELAY_MS) { Chat.pc("" + if (mobName != null) "Cocooned a ${mobName}!" else "Cocoon!") }
+        }
+        if (Diana.cocoonTitle) {
+            val subtitle = if (mobName != null) "§b${mobName}" else null
+            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", subtitle, 10, 40, 10)
+            playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
         }
     }
 
@@ -253,7 +277,7 @@ object DianaMobDetect {
 
             if (mobType !in Diana.ShareMobs) return
             val playerPos = SboPlayer.getLastPosition()
-            Chat.command("pc x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob")
+            Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob")
         }
 
         when (mob) {
@@ -261,7 +285,7 @@ object DianaMobDetect {
                 Diana.announceInqText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceInqText[0], "inq")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }
@@ -270,7 +294,7 @@ object DianaMobDetect {
                 Diana.announceSphinxText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }
@@ -279,7 +303,7 @@ object DianaMobDetect {
                 Diana.announceMantiText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }
@@ -288,7 +312,7 @@ object DianaMobDetect {
                 Diana.announceKingText.firstOrNull()?.let { killText ->
                     if (killText.isNotBlank()) {
                         val message = Helper.getSpawnMessage(Diana.announceKingText[0], "king")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.command("pc $message") }
+                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc("$message") }
                     }
                 }
             }

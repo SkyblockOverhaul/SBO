@@ -40,7 +40,7 @@
       "environment": "client"
     }
   ],
-  "accessWidener": "sbo-kotlin.accesswidener",
+  "accessWidener": "sbo-kotlin.classtweaker",
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
     "minecraft": ">=${mc_version}",

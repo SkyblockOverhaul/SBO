@@ -9,19 +9,22 @@ plugins {
     java
     kotlin("jvm")
     kotlin("plugin.serialization") version "2.3.21"
-    id("gg.essential.loom") version "1.15.50"
+    id("net.fabricmc.fabric-loom-remap") version "1.16.2"
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     id("com.google.devtools.ksp") version "2.3.7"
 }
 
-loom {
-    // Temporarily disabled because of build failure on latest versions:
-    // java.lang.IllegalStateException: Javadoc provided by mod (fabric-content-registries-v0) must be have an intermediary source namespace
-    enableModProvidedJavadoc = false
+private val mcProject: String = project.name
+private val mcVersion: String = mcProject.replace("-fabric", "")
 
+private fun versionedProperty(name: String): String {
+    return project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for ${mcProject}")
+}
+
+loom {
     // Some stuff were made private / package-private in later versions, so we need this.
-    accessWidenerPath = file("src/main/resources/sbo-kotlin.accesswidener")
+    accessWidenerPath = file("src/main/resources/sbo-kotlin.classtweaker")
 
     runs {
         named("client") {
@@ -34,7 +37,7 @@ loom {
 }
 
 bloom {
-    if ("26.1-fabric" == project.name) {
+    if ("26.1.2-fabric" == mcProject) {
         // GuiGraphics --> GuiGraphicsExtractor
         replacement("GuiGraphics", "GuiGraphicsExtractor")
 
@@ -104,10 +107,6 @@ tasks.withType<KotlinJvmCompile>().configureEach {
     }
 }
 
-private fun versionedProperty(name: String): String {
-    return project.property("${name}.${project.name.replace("-fabric", "")}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for ${project.name}")
-}
-
 kotlin {
     // This improves build performance as it supports incremental compilation among other things with the BTA API
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
@@ -115,15 +114,69 @@ kotlin {
 }
 
 repositories {
-    maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
-    maven("https://repo.essential.gg/repository/maven-public")
-    maven("https://maven.teamresourceful.com/repository/maven-public/")
-    maven("https://maven.terraformersmc.com/")
-    maven("https://maven.azureaaron.net/releases")
-    maven("https://api.modrinth.com/maven")
+    exclusiveContent {
+        forRepository {
+            maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+        }
+
+        filter {
+            includeGroup("me.djtheredstoner")
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven("https://repo.essential.gg/repository/maven-public")
+        }
+
+        filter {
+            includeGroup("gg.essential")
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven("https://maven.teamresourceful.com/repository/maven-public/")
+        }
+
+        filter {
+            includeGroup("com.teamresourceful.resourcefulconfig")
+            includeGroup("com.teamresourceful.resourcefulconfigkt")
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven("https://maven.terraformersmc.com/")
+        }
+
+        filter {
+            includeModule("com.terraformersmc", "modmenu")
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven("https://maven.azureaaron.net/releases")
+        }
+
+        filter {
+            includeModule("net.azureaaron", "hm-api")
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven("https://api.modrinth.com/maven")
+        }
+
+        filter {
+            includeModule("maven.modrinth", "iris")
+        }
+    }
 }
 
-val jarName = project.property("mod.name").toString() + "-" + project.property("mod.version").toString() + "+" + project.name
+val jarName = project.property("mod.name").toString() + "-" + project.property("mod.version").toString() + "+" + mcProject
 
 afterEvaluate {
     val newBuildDestinationDirectory by lazy {
@@ -136,7 +189,7 @@ afterEvaluate {
             archiveBaseName.set(jarName)
         }
 
-        if ("26.1-fabric" != project.name) {
+        if ("26.1.2-fabric" != mcProject) {
             named<RemapJarTask>("remapJar") {
                 destinationDirectory.set(newBuildDestinationDirectory)
                 archiveBaseName.set(jarName)
@@ -147,19 +200,13 @@ afterEvaluate {
 
 tasks.withType<JavaCompile> {
   options.release = Integer.parseInt(versionedProperty("java.version"))
-  options.encoding = StandardCharsets.UTF_8.toString()
 }
 
 tasks.withType<KotlinJvmCompile> {
     compilerOptions.jvmTarget.set(JvmTarget.fromTarget(versionedProperty("java.version")))
 }
 
-tasks.withType<AbstractArchiveTask> {
-  isReproducibleFileOrder = true
-  isPreserveFileTimestamps = false
-}
-
-tasks.matching { it.name.contains("Test") }.configureEach {
+tasks.matching { it.name.contains("Test") || it.name.contains("test") }.configureEach {
     // One of the tasks create problems since preprocessTestCode reads output of kspTestKotlin without depending on it
     // We don't have any tests anyway; so this OK to disable to workaround the error.
     enabled = false
@@ -182,8 +229,6 @@ tasks.named<ProcessResources>("processResources") {
     val modId = project.property("mod.id")
     val modVersion = project.property("mod.version")
     val modGroup = project.property("mod.group")
-
-    val mcVersion = project.name.replace("-fabric", "")
 
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
@@ -235,7 +280,7 @@ tasks.named<ProcessResources>("processResources") {
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${project.name.replace("-fabric", "")}")
+    minecraft("com.mojang:minecraft:${mcVersion}")
 
     val mappingsConfig = configurations.findByName("mappings")
 
@@ -245,15 +290,6 @@ dependencies {
             loom.officialMojangMappings()
         )
     }
-
-    implementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
-
-    implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
-
-    ksp(project(":event-processor"))
-    ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
-
-    implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
 
     val modImplementationConfig = configurations.findByName("modImplementation")
 
@@ -265,35 +301,38 @@ dependencies {
         }
     }
 
-    when (project.name) {
-        "26.1-fabric" -> {
-            implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
-            implementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
-            implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
+    maybeModImplementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
+    maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
+    implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
+
+    ksp(project(":event-processor"))
+    ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
+
+    implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
+
+    maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
+    maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
+
+    when (mcProject) {
+        "26.1.2-fabric" -> {
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
             implementation(include("gg.essential:universalcraft-26.1-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
         }
         "1.21.11-fabric" -> {
-            maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
-            maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
-            maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
             maybeModImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.11:${versionedProperty("rconfig.version")}")!!)
             maybeModImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.11:${versionedProperty("rconfigkt.version")}")!!)
             maybeModImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.11-fabric")
         }
         "1.21.10-fabric" -> {
-            maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
-            maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
-            maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
             maybeModImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.9:${versionedProperty("rconfig.version")}")!!) // .9 works on .10
             maybeModImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.5:${versionedProperty("rconfigkt.version")}")!!)  // .5 works on .10
             maybeModImplementation(include("gg.essential:universalcraft-1.21.9-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.10-fabric")
         }
-        else -> throw AssertionError("build.gradle.kts needs updating for ${project.name}")
+        else -> throw AssertionError("build.gradle.kts needs updating for ${mcProject}")
     }
 
     implementation(project(":event-processor"))
@@ -301,9 +340,9 @@ dependencies {
 }
 
 tasks.findByName("preprocessCode")?.apply {
-    when (project.name) {
-        "26.1-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
+    when (mcProject) {
+        "26.1.2-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
         "1.21.11-fabric" -> dependsOn(":1.21.10-fabric:kspKotlin")
-        else -> throw AssertionError("build.gradle.kts needs updating for ${project.name}")
+        else -> throw AssertionError("build.gradle.kts needs updating for ${mcProject}")
     }
 }

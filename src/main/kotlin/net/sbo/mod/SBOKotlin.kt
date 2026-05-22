@@ -79,8 +79,6 @@ object SBOKotlin : ClientModInitializer {
 			.map { it.metadata.version.friendlyString }
 			.orElse("unknown")
 
-
-
 		logger.info("Initializing SBO-Kotlin, version: $version...")
 
 		// Initialize Mayor Data
