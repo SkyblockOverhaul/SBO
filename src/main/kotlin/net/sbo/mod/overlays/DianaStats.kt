@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting.*
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 
 object DianaStats : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Stats", 10f, 10f, 1f).setCondition { Diana.statsTracker && (Helper.checkDiana() || Helper.hasSpade)}

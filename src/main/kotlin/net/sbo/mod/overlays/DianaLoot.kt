@@ -20,6 +20,7 @@ import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
+import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 import java.util.concurrent.TimeUnit
 
 object DianaLoot : DirtyFlushableOverlay() {
@@ -353,6 +354,10 @@ object DianaLoot : DirtyFlushableOverlay() {
             Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
             Diana.Tracker.EVENT -> SboTimerManager.timerMayor
             Diana.Tracker.SESSION -> SboTimerManager.timerSession
+            Diana.Tracker.OFF -> {
+                timerLine.text = ""
+                return
+            }
         }
 
         val formattedTime = Helper.formatTime(tracker.items.TIME)

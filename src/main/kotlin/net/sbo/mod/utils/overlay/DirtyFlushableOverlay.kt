@@ -1,7 +1,5 @@
-package net.sbo.mod.overlays
+package net.sbo.mod.utils.overlay
 
-import net.sbo.mod.utils.overlay.Overlay
-import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.events.Register
 
 abstract class DirtyFlushableOverlay {

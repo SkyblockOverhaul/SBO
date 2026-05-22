@@ -23,6 +23,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 
 object DianaMobs : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Mobs", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
