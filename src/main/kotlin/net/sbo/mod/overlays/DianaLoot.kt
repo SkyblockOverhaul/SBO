@@ -22,10 +22,10 @@ import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
 import java.util.concurrent.TimeUnit
 
-object DianaLoot {
+object DianaLoot : DirtyFlushableOverlay() {
     private var isSellTypeHovered = false
     val timerLine: OverlayTextLine = OverlayTextLine("")
-    val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
+    override val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
 
     val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
@@ -120,7 +120,7 @@ object DianaLoot {
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
-            updateLines(isCraftingOpen = true)
+            updateLines()
         }
     }
 
@@ -197,19 +197,21 @@ object DianaLoot {
         return line
     }
 
-    fun updateLines(isCraftingOpen: Boolean = false) {
-        val lines = mutableListOf<OverlayTextLine>()
+    override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.lootTracker
         val tracker = getDianaTracker(type) ?: run {
-            overlay.setLines(emptyList())
-            return
+            return emptyList()
         }
+
+        val isCraftingOpen = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
+        val lines = mutableListOf<OverlayTextLine>()
 
         updateControlLines(lines, isCraftingOpen)
         lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Loot $GRAY($YELLOW${Helper.toTitleCase(type.toString())}$GRAY)"))
         lines.addAll(generateLootLines(tracker))
         lines.addAll(generateStatisticsLines(tracker, type, isCraftingOpen))
-        overlay.setLines(lines)
+
+        return lines
     }
 
     private fun getDianaTracker(type: Diana.Tracker): DianaTracker? {

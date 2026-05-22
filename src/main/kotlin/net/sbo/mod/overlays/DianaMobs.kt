@@ -22,9 +22,10 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.utils.events.Register
 
-object DianaMobs {
-    val overlay = Overlay("Diana Mobs", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
+object DianaMobs : DirtyFlushableOverlay() {
+    override val overlay = Overlay("Diana Mobs", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
     val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {
             Diana.mobTracker = Diana.mobTracker.next()
@@ -52,7 +53,7 @@ object DianaMobs {
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
-            updateLines(true)
+            updateLines()
         }
     }
 
@@ -77,16 +78,14 @@ object DianaMobs {
         return line
     }
 
-    fun updateLines(isCraftingOpen: Boolean = false) {
-        val lines = mutableListOf<OverlayTextLine>()
+    override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.mobTracker
         val tracker = when (type) {
             Diana.Tracker.TOTAL -> SBOConfigBundle.dianaTrackerTotalData
             Diana.Tracker.EVENT -> SBOConfigBundle.dianaTrackerMayorData
             Diana.Tracker.SESSION -> SBOConfigBundle.dianaTrackerSessionData
             Diana.Tracker.OFF -> {
-                overlay.setLines(emptyList())
-                return
+                return emptyList()
             }
         }
         val kingPercent = calcPercentOne(tracker.items, tracker.mobs, "KING_MINOS")
@@ -106,7 +105,9 @@ object DianaMobs {
             BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
         } else 0.0
 
-        if (isCraftingOpen || isCraftingScreenOpen()) {
+        val lines = mutableListOf<OverlayTextLine>()
+
+        if (isCraftingScreenOpen()) {
             lines.add(changeView)
         }
 
@@ -129,6 +130,7 @@ object DianaMobs {
                 OverlayTextLine("$GRAY - ${GRAY}Total Mobs: $AQUA${Helper.formatNumber(tracker.mobs.TOTAL_MOBS, true)} $GRAY[$AQUA$mobsPerHr$GRAY/${AQUA}hr$GRAY]")
             )
         )
-        overlay.setLines(lines)
+
+        return lines
     }
 }
