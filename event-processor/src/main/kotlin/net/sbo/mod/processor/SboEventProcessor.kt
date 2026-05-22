@@ -52,10 +52,13 @@ class SboEventProcessor(
             OutputStreamWriter(file).use { writer ->
                 val functionCalls = functions.joinToString("\n") { fn ->
                     val paramType = fn.parameters.firstOrNull()?.type?.resolve()?.declaration?.qualifiedName?.asString()
+                    val priority = fn.annotations.find { it.shortName.getShortName() == "SboEvent" }
+                        ?.arguments?.find { it.name?.getShortName() == "priority" }
+                        ?.value?.toString()?.toIntOrNull() ?: 1
                     if (paramType == null) {
                         "// Cannot resolve type for ${fn.simpleName.asString()}"
                     } else {
-                        "SBOEvent.on($paramType::class) { e -> $instanceRef.${fn.simpleName.asString()}(e) }"
+                        "SBOEvent.on($paramType::class, $priority) { e -> $instanceRef.${fn.simpleName.asString()}(e) }"
                     }
                 }
 
@@ -63,6 +66,7 @@ class SboEventProcessor(
                     package $packageName
 
                     import net.sbo.mod.utils.events.SBOEvent
+                    import net.sbo.mod.utils.events.annotations.SboEvent
 
                     object $fileName {
                         fun register() {
