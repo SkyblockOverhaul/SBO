@@ -49,6 +49,8 @@ object DianaTracker {
     private var lootAnnouncerBool: Boolean = false
     private var allowScavTracking: Boolean = true
 
+    var lastSpawnedMob: String? = null
+
     fun init() {
         Register.command("sboresetsession") {
             DianaLoot.resetSession()
@@ -163,139 +165,152 @@ object DianaTracker {
         Register.onChatMessageCancable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
             val mob = matchResult.group(3)
             if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancable !QOL.dianaMessageHider
-            when (mob) {
-                "King Minos" -> {
-                    DianaMobDetect.onRareSpawn(mob)
-                    trackMob(mob, 1)
 
-                    sboData.kingSinceWool += 1
-                    if (Diana.sendSinceMessage) {
-                        val timeSinceKing = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastKingDate)
-                        if (sboData.lastKingDate != 0L) {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceKing} §eMobs and §c$timeSinceKing §eto get a King!")
-                        } else {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceKing} §eMobs to get a King!")
-                        }
-                    }
-                    sboData.lastKingDate = dianaTrackerTotal.items.TIME
+            trackMobOnSpawnAndSave(mob)
 
-                    if (sboData.b2bKing && sboData.mobsSinceKing == 1) {
-                        Chat.chat("§6[SBO] §cb2b2b King Minos!")
-                        unlockAchievement(117) // b2b2b king
-                    }
-                    if (sboData.mobsSinceKing == 1 && !sboData.b2bKing) {
-                        Chat.chat("§6[SBO] §cb2b King Minos!")
-                        unlockAchievement(87) // b2b king
-                        sboData.b2bKing = true
-                    }
-                    if (sboData.kingSinceWool >= 2) sboData.b2bWool = false
-                    if (sboData.kingSinceWool >= 2) sboData.b2bWoolLs = false
-                    sboData.mobsSinceKing = 0
-                }
-                "Manticore" -> {
-                    DianaMobDetect.onRareSpawn(mob)
-                    trackMob(mob, 1)
-
-                    sboData.mantiSinceCore += 1
-                    sboData.mantiSinceStinger += 1
-
-                    if (Diana.sendSinceMessage) {
-                        val timeSinceManti = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastMantiDate)
-                        if (sboData.lastMantiDate != 0L) {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceManti} §eMobs and §c$timeSinceManti §eto get a Manticore!")
-                        } else {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceManti} §eMobs to get a Manticore!")
-                        }
-                    }
-                    sboData.lastMantiDate = dianaTrackerTotal.items.TIME
-
-                    if (sboData.b2bManti && sboData.mobsSinceManti == 1) {
-                        Chat.chat("§6[SBO] §cb2b2b Manticore!")
-                        unlockAchievement(110)
-                    }
-                    if (sboData.mobsSinceManti == 1 && !sboData.b2bManti) {
-                        Chat.chat("§6[SBO] §cb2b Manticore!")
-                        unlockAchievement(109) // b2b manti
-                        sboData.b2bManti = true
-                    }
-                    if (sboData.mantiSinceCore >= 2) sboData.b2bCore = false
-                    if (sboData.mantiSinceStinger >= 2) sboData.b2bStinger = false
-                    sboData.mobsSinceManti = 0
-                }
-                "Minos Inquisitor" -> {
-                    DianaMobDetect.onRareSpawn(mob)
-                    trackMob(mob, 1)
-
-                    sboData.inqsSinceChim += 1
-
-                    if (Diana.sendSinceMessage) {
-                        val timeSinceInq = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastInqDate)
-                        if (sboData.lastInqDate != 0L) {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs and §c$timeSinceInq §eto get an Inquis!")
-                        } else {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs to get an Inquis!")
-                        }
-                    }
-                    sboData.lastInqDate = dianaTrackerTotal.items.TIME
-
-                    if (sboData.b2bInq && sboData.mobsSinceInq == 1) {
-                        Chat.chat("§6[SBO] §cb2b2b Inquisitor!")
-                        unlockAchievement(7) // b2b2b inq
-                    }
-                    if (sboData.mobsSinceInq == 1 && !sboData.b2bInq) {
-                        Chat.chat("§6[SBO] §cb2b Inquisitor!")
-                        unlockAchievement(6) // b2b inq
-                        sboData.b2bInq = true
-                    }
-                    if (sboData.inqsSinceChim >= 2) sboData.b2bChim = false
-                    sboData.mobsSinceInq = 0
-                }
-                "Sphinx" -> {
-                    DianaMobDetect.onRareSpawn(mob)
-                    trackMob(mob, 1)
-
-                    sboData.sphinxSinceFood += 1
-
-                    if (Diana.sendSinceMessage) {
-                        val timeSinceSphinx = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastSphinxDate)
-                        if (sboData.lastSphinxDate != 0L) {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceSphinx} §eMobs and §c$timeSinceSphinx §eto get a Sphinx!")
-                        } else {
-                            Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceSphinx} §eMobs to get a Sphinx!")
-                        }
-                    }
-                    sboData.lastSphinxDate = dianaTrackerTotal.items.TIME
-
-                    if (sboData.b2bSphinx && sboData.mobsSinceSphinx == 1) {
-                        Chat.chat("§6[SBO] §cb2b2b Sphinx!")
-                        unlockAchievement(108)
-                    }
-                    if (sboData.mobsSinceSphinx == 1 && !sboData.b2bSphinx) {
-                        Chat.chat("§6[SBO] §cb2b Sphinx!")
-                        unlockAchievement(107)
-                        sboData.b2bSphinx = true
-                    }
-                    if (sboData.sphinxSinceFood >= 2) sboData.b2bFood = false
-                    sboData.mobsSinceSphinx = 0
-                }
-                "Minos Champion" -> {
-                    sboData.champsSinceRelic += 1
-                    trackMob(mob, 1)
-                }
-                "Minotaur" -> {
-                    sboData.minotaursSinceStick += 1
-                    if (sboData.minotaursSinceStick >= 2) sboData.b2bStick = false
-                    trackMob(mob, 1)
-                }
-                "Gaia Construct" -> trackMob(mob, 1)
-                "Harpy" -> trackMob(mob, 1)
-                "Cretan Bull" -> trackMob(mob, 1)
-                "Stranded Nymph" -> trackMob(mob, 1)
-                "Siamese Lynxes" -> trackMob(mob, 1)
-                "Minos Hunter" -> trackMob(mob, 1)
-            }
-            SboDataObject.save("SboData")
             !QOL.dianaMessageHider
+        }
+    }
+
+    fun trackMobOnSpawnAndSave(mob: String, fromCocoon: Boolean = false) {
+        onMobSpawn(mob, fromCocoon)
+        SboDataObject.save("SboData")
+    }
+
+    fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
+        lastSpawnedMob = mob
+        if (fromCocoon) Chat.chat("§6[SBO] §eTracking cocooned mob: ${mob}")
+        when (mob) {
+            "King Minos" -> {
+                DianaMobDetect.onRareSpawn(mob)
+                trackMob(mob, 1)
+
+                sboData.kingSinceWool += 1
+                if (Diana.sendSinceMessage) {
+                    val timeSinceKing = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastKingDate)
+                    if (sboData.lastKingDate != 0L) {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceKing} §eMobs and §c$timeSinceKing §eto get a King!")
+                    } else {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceKing} §eMobs to get a King!")
+                    }
+                }
+                sboData.lastKingDate = dianaTrackerTotal.items.TIME
+
+                if (sboData.b2bKing && sboData.mobsSinceKing == 1) {
+                    Chat.chat("§6[SBO] §cb2b2b King Minos!")
+                    unlockAchievement(117) // b2b2b king
+                }
+                if (sboData.mobsSinceKing == 1 && !sboData.b2bKing) {
+                    Chat.chat("§6[SBO] §cb2b King Minos!")
+                    unlockAchievement(87) // b2b king
+                    sboData.b2bKing = true
+                }
+                if (sboData.kingSinceWool >= 2) sboData.b2bWool = false
+                if (sboData.kingSinceWool >= 2) sboData.b2bWoolLs = false
+                sboData.mobsSinceKing = 0
+            }
+            "Manticore" -> {
+                DianaMobDetect.onRareSpawn(mob)
+                trackMob(mob, 1)
+
+                sboData.mantiSinceCore += 1
+                sboData.mantiSinceStinger += 1
+
+                if (Diana.sendSinceMessage) {
+                    val timeSinceManti = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastMantiDate)
+                    if (sboData.lastMantiDate != 0L) {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceManti} §eMobs and §c$timeSinceManti §eto get a Manticore!")
+                    } else {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceManti} §eMobs to get a Manticore!")
+                    }
+                }
+                sboData.lastMantiDate = dianaTrackerTotal.items.TIME
+
+                if (sboData.b2bManti && sboData.mobsSinceManti == 1) {
+                    Chat.chat("§6[SBO] §cb2b2b Manticore!")
+                    unlockAchievement(110)
+                }
+                if (sboData.mobsSinceManti == 1 && !sboData.b2bManti) {
+                    Chat.chat("§6[SBO] §cb2b Manticore!")
+                    unlockAchievement(109) // b2b manti
+                    sboData.b2bManti = true
+                }
+                if (sboData.mantiSinceCore >= 2) sboData.b2bCore = false
+                if (sboData.mantiSinceStinger >= 2) sboData.b2bStinger = false
+                sboData.mobsSinceManti = 0
+            }
+            "Minos Inquisitor" -> {
+                DianaMobDetect.onRareSpawn(mob)
+                trackMob(mob, 1)
+
+                sboData.inqsSinceChim += 1
+
+                if (Diana.sendSinceMessage) {
+                    val timeSinceInq = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastInqDate)
+                    if (sboData.lastInqDate != 0L) {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs and §c$timeSinceInq §eto get an Inquis!")
+                    } else {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs to get an Inquis!")
+                    }
+                }
+                sboData.lastInqDate = dianaTrackerTotal.items.TIME
+
+                if (sboData.b2bInq && sboData.mobsSinceInq == 1) {
+                    Chat.chat("§6[SBO] §cb2b2b Inquisitor!")
+                    unlockAchievement(7) // b2b2b inq
+                }
+                if (sboData.mobsSinceInq == 1 && !sboData.b2bInq) {
+                    Chat.chat("§6[SBO] §cb2b Inquisitor!")
+                    unlockAchievement(6) // b2b inq
+                    sboData.b2bInq = true
+                }
+                if (sboData.inqsSinceChim >= 2) sboData.b2bChim = false
+                sboData.mobsSinceInq = 0
+            }
+            "Sphinx" -> {
+                DianaMobDetect.onRareSpawn(mob)
+                trackMob(mob, 1)
+
+                sboData.sphinxSinceFood += 1
+
+                if (Diana.sendSinceMessage) {
+                    val timeSinceSphinx = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastSphinxDate)
+                    if (sboData.lastSphinxDate != 0L) {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceSphinx} §eMobs and §c$timeSinceSphinx §eto get a Sphinx!")
+                    } else {
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceSphinx} §eMobs to get a Sphinx!")
+                    }
+                }
+                sboData.lastSphinxDate = dianaTrackerTotal.items.TIME
+
+                if (sboData.b2bSphinx && sboData.mobsSinceSphinx == 1) {
+                    Chat.chat("§6[SBO] §cb2b2b Sphinx!")
+                    unlockAchievement(108)
+                }
+                if (sboData.mobsSinceSphinx == 1 && !sboData.b2bSphinx) {
+                    Chat.chat("§6[SBO] §cb2b Sphinx!")
+                    unlockAchievement(107)
+                    sboData.b2bSphinx = true
+                }
+                if (sboData.sphinxSinceFood >= 2) sboData.b2bFood = false
+                sboData.mobsSinceSphinx = 0
+            }
+            "Minos Champion" -> {
+                sboData.champsSinceRelic += 1
+                trackMob(mob, 1)
+            }
+            "Minotaur" -> {
+                sboData.minotaursSinceStick += 1
+                if (sboData.minotaursSinceStick >= 2) sboData.b2bStick = false
+                trackMob(mob, 1)
+            }
+            "Gaia Construct" -> trackMob(mob, 1)
+            "Harpy" -> trackMob(mob, 1)
+            "Cretan Bull" -> trackMob(mob, 1)
+            "Stranded Nymph" -> trackMob(mob, 1)
+            "Siamese Lynxes" -> trackMob(mob, 1)
+            "Minos Hunter" -> trackMob(mob, 1)
+            else -> Chat.chat("§6[SBO] §cUnknown diana mob spawned: ${mob}. Please report this.")
         }
     }
 
