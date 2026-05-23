@@ -60,7 +60,7 @@ object Mayor {
         }
 
         if (skyblockDate != null) {
-            if ((mayor === null || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
+            if ((mayor == null || mayorApiError || newMayor || outDatedApi) && !refreshingMayor) {
                 getMayor()
                 newMayor = false
             }

@@ -8,20 +8,21 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 
 object ItemUtils {
+    private fun CustomData?.orEmpty(): CompoundTag? = this?.copyTag()
 
-    fun getTimestamp(customData: CustomData?, nbt: CompoundTag? = customData?.copyTag()): Long {
+    fun getTimestamp(customData: CustomData?, nbt: CompoundTag? = customData.orEmpty()): Long {
         if (customData == null || nbt == null) return 0L
         if (!nbt.contains("timestamp")) return 0L
         return nbt.getLong("timestamp").orElse(0L)
     }
 
-    fun getSBID(customData: CustomData?, nbt: CompoundTag? = customData?.copyTag()): String {
+    fun getSBID(customData: CustomData?, nbt: CompoundTag? = customData.orEmpty()): String {
         if (customData == null || nbt == null) return ""
         if (!nbt.contains("id")) return ""
         return nbt.getString("id").orElse("")
     }
 
-    fun getUUID(customData: CustomData?, nbt: CompoundTag? = customData?.copyTag()): String {
+    fun getUUID(customData: CustomData?, nbt: CompoundTag? = customData.orEmpty()): String {
         if (customData == null || nbt == null) return ""
         if (!nbt.contains("uuid")) return ""
         return nbt.getString("uuid").orElse("")
