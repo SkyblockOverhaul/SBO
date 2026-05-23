@@ -731,13 +731,13 @@ object SboDataObject {
             ".tmp"
         )
 
-        writerForFile(tempFile).use { writer ->
+        writerForFile(tempFile.toFile()).use { writer ->
             gson.toJson(data, writer)
         }
 
         try {
             Files.move(
-                tempFile.toPath(),
+                tempFile,
                 file.toPath(),
                 StandardCopyOption.REPLACE_EXISTING,
                 StandardCopyOption.ATOMIC_MOVE
@@ -746,7 +746,7 @@ object SboDataObject {
             // Hopefully no power loss or crash because non-atomic move here
             // This code path won't be taken unless outdated OS, weird partition setup or OneDrive (lame)
             Files.move(
-                tempFile.toPath(),
+                tempFile,
                 file.toPath(),
                 StandardCopyOption.REPLACE_EXISTING
             )
