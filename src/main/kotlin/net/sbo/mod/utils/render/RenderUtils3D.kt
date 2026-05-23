@@ -39,8 +39,7 @@ object RenderUtils3D {
         throughWalls: Boolean,
         drawLine: Boolean,
         lineWidth: Float,
-        renderBeam: Boolean,
-        lineColor: FloatArray? = null
+        renderBeam: Boolean
     ) {
         drawFilledBox(
             context,
@@ -54,7 +53,7 @@ object RenderUtils3D {
             drawLineFromCursor(
                 context,
                 pos,
-                lineColor ?: colorComponents,
+                colorComponents,
                 lineWidth,
                 throughWalls,
                 alpha

@@ -53,14 +53,15 @@ class Waypoint(
     var distanceText: String = ""
     var formattedText: String = ""
     var warp: String? = null
+    var isClosest = false
 
     fun distanceToPlayer(): Double {
         val playerPos = Player.getLastPosition()
         return sqrt((playerPos.x - this.pos.x).pow(2) + (playerPos.y - this.pos.y).pow(2) + (playerPos.z - this.pos.z).pow(2))
     }
 
-    private fun setWarpText(isBestGuess: Boolean = true) {
-        if (isBestGuess) {
+    private fun setWarpText() {
+        if (isClosest) {
             this.warp = WaypointManager.getClosestWarp(this.pos)
             this.formattedText = this.warp?.let {
                 "$text§7 (warp $it)${this.distanceText}"
@@ -72,16 +73,15 @@ class Waypoint(
 
     fun format(
         inqWaypoints: List<Waypoint>,
-        closestBurrowDistance: Double,
-        isBestGuess: Boolean = false
+        closestBurrowDistance: Double
     ) {
         this.distanceRaw = distanceToPlayer()
         this.distanceText = if (distance) " §b[${distanceRaw.roundToInt()}m]" else ""
 
         when (this.type) {
             "guess", "arrow" -> {
-                this.color = Color(if (WaypointManager.getBestGuess() == this) Customization.closestColor else Customization.guessColor)
-                this.line = Diana.guessLine && closestBurrowDistance > 60 && inqWaypoints.isEmpty() && isBestGuess
+                this.color = Color(if (isClosest) Customization.closestColor else Customization.guessColor)
+                this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
                 this.r = color.red / 255f
                 this.g = color.green / 255f
                 this.b = color.blue / 255f
@@ -90,7 +90,11 @@ class Waypoint(
                 WaypointManager.waypointExists("burrow", this.pos).let { (exists, wp) ->
                     if (exists && wp != null) this.hidden = wp.distanceToPlayer() < 60
                 }
-                setWarpText(isBestGuess)
+                setWarpText()
+            }
+            "burrow" -> {
+                this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
+                setWarpText()
             }
             "rareMob" -> {
                 if (inqWaypoints.lastOrNull() == this) {
@@ -115,10 +119,6 @@ class Waypoint(
         return this
     }
 
-    private fun extractColorComponents(color: Color): FloatArray {
-        return floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f)
-    }
-
     fun render(context: WorldRenderContext) {
         if (!this.formatted || this.hidden) return
         if (this.type == "guess" && this.distanceRaw <= Diana.removeGuessDistance) return
@@ -133,8 +133,7 @@ class Waypoint(
             true,
             this.line,
             Diana.dianaLineWidth.toFloat(),
-            this.beam,
-            lineColor = if (WaypointManager.getBestGuess() == this) extractColorComponents(Color(Customization.closestColor)) else null
+            this.beam
         )
     }
 }
