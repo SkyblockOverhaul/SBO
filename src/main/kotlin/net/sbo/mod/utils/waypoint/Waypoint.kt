@@ -52,7 +52,6 @@ class Waypoint(
     var distanceRaw: Double = 0.0
     var distanceText: String = ""
     var formattedText: String = ""
-    var warp: String? = null
     var isClosest = false
 
     fun distanceToPlayer(): Double {
@@ -62,8 +61,7 @@ class Waypoint(
 
     private fun setWarpText() {
         if (isClosest) {
-            this.warp = WaypointManager.getClosestWarp(this.pos)
-            this.formattedText = this.warp?.let {
+            this.formattedText = WaypointManager.getClosestWarp(this.pos)?.let {
                 "$text§7 (warp $it)${this.distanceText}"
             } ?: "${this.text}${this.distanceText}"
         } else {
@@ -72,8 +70,7 @@ class Waypoint(
     }
 
     fun format(
-        inqWaypoints: List<Waypoint>,
-        closestBurrowDistance: Double
+        inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
         this.distanceText = if (distance) " §b[${distanceRaw.roundToInt()}m]" else ""
@@ -97,10 +94,13 @@ class Waypoint(
                 setWarpText()
             }
             "rareMob" -> {
-                if (inqWaypoints.lastOrNull() == this) {
+                val newest = inqWaypoints.lastOrNull() == this
+
+                if (newest) {
                     setWarpText()
-                    this.line = Diana.inqLine
                 }
+
+                this.line = newest && Diana.inqLine
             }
             else -> {
                 this.formattedText = "$text$distanceText"
