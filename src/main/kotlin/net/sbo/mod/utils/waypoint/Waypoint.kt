@@ -80,7 +80,7 @@ class Waypoint(
 
         when (this.type) {
             "guess", "arrow" -> {
-                this.color = Color(if (WaypointManager.getBestGuess() == this) Customization.focusedColor else Customization.guessColor)
+                this.color = Color(if (WaypointManager.getBestGuess() == this) Customization.closestColor else Customization.guessColor)
                 this.line = Diana.guessLine && closestBurrowDistance > 60 && inqWaypoints.isEmpty() && isBestGuess
                 this.r = color.red / 255f
                 this.g = color.green / 255f
@@ -116,7 +116,7 @@ class Waypoint(
     }
 
     private fun extractColorComponents(color: Color): FloatArray {
-        return floatArrayOf(color.red / 255, color.green / 255, color.blue / 255)
+        return floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f)
     }
 
     fun render(context: WorldRenderContext) {
@@ -134,7 +134,7 @@ class Waypoint(
             this.line,
             Diana.dianaLineWidth.toFloat(),
             this.beam,
-            lineColor = if (WaypointManager.getBestGuess() == this) extractColorComponents(Color(Customization.focusedColor)) else null
+            lineColor = if (WaypointManager.getBestGuess() == this) extractColorComponents(Color(Customization.closestColor)) else null
         )
     }
 }
