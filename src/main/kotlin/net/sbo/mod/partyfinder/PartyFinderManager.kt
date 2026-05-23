@@ -231,7 +231,7 @@ object PartyFinderManager {
                         "&partytype=$partyType" +
                         "&partysize=$partySize" +
                         "&key=${sboData.sboKey}"
-            ).toJson<PartyAddResponse> { response ->
+            ).toJson<PartyAddResponse>(true) { response ->
                 if (response.success) {
                     val timeTaken = System.currentTimeMillis() - currentTime
                     inQueue = true
@@ -280,7 +280,7 @@ object PartyFinderManager {
                         "&partytype=$partyType" +
                         "&partysize=$partySize" +
                         "&key=${sboData.sboKey}"
-            ).toJson<PartyUpdateResponse> { response ->
+            ).toJson<PartyUpdateResponse>(true) { response ->
                 if (response.success) {
                     val timeTaken = System.currentTimeMillis() - currentTime
                     partyReqsMap = response.partyReqs!!

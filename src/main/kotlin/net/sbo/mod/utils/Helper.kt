@@ -538,7 +538,7 @@ object Helper {
 
     fun updateItemPriceInfo() {
         Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
-            .toJson<List<Map<String, Map<String, Long>>>> { json ->
+            .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
@@ -552,7 +552,7 @@ object Helper {
                 }
             }
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
-            .toJson<HypixelBazaarResponse> {
+            .toJson<HypixelBazaarResponse>(true) {
                 priceDataBazaar = it
                 DianaLoot.updateLines()
             }.error { error ->
