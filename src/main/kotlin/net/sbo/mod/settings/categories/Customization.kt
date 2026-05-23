@@ -48,10 +48,10 @@ object Customization : CategoryKt("Customization") {
         this.allowAlpha = true
     }
     
-    var focusedColor by color(
+    var closestColor by color(
         Color(0.6f, 0.2f, 0.8f).rgb) {
-        this.name = Literal("Focused Color")
-        this.description = Literal("Pick a color for your focused guess")
+        this.name = Literal("Closest Color")
+        this.description = Literal("Pick a color for your closest burrow")
         this.allowAlpha = true
     }
 

@@ -151,7 +151,7 @@ object WaypointManager {
             val rareWp = getWaypointsOfType("rareMob")
             if (Diana.removeRareMobwaypoint) {
                 val rareMobsToRemove = rareWp
-                    .filter { waypoint -> waypoint.distanceToPlayer() < 3.0 }
+                    .filter { waypoint -> waypoint.distanceToPlayer() < 8.0 }
                     .toList()
                 rareMobsToRemove.forEach { waypoint -> removeWaypoint(waypoint) }
             }
@@ -284,13 +284,14 @@ object WaypointManager {
             guessWp = Waypoint("Guess", 100.0, 100.0, 100.0, 0.0f, 0.964f, 1.0f, 0,"guess")
         }
         guessWp?.apply {
-            val (exists, wp) = waypointExists("burrow", this.pos)
-            if (exists && wp != null) {
-                this.hidden = wp.distanceToPlayer() < 60
-            } else {
-                this.hidden = false
-            }
-            this.pos = pos
+            val position = pos
+            this.pos = position
+
+            val (exists, wp) = waypointExists("burrow", position)
+
+            // The shovel "precise" guess will be hidden if we have a known treasure/mob burrow at the same location as the guess and the player is 60 blocks nearby,
+            // or otherwise if the player is in the removeGuessDistance blocks of the guess (8 by default)
+            this.hidden = exists && wp != null && (wp.distanceToPlayer() < 60 || this.distanceToPlayer() < Diana.removeGuessDistance)
         }
     }
 
@@ -339,7 +340,6 @@ object WaypointManager {
 
     /**
      * Retrieves all waypoints of a specific type.
-     * Returns a COPY of the list to ensure thread safety during iteration.
      * @param type The type of waypoints to retrieve.
      * @return A list of waypoints of the specified type.
      */
@@ -347,12 +347,12 @@ object WaypointManager {
         return waypoints[type.lowercase()] ?: emptyList()
     }
 
-    private fun getBestGuess(): Waypoint? {
-        val preciseGuesses = getWaypointsOfType("guess")
-        val arrowGuesses = getWaypointsOfType("arrow")
-        val validPrecise = preciseGuesses.firstOrNull() { !it.hidden }
-        if (validPrecise != null) return  validPrecise
-        return arrowGuesses.minByOrNull { it.distanceToPlayer()  }
+    fun getBestGuess(): Waypoint? {
+        return (
+            getWaypointsOfType("burrow") +
+            getWaypointsOfType("arrow") +
+            getWaypointsOfType("guess").filter { !it.hidden }
+        ).minByOrNull { it.distanceToPlayer() }
     }
 
     /**
