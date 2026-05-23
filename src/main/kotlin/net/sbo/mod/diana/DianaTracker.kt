@@ -369,7 +369,7 @@ object DianaTracker {
                     if (customMsg.first) {
                         announceLootToParty("Shimmering Wool!", customMsg.second, true)
                     } else {
-                        announceLootToParty("Shimmering Wool!", "Shimmering Wool!$mfPrefix")
+                        announceLootToParty("Shimmering Wool!", "Shimmering Wool!$mfPrefix", amount = SboDataObject.dianaTrackerMayor.items.SHIMMERING_WOOL + SboDataObject.dianaTrackerMayor.items.SHIMMERING_WOOL_LS)
                     }
 
                 }
@@ -410,7 +410,7 @@ object DianaTracker {
                     if (customMsg.first) {
                         announceLootToParty("Manti-core!", customMsg.second, true)
                     } else {
-                        announceLootToParty("Manti-core!", "Manti-core!$mfPrefix")
+                        announceLootToParty("Manti-core!", "Manti-core!$mfPrefix", amount = SboDataObject.dianaTrackerMayor.items.MANTI_CORE + SboDataObject.dianaTrackerMayor.items.MANTI_CORE_LS, buffer = true)
                     }
 
                 }
@@ -449,7 +449,7 @@ object DianaTracker {
                     if (customMsg.first) {
                         announceLootToParty("Fateful Stinger!", customMsg.second, true)
                     } else {
-                        announceLootToParty("Fateful Stinger!", "Fateful Stinger!$mfPrefix")
+                        announceLootToParty("Fateful Stinger!", "Fateful Stinger!$mfPrefix", amount = SboDataObject.dianaTrackerMayor.items.FATEFUL_STINGER + SboDataObject.dianaTrackerMayor.items.FATEFUL_STINGER_LS, buffer = true)
                     }
 
                 }
@@ -498,7 +498,7 @@ object DianaTracker {
                     if (customChimMsg.first) {
                         announceLootToParty("Chimera!", customChimMsg.second, true)
                     } else {
-                        announceLootToParty("Chimera!", "Chimera!$mfPrefix")
+                        announceLootToParty("Chimera!", "Chimera!$mfPrefix", amount = SboDataObject.dianaTrackerMayor.items.CHIMERA + SboDataObject.dianaTrackerMayor.items.CHIMERA_LS)
                     }
                 }
                 drop.contains("Brain Food") -> { // todo: add achievements for food
@@ -540,7 +540,7 @@ object DianaTracker {
                     if (customMsg.first) {
                         announceLootToParty("Brain Food!", customMsg.second, true)
                     } else {
-                        announceLootToParty("Brain Food!", "Brain Food!$mfPrefix")
+                        announceLootToParty("Brain Food!", "Brain Food!$mfPrefix", amount = SboDataObject.dianaTrackerMayor.items.BRAIN_FOOD + SboDataObject.dianaTrackerMayor.items.BRAIN_FOOD_LS)
                     }
                 }
                 drop.contains("Daedalus Stick") -> {
@@ -666,15 +666,20 @@ object DianaTracker {
         }
     }
 
-    fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false) {
+    fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, buffer: Boolean = false) {
         if (!Diana.lootAnnouncerParty) return
         var msg = Helper.toTitleCase(item.replace("_LS", "").replace("_", " "))
-        if (customMsg != null) msg = customMsg.removeFormatting()
+        val custom = customMsg != null
+        if (custom) msg = customMsg.removeFormatting()
 
         if (replaceDropMessage) {
-            if (customMsg != null) Chat.chat(customMsg)
-            Chat.pc("$msg")
+            if (custom) Chat.chat(customMsg)
         } else {
+            if (amount != -1) msg += " #$amount"
+            msg = "[SBO] RARE DROP! $msg"
+        }
+
+        if (buffer) {
             lootAnnouncerBuffer.add(msg)
             if (!lootAnnouncerBool) {
                 lootAnnouncerBool = true
@@ -683,6 +688,8 @@ object DianaTracker {
                     lootAnnouncerBool = false
                 }
             }
+        } else {
+            Chat.pc(msg)
         }
     }
 
@@ -690,7 +697,7 @@ object DianaTracker {
         if (lootAnnouncerBuffer.isEmpty()) return
         val msg = lootAnnouncerBuffer.joinToString(", ")
         lootAnnouncerBuffer.clear()
-        Chat.pc("[SBO] RARE DROP! $msg")
+        Chat.pc(msg)
     }
 
     fun getB2BMessage(itemName: String, streak: Int): String? { // not used yet
