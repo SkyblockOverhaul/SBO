@@ -78,7 +78,7 @@ Before you begin, you need to have a few things installed:
 
 **1. Install Dependencies**
 * Download the **Fabric API** and **Fabric Language Kotlin** `.jar` files from their respective Modrinth pages.
-* Make sure to download the versions that match your Minecraft version (like `1.21.11`).
+* Make sure to download the versions that match your Minecraft version (like `26.1.2`).
 
 **2. Install SkyblockOverhaul**
 
