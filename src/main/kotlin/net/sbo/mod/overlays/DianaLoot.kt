@@ -361,7 +361,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         }
 
         val formattedTime = Helper.formatTime(tracker.items.TIME)
-        val text = if (timer.running) {
+        val text = if (timer.isRunning()) {
             "${YELLOW}Playtime: $AQUA$formattedTime"
         } else {
             "${YELLOW}Playtime: $AQUA$formattedTime ${GRAY}[${RED}PAUSED${GRAY}]"
