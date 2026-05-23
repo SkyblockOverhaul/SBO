@@ -1,7 +1,5 @@
 package net.sbo.mod.settings.categories
 
-import net.sbo.mod.SBOKotlin
-import net.sbo.mod.utils.data.SboDataObject
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import gg.essential.universal.UDesktop
 import net.fabricmc.loader.api.FabricLoader
@@ -9,25 +7,6 @@ import java.awt.Color
 import java.io.File
 
 object Customization : CategoryKt("Customization") {
-    val ALL_SOUNDS_FILENAMES: List<String> = try {
-        val directory = File(File(FabricLoader.getInstance().configDir.toFile(), SboDataObject.dataDir), "sounds")
-        directory.mkdirs()
-
-        if (directory.isDirectory) {
-            directory.listFiles { file -> file.extension == "ogg" }
-                ?.map { it.nameWithoutExtension }
-                ?.sorted()
-                ?: emptyList()
-        } else {
-            SBOKotlin.logger.warn("Sounds directory was a file, expected directory at: $directory")
-            SBOKotlin.logger.warn("You should delete and re-create it as a directory and put the sounds under that directory.")
-            emptyList()
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        emptyList()
-    }
-
     init {
         separator {
             this.title = "Waypoint Customization"
@@ -279,52 +258,5 @@ object Customization : CategoryKt("Customization") {
         this.description = Literal("Set the volume of the Shelmet/Plushie/Remedies drop sound")
         this.range = 0.0f..1.0f
         this.slider = true
-    }
-
-    fun resetSoundCustomizationToDefaults() {
-        Customization.rareMobSound = arrayOf("exporb")
-        Customization.rareMobVolume = 1.0f
-
-        Customization.inqSound = arrayOf("")
-        Customization.inqVolume = 1.0f
-
-        Customization.sphinxSound = arrayOf("")
-        Customization.sphinxVolume = 1.0f
-
-        Customization.kingSound = arrayOf("")
-        Customization.kingVolume = 1.0f
-
-        Customization.mantiSound = arrayOf("")
-        Customization.mantiVolume = 1.0f
-
-        Customization.cocoonSound = arrayOf("")
-        Customization.cocoonVolume = 1.0f
-
-        Customization.burrowSound = arrayOf("")
-        Customization.burrowVolume = 1.0f
-
-        Customization.chimSound = arrayOf("")
-        Customization.chimVolume = 1.0f
-
-        Customization.bfSound = arrayOf("")
-        Customization.bfVolume = 1.0f
-
-        Customization.coreSound = arrayOf("")
-        Customization.coreVolume = 1.0f
-
-        Customization.stingerSound = arrayOf("")
-        Customization.stingerVolume = 1.0f
-
-        Customization.woolSound = arrayOf("")
-        Customization.woolVolume = 1.0f
-
-        Customization.relicSound = arrayOf("")
-        Customization.relicVolume = 1.0f
-
-        Customization.stickSound = arrayOf("")
-        Customization.stickVolume = 1.0f
-
-        Customization.sprSound = arrayOf("")
-        Customization.sprVolume = 1.0f
     }
 }
