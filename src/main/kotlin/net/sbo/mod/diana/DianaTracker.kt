@@ -113,11 +113,9 @@ object DianaTracker {
 
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
-        if (!Diana.resetSessionOnGameRestart) return
-        dianaTrackerSession.reset().save()
-        DianaMobs.updateLines()
-        DianaLoot.updateLines()
-        SboTimerManager.timerSession.reset()
+        if (Diana.resetSessionOnGameRestart) {
+            DianaLoot.resetSession()
+        }
     }
 
     fun trackWithPickuplog(item: Item) {
