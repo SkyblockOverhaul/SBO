@@ -41,6 +41,14 @@ object BurrowDetector {
             refreshBurrows()
             true
         }
+
+        Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult -> {
+            if (Diana.showTitleWhenChainEnd) requestSpade()
+        }
+    }
+
+    fun requestSpade() {
+        Helper.showTitle("§c Use Spade!", "", 0, 30, 0)
     }
 
     @SboEvent

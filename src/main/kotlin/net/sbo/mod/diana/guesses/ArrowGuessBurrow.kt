@@ -251,7 +251,7 @@ object ArrowGuessBurrow {
 
         if (Diana.showTitleWhenInaccurate) {
             if (withinRange.size > 1) {
-                if (!spadeTitleShown) Helper.showTitle("§c Use Spade!", "", 0, 30, 0)
+                if (!spadeTitleShown) BurrowDetector.requestSpade()
                 spadeTitleShown = true
             } else {
                 spadeTitleShown = false
