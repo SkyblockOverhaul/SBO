@@ -142,6 +142,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
 
             val leftData = mutableListOf(
                 "§cDyes: ${Helper.formatNumber(data.items.MYTHOLOGICAL_DYE,true)}",
+                "§cMyth the Fishes: ${Helper.formatNumber(data.items.MYTH_THE_FISH,true)}",
                 "§cWools: ${Helper.formatNumber(data.items.SHIMMERING_WOOL,true)} ${leftPercents[0]}",
                 "§cWools (LS): ${Helper.formatNumber(data.items.SHIMMERING_WOOL_LS,true)} ${leftPercents[1]}",
                 "§cManti-cores: ${Helper.formatNumber(data.items.MANTI_CORE,true)} ${leftPercents[2]}",
@@ -178,9 +179,14 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTICORE_LS")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_INQUISITOR")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_INQUISITOR_LS")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SPHINX")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SPHINX_LS")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_CHAMPION")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOTAUR")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"GAIA_CONSTRUCT")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"HARPY")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"CRETAN_BULL")}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"STRANDED_NYMPH")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SIAMESE_LYNXES")}%§7)",
                 "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_HUNTER")}%§7)"
             )
@@ -192,11 +198,16 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
                 "§cMantis (LS): ${Helper.formatNumber(data.mobs.MANTICORE_LS,true)} ${rightPercents[3]}",
                 "§dInquisitors: ${Helper.formatNumber(data.mobs.MINOS_INQUISITOR,true)} ${rightPercents[4]}",
                 "§dInquisitors (LS): ${Helper.formatNumber(data.mobs.MINOS_INQUISITOR_LS,true)} ${rightPercents[5]}",
-                "§5Champions: ${Helper.formatNumber(data.mobs.MINOS_CHAMPION,true)} ${rightPercents[6]}",
-                "§6Minotaurs: ${Helper.formatNumber(data.mobs.MINOTAUR,true)} ${rightPercents[7]}",
-                "§2Gaias: ${Helper.formatNumber(data.mobs.GAIA_CONSTRUCT,true)} ${rightPercents[8]}",
-                "§2Siamese: ${Helper.formatNumber(data.mobs.SIAMESE_LYNXES,true)} ${rightPercents[9]}",
-                "§2Hunters: ${Helper.formatNumber(data.mobs.MINOS_HUNTER,true)} ${rightPercents[10]}",
+                "§dSphinxes: ${Helper.formatNumber(data.mobs.SPHINX,true)} ${rightPercents[6]}",
+                "§dSphinxes (LS): ${Helper.formatNumber(data.mobs.SPHINX_LS,true)} ${rightPercents[7]}",
+                "§5Champions: ${Helper.formatNumber(data.mobs.MINOS_CHAMPION,true)} ${rightPercents[8]}",
+                "§6Minotaurs: ${Helper.formatNumber(data.mobs.MINOTAUR,true)} ${rightPercents[9]}",
+                "§2Gaias: ${Helper.formatNumber(data.mobs.GAIA_CONSTRUCT,true)} ${rightPercents[10]}",
+                "§2Harpy: ${Helper.formatNumber(data.mobs.HARPY,true)} ${rightPercents[11]}",
+                "§2Cretan Bulls: ${Helper.formatNumber(data.mobs.CRETAN_BULL,true)} ${rightPercents[12]}",
+                "§2Stranded Nymph: ${Helper.formatNumber(data.mobs.STRANDED_NYMPH,true)} ${rightPercents[13]}",
+                "§2Siamese: ${Helper.formatNumber(data.mobs.SIAMESE_LYNXES,true)} ${rightPercents[14]}",
+                "§2Hunters: ${Helper.formatNumber(data.mobs.MINOS_HUNTER,true)} ${rightPercents[15]}",
                 "§eTotal Mobs: ${Helper.formatNumber(data.mobs.TOTAL_MOBS)}"
             )
             createBlock(rightData, 52)
