@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Style
 import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.events.ClickActionManager
 import net.sbo.mod.settings.categories.General
+import net.sbo.mod.utils.chat.ChatMessageQueue
 
 object Chat {
 
@@ -38,9 +39,9 @@ object Chat {
      */
     fun command(command: String) {
         if (!command.startsWith("/")) {
-            mc.player?.connection?.sendChat("/$command")
+            say("/$command")
         } else {
-            mc.player?.connection?.sendChat(command)
+            say(command)
         }
     }
 
@@ -69,7 +70,7 @@ object Chat {
      * @param message The message to send.
      */
     fun say(message: String) {
-        mc.connection?.sendChat(message)
+        ChatMessageQueue.queue(message)
     }
 
     /**

@@ -98,7 +98,7 @@ object DianaStats {
             append("Relics: ${stats.relicsDropped} (${stats.relicDropRate})")
         }
 
-        Chat.command("pc $statsMessage")
+        Chat.pc(statsMessage)
     }
 
     data class PlayerStats(
