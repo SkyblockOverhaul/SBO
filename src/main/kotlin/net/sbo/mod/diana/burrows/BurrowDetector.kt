@@ -20,6 +20,7 @@ import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.game.World
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+import net.sbo.mod.utils.Helper
 
 object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
