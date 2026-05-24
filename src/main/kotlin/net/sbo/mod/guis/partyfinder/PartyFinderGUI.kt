@@ -160,12 +160,12 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     internal fun getTextScale(base: Float = 1f): PixelConstraint {
-        return if (base + PartyFinder.scaleText <= 0f) return 0.1f.pixels()
+        return if (base + PartyFinder.scaleText <= 0f) 0.1f.pixels()
         else (base + PartyFinder.scaleText).pixels()
     }
 
     private fun getIconScale(base: Int = 18): PixelConstraint {
-        return if (base + PartyFinder.scaleIcon <= 0) return 1.pixels()
+        return if (base + PartyFinder.scaleIcon <= 0) 1.pixels()
         else (base + PartyFinder.scaleIcon).pixels()
     }
 
@@ -331,13 +331,13 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     private fun updatePageHighlight() {
         elementToHighlight.forEach { element ->
             if (element.obj is UIBlock) {
-                if (element.page === selectedPage) {
+                if (element.page == selectedPage) {
                     element.obj.setColor(Color(50, 50, 50, 255))
                 } else {
                     element.obj.setColor(Color(0, 0, 0, 0))
                 }
             } else {
-                if (element.page === selectedPage) {
+                if (element.page == selectedPage) {
                     element.obj.setColor(Color(50, 50, 255, 200))
                 } else {
                     element.obj.setColor(Color(255, 255, 255, 255))
@@ -415,7 +415,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }.setColor(Color(255, 255, 255, 255))
 
         block.onMouseClick {
-            if (selectedPage === pageTitle) return@onMouseClick
+            if (selectedPage == pageTitle) return@onMouseClick
             if (isClickable) return@onMouseClick pageContent()
             selectedPage = pageTitle
             contentBlock.clearChildren()
@@ -429,11 +429,11 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
         block.addChild(text)
             .onMouseEnter {
-                if (selectedPage === pageTitle) return@onMouseEnter
+                if (selectedPage == pageTitle) return@onMouseEnter
                 block.setColor(Color(50, 50, 50, 150))
             }
             .onMouseLeave {
-                if (selectedPage === pageTitle) return@onMouseLeave
+                if (selectedPage == pageTitle) return@onMouseLeave
                 block.setColor(Color(0, 0, 0, 0))
             }
 

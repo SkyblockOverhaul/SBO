@@ -20,7 +20,6 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
-import java.util.regex.Pattern
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -28,7 +27,6 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sign
 import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -119,7 +117,7 @@ object ArrowGuessBurrow {
             entry.removeGuesses()
         }
 
-        allGuesses.removeAll(containList)
+        allGuesses.removeAll(containList.toSet())
     }
 
     private fun detectArrow(): RaycastUtils.Ray? {
@@ -323,7 +321,7 @@ object ArrowGuessBurrow {
     private fun AABB.isInside(vec: SboVec): Boolean {
         return vec.x > this.minX && vec.x <= this.maxX &&
                 vec.y > this.minY && vec.y <= this.maxY &&
-                vec.z > this.minZ && vec.z <= this.maxZ;
+                vec.z > this.minZ && vec.z <= this.maxZ
     }
 
     private fun ClientboundLevelParticlesPacket.isRelevant() : Boolean {

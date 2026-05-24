@@ -4,7 +4,6 @@ import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
-import java.util.Collections
 import java.util.ArrayList
 
 object TabList {

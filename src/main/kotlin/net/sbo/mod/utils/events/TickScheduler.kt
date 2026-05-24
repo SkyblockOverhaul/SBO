@@ -8,23 +8,23 @@ object TickScheduler {
 
     init {
         ClientTickEvents.END_CLIENT_TICK.register {
-            var remaining = TickScheduler.tasks.size
+            var remaining = tasks.size
 
             while (remaining > 0) {
                 remaining--
 
-                val task = TickScheduler.tasks.poll()
+                val task = tasks.poll()
                     ?: break
 
                 if (!task.tick()) {
-                    TickScheduler.tasks.offer(task)
+                    tasks.offer(task)
                 }
             }
         }
     }
 
     fun schedule(task: ScheduledTask) {
-        TickScheduler.tasks.offer(task)
+        tasks.offer(task)
     }
 
     data class ScheduledTask(

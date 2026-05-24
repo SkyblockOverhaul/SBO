@@ -2,7 +2,6 @@ package net.sbo.mod.utils
 
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin
@@ -14,13 +13,11 @@ import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.SboDataObject
-import kotlin.concurrent.thread
 import net.sbo.mod.utils.data.DianaItemsData
 import net.sbo.mod.utils.data.DianaMobsData
 import net.sbo.mod.utils.data.npcSellValueMap
 import net.sbo.mod.utils.data.HypixelBazaarResponse
 import net.sbo.mod.utils.data.Item
-import net.sbo.mod.utils.data.SboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
@@ -37,7 +34,6 @@ import java.math.RoundingMode
 import kotlin.reflect.full.memberProperties
 import java.text.DecimalFormat
 import java.util.Locale
-import java.util.Locale.getDefault
 import java.util.regex.Pattern
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
@@ -431,7 +427,7 @@ object Helper {
 
     private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
 
-    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && Helper.hasMythologicalRitualActive() && World.getWorld() == "Hub"
+    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && hasMythologicalRitualActive() && World.getWorld() == "Hub"
 
     fun getGuiName(): String {
         return currentScreen?.title?.string ?: ""
@@ -441,9 +437,9 @@ object Helper {
         mc.gui.apply {
             setTimes(fadeIn, time, fadeOut)
             if (title != null)
-                setTitle(net.minecraft.network.chat.Component.nullToEmpty(title))
+                setTitle(Component.nullToEmpty(title))
             if (subtitle != null)
-                setSubtitle(net.minecraft.network.chat.Component.nullToEmpty(subtitle))
+                setSubtitle(Component.nullToEmpty(subtitle))
         }
     }
 
@@ -492,7 +488,6 @@ object Helper {
         val mobs = SboDataObject.dianaTrackerMayor.mobs
         val items = SboDataObject.dianaTrackerMayor.items
         val sboData = SboDataObject.sboData
-        val msg = message
 
         val kingPercent = calcPercentOne(items, mobs, "KING_MINOS")
         val manticorePercent = calcPercentOne(items, mobs, "MANTICORE")
@@ -502,22 +497,22 @@ object Helper {
         when (mob.lowercase()) {
             "minos inquisitor", "inq" -> {
                 val since = sboData.mobsSinceInq
-                return msg.replace("{since}", since.toString()).replace("{chance}", inqPercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", inqPercent)
             }
 
             "king minos", "king" -> {
                 val since = sboData.mobsSinceKing
-                return msg.replace("{since}", since.toString()).replace("{chance}", kingPercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", kingPercent)
             }
 
             "sphinx" -> {
                 val since = sboData.mobsSinceSphinx
-                return msg.replace("{since}", since.toString()).replace("{chance}", sphinxPercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", sphinxPercent)
             }
 
             "manticore", "manti" -> {
                 val since = sboData.mobsSinceManti
-                return msg.replace("{since}", since.toString()).replace("{chance}", manticorePercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", manticorePercent)
             }
             else -> return ""
         }

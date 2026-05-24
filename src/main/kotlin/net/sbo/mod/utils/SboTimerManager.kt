@@ -1,12 +1,10 @@
 package net.sbo.mod.utils
 
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import java.lang.reflect.Field
 import java.util.Locale
 
 object SboTimerManager {
@@ -42,7 +40,7 @@ object SboTimerManager {
     }
 
     internal fun getTimer(name: String): SBOTimer? {
-        return SBOTimer.timerList.find { it.name.lowercase() == name.lowercase() }
+        return SBOTimer.timerList.find { it.name.equals(name, ignoreCase = true) }
     }
 
     @SboEvent
@@ -104,7 +102,7 @@ object SboTimerManager {
             if (now - lastActivityTime > INACTIVITY_LIMIT_MS) {
                 pause()
                 if (!inactivityFlag) {
-                    tracker.items.TIME = tracker.items.TIME - INACTIVITY_LIMIT_MS
+                    tracker.items.TIME -= INACTIVITY_LIMIT_MS
                     inactivityFlag = true
                 }
             }

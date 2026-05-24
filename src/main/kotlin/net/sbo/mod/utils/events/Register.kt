@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.ChatHandler
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
-import net.sbo.mod.utils.events.TickScheduler
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -61,9 +60,7 @@ object Register {
      * @param action The action to execute. It receives a lambda to unregister itself.
      */
     fun onTick(tick: Int, action: (unregister: () -> Unit) -> Unit) {
-        lateinit var task: TickScheduler.ScheduledTask
-
-        task = TickScheduler.ScheduledTask(tick) {
+        val task: TickScheduler.ScheduledTask = TickScheduler.ScheduledTask(tick) {
             var remove = false
 
             action {

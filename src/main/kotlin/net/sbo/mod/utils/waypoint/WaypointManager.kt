@@ -428,8 +428,7 @@ object WaypointManager {
         val newestInq = getWaypointsOfType("rareMob").maxByOrNull { it.creation }
         if (newestInq == null) return
 
-        val warp = getClosestWarp(newestInq.pos)
-        if (warp == null) return
+        val warp = getClosestWarp(newestInq.pos) ?: return
 
         executeWarpCommand(warp)
     }
@@ -456,7 +455,6 @@ object WaypointManager {
     }
 
     fun findBlock(world: ClientLevel, x: Int, y: Int, z: Int): Int {
-        val originalY = y
         var currentY = y
         while (currentY > world.minY) {
             val pos = BlockPos(x, currentY, z)
@@ -467,6 +465,6 @@ object WaypointManager {
             currentY--
         }
         // fallback if no block found
-        return originalY
+        return y
     }
 }
