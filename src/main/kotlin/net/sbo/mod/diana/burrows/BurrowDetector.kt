@@ -19,6 +19,7 @@ import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.game.World
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+import net.sbo.mod.utils.Helper
 
 object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
@@ -40,6 +41,15 @@ object BurrowDetector {
             refreshBurrows()
             true
         }
+
+        Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
+            val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
+            if (Diana.showTitleWhenChainEnd && anyClose.isEmpty()) requestSpade()
+        }
+    }
+
+    fun requestSpade() {
+        Helper.showTitle("§c Use Spade!", "", 0, 30, 0)
     }
 
     @SboEvent

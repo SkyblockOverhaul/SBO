@@ -337,12 +337,12 @@ object WaypointManager {
         return waypoints[type.lowercase()] ?: emptyList()
     }
 
+    fun getAllGuessesAndBurrows(): List<Waypoint> {
+        return getWaypointsOfType("burrow") + getWaypointsOfType("arrow") + getWaypointsOfType("guess")
+    }
+
     fun getBestGuess(): Waypoint? {
-        return (
-                getWaypointsOfType("burrow") +
-                getWaypointsOfType("arrow") +
-                getWaypointsOfType("guess")
-            )
+        return getAllGuessesAndBurrows()
             .filter { !it.hidden }
             .minByOrNull { it.distanceToPlayer() }
     }
@@ -358,7 +358,7 @@ object WaypointManager {
     }
 
     private fun getClosestWaypointFrom(pos: SboVec): Pair<Waypoint, Double>? {
-        return getClosestWaypointFrom(pos, getWaypointsOfType("burrow") + getWaypointsOfType("arrow") + getWaypointsOfType("guess"))
+        return getClosestWaypointFrom(pos, getAllGuessesAndBurrows())
     }
 
     private fun getClosestWaypointFrom(pos: SboVec, waypoints: List<Waypoint>): Pair<Waypoint, Double>? {

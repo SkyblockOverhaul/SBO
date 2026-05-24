@@ -75,6 +75,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a title to guess normally when the arrow guess is inaccurate")
     }
 
+    var showTitleWhenChainEnd by boolean(false) {
+        this.name = Literal("Show Title When Chain End")
+        this.description = Literal("Shows a title to guess normally when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby")
+    }
+
     var dontClearArrowGuess by boolean(true) {
         this.name = Literal("Don't Clear Arrow Guess on World Change")
         this.description = Literal("If enabled, the arrow guess waypoints will not be cleared when changing worlds/lobby")
