@@ -9,7 +9,6 @@ import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaLoot.totalProfit
@@ -395,7 +394,7 @@ object AchievementManager {
             var chimV = false
             var lootingV = false
             var divineGift3 = false
-            val player = SBOKotlin.mc.player ?: return@sleep
+            val player = mc.player ?: return@sleep
 
             for (slot in 0..8) {
                 val stack: ItemStack = player.inventory.getItem(slot)

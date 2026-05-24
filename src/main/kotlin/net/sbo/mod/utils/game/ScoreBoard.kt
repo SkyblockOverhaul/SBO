@@ -41,10 +41,11 @@ object ScoreBoard {
     }
 
     private fun fetchLines(): List<String> {
-        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return emptyList()
+        val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return emptyList()
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return emptyList()
 
         return scoreboard.listPlayerScores(objective)
+            .asSequence()
             .filter { entry -> !entry.isHidden }
             .sortedWith(COMPARATOR)
             .take(15)
@@ -57,6 +58,7 @@ object ScoreBoard {
             .map { decoratedText ->
                 decoratedText.replace(FORMATTING_REGEX, "")
             }
+            .toList()
             .asReversed()
     }
 
@@ -70,7 +72,7 @@ object ScoreBoard {
     }
 
     private fun fetchTitle(): String {
-        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return "Unknown Scoreboard"
+        val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return "Unknown Scoreboard"
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
 
         return objective.displayName.string

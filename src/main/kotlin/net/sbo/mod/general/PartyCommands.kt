@@ -216,13 +216,13 @@ object PartyCommands {
                 "!c", "!carrot" -> if (settings.carrotCommand) sendResponse(carrot.random())
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
                 "!tps" -> if (settings.tpsCommand) sendResponse("${"%.2f".format(ServerStats.getTps())} TPS")
-                "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg?.lowercase() == user.lowercase()) {
+                "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     sleep(200) { DianaStats.sendPlayerStats(false) }
                 }
-                "!totalstats", "!totalstat" -> if (settings.dianaPartyCommands && secondArg?.lowercase() == user.lowercase()) {
+                "!totalstats", "!totalstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     sleep(200) { DianaStats.sendPlayerStats(true) }
                 }
-                "!sessionstats", "!sessionstat" -> if (settings.dianaPartyCommands && secondArg?.lowercase() == user.lowercase()) {
+                "!sessionstats", "!sessionstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     sleep(200) { DianaStats.sendPlayerStats(null) }
                 }
                 "!version" -> sendResponse("SBO version: ${SBOKotlin.version} | Minecraft version: ${SBOKotlin.mcVersion}")

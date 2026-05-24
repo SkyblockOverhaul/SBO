@@ -271,7 +271,7 @@ object PartyFinderManager {
         if (!this.updateBool) return
         updateBool = false
         if (inQueue && isInParty && isLeader) {
-            if (partyMember.size >= partySize || partyMember.size < 2) return
+            if (partyMember.size !in 2..<partySize) return
             val currentTime = System.currentTimeMillis()
             Http.sendGetRequest(
                 "$API_URL/queuePartyUpdate?uuids=${partyMember.joinToString(",").replace("-", "")}" +

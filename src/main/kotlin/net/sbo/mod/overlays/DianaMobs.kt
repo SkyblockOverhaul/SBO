@@ -11,7 +11,6 @@ import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.minecraft.ChatFormatting.*
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -22,7 +21,6 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
-import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 
 object DianaMobs : DirtyFlushableOverlay() {

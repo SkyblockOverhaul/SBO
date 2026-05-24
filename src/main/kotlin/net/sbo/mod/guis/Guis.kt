@@ -18,7 +18,7 @@ import net.minecraft.ChatFormatting
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
-    public var achievementsGui: AchievementsGUI? = null
+    var achievementsGui: AchievementsGUI? = null
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
@@ -30,7 +30,7 @@ object Guis {
                 Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
                 return
             }
-            mc.getToastManager().addToast(
+            mc.toastManager.addToast(
                 SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("SBO").setStyle(
                     Style.EMPTY.withColor(ChatFormatting.GOLD)), Component.literal("Join skyblock before opening Party Finder!").setStyle(
                     Style.EMPTY.withColor(ChatFormatting.RED))))

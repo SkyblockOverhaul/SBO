@@ -3,7 +3,6 @@ package net.sbo.mod.utils.render
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.blockentity.BeaconRenderer
-import net.minecraft.util.TriState
 import java.util.OptionalDouble
 //#if MC > 1.21.10
 //$$ import net.minecraft.client.renderer.rendertype.RenderSetup
