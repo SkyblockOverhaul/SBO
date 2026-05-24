@@ -7,7 +7,6 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 object InventoryUtils {
     private var currentItemId: String = "AIR"

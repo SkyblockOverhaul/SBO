@@ -1,7 +1,6 @@
 package net.sbo.mod.utils.accessors
 
 import net.minecraft.world.entity.Entity
-import net.minecraft.ChatFormatting
 import java.awt.Color
 
 /**

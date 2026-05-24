@@ -43,7 +43,7 @@ object DianaMobDetect {
 
     private const val NAME_CHECK_TIMEOUT_MS = 1000L
 
-    private val COCOON_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1ODMxMjMyODkwNTMsInByb2ZpbGVJZCI6IjkxZjA0ZmU5MGYzNjQzYjU4ZjIwZTMzNzVmODZkMzllIiwicHJvZmlsZU5hbWUiOiJTdG9ybVN0b3JteSIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNlYjBlZDhmYzIyNzJiM2QzZDgyMDY3NmQ1MmEzOGU3YjJlOGRhOGM2ODdhMjMzZTBkYWJhYTE2YzBlOTZkZiJ9fX0="
+    private const val COCOON_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1ODMxMjMyODkwNTMsInByb2ZpbGVJZCI6IjkxZjA0ZmU5MGYzNjQzYjU4ZjIwZTMzNzVmODZkMzllIiwicHJvZmlsZU5hbWUiOiJTdG9ybVN0b3JteSIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNlYjBlZDhmYzIyNzJiM2QzZDgyMDY3NmQ1MmEzOGU3YjJlOGRhOGM2ODdhMjMzZTBkYWJhYTE2YzBlOTZkZiJ9fX0="
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
     private val unconfirmed = mutableMapOf<Int, Pair<ArmorStand, Long>>()
@@ -96,7 +96,8 @@ object DianaMobDetect {
             val cleanName = name.removeFormatting()
 
             val rare = RareDianaMob.fromName(cleanName)
-            val displayName = if (rare != null) rare.display else fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
+            val displayName =
+                rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
             // Check if cocooned mob is a diana mob by checking if its either a rare mob or has the diana mob prefix like empyrean
             if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ")} != null) {
@@ -246,9 +247,9 @@ object DianaMobDetect {
         if (head.isEmpty) return
         if (head.item.toString() != "minecraft:player_head") return
         val profileComponent: ResolvableProfile? = head.get(DataComponents.PROFILE)
-        val texture: String? = profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value
+        val texture: String =
+            profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value ?: return
 
-        if (texture == null) return
         if (texture == COCOON_TEXTURE && lastCocoon + COCOON_COOLDOWN_MS < now) {
             lastCocoon = now
             announceCocoon(DetectionType.TEXTURE)

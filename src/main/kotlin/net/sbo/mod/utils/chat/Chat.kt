@@ -25,9 +25,9 @@ object Chat {
             // trying send message will show up a huge output about the remaining mute time,
             // server rules and all that yapping with no other output about the text we want
             // to send, so send locally instead via the chat method. We can have color since it's regular chat.
-            Chat.chat("§6[SBO] §e${text}")
+            chat("§6[SBO] §e${text}")
         } else {
-            Chat.command("pc ${text}")
+            command("pc $text")
         }
     }
 
