@@ -9,7 +9,6 @@ import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import java.io.File
 import java.io.FileReader
@@ -18,8 +17,6 @@ import java.io.FileWriter
 import java.io.BufferedWriter
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Files
@@ -33,7 +30,6 @@ import java.util.zip.ZipOutputStream
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
 import kotlin.collections.iterator
-import kotlin.concurrent.thread
 import kotlin.reflect.KMutableProperty1
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -203,7 +199,7 @@ object SboDataObject {
 
                     val success = mergeDirectories(modName, oldDir, newDir)
                     cleanupIfSafe(modName, oldDir, success)
-                    SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir")
+                    SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-sensitive FS)")
                 }
             } else {
                 // Windows: case-insensitive, normalize folder name if needed
@@ -216,7 +212,7 @@ object SboDataObject {
                             } else {
                                 val success = mergeDirectories(modName, oldDir, newDir)
                                 cleanupIfSafe(modName, oldDir, success)
-                                SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir")
+                                SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-insensitive FS)")
                             }
                         } else {
                             val tempDir = Files.createTempDirectory(baseDir, "${newName}_tmp_")
