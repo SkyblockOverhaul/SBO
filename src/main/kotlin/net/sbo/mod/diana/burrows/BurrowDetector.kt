@@ -44,7 +44,8 @@ object BurrowDetector {
         }
 
         Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
-            if (Diana.showTitleWhenChainEnd) requestSpade()
+            val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
+            if (Diana.showTitleWhenChainEnd && anyClose.isEmpty()) requestSpade()
         }
     }
 

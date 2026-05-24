@@ -78,7 +78,7 @@ object Diana : CategoryKt("Diana") {
 
     var showTitleWhenChainEnd by boolean(false) {
         this.name = Literal("Show Title When Chain End")
-        this.description = Literal("Shows a title to guess normally when the burrow chain is complete")
+        this.description = Literal("Shows a title to guess normally when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby")
     }
 
     var dontClearArrowGuess by boolean(true) {
