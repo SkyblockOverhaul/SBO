@@ -15,7 +15,6 @@ import kotlin.time.Duration
  *
  * Credits to this go fully to SkyHanni
  */
-@Suppress("UnstableApiUsage")
 class TimeLimitedCache<K : Any, V : Any>(
     expireAfterWrite: Duration,
     removalListener: ((K?, V?, RemovalCause) -> Unit)? = null,

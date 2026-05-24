@@ -15,6 +15,7 @@ import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.Effect
+import gg.essential.elementa.events.UIClickEvent
 import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 import org.lwjgl.glfw.GLFW
@@ -311,12 +312,10 @@ object GuiHandler {
                 if (text.isNotEmpty()) return@onFocusLost
             }
 
-            textInput.onMouseClick {
+            val onClick: UIComponent.(UIClickEvent) -> Unit = {
                 if (!textSet) {
-                    if (getValue().isEmpty()) {
-                        text = textInputText.getText()
-                    } else {
-                        text = getValue()
+                    text = getValue().ifEmpty {
+                        textInputText.getText()
                     }
                     textInputText.setText(text)
                     textSet = true
@@ -325,19 +324,8 @@ object GuiHandler {
                 textInputText.focus()
             }
 
-            textInputText.onMouseClick {
-                if (!textSet) {
-                    if (getValue().isEmpty()) {
-                        text = textInputText.getText()
-                    } else {
-                        text = getValue()
-                    }
-                    textInputText.setText(text)
-                    textSet = true
-                }
-                textInputText.grabWindowFocus()
-                textInputText.focus()
-            }
+            textInput.onMouseClick(onClick)
+            textInputText.onMouseClick(onClick)
 
             textInputText.onKeyType { typedChar, keyCode ->
                 if (maxChars > 0 && textInputText.getText().length > maxChars && keyCode != GLFW.GLFW_KEY_BACKSPACE && keyCode != GLFW.GLFW_KEY_DELETE) {

@@ -56,8 +56,7 @@ object PreciseGuessBurrow {
         if (distToLast > 3 || distToLast == 0.0) return
         this.particleLocations.add(currLoc)
 
-        val guessPosition = this.guessBurrowLocation()
-        if (guessPosition == null) return
+        val guessPosition = this.guessBurrowLocation() ?: return
         finalLocation = guessPosition.down(0.5).roundLocationToBlock()
         finalLocation = guessPosition.down(0.5).roundLocationToBlock()
         WaypointManager.updateGuess(finalLocation)
@@ -94,7 +93,7 @@ object PreciseGuessBurrow {
         }
 
         val coefficients = fitters.map { it.fit() }
-        val startPointDerivative = SboVec.Companion.fromArray(coefficients.map { it[1] })
+        val startPointDerivative = SboVec.fromArray(coefficients.map { it[1] })
 
         val pitch = this.getPitchFromDerivative(startPointDerivative)
         val controlPointDistance = sqrt(24 * sin(pitch - PI) + 25)
@@ -102,7 +101,7 @@ object PreciseGuessBurrow {
         val result = coefficients.map { coeff ->
             coeff[0] + coeff[1] * t + coeff[2] * t.pow(2) + coeff[3] * t.pow(3)
         }
-        return SboVec.Companion.fromArray(result)
+        return SboVec.fromArray(result)
     }
 
     private fun getPitchFromDerivative(derivative: SboVec): Double {

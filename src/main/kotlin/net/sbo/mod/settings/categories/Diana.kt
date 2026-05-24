@@ -2,7 +2,6 @@ package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
-import net.minecraft.network.chat.Component
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.utils.Helper

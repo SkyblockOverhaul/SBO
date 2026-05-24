@@ -1,6 +1,5 @@
 package net.sbo.mod.utils.events.impl.guis
 
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.GuiGraphics
 
