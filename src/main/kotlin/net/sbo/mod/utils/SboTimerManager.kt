@@ -1,42 +1,36 @@
 package net.sbo.mod.utils
 
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import java.lang.reflect.Field
 import java.util.Locale
+import net.sbo.mod.settings.categories.Diana
 
 object SboTimerManager {
-    internal val activeTimers = mutableListOf<SBOTimer>()
+    internal val activeTimers = mutableSetOf<SBOTimer>()
     val timerMayor = SBOTimer(
         name = "Mayor",
-        inactiveTimeLimit = 1.5f,
         tracker = SboDataObject.dianaTrackerMayor
     )
     val timerTotal = SBOTimer(
         name = "Total",
-        inactiveTimeLimit = 1.5f,
         tracker = SboDataObject.dianaTrackerTotal
     )
     val timerSession = SBOTimer(
         name = "Session",
-        inactiveTimeLimit = 1.5f,
         tracker = SboDataObject.dianaTrackerSession
     )
 
     fun init() {
         Register.onTick(1) {
-            activeTimers.toList().forEach { it.tick() }
+            activeTimers.forEach { it.tick() }
         }
     }
 
     private fun addTimer(timer: SBOTimer) {
-        if (!activeTimers.contains(timer)) {
-            activeTimers.add(timer)
-        }
+        activeTimers.add(timer)
     }
 
     private fun removeTimer(timer: SBOTimer) {
@@ -44,21 +38,26 @@ object SboTimerManager {
     }
 
     internal fun getTimer(name: String): SBOTimer? {
-        return SBOTimer.timerList.find { it.name.lowercase() == name.lowercase() }
+        return SBOTimer.timerList.find { it.name.equals(name, ignoreCase = true) }
     }
 
     @SboEvent
     fun onDisconnect(event: DisconnectEvent) {
-        activeTimers.toList().forEach { it.pause() }
+        activeTimers.forEach { it.pause() }
     }
 
     fun updateAllActivity() {
         SBOTimer.timerList.forEach { it.updateActivity() }
     }
 
+    sealed class TimerState {
+        object Idle : TimerState()
+        object Running : TimerState()
+        object Paused : TimerState()
+    }
+
     class SBOTimer(
         val name: String,
-        inactiveTimeLimit: Float,
         private val tracker: DianaTracker
     ) {
         companion object {
@@ -67,21 +66,22 @@ object SboTimerManager {
 
         private var startTime: Long = 0
         var elapsedTime: Long = 0
-        var running: Boolean = false
-        private var startedOnce: Boolean = false
+        private var state: TimerState = TimerState.Idle
         private var lastActivityTime: Long = System.currentTimeMillis()
-        private val INACTIVITY_LIMIT: Long = (inactiveTimeLimit * 60 * 1000).toLong()
         private var inactivityFlag: Boolean = false
+
+        private fun getInactivityLimitMs(): Long {
+            return Diana.afkTimeout.toLong().coerceAtLeast(15L) * 1000L
+        }
 
         init {
             timerList.add(this)
         }
 
-        /**
-         * Starts the timer.
-         */
+        fun isRunning(): Boolean = state == TimerState.Running
+
         fun start() {
-            if (running || startedOnce) return
+            if (state == TimerState.Running || elapsedTime > 0) return
 
             startTime = System.currentTimeMillis()
 
@@ -90,102 +90,69 @@ object SboTimerManager {
                 elapsedTime = storedTime
             }
 
-            running = true
-            startedOnce = true
+            state = TimerState.Running
             updateElapsedTime()
             startInactivityCheck()
         }
 
-        /**
-         * The method called by the TimerManager on every tick.
-         */
         fun tick() {
-            if (!running) return
-            updateElapsedTime()
-            if (System.currentTimeMillis() - lastActivityTime > INACTIVITY_LIMIT) {
+            if (state != TimerState.Running) return
+            val now = System.currentTimeMillis()
+            updateElapsedTime(now)
+            if (now - lastActivityTime > getInactivityLimitMs()) {
                 pause()
                 if (!inactivityFlag) {
-                    tracker.items.TIME = tracker.items.TIME - INACTIVITY_LIMIT
+                    tracker.items.TIME -= getInactivityLimitMs()
                     inactivityFlag = true
                 }
             }
         }
 
-        /**
-         * Updates the elapsed time based on the time since the last update.
-         */
-        private fun updateElapsedTime() {
-            if (!running) return
-            val now = System.currentTimeMillis()
+        private fun updateElapsedTime(now: Long = System.currentTimeMillis()) {
+            if (state != TimerState.Running) return
             elapsedTime += now - startTime
             startTime = now
             tracker.items.TIME = elapsedTime
         }
 
-        /**
-         * Pauses the timer.
-         */
         fun pause() {
-            if (!running) return
+            if (state != TimerState.Running) return
             updateElapsedTime()
-            running = false
+            state = TimerState.Paused
             stopInactivityCheck()
         }
 
-        /**
-         * Continues the timer from where it was paused.
-         */
         fun continueTimer() {
-            if (running) return
+            if (state == TimerState.Running) return
             if (inactivityFlag) {
-                elapsedTime -= INACTIVITY_LIMIT
+                elapsedTime -= getInactivityLimitMs()
             }
             startTime = System.currentTimeMillis()
-            running = true
+            state = TimerState.Running
             startInactivityCheck()
         }
 
-        /**
-         * Resets the timer to 0.
-         */
         fun reset() {
-            running = false
-            startedOnce = false
+            state = TimerState.Idle
             elapsedTime = 0
             startTime = 0
             tracker.items.TIME = 0
             stopInactivityCheck()
         }
 
-        /**
-         * Returns the elapsed time in hours.
-         */
-        fun getHourTime(): Double {
-            val millisecondTime = tracker.items.TIME
-            val formattedString = String.format(Locale.US, "%.6f", millisecondTime / 3600000.0)
-            return formattedString.toDouble()
-        }
+        fun getHourTime(): Double = elapsedTime / 3600000.0
 
-        /**
-         * Updates the last activity time to the current time.
-         */
         fun updateActivity() {
             this.start()
             this.continueTimer()
             lastActivityTime = System.currentTimeMillis()
         }
 
-        /**
-         * Starts the inactivity check by adding this timer to the central manager.
-         */
         private fun startInactivityCheck() {
             addTimer(this)
             inactivityFlag = false
         }
 
-        /**
-         * Stops the inactivity check by removing this timer from the central manager.
-         */
         private fun stopInactivityCheck() {
             removeTimer(this)
             inactivityFlag = false

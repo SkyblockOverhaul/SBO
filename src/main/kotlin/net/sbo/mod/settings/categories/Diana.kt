@@ -2,7 +2,6 @@ package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
-import net.minecraft.network.chat.Component
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.utils.Helper
@@ -199,6 +198,13 @@ object Diana : CategoryKt("Diana") {
                 DianaLoot.updateLines()
             }
         }
+    }
+
+    var afkTimeout by int(60) {
+        this.name = Literal("AFK Timeout")
+        this.description = Literal("Pause the trackers if it is not modified for this amount of seconds. Minimum 15, maximum 900 seconds is allowed.")
+        this.range = 15..900
+        this.slider = true
     }
 
     var statsTracker by boolean(false) {

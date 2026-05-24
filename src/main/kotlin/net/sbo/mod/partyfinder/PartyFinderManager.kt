@@ -231,7 +231,7 @@ object PartyFinderManager {
                         "&partytype=$partyType" +
                         "&partysize=$partySize" +
                         "&key=${sboData.sboKey}"
-            ).toJson<PartyAddResponse> { response ->
+            ).toJson<PartyAddResponse>(true) { response ->
                 if (response.success) {
                     val timeTaken = System.currentTimeMillis() - currentTime
                     inQueue = true
@@ -271,7 +271,7 @@ object PartyFinderManager {
         if (!this.updateBool) return
         updateBool = false
         if (inQueue && isInParty && isLeader) {
-            if (partyMember.size >= partySize || partyMember.size < 2) return
+            if (partyMember.size !in 2..<partySize) return
             val currentTime = System.currentTimeMillis()
             Http.sendGetRequest(
                 "$API_URL/queuePartyUpdate?uuids=${partyMember.joinToString(",").replace("-", "")}" +
@@ -280,7 +280,7 @@ object PartyFinderManager {
                         "&partytype=$partyType" +
                         "&partysize=$partySize" +
                         "&key=${sboData.sboKey}"
-            ).toJson<PartyUpdateResponse> { response ->
+            ).toJson<PartyUpdateResponse>(true) { response ->
                 if (response.success) {
                     val timeTaken = System.currentTimeMillis() - currentTime
                     partyReqsMap = response.partyReqs!!

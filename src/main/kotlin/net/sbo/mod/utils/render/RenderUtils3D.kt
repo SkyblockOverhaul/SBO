@@ -1,7 +1,6 @@
 package net.sbo.mod.utils.render
 
 import com.mojang.blaze3d.systems.RenderSystem
-import net.fabricmc.fabric.api.client.rendering.v1.*
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.texture.OverlayTexture
@@ -133,12 +132,11 @@ object RenderUtils3D {
             val maxZ = depth / 2.0
 
             val minY = 0.0
-            val maxY = height
 
             ShapeRenderer.addChainedFilledBoxVertices(
                 this, buffer,
                 minX, minY, minZ,
-                maxX, maxY, maxZ,
+                maxX, height, maxZ,
                 colorComponents[0], colorComponents[1], colorComponents[2], alpha
             )
         }

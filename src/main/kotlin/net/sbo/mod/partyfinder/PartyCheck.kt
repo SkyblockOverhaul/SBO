@@ -52,7 +52,7 @@ object PartyCheck {
     ) {
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
         Http.sendGetRequest("$API_URL/partyInfo?party=$playerName&readCache=$readCache")
-            .toJson<PartyInfo> { response ->
+            .toJson<PartyInfo>(true) { response ->
                 if (response.success) {
                     val partyInfo = response.partyInfo
                     if (partyInfo.firstOrNull() != null) {
@@ -82,7 +82,7 @@ object PartyCheck {
             return
         }
         Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${partyMember.joinToString(",").replace("-", "")}")
-            .toJson<PartyInfo> { response ->
+            .toJson<PartyInfo>(true) { response ->
                 if (response.success) {
                     printPartyInfo(response.partyInfo)
                 }

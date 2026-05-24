@@ -1,6 +1,5 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.ChatScreen

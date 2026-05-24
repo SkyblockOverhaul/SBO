@@ -11,6 +11,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.getSecondsPassed
 import net.sbo.mod.utils.Helper.lastCocoon
 import net.sbo.mod.utils.Helper.lastInqDeath
@@ -42,7 +43,7 @@ object DianaMobDetect {
 
     private const val NAME_CHECK_TIMEOUT_MS = 1000L
 
-    private val COCOON_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1ODMxMjMyODkwNTMsInByb2ZpbGVJZCI6IjkxZjA0ZmU5MGYzNjQzYjU4ZjIwZTMzNzVmODZkMzllIiwicHJvZmlsZU5hbWUiOiJTdG9ybVN0b3JteSIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNlYjBlZDhmYzIyNzJiM2QzZDgyMDY3NmQ1MmEzOGU3YjJlOGRhOGM2ODdhMjMzZTBkYWJhYTE2YzBlOTZkZiJ9fX0="
+    private const val COCOON_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1ODMxMjMyODkwNTMsInByb2ZpbGVJZCI6IjkxZjA0ZmU5MGYzNjQzYjU4ZjIwZTMzNzVmODZkMzllIiwicHJvZmlsZU5hbWUiOiJTdG9ybVN0b3JteSIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNlYjBlZDhmYzIyNzJiM2QzZDgyMDY3NmQ1MmEzOGU3YjJlOGRhOGM2ODdhMjMzZTBkYWJhYTE2YzBlOTZkZiJ9fX0="
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
     private val unconfirmed = mutableMapOf<Int, Pair<ArmorStand, Long>>()
@@ -64,8 +65,6 @@ object DianaMobDetect {
         }
     }
 
-
-
     private fun parseHealthFromName(name: String): Double? =
         healthRegex.find(name)?.groupValues?.get(1)?.let { raw ->
             when {
@@ -79,6 +78,14 @@ object DianaMobDetect {
 
     private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && Diana.hpAlert > 0.0
 
+    val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
+
+    private fun fallbackRemovePrefix(mobName: String): String {
+        return prefixes.firstOrNull { mobName.startsWith("$it ") }
+            ?.let { mobName.removePrefix("$it ") }
+            ?: mobName
+    }
+
     fun init() {
         mobHpOverlay.init()
         noShurikenOverlay.init()
@@ -86,11 +93,25 @@ object DianaMobDetect {
             Regex("^§a§lCAUGHT!.*?You cocooned a (?<name>.+?)!.*$")
         ) { _, matchResult ->
             val name = matchResult.groups["name"]?.value ?: return@onChatMessage
-            val rare = RareDianaMob.fromName(name)
+            val cleanName = name.removeFormatting()
+
+            val rare = RareDianaMob.fromName(cleanName)
+            val displayName =
+                rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
+
+            // Check if cocooned mob is a diana mob by checking if its either a rare mob or has the diana mob prefix like empyrean
+            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ")} != null) {
+                // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
+                if (DianaTracker.lastSpawnedMob == displayName) {
+                    // Count as a new spawned mob, exactly as if it was received as spawned by a regular burrow, so that achievements and mob tracking work.
+                    // This will give an error in chat if we pass a string that matches no mob name in the tracker handler code.
+                    DianaTracker.trackMobOnSpawnAndSave(displayName, fromCocoon = true)
+                }
+            }
 
             if (rare != null) {
                 // Cocooned a rare mob if rare != null
-                announceCocoon(DetectionType.CHAT_MESSAGE, rare.display)
+                announceCocoon(DetectionType.CHAT_MESSAGE, displayName)
             }
         }
         Register.onTick(1) {
@@ -226,9 +247,9 @@ object DianaMobDetect {
         if (head.isEmpty) return
         if (head.item.toString() != "minecraft:player_head") return
         val profileComponent: ResolvableProfile? = head.get(DataComponents.PROFILE)
-        val texture: String? = profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value
+        val texture: String =
+            profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value ?: return
 
-        if (texture == null) return
         if (texture == COCOON_TEXTURE && lastCocoon + COCOON_COOLDOWN_MS < now) {
             lastCocoon = now
             announceCocoon(DetectionType.TEXTURE)

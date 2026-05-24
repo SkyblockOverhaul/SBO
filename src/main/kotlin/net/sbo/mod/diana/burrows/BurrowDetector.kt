@@ -1,7 +1,6 @@
 package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
-import net.minecraft.core.BlockPos
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.settings.categories.Customization

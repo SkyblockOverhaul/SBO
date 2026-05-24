@@ -53,7 +53,7 @@ object PartyPlayer {
             }
             refreshing = true
             Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${Player.getUUIDString().replace("-", "")}&readcache=false")
-                .toJson<PartyInfo> { response ->
+                .toJson<PartyInfo>(true) { response ->
                     refreshing = false
                     if (response.success) {
                         lastUpdate = System.currentTimeMillis()

@@ -63,7 +63,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         hoverText = "$RED${UNDERLINE}Reset Session",
         defaultText = "${RED}Reset Session",
         onClick = {
-            DianaLoot.resetSession()
+            resetSession()
         }
     )
 
@@ -74,7 +74,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         DianaMobs.updateLines()
     }
 
-    private val LOOT_ITEMS = listOf<LootItemData>(
+    private val LOOT_ITEMS = listOf(
         LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED),
         LootItemData("MYTH_THE_FISH", "Myth the Fish", RED),
         LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS"),
@@ -361,7 +361,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         }
 
         val formattedTime = Helper.formatTime(tracker.items.TIME)
-        val text = if (timer.running) {
+        val text = if (timer.isRunning()) {
             "${YELLOW}Playtime: $AQUA$formattedTime"
         } else {
             "${YELLOW}Playtime: $AQUA$formattedTime ${GRAY}[${RED}PAUSED${GRAY}]"

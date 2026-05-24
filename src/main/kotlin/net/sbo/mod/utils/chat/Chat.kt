@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Style
 import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.events.ClickActionManager
 import net.sbo.mod.settings.categories.General
+import net.sbo.mod.utils.chat.ChatMessageQueue
 
 object Chat {
 
@@ -25,9 +26,9 @@ object Chat {
             // trying send message will show up a huge output about the remaining mute time,
             // server rules and all that yapping with no other output about the text we want
             // to send, so send locally instead via the chat method. We can have color since it's regular chat.
-            Chat.chat("§6[SBO] §e${text}")
+            chat("§6[SBO] §e${text}")
         } else {
-            Chat.command("pc ${text}")
+            command("pc $text")
         }
     }
 
@@ -38,9 +39,9 @@ object Chat {
      */
     fun command(command: String) {
         if (!command.startsWith("/")) {
-            mc.player?.connection?.sendChat("/$command")
+            say("/$command")
         } else {
-            mc.player?.connection?.sendChat(command)
+            say(command)
         }
     }
 
@@ -69,7 +70,7 @@ object Chat {
      * @param message The message to send.
      */
     fun say(message: String) {
-        mc.connection?.sendChat(message)
+        ChatMessageQueue.queue(message)
     }
 
     /**

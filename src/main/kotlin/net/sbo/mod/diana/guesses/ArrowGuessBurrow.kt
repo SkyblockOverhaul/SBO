@@ -20,7 +20,6 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
-import java.util.regex.Pattern
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -28,7 +27,6 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sign
 import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -54,15 +52,31 @@ object ArrowGuessBurrow {
 
     private val allowedBlocksAboveGround = buildList {
         add(Blocks.AIR)
+        add(Blocks.DANDELION)
         add(Blocks.SPRUCE_FENCE)
-        add(Blocks.WILDFLOWERS)
-        add(Blocks.TALL_GRASS)
         add(Blocks.OAK_LEAVES)
+        add(Blocks.SPRUCE_LEAVES)
         add(Blocks.BIRCH_LEAVES)
         add(Blocks.JUNGLE_LEAVES)
         add(Blocks.ACACIA_LEAVES)
         add(Blocks.DARK_OAK_LEAVES)
-        add(Blocks.SPRUCE_LEAVES)
+        add(Blocks.SHORT_GRASS)
+        add(Blocks.FERN)
+        add(Blocks.SUNFLOWER)
+        add(Blocks.LILAC)
+        add(Blocks.TALL_GRASS)
+        add(Blocks.LARGE_FERN)
+        add(Blocks.ROSE_BUSH)
+        add(Blocks.PEONY)
+        add(Blocks.POPPY)
+        add(Blocks.BLUE_ORCHID)
+        add(Blocks.ALLIUM)
+        add(Blocks.AZURE_BLUET)
+        add(Blocks.RED_TULIP)
+        add(Blocks.ORANGE_TULIP)
+        add(Blocks.WHITE_TULIP)
+        add(Blocks.PINK_TULIP)
+        add(Blocks.OXEYE_DAISY)
     }
 
     private val recentArrowParticles = TimeLimitedSet<SboVec>(1.minutes)
@@ -119,7 +133,7 @@ object ArrowGuessBurrow {
             entry.removeGuesses()
         }
 
-        allGuesses.removeAll(containList)
+        allGuesses.removeAll(containList.toSet())
     }
 
     private fun detectArrow(): RaycastUtils.Ray? {
@@ -323,7 +337,7 @@ object ArrowGuessBurrow {
     private fun AABB.isInside(vec: SboVec): Boolean {
         return vec.x > this.minX && vec.x <= this.maxX &&
                 vec.y > this.minY && vec.y <= this.maxY &&
-                vec.z > this.minZ && vec.z <= this.maxZ;
+                vec.z > this.minZ && vec.z <= this.maxZ
     }
 
     private fun ClientboundLevelParticlesPacket.isRelevant() : Boolean {

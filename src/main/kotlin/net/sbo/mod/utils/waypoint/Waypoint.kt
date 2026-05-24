@@ -52,17 +52,16 @@ class Waypoint(
     var distanceRaw: Double = 0.0
     var distanceText: String = ""
     var formattedText: String = ""
-    var warp: String? = null
+    var isClosest = false
 
     fun distanceToPlayer(): Double {
         val playerPos = Player.getLastPosition()
         return sqrt((playerPos.x - this.pos.x).pow(2) + (playerPos.y - this.pos.y).pow(2) + (playerPos.z - this.pos.z).pow(2))
     }
 
-    private fun setWarpText(isBestGuess: Boolean = true) {
-        if (isBestGuess) {
-            this.warp = WaypointManager.getClosestWarp(this.pos)
-            this.formattedText = this.warp?.let {
+    private fun setWarpText() {
+        if (isClosest) {
+            this.formattedText = WaypointManager.getClosestWarp(this.pos)?.let {
                 "$text§7 (warp $it)${this.distanceText}"
             } ?: "${this.text}${this.distanceText}"
         } else {
@@ -71,17 +70,15 @@ class Waypoint(
     }
 
     fun format(
-        inqWaypoints: List<Waypoint>,
-        closestBurrowDistance: Double,
-        isBestGuess: Boolean = false
+        inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
         this.distanceText = if (distance) " §b[${distanceRaw.roundToInt()}m]" else ""
 
         when (this.type) {
             "guess", "arrow" -> {
-                this.color = Color(Customization.guessColor)
-                this.line = Diana.guessLine && closestBurrowDistance > 60 && inqWaypoints.isEmpty() && isBestGuess
+                this.color = Color(if (isClosest) Customization.closestColor else Customization.guessColor)
+                this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
                 this.r = color.red / 255f
                 this.g = color.green / 255f
                 this.b = color.blue / 255f
@@ -90,13 +87,20 @@ class Waypoint(
                 WaypointManager.waypointExists("burrow", this.pos).let { (exists, wp) ->
                     if (exists && wp != null) this.hidden = wp.distanceToPlayer() < 60
                 }
-                setWarpText(isBestGuess)
+                setWarpText()
+            }
+            "burrow" -> {
+                this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
+                setWarpText()
             }
             "rareMob" -> {
-                if (inqWaypoints.lastOrNull() == this) {
+                val newest = inqWaypoints.lastOrNull() == this
+
+                if (newest) {
                     setWarpText()
-                    this.line = Diana.inqLine
                 }
+
+                this.line = newest && Diana.inqLine
             }
             else -> {
                 this.formattedText = "$text$distanceText"

@@ -9,11 +9,11 @@ import kotlin.math.max
 
 object ServerStats {
     private var prevTime = 0L
-    var avargeTps = 20f
+    var averageTps = 20f
         private set
 
     fun getTps(): Float {
-        return avargeTps
+        return averageTps
     }
 
     @SboEvent
@@ -23,13 +23,13 @@ object ServerStats {
                 val currentTime = Util.getMillis()
                 if (prevTime != 0L) {
                     val deltaTime = currentTime - prevTime
-                    avargeTps = (20000f / max(1, deltaTime)).coerceIn(0f, 20f)
+                    averageTps = (20000f / max(1, deltaTime)).coerceIn(0f, 20f)
                 }
                 prevTime = currentTime
             }
 
             is ClientboundLoginPacket -> {
-                avargeTps = 20f
+                averageTps = 20f
                 prevTime = 0L
             }
         }

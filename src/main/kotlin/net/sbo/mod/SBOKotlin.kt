@@ -5,7 +5,6 @@ import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.Util
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.utils.waypoint.WaypointManager
@@ -26,7 +25,6 @@ import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.DianaMobDetect
-import net.sbo.mod.diana.DianaTracker.announceLootToParty
 import net.sbo.mod.diana.RareMobHighlight
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
@@ -42,7 +40,6 @@ import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.SoundHandler
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.overlay.OverlayManager
