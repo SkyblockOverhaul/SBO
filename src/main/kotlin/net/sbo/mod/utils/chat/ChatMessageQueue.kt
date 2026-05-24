@@ -37,7 +37,6 @@ object ChatMessageQueue {
 
     fun flush() {
         val player = mc.player ?: return
-        val connection = player.connection ?: return
 
         if (queue.isEmpty) {
             return
@@ -49,8 +48,8 @@ object ChatMessageQueue {
 
         val message = queue.dequeue()
 
-        if (!message.isNullOrEmpty()) {
-            connection.sendChat(message)
+        if (!message.isEmpty()) {
+            player.connection.sendChat(message)
         }
     }
 }
