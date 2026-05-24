@@ -217,20 +217,18 @@ object PartyCommands {
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
                 "!tps" -> if (settings.tpsCommand) sendResponse("${"%.2f".format(ServerStats.getTps())} TPS")
                 "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
-                    sleep(200) { DianaStats.sendPlayerStats(false) }
+                    DianaStats.sendPlayerStats(false)
                 }
                 "!totalstats", "!totalstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
-                    sleep(200) { DianaStats.sendPlayerStats(true) }
+                    DianaStats.sendPlayerStats(true)
                 }
                 "!sessionstats", "!sessionstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
-                    sleep(200) { DianaStats.sendPlayerStats(null) }
+                    DianaStats.sendPlayerStats(null)
                 }
                 "!version" -> sendResponse("SBO version: ${SBOKotlin.version} | Minecraft version: ${SBOKotlin.mcVersion}")
                 "!help" -> if (settings.dianaPartyCommands) {
-                    sleep(200) {
-                        help()
-                        Chat.pc("Available diana party commands: ${helpCommands.joinToString(",")}")
-                    }
+                    help()
+                    sendResponse("Available diana party commands: ${helpCommands.joinToString(",")}")
                 }
                 "!since" -> handleSinceCommand(secondArg)
                 else -> commandMap[command]?.let { cmd ->
@@ -255,9 +253,9 @@ object PartyCommands {
             "woolls", "lswool" -> "Kings since lootshare wool: ${sboData.kingSinceLsWool}"
             else -> "Mobs since inq: ${sboData.mobsSinceInq}"
         }
-        sleep(200) { Chat.pc(response) }
+        sendResponse(response)
     }
 
-    private fun sendCommand(cmd: String) = sleep(200) { Chat.command(cmd) }
-    private fun sendResponse(msg: String) = sleep(200) { Chat.pc(msg) }
+    private fun sendCommand(cmd: String) = Chat.command(cmd)
+    private fun sendResponse(msg: String) = Chat.pc(msg)
 }
