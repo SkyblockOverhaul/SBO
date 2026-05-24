@@ -201,6 +201,13 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
+    var afkTimeout by int(60) {
+        this.name = Literal("AFK Timeout")
+        this.description = Literal("Pause the trackers if it is not modified for this amount of seconds. Minimum 15, maximum 900 seconds is allowed.")
+        this.range = 15..900
+        this.slider = true
+    }
+
     var statsTracker by boolean(false) {
         this.name = Literal("Diana Stats Tracker")
         this.description = Literal("Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, /sboguis to move the overlay")

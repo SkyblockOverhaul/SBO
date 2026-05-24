@@ -8,22 +8,20 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import java.lang.reflect.Field
 import java.util.Locale
+import net.sbo.mod.settings.categories.Diana
 
 object SboTimerManager {
     internal val activeTimers = mutableSetOf<SBOTimer>()
     val timerMayor = SBOTimer(
         name = "Mayor",
-        inactiveTimeLimit = 1.5f,
         tracker = SboDataObject.dianaTrackerMayor
     )
     val timerTotal = SBOTimer(
         name = "Total",
-        inactiveTimeLimit = 1.5f,
         tracker = SboDataObject.dianaTrackerTotal
     )
     val timerSession = SBOTimer(
         name = "Session",
-        inactiveTimeLimit = 1.5f,
         tracker = SboDataObject.dianaTrackerSession
     )
 
@@ -62,7 +60,6 @@ object SboTimerManager {
 
     class SBOTimer(
         val name: String,
-        inactiveTimeLimit: Float,
         private val tracker: DianaTracker
     ) {
         companion object {
@@ -73,8 +70,11 @@ object SboTimerManager {
         var elapsedTime: Long = 0
         private var state: TimerState = TimerState.Idle
         private var lastActivityTime: Long = System.currentTimeMillis()
-        private val INACTIVITY_LIMIT_MS: Long = (inactiveTimeLimit * 60 * 1000).toLong()
         private var inactivityFlag: Boolean = false
+
+        private fun getInactivityLimitMs(): Long {
+            return Diana.afkTimeout.toLong().coerceAtLeast(15L) * 1000L
+        }
 
         init {
             timerList.add(this)
@@ -101,10 +101,10 @@ object SboTimerManager {
             if (state != TimerState.Running) return
             val now = System.currentTimeMillis()
             updateElapsedTime(now)
-            if (now - lastActivityTime > INACTIVITY_LIMIT_MS) {
+            if (now - lastActivityTime > getInactivityLimitMs()) {
                 pause()
                 if (!inactivityFlag) {
-                    tracker.items.TIME = tracker.items.TIME - INACTIVITY_LIMIT_MS
+                    tracker.items.TIME = tracker.items.TIME - getInactivityLimitMs()
                     inactivityFlag = true
                 }
             }
@@ -127,7 +127,7 @@ object SboTimerManager {
         fun continueTimer() {
             if (state == TimerState.Running) return
             if (inactivityFlag) {
-                elapsedTime -= INACTIVITY_LIMIT_MS
+                elapsedTime -= getInactivityLimitMs()
             }
             startTime = System.currentTimeMillis()
             state = TimerState.Running
