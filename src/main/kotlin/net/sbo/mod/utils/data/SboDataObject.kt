@@ -659,12 +659,6 @@ object SboDataObject {
         "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData)
     )
 
-    private fun <T> saveToFolder(folder: File, data: T, fileName: String) {
-        writerForFile(File(folder, fileName)).use { writer ->
-            gson.toJson(data, writer)
-        }
-    }
-
     private fun saveAllData() {
         configMapforSave.forEach { (_, configData) ->
             configData.first.invoke()
@@ -702,12 +696,56 @@ object SboDataObject {
         }
     }
 
+    private fun <T> saveToFolder(folder: File, data: T, fileName: String) {
+        val file = File(folder, fileName)
+        writeJsonAtomically(file, data as Any)
+    }
+
     fun <T> save(modName: String, data: T, fileName: String) {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
         modConfigDir.mkdirs()
+
         val dataFile = File(modConfigDir, fileName)
-        writerForFile(dataFile).use { writer ->
+        writeJsonAtomically(dataFile, data as Any)
+    }
+
+    /**
+     * Writes json data to a temporary file, then replaces the original file with it
+     * only after the temp file has finished fully writing. Performs atomic move to avoid
+     * data loss if crash or power loss during the move.
+     */
+    private fun writeJsonAtomically(file: File, data: Any) {
+        val parentDirectory = file.parentFile
+
+        parentDirectory.listFiles { candidate ->
+            candidate.name.startsWith("${file.name}.") && candidate.name.endsWith(".tmp")
+        }?.forEach(File::delete)
+
+        val tempFile = Files.createTempFile(
+            parentDirectory.toPath(),
+            "${file.name}.",
+            ".tmp"
+        )
+
+        writerForFile(tempFile.toFile()).use { writer ->
             gson.toJson(data, writer)
+        }
+
+        try {
+            Files.move(
+                tempFile,
+                file.toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.ATOMIC_MOVE
+            )
+        } catch (e: AtomicMoveNotSupportedException) {
+            // Hopefully no power loss or crash because non-atomic move here
+            // This code path won't be taken unless outdated OS, weird partition setup or OneDrive (lame)
+            Files.move(
+                tempFile,
+                file.toPath(),
+                StandardCopyOption.REPLACE_EXISTING
+            )
         }
     }
 
