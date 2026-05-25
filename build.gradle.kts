@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import net.fabricmc.loom.task.RemapJarTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.lang.module.ModuleDescriptor.Version
 
 plugins {
     java
@@ -22,6 +23,14 @@ private fun versionedProperty(name: String): String {
     return project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for ${mcProject}")
 }
 
+private fun isUnobfuscatedMCVersion(): Boolean {
+    return isMCVersionGreaterOrEqualTo("26.1")
+}
+
+private fun isMCVersionGreaterOrEqualTo(version: String): Boolean {
+    return Version.parse(mcVersion) >= Version.parse(version)
+}
+
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.
     accessWidenerPath = file("src/main/resources/sbo-kotlin.classtweaker")
@@ -37,7 +46,7 @@ loom {
 }
 
 bloom {
-    if ("26.1.2-fabric" == mcProject) {
+    if (isMCVersionGreaterOrEqualTo("26.1")) {
         // GuiGraphics --> GuiGraphicsExtractor
         replacement("GuiGraphics", "GuiGraphicsExtractor")
 
@@ -189,7 +198,7 @@ afterEvaluate {
             archiveBaseName.set(jarName)
         }
 
-        if ("26.1.2-fabric" != mcProject) {
+        if (!isUnobfuscatedMCVersion()) {
             named<RemapJarTask>("remapJar") {
                 destinationDirectory.set(newBuildDestinationDirectory)
                 archiveBaseName.set(jarName)
@@ -230,13 +239,16 @@ tasks.named<ProcessResources>("processResources") {
     val modVersion = project.property("mod.version")
     val modGroup = project.property("mod.group")
 
+    // 26.1 onwards switched back to proper SemVer so we use ~ to accept compatible patch updates; for older versions do an exact requirement as even patch level version updates (e.g 1.21.10 to 1.21.11) are incompatible with each other.
+    val mcVersionConstraint = if (isMCVersionGreaterOrEqualTo("26.1")) "~$mcVersion" else "=$mcVersion"
+
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
     inputs.property("mod_id", modId)
     inputs.property("mod_version", modVersion)
     inputs.property("mod_group", modGroup)
 
-    inputs.property("mc_version", mcVersion)
+    inputs.property("mc_version_constraint", mcVersionConstraint)
 
     inputs.property("fabric_loader_version", fabricLoaderVersion)
     inputs.property("fabric_api_version", fabricApiVersion)
