@@ -107,6 +107,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Select the warps you want to be able to warp to with the guess and inquisitor warp keys.")
     }
 
+    var showTitleWhenWarpAvailable by boolean(false) {
+        this.name = Literal("Show Title When Warp Is Available")
+        this.description = Literal("If enabled, will show a title when warp is available.")
+    }
+
     var dontWarpIfBurrowClose by boolean(true) {
         this.name = Literal("Don't Warp If a Burrow is nearby")
         this.description = Literal("If enabled, the warp key will not warp you if you are within 60 blocks of a burrow")
