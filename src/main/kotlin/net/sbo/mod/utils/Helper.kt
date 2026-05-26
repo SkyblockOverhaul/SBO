@@ -354,7 +354,7 @@ object Helper {
                 var id: String
                 var item: Item
                 val nbt = customData?.copyTag()
-                val sbId = ItemUtils.getSBID(customData, nbt)
+                val sbId = ItemUtils.getSBID(customData)
                 // print for debugging the lore lines
                 var isChimera = false
                 if (sbId == "ENCHANTED_BOOK") {
@@ -370,18 +370,18 @@ object Helper {
                 if (!isChimera) {
                     item = Item(
                         sbId,
-                        ItemUtils.getUUID(customData, nbt),
+                        ItemUtils.getUUID(customData),
                         ItemUtils.getDisplayName(stack),
-                        ItemUtils.getTimestamp(customData, nbt),
+                        ItemUtils.getTimestamp(customData),
                         stack.count
                     )
                     id = if (item.itemUUID != "") item.itemUUID else item.itemId
                 } else {
                     item = Item(
                         "CHIMERA",
-                        ItemUtils.getUUID(customData, nbt),
+                        ItemUtils.getUUID(customData),
                         "§d§lChimera",
-                        ItemUtils.getTimestamp(customData, nbt),
+                        ItemUtils.getTimestamp(customData),
                         stack.count
                     )
                     id = "CHIMERA"

@@ -5,35 +5,28 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.component.CustomData
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.item.ItemStack
-import net.minecraft.network.chat.Component
 
 object ItemUtils {
     private fun CustomData?.orEmpty(): CompoundTag? = this?.copyTag()
 
-    fun getTimestamp(customData: CustomData?, nbt: CompoundTag? = customData.orEmpty()): Long {
-        if (customData == null || nbt == null) return 0L
-        if (!nbt.contains("timestamp")) return 0L
-        return nbt.getLong("timestamp").orElse(0L)
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> getNbtValue(customData: CustomData?, key: String, default: T): T {
+        val nbt = customData.orEmpty() ?: return default
+        return when {
+            nbt.contains(key) && key == "timestamp" -> nbt.getLong(key).orElse(0L) as T
+            nbt.contains(key) && (key == "uuid" || key == "id") -> nbt.getString(key).orElse("") as T
+            else -> default
+        }
     }
 
-    fun getSBID(customData: CustomData?, nbt: CompoundTag? = customData.orEmpty()): String {
-        if (customData == null || nbt == null) return ""
-        if (!nbt.contains("id")) return ""
-        return nbt.getString("id").orElse("")
-    }
+    fun getTimestamp(customData: CustomData?): Long = getNbtValue(customData, "timestamp", 0L)
 
-    fun getUUID(customData: CustomData?, nbt: CompoundTag? = customData.orEmpty()): String {
-        if (customData == null || nbt == null) return ""
-        if (!nbt.contains("uuid")) return ""
-        return nbt.getString("uuid").orElse("")
-    }
+    fun getSBID(customData: CustomData?): String = getNbtValue(customData, "id", "")
 
-    fun getDisplayName(stack: ItemStack): String {
-        return stack.hoverName.toFormattedString()
-    }
+    fun getUUID(customData: CustomData?): String = getNbtValue(customData, "uuid", "")
 
-    fun getLoreList(stack: ItemStack): List<String> {
-        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: listOf()
-        return linesList.map { it.toFormattedString() }
-    }
+    fun getDisplayName(stack: ItemStack): String = stack.hoverName.toFormattedString()
+
+    fun getLoreList(stack: ItemStack): List<String> =
+        (stack.get(DataComponents.LORE)?.lines ?: emptyList()).map { it.toFormattedString() }
 }
