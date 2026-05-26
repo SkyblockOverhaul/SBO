@@ -25,7 +25,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
  * @param ttl The time to live for the waypoint in seconds (0 for infinite).
  * @param type The type of the waypoint for customization.
  * @param line Whether to draw a line to the waypoint.
- * @param beam Whether to draw a beam at the waypoint.
  * @param distance Whether to display the distance in meters (blocks) to the waypoint.
  */
 class Waypoint(
@@ -39,7 +38,6 @@ class Waypoint(
     val ttl: Int = 0,
     val type: String = "normal",
     var line: Boolean = false,
-    var beam: Boolean = true,
     var distance: Boolean = true
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
@@ -133,7 +131,7 @@ class Waypoint(
             true,
             this.line,
             Diana.dianaLineWidth.toFloat(),
-            this.beam
+            Diana.showBeaconBeam
         )
     }
 }
