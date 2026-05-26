@@ -70,6 +70,11 @@ object Diana : CategoryKt("Diana") {
         )
     }
 
+    var showBeaconBeam by boolean(true) {
+        this.name = Literal("Show Beacon Beam")
+        this.description = Literal("Shows a beacon beam for waypoints going to the sky if enabled.")
+    }
+
     var showTitleWhenInaccurate by boolean(false) {
         this.name = Literal("Show Title When Inaccurate")
         this.description = Literal("Shows a title to guess normally when the arrow guess is inaccurate")
@@ -209,7 +214,6 @@ object Diana : CategoryKt("Diana") {
         this.name = Literal("AFK Timeout")
         this.description = Literal("Pause the trackers if it is not modified for this amount of seconds. Minimum 15, maximum 900 seconds is allowed.")
         this.range = 15..900
-        this.slider = true
     }
 
     var statsTracker by boolean(false) {
