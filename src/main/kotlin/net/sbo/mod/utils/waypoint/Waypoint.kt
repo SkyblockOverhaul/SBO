@@ -3,6 +3,7 @@ package net.sbo.mod.utils.waypoint
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
 import kotlin.math.pow
@@ -59,9 +60,17 @@ class Waypoint(
 
     private fun setWarpText() {
         if (isClosest) {
-            this.formattedText = WaypointManager.getClosestWarp(this.pos)?.let {
+            val closest = WaypointManager.getClosestWarp(this.pos)
+
+            this.formattedText = closest?.let {
                 "$text§7 (warp $it)${this.distanceText}"
             } ?: "${this.text}${this.distanceText}"
+
+            val title = Diana.showTitleWhenWarpAvailable
+            if (title && closest != null) {
+                 val warpName = closest.replaceFirstChar(Char::titlecase)
+                 Helper.showTitle("§bWarp §e$warpName$distanceText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
+            }
         } else {
             this.formattedText = "${this.text}${this.distanceText}"
         }
