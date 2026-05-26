@@ -107,7 +107,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Select the warps you want to be able to warp to with the guess and inquisitor warp keys.")
     }
 
-    var showTitleWhenWarpAvailable by boolean(true) {
+    var showTitleWhenWarpAvailable by boolean(false) {
         this.name = Literal("Show Title When Warp Is Available")
         this.description = Literal("If enabled, will show a title when warp is available.")
     }
