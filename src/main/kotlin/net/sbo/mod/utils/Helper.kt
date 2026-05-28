@@ -23,7 +23,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
-import net.sbo.mod.utils.game.ItemUtils
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.game.World
@@ -350,15 +350,14 @@ object Helper {
             val stack: ItemStack = inventory[slot]
 
             if (!stack.isEmpty) {
-                val customData = stack.get(DataComponents.CUSTOM_DATA)
                 var id: String
                 var item: Item
-                val nbt = customData?.copyTag()
-                val sbId = ItemUtils.getSBID(customData)
+                val lookup = ItemLookup(stack)
+                val sbId = lookup.sbId
                 // print for debugging the lore lines
                 var isChimera = false
                 if (sbId == "ENCHANTED_BOOK") {
-                    val lore = ItemUtils.getLoreList(stack)
+                    val lore = lookup.loreList
                     for (line in lore) {
                         if (line.contains("Chimera")) {
                             isChimera = true
@@ -370,18 +369,18 @@ object Helper {
                 if (!isChimera) {
                     item = Item(
                         sbId,
-                        ItemUtils.getUUID(customData),
-                        ItemUtils.getDisplayName(stack),
-                        ItemUtils.getTimestamp(customData),
+                        lookup.uuid,
+                        lookup.displayName,
+                        lookup.timestamp,
                         stack.count
                     )
                     id = if (item.itemUUID != "") item.itemUUID else item.itemId
                 } else {
                     item = Item(
                         "CHIMERA",
-                        ItemUtils.getUUID(customData),
+                        lookup.uuid,
                         "§d§lChimera",
-                        ItemUtils.getTimestamp(customData),
+                        lookup.timestamp,
                         stack.count
                     )
                     id = "CHIMERA"
@@ -418,7 +417,8 @@ object Helper {
         val inv = Player.getPlayerInventory()
         for (i in inv.indices) {
             val stack = inv[i]
-            if (!stack.isEmpty && ItemUtils.getSBID(stack.get(DataComponents.CUSTOM_DATA)) == sbId) {
+            val lookup = ItemLookup(stack)
+            if (!stack.isEmpty && lookup.sbId == sbId) {
                 return true
             }
         }
