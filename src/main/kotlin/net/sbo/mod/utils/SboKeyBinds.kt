@@ -11,9 +11,8 @@ import org.lwjgl.glfw.GLFW
 import net.minecraft.resources.ResourceLocation
 
 object SboKeyBinds {
-
     private data class KeyPressState(var isHeldDown: Boolean = false, var lastActivation: Long = 0)
-    private val keyStates = mutableMapOf<KeyMapping, KeyPressState>()
+    private val keyStates = mutableMapOf<String, KeyPressState>()
     private val SBO_CATEGORY = KeyMapping.Category(ResourceLocation.fromNamespaceAndPath("sbo-kotlin", "keybinds"))
 
     fun init() {
@@ -61,9 +60,9 @@ object SboKeyBinds {
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, cooldownMillis: Long, action: () -> Unit) {
-        val state = keyStates.getOrPut(keyBinding) { KeyPressState() }
+        val state = keyStates.getOrPut(keyBinding.name) { KeyPressState() }
 
-        if (keyBinding.consumeClick()) {
+        if (keyBinding.isDown) {
             val currentTime = System.currentTimeMillis()
             if (!state.isHeldDown && currentTime - state.lastActivation > cooldownMillis) {
                 action()
