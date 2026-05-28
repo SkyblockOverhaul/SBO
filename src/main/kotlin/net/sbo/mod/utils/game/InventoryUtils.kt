@@ -46,8 +46,9 @@ object InventoryUtils {
     fun getInternalName(stack: ItemStack): String {
         if (stack.isEmpty) return "AIR"
 
-        val customData = stack.get(DataComponents.CUSTOM_DATA)
-        val sbId = ItemUtils.getSBID(customData)
+        val lookup = ItemLookup(stack)
+        val sbId = lookup.sbId
+
         if (sbId.isNotEmpty()) return sbId
 
         return BuiltInRegistries.ITEM.getKey(stack.item).toString()

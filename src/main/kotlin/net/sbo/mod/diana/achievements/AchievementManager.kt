@@ -15,8 +15,7 @@ import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
-import net.sbo.mod.utils.game.ItemUtils.getDisplayName
-import net.sbo.mod.utils.game.ItemUtils.getLoreList
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DianaTrackerMayorData
 import net.sbo.mod.utils.data.PartyPlayerStats
@@ -142,8 +141,10 @@ object AchievementManager {
         if (event.entity !is Player) return
         val isRareMob = RareDianaMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
         if (!isRareMob) return
-        if (getDisplayName(event.player.mainHandItem).contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
-        if (getDisplayName(event.player.mainHandItem).contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
+        val item = event.player.mainHandItem
+        val lookup = ItemLookup(item)
+        if (lookup.displayName.contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
+        if (lookup.displayName.contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
     }
 
 
@@ -342,11 +343,12 @@ object AchievementManager {
 
     fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
-        if (!getDisplayName(helmet).contains("Crown of Avarice")) return
+        val lookup = ItemLookup(helmet)
+        if (!lookup.displayName.contains("Crown of Avarice")) return
 
         unlockAchievement(121)
 
-        val mf = getLoreList(helmet)
+        val mf = lookup.loreList
             .map { it.removeFormatting() }
             .getValueFromLine(
                 Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")
