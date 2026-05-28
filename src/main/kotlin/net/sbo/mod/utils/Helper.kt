@@ -588,7 +588,8 @@ object Helper {
         val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
-        val bestUnitPrice = if (npcPrice > ahPrice) npcPrice else ahPrice
+        val preferNpc = Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
+        val bestUnitPrice = if (npcPrice > ahPrice || preferNpc) npcPrice else ahPrice
 
         return (bestUnitPrice * amount).roundToLong()
     }
