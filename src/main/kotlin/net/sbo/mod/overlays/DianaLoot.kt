@@ -293,7 +293,7 @@ object DianaLoot : DirtyFlushableOverlay() {
     }
 
     private fun createCoinLine(tracker: DianaTracker): OverlayTextLine {
-        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}")
+        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}" + if (Diana.excludeCoinsFromProfit) "$GRAY[$RED EXCLUDED$GRAY]" else "")
             .onHover { drawContext, textRenderer ->
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor
@@ -335,7 +335,7 @@ object DianaLoot : DirtyFlushableOverlay() {
                 totalProfit += itemPrice * itemValue
             }
         }
-        return totalProfit + tracker.items.COINS
+        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
     }
 
     fun updateTimerText() {

@@ -191,6 +191,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Always prefers NPC prices for select items; such as the Pet Item drops like Cretan Urn, Dwarf Turtle Shelmet, Antique Remedies, Washed Up Souvenir and Crochet Tiger Plushie, along with Hilt of Revelations, useful if NPC selling them.")
     }
 
+    var excludeCoinsFromProfit by boolean(false) {
+        this.name = Literal("Exclude Coins from Profit")
+        this.description = Literal("Excludes coins from the loot tracker's profit calculation when enabled, useful if using a non-1B crown since coins are consumed.")
+    }
+
     var hideUnobtainedItems by ObservableEntry(
         boolean(true) {
             this.name = Literal("Hide Unobtained Items")
