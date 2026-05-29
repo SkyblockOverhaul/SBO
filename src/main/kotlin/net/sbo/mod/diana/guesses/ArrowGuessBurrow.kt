@@ -79,14 +79,12 @@ object ArrowGuessBurrow {
         add(Blocks.OXEYE_DAISY)
     }
 
-    private val recentArrowParticles = TimeLimitedSet<SboVec>(1.minutes)
+    private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
     private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
 
     private var lastBlockClicked: SboVec? = null
 
     private val allGuesses = CopyOnWriteArrayList<GuessEntry>()
-
-    private var newArrow = true
 
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
@@ -96,9 +94,8 @@ object ArrowGuessBurrow {
 
         val location = SboVec(packet.x, packet.y, packet.z)
         if (!location.isCloseToLastBurrow()) return
-        if(!recentArrowParticles.add(location)) return
 
-        val range = getArrowRange(packet.xDist, packet.yDist) ?: return
+        val range = getArrowRange(packet.xDist, packet.yDist, packet.zDist) ?: return
         locations.add(location)
         range.processArrowDetection()
     }
@@ -121,7 +118,6 @@ object ArrowGuessBurrow {
         val maxChain = event.maxBurrow
         if (currentChain != maxChain) {
             locations.clear()
-            newArrow = true
         }
         if (currentChain == 1) return
 
@@ -251,7 +247,7 @@ object ArrowGuessBurrow {
 
             val scaledDistance = (distanceToRay * 500000 / distanceFromOrigin).roundTo(5)
 
-            candidates[candidateBlock] = Pair(scaledDistance.roundTo(5), distanceFromOrigin)
+            candidates[candidateBlock] = Pair(scaledDistance.roundTo(2), distanceFromOrigin)
         }
         if (candidates.isEmpty()) return null
 
@@ -283,7 +279,6 @@ object ArrowGuessBurrow {
         val playerPos = player.position().toSboVec()
 
         for (guess in allGuesses) {
-            if (guess == null) continue
             val current = guess.getCurrent()
             if (!isBlockValid(current)) {
                 guess.moveToNext()
@@ -300,10 +295,10 @@ object ArrowGuessBurrow {
         }
     }
 
-    private fun getArrowRange(offsetX: Float, offsetY: Float): IntRange? {
-        if (offsetY == 128.0f) return 0..117 //Green Close
-        if (offsetY == 255.0f && offsetX == 255.0f) return 112..282 //Red Medium
-        if (offsetX == 255.0f) return 281..600 //Black Far
+    private fun getArrowRange(offsetX: Float, offsetY: Float, offsetZ: Float): IntRange? {
+        if (offsetX == 0f && offsetY == 128f && offsetZ == 0f) return 0..117 //Yellow Close
+        if (offsetX == 255f && offsetY == 255f && offsetZ == 0f) return 112..282 //Red Medium
+        if (offsetX == 255f && offsetY == 0f && offsetZ == 0f) return 281..600 //Black Far
         return null
     }
 
@@ -348,15 +343,17 @@ object ArrowGuessBurrow {
         return parameters is DustParticleOptions
     }
 
-    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) < 5 } ?: false
+    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) <= 6 } ?: false
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this
+        if(!recentFoundArrows.add(arrow)) return this
+
         locations.clear()
         findClosestValidBlockToRayNew(arrow, this)?.let {
             WaypointManager.addArrowGuess(it)
-            newArrow = false
         }
+
         return this
     }
 }

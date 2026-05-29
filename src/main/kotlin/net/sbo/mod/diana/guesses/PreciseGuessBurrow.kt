@@ -45,7 +45,7 @@ object PreciseGuessBurrow {
         if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)
         this.lastLavaParticle = System.currentTimeMillis()
-        if (System.currentTimeMillis() - lastGuessTime > 1000) return
+        if (System.currentTimeMillis() - lastGuessTime > 3000) return
 
         if (this.particleLocations.isEmpty()) {
             this.particleLocations.add(currLoc)
