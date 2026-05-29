@@ -420,7 +420,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             selectedPage = pageTitle
             contentBlock.clearChildren()
             partyListContainer.clearChildren()
-            if (selectedPage != "Home" && selectedPage != "Help" && selectedPage != "Settimgs") {
+            if (selectedPage != "Home" && selectedPage != "Help" && selectedPage != "Settings") {
                 contentBlock.addChild(partyListContainer)
             }
             updatePageHighlight()

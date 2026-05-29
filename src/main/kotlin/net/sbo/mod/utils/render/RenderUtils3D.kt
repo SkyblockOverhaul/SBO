@@ -118,7 +118,7 @@ object RenderUtils3D {
         val height = 1.0
         val depth = 1.0
         context.pushPop {
-            val cameraPos = context.getCamera().position
+            val cameraPos = context.getCamera().position()
             translate(pos.x + 0.5 - cameraPos.x, pos.y - cameraPos.y, pos.z + 0.5 - cameraPos.z)
 
             val consumers = context.consumers()!!
@@ -164,7 +164,7 @@ object RenderUtils3D {
     ) {
         context.pushPop {
             val camera = context.getCamera()
-            val cameraPos = camera.position
+            val cameraPos = camera.position()
             val cameraYaw = camera.yRot
             val cameraPitch = camera.xRot
             val textRenderer = mc.font
@@ -221,7 +221,7 @@ object RenderUtils3D {
     ) {
         context.pushPop {
             val camera = context.getCamera()
-            val cameraPos = camera.position
+            val cameraPos = camera.position()
 
             translate(cameraPos.reverse())
 
@@ -282,7 +282,7 @@ object RenderUtils3D {
         val consumers = ctx.consumers()
         val wolrd = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
-        val cam = ctx.getCamera().position
+        val cam = ctx.getCamera().position()
         val beamColor = floatArrayOf(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f)
 
         ctx.pushPop {
