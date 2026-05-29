@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
+import net.minecraft.client.gui.components.ChatComponent
 import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.events.ClickActionManager
 import net.sbo.mod.settings.categories.General
@@ -188,7 +189,7 @@ object Chat {
             return ""
         }
         val textRenderer = mc.font
-        val chatWidth = mc.gui.chat.width
+        val chatWidth = ChatComponent.getWidth(mc.options.chatWidth().get())
         val separatorWidth = textRenderer.width(separator)
 
         if (separatorWidth <= 0) {
