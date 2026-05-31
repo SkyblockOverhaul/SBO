@@ -21,8 +21,8 @@ import net.sbo.mod.settings.categories.Diana
 
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 
-import 	net.minecraft.gizmos.Gizmos
-import 	net.minecraft.gizmos.GizmoStyle
+import net.minecraft.gizmos.Gizmos
+import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.world.phys.AABB
 
 object RenderUtils3D {
