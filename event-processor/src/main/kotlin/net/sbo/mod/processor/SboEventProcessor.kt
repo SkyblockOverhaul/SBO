@@ -59,7 +59,7 @@ class SboEventProcessor(
                         )
                         return@joinToString ""
                     }
-                    val paramType = param.type.resolve()?.declaration?.qualifiedName?.asString()
+                    val paramType = param.type.resolve().declaration?.qualifiedName?.asString()
                     val priority = fn.annotations.find { it.annotationType.resolve().declaration.qualifiedName?.asString() == "net.sbo.mod.utils.events.annotations.SboEvent" }
                         ?.arguments?.find { it.name?.getShortName() == "priority" }
                         ?.value?.toString()?.toIntOrNull() ?: 1
