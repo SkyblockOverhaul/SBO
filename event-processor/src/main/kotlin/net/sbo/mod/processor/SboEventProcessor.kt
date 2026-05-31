@@ -26,7 +26,7 @@ class SboEventProcessor(
 
             val isObject = clazz.classKind == ClassKind.OBJECT
             if (!isObject) {
-                logger.error("@SboEvent can only be used inside objects: ${clazz.simpleName.asString()}")
+                logger.error("@SboEvent can only be used inside objects: ${clazz.simpleName.asString()}", clazz)
                 return@forEach
             }
 
@@ -39,10 +39,10 @@ class SboEventProcessor(
                 className
             }
 
-            logger.info("Generating EventRegister for $packageName.$className with functions: ${functions.map { it.simpleName.asString() }}")
+            logger.info("Generating EventRegister for $packageName.$className with functions: ${functions.joinToString { it.simpleName.asString() }}")
 
             // Nur KSFile-Objekte sammeln, die nicht null sind
-            val dependencies = functions.mapNotNull { it.containingFile }.toTypedArray<KSFile>()
+            val dependencies = functions.mapNotNull { it.containingFile }.distinct().toTypedArray<KSFile>()
             val file = codeGenerator.createNewFile(
                 Dependencies(true, *dependencies),
                 packageName,
@@ -51,12 +51,21 @@ class SboEventProcessor(
 
             OutputStreamWriter(file).use { writer ->
                 val functionCalls = functions.joinToString("\n") { fn ->
-                    val paramType = fn.parameters.firstOrNull()?.type?.resolve()?.declaration?.qualifiedName?.asString()
-                    val priority = fn.annotations.find { it.shortName.getShortName() == "SboEvent" }
+                    val param = fn.parameters.firstOrNull()
+                    if (null == param || 1 != fn.parameters.size) {
+                        logger.error(
+                            "@SboEvent functions must have exactly one parameter",
+                            fn
+                        )
+                        return@joinToString ""
+                    }
+                    val paramType = param.type.resolve()?.declaration?.qualifiedName?.asString()
+                    val priority = fn.annotations.find { it.annotationType.resolve().declaration.qualifiedName?.asString() == "net.sbo.mod.utils.events.annotations.SboEvent" }
                         ?.arguments?.find { it.name?.getShortName() == "priority" }
                         ?.value?.toString()?.toIntOrNull() ?: 1
                     if (paramType == null) {
-                        "// Cannot resolve type for ${fn.simpleName.asString()}"
+                        logger.error("Cannot resolve type for ${fn.simpleName.asString()}")
+                        return@joinToString "// Cannot resolve type for ${fn.simpleName.asString()}"
                     } else {
                         "SBOEvent.on($paramType::class, $priority) { e -> $instanceRef.${fn.simpleName.asString()}(e) }"
                     }

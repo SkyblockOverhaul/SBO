@@ -4,7 +4,7 @@ import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.utils.waypoint.WaypointManager
@@ -65,7 +65,7 @@ object SBOKotlin : ClientModInitializer {
 	lateinit var version: String
 	lateinit var mcVersion: String
 
-	fun id(path: String): ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, path)
+	fun id(path: String): Identifier = Identifier.fromNamespaceAndPath(MOD_ID, path)
 
 	override fun onInitializeClient() {
 		version = FabricLoader.getInstance().getModContainer(MOD_ID)

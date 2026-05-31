@@ -21,11 +21,9 @@ import net.sbo.mod.settings.categories.Diana
 
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 
-//#if MC > 1.21.10
-//$$ import 	net.minecraft.gizmos.Gizmos
-//$$ import 	net.minecraft.gizmos.GizmoStyle
-//$$ import net.minecraft.world.phys.AABB
-//#endif
+import 	net.minecraft.gizmos.Gizmos
+import 	net.minecraft.gizmos.GizmoStyle
+import net.minecraft.world.phys.AABB
 
 object RenderUtils3D {
     fun renderWaypoint(
@@ -101,46 +99,17 @@ object RenderUtils3D {
         alpha: Float,
         throughWalls: Boolean
     ) {
-        //#if MC > 1.21.10
-        //$$ val r = (colorComponents[0].coerceIn(0f, 1f) * 255).toInt()
-        //$$ val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
-        //$$ val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
-        //$$ val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
-        //$$ val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
-        //$$ val bPos = pos.toBlockPos().immutable()
-        //$$ if (throughWalls) {
-        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
-        //$$ } else {
-        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor))
-        //$$ }
-        //#else
-        val width = 1.0
-        val height = 1.0
-        val depth = 1.0
-        context.pushPop {
-            val cameraPos = context.getCamera().position()
-            translate(pos.x + 0.5 - cameraPos.x, pos.y - cameraPos.y, pos.z + 0.5 - cameraPos.z)
-
-            val consumers = context.consumers()!!
-
-            val renderLayer = if (throughWalls) SboRenderLayers.FILLED_BOX_THROUGH_WALLS else SboRenderLayers.FILLED_BOX
-            val buffer = consumers.getBuffer(renderLayer)
-
-            val minX = -width / 2.0
-            val minZ = -depth / 2.0
-            val maxX = width / 2.0
-            val maxZ = depth / 2.0
-
-            val minY = 0.0
-
-            ShapeRenderer.addChainedFilledBoxVertices(
-                this, buffer,
-                minX, minY, minZ,
-                maxX, height, maxZ,
-                colorComponents[0], colorComponents[1], colorComponents[2], alpha
-            )
+        val r = (colorComponents[0].coerceIn(0f, 1f) * 255).toInt()
+        val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
+        val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
+        val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
+        val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
+        val bPos = pos.toBlockPos().immutable()
+        if (throughWalls) {
+            Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
+        } else {
+            Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor))
         }
-        //#endif
     }
 
     /**
@@ -165,8 +134,8 @@ object RenderUtils3D {
         context.pushPop {
             val camera = context.getCamera()
             val cameraPos = camera.position()
-            val cameraYaw = camera.yRot
-            val cameraPitch = camera.xRot
+            val cameraYaw = camera.yRot()
+            val cameraPitch = camera.xRot()
             val textRenderer = mc.font
 
             val textWorldPos = Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
@@ -226,7 +195,7 @@ object RenderUtils3D {
             translate(cameraPos.reverse())
 
             val consumers = context.consumers()
-            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot, camera.yRot))
+            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
             val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
             val lineDir = endPos.subtract(startPos)
@@ -240,26 +209,19 @@ object RenderUtils3D {
             val ny = upVec.y.toFloat()
             val nz = upVec.z.toFloat()
 
-            withLineWidth(lineWidth) {
-                val renderLayer = if (throughWalls) SboRenderLayers.LINES_THROUGH_WALLS else SboRenderLayers.LINES
-                val buffer = consumers.getBuffer(renderLayer)
-                val matrixEntry = last()
+            val renderLayer = if (throughWalls) SboRenderLayers.LINES_THROUGH_WALLS else SboRenderLayers.LINES
+            val buffer = consumers.getBuffer(renderLayer)
+            val matrixEntry = last()
 
-                buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
-                    .setNormal(matrixEntry, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    //#if MC > 1.21.10
-                    //$$ .setLineWidth(lineWidth)
-                    //#endif
+            buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
+                .setNormal(matrixEntry, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
 
-
-                buffer.addVertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
-                    .setNormal(matrixEntry, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    //#if MC > 1.21.10
-                    //$$ .setLineWidth(lineWidth)
-                    //#endif
-            }
+            buffer.addVertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
+                .setNormal(matrixEntry, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
         }
     }
     /**
@@ -421,17 +383,6 @@ object RenderUtils3D {
     private inline fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
         val matrix = matrices()
         matrix.pushPop(function)
-    }
-
-    private inline fun PoseStack.withLineWidth(lineWidth: Float, function: PoseStack.() -> Unit) {
-        //#if MC > 1.21.10
-        //$$ function()
-        //#else
-        val prevLineWidth = RenderSystem.getShaderLineWidth()
-        RenderSystem.lineWidth(lineWidth)
-        function()
-        RenderSystem.lineWidth(prevLineWidth)
-        //#endif
     }
 
     private inline fun PoseStack.pushPop(function: PoseStack.() -> Unit) {

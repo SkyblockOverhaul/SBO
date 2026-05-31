@@ -2,7 +2,7 @@ package net.sbo.mod.settings
 
 import com.teamresourceful.resourcefulconfig.api.types.options.TranslatableValue
 import com.teamresourceful.resourcefulconfigkt.api.ConfigKt
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.settings.categories.Diana

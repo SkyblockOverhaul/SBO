@@ -4,7 +4,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.minecraft.network.protocol.game.ClientboundLoginPacket
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket
-import net.minecraft.Util
+import net.minecraft.util.Util
 import kotlin.math.max
 
 object ServerStats {

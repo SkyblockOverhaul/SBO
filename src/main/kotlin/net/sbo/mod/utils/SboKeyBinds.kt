@@ -8,12 +8,12 @@ import com.mojang.blaze3d.platform.InputConstants
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 object SboKeyBinds {
     private data class KeyPressState(var isHeldDown: Boolean = false, var lastActivation: Long = 0)
     private val keyStates = mutableMapOf<String, KeyPressState>()
-    private val SBO_CATEGORY = KeyMapping.Category(ResourceLocation.fromNamespaceAndPath("sbo-kotlin", "keybinds"))
+    private val SBO_CATEGORY = KeyMapping.Category(Identifier.fromNamespaceAndPath("sbo-kotlin", "keybinds"))
 
     fun init() {
         register()

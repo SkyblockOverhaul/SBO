@@ -212,10 +212,6 @@ class Overlay(
         val scaledWidth = (width * scale).toInt()
         val scaledHeight = (height * scale).toInt()
 
-        //#if MC > 1.21.10
-        //$$ drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
-        //#else
-        drawContext.submitOutline(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
-        //#endif
+        drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
     }
 }

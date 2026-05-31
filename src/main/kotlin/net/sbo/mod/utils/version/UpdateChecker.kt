@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.version
 
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.Http

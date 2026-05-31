@@ -22,7 +22,7 @@ import gg.essential.elementa.dsl.percent
 import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.universal.UKeyboard
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.pages.CustomPage
