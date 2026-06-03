@@ -41,7 +41,7 @@ class SboEventProcessor(
 
             logger.info("Generating EventRegister for $packageName.$className with functions: ${functions.joinToString { it.simpleName.asString() }}")
 
-            // Nur KSFile-Objekte sammeln, die nicht null sind
+            // Only collect KSFile objects that are not null
             val dependencies = functions.mapNotNull { it.containingFile }.distinct().toTypedArray<KSFile>()
             val file = codeGenerator.createNewFile(
                 Dependencies(true, *dependencies),
