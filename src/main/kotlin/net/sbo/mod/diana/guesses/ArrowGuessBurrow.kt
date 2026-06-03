@@ -8,7 +8,7 @@ import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.NumberUtil.roundTo
 import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -24,10 +24,8 @@ import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
-import kotlin.math.pow
 import kotlin.math.sign
 import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 //todo: when not precise and normal guess was used remove latest arrow guess waypoint
@@ -245,7 +243,7 @@ object ArrowGuessBurrow {
 
             val distanceFromOrigin = candidatePoint.distance(ray.origin)
 
-            val scaledDistance = (distanceToRay * 500000 / distanceFromOrigin).roundTo(5)
+            val scaledDistance = (distanceToRay * 500000 / distanceFromOrigin)
 
             candidates[candidateBlock] = Pair(scaledDistance.roundTo(2), distanceFromOrigin)
         }
@@ -322,11 +320,6 @@ object ArrowGuessBurrow {
         val dy = this.y - player.y
         val dz = this.z - player.z
         return sqrt(dx * dx + dy * dy + dz * dz)
-    }
-
-    private fun Double.roundTo(decimals: Int): Double {
-        val factor = 10.0.pow(decimals)
-        return kotlin.math.round(this * factor) / factor
     }
 
     private fun AABB.isInside(vec: SboVec): Boolean {
