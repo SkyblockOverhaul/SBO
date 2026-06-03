@@ -882,6 +882,17 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }
     }
 
+    private fun stpBtn(btn: GuiHandler.Button) {
+        btn.textObject.setTextScale(getTextScale())
+        btn.uiObject.addChild(GuiHandler.UILine(
+            x = CenterConstraint(),
+            y = 100.percent(),
+            (btn.textObject.getWidth() + 10).pixels(),
+            10.percent(),
+            Color(0, 110, 250, 255)
+        ).get())
+    }
+
     private fun createGui() {
         filterBackground = UIBlock().constrain {
             width = 100.percent()
@@ -994,14 +1005,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             .setTextOnClick {
                 SBOKotlin.openInBrowser("https://discord.gg/QvM6b9jsJD")
             }
-        discord.textObject.setTextScale(getTextScale())
-        discord.uiObject.addChild(GuiHandler.UILine(
-            x = CenterConstraint(),
-            y = 100.percent(),
-            (discord.textObject.getWidth() + 10).pixels(),
-            10.percent(),
-            Color(0, 110, 250, 255)
-        ).get())
+        stpBtn(discord)
 
         val githubBlock = UIBlock().constrain {
             width = 11.percent()
@@ -1023,14 +1027,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             .setTextOnClick {
                 SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO-Kotlin")
             }
-        github.textObject.setTextScale(getTextScale())
-        github.uiObject.addChild(GuiHandler.UILine(
-            x = CenterConstraint(),
-            y = 100.percent(),
-            (github.textObject.getWidth() + 10).pixels(),
-            10.percent(),
-            Color(0, 110, 250, 255)
-        ).get())
+        stpBtn(github)
 
         val patreonBlock = UIBlock().constrain {
             width = 11.percent()

@@ -5,7 +5,6 @@ import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import java.util.Locale
 import net.sbo.mod.settings.categories.Diana
 import java.util.concurrent.CopyOnWriteArraySet
 

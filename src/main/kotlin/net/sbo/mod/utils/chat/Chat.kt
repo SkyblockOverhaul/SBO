@@ -9,7 +9,6 @@ import net.minecraft.client.gui.components.ChatComponent
 import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.events.ClickActionManager
 import net.sbo.mod.settings.categories.General
-import net.sbo.mod.utils.chat.ChatMessageQueue
 
 object Chat {
 

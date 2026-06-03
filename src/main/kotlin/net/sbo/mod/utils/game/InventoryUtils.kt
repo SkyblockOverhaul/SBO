@@ -1,7 +1,6 @@
 package net.sbo.mod.utils.game
 
 import net.minecraft.client.Minecraft
-import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.core.registries.BuiltInRegistries
 import net.sbo.mod.SBOKotlin
