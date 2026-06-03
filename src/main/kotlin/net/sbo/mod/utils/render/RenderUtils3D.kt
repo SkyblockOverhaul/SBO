@@ -85,9 +85,6 @@ object RenderUtils3D {
      * Draws a filled box at the specified world coordinates.
      * @param context The world render context.
      * @param pos The position in the world where the box should be drawn.
-     * @param width The width of the box.
-     * @param height The height of the box.
-     * @param depth The depth of the box.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to 1.0).
      * @param alpha The alpha value for transparency (0.0 to 1.0).
      * @param throughWalls Whether the box should be drawn through walls.
@@ -226,12 +223,11 @@ object RenderUtils3D {
     }
     /**
      * Renders a beacon beam at the given location.
-     * @param context The world render context.
+     * @param ctx The world render context.
      * @param vec The position in the world where the beacon beam should be rendered.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to
      * @param phase Whether the beam should render through walls.
      */
-    @JvmOverloads
     fun renderBeaconBeam(
         ctx: WorldRenderContext,
         vec: SboVec,
@@ -380,12 +376,12 @@ object RenderUtils3D {
         return gameRenderer().mainCamera
     }
 
-    private inline fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
+    private fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
         val matrix = matrices()
         matrix.pushPop(function)
     }
 
-    private inline fun PoseStack.pushPop(function: PoseStack.() -> Unit) {
+    private fun PoseStack.pushPop(function: PoseStack.() -> Unit) {
         this.pushPose()
         function()
         this.popPose()

@@ -514,8 +514,6 @@ object SboDataObject {
         }
     }
 
-    private val backupRegex = Regex("SBOBackup_\\d{8}_\\d{6}")
-
     private fun cleanupBrokenBackups(modName: String, backupDir: File) {
         val files = backupDir.listFiles() ?: return
 

@@ -88,7 +88,7 @@ abstract class CacheMap<K : Any, V : Any> : MutableMap<K, V> {
             }
         }
 
-        inline fun <K : Any, V : Any> buildCache(block: CacheBuilder<K, V>.() -> Unit): Cache<K, V> {
+        fun <K : Any, V : Any> buildCache(block: CacheBuilder<K, V>.() -> Unit): Cache<K, V> {
             @Suppress("UNCHECKED_CAST")
             return (CacheBuilder.newBuilder() as CacheBuilder<K, V>).apply(block).build()
         }

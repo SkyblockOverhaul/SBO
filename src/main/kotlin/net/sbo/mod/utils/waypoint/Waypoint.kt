@@ -36,7 +36,7 @@ class Waypoint(
     var r: Float,
     var g: Float,
     var b: Float,
-    val ttl: Int = 0,
+    val ttl: Int = 1800,
     val type: String = "normal",
     var line: Boolean = false,
     var distance: Boolean = true
@@ -94,10 +94,12 @@ class Waypoint(
                 WaypointManager.waypointExists("burrow", this.pos).let { (exists, wp) ->
                     if (exists && wp != null) this.hidden = wp.distanceToPlayer() < 60
                 }
+
                 setWarpText()
             }
             "burrow" -> {
-                this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
+                this.line = Diana.burrowLine && inqWaypoints.isEmpty() && isClosest
+
                 setWarpText()
             }
             "rareMob" -> {

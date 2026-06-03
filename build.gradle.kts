@@ -1,4 +1,3 @@
-import java.nio.charset.StandardCharsets
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -20,7 +19,7 @@ private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
 
 private fun versionedProperty(name: String): String {
-    return project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for ${mcProject}")
+    return project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
 }
 
 private fun isUnobfuscatedMCVersion(): Boolean {
@@ -216,8 +215,8 @@ tasks.withType<KotlinJvmCompile> {
 }
 
 tasks.matching { it.name.contains("Test") || it.name.contains("test") }.configureEach {
-    // One of the tasks create problems since preprocessTestCode reads output of kspTestKotlin without depending on it
-    // We don't have any tests anyway; so this OK to disable to workaround the error.
+    // One of the tasks create problems since preprocessTestCode reads output of kspTestKotlin without depending on it,
+    // We don't have any tests anyway; so this OK to disable to work around the error.
     enabled = false
 }
 
@@ -317,7 +316,7 @@ dependencies {
     maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
-    ksp(project(":event-processor"))
+    implementation(ksp(project(":event-processor"))!!)
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
     implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
@@ -338,16 +337,15 @@ dependencies {
             maybeModImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.11-fabric")
         }
-        else -> throw AssertionError("build.gradle.kts needs updating for ${mcProject}")
+        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 
-    implementation(project(":event-processor"))
     runtimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth.version")}")
 }
 
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
         "26.1.2-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
-        else -> throw AssertionError("build.gradle.kts needs updating for ${mcProject}")
+        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 }

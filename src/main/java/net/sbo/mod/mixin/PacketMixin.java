@@ -15,13 +15,13 @@ import io.netty.channel.ChannelFutureListener;
 
 @Mixin(Connection.class)
 public class PacketMixin {
-    // recived S2C packets
+    // received S2C packets
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"))
     private void onPacketReceive(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new PacketReceiveEvent(packet));
     }
 
-    // sended C2S packets
+    // sent C2S packets
     @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V", at = @At("HEAD"))
     private void onPacketSend(Packet<?> packet, ChannelFutureListener channelFutureListener, CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new PacketSendEvent(packet));

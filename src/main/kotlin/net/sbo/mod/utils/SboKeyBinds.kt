@@ -1,5 +1,6 @@
 package net.sbo.mod.utils
 
+import net.sbo.mod.SBOKotlin
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.Minecraft
@@ -8,12 +9,11 @@ import com.mojang.blaze3d.platform.InputConstants
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
-import net.minecraft.resources.Identifier
 
 object SboKeyBinds {
     private data class KeyPressState(var isHeldDown: Boolean = false, var lastActivation: Long = 0)
     private val keyStates = mutableMapOf<String, KeyPressState>()
-    private val SBO_CATEGORY = KeyMapping.Category(Identifier.fromNamespaceAndPath("sbo-kotlin", "keybinds"))
+    private val SBO_CATEGORY = KeyMapping.Category(SBOKotlin.id(owner = "sbo-kotlin", path = "keybinds"))
 
     fun init() {
         register()
@@ -75,7 +75,7 @@ object SboKeyBinds {
     }
 
     fun registerKeyBindListener() {
-        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { client: Minecraft ->
+        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { _: Minecraft ->
             handlePressAction(guessWarpKey) {
                 WaypointManager.warpToGuess()
             }
