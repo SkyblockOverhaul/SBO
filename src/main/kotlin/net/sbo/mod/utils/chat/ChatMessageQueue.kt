@@ -1,6 +1,7 @@
 package net.sbo.mod.utils.chat
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue
+import net.minecraft.client.player.LocalPlayer
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -8,7 +9,7 @@ import net.sbo.mod.utils.events.impl.game.SentMessageEvent
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent
 
 object ChatMessageQueue {
-    private const val delayNanos = 200_000_000L
+    private const val DELAY_NANOS = 200_000_000L
     private val queue = ObjectArrayFIFOQueue<String>(1)
 
     private var lastSentAt = 0L
@@ -31,7 +32,22 @@ object ChatMessageQueue {
         lastSentAt = System.nanoTime()
     }
 
+    fun canSend(): Boolean {
+        return 0L == lastSentAt || System.nanoTime() - lastSentAt > DELAY_NANOS
+    }
+
+    fun send(player: LocalPlayer, message: String) {
+        player.connection.sendChat(message)
+    }
+
     fun queue(message: String) {
+        val player = mc.player
+
+        if (null != player && canSend()) { // if player is null we queue so that no messages are lost
+            send(player, message)
+            return
+        }
+
         queue.enqueue(message)
     }
 
@@ -42,14 +58,11 @@ object ChatMessageQueue {
             return
         }
 
-        if (0L != lastSentAt && System.nanoTime() - lastSentAt <= delayNanos) {
+        if (!canSend()) {
             return
         }
 
         val message = queue.dequeue()
-
-        if (!message.isEmpty()) {
-            player.connection.sendChat(message)
-        }
+        send(player, message)
     }
 }
