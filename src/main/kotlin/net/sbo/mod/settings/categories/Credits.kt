@@ -1,8 +1,7 @@
 package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
-import net.minecraft.Util
-
+import net.sbo.mod.SBOKotlin
 
 object Credits : CategoryKt("Credits") {
     init {
@@ -11,7 +10,7 @@ object Credits : CategoryKt("Credits") {
             description = "Diana guess (bloxigus)"
             text = "Open"
             onClick {
-                Util.getPlatform().openUri("https://github.com/hannibal002/SkyHanni")
+                SBOKotlin.openInBrowser("https://github.com/hannibal002/SkyHanni")
             }
         }
 
