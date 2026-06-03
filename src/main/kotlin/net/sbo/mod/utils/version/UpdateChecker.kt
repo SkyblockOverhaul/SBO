@@ -49,7 +49,7 @@ object UpdateChecker {
         Chat.clickableChat(
             "§6[SBO] §eUpdate available: §a${latestVersion} §b[Click]",
             "§eOpen Version on Modrinth"
-        ) { Util.getPlatform().openUri(versionUrl) }
+        ) { SBOKotlin.openInBrowser(versionUrl) }
         Chat.chat(breakLine)
     }
 }
