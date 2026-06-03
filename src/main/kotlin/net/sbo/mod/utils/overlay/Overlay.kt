@@ -206,12 +206,6 @@ class Overlay(
     }
 
     private fun drawDebugBox(drawContext: GuiGraphics, x: Int, y: Int, width: Int, height: Int) {
-        // Multiply everything by scale so that the box renders correctly when scale != 1.0F
-        val scaledX = (x * scale).toInt()
-        val scaledY = (y * scale).toInt()
-        val scaledWidth = (width * scale).toInt()
-        val scaledHeight = (height * scale).toInt()
-
         drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
     }
 }

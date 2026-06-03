@@ -1,31 +1,10 @@
 package net.sbo.mod.utils.render
 
-import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BeaconRenderer
-import java.util.OptionalDouble
 import net.minecraft.client.renderer.rendertype.RenderSetup
-import net.minecraft.client.renderer.rendertype.LayeringTransform
 
 object SboRenderLayers {
-    @JvmField
-    val FILLED_BOX: RenderType = RenderType.create(
-        "sbo/filled_box",
-        RenderSetup.builder(RenderPipelines.DEBUG_FILLED_BOX)
-            .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-            .sortOnUpload()
-            .createRenderSetup()
-    )
-
-    @JvmField
-    val FILLED_BOX_THROUGH_WALLS: RenderType = RenderType.create(
-        "sbo/filled_box_through_walls",
-        RenderSetup.builder(SboRenderPipelines.FILLED_BOX_THROUGH_WALLS)
-            .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-            .sortOnUpload()
-            .createRenderSetup()
-    )
-
     @JvmField
     val LINES: RenderType = RenderType.create(
         "sbo/lines",
