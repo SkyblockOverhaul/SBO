@@ -1,6 +1,8 @@
 package net.sbo.mod.utils.version
 
-import net.minecraft.Util
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.Http
@@ -44,6 +46,15 @@ object UpdateChecker {
         val breakLine = Chat.getChatBreak(" ", "§a§m")
 
         val versionUrl = "https://modrinth.com/mod/skyblock-overhaul/version/${latestId}"
+
+        SBOKotlin.toast(
+                Component.literal("SBO").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.GOLD)
+                ),
+                Component.literal("Outdated version, please update!").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.YELLOW)
+                )
+        )
 
         Chat.chat(breakLine)
         Chat.clickableChat(
