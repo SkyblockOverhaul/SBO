@@ -164,9 +164,9 @@ class Overlay(
     }
 
     private class LineRenderState(
-        private val line: OverlayTextLine,
-        private val x: Int,
-        private val y: Int
+        val line: OverlayTextLine,
+        val x: Int,
+        val y: Int
     )
 
     fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
