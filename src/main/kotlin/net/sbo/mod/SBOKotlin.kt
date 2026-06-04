@@ -70,6 +70,15 @@ object SBOKotlin : ClientModInitializer {
 
 	fun id(path: String, owner: String = MOD_ID): ResourceLocation = ResourceLocation.fromNamespaceAndPath(owner, path)
 
+    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (IdentifierException) -> Unit): ResourceLocation? {
+        return try {
+            id(path = path, owner = owner)
+        } catch (invalidIdentifierException: IdentifierException) {
+            onInvalid(invalidIdentifierException)
+            null
+        }
+    }
+
     fun toast(title: Component, message: Component) {
         mc.toastManager.addToast(
             SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, title, message)
