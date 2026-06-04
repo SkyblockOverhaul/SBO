@@ -71,10 +71,10 @@ object SBOKotlin : ClientModInitializer {
 
 	fun id(path: String, owner: String = MOD_ID): Identifier = Identifier.fromNamespaceAndPath(owner, path)
 
-    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (ResourceLocationException) -> Unit): ResourceLocation? {
+    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (IdentifierException) -> Unit): Identifier? {
         return try {
             id(path = path, owner = owner)
-        } catch (invalidIdentifierException: ResourceLocationException) {
+        } catch (invalidIdentifierException: IdentifierException) {
             onInvalid(invalidIdentifierException)
             null
         }
