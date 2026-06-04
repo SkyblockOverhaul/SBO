@@ -124,11 +124,11 @@ object DianaTracker {
 //            if (!dianaMobDiedRecently(3)) return@sleep
             if (!checkDiana()) return@sleep
             when (item.itemId) {
-                "HILT_OF_REVELATIONS" -> onRareDropFromMob("HILT_OF_REVELATIONS", title = false, partyAnnounce = false,
+                "HILT_OF_REVELATIONS" -> onRareDropFromMob("Hilt Of Revelations", rare = false,
                     trackLootshare = false,
                     magicFind = 0
                 )
-                "CROWN_OF_GREED" -> onRareDropFromMob("CROWN_OF_GREED", title = false, partyAnnounce = false,
+                "CROWN_OF_GREED" -> onRareDropFromMob("Crown Of Greed", rare = false,
                     trackLootshare = false,
                     magicFind = 0
                 )
@@ -350,8 +350,7 @@ object DianaTracker {
             when {
                 drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
                     playCustomSound(Customization.woolSound[0], Customization.woolVolume)
-                    onRareDropFromMob("Shimmering Wool", title = true,
-                        partyAnnounce = true,
+                    onRareDropFromMob("Shimmering Wool", rare = true,
                         trackLootshare = true,
                         magicFind = magicfind
                     )
@@ -395,8 +394,7 @@ object DianaTracker {
                 }
                 drop.contains("Manti-core") -> { // todo: add achievements for core
                     playCustomSound(Customization.coreSound[0], Customization.coreVolume)
-                    onRareDropFromMob("Manti-core", title = true,
-                        partyAnnounce = true,
+                    onRareDropFromMob("Manti-core", rare = true,
                         trackLootshare = true,
                         magicFind = magicfind
                     )
@@ -440,8 +438,7 @@ object DianaTracker {
                 }
                 drop.contains("Fateful Stinger") -> { // todo: add achievements for stinger
                     playCustomSound(Customization.stingerSound[0], Customization.stingerVolume)
-                    onRareDropFromMob("Fateful Stinger", title = true,
-                        partyAnnounce = true,
+                    onRareDropFromMob("Fateful Stinger", rare = true,
                         trackLootshare = true,
                         magicFind = magicfind
                     )
@@ -485,8 +482,7 @@ object DianaTracker {
                     if (!drop.contains("Chimera")) return@onChatMessageCancable true
 
                     playCustomSound(Customization.chimSound[0], Customization.chimVolume)
-                    onRareDropFromMob("Chimera", title = true,
-                        partyAnnounce = false,
+                    onRareDropFromMob("Chimera", rare = true,
                         trackLootshare = true,
                         magicFind = magicfind
                     )
@@ -535,8 +531,7 @@ object DianaTracker {
                 }
                 drop.contains("Brain Food") -> { // todo: add achievements for food
                     playCustomSound(Customization.bfSound[0], Customization.bfVolume)
-                    onRareDropFromMob("Brain Food", title = true,
-                        partyAnnounce = true,
+                    onRareDropFromMob("Brain Food", rare = true,
                         trackLootshare = true,
                         magicFind = magicfind
                     )
@@ -581,8 +576,7 @@ object DianaTracker {
                 }
                 drop.contains("Daedalus Stick") -> {
                     playCustomSound(Customization.stickSound[0], Customization.stickVolume)
-                    onRareDropFromMob("Daedalus Stick", title = true,
-                        partyAnnounce = true,
+                    onRareDropFromMob("Daedalus Stick", rare = true,
                         trackLootshare = false,
                         magicFind = magicfind
                     )
@@ -599,11 +593,11 @@ object DianaTracker {
                         unlockAchievement(3) // b2b stick
                     }
                     sboData.minotaursSinceStick = 0
+                    announceLootToParty("Daedalus Stick!", "Daedalus Stick!$mfPrefix", amount = dianaTrackerMayor.items.DAEDALUS_STICK)
                 }
                 drop.contains("Minos Relic") -> {
                     playCustomSound(Customization.relicSound[0], Customization.relicVolume)
-                    onRareDropFromMob("Minos Relic", title = true,
-                        partyAnnounce = true,
+                    onRareDropFromMob("Minos Relic", rare = true,
                         trackLootshare = false,
                         magicFind = magicfind
                     )
@@ -619,43 +613,58 @@ object DianaTracker {
                         unlockAchievement(17) // relic ls
                     }
                     sboData.champsSinceRelic = 0
+                    announceLootToParty("Minos Relic!", "Minos Relic!$mfPrefix", amount = dianaTrackerMayor.items.MINOS_RELIC)
                 }
-                drop.contains("Crown of Greed") -> onRareDropFromMob("Crown of Greed",
-                    title = false,
-                    partyAnnounce = false,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
-                drop.contains("Washed-up Souvenir") -> onRareDropFromMob("Washed-up Souvenir", title = false,
-                    partyAnnounce = false,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
-                drop.contains("Dwarf Turtle Shelmet") -> onRareDropFromMob("Dwarf Turtle Shelmet", title = false,
-                    partyAnnounce = false,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
-                drop.contains("Crochet Tiger Plushie") -> onRareDropFromMob("Crochet Tiger Plushie", title = false,
-                    partyAnnounce = false,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
-                drop.contains("Antique Remedies") -> onRareDropFromMob("Antique Remedies",
-                    title = false,
-                    partyAnnounce = false,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
-                drop.contains("Cretan Urn") -> onRareDropFromMob("Cretan Urn", title = false, partyAnnounce = false,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
-                drop.contains("Hilt of Revelations") -> onRareDropFromMob("Hilt of Revelations", title = false,
-                    partyAnnounce = false,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
+                drop.contains("Crown of Greed") -> {
+                    onRareDropFromMob("Crown of Greed",
+                        rare = true,
+                        trackLootshare = false,
+                        magicFind = magicfind
+                    )
+                }
+                drop.contains("Washed-up Souvenir") -> {
+                    onRareDropFromMob("Washed-up Souvenir", rare = false,
+                        trackLootshare = false,
+                        magicFind = magicfind
+                    )
+                    playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
+                }
+                drop.contains("Dwarf Turtle Shelmet") -> {
+                    onRareDropFromMob("Dwarf Turtle Shelmet", rare = false,
+                        trackLootshare = false,
+                        magicFind = magicfind
+                    )
+                    playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
+                }
+                drop.contains("Crochet Tiger Plushie") -> {
+                    onRareDropFromMob("Crochet Tiger Plushie", rare = false,
+                        trackLootshare = false,
+                        magicFind = magicfind
+                    )
+                    playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
+                }
+                drop.contains("Antique Remedies") -> {
+                    onRareDropFromMob("Antique Remedies",
+                        rare = false,
+                        trackLootshare = false,
+                        magicFind = magicfind
+                    )
+                    playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
+                }
+                drop.contains("Cretan Urn") -> {
+                    onRareDropFromMob("Cretan Urn", rare = false,
+                        trackLootshare = false,
+                        magicFind = magicfind
+                    )
+                    playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
+                }
+                drop.contains("Hilt of Revelations") -> {
+                    onRareDropFromMob("Hilt of Revelations", rare = false,
+                        trackLootshare = false,
+                        magicFind = magicfind
+                    )
+                    playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
+                }
             }
             SboDataObject.save("SboData")
             true
@@ -665,8 +674,7 @@ object DianaTracker {
             val player = matchResult.group(1).removeFormatting().lowercase().trim()
             if (player.contains(Player.getName()?.lowercase()?.trim()?: "")) {
                 onRareDropFromMob("Mythological Dye",
-                    title = true,
-                    partyAnnounce = true,
+                    rare = true,
                     trackLootshare = false,
                     magicFind = 0
                 )
@@ -675,29 +683,58 @@ object DianaTracker {
         }
     }
 
-    // todo: show title and announce to party based on value of the item
-    fun onRareDropFromMob(item: String, title: Boolean, partyAnnounce: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1) {
+    fun onRareDropFromMob(item: String, rare: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1) {
         if (isItemOnCooldown.getOrDefault(item, false)) return
+
         val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
+
         var mfPrefix = ""
         if (magicFind > 0) mfPrefix = " (+$magicFind ✯ Magic Find)"
 
-        if (Diana.lootAnnouncerScreen && title) {
-            val subTitle = if (Diana.lootAnnouncerPrice) "§6${Helper.getItemPriceFormatted(itemId, amount)} coins" else ""
-            when (itemId) {
-                "MANTI_CORE", "SHIMMERING_WOOL", "MYTHOLOGICAL_DYE"  -> {
-                    Helper.showTitle("§c§l$item!", subTitle, 0, 25, 35)
-                }
-                "CHIMERA", "FATEFUL_STINGER" -> {
-                    Helper.showTitle("§d§l$item!", subTitle, 0, 25, 35)
-                }
-                "BRAIN_FOOD", "MINOS_RELIC", "BRAIDED_GRIFFIN_FEATHER" -> {
-                    Helper.showTitle("§5§l$item!", subTitle, 0, 25, 35)
-                }
-                "DAEDALUS_STICK", "MYTHOS_FRAGMENT" -> {
-                    Helper.showTitle("§6§l$item!", subTitle, 0, 25, 35)
-                }
+        val isCoG = itemId == "CROWN_OF_GREED"
+
+        if (isCoG || itemId == "HILT_OF_REVELATIONS") {
+            // onRareDropFrmMob for these drops are called from both the pickup log tracker and rare drop message, so we need to handle the sound and announceLootToParty here instead of rare drop message handler to make both pickuplog and rare drop message trigger the sound/party announce while preventing duplicates (due to isItemOnCooldown check above)
+            playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
+
+            if (isCoG) {
+                // CoG is no longer a treasure and instead dropped by Minos King; worth announcing
+                announceLootToParty("Crown of Greed!", "Crown of Greed!$mfPrefix", amount = dianaTrackerMayor.items.CROWN_OF_GREED)
             }
+        }
+
+        val colorAndCount = when (itemId) {
+            // Avoid reflective access by declaring each case separately even if they share the same color and itemId is the same as property name on the tracker
+            "MANTI_CORE" -> Pair("§c", dianaTrackerMayor.items.MANTI_CORE)
+            "SHIMMERING_WOOL" -> Pair("§c", dianaTrackerMayor.items.SHIMMERING_WOOL)
+            "MYTHOLOGICAL_DYE" -> Pair("§c", dianaTrackerMayor.items.MYTHOLOGICAL_DYE)
+
+            "CHIMERA" -> Pair("§d", dianaTrackerMayor.items.CHIMERA)
+            "FATEFUL_STINGER" -> Pair("§d", dianaTrackerMayor.items.FATEFUL_STINGER)
+
+            "BRAIN_FOOD" -> Pair("§5", dianaTrackerMayor.items.BRAIN_FOOD)
+            "MINOS_RELIC" -> Pair("§5", dianaTrackerMayor.items.MINOS_RELIC)
+            "BRAIDED_GRIFFIN_FEATHER" -> Pair("§5", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER)
+
+            "DAEDALUS_STICK" -> Pair("§6", dianaTrackerMayor.items.DAEDALUS_STICK)
+            "MYTHOS_FRAGMENT" -> Pair("§6", dianaTrackerMayor.items.MYTHOS_FRAGMENT)
+            "CROWN_OF_GREED" -> Pair("§6", dianaTrackerMayor.items.CROWN_OF_GREED)
+
+            else -> Pair("§f", -1) // shouldn't happen
+        }
+
+        var count = ""
+        val realCount = colorAndCount.second
+        if (realCount != -1) count = " #$realCount"
+
+        val price = if (Diana.lootAnnouncerPrice) "§6${Helper.getItemPriceFormatted(itemId, amount)} coins" else ""
+
+        if (Diana.lootAnnouncerChat && rare) {
+            Chat.chat("§6[SBO] RARE DROP! ${colorAndCount.first}$item$mfPrefix$count (+ $price)")
+        }
+
+        if (Diana.lootAnnouncerScreen && rare) {
+            Helper.showTitle("${colorAndCount.first}§l$item!", price, 0, 25, 35)
         }
 
         val isLootShare = gotLootShareRecently(2)
@@ -881,8 +918,7 @@ object DianaTracker {
         Register.onChatMessage(Regex("^(.*?) §eYou just dug out(.*?)$")) { message, matchResult ->
             if (matchResult.groupValues[2].contains("Myth the Fish")) {
                 onRareDropFromMob("Myth the Fish",
-                    title = false,
-                    partyAnnounce = true,
+                    rare = false,
                     trackLootshare = false,
                     magicFind = 0
                 )
