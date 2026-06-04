@@ -396,16 +396,41 @@ object WaypointManager {
             }
         }
 
+        var playerDistance = pos.distanceTo(Player.getLastPosition())
+
         var closestWarp: String? = null
+        var closestWarpPoint: WarpPoint? = null
         var closestDistance = Double.MAX_VALUE
-        val playerDistance = pos.distanceTo(Player.getLastPosition())
+
+        var secondClosestWarp: String? = null
+        var secondClosestWarpPoint: WarpPoint? = null
+        var secondClosestDistance = Double.MAX_VALUE
+
         for ((name, warp) in warps) {
-            val distance = pos.distanceTo(warp.pos)
+            val distance = if (warp.ignoreYLevel) pos.distanceToIgnoringY(warp.pos) else pos.distanceTo(warp.pos)
+
             if (distance < closestDistance) {
-                closestDistance = distance
+                secondClosestWarp = closestWarp
+                secondClosestWarpPoint = closestWarpPoint
+                secondClosestDistance = closestDistance
+
                 closestWarp = name
+                closestWarpPoint = warp
+                closestDistance = distance
+            } else if (distance < secondClosestDistance) {
+                secondClosestWarp = name
+                secondClosestWarpPoint = warp
+                secondClosestDistance = distance
             }
         }
+
+        if (secondClosestWarpPoint?.preferWarpAgainstCompetitive == closestWarpPoint?.warpType && secondClosestDistance - closestDistance < COMPETITIVE_WARP_DISTANCE_THRESHOLD) {
+            closestWarp = secondClosestWarp
+            closestWarpPoint = secondClosestWarpPoint
+            closestDistance = secondClosestDistance
+        }
+
+        if (closestWarpPoint?.ignoreYLevel == true) playerDistance = pos.distanceToIgnoringY(Player.getLastPosition())
 
         val condition1 = playerDistance > (closestDistance + Diana.warpDiff)
         val condition2 = condition1 && (closestWaypoint.second > 60 || getWaypointsOfType("rareMob").isNotEmpty())

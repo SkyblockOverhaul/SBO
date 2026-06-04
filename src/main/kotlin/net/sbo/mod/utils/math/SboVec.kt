@@ -20,6 +20,12 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
         return sqrt((other.x - this.x).pow(2) + (other.y - this.y).pow(2) + (other.z - this.z).pow(2))
     }
 
+    fun distanceToIgnoringY(other: SboVec): Double {
+        val dx = x - other.x
+        val dz = z - other.z
+        return sqrt(dx * dx + dz * dz)
+    }
+
     fun distanceTo(x: Double, y: Double, z: Double): Double {
         return sqrt((x - this.x).pow(2) + (y - this.y).pow(2) + (z - this.z).pow(2))
     }
