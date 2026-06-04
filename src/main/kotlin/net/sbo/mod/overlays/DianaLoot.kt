@@ -189,7 +189,7 @@ object DianaLoot : DirtyFlushableOverlay() {
                     drawContext,
                     "$YELLOW${Helper.toTitleCase(itemNameBase.replace("_", " ").lowercase())} LS Details:\n" +
                             lsText,
-                    mouseX, mouseY, textRenderer, overlay.scale
+                    mouseX, mouseY, textRenderer
                 )
             }
         if (SBOConfigBundle.sboData.hideTrackerLines.contains(itemNameBase)) {
@@ -303,7 +303,7 @@ object DianaLoot : DirtyFlushableOverlay() {
                             "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
                             "${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}\n" +
                             "${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}",
-                    mouseX, mouseY, textRenderer, overlay.scale)
+                    mouseX, mouseY, textRenderer)
             }
     }
 
@@ -317,7 +317,7 @@ object DianaLoot : DirtyFlushableOverlay() {
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$GOLD$profitPerHr coins/hr\n" +
                             "$GOLD$profitPerBurrow coins/burrow",
-                    mouseX, mouseY, textRenderer, overlay.scale)
+                    mouseX, mouseY, textRenderer)
             }
     }
 
