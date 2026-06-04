@@ -128,7 +128,7 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = 0
                 )
-                "CROWN_OF_GREED" -> onRareDropFromMob("Crown Of Greed", rare = false,
+                "CROWN_OF_GREED" -> onRareDropFromMob("Crown Of Greed", rare = true,
                     trackLootshare = false,
                     magicFind = 0
                 )
@@ -694,7 +694,7 @@ object DianaTracker {
         val isCoG = itemId == "CROWN_OF_GREED"
 
         if (isCoG || itemId == "HILT_OF_REVELATIONS") {
-            // onRareDropFrmMob for these drops are called from both the pickup log tracker and rare drop message, so we need to handle the sound and announceLootToParty here instead of rare drop message handler to make both pickuplog and rare drop message trigger the sound/party announce while preventing duplicates (due to isItemOnCooldown check above)
+            // onRareDropFromMob for these drops are called from both the pickup log tracker and rare drop message, so we need to handle the sound and announceLootToParty here instead of rare drop message handler to make both pickuplog and rare drop message trigger the sound/party announce while preventing duplicates (due to isItemOnCooldown check above)
             playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
 
             if (isCoG) {
@@ -708,6 +708,7 @@ object DianaTracker {
             "MANTI_CORE" -> Pair("§c", dianaTrackerMayor.items.MANTI_CORE)
             "SHIMMERING_WOOL" -> Pair("§c", dianaTrackerMayor.items.SHIMMERING_WOOL)
             "MYTHOLOGICAL_DYE" -> Pair("§c", dianaTrackerMayor.items.MYTHOLOGICAL_DYE)
+            "MYTH_THE_FISH" -> Pair("§c", dianaTrackerMayor.items.MYTH_THE_FISH)
 
             "CHIMERA" -> Pair("§d", dianaTrackerMayor.items.CHIMERA)
             "FATEFUL_STINGER" -> Pair("§d", dianaTrackerMayor.items.FATEFUL_STINGER)
@@ -918,10 +919,11 @@ object DianaTracker {
         Register.onChatMessage(Regex("^(.*?) §eYou just dug out(.*?)$")) { message, matchResult ->
             if (matchResult.groupValues[2].contains("Myth the Fish")) {
                 onRareDropFromMob("Myth the Fish",
-                    rare = false,
+                    rare = true,
                     trackLootshare = false,
                     magicFind = 0
                 )
+                announceLootToParty("Myth the Fish!", "Myth the Fish!", amount = dianaTrackerMayor.items.MYTH_THE_FISH)
                 unlockAchievement(119)
             }
         }
