@@ -6,7 +6,6 @@ import net.sbo.mod.settings.categories.PartyCommands
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
-import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Helper.getPlayerName
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.formatNumber
@@ -169,7 +168,7 @@ object PartyCommands {
             "Mobs: $totalMobs ($perHr/h)"
         },
         PartyCommand(listOf("!mf", "!magicfind"), { settings.dianaPartyCommands }) {
-            "Chims (${sboData.highestChimMagicFind}% ✯) Sticks (${sboData.highestStickMagicFind}% ✯)"
+            "Wools (${sboData.highestWoolMagicFind}% ✯) Chims (${sboData.highestChimMagicFind}% ✯) Foods (${sboData.highestFoodMagicFind}% ✯) Sticks (${sboData.highestStickMagicFind}% ✯)"
         },
         PartyCommand(listOf("!playtime"), { settings.dianaPartyCommands }) {
             "Playtime: ${formatTime(dianaTrackerMayor.items.TIME)}"

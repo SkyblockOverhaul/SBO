@@ -19,7 +19,9 @@ object MagicFind : DirtyFlushableOverlay() {
     override fun generateLines(): List<OverlayTextLine> {
         return listOf(
             OverlayTextLine("$YELLOW${BOLD}Diana MagicFind"),
+            OverlayTextLine("$GRAY - ${RED}Wools: $AQUA${sboData.highestWoolMagicFind}%"),
             OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Chimera: $AQUA${sboData.highestChimMagicFind}%"),
+            OverlayTextLine("$GRAY - ${DARK_PURPLE}Foods: $AQUA${sboData.highestFoodMagicFind}%"),
             OverlayTextLine("$GRAY - ${GOLD}Sticks: $AQUA${sboData.highestStickMagicFind}%")
         )
     }
