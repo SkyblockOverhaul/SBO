@@ -711,9 +711,9 @@ object DianaTracker {
             when (itemId) {
                 "DAEDALUS_STICK" -> if (magicFind > sboData.highestStickMagicFind) sboData.highestStickMagicFind = magicFind
                 "CHIMERA" -> if (magicFind > sboData.highestChimMagicFind) sboData.highestChimMagicFind = magicFind
-                "MATI_CORE" -> if (magicFind > sboData.highestCoreMagicFind) sboData.highestCoreMagicFind = magicFind
+                "MANTI_CORE" -> if (magicFind > sboData.highestCoreMagicFind) sboData.highestCoreMagicFind = magicFind
                 "SHIMMERING_WOOL" -> if (magicFind > sboData.highestWoolMagicFind) sboData.highestWoolMagicFind = magicFind
-                "FABLED_STINGER" -> if (magicFind > sboData.highestStingerMagicFind) sboData.highestStingerMagicFind = magicFind
+                "FATEFUL_STINGER" -> if (magicFind > sboData.highestStingerMagicFind) sboData.highestStingerMagicFind = magicFind
                 "BRAIN_FOOD" -> if (magicFind > sboData.highestFoodMagicFind) sboData.highestFoodMagicFind = magicFind
             }
 

@@ -4,7 +4,6 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.minecraft.network.protocol.game.ClientboundLoginPacket
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket
-import net.minecraft.util.Util
 import kotlin.math.max
 
 object ServerStats {
@@ -20,7 +19,7 @@ object ServerStats {
     fun onPacketReceive(event: PacketReceiveEvent) {
         when (event.packet) {
             is ClientboundSetTimePacket -> {
-                val currentTime = Util.getMillis()
+                val currentTime = System.currentTimeMillis()
                 if (prevTime != 0L) {
                     val deltaTime = currentTime - prevTime
                     averageTps = (20000f / max(1, deltaTime)).coerceIn(0f, 20f)

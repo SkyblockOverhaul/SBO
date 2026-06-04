@@ -332,12 +332,24 @@ object AchievementManager {
             val mfSlot = slots[14]
             val trackingSlot = slots[15]
 
-            if (
-                dmgSlot.item.hoverName.removeFormatting().contains("Storied Stinger V") &&
-                coinsSlot.item.hoverName.removeFormatting().contains("Deadly Greed V") &&
-                mfSlot.item.hoverName.removeFormatting().contains("Diana's Favor III") &&
-                trackingSlot.item.hoverName.removeFormatting().contains("Elusive Hunter II")
-            ) unlockAchievement(120)
+            if (dmgSlot.item.hoverName.removeFormatting().contains("Storied Stinger V") && coinsSlot.item.hoverName.removeFormatting().contains("Deadly Greed V") && mfSlot.item.hoverName.removeFormatting().contains("Diana's Favor III") && trackingSlot.item.hoverName.removeFormatting().contains("Elusive Hunter II")) { // does not guarantee its maxed since it shows next tier instead of current if it's not maxed, but we still need the check so that we don't trigger achievement for maxing unrelated perks
+                for (upgrade in listOf(dmgSlot, coinsSlot, mfSlot, trackingSlot)) {
+                    val lookup = ItemLookup(upgrade.item)
+                    var hasUnlocked = false
+                    for (loreLine in lookup.loreList) {
+                        if (loreLine.removeFormatting().contains("UNLOCKED")) {
+                            hasUnlocked = true
+                            break
+                        }
+                    }
+                    if (!hasUnlocked) {
+                        return@sleep // not maxed
+                    }
+                }
+
+                // if we reach here all should be maxed
+                unlockAchievement(120)
+            }
         }
     }
 
@@ -586,7 +598,7 @@ object AchievementManager {
         addAchievement(118, "No wool? Sell his soul to the devil!", "Get a King's soul", "Epic", hidden = true, repeatable = false)
 
         addAchievement(119, "Knowledge is Power", "Get Myth the Fish from answering Sphinx question correct", "Mythic", hidden = true)
-        addAchievement(120, "Max Carnival", "Get all diana carnival perks maxed out", "Legendary", repeatable = false)
+        addAchievement(120, "Max Diana Carnival", "Get all diana carnival perks maxed out", "Legendary", repeatable = false)
 
         addAchievement(77, "From the ashes", "Drop a Phoenix pet from a Diana mob", "Impossible", hidden = true)
 

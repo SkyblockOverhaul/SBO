@@ -69,6 +69,7 @@ bloom {
         replacement("override fun render(", "override fun extractRenderState(")
         replacement("super.render(", "super.extractRenderState(")
         replacement("this.renderMenuBackground", "this.extractMenuBackground")
+        replacement("drawContext.renderTooltip(", "drawContext.tooltip(")
 
         // Render --> Extract (Hacky way to fix Mixins, too lazy for versioned Mixins)
         replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")

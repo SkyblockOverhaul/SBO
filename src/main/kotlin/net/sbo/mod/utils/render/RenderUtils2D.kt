@@ -2,6 +2,8 @@ package net.sbo.mod.utils.render
 
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner
 import net.minecraft.network.chat.Component
 
 object RenderUtils2D {
@@ -11,17 +13,10 @@ object RenderUtils2D {
         x: Double,
         y: Double,
         textRenderer: Font,
-        scale: Float = 1.0f,
-        padding: Int = 2
     ) {
         if (text.isEmpty()) return
 
         val textLines = text.split("\n").map { Component.nullToEmpty(it) }
-
-        drawContext.pose().pushMatrix()
-
-        drawContext.setComponentTooltipForNextFrame(textRenderer, textLines, x.toInt(), y.toInt())
-
-        drawContext.pose().popMatrix()
+        drawContext.renderTooltip(textRenderer, textLines.map { it.visualOrderText }.map { ClientTooltipComponent.create(it) }, x.toInt(), y.toInt(), DefaultTooltipPositioner.INSTANCE, null)
     }
 }

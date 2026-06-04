@@ -7,6 +7,7 @@ import net.minecraft.util.Util
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.resources.Identifier
+import net.minecraft.IdentifierException
 import net.minecraft.network.chat.Component
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaTracker
@@ -69,6 +70,15 @@ object SBOKotlin : ClientModInitializer {
 	lateinit var mcVersion: String
 
 	fun id(path: String, owner: String = MOD_ID): Identifier = Identifier.fromNamespaceAndPath(owner, path)
+
+    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (ResourceLocationException) -> Unit): ResourceLocation? {
+        return try {
+            id(path = path, owner = owner)
+        } catch (invalidIdentifierException: ResourceLocationException) {
+            onInvalid(invalidIdentifierException)
+            null
+        }
+    }
 
     fun toast(title: Component, message: Component) {
         mc.toastManager.addToast(

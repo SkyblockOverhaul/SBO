@@ -163,6 +163,12 @@ class Overlay(
         return mouseX >= x && mouseX <= x + totalWidth && mouseY >= y && mouseY <= y + totalHeight
     }
 
+    private class LineRenderState(
+        val line: OverlayTextLine,
+        val x: Int,
+        val y: Int
+    )
+
     fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
         if (!condition()) return
         val textRenderer = mc.font
@@ -188,17 +194,32 @@ class Overlay(
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
-        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.screen) } }
+        val lines = getLines()
+        val lineStates = mutableListOf<LineRenderState>()
 
-        for (line in getLines()) {
+        for (line in lines) {
             if (!line.checkCondition()) continue
-            if (shouldRender) line.updateMouseInteraction(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale, drawContext)
-            line.draw(drawContext, currentX.toInt(), currentY.toInt(), textRenderer)
+
+            val lineX = currentX.toInt()
+            val lineY = currentY.toInt()
+
+            lineStates += LineRenderState(line, lineX, lineY)
+            line.draw(drawContext, lineX, lineY, textRenderer)
+
             if (line.linebreak) {
                 currentY += textRenderer.lineHeight + 1
                 currentX = (x / scale)
             } else {
                 currentX += line.width
+            }
+        }
+
+        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.screen) } }
+
+        for (state in lineStates) {
+            if (shouldRender) {
+                // renders the hover text after all main text, so that hover text renders on top of them instead of below
+                state.line.updateMouseInteraction(mouseX, mouseY, state.x * scale, state.y * scale, textRenderer, scale, drawContext)
             }
         }
 
