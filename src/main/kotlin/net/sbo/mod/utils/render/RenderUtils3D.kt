@@ -1,8 +1,6 @@
 package net.sbo.mod.utils.render
 
-import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.client.Camera
 import com.mojang.blaze3d.vertex.VertexConsumer
@@ -39,7 +37,6 @@ object RenderUtils3D {
         renderBeam: Boolean
     ) {
         drawFilledBox(
-            context,
             pos,
             colorComponents,
             alpha,
@@ -83,14 +80,12 @@ object RenderUtils3D {
 
     /**
      * Draws a filled box at the specified world coordinates.
-     * @param context The world render context.
      * @param pos The position in the world where the box should be drawn.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to 1.0).
      * @param alpha The alpha value for transparency (0.0 to 1.0).
      * @param throughWalls Whether the box should be drawn through walls.
      */
     fun drawFilledBox(
-        context: WorldRenderContext,
         pos: SboVec,
         colorComponents: FloatArray,
         alpha: Float,
