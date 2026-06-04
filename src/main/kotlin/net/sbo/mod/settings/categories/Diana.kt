@@ -168,6 +168,11 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
+    var assumeAllLS by boolean(false) {
+        this.name = Literal("Assume All LS")
+        this.description = Literal("Assumes you get loot share on all Kings, Inquisitors and Manticores. This works around the LOOT SHARE! message not being always sent by the server, but might inflate your numbers if you don't actually do enough damage to these mobs for lootshare. To reduce false positives a bit (not fully!), you need to be 30 blocks nearby the rare mob when it died.")
+    }
+
     var lootTracker by ObservableEntry(
         enum(Tracker.EVENT) {
             this.name = Literal("Loot Tracker")
@@ -426,7 +431,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("The width of the lines drawn for Diana waypoints")
     }
 
-    var removeGuessDistance by int(8) {
+    var removeGuessDistance by int(3) {
         this.range = 0..20
         this.slider = true
         this.name = Literal("Remove Guess When Close")

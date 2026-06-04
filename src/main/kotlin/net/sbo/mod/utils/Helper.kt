@@ -28,7 +28,7 @@ import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
-import net.sbo.mod.utils.waypoint.WaypointManager.onLootshare
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypoints
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.reflect.full.memberProperties
@@ -67,10 +67,13 @@ object Helper {
             .factory() // virtual threads are daemon by default
     )
 
+    private fun onLootShare() {
+        lastLootShare = System.currentTimeMillis()
+    }
+
     fun init() {
         Register.onChatMessageCancable(Pattern.compile("^§e§lLOOT SHARE §fYou received loot for assisting (.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            onLootshare()
-            lastLootShare = System.currentTimeMillis()
+            onLootShare()
             true
         }
 
@@ -87,8 +90,12 @@ object Helper {
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
         val dist = event.entity.distanceTo(mc.player!!)
+        val nearby = dist <= 30
+        val lsOverride = Diana.assumeAllLS && nearby
         when {
             event.name.contains("Minos Inquisitor") -> {
+                removeNearbyRareMobWaypoints()
+                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
                     hasTrackedInq = true
                     DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
@@ -99,6 +106,8 @@ object Helper {
                 lastInqDeath = System.currentTimeMillis()
             }
             event.name.contains("King Minos") -> {
+                removeNearbyRareMobWaypoints()
+                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
                     hasTrackedKing = true
                     DianaTracker.trackItem("KING_MINOS_LS", 1)
@@ -109,6 +118,7 @@ object Helper {
                 lastKingDeath = System.currentTimeMillis()
             }
             event.name.contains("Sphinx") -> {
+                removeNearbyRareMobWaypoints()
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     DianaTracker.trackItem("SPHINX_LS", 1)
@@ -119,6 +129,8 @@ object Helper {
                 lastSphinxDeath = System.currentTimeMillis()
             }
             event.name.contains("Manticore") -> {
+                removeNearbyRareMobWaypoints()
+                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
                     hasTrackedManti = true
                     DianaTracker.trackItem("MANTICORE_LS", 1)
@@ -130,7 +142,7 @@ object Helper {
             }
         }
 
-        if (dist <= 30) {
+        if (nearby) {
             allowSackTracking = true
             lastDianaMobDeath = System.currentTimeMillis()
         }
