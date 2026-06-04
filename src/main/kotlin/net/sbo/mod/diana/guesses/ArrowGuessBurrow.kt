@@ -91,7 +91,7 @@ object ArrowGuessBurrow {
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)
-        if (!location.isCloseToLastBurrow()) return
+        if (!location.isCloseToLastBurrow() || packet.distanceToPlayer() > 6) return
 
         val range = getArrowRange(packet.xDist, packet.yDist, packet.zDist) ?: return
         locations.add(location)
