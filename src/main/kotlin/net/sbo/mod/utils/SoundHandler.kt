@@ -140,11 +140,14 @@ object SoundHandler {
             return
         }
 
-        val id = try {
-            SBOKotlin.id(safeSound)
-        } catch (invalidIdentifierError: ResourceLocationException) {
-            Chat.chat("§6[SBO] §cInvalid sound name. Use letters, numbers, _ or -")
-            logger.error("Invalid sound ID: $sound", invalidIdentifierError)
+        val id = SBOKotlin.userSuppliedId(safeSound) { invalidIdentifierException ->
+            Chat.chat("§6[SBO] §cInvalid sound name \"$sound\". Use letters, numbers, _ or -")
+            logger.error("Invalid sound ID: $sound", invalidIdentifierException)
+        }
+
+        if (id == null) {
+            Chat.chat("§6[SBO] §cUnknown error when creating Identifier for sound ID: $sound")
+            logger.error("Unknown error when creating Identifier for sound ID: $sound")
             return
         }
 
