@@ -1,5 +1,5 @@
 plugins {
-    id("net.fabricmc.fabric-loom-remap") version "1.16.2" apply false
+    id("net.fabricmc.fabric-loom-remap") version "1.17.1" apply false
     id("dev.deftu.gradle.multiversion-root") version "2.73.0"
 }
 
