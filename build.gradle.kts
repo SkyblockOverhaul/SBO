@@ -33,15 +33,6 @@ private fun isMCVersionGreaterOrEqualTo(version: String): Boolean {
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.
     accessWidenerPath = file("src/main/resources/sbo-kotlin.classtweaker")
-
-    runs {
-        named("client") {
-            ideConfigGenerated(true)
-        }
-        named("server") {
-            ideConfigGenerated(true)
-        }
-    }
 }
 
 bloom {
