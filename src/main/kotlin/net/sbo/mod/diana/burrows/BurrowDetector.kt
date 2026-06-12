@@ -92,7 +92,7 @@ object BurrowDetector {
 
     private fun burrowDetect(packet: ClientboundLevelParticlesPacket) {
         val particleType = ParticleTypes.getParticleType(packet) ?: return
-        val pos = SboVec(packet.x, packet.y - 1.0, packet.z).roundLocationToBlock()
+        val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
         val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
         if (burrowsHistory.contains(posString)) return
