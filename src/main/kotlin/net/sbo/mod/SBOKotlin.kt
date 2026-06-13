@@ -3,11 +3,11 @@ package net.sbo.mod
 import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.ResourceLocationException
+import net.minecraft.resources.Identifier
+import net.minecraft.IdentifierException
 import net.minecraft.network.chat.Component
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaTracker
@@ -69,12 +69,12 @@ object SBOKotlin : ClientModInitializer {
 	lateinit var version: String
 	lateinit var mcVersion: String
 
-	fun id(path: String, owner: String = MOD_ID): ResourceLocation = ResourceLocation.fromNamespaceAndPath(owner, path)
+	fun id(path: String, owner: String = MOD_ID): Identifier = Identifier.fromNamespaceAndPath(owner, path)
 
-    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (ResourceLocationException) -> Unit): ResourceLocation? {
+    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (IdentifierException) -> Unit): Identifier? {
         return try {
             id(path = path, owner = owner)
-        } catch (invalidIdentifierException: ResourceLocationException) {
+        } catch (invalidIdentifierException: IdentifierException) {
             onInvalid(invalidIdentifierException)
             null
         }

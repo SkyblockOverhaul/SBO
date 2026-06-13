@@ -8,11 +8,11 @@ import java.lang.module.ModuleDescriptor.Version
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.3.21"
-    id("net.fabricmc.fabric-loom-remap") version "1.16.2"
+    kotlin("plugin.serialization") version "2.4.0"
+    id("net.fabricmc.fabric-loom-remap") version "1.17.1"
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
-    id("com.google.devtools.ksp") version "2.3.7"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
 private val mcProject: String = project.name
@@ -33,15 +33,6 @@ private fun isMCVersionGreaterOrEqualTo(version: String): Boolean {
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.
     accessWidenerPath = file("src/main/resources/sbo-kotlin.classtweaker")
-
-    runs {
-        named("client") {
-            ideConfigGenerated(true)
-        }
-        named("server") {
-            ideConfigGenerated(true)
-        }
-    }
 }
 
 bloom {
@@ -338,12 +329,6 @@ dependencies {
             maybeModImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.11-fabric")
         }
-        "1.21.10-fabric" -> {
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.9:${versionedProperty("rconfig.version")}")!!) // .9 works on .10
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.5:${versionedProperty("rconfigkt.version")}")!!)  // .5 works on .10
-            maybeModImplementation(include("gg.essential:universalcraft-1.21.9-fabric:${property("universalcraft.version")}")!!)
-            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.10-fabric")
-        }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 
@@ -353,7 +338,6 @@ dependencies {
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
         "26.1.2-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
-        "1.21.11-fabric" -> dependsOn(":1.21.10-fabric:kspKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 }
