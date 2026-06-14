@@ -93,11 +93,11 @@ object SBOKotlin : ClientModInitializer {
 	override fun onInitializeClient() {
 		version = FabricLoader.getInstance().getModContainer(MOD_ID)
 			.map { it.metadata.version.friendlyString }
-			.orElseGet { "unknown" }
+			.orElse("unknown")
 
 		mcVersion = FabricLoader.getInstance().getModContainer("minecraft")
 			.map { it.metadata.version.friendlyString }
-			.orElseGet { "unknown" }
+			.orElse("unknown")
 
 		logger.info("Initializing SBO-Kotlin, version: $version...")
 
