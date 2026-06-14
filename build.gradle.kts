@@ -9,7 +9,7 @@ plugins {
     java
     kotlin("jvm")
     kotlin("plugin.serialization") version "2.4.0"
-    id("net.fabricmc.fabric-loom-remap") version "1.17.1"
+    id("net.fabricmc.fabric-loom-remap") version "1.17.11"
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     id("com.google.devtools.ksp") version "2.3.9"
@@ -32,7 +32,11 @@ private fun isMCVersionGreaterOrEqualTo(version: String): Boolean {
 
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.
-    accessWidenerPath = file("src/main/resources/sbo-kotlin.classtweaker")
+    accessWidenerPath = file("src/main/resources/sbo.classtweaker")
+
+    runs.configureEach {
+        generateRunConfig.set(true)
+    }
 }
 
 bloom {
@@ -104,6 +108,8 @@ tasks.withType<KotlinJvmCompile>().configureEach {
         )
 
         freeCompilerArgs = args
+
+        moduleName.set("sbo") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric; we need unified name instead of MC version. The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
     }
 }
 
@@ -213,6 +219,13 @@ tasks.matching { it.name.contains("Test") || it.name.contains("test") }.configur
 }
 
 tasks.named<ProcessResources>("processResources") {
+    val expandedFiles = listOf(
+        "fabric.mod.json",
+        "sbo.mixins.json"
+    )
+
+    inputs.property("expanded_files", expandedFiles)
+
     val fabricLoaderVersion = project.property("fabricloader.version")
     val fabricApiVersion = versionedProperty("fabricapi.version")
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
@@ -253,6 +266,8 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("universalcraft_version", universalCraftVersion)
 
     val expandProperties = mapOf(
+        "expanded_files" to expandedFiles,
+
         "mod_name" to modName,
         "mod_description" to modDescription,
         "mod_id" to modId,
@@ -272,12 +287,7 @@ tasks.named<ProcessResources>("processResources") {
         "universalcraft_version" to universalCraftVersion
     ) + inputs.properties
 
-    filesMatching(
-        listOf(
-            "fabric.mod.json",
-            "sbo-kotlin.mixins.json"
-        )
-    ) {
+    filesMatching(expandedFiles) {
         expand(expandProperties)
     }
 }

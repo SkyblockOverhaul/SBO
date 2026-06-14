@@ -6,6 +6,7 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
+import net.sbo.mod.utils.game.World
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -33,17 +34,12 @@ class Waypoint(
     val x: Double,
     val y: Double,
     val z: Double,
-    var r: Float,
-    var g: Float,
-    var b: Float,
     val ttl: Int = 1800,
     val type: String = "normal",
     var line: Boolean = false,
     var distance: Boolean = true
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
-    var color: Color = Color(this.r, this.g, this.b)
-    var hexCode: Int = this.color.rgb
     val alpha: Double = 0.5
     var hidden: Boolean = false
     val creation: Long = System.currentTimeMillis()
@@ -67,13 +63,51 @@ class Waypoint(
             } ?: "${this.text}${this.distanceText}"
 
             val title = Diana.showTitleWhenWarpAvailable
-            if (title && closest != null) {
+            if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
                  val warpName = closest.replaceFirstChar(Char::titlecase)
                  Helper.showTitle("§bWarp §e$warpName$distanceText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}"
         }
+    }
+
+    private fun getColor(): Color {
+        when (this.type) {
+            "guess", "arrow" -> {
+                if (isClosest) {
+                    return Color(Customization.ClosestGuessColor)
+                }
+                return Color(Customization.OtherGuessColor)
+            }
+            "burrow" -> {
+                return when (this.text) {
+                    "Start" -> Color(Customization.StartColor)
+                    "Mob" -> Color(Customization.MobColor)
+                    "Treasure" -> Color(Customization.TreasureColor)
+                    else -> Color(255, 255, 255) // shouldn't happen
+                }
+            }
+            "rareMob" -> {
+                return Color(Customization.RareMobColor)
+            }
+            "world" -> {
+                return Color(Customization.OtherWaypointColor)
+            }
+        }
+        return Color(255, 255, 255) // shouldn't happen
+    }
+
+    private class RgbAndHex(val rgb: FloatArray, val hex: Int)
+
+    private fun getRgbAndHex(): RgbAndHex {
+        val color = getColor()
+
+        val r = color.red / 255f
+        val g = color.green / 255f
+        val b = color.blue / 255f
+
+        return RgbAndHex(floatArrayOf(r, g, b), color.rgb)
     }
 
     fun format(
@@ -84,16 +118,7 @@ class Waypoint(
 
         when (this.type) {
             "guess", "arrow" -> {
-                this.color = Color(if (isClosest) Customization.closestColor else Customization.guessColor)
                 this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
-                this.r = color.red / 255f
-                this.g = color.green / 255f
-                this.b = color.blue / 255f
-                this.hexCode = color.rgb
-
-                WaypointManager.waypointExists("burrow", this.pos).let { (exists, wp) ->
-                    if (exists && wp != null) this.hidden = wp.distanceToPlayer() < 60
-                }
 
                 setWarpText()
             }
@@ -132,12 +157,14 @@ class Waypoint(
         if (!this.formatted || this.hidden) return
         if (this.type == "guess" && this.distanceRaw <= Diana.removeGuessDistance) return
 
+        val rgbAndHex = getRgbAndHex()
+
         RenderUtils3D.renderWaypoint(
             context,
             this.formattedText,
             this.pos,
-            floatArrayOf(this.r, this.g, this.b),
-            this.hexCode,
+            rgbAndHex.rgb,
+            rgbAndHex.hex,
             this.alpha.toFloat(),
             true,
             this.line,

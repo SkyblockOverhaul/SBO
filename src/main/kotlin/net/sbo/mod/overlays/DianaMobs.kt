@@ -15,6 +15,7 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.data.SboDataObject.SBOConfigBundle
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
@@ -40,6 +41,10 @@ object DianaMobs : DirtyFlushableOverlay() {
     fun init() {
         overlay.init()
         updateLines()
+
+        Register.onTick(20) {
+            updateLines()
+        }
     }
 
     @SboEvent

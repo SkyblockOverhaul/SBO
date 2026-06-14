@@ -13,10 +13,17 @@ object Customization : CategoryKt("Customization") {
         }
     }
 
-    var guessColor by color(
+    var ClosestGuessColor by color(
+        Color(0.6f, 0.2f, 0.8f).rgb) {
+        this.name = Literal("Closest Guess Color")
+        this.description = Literal("Pick a color for closest guess")
+        this.allowAlpha = true
+    }
+
+    var OtherGuessColor by color(
         Color(0.0f, 0.964f, 1.0f).rgb) {
-        this.name = Literal("Guess Color")
-        this.description = Literal("Pick a color for your guess")
+        this.name = Literal("Other Guess Color")
+        this.description = Literal("Pick a color for other guesses")
         this.allowAlpha = true
     }
 
@@ -24,13 +31,6 @@ object Customization : CategoryKt("Customization") {
         Color(0.333f, 1.0f, 0.333f).rgb) {
         this.name = Literal("Start Burrow Color")
         this.description = Literal("Pick a color for start burrows")
-        this.allowAlpha = true
-    }
-    
-    var closestColor by color(
-        Color(0.6f, 0.2f, 0.8f).rgb) {
-        this.name = Literal("Closest Burrow Color")
-        this.description = Literal("Pick a color for your closest burrow")
         this.allowAlpha = true
     }
 
@@ -45,6 +45,20 @@ object Customization : CategoryKt("Customization") {
         Color(1f, 0.666f, 0.0f).rgb) {
         this.name = Literal("Treasure Burrow Color")
         this.description = Literal("Pick a color for treasure burrows")
+        this.allowAlpha = true
+    }
+
+    var RareMobColor by color(
+        Color(1.0f, 0.84f, 0.0f).rgb) {
+        this.name = Literal("Rare Mob Waypoint Color")
+        this.description = Literal("Pick a color for rare mob waypoints")
+        this.allowAlpha = true
+    }
+
+    var OtherWaypointColor by color(
+        Color(0.0f, 0.2f, 1.0f).rgb) {
+        this.name = Literal("Other Waypoint Color")
+        this.description = Literal("Pick a color for other waypoints, e.g., waypoints created from non-SBO player-sent coordinates (Separate from rare mob color).")
         this.allowAlpha = true
     }
 

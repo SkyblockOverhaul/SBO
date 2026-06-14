@@ -36,11 +36,11 @@
   },
   "mixins": [
     {
-      "config": "sbo-kotlin.mixins.json",
+      "config": "sbo.mixins.json",
       "environment": "client"
     }
   ],
-  "accessWidener": "sbo-kotlin.classtweaker",
+  "accessWidener": "sbo.classtweaker",
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
     "minecraft": "${mc_version_constraint}",
