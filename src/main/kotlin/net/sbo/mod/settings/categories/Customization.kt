@@ -249,13 +249,13 @@ object Customization : CategoryKt("Customization") {
         this.slider = true
     }
 
-    var sprSound by strings("") {
-        this.name = Literal("Shelmet/Plushie/Remedies Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a Shelmet/Plushie/Remedies. (enter filename)")
+    var miscDropSound by strings("") {
+        this.name = Literal("Misc Drop Sound")
+        this.description = Literal("Set the sound that plays when you drop a crown of greed, washed-up souvenir, dwarf turtle shelmet, crochet tiger plushie, antique remedies, cretan urn or hilt of revelations. (enter filename)")
     }
-    var sprVolume by float(1.0f) {
-        this.name = Literal("Shelmet/Plushie/Remedies Drop Volume")
-        this.description = Literal("Set the volume of the Shelmet/Plushie/Remedies drop sound")
+    var miscDropVolume by float(1.0f) {
+        this.name = Literal("Misc Drop Volume")
+        this.description = Literal("Set the volume of the misc drop sound")
         this.range = 0.0f..1.0f
         this.slider = true
     }
