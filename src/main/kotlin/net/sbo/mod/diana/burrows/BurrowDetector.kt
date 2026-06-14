@@ -81,15 +81,6 @@ object BurrowDetector {
         burrowDetect(packet)
     }
 
-    private fun getRGB(type: String): Color {
-        return when (type) {
-            "Start" -> Color(Customization.StartColor)
-            "Mob" -> Color(Customization.MobColor)
-            "Treasure" -> Color(Customization.TreasureColor)
-            else -> Color(255, 255, 255)
-        }
-    }
-
     private fun burrowDetect(packet: ClientboundLevelParticlesPacket) {
         val particleType = ParticleTypes.getParticleType(packet) ?: return
         val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
@@ -109,11 +100,9 @@ object BurrowDetector {
         val burrow = burrows[posString]
         if (burrow?.type != null && burrow.waypoint == null) {
             burrowsHistory.add(posString)
-            val color = getRGB(burrow.type!!)
             burrow.waypoint = Waypoint(
                 burrow.type!!,
                 pos.x, pos.y, pos.z,
-                color.red.toFloat() / 255, color.green.toFloat() / 255, color.blue.toFloat() / 255,
                 type = "burrow"
             )
             WaypointManager.addWaypoint(burrow.waypoint!!)

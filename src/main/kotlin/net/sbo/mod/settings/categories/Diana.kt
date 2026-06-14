@@ -57,17 +57,22 @@ object Diana : CategoryKt("Diana") {
     }
 
     var dianaBurrowGuess by boolean(true) {
-        this.name = Literal("Diana Burrow Guess")
-        this.description = Literal("Guess the burrow location. Needs Driping Lava Partciles and set /particlequality to Extreme for more accuracy")
+        this.name = Literal("Spade Guess")
+        this.description = Literal("Guess the burrow location when using spade ability. Needs Driping Lava Partciles and set /particlequality to Extreme for more accuracy")
     }
 
     var arrowGuess by boolean(true) {
-        this.name = Literal("[WIP]! Arrow Guess")
+        this.name = Literal("Arrow Guess")
         this.description = Literal("Guesses the burrow location from the arrow direction after digging a burrow \n" +
             "§bNOTE!: This replaces the old Multi guess system!\n" +
             "§cHave Dust Particles enabled!!!\n" +
             "§aDo every burrow you see for doing diana the fastest way!"
         )
+    }
+
+    var dianaBurrowDetect by boolean(true) {
+        this.name = Literal("Close Burrow Detection")
+        this.description = Literal("Detects Diana burrows when being close and holding shovel to show it as treasure or mob burrow. | to reset waypoints /sboclearburrows")
     }
 
     var showBeaconBeam by boolean(true) {
@@ -90,11 +95,6 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("If enabled, the arrow guess waypoints will not be cleared when changing worlds/lobby")
     }
 
-    var dianaBurrowDetect by boolean(true) {
-        this.name = Literal("Diana Burrow Detection")
-        this.description = Literal("Detects Diana burrows | to reset waypoints /sboclearburrows")
-    }
-
     init {
         separator {
             this.title = "Diana Warp"
@@ -109,7 +109,7 @@ object Diana : CategoryKt("Diana") {
 
     var showTitleWhenWarpAvailable by boolean(false) {
         this.name = Literal("Show Title When Warp Is Available")
-        this.description = Literal("If enabled, will show a title when warp is available.")
+        this.description = Literal("If enabled, will show a title when warp is available. Wait a few seconds to see if any close burrows appear, and if not, proceed to warp with the key, as the title updates live with new burrows discovered, it might sometimes only show for a split second when a new closer burrow is found making the warp unnecessary after title was shown.")
     }
 
     var dontWarpIfBurrowClose by boolean(true) {
@@ -122,6 +122,17 @@ object Diana : CategoryKt("Diana") {
         this.slider = true
         this.name = Literal("Warp Block Difference")
         this.description = Literal("The additional block difference to consider when warping to a waypoint. (0 to disable)")
+    }
+
+    var ignoreYLevel by boolean(false) {
+        this.name = Literal("Ignore Y Level for Castle & Wizard")
+        this.description = Literal("If enabled, ignores Y-Level when comparing distance between warp and the burrow when determining the closest warp for the Wizard and Castle warps, which have high Y-Level.")
+    }
+
+    var badWarpDistance by int(0) {
+        this.range = 0..150
+        this.name = Literal("Bad Warp Distance")
+        this.description = Literal("Blocks at which good warps are prioritized over bad ones (Currently only Castle and Crypt). For example, when the Crypt warp is closest warp but Castle is second closest and the distance is less than this value, Castle will be preferred over Crypt warp for accessibility. (0 to disable)")
     }
 
     var warpDelay by int(0) {

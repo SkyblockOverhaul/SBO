@@ -106,9 +106,13 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     fun init() {
         overlay.init()
-        updateLines()
         updateTimerText()
+        updateLines()
+
         Register.onTick(1) { updateTimerText() }
+        Register.onTick(20) {
+            updateLines()
+        }
     }
 
     @SboEvent
@@ -272,7 +276,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         val totalEvents = SBOConfigBundle.pastDianaEventsData.events.size
 
         val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
-        val bphText = if (burrowsPerHr.isNaN() || burrowsPerHr == 0.0) "" else " $GRAY[$AQUA$burrowsPerHr$GRAY/${AQUA}hr$GRAY]"
+        val bphText = if (burrowsPerHr.isNaN()) "" else " $GRAY[$AQUA$burrowsPerHr$GRAY/${AQUA}hr$GRAY]"
 
         val profitPerHr = if (playTimeHrs > 0) Helper.formatNumber(totalProfitValue / playTimeHrs) else 0.0
         val profitPerBurrow = if (totalBurrows > 0) Helper.formatNumber(totalProfitValue / totalBurrows) else 0.0

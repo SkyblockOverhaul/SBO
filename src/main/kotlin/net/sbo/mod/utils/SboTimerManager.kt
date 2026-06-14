@@ -7,6 +7,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.settings.categories.Diana
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.TimeUnit
 
 object SboTimerManager {
     internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
@@ -37,7 +38,7 @@ object SboTimerManager {
         activeTimers.remove(timer)
     }
 
-    internal fun getTimer(name: String): SBOTimer? {
+    private fun getTimer(name: String): SBOTimer? {
         return SBOTimer.timerList.find { it.name.equals(name, ignoreCase = true) }
     }
 
@@ -50,7 +51,7 @@ object SboTimerManager {
         SBOTimer.timerList.forEach { it.updateActivity() }
     }
 
-    sealed class TimerState {
+    private sealed class TimerState {
         object Idle : TimerState()
         object Running : TimerState()
         object Paused : TimerState()
@@ -64,14 +65,15 @@ object SboTimerManager {
             val timerList = mutableListOf<SBOTimer>()
         }
 
-        private var startTime: Long = 0
-        var elapsedTime: Long = 0
+        private var startNanoTime: Long = 0L
+        private var elapsedNanoTime: Long = 0L
         private var state: TimerState = TimerState.Idle
-        private var lastActivityTime: Long = System.currentTimeMillis()
-        private var inactivityFlag: Boolean = false
+        private var lastActivityNanoTime: Long = System.nanoTime()
 
-        private fun getInactivityLimitMs(): Long {
-            return Diana.afkTimeout.toLong().coerceAtLeast(15L) * 1000L
+        private fun getInactivityLimitNanos(): Long {
+            return TimeUnit.SECONDS.toNanos(
+                Diana.afkTimeout.toLong().coerceAtLeast(15L)
+            )
         }
 
         init {
@@ -80,82 +82,112 @@ object SboTimerManager {
 
         fun isRunning(): Boolean = state == TimerState.Running
 
-        fun start() {
-            if (state == TimerState.Running || elapsedTime > 0) return
+        private fun start() {
+            if (state == TimerState.Running || elapsedNanoTime > 0L) return
 
-            startTime = System.currentTimeMillis()
+            val storedTimeMs = tracker.items.TIME
 
-            val storedTime = tracker.items.TIME
-            if (storedTime > 0) {
-                elapsedTime = storedTime
+            if (storedTimeMs > 0L) {
+                elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(storedTimeMs)
             }
 
+            startNanoTime = System.nanoTime()
+            lastActivityNanoTime = startNanoTime
+
             state = TimerState.Running
-            updateElapsedTime()
+
             startInactivityCheck()
         }
 
         fun tick() {
             if (state != TimerState.Running) return
-            val now = System.currentTimeMillis()
+
+            val now = System.nanoTime()
+            val inactivityLimit = getInactivityLimitNanos()
+
             updateElapsedTime(now)
-            if (now - lastActivityTime > getInactivityLimitMs()) {
-                pause()
-                if (!inactivityFlag) {
-                    tracker.items.TIME -= getInactivityLimitMs()
-                    inactivityFlag = true
+
+            if (now - lastActivityNanoTime > inactivityLimit) {
+                elapsedNanoTime -= inactivityLimit
+
+                if (elapsedNanoTime < 0L) {
+                    elapsedNanoTime = 0L
                 }
+
+                tracker.items.TIME =
+                    TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
+
+                pause()
             }
         }
 
-        private fun updateElapsedTime(now: Long = System.currentTimeMillis()) {
+        private fun updateElapsedTime(now: Long = System.nanoTime()) {
             if (state != TimerState.Running) return
-            elapsedTime += now - startTime
-            startTime = now
-            tracker.items.TIME = elapsedTime
+
+            elapsedNanoTime += now - startNanoTime
+            startNanoTime = now
+
+            tracker.items.TIME = TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
         }
 
         fun pause() {
             if (state != TimerState.Running) return
+
             updateElapsedTime()
+
             state = TimerState.Paused
+
             stopInactivityCheck()
         }
 
-        fun continueTimer() {
+        private fun continueTimer() {
             if (state == TimerState.Running) return
-            if (inactivityFlag) {
-                elapsedTime -= getInactivityLimitMs()
-            }
-            startTime = System.currentTimeMillis()
+
+            startNanoTime = System.nanoTime()
+            lastActivityNanoTime = startNanoTime
+
             state = TimerState.Running
+
             startInactivityCheck()
         }
 
         fun reset() {
             state = TimerState.Idle
-            elapsedTime = 0
-            startTime = 0
-            tracker.items.TIME = 0
+
+            elapsedNanoTime = 0L
+            startNanoTime = 0L
+            lastActivityNanoTime = System.nanoTime()
+
+            tracker.items.TIME = 0L
+
             stopInactivityCheck()
         }
 
-        fun getHourTime(): Double = elapsedTime / 3600000.0
+        fun getElapsedNanos(): Long {
+            return if (state == TimerState.Running) {
+                elapsedNanoTime + (System.nanoTime() - startNanoTime)
+            } else {
+                elapsedNanoTime
+            }
+        }
+
+        fun getHourTime(): Double {
+            return getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
+        }
 
         fun updateActivity() {
-            this.start()
-            this.continueTimer()
-            lastActivityTime = System.currentTimeMillis()
+            start()
+            continueTimer()
+
+            lastActivityNanoTime = System.nanoTime()
         }
 
         private fun startInactivityCheck() {
             addTimer(this)
-            inactivityFlag = false
         }
 
         private fun stopInactivityCheck() {
             removeTimer(this)
-            inactivityFlag = false
         }
     }
 }
