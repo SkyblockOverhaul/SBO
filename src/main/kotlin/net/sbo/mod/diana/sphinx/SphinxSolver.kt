@@ -36,10 +36,10 @@ object SphinxSolver {
 
 
     fun detectQuestion() {
-        Register.onChatMessageCancable(
+        Register.onChatMessageCancelable(
             Pattern.compile("^(.*?)$", Pattern.DOTALL)
         ) { message, matchResult ->
-            if (!Diana.sphinxSolver) return@onChatMessageCancable true
+            if (!Diana.sphinxSolver) return@onChatMessageCancelable true
             val questionText = matchResult.group(1).trim()
             for (sphinxQuestion in SphinxQuestions.QUESTIONS) {
                 if (sphinxQuestion.question.equals(questionText.removeFormatting(), ignoreCase = true)) {
@@ -51,10 +51,10 @@ object SphinxSolver {
             true
         }
 
-        Register.onChatMessageCancable(
+        Register.onChatMessageCancelable(
             Pattern.compile("^§7 {3}([ABC])\\) §f(.*?)$")
         ) { msg, matcher ->
-            if (!Diana.sphinxSolver) return@onChatMessageCancable true
+            if (!Diana.sphinxSolver) return@onChatMessageCancelable true
 
             val letter = matcher.group(1)
             val possibleAnswer = matcher.group(2).trim()

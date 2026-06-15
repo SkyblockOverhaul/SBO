@@ -1,10 +1,10 @@
 package net.sbo.mod.general
 
+import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.ClickEvent.RunCommand
+import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent.ShowText
 import net.minecraft.network.chat.Style
-import net.minecraft.network.chat.Component
-import net.minecraft.ChatFormatting
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.SoundHandler
 import net.sbo.mod.utils.chat.Chat

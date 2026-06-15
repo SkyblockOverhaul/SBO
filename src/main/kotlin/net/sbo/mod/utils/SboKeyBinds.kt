@@ -1,11 +1,11 @@
 package net.sbo.mod.utils
 
-import net.sbo.mod.SBOKotlin
+import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.minecraft.client.Minecraft
 import net.minecraft.client.KeyMapping
-import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.client.Minecraft
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW

@@ -1,7 +1,7 @@
 package net.sbo.mod.diana.achievements
 
-import net.minecraft.sounds.SoundSource
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper
@@ -104,9 +104,5 @@ class Achievement(
             return achievementsData.currentEventAchievements[id] ?: false
         }
         return (achievementsData.totalAchievements[id] ?: 0) > 0
-    }
-
-    fun getDisplayName(): String {
-        return "$color$name"
     }
 }

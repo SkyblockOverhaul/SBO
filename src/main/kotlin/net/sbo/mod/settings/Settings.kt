@@ -3,14 +3,7 @@ package net.sbo.mod.settings
 import com.teamresourceful.resourcefulconfig.api.types.options.TranslatableValue
 import com.teamresourceful.resourcefulconfigkt.api.ConfigKt
 import net.sbo.mod.SBOKotlin
-import net.sbo.mod.settings.categories.General
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.settings.categories.PartyCommands
-import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.settings.categories.QOL
-import net.sbo.mod.settings.categories.Credits
-import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.settings.categories.PartyFinder
+import net.sbo.mod.settings.categories.*
 
 object Settings : ConfigKt("sbo/config") {
     override val name: TranslatableValue

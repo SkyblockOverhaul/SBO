@@ -1,9 +1,11 @@
 package net.sbo.mod.utils.game
 
+import net.minecraft.world.scores.DisplaySlot
+import net.minecraft.world.scores.PlayerScoreEntry
+import net.minecraft.world.scores.PlayerTeam
 import net.sbo.mod.SBOKotlin
-import net.minecraft.world.scores.*
-import java.lang.String.CASE_INSENSITIVE_ORDER
 import net.sbo.mod.utils.events.Register
+import java.lang.String.CASE_INSENSITIVE_ORDER
 
 object ScoreBoard {
     private val COMPARATOR: Comparator<PlayerScoreEntry> = Comparator.comparing { obj: PlayerScoreEntry -> obj.value() }

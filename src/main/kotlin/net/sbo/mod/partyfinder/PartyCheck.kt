@@ -3,13 +3,13 @@ package net.sbo.mod.partyfinder
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
 
 object PartyCheck {

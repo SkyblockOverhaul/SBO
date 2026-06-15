@@ -1,13 +1,9 @@
 package net.sbo.mod.overlays
 
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.overlay.Overlay
-import net.sbo.mod.utils.overlay.isCraftingScreenOpen
-import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
-import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
-import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.minecraft.ChatFormatting.*
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.overlays.OverlayUtils.LootItemData
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -18,9 +14,8 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
+import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
-import net.sbo.mod.overlays.OverlayUtils.LootItemData
-import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 import java.util.concurrent.TimeUnit
 
 object DianaLoot : DirtyFlushableOverlay() {
@@ -297,7 +292,7 @@ object DianaLoot : DirtyFlushableOverlay() {
     }
 
     private fun createCoinLine(tracker: DianaTracker): OverlayTextLine {
-        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}" + if (Diana.excludeCoinsFromProfit) "$GRAY[$RED EXCLUDED$GRAY]" else "")
+        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}" + if (Diana.excludeCoinsFromProfit) " $GRAY[${RED}EXCLUDED$GRAY]" else "")
             .onHover { drawContext, textRenderer ->
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor

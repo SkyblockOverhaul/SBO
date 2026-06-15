@@ -70,7 +70,7 @@ bloom {
         replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")
         replacement("Lnet/minecraft/client/gui/Gui;render(", "Lnet/minecraft/client/gui/Gui;extractRenderState(")
         replacement("@Inject(method = \"render\", at = @At(value = \"INVOKE\", target = ", "@Inject(method = \"extractGui\", at = @At(value = \"INVOKE\", target = ")
-        replacement("private void afterHudRender(DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
+        replacement("private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
 
         // drawString --> text
         replacement("drawContext.drawString(", "drawContext.text(")

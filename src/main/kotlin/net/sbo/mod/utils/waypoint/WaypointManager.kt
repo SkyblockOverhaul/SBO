@@ -1,34 +1,33 @@
 package net.sbo.mod.utils.waypoint
 
-import net.sbo.mod.diana.guesses.PreciseGuessBurrow
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.diana.guesses.PreciseGuessBurrow
 import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.utils.render.WaypointRenderer
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.General.HideOwnWaypoints
 import net.sbo.mod.settings.categories.General.hideOwnWaypoints
 import net.sbo.mod.settings.categories.General.patcherWaypoints
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.checkDiana
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
+import net.sbo.mod.utils.render.WaypointRenderer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.roundToInt
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
-import net.sbo.mod.utils.game.World
 
 object WaypointManager {
-    var guessWp: Waypoint? = null
     private val waypoints = ConcurrentHashMap<String, CopyOnWriteArrayList<Waypoint>>()
     var closestWaypoint: Pair<Waypoint?, Double> = null to 1000.0
     val rareMobs: List<String> = listOf(
@@ -42,10 +41,6 @@ object WaypointManager {
     )
 
     fun init() {
-        if (guessWp == null) {
-            guessWp = Waypoint("Guess", 100.0, 100.0, 100.0, type = "guess")
-        }
-
         Register.command("sbosendping") { args ->
             val playerPos = Player.getLastPosition()
             if (args.isNotEmpty()) {
@@ -121,51 +116,29 @@ object WaypointManager {
             val knownBurrows = getWaypointsOfType("burrow")
             val shovelGuesses = getWaypointsOfType("guess")
             val arrowGuesses = getWaypointsOfType("arrow")
+            val rareMobWaypoints = getWaypointsOfType("rareMob")
 
             val posP = SboVec(playerPos.x, playerPos.y, playerPos.z).roundLocationToBlock()
 
-            val allGuesses = shovelGuesses + arrowGuesses
-            val allWaypoints = shovelGuesses + arrowGuesses + knownBurrows
+            val allWaypoints = knownBurrows + shovelGuesses + arrowGuesses + rareMobWaypoints
 
             // These do not change location when using the shovel
-            val allStaticWaypoints = arrowGuesses + knownBurrows
+            val allStaticBurrowWaypoints = knownBurrows + arrowGuesses
 
-            // Remove all waypoints that are 3 blocks or less close to player, under the world (y < 60) or at the exact same position as player.
-            val guessesToRemove = allGuesses
-                .filter { waypoint ->
-                    waypoint.distanceToPlayer() < 3.0 ||
-                            waypoint.pos.y < 60 ||
-                            (waypoint.pos.x == posP.x && waypoint.pos.z == posP.z)
-                }
+            // Remove all waypoints that are under the world (y < 60)
+            val guessesToRemove = allWaypoints.filter { waypoint -> waypoint.pos.y < 60 }
 
             val rareWp = getWaypointsOfType("rareMob")
 
-            // Remove rare mob waypoints that are 3 blocks or less to player
-            if (Diana.removeRareMobwaypoint) {
-                val rareMobsToRemove = rareWp
-                    .filter { waypoint -> waypoint.distanceToPlayer() < 3.0 }
-                    .toList()
-                rareMobsToRemove.forEach { waypoint -> removeWaypoint(waypoint) }
-            }
-
             guessesToRemove.forEach { waypoint ->
                 removeWaypoint(waypoint)
-            }
-
-            // Remove the shovel guess if an arrow guess exist at the same block
-            guessWp?.let { wp ->
-                val guessBlock = wp.pos.roundLocationToBlock()
-                if (wp.distanceToPlayer() < Diana.removeGuessDistance || arrowGuesses.any { it.pos.roundLocationToBlock() == guessBlock }) {
-                    removeAllOfType("guess")
-                    guessWp = null
-                }
             }
 
             // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 3 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
             shovelGuesses.forEach { shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
                 if (
-                    allStaticWaypoints.any {
+                    allStaticBurrowWaypoints.any {
                         val waypointPos = it.pos
                         val waypointBlock = waypointPos.roundLocationToBlock()
 
@@ -173,7 +146,6 @@ object WaypointManager {
                     }
                 ) {
                     removeAllOfType("guess")
-                    guessWp = null
                 }
             }
 
@@ -204,11 +176,6 @@ object WaypointManager {
                 waypoint.isClosest = waypoint == bestGuessWp
                 waypoint.format(rareWp)
             }
-
-            val shouldLegacyHaveLine = bestGuessWp != null && bestGuessWp.type == "guess" && !bestGuessWp.hidden
-
-            guessWp?.isClosest = shouldLegacyHaveLine
-            guessWp?.format(rareWp)
         }
 
         WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
@@ -216,7 +183,6 @@ object WaypointManager {
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
-        guessWp?.hide()
         removeAllOfType("world")
         removeAllOfType("guess")
         if (!Diana.dontClearArrowGuess) removeAllOfType("arrow")
@@ -248,7 +214,6 @@ object WaypointManager {
         this.forEachWaypoint { waypoint ->
             waypoint.render(context)
         }
-        this.guessWp?.render(context)
     }
 
     /**
@@ -269,6 +234,20 @@ object WaypointManager {
             closestWaypoint = null to 1000.0
         }
         waypoints[waypoint.type.lowercase()]?.remove(waypoint)
+    }
+
+    /**
+     * Gets a waypoint at a specific position and type, or null if it does not exist.
+     * @param pos The position of the waypoint to get.
+     * @param type The type of the waypoint to get.
+     */
+    fun getWaypointAt(pos: SboVec, type: String): Waypoint? {
+        val list = waypoints[type.lowercase()]
+        val waypoint = list?.find { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
+        if (waypoint != null) {
+            return waypoint
+        }
+        return null
     }
 
     /**
@@ -313,17 +292,10 @@ object WaypointManager {
         if (pos == null) return
 
         removeAllOfType("guess")
-        addWaypoint(Waypoint("Guess", pos.x, pos.y, pos.z, type = "guess"))
 
-        if (guessWp == null) {
-            guessWp = Waypoint("Guess", 100.0, 100.0, 100.0, type = "guess")
-        }
-        guessWp?.apply {
-            val position = pos
-            this.pos = position
-
-            val (exists, wp) = waypointExists("burrow", position)
-            this.hidden = exists && wp != null && wp.distanceToPlayer() < 60
+        if (!waypointExists("burrow", pos).first) {
+            val waypoint = Waypoint("Guess", pos.x, pos.y, pos.z, type = "guess")
+            addWaypoint(waypoint)
         }
     }
 
@@ -383,16 +355,6 @@ object WaypointManager {
         return getAllGuessesAndBurrows()
             .filter { !it.hidden }
             .minByOrNull { it.distanceToPlayer() }
-    }
-
-    /**
-     * Gets the closest waypoint of a specific type to a given position.
-     * @param pos The position to find the closest waypoint to.
-     * @param type The type of waypoint to search for.
-     * @return The closest waypoint of the specified type, or null if none are found.
-     */
-    fun getClosestWaypoint(pos: SboVec, type: String): Pair<Waypoint, Double>? {
-        return getClosestWaypointFrom(pos, getWaypointsOfType(type))
     }
 
     private fun getClosestWaypointFrom(pos: SboVec): Pair<Waypoint, Double>? {

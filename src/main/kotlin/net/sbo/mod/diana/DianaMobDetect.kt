@@ -1,29 +1,28 @@
 package net.sbo.mod.diana
 
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.component.ResolvableProfile
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.sbo.mod.utils.events.Register
+import net.minecraft.world.item.component.ResolvableProfile
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.getSecondsPassed
 import net.sbo.mod.utils.Helper.lastCocoon
 import net.sbo.mod.utils.Helper.lastInqDeath
 import net.sbo.mod.utils.Helper.lastKingDeath
 import net.sbo.mod.utils.Helper.lastMantiDeath
 import net.sbo.mod.utils.Helper.lastSphinxDeath
+import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
-import net.sbo.mod.utils.Player as SboPlayer
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
@@ -34,6 +33,7 @@ import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import kotlin.math.roundToInt
+import net.sbo.mod.utils.Player as SboPlayer
 
 object DianaMobDetect {
     private const val DEATH_WINDOW_SECONDS = 5
@@ -99,7 +99,7 @@ object DianaMobDetect {
             val displayName =
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
-            // Check if cocooned mob is a diana mob by checking if its either a rare mob or has the diana mob prefix like empyrean
+            // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
             if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ")} != null) {
                 // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
                 if (DianaTracker.lastSpawnedMob == displayName) {

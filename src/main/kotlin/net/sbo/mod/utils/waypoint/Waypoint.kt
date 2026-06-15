@@ -1,18 +1,17 @@
 package net.sbo.mod.utils.waypoint
 
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
-import net.sbo.mod.utils.game.World
+import java.awt.Color
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
-import java.awt.Color
-
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 
 /**
  * @class Waypoint
@@ -21,13 +20,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
  * @param x The x-coordinate of the waypoint.
  * @param y The y-coordinate of the waypoint.
  * @param z The z-coordinate of the waypoint.
- * @param r The red color component of the waypoint.
- * @param g The green color component of the waypoint.
- * @param b The blue color component of the waypoint.
  * @param ttl The time to live for the waypoint in seconds (0 for infinite).
  * @param type The type of the waypoint for customization.
  * @param line Whether to draw a line to the waypoint.
- * @param distance Whether to display the distance in meters (blocks) to the waypoint.
  */
 class Waypoint(
     var text: String,
@@ -36,11 +31,9 @@ class Waypoint(
     val z: Double,
     val ttl: Int = 1800,
     val type: String = "normal",
-    var line: Boolean = false,
-    var distance: Boolean = true
+    var line: Boolean = false
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
-    val alpha: Double = 0.5
     var hidden: Boolean = false
     val creation: Long = System.currentTimeMillis()
     var formatted: Boolean = false
@@ -48,6 +41,7 @@ class Waypoint(
     var distanceText: String = ""
     var formattedText: String = ""
     var isClosest = false
+    var timesDug = 0
 
     fun distanceToPlayer(): Double {
         val playerPos = Player.getLastPosition()
@@ -55,20 +49,24 @@ class Waypoint(
     }
 
     private fun setWarpText() {
+        val showTimesDug = Customization.showTimesDug && this.type == "burrow" && this.text != "Start"
+        val timesDug = this.timesDug
+        val timesDugText = if (showTimesDug) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
+
         if (isClosest) {
             val closest = WaypointManager.getClosestWarp(this.pos)
 
             this.formattedText = closest?.let {
-                "$text§7 (warp $it)${this.distanceText}"
-            } ?: "${this.text}${this.distanceText}"
+                "$text§7 (warp $it)${this.distanceText}$timesDugText"
+            } ?: "${this.text}${this.distanceText}$timesDugText"
 
             val title = Diana.showTitleWhenWarpAvailable
             if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
                  val warpName = closest.replaceFirstChar(Char::titlecase)
-                 Helper.showTitle("§bWarp §e$warpName$distanceText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
+                 Helper.showTitle("§bWarp §e$warpName$distanceText$timesDugText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
             }
         } else {
-            this.formattedText = "${this.text}${this.distanceText}"
+            this.formattedText = "${this.text}${this.distanceText}$timesDugText"
         }
     }
 
@@ -114,7 +112,10 @@ class Waypoint(
         inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
-        this.distanceText = if (distance) " §b[${distanceRaw.roundToInt()}m]" else ""
+        val dist = distanceRaw.roundToInt()
+
+        val showDistance = Customization.showDistanceCutoff <= 0 || dist > Customization.showDistanceCutoff
+        this.distanceText = if (showDistance) " §b[${dist}m]" else ""
 
         when (this.type) {
             "guess", "arrow" -> {
@@ -148,24 +149,26 @@ class Waypoint(
         return this
     }
 
-    fun show(): Waypoint {
-        this.hidden = false
-        return this
+    private fun applyAlpha(color: Int, alpha: Float): Int {
+        val clampedAlpha = (alpha.coerceIn(0f, 1f) * 255f).toInt()
+        return (color and 0x00FFFFFF) or (clampedAlpha shl 24)
     }
 
     fun render(context: WorldRenderContext) {
         if (!this.formatted || this.hidden) return
-        if (this.type == "guess" && this.distanceRaw <= Diana.removeGuessDistance) return
 
         val rgbAndHex = getRgbAndHex()
+
+        val waypointOpacity = (Customization.waypointOpacity / 100.0).toFloat()
+        val waypointTextOpacity = (Customization.waypointTextOpacity / 100.0).toFloat()
 
         RenderUtils3D.renderWaypoint(
             context,
             this.formattedText,
             this.pos,
             rgbAndHex.rgb,
-            rgbAndHex.hex,
-            this.alpha.toFloat(),
+            applyAlpha(rgbAndHex.hex, waypointTextOpacity),
+            waypointOpacity,
             true,
             this.line,
             Diana.dianaLineWidth.toFloat(),

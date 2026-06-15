@@ -10,29 +10,16 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
-import java.io.File
-import java.io.FileReader
-import java.io.Writer
-import java.io.FileWriter
-import java.io.BufferedWriter
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.nio.file.Path
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-import java.nio.file.FileVisitResult
-import java.nio.file.SimpleFileVisitor
+import java.io.*
+import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.AtomicMoveNotSupportedException
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
-import java.util.concurrent.Executors
-import java.util.concurrent.ExecutorService
-import kotlin.collections.iterator
-import kotlin.reflect.KMutableProperty1
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import kotlin.reflect.KMutableProperty1
 
 object SboDataObject {
     @JvmField
@@ -391,7 +378,7 @@ object SboDataObject {
                     Int::class -> value.toIntOrNull()
                     String::class -> value
                     else -> {
-                        SBOKotlin.logger.warn("[$key] hasn an Unsupported type: ${prop.returnType.classifier}")
+                        SBOKotlin.logger.warn("[$key] has an an Unsupported type: ${prop.returnType.classifier}")
                         null
                     }
                 }
@@ -608,7 +595,7 @@ object SboDataObject {
                     } catch (e: AtomicMoveNotSupportedException) {
                         // Supported on all major OS unless trying to move to a different partition or drive
                         // The most likely culprit would be that MC was installed to a OneDrive sync folder
-                        // Fallbacking to regular move should be OK here at this point.
+                        // Fall-backing to regular move should be OK here at this point.
                         val success = tempZipFile.renameTo(zipFile)
                         if (!success) {
                             throw IOException("Failed to rename temp zip to final zip")
@@ -645,7 +632,7 @@ object SboDataObject {
         }
     }
 
-    val configMapforSave = mapOf(
+    val configMapForSave = mapOf(
         "SboData" to Pair({ save(dataDir, sboData, "SboData.json") }, sboData),
         "AchievementsData" to Pair({ save(dataDir, achievementsData, "sbo_achievements.json") }, achievementsData),
         "PastDianaEventsData" to Pair({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
@@ -658,7 +645,7 @@ object SboDataObject {
     )
 
     private fun saveAllData() {
-        configMapforSave.forEach { (_, configData) ->
+        configMapForSave.forEach { (_, configData) ->
             configData.first.invoke()
         }
     }
@@ -708,7 +695,7 @@ object SboDataObject {
     }
 
     /**
-     * Writes json data to a temporary file, then replaces the original file with it
+     * Writes JSON data to a temporary file, then replaces the original file with it
      * only after the temp file has finished fully writing. Performs atomic move to avoid
      * data loss if crash or power loss during the move.
      */
@@ -764,7 +751,7 @@ object SboDataObject {
      */
     fun save(configName: String) {
         DATA_SAVER_EXECUTOR.execute {
-            configMapforSave[configName]?.first?.invoke()
+            configMapForSave[configName]?.first?.invoke()
                 ?: SBOKotlin.logger.warn("[$configName] is not a valid config name. Please use a valid config name")
         }
     }

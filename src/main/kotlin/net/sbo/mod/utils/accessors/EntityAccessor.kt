@@ -4,7 +4,7 @@ import net.minecraft.world.entity.Entity
 import java.awt.Color
 
 /**
- * Interface to inject into Entity.class via Mixin
+ * Interface to inject via Mixin
  */
 internal interface EntityAccessor {
     fun `sbo$setGlowing`(glowing: Boolean)

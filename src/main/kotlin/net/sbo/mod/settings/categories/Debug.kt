@@ -19,7 +19,7 @@ object Debug : CategoryKt("Debug") {
     }
 
     var repeatableAchie by boolean(true) {
-        this.name = Literal("[WIP] Enable Repetable Achievements")
+        this.name = Literal("[WIP] Enable Repeatable Achievements")
         this.description = Literal("[WIP] allows you to unlock repeatable achievements for each new event")
     }
 }

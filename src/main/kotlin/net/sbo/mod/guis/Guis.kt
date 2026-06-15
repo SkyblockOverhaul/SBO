@@ -1,18 +1,18 @@
 package net.sbo.mod.guis
 
 import gg.essential.universal.UScreen
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.Style
-import net.minecraft.ChatFormatting
 
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null

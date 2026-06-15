@@ -1,13 +1,10 @@
 package net.sbo.mod.utils.overlay
 
-import net.sbo.mod.SBOKotlin.mc
-
-import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.Font
-
-import net.minecraft.util.FormattedCharSequence
+import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
-
+import net.minecraft.util.FormattedCharSequence
+import net.sbo.mod.SBOKotlin.mc
 import java.awt.Color
 
 class OverlayTextLine(

@@ -1,8 +1,8 @@
 package net.sbo.mod.utils.game
 
 import net.minecraft.client.Minecraft
-import net.minecraft.world.item.ItemStack
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import kotlin.time.Duration

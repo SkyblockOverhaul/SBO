@@ -2,8 +2,6 @@ package net.sbo.mod.utils.waypoint
 
 import net.sbo.mod.utils.math.SboVec
 
-const val COMPETITIVE_WARP_DISTANCE_THRESHOLD = 15.0
-
 /**
  * Represents a single warp point with coordinates and optional data.
  * @property pos The position of the warp point in the game world.

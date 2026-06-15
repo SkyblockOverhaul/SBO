@@ -1,8 +1,8 @@
 package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
-import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 import net.sbo.mod.utils.NumberUtil.roundTo
+import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 internal object ParticleTypes {
     internal val PARTICLE_CHECKS = mutableMapOf(

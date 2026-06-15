@@ -1,8 +1,8 @@
 package net.sbo.mod.utils.events.impl.game
 
 import net.minecraft.client.player.LocalPlayer
-import net.minecraft.world.level.Level
 import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 
 /**
  * Called when the player interacts with the world.

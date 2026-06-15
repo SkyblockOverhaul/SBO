@@ -2,11 +2,11 @@ package net.sbo.mod.utils.chat
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue
 import net.minecraft.client.player.LocalPlayer
-import net.sbo.mod.utils.events.Register
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.game.SentMessageEvent
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent
+import net.sbo.mod.utils.events.impl.game.SentMessageEvent
 
 object ChatMessageQueue {
     private const val DELAY_NANOS = 200_000_000L

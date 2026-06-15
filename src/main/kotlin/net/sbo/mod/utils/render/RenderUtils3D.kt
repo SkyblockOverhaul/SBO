@@ -1,27 +1,25 @@
 package net.sbo.mod.utils.render
 
-import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.Camera
+import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.minecraft.client.Camera
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.gizmos.GizmoStyle
+import net.minecraft.gizmos.Gizmos
+import net.minecraft.util.ARGB
+import net.minecraft.util.Mth
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
-import com.mojang.blaze3d.vertex.PoseStack
-import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.util.Mth
-import net.minecraft.util.ARGB
-import net.sbo.mod.settings.categories.Diana
-
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-
-import net.minecraft.gizmos.Gizmos
-import net.minecraft.gizmos.GizmoStyle
-import net.minecraft.world.phys.AABB
 
 object RenderUtils3D {
     fun renderWaypoint(
@@ -233,7 +231,7 @@ object RenderUtils3D {
         if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.removeBeam) return
 
         val consumers = ctx.consumers()
-        val wolrd = mc.level ?: return
+        val world = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
         val cam = ctx.getCamera().position()
         val beamColor = floatArrayOf(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f)
@@ -244,7 +242,7 @@ object RenderUtils3D {
             renderBeam(
                 consumers,
                 partialTicks,
-                wolrd.gameTime,
+                world.gameTime,
                 Color(beamColor[0], beamColor[1], beamColor[2]).rgb,
                 phase
             )
@@ -258,8 +256,8 @@ object RenderUtils3D {
         color: Int,
         phase: Boolean = false
     ) {
-        val opaqueLayyer = if (phase) SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_OPAQUE
-        val transluscentLayer = if (phase) SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_TRANSLUCENT
+        val opaqueLayer = if (phase) SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_OPAQUE
+        val translucentLayer = if (phase) SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_TRANSLUCENT
         val heightScale = 1f
         val height = 320
         val innerRadius = 0.2f
@@ -277,7 +275,7 @@ object RenderUtils3D {
                 mulPose(Axis.YP.rotationDegrees(time * 2.25f - 45f))
 
                 renderBeamLayer(
-                    vertices.getBuffer(opaqueLayyer),
+                    vertices.getBuffer(opaqueLayer),
                     color,
                     0f,
                     innerRadius,
@@ -295,7 +293,7 @@ object RenderUtils3D {
             renderYOffest = height.toFloat() * heightScale + animationStep
 
             renderBeamLayer(
-                vertices.getBuffer(transluscentLayer),
+                vertices.getBuffer(translucentLayer),
                 ARGB.color(32, color),
                 -outerRadius,
                 -outerRadius,

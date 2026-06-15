@@ -1,14 +1,14 @@
 package net.sbo.mod.utils.overlay
 
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.data.OverlayValues
 import net.sbo.mod.utils.data.SboDataObject.overlayData
+import net.sbo.mod.utils.game.World
 import java.awt.Color
 
 fun isCraftingScreenOpen(): Boolean {
@@ -63,20 +63,8 @@ class Overlay(
         return this
     }
 
-    fun checkCondition(): Boolean {
-        return condition()
-    }
-
     fun addLine(line: OverlayTextLine) {
         lines.add(line)
-    }
-
-    fun addLineAt(index: Int, line: OverlayTextLine) {
-        lines.add(index, line)
-    }
-
-    fun addLines(newLines: List<OverlayTextLine>) {
-        lines.addAll(newLines)
     }
 
     fun setLines(newLines: List<OverlayTextLine>) {
@@ -180,7 +168,7 @@ class Overlay(
         var currentX = (x / scale)
 
         // We don't need thread safety as we are in method-local context
-        // Making these vars lazy ensures they are only computed when needed (e.g not computed if both of the if conditions below are false)
+        // Making these vars lazy ensures they are only computed when needed (e.g., not computed if both of the if conditions below are false)
         // and only computed once when both of the if conditions are true.
         val totalWidth by lazy(LazyThreadSafetyMode.NONE) { getTotalWidth() }
         val totalHeight by lazy(LazyThreadSafetyMode.NONE) { getTotalHeight() }
