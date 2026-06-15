@@ -34,18 +34,25 @@ object BurrowDetector {
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("^ ☠ You (.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            if (World.getWorld() != "Hub") return@onChatMessageCancelable true
+        Register.onChatMessage(Regex("""^ ☠ You .+$"""), noFormatting = true) { message, matchResult ->
+            if ("Hub" != World.getWorld()) return@onChatMessage
+            Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.")
             refreshBurrows(true)
-            true
         }
 
         Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
+            // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
+            // The chain finished message does not trigger it.
+
+            // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
+            lastDugOutBurrowPos = DianaEvents.lastBurrowClicked ?: DianaEvents.lastBlockClicked ?: SboVec(0.0, 0.0, 0.0)
+            refreshBurrows(false)
+
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
             if (Diana.showTitleWhenChainEnd && anyClose.isEmpty()) requestSpade()
         }
 
-        Register.onChatMessage(Regex(""".*§eYou (?:just )?dug out.*""")) { message, matchResult ->
+        Register.onChatMessage(Regex(""".*§eYou (?:just )?dug out(?!.*\(\d+/\d+\)$).*""")) { message, matchResult ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 
