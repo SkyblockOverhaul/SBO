@@ -397,7 +397,7 @@ object WaypointManager {
         var secondClosestDistance = Double.MAX_VALUE
 
         for ((name, warp) in warps) {
-            val distance = if (Diana.ignoreYLevel && warp.ignoreYLevel) pos.distanceToIgnoringY(warp.pos) else pos.distanceTo(warp.pos)
+            val distance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(warp.pos) else pos.distanceTo(warp.pos)
 
             if (distance < closestDistance) {
                 secondClosestWarp = closestWarp
@@ -420,7 +420,7 @@ object WaypointManager {
             closestDistance = secondClosestDistance
         }
 
-        if (Diana.ignoreYLevel && closestWarpPoint?.ignoreYLevel == true) playerDistance = pos.distanceToIgnoringY(Player.getLastPosition())
+        if (Diana.ignoreYLevel) playerDistance = pos.distanceToIgnoringY(Player.getLastPosition())
 
         val condition1 = playerDistance > (closestDistance + Diana.warpDiff)
         val condition2 = condition1 && (closestWaypoint.second > 60 || getWaypointsOfType("rareMob").isNotEmpty())

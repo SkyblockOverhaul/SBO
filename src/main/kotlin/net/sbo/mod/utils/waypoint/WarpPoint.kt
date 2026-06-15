@@ -13,7 +13,6 @@ data class WarpPoint(
     val unlocked: Boolean,
     val setting: String? = null, // Nullable, since not all warps have a setting
     val warpType: AdditionalHubWarps? = null, // null for hub, set for all others
-    val ignoreYLevel: Boolean = false,
     val preferWarpAgainstCompetitive: AdditionalHubWarps? = null
 )
 
@@ -22,8 +21,8 @@ val hubWarps: Map<String, WarpPoint> = mapOf(
 )
 
 val additionalHubWarps: Map<String, WarpPoint> = mapOf(
-    "castle" to WarpPoint(SboVec(-250.00, 130.00, 45.00), true, "castleWarp", AdditionalHubWarps.CASTLE, true, AdditionalHubWarps.CRYPT),
-    "wizard" to WarpPoint(SboVec(44.50, 119.00, 93.50), true, "wizardWarp", AdditionalHubWarps.WIZARD, true),
+    "castle" to WarpPoint(SboVec(-250.00, 130.00, 45.00), true, "castleWarp", AdditionalHubWarps.CASTLE, AdditionalHubWarps.CRYPT),
+    "wizard" to WarpPoint(SboVec(44.50, 119.00, 93.50), true, "wizardWarp", AdditionalHubWarps.WIZARD),
     "crypt" to WarpPoint(SboVec(-160.50, 62.00, -106.50), true, "cryptWarp", AdditionalHubWarps.CRYPT),
     "stonks" to WarpPoint(SboVec(-36.50, 70.00, -81.50), true, "stonksWarp", AdditionalHubWarps.STONKS),
     "da" to WarpPoint(SboVec(91.50, 75.00, 173.50), true, "darkAuctionWarp", AdditionalHubWarps.DA),

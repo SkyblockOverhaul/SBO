@@ -51,7 +51,8 @@ class Waypoint(
     private fun setWarpText() {
         val showTimesDug = Customization.showTimesDug && this.type == "burrow" && this.text != "Start"
         val timesDug = this.timesDug
-        val timesDugText = if (showTimesDug) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
+        val dist = Customization.showDistanceCutoff == 0 || this.distanceToPlayer() < Customization.showDistanceCutoff
+        val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
 
         if (isClosest) {
             val closest = WaypointManager.getClosestWarp(this.pos)
@@ -63,7 +64,7 @@ class Waypoint(
             val title = Diana.showTitleWhenWarpAvailable
             if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
                  val warpName = closest.replaceFirstChar(Char::titlecase)
-                 Helper.showTitle("§bWarp §e$warpName$distanceText$timesDugText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
+                 Helper.showTitle("§bWarp §e$warpName$distanceText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"

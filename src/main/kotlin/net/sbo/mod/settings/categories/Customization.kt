@@ -92,10 +92,10 @@ object Customization : CategoryKt("Customization") {
         this.slider = true
     }
 
-    var showDistanceCutoff by int(0) {
+    var showDistanceCutoff by int(50) {
         this.range = 0..150
-        this.name = Literal("Show Distance Cutoff")
-        this.description = Literal("The distance cutoff at which the distance text disappears. For example if set to 50 will not display the distance text if 50m or closer. (0 to always show distance)")
+        this.name = Literal("Show Distance & Times Dug Cutoff")
+        this.description = Literal("The distance cutoff at which the distance text disappears, and the times dug text appears. For example if set to 50 will not display the distance text if 50m or closer, and will only display the times dug when 50m or closer. (0 to always show distance and times dug, if times dug is enabled)")
     }
 
     var showTimesDug by boolean(false) {
