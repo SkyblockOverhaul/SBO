@@ -125,6 +125,14 @@ object WaypointManager {
             // These do not change location when using the shovel
             val allStaticBurrowWaypoints = knownBurrows + arrowGuesses
 
+            // Remove all TTL expired waypoints
+            this.forEachWaypoint { waypoint ->
+                if (waypoint.ttl > 0 && waypoint.creation + waypoint.ttl * 1000L < System.currentTimeMillis()) {
+                    removeWaypoint(waypoint)
+                    return@forEachWaypoint
+                }
+            }
+
             // Remove all waypoints that are under the world (y < 60)
             val guessesToRemove = allWaypoints.filter { waypoint -> waypoint.pos.y < 60 }
 
@@ -161,13 +169,6 @@ object WaypointManager {
                     }
                 ) {
                     removeWaypoint(arrowGuess)
-                }
-            }
-
-            this.forEachWaypoint { waypoint ->
-                if (waypoint.ttl > 0 && waypoint.creation + waypoint.ttl * 1000L < System.currentTimeMillis()) {
-                    removeWaypoint(waypoint)
-                    return@forEachWaypoint
                 }
             }
 
