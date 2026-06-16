@@ -164,15 +164,17 @@ object WaypointManager {
                 }
             }
 
-            closestWaypoint = getClosestWaypointFrom(playerPos) ?: (null to 1000.0)
-            val bestGuessWp = getBestGuess()
-
             this.forEachWaypoint { waypoint ->
                 if (waypoint.ttl > 0 && waypoint.creation + waypoint.ttl * 1000L < System.currentTimeMillis()) {
                     removeWaypoint(waypoint)
                     return@forEachWaypoint
                 }
+            }
 
+            closestWaypoint = getClosestWaypointFrom(playerPos) ?: (null to 1000.0)
+            val bestGuessWp = getBestGuess()
+
+            this.forEachWaypoint { waypoint ->
                 waypoint.isClosest = waypoint == bestGuessWp
                 waypoint.format(rareWp)
             }
@@ -414,7 +416,9 @@ object WaypointManager {
             }
         }
 
-        if (Diana.badWarpDistance > 0 && secondClosestWarpPoint?.preferWarpAgainstCompetitive == closestWarpPoint?.warpType && secondClosestDistance - closestDistance < Diana.badWarpDistance) {
+        val preferredAgainst = secondClosestWarpPoint?.preferWarpAgainstCompetitive
+
+        if (Diana.badWarpDistance > 0 && preferredAgainst != null && preferredAgainst == closestWarpPoint?.warpType && secondClosestDistance - closestDistance < Diana.badWarpDistance) {
             closestWarp = secondClosestWarp
             closestWarpPoint = secondClosestWarpPoint
             closestDistance = secondClosestDistance
