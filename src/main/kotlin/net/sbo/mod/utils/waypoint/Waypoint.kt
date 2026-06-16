@@ -42,6 +42,7 @@ class Waypoint(
     var formattedText: String = ""
     var isClosest = false
     var timesDug = 0
+    var userInteractedWith = false
 
     fun distanceToPlayer(): Double {
         val playerPos = Player.getLastPosition()

@@ -448,13 +448,6 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("The width of the lines drawn for Diana waypoints")
     }
 
-    var removeBeam by int(8) {
-        this.range = 0..20
-        this.slider = true
-        this.name = Literal("Remove Rare Mob Beam Distance")
-        this.description = Literal("Removes the rare mob waypoint beam when you are within this distance of it (0 to disable)")
-    }
-
     init {
         separator {
             this.title = "Rare Mobs"
@@ -529,11 +522,6 @@ object Diana : CategoryKt("Diana") {
     var cocoonTitle by boolean(true) {
         this.name = Literal("Show Title On Cocoon")
         this.description = Literal("Shows a title on cocoon")
-    }
-
-    var legacyCocoonDetection by boolean(false) {
-        this.name = Literal("Legacy Cocoon Detection")
-        this.description = Literal("Uses egg sac player head texture to detect cocoon instead of the new cocoon chat message when enabled. Only enable if chat detection does not work.")
     }
 
     var hpAlert by double(0.0) {

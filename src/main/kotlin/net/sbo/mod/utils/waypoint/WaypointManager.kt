@@ -145,29 +145,31 @@ object WaypointManager {
             // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 3 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
             shovelGuesses.forEach { shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
-                if (
-                    allStaticBurrowWaypoints.any {
-                        val waypointPos = it.pos
-                        val waypointBlock = waypointPos.roundLocationToBlock()
 
-                        waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 3
+                allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
+                    val waypointBlock = staticBurrow.pos.roundLocationToBlock()
+
+                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 3
+                }?.let { staticBurrow ->
+                    if (shovelGuess.timesDug > staticBurrow.timesDug) {
+                        staticBurrow.timesDug = shovelGuess.timesDug
                     }
-                ) {
+
                     removeAllOfType("guess")
                 }
             }
 
-            // Remove the arrow guesses representing the same blocks as an already-known treasure/mob/start burrow
+            // Remove the arrow guesses representing the same blocks as an already-known treasure/mob/start burrow, and transfer its timesDug to the known burrow instead if the arrow guess was dug more times than the known burrow
             arrowGuesses.forEach { arrowGuess ->
                 val arrowGuessBlock = arrowGuess.pos.roundLocationToBlock()
-                if (
-                    knownBurrows.any {
-                        val waypointPos = it.pos
-                        val waypointBlock = waypointPos.roundLocationToBlock()
 
-                        waypointBlock == arrowGuessBlock
+                knownBurrows.firstOrNull { knownBurrow ->
+                    knownBurrow.pos.roundLocationToBlock() == arrowGuessBlock
+                }?.let { knownBurrow ->
+                    if (arrowGuess.timesDug > knownBurrow.timesDug) {
+                        knownBurrow.timesDug = arrowGuess.timesDug
                     }
-                ) {
+
                     removeWaypoint(arrowGuess)
                 }
             }

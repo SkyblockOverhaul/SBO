@@ -318,7 +318,7 @@ dependencies {
     maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
-    implementation(ksp(project(":event-processor"))!!)
+    ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
     implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)

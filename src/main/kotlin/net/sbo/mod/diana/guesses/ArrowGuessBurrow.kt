@@ -118,16 +118,6 @@ object ArrowGuessBurrow {
             locations.clear()
         }
         if (currentChain == 1) return
-
-        val containList = allGuesses.filter { guessEntry ->
-            guessEntry.guesses.any { guess -> guess.distanceTo(event.lastBlock) <= 3 }
-        }
-
-        containList.forEach { entry ->
-            entry.removeGuesses()
-        }
-
-        allGuesses.removeAll(containList.toSet())
     }
 
     private fun detectArrow(): RaycastUtils.Ray? {

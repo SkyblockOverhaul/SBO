@@ -228,7 +228,7 @@ object RenderUtils3D {
         phase: Boolean = false
     ) {
         val player = mc.player ?: return
-        if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.removeBeam) return
+        if (vec.center().distanceTo(player.x, player.y, player.z) < 8) return
 
         val consumers = ctx.consumers()
         val world = mc.level ?: return

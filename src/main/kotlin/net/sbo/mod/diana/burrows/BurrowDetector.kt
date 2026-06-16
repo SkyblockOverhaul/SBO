@@ -17,12 +17,14 @@ import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+import java.util.function.BooleanSupplier
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
     internal var lastDugOutBurrowPos: SboVec = SboVec(0.0, 0.0, 0.0)
     internal val burrowsHistory = EvictingQueue<String>(2)
+    internal val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
 
     fun init() {
         Register.command("sboclearburrows", "sbocb") {
@@ -36,8 +38,7 @@ object BurrowDetector {
 
         Register.onChatMessage(Regex("""^ ☠ You .+$"""), noFormatting = true) { message, matchResult ->
             if ("Hub" != World.getWorld()) return@onChatMessage
-            Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.")
-            refreshBurrows(true)
+            refreshBurrows(true, 1)
         }
 
         Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
@@ -45,8 +46,8 @@ object BurrowDetector {
             // The chain finished message does not trigger it.
 
             // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
-            lastDugOutBurrowPos = DianaEvents.lastBurrowClicked ?: DianaEvents.lastBlockClicked ?: SboVec(0.0, 0.0, 0.0)
-            refreshBurrows(false)
+            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+            refreshBurrows(false, 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
             if (Diana.showTitleWhenChainEnd && anyClose.isEmpty()) requestSpade()
@@ -57,8 +58,8 @@ object BurrowDetector {
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 
             // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
-            lastDugOutBurrowPos = DianaEvents.lastBurrowClicked ?: DianaEvents.lastBlockClicked ?: SboVec(0.0, 0.0, 0.0)
-            refreshBurrows(false)
+            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+            refreshBurrows(false, 1)
         }
     }
 
@@ -69,9 +70,8 @@ object BurrowDetector {
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
         if (!Diana.closeBurrowDetection) return
-        if (event.burrowPos == null) return
-        lastDugOutBurrowPos = event.burrowPos
-        refreshBurrows(false)
+        lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+        refreshBurrows(false, 2)
     }
 
     @SboEvent
@@ -90,6 +90,8 @@ object BurrowDetector {
         if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down(1.0)
             WaypointManager.removeWaypointAt(pos, "burrow")
+            WaypointManager.removeWaypointAt(pos, "arrow")
+            WaypointManager.removeWaypointAt(pos, "guess")
             WaypointManager.removeWaypointAt(pos, "rareMob")
         }
         burrowDetect(packet)
@@ -123,25 +125,56 @@ object BurrowDetector {
         }
     }
 
-    fun refreshBurrows(deathOriginating: Boolean) {
-        val dugWaypoint = WaypointManager.getWaypointAt(lastDugOutBurrowPos, "burrow") ?: return
-        val startBurrow = dugWaypoint.text == "Start"
-        val mobBurrow = dugWaypoint.text == "Mob"
-        val shouldCount = !deathOriginating && !startBurrow
+    fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
+        toRemove.put(waypoint, condition)
+    }
 
-        if (shouldCount) {
-            dugWaypoint.timesDug++
+    private fun flushRemovals() {
+        toRemove.forEach { waypoint, condition ->
+            if (condition.getAsBoolean()) {
+                WaypointManager.removeWaypoint(waypoint)
+            }
+        }
+    }
+
+    fun refreshBurrows(deathOriginating: Boolean, expectedTimesDug: Int) {
+        // Try known burrow first, then arrow, then precise
+        val dugWaypoint = WaypointManager.getWaypointAt(lastDugOutBurrowPos, "burrow") ?: WaypointManager.getWaypointAt(lastDugOutBurrowPos, "arrow") ?: WaypointManager.getWaypointAt(lastDugOutBurrowPos, "guess")
+
+        if (null != dugWaypoint) {
+            // Will only work if known burrow
+            val startBurrow = dugWaypoint.text == "Start"
+            val mobBurrow = dugWaypoint.text == "Mob"
+
+            // Count if not death originating and not start burrow (will still count if was a guess and not known burrow)
+            val shouldCount = !deathOriginating && !startBurrow
+
+            if (shouldCount) {
+                dugWaypoint.timesDug++
+            }
+
+            if (dugWaypoint.timesDug < expectedTimesDug) {
+                // Fix up the times dug from chat message in case it ever desyncs
+                dugWaypoint.timesDug = expectedTimesDug
+            }
+
+            // Remove if:
+            // 1. Not death originating (was called from BurrowDugEvent) and the burrow type is Start (Start burrows only need to be dug once)
+            // 2. Not death originating (was called from BurrowDugEvent) and times dug is 2 or more (Treasure/Mob burrow that was fully dug out)
+            // 3. Death originating (was called after self player dies) and last dug burrows times dug is 1 or more, and it was a Mob burrow (A mob burrow was dug once and the player died to the mob)
+            val death = deathOriginating && dugWaypoint.timesDug >= 1 && mobBurrow
+            val removalCondition = (!deathOriginating && startBurrow) || (!deathOriginating && dugWaypoint.timesDug >= 2) || (death)
+
+            if (removalCondition) {
+                if (death) {
+                    Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.")
+                }
+                WaypointManager.removeWaypoint(dugWaypoint)
+            }
         }
 
-        // Remove if:
-        // 1. Not death originating (was called from BurrowDugEvent) and the burrow type is Start (Start burrows only need to be dug once)
-        // 2. Not death originating (was called from BurrowDugEvent) and times dug is 2 or more (Treasure/Mob burrow that was fully dug out)
-        // 3. Death originating (was called after self player dies) and last dug burrows times dug is 1 or more, and it was a Mob burrow (A mob burrow was dug once and the player died to the mob)
-        val removalCondition = (!deathOriginating && startBurrow) || (!deathOriginating && dugWaypoint.timesDug >= 2) || (deathOriginating && dugWaypoint.timesDug >= 1 && mobBurrow)
-
-        if (removalCondition) {
-            WaypointManager.removeWaypoint(dugWaypoint)
-        }
+        // Counted timesDug above already
+        flushRemovals()
     }
 
     fun resetBurrows() {
