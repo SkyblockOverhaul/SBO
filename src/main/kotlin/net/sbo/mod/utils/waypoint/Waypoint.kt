@@ -13,6 +13,11 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
+private const val MIN_OPACITY = 0.2f
+private const val MAX_OPACITY = 1.0f
+private const val FADE_START_DISTANCE = 4.5
+private const val FADE_END_DISTANCE = 100.0
+
 /**
  * @class Waypoint
  * @description A class to create waypoints in the game.
@@ -49,6 +54,11 @@ class Waypoint(
         return sqrt((playerPos.x - this.pos.x).pow(2) + (playerPos.y - this.pos.y).pow(2) + (playerPos.z - this.pos.z).pow(2))
     }
 
+    fun distanceToPlayerIgnoringY(): Double {
+        val playerPos = Player.getLastPosition()
+        return sqrt((playerPos.x - this.pos.x).pow(2) + (playerPos.z - this.pos.z).pow(2))
+    }
+
     private fun setWarpText() {
         val showTimesDug = Customization.showTimesDug && this.type == "burrow" && this.text != "Start"
         val timesDug = this.timesDug
@@ -70,6 +80,21 @@ class Waypoint(
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"
         }
+    }
+
+    private fun getDynamicOpacity(): Float {
+        val distance = this.distanceRaw
+
+        if (distance <= FADE_START_DISTANCE) {
+            return MIN_OPACITY
+        }
+
+        if (distance >= FADE_END_DISTANCE) {
+            return MAX_OPACITY
+        }
+
+        val progress = ((distance - FADE_START_DISTANCE) / (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
+        return MIN_OPACITY + ((MAX_OPACITY - MIN_OPACITY) * progress)
     }
 
     private fun getColor(): Color {
@@ -161,7 +186,12 @@ class Waypoint(
 
         val rgbAndHex = getRgbAndHex()
 
-        val waypointOpacity = (Customization.waypointOpacity / 100.0).toFloat()
+        val waypointOpacity = if (Customization.dynamicWaypointOpacity) {
+            getDynamicOpacity()
+        } else {
+            (Customization.waypointOpacity / 100.0).toFloat()
+        }
+
         val waypointTextOpacity = (Customization.waypointTextOpacity / 100.0).toFloat()
 
         RenderUtils3D.renderWaypoint(

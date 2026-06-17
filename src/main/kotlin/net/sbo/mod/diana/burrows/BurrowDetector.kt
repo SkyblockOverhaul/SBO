@@ -59,8 +59,16 @@ object BurrowDetector {
 
             // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
-            refreshBurrows(false, 1)
+            refreshBurrows(false, 1, parseTypeFromChatMsg(message.getString()))
         }
+    }
+
+    private fun parseTypeFromChatMsg(message: String): String {
+        if (message.contains("Griffin Feather") || message.contains(" coins!") || message.contains("Mythos Fragment") || message.contains("Braided Griffin Feather") || message.contains("Myth the Fish")) {
+            return "Treasure"
+        }
+
+        return "Mob" // assume mob if not a known treasure drop
     }
 
     fun requestSpade() {
@@ -103,26 +111,32 @@ object BurrowDetector {
         val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
         if (burrowsHistory.contains(posString)) return
-        if (!burrows.containsKey(posString)) burrows[posString] = Burrow(pos)
+
+        val burrow = burrows.getOrPut(posString) {
+            Burrow(pos)
+        }
 
         when (particleType) {
-            "FOOTSTEP" -> burrows[posString]?.hasFootstep = true
-            "ENCHANT" -> burrows[posString]?.hasEnchant = true
-            "EMPTY" -> burrows[posString]?.type = "Start"
-            "MOB" -> burrows[posString]?.type = "Mob"
-            "TREASURE" -> burrows[posString]?.type = "Treasure"
+            "FOOTSTEP" -> burrow.hasFootstep = true
+            "ENCHANT" -> burrow.hasEnchant = true
+            "EMPTY" -> burrow.type = "Start"
+            "MOB" -> burrow.type = "Mob"
+            "TREASURE" -> burrow.type = "Treasure"
         }
 
-        val burrow = burrows[posString]
-        if (burrow?.type != null && burrow.waypoint == null) {
-            burrowsHistory.add(posString)
-            burrow.waypoint = Waypoint(
-                burrow.type!!,
-                pos.x, pos.y, pos.z,
-                type = "burrow"
-            )
-            WaypointManager.addWaypoint(burrow.waypoint!!)
-        }
+        val type = burrow.type ?: return
+        if (burrow.waypoint != null) return
+
+        burrowsHistory.add(posString)
+
+        val waypoint = Waypoint(
+            type,
+            pos.x, pos.y, pos.z,
+            type = "burrow"
+        )
+
+        burrow.waypoint = waypoint
+        WaypointManager.addWaypoint(waypoint)
     }
 
     fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
@@ -137,9 +151,10 @@ object BurrowDetector {
         }
     }
 
-    fun refreshBurrows(deathOriginating: Boolean, expectedTimesDug: Int) {
+    fun refreshBurrows(deathOriginating: Boolean, expectedTimesDug: Int, burrowType: String? = null) {
         // Try known burrow first, then arrow, then precise
-        val dugWaypoint = WaypointManager.getWaypointAt(lastDugOutBurrowPos, "burrow") ?: WaypointManager.getWaypointAt(lastDugOutBurrowPos, "arrow") ?: WaypointManager.getWaypointAt(lastDugOutBurrowPos, "guess")
+        val pos = lastDugOutBurrowPos
+        val dugWaypoint = WaypointManager.getWaypointAt(pos, "burrow") ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess")
 
         if (null != dugWaypoint) {
             // Will only work if known burrow
@@ -175,6 +190,17 @@ object BurrowDetector {
 
         // Counted timesDug above already
         flushRemovals()
+
+        if (dugWaypoint?.type != "burrow" && burrowType != null) {
+            // The user has dug the Guess waypoint before we could detect the particles and turn into a Mob/Treasure/Start waypoint.
+            // In this case, if it was a Start waypoint it would disappear instantly anyways. If it was a Mob/Treasure, we use the chat message
+            // to determine the burrow type, and add that as a known burrow and remove the old one, whilst carrying over timesDug.
+            val waypoint = Waypoint(burrowType, pos.x, pos.y, pos.z, type = "burrow")
+            waypoint.timesDug = dugWaypoint?.timesDug ?: expectedTimesDug
+
+            WaypointManager.addWaypoint(waypoint)
+            if (dugWaypoint != null) WaypointManager.removeWaypoint(dugWaypoint)
+        }
     }
 
     fun resetBurrows() {

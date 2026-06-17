@@ -62,6 +62,11 @@ object Customization : CategoryKt("Customization") {
         this.allowAlpha = true
     }
 
+    var dynamicWaypointOpacity by boolean(true) {
+        this.name = Literal("Dynamic Waypoint Opacity")
+        this.description = Literal("Uses a dynamic waypoint opacity that changes based on how far or close you are to the waypoints. If you enable this, the Waypoint Opacity setting below will not take effect.")
+    }
+
     var waypointOpacity by int(50) {
         this.range = 0..100
         this.name = Literal("Waypoint Opacity")

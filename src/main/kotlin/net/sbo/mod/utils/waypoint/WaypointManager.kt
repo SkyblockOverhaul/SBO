@@ -359,7 +359,7 @@ object WaypointManager {
     fun getBestGuess(): Waypoint? {
         return getAllGuessesAndBurrows()
             .filter { !it.hidden }
-            .minByOrNull { it.distanceToPlayer() }
+            .minByOrNull { if (Diana.ignoreYLevel) it.distanceToPlayerIgnoringY() else it.distanceToPlayer() }
     }
 
     private fun getClosestWaypointFrom(pos: SboVec): Pair<Waypoint, Double>? {
@@ -391,7 +391,7 @@ object WaypointManager {
             }
         }
 
-        var playerDistance = pos.distanceTo(Player.getLastPosition())
+        var playerDistance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(Player.getLastPosition()) else pos.distanceTo(Player.getLastPosition())
 
         var closestWarp: String? = null
         var closestWarpPoint: WarpPoint? = null
@@ -429,7 +429,7 @@ object WaypointManager {
 
         if (Diana.ignoreYLevel) playerDistance = pos.distanceToIgnoringY(Player.getLastPosition())
 
-        val condition1 = playerDistance > (closestDistance + Diana.warpDiff)
+        val condition1 = playerDistance > (closestDistance + Diana.warpDiff + (closestWarpPoint?.extraBlocks ?: 0))
         val condition2 = condition1 && (closestWaypoint.second > 60 || getWaypointsOfType("rareMob").isNotEmpty())
 
         val condition = if (Diana.dontWarpIfBurrowClose) condition2 else condition1
