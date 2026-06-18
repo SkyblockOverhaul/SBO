@@ -9,34 +9,17 @@ import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
-import java.io.File
-import java.io.FileReader
-import java.io.Writer
-import java.io.FileWriter
-import java.io.BufferedWriter
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.io.IOException
-import java.nio.file.Path
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-import java.nio.file.FileVisitResult
-import java.nio.file.SimpleFileVisitor
+import java.io.*
+import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.AtomicMoveNotSupportedException
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
-import java.util.concurrent.Executors
-import java.util.concurrent.ExecutorService
-import kotlin.collections.iterator
-import kotlin.concurrent.thread
-import kotlin.reflect.KMutableProperty1
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import kotlin.reflect.KMutableProperty1
 
 object SboDataObject {
     @JvmField
@@ -203,7 +186,7 @@ object SboDataObject {
 
                     val success = mergeDirectories(modName, oldDir, newDir)
                     cleanupIfSafe(modName, oldDir, success)
-                    SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir")
+                    SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-sensitive FS)")
                 }
             } else {
                 // Windows: case-insensitive, normalize folder name if needed
@@ -216,7 +199,7 @@ object SboDataObject {
                             } else {
                                 val success = mergeDirectories(modName, oldDir, newDir)
                                 cleanupIfSafe(modName, oldDir, success)
-                                SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir")
+                                SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-insensitive FS)")
                             }
                         } else {
                             val tempDir = Files.createTempDirectory(baseDir, "${newName}_tmp_")
@@ -276,7 +259,8 @@ object SboDataObject {
 
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
-        saveAndBackupAllDataThreaded(dataDir)
+        // Game is closing, if we do not block till save is complete, the game might close before save is complete, and so we might do a partial save which corrupts and resets stuff on the next launch.
+        saveAndBackupAllDataThreaded(dataDir, true)
     }
 
     fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
@@ -394,7 +378,7 @@ object SboDataObject {
                     Int::class -> value.toIntOrNull()
                     String::class -> value
                     else -> {
-                        SBOKotlin.logger.warn("[$key] hasn an Unsupported type: ${prop.returnType.classifier}")
+                        SBOKotlin.logger.warn("[$key] has an an Unsupported type: ${prop.returnType.classifier}")
                         null
                     }
                 }
@@ -517,8 +501,6 @@ object SboDataObject {
         }
     }
 
-    private val backupRegex = Regex("SBOBackup_\\d{8}_\\d{6}")
-
     private fun cleanupBrokenBackups(modName: String, backupDir: File) {
         val files = backupDir.listFiles() ?: return
 
@@ -613,7 +595,7 @@ object SboDataObject {
                     } catch (e: AtomicMoveNotSupportedException) {
                         // Supported on all major OS unless trying to move to a different partition or drive
                         // The most likely culprit would be that MC was installed to a OneDrive sync folder
-                        // Fallbacking to regular move should be OK here at this point.
+                        // Fall-backing to regular move should be OK here at this point.
                         val success = tempZipFile.renameTo(zipFile)
                         if (!success) {
                             throw IOException("Failed to rename temp zip to final zip")
@@ -650,7 +632,7 @@ object SboDataObject {
         }
     }
 
-    val configMapforSave = mapOf(
+    val configMapForSave = mapOf(
         "SboData" to Pair({ save(dataDir, sboData, "SboData.json") }, sboData),
         "AchievementsData" to Pair({ save(dataDir, achievementsData, "sbo_achievements.json") }, achievementsData),
         "PastDianaEventsData" to Pair({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
@@ -662,14 +644,8 @@ object SboDataObject {
         "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData)
     )
 
-    private fun <T> saveToFolder(folder: File, data: T, fileName: String) {
-        writerForFile(File(folder, fileName)).use { writer ->
-            gson.toJson(data, writer)
-        }
-    }
-
     private fun saveAllData() {
-        configMapforSave.forEach { (_, configData) ->
+        configMapForSave.forEach { (_, configData) ->
             configData.first.invoke()
         }
     }
@@ -682,12 +658,16 @@ object SboDataObject {
         }
     }
 
-    fun saveAndBackupAllDataThreaded(modName: String) {
-        DATA_SAVER_EXECUTOR.execute {
+    fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
+        val future = DATA_SAVER_EXECUTOR.submit {
             SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
             SBOKotlin.logger.info("All data saved successfully.")
             createBackup(modName)
+        }
+
+        if (block) {
+            future.get()
         }
     }
 
@@ -701,12 +681,56 @@ object SboDataObject {
         }
     }
 
+    private fun <T> saveToFolder(folder: File, data: T, fileName: String) {
+        val file = File(folder, fileName)
+        writeJsonAtomically(file, data as Any)
+    }
+
     fun <T> save(modName: String, data: T, fileName: String) {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
         modConfigDir.mkdirs()
+
         val dataFile = File(modConfigDir, fileName)
-        writerForFile(dataFile).use { writer ->
+        writeJsonAtomically(dataFile, data as Any)
+    }
+
+    /**
+     * Writes JSON data to a temporary file, then replaces the original file with it
+     * only after the temp file has finished fully writing. Performs atomic move to avoid
+     * data loss if crash or power loss during the move.
+     */
+    private fun writeJsonAtomically(file: File, data: Any) {
+        val parentDirectory = file.parentFile
+
+        parentDirectory.listFiles { candidate ->
+            candidate.name.startsWith("${file.name}.") && candidate.name.endsWith(".tmp")
+        }?.forEach(File::delete)
+
+        val tempFile = Files.createTempFile(
+            parentDirectory.toPath(),
+            "${file.name}.",
+            ".tmp"
+        )
+
+        writerForFile(tempFile.toFile()).use { writer ->
             gson.toJson(data, writer)
+        }
+
+        try {
+            Files.move(
+                tempFile,
+                file.toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.ATOMIC_MOVE
+            )
+        } catch (e: AtomicMoveNotSupportedException) {
+            // Hopefully no power loss or crash because non-atomic move here
+            // This code path won't be taken unless outdated OS, weird partition setup or OneDrive (lame)
+            Files.move(
+                tempFile,
+                file.toPath(),
+                StandardCopyOption.REPLACE_EXISTING
+            )
         }
     }
 
@@ -727,7 +751,7 @@ object SboDataObject {
      */
     fun save(configName: String) {
         DATA_SAVER_EXECUTOR.execute {
-            configMapforSave[configName]?.first?.invoke()
+            configMapForSave[configName]?.first?.invoke()
                 ?: SBOKotlin.logger.warn("[$configName] is not a valid config name. Please use a valid config name")
         }
     }

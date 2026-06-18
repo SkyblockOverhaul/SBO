@@ -2,56 +2,43 @@ package net.sbo.mod
 
 import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator
+import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.IdentifierException
 import net.minecraft.client.Minecraft
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.Util
+import net.minecraft.client.gui.components.toasts.SystemToast
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.util.Util
 import net.sbo.mod.compat.IrisCompatibility
-import net.sbo.mod.diana.DianaTracker
-import net.sbo.mod.utils.waypoint.WaypointManager
-import org.slf4j.LoggerFactory
-import net.sbo.mod.settings.Settings
-import net.sbo.mod.utils.game.Mayor
-import net.sbo.mod.utils.events.Register
-import net.sbo.mod.general.PartyCommands
-import net.sbo.mod.general.Pickuplog
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.partyfinder.PartyFinderManager
-import net.sbo.mod.utils.SboKeyBinds
-import net.sbo.mod.guis.Guis
-import net.sbo.mod.partyfinder.PartyCheck
-import net.sbo.mod.partyfinder.PartyPlayer
-import net.sbo.mod.utils.events.ClickActionManager
-import net.sbo.mod.utils.HypixelModApi
-import net.sbo.mod.utils.game.World
-import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.DianaMobDetect
-import net.sbo.mod.diana.DianaTracker.announceLootToParty
+import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.RareMobHighlight
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
+import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.general.HelpCommand
-import net.sbo.mod.overlays.Bobber
-import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.overlays.DianaMobs
-import net.sbo.mod.overlays.DianaStats
-import net.sbo.mod.overlays.Legion
-import net.sbo.mod.overlays.MagicFind
+import net.sbo.mod.general.PartyCommands
+import net.sbo.mod.general.Pickuplog
+import net.sbo.mod.guis.Guis
+import net.sbo.mod.overlays.*
+import net.sbo.mod.partyfinder.PartyCheck
+import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.SboTimerManager
-import net.sbo.mod.utils.SoundHandler
-import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.events.DianaEvents
-import net.sbo.mod.utils.events.SBOEvent
-import net.sbo.mod.utils.overlay.OverlayManager
-import net.sbo.mod.utils.events.SboEventGeneratedRegistry
+import net.sbo.mod.settings.Settings
+import net.sbo.mod.utils.*
+import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
+import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
+import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
-
-import net.fabricmc.api.ClientModInitializer
+import net.sbo.mod.utils.waypoint.WaypointManager
+import org.slf4j.LoggerFactory
 
 object SBOKotlin : ClientModInitializer {
 	@JvmField
@@ -68,18 +55,35 @@ object SBOKotlin : ClientModInitializer {
 	lateinit var version: String
 	lateinit var mcVersion: String
 
-	fun id(path: String): ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, path)
+	fun id(path: String, owner: String = MOD_ID): Identifier = Identifier.fromNamespaceAndPath(owner, path)
+
+    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (IdentifierException) -> Unit): Identifier? {
+        return try {
+            id(path = path, owner = owner)
+        } catch (invalidIdentifierException: IdentifierException) {
+            onInvalid(invalidIdentifierException)
+            null
+        }
+    }
+
+    fun toast(title: Component, message: Component) {
+        mc.toastManager.addToast(
+            SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, title, message)
+        )
+    }
+
+    fun openInBrowser(url: String) {
+        Util.getPlatform().openUri(url)
+    }
 
 	override fun onInitializeClient() {
 		version = FabricLoader.getInstance().getModContainer(MOD_ID)
 			.map { it.metadata.version.friendlyString }
-			.orElse("unknown")
+			.orElse("unknown")!!
 
 		mcVersion = FabricLoader.getInstance().getModContainer("minecraft")
 			.map { it.metadata.version.friendlyString }
-			.orElse("unknown")
-
-
+			.orElse("unknown")!!
 
 		logger.info("Initializing SBO-Kotlin, version: $version...")
 

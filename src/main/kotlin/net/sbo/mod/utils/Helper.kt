@@ -2,46 +2,38 @@ package net.sbo.mod.utils
 
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.component.ItemLore
-import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
+import net.minecraft.world.item.ItemStack
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
-import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.SboDataObject
-import kotlin.concurrent.thread
-import net.sbo.mod.utils.data.DianaItemsData
-import net.sbo.mod.utils.data.DianaMobsData
-import net.sbo.mod.utils.data.npcSellValueMap
-import net.sbo.mod.utils.data.HypixelBazaarResponse
-import net.sbo.mod.utils.data.Item
-import net.sbo.mod.utils.data.SboData
+import net.sbo.mod.utils.data.*
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
-import net.sbo.mod.utils.game.ItemUtils
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
-import net.sbo.mod.utils.waypoint.WaypointManager.onLootshare
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypoints
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.reflect.full.memberProperties
 import java.text.DecimalFormat
-import java.util.Locale
-import java.util.Locale.getDefault
-import java.util.regex.Pattern
-import java.util.concurrent.Executors
+import java.util.*
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.regex.Pattern
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import kotlin.reflect.full.memberProperties
+import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 
 object Helper {
     var lastLootShare: Long = 0L
@@ -70,10 +62,17 @@ object Helper {
             .factory() // virtual threads are daemon by default
     )
 
+    private fun onLootShare() {
+        lastLootShare = System.currentTimeMillis()
+    }
+
+    private fun notifyUserOfLs(mob: String) {
+        Chat.chat("§6[SBO] §eTracking lootshare mob: $mob")
+    }
+
     fun init() {
-        Register.onChatMessageCancable(Pattern.compile("^§e§lLOOT SHARE §fYou received loot for assisting (.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            onLootshare()
-            lastLootShare = System.currentTimeMillis()
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received loot for assisting (.*?)$", Pattern.DOTALL)) { message, matchResult ->
+            onLootShare()
             true
         }
 
@@ -84,16 +83,43 @@ object Helper {
         Register.onTick(20 * 60 * 5) {
             updateItemPriceInfo()
         }
+
+        /*
+        Register.command("sbotestls") {
+            handleDianaMobDeath("Minos Inquisitor", 30.0f)
+            handleDianaMobDeath("Minos Inquisitor", 31.0f)
+            handleDianaMobDeath("Cretan Bull", 5.0f)
+        }
+
+        Register.command("sbotestdrop") {
+            DianaTracker.trackChatRngDrop("Daedalus Stick §b(+§b483 ✯ Magic Find)")
+            DianaTracker.trackChatRngDrop("Minos Relic §b(+§b483 ✯ Magic Find)")
+            DianaTracker.trackChatRngDrop("Crown of Greed")
+            DianaTracker.trackChatRngDrop("Myth the Fish")
+            DianaTracker.trackChatRngDrop("Daedalus Stick")
+            DianaTracker.trackChatRngDrop("Shimmering Wool §b(+§b483 ✯ Magic Find)")
+        }
+        */
+
         updateItemPriceInfo()
     }
 
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
-        val dist = event.entity.distanceTo(mc.player!!)
+        handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!))
+    }
+
+    private fun handleDianaMobDeath(name: String, dist: Float) {
+        val nearby = dist <= 30
+        val last = DianaTracker.lastSpawnedMob
+        val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
-            event.name.contains("Minos Inquisitor") -> {
+            name.contains("Minos Inquisitor") -> {
+                removeNearbyRareMobWaypoints()
+                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
                     hasTrackedInq = true
+                    notifyUserOfLs(name)
                     DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
                     sleep(2000) {
                         hasTrackedInq = false
@@ -101,9 +127,12 @@ object Helper {
                 }
                 lastInqDeath = System.currentTimeMillis()
             }
-            event.name.contains("King Minos") -> {
+            name.contains("King Minos") -> {
+                removeNearbyRareMobWaypoints()
+                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
                     hasTrackedKing = true
+                    notifyUserOfLs(name)
                     DianaTracker.trackItem("KING_MINOS_LS", 1)
                     sleep(2000) {
                         hasTrackedKing = false
@@ -111,9 +140,11 @@ object Helper {
                 }
                 lastKingDeath = System.currentTimeMillis()
             }
-            event.name.contains("Sphinx") -> {
+            name.contains("Sphinx") -> {
+                removeNearbyRareMobWaypoints()
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
+                    notifyUserOfLs(name)
                     DianaTracker.trackItem("SPHINX_LS", 1)
                     sleep(2000) {
                         hasTrackedSphinx = false
@@ -121,9 +152,12 @@ object Helper {
                 }
                 lastSphinxDeath = System.currentTimeMillis()
             }
-            event.name.contains("Manticore") -> {
+            name.contains("Manticore") -> {
+                removeNearbyRareMobWaypoints()
+                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
                     hasTrackedManti = true
+                    notifyUserOfLs(name)
                     DianaTracker.trackItem("MANTICORE_LS", 1)
                     sleep(2000) {
                         hasTrackedManti = false
@@ -133,7 +167,7 @@ object Helper {
             }
         }
 
-        if (dist <= 30) {
+        if (nearby) {
             allowSackTracking = true
             lastDianaMobDeath = System.currentTimeMillis()
         }
@@ -353,15 +387,14 @@ object Helper {
             val stack: ItemStack = inventory[slot]
 
             if (!stack.isEmpty) {
-                val customData = stack.get(DataComponents.CUSTOM_DATA)
                 var id: String
                 var item: Item
-                val nbt = customData?.copyTag()
-                val sbId = ItemUtils.getSBID(customData, nbt)
+                val lookup = ItemLookup(stack)
+                val sbId = lookup.sbId
                 // print for debugging the lore lines
                 var isChimera = false
                 if (sbId == "ENCHANTED_BOOK") {
-                    val lore = ItemUtils.getLoreList(stack)
+                    val lore = lookup.loreList
                     for (line in lore) {
                         if (line.contains("Chimera")) {
                             isChimera = true
@@ -373,18 +406,18 @@ object Helper {
                 if (!isChimera) {
                     item = Item(
                         sbId,
-                        ItemUtils.getUUID(customData, nbt),
-                        ItemUtils.getDisplayName(stack),
-                        ItemUtils.getTimestamp(customData, nbt),
+                        lookup.uuid,
+                        lookup.displayName,
+                        lookup.timestamp,
                         stack.count
                     )
                     id = if (item.itemUUID != "") item.itemUUID else item.itemId
                 } else {
                     item = Item(
                         "CHIMERA",
-                        ItemUtils.getUUID(customData, nbt),
+                        lookup.uuid,
                         "§d§lChimera",
-                        ItemUtils.getTimestamp(customData, nbt),
+                        lookup.timestamp,
                         stack.count
                     )
                     id = "CHIMERA"
@@ -401,14 +434,6 @@ object Helper {
         return invItems
     }
 
-    fun timestampToDate(timestamp: Long): String {
-        if (timestamp <= 0) return "Unknown"
-        val date = java.util.Date(timestamp)
-        val format = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-        format.timeZone = java.util.TimeZone.getTimeZone("UTC")
-        return format.format(date)
-    }
-
     fun toUpperSnakeCase(input: String): String {
         return input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
     }
@@ -421,7 +446,8 @@ object Helper {
         val inv = Player.getPlayerInventory()
         for (i in inv.indices) {
             val stack = inv[i]
-            if (!stack.isEmpty && ItemUtils.getSBID(stack.get(DataComponents.CUSTOM_DATA)) == sbId) {
+            val lookup = ItemLookup(stack)
+            if (!stack.isEmpty && lookup.sbId == sbId) {
                 return true
             }
         }
@@ -430,19 +456,15 @@ object Helper {
 
     private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
 
-    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && Helper.hasMythologicalRitualActive() && World.getWorld() == "Hub"
-
-    fun getGuiName(): String {
-        return currentScreen?.title?.string ?: ""
-    }
+    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && hasMythologicalRitualActive() && World.getWorld() == "Hub"
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
         mc.gui.apply {
             setTimes(fadeIn, time, fadeOut)
             if (title != null)
-                setTitle(net.minecraft.network.chat.Component.nullToEmpty(title))
+                setTitle(Component.nullToEmpty(title))
             if (subtitle != null)
-                setSubtitle(net.minecraft.network.chat.Component.nullToEmpty(subtitle))
+                setSubtitle(Component.nullToEmpty(subtitle))
         }
     }
 
@@ -456,6 +478,7 @@ object Helper {
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace('&', '§')
+            .replace("+ ✯ Magic Find ", "") // prevent nonsense magic find when hypixel doesn't put it into the message (mob killed by someone else)
 
         return Pair(true, resultText)
     }
@@ -490,7 +513,6 @@ object Helper {
         val mobs = SboDataObject.dianaTrackerMayor.mobs
         val items = SboDataObject.dianaTrackerMayor.items
         val sboData = SboDataObject.sboData
-        val msg = message
 
         val kingPercent = calcPercentOne(items, mobs, "KING_MINOS")
         val manticorePercent = calcPercentOne(items, mobs, "MANTICORE")
@@ -500,22 +522,22 @@ object Helper {
         when (mob.lowercase()) {
             "minos inquisitor", "inq" -> {
                 val since = sboData.mobsSinceInq
-                return msg.replace("{since}", since.toString()).replace("{chance}", inqPercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", inqPercent)
             }
 
             "king minos", "king" -> {
                 val since = sboData.mobsSinceKing
-                return msg.replace("{since}", since.toString()).replace("{chance}", kingPercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", kingPercent)
             }
 
             "sphinx" -> {
                 val since = sboData.mobsSinceSphinx
-                return msg.replace("{since}", since.toString()).replace("{chance}", sphinxPercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", sphinxPercent)
             }
 
             "manticore", "manti" -> {
                 val since = sboData.mobsSinceManti
-                return msg.replace("{since}", since.toString()).replace("{chance}", manticorePercent)
+                return message.replace("{since}", since.toString()).replace("{chance}", manticorePercent)
             }
             else -> return ""
         }
@@ -536,18 +558,32 @@ object Helper {
 
     fun updateItemPriceInfo() {
         Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
-            .toJson<List<Map<String, Map<String, Long>>>> { json ->
+            .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                if (priceDataAh.isEmpty()) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary, and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
+                }
             }
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
-            .toJson<HypixelBazaarResponse> {
+            .toJson<HypixelBazaarResponse>(true) {
                 priceDataBazaar = it
                 DianaLoot.updateLines()
             }.error { error ->
-//                Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                if (priceDataBazaar == null) {
+                    // no price data available - notify user
+                    Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary, and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
+                }
             }
     }
 
@@ -577,7 +613,8 @@ object Helper {
         val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
-        val bestUnitPrice = if (npcPrice > ahPrice) npcPrice else ahPrice
+        val preferNpc = Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
+        val bestUnitPrice = if (npcPrice > ahPrice || preferNpc) npcPrice else ahPrice
 
         return (bestUnitPrice * amount).roundToLong()
     }
@@ -601,18 +638,18 @@ object Helper {
 
     fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
-        if (hours <= 0.01) return 0.0
+        if (hours <= 0.0) return 0.0
         val totalBurrows = tracker.items.TOTAL_BURROWS.toDouble()
         val burrowsPerHr = totalBurrows / hours
-        return BigDecimal(burrowsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
+        return BigDecimal.valueOf(burrowsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
     }
 
     fun getMobsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
-        if (hours <= 0.01) return 0.0
+        if (hours <= 0.0) return 0.0
         val totalMobs = tracker.mobs.TOTAL_MOBS.toDouble()
         val mobsPerHr = totalMobs / hours
-        return BigDecimal(mobsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
+        return BigDecimal.valueOf(mobsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
     }
 
     fun getChance(mf: Int, looting: Int,rarity: String, lootshare: Boolean = false): Map<String, Double> {

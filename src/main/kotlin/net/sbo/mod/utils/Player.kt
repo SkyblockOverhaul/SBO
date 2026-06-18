@@ -3,7 +3,7 @@ package net.sbo.mod.utils
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.math.SboVec
-import java.util.UUID
+import java.util.*
 
 object Player {
     fun getLastPosition(): SboVec {

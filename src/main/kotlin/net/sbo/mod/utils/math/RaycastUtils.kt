@@ -7,7 +7,7 @@ import kotlin.math.min
 
 /**
  * Utility functions for raycasting and geometric intersections.
- * The credits to this object go fully to the Skyhanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/RaycastUtils.kt
+ * The credits to this object go fully to the SkyHanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/RaycastUtils.kt
  */
 object RaycastUtils {
     const val EPSILON = 1e-12

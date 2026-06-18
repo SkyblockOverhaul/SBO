@@ -7,18 +7,14 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.minecraft.world.InteractionResult
+import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
-import net.sbo.mod.utils.events.impl.game.ChatMessageAllowEvent
-import net.sbo.mod.utils.events.impl.game.ChatMessageEvent
-import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import net.sbo.mod.utils.events.impl.game.GameCloseEvent
-import net.sbo.mod.utils.events.impl.game.TickEvent
-import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
+import net.sbo.mod.utils.events.impl.game.*
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickAfter
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickBefore
@@ -26,7 +22,12 @@ import net.sbo.mod.utils.events.impl.guis.GuiPostRenderEvent
 import kotlin.reflect.KClass
 
 object SBOEvent {
-    private val listeners = mutableMapOf<KClass<*>, MutableList<(Any) -> Unit>>()
+    private val listeners = java.util.concurrent.ConcurrentHashMap<KClass<*>, MutableList<Listener>>()
+
+    private data class Listener(
+        val callback: (Any) -> Unit,
+        val priority: Int = SboEvent.Priority.NORMAL
+    )
 
     /**
      * Initialize the event system by registering Fabric events to emit custom events.
@@ -78,7 +79,7 @@ object SBOEvent {
          * Allows for filtering of spammy messages.
          */
         ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
-            val event = ChatMessageAllowEvent(message, signed, true)
+            val event = ChatMessageAllowEvent(message, true)
             emit(event)
             event.isAllowed
         }
@@ -140,22 +141,27 @@ object SBOEvent {
         }
     }
 
-    /** Register a listener for a specific event type. */
-    fun <T : Any> on(eventType: KClass<T>, callback: (T) -> Unit) {
+    /** Register a listener for a specific event type. Returns an unregister function. */
+    fun <T : Any> on(eventType: KClass<T>, priority: Int = SboEvent.Priority.NORMAL, callback: (T) -> Unit): () -> Unit {
         val callbacks = listeners.getOrPut(eventType) { mutableListOf() }
         @Suppress("UNCHECKED_CAST")
-        callbacks.add(callback as (Any) -> Unit)
+        val listener = Listener(callback as (Any) -> Unit, priority)
+        callbacks.add(listener)
+        callbacks.sortByDescending { it.priority }
+        return {
+            callbacks.remove(listener)
+        }
     }
 
     /** Emit an event to all registered listeners. */
     fun emit(event: Any) {
-        listeners[event::class]?.forEach { callback ->
-            callback(event)
+        listeners[event::class]?.forEach { listener ->
+            listener.callback(event)
         }
     }
 
-    /** Convenience inline version for type inference. */
-    inline fun <reified T : Any> on(noinline callback: (T) -> Unit) {
-        on(T::class, callback)
+    /** Convenience inline version for type inference. Returns an unregister function. */
+    inline fun <reified T : Any> on(priority: Int = SboEvent.Priority.NORMAL, noinline callback: (T) -> Unit): () -> Unit {
+        return on(T::class, priority, callback)
     }
 }

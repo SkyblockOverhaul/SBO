@@ -1,15 +1,14 @@
 package net.sbo.mod.diana.guesses
 
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.phys.AABB
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.core.particles.DustParticleOptions
 import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.math.RaycastUtils
+import net.sbo.mod.utils.NumberUtil.roundTo
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
@@ -17,19 +16,16 @@ import net.sbo.mod.utils.events.impl.game.TickEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
-import java.util.regex.Pattern
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
-import kotlin.math.pow
 import kotlin.math.sign
 import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 //todo: when not precise and normal guess was used remove latest arrow guess waypoint
@@ -54,25 +50,39 @@ object ArrowGuessBurrow {
 
     private val allowedBlocksAboveGround = buildList {
         add(Blocks.AIR)
+        add(Blocks.DANDELION)
         add(Blocks.SPRUCE_FENCE)
-        add(Blocks.WILDFLOWERS)
-        add(Blocks.TALL_GRASS)
         add(Blocks.OAK_LEAVES)
+        add(Blocks.SPRUCE_LEAVES)
         add(Blocks.BIRCH_LEAVES)
         add(Blocks.JUNGLE_LEAVES)
         add(Blocks.ACACIA_LEAVES)
         add(Blocks.DARK_OAK_LEAVES)
-        add(Blocks.SPRUCE_LEAVES)
+        add(Blocks.SHORT_GRASS)
+        add(Blocks.FERN)
+        add(Blocks.SUNFLOWER)
+        add(Blocks.LILAC)
+        add(Blocks.TALL_GRASS)
+        add(Blocks.LARGE_FERN)
+        add(Blocks.ROSE_BUSH)
+        add(Blocks.PEONY)
+        add(Blocks.POPPY)
+        add(Blocks.BLUE_ORCHID)
+        add(Blocks.ALLIUM)
+        add(Blocks.AZURE_BLUET)
+        add(Blocks.RED_TULIP)
+        add(Blocks.ORANGE_TULIP)
+        add(Blocks.WHITE_TULIP)
+        add(Blocks.PINK_TULIP)
+        add(Blocks.OXEYE_DAISY)
     }
 
-    private val recentArrowParticles = TimeLimitedSet<SboVec>(1.minutes)
+    private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
     private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
 
     private var lastBlockClicked: SboVec? = null
 
     private val allGuesses = CopyOnWriteArrayList<GuessEntry>()
-
-    private var newArrow = true
 
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
@@ -81,10 +91,9 @@ object ArrowGuessBurrow {
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)
-        if (!location.isCloseToLastBurrow()) return
-        if(!recentArrowParticles.add(location)) return
+        if (!location.isCloseToLastBurrow() || packet.distanceToPlayer() > 6) return
 
-        val range = getArrowRange(packet.xDist, packet.yDist) ?: return
+        val range = getArrowRange(packet.xDist, packet.yDist, packet.zDist) ?: return
         locations.add(location)
         range.processArrowDetection()
     }
@@ -107,19 +116,8 @@ object ArrowGuessBurrow {
         val maxChain = event.maxBurrow
         if (currentChain != maxChain) {
             locations.clear()
-            newArrow = true
         }
         if (currentChain == 1) return
-
-        val containList = allGuesses.filter { guessEntry ->
-            guessEntry.guesses.any { guess -> guess.distanceTo(event.lastBlock) <= 3 }
-        }
-
-        containList.forEach { entry ->
-            entry.removeGuesses()
-        }
-
-        allGuesses.removeAll(containList)
     }
 
     private fun detectArrow(): RaycastUtils.Ray? {
@@ -235,9 +233,9 @@ object ArrowGuessBurrow {
 
             val distanceFromOrigin = candidatePoint.distance(ray.origin)
 
-            val scaledDistance = (distanceToRay * 500000 / distanceFromOrigin).roundTo(5)
+            val scaledDistance = (distanceToRay * 500000 / distanceFromOrigin)
 
-            candidates[candidateBlock] = Pair(scaledDistance.roundTo(5), distanceFromOrigin)
+            candidates[candidateBlock] = Pair(scaledDistance.roundTo(2), distanceFromOrigin)
         }
         if (candidates.isEmpty()) return null
 
@@ -251,7 +249,7 @@ object ArrowGuessBurrow {
 
         if (Diana.showTitleWhenInaccurate) {
             if (withinRange.size > 1) {
-                if (!spadeTitleShown) Helper.showTitle("§c Use Spade!", "", 0, 30, 0)
+                if (!spadeTitleShown) BurrowDetector.requestSpade()
                 spadeTitleShown = true
             } else {
                 spadeTitleShown = false
@@ -269,7 +267,6 @@ object ArrowGuessBurrow {
         val playerPos = player.position().toSboVec()
 
         for (guess in allGuesses) {
-            if (guess == null) continue
             val current = guess.getCurrent()
             if (!isBlockValid(current)) {
                 guess.moveToNext()
@@ -286,10 +283,10 @@ object ArrowGuessBurrow {
         }
     }
 
-    private fun getArrowRange(offsetX: Float, offsetY: Float): IntRange? {
-        if (offsetY == 128.0f) return 0..117 //Green Close
-        if (offsetY == 255.0f && offsetX == 255.0f) return 112..282 //Red Medium
-        if (offsetX == 255.0f) return 281..600 //Black Far
+    private fun getArrowRange(offsetX: Float, offsetY: Float, offsetZ: Float): IntRange? {
+        if (offsetX == 0f && offsetY == 128f && offsetZ == 0f) return 0..117 //Yellow Close
+        if (offsetX == 255f && offsetY == 255f && offsetZ == 0f) return 112..282 //Red Medium
+        if (offsetX == 255f && offsetY == 0f && offsetZ == 0f) return 281..600 //Black Far
         return null
     }
 
@@ -302,6 +299,10 @@ object ArrowGuessBurrow {
 
     internal fun isBlockValid(pos: SboVec): Boolean {
         if (!pos.isInLoadedChunk()) return true
+        return isBlockTrulyValid(pos)
+    }
+
+    internal fun isBlockTrulyValid(pos: SboVec): Boolean {
         val isGround = pos.getBlockAt() == Blocks.GRASS_BLOCK
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
         return isGround && isValidBlockAbove
@@ -315,15 +316,10 @@ object ArrowGuessBurrow {
         return sqrt(dx * dx + dy * dy + dz * dz)
     }
 
-    private fun Double.roundTo(decimals: Int): Double {
-        val factor = 10.0.pow(decimals)
-        return kotlin.math.round(this * factor) / factor
-    }
-
     private fun AABB.isInside(vec: SboVec): Boolean {
         return vec.x > this.minX && vec.x <= this.maxX &&
                 vec.y > this.minY && vec.y <= this.maxY &&
-                vec.z > this.minZ && vec.z <= this.maxZ;
+                vec.z > this.minZ && vec.z <= this.maxZ
     }
 
     private fun ClientboundLevelParticlesPacket.isRelevant() : Boolean {
@@ -334,15 +330,17 @@ object ArrowGuessBurrow {
         return parameters is DustParticleOptions
     }
 
-    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) < 5 } ?: false
+    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) <= 6 } ?: false
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this
+        if(!recentFoundArrows.add(arrow)) return this
+
         locations.clear()
         findClosestValidBlockToRayNew(arrow, this)?.let {
             WaypointManager.addArrowGuess(it)
-            newArrow = false
         }
+
         return this
     }
 }

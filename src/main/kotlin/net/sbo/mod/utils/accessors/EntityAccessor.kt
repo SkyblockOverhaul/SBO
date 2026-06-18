@@ -1,11 +1,10 @@
 package net.sbo.mod.utils.accessors
 
 import net.minecraft.world.entity.Entity
-import net.minecraft.ChatFormatting
 import java.awt.Color
 
 /**
- * Interface to inject into Entity.class via Mixin
+ * Interface to inject via Mixin
  */
 internal interface EntityAccessor {
     fun `sbo$setGlowing`(glowing: Boolean)

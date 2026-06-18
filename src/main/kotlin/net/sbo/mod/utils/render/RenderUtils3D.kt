@@ -1,32 +1,25 @@
 package net.sbo.mod.utils.render
 
-import com.mojang.blaze3d.systems.RenderSystem
-import net.fabricmc.fabric.api.client.rendering.v1.*
-import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.*
-import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.Camera
+import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.minecraft.client.Camera
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.gizmos.GizmoStyle
+import net.minecraft.gizmos.Gizmos
+import net.minecraft.util.ARGB
+import net.minecraft.util.Mth
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
-import com.mojang.blaze3d.vertex.PoseStack
-import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.util.Mth
-import net.minecraft.util.ARGB
-import net.sbo.mod.settings.categories.Diana
-
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-
-//#if MC > 1.21.10
-//$$ import 	net.minecraft.gizmos.Gizmos
-//$$ import 	net.minecraft.gizmos.GizmoStyle
-//$$ import net.minecraft.world.phys.AABB
-//#endif
 
 object RenderUtils3D {
     fun renderWaypoint(
@@ -42,7 +35,6 @@ object RenderUtils3D {
         renderBeam: Boolean
     ) {
         drawFilledBox(
-            context,
             pos,
             colorComponents,
             alpha,
@@ -86,63 +78,28 @@ object RenderUtils3D {
 
     /**
      * Draws a filled box at the specified world coordinates.
-     * @param context The world render context.
      * @param pos The position in the world where the box should be drawn.
-     * @param width The width of the box.
-     * @param height The height of the box.
-     * @param depth The depth of the box.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to 1.0).
      * @param alpha The alpha value for transparency (0.0 to 1.0).
      * @param throughWalls Whether the box should be drawn through walls.
      */
     fun drawFilledBox(
-        context: WorldRenderContext,
         pos: SboVec,
         colorComponents: FloatArray,
         alpha: Float,
         throughWalls: Boolean
     ) {
-        //#if MC > 1.21.10
-        //$$ val r = (colorComponents[0].coerceIn(0f, 1f) * 255).toInt()
-        //$$ val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
-        //$$ val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
-        //$$ val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
-        //$$ val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
-        //$$ val bPos = pos.toBlockPos().immutable()
-        //$$ if (throughWalls) {
-        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
-        //$$ } else {
-        //$$     Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor))
-        //$$ }
-        //#else
-        val width = 1.0
-        val height = 1.0
-        val depth = 1.0
-        context.pushPop {
-            val cameraPos = context.getCamera().position
-            translate(pos.x + 0.5 - cameraPos.x, pos.y - cameraPos.y, pos.z + 0.5 - cameraPos.z)
-
-            val consumers = context.consumers()!!
-
-            val renderLayer = if (throughWalls) SboRenderLayers.FILLED_BOX_THROUGH_WALLS else SboRenderLayers.FILLED_BOX
-            val buffer = consumers.getBuffer(renderLayer)
-
-            val minX = -width / 2.0
-            val minZ = -depth / 2.0
-            val maxX = width / 2.0
-            val maxZ = depth / 2.0
-
-            val minY = 0.0
-            val maxY = height
-
-            ShapeRenderer.addChainedFilledBoxVertices(
-                this, buffer,
-                minX, minY, minZ,
-                maxX, maxY, maxZ,
-                colorComponents[0], colorComponents[1], colorComponents[2], alpha
-            )
+        val r = (colorComponents[0].coerceIn(0f, 1f) * 255).toInt()
+        val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
+        val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
+        val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
+        val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
+        val bPos = pos.toBlockPos().immutable()
+        if (throughWalls) {
+            Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
+        } else {
+            Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor))
         }
-        //#endif
     }
 
     /**
@@ -166,9 +123,9 @@ object RenderUtils3D {
     ) {
         context.pushPop {
             val camera = context.getCamera()
-            val cameraPos = camera.position
-            val cameraYaw = camera.yRot
-            val cameraPitch = camera.xRot
+            val cameraPos = camera.position()
+            val cameraYaw = camera.yRot()
+            val cameraPitch = camera.xRot()
             val textRenderer = mc.font
 
             val textWorldPos = Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
@@ -223,12 +180,12 @@ object RenderUtils3D {
     ) {
         context.pushPop {
             val camera = context.getCamera()
-            val cameraPos = camera.position
+            val cameraPos = camera.position()
 
             translate(cameraPos.reverse())
 
             val consumers = context.consumers()
-            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot, camera.yRot))
+            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
             val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
             val lineDir = endPos.subtract(startPos)
@@ -242,36 +199,28 @@ object RenderUtils3D {
             val ny = upVec.y.toFloat()
             val nz = upVec.z.toFloat()
 
-            withLineWidth(lineWidth) {
-                val renderLayer = if (throughWalls) SboRenderLayers.LINES_THROUGH_WALLS else SboRenderLayers.LINES
-                val buffer = consumers.getBuffer(renderLayer)
-                val matrixEntry = last()
+            val renderLayer = if (throughWalls) SboRenderLayers.LINES_THROUGH_WALLS else SboRenderLayers.LINES
+            val buffer = consumers.getBuffer(renderLayer)
+            val matrixEntry = last()
 
-                buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
-                    .setNormal(matrixEntry, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    //#if MC > 1.21.10
-                    //$$ .setLineWidth(lineWidth)
-                    //#endif
+            buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
+                .setNormal(matrixEntry, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
 
-
-                buffer.addVertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
-                    .setNormal(matrixEntry, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    //#if MC > 1.21.10
-                    //$$ .setLineWidth(lineWidth)
-                    //#endif
-            }
+            buffer.addVertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
+                .setNormal(matrixEntry, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
         }
     }
     /**
      * Renders a beacon beam at the given location.
-     * @param context The world render context.
+     * @param ctx The world render context.
      * @param vec The position in the world where the beacon beam should be rendered.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to
      * @param phase Whether the beam should render through walls.
      */
-    @JvmOverloads
     fun renderBeaconBeam(
         ctx: WorldRenderContext,
         vec: SboVec,
@@ -279,12 +228,12 @@ object RenderUtils3D {
         phase: Boolean = false
     ) {
         val player = mc.player ?: return
-        if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.removeBeam) return
+        if (vec.center().distanceTo(player.x, player.y, player.z) < 8) return
 
         val consumers = ctx.consumers()
-        val wolrd = mc.level ?: return
+        val world = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
-        val cam = ctx.getCamera().position
+        val cam = ctx.getCamera().position()
         val beamColor = floatArrayOf(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f)
 
         ctx.pushPop {
@@ -293,7 +242,7 @@ object RenderUtils3D {
             renderBeam(
                 consumers,
                 partialTicks,
-                wolrd.gameTime,
+                world.gameTime,
                 Color(beamColor[0], beamColor[1], beamColor[2]).rgb,
                 phase
             )
@@ -307,8 +256,8 @@ object RenderUtils3D {
         color: Int,
         phase: Boolean = false
     ) {
-        val opaqueLayyer = if (phase) SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_OPAQUE
-        val transluscentLayer = if (phase) SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_TRANSLUCENT
+        val opaqueLayer = if (phase) SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_OPAQUE
+        val translucentLayer = if (phase) SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_TRANSLUCENT
         val heightScale = 1f
         val height = 320
         val innerRadius = 0.2f
@@ -326,7 +275,7 @@ object RenderUtils3D {
                 mulPose(Axis.YP.rotationDegrees(time * 2.25f - 45f))
 
                 renderBeamLayer(
-                    vertices.getBuffer(opaqueLayyer),
+                    vertices.getBuffer(opaqueLayer),
                     color,
                     0f,
                     innerRadius,
@@ -344,7 +293,7 @@ object RenderUtils3D {
             renderYOffest = height.toFloat() * heightScale + animationStep
 
             renderBeamLayer(
-                vertices.getBuffer(transluscentLayer),
+                vertices.getBuffer(translucentLayer),
                 ARGB.color(32, color),
                 -outerRadius,
                 -outerRadius,
@@ -420,23 +369,12 @@ object RenderUtils3D {
         return gameRenderer().mainCamera
     }
 
-    private inline fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
+    private fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
         val matrix = matrices()
         matrix.pushPop(function)
     }
 
-    private inline fun PoseStack.withLineWidth(lineWidth: Float, function: PoseStack.() -> Unit) {
-        //#if MC > 1.21.10
-        //$$ function()
-        //#else
-        val prevLineWidth = RenderSystem.getShaderLineWidth()
-        RenderSystem.lineWidth(lineWidth)
-        function()
-        RenderSystem.lineWidth(prevLineWidth)
-        //#endif
-    }
-
-    private inline fun PoseStack.pushPop(function: PoseStack.() -> Unit) {
+    private fun PoseStack.pushPop(function: PoseStack.() -> Unit) {
         this.pushPose()
         function()
         this.popPose()

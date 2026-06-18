@@ -1,24 +1,23 @@
 package net.sbo.mod.guis
 
 import gg.essential.universal.UScreen
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
-import net.minecraft.client.gui.components.toasts.SystemToast
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.Style
-import net.minecraft.ChatFormatting
 
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
-    public var achievementsGui: AchievementsGUI? = null
+    var achievementsGui: AchievementsGUI? = null
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
@@ -30,10 +29,14 @@ object Guis {
                 Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
                 return
             }
-            mc.getToastManager().addToast(
-                SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("SBO").setStyle(
-                    Style.EMPTY.withColor(ChatFormatting.GOLD)), Component.literal("Join skyblock before opening Party Finder!").setStyle(
-                    Style.EMPTY.withColor(ChatFormatting.RED))))
+            SBOKotlin.toast(
+                    Component.literal("SBO").setStyle(
+                        Style.EMPTY.withColor(ChatFormatting.GOLD)
+                    ),
+                    Component.literal("Join skyblock before opening Party Finder!").setStyle(
+                        Style.EMPTY.withColor(ChatFormatting.RED)
+                    )
+            )
             return
         }
         mc.schedule {

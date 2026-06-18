@@ -1,7 +1,5 @@
 package net.sbo.mod.settings.categories
 
-import net.sbo.mod.SBOKotlin
-import net.sbo.mod.utils.data.SboDataObject
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import gg.essential.universal.UDesktop
 import net.fabricmc.loader.api.FabricLoader
@@ -9,35 +7,23 @@ import java.awt.Color
 import java.io.File
 
 object Customization : CategoryKt("Customization") {
-    val ALL_SOUNDS_FILENAMES: List<String> = try {
-        val directory = File(File(FabricLoader.getInstance().configDir.toFile(), SboDataObject.dataDir), "sounds")
-        directory.mkdirs()
-
-        if (directory.isDirectory) {
-            directory.listFiles { file -> file.extension == "ogg" }
-                ?.map { it.nameWithoutExtension }
-                ?.sorted()
-                ?: emptyList()
-        } else {
-            SBOKotlin.logger.warn("Sounds directory was a file, expected directory at: $directory")
-            SBOKotlin.logger.warn("You should delete and re-create it as a directory and put the sounds under that directory.")
-            emptyList()
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        emptyList()
-    }
-
     init {
         separator {
             this.title = "Waypoint Customization"
         }
     }
 
-    var guessColor by color(
+    var ClosestGuessColor by color(
+        Color(0.6f, 0.2f, 0.8f).rgb) {
+        this.name = Literal("Closest Guess Color")
+        this.description = Literal("Pick a color for closest guess")
+        this.allowAlpha = true
+    }
+
+    var OtherGuessColor by color(
         Color(0.0f, 0.964f, 1.0f).rgb) {
-        this.name = Literal("Guess Color")
-        this.description = Literal("Pick a color for your guess")
+        this.name = Literal("Other Guess Color")
+        this.description = Literal("Pick a color for other guesses")
         this.allowAlpha = true
     }
 
@@ -45,13 +31,6 @@ object Customization : CategoryKt("Customization") {
         Color(0.333f, 1.0f, 0.333f).rgb) {
         this.name = Literal("Start Burrow Color")
         this.description = Literal("Pick a color for start burrows")
-        this.allowAlpha = true
-    }
-    
-    var focusedColor by color(
-        Color(0.6f, 0.2f, 0.8f).rgb) {
-        this.name = Literal("Focused Color")
-        this.description = Literal("Pick a color for your focused guess")
         this.allowAlpha = true
     }
 
@@ -67,6 +46,37 @@ object Customization : CategoryKt("Customization") {
         this.name = Literal("Treasure Burrow Color")
         this.description = Literal("Pick a color for treasure burrows")
         this.allowAlpha = true
+    }
+
+    var RareMobColor by color(
+        Color(1.0f, 0.84f, 0.0f).rgb) {
+        this.name = Literal("Rare Mob Waypoint Color")
+        this.description = Literal("Pick a color for rare mob waypoints")
+        this.allowAlpha = true
+    }
+
+    var OtherWaypointColor by color(
+        Color(0.0f, 0.2f, 1.0f).rgb) {
+        this.name = Literal("Other Waypoint Color")
+        this.description = Literal("Pick a color for other waypoints, e.g., waypoints created from non-SBO player-sent coordinates (Separate from rare mob color).")
+        this.allowAlpha = true
+    }
+
+    var dynamicWaypointOpacity by boolean(true) {
+        this.name = Literal("Dynamic Waypoint Opacity")
+        this.description = Literal("Uses a dynamic waypoint opacity that changes based on how far or close you are to the waypoints. If you enable this, the Waypoint Opacity setting below will not take effect.")
+    }
+
+    var waypointOpacity by int(50) {
+        this.range = 0..100
+        this.name = Literal("Waypoint Opacity")
+        this.description = Literal("The opacity of the rendered waypoints. 50 will make it 50% transparent, 100% fully opaque, 0% fully invisible, etc. (default 50)")
+    }
+
+    var waypointTextOpacity by int(100) {
+        this.range = 0..100
+        this.name = Literal("Waypoint Text Opacity")
+        this.description = Literal("The opacity of the text on the rendered waypoints. 50 will make it 50% transparent, 100% fully opaque, 0% fully invisible, etc. (default 100)")
     }
 
     init {
@@ -85,6 +95,17 @@ object Customization : CategoryKt("Customization") {
         this.description = Literal("Scale of the waypoint text")
         this.range = 0.3f..2.0f
         this.slider = true
+    }
+
+    var showDistanceCutoff by int(50) {
+        this.range = 0..150
+        this.name = Literal("Show Distance & Times Dug Cutoff")
+        this.description = Literal("The distance cutoff at which the distance text disappears, and the times dug text appears. For example if set to 50 will not display the distance text if 50m or closer, and will only display the times dug when 50m or closer. (0 to always show distance and times dug, if times dug is enabled)")
+    }
+
+    var showTimesDug by boolean(true) {
+        this.name = Literal("Show Times Dug")
+        this.description = Literal("Shows times dug on the waypoint text for known burrows.")
     }
 
     init {
@@ -270,61 +291,14 @@ object Customization : CategoryKt("Customization") {
         this.slider = true
     }
 
-    var sprSound by strings("") {
-        this.name = Literal("Shelmet/Plushie/Remedies Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a Shelmet/Plushie/Remedies. (enter filename)")
+    var miscDropSound by strings("") {
+        this.name = Literal("Misc Drop Sound")
+        this.description = Literal("Set the sound that plays when you drop a crown of greed, washed-up souvenir, dwarf turtle shelmet, crochet tiger plushie, antique remedies, cretan urn or hilt of revelations. (enter filename)")
     }
-    var sprVolume by float(1.0f) {
-        this.name = Literal("Shelmet/Plushie/Remedies Drop Volume")
-        this.description = Literal("Set the volume of the Shelmet/Plushie/Remedies drop sound")
+    var miscDropVolume by float(1.0f) {
+        this.name = Literal("Misc Drop Volume")
+        this.description = Literal("Set the volume of the misc drop sound")
         this.range = 0.0f..1.0f
         this.slider = true
-    }
-
-    fun resetSoundCustomizationToDefaults() {
-        Customization.rareMobSound = arrayOf("exporb")
-        Customization.rareMobVolume = 1.0f
-
-        Customization.inqSound = arrayOf("")
-        Customization.inqVolume = 1.0f
-
-        Customization.sphinxSound = arrayOf("")
-        Customization.sphinxVolume = 1.0f
-
-        Customization.kingSound = arrayOf("")
-        Customization.kingVolume = 1.0f
-
-        Customization.mantiSound = arrayOf("")
-        Customization.mantiVolume = 1.0f
-
-        Customization.cocoonSound = arrayOf("")
-        Customization.cocoonVolume = 1.0f
-
-        Customization.burrowSound = arrayOf("")
-        Customization.burrowVolume = 1.0f
-
-        Customization.chimSound = arrayOf("")
-        Customization.chimVolume = 1.0f
-
-        Customization.bfSound = arrayOf("")
-        Customization.bfVolume = 1.0f
-
-        Customization.coreSound = arrayOf("")
-        Customization.coreVolume = 1.0f
-
-        Customization.stingerSound = arrayOf("")
-        Customization.stingerVolume = 1.0f
-
-        Customization.woolSound = arrayOf("")
-        Customization.woolVolume = 1.0f
-
-        Customization.relicSound = arrayOf("")
-        Customization.relicVolume = 1.0f
-
-        Customization.stickSound = arrayOf("")
-        Customization.stickVolume = 1.0f
-
-        Customization.sprSound = arrayOf("")
-        Customization.sprVolume = 1.0f
     }
 }

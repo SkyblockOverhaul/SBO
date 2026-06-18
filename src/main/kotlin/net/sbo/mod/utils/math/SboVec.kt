@@ -1,8 +1,8 @@
 package net.sbo.mod.utils.math
 
+import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin
 import kotlin.math.absoluteValue
@@ -12,12 +12,18 @@ import kotlin.math.sqrt
 
 /**
  * A 3D vector class for mathematical operations and Minecraft world interactions.
- * The credits to this class go fully to the Skyhanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/LorenzVec.kt
+ * The credits to this class go fully to the SkyHanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/LorenzVec.kt
  */
 data class SboVec(var x: Double, var y: Double, var z: Double) {
 
     fun distanceTo(other: SboVec): Double {
         return sqrt((other.x - this.x).pow(2) + (other.y - this.y).pow(2) + (other.z - this.z).pow(2))
+    }
+
+    fun distanceToIgnoringY(other: SboVec): Double {
+        val dx = x - other.x
+        val dz = z - other.z
+        return sqrt(dx * dx + dz * dz)
     }
 
     fun distanceTo(x: Double, y: Double, z: Double): Double {
@@ -35,8 +41,6 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
     operator fun times(d: Double): SboVec {
         return SboVec(this.x * d, this.y * d, this.z * d)
     }
-
-    fun clone(): SboVec = this.copy()
 
     fun down(amount: Double = 1.0): SboVec {
         return this.copy(y = this.y - amount)
@@ -62,10 +66,6 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
 
     fun center(): SboVec {
         return SboVec(this.x + 0.5, this.y + 0.5, this.z + 0.5)
-    }
-
-    fun toCleanString(): String {
-        return "%.2f, %.2f, %.2f".format(this.x, this.y, this.z)
     }
 
     fun toDoubleArray(): DoubleArray {

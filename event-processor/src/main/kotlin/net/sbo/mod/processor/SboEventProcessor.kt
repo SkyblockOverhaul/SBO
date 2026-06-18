@@ -4,11 +4,30 @@ import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import java.io.OutputStreamWriter
 
+// @functionCalls will have 2 tab indent at .replace phase when replacing @ parameters
+
+private const val TEMPLATE_REGISTRAR = """package @packageName
+
+object @fileName {
+    fun register() {
+@functionCalls
+    }
+}
+"""
+
+private const val TEMPLATE_REGISTRY = """package net.sbo.mod.utils.events
+
+object SboEventGeneratedRegistry {
+    fun registerAll() {
+@functionCalls
+    }
+}
+"""
+
 class SboEventProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger
 ) : SymbolProcessor {
-
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation("net.sbo.mod.utils.events.annotations.SboEvent")
         val generatedObjects = mutableSetOf<String>()
@@ -20,17 +39,26 @@ class SboEventProcessor(
             if (clazz == null) return@forEach
             val packageName = clazz.packageName.asString()
             val className = clazz.simpleName.asString()
-            val fileName = "${className}_SboEventRegister"
+
+            val isCompanionObject = clazz.classKind == ClassKind.OBJECT &&
+                clazz.parentDeclaration is KSClassDeclaration
+
+            val generatedClassName = if (isCompanionObject) {
+                val enclosingClass = clazz.parentDeclaration as KSClassDeclaration
+                "${enclosingClass.simpleName.asString()}_Companion"
+            } else {
+                className
+            }
+
+            val fileName = "${generatedClassName}_SboEventRegister"
 
             generatedObjects.add("$packageName.$fileName")
 
             val isObject = clazz.classKind == ClassKind.OBJECT
             if (!isObject) {
-                logger.error("@SboEvent can only be used inside objects: ${clazz.simpleName.asString()}")
+                logger.error("@SboEvent can only be used inside objects: ${clazz.simpleName.asString()}", clazz)
                 return@forEach
             }
-
-            val isCompanionObject = clazz.classKind == ClassKind.OBJECT && clazz.parentDeclaration is KSClassDeclaration
 
             val instanceRef = if (isCompanionObject) {
                 val enclosingClass = clazz.parentDeclaration as KSClassDeclaration
@@ -39,10 +67,10 @@ class SboEventProcessor(
                 className
             }
 
-            logger.info("Generating EventRegister for $packageName.$className with functions: ${functions.map { it.simpleName.asString() }}")
+            logger.info("Generating EventRegister for $packageName.$className with functions: ${functions.joinToString { it.simpleName.asString() }}")
 
-            // Nur KSFile-Objekte sammeln, die nicht null sind
-            val dependencies = functions.mapNotNull { it.containingFile }.toTypedArray<KSFile>()
+            // Only collect KSFile objects that are not null
+            val dependencies = functions.mapNotNull { it.containingFile }.distinct().toTypedArray<KSFile>()
             val file = codeGenerator.createNewFile(
                 Dependencies(true, *dependencies),
                 packageName,
@@ -51,25 +79,31 @@ class SboEventProcessor(
 
             OutputStreamWriter(file).use { writer ->
                 val functionCalls = functions.joinToString("\n") { fn ->
-                    val paramType = fn.parameters.firstOrNull()?.type?.resolve()?.declaration?.qualifiedName?.asString()
+                    val param = fn.parameters.firstOrNull()
+                    if (null == param || 1 != fn.parameters.size) {
+                        logger.error(
+                            "@SboEvent functions must have exactly one parameter",
+                            fn
+                        )
+                        return@joinToString ""
+                    }
+                    val paramType = param.type.resolve().declaration.qualifiedName?.asString()
+                    val priority = fn.annotations.find { it.annotationType.resolve().declaration.qualifiedName?.asString() == "net.sbo.mod.utils.events.annotations.SboEvent" }
+                        ?.arguments?.find { it.name?.getShortName() == "priority" }
+                        ?.value?.toString()?.toIntOrNull() ?: 1
                     if (paramType == null) {
-                        "// Cannot resolve type for ${fn.simpleName.asString()}"
+                        logger.error("Cannot resolve type for ${fn.simpleName.asString()}")
+                        return@joinToString "// Cannot resolve type for ${fn.simpleName.asString()}"
                     } else {
-                        "SBOEvent.on($paramType::class) { e -> $instanceRef.${fn.simpleName.asString()}(e) }"
+                        "net.sbo.mod.utils.events.SBOEvent.on($paramType::class, $priority) { e -> $instanceRef.${fn.simpleName.asString()}(e) }"
                     }
                 }
 
-                writer.write("""
-                    package $packageName
-
-                    import net.sbo.mod.utils.events.SBOEvent
-
-                    object $fileName {
-                        fun register() {
-                            $functionCalls
-                        }
-                    }
-                """.trimIndent())
+                writer.write(TEMPLATE_REGISTRAR
+                    .replace("@packageName", packageName)
+                    .replace("@fileName", fileName)
+                    .replace("@functionCalls", functionCalls.lines().joinToString("\n") { "\t\t$it" })
+                )
             }
         }
 
@@ -82,16 +116,8 @@ class SboEventProcessor(
             )
 
             OutputStreamWriter(registryFile).use { writer ->
-                writer.write(
-                    """
-                    package net.sbo.mod.utils.events
-        
-                    object SboEventGeneratedRegistry {
-                        fun registerAll() {
-                            ${generatedObjects.joinToString("\n") { "$it.register()" }}
-                        }
-                    }
-                """.trimIndent()
+                writer.write(TEMPLATE_REGISTRY
+                    .replace("@functionCalls", generatedObjects.joinToString("\n") { "\t\t$it.register()" })
                 )
             }
         }

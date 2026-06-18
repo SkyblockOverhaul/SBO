@@ -1,20 +1,19 @@
 package net.sbo.mod.utils
 
+import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.minecraft.client.Minecraft
 import net.minecraft.client.KeyMapping
-import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.client.Minecraft
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
-import net.minecraft.resources.ResourceLocation
 
 object SboKeyBinds {
-
     private data class KeyPressState(var isHeldDown: Boolean = false, var lastActivation: Long = 0)
-    private val keyStates = mutableMapOf<KeyMapping, KeyPressState>()
-    private val SBO_CATEGORY = KeyMapping.Category(ResourceLocation.fromNamespaceAndPath("sbo-kotlin", "keybinds"))
+    private val keyStates = mutableMapOf<String, KeyPressState>()
+    private val SBO_CATEGORY = KeyMapping.Category(SBOKotlin.id(owner = "sbo-kotlin", path = "keybinds"))
 
     fun init() {
         register()
@@ -61,9 +60,9 @@ object SboKeyBinds {
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, cooldownMillis: Long, action: () -> Unit) {
-        val state = keyStates.getOrPut(keyBinding) { KeyPressState() }
+        val state = keyStates.getOrPut(keyBinding.name) { KeyPressState() }
 
-        if (keyBinding.consumeClick()) {
+        if (keyBinding.isDown) {
             val currentTime = System.currentTimeMillis()
             if (!state.isHeldDown && currentTime - state.lastActivation > cooldownMillis) {
                 action()
@@ -76,7 +75,7 @@ object SboKeyBinds {
     }
 
     fun registerKeyBindListener() {
-        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { client: Minecraft ->
+        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { _: Minecraft ->
             handlePressAction(guessWarpKey) {
                 WaypointManager.warpToGuess()
             }

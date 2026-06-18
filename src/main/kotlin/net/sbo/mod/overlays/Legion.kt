@@ -2,12 +2,12 @@ package net.sbo.mod.overlays
 
 import net.minecraft.client.Minecraft
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.utils.events.Register
 import net.sbo.mod.settings.categories.General
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import java.util.UUID
+import java.util.*
 
 object Legion {
     var legionCount: Int = 0

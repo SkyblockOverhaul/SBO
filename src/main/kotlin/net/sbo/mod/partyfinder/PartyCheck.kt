@@ -3,13 +3,13 @@ package net.sbo.mod.partyfinder
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
 
 object PartyCheck {
@@ -52,7 +52,7 @@ object PartyCheck {
     ) {
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
         Http.sendGetRequest("$API_URL/partyInfo?party=$playerName&readCache=$readCache")
-            .toJson<PartyInfo> { response ->
+            .toJson<PartyInfo>(true) { response ->
                 if (response.success) {
                     val partyInfo = response.partyInfo
                     if (partyInfo.firstOrNull() != null) {
@@ -82,7 +82,7 @@ object PartyCheck {
             return
         }
         Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${partyMember.joinToString(",").replace("-", "")}")
-            .toJson<PartyInfo> { response ->
+            .toJson<PartyInfo>(true) { response ->
                 if (response.success) {
                     printPartyInfo(response.partyInfo)
                 }

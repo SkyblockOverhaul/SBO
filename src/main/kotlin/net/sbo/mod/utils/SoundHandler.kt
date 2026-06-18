@@ -1,24 +1,23 @@
 package net.sbo.mod.utils
 
-import net.sbo.mod.utils.data.SboDataObject
-
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.SharedConstants
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.server.packs.PackType
 import net.minecraft.sounds.SoundEvent
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.ResourceLocationException
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.MOD_ID
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.utils.data.SboDataObject
 import java.io.File
 
 object SoundHandler {
     private val soundDir: File
     private val generatedPackDir: File
+
+    private val availableSounds = mutableSetOf<String>()
 
     init {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), SboDataObject.dataDir).apply { mkdirs() }
@@ -27,6 +26,10 @@ object SoundHandler {
         val packsDir = File(FabricLoader.getInstance().gameDir.toFile(), "resourcepacks").apply { mkdirs() }
         generatedPackDir = File(packsDir, "SBO Custom Sounds Data Pack").apply { mkdirs() }
     }
+
+    fun getAvailableSoundsList(): List<String> = availableSounds.sorted().toList()
+
+    fun hasSound(soundName: String): Boolean = soundName.isNotEmpty() && availableSounds.contains(soundName.lowercase())
 
     private fun safeName(base: String): String {
         val b = base.lowercase()
@@ -44,7 +47,8 @@ object SoundHandler {
     private fun currentResourcePackFormat(): Int {
         return try {
             SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES).major()
-        } catch (_: Throwable) {
+        } catch (tw: Throwable) {
+            logger.error("Error while determining current resource pack format, falling back to 48", tw)
             48
         }
     }
@@ -69,6 +73,7 @@ object SoundHandler {
         oggFiles.forEach { src ->
             val name = safeName(src.nameWithoutExtension)
             names += name
+            availableSounds.add(name)
             src.copyTo(File(assetsSoundsDir, "$name.ogg"), overwrite = true)
         }
 
@@ -98,7 +103,8 @@ object SoundHandler {
             """.trimIndent()
         )
         writePackIcon()
-        println("[$MOD_ID] Generated dynamic soundpack at: ${generatedPackDir.absolutePath}")
+
+        logger.info("[$MOD_ID] Custom sounds ready. Found ${availableSounds.size} sounds. To enable: Options > Resource Packs > move 'SBO Custom Sounds Data Pack' to the right")
     }
 
     private fun writePackIcon() {
@@ -113,31 +119,42 @@ object SoundHandler {
                     }
                 }
             }.onFailure {
-                println("[$MOD_ID] Failed to write pack icon: ${it.message}")
+                logger.warn("[$MOD_ID] Failed to write pack icon: ${it.message}")
             }
         } else {
-            println("[$MOD_ID] Pack icon not found at $resPath")
+            logger.info("[$MOD_ID] Pack icon not found at $resPath")
         }
     }
 
     fun playCustomSound(sound: String, volume: Float, pitch: Float = 1f) {
+        if (sound.isEmpty()) return
+
         val packManager = mc.resourcePackRepository
         val packId = "file/SBO Custom Sounds Data Pack"
 
-        val id = try {
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, sound.lowercase())
-        } catch (invalidIdentifierError: ResourceLocationException) {
-            Customization.resetSoundCustomizationToDefaults()
+        val safeSound = safeName(sound)
 
-            Chat.chat("§6[SBO] §cYou had an error with your custom sound configuration, your custom sound settings will automatically reset to protect from crashes. More information might be available in your logs.")
-            logger.error("Error with the user supplied custom sound ID", invalidIdentifierError) // print full error with stacktrace to logs
+        if (!availableSounds.contains(safeSound)) {
+            logger.warn("[$MOD_ID] Sound '$sound' not found. Available: ${availableSounds.joinToString()}")
+            return
+        }
 
+        val id = SBOKotlin.userSuppliedId(safeSound) { invalidIdentifierException ->
+            Chat.chat("§6[SBO] §cInvalid sound name \"$sound\". Use letters, numbers, _ or -")
+            logger.error("Invalid sound ID: $sound", invalidIdentifierException)
+        }
+
+        if (id == null) {
+            Chat.chat("§6[SBO] §cUnknown error when creating Identifier for sound ID: $sound")
+            logger.error("Unknown error when creating Identifier for sound ID: $sound")
             return
         }
 
         val event = SoundEvent.createVariableRangeEvent(id)
 
-        if (!packManager.selectedIds.contains(packId) && sound.isNotEmpty()) Chat.chat("§6[SBO] §cCustom sound pack is not enabled. Please enable it in the resource packs menu.")
+        if (!packManager.selectedIds.contains(packId)) {
+            Chat.chat("§6[SBO] §cSounds not playing? §aGo to Options > Resource Packs > move '§lSBO Custom Sounds Data Pack§a' to the right (Active)")
+        }
         mc.soundManager.play(SimpleSoundInstance.forUI(event, pitch, volume))
     }
 }

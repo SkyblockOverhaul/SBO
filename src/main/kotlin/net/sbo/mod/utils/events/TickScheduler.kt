@@ -1,27 +1,46 @@
 package net.sbo.mod.utils.events
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import java.util.concurrent.ConcurrentLinkedQueue
 
 object TickScheduler {
-    val tasks = mutableListOf<ScheduledTask>()
+    private val tasks = ConcurrentLinkedQueue<ScheduledTask>()
 
     init {
         ClientTickEvents.END_CLIENT_TICK.register {
-            val iterator = tasks.iterator()
-            while (iterator.hasNext()) {
-                val task = iterator.next()
-                task.counter++
-                if (task.counter >= task.tick) {
-                    task.action { iterator.remove() }
-                    task.counter = 0
+            var remaining = tasks.size
+
+            while (remaining > 0) {
+                remaining--
+
+                val task = tasks.poll()
+                    ?: break
+
+                if (!task.tick()) {
+                    tasks.offer(task)
                 }
             }
         }
     }
 
+    fun schedule(task: ScheduledTask) {
+        tasks.offer(task)
+    }
+
     data class ScheduledTask(
-        val tick: Int,
-        val action: (() -> Unit) -> Unit,
-        var counter: Int = 0
-    )
+        val interval: Int,
+        var counter: Int = 0,
+        val action: () -> Boolean
+    ) {
+        fun tick(): Boolean {
+            counter++
+
+            if (counter < interval) {
+                return false
+            }
+
+            counter = 0
+            return action()
+        }
+    }
 }

@@ -1,14 +1,36 @@
 package net.sbo.mod.utils.chat
 
-import net.sbo.mod.SBOKotlin.mc
-import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
+import net.minecraft.client.gui.components.ChatComponent
 import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
-import net.minecraft.ChatFormatting
+import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.events.ClickActionManager
 
 object Chat {
+
+    /**
+     * Sends a text to party chat via the /pc command, or
+     * sends it locally if the user opted-in to the "Assume Muted"
+     * option for accessibility, so that they can still see the message
+     * and/or possibly copy and share the message in another platform such as Discord.
+     *
+     * @param text The text to send to party chat if possible or otherwise locally.
+     */
+    fun pc(text: String) {
+        if (General.assumeMuted) {
+            // User is muted (or we assume it bc of the opt-in setting that's false by default)
+            // trying to send message will show up a huge output about the remaining mute time,
+            // server rules and all that yapping with no other output about the text we want
+            // to send, so send locally instead via the chat method. We can have color since it's regular chat.
+            chat("§6[SBO] §e${text}")
+        } else {
+            command("pc $text")
+        }
+    }
 
     /**
      * Sends a command to the server.
@@ -17,9 +39,9 @@ object Chat {
      */
     fun command(command: String) {
         if (!command.startsWith("/")) {
-            mc.player?.connection?.sendChat("/$command")
+            say("/$command")
         } else {
-            mc.player?.connection?.sendChat(command)
+            say(command)
         }
     }
 
@@ -48,7 +70,7 @@ object Chat {
      * @param message The message to send.
      */
     fun say(message: String) {
-        mc.connection?.sendChat(message)
+        ChatMessageQueue.queue(message)
     }
 
     /**
@@ -158,7 +180,7 @@ object Chat {
 
     /**
      * Gets a message that fills one line of chat by repeating the separator.
-     * @param separator The string to repeat. Defaults to "-".
+     * @param separator The string to repeat. Defaults to -.
      * @return The message string that fills the chat line.
      */
     fun getChatBreak(separator: String = "-", colorcodes: String = "§b"): String {
@@ -166,7 +188,7 @@ object Chat {
             return ""
         }
         val textRenderer = mc.font
-        val chatWidth = mc.gui.chat.width
+        val chatWidth = ChatComponent.getWidth(mc.options.chatWidth().get())
         val separatorWidth = textRenderer.width(separator)
 
         if (separatorWidth <= 0) {

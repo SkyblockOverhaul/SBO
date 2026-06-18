@@ -36,14 +36,14 @@
   },
   "mixins": [
     {
-      "config": "sbo-kotlin.mixins.json",
+      "config": "sbo.mixins.json",
       "environment": "client"
     }
   ],
-  "accessWidener": "sbo-kotlin.accesswidener",
+  "accessWidener": "sbo.classtweaker",
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
-    "minecraft": ">=${mc_version}",
+    "minecraft": "${mc_version_constraint}",
     "java": ">=${java_version_major}",
     "fabric-api": ">=${fabric_api_version}",
     "fabric-language-kotlin": ">=${fabric_language_kotlin_version}",

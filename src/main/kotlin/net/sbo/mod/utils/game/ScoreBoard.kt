@@ -1,7 +1,10 @@
 package net.sbo.mod.utils.game
 
+import net.minecraft.world.scores.DisplaySlot
+import net.minecraft.world.scores.PlayerScoreEntry
+import net.minecraft.world.scores.PlayerTeam
 import net.sbo.mod.SBOKotlin
-import net.minecraft.world.scores.*
+import net.sbo.mod.utils.events.Register
 import java.lang.String.CASE_INSENSITIVE_ORDER
 
 object ScoreBoard {
@@ -11,6 +14,19 @@ object ScoreBoard {
 
     private val FORMATTING_REGEX: Regex = "§[^a-f0-9]".toRegex()
 
+    private var linesDirty = true
+    private var titleDirty = true
+
+    private var lastLines: List<String> = emptyList()
+    private var lastTitle: String = "Unknown Scoreboard" // dummy
+
+    init {
+        Register.onTick(1) {
+            linesDirty = true
+            titleDirty = true
+        }
+    }
+
     /**
      * Retrieves the lines from the scoreboard sidebar.
      * It returns a list of formatted strings representing the scoreboard entries.
@@ -18,10 +34,20 @@ object ScoreBoard {
      * @return A list of formatted strings representing the scoreboard entries.
      */
     fun getLines(): List<String> {
-        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return emptyList()
+        if (linesDirty) {
+            lastLines = fetchLines()
+            linesDirty = false
+        }
+
+        return lastLines
+    }
+
+    private fun fetchLines(): List<String> {
+        val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return emptyList()
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return emptyList()
 
         return scoreboard.listPlayerScores(objective)
+            .asSequence()
             .filter { entry -> !entry.isHidden }
             .sortedWith(COMPARATOR)
             .take(15)
@@ -34,12 +60,23 @@ object ScoreBoard {
             .map { decoratedText ->
                 decoratedText.replace(FORMATTING_REGEX, "")
             }
+            .toList()
             .asReversed()
     }
 
     fun getTitle(): String {
-        val scoreboard = SBOKotlin.mc.level?.getScoreboard() ?: return "Unknown Scoreboard"
+        if (titleDirty) {
+            lastTitle = fetchTitle()
+            titleDirty = false
+        }
+
+        return lastTitle
+    }
+
+    private fun fetchTitle(): String {
+        val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return "Unknown Scoreboard"
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
+
         return objective.displayName.string
     }
 }

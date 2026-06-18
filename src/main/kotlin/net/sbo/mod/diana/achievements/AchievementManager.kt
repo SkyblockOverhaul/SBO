@@ -5,19 +5,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.component.CustomData
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.minecraft.nbt.CompoundTag
-import net.sbo.mod.SBOKotlin
+import net.minecraft.world.item.component.CustomData
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
-import net.sbo.mod.utils.game.ItemUtils.getDisplayName
-import net.sbo.mod.utils.game.ItemUtils.getLoreList
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DianaTrackerMayorData
 import net.sbo.mod.utils.data.PartyPlayerStats
@@ -31,6 +28,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
+import net.sbo.mod.utils.game.ItemLookup
 import java.lang.Thread.sleep
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
@@ -125,11 +123,6 @@ object AchievementManager {
         }
     }
 
-    fun lockById(id: Int) {
-        if (!achievements.containsKey(id)) return
-        achievements[id]?.lock()
-    }
-
     fun backTrackAchievements() { // todo: needs rework because of new data structure
         Chat.chat("§6[SBO] §eBacktracking Achievements...")
         pastDianaEventsData.events.forEach { eventData ->
@@ -143,8 +136,10 @@ object AchievementManager {
         if (event.entity !is Player) return
         val isRareMob = RareDianaMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
         if (!isRareMob) return
-        if (getDisplayName(event.player.mainHandItem).contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
-        if (getDisplayName(event.player.mainHandItem).contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
+        val item = event.player.mainHandItem
+        val lookup = ItemLookup(item)
+        if (lookup.displayName.contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
+        if (lookup.displayName.contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
     }
 
 
@@ -332,22 +327,35 @@ object AchievementManager {
             val mfSlot = slots[14]
             val trackingSlot = slots[15]
 
-            if (
-                dmgSlot.item.hoverName.removeFormatting().contains("Storied Stinger V") &&
-                coinsSlot.item.hoverName.removeFormatting().contains("Deadly Greed V") &&
-                mfSlot.item.hoverName.removeFormatting().contains("Diana's Favor III") &&
-                trackingSlot.item.hoverName.removeFormatting().contains("Elusive Hunter II")
-            ) unlockAchievement(120)
+            if (dmgSlot.item.hoverName.removeFormatting().contains("Storied Stinger V") && coinsSlot.item.hoverName.removeFormatting().contains("Deadly Greed V") && mfSlot.item.hoverName.removeFormatting().contains("Diana's Favor III") && trackingSlot.item.hoverName.removeFormatting().contains("Elusive Hunter II")) { // does not guarantee its maxed since it shows next tier instead of current if it's not maxed, but we still need the check so that we don't trigger achievement for maxing unrelated perks
+                for (upgrade in listOf(dmgSlot, coinsSlot, mfSlot, trackingSlot)) {
+                    val lookup = ItemLookup(upgrade.item)
+                    var hasUnlocked = false
+                    for (loreLine in lookup.loreList) {
+                        if (loreLine.removeFormatting().contains("UNLOCKED")) {
+                            hasUnlocked = true
+                            break
+                        }
+                    }
+                    if (!hasUnlocked) {
+                        return@sleep // not maxed
+                    }
+                }
+
+                // if we reach here all should be maxed
+                unlockAchievement(120)
+            }
         }
     }
 
     fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
-        if (!getDisplayName(helmet).contains("Crown of Avarice")) return
+        val lookup = ItemLookup(helmet)
+        if (!lookup.displayName.contains("Crown of Avarice")) return
 
         unlockAchievement(121)
 
-        val mf = getLoreList(helmet)
+        val mf = lookup.loreList
             .map { it.removeFormatting() }
             .getValueFromLine(
                 Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")
@@ -395,7 +403,7 @@ object AchievementManager {
             var chimV = false
             var lootingV = false
             var divineGift3 = false
-            val player = SBOKotlin.mc.player ?: return@sleep
+            val player = mc.player ?: return@sleep
 
             for (slot in 0..8) {
                 val stack: ItemStack = player.inventory.getItem(slot)
@@ -585,7 +593,7 @@ object AchievementManager {
         addAchievement(118, "No wool? Sell his soul to the devil!", "Get a King's soul", "Epic", hidden = true, repeatable = false)
 
         addAchievement(119, "Knowledge is Power", "Get Myth the Fish from answering Sphinx question correct", "Mythic", hidden = true)
-        addAchievement(120, "Max Carnival", "Get all diana carnival perks maxed out", "Legendary", repeatable = false)
+        addAchievement(120, "Max Diana Carnival", "Get all diana carnival perks maxed out", "Legendary", repeatable = false)
 
         addAchievement(77, "From the ashes", "Drop a Phoenix pet from a Diana mob", "Impossible", hidden = true)
 

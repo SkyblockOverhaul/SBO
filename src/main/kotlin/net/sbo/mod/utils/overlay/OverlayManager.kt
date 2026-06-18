@@ -4,11 +4,11 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.render.RenderEvent
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickAfter
 import net.sbo.mod.utils.events.impl.guis.GuiPostRenderEvent
+import net.sbo.mod.utils.events.impl.render.RenderEvent
+import net.sbo.mod.utils.game.World
 
 object OverlayManager {
     val overlays = mutableListOf<Overlay>()

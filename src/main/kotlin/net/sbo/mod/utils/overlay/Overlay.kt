@@ -1,15 +1,14 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.data.OverlayValues
 import net.sbo.mod.utils.data.SboDataObject.overlayData
+import net.sbo.mod.utils.game.World
 import java.awt.Color
 
 fun isCraftingScreenOpen(): Boolean {
@@ -64,20 +63,8 @@ class Overlay(
         return this
     }
 
-    fun checkCondition(): Boolean {
-        return condition()
-    }
-
     fun addLine(line: OverlayTextLine) {
         lines.add(line)
-    }
-
-    fun addLineAt(index: Int, line: OverlayTextLine) {
-        lines.add(index, line)
-    }
-
-    fun addLines(newLines: List<OverlayTextLine>) {
-        lines.addAll(newLines)
     }
 
     fun setLines(newLines: List<OverlayTextLine>) {
@@ -164,6 +151,12 @@ class Overlay(
         return mouseX >= x && mouseX <= x + totalWidth && mouseY >= y && mouseY <= y + totalHeight
     }
 
+    private class LineRenderState(
+        val line: OverlayTextLine,
+        val x: Int,
+        val y: Int
+    )
+
     fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
         if (!condition()) return
         val textRenderer = mc.font
@@ -175,7 +168,7 @@ class Overlay(
         var currentX = (x / scale)
 
         // We don't need thread safety as we are in method-local context
-        // Making these vars lazy ensures they are only computed when needed (e.g not computed if both of the if conditions below are false)
+        // Making these vars lazy ensures they are only computed when needed (e.g., not computed if both of the if conditions below are false)
         // and only computed once when both of the if conditions are true.
         val totalWidth by lazy(LazyThreadSafetyMode.NONE) { getTotalWidth() }
         val totalHeight by lazy(LazyThreadSafetyMode.NONE) { getTotalHeight() }
@@ -189,12 +182,18 @@ class Overlay(
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
-        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.screen) } }
+        val lines = getLines()
+        val lineStates = mutableListOf<LineRenderState>()
 
-        for (line in getLines()) {
+        for (line in lines) {
             if (!line.checkCondition()) continue
-            if (shouldRender) line.updateMouseInteraction(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale, drawContext)
-            line.draw(drawContext, currentX.toInt(), currentY.toInt(), textRenderer)
+
+            val lineX = currentX.toInt()
+            val lineY = currentY.toInt()
+
+            lineStates += LineRenderState(line, lineX, lineY)
+            line.draw(drawContext, lineX, lineY, textRenderer)
+
             if (line.linebreak) {
                 currentY += textRenderer.lineHeight + 1
                 currentX = (x / scale)
@@ -203,20 +202,19 @@ class Overlay(
             }
         }
 
+        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.screen) } }
+
+        for (state in lineStates) {
+            if (shouldRender) {
+                // renders the hover text after all main text, so that hover text renders on top of them instead of below
+                state.line.updateMouseInteraction(mouseX, mouseY, state.x * scale, state.y * scale, textRenderer, scale, drawContext)
+            }
+        }
+
         drawContext.pose().popMatrix()
     }
 
     private fun drawDebugBox(drawContext: GuiGraphics, x: Int, y: Int, width: Int, height: Int) {
-        // Multiply everything by scale so that the box renders correctly when scale != 1.0F
-        val scaledX = (x * scale).toInt()
-        val scaledY = (y * scale).toInt()
-        val scaledWidth = (width * scale).toInt()
-        val scaledHeight = (height * scale).toInt()
-
-        //#if MC > 1.21.10
-        //$$ drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
-        //#else
-        drawContext.submitOutline(scaledX, scaledY, scaledWidth, scaledHeight, Color(255, 0, 0, 170).rgb)
-        //#endif
+        drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
     }
 }

@@ -1,16 +1,16 @@
 package net.sbo.mod.diana
 
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.DianaTracker
-import java.util.concurrent.TimeUnit
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.SboTimerManager
+import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.DianaTracker
+import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.Register
+import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
-import java.util.Locale
 
 object DianaStats {
     val STATS_PATTERN: Pattern = Pattern.compile(
@@ -19,7 +19,7 @@ object DianaStats {
     )
 
     fun registerReplaceStatsMessage() {
-        Register.onChatMessageCancable(
+        Register.onChatMessageCancelable(
             STATS_PATTERN
         ) { message, matcher ->
             val statsMessage = ArrayList<String>()
@@ -98,7 +98,7 @@ object DianaStats {
             append("Relics: ${stats.relicsDropped} (${stats.relicDropRate})")
         }
 
-        Chat.command("pc $statsMessage")
+        Chat.pc(statsMessage)
     }
 
     data class PlayerStats(

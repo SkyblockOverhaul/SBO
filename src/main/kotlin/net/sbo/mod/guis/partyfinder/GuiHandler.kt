@@ -6,15 +6,12 @@ import gg.essential.elementa.components.UIRoundedRectangle
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.UIWrappedText
 import gg.essential.elementa.components.input.UITextInput
-import gg.essential.elementa.constraints.CenterConstraint
-import gg.essential.elementa.constraints.ChildBasedSizeConstraint
-import gg.essential.elementa.constraints.PositionConstraint
-import gg.essential.elementa.constraints.SiblingConstraint
-import gg.essential.elementa.constraints.SizeConstraint
+import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.Effect
+import gg.essential.elementa.events.UIClickEvent
 import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 import org.lwjgl.glfw.GLFW
@@ -39,10 +36,10 @@ object GuiHandler {
         private val y: PositionConstraint,
         private val width: SizeConstraint,
         private val height: SizeConstraint,
-        private val color: Color,
-        private val parent: UIComponent? = null,
-        private val rounded: Boolean = false,
-        private val roundness: Float = 5f
+        color: Color,
+        parent: UIComponent? = null,
+        rounded: Boolean = false,
+        roundness: Float = 5f
     ) {
         val uiObject: UIComponent = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
 
@@ -61,17 +58,17 @@ object GuiHandler {
     }
 
     class Button(
-        private val text: String,
+        text: String,
         private val x: PositionConstraint,
         private val y: PositionConstraint,
         private val width: SizeConstraint,
         private val height: SizeConstraint,
         private val color: Color,
         private val textColor: Color? = null,
-        private val outline: Effect? = null,
-        private val parent: UIComponent? = null,
-        private val rounded: Boolean = false,
-        private val wrapped: Boolean = false,
+        outline: Effect? = null,
+        parent: UIComponent? = null,
+        rounded: Boolean = false,
+        wrapped: Boolean = false,
     ) {
         val uiObject: UIComponent = if (rounded) UIRoundedRectangle(10f) else UIBlock()
         val textObject: UIComponent = if (wrapped) UIWrappedText(text) else UIText(text)
@@ -138,8 +135,8 @@ object GuiHandler {
         private val color: Color,
         private val checkedColor: Color,
         private val text: String = "",
-        private val rounded: Boolean = false,
-        private val roundness: Float = 10f,
+        rounded: Boolean = false,
+        roundness: Float = 10f,
         private val filter: Boolean = false
     ) {
         private lateinit var onClick: () -> Unit
@@ -180,21 +177,10 @@ object GuiHandler {
 
         private val bgbox = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
         private val checkbox = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
-        private val outlineBlock = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
         internal lateinit var textObject: UIText
 
         fun setBgBoxColor(color: Color): Checkbox {
             bgbox.setColor(color)
-            return this
-        }
-
-        fun setCheckBoxDimensions(width: SizeConstraint, height: SizeConstraint): Checkbox {
-            checkbox.setWidth(width).setHeight(height)
-            return this
-        }
-
-        fun setTextColor(color: Color): Checkbox {
-            textObject.setColor(color)
             return this
         }
 
@@ -254,8 +240,8 @@ object GuiHandler {
         private val inputWidth: SizeConstraint,
         private val color: Color,
         private val textColor: Color,
-        private val rounded: Boolean = false,
-        private val roundness: Float = 5f
+        rounded: Boolean = false,
+        roundness: Float = 5f
     ) {
         internal var onlyNumbers = false
         internal var onlyText = false
@@ -311,12 +297,10 @@ object GuiHandler {
                 if (text.isNotEmpty()) return@onFocusLost
             }
 
-            textInput.onMouseClick {
+            val onClick: UIComponent.(UIClickEvent) -> Unit = {
                 if (!textSet) {
-                    if (getValue().isEmpty()) {
-                        text = textInputText.getText()
-                    } else {
-                        text = getValue()
+                    text = getValue().ifEmpty {
+                        textInputText.getText()
                     }
                     textInputText.setText(text)
                     textSet = true
@@ -325,19 +309,8 @@ object GuiHandler {
                 textInputText.focus()
             }
 
-            textInputText.onMouseClick {
-                if (!textSet) {
-                    if (getValue().isEmpty()) {
-                        text = textInputText.getText()
-                    } else {
-                        text = getValue()
-                    }
-                    textInputText.setText(text)
-                    textSet = true
-                }
-                textInputText.grabWindowFocus()
-                textInputText.focus()
-            }
+            textInput.onMouseClick(onClick)
+            textInputText.onMouseClick(onClick)
 
             textInputText.onKeyType { typedChar, keyCode ->
                 if (maxChars > 0 && textInputText.getText().length > maxChars && keyCode != GLFW.GLFW_KEY_BACKSPACE && keyCode != GLFW.GLFW_KEY_DELETE) {

@@ -1,16 +1,23 @@
 package net.sbo.mod.utils.waypoint
 
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
-import kotlin.math.pow
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import java.awt.Color
+import java.time.Duration
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
-import java.awt.Color
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+private const val MIN_OPACITY = 0.2f
+private const val MAX_OPACITY = 0.99f
+private const val FADE_START_DISTANCE = 4.5
+private const val FADE_END_DISTANCE = 100.0
 
 /**
  * @class Waypoint
@@ -19,84 +26,178 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
  * @param x The x-coordinate of the waypoint.
  * @param y The y-coordinate of the waypoint.
  * @param z The z-coordinate of the waypoint.
- * @param r The red color component of the waypoint.
- * @param g The green color component of the waypoint.
- * @param b The blue color component of the waypoint.
  * @param ttl The time to live for the waypoint in seconds (0 for infinite).
  * @param type The type of the waypoint for customization.
  * @param line Whether to draw a line to the waypoint.
- * @param beam Whether to draw a beam at the waypoint.
- * @param distance Whether to display the distance in meters (blocks) to the waypoint.
  */
 class Waypoint(
     var text: String,
     val x: Double,
     val y: Double,
     val z: Double,
-    var r: Float,
-    var g: Float,
-    var b: Float,
-    val ttl: Int = 0,
+    val ttl: Int = 1800,
     val type: String = "normal",
-    var line: Boolean = false,
-    var beam: Boolean = true,
-    var distance: Boolean = true
+    var line: Boolean = false
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
-    var color: Color = Color(this.r, this.g, this.b)
-    var hexCode: Int = this.color.rgb
-    val alpha: Double = 0.5
     var hidden: Boolean = false
     val creation: Long = System.currentTimeMillis()
     var formatted: Boolean = false
     var distanceRaw: Double = 0.0
     var distanceText: String = ""
     var formattedText: String = ""
-    var warp: String? = null
+    var isClosest = false
+    var timesDug = 0
+    var userInteractedWith = false
+    var dynamicOpacity = 0.99f
+    var inaccurateArrow = false
 
-    fun distanceToPlayer(): Double {
-        val playerPos = Player.getLastPosition()
-        return sqrt((playerPos.x - this.pos.x).pow(2) + (playerPos.y - this.pos.y).pow(2) + (playerPos.z - this.pos.z).pow(2))
-    }
+    fun hasStrongerStateThan(other: Waypoint): Boolean = this.timesDug > other.timesDug || (this.userInteractedWith && !other.userInteractedWith)
 
-    private fun setWarpText(isBestGuess: Boolean = true) {
-        if (isBestGuess) {
-            this.warp = WaypointManager.getClosestWarp(this.pos)
-            this.formattedText = this.warp?.let {
-                "$text§7 (warp $it)${this.distanceText}"
-            } ?: "${this.text}${this.distanceText}"
-        } else {
-            this.formattedText = "${this.text}${this.distanceText}"
+    fun carryOverState(other: Waypoint) {
+        val otherTimesDug = other.timesDug
+
+        if (otherTimesDug > this.timesDug) {
+            this.timesDug = otherTimesDug
+        }
+
+        val otherInteractedWith = other.userInteractedWith
+
+        if (otherInteractedWith && !this.userInteractedWith) {
+            this.userInteractedWith = true
         }
     }
 
+    fun distanceToPlayer(): Double {
+        val playerPos = Player.getLastPosition()
+        val dx = playerPos.x - this.pos.x
+        val dy = playerPos.y - this.pos.y
+        val dz = playerPos.z - this.pos.z
+
+        return sqrt(dx * dx + dy * dy + dz * dz)
+    }
+
+    fun distanceToPlayerIgnoringY(): Double {
+        val playerPos = Player.getLastPosition()
+        val dx = playerPos.x - this.pos.x
+        val dz = playerPos.z - this.pos.z
+
+        return sqrt(dx * dx + dz * dz)
+    }
+
+    private fun setWarpText() {
+        val showTimesDug = Customization.showTimesDug && this.type == "burrow" && this.text != "Start"
+        val timesDug = this.timesDug
+        val dist = Customization.showDistanceCutoff == 0 || this.distanceToPlayer() < Customization.showDistanceCutoff
+        val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
+
+        if (isClosest) {
+            val closest = WaypointManager.getClosestWarp(this.pos)
+
+            this.formattedText = closest?.let {
+                "$text§7 (warp $it)${this.distanceText}$timesDugText"
+            } ?: "${this.text}${this.distanceText}$timesDugText"
+
+            val title = Diana.showTitleWhenWarpAvailable
+            if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
+                 val warpName = closest.replaceFirstChar(Char::titlecase)
+                 Helper.showTitle("§bWarp §e$warpName$distanceText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
+            }
+        } else {
+            this.formattedText = "${this.text}${this.distanceText}$timesDugText"
+        }
+    }
+
+    private fun updateDynamicOpacity(): Float {
+        val distance = this.distanceRaw
+
+        if (!distance.isFinite()) {
+            return MAX_OPACITY
+        }
+
+        if (distance <= FADE_START_DISTANCE) {
+            return MIN_OPACITY
+        }
+
+        if (distance >= FADE_END_DISTANCE) {
+            return MAX_OPACITY
+        }
+
+        val progress = ((distance - FADE_START_DISTANCE) /
+            (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
+
+        return (MIN_OPACITY + ((MAX_OPACITY - MIN_OPACITY) * progress))
+            .coerceIn(MIN_OPACITY, MAX_OPACITY)
+    }
+
+    private fun getColor(): Color {
+        when (this.type) {
+            "guess", "arrow" -> {
+                if (isClosest) {
+                    return Color(Customization.ClosestGuessColor)
+                }
+                return Color(Customization.OtherGuessColor)
+            }
+            "burrow" -> {
+                return when (this.text) {
+                    "Start" -> Color(Customization.StartColor)
+                    "Mob" -> Color(Customization.MobColor)
+                    "Treasure" -> Color(Customization.TreasureColor)
+                    else -> Color(255, 255, 255) // shouldn't happen
+                }
+            }
+            "rareMob" -> {
+                return Color(Customization.RareMobColor)
+            }
+            "world" -> {
+                return Color(Customization.OtherWaypointColor)
+            }
+        }
+        return Color(255, 255, 255) // shouldn't happen
+    }
+
+    private class RgbAndHex(val rgb: FloatArray, val hex: Int)
+
+    private fun getRgbAndHex(): RgbAndHex {
+        val color = getColor()
+
+        val r = color.red / 255f
+        val g = color.green / 255f
+        val b = color.blue / 255f
+
+        return RgbAndHex(floatArrayOf(r, g, b), color.rgb)
+    }
+
     fun format(
-        inqWaypoints: List<Waypoint>,
-        closestBurrowDistance: Double,
-        isBestGuess: Boolean = false
+        inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
-        this.distanceText = if (distance) " §b[${distanceRaw.roundToInt()}m]" else ""
+        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 1f)
+
+        val dist = distanceRaw.roundToInt()
+
+        val showDistance = Customization.showDistanceCutoff <= 0 || dist > Customization.showDistanceCutoff
+        this.distanceText = if (showDistance) " §b[${dist}m]" else ""
 
         when (this.type) {
             "guess", "arrow" -> {
-                this.color = Color(Customization.guessColor)
-                this.line = Diana.guessLine && closestBurrowDistance > 60 && inqWaypoints.isEmpty() && isBestGuess
-                this.r = color.red / 255f
-                this.g = color.green / 255f
-                this.b = color.blue / 255f
-                this.hexCode = color.rgb
+                this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
 
-                WaypointManager.waypointExists("burrow", this.pos).let { (exists, wp) ->
-                    if (exists && wp != null) this.hidden = wp.distanceToPlayer() < 60
-                }
-                setWarpText(isBestGuess)
+                setWarpText()
+            }
+            "burrow" -> {
+                this.line = Diana.burrowLine && inqWaypoints.isEmpty() && isClosest
+
+                setWarpText()
             }
             "rareMob" -> {
-                if (inqWaypoints.lastOrNull() == this) {
+                val newest = inqWaypoints.lastOrNull() == this
+
+                if (newest) {
                     setWarpText()
-                    this.line = Diana.inqLine
                 }
+
+                this.line = newest && Diana.inqLine
             }
             else -> {
                 this.formattedText = "$text$distanceText"
@@ -110,26 +211,35 @@ class Waypoint(
         return this
     }
 
-    fun show(): Waypoint {
-        this.hidden = false
-        return this
+    private fun applyAlpha(color: Int, alpha: Float): Int {
+        val clampedAlpha = (alpha.coerceIn(0f, 1f) * 255f).toInt()
+        return (color and 0x00FFFFFF) or (clampedAlpha shl 24)
+    }
+
+    fun isOlderThan(duration: Duration): Boolean {
+        return System.currentTimeMillis() - this.creation > duration.toMillis()
     }
 
     fun render(context: WorldRenderContext) {
         if (!this.formatted || this.hidden) return
-        if (this.type == "guess" && this.distanceRaw <= Diana.removeGuessDistance) return
+        if (inaccurateArrow) return
+
+        val rgbAndHex = getRgbAndHex()
+
+        val waypointOpacity = this.dynamicOpacity
+        val waypointTextOpacity = (Customization.waypointTextOpacity / 100.0).toFloat()
 
         RenderUtils3D.renderWaypoint(
             context,
             this.formattedText,
             this.pos,
-            floatArrayOf(this.r, this.g, this.b),
-            this.hexCode,
-            this.alpha.toFloat(),
+            rgbAndHex.rgb,
+            applyAlpha(rgbAndHex.hex, waypointTextOpacity),
+            waypointOpacity,
             true,
             this.line,
             Diana.dianaLineWidth.toFloat(),
-            this.beam
+            Diana.showBeaconBeam
         )
     }
 }

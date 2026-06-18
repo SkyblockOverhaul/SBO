@@ -1,13 +1,9 @@
 package net.sbo.mod.overlays
 
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.overlay.Overlay
-import net.sbo.mod.utils.overlay.isCraftingScreenOpen
-import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
-import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
-import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.minecraft.ChatFormatting.*
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.overlays.OverlayUtils.LootItemData
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -18,14 +14,14 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
+import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
-import net.sbo.mod.overlays.OverlayUtils.LootItemData
 import java.util.concurrent.TimeUnit
 
-object DianaLoot {
+object DianaLoot : DirtyFlushableOverlay() {
     private var isSellTypeHovered = false
     val timerLine: OverlayTextLine = OverlayTextLine("")
-    val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
+    override val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
 
     val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
@@ -62,15 +58,20 @@ object DianaLoot {
         hoverText = "$RED${UNDERLINE}Reset Session",
         defaultText = "${RED}Reset Session",
         onClick = {
-            SboTimerManager.timerSession.reset()
-            SBOConfigBundle.dianaTrackerSessionData.reset().save()
-            updateLines()
-            DianaMobs.updateLines()
+            resetSession()
         }
     )
 
-    private val LOOT_ITEMS = listOf<LootItemData>(
+    fun resetSession() {
+        SboTimerManager.timerSession.reset()
+        SBOConfigBundle.dianaTrackerSessionData.reset().save()
+        updateLines()
+        DianaMobs.updateLines()
+    }
+
+    private val LOOT_ITEMS = listOf(
         LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED),
+        LootItemData("MYTH_THE_FISH", "Myth the Fish", RED),
         LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS"),
         LootItemData("MANTI_CORE", "Manti-core", RED, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
         LootItemData("KING_MINOS_SHARD", "King Minos Shard", RED, isRarerDrop = true, dropMobId = "KING_MINOS"),
@@ -100,9 +101,13 @@ object DianaLoot {
 
     fun init() {
         overlay.init()
-        updateLines()
         updateTimerText()
+        updateLines()
+
         Register.onTick(1) { updateTimerText() }
+        Register.onTick(20) {
+            updateLines()
+        }
     }
 
     @SboEvent
@@ -115,7 +120,7 @@ object DianaLoot {
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
-            updateLines(isCraftingOpen = true)
+            updateLines()
         }
     }
 
@@ -183,7 +188,7 @@ object DianaLoot {
                     drawContext,
                     "$YELLOW${Helper.toTitleCase(itemNameBase.replace("_", " ").lowercase())} LS Details:\n" +
                             lsText,
-                    mouseX, mouseY, textRenderer, overlay.scale
+                    mouseX, mouseY, textRenderer
                 )
             }
         if (SBOConfigBundle.sboData.hideTrackerLines.contains(itemNameBase)) {
@@ -192,19 +197,21 @@ object DianaLoot {
         return line
     }
 
-    fun updateLines(isCraftingOpen: Boolean = false) {
-        val lines = mutableListOf<OverlayTextLine>()
+    override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.lootTracker
         val tracker = getDianaTracker(type) ?: run {
-            overlay.setLines(emptyList())
-            return
+            return emptyList()
         }
+
+        val isCraftingOpen = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
+        val lines = mutableListOf<OverlayTextLine>()
 
         updateControlLines(lines, isCraftingOpen)
         lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Loot $GRAY($YELLOW${Helper.toTitleCase(type.toString())}$GRAY)"))
         lines.addAll(generateLootLines(tracker))
         lines.addAll(generateStatisticsLines(tracker, type, isCraftingOpen))
-        overlay.setLines(lines)
+
+        return lines
     }
 
     private fun getDianaTracker(type: Diana.Tracker): DianaTracker? {
@@ -264,7 +271,7 @@ object DianaLoot {
         val totalEvents = SBOConfigBundle.pastDianaEventsData.events.size
 
         val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
-        val bphText = if (burrowsPerHr.isNaN() || burrowsPerHr == 0.0) "" else " $GRAY[$AQUA$burrowsPerHr$GRAY/${AQUA}hr$GRAY]"
+        val bphText = if (burrowsPerHr.isNaN()) "" else " $GRAY[$AQUA$burrowsPerHr$GRAY/${AQUA}hr$GRAY]"
 
         val profitPerHr = if (playTimeHrs > 0) Helper.formatNumber(totalProfitValue / playTimeHrs) else 0.0
         val profitPerBurrow = if (totalBurrows > 0) Helper.formatNumber(totalProfitValue / totalBurrows) else 0.0
@@ -285,7 +292,7 @@ object DianaLoot {
     }
 
     private fun createCoinLine(tracker: DianaTracker): OverlayTextLine {
-        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}")
+        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}" + if (Diana.excludeCoinsFromProfit) " $GRAY[${RED}EXCLUDED$GRAY]" else "")
             .onHover { drawContext, textRenderer ->
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor
@@ -295,7 +302,7 @@ object DianaLoot {
                             "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
                             "${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}\n" +
                             "${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}",
-                    mouseX, mouseY, textRenderer, overlay.scale)
+                    mouseX, mouseY, textRenderer)
             }
     }
 
@@ -309,7 +316,7 @@ object DianaLoot {
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$GOLD$profitPerHr coins/hr\n" +
                             "$GOLD$profitPerBurrow coins/burrow",
-                    mouseX, mouseY, textRenderer, overlay.scale)
+                    mouseX, mouseY, textRenderer)
             }
     }
 
@@ -327,7 +334,7 @@ object DianaLoot {
                 totalProfit += itemPrice * itemValue
             }
         }
-        return totalProfit + tracker.items.COINS
+        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
     }
 
     fun updateTimerText() {
@@ -346,10 +353,14 @@ object DianaLoot {
             Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
             Diana.Tracker.EVENT -> SboTimerManager.timerMayor
             Diana.Tracker.SESSION -> SboTimerManager.timerSession
+            Diana.Tracker.OFF -> {
+                timerLine.text = ""
+                return
+            }
         }
 
         val formattedTime = Helper.formatTime(tracker.items.TIME)
-        val text = if (timer.running) {
+        val text = if (timer.isRunning()) {
             "${YELLOW}Playtime: $AQUA$formattedTime"
         } else {
             "${YELLOW}Playtime: $AQUA$formattedTime ${GRAY}[${RED}PAUSED${GRAY}]"

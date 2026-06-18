@@ -1,13 +1,11 @@
 package net.sbo.mod.utils.game
 
 import net.minecraft.client.Minecraft
-import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.ItemStack
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 object InventoryUtils {
     private var currentItemId: String = "AIR"
@@ -47,8 +45,9 @@ object InventoryUtils {
     fun getInternalName(stack: ItemStack): String {
         if (stack.isEmpty) return "AIR"
 
-        val customData = stack.get(DataComponents.CUSTOM_DATA)
-        val sbId = ItemUtils.getSBID(customData)
+        val lookup = ItemLookup(stack)
+        val sbId = lookup.sbId
+
         if (sbId.isNotEmpty()) return sbId
 
         return BuiltInRegistries.ITEM.getKey(stack.item).toString()

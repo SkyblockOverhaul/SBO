@@ -5,24 +5,15 @@ import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
-import gg.essential.elementa.components.ScrollComponent
-import gg.essential.elementa.components.UIBlock
-import gg.essential.elementa.components.UIRoundedRectangle
-import gg.essential.elementa.components.UIText
-import gg.essential.elementa.components.UIWrappedText
-import gg.essential.elementa.components.Window
-import gg.essential.elementa.constraints.CenterConstraint
-import gg.essential.elementa.constraints.FillConstraint
-import gg.essential.elementa.constraints.PixelConstraint
-import gg.essential.elementa.constraints.PositionConstraint
-import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.components.*
+import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.percent
 import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.universal.UKeyboard
-import net.minecraft.Util
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.pages.CustomPage
@@ -37,8 +28,8 @@ import net.sbo.mod.partyfinder.PartyFinderManager.removePartyFromQueue
 import net.sbo.mod.partyfinder.PartyFinderManager.sendJoinRequest
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.settings.categories.PartyFinder
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.HighlightElement
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
@@ -160,13 +151,8 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     internal fun getTextScale(base: Float = 1f): PixelConstraint {
-        return if (base + PartyFinder.scaleText <= 0f) return 0.1f.pixels()
+        return if (base + PartyFinder.scaleText <= 0f) 0.1f.pixels()
         else (base + PartyFinder.scaleText).pixels()
-    }
-
-    private fun getIconScale(base: Int = 18): PixelConstraint {
-        return if (base + PartyFinder.scaleIcon <= 0) return 1.pixels()
-        else (base + PartyFinder.scaleIcon).pixels()
     }
 
     private fun getMemberColor(members: Int, patySize: Int): Color {
@@ -331,13 +317,13 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     private fun updatePageHighlight() {
         elementToHighlight.forEach { element ->
             if (element.obj is UIBlock) {
-                if (element.page === selectedPage) {
+                if (element.page == selectedPage) {
                     element.obj.setColor(Color(50, 50, 50, 255))
                 } else {
                     element.obj.setColor(Color(0, 0, 0, 0))
                 }
             } else {
-                if (element.page === selectedPage) {
+                if (element.page == selectedPage) {
                     element.obj.setColor(Color(50, 50, 255, 200))
                 } else {
                     element.obj.setColor(Color(255, 255, 255, 255))
@@ -415,12 +401,12 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }.setColor(Color(255, 255, 255, 255))
 
         block.onMouseClick {
-            if (selectedPage === pageTitle) return@onMouseClick
+            if (selectedPage == pageTitle) return@onMouseClick
             if (isClickable) return@onMouseClick pageContent()
             selectedPage = pageTitle
             contentBlock.clearChildren()
             partyListContainer.clearChildren()
-            if (selectedPage != "Home" && selectedPage != "Help" && selectedPage != "Settimgs") {
+            if (selectedPage != "Home" && selectedPage != "Help" && selectedPage != "Settings") {
                 contentBlock.addChild(partyListContainer)
             }
             updatePageHighlight()
@@ -429,11 +415,11 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
         block.addChild(text)
             .onMouseEnter {
-                if (selectedPage === pageTitle) return@onMouseEnter
+                if (selectedPage == pageTitle) return@onMouseEnter
                 block.setColor(Color(50, 50, 50, 150))
             }
             .onMouseLeave {
-                if (selectedPage === pageTitle) return@onMouseLeave
+                if (selectedPage == pageTitle) return@onMouseLeave
                 block.setColor(Color(0, 0, 0, 0))
             }
 
@@ -882,6 +868,17 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }
     }
 
+    private fun stpBtn(btn: GuiHandler.Button) {
+        btn.textObject.setTextScale(getTextScale())
+        btn.uiObject.addChild(GuiHandler.UILine(
+            x = CenterConstraint(),
+            y = 100.percent(),
+            (btn.textObject.getWidth() + 10).pixels(),
+            10.percent(),
+            Color(0, 110, 250, 255)
+        ).get())
+    }
+
     private fun createGui() {
         filterBackground = UIBlock().constrain {
             width = 100.percent()
@@ -992,16 +989,9 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.getPlatform().openUri("https://discord.gg/QvM6b9jsJD")
+                SBOKotlin.openInBrowser("https://discord.gg/QvM6b9jsJD")
             }
-        discord.textObject.setTextScale(getTextScale())
-        discord.uiObject.addChild(GuiHandler.UILine(
-            x = CenterConstraint(),
-            y = 100.percent(),
-            (discord.textObject.getWidth() + 10).pixels(),
-            10.percent(),
-            Color(0, 110, 250, 255)
-        ).get())
+        stpBtn(discord)
 
         val githubBlock = UIBlock().constrain {
             width = 11.percent()
@@ -1021,16 +1011,9 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.getPlatform().openUri("https://github.com/SkyblockOverhaul/SBO-Kotlin")
+                SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO-Kotlin")
             }
-        github.textObject.setTextScale(getTextScale())
-        github.uiObject.addChild(GuiHandler.UILine(
-            x = CenterConstraint(),
-            y = 100.percent(),
-            (github.textObject.getWidth() + 10).pixels(),
-            10.percent(),
-            Color(0, 110, 250, 255)
-        ).get())
+        stpBtn(github)
 
         val patreonBlock = UIBlock().constrain {
             width = 11.percent()
@@ -1050,7 +1033,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                Util.getPlatform().openUri("https://www.patreon.com/Skyblock_Overhaul")
+                SBOKotlin.openInBrowser("https://www.patreon.com/Skyblock_Overhaul")
             }
         patreon.textObject.setTextScale(getTextScale())
         patreon.uiObject.addChild(GuiHandler.UILine(

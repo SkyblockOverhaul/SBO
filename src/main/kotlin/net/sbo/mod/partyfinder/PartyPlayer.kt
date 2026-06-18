@@ -2,12 +2,12 @@ package net.sbo.mod.partyfinder
 
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
 
 object PartyPlayer {
@@ -53,7 +53,7 @@ object PartyPlayer {
             }
             refreshing = true
             Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${Player.getUUIDString().replace("-", "")}&readcache=false")
-                .toJson<PartyInfo> { response ->
+                .toJson<PartyInfo>(true) { response ->
                     refreshing = false
                     if (response.success) {
                         lastUpdate = System.currentTimeMillis()

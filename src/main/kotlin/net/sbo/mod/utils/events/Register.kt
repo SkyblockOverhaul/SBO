@@ -8,8 +8,6 @@ import net.minecraft.network.chat.Component
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.ChatHandler
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
-import net.sbo.mod.utils.events.TickScheduler.ScheduledTask
-import net.sbo.mod.utils.events.TickScheduler.tasks
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -62,7 +60,17 @@ object Register {
      * @param action The action to execute. It receives a lambda to unregister itself.
      */
     fun onTick(tick: Int, action: (unregister: () -> Unit) -> Unit) {
-        tasks += ScheduledTask(tick, action)
+        val task: TickScheduler.ScheduledTask = TickScheduler.ScheduledTask(tick) {
+            var remove = false
+
+            action {
+                remove = true
+            }
+
+            remove
+        }
+
+        TickScheduler.schedule(task)
     }
 
     /**
@@ -93,12 +101,12 @@ object Register {
     /**
      * Registers an event that listens for chat messages that match a regex.
      * The action receives both the message and the regex matcher for easy value extraction.
-     * If the action returns true, the message will be cancelled (not displayed in chat).
+     * If the action returns true, the message will be canceled (not displayed in chat).
      *
      * @param regex The regular expression to filter messages with.
      * @param action The action to execute. It receives the message and the `Matcher`.
      */
-    fun onChatMessageCancable(
+    fun onChatMessageCancelable(
         regex: Pattern,
         action: (message: Component, matchResult: Matcher) -> Boolean
     ) {

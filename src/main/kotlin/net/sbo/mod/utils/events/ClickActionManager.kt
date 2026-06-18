@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.events
 
-import java.util.UUID
+import java.util.*
 
 /**
  * Manages click actions by mapping a unique ID to a lambda function.
