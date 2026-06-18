@@ -103,7 +103,7 @@ object Customization : CategoryKt("Customization") {
         this.description = Literal("The distance cutoff at which the distance text disappears, and the times dug text appears. For example if set to 50 will not display the distance text if 50m or closer, and will only display the times dug when 50m or closer. (0 to always show distance and times dug, if times dug is enabled)")
     }
 
-    var showTimesDug by boolean(false) {
+    var showTimesDug by boolean(true) {
         this.name = Literal("Show Times Dug")
         this.description = Literal("Shows times dug on the waypoint text for known burrows.")
     }

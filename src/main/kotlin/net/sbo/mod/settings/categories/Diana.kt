@@ -474,7 +474,7 @@ object Diana : CategoryKt("Diana") {
 
     var HighlightRareMobs by boolean(true) {
         this.name = Literal("Highlight Rare Mobs")
-        this.description = Literal("Highlights rare mobs(King, Manti, Sphinx, Inq) with a glowing effect")
+        this.description = Literal("Highlights rare mobs (King, Manti, Sphinx, Inq) with a glowing effect")
     }
 
     var HighlightColor by color(
@@ -486,7 +486,7 @@ object Diana : CategoryKt("Diana") {
 
     var allWaypointsAreInqs by boolean(false) {
         this.name = Literal("All Waypoints are Rare Mobs")
-        this.description = Literal("All coordinates from chat are considered rare mobs(King, Manti, Sphinx, Inq) only works in hub during diana")
+        this.description = Literal("All coordinates from chat are considered rare mobs (King, Manti, Sphinx, Inq)")
     }
 
     var announceInqText by strings("") {
