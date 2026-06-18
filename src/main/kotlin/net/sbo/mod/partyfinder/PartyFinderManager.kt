@@ -2,35 +2,28 @@ package net.sbo.mod.partyfinder
 
 import gg.essential.universal.utils.toFormattedString
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
-import net.sbo.mod.settings.categories.PartyFinder
-import net.sbo.mod.utils.HypixelModApi
-import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.Helper.sleep
-import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.http.Http
-import net.sbo.mod.utils.http.Http.getBoolean
-import net.sbo.mod.utils.http.Http.getString
-import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
-import net.sbo.mod.utils.events.SBOEvent
+import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.PartyPlayerStats
-import net.sbo.mod.utils.data.GetAllParties
-import net.sbo.mod.utils.data.Party
-import net.sbo.mod.utils.data.PartyAddResponse
-import net.sbo.mod.utils.data.PartyUpdateResponse
-import net.sbo.mod.utils.data.Reqs
+import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.utils.HypixelModApi
+import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.*
+import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
+import net.sbo.mod.utils.events.impl.game.ChatMessageEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderRefreshListEvent
-import net.sbo.mod.utils.events.impl.game.ChatMessageEvent
+import net.sbo.mod.utils.http.Http
+import net.sbo.mod.utils.http.Http.getBoolean
 import net.sbo.mod.utils.http.Http.getInt
-import java.util.UUID
+import net.sbo.mod.utils.http.Http.getString
+import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.mutableMapOf
 
 object PartyFinderManager {
     var creatingParty = false
@@ -113,7 +106,7 @@ object PartyFinderManager {
             Chat.chat("§6[SBO] §aKey has been cleared")
         }
 
-        Register.onChatMessageCancable(
+        Register.onChatMessageCancelable(
             Pattern.compile("§d(.*?) (.*?)§7: (.*?) join party request - id:(.*)", Pattern.DOTALL)
         ) { message, matchResult ->
             if (matchResult.group(1).contains("From")) {
@@ -136,7 +129,7 @@ object PartyFinderManager {
             false
         }
 
-        Register.onChatMessageCancable(
+        Register.onChatMessageCancelable(
             Pattern.compile("^§9§m(.*?) §ehas invited you to join their party!(.*?)$", Pattern.DOTALL)
         ) { message, matchResult ->
             val playername = Helper.getPlayerName(matchResult.group(1) ?: "")

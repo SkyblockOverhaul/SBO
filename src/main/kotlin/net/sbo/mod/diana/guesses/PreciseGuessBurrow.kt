@@ -1,7 +1,7 @@
 package net.sbo.mod.diana.guesses
 
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -12,12 +12,7 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.PolynomialFitter
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
-import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 object PreciseGuessBurrow {
     private var particleLocations = mutableListOf<SboVec>()
@@ -30,7 +25,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
-        if (!Diana.dianaBurrowGuess) return
+        if (!Diana.spadeGuess) return
         this.guessPoint = null
         this.particleLocations.clear()
         finalLocation = null
@@ -41,7 +36,7 @@ object PreciseGuessBurrow {
     fun onReceiveParticle(event: PacketReceiveEvent) {
         val packet = event.packet
         if (packet !is ClientboundLevelParticlesPacket) return
-        if (!Diana.dianaBurrowGuess || World.getWorld() != "Hub") return
+        if (!Diana.spadeGuess || World.getWorld() != "Hub") return
         if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)
         this.lastLavaParticle = System.currentTimeMillis()
@@ -65,7 +60,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onUseSpade(event: PlayerInteractEvent) {
-        if (!Diana.dianaBurrowGuess) return
+        if (!Diana.spadeGuess) return
         val action = event.action
         if (action != "useItem" && action != "useBlock") return
         val player = SBOKotlin.mc.player

@@ -19,15 +19,15 @@ This mod is heavily focused on the Diana event, providing numerous tools to help
 
 * **Diana Burrow Guessing**: Precise Diana Guess.
 * **Diana Burrow Detection**: Automatically detects and highlights Diana burrows.
-* **Diana Warp**: Allowy you to instantly warp to the location you guessed.
+* **Diana Warp**: Allows you to instantly warp to the location you guessed.
   * **Customizable Warp Locations**: (Crypt, DA, Wizard, Castle, Stonks)
   * **Don't Warp If Burrow Close**: Prevents accidental warps if you are within 60 blocks of a burrow.
   * **Warp Delay**: Configurable delay before you are able to warp mainly used to make the guess more precise.
 * **Diana Trackers**: Adds multiple on-screen overlays to keep track of your progress. You can move these overlays with the `/sboguis` command.
   * **Mob Tracker**: Tracks your Diana mob kills.
   * **Loot Tracker**: Tracks your Diana loot.
-  * **Inquis Loot**: Tracks your inquis loot.
-  * **Stats Tracker**: Tracks your Diana stats (Since inq, Since chim, etc).
+  * **Inquisitor Loot**: Tracks your inquisitor loot.
+  * **Stats Tracker**: Tracks your Diana stats (Since inq, Since chim, etc.,).
   * **Magic Find Tracker**: Tracks your highest magic find for sticks/chims.
 * **Loot Announcers**: Get notified about your rare drops.
   * **Chat Announcer**: Announces rare drops like relics in your chat.
@@ -58,7 +58,7 @@ The mod offers a wide range of options to personalize your experience.
   * **Diana Party Commands**: Use commands like `!chim` or `!inq` to share your stats with your party.
 * **Party Finder**:
   * **Auto-Invite**: Automatically invites players who meet your party requirements.
-  * **Auto-Requeue**: Automatically requeues your party after a member leaves.
+  * **Auto-Requeue**: Automatically re-queues your party after a member leaves.
 * **Message Hiders**: Reduce chat clutter by hiding messages from Diana events, AutoPet, Implosion, and Sacks.
 * **Phoenix Announcer**: Get an on-screen announcement when you drop a Phoenix pet.
 
@@ -72,7 +72,7 @@ Before you begin, you need to have a few things installed:
 
 * **Fabric API**: This is a dependency for most Fabric mods, including SkyblockOverhaul. [Download it from Modrinth](https://modrinth.com/mod/fabric-api)
 * **Fabric Language Kotlin**: This mod is written in Kotlin, so you need this library as well. [Download it from Modrinth](https://modrinth.com/mod/fabric-language-kotlin)
-* **Mod Menu**: needed so sbo settings show up in mod page ingame. [Download it from Modrinth](https://modrinth.com/mod/modmenu)
+* **Mod Menu**: needed so sbo settings show up in mod page in game. [Download it from Modrinth](https://modrinth.com/mod/modmenu)
 
 ### Step-by-Step Installation Guide
 

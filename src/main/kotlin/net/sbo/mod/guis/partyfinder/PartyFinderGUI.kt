@@ -5,17 +5,8 @@ import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
-import gg.essential.elementa.components.ScrollComponent
-import gg.essential.elementa.components.UIBlock
-import gg.essential.elementa.components.UIRoundedRectangle
-import gg.essential.elementa.components.UIText
-import gg.essential.elementa.components.UIWrappedText
-import gg.essential.elementa.components.Window
-import gg.essential.elementa.constraints.CenterConstraint
-import gg.essential.elementa.constraints.FillConstraint
-import gg.essential.elementa.constraints.PixelConstraint
-import gg.essential.elementa.constraints.PositionConstraint
-import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.elementa.components.*
+import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.percent
@@ -37,8 +28,8 @@ import net.sbo.mod.partyfinder.PartyFinderManager.removePartyFromQueue
 import net.sbo.mod.partyfinder.PartyFinderManager.sendJoinRequest
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.settings.categories.PartyFinder
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.HighlightElement
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
@@ -162,11 +153,6 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     internal fun getTextScale(base: Float = 1f): PixelConstraint {
         return if (base + PartyFinder.scaleText <= 0f) 0.1f.pixels()
         else (base + PartyFinder.scaleText).pixels()
-    }
-
-    private fun getIconScale(base: Int = 18): PixelConstraint {
-        return if (base + PartyFinder.scaleIcon <= 0) 1.pixels()
-        else (base + PartyFinder.scaleIcon).pixels()
     }
 
     private fun getMemberColor(members: Int, patySize: Int): Color {

@@ -26,10 +26,6 @@ abstract class CacheSet<T : Any> : MutableSet<T> {
         return true
     }
 
-    fun addIfAbsent(element: T) {
-        if (!contains(element)) add(element)
-    }
-
     override fun addAll(elements: Collection<T>): Boolean {
         var value = false
         for (element in elements) {

@@ -1,11 +1,7 @@
 package net.sbo.mod.utils.chat
 
-import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.HoverEvent
-import net.minecraft.network.chat.Style
-import net.minecraft.network.chat.TextColor
-import net.minecraft.network.chat.Component
 import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.*
 import java.util.*
 
 object ChatUtils {

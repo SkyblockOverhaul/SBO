@@ -1,15 +1,14 @@
 package net.sbo.mod.diana.guesses
 
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.phys.AABB
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.core.particles.DustParticleOptions
 import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.NumberUtil.roundTo
-import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
@@ -17,10 +16,11 @@ import net.sbo.mod.utils.events.impl.game.TickEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
@@ -118,16 +118,6 @@ object ArrowGuessBurrow {
             locations.clear()
         }
         if (currentChain == 1) return
-
-        val containList = allGuesses.filter { guessEntry ->
-            guessEntry.guesses.any { guess -> guess.distanceTo(event.lastBlock) <= 3 }
-        }
-
-        containList.forEach { entry ->
-            entry.removeGuesses()
-        }
-
-        allGuesses.removeAll(containList.toSet())
     }
 
     private fun detectArrow(): RaycastUtils.Ray? {
@@ -309,6 +299,10 @@ object ArrowGuessBurrow {
 
     internal fun isBlockValid(pos: SboVec): Boolean {
         if (!pos.isInLoadedChunk()) return true
+        return isBlockTrulyValid(pos)
+    }
+
+    internal fun isBlockTrulyValid(pos: SboVec): Boolean {
         val isGround = pos.getBlockAt() == Blocks.GRASS_BLOCK
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
         return isGround && isValidBlockAbove

@@ -7,19 +7,14 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.minecraft.world.InteractionResult
-import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
+import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
-import net.sbo.mod.utils.events.impl.game.ChatMessageAllowEvent
-import net.sbo.mod.utils.events.impl.game.ChatMessageEvent
-import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import net.sbo.mod.utils.events.impl.game.GameCloseEvent
-import net.sbo.mod.utils.events.impl.game.TickEvent
-import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
+import net.sbo.mod.utils.events.impl.game.*
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickAfter
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickBefore
@@ -84,7 +79,7 @@ object SBOEvent {
          * Allows for filtering of spammy messages.
          */
         ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
-            val event = ChatMessageAllowEvent(message, signed, true)
+            val event = ChatMessageAllowEvent(message, true)
             emit(event)
             event.isAllowed
         }

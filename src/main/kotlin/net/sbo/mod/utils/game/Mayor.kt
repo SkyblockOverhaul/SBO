@@ -4,9 +4,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.data.MayorResponse
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
-import java.util.Calendar
-import java.util.Date
-import java.util.GregorianCalendar
+import java.util.*
 import kotlin.math.floor
 
 object Mayor {

@@ -62,6 +62,23 @@ object Customization : CategoryKt("Customization") {
         this.allowAlpha = true
     }
 
+    var dynamicWaypointOpacity by boolean(true) {
+        this.name = Literal("Dynamic Waypoint Opacity")
+        this.description = Literal("Uses a dynamic waypoint opacity that changes based on how far or close you are to the waypoints. If you enable this, the Waypoint Opacity setting below will not take effect.")
+    }
+
+    var waypointOpacity by int(50) {
+        this.range = 0..100
+        this.name = Literal("Waypoint Opacity")
+        this.description = Literal("The opacity of the rendered waypoints. 50 will make it 50% transparent, 100% fully opaque, 0% fully invisible, etc. (default 50)")
+    }
+
+    var waypointTextOpacity by int(100) {
+        this.range = 0..100
+        this.name = Literal("Waypoint Text Opacity")
+        this.description = Literal("The opacity of the text on the rendered waypoints. 50 will make it 50% transparent, 100% fully opaque, 0% fully invisible, etc. (default 100)")
+    }
+
     init {
         separator {
             this.title = "Waypoint Text Customization"
@@ -78,6 +95,17 @@ object Customization : CategoryKt("Customization") {
         this.description = Literal("Scale of the waypoint text")
         this.range = 0.3f..2.0f
         this.slider = true
+    }
+
+    var showDistanceCutoff by int(50) {
+        this.range = 0..150
+        this.name = Literal("Show Distance & Times Dug Cutoff")
+        this.description = Literal("The distance cutoff at which the distance text disappears, and the times dug text appears. For example if set to 50 will not display the distance text if 50m or closer, and will only display the times dug when 50m or closer. (0 to always show distance and times dug, if times dug is enabled)")
+    }
+
+    var showTimesDug by boolean(true) {
+        this.name = Literal("Show Times Dug")
+        this.description = Literal("Shows times dug on the waypoint text for known burrows.")
     }
 
     init {

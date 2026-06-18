@@ -2,6 +2,7 @@ package net.sbo.mod.mixin;
 
 import net.minecraft.world.entity.Entity;
 import net.sbo.mod.utils.accessors.EntityAccessor;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,7 +25,7 @@ public class EntityMixin implements EntityAccessor {
             at = @At("HEAD"),
             cancellable = true
     )
-    public void getTeamColorValue(CallbackInfoReturnable<Integer> cir) {
+    public void getTeamColorValue(@NonNull CallbackInfoReturnable<Integer> cir) {
         if (sbo$hasCustomGlow()) {
             cir.setReturnValue(sbo$glowingColor);
             // We don't reset frame glow here to ensure it persists through the render cycle
@@ -36,7 +37,7 @@ public class EntityMixin implements EntityAccessor {
             at = @At("HEAD"),
             cancellable = true
     )
-    public void isGlowing(CallbackInfoReturnable<Boolean> cir) {
+    public void isGlowing(@NonNull CallbackInfoReturnable<Boolean> cir) {
         if (sbo$hasCustomGlow()) {
             cir.setReturnValue(true);
         }

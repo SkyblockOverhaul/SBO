@@ -5,16 +5,12 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.settings.categories.QOL
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.data.Item
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.InventorySlotUpdateEvent
-import net.sbo.mod.utils.overlay.Overlay
-import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
-import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
-import net.sbo.mod.utils.overlay.OverlayExamples
-import net.sbo.mod.utils.overlay.OverlayTextLine
+import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.overlay.*
 import java.util.regex.Pattern
 
 object Pickuplog {
@@ -37,7 +33,7 @@ object Pickuplog {
         overlay.init()
         overlay.setCondition { QOL.pickuplogOverlay }
 
-        Register.onChatMessageCancable(Pattern.compile("(.*?) item(.*?) (.*?)", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("(.*?) item(.*?) (.*?)", Pattern.DOTALL)) { message, matchResult ->
             var cancel = true
             if (World.isInSkyblock() && matchResult.group(1).contains("Sacks")) {
                 message.siblings.forEach { part ->

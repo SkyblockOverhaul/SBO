@@ -70,7 +70,7 @@ bloom {
         replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")
         replacement("Lnet/minecraft/client/gui/Gui;render(", "Lnet/minecraft/client/gui/Gui;extractRenderState(")
         replacement("@Inject(method = \"render\", at = @At(value = \"INVOKE\", target = ", "@Inject(method = \"extractGui\", at = @At(value = \"INVOKE\", target = ")
-        replacement("private void afterHudRender(DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
+        replacement("private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
 
         // drawString --> text
         replacement("drawContext.drawString(", "drawContext.text(")
@@ -109,7 +109,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
         freeCompilerArgs = args
 
-        moduleName.set("sbo") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric; we need unified name instead of MC version. The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
+        moduleName.set("sbo-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
     }
 }
 
@@ -318,7 +318,7 @@ dependencies {
     maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
-    implementation(ksp(project(":event-processor"))!!)
+    ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
     implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)

@@ -101,12 +101,12 @@ object Register {
     /**
      * Registers an event that listens for chat messages that match a regex.
      * The action receives both the message and the regex matcher for easy value extraction.
-     * If the action returns true, the message will be cancelled (not displayed in chat).
+     * If the action returns true, the message will be canceled (not displayed in chat).
      *
      * @param regex The regular expression to filter messages with.
      * @param action The action to execute. It receives the message and the `Matcher`.
      */
-    fun onChatMessageCancable(
+    fun onChatMessageCancelable(
         regex: Pattern,
         action: (message: Component, matchResult: Matcher) -> Boolean
     ) {

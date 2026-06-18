@@ -1,9 +1,9 @@
 package net.sbo.mod.utils.game
 
-import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.minecraft.network.protocol.game.ClientboundLoginPacket
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket
+import net.sbo.mod.utils.events.annotations.SboEvent
+import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import kotlin.math.max
 
 object ServerStats {

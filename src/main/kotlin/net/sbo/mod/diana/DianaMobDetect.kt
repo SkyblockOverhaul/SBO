@@ -1,29 +1,28 @@
 package net.sbo.mod.diana
 
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.component.ResolvableProfile
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.sbo.mod.utils.events.Register
+import net.minecraft.world.item.component.ResolvableProfile
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.getSecondsPassed
 import net.sbo.mod.utils.Helper.lastCocoon
 import net.sbo.mod.utils.Helper.lastInqDeath
 import net.sbo.mod.utils.Helper.lastKingDeath
 import net.sbo.mod.utils.Helper.lastMantiDeath
 import net.sbo.mod.utils.Helper.lastSphinxDeath
+import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
-import net.sbo.mod.utils.Player as SboPlayer
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
@@ -34,16 +33,14 @@ import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import kotlin.math.roundToInt
+import net.sbo.mod.utils.Player as SboPlayer
 
 object DianaMobDetect {
     private const val DEATH_WINDOW_SECONDS = 5
-    private const val COCOON_COOLDOWN_MS = 10_000L
-    private const val CHAT_DELAY_MS = 200L
     private const val ANNOUNCE_DELAY_MS = 5_000L
 
     private const val NAME_CHECK_TIMEOUT_MS = 1000L
 
-    private const val COCOON_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1ODMxMjMyODkwNTMsInByb2ZpbGVJZCI6IjkxZjA0ZmU5MGYzNjQzYjU4ZjIwZTMzNzVmODZkMzllIiwicHJvZmlsZU5hbWUiOiJTdG9ybVN0b3JteSIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNlYjBlZDhmYzIyNzJiM2QzZDgyMDY3NmQ1MmEzOGU3YjJlOGRhOGM2ODdhMjMzZTBkYWJhYTE2YzBlOTZkZiJ9fX0="
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
     private val unconfirmed = mutableMapOf<Int, Pair<ArmorStand, Long>>()
@@ -99,7 +96,7 @@ object DianaMobDetect {
             val displayName =
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
-            // Check if cocooned mob is a diana mob by checking if its either a rare mob or has the diana mob prefix like empyrean
+            // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
             if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ")} != null) {
                 // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
                 if (DianaTracker.lastSpawnedMob == displayName) {
@@ -111,7 +108,7 @@ object DianaMobDetect {
 
             if (rare != null) {
                 // Cocooned a rare mob if rare != null
-                announceCocoon(DetectionType.CHAT_MESSAGE, displayName)
+                announceCocoon(displayName)
             }
         }
         Register.onTick(1) {
@@ -131,8 +128,6 @@ object DianaMobDetect {
                     unconfirmedIterator.remove()
                     continue
                 }
-
-                checkCocoon(entity, now)
 
                 val name = entity.customName?.formattedString() ?: entity.name.formattedString()
                 if (name.contains("§2✿", ignoreCase = true)) {
@@ -236,41 +231,13 @@ object DianaMobDetect {
         }
     }
 
-    private fun checkCocoon(entity: ArmorStand, now: Long) {
-        if (!Diana.legacyCocoonDetection || World.getWorld() != "Hub") return
-        val recentDeath = listOf(lastInqDeath, lastKingDeath, lastSphinxDeath, lastMantiDeath)
-            .any { getSecondsPassed(it) < DEATH_WINDOW_SECONDS }
-
-        if (!recentDeath) return
-        val head: ItemStack = entity.getItemBySlot(EquipmentSlot.HEAD)
-
-        if (head.isEmpty) return
-        if (head.item.toString() != "minecraft:player_head") return
-        val profileComponent: ResolvableProfile? = head.get(DataComponents.PROFILE)
-        val texture: String =
-            profileComponent?.partialProfile()?.properties?.get("textures")?.firstOrNull()?.value ?: return
-
-        if (texture == COCOON_TEXTURE && lastCocoon + COCOON_COOLDOWN_MS < now) {
-            lastCocoon = now
-            announceCocoon(DetectionType.TEXTURE)
-        }
-    }
-
-    private enum class DetectionType {
-        TEXTURE, CHAT_MESSAGE
-    }
-
-    private fun announceCocoon(detectionType: DetectionType, mobName: String? = null) {
-        if (detectionType == DetectionType.TEXTURE && !Diana.legacyCocoonDetection) {
-            return
-        }
-
+    private fun announceCocoon(mobName: String) {
         if (Diana.announceCocoon) {
-            sleep(CHAT_DELAY_MS) { Chat.pc("" + if (mobName != null) "Cocooned a ${mobName}!" else "Cocoon!") }
+            Chat.pc("Cocooned a ${mobName}!")
         }
+
         if (Diana.cocoonTitle) {
-            val subtitle = if (mobName != null) "§b${mobName}" else null
-            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", subtitle, 10, 40, 10)
+            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b${mobName}", 10, 40, 10)
             playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
         }
     }

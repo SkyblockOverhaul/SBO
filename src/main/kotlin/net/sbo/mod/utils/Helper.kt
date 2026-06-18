@@ -2,22 +2,16 @@ package net.sbo.mod.utils
 
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
-import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.DianaItemsData
-import net.sbo.mod.utils.data.DianaMobsData
-import net.sbo.mod.utils.data.npcSellValueMap
-import net.sbo.mod.utils.data.HypixelBazaarResponse
-import net.sbo.mod.utils.data.Item
+import net.sbo.mod.utils.data.*
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
@@ -31,14 +25,15 @@ import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypoints
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.reflect.full.memberProperties
 import java.text.DecimalFormat
-import java.util.Locale
-import java.util.regex.Pattern
-import java.util.concurrent.Executors
+import java.util.*
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.regex.Pattern
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import kotlin.reflect.full.memberProperties
+import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 
 object Helper {
     var lastLootShare: Long = 0L
@@ -76,7 +71,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancable(Pattern.compile("^§e§lLOOT SHARE §fYou received loot for assisting (.*?)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received loot for assisting (.*?)$", Pattern.DOTALL)) { message, matchResult ->
             onLootShare()
             true
         }
@@ -439,14 +434,6 @@ object Helper {
         return invItems
     }
 
-    fun timestampToDate(timestamp: Long): String {
-        if (timestamp <= 0) return "Unknown"
-        val date = java.util.Date(timestamp)
-        val format = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-        format.timeZone = java.util.TimeZone.getTimeZone("UTC")
-        return format.format(date)
-    }
-
     fun toUpperSnakeCase(input: String): String {
         return input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
     }
@@ -470,10 +457,6 @@ object Helper {
     private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
 
     fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && hasMythologicalRitualActive() && World.getWorld() == "Hub"
-
-    fun getGuiName(): String {
-        return currentScreen?.title?.string ?: ""
-    }
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
         mc.gui.apply {
@@ -583,7 +566,7 @@ object Helper {
                     // no price data available - notify user
                     Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
                 } else {
-                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // if a previous request succeeded and this request failed, it might be temporary, and we still
                     // have some price data even if outdated. so only log to logs
                     SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
                 }
@@ -597,7 +580,7 @@ object Helper {
                     // no price data available - notify user
                     Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
                 } else {
-                    // if a previous request succeeded and this request failed, it might be temporary and we still
+                    // if a previous request succeeded and this request failed, it might be temporary, and we still
                     // have some price data even if outdated. so only log to logs
                     SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
                 }

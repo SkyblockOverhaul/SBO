@@ -2,12 +2,12 @@ package net.sbo.mod.utils.overlay
 
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.data.SboDataObject.overlayData
 import org.lwjgl.glfw.GLFW
-import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.client.input.KeyEvent
 
 class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     private var selectedOverlay: Overlay? = null

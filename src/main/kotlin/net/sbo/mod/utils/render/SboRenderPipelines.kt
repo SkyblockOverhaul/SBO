@@ -5,9 +5,9 @@ import com.mojang.blaze3d.pipeline.RenderPipeline
 //#if MC < 26.1
 import com.mojang.blaze3d.platform.DepthTestFunction
 //#endif
+import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.VertexFormat.Mode
 import net.minecraft.client.renderer.RenderPipelines
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import net.sbo.mod.SBOKotlin
 
 /** Add new pipelines to [net.sbo.mod.compat.IrisCompatibility] */

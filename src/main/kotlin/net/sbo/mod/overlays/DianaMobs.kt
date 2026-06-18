@@ -1,16 +1,11 @@
 package net.sbo.mod.overlays
 /* todo: Refactoring
-* This Code definetly needs refactoring, but I don't have the time to do it right now.
+* This Code definitely needs refactoring, but I don't have the time to do it right now.
 * I will do it in the future, but for now it works and I don't want to break it.
 * If you want to refactor it, feel free to do so, but please keep the functionality intact.
 */
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.overlay.Overlay
-import net.sbo.mod.utils.overlay.isCraftingScreenOpen
-import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
-import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
-import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.minecraft.ChatFormatting.*
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -19,10 +14,10 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
+import net.sbo.mod.utils.overlay.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
-import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 
 object DianaMobs : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Mobs", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }

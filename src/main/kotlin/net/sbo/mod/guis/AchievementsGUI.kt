@@ -3,31 +3,18 @@ package net.sbo.mod.guis
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
-import gg.essential.elementa.components.ScrollComponent
-import gg.essential.elementa.components.UIBlock
-import gg.essential.elementa.components.UIRoundedRectangle
-import gg.essential.elementa.components.UIText
-import gg.essential.elementa.components.UIWrappedText
+import gg.essential.elementa.components.*
 import gg.essential.elementa.components.input.UITextInput
-import gg.essential.elementa.constraints.AdditiveConstraint
-import gg.essential.elementa.constraints.CenterConstraint
-import gg.essential.elementa.constraints.ChildBasedSizeConstraint
-import gg.essential.elementa.constraints.FillConstraint
-import gg.essential.elementa.constraints.SiblingConstraint
-import gg.essential.elementa.constraints.SubtractiveConstraint
-import gg.essential.elementa.dsl.childOf
-import gg.essential.elementa.dsl.constrain
-import gg.essential.elementa.dsl.percent
-import gg.essential.elementa.dsl.pixels
-import gg.essential.elementa.dsl.toConstraint
+import gg.essential.elementa.constraints.*
+import gg.essential.elementa.dsl.*
 import gg.essential.universal.UKeyboard
+import net.minecraft.ChatFormatting
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.Achievement
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.utils.data.SboDataObject
 import java.awt.Color
 import kotlin.math.floor
-import net.minecraft.ChatFormatting
-import net.sbo.mod.SBOKotlin.mc
 
 class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
     enum class AchievementFilter {

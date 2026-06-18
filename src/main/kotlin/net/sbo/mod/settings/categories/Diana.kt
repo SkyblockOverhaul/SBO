@@ -2,15 +2,15 @@ package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
+import gg.essential.universal.UScreen
+import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.PastEventsGui
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
 import java.awt.Color
-import gg.essential.universal.UScreen
-import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.PastEventsGui
 
 object Diana : CategoryKt("Diana") {
     enum class ShareList {
@@ -53,26 +53,33 @@ object Diana : CategoryKt("Diana") {
     init {
         separator {
             this.title = "Diana Burrows"
+            this.description = "You should keep all of these On for the optimal experience. Without the Arrow Guess, your rates will be much worse, and without the Close Burrow Detection your burrows will not turn into Mob/Treasure/Start burrows when getting close and holding a spade, and it will also make your experience and rates worse."
         }
     }
 
-    var dianaBurrowGuess by boolean(true) {
+    var spadeGuess by boolean(true) {
         this.name = Literal("Spade Guess")
-        this.description = Literal("Guess the burrow location when using spade ability. Needs Driping Lava Partciles and set /particlequality to Extreme for more accuracy")
+        this.description = Literal("Guess the burrow location when using spade ability. Needs Dripping Lava Particles and set /particlequality to Extreme for more accuracy")
     }
 
     var arrowGuess by boolean(true) {
         this.name = Literal("Arrow Guess")
         this.description = Literal("Guesses the burrow location from the arrow direction after digging a burrow \n" +
             "§bNOTE!: This replaces the old Multi guess system!\n" +
-            "§cHave Dust Particles enabled!!!\n" +
-            "§aDo every burrow you see for doing diana the fastest way!"
+            "§cHave Dust Particles enabled!\n" +
+            "§aDo every burrow you see for doing Diana the fastest way!"
         )
     }
 
-    var dianaBurrowDetect by boolean(true) {
+    var closeBurrowDetection by boolean(true) {
         this.name = Literal("Close Burrow Detection")
-        this.description = Literal("Detects Diana burrows when being close and holding shovel to show it as treasure or mob burrow. | to reset waypoints /sboclearburrows")
+        this.description = Literal("Detects burrow locations when being close to them from the particles when holding shovel to register/update it as a Treasure, Mob or Start burrow. To reset waypoints type /sboclearburrows")
+    }
+
+    init {
+        separator {
+            this.title = "Diana Burrows Preferences"
+        }
     }
 
     var showBeaconBeam by boolean(true) {
@@ -88,11 +95,6 @@ object Diana : CategoryKt("Diana") {
     var showTitleWhenChainEnd by boolean(false) {
         this.name = Literal("Show Title When Chain End")
         this.description = Literal("Shows a title to guess normally when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby")
-    }
-
-    var dontClearArrowGuess by boolean(true) {
-        this.name = Literal("Don't Clear Arrow Guess on World Change")
-        this.description = Literal("If enabled, the arrow guess waypoints will not be cleared when changing worlds/lobby")
     }
 
     init {
@@ -132,7 +134,7 @@ object Diana : CategoryKt("Diana") {
     var badWarpDistance by int(0) {
         this.range = 0..150
         this.name = Literal("Bad Warp Distance")
-        this.description = Literal("Blocks at which good warps are prioritized over bad ones (Currently only Castle and Crypt). For example, when the Crypt warp is closest warp but Castle is second closest and the distance is less than this value, Castle will be preferred over Crypt warp for accessibility. (0 to disable)")
+        this.description = Literal("Blocks at which good warps are prioritized over bad ones (Currently only Castle and Crypt). For example, if you set it to 100, when the Crypt warp is the closest warp to a burrow, and the Castle is second closest, with Crypt warp being only 100 blocks or less closer than Castle, Castle will be preferred over Crypt warp for accessibility, as it can be faster to AOTV out of castle to reach the burrow whereas Crypt is longer to get out. (0 to disable)")
     }
 
     var warpDelay by int(0) {
@@ -305,34 +307,6 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
-    init {
-        separator {
-            this.title = "Title Timings"
-            this.description = "Customize fade-in, display and fade-out ticks for titles"
-        }
-    }
-
-    var rareTitleFadeIn by int(0) {
-        this.name = Literal("Rare Title Fade In")
-        this.description = Literal("Fade-in (ticks) for rare mob titles")
-        this.range = 0..100
-        this.slider = true
-    }
-
-    var rareTitleTime by int(90) {
-        this.name = Literal("Rare Title Time")
-        this.description = Literal("Display time (ticks) for rare mob titles")
-        this.range = 0..100
-        this.slider = true
-    }
-
-    var rareTitleFadeOut by int(20) {
-        this.name = Literal("Rare Title Fade Out")
-        this.description = Literal("Fade-out (ticks) for rare mob titles")
-        this.range = 0..100
-        this.slider = true
-    }
-
     var lootAnnouncerParty by boolean(true) {
         this.name = Literal("Loot Party Announcer")
         this.description = Literal("Announces chimera/wool/stinger/food in party chat")
@@ -412,6 +386,33 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
+    init {
+        separator {
+            this.title = "Title Timings"
+            this.description = "Customize fade-in, display and fade-out ticks for titles"
+        }
+    }
+
+    var rareTitleFadeIn by int(0) {
+        this.name = Literal("Rare Title Fade In")
+        this.description = Literal("Fade-in (ticks) for rare mob titles")
+        this.range = 0..100
+        this.slider = true
+    }
+
+    var rareTitleTime by int(90) {
+        this.name = Literal("Rare Title Time")
+        this.description = Literal("Display time (ticks) for rare mob titles")
+        this.range = 0..100
+        this.slider = true
+    }
+
+    var rareTitleFadeOut by int(20) {
+        this.name = Literal("Rare Title Fade Out")
+        this.description = Literal("Fade-out (ticks) for rare mob titles")
+        this.range = 0..100
+        this.slider = true
+    }
 
     init {
         separator {
@@ -442,25 +443,6 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("The width of the lines drawn for Diana waypoints")
     }
 
-    var removeGuessDistance by int(3) {
-        this.range = 0..20
-        this.slider = true
-        this.name = Literal("Remove Guess When Close")
-        this.description = Literal("Removes the guess waypoint when you are within this distance of it (0 to disable)")
-    }
-
-    var removeRareMobwaypoint by boolean(true) {
-        this.name = Literal("Remove Rare Mob Waypoint when near")
-        this.description = Literal("Removes the rare mob waypoint when you are within 3 blocks of it")
-    }
-
-    var removeBeam by int(8) {
-        this.range = 0..20
-        this.slider = true
-        this.name = Literal("Remove Rare Mob Beam Distance")
-        this.description = Literal("Removes the rare mob waypoint beam when you are within this distance of it (0 to disable)")
-    }
-
     init {
         separator {
             this.title = "Rare Mobs"
@@ -486,13 +468,13 @@ object Diana : CategoryKt("Diana") {
         this.name = Literal("Which Mobs to Receive")
         this.description = Literal(
         "Select which mobs to receive\n" +
-            "§bOTHER = Rare mobs from players that dont ping with sbo (mainly skyhanni)"
+            "§bOTHER = Rare mobs from players that don't ping with sbo (mainly skyhanni)"
         )
     }
 
     var HighlightRareMobs by boolean(true) {
         this.name = Literal("Highlight Rare Mobs")
-        this.description = Literal("Highlights rare mobs(King, Manti, Sphinx, Inq) with a glowing effect")
+        this.description = Literal("Highlights rare mobs (King, Manti, Sphinx, Inq) with a glowing effect")
     }
 
     var HighlightColor by color(
@@ -504,7 +486,7 @@ object Diana : CategoryKt("Diana") {
 
     var allWaypointsAreInqs by boolean(false) {
         this.name = Literal("All Waypoints are Rare Mobs")
-        this.description = Literal("All coordinates from chat are considered rare mobs(King, Manti, Sphinx, Inq) only works in hub during diana")
+        this.description = Literal("All coordinates from chat are considered rare mobs (King, Manti, Sphinx, Inq)")
     }
 
     var announceInqText by strings("") {
@@ -535,11 +517,6 @@ object Diana : CategoryKt("Diana") {
     var cocoonTitle by boolean(true) {
         this.name = Literal("Show Title On Cocoon")
         this.description = Literal("Shows a title on cocoon")
-    }
-
-    var legacyCocoonDetection by boolean(false) {
-        this.name = Literal("Legacy Cocoon Detection")
-        this.description = Literal("Uses egg sac player head texture to detect cocoon instead of the new cocoon chat message when enabled. Only enable if chat detection does not work.")
     }
 
     var hpAlert by double(0.0) {
@@ -584,6 +561,6 @@ object Diana : CategoryKt("Diana") {
 
     var sphinxSolver by boolean(true) {
         this.name = Literal("Sphinx Solver")
-        this.description = Literal("Helps you solve the sphinx riddle by showing you the answer choices in chat and it automatically clicks the correct one for you when you click anywehre while the chat is open.")
+        this.description = Literal("Helps you solve the sphinx riddle by showing you the answer choices in chat and it automatically clicks the correct one for you when you click anywhere while the chat is open.")
     }
 }

@@ -1,11 +1,11 @@
 package net.sbo.mod.utils
 
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.data.DianaTracker
+import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import net.sbo.mod.settings.categories.Diana
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.TimeUnit
 
@@ -36,10 +36,6 @@ object SboTimerManager {
 
     private fun removeTimer(timer: SBOTimer) {
         activeTimers.remove(timer)
-    }
-
-    private fun getTimer(name: String): SBOTimer? {
-        return SBOTimer.timerList.find { it.name.equals(name, ignoreCase = true) }
     }
 
     @SboEvent
@@ -77,6 +73,12 @@ object SboTimerManager {
         }
 
         init {
+            val storedTimeMs = tracker.items.TIME
+
+            if (storedTimeMs > 0L) {
+                elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(storedTimeMs)
+            }
+
             timerList.add(this)
         }
 

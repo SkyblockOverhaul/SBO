@@ -21,7 +21,7 @@ object MessageHider {
 
     fun init() {
         (generalRules + dianaRules).forEach { rule ->
-            Register.onChatMessageCancable(rule.pattern) { _, _ -> !rule.isEnabled() }
+            Register.onChatMessageCancelable(rule.pattern) { _, _ -> !rule.isEnabled() }
         }
     }
 }

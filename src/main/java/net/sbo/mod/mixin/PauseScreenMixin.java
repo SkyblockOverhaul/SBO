@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.sbo.mod.SBOKotlin;
 import net.sbo.mod.guis.AchievementsGUI;
 import net.sbo.mod.guis.Guis;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,13 +25,14 @@ public abstract class PauseScreenMixin {
     boolean injected = false;
 
     @Inject(method = "createPauseMenu", at = @At(value = "HEAD"))
-    void sbo$createPauseMenuHead(CallbackInfo ci) {
+    void sbo$createPauseMenuHead(@NonNull CallbackInfo ci) {
         addedButtons = 0;
         injected = false;
     }
 
     @Redirect(method = "createPauseMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
-    LayoutElement sbo$onAddChild(RowHelper helper, LayoutElement original) {
+    @NonNull
+    LayoutElement sbo$onAddChild(@NonNull RowHelper helper, @NonNull LayoutElement original) {
         if (addedButtons == 0 && !injected) {
             injected = true;
 

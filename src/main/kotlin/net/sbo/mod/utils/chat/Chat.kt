@@ -1,14 +1,14 @@
 package net.sbo.mod.utils.chat
 
-import net.sbo.mod.SBOKotlin.mc
-import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
+import net.minecraft.client.gui.components.ChatComponent
 import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
-import net.minecraft.client.gui.components.ChatComponent
-import net.minecraft.ChatFormatting
-import net.sbo.mod.utils.events.ClickActionManager
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.General
+import net.sbo.mod.utils.events.ClickActionManager
 
 object Chat {
 
@@ -22,8 +22,8 @@ object Chat {
      */
     fun pc(text: String) {
         if (General.assumeMuted) {
-            // User is muted (or we assume it bc of the opt-in setting thats false by default)
-            // trying send message will show up a huge output about the remaining mute time,
+            // User is muted (or we assume it bc of the opt-in setting that's false by default)
+            // trying to send message will show up a huge output about the remaining mute time,
             // server rules and all that yapping with no other output about the text we want
             // to send, so send locally instead via the chat method. We can have color since it's regular chat.
             chat("§6[SBO] §e${text}")
@@ -180,7 +180,7 @@ object Chat {
 
     /**
      * Gets a message that fills one line of chat by repeating the separator.
-     * @param separator The string to repeat. Defaults to "-".
+     * @param separator The string to repeat. Defaults to -.
      * @return The message string that fills the chat line.
      */
     fun getChatBreak(separator: String = "-", colorcodes: String = "§b"): String {
