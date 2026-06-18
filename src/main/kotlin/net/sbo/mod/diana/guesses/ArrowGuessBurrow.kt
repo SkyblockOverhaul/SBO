@@ -299,6 +299,10 @@ object ArrowGuessBurrow {
 
     internal fun isBlockValid(pos: SboVec): Boolean {
         if (!pos.isInLoadedChunk()) return true
+        return isBlockTrulyValid(pos)
+    }
+
+    internal fun isBlockTrulyValid(pos: SboVec): Boolean {
         val isGround = pos.getBlockAt() == Blocks.GRASS_BLOCK
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
         return isGround && isValidBlockAbove

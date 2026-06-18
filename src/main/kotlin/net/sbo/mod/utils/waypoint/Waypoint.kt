@@ -8,13 +8,14 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import java.awt.Color
-import kotlin.math.pow
+import java.time.Duration
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 private const val MIN_OPACITY = 0.2f
-private const val MAX_OPACITY = 1.0f
+private const val MAX_OPACITY = 0.99f
 private const val FADE_START_DISTANCE = 4.5
 private const val FADE_END_DISTANCE = 100.0
 
@@ -48,15 +49,40 @@ class Waypoint(
     var isClosest = false
     var timesDug = 0
     var userInteractedWith = false
+    var dynamicOpacity = 0.99f
+    var inaccurateArrow = false
+
+    fun hasStrongerStateThan(other: Waypoint): Boolean = this.timesDug > other.timesDug || (this.userInteractedWith && !other.userInteractedWith)
+
+    fun carryOverState(other: Waypoint) {
+        val otherTimesDug = other.timesDug
+
+        if (otherTimesDug > this.timesDug) {
+            this.timesDug = otherTimesDug
+        }
+
+        val otherInteractedWith = other.userInteractedWith
+
+        if (otherInteractedWith && !this.userInteractedWith) {
+            this.userInteractedWith = true
+        }
+    }
 
     fun distanceToPlayer(): Double {
         val playerPos = Player.getLastPosition()
-        return sqrt((playerPos.x - this.pos.x).pow(2) + (playerPos.y - this.pos.y).pow(2) + (playerPos.z - this.pos.z).pow(2))
+        val dx = playerPos.x - this.pos.x
+        val dy = playerPos.y - this.pos.y
+        val dz = playerPos.z - this.pos.z
+
+        return sqrt(dx * dx + dy * dy + dz * dz)
     }
 
     fun distanceToPlayerIgnoringY(): Double {
         val playerPos = Player.getLastPosition()
-        return sqrt((playerPos.x - this.pos.x).pow(2) + (playerPos.z - this.pos.z).pow(2))
+        val dx = playerPos.x - this.pos.x
+        val dz = playerPos.z - this.pos.z
+
+        return sqrt(dx * dx + dz * dz)
     }
 
     private fun setWarpText() {
@@ -82,8 +108,12 @@ class Waypoint(
         }
     }
 
-    private fun getDynamicOpacity(): Float {
+    private fun updateDynamicOpacity(): Float {
         val distance = this.distanceRaw
+
+        if (!distance.isFinite()) {
+            return MAX_OPACITY
+        }
 
         if (distance <= FADE_START_DISTANCE) {
             return MIN_OPACITY
@@ -93,8 +123,11 @@ class Waypoint(
             return MAX_OPACITY
         }
 
-        val progress = ((distance - FADE_START_DISTANCE) / (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
-        return MIN_OPACITY + ((MAX_OPACITY - MIN_OPACITY) * progress)
+        val progress = ((distance - FADE_START_DISTANCE) /
+            (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
+
+        return (MIN_OPACITY + ((MAX_OPACITY - MIN_OPACITY) * progress))
+            .coerceIn(MIN_OPACITY, MAX_OPACITY)
     }
 
     private fun getColor(): Color {
@@ -139,6 +172,8 @@ class Waypoint(
         inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
+        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 1f)
+
         val dist = distanceRaw.roundToInt()
 
         val showDistance = Customization.showDistanceCutoff <= 0 || dist > Customization.showDistanceCutoff
@@ -181,17 +216,17 @@ class Waypoint(
         return (color and 0x00FFFFFF) or (clampedAlpha shl 24)
     }
 
+    fun isOlderThan(duration: Duration): Boolean {
+        return System.currentTimeMillis() - this.creation > duration.toMillis()
+    }
+
     fun render(context: WorldRenderContext) {
         if (!this.formatted || this.hidden) return
+        if (inaccurateArrow) return
 
         val rgbAndHex = getRgbAndHex()
 
-        val waypointOpacity = if (Customization.dynamicWaypointOpacity) {
-            getDynamicOpacity()
-        } else {
-            (Customization.waypointOpacity / 100.0).toFloat()
-        }
-
+        val waypointOpacity = this.dynamicOpacity
         val waypointTextOpacity = (Customization.waypointTextOpacity / 100.0).toFloat()
 
         RenderUtils3D.renderWaypoint(

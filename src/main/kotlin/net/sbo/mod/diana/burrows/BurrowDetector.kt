@@ -32,11 +32,13 @@ object BurrowDetector {
             WaypointManager.removeAllOfType("guess")
             WaypointManager.removeAllOfType("arrow")
             WaypointManager.removeAllOfType("rareMob")
-            resetBurrows()
+            WaypointManager.removeAllOfType("burrow")
+            burrows.clear()
+            burrowsHistory.clear()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
-        Register.onChatMessage(Regex("""^ ☠ You .+$"""), noFormatting = true) { message, matchResult ->
+        Register.onChatMessage(Regex("""^§c ☠ §7You .+$""")) { message, matchResult ->
             if ("Hub" != World.getWorld()) return@onChatMessage
             refreshBurrows(true, 1)
         }
@@ -83,12 +85,6 @@ object BurrowDetector {
     }
 
     @SboEvent
-    fun onWorldChange(event: WorldChangeEvent) {
-        if (!Diana.closeBurrowDetection) return
-        resetBurrows()
-    }
-
-    @SboEvent
     fun onParticleReceive(event: PacketReceiveEvent) {
         val packet = event.packet
         if (packet !is ClientboundLevelParticlesPacket) return
@@ -101,6 +97,7 @@ object BurrowDetector {
             WaypointManager.removeWaypointAt(pos, "arrow")
             WaypointManager.removeWaypointAt(pos, "guess")
             WaypointManager.removeWaypointAt(pos, "rareMob")
+            WaypointManager.removeWaypointAt(pos, "world")
         }
         burrowDetect(packet)
     }
@@ -108,32 +105,61 @@ object BurrowDetector {
     private fun burrowDetect(packet: ClientboundLevelParticlesPacket) {
         val particleType = ParticleTypes.getParticleType(packet) ?: return
         val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
+
+        val type = when (particleType) {
+            "FOOTSTEP" -> {
+                burrows.getOrPut("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}") { Burrow(pos) }.hasFootstep = true
+                return
+            }
+            "ENCHANT" -> {
+                burrows.getOrPut("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}") { Burrow(pos) }.hasEnchant = true
+                return
+            }
+            "EMPTY" -> "Start"
+            "MOB" -> "Mob"
+            "TREASURE" -> "Treasure"
+            else -> return
+        }
+
+        registerBurrow(pos, type)
+    }
+
+    private fun registerBurrow(
+        pos: SboVec,
+        type: String,
+        source: String = "particle",
+        carriedTimesDug: Int? = null
+    ) {
         val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
         if (burrowsHistory.contains(posString)) return
+        if (WaypointManager.waypointExists("burrow", pos).first) return
 
         val burrow = burrows.getOrPut(posString) {
             Burrow(pos)
         }
 
-        when (particleType) {
-            "FOOTSTEP" -> burrow.hasFootstep = true
-            "ENCHANT" -> burrow.hasEnchant = true
-            "EMPTY" -> burrow.type = "Start"
-            "MOB" -> burrow.type = "Mob"
-            "TREASURE" -> burrow.type = "Treasure"
-        }
+        burrow.type = type
 
-        val type = burrow.type ?: return
         if (burrow.waypoint != null) return
 
-        burrowsHistory.add(posString)
+        val existingTimesDug =
+            carriedTimesDug
+                ?: burrows[posString]?.waypoint?.timesDug
+                ?: WaypointManager.getWaypointAt(pos, "burrow")?.timesDug
+                ?: WaypointManager.getWaypointAt(pos, "arrow")?.timesDug
+                ?: WaypointManager.getWaypointAt(pos, "guess")?.timesDug
+                ?: 0
 
         val waypoint = Waypoint(
             type,
             pos.x, pos.y, pos.z,
             type = "burrow"
         )
+
+        waypoint.timesDug = existingTimesDug
+
+        burrowsHistory.add(posString)
 
         burrow.waypoint = waypoint
         WaypointManager.addWaypoint(waypoint)
@@ -159,7 +185,7 @@ object BurrowDetector {
         if (null != dugWaypoint) {
             // Will only work if known burrow
             val startBurrow = dugWaypoint.text == "Start"
-            val mobBurrow = dugWaypoint.text == "Mob"
+            val mobBurrow = dugWaypoint.text == "Mob" || burrowType == "Mob"
 
             // Count if not death originating and not start burrow (will still count if was a guess and not known burrow)
             val shouldCount = !deathOriginating && !startBurrow
@@ -168,7 +194,7 @@ object BurrowDetector {
                 dugWaypoint.timesDug++
             }
 
-            if (dugWaypoint.timesDug < expectedTimesDug) {
+            if (dugWaypoint.timesDug != expectedTimesDug) {
                 // Fix up the times dug from chat message in case it ever desyncs
                 dugWaypoint.timesDug = expectedTimesDug
             }
@@ -192,20 +218,18 @@ object BurrowDetector {
         flushRemovals()
 
         if (dugWaypoint?.type != "burrow" && burrowType != null) {
-            // The user has dug the Guess waypoint before we could detect the particles and turn into a Mob/Treasure/Start waypoint.
-            // In this case, if it was a Start waypoint it would disappear instantly anyways. If it was a Mob/Treasure, we use the chat message
-            // to determine the burrow type, and add that as a known burrow and remove the old one, whilst carrying over timesDug.
-            val waypoint = Waypoint(burrowType, pos.x, pos.y, pos.z, type = "burrow")
-            waypoint.timesDug = dugWaypoint?.timesDug ?: expectedTimesDug
+            // The user dug a Guess waypoint before particles updated it into a real burrow type.
+            // We promote it into a real burrow and preserve progression state.
+            registerBurrow(
+                pos = pos,
+                type = burrowType,
+                source = "chat",
+                carriedTimesDug = dugWaypoint?.timesDug ?: expectedTimesDug
+            )
 
-            WaypointManager.addWaypoint(waypoint)
-            if (dugWaypoint != null) WaypointManager.removeWaypoint(dugWaypoint)
+            if (dugWaypoint != null) {
+                WaypointManager.removeWaypoint(dugWaypoint)
+            }
         }
-    }
-
-    fun resetBurrows() {
-        WaypointManager.removeAllOfType("burrow")
-        burrows.clear()
-        burrowsHistory.clear()
     }
 }

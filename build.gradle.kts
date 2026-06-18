@@ -109,7 +109,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
         freeCompilerArgs = args
 
-        moduleName.set("sbo") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric; we need unified name instead of MC version. The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
+        moduleName.set("sbo-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
     }
 }
 

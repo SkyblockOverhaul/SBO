@@ -6,13 +6,13 @@ import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.General.HideOwnWaypoints
 import net.sbo.mod.settings.categories.General.hideOwnWaypoints
 import net.sbo.mod.settings.categories.General.patcherWaypoints
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.checkDiana
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
@@ -25,6 +25,7 @@ import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.WaypointRenderer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.time.Duration
 import kotlin.math.roundToInt
 
 object WaypointManager {
@@ -65,7 +66,7 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim().lowercase()
             val playername = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                if ((!trailing.startsWith(" ") || rareMobs.contains(mob) || Diana.allWaypointsAreInqs) && Diana.receiveRareMob && checkDiana()) {
+                if ((!trailing.startsWith(" ") || rareMobs.contains(mob) || Diana.allWaypointsAreInqs) && Diana.receiveRareMob) {
                     val mobType: Diana.ReceiveList = when (mob) {
                         "minos inquisitor", "inquisitor", "inq" -> Diana.ReceiveList.INQ
                         "king minos", "king" -> Diana.ReceiveList.KING
@@ -142,6 +143,26 @@ object WaypointManager {
                 removeWaypoint(waypoint)
             }
 
+            // Remove shovel guesses pointing to invalid burrow locations
+            shovelGuesses.forEach { shovelGuess ->
+                if (!ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
+                    removeWaypoint(shovelGuess)
+                }
+            }
+
+            // Remove arrow guesses pointing to invalid burrow locations after being existing for over 10 seconds (During 10 seconds period, we hide them instead to give time for moveToNext to do its job)
+            arrowGuesses.forEach { arrowGuess ->
+                if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
+                    if (arrowGuess.isOlderThan(Duration.ofSeconds(10))) {
+                        removeWaypoint(arrowGuess)
+                    } else {
+                        arrowGuess.inaccurateArrow = true
+                    }
+                } else {
+                    arrowGuess.inaccurateArrow = false
+                }
+            }
+
             // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 3 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
             shovelGuesses.forEach { shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
@@ -151,25 +172,34 @@ object WaypointManager {
 
                     waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 3
                 }?.let { staticBurrow ->
-                    if (shovelGuess.timesDug > staticBurrow.timesDug) {
-                        staticBurrow.timesDug = shovelGuess.timesDug
-                    }
-
-                    removeAllOfType("guess")
+                    staticBurrow.carryOverState(shovelGuess)
+                    removeWaypoint(shovelGuess)
                 }
             }
 
-            // Remove the arrow guesses representing the same blocks as an already-known treasure/mob/start burrow, and transfer its timesDug to the known burrow instead if the arrow guess was dug more times than the known burrow
+            // Remove duplicate shovel guesses that are within 30 blocks, or 60 if in an unloaded chunk, of each other
+            shovelGuesses.forEachIndexed { index, shovelGuess ->
+                val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
+
+                shovelGuesses.drop(index + 1).firstOrNull { otherGuess ->
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= (if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 60)
+                }?.let { otherGuess ->
+                    val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
+                    val remove = if (keep === shovelGuess) otherGuess else shovelGuess
+
+                    keep.carryOverState(remove)
+                    removeWaypoint(remove)
+                }
+            }
+
+            // Remove the arrow guesses representing the same blocks as an already-known treasure/mob/start burrow, and transfer its state to the known burrow instead if the arrow guess was dug more times than the known burrow
             arrowGuesses.forEach { arrowGuess ->
                 val arrowGuessBlock = arrowGuess.pos.roundLocationToBlock()
 
                 knownBurrows.firstOrNull { knownBurrow ->
                     knownBurrow.pos.roundLocationToBlock() == arrowGuessBlock
                 }?.let { knownBurrow ->
-                    if (arrowGuess.timesDug > knownBurrow.timesDug) {
-                        knownBurrow.timesDug = arrowGuess.timesDug
-                    }
-
+                    knownBurrow.carryOverState(arrowGuess)
                     removeWaypoint(arrowGuess)
                 }
             }
@@ -186,13 +216,6 @@ object WaypointManager {
         WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
     }
 
-    @SboEvent
-    fun onWorldChange(event: WorldChangeEvent) {
-        removeAllOfType("world")
-        removeAllOfType("guess")
-        if (!Diana.dontClearArrowGuess) removeAllOfType("arrow")
-    }
-
     fun addRareMobWaypoint(player: String, pos: SboVec, mobName: String, playername: String) {
         when (mobName) {
             "minos inquisitor", "inquisitor" -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(playername)) return
@@ -200,11 +223,12 @@ object WaypointManager {
             "manticore" -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(playername)) return
             "sphinx" -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(playername)) return
         }
-        addWaypoint(Waypoint(player, pos.x, pos.y, pos.z, ttl = 45, type = "rareMob") )
+        addWaypoint(Waypoint(player, pos.x, pos.y, pos.z, ttl = 45, type = "rareMob"))
     }
 
     fun removeNearbyRareMobWaypoints() {
         removeWithinDistance("rareMob", 30)
+        removeWithinDistance("world", 30)
     }
 
     /**
@@ -295,8 +319,6 @@ object WaypointManager {
      */
     fun updateGuess(pos: SboVec?) {
         if (pos == null) return
-
-        removeAllOfType("guess")
 
         if (!waypointExists("burrow", pos).first) {
             val waypoint = Waypoint("Guess", pos.x, pos.y, pos.z, type = "guess")
@@ -430,7 +452,7 @@ object WaypointManager {
         if (Diana.ignoreYLevel) playerDistance = pos.distanceToIgnoringY(Player.getLastPosition())
 
         val condition1 = playerDistance > (closestDistance + Diana.warpDiff + (closestWarpPoint?.extraBlocks ?: 0))
-        val condition2 = condition1 && (closestWaypoint.second > 60 || getWaypointsOfType("rareMob").isNotEmpty())
+        val condition2 = condition1 && (closestWaypoint.second > 60 || getWaypointsOfType("rareMob").isNotEmpty() || getWaypointsOfType("world").isNotEmpty())
 
         val condition = if (Diana.dontWarpIfBurrowClose) condition2 else condition1
 
@@ -448,15 +470,15 @@ object WaypointManager {
 
     fun warpToInq() {
         val newestInq = getWaypointsOfType("rareMob").maxByOrNull { it.creation }
-        if (newestInq == null) return
-
-        val warp = getClosestWarp(newestInq.pos) ?: return
+        val newestWorldInq = getWaypointsOfType("world").maxByOrNull { it.creation }
+        val pos = newestInq?.pos ?: newestWorldInq?.pos ?: return
+        val warp = getClosestWarp(pos) ?: return
 
         executeWarpCommand(warp)
     }
 
     fun warpBoth() {
-        if (getWaypointsOfType("rareMob").isEmpty()) {
+        if (getWaypointsOfType("rareMob").isEmpty() && getWaypointsOfType("world").isEmpty()) {
             warpToGuess()
         } else {
             warpToInq()
