@@ -37,6 +37,7 @@ object ChatMessageQueue {
     }
 
     fun send(player: LocalPlayer, message: String) {
+        onCommandOrMessageSent() // mixin should call it, but out of precaution
         player.connection.sendChat(message)
     }
 
