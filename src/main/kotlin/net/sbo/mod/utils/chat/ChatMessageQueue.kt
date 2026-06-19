@@ -9,7 +9,7 @@ import net.sbo.mod.utils.events.impl.game.SentCommandEvent
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent
 
 object ChatMessageQueue {
-    private const val DELAY_NANOS = 250_000_000L
+    private const val DELAY_NANOS = 500_000_000L
     private val queue = ObjectArrayFIFOQueue<String>(1)
 
     private var lastSentAt = 0L
