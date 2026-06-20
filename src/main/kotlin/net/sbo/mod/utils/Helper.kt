@@ -36,6 +36,8 @@ import kotlin.reflect.full.memberProperties
 import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 
 object Helper {
+    private val MF_REGEX = Regex("""§b\(\+§b(\d+)""")
+
     var lastLootShare: Long = 0L
     var allowSackTracking: Boolean = true
     var hasSpade: Boolean = false
@@ -548,7 +550,7 @@ object Helper {
     }
 
     fun getMagicFind(mf: String): Int {
-        val mfMatch = Regex("""§b\(\+§b(\d+)""").find(mf)
+        val mfMatch = MF_REGEX.find(mf)
         if (mfMatch != null) {
             val mfValue = mfMatch.groupValues[1].toIntOrNull() ?: 0
             return mfValue
