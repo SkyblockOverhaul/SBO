@@ -1,9 +1,9 @@
 package net.sbo.mod.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import gg.essential.universal.UScreen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout.RowHelper;
-import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.network.chat.Component;
 import net.sbo.mod.SBOKotlin;
@@ -14,10 +14,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(PauseScreen.class)
+@Mixin(value = PauseScreen.class)
 public abstract class PauseScreenMixin {
     @Unique
     int addedButtons;
@@ -30,9 +29,8 @@ public abstract class PauseScreenMixin {
         injected = false;
     }
 
-    @Redirect(method = "createPauseMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
-    @NonNull
-    LayoutElement sbo$onAddChild(@NonNull RowHelper helper, @NonNull LayoutElement original) {
+    @Inject(method = "createPauseMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
+    void sbo$onAddChild(@NonNull CallbackInfo ci, @Local @NonNull RowHelper helper) {
         if (addedButtons == 0 && !injected) {
             injected = true;
 
@@ -50,6 +48,5 @@ public abstract class PauseScreenMixin {
         }
 
         addedButtons++;
-        return helper.addChild(original);
     }
 }
