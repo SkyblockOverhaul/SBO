@@ -328,8 +328,10 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
             val borderColor = if (achievement.isUnlocked(true)) Color(0, 255, 0) else Color(255, 0, 0)
             val achievementColor = if ("Celestial" != achievement.rarity) {
                 Color(
-                    TextColor.fromLegacyFormat(ChatFormatting.getByCode(achievement.color[1]))
-                        ?.getValue() ?: 0xFFFFFF
+                    ChatFormatting.getByCode(achievement.color[1])
+                        ?.let(TextColor::fromLegacyFormat)
+                        ?.getValue()
+                        ?: 0xFFFFFF
                 )
             } else {
                 Color(0x7D00FF)
