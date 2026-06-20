@@ -130,6 +130,8 @@ object BurrowDetector {
         source: String = "particle",
         carriedTimesDug: Int? = null
     ) {
+        if (!Diana.closeBurrowDetection) return
+
         val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
         if (burrowsHistory.contains(posString)) return
