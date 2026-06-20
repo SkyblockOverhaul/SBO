@@ -9,9 +9,14 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
+import java.util.concurrent.TimeUnit
 
 object SboKeyBinds {
-    private data class KeyPressState(var isHeldDown: Boolean = false, var lastActivation: Long = 0)
+    private data class KeyPressState(
+        var isHeldDown: Boolean = false,
+        var lastActivationNanos: Long = 0L
+    )
+
     private val keyStates = mutableMapOf<String, KeyPressState>()
     private val SBO_CATEGORY = KeyMapping.Category(SBOKotlin.id(owner = "sbo-kotlin", path = "keybinds"))
 
@@ -59,14 +64,23 @@ object SboKeyBinds {
         handlePressAction(keyBinding, 0L, action)
     }
 
-    private fun handlePressAction(keyBinding: KeyMapping, cooldownMillis: Long, action: () -> Unit) {
+    private fun handlePressAction(
+        keyBinding: KeyMapping,
+        cooldownMillis: Long,
+        action: () -> Unit
+    ) {
         val state = keyStates.getOrPut(keyBinding.name) { KeyPressState() }
 
         if (keyBinding.isDown) {
-            val currentTime = System.currentTimeMillis()
-            if (!state.isHeldDown && currentTime - state.lastActivation > cooldownMillis) {
+            val currentTimeNanos = System.nanoTime()
+
+            if (
+                !state.isHeldDown &&
+                currentTimeNanos - state.lastActivationNanos >=
+                TimeUnit.MILLISECONDS.toNanos(cooldownMillis)
+            ) {
                 action()
-                state.lastActivation = currentTime
+                state.lastActivationNanos = currentTimeNanos
                 state.isHeldDown = true
             }
         } else {

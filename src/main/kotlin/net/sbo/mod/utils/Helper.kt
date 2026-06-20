@@ -67,7 +67,7 @@ object Helper {
     }
 
     private fun notifyUserOfLs(mob: String) {
-        Chat.chat("§6[SBO] §eTracking lootshare mob: $mob")
+        Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
     }
 
     fun init() {
@@ -119,7 +119,7 @@ object Helper {
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
                     hasTrackedInq = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("Minos Inquisitor")
                     DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
                     sleep(2000) {
                         hasTrackedInq = false
@@ -132,7 +132,7 @@ object Helper {
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
                     hasTrackedKing = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("King Minos")
                     DianaTracker.trackItem("KING_MINOS_LS", 1)
                     sleep(2000) {
                         hasTrackedKing = false
@@ -144,7 +144,7 @@ object Helper {
                 removeNearbyRareMobWaypoints()
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("Sphinx")
                     DianaTracker.trackItem("SPHINX_LS", 1)
                     sleep(2000) {
                         hasTrackedSphinx = false
@@ -157,7 +157,7 @@ object Helper {
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
                     hasTrackedManti = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("Manticore")
                     DianaTracker.trackItem("MANTICORE_LS", 1)
                     sleep(2000) {
                         hasTrackedManti = false
