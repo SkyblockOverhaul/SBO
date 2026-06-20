@@ -137,13 +137,6 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Blocks at which good warps are prioritized over bad ones (Currently only Castle and Crypt). For example, if you set it to 100, when the Crypt warp is the closest warp to a burrow, and the Castle is second closest, with Crypt warp being only 100 blocks or less closer than Castle, Castle will be preferred over Crypt warp for accessibility, as it can be faster to AOTV out of castle to reach the burrow whereas Crypt is longer to get out. (0 to disable)")
     }
 
-    var warpDelay by int(0) {
-        this.range = 0..1000
-        this.slider = true
-        this.name = Literal("Warp Delay (<X>ms)")
-        this.description = Literal("The delay bevor you can warp after guessing with spade. (0 to disable)")
-    }
-
     init {
         separator {
             this.title = "Diana Tracker"
