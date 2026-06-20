@@ -231,7 +231,6 @@ class Waypoint(
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),
             waypointOpacity,
-            true,
             this.line,
             Diana.dianaLineWidth.toFloat(),
             Diana.showBeaconBeam
