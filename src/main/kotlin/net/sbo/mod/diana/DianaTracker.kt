@@ -1,5 +1,6 @@
 package net.sbo.mod.diana
 
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.trackMagicFind
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
@@ -120,8 +121,8 @@ object DianaTracker {
     fun trackWithPickuplog(item: Item) {
         sleep (1000) {
             mc.execute {
-                if (Helper.getSecondsPassed(item.creation) > 5) return@sleep
-    //            if (!dianaMobDiedRecently(3)) return@sleep
+                if (Helper.getSecondsPassed(item.creation) > 5) return@execute
+    //            if (!dianaMobDiedRecently(3)) return@execute
                 when (item.itemId) {
                     "HILT_OF_REVELATIONS" -> onRareDropFromMob("Hilt Of Revelations", rare = false,
                         trackLootshare = false,
