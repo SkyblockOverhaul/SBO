@@ -12,14 +12,24 @@ object SboRenderPipelines {
     val FILLED_BOX_THROUGH_WALLS: RenderPipeline = RenderPipelines.register(
         RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
             .withLocation(SBOKotlin.id("pipeline/debug_filled_box_through_walls"))
+            //#if MC >= 26.2
+            //$ .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR)
+            //$ .withPrimitiveTopology(PrimitiveTopology.TRIANGLE_STRIP)
+            //#else
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.TRIANGLE_STRIP)
+            //#endif
             .build()
     )
 
     val LINES: RenderPipeline = RenderPipelines.register(
         RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(SBOKotlin.id("pipeline/line_strip"))
+            //#if MC >= 26.2
+            //$ .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH)
+            //$ .withPrimitiveTopology(PrimitiveTopology.LINES)
+            //#else
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, Mode.LINES)
+            //#endif
             .withCull(false)
             .build()
     )
@@ -28,7 +38,12 @@ object SboRenderPipelines {
         RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(SBOKotlin.id("pipeline/line_through_walls"))
             .withShaderDefine("shad")
+            //#if MC >= 26.2
+            //$ .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH)
+            //$ .withPrimitiveTopology(PrimitiveTopology.LINES)
+            //#else
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, Mode.LINES)
+            //#endif
             .withCull(false)
             .build()
     )
