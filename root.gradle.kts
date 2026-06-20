@@ -5,4 +5,6 @@ plugins {
 
 preprocess {
     strictExtraMappings.set(true)
+
+    val fabric2612 = createNode("26.1.2-fabric", 26_01_02, "srg")
 }
