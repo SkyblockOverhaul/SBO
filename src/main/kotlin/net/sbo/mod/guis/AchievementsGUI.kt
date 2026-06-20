@@ -9,6 +9,7 @@ import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.*
 import gg.essential.universal.UKeyboard
 import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.TextColor
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.Achievement
 import net.sbo.mod.diana.achievements.AchievementManager
