@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.overlay
 
 import net.minecraft.client.gui.Font
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import net.minecraft.util.FormattedCharSequence
 import net.sbo.mod.SBOKotlin.mc
@@ -17,7 +17,7 @@ class OverlayTextLine(
 
     var mouseEnterAction: (() -> Unit)? = null
     var mouseLeaveAction: (() -> Unit)? = null
-    var hoverAction: ((drawContext: GuiGraphics, textRenderer: Font) -> Unit)? = null
+    var hoverAction: ((drawContext: GuiGraphicsExtractor, textRenderer: Font) -> Unit)? = null
     var clickAction: (() -> Unit)? = null
     var isHovered: Boolean = false
     var x: Int = 0
@@ -92,7 +92,7 @@ class OverlayTextLine(
      * so it should be lightweight to avoid performance issues.
      * @param action The action to execute when the mouse hovers over the text line.
      */
-    fun onHover(action: (drawContext: GuiGraphics, textRenderer: Font) -> Unit): OverlayTextLine {
+    fun onHover(action: (drawContext: GuiGraphicsExtractor, textRenderer: Font) -> Unit): OverlayTextLine {
         hoverAction = action
         return this
     }
@@ -114,7 +114,7 @@ class OverlayTextLine(
         mouseLeaveAction?.invoke()
     }
 
-    private fun hover(drawContext: GuiGraphics, textRenderer: Font) {
+    private fun hover(drawContext: GuiGraphicsExtractor, textRenderer: Font) {
         if (isHovered) hoverAction?.invoke(drawContext, textRenderer)
     }
 
@@ -132,7 +132,7 @@ class OverlayTextLine(
         return mouseX >= x && mouseX <= x + textWidth && mouseY >= y && mouseY <= y + textHeight
     }
 
-    fun updateMouseInteraction(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float, drawContext: GuiGraphics) {
+    fun updateMouseInteraction(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float, drawContext: GuiGraphicsExtractor) {
         if (text.isEmpty()) return
         if (mouseEnterAction == null && mouseLeaveAction == null && hoverAction == null) {
             return
@@ -152,7 +152,7 @@ class OverlayTextLine(
         }
     }
 
-    fun draw(drawContext: GuiGraphics, x: Int, y: Int, textRenderer: Font) {
+    fun draw(drawContext: GuiGraphicsExtractor, x: Int, y: Int, textRenderer: Font) {
         if (text.isEmpty()) return
 
         this.x = x
@@ -163,6 +163,6 @@ class OverlayTextLine(
             drawContext.fill(x, y, x + width, y + height + 1, Color(128, 128, 128, 130).rgb)
         }
 
-        drawContext.drawString(textRenderer, getOrderedText(), x, y, -1, shadow)
+        drawContext.text(textRenderer, getOrderedText(), x, y, -1, shadow)
     }
 }

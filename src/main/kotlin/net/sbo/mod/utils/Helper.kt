@@ -459,13 +459,9 @@ object Helper {
     fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && hasMythologicalRitualActive() && World.getWorld() == "Hub"
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
-        mc.gui.apply {
-            setTimes(fadeIn, time, fadeOut)
-            if (title != null)
-                setTitle(Component.nullToEmpty(title))
-            if (subtitle != null)
-                setSubtitle(Component.nullToEmpty(subtitle))
-        }
+        mc.gui.setTimes(fadeIn, time, fadeOut)
+        if (title != null) mc.gui.setTitle(Component.nullToEmpty(title))
+        if (subtitle != null) mc.gui.setSubtitle(Component.nullToEmpty(subtitle))
     }
 
     fun checkCustomDropMessage(dropName: String, magicFind: Int): Pair<Boolean, String> {

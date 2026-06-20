@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
@@ -157,7 +157,7 @@ class Overlay(
         val y: Int
     )
 
-    fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
+    fun render(drawContext: GuiGraphicsExtractor, mouseX: Double, mouseY: Double) {
         if (!condition()) return
         val textRenderer = mc.font
 
@@ -175,7 +175,7 @@ class Overlay(
 
         if (selected) {
             drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
-            drawContext.drawString(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
+            drawContext.text(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
         if (Helper.currentScreen is OverlayEditScreen && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
@@ -214,7 +214,7 @@ class Overlay(
         drawContext.pose().popMatrix()
     }
 
-    private fun drawDebugBox(drawContext: GuiGraphics, x: Int, y: Int, width: Int, height: Int) {
-        drawContext.renderOutline(x, y, width, height, Color(255, 0, 0, 170).rgb)
+    private fun drawDebugBox(drawContext: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
+        drawContext.outline(x, y, width, height, Color(255, 0, 0, 170).rgb)
     }
 }

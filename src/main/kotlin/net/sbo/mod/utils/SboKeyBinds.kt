@@ -2,7 +2,7 @@ package net.sbo.mod.utils
 
 import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.sbo.mod.SBOKotlin
@@ -49,10 +49,10 @@ object SboKeyBinds {
     )
 
     fun register() {
-        KeyBindingHelper.registerKeyBinding(guessWarpKey)
-        KeyBindingHelper.registerKeyBinding(inqWarpKey)
-        KeyBindingHelper.registerKeyBinding(generalWarpKey)
-        KeyBindingHelper.registerKeyBinding(sendCoordsKey)
+        KeyMappingHelper.registerKeyMapping(guessWarpKey)
+        KeyMappingHelper.registerKeyMapping(inqWarpKey)
+        KeyMappingHelper.registerKeyMapping(generalWarpKey)
+        KeyMappingHelper.registerKeyMapping(sendCoordsKey)
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {

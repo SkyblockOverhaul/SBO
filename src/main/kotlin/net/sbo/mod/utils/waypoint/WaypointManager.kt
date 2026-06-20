@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.waypoint
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.sbo.mod.SBOKotlin
@@ -213,7 +213,7 @@ object WaypointManager {
             }
         }
 
-        WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
+        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(WaypointRenderer)
     }
 
     fun addRareMobWaypoint(player: String, pos: SboVec, mobName: String, playername: String) {
@@ -235,7 +235,7 @@ object WaypointManager {
      * Renders all waypoints in the management system.
      * @param context The world render context.
      */
-    fun renderAllWaypoints(context: WorldRenderContext) {
+    fun renderAllWaypoints(context: LevelRenderContext) {
         if (World.getWorld() != "Hub") {
             return
         }

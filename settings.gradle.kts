@@ -17,7 +17,6 @@ pluginManagement {
 include("event-processor")
 
 listOf(
-    "1.21.11-fabric",
     "26.1.2-fabric"
 ).forEach { version ->
     include(":$version")

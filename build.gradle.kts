@@ -39,62 +39,6 @@ loom {
     }
 }
 
-bloom {
-    if (isMCVersionGreaterOrEqualTo("26.1")) {
-        // GuiGraphics --> GuiGraphicsExtractor
-        replacement("GuiGraphics", "GuiGraphicsExtractor")
-
-        // KeyBinding --> KeyMapping
-        replacement("net.fabricmc.fabric.api.client.keybinding", "net.fabricmc.fabric.api.client.keymapping")
-        replacement("KeyBindingHelper", "KeyMappingHelper")
-        replacement("registerKeyBinding", "registerKeyMapping")
-
-        // ClientCommandManager --> ClientCommands
-        replacement("ClientCommandManager", "ClientCommands")
-
-        // World --> Level
-        replacement("net.fabricmc.fabric.api.client.rendering.v1.world", "net.fabricmc.fabric.api.client.rendering.v1.level")
-        replacement("ClientWorldEvents", "ClientLevelEvents")
-        replacement("WorldRenderEvents", "LevelRenderEvents")
-        replacement("WorldRenderContext", "LevelRenderContext")
-        replacement("AFTER_CLIENT_WORLD_CHANGE", "AFTER_CLIENT_LEVEL_CHANGE")
-
-        // Render --> Extract
-        replacement("ScreenEvents.afterRender", "ScreenEvents.afterExtract")
-        replacement("override fun render(", "override fun extractRenderState(")
-        replacement("super.render(", "super.extractRenderState(")
-        replacement("this.renderMenuBackground", "this.extractMenuBackground")
-        replacement("drawContext.renderTooltip(", "drawContext.tooltip(")
-
-        // Render --> Extract (Hacky way to fix Mixins, too lazy for versioned Mixins)
-        replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")
-        replacement("Lnet/minecraft/client/gui/Gui;render(", "Lnet/minecraft/client/gui/Gui;extractRenderState(")
-        replacement("@Inject(method = \"render\", at = @At(value = \"INVOKE\", target = ", "@Inject(method = \"extractGui\", at = @At(value = \"INVOKE\", target = ")
-        replacement("private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
-
-        // drawString --> text
-        replacement("drawContext.drawString(", "drawContext.text(")
-
-        // renderOutline --> outline
-        replacement("drawContext.renderOutline(", "drawContext.outline(")
-
-        // consumers --> bufferSource
-        replacement("context.consumers", "context.bufferSource")
-        replacement("ctx.consumers", "ctx.bufferSource")
-
-        // matrices --> poseStack
-        replacement("matrices()", "poseStack()")
-
-        // BEFORE_TRANSLUCENT --> BEFORE_TRANSLUCENT_TERRAIN
-        replacement("BEFORE_TRANSLUCENT", "BEFORE_TRANSLUCENT_TERRAIN")
-        replacement("BeforeTranslucent", "BeforeTranslucentTerrain")
-        replacement("override fun beforeTranslucent(", "override fun beforeTranslucentTerrain(")
-
-        // addMessage --> addClientSystemMessage
-        replacement("chat.addMessage(", "chat.addClientSystemMessage(")
-    }
-}
-
 tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions {
         val args = mutableListOf<String>()
@@ -333,21 +277,8 @@ dependencies {
             implementation(include("gg.essential:universalcraft-26.1-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
         }
-        "1.21.11-fabric" -> {
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.11:${versionedProperty("rconfig.version")}")!!)
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.11:${versionedProperty("rconfigkt.version")}")!!)
-            maybeModImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("universalcraft.version")}")!!)
-            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.11-fabric")
-        }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 
     runtimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth.version")}")
-}
-
-tasks.findByName("preprocessCode")?.apply {
-    when (mcProject) {
-        "26.1.2-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
-        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
-    }
 }

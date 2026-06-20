@@ -1,7 +1,7 @@
 package net.sbo.mod.mixin;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.sbo.mod.utils.events.SBOEvent;
@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Screen.class)
 public abstract class ScreenMixin {
 
-    @Inject(method = "render", at = @At("HEAD"))
-    public void onRender(@NonNull GuiGraphics context, int mouseX, int mouseY, float delta, @NonNull CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("HEAD"))
+    public void onRender(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, @NonNull CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         Screen screen = (Screen)(Object)this;
         SBOEvent.INSTANCE.emit(new GuiRenderEvent(client, screen, context, mouseX, mouseY, delta));
