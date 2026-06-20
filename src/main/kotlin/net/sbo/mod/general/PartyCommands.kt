@@ -14,6 +14,7 @@ import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.chat.ChatMessageQueue
 import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
 import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
@@ -256,5 +257,8 @@ object PartyCommands {
     }
 
     private fun sendCommand(cmd: String) = Chat.command(cmd)
-    private fun sendResponse(msg: String) = Chat.pc(msg)
+    private fun sendResponse(msg: String) {
+        ChatMessageQueue.onCommandOrMessageSent() // always force the 250ms delay just in case for now since some users report hypixel blocks sometimes
+        Chat.pc(msg)
+    }
 }
