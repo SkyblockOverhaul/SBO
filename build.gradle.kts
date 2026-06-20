@@ -53,7 +53,7 @@ bloom {
         replacement("mc.options.hideGui", "mc.gui.hud.isHidden()")
         replacement("gameRenderer().mainCamera", "gameRenderer().mainCamera()")
         replacement("com.mojang.blaze3d.vertex.VertexFormat.Mode", "com.mojang.blaze3d.PrimitiveTopology")
-        replacement("net.minecraft.client.renderer.MultiBufferSource", "com.mojang.blaze3d.vertex.VertexConsumer")
+        replacement("net.minecraft.client.renderer.MultiBufferSource", "")
         replacement("MultiBufferSource", "VertexConsumer")
     }
 }
