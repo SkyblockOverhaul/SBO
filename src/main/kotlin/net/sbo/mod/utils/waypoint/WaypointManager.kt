@@ -32,7 +32,7 @@ import kotlin.math.roundToInt
 object WaypointManager {
     private val waypoints = ConcurrentHashMap<String, CopyOnWriteArrayList<Waypoint>>()
     var closestWaypoint: Pair<Waypoint?, Double> = null to 1000.0
-    val rareMobs: List<String> = listOf(
+    val rareMobs: Set<String> = setOf(
         "minos inquisitor",
         "inquisitor",
         "inq",

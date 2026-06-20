@@ -9,13 +9,14 @@ import net.sbo.mod.utils.http.Http
 
 object UpdateChecker {
     private const val MODRINTH_ID = "9lBqVbQF"
+    private val VERSION_REGEX = Regex("""(\d+\.\d+\.\d+|\d+\.\d+)""")
+
     var latestVersion: String? = null
     var latestId: String? = null
     var isUpdateAvailable = false
 
     private fun String.extractCoreVersion(): String {
-        val regex = Regex("""(\d+\.\d+\.\d+|\d+\.\d+)""")
-        return regex.find(this)?.value ?: this
+        return VERSION_REGEX.find(this)?.value ?: this
     }
 
     fun check() {
