@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
@@ -461,10 +462,7 @@ object WaypointManager {
 
     fun warpToGuess() {
         val bestGuess = getBestGuess() ?: return
-        getClosestWarp(bestGuess.pos)?.let {
-            executeWarpCommand(it)
-        } ?:
-        return
+        getClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
     }
 
     fun warpToInq() {
@@ -485,13 +483,16 @@ object WaypointManager {
     }
 
     var tryWarp: Boolean = false
+
     fun executeWarpCommand(warp: String) {
         if (World.getWorld() != "Hub" || !Helper.hasSpade) return
         if (warp.isNotEmpty() && !tryWarp) {
             tryWarp = true
             Chat.command("warp $warp")
             sleep(500) {
-                tryWarp = false
+                mc.execute {
+                    tryWarp = false
+                }
             }
         }
     }
