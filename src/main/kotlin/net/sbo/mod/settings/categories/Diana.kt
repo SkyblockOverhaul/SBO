@@ -421,19 +421,14 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
-    var guessLine by boolean(true) {
-        this.name = Literal("Guess Line")
-        this.description = Literal("Draws line for guess, Disable View Bobbing in controls if its buggy")
+    var guessAndBurrowLine by boolean(true) {
+        this.name = Literal("Guess & Burrow Line")
+        this.description = Literal("Draws line to the closest guess and/or burrow, Disable View Bobbing in controls if its buggy")
     }
 
     var inqLine by boolean(true) {
         this.name = Literal("Rare Mob Line")
         this.description = Literal("Draws line to rare mob waypoints, Disable View Bobbing in controls if its buggy")
-    }
-
-    var burrowLine by boolean(true) {
-        this.name = Literal("Burrow Line")
-        this.description = Literal("Draws line for burrow, Disable View Bobbing in controls if its buggy")
     }
 
     var dianaLineWidth by int(5) {
