@@ -87,9 +87,9 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a beacon beam for waypoints going to the sky if enabled.")
     }
 
-    var showTitleWhenInaccurate by boolean(false) {
-        this.name = Literal("Show Title When Inaccurate")
-        this.description = Literal("Shows a title to guess normally when the arrow guess is inaccurate")
+    var showTitleWhenFailure by boolean(false) {
+        this.name = Literal("Show Title When Failure")
+        this.description = Literal("Shows a title to guess normally when the arrow guess fails to solve the burrow")
     }
 
     var showTitleWhenChainEnd by boolean(false) {
