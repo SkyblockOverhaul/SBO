@@ -298,6 +298,7 @@ object ArrowGuessBurrow {
     }
 
     internal fun isBlockValid(pos: SboVec): Boolean {
+        if (!HUB_BOUNDS.isInside(pos)) return false 
         if (!pos.isInLoadedChunk()) return true
         return isBlockTrulyValid(pos)
     }
