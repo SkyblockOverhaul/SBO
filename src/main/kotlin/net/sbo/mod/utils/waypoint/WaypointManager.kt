@@ -134,8 +134,8 @@ object WaypointManager {
                 }
             }
 
-            // Remove all waypoints that are under the world (y < 60)
-            val guessesToRemove = allWaypoints.filter { waypoint -> waypoint.pos.y < 60 }
+            // Remove all waypoints that are under the world (y < 60) and above the world (y > 200)
+            val guessesToRemove = allWaypoints.filter { waypoint -> waypoint.pos.y < 60 || waypoint.pos.y >= 200 }
 
             val rareWp = getWaypointsOfType("rareMob")
 
@@ -153,7 +153,7 @@ object WaypointManager {
             // Remove arrow guesses pointing to invalid burrow locations after being existing for over 10 seconds (During 10 seconds period, we hide them instead to give time for moveToNext to do its job)
             arrowGuesses.forEach { arrowGuess ->
                 if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
-                    if (arrowGuess.isOlderThan(Duration.ofSeconds(10))) {
+                    if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
                         removeWaypoint(arrowGuess)
                     } else {
                         arrowGuess.inaccurateArrow = true
@@ -170,7 +170,7 @@ object WaypointManager {
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
                     val waypointBlock = staticBurrow.pos.roundLocationToBlock()
 
-                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 3
+                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 4
                 }?.let { staticBurrow ->
                     staticBurrow.carryOverState(shovelGuess)
                     removeWaypoint(shovelGuess)
@@ -182,7 +182,7 @@ object WaypointManager {
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= (if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 60)
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= (if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 70)
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
