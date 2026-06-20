@@ -87,9 +87,9 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a beacon beam for waypoints going to the sky if enabled.")
     }
 
-    var showTitleWhenInaccurate by boolean(false) {
-        this.name = Literal("Show Title When Inaccurate")
-        this.description = Literal("Shows a title to guess normally when the arrow guess is inaccurate")
+    var showTitleWhenFailure by boolean(false) {
+        this.name = Literal("Show Title When Failure")
+        this.description = Literal("Shows a title to guess normally when the arrow guess fails to solve the burrow")
     }
 
     var showTitleWhenChainEnd by boolean(false) {
@@ -135,13 +135,6 @@ object Diana : CategoryKt("Diana") {
         this.range = 0..150
         this.name = Literal("Bad Warp Distance")
         this.description = Literal("Blocks at which good warps are prioritized over bad ones (Currently only Castle and Crypt). For example, if you set it to 100, when the Crypt warp is the closest warp to a burrow, and the Castle is second closest, with Crypt warp being only 100 blocks or less closer than Castle, Castle will be preferred over Crypt warp for accessibility, as it can be faster to AOTV out of castle to reach the burrow whereas Crypt is longer to get out. (0 to disable)")
-    }
-
-    var warpDelay by int(0) {
-        this.range = 0..1000
-        this.slider = true
-        this.name = Literal("Warp Delay (<X>ms)")
-        this.description = Literal("The delay bevor you can warp after guessing with spade. (0 to disable)")
     }
 
     init {
@@ -421,19 +414,14 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
-    var guessLine by boolean(true) {
-        this.name = Literal("Guess Line")
-        this.description = Literal("Draws line for guess, Disable View Bobbing in controls if its buggy")
+    var guessAndBurrowLine by boolean(true) {
+        this.name = Literal("Guess & Burrow Line")
+        this.description = Literal("Draws line to the closest guess and/or burrow, Disable View Bobbing in controls if its buggy")
     }
 
     var inqLine by boolean(true) {
         this.name = Literal("Rare Mob Line")
         this.description = Literal("Draws line to rare mob waypoints, Disable View Bobbing in controls if its buggy")
-    }
-
-    var burrowLine by boolean(true) {
-        this.name = Literal("Burrow Line")
-        this.description = Literal("Draws line for burrow, Disable View Bobbing in controls if its buggy")
     }
 
     var dianaLineWidth by int(5) {
