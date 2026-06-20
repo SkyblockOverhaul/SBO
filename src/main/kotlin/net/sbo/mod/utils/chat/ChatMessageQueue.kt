@@ -9,7 +9,7 @@ import net.sbo.mod.utils.events.impl.game.SentCommandEvent
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent
 
 object ChatMessageQueue {
-    private const val DELAY_NANOS = 200_000_000L
+    private const val DELAY_NANOS = 250_000_000L
     private val queue = ObjectArrayFIFOQueue<String>(1)
 
     private var lastSentAt = 0L
@@ -37,6 +37,7 @@ object ChatMessageQueue {
     }
 
     fun send(player: LocalPlayer, message: String) {
+        onCommandOrMessageSent() // should be called by mixin, but just in case it doesn't for some reason
         player.connection.sendChat(message)
     }
 
