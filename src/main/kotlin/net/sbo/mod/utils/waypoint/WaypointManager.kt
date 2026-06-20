@@ -130,7 +130,6 @@ object WaypointManager {
             this.forEachWaypoint { waypoint ->
                 if (waypoint.ttl > 0 && waypoint.creation + waypoint.ttl * 1000L < System.currentTimeMillis()) {
                     removeWaypoint(waypoint)
-                    return@forEachWaypoint
                 }
             }
 
@@ -182,7 +181,7 @@ object WaypointManager {
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= (if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 70)
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= (if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 75)
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
