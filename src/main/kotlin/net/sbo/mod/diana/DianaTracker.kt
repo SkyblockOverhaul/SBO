@@ -178,7 +178,7 @@ object DianaTracker {
 
     fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
-        if (fromCocoon) Chat.chat("§6[SBO] §eTracking cocooned mob: $mob")
+        if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
                 DianaMobDetect.onRareSpawn(mob)
