@@ -133,6 +133,16 @@ handlePressAction(myKeyBind) {
 2. Extend from `UOverlay` (from Elementa)
 3. Register in `OverlayManager.kt`
 
+### 5. Using the Event System
+
+The mod uses a custom event system. For detailed documentation on:
+- `@SboEvent` annotation
+- Creating and emitting custom events
+- Event priorities
+- Helper functions
+
+See [DOCS.md](DOCS.md).
+
 ## Code Style
 
 - **Language**: Kotlin
