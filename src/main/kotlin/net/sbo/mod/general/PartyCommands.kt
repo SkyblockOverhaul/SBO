@@ -107,7 +107,7 @@ object PartyCommands {
             fmt("Relics", dianaTrackerMayor.items.MINOS_RELIC, "MINOS_RELIC", "MINOS_CHAMPION")
         },
         PartyCommand(listOf("!chimls", "!chimerals", "!bookls", "!lschim", "!lsbook", "!lootsharechim", "!lschimera"), { settings.dianaPartyCommands }) {
-            fmt("Chimera LS", dianaTrackerMayor.items.CHIMERA_LS, "CHIMERALS", "MINOS_INQUISITOR_LS")
+            fmt("Chimera LS", dianaTrackerMayor.items.CHIMERA_LS, "CHIMERA_LS", "MINOS_INQUISITOR_LS")
         },
         PartyCommand(listOf("!core", "!manticore"), { settings.dianaPartyCommands }) {
             fmt("Cores", dianaTrackerMayor.items.MANTI_CORE, "MANTI_CORE", "MANTICORE")
