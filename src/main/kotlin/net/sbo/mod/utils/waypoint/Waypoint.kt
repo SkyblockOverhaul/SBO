@@ -180,13 +180,8 @@ class Waypoint(
         this.distanceText = if (showDistance) " §b[${dist}m]" else ""
 
         when (this.type) {
-            "guess", "arrow" -> {
-                this.line = Diana.guessLine && inqWaypoints.isEmpty() && isClosest
-
-                setWarpText()
-            }
-            "burrow" -> {
-                this.line = Diana.burrowLine && inqWaypoints.isEmpty() && isClosest
+            "guess", "arrow", "burrow" -> {
+                this.line = Diana.guessAndBurrowLine && inqWaypoints.isEmpty() && isClosest
 
                 setWarpText()
             }
