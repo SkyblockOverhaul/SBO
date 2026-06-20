@@ -119,17 +119,19 @@ object DianaTracker {
 
     fun trackWithPickuplog(item: Item) {
         sleep (1000) {
-            if (Helper.getSecondsPassed(item.creation) > 5) return@sleep
-//            if (!dianaMobDiedRecently(3)) return@sleep
-            when (item.itemId) {
-                "HILT_OF_REVELATIONS" -> onRareDropFromMob("Hilt Of Revelations", rare = false,
-                    trackLootshare = false,
-                    magicFind = 0
-                )
-                "CROWN_OF_GREED" -> onRareDropFromMob("Crown Of Greed", rare = true,
-                    trackLootshare = false,
-                    magicFind = 0
-                )
+            mc.execute {
+                if (Helper.getSecondsPassed(item.creation) > 5) return@sleep
+    //            if (!dianaMobDiedRecently(3)) return@sleep
+                when (item.itemId) {
+                    "HILT_OF_REVELATIONS" -> onRareDropFromMob("Hilt Of Revelations", rare = false,
+                        trackLootshare = false,
+                        magicFind = 0
+                    )
+                    "CROWN_OF_GREED" -> onRareDropFromMob("Crown Of Greed", rare = true,
+                        trackLootshare = false,
+                        magicFind = 0
+                    )
+                }
             }
         }
     }
@@ -696,7 +698,7 @@ object DianaTracker {
 
             if (isCoG) {
                 // CoG is no longer a treasure and instead dropped by Minos King; worth announcing
-                announceLootToParty("Crown of Greed", "Crown of Greed$mfPrefix", amount = dianaTrackerMayor.items.CROWN_OF_GREED)
+                announceLootToParty("Crown of Greed", "Crown of Greed$mfPrefix", amount = dianaTrackerMayor.items.CROWN_OF_GREED + 1) // we didn't call trackItem yet, so add + 1
             }
         }
 
