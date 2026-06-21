@@ -35,13 +35,13 @@ class Waypoint(
     val x: Double,
     val y: Double,
     val z: Double,
-    val ttl: Int = 1800,
+    val ttl: Long = 1800,
     val type: String = "normal",
     var line: Boolean = false
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
     var hidden: Boolean = false
-    val creation: Long = System.currentTimeMillis()
+    val creationNs: Long = System.nanoTime()
     var formatted: Boolean = false
     var distanceRaw: Double = 0.0
     var distanceText: String = ""
@@ -212,7 +212,7 @@ class Waypoint(
     }
 
     fun isOlderThan(duration: Duration): Boolean {
-        return System.currentTimeMillis() - this.creation > duration.toMillis()
+        return this.creationNs + duration.toNanos() < System.nanoTime()
     }
 
     fun render(context: WorldRenderContext) {
