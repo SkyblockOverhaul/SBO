@@ -86,14 +86,12 @@ object Helper {
             updateItemPriceInfo()
         }
 
-        /*
-        Register.command("sbotestls") {
+        /*Register.command("sbotestlschimdrop") {
             handleDianaMobDeath("Minos Inquisitor", 30.0f)
-            handleDianaMobDeath("Minos Inquisitor", 31.0f)
-            handleDianaMobDeath("Cretan Bull", 5.0f)
+            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }
 
-        Register.command("sbotestdrop") {
+        Register.command("sbotestdrops") {
             DianaTracker.trackChatRngDrop("Daedalus Stick §b(+§b483 ✯ Magic Find)")
             DianaTracker.trackChatRngDrop("Minos Relic §b(+§b483 ✯ Magic Find)")
             DianaTracker.trackChatRngDrop("Crown of Greed")
@@ -101,7 +99,14 @@ object Helper {
             DianaTracker.trackChatRngDrop("Daedalus Stick")
             DianaTracker.trackChatRngDrop("Shimmering Wool §b(+§b483 ✯ Magic Find)")
         }
-        */
+
+        Register.command("sbotestbraideddrop") {
+            DianaTracker.onBraidedDrop()
+        }
+
+        Register.command("sbotestchimdrop") {
+            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
+        }*/
 
         updateItemPriceInfo()
     }
