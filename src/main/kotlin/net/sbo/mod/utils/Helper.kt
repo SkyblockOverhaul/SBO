@@ -36,6 +36,8 @@ import kotlin.reflect.full.memberProperties
 import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 
 object Helper {
+    private val MF_REGEX = Regex("""§b\(\+§b(\d+)""")
+
     var lastLootShare: Long = 0L
     var allowSackTracking: Boolean = true
     var hasSpade: Boolean = false
@@ -67,7 +69,7 @@ object Helper {
     }
 
     private fun notifyUserOfLs(mob: String) {
-        Chat.chat("§6[SBO] §eTracking lootshare mob: $mob")
+        Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
     }
 
     fun init() {
@@ -84,14 +86,12 @@ object Helper {
             updateItemPriceInfo()
         }
 
-        /*
-        Register.command("sbotestls") {
+        /*Register.command("sbotestlschimdrop") {
             handleDianaMobDeath("Minos Inquisitor", 30.0f)
-            handleDianaMobDeath("Minos Inquisitor", 31.0f)
-            handleDianaMobDeath("Cretan Bull", 5.0f)
+            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }
 
-        Register.command("sbotestdrop") {
+        Register.command("sbotestdrops") {
             DianaTracker.trackChatRngDrop("Daedalus Stick §b(+§b483 ✯ Magic Find)")
             DianaTracker.trackChatRngDrop("Minos Relic §b(+§b483 ✯ Magic Find)")
             DianaTracker.trackChatRngDrop("Crown of Greed")
@@ -99,7 +99,14 @@ object Helper {
             DianaTracker.trackChatRngDrop("Daedalus Stick")
             DianaTracker.trackChatRngDrop("Shimmering Wool §b(+§b483 ✯ Magic Find)")
         }
-        */
+
+        Register.command("sbotestbraideddrop") {
+            DianaTracker.onBraidedDrop()
+        }
+
+        Register.command("sbotestchimdrop") {
+            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
+        }*/
 
         updateItemPriceInfo()
     }
@@ -119,7 +126,7 @@ object Helper {
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
                     hasTrackedInq = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("Minos Inquisitor")
                     DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
                     sleep(2000) {
                         hasTrackedInq = false
@@ -132,7 +139,7 @@ object Helper {
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
                     hasTrackedKing = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("King Minos")
                     DianaTracker.trackItem("KING_MINOS_LS", 1)
                     sleep(2000) {
                         hasTrackedKing = false
@@ -144,7 +151,7 @@ object Helper {
                 removeNearbyRareMobWaypoints()
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("Sphinx")
                     DianaTracker.trackItem("SPHINX_LS", 1)
                     sleep(2000) {
                         hasTrackedSphinx = false
@@ -157,7 +164,7 @@ object Helper {
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
                     hasTrackedManti = true
-                    notifyUserOfLs(name)
+                    notifyUserOfLs("Manticore")
                     DianaTracker.trackItem("MANTICORE_LS", 1)
                     sleep(2000) {
                         hasTrackedManti = false
@@ -548,7 +555,7 @@ object Helper {
     }
 
     fun getMagicFind(mf: String): Int {
-        val mfMatch = Regex("""§b\(\+§b(\d+)""").find(mf)
+        val mfMatch = MF_REGEX.find(mf)
         if (mfMatch != null) {
             val mfValue = mfMatch.groupValues[1].toIntOrNull() ?: 0
             return mfValue

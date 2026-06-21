@@ -29,26 +29,7 @@ object DianaEvents {
         if (World.getWorld() != "Hub") return
         if (packet.action != ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) return
 
-        val waypoint = WaypointManager.getWaypointAt(packet.pos.toSboVec(), "burrow") ?: WaypointManager.getWaypointAt(packet.pos.toSboVec(), "arrow") ?: WaypointManager.getWaypointAt(packet.pos.toSboVec(), "guess")
-        if (waypoint != null) {
-            waypoint.userInteractedWith = true
-            lastWaypointClicked = waypoint.pos
-        }
-
-        val posString = "${packet.pos.x} ${packet.pos.y} ${packet.pos.z}"
-        if (BurrowDetector.burrows.containsKey(posString)) {
-            lastBurrowClicked = SboVec(
-                packet.pos.x.toDouble(),
-                packet.pos.y.toDouble(),
-                packet.pos.z.toDouble()
-            )
-        }
-
-        lastBlockClicked = SboVec(
-            packet.pos.x.toDouble(),
-            packet.pos.y.toDouble(),
-            packet.pos.z.toDouble()
-        )
+        processBlockInteraction(packet.pos.toSboVec())
     }
 
     @SboEvent
@@ -62,26 +43,21 @@ object DianaEvents {
         if (item == null || !item.hoverName.string.contains("Spade")) return
         if (event.pos ==  null) return
 
-        val waypoint = WaypointManager.getWaypointAt(event.pos.toSboVec(), "burrow") ?: WaypointManager.getWaypointAt(event.pos.toSboVec(), "arrow") ?: WaypointManager.getWaypointAt(event.pos.toSboVec(), "guess")
+        processBlockInteraction(event.pos.toSboVec())
+    }
+
+    private fun processBlockInteraction(pos: SboVec) {
+        val waypoint = WaypointManager.getWaypointAt(pos, "burrow") ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess")
         if (waypoint != null) {
             waypoint.userInteractedWith = true
             lastWaypointClicked = waypoint.pos
         }
 
-        val posString = "${event.pos.x} ${event.pos.y} ${event.pos.z}"
+        val posString = "${pos.x} ${pos.y} ${pos.z}"
         if (BurrowDetector.burrows.containsKey(posString)) {
-            lastBurrowClicked = SboVec(
-                event.pos.x.toDouble(),
-                event.pos.y.toDouble(),
-                event.pos.z.toDouble()
-            )
+            lastBurrowClicked = pos
         }
-
-        lastBlockClicked = SboVec(
-            event.pos.x.toDouble(),
-            event.pos.y.toDouble(),
-            event.pos.z.toDouble()
-        )
+        lastBlockClicked = pos
     }
 
     private fun registerBurrowDug() {

@@ -7,7 +7,7 @@ object Credits : CategoryKt("Credits") {
     init {
         button {
             title = "Skyhanni"
-            description = "Diana guess (bloxigus)"
+            description = "Spade guess (bloxigus) and Arrow guess (SidOfThe7Cs)"
             text = "Open"
             onClick {
                 SBOKotlin.openInBrowser("https://github.com/hannibal002/SkyHanni")

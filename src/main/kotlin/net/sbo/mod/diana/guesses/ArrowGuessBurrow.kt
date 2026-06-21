@@ -247,8 +247,10 @@ object ArrowGuessBurrow {
             allGuesses.add(GuessEntry(withinRange))
         }
 
-        if (Diana.showTitleWhenInaccurate) {
-            if (withinRange.size > 1) {
+        val withinRangeFirst = withinRange.getOrNull(0)
+
+        if (Diana.showTitleWhenFailure) {
+            if (withinRangeFirst == null) {
                 if (!spadeTitleShown) BurrowDetector.requestSpade()
                 spadeTitleShown = true
             } else {
@@ -256,14 +258,14 @@ object ArrowGuessBurrow {
             }
         }
 
-        return withinRange.getOrNull(0)
+        return withinRangeFirst
     }
 
     private fun checkMoveGuess() {
         if (allGuesses.isEmpty()) return
         val player = SBOKotlin.mc.player ?: return
         val hasSpade = InventoryUtils.isItemHeld("SPADE", 1.seconds)
-        val burrowLocations = BurrowDetector.burrows.values.map { it.waypoint?.pos ?: SboVec(0.0, 0.0, 0.0) }
+        val burrowLocations = BurrowDetector.burrows.values.asSequence().map { it.waypoint?.pos ?: SboVec.ZERO }.toHashSet()
         val playerPos = player.position().toSboVec()
 
         for (guess in allGuesses) {
@@ -298,6 +300,7 @@ object ArrowGuessBurrow {
     }
 
     internal fun isBlockValid(pos: SboVec): Boolean {
+        if (!HUB_BOUNDS.isInside(pos)) return false 
         if (!pos.isInLoadedChunk()) return true
         return isBlockTrulyValid(pos)
     }

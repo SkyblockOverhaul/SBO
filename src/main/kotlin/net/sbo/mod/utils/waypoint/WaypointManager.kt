@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
@@ -26,12 +27,13 @@ import net.sbo.mod.utils.render.WaypointRenderer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 object WaypointManager {
     private val waypoints = ConcurrentHashMap<String, CopyOnWriteArrayList<Waypoint>>()
     var closestWaypoint: Pair<Waypoint?, Double> = null to 1000.0
-    val rareMobs: List<String> = listOf(
+    val rareMobs: Set<String> = setOf(
         "minos inquisitor",
         "inquisitor",
         "inq",
@@ -117,30 +119,33 @@ object WaypointManager {
             val knownBurrows = getWaypointsOfType("burrow")
             val shovelGuesses = getWaypointsOfType("guess")
             val arrowGuesses = getWaypointsOfType("arrow")
-            val rareMobWaypoints = getWaypointsOfType("rareMob")
 
             val posP = SboVec(playerPos.x, playerPos.y, playerPos.z).roundLocationToBlock()
-
-            val allWaypoints = knownBurrows + shovelGuesses + arrowGuesses + rareMobWaypoints
 
             // These do not change location when using the shovel
             val allStaticBurrowWaypoints = knownBurrows + arrowGuesses
 
             // Remove all TTL expired waypoints
+            val currentTime = System.nanoTime()
+
             this.forEachWaypoint { waypoint ->
-                if (waypoint.ttl > 0 && waypoint.creation + waypoint.ttl * 1000L < System.currentTimeMillis()) {
+                if (waypoint.ttl > 0L && currentTime - waypoint.creationNs > TimeUnit.SECONDS.toNanos(waypoint.ttl)) {
                     removeWaypoint(waypoint)
-                    return@forEachWaypoint
                 }
             }
 
-            // Remove all waypoints that are under the world (y < 60)
-            val guessesToRemove = allWaypoints.filter { waypoint -> waypoint.pos.y < 60 }
+            // Remove all waypoints that are not in radius of typical burrow locations x y z
+            this.forEachWaypoint { waypoint ->
+                val underWorld = waypoint.pos.y < 60
+                val aboveWorld = waypoint.pos.y > 100
+                val outsideZ = waypoint.pos.z > 205
+                val outsideX = waypoint.pos.x > 175
+                val outsideNegativeZ = waypoint.pos.z < 0 && -waypoint.pos.z > 208
+                val outsideNegativeX = waypoint.pos.x < 0 && -waypoint.pos.x > 283
 
-            val rareWp = getWaypointsOfType("rareMob")
-
-            guessesToRemove.forEach { waypoint ->
-                removeWaypoint(waypoint)
+                if (underWorld || aboveWorld || outsideZ || outsideX || outsideNegativeZ || outsideNegativeX) {
+                    removeWaypoint(waypoint)
+                }
             }
 
             // Remove shovel guesses pointing to invalid burrow locations
@@ -153,7 +158,7 @@ object WaypointManager {
             // Remove arrow guesses pointing to invalid burrow locations after being existing for over 10 seconds (During 10 seconds period, we hide them instead to give time for moveToNext to do its job)
             arrowGuesses.forEach { arrowGuess ->
                 if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
-                    if (arrowGuess.isOlderThan(Duration.ofSeconds(10))) {
+                    if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
                         removeWaypoint(arrowGuess)
                     } else {
                         arrowGuess.inaccurateArrow = true
@@ -163,26 +168,26 @@ object WaypointManager {
                 }
             }
 
-            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 3 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
+            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 30 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
             shovelGuesses.forEach { shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
                     val waypointBlock = staticBurrow.pos.roundLocationToBlock()
 
-                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 3
+                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 30
                 }?.let { staticBurrow ->
                     staticBurrow.carryOverState(shovelGuess)
                     removeWaypoint(shovelGuess)
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 30 blocks, or 60 if in an unloaded chunk, of each other
+            // Remove duplicate shovel guesses that are within 30 blocks, or 75 if in an unloaded chunk, of each other
             shovelGuesses.forEachIndexed { index, shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= (if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 60)
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= (if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 75)
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
@@ -206,6 +211,8 @@ object WaypointManager {
 
             closestWaypoint = getClosestWaypointFrom(playerPos) ?: (null to 1000.0)
             val bestGuessWp = getBestGuess()
+
+            val rareWp = getWaypointsOfType("rareMob")
 
             this.forEachWaypoint { waypoint ->
                 waypoint.isClosest = waypoint == bestGuessWp
@@ -405,10 +412,11 @@ object WaypointManager {
     fun getClosestWarp(pos: SboVec): String? {
         var warps = hubWarps.filter { it.value.unlocked }.mapValues { it.value }
         for (warp in Diana.allowedWarps) {
-            if (additionalHubWarps.containsKey(warp.name.lowercase())) {
-                val additionalWarp = additionalHubWarps[warp.name.lowercase()]
+            val warpName = warp.name.lowercase()
+            if (additionalHubWarps.containsKey(warpName)) {
+                val additionalWarp = additionalHubWarps[warpName]
                 if (additionalWarp != null && additionalWarp.unlocked) {
-                    warps = warps + (warp.name.lowercase() to additionalWarp)
+                    warps = warps + (warpName to additionalWarp)
                 }
             }
         }
@@ -461,16 +469,12 @@ object WaypointManager {
 
     fun warpToGuess() {
         val bestGuess = getBestGuess() ?: return
-        if (bestGuess.hidden) return
-        getClosestWarp(bestGuess.pos)?.let {
-            executeWarpCommand(it)
-        } ?:
-        return
+        getClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
     }
 
     fun warpToInq() {
-        val newestInq = getWaypointsOfType("rareMob").maxByOrNull { it.creation }
-        val newestWorldInq = getWaypointsOfType("world").maxByOrNull { it.creation }
+        val newestInq = getWaypointsOfType("rareMob").maxByOrNull { it.creationNs }
+        val newestWorldInq = getWaypointsOfType("world").maxByOrNull { it.creationNs }
         val pos = newestInq?.pos ?: newestWorldInq?.pos ?: return
         val warp = getClosestWarp(pos) ?: return
 
@@ -486,14 +490,16 @@ object WaypointManager {
     }
 
     var tryWarp: Boolean = false
+
     fun executeWarpCommand(warp: String) {
         if (World.getWorld() != "Hub" || !Helper.hasSpade) return
-        if (Diana.warpDelay > 0 && System.currentTimeMillis() - PreciseGuessBurrow.lastGuessTime < Diana.warpDelay) return
         if (warp.isNotEmpty() && !tryWarp) {
             tryWarp = true
             Chat.command("warp $warp")
             sleep(500) {
-                tryWarp = false
+                mc.execute {
+                    tryWarp = false
+                }
             }
         }
     }

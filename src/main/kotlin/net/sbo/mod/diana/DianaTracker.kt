@@ -1,5 +1,6 @@
 package net.sbo.mod.diana
 
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.trackMagicFind
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
@@ -118,19 +119,21 @@ object DianaTracker {
     }
 
     fun trackWithPickuplog(item: Item) {
-        sleep (1000) {
-            if (Helper.getSecondsPassed(item.creation) > 5) return@sleep
-//            if (!dianaMobDiedRecently(3)) return@sleep
-            when (item.itemId) {
-                "HILT_OF_REVELATIONS" -> onRareDropFromMob("Hilt Of Revelations", rare = false,
-                    trackLootshare = false,
-                    magicFind = 0
-                )
-                "CROWN_OF_GREED" -> onRareDropFromMob("Crown Of Greed", rare = true,
-                    trackLootshare = false,
-                    magicFind = 0
-                )
-            }
+        if (Helper.getSecondsPassed(item.creation) > 5) return
+//            if (!dianaMobDiedRecently(3)) return
+        trackWithPickuplog(item.itemId)
+    }
+
+    fun trackWithPickuplog(itemId: String) {
+        when (itemId) {
+            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt Of Revelations", rare = false,
+                trackLootshare = false,
+                magicFind = 0
+            )
+            "CROWN_OF_GREED" -> onRareDrop("Crown Of Greed", rare = true,
+                trackLootshare = false,
+                magicFind = 0
+            )
         }
     }
 
@@ -178,7 +181,7 @@ object DianaTracker {
 
     fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
-        if (fromCocoon) Chat.chat("§6[SBO] §eTracking cocooned mob: $mob")
+        if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
                 DianaMobDetect.onRareSpawn(mob)
@@ -326,10 +329,19 @@ object DianaTracker {
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather" -> trackItem(drop, 1)
                 "Mythos Fragment" -> trackItem(drop, 1)
-                "Braided Griffin Feather" -> trackItem(drop, 1) // todo: add since message
+                "Braided Griffin Feather" -> onBraidedDrop()
             }
             true
         }
+    }
+
+    fun onBraidedDrop() {
+        // TODO: add since message
+        onRareDrop("Braided Griffin Feather", rare = true,
+            trackLootshare = false,
+            magicFind = 0
+        )
+        announceLootToParty("Braided Griffin Feather", "Braided Griffin Feather", amount = dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER)
     }
 
     fun trackRngDropsWithChat() {
@@ -341,7 +353,7 @@ object DianaTracker {
         Register.onChatMessageCancelable(Pattern.compile("^§d§lWOW! (.*?) §6found a §2Mythological Dye§6!$", Pattern.DOTALL)) { message, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase().trim()
             if (player.contains(Player.getName()?.lowercase()?.trim()?: "")) {
-                onRareDropFromMob("Mythological Dye",
+                onRareDrop("Mythological Dye",
                     rare = true,
                     trackLootshare = false,
                     magicFind = 0
@@ -361,7 +373,7 @@ object DianaTracker {
         when {
             drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
                 playCustomSound(Customization.woolSound[0], Customization.woolVolume)
-                onRareDropFromMob("Shimmering Wool", rare = true,
+                onRareDrop("Shimmering Wool", rare = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
@@ -399,13 +411,13 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Shimmering Wool", customMsg.second, true)
                 } else {
-                    announceLootToParty("Shimmering Wool", "Shimmering Wool$mfPrefix", amount = dianaTrackerMayor.items.SHIMMERING_WOOL + dianaTrackerMayor.items.SHIMMERING_WOOL_LS)
+                    announceLootToParty("Shimmering Wool", "Shimmering Wool$mfPrefix", amount = dianaTrackerMayor.items.SHIMMERING_WOOL + dianaTrackerMayor.items.SHIMMERING_WOOL_LS, lsAmount = dianaTrackerMayor.items.SHIMMERING_WOOL_LS)
                 }
 
             }
             drop.contains("Manti-core") -> { // todo: add achievements for core
                 playCustomSound(Customization.coreSound[0], Customization.coreVolume)
-                onRareDropFromMob("Manti-core", rare = true,
+                onRareDrop("Manti-core", rare = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
@@ -443,13 +455,13 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Manti-core", customMsg.second, true)
                 } else {
-                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayor.items.MANTI_CORE + dianaTrackerMayor.items.MANTI_CORE_LS, buffer = true)
+                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayor.items.MANTI_CORE + dianaTrackerMayor.items.MANTI_CORE_LS,  lsAmount = dianaTrackerMayor.items.MANTI_CORE_LS, buffer = true)
                 }
 
             }
             drop.contains("Fateful Stinger") -> { // todo: add achievements for stinger
                 playCustomSound(Customization.stingerSound[0], Customization.stingerVolume)
-                onRareDropFromMob("Fateful Stinger", rare = true,
+                onRareDrop("Fateful Stinger", rare = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
@@ -485,7 +497,7 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Fateful Stinger", customMsg.second, true)
                 } else {
-                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayor.items.FATEFUL_STINGER + dianaTrackerMayor.items.FATEFUL_STINGER_LS, buffer = true)
+                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayor.items.FATEFUL_STINGER + dianaTrackerMayor.items.FATEFUL_STINGER_LS, lsAmount = dianaTrackerMayor.items.FATEFUL_STINGER_LS, buffer = true)
                 }
 
             }
@@ -493,7 +505,7 @@ object DianaTracker {
                 if (!drop.contains("Chimera")) return
 
                 playCustomSound(Customization.chimSound[0], Customization.chimVolume)
-                onRareDropFromMob("Chimera", rare = true,
+                onRareDrop("Chimera", rare = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
@@ -537,12 +549,12 @@ object DianaTracker {
                 if (customChimMsg.first) {
                     announceLootToParty("Chimera", customChimMsg.second, true)
                 } else {
-                    announceLootToParty("Chimera", "Chimera$mfPrefix", amount = dianaTrackerMayor.items.CHIMERA + dianaTrackerMayor.items.CHIMERA_LS)
+                    announceLootToParty("Chimera", "Chimera$mfPrefix", amount = dianaTrackerMayor.items.CHIMERA + dianaTrackerMayor.items.CHIMERA_LS, lsAmount = dianaTrackerMayor.items.CHIMERA_LS)
                 }
             }
             drop.contains("Brain Food") -> { // todo: add achievements for food
                 playCustomSound(Customization.bfSound[0], Customization.bfVolume)
-                onRareDropFromMob("Brain Food", rare = true,
+                onRareDrop("Brain Food", rare = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
@@ -582,12 +594,12 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Brain Food", customMsg.second, true)
                 } else {
-                    announceLootToParty("Brain Food", "Brain Food$mfPrefix", amount = dianaTrackerMayor.items.BRAIN_FOOD + dianaTrackerMayor.items.BRAIN_FOOD_LS)
+                    announceLootToParty("Brain Food", "Brain Food$mfPrefix", amount = dianaTrackerMayor.items.BRAIN_FOOD + dianaTrackerMayor.items.BRAIN_FOOD_LS, lsAmount = dianaTrackerMayor.items.BRAIN_FOOD_LS)
                 }
             }
             drop.contains("Daedalus Stick") -> {
                 playCustomSound(Customization.stickSound[0], Customization.stickVolume)
-                onRareDropFromMob("Daedalus Stick", rare = true,
+                onRareDrop("Daedalus Stick", rare = true,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
@@ -608,7 +620,7 @@ object DianaTracker {
             }
             drop.contains("Minos Relic") -> {
                 playCustomSound(Customization.relicSound[0], Customization.relicVolume)
-                onRareDropFromMob("Minos Relic", rare = true,
+                onRareDrop("Minos Relic", rare = true,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
@@ -626,36 +638,29 @@ object DianaTracker {
                 sboData.champsSinceRelic = 0
                 announceLootToParty("Minos Relic", "Minos Relic$mfPrefix", amount = dianaTrackerMayor.items.MINOS_RELIC)
             }
-            drop.contains("Crown of Greed") -> {
-                onRareDropFromMob("Crown of Greed",
-                    rare = true,
-                    trackLootshare = false,
-                    magicFind = magicfind
-                )
-            }
             drop.contains("Washed-up Souvenir") -> {
-                onRareDropFromMob("Washed-up Souvenir", rare = false,
+                onRareDrop("Washed-up Souvenir", rare = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
                 playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
             }
             drop.contains("Dwarf Turtle Shelmet") -> {
-                onRareDropFromMob("Dwarf Turtle Shelmet", rare = false,
+                onRareDrop("Dwarf Turtle Shelmet", rare = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
                 playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
             }
             drop.contains("Crochet Tiger Plushie") -> {
-                onRareDropFromMob("Crochet Tiger Plushie", rare = false,
+                onRareDrop("Crochet Tiger Plushie", rare = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
                 playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
             }
             drop.contains("Antique Remedies") -> {
-                onRareDropFromMob("Antique Remedies",
+                onRareDrop("Antique Remedies",
                     rare = false,
                     trackLootshare = false,
                     magicFind = magicfind
@@ -663,14 +668,14 @@ object DianaTracker {
                 playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
             }
             drop.contains("Cretan Urn") -> {
-                onRareDropFromMob("Cretan Urn", rare = false,
+                onRareDrop("Cretan Urn", rare = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
                 playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
             }
             drop.contains("Hilt of Revelations") -> {
-                onRareDropFromMob("Hilt of Revelations", rare = false,
+                onRareDrop("Hilt of Revelations", rare = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
@@ -680,7 +685,7 @@ object DianaTracker {
         SboDataObject.save("SboData")
     }
 
-    fun onRareDropFromMob(item: String, rare: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1) {
+    fun onRareDrop(item: String, rare: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1) {
         if (isItemOnCooldown.getOrDefault(item, false)) return
 
         val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
@@ -691,49 +696,63 @@ object DianaTracker {
         val isCoG = itemId == "CROWN_OF_GREED"
 
         if (isCoG || itemId == "HILT_OF_REVELATIONS") {
-            // onRareDropFromMob for these drops are called from both the pickup log tracker and rare drop message, so we need to handle the sound and announceLootToParty here instead of rare drop message handler to make both pickuplog and rare drop message trigger the sound/party announce while preventing duplicates (due to isItemOnCooldown check above)
+            // onRareDrop for these drops are called from both the pickup log tracker and rare drop message, so we need to handle the sound and announceLootToParty here instead of rare drop message handler to make both pickuplog and rare drop message trigger the sound/party announce while preventing duplicates (due to isItemOnCooldown check above)
             playCustomSound(Customization.miscDropSound[0], Customization.miscDropVolume)
 
             if (isCoG) {
                 // CoG is no longer a treasure and instead dropped by Minos King; worth announcing
-                announceLootToParty("Crown of Greed", "Crown of Greed$mfPrefix", amount = dianaTrackerMayor.items.CROWN_OF_GREED)
+                announceLootToParty("Crown of Greed", "Crown of Greed$mfPrefix", amount = dianaTrackerMayor.items.CROWN_OF_GREED + 1) // we didn't call trackItem yet, so add + 1
             }
         }
 
         val colorAndCount = when (itemId) {
             // Avoid reflective access by declaring each case separately even if they share the same color and itemId is the same as property name on the tracker
-            "MANTI_CORE" -> Pair("§c", dianaTrackerMayor.items.MANTI_CORE)
-            "SHIMMERING_WOOL" -> Pair("§c", dianaTrackerMayor.items.SHIMMERING_WOOL)
-            "MYTHOLOGICAL_DYE" -> Pair("§c", dianaTrackerMayor.items.MYTHOLOGICAL_DYE)
-            "MYTH_THE_FISH" -> Pair("§c", dianaTrackerMayor.items.MYTH_THE_FISH)
+            "MANTI_CORE" -> Triple("§c", dianaTrackerMayor.items.MANTI_CORE, dianaTrackerMayor.items.MANTI_CORE_LS)
+            "SHIMMERING_WOOL" -> Triple("§c", dianaTrackerMayor.items.SHIMMERING_WOOL, dianaTrackerMayor.items.SHIMMERING_WOOL_LS)
+            "MYTHOLOGICAL_DYE" -> Triple("§c", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, -1)
+            "MYTH_THE_FISH" -> Triple("§c", dianaTrackerMayor.items.MYTH_THE_FISH, -1)
 
-            "CHIMERA" -> Pair("§d", dianaTrackerMayor.items.CHIMERA)
-            "FATEFUL_STINGER" -> Pair("§d", dianaTrackerMayor.items.FATEFUL_STINGER)
+            "CHIMERA" -> Triple("§d", dianaTrackerMayor.items.CHIMERA, dianaTrackerMayor.items.CHIMERA_LS)
+            "FATEFUL_STINGER" -> Triple("§d", dianaTrackerMayor.items.FATEFUL_STINGER, dianaTrackerMayor.items.FATEFUL_STINGER_LS)
 
-            "BRAIN_FOOD" -> Pair("§5", dianaTrackerMayor.items.BRAIN_FOOD)
-            "MINOS_RELIC" -> Pair("§5", dianaTrackerMayor.items.MINOS_RELIC)
-            "BRAIDED_GRIFFIN_FEATHER" -> Pair("§5", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER)
+            "BRAIN_FOOD" -> Triple("§5", dianaTrackerMayor.items.BRAIN_FOOD, dianaTrackerMayor.items.BRAIN_FOOD_LS)
+            "MINOS_RELIC" -> Triple("§5", dianaTrackerMayor.items.MINOS_RELIC, -1)
+            "BRAIDED_GRIFFIN_FEATHER" -> Triple("§5", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, -1)
 
-            "DAEDALUS_STICK" -> Pair("§6", dianaTrackerMayor.items.DAEDALUS_STICK)
-            "MYTHOS_FRAGMENT" -> Pair("§6", dianaTrackerMayor.items.MYTHOS_FRAGMENT)
-            "CROWN_OF_GREED" -> Pair("§6", dianaTrackerMayor.items.CROWN_OF_GREED)
+            "DAEDALUS_STICK" -> Triple("§6", dianaTrackerMayor.items.DAEDALUS_STICK, -1)
+            "MYTHOS_FRAGMENT" -> Triple("§6", dianaTrackerMayor.items.MYTHOS_FRAGMENT, -1)
+            "CROWN_OF_GREED" -> Triple("§6", dianaTrackerMayor.items.CROWN_OF_GREED, -1) // TODO: Add Seperate LS tracker for LS Crown and clarify if LS or not in the message + party announce
 
-            else -> Pair("§f", -1) // shouldn't happen
+            else -> Triple("§f", -1, -1) // shouldn't happen
         }
-
-        var count = ""
-        val rawCount = colorAndCount.second
-        val realCount = if (rawCount != -1) rawCount + 1 else -1 // we didn't call trackItem yet, avoids being #0
-        if (realCount != -1) count = " #$realCount"
 
         val price = if (Diana.lootAnnouncerPrice) "§6${Helper.getItemPriceFormatted(itemId, amount)} coins" else ""
 
+        val ls = gotLootShareRecently(2)
+        val lsText = if (ls) " (LS)" else ""
+
+        var count = ""
+
+        val rawCount = colorAndCount.second
+        val realCount = if (rawCount != -1) rawCount + 1 else -1 // we didn't call trackItem yet, avoids being #0
+
+        val rawLsCount = colorAndCount.third
+        val realLsCount = if (rawLsCount != -1) rawLsCount + 1 else -1 // we didn't call trackItem yet, avoids being #0
+
+        if (realCount != -1) {
+            if (realLsCount != -1 && ls) {
+                count = " Total #$realCount LS #$realLsCount"
+            } else {
+                count = " #$realCount"
+            }
+        }
+
         if (Diana.lootAnnouncerChat && rare) {
-            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§e$count§6 (+$price)")
+            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
         }
 
         if (Diana.lootAnnouncerScreen && rare) {
-            Helper.showTitle("${colorAndCount.first}§l$item!", price, 0, 25, 35)
+            Helper.showTitle("${colorAndCount.first}§l$item$lsText!", price, 0, 25, 35)
         }
 
         val isLootShare = gotLootShareRecently(2)
@@ -780,7 +799,7 @@ object DianaTracker {
         }
     }
 
-    fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, buffer: Boolean = false) {
+    fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1, buffer: Boolean = false) {
         if (!Diana.lootAnnouncerParty) return
         var msg = Helper.toTitleCase(item.replace("_LS", "").replace("_", " "))
         val custom = customMsg != null
@@ -789,11 +808,19 @@ object DianaTracker {
         if (replaceDropMessage) {
             if (custom) Chat.chat(customMsg)
         } else {
-            val itemId = item.uppercase().replace(" ", "_").replace("MANTI-CORE", "MANTI_CORE") // special case for manticore
+            val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
             val price = Helper.getItemPriceFormatted(itemId, 1)
             val priceStr = if (price != "0") " (+$price coins)" else ""
+            val ls = gotLootShareRecently(2)
 
-            if (amount != -1) msg += " #$amount"
+            if (ls) msg += " (LS)"
+            if (amount != -1) {
+                if (ls && lsAmount != -1) {
+                    msg += " Total #$amount LS #$lsAmount"
+                } else {
+                    msg += " #$amount"
+                }
+            }
             msg = "[SBO] RARE DROP! $msg$priceStr"
         }
 
@@ -911,7 +938,7 @@ object DianaTracker {
     fun trackMythTheFish() {
         Register.onChatMessage(Regex("^(.*?) §eYou just dug out(.*?)$")) { message, matchResult ->
             if (matchResult.groupValues[2].contains("Myth the Fish")) {
-                onRareDropFromMob("Myth the Fish",
+                onRareDrop("Myth the Fish",
                     rare = true,
                     trackLootshare = false,
                     magicFind = 0
@@ -984,7 +1011,7 @@ object DianaTracker {
             "HARPY_SHARD" -> tracker.items.HARPY_SHARD += amount
 
             // ITEMS
-            "BRAIDED_GRIFFIN_FEATHER" -> tracker.items.BRAIDED_GRIFFIN_FEATHER += amount // todo: title, since und party message // drops from treasure burrow
+            "BRAIDED_GRIFFIN_FEATHER" -> tracker.items.BRAIDED_GRIFFIN_FEATHER += amount
             "FATEFUL_STINGER" -> tracker.items.FATEFUL_STINGER += amount
             "FATEFUL_STINGER_LS" -> tracker.items.FATEFUL_STINGER_LS += amount
             "MANTI_CORE" -> tracker.items.MANTI_CORE += amount
