@@ -9,7 +9,7 @@ plugins {
     java
     kotlin("jvm")
     kotlin("plugin.serialization") version "2.4.0"
-    id("net.fabricmc.fabric-loom-remap") version "1.17.11"
+    id("net.fabricmc.fabric-loom") version "1.17.11"
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     id("com.google.devtools.ksp") version "2.3.9"
@@ -53,8 +53,6 @@ bloom {
         replacement("mc.options.hideGui", "mc.gui.hud.isHidden()")
         replacement("gameRenderer().mainCamera", "gameRenderer().mainCamera()")
         replacement("com.mojang.blaze3d.vertex.VertexFormat.Mode", "com.mojang.blaze3d.PrimitiveTopology")
-        replacement("import net.minecraft.client.renderer.MultiBufferSource", "")
-        replacement("MultiBufferSource", "VertexConsumer")
     }
 }
 
@@ -258,27 +256,8 @@ tasks.named<ProcessResources>("processResources") {
 dependencies {
     minecraft("com.mojang:minecraft:${mcVersion}")
 
-    val mappingsConfig = configurations.findByName("mappings")
-
-    if (null != mappingsConfig) {
-        dependencies.add(
-            mappingsConfig.name,
-            loom.officialMojangMappings()
-        )
-    }
-
-    val modImplementationConfig = configurations.findByName("modImplementation")
-
-    fun DependencyHandler.maybeModImplementation(dependencyNotation: Any) {
-        if (null != modImplementationConfig) {
-            add(modImplementationConfig.name, dependencyNotation)
-        } else {
-            implementation(dependencyNotation)
-        }
-    }
-
-    maybeModImplementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
-    maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
+    implementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
     ksp(project(":event-processor"))
@@ -286,8 +265,8 @@ dependencies {
 
     implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
 
-    maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
-    maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
+    implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
+    implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
 
     when (mcProject) {
         "26.2-fabric" -> {

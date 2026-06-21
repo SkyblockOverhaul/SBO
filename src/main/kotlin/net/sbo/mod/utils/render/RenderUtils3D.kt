@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.render
 
+import net.sbo.mod.utils.chat.ChatUtils
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
@@ -129,10 +130,17 @@ object RenderUtils3D {
             val textWidth = textRenderer.width(text)
             val xOffset = -textWidth / 2f
 
+            //#if MC < 26.2
             val consumers = context.bufferSource()
+            //#endif
 
             val layerType = Font.DisplayMode.SEE_THROUGH
 
+            //#if MC >= 26.2
+            //$ val deltaPartialTick = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
+            //$ val visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
+            //$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, 0f, visualOrderText, shadow, layerType, mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, deltaPartialTick), color, 0, 0xF000F0)
+            //#else
             textRenderer.drawInBatch(
                 text,
                 xOffset,
@@ -145,6 +153,7 @@ object RenderUtils3D {
                 0,
                 0xF000F0
             )
+            //#endif
         }
     }
 
