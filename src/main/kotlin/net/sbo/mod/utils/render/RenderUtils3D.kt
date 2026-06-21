@@ -7,8 +7,9 @@ import com.mojang.math.Axis
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.blockentity.BeaconRenderer
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.util.ARGB
@@ -21,6 +22,7 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
+import kotlin.math.sqrt
 
 object RenderUtils3D {
     fun renderWaypoint(
@@ -130,30 +132,12 @@ object RenderUtils3D {
             val textWidth = textRenderer.width(text)
             val xOffset = -textWidth / 2f
 
-            //#if MC < 26.2
-            val consumers = context.bufferSource()
-            //#endif
-
             val layerType = Font.DisplayMode.SEE_THROUGH
 
-            //#if MC >= 26.2
-            //$ val deltaPartialTick = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
-            //$ val visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
-            //$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, 0f, visualOrderText, shadow, layerType, mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, deltaPartialTick), color, 0, 0xF000F0)
-            //#else
-            textRenderer.drawInBatch(
-                text,
-                xOffset,
-                0f,
-                color,
-                shadow,
-                last().pose(),
-                consumers,
-                layerType,
-                0,
-                0xF000F0
-            )
-            //#endif
+            val deltaPartialTick = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
+            val visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
+
+            context.submitNodeCollector().submitText(context.poseStack(), xOffset, 0f, visualOrderText, shadow, layerType, mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, deltaPartialTick), color, 0, 0xF000F0)
         }
     }
 
@@ -178,42 +162,58 @@ object RenderUtils3D {
 
             translate(cameraPos.reverse())
 
-            val consumers = context.bufferSource()
-            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
-            val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
+            val startPos =
+                cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
+
+            val endPos =
+                target.center().toVec3d().add(0.0, 0.5, 0.0)
 
             val lineDir = endPos.subtract(startPos)
             val viewDir = startPos.subtract(cameraPos)
 
             val sideVec = lineDir.cross(viewDir).normalize()
-
             val upVec = sideVec.cross(lineDir).normalize()
 
             val nx = upVec.x.toFloat()
             val ny = upVec.y.toFloat()
             val nz = upVec.z.toFloat()
 
-            val renderLayer = SboRenderLayers.LINES_THROUGH_WALLS
-            val buffer = consumers.getBuffer(renderLayer)
-            val matrixEntry = last()
+            val renderLayer = RenderTypes.LINES
 
-            buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
-                .setNormal(matrixEntry, nx, ny, nz)
-                .setColor(color[0], color[1], color[2], alpha)
-                .setLineWidth(lineWidth)
+            context.submitNodeCollector().submitCustomGeometry(
+                context.poseStack(),
+                renderLayer
+            ) { pose, consumer ->
+                consumer
+                    .addVertex(
+                        pose,
+                        startPos.x.toFloat(),
+                        startPos.y.toFloat(),
+                        startPos.z.toFloat()
+                    )
+                    .setNormal(pose, nx, ny, nz)
+                    .setColor(color[0], color[1], color[2], alpha)
+                    .setLineWidth(lineWidth)
 
-            buffer.addVertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
-                .setNormal(matrixEntry, nx, ny, nz)
-                .setColor(color[0], color[1], color[2], alpha)
-                .setLineWidth(lineWidth)
+                consumer
+                    .addVertex(
+                        pose,
+                        endPos.x.toFloat(),
+                        endPos.y.toFloat(),
+                        endPos.z.toFloat()
+                    )
+                    .setNormal(pose, nx, ny, nz)
+                    .setColor(color[0], color[1], color[2], alpha)
+                    .setLineWidth(lineWidth)
+            }
         }
     }
+
     /**
      * Renders a beacon beam at the given location.
      * @param ctx The world render context.
      * @param vec The position in the world where the beacon beam should be rendered.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to
-     * @param phase Whether the beam should render through walls.
      */
     fun renderBeaconBeam(
         ctx: LevelRenderContext,
@@ -223,137 +223,36 @@ object RenderUtils3D {
         val player = mc.player ?: return
         if (vec.center().distanceTo(player.x, player.y, player.z) < 8) return
 
-        val consumers = ctx.bufferSource()
         val world = mc.level ?: return
-        val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
-        val cam = ctx.getCamera().position()
+
         val beamColor = floatArrayOf(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f)
+        val cameraPos = ctx.getCamera().position()
 
         ctx.pushPop {
-            translate(vec.x - cam.x, (vec.y + 1.0) - cam.y, vec.z - cam.z)
+            translate(
+                vec.x - cameraPos.x,
+                (vec.y + 1.0) - cameraPos.y,
+                vec.z - cameraPos.z
+            )
 
-            renderBeam(
-                consumers,
-                partialTicks,
-                world.gameTime,
-                Color(beamColor[0], beamColor[1], beamColor[2]).rgb
+            BeaconRenderer.submitBeaconBeam(
+                ctx.poseStack(),
+                ctx.submitNodeCollector(),
+                BeaconRenderer.BEAM_LOCATION,
+                1.0f,
+                Math.floorMod(world.gameTime, 40)
+                    + mc.deltaTracker.getGameTimeDeltaPartialTick(false),
+                0,
+                320,
+                Color(
+                    beamColor[0],
+                    beamColor[1],
+                    beamColor[2]
+                ).rgb,
+                0.2f,
+                0.25f
             )
         }
-    }
-
-    private fun PoseStack.renderBeam(
-        vertices: MultiBufferSource,
-        partialTicks: Float,
-        worldTime: Long,
-        color: Int
-    ) {
-        val opaqueLayer = SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS
-        val translucentLayer = SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS
-        val heightScale = 1f
-        val height = 320
-        val innerRadius = 0.2f
-        val outerRadius = 0.25f
-        val time = Math.floorMod(worldTime, 40) + partialTicks
-        val fixedTime = -time
-        val wavePhase = Mth.frac(fixedTime * 0.2f - Mth.floor(fixedTime * 0.1f).toFloat())
-        val animationStep = -1f + wavePhase
-        var renderYOffest = height.toFloat() * heightScale * (0.5f / innerRadius) + animationStep
-
-        pushPop {
-            translate(0.5, 0.0, 0.5)
-
-            pushPop {
-                mulPose(Axis.YP.rotationDegrees(time * 2.25f - 45f))
-
-                renderBeamLayer(
-                    vertices.getBuffer(opaqueLayer),
-                    color,
-                    0f,
-                    innerRadius,
-                    innerRadius,
-                    0f,
-                    -innerRadius,
-                    0f,
-                    0f,
-                    -innerRadius,
-                    renderYOffest,
-                    animationStep
-                )
-            }
-
-            renderYOffest = height.toFloat() * heightScale + animationStep
-
-            renderBeamLayer(
-                vertices.getBuffer(translucentLayer),
-                ARGB.color(32, color),
-                -outerRadius,
-                -outerRadius,
-                outerRadius,
-                -outerRadius,
-                -outerRadius,
-                outerRadius,
-                outerRadius,
-                outerRadius,
-                renderYOffest,
-                animationStep
-            )
-        }
-    }
-
-    private fun PoseStack.renderBeamLayer(
-        vertices: VertexConsumer,
-        color: Int,
-        x1: Float,
-        z1: Float,
-        x2: Float,
-        z2: Float,
-        x3: Float,
-        z3: Float,
-        x4: Float,
-        z4: Float,
-        v1: Float,
-        v2: Float
-    ) {
-        val entry = last()
-        renderBeamFace(entry, vertices, color, x1, z1, x2, z2, v1, v2)
-        renderBeamFace(entry, vertices, color, x4, z4, x3, z3, v1, v2)
-        renderBeamFace(entry, vertices, color, x2, z2, x4, z4, v1, v2)
-        renderBeamFace(entry, vertices, color, x3, z3, x1, z1, v1, v2)
-    }
-
-    private fun renderBeamFace(
-        matrix: PoseStack.Pose,
-        vertices: VertexConsumer,
-        color: Int,
-        x1: Float,
-        z1: Float,
-        x2: Float,
-        z2: Float,
-        v1: Float,
-        v2: Float
-    ) {
-        renderBeamVertex(matrix, vertices, color, 320, x1, z1, 1f, v1)
-        renderBeamVertex(matrix, vertices, color, 0, x1, z1, 1f, v2)
-        renderBeamVertex(matrix, vertices, color, 0, x2, z2, 0f, v2)
-        renderBeamVertex(matrix, vertices, color, 320, x2, z2, 0f, v1)
-    }
-
-    private fun renderBeamVertex(
-        matrix: PoseStack.Pose,
-        vertices: VertexConsumer,
-        color: Int,
-        y: Int,
-        x: Float,
-        z: Float,
-        u: Float,
-        v: Float
-    ) {
-        vertices
-            .addVertex(matrix, x, y.toFloat(), z)
-            .setColor(color)
-            .setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(15728880).setNormal(matrix, 0f, 1f, 0f)
     }
 
     private fun LevelRenderContext.getCamera(): Camera {
