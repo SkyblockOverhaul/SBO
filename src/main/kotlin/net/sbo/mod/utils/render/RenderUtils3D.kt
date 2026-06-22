@@ -185,7 +185,7 @@ object RenderUtils3D {
             val ny = upVec.y.toFloat()
             val nz = upVec.z.toFloat()
 
-            val renderLayer = RenderTypes.LINES
+            val renderLayer = SboRenderLayers.LINES_THROUGH_WALLS
             val buffer = consumers.getBuffer(renderLayer)
             val matrixEntry = last()
 
