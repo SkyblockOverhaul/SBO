@@ -8,6 +8,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.General.HideOwnWaypoints
@@ -213,6 +214,14 @@ object WaypointManager {
                 }?.let { knownBurrow ->
                     knownBurrow.carryOverState(arrowGuess)
                     removeWaypoint(arrowGuess)
+
+                    val containList = ArrowGuessBurrow.allGuesses.filter { guessEntry ->
+                        val current = guessEntry.getCurrent().roundLocationToBlock()
+
+                        current.x == arrowGuessBlock.x && current.y == arrowGuessBlock.y && current.z == arrowGuessBlock.z
+                    }
+
+                    ArrowGuessBurrow.allGuesses.removeAll(containList.toSet())
                 }
             }
 
@@ -337,7 +346,7 @@ object WaypointManager {
         if (pos == null) return
 
         if (!waypointExists("burrow", pos).first) {
-            val waypoint = Waypoint("Guess", pos.x, pos.y, pos.z, type = "guess")
+            val waypoint = Waypoint("Spade Guess", pos.x, pos.y, pos.z, type = "guess")
             addWaypoint(waypoint)
         }
     }
