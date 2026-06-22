@@ -4,6 +4,7 @@ import com.google.common.cache.Cache
 import com.google.common.cache.RemovalCause
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 /**
  * A cache map that automatically removes entries after a specified duration since their last write.
@@ -21,7 +22,7 @@ class TimeLimitedCache<K : Any, V : Any>(
 ) : CacheMap<K, V>() {
 
     override val cache: Cache<K, V> = buildCache {
-        expireAfterWrite(expireAfterWrite.inWholeNanoseconds, TimeUnit.NANOSECONDS)
+        expireAfterWrite(expireAfterWrite.toJavaDuration())
         setRemovalListener(removalListener)
     }
 }

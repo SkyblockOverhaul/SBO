@@ -2,6 +2,7 @@ package net.sbo.mod.utils.events
 
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
@@ -29,7 +30,10 @@ object DianaEvents {
         if (World.getWorld() != "Hub") return
         if (packet.action != ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) return
 
-        processBlockInteraction(packet.pos.toSboVec())
+        val pos = packet.pos.toSboVec()
+
+        ArrowGuessBurrow.recentClickedBlocks.add(pos)
+        processBlockInteraction(pos)
     }
 
     @SboEvent

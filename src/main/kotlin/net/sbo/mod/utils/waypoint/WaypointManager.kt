@@ -78,33 +78,40 @@ object WaypointManager {
                     }
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
 
-                    when (mob) { // todo: add custom sounds per mob
-                        "minos inquisitor", "inquisitor", "inq" -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §b§lINQUISITOR! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
+                    val mobDisplayName = when (mobType) {
+                        Diana.ReceiveList.INQ -> {
+                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
                             playCustomSound(Customization.inqSound[0], Customization.inqVolume)
+                            "§dInquisitor"
                         }
-                        "king minos", "king" -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §b§lKING MINOS! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
+                        Diana.ReceiveList.KING -> {
+                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
                             playCustomSound(Customization.kingSound[0], Customization.kingVolume)
+                            "§6King Minos"
                         }
-                        "manticore" -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §b§lMANTICORE! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
+                        Diana.ReceiveList.MANTICORE -> {
+                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
                             playCustomSound(Customization.mantiSound[0], Customization.mantiVolume)
+                            "§2Manticore"
                         }
-                        "sphinx" -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §b§lSPHINX! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
+                        Diana.ReceiveList.SPHINX -> {
+                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
                             playCustomSound(Customization.sphinxSound[0], Customization.sphinxVolume)
+                            "§9Sphinx"
                         }
                         else -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §b§lRARE MOB! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
+                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
                             playCustomSound(Customization.rareMobSound[0], Customization.rareMobVolume)
+                            "§3Rare Mob"
                         }
                     }
+
                     addRareMobWaypoint(
                         player,
                         SboVec(x.toDouble(), y.toDouble(), z.toDouble()),
-                        mob,
-                        playername
+                        mobType,
+                        playername,
+                        mobDisplayName
                     )
                 } else if (patcherWaypoints) {
                     if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(playername)) return@onChatMessage
@@ -137,7 +144,7 @@ object WaypointManager {
             // Remove all waypoints that are not in radius of typical burrow locations x y z
             this.forEachWaypoint { waypoint ->
                 val underWorld = waypoint.pos.y < 60
-                val aboveWorld = waypoint.pos.y > 100
+                val aboveWorld = waypoint.pos.y > 105
                 val outsideZ = waypoint.pos.z > 205
                 val outsideX = waypoint.pos.x > 175
                 val outsideNegativeZ = waypoint.pos.z < 0 && -waypoint.pos.z > 208
@@ -223,14 +230,16 @@ object WaypointManager {
         WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
     }
 
-    fun addRareMobWaypoint(player: String, pos: SboVec, mobName: String, playername: String) {
-        when (mobName) {
-            "minos inquisitor", "inquisitor" -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(playername)) return
-            "king minos", "king" -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING) && player.contains(playername)) return
-            "manticore" -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(playername)) return
-            "sphinx" -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(playername)) return
+    fun addRareMobWaypoint(player: String, pos: SboVec, mobType: Diana.ReceiveList, playername: String, mobDisplayName: String) {
+        when (mobType) {
+            Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(playername)) return
+            Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING) && player.contains(playername)) return
+            Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(playername)) return
+            Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(playername)) return
+            else -> {}
         }
-        addWaypoint(Waypoint(player, pos.x, pos.y, pos.z, ttl = 45, type = "rareMob"))
+
+        addWaypoint(Waypoint(mobDisplayName + " §7($player§7)", pos.x, pos.y, pos.z, ttl = 45, type = "rareMob"))
     }
 
     fun removeNearbyRareMobWaypoints() {
@@ -321,10 +330,10 @@ object WaypointManager {
     }
 
     /**
-     * Updates the guess waypoint position.
-     * @param pos The new position for the guess waypoint.
+     * Adds a shovel guess waypoint.
+     * @param pos The position for the shovel guess waypoint.
      */
-    fun updateGuess(pos: SboVec?) {
+    fun addShovelGuess(pos: SboVec?) {
         if (pos == null) return
 
         if (!waypointExists("burrow", pos).first) {

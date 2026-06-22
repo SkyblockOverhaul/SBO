@@ -9,6 +9,7 @@ import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.*
 import gg.essential.universal.UKeyboard
 import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.TextColor
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.Achievement
 import net.sbo.mod.diana.achievements.AchievementManager
@@ -325,8 +326,16 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
             val posY = spacingY + (row * (achievementBoxHeight + spacingY))
             lastY = posY
             val borderColor = if (achievement.isUnlocked(true)) Color(0, 255, 0) else Color(255, 0, 0)
-            val achievementColor =  if (achievement.rarity != "Celestial") Color(
-                ChatFormatting.getByCode(achievement.color[1])?.color ?: 0xFFFFFF) else Color(0x7D00FF)
+            val achievementColor = if ("Celestial" != achievement.rarity) {
+                Color(
+                    ChatFormatting.getByCode(achievement.color[1])
+                        ?.let(TextColor::fromLegacyFormat)
+                        ?.getValue()
+                        ?: 0xFFFFFF
+                )
+            } else {
+                Color(0x7D00FF)
+            }
 
             val roundedOutline = UIRoundedRectangle(5f).constrain {
                 x = posX.pixels
