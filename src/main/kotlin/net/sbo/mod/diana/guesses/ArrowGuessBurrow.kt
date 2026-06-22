@@ -43,8 +43,8 @@ object ArrowGuessBurrow {
     private const val COUNT_NEAR_TIP = 4
     private const val COUNT_NEAR_BASE = 2
     private const val EPSILON = 1e-6
-    private val HUB_BOUNDS_MIN = SboVec(-296.0, 0.0, -272.0)
-    private val HUB_BOUNDS_MAX = SboVec(207.0, 256.0, 223.0)
+    private val HUB_BOUNDS_MIN = SboVec(-283.0, 60.0, -208.0)
+    private val HUB_BOUNDS_MAX = SboVec(175.0, 105.0, 205.0)
     private val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
     private var spadeTitleShown = false
 
@@ -82,7 +82,9 @@ object ArrowGuessBurrow {
 
     private var lastBlockClicked: SboVec? = null
 
-    private val allGuesses = CopyOnWriteArrayList<GuessEntry>()
+    val recentClickedBlocks = TimeLimitedSet<SboVec>(3.seconds)
+
+    val allGuesses = CopyOnWriteArrayList<GuessEntry>()
 
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
@@ -276,10 +278,8 @@ object ArrowGuessBurrow {
             }
             if (hasSpade) {
                 val isKnownBurrow = burrowLocations.contains(current)
-                if (!isKnownBurrow && current.distanceSq(playerPos) < 900) {
-                    if (guess.moveToNext()) {
-                        return
-                    }
+                if (!isKnownBurrow && current.distanceSq(playerPos) < 900) { // 30 blocks
+                    guess.moveToNext()
                 }
             }
         }
@@ -306,8 +306,13 @@ object ArrowGuessBurrow {
     }
 
     internal fun isBlockTrulyValid(pos: SboVec): Boolean {
-        val isGround = pos.getBlockAt() == Blocks.GRASS_BLOCK
+        val block = pos.getBlockAt()
+        val isGrass = pos.getBlockAt() == Blocks.GRASS_BLOCK
+        val isAir = pos.getBlockAt() == Blocks.AIR
+        val isGround = isGrass || (isAir && recentClickedBlocks.contains(pos))
+
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
+
         return isGround && isValidBlockAbove
     }
 

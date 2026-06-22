@@ -7,6 +7,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.PastEventsGui
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
+import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
@@ -245,6 +246,16 @@ object Diana : CategoryKt("Diana") {
     var statsTracker by boolean(false) {
         this.name = Literal("Diana Stats Tracker")
         this.description = Literal("Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, /sboguis to move the overlay")
+    }
+
+    var hideLsStats by ObservableEntry(boolean(false) {
+            this.name = Literal("Hide LS Stats")
+            this.description = Literal("Hides the Loot Share (LS) portion of the Diana stats lines")
+        }
+    ) { old, new ->
+        if (old != new) {
+            DianaStats.updateLines()
+        }
     }
 
     var resetSessionOnGameRestart by boolean(false) {

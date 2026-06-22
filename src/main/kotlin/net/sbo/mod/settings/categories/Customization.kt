@@ -108,6 +108,11 @@ object Customization : CategoryKt("Customization") {
         this.description = Literal("Shows times dug on the waypoint text for known burrows.")
     }
 
+    var warpTitleAsSubtitle by boolean(false) {
+        this.name = Literal("Warp Title As Subtitle")
+        this.description = Literal("Shows the warp title as a subtitle instead of title, reducing its size on screen. This will also cause it to move down slightly.")
+    }
+
     init {
         separator {
             this.title = "Sounds"

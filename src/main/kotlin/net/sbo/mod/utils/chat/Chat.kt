@@ -45,24 +45,26 @@ object Chat {
         }
     }
 
+    private fun sendClientMessage(message: Component) {
+        mc.execute {
+            mc.gui.chat.addMessage(message)
+        }
+    }
+
     /**
      * Shows a local chat message only visible to the player.
      * @param string The message to display in the chat.
      */
-    fun chat(string: String) {
-        mc.execute {
-            mc.gui.chat.addMessage(Component.nullToEmpty(string))
-        }
+    fun chat(message: String) {
+        sendClientMessage(Component.nullToEmpty(message))
     }
 
     /**
      * Shows a local chat message only visible to the player.
      * @param text The message to display in the chat.
      */
-    fun chat(text: Component) {
-        mc.execute {
-            mc.gui.chat.addMessage(text)
-        }
+    fun chat(message: Component) {
+        sendClientMessage(message)
     }
 
     /**
@@ -97,9 +99,7 @@ object Chat {
                 .withHoverEvent(hoverEvent)
         )
 
-        mc.execute {
-            mc.gui.chat.addMessage(styledText)
-        }
+        sendClientMessage(styledText)
     }
 
     /**
@@ -125,9 +125,7 @@ object Chat {
                 .withHoverEvent(hoverEvent)
         )
 
-        mc.execute {
-            mc.gui.chat.addMessage(styledText)
-        }
+        sendClientMessage(styledText)
     }
 
     /**
@@ -144,9 +142,7 @@ object Chat {
             combinedText.append(component)
         }
 
-        mc.execute {
-            mc.gui.chat.addMessage(combinedText)
-        }
+        sendClientMessage(combinedText)
     }
 
     /**
