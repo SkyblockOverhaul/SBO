@@ -337,7 +337,7 @@ object WaypointManager {
         if (pos == null) return
 
         if (!waypointExists("burrow", pos).first) {
-            val waypoint = Waypoint("Spade Guess", pos.x, pos.y, pos.z, type = "guess")
+            val waypoint = Waypoint("Guess", pos.x, pos.y, pos.z, type = "guess")
             addWaypoint(waypoint)
         }
     }
