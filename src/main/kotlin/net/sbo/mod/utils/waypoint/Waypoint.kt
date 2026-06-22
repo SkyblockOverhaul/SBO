@@ -102,7 +102,7 @@ class Waypoint(
             if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
                 val warpName = closest.replaceFirstChar(Char::titlecase)
 
-                val text = "§bWarp §e$warpName$distanceText"
+                val text = "§" + (if (this.type == "rareMob" || this.type == "world") "d" else "b") + "Warp §e$warpName$distanceText"
                 val asSubtitle = Customization.warpTitleAsSubtitle
 
                 val title = if (asSubtitle) "" else text
@@ -179,7 +179,7 @@ class Waypoint(
         inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
-        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 1f)
+        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 0.99f)
 
         val dist = distanceRaw.roundToInt()
 
@@ -188,18 +188,20 @@ class Waypoint(
 
         when (this.type) {
             "guess", "arrow", "burrow" -> {
-                this.line = Diana.guessAndBurrowLine && inqWaypoints.isEmpty() && isClosest
+                if (isClosest && !inqWaypoints.isEmpty()) isClosest = false
+                this.line = Diana.guessAndBurrowLine && isClosest
 
                 setWarpText()
             }
-            "rareMob" -> {
+            "rareMob", "world" -> {
                 val newest = inqWaypoints.lastOrNull() == this
+
+                if (newest) isClosest = true
+                this.line = newest && Diana.inqLine
 
                 if (newest) {
                     setWarpText()
                 }
-
-                this.line = newest && Diana.inqLine
             }
             else -> {
                 this.formattedText = "$text$distanceText"
