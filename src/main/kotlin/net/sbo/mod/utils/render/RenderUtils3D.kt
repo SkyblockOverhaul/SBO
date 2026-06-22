@@ -8,6 +8,7 @@ import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.util.ARGB
@@ -184,7 +185,7 @@ object RenderUtils3D {
             val ny = upVec.y.toFloat()
             val nz = upVec.z.toFloat()
 
-            val renderLayer = SboRenderLayers.LINES_THROUGH_WALLS
+            val renderLayer = RenderTypes.LINES
             val buffer = consumers.getBuffer(renderLayer)
             val matrixEntry = last()
 

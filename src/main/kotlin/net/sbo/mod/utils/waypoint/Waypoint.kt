@@ -100,8 +100,15 @@ class Waypoint(
 
             val title = Diana.showTitleWhenWarpAvailable
             if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
-                 val warpName = closest.replaceFirstChar(Char::titlecase)
-                 Helper.showTitle("§bWarp §e$warpName$distanceText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
+                val warpName = closest.replaceFirstChar(Char::titlecase)
+
+                val text = "§bWarp §e$warpName$distanceText"
+                val asSubtitle = Customization.warpTitleAsSubtitle
+
+                val title = if (asSubtitle) "" else text
+                val subtitle = if (asSubtitle) text else null
+
+                Helper.showTitle(title, subtitle, 0, 1, 0) // 1 ticks because next tick this will be called again
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"

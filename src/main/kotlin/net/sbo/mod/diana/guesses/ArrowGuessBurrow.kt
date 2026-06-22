@@ -82,7 +82,9 @@ object ArrowGuessBurrow {
 
     private var lastBlockClicked: SboVec? = null
 
-    private val allGuesses = CopyOnWriteArrayList<GuessEntry>()
+    val recentClickedBlocks = TimeLimitedSet<SboVec>(3.seconds)
+
+    val allGuesses = CopyOnWriteArrayList<GuessEntry>()
 
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
@@ -306,8 +308,13 @@ object ArrowGuessBurrow {
     }
 
     internal fun isBlockTrulyValid(pos: SboVec): Boolean {
-        val isGround = pos.getBlockAt() == Blocks.GRASS_BLOCK
+        val block = pos.getBlockAt()
+        val isGrass = pos.getBlockAt() == Blocks.GRASS_BLOCK
+        val isAir = pos.getBlockAt() == Blocks.AIR
+        val isGround = isGrass || (isAir && recentClickedBlocks.contains(pos))
+
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
+
         return isGround && isValidBlockAbove
     }
 
