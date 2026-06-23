@@ -7,7 +7,6 @@ import net.minecraft.world.level.chunk.LevelChunk
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import net.sbo.mod.utils.hubcache.ChunkCache.isEnabled
 
 /**
  * Manages cached chunk data for Hub area.
@@ -20,7 +19,7 @@ object ChunkCacheManager {
 
     @SboEvent
     fun onDisconnect(event: DisconnectEvent) {
-        if (!isEnabled()) clear()
+        clear()
     }
 
     /**
