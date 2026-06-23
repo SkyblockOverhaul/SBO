@@ -15,19 +15,27 @@ import kotlin.math.sqrt
  * The credits to this class go fully to the SkyHanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/LorenzVec.kt
  */
 data class SboVec(var x: Double, var y: Double, var z: Double) {
-
     fun distanceTo(other: SboVec): Double {
-        return sqrt((other.x - this.x).pow(2) + (other.y - this.y).pow(2) + (other.z - this.z).pow(2))
+        val dx = other.x - x
+        val dy = other.y - y
+        val dz = other.z - z
+
+        return sqrt(dx * dx + dy * dy + dz * dz)
     }
 
     fun distanceToIgnoringY(other: SboVec): Double {
         val dx = x - other.x
         val dz = z - other.z
+
         return sqrt(dx * dx + dz * dz)
     }
 
     fun distanceTo(x: Double, y: Double, z: Double): Double {
-        return sqrt((x - this.x).pow(2) + (y - this.y).pow(2) + (z - this.z).pow(2))
+        val dx = x - this.x
+        val dy = y - this.y
+        val dz = z - this.z
+
+        return sqrt(dx * dx + dy * dy + dz * dz)
     }
 
     operator fun plus(other: SboVec): SboVec {

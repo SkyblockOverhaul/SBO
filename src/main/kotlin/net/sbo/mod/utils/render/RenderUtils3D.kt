@@ -8,6 +8,7 @@ import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.util.ARGB
@@ -29,7 +30,6 @@ object RenderUtils3D {
         colorComponents: FloatArray,
         hexColor: Int,
         alpha: Float,
-        throughWalls: Boolean,
         drawLine: Boolean,
         lineWidth: Float,
         renderBeam: Boolean
@@ -37,8 +37,7 @@ object RenderUtils3D {
         drawFilledBox(
             pos,
             colorComponents,
-            alpha,
-            throughWalls
+            alpha
         )
 
         if (drawLine) {
@@ -47,7 +46,6 @@ object RenderUtils3D {
                 pos,
                 colorComponents,
                 lineWidth,
-                throughWalls,
                 alpha
             )
         }
@@ -56,10 +54,8 @@ object RenderUtils3D {
             renderBeaconBeam(
                 context,
                 pos,
-                colorComponents,
-                true
+                colorComponents
             )
-
         }
 
         if (text.isNotEmpty() && text != "§7") {
@@ -70,8 +66,7 @@ object RenderUtils3D {
                 text,
                 hexColor,
                 Customization.waypointTextShadow,
-                Customization.waypointTextScale/100.0,
-                throughWalls
+                Customization.waypointTextScale/100.0
             )
         }
     }
@@ -81,13 +76,11 @@ object RenderUtils3D {
      * @param pos The position in the world where the box should be drawn.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to 1.0).
      * @param alpha The alpha value for transparency (0.0 to 1.0).
-     * @param throughWalls Whether the box should be drawn through walls.
      */
-    fun drawFilledBox(
+    private fun drawFilledBox(
         pos: SboVec,
         colorComponents: FloatArray,
         alpha: Float,
-        throughWalls: Boolean
     ) {
         val r = (colorComponents[0].coerceIn(0f, 1f) * 255).toInt()
         val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
@@ -95,11 +88,7 @@ object RenderUtils3D {
         val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
         val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
         val bPos = pos.toBlockPos().immutable()
-        if (throughWalls) {
-            Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
-        } else {
-            Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor))
-        }
+        Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
     }
 
     /**
@@ -111,15 +100,14 @@ object RenderUtils3D {
      * @param shadow Whether to draw the text with a shadow.
      * @param scale The scale of the text.
      */
-    fun drawString(
+    private fun drawString(
         context: LevelRenderContext,
         pos: SboVec,
         yOffset: Double,
         text: String,
         color: Int,
         shadow: Boolean,
-        scale: Double,
-        throughWalls: Boolean
+        scale: Double
     ) {
         context.pushPop {
             val camera = context.getCamera()
@@ -144,7 +132,7 @@ object RenderUtils3D {
 
             val consumers = context.bufferSource()
 
-            val layerType = if (throughWalls) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
+            val layerType = Font.DisplayMode.SEE_THROUGH
 
             textRenderer.drawInBatch(
                 text,
@@ -167,15 +155,13 @@ object RenderUtils3D {
      * @param target The target position in the world.
      * @param color The RGB color of the line as a FloatArray (0.0 to 1.0).
      * @param lineWidth The width of the line.
-     * @param throughWalls Whether the line should be drawn through walls.
      * @param alpha The alpha value for transparency (0.0 to 1.0).
      */
-    fun drawLineFromCursor(
+    private fun drawLineFromCursor(
         context: LevelRenderContext,
         target: SboVec,
         color: FloatArray,
         lineWidth: Float,
-        throughWalls: Boolean,
         alpha: Float = 0.5f
     ) {
         context.pushPop {
@@ -199,7 +185,7 @@ object RenderUtils3D {
             val ny = upVec.y.toFloat()
             val nz = upVec.z.toFloat()
 
-            val renderLayer = if (throughWalls) SboRenderLayers.LINES_THROUGH_WALLS else SboRenderLayers.LINES
+            val renderLayer = SboRenderLayers.LINES_THROUGH_WALLS
             val buffer = consumers.getBuffer(renderLayer)
             val matrixEntry = last()
 
@@ -221,11 +207,10 @@ object RenderUtils3D {
      * @param colorComponents The RGB color components as a FloatArray (0.0 to
      * @param phase Whether the beam should render through walls.
      */
-    fun renderBeaconBeam(
+    private fun renderBeaconBeam(
         ctx: LevelRenderContext,
         vec: SboVec,
-        colorComponents: FloatArray,
-        phase: Boolean = false
+        colorComponents: FloatArray
     ) {
         val player = mc.player ?: return
         if (vec.center().distanceTo(player.x, player.y, player.z) < 8) return
@@ -243,8 +228,7 @@ object RenderUtils3D {
                 consumers,
                 partialTicks,
                 world.gameTime,
-                Color(beamColor[0], beamColor[1], beamColor[2]).rgb,
-                phase
+                Color(beamColor[0], beamColor[1], beamColor[2]).rgb
             )
         }
     }
@@ -253,11 +237,10 @@ object RenderUtils3D {
         vertices: MultiBufferSource,
         partialTicks: Float,
         worldTime: Long,
-        color: Int,
-        phase: Boolean = false
+        color: Int
     ) {
-        val opaqueLayer = if (phase) SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_OPAQUE
-        val translucentLayer = if (phase) SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS else SboRenderLayers.BEACON_BEAM_TRANSLUCENT
+        val opaqueLayer = SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS
+        val translucentLayer = SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS
         val heightScale = 1f
         val height = 320
         val innerRadius = 0.2f

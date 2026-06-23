@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.sbo.mod.SBOKotlin;
 import net.sbo.mod.guis.AchievementsGUI;
 import net.sbo.mod.guis.Guis;
+import net.sbo.mod.settings.categories.General;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -31,7 +32,7 @@ public abstract class PauseScreenMixin {
 
     @Inject(method = "createPauseMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
     void sbo$onAddChild(@NonNull CallbackInfo ci, @Local @NonNull RowHelper helper) {
-        if (addedButtons == 0 && !injected) {
+        if (addedButtons == 0 && !injected && General.INSTANCE.getAchievementsButton()) {
             injected = true;
 
             Button custom = Button.builder(

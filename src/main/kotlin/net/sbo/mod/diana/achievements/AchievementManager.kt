@@ -348,6 +348,8 @@ object AchievementManager {
         }
     }
 
+    val COA_MF_PATTERN = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")
+
     fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
         val lookup = ItemLookup(helmet)
@@ -357,9 +359,7 @@ object AchievementManager {
 
         val mf = lookup.loreList
             .map { it.removeFormatting() }
-            .getValueFromLine(
-                Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")
-            )
+            .getValueFromLine(COA_MF_PATTERN)
             .toDouble()
 
         when (mf) {

@@ -234,6 +234,7 @@ object DianaLoot : DirtyFlushableOverlay() {
 
         if (screenOpen) {
             lines.addAll(listOf(changeView, delimiter, changeSellType))
+            if (Diana.lootTracker == Diana.Tracker.SESSION) lines.add(resetSession)
         }
     }
 
@@ -286,7 +287,6 @@ object DianaLoot : DirtyFlushableOverlay() {
 
         stats.add(timerLine)
         if (type == Diana.Tracker.TOTAL) stats.add(OverlayTextLine("${YELLOW}Total Events: $AQUA$totalEvents"))
-        if (screenOpen && type == Diana.Tracker.SESSION) stats.add(resetSession)
 
         return stats
     }

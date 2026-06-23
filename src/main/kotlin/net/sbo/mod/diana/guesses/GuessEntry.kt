@@ -12,12 +12,6 @@ class GuessEntry(val guesses: List<SboVec>) {
 
     fun contains(vec: SboVec): Boolean = guesses.contains(vec)
 
-    fun removeGuesses() {
-        guesses.forEach {
-            WaypointManager.removeArrowGuess(it)
-        }
-    }
-
     fun moveToNext(): Boolean {
         val current = getCurrent()
         val currentWaypoint = WaypointManager.getWaypointAt(current, "arrow")

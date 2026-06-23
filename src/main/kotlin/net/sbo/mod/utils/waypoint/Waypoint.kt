@@ -35,13 +35,13 @@ class Waypoint(
     val x: Double,
     val y: Double,
     val z: Double,
-    val ttl: Int = 1800,
+    val ttl: Long = 1800,
     val type: String = "normal",
     var line: Boolean = false
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
     var hidden: Boolean = false
-    val creation: Long = System.currentTimeMillis()
+    val creationNs: Long = System.nanoTime()
     var formatted: Boolean = false
     var distanceRaw: Double = 0.0
     var distanceText: String = ""
@@ -100,8 +100,15 @@ class Waypoint(
 
             val title = Diana.showTitleWhenWarpAvailable
             if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
-                 val warpName = closest.replaceFirstChar(Char::titlecase)
-                 Helper.showTitle("§bWarp §e$warpName$distanceText", "", 0, 1, 0) // 1 ticks because next tick this will be called again
+                val warpName = closest.replaceFirstChar(Char::titlecase)
+
+                val text = "§" + (if (this.type == "rareMob" || this.type == "world") "d" else "b") + "Warp §e$warpName$distanceText"
+                val asSubtitle = Customization.warpTitleAsSubtitle
+
+                val title = if (asSubtitle) "" else text
+                val subtitle = if (asSubtitle) text else null
+
+                Helper.showTitle(title, subtitle, 0, 1, 0) // 1 ticks because next tick this will be called again
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"
@@ -172,7 +179,7 @@ class Waypoint(
         inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
-        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 1f)
+        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 0.99f)
 
         val dist = distanceRaw.roundToInt()
 
@@ -181,18 +188,20 @@ class Waypoint(
 
         when (this.type) {
             "guess", "arrow", "burrow" -> {
-                this.line = Diana.guessAndBurrowLine && inqWaypoints.isEmpty() && isClosest
+                if (isClosest && !inqWaypoints.isEmpty()) isClosest = false
+                this.line = Diana.guessAndBurrowLine && isClosest
 
                 setWarpText()
             }
-            "rareMob" -> {
+            "rareMob", "world" -> {
                 val newest = inqWaypoints.lastOrNull() == this
+
+                if (newest) isClosest = true
+                this.line = newest && Diana.inqLine
 
                 if (newest) {
                     setWarpText()
                 }
-
-                this.line = newest && Diana.inqLine
             }
             else -> {
                 this.formattedText = "$text$distanceText"
@@ -212,7 +221,7 @@ class Waypoint(
     }
 
     fun isOlderThan(duration: Duration): Boolean {
-        return System.currentTimeMillis() - this.creation > duration.toMillis()
+        return this.creationNs + duration.toNanos() < System.nanoTime()
     }
 
     fun render(context: LevelRenderContext) {
@@ -231,7 +240,6 @@ class Waypoint(
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),
             waypointOpacity,
-            true,
             this.line,
             Diana.dianaLineWidth.toFloat(),
             Diana.showBeaconBeam
