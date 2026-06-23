@@ -9,7 +9,7 @@ plugins {
     java
     kotlin("jvm")
     kotlin("plugin.serialization") version "2.4.0"
-    id("net.fabricmc.fabric-loom") version "1.17.11"
+    id("net.fabricmc.fabric-loom") version "1.17.12"
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     id("com.google.devtools.ksp") version "2.3.9"
