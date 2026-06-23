@@ -5,6 +5,7 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.utils.hubcache.ChunkCache
 import kotlin.math.absoluteValue
 import kotlin.math.floor
 import kotlin.math.pow
@@ -113,7 +114,16 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
 
     fun getBlockAt(): Block? = getBlockStateAt()?.block
 
-    fun getBlockStateAt(): BlockState? = SBOKotlin.mc.level?.getBlockState(toBlockPos())
+    fun getBlockStateAt(): BlockState? {
+        val pos = toBlockPos()
+        // First try regular level (for loaded chunks)
+        val level = SBOKotlin.mc.level
+        if (level != null && level.isLoaded(pos)) {
+            return level.getBlockState(pos)
+        }
+        // Fall back to HubChunkCache for unloaded chunks in Hub
+        return ChunkCache.getBlockState(pos)
+    }
 
     fun dotProduct(other: SboVec): Double = (x * other.x) + (y * other.y) + (z * other.z)
 

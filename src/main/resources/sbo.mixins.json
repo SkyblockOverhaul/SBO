@@ -14,7 +14,8 @@
     "PlayerInteractMixin",
     "ScreenHandlerSlotUpdateS2CPacketMixin",
     "ScreenMixin",
-    "EntityMixin"
+    "EntityMixin",
+    "ChunkCacheMixin"
   ],
   "injectors": {
     "defaultRequire": 1

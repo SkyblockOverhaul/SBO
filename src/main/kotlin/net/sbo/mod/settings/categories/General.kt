@@ -73,4 +73,15 @@ object General : CategoryKt("General") {
         this.name = Literal("Achievements Button")
         this.description = Literal("Shows the SBO Achievements button in the pause menu")
     }
+
+    init {
+        separator {
+            this.title = "Chunk Cache"
+        }
+    }
+
+    var hubChunkCache by boolean(true) {
+        this.name = Literal("Hub Chunk Cache")
+        this.description = Literal("Caches unloaded chunks in Hub for accurate arrow guesses. Disable if using Bobby or other chunk caching mods.")
+    }
 }

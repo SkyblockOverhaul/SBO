@@ -92,6 +92,9 @@ bloom {
 
         // addMessage --> addClientSystemMessage
         replacement("chat.addMessage(", "chat.addClientSystemMessage(")
+
+        // ChunkPos.asLong --> ChunkPos.pack (26.1+)
+        replacement("ChunkPos.asLong", "ChunkPos.pack")
     }
 }
 
