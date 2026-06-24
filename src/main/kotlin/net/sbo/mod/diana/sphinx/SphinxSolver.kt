@@ -22,16 +22,20 @@ object SphinxSolver {
         detectQuestion()
     }
 
-    @SboEvent
-    fun onGuiMouseClick(event: GuiMouseClickBefore) {
+    fun solve() {
         if (!Diana.sphinxSolver) return
 
         val index = currentSession?.correctAnswersIndex ?: return
-        if (event.button != 0) return
         if (index == -1) return
-        if (event.screen !is ChatScreen) return
         Chat.command("/sphinxanswer $index")
         currentSession = null
+    }
+
+    @SboEvent
+    fun onGuiMouseClick(event: GuiMouseClickBefore) {
+        if (event.screen !is ChatScreen) return
+        if (event.button != 0) return
+        solve()
     }
 
 
