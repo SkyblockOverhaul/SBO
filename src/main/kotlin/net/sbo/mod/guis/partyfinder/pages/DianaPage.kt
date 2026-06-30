@@ -137,7 +137,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         lvlInput.create().setChildOf(lvlbox)
         lvlInput.onlyNumbers = true
         lvlInput.maxChars = 3
-        lvlInput.textInputText.setTextScale(parent.getTextScale(1f))
+        lvlInput.textInputText.setTextScale(parent.getTextScale())
         if (pfConfigState.inputs.diana.lvl > 0) {
             lvlInput.textInputText.setText(pfConfigState.inputs.diana.lvl.toString())
         }
@@ -151,7 +151,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         UIText("Kills").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale(1f)
+            textScale = parent.getTextScale()
         }.setColor(Color(255, 255, 255, 255)) childOf killsBox
         val killsInput = GuiHandler.TextInput(
             list = "diana",
@@ -168,7 +168,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         killsInput.create().setChildOf(killsBox)
         killsInput.onlyNumbers = true
         killsInput.maxChars = 6
-        killsInput.textInputText.setTextScale(parent.getTextScale(1f))
+        killsInput.textInputText.setTextScale(parent.getTextScale())
         if (pfConfigState.inputs.diana.kills > 0) {
             killsInput.textInputText.setText(pfConfigState.inputs.diana.kills.toString())
         }
@@ -230,7 +230,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         eman9checkbox.create().setChildOf(eman9box)
         eman9checkbox.setBgBoxColor(Color(50, 50, 50, 200))
-        eman9checkbox.textObject.setTextScale(parent.getTextScale(1f))
+        eman9checkbox.textObject.setTextScale(parent.getTextScale())
         val looting5box = UIBlock().constrain {
             x = SiblingConstraint()
             y = 0.percent()
@@ -252,7 +252,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         looting5checkbox.create().setChildOf(looting5box)
         looting5checkbox.setBgBoxColor(Color(50, 50, 50, 200))
-        looting5checkbox.textObject.setTextScale(parent.getTextScale(1f))
+        looting5checkbox.textObject.setTextScale(parent.getTextScale())
 
         parent.createBox = UIBlock().constrain {
             x = 0.percent()
@@ -323,19 +323,19 @@ class DianaPage(private val parent: PartyFinderGUI) {
             x = CenterConstraint()
             y = 0.percent()
             width = 100.percent()
-            height = (33.33f).percent()
+            height = 33.33f.percent()
         }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
         val row2 = UIBlock().constrain {
             x = CenterConstraint()
             y = SiblingConstraint()
             width = 100.percent()
-            height = (33.33f).percent()
+            height = 33.33f.percent()
         }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
         val row3 = UIBlock().constrain {
             x = CenterConstraint()
             y = SiblingConstraint()
             width = 100.percent()
-            height = (33.33f).percent()
+            height = 33.33f.percent()
         }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
         val eman9Filter = GuiHandler.Checkbox(
             list = "diana",

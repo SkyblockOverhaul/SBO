@@ -11,7 +11,7 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 
 object HelpCommand {
-    val commands = arrayOf(
+    private val commands = arrayOf(
         mapOf("cmd" to "sbo", "desc" to "Open the Settings GUI"),
         mapOf("cmd" to "sbohelp", "desc" to "Shows this message"),
         mapOf("cmd" to "sboguis", "desc" to "Open the GUIs and move them around (or: /sbomoveguis)"),
@@ -72,7 +72,7 @@ object HelpCommand {
         testSound()
     }
 
-    fun testSound() {
+    private fun testSound() {
         Register.command("sbots", "sbotsound", "sbotestsound") { args ->
             if (args.isEmpty()) {
                 val available = SoundHandler.getAvailableSoundsList().take(10).joinToString(", ")
@@ -97,7 +97,7 @@ object HelpCommand {
         }
     }
 
-    fun dropChances() {
+    private fun dropChances() {
         Register.command("sbodc", "sbodropchances") { args ->
             if (args.size < 2) {
                 Chat.chat("§6[SBO] §ePlease provide mf/looting values. /sbodc <mf> <looting> <griffinrairty>")
@@ -107,7 +107,12 @@ object HelpCommand {
             val mf = args[0].toIntOrNull()
             val looting = args[1].toIntOrNull()
             val rarity = args[2]
-            if (mf == null || looting == null || (rarity.isEmpty() && rarity.lowercase() !in listOf("epic", "legendary", "mythic"))) {
+            if (mf == null || looting == null || rarity.isEmpty() && rarity.lowercase() !in listOf(
+                    "epic",
+                    "legendary",
+                    "mythic"
+                )
+            ) {
                 Chat.chat("§6[SBO] §ePlease provide valid numbers. /sbodc 500 5 <griffinrarity(epic/legendary/mythic)>")
                 return@command
             }
@@ -125,7 +130,7 @@ object HelpCommand {
             val normalChances = Helper.getChance(mf, looting, rarity)
             val lsChances = Helper.getChance(mf, looting, rarity, true)
 
-            (listOf(false, true)).forEach { isLs ->
+            listOf(false, true).forEach { isLs ->
                 val chances = if (isLs) lsChances else normalChances
                 val labelFunc: (String) -> String = if (isLs) { _ -> "§7[MF:$mf]" } else { _ -> Helper.getMagicFindAndLooting(mf, looting) }
 

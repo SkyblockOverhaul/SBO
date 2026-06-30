@@ -199,7 +199,7 @@ object PartyFinderManager {
         HypixelModApi.sendPartyInfoPacket(true)
     }
 
-    fun queueParty() {
+    private fun queueParty() {
         if (!this.creatingParty) return
         creatingParty = false
         if (partyMember.size > partySize) {
@@ -260,7 +260,7 @@ object PartyFinderManager {
         }
     }
 
-    fun updateParty() {
+    private fun updateParty() {
         if (!this.updateBool) return
         updateBool = false
         if (inQueue && isInParty && isLeader) {
@@ -317,7 +317,7 @@ object PartyFinderManager {
     }
 
     // todo: add a way to prevent inviting more player then party has space (maybe every user has 10 seconds to accept else next player gets invited)
-    fun invitePlayerIfMeetsReqs(playerName: String) {
+    private fun invitePlayerIfMeetsReqs(playerName: String) {
         PartyCheck.checkPlayer(playerName, true) { stats ->
             if (checkIfPlayerMeetsReqs(stats, partyReqsMap)) {
                 if (partyMemberCount < partySize) {
@@ -328,7 +328,7 @@ object PartyFinderManager {
         }
     }
 
-    fun checkIfPlayerMeetsReqs(
+    private fun checkIfPlayerMeetsReqs(
         stats: PartyPlayerStats,
         reqs: Reqs
     ): Boolean {
@@ -344,10 +344,7 @@ object PartyFinderManager {
         if (reqs.looting5 && !stats.looting5daxe) {
             return false
         }
-        if (stats.magicalPower < reqs.mp) {
-            return false
-        }
-        return true
+        return stats.magicalPower >= reqs.mp
     }
 
     fun sendJoinRequest(
@@ -424,7 +421,7 @@ object PartyFinderManager {
         if (match) trackMemberCount()
     }
 
-    fun trackMemberCount() {
+    private fun trackMemberCount() {
         if (inQueue) {
             if (partyMemberCount >= partySize) {
                 sleep(100) {
@@ -454,7 +451,7 @@ object PartyFinderManager {
         }
     }
 
-    fun checkPartyNote(note: String): String {
+    private fun checkPartyNote(note: String): String {
         // allowed characters a-z, A-Z, 0-9, comma, dot, exclamation mark, hyphen, underscore, question mark
         return note.replace(Regex("[^a-zA-Z0-9 ,.!?\\-_]"), "")
             .take(30)

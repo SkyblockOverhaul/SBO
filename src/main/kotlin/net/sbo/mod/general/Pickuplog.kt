@@ -24,7 +24,10 @@ object Pickuplog {
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
-    private val overlay: Overlay = Overlay("pickuplog", 5f, 5f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER), OverlayExamples.pickupLogExample)
+    private val overlay: Overlay = Overlay("pickuplog", 5f, 5f,
+        allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER),
+        exampleView = OverlayExamples.pickupLogExample
+    )
 
     private val itemsShowAdded: MutableList<MutableMap<String, OverlayLineData>> = mutableListOf()
     private val itemsShowRemoved: MutableList<MutableMap<String, OverlayLineData>> = mutableListOf()
@@ -71,7 +74,7 @@ object Pickuplog {
         updateOverlay()
     }
 
-    fun compareInventory() {
+    private fun compareInventory() {
         val purseChange = newPurse - oldPurse
         if (purseChange != 0L) {
             DianaTracker.trackScavengerCoins(purseChange)
@@ -120,7 +123,7 @@ object Pickuplog {
         }
     }
 
-    fun refreshOverlay(itemId: String, name: String, amount: Int) {
+    private fun refreshOverlay(itemId: String, name: String, amount: Int) {
         val currentTime = System.currentTimeMillis()
         if (amount > 0) {
             val existingItem = itemsShowAdded.find { it.containsKey(itemId) }?.get(itemId)
@@ -142,7 +145,7 @@ object Pickuplog {
         updateOverlay()
     }
 
-    fun updateOverlay() {
+    private fun updateOverlay() {
         val currentTime = System.currentTimeMillis()
         val lines = mutableListOf<OverlayTextLine>()
 

@@ -11,7 +11,7 @@ abstract class DirtyFlushableOverlay {
     }
 
     fun updateLines() { dirty = true }
-    fun flushUpdateLines() {
+    private fun flushUpdateLines() {
         if (!dirty) return
         overlay.setLines(generateLines())
         dirty = false

@@ -38,16 +38,15 @@ import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 object Helper {
     private val MF_REGEX = Regex("""§b\(\+§b(\d+)""")
 
-    var lastLootShare: Long = 0L
+    private var lastLootShare: Long = 0L
     var allowSackTracking: Boolean = true
     var hasSpade: Boolean = false
-    var lastDianaMobDeath: Long = 0L
+    private var lastDianaMobDeath: Long = 0L
     var lastInqDeath: Long = 0L
     var lastKingDeath: Long = 0L
     var lastSphinxDeath: Long = 0L
     var lastMantiDeath: Long = 0L
     var currentScreen: Screen? = null
-    var lastCocoon: Long = 0L
 
     private var hasTrackedInq: Boolean = false
     private var hasTrackedKing: Boolean = false
@@ -248,13 +247,13 @@ object Helper {
     fun formatNumber(number: Number?, withCommas: Boolean = false): String {
         val num = number?.toDouble() ?: 0.0
 
-        if (withCommas) {
+        return if (withCommas) {
             // Format with commas
             val formatter = DecimalFormat("#,###")
-            return formatter.format(num)
+            formatter.format(num)
         } else {
             // Format with suffixes (k, m, b)
-            return when {
+            when {
                 num >= 1_000_000_000 -> "%.2fb".format(num / 1_000_000_000)
                 num >= 1_000_000 -> "%.1fm".format(num / 1_000_000)
                 num >= 1_000 -> "%.1fk".format(num / 1_000)
@@ -378,7 +377,7 @@ object Helper {
         }
     }
 
-    fun getCursorItemStack(): ItemStack? {
+    private fun getCursorItemStack(): ItemStack? {
         val handler = mc.player?.containerMenu ?: return null
         return handler.carried
     }
@@ -449,7 +448,7 @@ object Helper {
         return (System.currentTimeMillis() - timestamp) / 1000
     }
 
-    fun playerHasItem(sbId: String): Boolean {
+    private fun playerHasItem(sbId: String): Boolean {
         val inv = Player.getPlayerInventory()
         for (i in inv.indices) {
             val stack = inv[i]
@@ -490,8 +489,8 @@ object Helper {
         val template: String,
         val isEnabled: Boolean,
         val totalAmount: Int,
-        val mobCount: Int,
-        val dropCount: Int
+        private val mobCount: Int,
+        private val dropCount: Int
     ) {
         val percentage: Double
             get() = if (mobCount > 0) (dropCount.toDouble() / mobCount) * 100 else 0.0
@@ -553,13 +552,12 @@ object Helper {
     fun getMagicFind(mf: String): Int {
         val mfMatch = MF_REGEX.find(mf)
         if (mfMatch != null) {
-            val mfValue = mfMatch.groupValues[1].toIntOrNull() ?: 0
-            return mfValue
+            return mfMatch.groupValues[1].toIntOrNull() ?: 0
         }
         return 0
     }
 
-    fun updateItemPriceInfo() {
+    private fun updateItemPriceInfo() {
         Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }

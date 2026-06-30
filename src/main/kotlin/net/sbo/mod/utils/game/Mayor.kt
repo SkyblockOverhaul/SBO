@@ -21,20 +21,20 @@ object Mayor {
     private const val FALLBACK_MAYOR = "Diana"
     private const val FALLBACK_PERK = "Mythological Ritual"
 
-    var dateMayorElected: Date? = null
-    var newMayorAtDate: Date? = null
+    private var dateMayorElected: Date? = null
+    private var newMayorAtDate: Date? = null
     var mayor: String? = null
     var perks: MutableSet<String> = mutableSetOf()
-    var mayorApiError: Boolean = false
-    var apiLastUpdated: Long? = null
-    var minister: String? = null
+    private var mayorApiError: Boolean = false
+    private var apiLastUpdated: Long? = null
+    private var minister: String? = null
     var ministerPerk: String? = null
-    var skyblockDate: Date? = null
-    var skyblockDateString: String = ""
-    var refreshingMayor: Boolean = false
-    var newMayor: Boolean = false
-    var outDatedApi: Boolean = false
-    var sbYear: Int = 0
+    private var skyblockDate: Date? = null
+    private var skyblockDateString: String = ""
+    private var refreshingMayor: Boolean = false
+    private var newMayor: Boolean = false
+    private var outDatedApi: Boolean = false
+    private var sbYear: Int = 0
     var mayorElectedYear = 0
 
     fun init() {
@@ -87,7 +87,7 @@ object Mayor {
         newMayor = false
     }
 
-    internal fun getMayor() {
+    private fun getMayor() {
         mayor = null
         perks.clear()
         refreshingMayor = true

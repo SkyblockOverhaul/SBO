@@ -8,8 +8,7 @@ import kotlin.math.max
 
 object ServerStats {
     private var prevTime = 0L
-    var averageTps = 20f
-        private set
+    private var averageTps = 20f
 
     fun getTps(): Float {
         return averageTps

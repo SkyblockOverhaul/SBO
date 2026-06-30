@@ -7,4 +7,4 @@ import net.minecraft.network.chat.Component
  * @param message The chat message text.
  * @param signed Whether the message is signed.
  */
-class ChatMessageEvent(val message: Component, val signed: Boolean)
+class ChatMessageEvent(val message: Component, private val signed: Boolean)

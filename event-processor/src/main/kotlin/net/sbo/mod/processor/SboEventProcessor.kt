@@ -72,7 +72,7 @@ class SboEventProcessor(
             // Only collect KSFile objects that are not null
             val dependencies = functions.mapNotNull { it.containingFile }.distinct().toTypedArray<KSFile>()
             val file = codeGenerator.createNewFile(
-                Dependencies(true, *dependencies),
+                Dependencies(aggregating = true, sources = dependencies),
                 packageName,
                 fileName
             )
@@ -110,7 +110,7 @@ class SboEventProcessor(
         if (generatedObjects.isNotEmpty()) {
             val allDependencies: List<KSFile> = classSymbols.keys.mapNotNull { it?.containingFile }
             val registryFile = codeGenerator.createNewFile(
-                Dependencies(true, *allDependencies.toTypedArray()),
+                Dependencies(aggregating = true, sources = allDependencies.toTypedArray()),
                 "net.sbo.mod.utils.events",
                 "SboEventGeneratedRegistry"
             )

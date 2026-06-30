@@ -49,7 +49,7 @@ object SBOKotlin : ClientModInitializer {
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
-	val configurator = Configurator(MOD_ID)
+	private val configurator = Configurator(MOD_ID)
 	val settings = Settings.register(configurator)
 
 	lateinit var version: String

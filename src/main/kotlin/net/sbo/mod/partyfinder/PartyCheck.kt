@@ -2,6 +2,7 @@ package net.sbo.mod.partyfinder
 
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
@@ -35,11 +36,7 @@ object PartyCheck {
         }
 
         Register.command("sbocheck", "sboc") { args ->
-            if (args.isEmpty()) {
-                Chat.chat("§6[SBO] §ePlease provide a player name to check.")
-                return@command
-            }
-            val playerName = args[0].trim()
+            val playerName = if (args.isEmpty()) mc.user.name else args[0].trim()
             checkPlayer(playerName)
         }
     }
@@ -71,7 +68,7 @@ object PartyCheck {
             }
     }
 
-    fun checkParty(partyMember: List<String>) {
+    private fun checkParty(partyMember: List<String>) {
         if (!checkPartyBool) return
         checkPartyBool = false
         if (partyMember.size > partyCheckLimit) {
@@ -94,7 +91,7 @@ object PartyCheck {
             }
     }
 
-    fun printPartyInfo(partyInfo: List<PartyPlayerStats>, inviteButton: Boolean = false) {
+    private fun printPartyInfo(partyInfo: List<PartyPlayerStats>, inviteButton: Boolean = false) {
         partyInfo.forEach { player ->
             Chat.chat(
                 "§6[SBO] §eName: §b${player.name} §9│ §eLvL: §6${player.sbLvl} " +

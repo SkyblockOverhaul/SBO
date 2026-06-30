@@ -17,13 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PacketMixin {
     // received S2C packets
     @Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"))
-    private void onPacketReceive(@NonNull ChannelHandlerContext context, @NonNull Packet<?> packet, @NonNull CallbackInfo ci) {
+    private void onPacketReceive(@NonNull final ChannelHandlerContext context, @NonNull final Packet<?> packet, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new PacketReceiveEvent(packet));
     }
 
     // sent C2S packets
     @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V", at = @At("HEAD"))
-    private void onPacketSend(@NonNull Packet<?> packet, @NonNull ChannelFutureListener channelFutureListener, @NonNull CallbackInfo ci) {
+    private void onPacketSend(@NonNull final Packet<?> packet, @NonNull final ChannelFutureListener channelFutureListener, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new PacketSendEvent(packet));
     }
 }

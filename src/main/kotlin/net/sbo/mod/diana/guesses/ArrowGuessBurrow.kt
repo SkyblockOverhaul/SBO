@@ -80,11 +80,21 @@ object ArrowGuessBurrow {
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
     private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
 
-    private var lastBlockClicked: SboVec? = null
-
-    val recentClickedBlocks = TimeLimitedSet<SboVec>(3.seconds)
+    val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
+
+    fun removeFromInternalState(pos: SboVec) {
+        val target = pos.roundLocationToBlock()
+
+        val containList = allGuesses.filter { guessEntry ->
+            val current = guessEntry.getCurrent().roundLocationToBlock()
+
+            current.x == target.x && current.y == target.y && current.z == target.z
+        }
+
+        allGuesses.removeAll(containList.toSet())
+    }
 
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
@@ -112,13 +122,14 @@ object ArrowGuessBurrow {
     fun onBurrowDug(event: BurrowDugEvent) {
         if (!Diana.arrowGuess) return
         if (event.lastBlock == null) return
-        lastBlockClicked = event.lastBlock
 
         val currentChain = event.currentBurrow
         val maxChain = event.maxBurrow
+
         if (currentChain != maxChain) {
             locations.clear()
         }
+
         if (currentChain == 1) return
     }
 
@@ -252,11 +263,11 @@ object ArrowGuessBurrow {
         val withinRangeFirst = withinRange.getOrNull(0)
 
         if (Diana.showTitleWhenFailure) {
-            if (withinRangeFirst == null) {
-                if (!spadeTitleShown) BurrowDetector.requestSpade()
-                spadeTitleShown = true
+            spadeTitleShown = if (withinRangeFirst == null) {
+                if (!spadeTitleShown) BurrowDetector.requestSpade("failure")
+                true
             } else {
-                spadeTitleShown = false
+                false
             }
         }
 
@@ -269,20 +280,27 @@ object ArrowGuessBurrow {
         val hasSpade = InventoryUtils.isItemHeld("SPADE", 1.seconds)
         val burrowLocations = BurrowDetector.burrows.values.asSequence().map { it.waypoint?.pos ?: SboVec.ZERO }.toHashSet()
         val playerPos = player.position().toSboVec()
+        val toRemove = mutableSetOf<GuessEntry>()
 
         for (guess in allGuesses) {
             val current = guess.getCurrent()
             if (!isBlockValid(current)) {
-                guess.moveToNext()
+                if (!guess.moveToNext("invalid")) {
+                    toRemove.add(guess)
+                }
                 continue
             }
             if (hasSpade) {
                 val isKnownBurrow = burrowLocations.contains(current)
                 if (!isKnownBurrow && current.distanceSq(playerPos) < 900) { // 30 blocks
-                    guess.moveToNext()
+                    if (!guess.moveToNext("assumption")) {
+                        toRemove.add(guess)
+                    }
                 }
             }
         }
+
+        allGuesses.removeAll(toRemove)
     }
 
     private fun getArrowRange(offsetX: Float, offsetY: Float, offsetZ: Float): IntRange? {
@@ -305,11 +323,11 @@ object ArrowGuessBurrow {
         return isBlockTrulyValid(pos)
     }
 
-    internal fun isBlockTrulyValid(pos: SboVec): Boolean {
+    private fun isBlockTrulyValid(pos: SboVec): Boolean {
         val block = pos.getBlockAt()
-        val isGrass = pos.getBlockAt() == Blocks.GRASS_BLOCK
-        val isAir = pos.getBlockAt() == Blocks.AIR
-        val isGround = isGrass || (isAir && recentClickedBlocks.contains(pos))
+        val isGrass = block == Blocks.GRASS_BLOCK
+        val isAir = block == Blocks.AIR
+        val isGround = isGrass || isAir && recentClickedBlocks.contains(pos)
 
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
 
@@ -337,8 +355,6 @@ object ArrowGuessBurrow {
         val parameters = this.particle
         return parameters is DustParticleOptions
     }
-
-    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) <= 6 } ?: false
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this

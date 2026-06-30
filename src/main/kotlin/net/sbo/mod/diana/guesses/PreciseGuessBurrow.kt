@@ -20,8 +20,8 @@ object PreciseGuessBurrow {
     private var lastLavaParticle: Long = 0
     private var newBurrow: Boolean = true
 
-    var finalLocation: SboVec? = null
-    var lastGuessTime: Long = 0
+    private var finalLocation: SboVec? = null
+    private var lastGuessTime: Long = 0
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
@@ -76,7 +76,7 @@ object PreciseGuessBurrow {
         newBurrow = true
     }
 
-    fun guessBurrowLocation(): SboVec? {
+    private fun guessBurrowLocation(): SboVec? {
         if (this.particleLocations.size < 4) return null
         val fitters = List(3) { PolynomialFitter(3) }
 

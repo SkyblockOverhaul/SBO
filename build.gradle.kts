@@ -1,8 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import net.fabricmc.loom.task.RemapJarTask
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import net.fabricmc.loom.task.RemapJarTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.lang.module.ModuleDescriptor.Version
 
 plugins {
@@ -18,17 +18,11 @@ plugins {
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
 
-private fun versionedProperty(name: String): String {
-    return project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
-}
+private fun versionedProperty(name: String): String = project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
 
-private fun isUnobfuscatedMCVersion(): Boolean {
-    return isMCVersionGreaterOrEqualTo("26.1")
-}
+private fun isUnobfuscatedMCVersion(): Boolean = isMCVersionGreaterOrEqualTo("26.1")
 
-private fun isMCVersionGreaterOrEqualTo(version: String): Boolean {
-    return Version.parse(mcVersion) >= Version.parse(version)
-}
+private fun isMCVersionGreaterOrEqualTo(version: String): Boolean = Version.parse(mcVersion) >= Version.parse(version)
 
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.

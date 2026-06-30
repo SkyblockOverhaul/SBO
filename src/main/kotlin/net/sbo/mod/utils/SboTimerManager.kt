@@ -12,15 +12,12 @@ import java.util.concurrent.TimeUnit
 object SboTimerManager {
     internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
     val timerMayor = SBOTimer(
-        name = "Mayor",
         tracker = SboDataObject.dianaTrackerMayor
     )
     val timerTotal = SBOTimer(
-        name = "Total",
         tracker = SboDataObject.dianaTrackerTotal
     )
     val timerSession = SBOTimer(
-        name = "Session",
         tracker = SboDataObject.dianaTrackerSession
     )
 
@@ -54,7 +51,6 @@ object SboTimerManager {
     }
 
     class SBOTimer(
-        val name: String,
         private val tracker: DianaTracker
     ) {
         companion object {
@@ -165,7 +161,7 @@ object SboTimerManager {
             stopInactivityCheck()
         }
 
-        fun getElapsedNanos(): Long {
+        private fun getElapsedNanos(): Long {
             return if (state == TimerState.Running) {
                 elapsedNanoTime + (System.nanoTime() - startNanoTime)
             } else {

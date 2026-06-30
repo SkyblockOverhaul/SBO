@@ -42,17 +42,18 @@ class Waypoint(
     var pos: SboVec = SboVec(this.x, this.y, this.z)
     var hidden: Boolean = false
     val creationNs: Long = System.nanoTime()
-    var formatted: Boolean = false
-    var distanceRaw: Double = 0.0
-    var distanceText: String = ""
-    var formattedText: String = ""
+    private var formatted: Boolean = false
+    private var distanceRaw: Double = 0.0
+    private var distanceText: String = ""
+    private var formattedText: String = ""
     var isClosest = false
     var timesDug = 0
     var userInteractedWith = false
-    var dynamicOpacity = 0.99f
+    private var dynamicOpacity = 0.99f
     var inaccurateArrow = false
 
-    fun hasStrongerStateThan(other: Waypoint): Boolean = this.timesDug > other.timesDug || (this.userInteractedWith && !other.userInteractedWith)
+    fun hasStrongerStateThan(other: Waypoint): Boolean =
+        this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
 
     fun carryOverState(other: Waypoint) {
         val otherTimesDug = other.timesDug
@@ -133,7 +134,7 @@ class Waypoint(
         val progress = ((distance - FADE_START_DISTANCE) /
             (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
 
-        return (MIN_OPACITY + ((MAX_OPACITY - MIN_OPACITY) * progress))
+        return (MIN_OPACITY + (MAX_OPACITY - MIN_OPACITY) * progress)
             .coerceIn(MIN_OPACITY, MAX_OPACITY)
     }
 
@@ -193,6 +194,7 @@ class Waypoint(
 
                 setWarpText()
             }
+
             "rareMob", "world" -> {
                 val newest = inqWaypoints.lastOrNull() == this
 
@@ -201,23 +203,22 @@ class Waypoint(
 
                 if (newest) {
                     setWarpText()
+                } else {
+                    this.formattedText = "$text$distanceText"
                 }
             }
+
             else -> {
                 this.formattedText = "$text$distanceText"
             }
         }
-        formatted = true
-    }
 
-    fun hide(): Waypoint {
-        this.hidden = true
-        return this
+        formatted = true
     }
 
     private fun applyAlpha(color: Int, alpha: Float): Int {
         val clampedAlpha = (alpha.coerceIn(0f, 1f) * 255f).toInt()
-        return (color and 0x00FFFFFF) or (clampedAlpha shl 24)
+        return color and 0x00FFFFFF or (clampedAlpha shl 24)
     }
 
     fun isOlderThan(duration: Duration): Boolean {

@@ -16,7 +16,7 @@ class Achievement(
     var description: String,
     val rarity: String,
     val previousId: Int? = null,
-    val hidden: Boolean = false,
+    private val hidden: Boolean = false,
     val repeatable: Boolean = false,
 ) {
     val color = AchievementManager.rarityColorDict[rarity] ?: "§f"
@@ -65,16 +65,6 @@ class Achievement(
         SboDataObject.save("AchievementsData")
 
         showUnlockEffects()
-    }
-
-    fun lock() {
-        achievementsData.totalAchievements.remove(id)
-        achievementsData.currentEventAchievements.remove(id)
-        AchievementManager.achievementsUnlockedTotal -= 1
-        if ((this.repeatable && Debug.repeatableAchie)) AchievementManager.achievementsUnlockedEvent -= 1
-        if (this.hidden) {
-            this.description = "§k" + this.description
-        }
     }
 
     fun loadState() {

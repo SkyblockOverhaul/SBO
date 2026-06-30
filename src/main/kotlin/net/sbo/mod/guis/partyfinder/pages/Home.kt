@@ -42,7 +42,7 @@ class Home(private val parent: PartyFinderGUI) {
                         x = 2.percent()
                         y = SiblingConstraint()
                         width = 100.percent()
-                        textScale = parent.getTextScale(1f)
+                        textScale = parent.getTextScale()
                     }.setColor(Color(255, 255, 255, 255))
                 )
             )

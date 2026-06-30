@@ -80,7 +80,7 @@ object AchievementManager {
         // Register.onChatMessage()
     }
 
-    fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true) {
+    private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true) {
         if (achievements.containsKey(id)) {
             throw RuntimeException("Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}")
         }
@@ -89,7 +89,7 @@ object AchievementManager {
         achievement.loadState()
     }
 
-    fun getAchievement(id: Int): Achievement? {
+    private fun getAchievement(id: Int): Achievement? {
         return achievements[id]
     }
 
@@ -123,7 +123,7 @@ object AchievementManager {
         }
     }
 
-    fun backTrackAchievements() { // todo: needs rework because of new data structure
+    private fun backTrackAchievements() { // todo: needs rework because of new data structure
         Chat.chat("§6[SBO] §eBacktracking Achievements...")
         pastDianaEventsData.events.forEach { eventData ->
             trackAchievementsItem(eventData)
@@ -348,19 +348,20 @@ object AchievementManager {
         }
     }
 
-    val COA_MF_PATTERN = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")
+    private val COA_MF_PATTERN: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")!!
 
-    fun trackCOA() {
+    private fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
         val lookup = ItemLookup(helmet)
         if (!lookup.displayName.contains("Crown of Avarice")) return
 
         unlockAchievement(121)
 
-        val mf = lookup.loreList
+        val mfStr = lookup.loreList
             .map { it.removeFormatting() }
             .getValueFromLine(COA_MF_PATTERN)
-            .toDouble()
+
+        val mf = if (!mfStr.isEmpty()) mfStr.toDouble() else -1
 
         when (mf) {
             25.0 -> unlockAchievement(124)
@@ -430,13 +431,13 @@ object AchievementManager {
         }
     }
 
-    fun kingSoul() {
+    private fun kingSoul() {
         Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
             if (matchResult.groupValues[0].contains("King Minos")) unlockAchievement(118)
         }
     }
 
-    fun addAllAchievements() {
+    private fun addAllAchievements() {
         // inquisitor
         addAchievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic")
         addAchievement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine")
