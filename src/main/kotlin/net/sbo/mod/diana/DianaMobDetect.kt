@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit
 object DianaMobDetect {
     private const val ANNOUNCE_DELAY_MS = 5_000L
 
-    private const val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
+    private val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
 
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
@@ -142,7 +142,7 @@ object DianaMobDetect {
                     continue
                 }
 
-                val name = entity.customName?.formattedString() ?: entity.name.formattedString()
+                val name = armorStand.customName?.formattedString() ?: armorStand.name.formattedString()
                 checkDianaMob(armorStand, name, id)?.let { overlayLines.add(it) }
 
                 val result = checkStarlessMob(armorStand, name, id, player, closestStarlessMob, closestDistanceSq)

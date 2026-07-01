@@ -30,7 +30,7 @@ class Help(private val parent: PartyFinderGUI) {
                         x = 2.percent()
                         y = CenterConstraint()
                         width = 100.percent()
-                        textScale = parent.getTextScale(1.5f)
+                        textScale = parent.getTextScaleOfScaleText(1.5f)
                     }.setColor(Color(255, 255, 255, 255)))
                 )
                 .addChild(UIWrappedText(
@@ -49,7 +49,7 @@ class Help(private val parent: PartyFinderGUI) {
                     x = 2.percent()
                     y = SiblingConstraint()
                     width = 100.percent()
-                    textScale = parent.getTextScale()
+                    textScale = parent.getTextScaleOfScaleText()
                 }.setColor(Color(255, 255, 255, 255)))
             )
         }

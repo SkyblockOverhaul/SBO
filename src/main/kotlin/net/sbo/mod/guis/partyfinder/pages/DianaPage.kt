@@ -120,7 +120,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         UIText("SbLvL").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale()
+            textScale = parent.getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255)) childOf lvlbox
         val lvlInput = GuiHandler.TextInput(
             list = "diana",
@@ -137,7 +137,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         lvlInput.create().setChildOf(lvlbox)
         lvlInput.onlyNumbers = true
         lvlInput.maxChars = 3
-        lvlInput.textInputText.setTextScale(parent.getTextScale())
+        lvlInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
         if (pfConfigState.inputs.diana.lvl > 0) {
             lvlInput.textInputText.setText(pfConfigState.inputs.diana.lvl.toString())
         }
@@ -151,7 +151,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         UIText("Kills").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale()
+            textScale = parent.getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255)) childOf killsBox
         val killsInput = GuiHandler.TextInput(
             list = "diana",
@@ -168,7 +168,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         killsInput.create().setChildOf(killsBox)
         killsInput.onlyNumbers = true
         killsInput.maxChars = 6
-        killsInput.textInputText.setTextScale(parent.getTextScale())
+        killsInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
         if (pfConfigState.inputs.diana.kills > 0) {
             killsInput.textInputText.setText(pfConfigState.inputs.diana.kills.toString())
         }
@@ -182,7 +182,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         UIText("Note ").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale()
+            textScale = parent.getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255)) childOf noteBox
         val noteInput = GuiHandler.TextInput(
             list = "diana",
@@ -198,7 +198,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         noteInput.create().setChildOf(noteBox)
         noteInput.maxChars = 30
-        noteInput.textInputText.setTextScale(parent.getTextScale())
+        noteInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
         if (pfConfigState.inputs.diana.note.isNotEmpty()) {
             noteInput.textInputText.setText(pfConfigState.inputs.diana.note)
         }
@@ -230,7 +230,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         eman9checkbox.create().setChildOf(eman9box)
         eman9checkbox.setBgBoxColor(Color(50, 50, 50, 200))
-        eman9checkbox.textObject.setTextScale(parent.getTextScale())
+        eman9checkbox.textObject.setTextScale(parent.getTextScaleOfScaleText())
         val looting5box = UIBlock().constrain {
             x = SiblingConstraint()
             y = 0.percent()
@@ -252,7 +252,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         looting5checkbox.create().setChildOf(looting5box)
         looting5checkbox.setBgBoxColor(Color(50, 50, 50, 200))
-        looting5checkbox.textObject.setTextScale(parent.getTextScale())
+        looting5checkbox.textObject.setTextScale(parent.getTextScaleOfScaleText())
 
         parent.createBox = UIBlock().constrain {
             x = 0.percent()
@@ -293,7 +293,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             parent.partyCreate(reqs = reqString, note = note, type = partyType)
             parent.closeCpWindow()
         }
-        createButton.textObject.setTextScale(parent.getTextScale())
+        createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
     }
 
     internal fun addDianaFilter(x1: PositionConstraint, y1: PositionConstraint) {
@@ -353,7 +353,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         eman9Filter.create().setChildOf(row1)
         eman9Filter.setBgBoxColor(Color(25, 25, 25, 200))
-        eman9Filter.textObject.setTextScale(parent.getTextScale())
+        eman9Filter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         eman9Filter.setOnClick { setFilter() }
 
         val looting5Filter = GuiHandler.Checkbox(
@@ -372,7 +372,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         looting5Filter.create().setChildOf(row2)
         looting5Filter.setBgBoxColor(Color(25, 25, 25, 200))
-        looting5Filter.textObject.setTextScale(parent.getTextScale())
+        looting5Filter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         looting5Filter.setOnClick { setFilter() }
 
         val canIjoinFilter = GuiHandler.Checkbox(
@@ -391,7 +391,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         canIjoinFilter.create().setChildOf(row3)
         canIjoinFilter.setBgBoxColor(Color(25, 25, 25, 200))
-        canIjoinFilter.textObject.setTextScale(parent.getTextScale())
+        canIjoinFilter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         canIjoinFilter.setOnClick { setFilter() }
     }
 }

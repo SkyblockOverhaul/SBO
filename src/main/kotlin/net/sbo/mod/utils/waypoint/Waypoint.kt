@@ -8,7 +8,6 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import java.awt.Color
 import java.time.Duration
 import kotlin.math.roundToInt
