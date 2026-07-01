@@ -464,7 +464,11 @@ object SboDataObject {
             }
         } catch (e: Exception) {
             SBOKotlin.logger.error("[$modName] Error reading sbo_achievements.json, resetting to default data.", e)
-            save(modName, defaultData, "sbo_achievements.json")
+            try {
+                save(modName, defaultData, "sbo_achievements.json")
+            } catch (saveError: Exception) {
+                SBOKotlin.logger.error("[$modName] Also failed to save default achievements data", saveError)
+            }
             defaultData
         }
     }
@@ -697,6 +701,7 @@ object SboDataObject {
      * Writes JSON data to a temporary file, then replaces the original file with it
      * only after the temp file has finished fully writing. Performs atomic move to avoid
      * data loss if crash or power loss during the move.
+     * Includes retry logic to handle transient Windows lock errors (AV, indexing, etc.)
      */
     private fun writeJsonAtomically(file: File, data: Any) {
         val parentDirectory = file.parentFile
@@ -715,21 +720,55 @@ object SboDataObject {
             gson.toJson(data, writer)
         }
 
+        val maxAttempts = 5
+
+        for (attempt in 1..maxAttempts) {
+            try {
+                try {
+                    Files.move(
+                        tempFile,
+                        file.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE
+                    )
+                } catch (e: AtomicMoveNotSupportedException) {
+                    // Hopefully no power loss or crash because non-atomic move here
+                    // This code path won't be taken unless outdated OS, weird partition setup or OneDrive (lame)
+                    Files.move(
+                        tempFile,
+                        file.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING
+                    )
+                }
+                return // success
+            } catch (e: IOException) {
+                // AccessDeniedException, FileSystemException etc land here (Windows AV/indexing lock)
+                if (attempt < maxAttempts) {
+                    try {
+                        Thread.sleep(50L * attempt)
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        break
+                    }
+                }
+            }
+        }
+
+        // Give up after retries: try direct write as last resort (not atomic, but better than nothing)
+        SBOKotlin.logger.warn("[sbo] Atomic move failed, attempting direct write for ${file.name}")
         try {
-            Files.move(
-                tempFile,
-                file.toPath(),
-                StandardCopyOption.REPLACE_EXISTING,
-                StandardCopyOption.ATOMIC_MOVE
-            )
-        } catch (e: AtomicMoveNotSupportedException) {
-            // Hopefully no power loss or crash because non-atomic move here
-            // This code path won't be taken unless outdated OS, weird partition setup or OneDrive (lame)
-            Files.move(
-                tempFile,
-                file.toPath(),
-                StandardCopyOption.REPLACE_EXISTING
-            )
+            writerForFile(file).use { writer ->
+                gson.toJson(data, writer)
+            }
+            SBOKotlin.logger.info("[sbo] Direct write succeeded for ${file.name}")
+        } catch (e: IOException) {
+            SBOKotlin.logger.error("[sbo] Direct write also failed for ${file.name}", e)
+        } finally {
+            // Clean up temp file regardless of direct write outcome
+            try {
+                Files.deleteIfExists(tempFile)
+            } catch (_: IOException) {
+            }
         }
     }
 
