@@ -21,8 +21,11 @@ import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.math.SboVec
+import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypoints
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointsAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -112,16 +115,17 @@ object Helper {
 
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
-        handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!))
+        handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!), event.entity.blockPosition().toSboVec())
     }
 
-    private fun handleDianaMobDeath(name: String, dist: Float) {
+    private fun handleDianaMobDeath(name: String, dist: Float, pos: SboVec) {
         val nearby = dist <= 30
         val last = DianaTracker.lastSpawnedMob
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
                 removeNearbyRareMobWaypoints()
+                removeNearbyRareMobWaypointsAt(pos)
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
                     hasTrackedInq = true
@@ -135,6 +139,7 @@ object Helper {
             }
             name.contains("King Minos") -> {
                 removeNearbyRareMobWaypoints()
+                removeNearbyRareMobWaypointsAt(pos)
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
                     hasTrackedKing = true
@@ -148,6 +153,7 @@ object Helper {
             }
             name.contains("Sphinx") -> {
                 removeNearbyRareMobWaypoints()
+                removeNearbyRareMobWaypointsAt(pos)
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
@@ -160,6 +166,7 @@ object Helper {
             }
             name.contains("Manticore") -> {
                 removeNearbyRareMobWaypoints()
+                removeNearbyRareMobWaypointsAt(pos)
                 if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
                 if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
                     hasTrackedManti = true

@@ -261,6 +261,11 @@ object WaypointManager {
         removeWithinDistance("world", 30)
     }
 
+    fun removeNearbyRareMobWaypointsAt(pos: SboVec) {
+        removeWithinDistanceFrom(pos, "rareMob", 30)
+        removeWithinDistanceFrom(pos, "world", 30)
+    }
+
     /**
      * Renders all waypoints in the management system.
      * @param context The world render context.
@@ -279,9 +284,14 @@ object WaypointManager {
      * Adds a waypoint to the management system.
      * @param waypoint The waypoint to add.
      */
-    fun addWaypoint(waypoint: Waypoint) {
-        waypoints.computeIfAbsent(waypoint.type.lowercase()) { CopyOnWriteArrayList() }.add(waypoint)
-        if (waypoint.type.lowercase() == "burrow") playCustomSound(Customization.burrowSound[0], Customization.burrowVolume)
+    fun addWaypoint(waypoint: Waypoint, playSound: Boolean = true) {
+        val type = waypoint.type.lowercase()
+
+        waypoints.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(waypoint)
+
+        if (type == "burrow") {
+            playCustomSound(Customization.burrowSound[0], Customization.burrowVolume)
+        }
     }
 
     /**
@@ -338,9 +348,16 @@ object WaypointManager {
      * @param type The type of waypoints to remove.
      */
     private fun removeWithinDistance(type: String, distance: Int) {
-        val playerPos = Player.getLastPosition()
+        removeWithinDistanceFrom(Player.getLastPosition(), type, distance)
+    }
+
+    /**
+     * Removes all waypoints of a specific type that are within a certain distance from the given position.
+     * @param type The type of waypoints to remove.
+     */
+    private fun removeWithinDistanceFrom(pos: SboVec, type: String, distance: Int) {
         val list = waypoints[type.lowercase()] ?: return
-        list.removeIf { it.pos.distanceTo(playerPos) < distance }
+        list.removeIf { it.pos.distanceTo(pos) < distance }
     }
 
     /**

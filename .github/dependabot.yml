@@ -4,8 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    target-branch: "Diana-V2"
 
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "daily"
+    target-branch: "Diana-V2"

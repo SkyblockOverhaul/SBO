@@ -135,7 +135,10 @@ object SoundHandler {
         val safeSound = safeName(sound)
 
         if (!availableSounds.contains(safeSound)) {
-            logger.warn("[$MOD_ID] Sound '$sound' not found. Available: ${availableSounds.joinToString()}")
+            val message = "Sound '$sound' not found. Available: ${availableSounds.joinToString()}"
+            Chat.chat("§6[SBO] §c$message")
+            logger.warn("[$MOD_ID] $message")
+
             return
         }
 
@@ -155,6 +158,7 @@ object SoundHandler {
         if (!packManager.selectedIds.contains(packId)) {
             Chat.chat("§6[SBO] §cSounds not playing? §aGo to Options > Resource Packs > move '§lSBO Custom Sounds Data Pack§a' to the right (Active)")
         }
+
         mc.soundManager.play(SimpleSoundInstance.forUI(event, pitch, volume))
     }
 }

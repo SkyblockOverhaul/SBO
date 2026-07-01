@@ -73,7 +73,7 @@ object BurrowDetector {
     fun requestSpade(reason: String) {
         val color = if (reason == "failure") "c" else "e"
         Helper.showTitle("§${color}Use Spade!", "", 0, 60, 0)
-        Chat.chat("§6[SBO] §dUse spade!")
+        Chat.chat("§6[SBO] §${color}Use spade!")
     }
 
     fun removeFromInternalState(pos: SboVec) {
@@ -130,12 +130,13 @@ object BurrowDetector {
             else -> return
         }
 
-        registerBurrow(pos, type)
+        registerBurrow(pos, type, "particle")
     }
 
     private fun registerBurrow(
         pos: SboVec,
         type: String,
+        source: String,
         carriedTimesDug: Int? = null
     ) {
         if (!Diana.closeBurrowDetection) return
@@ -176,7 +177,7 @@ object BurrowDetector {
         waypoint.timesDug = existingTimesDug
 
         burrow.waypoint = waypoint
-        WaypointManager.addWaypoint(waypoint)
+        WaypointManager.addWaypoint(waypoint, source == "particle")
     }
 
     fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
@@ -246,6 +247,7 @@ object BurrowDetector {
             registerBurrow(
                 pos = pos,
                 type = burrowType,
+                source = "chat",
                 carriedTimesDug = dugWaypoint?.timesDug ?: expectedTimesDug
             )
 

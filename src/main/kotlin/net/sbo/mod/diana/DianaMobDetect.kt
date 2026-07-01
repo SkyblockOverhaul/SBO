@@ -26,6 +26,9 @@ import net.sbo.mod.utils.Player as SboPlayer
 import java.util.concurrent.TimeUnit
 
 object DianaMobDetect {
+    private const val MYTHO_MOB_TYPE_CHAR = ""
+    private const val MYTHO_MOB_TYPE_CHAR_2 = "✿" // TODO: Remove once alpha releases to main and resourcepack is forced.
+
     private const val ANNOUNCE_DELAY_MS = 5_000L
 
     private val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
@@ -121,7 +124,7 @@ object DianaMobDetect {
                 }
 
                 val name = entity.customName?.formattedString() ?: entity.name.formattedString()
-                if (name.contains("§2✿", ignoreCase = true)) {
+                if (hasMythoMobTypeChar(name)) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
                 }
@@ -177,9 +180,13 @@ object DianaMobDetect {
         }
     }
 
+    private fun hasMythoMobTypeChar(name: String): Boolean {
+        return name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true) || name.contains("§2$MYTHO_MOB_TYPE_CHAR_2", ignoreCase = true)
+    }
+
     private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
         if (name.isEmpty() || name == "Armor Stand") return null
-        if (!name.contains("§2✿", ignoreCase = true)) return null
+        if (!hasMythoMobTypeChar(name)) return null
 
         val health = parseHealthFromName(name)
         maybeTriggerHealthAlert(name, id, health)
