@@ -103,7 +103,9 @@ object ArrowGuessBurrow {
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)
-        if (!location.isCloseToLastBurrow() || packet.distanceToPlayer() > 6) return
+        if (packet.distanceToPlayer() >= 7) {
+            return
+        }
 
         val range = getArrowRange(packet.xDist, packet.yDist, packet.zDist) ?: return
         locations.add(location)
@@ -141,8 +143,7 @@ object ArrowGuessBurrow {
         val count1 = getPointsWithinDistance(candidate1)
         val count2 = getPointsWithinDistance(candidate2)
 
-        if (!((count1 == COUNT_NEAR_BASE && count2 == COUNT_NEAR_TIP) ||
-            (count1 == COUNT_NEAR_TIP && count2 == COUNT_NEAR_BASE))
+        if (!(count1 == COUNT_NEAR_BASE && count2 == COUNT_NEAR_TIP || count1 == COUNT_NEAR_TIP && count2 == COUNT_NEAR_BASE)
         ) return null
 
         val base: SboVec
@@ -246,7 +247,7 @@ object ArrowGuessBurrow {
 
             val distanceFromOrigin = candidatePoint.distance(ray.origin)
 
-            val scaledDistance = (distanceToRay * 500000 / distanceFromOrigin)
+            val scaledDistance = distanceToRay * 500000 / distanceFromOrigin
 
             candidates[candidateBlock] = Pair(scaledDistance.roundTo(2), distanceFromOrigin)
         }

@@ -50,30 +50,30 @@ public class EntityMixin implements EntityAccessor {
 
     @Override
     public void sbo$setGlowingColor(final int color) {
-        this.sbo$glowingColor = color;
+        sbo$glowingColor = color;
     }
 
     @Override
     public void sbo$glowTime(final long time) {
-        this.sbo$glowTime = System.currentTimeMillis() + time;
-        this.sbo$glowing = false;
+        sbo$glowTime = System.nanoTime() + time;
+        sbo$glowing = false;
     }
 
     @Override
     public void sbo$setGlowingThisFrame(final boolean glowing) {
-        this.sbo$glowingThisFrame = glowing;
+        sbo$glowingThisFrame = glowing;
     }
 
     @Unique
     private boolean sbo$hasCustomGlow() {
-        if (this.sbo$glowingThisFrame) return true;
-        if (this.sbo$glowTime > System.currentTimeMillis()) return true;
+        if (sbo$glowingThisFrame) return true;
+        if (sbo$glowTime > System.nanoTime()) return true;
 
         // Reset time if expired
-        if (this.sbo$glowTime != -1 && this.sbo$glowTime <= System.currentTimeMillis()) {
+        if (sbo$glowTime != -1L && sbo$glowTime <= System.nanoTime()) {
             sbo$glowTime = -1L;
         }
 
-        return this.sbo$glowing;
+        return sbo$glowing;
     }
 }

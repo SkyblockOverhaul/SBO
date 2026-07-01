@@ -3,6 +3,7 @@ package net.sbo.mod.utils
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
@@ -115,6 +116,7 @@ object SboTimerManager {
                 tracker.items.TIME =
                     TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
 
+                Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.")
                 pause()
             }
         }

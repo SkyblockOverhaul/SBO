@@ -232,14 +232,14 @@ object Helper {
                 ?.call(mobs) as? Int ?: 0
 
             if (mobCount <= 0) 0.0
-            else (itemCount.toDouble() / mobCount.toDouble() * 100)
+            else itemCount.toDouble() / mobCount.toDouble() * 100
         } else {
             val mobCount = mobs::class.memberProperties.firstOrNull { it.name == propertyName }
                 ?.call(mobs) as? Int ?: 0
             val totalMobsCount = mobs.TOTAL_MOBS
 
             if (totalMobsCount <= 0) 0.0
-            else (mobCount.toDouble() / totalMobsCount.toDouble() * 100)
+            else mobCount.toDouble() / totalMobsCount.toDouble() * 100
         }
         return "%.2f".format(Locale.US, result)
     }
@@ -388,7 +388,7 @@ object Helper {
 
         if (getCursorItemStack()?.count != 0) return prevInv
 
-        for (slot in 0 until (inventory.size - 5)) {
+        for (slot in 0..<inventory.size - 5) {
             if (slot == 8) continue // Skip SB Star
             val stack: ItemStack = inventory[slot]
 
@@ -493,7 +493,7 @@ object Helper {
         private val dropCount: Int
     ) {
         val percentage: Double
-            get() = if (mobCount > 0) (dropCount.toDouble() / mobCount) * 100 else 0.0
+            get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
     private fun getDropInfo(dropName: String): DropInfo? {

@@ -51,7 +51,7 @@ internal object ParticleTypes {
     fun getParticleType(packet: ClientboundLevelParticlesPacket): String? {
         PARTICLE_CHECKS.forEach { (type, check) ->
             if (check.typeCheck(packet)) {
-                return type
+                return@getParticleType type
             }
         }
         return null

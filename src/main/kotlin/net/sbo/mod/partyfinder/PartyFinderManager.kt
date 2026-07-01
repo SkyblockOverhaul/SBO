@@ -216,7 +216,7 @@ object PartyFinderManager {
         }
 
         try {
-            val currentTime = System.currentTimeMillis()
+            val currentTime = System.nanoTime()
             Http.sendGetRequest(
                 "$API_URL/createParty?uuids=${partyMember.joinToString(",").replace("-", "")}" +
                         "&reqs=$partyReqs" +
@@ -226,7 +226,7 @@ object PartyFinderManager {
                         "&key=${sboData.sboKey}"
             ).toJson<PartyAddResponse>(true) { response ->
                 if (response.success) {
-                    val timeTaken = System.currentTimeMillis() - currentTime
+                    val timeTaken = System.nanoTime() - currentTime
                     inQueue = true
                     creatingParty = false
                     partyReqsMap = response.partyReqs!!
@@ -242,7 +242,7 @@ object PartyFinderManager {
                         Chat.clickableChat("§6[SBO] §eClick to dequeue party", "Dequeue Party", "/sbodequeue")
                     }
 
-                    Chat.chat("§6[SBO] §eParty created successfully! Time taken: ${timeTaken}ms")
+                    Chat.chat("§6[SBO] §eParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
 
                     if (isInParty) Chat.pc("[SBO] Party now in queue.")
                 } else {
@@ -265,7 +265,7 @@ object PartyFinderManager {
         updateBool = false
         if (inQueue && isInParty && isLeader) {
             if (partyMember.size !in 2..<partySize) return
-            val currentTime = System.currentTimeMillis()
+            val currentTime = System.nanoTime()
             Http.sendGetRequest(
                 "$API_URL/queuePartyUpdate?uuids=${partyMember.joinToString(",").replace("-", "")}" +
                         "&reqs=$partyReqs" +
@@ -275,9 +275,9 @@ object PartyFinderManager {
                         "&key=${sboData.sboKey}"
             ).toJson<PartyUpdateResponse>(true) { response ->
                 if (response.success) {
-                    val timeTaken = System.currentTimeMillis() - currentTime
+                    val timeTaken = System.nanoTime() - currentTime
                     partyReqsMap = response.partyReqs!!
-                    Chat.chat("§6[SBO] §eParty updated successfully! Time taken: ${timeTaken}ms")
+                    Chat.chat("§6[SBO] §eParty updated successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
                 } else {
                     inQueue = false
                     val errorMessage = response.error ?: "Unknown error"
@@ -353,12 +353,15 @@ object PartyFinderManager {
     ) {
         getPartyPlayerStats { playerStats ->
             if (checkIfPlayerMeetsReqs(playerStats, partyReqs)) {
-                if (playersSentRequest.containsKey(partyLeader) && (System.currentTimeMillis() - playersSentRequest[partyLeader]!! < 60000)) { // 1 minute cooldown
+                if (playersSentRequest.containsKey(partyLeader) && System.nanoTime() - playersSentRequest[partyLeader]!! < TimeUnit.MILLISECONDS.toNanos(
+                        60000
+                    )
+                ) { // 1 minute cooldown
                     Chat.chat("§6[SBO] §cYou have already sent a request to this player recently.")
                 } else {
                     Chat.chat("§6[SBO] §eSending join request to $partyLeader...")
                     Chat.command("msg $partyLeader [SBO] join party request - id:${UUID.randomUUID()}")
-                    playersSentRequest[partyLeader] = System.currentTimeMillis()
+                    playersSentRequest[partyLeader] = System.nanoTime()
                 }
             } else {
                 Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party.")

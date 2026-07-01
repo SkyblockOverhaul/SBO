@@ -25,8 +25,9 @@ object PartyCheck {
         }
 
         Register.command("sbocheckparty", "sbocheckp", "sbocp") {
-            if (System.currentTimeMillis() - checkCooldown > 30000) { // 30 seconds cooldown
-                checkCooldown = System.currentTimeMillis()
+            val now = System.nanoTime()
+            if (now - checkCooldown > TimeUnit.MILLISECONDS.toNanos(30000)) { // 30 seconds cooldown
+                checkCooldown = now
                 checkPartyBool = true
                 Chat.chat("§6[SBO] §eChecking party members...")
                 HypixelModApi.sendPartyInfoPacket()

@@ -21,13 +21,6 @@ object PartyFinder : CategoryKt("PartyFinder") {
         this.slider = true
     }
 
-    var scaleIcon by float(0f) {
-        this.name = Literal("Icon Scale")
-        this.description = Literal("Change the size of the icons")
-        this.range = -20f..20f
-        this.slider = true
-    }
-
     init {
         button {
             title = "Open Party Finder"

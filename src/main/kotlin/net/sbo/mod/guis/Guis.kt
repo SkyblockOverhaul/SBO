@@ -21,7 +21,7 @@ object Guis {
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
-    private const val UPDATE_INTERVAL = 300_000L // 5 minutes in ms
+    private const val UPDATE_INTERVAL = TimeUnit.MILLISECONDS.toNanos(300_000L) // 5 minutes in ns
 
     fun openSboPf(calledFromGUI: Boolean = false) {
         if (!World.isInSkyblock()) {
@@ -81,7 +81,7 @@ object Guis {
 //        }
 
         Register.onTick(20) {
-            val now = System.currentTimeMillis()
+            val now = System.nanoTime()
             if (now - lastUpdate > UPDATE_INTERVAL && !updating && World.isInSkyblock()) {
                 lastUpdate = now
                 updating = true

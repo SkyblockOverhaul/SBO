@@ -298,7 +298,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     internal fun filterPartyList(filterPredicate: ((Party) -> Boolean)? = null) {
         val partyList = partyCache[selectedPage] ?: run {
             updateCurrentPartyList(true)
-            return
+            return@filterPartyList
         }
         val resultList = filterPredicate?.let { partyList.filter(it) } ?: partyList
         addPartyList(resultList, true)
@@ -333,8 +333,8 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     internal fun updateCurrentPartyList(ignoreCooldown: Boolean = false) {
-        val now = System.currentTimeMillis()
-        if (!ignoreCooldown && (now - this.lastRefreshTime) < 1000) {
+        val now = System.nanoTime()
+        if (!ignoreCooldown && now - this.lastRefreshTime < TimeUnit.MILLISECONDS.toNanos(1000)) {
             Chat.chat("§6[SBO] §ePlease wait before refreshing the party list again.")
             return
         }
@@ -730,7 +730,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }.setColor(Color(0, 0, 0, 0))
         filterBlock.addChild(filterText)
         filterBlock.onMouseClick {
-            val x = filterBlock.getLeft() + (filterBlock.getWidth() / 2f)
+            val x = filterBlock.getLeft() + filterBlock.getWidth() / 2f
             val y = line.getBottom()
             addFilterPage(listName, x.pixels(), y.pixels())
         }

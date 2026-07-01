@@ -23,11 +23,12 @@ import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import kotlin.math.roundToInt
 import net.sbo.mod.utils.Player as SboPlayer
+import java.util.concurrent.TimeUnit
 
 object DianaMobDetect {
     private const val ANNOUNCE_DELAY_MS = 5_000L
 
-    private const val NAME_CHECK_TIMEOUT_MS = 1000L
+    private const val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
 
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
@@ -107,7 +108,7 @@ object DianaMobDetect {
             val overlayLines = mutableListOf<OverlayTextLine>()
 
             val unconfirmedIterator = unconfirmed.iterator()
-            val now = System.currentTimeMillis()
+            val now = System.nanoTime()
 
             while (unconfirmedIterator.hasNext()) {
                 val (id, data) = unconfirmedIterator.next()
@@ -124,7 +125,7 @@ object DianaMobDetect {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
                 }
-                else if (now - spawnTime > NAME_CHECK_TIMEOUT_MS) unconfirmedIterator.remove()
+                else if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) unconfirmedIterator.remove()
             }
 
             var closestStarlessMob: ArmorStand? = null
@@ -164,7 +165,7 @@ object DianaMobDetect {
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
         if (event.entity is ArmorStand) {
-            unconfirmed[event.entity.id] = event.entity to System.currentTimeMillis()
+            unconfirmed[event.entity.id] = event.entity to System.nanoTime()
         }
     }
 
