@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
@@ -53,11 +54,19 @@ object SboKeyBinds {
         SBO_CATEGORY
     )
 
+    val sphinxSolverKey: KeyMapping = KeyMapping(
+        "key.sbo-kotlin.sphinx_solver",
+        InputConstants.Type.KEYSYM,
+        GLFW.GLFW_KEY_UNKNOWN,
+        SBO_CATEGORY
+    )
+
     fun register() {
         KeyMappingHelper.registerKeyMapping(guessWarpKey)
         KeyMappingHelper.registerKeyMapping(inqWarpKey)
         KeyMappingHelper.registerKeyMapping(generalWarpKey)
         KeyMappingHelper.registerKeyMapping(sendCoordsKey)
+        KeyMappingHelper.registerKeyMapping(sphinxSolverKey)
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {
@@ -105,6 +114,10 @@ object SboKeyBinds {
             handlePressAction(sendCoordsKey, 500L) {
                 val playerPos = Player.getLastPosition()
                 Chat.say("x: ${playerPos.x.toInt()}, y: ${playerPos.y.toInt() - 1}, z: ${playerPos.z.toInt()} ") // patcher sendcoords format
+            }
+
+            handlePressAction(sphinxSolverKey) {
+                SphinxSolver.solve()
             }
         })
     }
