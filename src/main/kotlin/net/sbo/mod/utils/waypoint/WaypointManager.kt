@@ -159,7 +159,7 @@ object WaypointManager {
                     val waypointPos = waypoint.pos
 
                     if (waypoint.type == "arrow") {
-                        ArrowGuessBurrow.removeFromInternalState(waypointPos)
+                        ArrowGuessBurrow.removeOrMoveFromInternalState(waypointPos)
                     } else if (waypoint.type == "burrow") {
                         BurrowDetector.removeFromInternalState(waypointPos)
                     }
@@ -178,7 +178,7 @@ object WaypointManager {
                 if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
                     if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
                         removeWaypoint(arrowGuess)
-                        ArrowGuessBurrow.removeFromInternalState(arrowGuess.pos)
+                        ArrowGuessBurrow.removeOrMoveFromInternalState(arrowGuess.pos)
                     } else {
                         arrowGuess.inaccurateArrow = true
                     }

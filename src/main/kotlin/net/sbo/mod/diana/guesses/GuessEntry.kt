@@ -12,7 +12,7 @@ class GuessEntry(val guesses: List<SboVec>) {
 
     fun contains(vec: SboVec): Boolean = guesses.contains(vec)
 
-    fun moveToNext(reason: String): Boolean {
+    fun moveToNext(): Boolean {
         val current = getCurrent()
         val currentWaypoint = WaypointManager.getWaypointAt(current, "arrow")
 

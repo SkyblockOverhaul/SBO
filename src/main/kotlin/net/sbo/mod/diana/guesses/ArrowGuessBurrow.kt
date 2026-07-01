@@ -9,6 +9,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.NumberUtil.roundTo
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
@@ -80,6 +81,8 @@ object ArrowGuessBurrow {
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
     private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
 
+    private var lastBlockClicked: SboVec? = null
+
     val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
@@ -96,6 +99,26 @@ object ArrowGuessBurrow {
         allGuesses.removeAll(containList.toSet())
     }
 
+    fun removeOrMoveFromInternalState(pos: SboVec) {
+        val target = pos.roundLocationToBlock()
+
+        val containList = allGuesses.filter { guessEntry ->
+            val current = guessEntry.getCurrent().roundLocationToBlock()
+
+            current.x == target.x && current.y == target.y && current.z == target.z
+        }
+
+        val toRemove = mutableSetOf<GuessEntry>()
+
+        containList.forEach {
+            if (!it.moveToNext()) {
+                toRemove.add(it)
+            }
+        }
+
+        allGuesses.removeAll(toRemove)
+    }
+
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
         if (!Diana.arrowGuess) return
@@ -103,9 +126,7 @@ object ArrowGuessBurrow {
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)
-        if (packet.distanceToPlayer() >= 7) {
-            return
-        }
+        if (!location.isCloseToLastBurrow()) return
 
         val range = getArrowRange(packet.xDist, packet.yDist, packet.zDist) ?: return
         locations.add(location)
@@ -124,6 +145,7 @@ object ArrowGuessBurrow {
     fun onBurrowDug(event: BurrowDugEvent) {
         if (!Diana.arrowGuess) return
         if (event.lastBlock == null) return
+        lastBlockClicked = event.lastBlock
 
         val currentChain = event.currentBurrow
         val maxChain = event.maxBurrow
@@ -286,7 +308,7 @@ object ArrowGuessBurrow {
         for (guess in allGuesses) {
             val current = guess.getCurrent()
             if (!isBlockValid(current)) {
-                if (!guess.moveToNext("invalid")) {
+                if (!guess.moveToNext()) {
                     toRemove.add(guess)
                 }
                 continue
@@ -294,7 +316,7 @@ object ArrowGuessBurrow {
             if (hasSpade) {
                 val isKnownBurrow = burrowLocations.contains(current)
                 if (!isKnownBurrow && current.distanceSq(playerPos) < 900) { // 30 blocks
-                    if (!guess.moveToNext("assumption")) {
+                    if (!guess.moveToNext()) {
                         toRemove.add(guess)
                     }
                 }
@@ -356,6 +378,8 @@ object ArrowGuessBurrow {
         val parameters = this.particle
         return parameters is DustParticleOptions
     }
+
+    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) <= 6 } ?: false
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this

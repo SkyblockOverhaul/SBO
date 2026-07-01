@@ -99,7 +99,7 @@ object BurrowDetector {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
 
             removeFromInternalState(pos)
-            ArrowGuessBurrow.removeFromInternalState(pos)
+            ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
 
             WaypointManager.removeWaypointAt(pos, "burrow")
             WaypointManager.removeWaypointAt(pos, "arrow")
@@ -221,7 +221,7 @@ object BurrowDetector {
             // 2. Not death originating (was called from BurrowDugEvent) and times dug is 2 or more (Treasure/Mob burrow that was fully dug out)
             // 3. Death originating (was called after self player dies) and last dug burrows times dug is 1 or more, and it was a Mob burrow (A mob burrow was dug once and the player died to the mob)
             val death = deathOriginating && dugWaypoint.timesDug >= 1 && mobBurrow
-            val removalCondition = (!deathOriginating && startBurrow) || (!deathOriginating && dugWaypoint.timesDug >= 2) || (death)
+            val removalCondition = !deathOriginating && startBurrow || !deathOriginating && dugWaypoint.timesDug >= 2 || death
 
             if (removalCondition) {
                 if (death) {
