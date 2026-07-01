@@ -290,7 +290,7 @@ object WaypointManager {
         waypoints.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(waypoint)
 
         if (type == "burrow") {
-            playCustomSound(Customization.burrowSound[0], Customization.burrowVolume)
+            playCustomSound(Customization.burrowFoundSound[0], Customization.burrowVolume)
         }
     }
 

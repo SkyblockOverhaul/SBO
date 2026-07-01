@@ -108,7 +108,7 @@ class Waypoint(
                 val title = if (asSubtitle) "" else text
                 val subtitle = if (asSubtitle) text else null
 
-                Helper.showTitle(title, subtitle, 0, 1, 0) // 1 ticks because next tick this will be called again
+                Helper.showTitle(title, subtitle, 0, 1, 0, overwrite = false) // 1 ticks because next tick this will be called again. Overwrite false to not wipe rare mob title or use spade title.
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"

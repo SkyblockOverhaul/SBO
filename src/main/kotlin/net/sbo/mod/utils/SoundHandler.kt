@@ -12,6 +12,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.SboDataObject
 import java.io.File
+import java.nio.file.Files
 
 object SoundHandler {
     private val soundDir: File
@@ -54,17 +55,35 @@ object SoundHandler {
     }
 
     fun init() {
-        runCatching {
-            val urls = SoundHandler::class.java.classLoader.getResources("assets/$MOD_ID/sounds")
-            while (urls.hasMoreElements()) {
-                val resource = urls.nextElement()
-                val dir = File(resource.path)
-                val files = dir.listFiles { f -> f.isFile && f.extension.equals("ogg", ignoreCase = true) } ?: emptyArray()
-                files.forEach { file ->
-                    val target = File(soundDir, "${safeName(file.nameWithoutExtension)}.ogg")
-                    if (!target.exists()) runCatching { file.copyTo(target, overwrite = false) }
+        val modContainer = FabricLoader.getInstance().getModContainer(MOD_ID).orElse(null)
+
+        if (modContainer != null) {
+            for (root in modContainer.rootPaths) {
+                val sounds = root.resolve("assets/$MOD_ID/sounds")
+
+                if (!Files.exists(sounds)) {
+                    continue
+                }
+
+                Files.walk(sounds).use { stream ->
+                    stream
+                        .filter(Files::isRegularFile)
+                        .filter { it.fileName.toString().endsWith(".ogg") }
+                        .forEach { source ->
+                            val sound = source.fileName.toString()
+                            val target = soundDir.toPath().resolve(sound)
+                            if (!Files.exists(target)) {
+                                runCatching {
+                                    Files.copy(source, target)
+                                }.onFailure {
+                                    logger.error("[$MOD_ID] Failed to extract the built-in sound $sound", it)
+                                }
+                            }
+                        }
                 }
             }
+        } else {
+            logger.warn("[$MOD_ID] Could not locate the mod container; built-in sounds will not be extracted.")
         }
 
         val assetsSoundsDir = File(generatedPackDir, "assets/$MOD_ID/sounds").apply { mkdirs() }
@@ -127,18 +146,31 @@ object SoundHandler {
     }
 
     fun playCustomSound(sound: String, volume: Float, pitch: Float = 1f) {
+        // Playing sounds off the Render thread causes a ConcurrentModificationException at SoundEngine#tickInGameSound due to a HashMap iteration, so we need this
+        mc.execute {
+            playCustomSoundNonThreadSafe(sound, volume, pitch)
+        }
+    }
+
+    private fun playCustomSoundNonThreadSafe(sound: String, volume: Float, pitch: Float) {
         if (sound.isEmpty()) return
 
         val packManager = mc.resourcePackRepository
         val packId = "file/SBO Custom Sounds Data Pack"
 
         val safeSound = safeName(sound)
+        val packMissing = "§6[SBO] §cCustom sounds are inactive. §aGo to Options > Resource Packs > move '§lSBO Custom Sounds Data Pack§a' to the right (Active)"
 
         if (!availableSounds.contains(safeSound)) {
             val message = "Sound '$sound' not found. Available: ${availableSounds.joinToString()}"
-            Chat.chat("§6[SBO] §c$message")
-            logger.warn("[$MOD_ID] $message")
 
+            if (availableSounds.isEmpty()) {
+                Chat.chat(packMissing)
+            } else {
+                Chat.chat("§6[SBO] §c$message")
+            }
+
+            logger.warn("[$MOD_ID] $message")
             return
         }
 
@@ -156,7 +188,7 @@ object SoundHandler {
         val event = SoundEvent.createVariableRangeEvent(id)
 
         if (!packManager.selectedIds.contains(packId)) {
-            Chat.chat("§6[SBO] §cSounds not playing? §aGo to Options > Resource Packs > move '§lSBO Custom Sounds Data Pack§a' to the right (Active)")
+            Chat.chat(packMissing)
         }
 
         mc.soundManager.play(SimpleSoundInstance.forUI(event, pitch, volume))

@@ -404,7 +404,6 @@ object Helper {
                 var item: Item
                 val lookup = ItemLookup(stack)
                 val sbId = lookup.sbId
-                // print for debugging the lore lines
                 var isChimera = false
                 if (sbId == "ENCHANTED_BOOK") {
                     val lore = lookup.loreList
@@ -471,10 +470,22 @@ object Helper {
 
     fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && hasMythologicalRitualActive() && World.getWorld() == "Hub"
 
-    fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
-        mc.gui.setTimes(fadeIn, time, fadeOut)
-        if (title != null) mc.gui.setTitle(Component.nullToEmpty(title))
-        if (subtitle != null) mc.gui.setSubtitle(Component.nullToEmpty(subtitle))
+    fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
+        val currentDurationTicks = mc.gui.titleTime
+        val currentTitle = mc.gui.title?.string
+        val currentSubtitle = mc.gui.subtitle?.string
+
+        if (overwrite || time >= currentDurationTicks) {
+            mc.gui.setTimes(fadeIn, time, fadeOut)
+        }
+
+        if (title != null && (overwrite || currentTitle.isNullOrEmpty())) {
+            mc.gui.setTitle(Component.nullToEmpty(title))
+        }
+
+        if (subtitle != null && (overwrite || currentSubtitle.isNullOrEmpty())) {
+            mc.gui.setSubtitle(Component.nullToEmpty(subtitle))
+        }
     }
 
     fun checkCustomDropMessage(dropName: String, magicFind: Int): Pair<Boolean, String> {

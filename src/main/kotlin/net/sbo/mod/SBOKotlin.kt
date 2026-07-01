@@ -142,6 +142,7 @@ object SBOKotlin : ClientModInitializer {
 		SphinxSolver.init()
 		RareMobHighlight.init()
 		InventoryUtils.init()
+		Chains.init()
 
 		Register.onTick(100) { unregister ->
 			val player = mc.player
