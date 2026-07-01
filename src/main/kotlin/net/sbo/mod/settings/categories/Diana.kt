@@ -560,6 +560,9 @@ object Diana : CategoryKt("Diana") {
 
     var sphinxSolver by boolean(true) {
         this.name = Literal("Sphinx Solver")
-        this.description = Literal("Helps you solve the sphinx riddle by showing you the answer choices in chat and it automatically clicks the correct one for you when you click anywhere while the chat is open.")
+        this.description = Literal(
+            "Helps you solve the sphinx riddle by showing you the answer choices in chat and it automatically clicks the correct one for you when you click anywhere while the chat is open.\n" +
+                "Theres also the option to us a keybind in the mc keybinds menu but §c⚠ USE AT YOUR OWN RISK ⚠"
+        )
     }
 }

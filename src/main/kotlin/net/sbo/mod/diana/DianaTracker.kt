@@ -770,6 +770,7 @@ object DianaTracker {
                 "SHIMMERING_WOOL" -> if (magicFind > sboData.highestWoolMagicFind) sboData.highestWoolMagicFind = magicFind
                 "FATEFUL_STINGER" -> if (magicFind > sboData.highestStingerMagicFind) sboData.highestStingerMagicFind = magicFind
                 "BRAIN_FOOD" -> if (magicFind > sboData.highestFoodMagicFind) sboData.highestFoodMagicFind = magicFind
+                "MINOS_RELIC" -> if (magicFind > sboData.highestRelicMagicFind) sboData.highestRelicMagicFind = magicFind
             }
 
             trackMagicFind(magicFind, itemId == "CHIMERA")

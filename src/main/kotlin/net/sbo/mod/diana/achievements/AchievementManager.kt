@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaLoot.totalProfit
@@ -348,7 +349,7 @@ object AchievementManager {
         }
     }
 
-    val COA_MF_PATTERN = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")
+    val COA_MF_PATTERN = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find")
 
     fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
@@ -357,26 +358,23 @@ object AchievementManager {
 
         unlockAchievement(121)
 
-        val mf = lookup.loreList
+        val loreLine = lookup.loreList
             .map { it.removeFormatting() }
-            .getValueFromLine(COA_MF_PATTERN)
-            .toDouble()
+            .findLast { COA_MF_PATTERN.matcher(it).find() }
+
+        if (loreLine == null) return
+
+        val mfString = COA_MF_PATTERN.matcher(loreLine).let {
+            if (it.find()) it.group(1) else null
+        }
+
+        val mf = mfString?.toDoubleOrNull() ?: return
 
         when (mf) {
             25.0 -> unlockAchievement(124)
             22.5 -> unlockAchievement(123)
             20.0 -> unlockAchievement(122)
         }
-    }
-
-    private fun List<String>.getValueFromLine(regex: Pattern): String {
-        for (line in this) {
-            val matcher = regex.matcher(line)
-            if (matcher.find()) {
-                return matcher.group(1)
-            }
-        }
-        return ""
     }
 
     fun trackWithCheckPlayer(playerInfo: PartyPlayerStats) {
