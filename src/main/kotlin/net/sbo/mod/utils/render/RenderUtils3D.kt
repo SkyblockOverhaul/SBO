@@ -3,7 +3,7 @@ package net.sbo.mod.utils.render
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.MultiBufferSource
@@ -24,7 +24,7 @@ import kotlin.math.max
 
 object RenderUtils3D {
     fun renderWaypoint(
-        context: WorldRenderContext,
+        context: LevelRenderContext,
         text: String,
         pos: SboVec,
         colorComponents: FloatArray,
@@ -101,7 +101,7 @@ object RenderUtils3D {
      * @param scale The scale of the text.
      */
     private fun drawString(
-        context: WorldRenderContext,
+        context: LevelRenderContext,
         pos: SboVec,
         yOffset: Double,
         text: String,
@@ -130,7 +130,7 @@ object RenderUtils3D {
             val textWidth = textRenderer.width(text)
             val xOffset = -textWidth / 2f
 
-            val consumers = context.consumers()
+            val consumers = context.bufferSource()
 
             val layerType = Font.DisplayMode.SEE_THROUGH
 
@@ -158,7 +158,7 @@ object RenderUtils3D {
      * @param alpha The alpha value for transparency (0.0 to 1.0).
      */
     private fun drawLineFromCursor(
-        context: WorldRenderContext,
+        context: LevelRenderContext,
         target: SboVec,
         color: FloatArray,
         lineWidth: Float,
@@ -170,7 +170,7 @@ object RenderUtils3D {
 
             translate(cameraPos.reverse())
 
-            val consumers = context.consumers()
+            val consumers = context.bufferSource()
             val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
             val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
@@ -208,14 +208,14 @@ object RenderUtils3D {
      * @param phase Whether the beam should render through walls.
      */
     private fun renderBeaconBeam(
-        ctx: WorldRenderContext,
+        ctx: LevelRenderContext,
         vec: SboVec,
         colorComponents: FloatArray
     ) {
         val player = mc.player ?: return
         if (vec.center().distanceTo(player.x, player.y, player.z) < 8) return
 
-        val consumers = ctx.consumers()
+        val consumers = ctx.bufferSource()
         val world = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
         val cam = ctx.getCamera().position()
@@ -348,12 +348,12 @@ object RenderUtils3D {
             .setLight(15728880).setNormal(matrix, 0f, 1f, 0f)
     }
 
-    private fun WorldRenderContext.getCamera(): Camera {
+    private fun LevelRenderContext.getCamera(): Camera {
         return gameRenderer().mainCamera
     }
 
-    private fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
-        val matrix = matrices()
+    private fun LevelRenderContext.pushPop(function: PoseStack.() -> Unit) {
+        val matrix = poseStack()
         matrix.pushPop(function)
     }
 

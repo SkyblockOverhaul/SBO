@@ -3,7 +3,7 @@ package net.sbo.mod.utils.events
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
@@ -38,7 +38,7 @@ object SBOEvent {
          * World Change Event
          * Fired after the client world changes (e.g., when joining a new world or server).
          */
-        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register { mc, world ->
+        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { mc, world ->
             emit(WorldChangeEvent(mc, world))
         }
         /**
@@ -105,7 +105,7 @@ object SBOEvent {
             /** GUI Post Render Event
              * Fired after a GUI screen is rendered.
              */
-            ScreenEvents.afterRender(screen).register { renderScreen, drawContext, mouseX, mouseY, tickDelta ->
+            ScreenEvents.afterExtract(screen).register { renderScreen, drawContext, mouseX, mouseY, tickDelta ->
                 emit(GuiPostRenderEvent(renderScreen, drawContext, mouseX, mouseY, tickDelta))
             }
 

@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
@@ -50,7 +50,7 @@ object OverlayManager {
         render(event.context, mc.screen)
     }
 
-    fun render(drawContext: GuiGraphics, renderScreen: Screen? = null) {
+    fun render(drawContext: GuiGraphicsExtractor, renderScreen: Screen? = null) {
         if (!World.isInSkyblock()) return
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
@@ -61,7 +61,7 @@ object OverlayManager {
         }
     }
 
-    fun postRender(drawContext: GuiGraphics, renderScreen: Screen) {
+    fun postRender(drawContext: GuiGraphicsExtractor, renderScreen: Screen) {
         if (!World.isInSkyblock()) return
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
