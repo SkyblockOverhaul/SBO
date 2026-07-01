@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.waypoint
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
@@ -224,7 +224,7 @@ class Waypoint(
         return this.creationNs + duration.toNanos() < System.nanoTime()
     }
 
-    fun render(context: WorldRenderContext) {
+    fun render(context: LevelRenderContext) {
         if (!this.formatted || this.hidden) return
         if (inaccurateArrow) return
 

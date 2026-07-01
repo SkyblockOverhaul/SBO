@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.events.impl.guis
 
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 
 /**
@@ -16,7 +16,7 @@ import net.minecraft.client.gui.screens.Screen
 class GuiRenderEvent(
     val client: Minecraft,
     val screen: Screen,
-    val context: GuiGraphics,
+    val context: GuiGraphicsExtractor,
     val mouseX: Int,
     val mouseY: Int,
     val delta: Float

@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.events
 
 import com.mojang.brigadier.arguments.StringArgumentType
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.network.chat.Component
@@ -31,13 +31,13 @@ object Register {
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
 
             fun createLiteral(commandName: String) =
-                ClientCommandManager.literal(commandName)
+                ClientCommands.literal(commandName)
                     .executes {
                         action(emptyArray())
                         1
                     }
                     .then(
-                        ClientCommandManager.argument("args", StringArgumentType.greedyString())
+                        ClientCommands.argument("args", StringArgumentType.greedyString())
                             .executes {
                                 val argsString = StringArgumentType.getString(it, "args")
                                 val args = argsString.split(' ').filter { s -> s.isNotEmpty() }.toTypedArray()

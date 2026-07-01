@@ -9,7 +9,7 @@ plugins {
     java
     kotlin("jvm")
     kotlin("plugin.serialization") version "2.4.0"
-    id("net.fabricmc.fabric-loom-remap") version "1.17.12"
+    id("net.fabricmc.fabric-loom") version "1.17.12"
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     id("com.google.devtools.ksp") version "2.3.9"
@@ -40,58 +40,19 @@ loom {
 }
 
 bloom {
-    if (isMCVersionGreaterOrEqualTo("26.1")) {
-        // GuiGraphics --> GuiGraphicsExtractor
-        replacement("GuiGraphics", "GuiGraphicsExtractor")
-
-        // KeyBinding --> KeyMapping
-        replacement("net.fabricmc.fabric.api.client.keybinding", "net.fabricmc.fabric.api.client.keymapping")
-        replacement("KeyBindingHelper", "KeyMappingHelper")
-        replacement("registerKeyBinding", "registerKeyMapping")
-
-        // ClientCommandManager --> ClientCommands
-        replacement("ClientCommandManager", "ClientCommands")
-
-        // World --> Level
-        replacement("net.fabricmc.fabric.api.client.rendering.v1.world", "net.fabricmc.fabric.api.client.rendering.v1.level")
-        replacement("ClientWorldEvents", "ClientLevelEvents")
-        replacement("WorldRenderEvents", "LevelRenderEvents")
-        replacement("WorldRenderContext", "LevelRenderContext")
-        replacement("AFTER_CLIENT_WORLD_CHANGE", "AFTER_CLIENT_LEVEL_CHANGE")
-
-        // Render --> Extract
-        replacement("ScreenEvents.afterRender", "ScreenEvents.afterExtract")
-        replacement("override fun render(", "override fun extractRenderState(")
-        replacement("super.render(", "super.extractRenderState(")
-        replacement("this.renderMenuBackground", "this.extractMenuBackground")
-        replacement("drawContext.renderTooltip(", "drawContext.tooltip(")
-
-        // Render --> Extract (Hacky way to fix Mixins, too lazy for versioned Mixins)
-        replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")
-        replacement("Lnet/minecraft/client/gui/Gui;render(", "Lnet/minecraft/client/gui/Gui;extractRenderState(")
-        replacement("@Inject(method = \"render\", at = @At(value = \"INVOKE\", target = ", "@Inject(method = \"extractGui\", at = @At(value = \"INVOKE\", target = ")
-        replacement("private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
-
-        // drawString --> text
-        replacement("drawContext.drawString(", "drawContext.text(")
-
-        // renderOutline --> outline
-        replacement("drawContext.renderOutline(", "drawContext.outline(")
-
-        // consumers --> bufferSource
-        replacement("context.consumers", "context.bufferSource")
-        replacement("ctx.consumers", "ctx.bufferSource")
-
-        // matrices --> poseStack
-        replacement("matrices()", "poseStack()")
-
-        // BEFORE_TRANSLUCENT --> BEFORE_TRANSLUCENT_TERRAIN
-        replacement("BEFORE_TRANSLUCENT", "BEFORE_TRANSLUCENT_TERRAIN")
-        replacement("BeforeTranslucent", "BeforeTranslucentTerrain")
-        replacement("override fun beforeTranslucent(", "override fun beforeTranslucentTerrain(")
-
-        // addMessage --> addClientSystemMessage
-        replacement("chat.addMessage(", "chat.addClientSystemMessage(")
+    if (isMCVersionGreaterOrEqualTo("26.2")) {
+        replacement("mc.screen", "mc.gui.screen()")
+        replacement("mc.setScreen(", "mc.gui.setScreen(")
+        replacement("mc.toastManager", "mc.gui.toastManager()")
+        replacement("mc.gui.setTimes", "mc.gui.hud.setTimes")
+        replacement("mc.gui.setTitle", "mc.gui.hud.setTitle")
+        replacement("mc.gui.setSubtitle", "mc.gui.hud.setSubtitle")
+        replacement("SystemToast.multiline(mc, ", "SystemToast(")
+        replacement("mc.gui.chat.addClientSystemMessage", "mc.gui.hud.chat.addClientSystemMessage")
+        replacement("formatting?.char", "formatting?.code")
+        replacement("mc.options.hideGui", "mc.gui.hud.isHidden()")
+        replacement("gameRenderer().mainCamera", "gameRenderer().mainCamera()")
+        replacement("com.mojang.blaze3d.vertex.VertexFormat.Mode", "com.mojang.blaze3d.PrimitiveTopology")
     }
 }
 
@@ -295,27 +256,8 @@ tasks.named<ProcessResources>("processResources") {
 dependencies {
     minecraft("com.mojang:minecraft:${mcVersion}")
 
-    val mappingsConfig = configurations.findByName("mappings")
-
-    if (null != mappingsConfig) {
-        dependencies.add(
-            mappingsConfig.name,
-            loom.officialMojangMappings()
-        )
-    }
-
-    val modImplementationConfig = configurations.findByName("modImplementation")
-
-    fun DependencyHandler.maybeModImplementation(dependencyNotation: Any) {
-        if (null != modImplementationConfig) {
-            add(modImplementationConfig.name, dependencyNotation)
-        } else {
-            implementation(dependencyNotation)
-        }
-    }
-
-    maybeModImplementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
-    maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
+    implementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
     ksp(project(":event-processor"))
@@ -323,21 +265,21 @@ dependencies {
 
     implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
 
-    maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
-    maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
+    implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
+    implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
 
     when (mcProject) {
+        "26.2-fabric" -> {
+            implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.2:${versionedProperty("rconfig.version")}")!!)
+            implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
+            implementation(include("gg.essential:universalcraft-26.2-fabric:${property("universalcraft.version")}")!!)
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
+        }
         "26.1.2-fabric" -> {
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
             implementation(include("gg.essential:universalcraft-26.1-fabric:${property("universalcraft.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
-        }
-        "1.21.11-fabric" -> {
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.11:${versionedProperty("rconfig.version")}")!!)
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.11:${versionedProperty("rconfigkt.version")}")!!)
-            maybeModImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("universalcraft.version")}")!!)
-            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.11-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
@@ -347,7 +289,7 @@ dependencies {
 
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
-        "26.1.2-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
+        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 }
