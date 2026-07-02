@@ -8,7 +8,6 @@ import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.util.ARGB
@@ -17,7 +16,6 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
@@ -86,7 +84,7 @@ object RenderUtils3D {
         val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
         val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
         val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
-        val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
+        val argbColor = a shl 24 or (r shl 16) or (g shl 8) or b
         val bPos = pos.toBlockPos().immutable()
         Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
     }
@@ -222,7 +220,7 @@ object RenderUtils3D {
         val beamColor = floatArrayOf(colorComponents[0], colorComponents[1], colorComponents[2], 1.0f)
 
         ctx.pushPop {
-            translate(vec.x - cam.x, (vec.y + 1.0) - cam.y, vec.z - cam.z)
+            translate(vec.x - cam.x, vec.y + 1.0 - cam.y, vec.z - cam.z)
 
             renderBeam(
                 consumers,

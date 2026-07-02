@@ -2,7 +2,6 @@ package net.sbo.mod.utils.collection
 
 import com.google.common.cache.Cache
 import com.google.common.cache.RemovalCause
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 

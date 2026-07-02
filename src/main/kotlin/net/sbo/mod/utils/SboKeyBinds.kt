@@ -26,35 +26,35 @@ object SboKeyBinds {
         registerKeyBindListener()
     }
 
-    val guessWarpKey: KeyMapping = KeyMapping(
+    private val guessWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.guess_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val inqWarpKey: KeyMapping = KeyMapping(
+    private val inqWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.inq_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val generalWarpKey: KeyMapping = KeyMapping(
+    private val generalWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.general_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val sendCoordsKey: KeyMapping = KeyMapping(
+    private val sendCoordsKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.send_coords",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val sphinxSolverKey: KeyMapping = KeyMapping(
+    private val sphinxSolverKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.sphinx_solver",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
@@ -97,7 +97,7 @@ object SboKeyBinds {
         }
     }
 
-    fun registerKeyBindListener() {
+    private fun registerKeyBindListener() {
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { _: Minecraft ->
             handlePressAction(guessWarpKey) {
                 WaypointManager.warpToGuess()

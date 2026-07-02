@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
     @Inject(method = "setScreen", at = @At("HEAD"))
-    public void onSetScreen(@Nullable Screen screen, @NonNull CallbackInfo ci) {
+    public void onSetScreen(@Nullable final Screen screen, @NonNull final CallbackInfo ci) {
         if (screen != null) {
             SBOEvent.INSTANCE.emit(new GuiOpenEvent(screen, ci));
         }

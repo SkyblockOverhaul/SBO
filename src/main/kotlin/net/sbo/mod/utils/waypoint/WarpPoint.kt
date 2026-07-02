@@ -11,7 +11,7 @@ import net.sbo.mod.utils.math.SboVec
 data class WarpPoint(
     val pos: SboVec = SboVec(0.0, 0.0, 0.0),
     val unlocked: Boolean,
-    val setting: String? = null, // Nullable, since not all warps have a setting
+    private val setting: String? = null, // Nullable, since not all warps have a setting
     val warpType: AdditionalHubWarps? = null, // null for hub, set for all others
     val preferWarpAgainstCompetitive: AdditionalHubWarps? = null,
     val extraBlocks: Int = 0

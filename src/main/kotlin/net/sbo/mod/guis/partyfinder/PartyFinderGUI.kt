@@ -39,44 +39,44 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderRefreshListEvent
 import java.awt.Color
-
+import java.util.concurrent.TimeUnit
 
 class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
-    internal val elementToHighlight: MutableList<HighlightElement> = mutableListOf()
+    private val elementToHighlight: MutableList<HighlightElement> = mutableListOf()
     internal var selectedPage: String = "Home"
-    internal val pages: MutableMap<String, () -> Unit> = mutableMapOf()
-    internal var partyCache: MutableMap<String, List<Party>> = mutableMapOf()
-    internal var lastRefreshTime: Long = 0L
-    internal var cpWindowOpened: Boolean = false
-    internal var filterWindowOpened: Boolean = false
-    internal var partyInfoOpened: Boolean = false
+    private val pages: MutableMap<String, () -> Unit> = mutableMapOf()
+    private var partyCache: MutableMap<String, List<Party>> = mutableMapOf()
+    private var lastRefreshTime: Long = 0L
+    private var cpWindowOpened: Boolean = false
+    private var filterWindowOpened: Boolean = false
+    private var partyInfoOpened: Boolean = false
 
     private val dianaPage = DianaPage(this)
     private val customPage = CustomPage(this)
     private val homePage = Home(this)
     private val helpPage = Help(this)
 
-    internal lateinit var filterBackground: UIComponent
+    private lateinit var filterBackground: UIComponent
     internal lateinit var filterWindow : UIComponent
-    internal lateinit var partyInfoWindow : UIComponent
+    private lateinit var partyInfoWindow : UIComponent
     internal lateinit var cpWindow : UIComponent
-    internal lateinit var base : UIComponent
-    internal lateinit var onlineUserBlock: UIComponent
+    private lateinit var base : UIComponent
+    private lateinit var onlineUserBlock: UIComponent
     internal lateinit var onlineUserText: UIText
-    internal lateinit var titleBlock: UIComponent
-    internal lateinit var categoryBlock: UIComponent
+    private lateinit var titleBlock: UIComponent
+    private lateinit var categoryBlock: UIComponent
     internal lateinit var contentBlock: UIComponent
-    internal lateinit var playerNameBase: UIComponent
-    internal lateinit var partyListContainer: UIComponent
+    private lateinit var playerNameBase: UIComponent
+    private lateinit var partyListContainer: UIComponent
     internal lateinit var noParties : UIComponent
-    internal lateinit var partyShowType : UIComponent
+    private lateinit var partyShowType : UIComponent
     internal lateinit var reqsBox: UIComponent
     internal lateinit var createBox: UIComponent
     internal lateinit var filterBox: UIComponent
     internal lateinit var infobase: UIComponent
     internal lateinit var partyCount: UIText
-    internal var guiScale: Int? = null
+    private var guiScale: Int? = null
 
 
     init {
@@ -150,7 +150,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         guiScale = null
     }
 
-    internal fun getTextScale(base: Float = 1f): PixelConstraint {
+    internal fun getTextScaleOfScaleText(base: Float = 1f): PixelConstraint {
         return if (base + PartyFinder.scaleText <= 0f) 0.1f.pixels()
         else (base + PartyFinder.scaleText).pixels()
     }
@@ -298,7 +298,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     internal fun filterPartyList(filterPredicate: ((Party) -> Boolean)? = null) {
         val partyList = partyCache[selectedPage] ?: run {
             updateCurrentPartyList(true)
-            return
+            return@filterPartyList
         }
         val resultList = filterPredicate?.let { partyList.filter(it) } ?: partyList
         addPartyList(resultList, true)
@@ -333,8 +333,8 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     internal fun updateCurrentPartyList(ignoreCooldown: Boolean = false) {
-        val now = System.currentTimeMillis()
-        if (!ignoreCooldown && (now - this.lastRefreshTime) < 1000) {
+        val now = System.nanoTime()
+        if (!ignoreCooldown && now - this.lastRefreshTime < TimeUnit.MILLISECONDS.toNanos(1000)) {
             Chat.chat("§6[SBO] §ePlease wait before refreshing the party list again.")
             return
         }
@@ -370,7 +370,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             filterWindowOpened = false
             return
         }
-        else openFilterWindow()
+        openFilterWindow()
 
         when (listName) {
             "Diana Party List" -> {
@@ -397,7 +397,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
         val text = UIText("・ $pageTitle").constrain {
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255))
 
         block.onMouseClick {
@@ -461,7 +461,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText(party.leaderName).constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(Color(85, 255, 255, 255)))
             )
             .addChild(GuiHandler.UILine(
@@ -495,7 +495,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                         x = 0.pixels
                         y = CenterConstraint()
                         width = 100.percent()
-                        textScale = getTextScale(1f)
+                        textScale = getTextScaleOfScaleText()
                     }.setColor(Color(255, 255, 255, 255)))
                 )
             )
@@ -515,7 +515,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                         x = 0.pixels
                         y = CenterConstraint()
                         width = 100.percent()
-                        textScale = getTextScale(1f)
+                        textScale = getTextScaleOfScaleText()
                     }.setColor(Color(255, 255, 255, 255)))
                 )
             )
@@ -538,7 +538,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText("${party.partyMembersCount}/${party.partySize}").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(getMemberColor(party.partyMembersCount, party.partySize)))
             )
             .addChild(GuiHandler.UILine(
@@ -569,7 +569,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
         joinBlock.addChild(joinButton.uiObject)
         partyBlock.addChild(joinBlock)
-        joinButton.textObject.setTextScale(getTextScale(1f))
+        joinButton.textObject.setTextScale(getTextScaleOfScaleText())
 
         joinButton.setOnClick {
             joinParty(party.leaderName, party.reqs)
@@ -670,7 +670,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText(party.name).constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(Color(255, 255, 255, 255)))
             playerBlock.onMouseEnter {
                 playerBlock.setColor(Color(50, 50, 50, 255))
@@ -679,7 +679,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                     x = 4.percent()
                     y = 4.percent()
                     width = 96.percent()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 })
             }
             playerBlock.onMouseLeave {
@@ -708,7 +708,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         partyCount = UIText("").constrain {
             x = SiblingConstraint()
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         }
         partyCount.setColor(Color(255, 255, 255, 255))
 //        val filterSvgComp = SVGComponent.ofResource("/assets/sbo-kotlin/svgs/filter.svg").constrain {
@@ -720,7 +720,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         val filterText = UIText("Filter").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         }.setColor(Color(0, 110, 250, 255))
         val filterBlock = UIBlock().constrain {
             x = SiblingConstraint()
@@ -730,7 +730,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }.setColor(Color(0, 0, 0, 0))
         filterBlock.addChild(filterText)
         filterBlock.onMouseClick {
-            val x = filterBlock.getLeft() + (filterBlock.getWidth() / 2f)
+            val x = filterBlock.getLeft() + filterBlock.getWidth() / 2f
             val y = line.getBottom()
             addFilterPage(listName, x.pixels(), y.pixels())
         }
@@ -749,7 +749,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         val refreshText = UIText("Refresh").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         }.setColor(Color(0, 110, 250, 255))
         val refreshBlock = UIBlock().constrain {
             x = SiblingConstraint(5f)
@@ -776,7 +776,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         val unqueuePartyText = UIText("Delete").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         }.setColor(Color(255, 0, 0, 255))
         val unqueuePartyBlock = UIBlock().constrain {
             x = SiblingConstraint(5f)
@@ -803,7 +803,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         val createPartyText = UIText("Create").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         }.setColor(Color(0, 255, 0, 255))
         val createPartyBlock = UIBlock().constrain {
             x = SiblingConstraint(5f)
@@ -851,7 +851,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText(listName).constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1.5f)
+                    textScale = getTextScaleOfScaleText(1.5f)
                 }.setColor(Color(255, 255, 255, 255)))
             )
             .addChild(filterBlock)
@@ -869,7 +869,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     private fun stpBtn(btn: GuiHandler.Button) {
-        btn.textObject.setTextScale(getTextScale())
+        btn.textObject.setTextScale(getTextScaleOfScaleText())
         btn.uiObject.addChild(GuiHandler.UILine(
             x = CenterConstraint(),
             y = 100.percent(),
@@ -905,7 +905,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText("Create Party").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1.5f)
+                    textScale = getTextScaleOfScaleText(1.5f)
                 }.setColor(Color(255, 255, 255, 255))))
             .addChild(GuiHandler.UILine(
                 x = 0.percent(),
@@ -943,7 +943,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         onlineUserText = UIText("Online: 0").constrain {
             x = 0.percent()
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         } childOf onlineUserBlock
 
         titleBlock = UIBlock().constrain {
@@ -968,7 +968,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 UIText("SBO Party Finder").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(Color(255, 255, 255, 255)))
             )
         val discordBlock = UIBlock().constrain {
@@ -1011,7 +1011,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
             .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
             .setTextOnClick {
-                SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO-Kotlin")
+                SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO")
             }
         stpBtn(github)
 
@@ -1035,7 +1035,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             .setTextOnClick {
                 SBOKotlin.openInBrowser("https://www.patreon.com/Skyblock_Overhaul")
             }
-        patreon.textObject.setTextScale(getTextScale())
+        patreon.textObject.setTextScale(getTextScaleOfScaleText())
         patreon.uiObject.addChild(GuiHandler.UILine(
             x = CenterConstraint(),
             y = 100.percent(),
@@ -1086,7 +1086,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         noParties = UIText("No parties found").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
-            textScale = getTextScale(1f)
+            textScale = getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255))
         partyListContainer.addChild(noParties)
         noParties.hide()
@@ -1103,7 +1103,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText("Leader").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(Color(85, 255, 255, 255)))
             )
             .addChild(GuiHandler.UILine(
@@ -1123,7 +1123,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText("Reqs/Note").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(Color(85, 255, 255, 255))))
             .addChild(GuiHandler.UILine(
                 x = SiblingConstraint(),
@@ -1142,7 +1142,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText("Members").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(Color(85, 255, 255, 255))))
             .addChild(GuiHandler.UILine(
                 x = SiblingConstraint(),
@@ -1161,13 +1161,13 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 .addChild(UIText("Button").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
-                    textScale = getTextScale(1f)
+                    textScale = getTextScaleOfScaleText()
                 }.setColor(Color(85, 255, 255, 255)))
             )
         //-----------------Pages-----------------
         addPage("Home", homePage::render, isSubPage = true, y1 = 93.percent())
         addPage("Help", helpPage::render, isSubPage = true)
-        addPage("Settings", ::settings, isSubPage = true, y1 = null, isClickable = true)
+        addPage("Settings", ::settings, isSubPage = true, isClickable = true)
         addPage("Diana", dianaPage::render, y1 = 0.percent())
         addPage("Custom", customPage::render)
     }

@@ -28,8 +28,8 @@ object TickScheduler {
     }
 
     data class ScheduledTask(
-        val interval: Int,
-        var counter: Int = 0,
+        private val interval: Int,
+        private var counter: Int = 0,
         val action: () -> Boolean
     ) {
         fun tick(): Boolean {

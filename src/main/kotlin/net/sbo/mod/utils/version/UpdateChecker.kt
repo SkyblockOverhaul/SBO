@@ -11,8 +11,8 @@ object UpdateChecker {
     private const val MODRINTH_ID = "9lBqVbQF"
     private val VERSION_REGEX = Regex("""(\d+\.\d+\.\d+|\d+\.\d+)""")
 
-    var latestVersion: String? = null
-    var latestId: String? = null
+    private var latestVersion: String? = null
+    private var latestId: String? = null
     var isUpdateAvailable = false
 
     private fun String.extractCoreVersion(): String {

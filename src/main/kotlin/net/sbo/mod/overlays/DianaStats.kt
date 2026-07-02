@@ -14,14 +14,16 @@ import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 
 object DianaStats : DirtyFlushableOverlay() {
-    override val overlay = Overlay("Diana Stats", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)).setCondition { Diana.statsTracker && (Helper.checkDiana() || Helper.hasSpade) }
+    override val overlay = Overlay("Diana Stats", 10f, 10f,
+        allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
+    ).setCondition { Diana.statsTracker && (Helper.checkDiana() || Helper.hasSpade) }
 
     fun init() {
         overlay.init()
         updateLines()
     }
 
-    fun createStatLine(name: String, formattedText: String): OverlayTextLine {
+    private fun createStatLine(name: String, formattedText: String): OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick {
             if (!isCraftingScreenOpen()) return@onClick
             val hideList = SBOConfigBundle.sboData.hideTrackerLines

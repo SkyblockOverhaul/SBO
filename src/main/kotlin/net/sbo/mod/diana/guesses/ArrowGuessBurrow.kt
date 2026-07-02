@@ -9,7 +9,9 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.NumberUtil.roundTo
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.collection.TimeLimitedSet
+import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.TickEvent
@@ -46,7 +48,6 @@ object ArrowGuessBurrow {
     private val HUB_BOUNDS_MIN = SboVec(-283.0, 60.0, -208.0)
     private val HUB_BOUNDS_MAX = SboVec(175.0, 105.0, 205.0)
     private val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
-    private var spadeTitleShown = false
 
     private val allowedBlocksAboveGround = buildList {
         add(Blocks.AIR)
@@ -78,13 +79,46 @@ object ArrowGuessBurrow {
     }
 
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
+
+    private var spadeTitleShown = false
+
     private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
 
-    private var lastBlockClicked: SboVec? = null
-
-    val recentClickedBlocks = TimeLimitedSet<SboVec>(3.seconds)
+    val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
+
+    fun removeFromInternalState(pos: SboVec) {
+        val target = pos.roundLocationToBlock()
+
+        val containList = allGuesses.filter { guessEntry ->
+            val current = guessEntry.getCurrent().roundLocationToBlock()
+
+            current.x == target.x && current.y == target.y && current.z == target.z
+        }
+
+        allGuesses.removeAll(containList.toSet())
+    }
+
+    fun removeOrMoveFromInternalState(pos: SboVec) {
+        val target = pos.roundLocationToBlock()
+
+        val containList = allGuesses.filter { guessEntry ->
+            val current = guessEntry.getCurrent().roundLocationToBlock()
+
+            current.x == target.x && current.y == target.y && current.z == target.z
+        }
+
+        val toRemove = mutableSetOf<GuessEntry>()
+
+        containList.forEach {
+            if (!it.moveToNext()) {
+                toRemove.add(it)
+            }
+        }
+
+        allGuesses.removeAll(toRemove)
+    }
 
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
@@ -93,7 +127,7 @@ object ArrowGuessBurrow {
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)
-        if (!location.isCloseToLastBurrow() || packet.distanceToPlayer() > 6) return
+        if (!location.isCloseToLastBurrow() && packet.distanceToPlayer() >= 7) return
 
         val range = getArrowRange(packet.xDist, packet.yDist, packet.zDist) ?: return
         locations.add(location)
@@ -111,15 +145,13 @@ object ArrowGuessBurrow {
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
         if (!Diana.arrowGuess) return
-        if (event.lastBlock == null) return
-        lastBlockClicked = event.lastBlock
 
         val currentChain = event.currentBurrow
         val maxChain = event.maxBurrow
+
         if (currentChain != maxChain) {
             locations.clear()
         }
-        if (currentChain == 1) return
     }
 
     private fun detectArrow(): RaycastUtils.Ray? {
@@ -130,8 +162,7 @@ object ArrowGuessBurrow {
         val count1 = getPointsWithinDistance(candidate1)
         val count2 = getPointsWithinDistance(candidate2)
 
-        if (!((count1 == COUNT_NEAR_BASE && count2 == COUNT_NEAR_TIP) ||
-            (count1 == COUNT_NEAR_TIP && count2 == COUNT_NEAR_BASE))
+        if (!(count1 == COUNT_NEAR_BASE && count2 == COUNT_NEAR_TIP || count1 == COUNT_NEAR_TIP && count2 == COUNT_NEAR_BASE)
         ) return null
 
         val base: SboVec
@@ -235,7 +266,7 @@ object ArrowGuessBurrow {
 
             val distanceFromOrigin = candidatePoint.distance(ray.origin)
 
-            val scaledDistance = (distanceToRay * 500000 / distanceFromOrigin)
+            val scaledDistance = distanceToRay * 500000 / distanceFromOrigin
 
             candidates[candidateBlock] = Pair(scaledDistance.roundTo(2), distanceFromOrigin)
         }
@@ -252,11 +283,11 @@ object ArrowGuessBurrow {
         val withinRangeFirst = withinRange.getOrNull(0)
 
         if (Diana.showTitleWhenFailure) {
-            if (withinRangeFirst == null) {
-                if (!spadeTitleShown) BurrowDetector.requestSpade()
-                spadeTitleShown = true
+            spadeTitleShown = if (withinRangeFirst == null) {
+                if (!spadeTitleShown) BurrowDetector.requestSpade("failure")
+                true
             } else {
-                spadeTitleShown = false
+                false
             }
         }
 
@@ -269,20 +300,27 @@ object ArrowGuessBurrow {
         val hasSpade = InventoryUtils.isItemHeld("SPADE", 1.seconds)
         val burrowLocations = BurrowDetector.burrows.values.asSequence().map { it.waypoint?.pos ?: SboVec.ZERO }.toHashSet()
         val playerPos = player.position().toSboVec()
+        val toRemove = mutableSetOf<GuessEntry>()
 
         for (guess in allGuesses) {
             val current = guess.getCurrent()
             if (!isBlockValid(current)) {
-                guess.moveToNext()
+                if (!guess.moveToNext()) {
+                    toRemove.add(guess)
+                }
                 continue
             }
             if (hasSpade) {
                 val isKnownBurrow = burrowLocations.contains(current)
                 if (!isKnownBurrow && current.distanceSq(playerPos) < 900) { // 30 blocks
-                    guess.moveToNext()
+                    if (!guess.moveToNext()) {
+                        toRemove.add(guess)
+                    }
                 }
             }
         }
+
+        allGuesses.removeAll(toRemove)
     }
 
     private fun getArrowRange(offsetX: Float, offsetY: Float, offsetZ: Float): IntRange? {
@@ -305,11 +343,11 @@ object ArrowGuessBurrow {
         return isBlockTrulyValid(pos)
     }
 
-    internal fun isBlockTrulyValid(pos: SboVec): Boolean {
+    private fun isBlockTrulyValid(pos: SboVec): Boolean {
         val block = pos.getBlockAt()
-        val isGrass = pos.getBlockAt() == Blocks.GRASS_BLOCK
-        val isAir = pos.getBlockAt() == Blocks.AIR
-        val isGround = isGrass || (isAir && recentClickedBlocks.contains(pos))
+        val isGrass = block == Blocks.GRASS_BLOCK
+        val isAir = block == Blocks.AIR
+        val isGround = isGrass || isAir && recentClickedBlocks.contains(pos)
 
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
 
@@ -338,7 +376,7 @@ object ArrowGuessBurrow {
         return parameters is DustParticleOptions
     }
 
-    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) <= 6 } ?: false
+    private fun SboVec.isCloseToLastBurrow(): Boolean = DianaEvents.lastWaypointClicked?.let { this.distanceTo(it) <= 7 } ?: true // null at startup then never null, pass condition if its null since we do not know but it is probably close
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this

@@ -14,11 +14,11 @@ import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 
 object HypixelModApi {
     var isOnHypixel: Boolean = false
-    var isOnSkyblock: Boolean = false
-    var isLeader: Boolean = false
-    var isInParty: Boolean = false
-    var partyMembers: List<String> = emptyList()
-    var mode: String = ""
+    private var isOnSkyblock: Boolean = false
+    private var isLeader: Boolean = false
+    private var isInParty: Boolean = false
+    private var partyMembers: List<String> = emptyList()
+    private var mode: String = ""
 
     // listeners
     private val partyInfoListeners = mutableListOf<(isInParty: Boolean, isLeader: Boolean, members: List<String>) -> Unit>()

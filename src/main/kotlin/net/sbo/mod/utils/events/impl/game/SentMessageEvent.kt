@@ -8,4 +8,4 @@ package net.sbo.mod.utils.events.impl.game
  * @param content The content of the message. Never begins with a slash ('/').
  * For commands, use {@link SentCommandEvent}.
  */
-class SentMessageEvent(val content: String)
+class SentMessageEvent(private val content: String)

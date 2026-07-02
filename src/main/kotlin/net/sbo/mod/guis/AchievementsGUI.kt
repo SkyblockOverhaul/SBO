@@ -268,7 +268,7 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
         val spacingY = 20f
         val columns = floor((scrollComponent.getWidth() - spacingX) / (achievementBoxWidth + spacingX)).toInt()
         if (columns <= 0) return
-        val totalGridWidth = (columns * achievementBoxWidth) + ((columns - 1) * spacingX)
+        val totalGridWidth = columns * achievementBoxWidth + (columns - 1) * spacingX
         val centeringOffset = ((scrollComponent.getWidth() - totalGridWidth) / 2f).coerceAtLeast(10f)
         var lastY = 0f
 
@@ -322,15 +322,15 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
         achievementList.forEachIndexed { index, achievement ->
             val column = index % columns
             val row = floor(index.toFloat() / columns).toInt()
-            val posX = centeringOffset + (column * (achievementBoxWidth + spacingX))
-            val posY = spacingY + (row * (achievementBoxHeight + spacingY))
+            val posX = centeringOffset + column * (achievementBoxWidth + spacingX)
+            val posY = spacingY + row * (achievementBoxHeight + spacingY)
             lastY = posY
             val borderColor = if (achievement.isUnlocked(true)) Color(0, 255, 0) else Color(255, 0, 0)
             val achievementColor = if ("Celestial" != achievement.rarity) {
                 Color(
                     ChatFormatting.getByCode(achievement.color[1])
                         ?.let(TextColor::fromLegacyFormat)
-                        ?.getValue()
+                        ?.value
                         ?: 0xFFFFFF
                 )
             } else {
@@ -340,8 +340,8 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
             val roundedOutline = UIRoundedRectangle(5f).constrain {
                 x = posX.pixels
                 y = posY.pixels
-                width = (achievementBoxWidth + (1f * 2)).pixels
-                height = (achievementBoxHeight + (1f * 2)).pixels
+                width = (achievementBoxWidth + 1f * 2).pixels
+                height = (achievementBoxHeight + 1f * 2).pixels
             }.setColor(borderColor)
 
             UIRoundedRectangle(5f).constrain {

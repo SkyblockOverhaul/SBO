@@ -12,8 +12,8 @@ import net.sbo.mod.utils.math.SboVec
  * @param maxBurrow     The maximum number of burrows that can be dug.
  */
 class BurrowDugEvent (
-    val burrowPos: SboVec?,
-    val waypointPos: SboVec?,
+    private val burrowPos: SboVec?,
+    private val waypointPos: SboVec?,
     val lastBlock: SboVec?,
     val currentBurrow: Int,
     val maxBurrow: Int

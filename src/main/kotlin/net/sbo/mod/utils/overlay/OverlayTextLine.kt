@@ -9,17 +9,17 @@ import java.awt.Color
 
 class OverlayTextLine(
     var text: String,
-    var shadow: Boolean = true,
+    private var shadow: Boolean = true,
     var linebreak: Boolean = true
 ) {
     private var orderedText: FormattedCharSequence? = null
     private var orderedTextSource: String? = null
 
-    var mouseEnterAction: (() -> Unit)? = null
-    var mouseLeaveAction: (() -> Unit)? = null
-    var hoverAction: ((drawContext: GuiGraphics, textRenderer: Font) -> Unit)? = null
-    var clickAction: (() -> Unit)? = null
-    var isHovered: Boolean = false
+    private var mouseEnterAction: (() -> Unit)? = null
+    private var mouseLeaveAction: (() -> Unit)? = null
+    private var hoverAction: ((drawContext: GuiGraphics, textRenderer: Font) -> Unit)? = null
+    private var clickAction: (() -> Unit)? = null
+    private var isHovered: Boolean = false
     var x: Int = 0
     var y: Int = 0
 
@@ -39,7 +39,7 @@ class OverlayTextLine(
         private set
 
     private var height: Int = 0
-    var renderDebugBox: Boolean = false
+    private var renderDebugBox: Boolean = false
     private var condition: () -> Boolean = { true }
 
     private fun getOrderedText(): FormattedCharSequence { // we return FormattedCharSequence instead of FormattedCharSequence? so this can't be a property getter

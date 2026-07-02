@@ -36,7 +36,7 @@ object ClickActionManager {
      * The action is removed after execution to prevent memory leaks.
      * @param id The UUID of the action to execute.
      */
-    fun executeAction(id: UUID) {
+    private fun executeAction(id: UUID) {
         actions.remove(id)?.invoke()
     }
 }

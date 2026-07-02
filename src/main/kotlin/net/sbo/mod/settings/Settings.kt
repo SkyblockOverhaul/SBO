@@ -21,7 +21,7 @@ object Settings : ConfigKt("sbo/config") {
             description = "Opens the GitHub releases page"
             text = "Open"
             onClick {
-                SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO-Kotlin/releases")
+                SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO/releases")
             }
         }
 

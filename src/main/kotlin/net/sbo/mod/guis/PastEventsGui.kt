@@ -251,15 +251,15 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             }.setColor(Color(0,0,0,0)) childOf eventBlock
 
             val rightText = UIBlock().constrain {
-                x = (leftText.getRight()).pixels; y = 10.pixels; width = ChildBasedSizeConstraint(); height = ChildBasedSizeConstraint()
+                x = leftText.getRight().pixels; y = 10.pixels; width = ChildBasedSizeConstraint(); height = ChildBasedSizeConstraint()
             }.setColor(Color(0,0,0,0)) childOf eventBlock
 
             UIText("§aYear: ${event.year}").constrain { x=0.pixels;y=0.pixels;textScale=1.0.pixels }.setColor(Color.WHITE) childOf leftText
             UIText("§ePlaytime: ${Helper.formatTime(event.items.TIME)}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.YELLOW) childOf leftText
             UIText("§6Total Profit: ${Helper.formatNumber(DianaLoot.totalProfit(event))}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.ORANGE) childOf leftText
 
-            UIText("§dChimeras: ${(event.items.CHIMERA + event.items.CHIMERA_LS)}").constrain { x=0.pixels;y=0.pixels;textScale=0.9.pixels }.setColor(Color.CYAN) childOf rightText
-            UIText("§cWools: ${(event.items.SHIMMERING_WOOL + event.items.SHIMMERING_WOOL_LS)}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.RED) childOf rightText
+            UIText("§dChimeras: ${event.items.CHIMERA + event.items.CHIMERA_LS}").constrain { x=0.pixels;y=0.pixels;textScale=0.9.pixels }.setColor(Color.CYAN) childOf rightText
+            UIText("§cWools: ${event.items.SHIMMERING_WOOL + event.items.SHIMMERING_WOOL_LS}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.RED) childOf rightText
             UIText("§7Burrows: ${Helper.formatNumber(event.items.TOTAL_BURROWS)}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.LIGHT_GRAY) childOf rightText
             UIText("§7Mobs: ${Helper.formatNumber(event.mobs.TOTAL_MOBS)}").constrain { x=0.pixels;y=SiblingConstraint(3f);textScale=0.9.pixels }.setColor(Color.LIGHT_GRAY) childOf rightText
 

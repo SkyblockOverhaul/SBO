@@ -204,7 +204,7 @@ object Customization : CategoryKt("Customization") {
         this.slider = true
     }
 
-    var burrowSound by strings("") {
+    var burrowFoundSound by strings("notification") {
         this.name = Literal("Burrow Found Sound")
         this.description = Literal("Set the sound that plays when you find a burrow. (enter filename)")
     }

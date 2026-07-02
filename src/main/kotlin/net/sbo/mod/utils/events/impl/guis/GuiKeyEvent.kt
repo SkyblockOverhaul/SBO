@@ -15,5 +15,5 @@ class GuiKeyEvent(
     val client: Minecraft,
     val screen: Screen,
     val key: Int,
-    val cir: CallbackInfoReturnable<Boolean>
+    private val cir: CallbackInfoReturnable<Boolean>
 )

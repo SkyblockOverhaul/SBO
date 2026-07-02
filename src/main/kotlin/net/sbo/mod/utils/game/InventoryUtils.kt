@@ -32,7 +32,7 @@ object InventoryUtils {
             if (durationHeld > 50) {
                 heldHistory.add(Triple(currentItemId, durationHeld, now))
             }
-            heldHistory.removeAll { (_, _, timestampStopped) -> (now - timestampStopped) > 5000 }
+            heldHistory.removeAll { (_, _, timestampStopped) -> now - timestampStopped > 5000 }
             currentItemId = newItemId
             currentItemStartTime = now
         }
@@ -42,7 +42,7 @@ object InventoryUtils {
      * returns the SkyBlock ID (e.g. "HYPERION") if present,
      * otherwise returns vanilla ID (e.g. "minecraft:iron_sword")
      */
-    fun getInternalName(stack: ItemStack): String {
+    private fun getInternalName(stack: ItemStack): String {
         if (stack.isEmpty) return "AIR"
 
         val lookup = ItemLookup(stack)
@@ -55,7 +55,7 @@ object InventoryUtils {
 
     /**
      * Checks if an item is currently held OR was recently held.
-     * * @param itemId The Item ID (e.g. "HYPERION" or "minecraft:stick")
+     * @param itemId The Item ID (e.g. "HYPERION" or "minecraft:stick")
      * @param duration The minimum time it must have been held (e.g. 500.milliseconds)
      */
     fun isItemHeld(
@@ -66,13 +66,13 @@ object InventoryUtils {
         val requiredMs = duration.inWholeMilliseconds
 
         if (currentItemId.contains(itemId)) {
-            if ((now - currentItemStartTime) >= requiredMs) return true
+            if (now - currentItemStartTime >= requiredMs) return true
         }
 
         return heldHistory.any { (histId, histDuration, stoppedAt) ->
             histId.contains(itemId) &&
             histDuration >= requiredMs &&
-            (now - stoppedAt) <= 200
+            now - stoppedAt <= 200
         }
     }
 }

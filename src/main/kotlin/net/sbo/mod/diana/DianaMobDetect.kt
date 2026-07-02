@@ -1,21 +1,11 @@
 package net.sbo.mod.diana
 
-import net.minecraft.core.component.DataComponents
-import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.component.ResolvableProfile
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.getSecondsPassed
-import net.sbo.mod.utils.Helper.lastCocoon
-import net.sbo.mod.utils.Helper.lastInqDeath
-import net.sbo.mod.utils.Helper.lastKingDeath
-import net.sbo.mod.utils.Helper.lastMantiDeath
-import net.sbo.mod.utils.Helper.lastSphinxDeath
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
@@ -28,18 +18,20 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import kotlin.math.roundToInt
 import net.sbo.mod.utils.Player as SboPlayer
+import java.util.concurrent.TimeUnit
 
 object DianaMobDetect {
-    private const val DEATH_WINDOW_SECONDS = 5
+    private const val MYTHO_MOB_TYPE_CHAR = ""
+    private const val MYTHO_MOB_TYPE_CHAR_2 = "✿" // TODO: Remove once alpha releases to main and resourcepack is forced.
+
     private const val ANNOUNCE_DELAY_MS = 5_000L
 
-    private const val NAME_CHECK_TIMEOUT_MS = 1000L
+    private val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
 
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
@@ -48,7 +40,7 @@ object DianaMobDetect {
     private val defeated = mutableSetOf<Int>()
     private val warned = mutableSetOf<Int>()
 
-    private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, scale = 1f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
+    private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
     internal enum class RareDianaMob(val display: String) {
@@ -75,7 +67,7 @@ object DianaMobDetect {
 
     private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && Diana.hpAlert > 0.0
 
-    val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
+    private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
     private fun fallbackRemovePrefix(mobName: String): String {
         return prefixes.firstOrNull { mobName.startsWith("$it ") }
@@ -86,6 +78,7 @@ object DianaMobDetect {
     fun init() {
         mobHpOverlay.init()
         noShurikenOverlay.init()
+
         Register.onChatMessage(
             Regex("^§a§lCAUGHT!.*?You cocooned a (?<name>.+?)!.*$")
         ) { _, matchResult ->
@@ -111,13 +104,14 @@ object DianaMobDetect {
                 announceCocoon(displayName)
             }
         }
+
         Register.onTick(1) {
             val world = mc.level ?: return@onTick
             val player = mc.player ?: return@onTick
             val overlayLines = mutableListOf<OverlayTextLine>()
 
             val unconfirmedIterator = unconfirmed.iterator()
-            val now = System.currentTimeMillis()
+            val now = System.nanoTime()
 
             while (unconfirmedIterator.hasNext()) {
                 val (id, data) = unconfirmedIterator.next()
@@ -130,16 +124,17 @@ object DianaMobDetect {
                 }
 
                 val name = entity.customName?.formattedString() ?: entity.name.formattedString()
-                if (name.contains("§2✿", ignoreCase = true)) {
+                if (hasMythoMobTypeChar(name)) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
                 }
-                else if (now - spawnTime > NAME_CHECK_TIMEOUT_MS) unconfirmedIterator.remove()
+                else if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) unconfirmedIterator.remove()
             }
 
             var closestStarlessMob: ArmorStand? = null
             var closestDistanceSq = Double.MAX_VALUE
             val trackedIterator = tracked.iterator()
+
             while (trackedIterator.hasNext()) {
                 val (id, armorStand) = trackedIterator.next()
 
@@ -150,12 +145,14 @@ object DianaMobDetect {
                     continue
                 }
 
-                checkDianaMob(armorStand, id)?.let { overlayLines.add(it) }
+                val name = armorStand.customName?.formattedString() ?: armorStand.name.formattedString()
+                checkDianaMob(armorStand, name, id)?.let { overlayLines.add(it) }
 
-                val result = checkStarlessMob(armorStand, id, player, closestStarlessMob, closestDistanceSq)
+                val result = checkStarlessMob(armorStand, name, id, player, closestStarlessMob, closestDistanceSq)
                 closestStarlessMob = result.first
                 closestDistanceSq = result.second
             }
+
             mobHpOverlay.setLines(overlayLines)
 
             if (closestStarlessMob != null) {
@@ -171,7 +168,7 @@ object DianaMobDetect {
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
         if (event.entity is ArmorStand) {
-            unconfirmed[event.entity.id] = event.entity to System.currentTimeMillis()
+            unconfirmed[event.entity.id] = event.entity to System.nanoTime()
         }
     }
 
@@ -183,10 +180,13 @@ object DianaMobDetect {
         }
     }
 
-    private fun checkDianaMob(entity: ArmorStand, id: Int) : OverlayTextLine? {
-        val name = entity.customName?.formattedString() ?: entity.name.formattedString()
+    private fun hasMythoMobTypeChar(name: String): Boolean {
+        return name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true) || name.contains("§2$MYTHO_MOB_TYPE_CHAR_2", ignoreCase = true)
+    }
+
+    private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
         if (name.isEmpty() || name == "Armor Stand") return null
-        if (!name.contains("§2✿", ignoreCase = true)) return null
+        if (!hasMythoMobTypeChar(name)) return null
 
         val health = parseHealthFromName(name)
         maybeTriggerHealthAlert(name, id, health)
@@ -201,13 +201,13 @@ object DianaMobDetect {
 
     private fun checkStarlessMob(
         entity: ArmorStand,
+        name: String,
         id: Int,
         player: Player,
         currentClosest: ArmorStand?,
         currentDistanceSq: Double
     ): Pair<ArmorStand?, Double> {
         if (id in defeated) return currentClosest to currentDistanceSq
-        val name = entity.customName?.formattedString() ?: entity.name.formattedString()
         val mobType = RareDianaMob.fromName(name) ?: return currentClosest to currentDistanceSq
 
         val shouldCheck = when (mobType) {

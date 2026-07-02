@@ -12,6 +12,7 @@ import net.sbo.mod.utils.events.impl.game.InventorySlotUpdateEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 import java.util.regex.Pattern
+import java.util.concurrent.TimeUnit
 
 object Pickuplog {
     data class OverlayLineData(var amount: Int, val name: String, var modified: Long)
@@ -24,7 +25,10 @@ object Pickuplog {
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
-    private val overlay: Overlay = Overlay("pickuplog", 5f, 5f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER), OverlayExamples.pickupLogExample)
+    private val overlay: Overlay = Overlay("pickuplog", 5f, 5f,
+        allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER),
+        exampleView = OverlayExamples.pickupLogExample
+    )
 
     private val itemsShowAdded: MutableList<MutableMap<String, OverlayLineData>> = mutableListOf()
     private val itemsShowRemoved: MutableList<MutableMap<String, OverlayLineData>> = mutableListOf()
@@ -71,7 +75,7 @@ object Pickuplog {
         updateOverlay()
     }
 
-    fun compareInventory() {
+    private fun compareInventory() {
         val purseChange = newPurse - oldPurse
         if (purseChange != 0L) {
             DianaTracker.trackScavengerCoins(purseChange)
@@ -120,8 +124,8 @@ object Pickuplog {
         }
     }
 
-    fun refreshOverlay(itemId: String, name: String, amount: Int) {
-        val currentTime = System.currentTimeMillis()
+    private fun refreshOverlay(itemId: String, name: String, amount: Int) {
+        val currentTime = System.nanoTime()
         if (amount > 0) {
             val existingItem = itemsShowAdded.find { it.containsKey(itemId) }?.get(itemId)
             if (existingItem != null) {
@@ -142,14 +146,14 @@ object Pickuplog {
         updateOverlay()
     }
 
-    fun updateOverlay() {
-        val currentTime = System.currentTimeMillis()
+    private fun updateOverlay() {
+        val currentTime = System.nanoTime()
         val lines = mutableListOf<OverlayTextLine>()
 
         val newAddedList = mutableListOf<MutableMap<String, OverlayLineData>>()
         itemsShowAdded.forEach { map ->
             val (_, data) = map.entries.first()
-            if (currentTime - data.modified <= 6000) {
+            if (currentTime - data.modified <= TimeUnit.MILLISECONDS.toNanos(6000)) {
                 newAddedList.add(map)
                 lines.add(OverlayTextLine("§a+ ${data.amount}x §r${data.name}"))
             }
@@ -160,7 +164,7 @@ object Pickuplog {
         val newRemovedList = mutableListOf<MutableMap<String, OverlayLineData>>()
         itemsShowRemoved.forEach { map ->
             val (_, data) = map.entries.first()
-            if (currentTime - data.modified <= 6000) {
+            if (currentTime - data.modified <= TimeUnit.MILLISECONDS.toNanos(6000)) {
                 newRemovedList.add(map)
                 lines.add(OverlayTextLine("§c- ${-data.amount}x §r${data.name}"))
             }

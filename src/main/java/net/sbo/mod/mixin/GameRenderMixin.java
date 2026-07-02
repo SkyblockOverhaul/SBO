@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRenderMixin {
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V", shift = At.Shift.AFTER))
-    private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, @NonNull CallbackInfo ci, @Local @NonNull GuiGraphics context) {
+    private void afterHudRender(@NonNull final DeltaTracker tickCounter, final boolean tick, @NonNull final CallbackInfo ci, @Local @NonNull final GuiGraphics context) {
         SBOEvent.INSTANCE.emit(new RenderEvent(context));
     }
 }

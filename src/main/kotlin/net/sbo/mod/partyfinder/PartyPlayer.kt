@@ -9,6 +9,7 @@ import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
+import java.util.concurrent.TimeUnit
 
 object PartyPlayer {
     var stats: PartyPlayerStats = PartyPlayerStats()
@@ -18,14 +19,13 @@ object PartyPlayer {
 
     fun init() {
         Register.command("sboreloadstats") {
-            if (System.currentTimeMillis() - cooldown < 2 * 60 * 1000) { // if cooldown is 2 min
+            if (System.nanoTime() - cooldown < TimeUnit.MILLISECONDS.toNanos(2 * 60 * 1000)) { // if cooldown is 2 min
                 Chat.chat("§6[SBO] §cPlease wait before reloading stats again.")
                 return@command
-            } else {
-                cooldown = System.currentTimeMillis()
-                getPartyPlayerStats(true) { stats ->
-                    Chat.chat("§6[SBO] §aPlayer stats reloaded: ${stats.name} (SB Level: ${stats.sbLvl})")
-                }
+            }
+            cooldown = System.nanoTime()
+            getPartyPlayerStats(true) { stats ->
+                Chat.chat("§6[SBO] §aPlayer stats reloaded: ${stats.name} (SB Level: ${stats.sbLvl})")
             }
         }
 
@@ -46,7 +46,7 @@ object PartyPlayer {
     }
 
     fun getPartyPlayerStats(forceRefresh: Boolean = false, callback: (PartyPlayerStats) -> Unit) {
-        if (forceRefresh || System.currentTimeMillis() - lastUpdate > 10 * 60 * 1000) { // 10 minutes
+        if (forceRefresh || System.nanoTime() - lastUpdate > TimeUnit.MILLISECONDS.toNanos(10 * 60 * 1000)) { // 10 minutes
             if (refreshing) {
                 callback(stats)
                 return
@@ -56,7 +56,7 @@ object PartyPlayer {
                 .toJson<PartyInfo>(true) { response ->
                     refreshing = false
                     if (response.success) {
-                        lastUpdate = System.currentTimeMillis()
+                        lastUpdate = System.nanoTime()
                         stats = response.partyInfo.firstOrNull() ?: PartyPlayerStats()
                         if (stats.sbLvl == -1) {
                             Chat.chat("§6[SBO] §cYour stats are not available, please try again later.")

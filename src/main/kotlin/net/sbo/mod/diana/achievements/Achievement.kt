@@ -16,7 +16,7 @@ class Achievement(
     var description: String,
     val rarity: String,
     val previousId: Int? = null,
-    val hidden: Boolean = false,
+    private val hidden: Boolean = false,
     val repeatable: Boolean = false,
 ) {
     val color = AchievementManager.rarityColorDict[rarity] ?: "§f"
@@ -56,7 +56,7 @@ class Achievement(
         achievementsData.totalAchievements[id] = currentTotal + 1
 
 
-        if ((this.repeatable && Debug.repeatableAchie)) {
+        if (this.repeatable && Debug.repeatableAchie) {
             achievementsData.currentEventAchievements[id] = true
             AchievementManager.achievementsUnlockedEvent += 1
         }
@@ -67,23 +67,13 @@ class Achievement(
         showUnlockEffects()
     }
 
-    fun lock() {
-        achievementsData.totalAchievements.remove(id)
-        achievementsData.currentEventAchievements.remove(id)
-        AchievementManager.achievementsUnlockedTotal -= 1
-        if ((this.repeatable && Debug.repeatableAchie)) AchievementManager.achievementsUnlockedEvent -= 1
-        if (this.hidden) {
-            this.description = "§k" + this.description
-        }
-    }
-
     fun loadState() {
         if (isUnlocked(true)) {
             AchievementManager.achievementsUnlockedTotal += 1
         } else {
             if (this.hidden) this.description = "§k" + this.description
         }
-        if ((this.repeatable && Debug.repeatableAchie) && isUnlocked()) {
+        if (this.repeatable && Debug.repeatableAchie && isUnlocked()) {
             AchievementManager.achievementsUnlockedEvent += 1
         }
     }
@@ -92,7 +82,7 @@ class Achievement(
         checkYearReset()
 
         if (!(this.repeatable && Debug.repeatableAchie)) {
-            return (achievementsData.totalAchievements[id] ?: 0) == 0
+            return achievementsData.totalAchievements[id] ?: 0 == 0
         }
         return achievementsData.currentEventAchievements[id] != true
     }
@@ -100,9 +90,9 @@ class Achievement(
     fun isUnlocked(total: Boolean = false): Boolean {
         checkYearReset()
 
-        if ((this.repeatable && Debug.repeatableAchie) && !total) {
+        if (this.repeatable && Debug.repeatableAchie && !total) {
             return achievementsData.currentEventAchievements[id] ?: false
         }
-        return (achievementsData.totalAchievements[id] ?: 0) > 0
+        return achievementsData.totalAchievements[id] ?: 0 > 0
     }
 }

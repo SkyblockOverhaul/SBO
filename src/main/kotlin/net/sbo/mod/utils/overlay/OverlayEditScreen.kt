@@ -34,7 +34,7 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
                 lastMouseY = mouseY
 
                 OverlayManager.overlays.forEach {
-                    it.selected = (it == selectedOverlay)
+                    it.selected = it == selectedOverlay
                 }
             } else {
                 OverlayManager.overlays.forEach { it.selected = false }
@@ -68,7 +68,7 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
         selectedOverlay?.let {
             it.scale = (it.scale + verticalAmount * 0.1f).coerceIn(0.5, 5.0).toFloat()
             overlayData.overlays[it.name]?.scale = it.scale
-            return true
+            return@mouseScrolled true
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
@@ -94,9 +94,9 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
                     it.x += step
                     overlayData.overlays[it.name]?.x = it.x
                 }
-                else -> return super.keyPressed(keyInput)
+                else -> return@keyPressed super.keyPressed(keyInput)
             }
-            return true
+            return@keyPressed true
         }
         return super.keyPressed(keyInput)
     }

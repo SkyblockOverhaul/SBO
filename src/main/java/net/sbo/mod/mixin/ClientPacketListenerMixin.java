@@ -18,17 +18,17 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 @Mixin(ClientPacketListener.class)
 public class ClientPacketListenerMixin {
     @Inject(method = "sendChat", at = @At("HEAD"))
-    private void sbo$onSendMessage(@NonNull String content, @NonNull CallbackInfo ci) {
+    private void sbo$onSendMessage(@NonNull final String content, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new SentMessageEvent(content));
     }
 
     @Inject(method = "sendCommand", at = @At("HEAD"))
-    private void sbo$onSendCommand(@NonNull String command, @NonNull CallbackInfo ci) {
+    private void sbo$onSendCommand(@NonNull final String command, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new SentCommandEvent(command));
     }
 
     @WrapOperation(method = "handleBundlePacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/Packet;handle(Lnet/minecraft/network/PacketListener;)V"))
-    private void wrapPacketHandle(@NonNull Packet<?> packet, @NonNull PacketListener listener, @NonNull Operation<Void> original) {
+    private void wrapPacketHandle(@NonNull final Packet<?> packet, @NonNull final PacketListener listener, @NonNull final Operation<Void> original) {
         SBOEvent.INSTANCE.emit(new PacketReceiveEvent(packet));
         original.call(packet, listener);
     }

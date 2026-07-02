@@ -32,11 +32,11 @@ object PartyCommands {
     //   }
     // For count+percent: use fmt("Label", count, "ITEM_KEY", "MOB_KEY")
 
-    val commandRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
+    private val commandRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
 
     val settings = PartyCommands
 
-    val carrot = listOf(
+    private val carrot = listOf(
         "As I see it, Carrot",
         "It is Carrot",
         "It is decidedly Carrot",
@@ -62,20 +62,20 @@ object PartyCommands {
         partyCommands()
     }
 
-    fun partyCommands() {
+    private fun partyCommands() {
         Register.command("sbopartycommands", "sbopcom") {
             help()
         }
     }
 
-    val helpCommands = listOf(
+    private val helpCommands = listOf(
         "!chim", "!chimls", "!stick", "!relic", "!feathers",
         "!profit", "!playtime", "!mobs", "!burrows", "!mf",
         "!stats <playername>",
         "!since (chim, chimls, relic, stick, inq, king, manti, core, corels, wool, woolls)"
     )
 
-    fun help() {
+    private fun help() {
         Chat.chat("§6[SBO] §eDiana party commands:")
         helpCommands.forEach {
             Chat.chat("§7> §a$it")
@@ -169,7 +169,7 @@ object PartyCommands {
             "Mobs: $totalMobs ($perHr/h)"
         },
         PartyCommand(listOf("!mf", "!magicfind"), { settings.dianaPartyCommands }) {
-            "Wools (${sboData.highestWoolMagicFind}% ✯) Chims (${sboData.highestChimMagicFind}% ✯) Foods (${sboData.highestFoodMagicFind}% ✯) Sticks (${sboData.highestStickMagicFind}% ✯)"
+            "Wool (${sboData.highestWoolMagicFind}% ✯) Manticore (${sboData.highestCoreMagicFind}% ✯) Stinger (${sboData.highestStingerMagicFind}% ✯) Chim (${sboData.highestChimMagicFind}% ✯) Relic (${sboData.highestRelicMagicFind}% ✯) Food (${sboData.highestFoodMagicFind}% ✯) Stick (${sboData.highestStickMagicFind}% ✯)"
         },
         PartyCommand(listOf("!playtime"), { settings.dianaPartyCommands }) {
             "Playtime: ${formatTime(dianaTrackerMayor.items.TIME)}"
@@ -193,7 +193,7 @@ object PartyCommands {
         return "$label: $count ($percent%)"
     }
 
-    fun registerPartyChatListeners() {
+    private fun registerPartyChatListeners() {
         DianaStats.registerReplaceStatsMessage()
         Register.onChatMessage(commandRegex) { message, matchResult ->
             val unformattedPlayerName = matchResult.groupValues[1]
@@ -217,7 +217,7 @@ object PartyCommands {
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
                 "!tps" -> if (settings.tpsCommand) sendResponse("${"%.2f".format(ServerStats.getTps())} TPS")
                 "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
-                    DianaStats.sendPlayerStats(false)
+                    DianaStats.sendPlayerStats()
                 }
                 "!totalstats", "!totalstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     DianaStats.sendPlayerStats(true)

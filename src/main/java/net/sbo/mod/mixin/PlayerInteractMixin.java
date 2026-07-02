@@ -22,9 +22,9 @@ public class PlayerInteractMixin {
     private final @NonNull Minecraft client = Minecraft.getInstance();
 
     @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
-    private void onInteractItem(@NonNull CallbackInfoReturnable<InteractionResult> cir) {
+    private void onInteractItem(@NonNull final CallbackInfoReturnable<InteractionResult> cir) {
         if (client.player != null) {
-            PlayerInteractEvent event = new PlayerInteractEvent(
+            final PlayerInteractEvent event = new PlayerInteractEvent(
                     "useItem", null, client.player, client.player.level(), false
             );
             SBOEvent.INSTANCE.emit(event);
@@ -37,9 +37,9 @@ public class PlayerInteractMixin {
     }
 
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
-    private void onInteractBlock(@NonNull LocalPlayer player, @NonNull InteractionHand hand, @NonNull BlockHitResult hitResult, @NonNull CallbackInfoReturnable<InteractionResult> cir) {
+    private void onInteractBlock(@NonNull final LocalPlayer player, @NonNull final InteractionHand hand, @NonNull final BlockHitResult hitResult, @NonNull final CallbackInfoReturnable<InteractionResult> cir) {
         if (hand == InteractionHand.MAIN_HAND) {
-            PlayerInteractEvent event = new PlayerInteractEvent(
+            final PlayerInteractEvent event = new PlayerInteractEvent(
                     "useBlock", hitResult.getBlockPos(), player, player.level(), false
             );
             SBOEvent.INSTANCE.emit(event);
