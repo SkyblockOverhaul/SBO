@@ -142,9 +142,7 @@ object PartyFinderManager {
             true
         }
 
-        Register.onTick(20 * 60 * 4) { // every 4 minutes
-            Http.sendGetRequest("$API_URL/countActiveUsers")
-
+        Register.onTick(20 * 60 * 10) { // every 10 minutes
             if (inQueue) {
                 Http.sendGetRequest("$API_URL/queueUpdate?leaderId=${Player.getUUIDString().replace("-", "")}")
                     .toJsonObject { response ->

@@ -60,6 +60,8 @@ object Helper {
     private var priceDataAh: Map<String, Long> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
 
+    var notifiedPriceUpdateError = false
+
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
             .ofVirtual()
             .name("sbo-callback-thread-", 1) // sbo-callback-thread-1, sbo-callback-thread-2 etc. starting from 1 (second parameter)
@@ -84,7 +86,7 @@ object Helper {
             hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
         }
 
-        Register.onTick(20 * 60 * 5) {
+        Register.onTick(20 * 60 * 10) {
             updateItemPriceInfo()
         }
 
@@ -576,20 +578,6 @@ object Helper {
     }
 
     private fun updateItemPriceInfo() {
-        Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
-            .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
-                priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
-                DianaLoot.updateLines()
-            }.error { error ->
-                if (priceDataAh.isEmpty()) {
-                    // no price data available - notify user
-                    Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
-                } else {
-                    // if a previous request succeeded and this request failed, it might be temporary, and we still
-                    // have some price data even if outdated. so only log to logs
-                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
-                }
-            }
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse>(true) {
                 priceDataBazaar = it
@@ -602,6 +590,21 @@ object Helper {
                     // if a previous request succeeded and this request failed, it might be temporary, and we still
                     // have some price data even if outdated. so only log to logs
                     SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
+                }
+            }
+        Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
+            .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
+                priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
+                DianaLoot.updateLines()
+            }.error { error ->
+                if (priceDataAh.isEmpty() && !notifiedPriceUpdateError) {
+                    // no price data available - notify user 1 time
+                    Chat.chat("§6[SBO] §cUnexpected error while fetching AH item prices: $error")
+                    notifiedPriceUpdateError = true
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary, and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
                 }
             }
     }

@@ -146,6 +146,8 @@ object WaypointManager {
 
             // Remove all waypoints that are not in radius of typical burrow locations x y z
             this.forEachWaypoint { waypoint ->
+                if (World.getWorld() != "Hub") return@forEachWaypoint
+
                 val underWorld = waypoint.pos.y < 60
                 val aboveWorld = waypoint.pos.y > 105
                 val outsideZ = waypoint.pos.z > 205
@@ -168,13 +170,17 @@ object WaypointManager {
 
             // Remove shovel guesses pointing to invalid burrow locations
             shovelGuesses.forEach { shovelGuess ->
+                if (World.getWorld() != "Hub") return@forEach
+
                 if (!ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
                     removeWaypoint(shovelGuess)
                 }
             }
 
-            // Remove arrow guesses pointing to invalid burrow locations after being existing for over 10 seconds (During 10 seconds period, we hide them instead to give time for moveToNext to do its job)
+            // Remove arrow guesses pointing to invalid burrow locations after being existing for over 15 seconds (During 15 seconds period, we hide them instead to give time for moveToNext to do its job)
             arrowGuesses.forEach { arrowGuess ->
+                if (World.getWorld() != "Hub") return@forEach
+
                 if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
                     if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
                         removeWaypoint(arrowGuess)

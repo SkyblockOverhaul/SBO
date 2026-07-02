@@ -40,7 +40,11 @@ object Chains : DirtyFlushableOverlay() {
         val chains = BurrowDetector.chains
         val chainsColor = colorBasedOnAmount(chains)
 
-        val knownW = WaypointManager.getWaypointsOfType("burrow").filter { !it.hidden && it.text != "Start" }.size
+        val burrowWayps = WaypointManager.getWaypointsOfType("burrow")
+
+        val knownW = burrowWayps.filter { !it.hidden && it.text != "Start" }.size
+        val knownWStart = burrowWayps.filter { it.text == "Start" }.size
+
         val arrowW = WaypointManager.getWaypointsOfType("arrow").filter { !it.hidden && !it.inaccurateArrow }.size
 
         val waypoints = knownW + arrowW
@@ -82,7 +86,7 @@ object Chains : DirtyFlushableOverlay() {
         lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Chains"))
 
         // TODO: sometimes max is 8 due to close burrow detection, but it does not held up, 7 seems to be most common. maybe update when confirmed fully
-        lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/7-8"))
+        lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/7-8 ($knownWStart pending start)"))
         lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/7-8 ($knownW known, $arrowW arrow)"))
 
         // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly

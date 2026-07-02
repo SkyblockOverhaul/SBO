@@ -11,6 +11,7 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.NumberUtil.roundTo
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.collection.TimeLimitedSet
+import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.TickEvent
@@ -79,9 +80,10 @@ object ArrowGuessBurrow {
     }
 
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
-    private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
 
-    private var lastBlockClicked: SboVec? = null
+    private var spadeTitleShown = false
+
+    private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
 
     val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
 
@@ -126,7 +128,7 @@ object ArrowGuessBurrow {
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)
-        if (!location.isCloseToLastBurrow()) return
+        if (!location.isCloseToLastBurrow() && packet.distanceToPlayer() >= 7) return
 
         val range = getArrowRange(packet.xDist, packet.yDist, packet.zDist) ?: return
         locations.add(location)
@@ -144,8 +146,6 @@ object ArrowGuessBurrow {
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
         if (!Diana.arrowGuess) return
-        if (event.lastBlock == null) return
-        lastBlockClicked = event.lastBlock
 
         val currentChain = event.currentBurrow
         val maxChain = event.maxBurrow
@@ -153,8 +153,6 @@ object ArrowGuessBurrow {
         if (currentChain != maxChain) {
             locations.clear()
         }
-
-        if (currentChain == 1) return
     }
 
     private fun detectArrow(): RaycastUtils.Ray? {
@@ -379,7 +377,7 @@ object ArrowGuessBurrow {
         return parameters is DustParticleOptions
     }
 
-    private fun SboVec.isCloseToLastBurrow(): Boolean = lastBlockClicked?.let { this.distanceTo(it) <= 6 } ?: false
+    private fun SboVec.isCloseToLastBurrow(): Boolean = DianaEvents.lastWaypointClicked?.let { this.distanceTo(it) <= 7 } ?: true // null at startup then never null, pass condition if its null since we do not know but it is probably close
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this

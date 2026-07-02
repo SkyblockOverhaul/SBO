@@ -22,7 +22,7 @@ object Guis {
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
-    private val UPDATE_INTERVAL = TimeUnit.MILLISECONDS.toNanos(300_000L) // 5 minutes in ns
+    private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(10L)
 
     fun openSboPf(calledFromGUI: Boolean = false) {
         if (!World.isInSkyblock()) {

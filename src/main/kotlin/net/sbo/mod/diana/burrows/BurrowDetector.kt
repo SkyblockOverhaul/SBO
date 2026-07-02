@@ -52,6 +52,7 @@ object BurrowDetector {
             WaypointManager.removeAllOfType("burrow")
             burrows.clear()
             ArrowGuessBurrow.allGuesses.clear()
+            chainExpirations.clear()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
