@@ -36,7 +36,6 @@ object Http {
     private val CLIENT: HttpClient = HttpClient.newBuilder()
         .executor(EXECUTOR)
         .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
-        .version(HTTP_3_OR_2)
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
 
@@ -48,6 +47,12 @@ object Http {
         }
     }
 
+    private val HTTP2_ONLY = setOf(
+        // Unfortunately, the backend does not yet support HTTP/3 it seems and JDK's HTTP/3 implementation seems to not correctly fallback into HTTP/2 with it. Bazaar and Election API of Hypixel successfully make use of it, though, so we should keep it for these.
+        "skyblockoverhaul.com",
+        "api.skyblockoverhaul.com"
+    )
+
     /**
      * Sends an asynchronous HTTP GET request.
      *
@@ -57,8 +62,12 @@ object Http {
     fun sendGetRequest(urlString: String): HttpRequestHandle {
         val handle = HttpRequestHandle()
 
+        val uri = URI.create(urlString)
+        val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
+
         val request = HttpRequest.newBuilder()
-            .uri(URI.create(urlString))
+            .version(httpVersion)
+            .uri(uri)
             .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
             .header("User-Agent", USER_AGENT)
             .GET()
