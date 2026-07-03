@@ -25,18 +25,33 @@ object Http {
     private val EXECUTOR: ExecutorService = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors() * 2,
         ThreadFactory { runnable ->
-            Thread(runnable, "SBO HTTP").apply {
+            Thread(runnable, "SBO Http Request Thread").apply {
                 isDaemon = true
             }
         }
     )
 
+    private val HTTP_3_OR_2: HttpClient.Version = http3WithFallback()
+
     private val CLIENT: HttpClient = HttpClient.newBuilder()
         .executor(EXECUTOR)
         .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
-        .version(HttpClient.Version.HTTP_2)
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
+
+    private fun http3WithFallback(): HttpClient.Version {
+        try {
+            return HttpClient.Version.valueOf("HTTP_3") // Available since Java 26 (JEP 517: HTTP/3 for the HTTP Client API)
+        } catch (ignored: IllegalArgumentException) {
+            return HttpClient.Version.HTTP_2 // Fallback to baseline of HTTP/2
+        }
+    }
+
+    private val HTTP2_ONLY = setOf(
+        // Unfortunately, the backend does not yet support HTTP/3 it seems and JDK's HTTP/3 implementation seems to not correctly fallback into HTTP/2 with it. Bazaar and Election API of Hypixel successfully make use of it, though, so we should keep it for these.
+        "skyblockoverhaul.com",
+        "api.skyblockoverhaul.com"
+    )
 
     /**
      * Sends an asynchronous HTTP GET request.
@@ -47,14 +62,12 @@ object Http {
     fun sendGetRequest(urlString: String): HttpRequestHandle {
         val handle = HttpRequestHandle()
 
-        val httpVersion = try {
-            HttpClient.Version.valueOf("HTTP_3") // Available since Java 26
-        } catch (ignored: IllegalArgumentException) {
-            HttpClient.Version.HTTP_2 // Fallback to baseline of HTTP/2
-        }
+        val uri = URI.create(urlString)
+        val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
 
         val request = HttpRequest.newBuilder()
-            .uri(URI.create(urlString))
+            .version(httpVersion)
+            .uri(uri)
             .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
             .header("User-Agent", USER_AGENT)
             .GET()

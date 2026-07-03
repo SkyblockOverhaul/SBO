@@ -14,7 +14,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 private const val MIN_OPACITY = 0.2f
-private const val MAX_OPACITY = 0.99f
+private const val MAX_OPACITY = 1.0f
 private const val FADE_START_DISTANCE = 4.5
 private const val FADE_END_DISTANCE = 100.0
 
@@ -48,7 +48,7 @@ class Waypoint(
     var isClosest = false
     var timesDug = 0
     var userInteractedWith = false
-    private var dynamicOpacity = 0.99f
+    private var dynamicOpacity = 1.0f
     var inaccurateArrow = false
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
@@ -179,7 +179,7 @@ class Waypoint(
         inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
-        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 0.99f)
+        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0.2f, 1.0f)
 
         val dist = distanceRaw.roundToInt()
 

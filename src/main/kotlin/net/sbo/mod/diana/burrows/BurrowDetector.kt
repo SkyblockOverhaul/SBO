@@ -117,6 +117,8 @@ object BurrowDetector {
     }
 
     fun requestSpade(reason: String) {
+        if (World.getWorld() != "Hub") return
+
         val color = if (reason == "failure") "c" else "e"
         Helper.showTitle("§${color}Use Spade!", "", 0, 60, 0)
         Chat.chat("§6[SBO] §${color}Use spade!")
