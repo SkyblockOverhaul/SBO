@@ -10,7 +10,6 @@ import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
-import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.RareMobHighlight
