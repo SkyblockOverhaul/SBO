@@ -15,9 +15,9 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.regex.Pattern
 
 object DianaEvents {
-    var lastBlockClicked: SboVec? = null
+    private var lastBlockClicked: SboVec? = null
     var lastWaypointClicked: SboVec? = null
-    var lastBurrowClicked: SboVec? = null
+    private var lastBurrowClicked: SboVec? = null
 
     internal fun init() {
         registerBurrowDug()

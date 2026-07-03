@@ -39,7 +39,7 @@ object SphinxSolver {
     }
 
 
-    fun detectQuestion() {
+    private fun detectQuestion() {
         Register.onChatMessageCancelable(
             Pattern.compile("^(.*?)$", Pattern.DOTALL)
         ) { message, matchResult ->

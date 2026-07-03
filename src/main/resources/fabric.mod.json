@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
-  "custom": {
-    "modmenu": {
-      "update_checker": true,
-      "links": {
-        "Website": "https://skyblockoverhaul.com/",
-        "Patreon": "https://www.patreon.com/Skyblock_Overhaul",
-        "Discord Link": "https://discord.gg/QvM6b9jsJD"
-      }
-    }
-  },
   "id": "${mod_id}",
   "version": "${mod_version}",
   "name": "${mod_name}",
   "description": "${mod_description}",
   "authors": [
-    "D4rkSwift/Saotzuri",
-    "RolexDE"
+    {
+      "name": "D4rkSwift/Saotzuri",
+      "contact": {
+        "homepage": "https://github.com/Saotzuri"
+      }
+    },
+    {
+      "name": "RolexDE",
+      "contact": {
+        "homepage": "https://github.com/RolexDE"
+      }
+    }
   ],
   "contact": {
-    "homepage": "https://skyblockoverhaul.com/",
-    "sources": "https://github.com/SkyblockOverhaul/SBO-Kotlin",
-    "issues": "https://github.com/SkyblockOverhaul/SBO-Kotlin/issues"
+    "homepage": "https://skyblockoverhaul.com",
+    "sources": "https://github.com/SkyblockOverhaul/SBO",
+    "issues": "https://github.com/SkyblockOverhaul/SBO/issues"
   },
-  "license": "Apache License 2.0",
+  "license": "Apache-2.0",
   "icon": "assets/sbo/icon.png",
   "environment": "client",
   "entrypoints": {
@@ -52,5 +52,17 @@
     "resourcefulconfig": ">=${resourcefulconfig_version}",
     "resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
     "universalcraft": ">=${universalcraft_version}"
+  },
+  "custom": {
+    "modmenu": {
+      "update_checker": true,
+      "links": {
+        "modmenu.website": "https://skyblockoverhaul.com/",
+        "modmenu.patreon": "https://www.patreon.com/Skyblock_Overhaul",
+        "modmenu.discord": "https://discord.com/invite/QvM6b9jsJD",
+        "modmenu.github_releases": "https://github.com/SkyblockOverhaul/SBO/releases",
+        "modmenu.modrinth": "https://modrinth.com/mod/skyblock-overhaul"
+      }
+    }
   }
 }

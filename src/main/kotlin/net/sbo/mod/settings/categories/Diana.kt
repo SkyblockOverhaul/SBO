@@ -98,6 +98,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a title to guess normally when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby")
     }
 
+    var ongoingChainsDisplay by boolean(false) {
+        this.name = Literal("Ongoing Chains Display")
+        this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time, rarely 8 although one will finish very fast, going back to 7.")
+    }
+
     init {
         separator {
             this.title = "Diana Warp"

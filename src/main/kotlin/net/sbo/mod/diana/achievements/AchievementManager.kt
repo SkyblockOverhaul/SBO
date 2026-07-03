@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.utils.Helper
@@ -80,7 +81,7 @@ object AchievementManager {
         // Register.onChatMessage()
     }
 
-    fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true) {
+    private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true) {
         if (achievements.containsKey(id)) {
             throw RuntimeException("Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}")
         }
@@ -89,7 +90,7 @@ object AchievementManager {
         achievement.loadState()
     }
 
-    fun getAchievement(id: Int): Achievement? {
+    private fun getAchievement(id: Int): Achievement? {
         return achievements[id]
     }
 
@@ -123,7 +124,7 @@ object AchievementManager {
         }
     }
 
-    fun backTrackAchievements() { // todo: needs rework because of new data structure
+    private fun backTrackAchievements() { // todo: needs rework because of new data structure
         Chat.chat("§6[SBO] §eBacktracking Achievements...")
         pastDianaEventsData.events.forEach { eventData ->
             trackAchievementsItem(eventData)
@@ -348,19 +349,35 @@ object AchievementManager {
         }
     }
 
-    val COA_MF_PATTERN = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")
+    // The first pattern is with the Hypixel Skyblock Resourcepack, second one is before the resourcepack was added.
+    private val COA_MF_PATTERN: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!
+    private val COA_MF_PATTERN_2: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")!! // TODO: Remove once alpha releases to main and resourcepack is forced.
 
-    fun trackCOA() {
+    private fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
         val lookup = ItemLookup(helmet)
         if (!lookup.displayName.contains("Crown of Avarice")) return
 
         unlockAchievement(121)
 
-        val mf = lookup.loreList
+        val loreLines = lookup.loreList
             .map { it.removeFormatting() }
-            .getValueFromLine(COA_MF_PATTERN)
-            .toDouble()
+
+        val mfStr = loreLines.getValueFromLine(COA_MF_PATTERN)
+        val mfStr2 = loreLines.getValueFromLine(COA_MF_PATTERN_2)
+
+        val mf = if (mfStr.isNotEmpty()) mfStr.toDouble() else if (mfStr2.isNotEmpty()) mfStr2.toDouble() else -1
+
+        if (mf == -1) {
+            // Notify user to not be a silent failure point. Full lines are only logged to logs and not chat as it's long.
+            Chat.chat("§6[SBO] §cFailed to determine how much Magic Find your CoA gives for the 1B CoA achievement. Logs will have more information.")
+
+            logger.warn("Failed to determine how much Magic Find users CoA gives for the 1B CoA achievement - CoA lore lines:")
+
+            loreLines.forEach {
+                logger.warn(it)
+            }
+        }
 
         when (mf) {
             25.0 -> unlockAchievement(124)
@@ -430,13 +447,13 @@ object AchievementManager {
         }
     }
 
-    fun kingSoul() {
+    private fun kingSoul() {
         Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
             if (matchResult.groupValues[0].contains("King Minos")) unlockAchievement(118)
         }
     }
 
-    fun addAllAchievements() {
+    private fun addAllAchievements() {
         // inquisitor
         addAchievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic")
         addAchievement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine")

@@ -20,11 +20,13 @@ import java.util.concurrent.TimeUnit
 
 object DianaLoot : DirtyFlushableOverlay() {
     private var isSellTypeHovered = false
-    val timerLine: OverlayTextLine = OverlayTextLine("")
-    override val overlay = Overlay("Diana Loot", 10f, 10f, 1f, listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER))
+    private val timerLine: OverlayTextLine = OverlayTextLine("")
+    override val overlay = Overlay("Diana Loot", 10f, 10f,
+        allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
+    )
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
 
-    val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
+    private val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "${YELLOW}Change View",
         hoverText = "$YELLOW${UNDERLINE}Change View",
         defaultText = "${YELLOW}Change View",
@@ -35,9 +37,9 @@ object DianaLoot : DirtyFlushableOverlay() {
         lineBreak = false
     )
 
-    val delimiter = OverlayTextLine(" | ", linebreak = false)
+    private val delimiter = OverlayTextLine(" | ", linebreak = false)
 
-    val changeSellType: OverlayTextLine = OverlayUtils.createClickableTextLine(
+    private val changeSellType: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "",
         onClick = {
             Diana.bazaarSettingDiana = Diana.bazaarSettingDiana.next()
@@ -53,7 +55,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         }
     )
 
-    val resetSession = OverlayUtils.createClickableTextLine(
+    private val resetSession = OverlayUtils.createClickableTextLine(
         text = "${RED}Reset Session",
         hoverText = "$RED${UNDERLINE}Reset Session",
         defaultText = "${RED}Reset Session",
@@ -124,14 +126,14 @@ object DianaLoot : DirtyFlushableOverlay() {
         }
     }
 
-    fun hideLine(name: String) {
+    private fun hideLine(name: String) {
         if (!isCraftingScreenOpen()) return
         val hideList = SBOConfigBundle.sboData.hideTrackerLines
         if (hideList.contains(name)) hideList.remove(name) else hideList.add(name)
         updateLines()
     }
 
-    fun createLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
+    private fun createLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
         val itemName = data.id
         val amount = tracker.getAmountOf(itemName)
         val formattedName = "${data.color}${data.name}: ${AQUA}${Helper.formatNumber(amount, true)}"
@@ -153,7 +155,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         return line
     }
 
-    fun createCombinedLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
+    private fun createCombinedLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
         val itemNameBase = data.id
         val itemNameLs = "${data.id}_LS"
         val amountBase = tracker.getAmountOf(itemNameBase)
@@ -200,7 +202,7 @@ object DianaLoot : DirtyFlushableOverlay() {
     override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.lootTracker
         val tracker = getDianaTracker(type) ?: run {
-            return emptyList()
+            return@generateLines emptyList()
         }
 
         val isCraftingOpen = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
@@ -277,8 +279,6 @@ object DianaLoot : DirtyFlushableOverlay() {
         val profitPerHr = if (playTimeHrs > 0) Helper.formatNumber(totalProfitValue / playTimeHrs) else 0.0
         val profitPerBurrow = if (totalBurrows > 0) Helper.formatNumber(totalProfitValue / totalBurrows) else 0.0
 
-        val screenOpen = isCraftingOpen || isCraftingScreenOpen()
-
         val stats = mutableListOf(
             OverlayTextLine("${GRAY}Total Burrows: $AQUA${Helper.formatNumber(totalBurrows, true)}$bphText"),
             createCoinLine(tracker),
@@ -337,7 +337,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
     }
 
-    fun updateTimerText() {
+    private fun updateTimerText() {
         val type = Diana.lootTracker
         val tracker = when (type) {
             Diana.Tracker.TOTAL -> SBOConfigBundle.dianaTrackerTotalData

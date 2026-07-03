@@ -24,6 +24,7 @@ import net.sbo.mod.utils.http.Http.getInt
 import net.sbo.mod.utils.http.Http.getString
 import java.util.*
 import java.util.regex.Pattern
+import java.util.concurrent.TimeUnit
 
 object PartyFinderManager {
     var creatingParty = false
@@ -142,8 +143,6 @@ object PartyFinderManager {
         }
 
         Register.onTick(20 * 60 * 4) { // every 4 minutes
-            Http.sendGetRequest("$API_URL/countActiveUsers")
-
             if (inQueue) {
                 Http.sendGetRequest("$API_URL/queueUpdate?leaderId=${Player.getUUIDString().replace("-", "")}")
                     .toJsonObject { response ->
@@ -199,7 +198,7 @@ object PartyFinderManager {
         HypixelModApi.sendPartyInfoPacket(true)
     }
 
-    fun queueParty() {
+    private fun queueParty() {
         if (!this.creatingParty) return
         creatingParty = false
         if (partyMember.size > partySize) {
@@ -216,7 +215,7 @@ object PartyFinderManager {
         }
 
         try {
-            val currentTime = System.currentTimeMillis()
+            val currentTime = System.nanoTime()
             Http.sendGetRequest(
                 "$API_URL/createParty?uuids=${partyMember.joinToString(",").replace("-", "")}" +
                         "&reqs=$partyReqs" +
@@ -226,7 +225,7 @@ object PartyFinderManager {
                         "&key=${sboData.sboKey}"
             ).toJson<PartyAddResponse>(true) { response ->
                 if (response.success) {
-                    val timeTaken = System.currentTimeMillis() - currentTime
+                    val timeTaken = System.nanoTime() - currentTime
                     inQueue = true
                     creatingParty = false
                     partyReqsMap = response.partyReqs!!
@@ -242,7 +241,7 @@ object PartyFinderManager {
                         Chat.clickableChat("§6[SBO] §eClick to dequeue party", "Dequeue Party", "/sbodequeue")
                     }
 
-                    Chat.chat("§6[SBO] §eParty created successfully! Time taken: ${timeTaken}ms")
+                    Chat.chat("§6[SBO] §eParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
 
                     if (isInParty) Chat.pc("[SBO] Party now in queue.")
                 } else {
@@ -260,12 +259,12 @@ object PartyFinderManager {
         }
     }
 
-    fun updateParty() {
+    private fun updateParty() {
         if (!this.updateBool) return
         updateBool = false
         if (inQueue && isInParty && isLeader) {
             if (partyMember.size !in 2..<partySize) return
-            val currentTime = System.currentTimeMillis()
+            val currentTime = System.nanoTime()
             Http.sendGetRequest(
                 "$API_URL/queuePartyUpdate?uuids=${partyMember.joinToString(",").replace("-", "")}" +
                         "&reqs=$partyReqs" +
@@ -275,9 +274,9 @@ object PartyFinderManager {
                         "&key=${sboData.sboKey}"
             ).toJson<PartyUpdateResponse>(true) { response ->
                 if (response.success) {
-                    val timeTaken = System.currentTimeMillis() - currentTime
+                    val timeTaken = System.nanoTime() - currentTime
                     partyReqsMap = response.partyReqs!!
-                    Chat.chat("§6[SBO] §eParty updated successfully! Time taken: ${timeTaken}ms")
+                    Chat.chat("§6[SBO] §eParty updated successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
                 } else {
                     inQueue = false
                     val errorMessage = response.error ?: "Unknown error"
@@ -317,7 +316,7 @@ object PartyFinderManager {
     }
 
     // todo: add a way to prevent inviting more player then party has space (maybe every user has 10 seconds to accept else next player gets invited)
-    fun invitePlayerIfMeetsReqs(playerName: String) {
+    private fun invitePlayerIfMeetsReqs(playerName: String) {
         PartyCheck.checkPlayer(playerName, true) { stats ->
             if (checkIfPlayerMeetsReqs(stats, partyReqsMap)) {
                 if (partyMemberCount < partySize) {
@@ -328,7 +327,7 @@ object PartyFinderManager {
         }
     }
 
-    fun checkIfPlayerMeetsReqs(
+    private fun checkIfPlayerMeetsReqs(
         stats: PartyPlayerStats,
         reqs: Reqs
     ): Boolean {
@@ -344,10 +343,7 @@ object PartyFinderManager {
         if (reqs.looting5 && !stats.looting5daxe) {
             return false
         }
-        if (stats.magicalPower < reqs.mp) {
-            return false
-        }
-        return true
+        return stats.magicalPower >= reqs.mp
     }
 
     fun sendJoinRequest(
@@ -356,12 +352,15 @@ object PartyFinderManager {
     ) {
         getPartyPlayerStats { playerStats ->
             if (checkIfPlayerMeetsReqs(playerStats, partyReqs)) {
-                if (playersSentRequest.containsKey(partyLeader) && (System.currentTimeMillis() - playersSentRequest[partyLeader]!! < 60000)) { // 1 minute cooldown
+                if (playersSentRequest.containsKey(partyLeader) && System.nanoTime() - playersSentRequest[partyLeader]!! < TimeUnit.MILLISECONDS.toNanos(
+                        60000
+                    )
+                ) { // 1 minute cooldown
                     Chat.chat("§6[SBO] §cYou have already sent a request to this player recently.")
                 } else {
                     Chat.chat("§6[SBO] §eSending join request to $partyLeader...")
                     Chat.command("msg $partyLeader [SBO] join party request - id:${UUID.randomUUID()}")
-                    playersSentRequest[partyLeader] = System.currentTimeMillis()
+                    playersSentRequest[partyLeader] = System.nanoTime()
                 }
             } else {
                 Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party.")
@@ -424,7 +423,7 @@ object PartyFinderManager {
         if (match) trackMemberCount()
     }
 
-    fun trackMemberCount() {
+    private fun trackMemberCount() {
         if (inQueue) {
             if (partyMemberCount >= partySize) {
                 sleep(100) {
@@ -454,7 +453,7 @@ object PartyFinderManager {
         }
     }
 
-    fun checkPartyNote(note: String): String {
+    private fun checkPartyNote(note: String): String {
         // allowed characters a-z, A-Z, 0-9, comma, dot, exclamation mark, hyphen, underscore, question mark
         return note.replace(Regex("[^a-zA-Z0-9 ,.!?\\-_]"), "")
             .take(30)

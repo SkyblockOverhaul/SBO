@@ -18,7 +18,6 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
@@ -88,7 +87,7 @@ object RenderUtils3D {
         val g = (colorComponents[1].coerceIn(0f, 1f) * 255).toInt()
         val b = (colorComponents[2].coerceIn(0f, 1f) * 255).toInt()
         val a = (alpha.coerceIn(0f, 1f) * 255).toInt()
-        val argbColor = (a shl 24) or (r shl 16) or (g shl 8) or b
+        val argbColor = a shl 24 or (r shl 16) or (g shl 8) or b
         val bPos = pos.toBlockPos().immutable()
         Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
     }
@@ -231,7 +230,7 @@ object RenderUtils3D {
         ctx.pushPop {
             translate(
                 vec.x - cameraPos.x,
-                (vec.y + 1.0) - cameraPos.y,
+                vec.y + 1.0 - cameraPos.y,
                 vec.z - cameraPos.z
             )
 

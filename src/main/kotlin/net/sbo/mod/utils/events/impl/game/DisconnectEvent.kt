@@ -8,4 +8,4 @@ import net.minecraft.client.multiplayer.ClientPacketListener
  * @param handler The ClientPlayNetworkHandler instance.
  * @param mc The MinecraftClient instance.
  */
-class DisconnectEvent(val handler: ClientPacketListener, val mc: Minecraft)
+class DisconnectEvent(private val handler: ClientPacketListener, val mc: Minecraft)

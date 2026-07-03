@@ -8,8 +8,7 @@ object World {
      * If the world name is not found, it returns "None".
      */
     fun getWorld(): String {
-        val worldName = TabList.findInfo("Area: ") ?: "None"
-        return worldName
+        return TabList.findInfo("Area: ") ?: "None"
     }
 
     /**
