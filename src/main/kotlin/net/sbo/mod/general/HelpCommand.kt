@@ -33,6 +33,7 @@ object HelpCommand {
         mapOf("cmd" to "sboresetstatstracker", "desc" to "Resets the stats tracker"),
         mapOf("cmd" to "sboKey", "desc" to "Set your sbokey"),
         mapOf("cmd" to "sboClearKey", "desc" to "Reset your sbokey"),
+        mapOf("cmd" to "sbotestmedalclip [chimera|wool|brainfood|relic|all]", "desc" to "Test Medal clip saving"),
         mapOf("cmd" to "sbots <sound> [volume]", "desc" to "Test a custom sound (use filename without .ogg)")
     )
 

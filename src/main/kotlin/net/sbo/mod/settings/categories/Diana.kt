@@ -570,4 +570,72 @@ object Diana : CategoryKt("Diana") {
                 "Theres also the option to us a keybind in the mc keybinds menu but §c⚠ USE AT YOUR OWN RISK ⚠"
         )
     }
+
+    init {
+        separator {
+            this.title = "Medal Clips"
+            this.description = "Saves Medal clips on Diana rare drops. Requires Medal to be running locally."
+        }
+    }
+
+    var medalEnabled by boolean(false) {
+        this.name = Literal("Enable Medal Clips")
+        this.description = Literal("Saves Medal clips on Chimera, Shimmering Wool, Brain Food, and Minos Relic drops")
+    }
+
+    var medalChimeraClipDurationSeconds by int(30) {
+        this.range = 1..120
+        this.slider = true
+        this.name = Literal("Chimera Clip Duration (seconds)")
+        this.description = Literal("How long the Chimera Medal clip should be")
+    }
+
+    var medalChimeraCaptureDelayMs by int(10000) {
+        this.range = 0..60000
+        this.slider = true
+        this.name = Literal("Chimera Capture Delay (ms)")
+        this.description = Literal("Delay before Medal captures the Chimera clip")
+    }
+
+    var medalWoolClipDurationSeconds by int(30) {
+        this.range = 1..120
+        this.slider = true
+        this.name = Literal("Shimmering Wool Clip Duration (seconds)")
+        this.description = Literal("How long the Shimmering Wool Medal clip should be")
+    }
+
+    var medalWoolCaptureDelayMs by int(10000) {
+        this.range = 0..60000
+        this.slider = true
+        this.name = Literal("Shimmering Wool Capture Delay (ms)")
+        this.description = Literal("Delay before Medal captures the Shimmering Wool clip")
+    }
+
+    var medalBrainFoodClipDurationSeconds by int(30) {
+        this.range = 1..120
+        this.slider = true
+        this.name = Literal("Brain Food Clip Duration (seconds)")
+        this.description = Literal("How long the Brain Food Medal clip should be")
+    }
+
+    var medalBrainFoodCaptureDelayMs by int(10000) {
+        this.range = 0..60000
+        this.slider = true
+        this.name = Literal("Brain Food Capture Delay (ms)")
+        this.description = Literal("Delay before Medal captures the Brain Food clip")
+    }
+
+    var medalMinosRelicClipDurationSeconds by int(30) {
+        this.range = 1..120
+        this.slider = true
+        this.name = Literal("Minos Relic Clip Duration (seconds)")
+        this.description = Literal("How long the Minos Relic Medal clip should be")
+    }
+
+    var medalMinosRelicCaptureDelayMs by int(10000) {
+        this.range = 0..60000
+        this.slider = true
+        this.name = Literal("Minos Relic Capture Delay (ms)")
+        this.description = Literal("Delay before Medal captures the Minos Relic clip")
+    }
 }

@@ -34,7 +34,7 @@ object Mayor {
     private var refreshingMayor: Boolean = false
     private var newMayor: Boolean = false
     private var outDatedApi: Boolean = false
-    private var sbYear: Int = 0
+    var sbYear: Int = 0
     var mayorElectedYear = 0
 
     fun init() {

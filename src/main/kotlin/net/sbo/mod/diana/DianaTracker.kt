@@ -34,6 +34,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.World.isInSkyblock
+import net.sbo.mod.utils.medal.MedalIntegration
 import java.util.regex.Pattern
 
 object DianaTracker {
@@ -67,6 +68,10 @@ object DianaTracker {
             SboDataObject.save("SboData")
             SboTimerManager.timerSession.reset()
             DianaStats.updateLines()
+        }
+
+        Register.command("sbotestmedalclip", "sbomedaltest") { args ->
+            MedalIntegration.testClip(args.firstOrNull())
         }
 
         Register.onChatMessageCancelable(
@@ -376,6 +381,7 @@ object DianaTracker {
         when {
             drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
                 playCustomSound(Customization.woolSound[0], Customization.woolVolume)
+                MedalIntegration.saveWoolClip()
                 onRareDrop("Shimmering Wool", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
@@ -508,6 +514,7 @@ object DianaTracker {
                 if (!drop.contains("Chimera")) return
 
                 playCustomSound(Customization.chimSound[0], Customization.chimVolume)
+                MedalIntegration.saveChimeraClip()
                 onRareDrop("Chimera", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
@@ -557,6 +564,7 @@ object DianaTracker {
             }
             drop.contains("Brain Food") -> { // todo: add achievements for food
                 playCustomSound(Customization.bfSound[0], Customization.bfVolume)
+                MedalIntegration.saveBrainFoodClip()
                 onRareDrop("Brain Food", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
@@ -623,6 +631,7 @@ object DianaTracker {
             }
             drop.contains("Minos Relic") -> {
                 playCustomSound(Customization.relicSound[0], Customization.relicVolume)
+                MedalIntegration.saveMinosRelicClip()
                 onRareDrop("Minos Relic", showMessageOrTitle = true,
                     trackLootshare = false,
                     magicFind = magicfind
