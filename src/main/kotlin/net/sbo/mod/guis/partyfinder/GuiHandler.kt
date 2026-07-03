@@ -41,7 +41,7 @@ object GuiHandler {
         rounded: Boolean = false,
         roundness: Float = 5f
     ) {
-        val uiObject: UIComponent = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
+        private val uiObject: UIComponent = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
 
         fun get(): UIComponent = uiObject
 
@@ -141,7 +141,7 @@ object GuiHandler {
     ) {
         private lateinit var onClick: () -> Unit
 
-        var checked: Boolean = if (filter) {
+        private var checked: Boolean = if (filter) {
             when (list) {
                 "diana" -> when (key) {
                     "eman9Filter" -> pfConfigState.filters.diana.eman9Filter
@@ -244,13 +244,13 @@ object GuiHandler {
         roundness: Float = 5f
     ) {
         internal var onlyNumbers = false
-        internal var onlyText = false
-        internal var lastValidText = getValue()
+        private var onlyText = false
+        private var lastValidText = getValue()
         internal var maxChars = 0
 
         internal var text = ""
-        internal var textSet = false
-        internal val textInput = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
+        private var textSet = false
+        private val textInput = if (rounded) UIRoundedRectangle(roundness) else UIBlock()
         internal val textInputText = UITextInput("", true)
 
         fun getValue(): String {
@@ -327,7 +327,7 @@ object GuiHandler {
                     textInputText.setText(lastValidText)
                     return@onKeyType
                 }
-                if (onlyText && (!typedChar.isLetterOrDigit() && typedChar != ' ')) {
+                if (onlyText && !typedChar.isLetterOrDigit() && typedChar != ' ') {
                     textInputText.setText(lastValidText)
                     return@onKeyType
                 }

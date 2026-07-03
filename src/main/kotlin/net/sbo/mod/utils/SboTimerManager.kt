@@ -3,6 +3,7 @@ package net.sbo.mod.utils
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
@@ -12,15 +13,12 @@ import java.util.concurrent.TimeUnit
 object SboTimerManager {
     internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
     val timerMayor = SBOTimer(
-        name = "Mayor",
         tracker = SboDataObject.dianaTrackerMayor
     )
     val timerTotal = SBOTimer(
-        name = "Total",
         tracker = SboDataObject.dianaTrackerTotal
     )
     val timerSession = SBOTimer(
-        name = "Session",
         tracker = SboDataObject.dianaTrackerSession
     )
 
@@ -54,7 +52,6 @@ object SboTimerManager {
     }
 
     class SBOTimer(
-        val name: String,
         private val tracker: DianaTracker
     ) {
         companion object {
@@ -119,6 +116,10 @@ object SboTimerManager {
                 tracker.items.TIME =
                     TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
 
+                if (this == timerTotal) { // message is sent three times otherwise for each timer
+                    Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.")
+                }
+
                 pause()
             }
         }
@@ -165,7 +166,7 @@ object SboTimerManager {
             stopInactivityCheck()
         }
 
-        fun getElapsedNanos(): Long {
+        private fun getElapsedNanos(): Long {
             return if (state == TimerState.Running) {
                 elapsedNanoTime + (System.nanoTime() - startNanoTime)
             } else {

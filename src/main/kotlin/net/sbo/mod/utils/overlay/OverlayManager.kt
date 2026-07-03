@@ -61,7 +61,7 @@ object OverlayManager {
         }
     }
 
-    fun postRender(drawContext: GuiGraphicsExtractor, renderScreen: Screen) {
+    private fun postRender(drawContext: GuiGraphicsExtractor, renderScreen: Screen) {
         if (!World.isInSkyblock()) return
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor

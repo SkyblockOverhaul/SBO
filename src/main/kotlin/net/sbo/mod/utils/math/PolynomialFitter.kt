@@ -20,7 +20,6 @@ class PolynomialFitter(private val degree: Int) {
         val yMatrix = Matrix(this.yPoints)
 
         val coeffsMatrix = xMatrix.transpose().multiply(xMatrix).inverse().multiply(xMatrix.transpose()).multiply(yMatrix)
-        val coeffsRow = coeffsMatrix.transpose().data[0]
-        return coeffsRow
+        return coeffsMatrix.transpose().data[0]
     }
 }
