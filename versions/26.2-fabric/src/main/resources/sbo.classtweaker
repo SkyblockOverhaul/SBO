@@ -5,3 +5,6 @@ accessible	field	net/minecraft/client/renderer/RenderPipelines DEBUG_FILLED_SNIP
 accessible	field	net/minecraft/client/renderer/RenderPipelines LINES_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible	field	net/minecraft/client/renderer/RenderPipelines BEACON_BEAM_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible	field	net/minecraft/ChatFormatting code C
+accessible  field   net/minecraft/client/gui/Hud titleTime I
+accessible  field   net/minecraft/client/gui/Hud title Lnet/minecraft/network/chat/Component;
+accessible  field   net/minecraft/client/gui/Hud subtitle Lnet/minecraft/network/chat/Component;
