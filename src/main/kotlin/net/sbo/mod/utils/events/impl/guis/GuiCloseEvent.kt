@@ -13,6 +13,6 @@ import net.minecraft.client.gui.screens.Screen
 class GuiCloseEvent(
     val client: Minecraft,
     val screen: Screen,
-    val scaledWidth: Int,
-    val scaledHeight: Int
+    private val scaledWidth: Int,
+    private val scaledHeight: Int
 )

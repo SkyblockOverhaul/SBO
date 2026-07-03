@@ -10,9 +10,9 @@ import net.sbo.mod.utils.overlay.OverlayTextLine
 
 
 object Bobber {
-    var bobberCount: Int = 0
-    val overlay: Overlay = Overlay("bobberOverlay", 10.0f, 10.0f, 1.0f)
-    val overlayText: OverlayTextLine = OverlayTextLine("")
+    private var bobberCount: Int = 0
+    val overlay: Overlay = Overlay("bobberOverlay", 10.0f, 10.0f)
+    private val overlayText: OverlayTextLine = OverlayTextLine("")
 
     fun init() {
         overlay.init()

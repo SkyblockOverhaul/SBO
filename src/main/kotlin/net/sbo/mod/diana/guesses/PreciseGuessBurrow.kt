@@ -13,6 +13,7 @@ import net.sbo.mod.utils.math.PolynomialFitter
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
 import kotlin.math.*
+import java.util.concurrent.TimeUnit
 
 object PreciseGuessBurrow {
     private var particleLocations = mutableListOf<SboVec>()
@@ -20,8 +21,8 @@ object PreciseGuessBurrow {
     private var lastLavaParticle: Long = 0
     private var newBurrow: Boolean = true
 
-    var finalLocation: SboVec? = null
-    var lastGuessTime: Long = 0
+    private var finalLocation: SboVec? = null
+    private var lastGuessTime: Long = 0
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
@@ -39,8 +40,9 @@ object PreciseGuessBurrow {
         if (!Diana.spadeGuess || World.getWorld() != "Hub") return
         if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)
-        this.lastLavaParticle = System.currentTimeMillis()
-        if (System.currentTimeMillis() - lastGuessTime > 3000) return
+        val now = System.nanoTime()
+        this.lastLavaParticle = now
+        if (now - lastGuessTime > TimeUnit.MILLISECONDS.toNanos(3000L)) return
 
         if (this.particleLocations.isEmpty()) {
             this.particleLocations.add(currLoc)
@@ -67,16 +69,16 @@ object PreciseGuessBurrow {
         val item = player?.mainHandItem
         if (item?.isEmpty == true) return
         if (item == null || !item.hoverName.string.contains("Spade")) return
-        if (System.currentTimeMillis() - this.lastLavaParticle < 200) {
+        if (System.nanoTime() - this.lastLavaParticle < TimeUnit.MILLISECONDS.toNanos(200L)) {
             event.isCanceled = true
             return
         }
         this.particleLocations.clear()
-        lastGuessTime = System.currentTimeMillis()
+        lastGuessTime = System.nanoTime()
         newBurrow = true
     }
 
-    fun guessBurrowLocation(): SboVec? {
+    private fun guessBurrowLocation(): SboVec? {
         if (this.particleLocations.size < 4) return null
         val fitters = List(3) { PolynomialFitter(3) }
 
@@ -92,7 +94,7 @@ object PreciseGuessBurrow {
 
         val pitch = this.getPitchFromDerivative(startPointDerivative)
         val controlPointDistance = sqrt(24 * sin(pitch - PI) + 25)
-        val t = (3 * controlPointDistance) / startPointDerivative.length()
+        val t = 3 * controlPointDistance / startPointDerivative.length()
         val result = coefficients.map { coeff ->
             coeff[0] + coeff[1] * t + coeff[2] * t.pow(2) + coeff[3] * t.pow(3)
         }
@@ -111,7 +113,7 @@ object PreciseGuessBurrow {
             val resultPitch = atan2(sin(guessPitch) - 0.75, cos(guessPitch))
 
             if (resultPitch == pitchRadians) {
-                return guessPitch
+                return@getPitchFromDerivative guessPitch
             }
 
             if (resultPitch < pitchRadians) {

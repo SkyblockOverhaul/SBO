@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.lwjgl.glfw.GLFW
@@ -25,29 +26,36 @@ object SboKeyBinds {
         registerKeyBindListener()
     }
 
-    val guessWarpKey: KeyMapping = KeyMapping(
+    private val guessWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.guess_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val inqWarpKey: KeyMapping = KeyMapping(
+    private val inqWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.inq_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val generalWarpKey: KeyMapping = KeyMapping(
+    private val generalWarpKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.general_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
     )
 
-    val sendCoordsKey: KeyMapping = KeyMapping(
+    private val sendCoordsKey: KeyMapping = KeyMapping(
         "key.sbo-kotlin.send_coords",
+        InputConstants.Type.KEYSYM,
+        GLFW.GLFW_KEY_UNKNOWN,
+        SBO_CATEGORY
+    )
+
+    private val sphinxSolverKey: KeyMapping = KeyMapping(
+        "key.sbo-kotlin.sphinx_solver",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
@@ -58,6 +66,7 @@ object SboKeyBinds {
         KeyBindingHelper.registerKeyBinding(inqWarpKey)
         KeyBindingHelper.registerKeyBinding(generalWarpKey)
         KeyBindingHelper.registerKeyBinding(sendCoordsKey)
+        KeyBindingHelper.registerKeyBinding(sphinxSolverKey)
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {
@@ -88,7 +97,7 @@ object SboKeyBinds {
         }
     }
 
-    fun registerKeyBindListener() {
+    private fun registerKeyBindListener() {
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { _: Minecraft ->
             handlePressAction(guessWarpKey) {
                 WaypointManager.warpToGuess()
@@ -105,6 +114,10 @@ object SboKeyBinds {
             handlePressAction(sendCoordsKey, 500L) {
                 val playerPos = Player.getLastPosition()
                 Chat.say("x: ${playerPos.x.toInt()}, y: ${playerPos.y.toInt() - 1}, z: ${playerPos.z.toInt()} ") // patcher sendcoords format
+            }
+
+            handlePressAction(sphinxSolverKey) {
+                SphinxSolver.solve()
             }
         })
     }

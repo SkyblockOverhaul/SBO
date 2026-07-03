@@ -13,6 +13,7 @@ import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
+import java.util.concurrent.TimeUnit
 
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
@@ -21,7 +22,7 @@ object Guis {
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
-    private const val UPDATE_INTERVAL = 300_000L // 5 minutes in ms
+    private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
 
     fun openSboPf(calledFromGUI: Boolean = false) {
         if (!World.isInSkyblock()) {
@@ -81,7 +82,7 @@ object Guis {
 //        }
 
         Register.onTick(20) {
-            val now = System.currentTimeMillis()
+            val now = System.nanoTime()
             if (now - lastUpdate > UPDATE_INTERVAL && !updating && World.isInSkyblock()) {
                 lastUpdate = now
                 updating = true

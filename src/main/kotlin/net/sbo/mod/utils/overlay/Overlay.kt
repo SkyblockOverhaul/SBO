@@ -83,7 +83,7 @@ class Overlay(
         lines = mutableListOf()
     }
 
-    fun getLines(): List<OverlayTextLine> {
+    private fun getLines(): List<OverlayTextLine> {
         if (lines.isEmpty() && exampleView.isNotEmpty() && Helper.currentScreen is OverlayEditScreen) {
             return exampleView
         }
@@ -112,7 +112,7 @@ class Overlay(
         }
     }
 
-    fun getTotalHeight(): Int {
+    private fun getTotalHeight(): Int {
         val textRenderer = mc.font
         var totalHeight = 0
         for (line in getLines()) {
@@ -123,7 +123,7 @@ class Overlay(
         return totalHeight
     }
 
-    fun getTotalWidth(): Int {
+    private fun getTotalWidth(): Int {
         val textRenderer = mc.font
         var maxWidth = 0
         var currentWidth = 0
@@ -164,8 +164,8 @@ class Overlay(
         drawContext.pose().pushMatrix()
         drawContext.pose().scale(scale, scale)
 
-        var currentY = (y / scale)
-        var currentX = (x / scale)
+        var currentY = y / scale
+        var currentX = x / scale
 
         // We don't need thread safety as we are in method-local context
         // Making these vars lazy ensures they are only computed when needed (e.g., not computed if both of the if conditions below are false)
@@ -175,7 +175,7 @@ class Overlay(
 
         if (selected) {
             drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
-            drawContext.drawString(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
+            drawContext.drawString(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
         if (Helper.currentScreen is OverlayEditScreen && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
@@ -196,7 +196,7 @@ class Overlay(
 
             if (line.linebreak) {
                 currentY += textRenderer.lineHeight + 1
-                currentX = (x / scale)
+                currentX = x / scale
             } else {
                 currentX += line.width
             }

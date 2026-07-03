@@ -74,6 +74,7 @@ data class SboData(
     var highestWoolMagicFind: Int = 0,
     var highestCoreMagicFind: Int = 0,
     var highestStingerMagicFind: Int = 0,
+    var highestRelicMagicFind: Int = 0,
     var hideTrackerLines: MutableList<String> = mutableListOf(),
     var partyBlacklist: List<String> = emptyList(),
     var achievementFilter: String = "Locked",

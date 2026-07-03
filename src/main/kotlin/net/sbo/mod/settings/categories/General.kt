@@ -62,4 +62,15 @@ object General : CategoryKt("General") {
         this.name = Literal("Assume Muted")
         this.description = Literal("Assumes you are muted and instead of running /pc to send mod messages always prefers to send them client-side to yourself only.")
     }
+
+    init {
+        separator {
+            this.title = "Achievements"
+        }
+    }
+
+    var achievementsButton by boolean(true) {
+        this.name = Literal("Achievements Button")
+        this.description = Literal("Shows the SBO Achievements button in the pause menu")
+    }
 }

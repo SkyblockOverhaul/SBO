@@ -8,14 +8,13 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import java.awt.Color
 import java.time.Duration
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 private const val MIN_OPACITY = 0.2f
-private const val MAX_OPACITY = 0.99f
+private const val MAX_OPACITY = 1.0f
 private const val FADE_START_DISTANCE = 4.5
 private const val FADE_END_DISTANCE = 100.0
 
@@ -42,17 +41,18 @@ class Waypoint(
     var pos: SboVec = SboVec(this.x, this.y, this.z)
     var hidden: Boolean = false
     val creationNs: Long = System.nanoTime()
-    var formatted: Boolean = false
-    var distanceRaw: Double = 0.0
-    var distanceText: String = ""
-    var formattedText: String = ""
+    private var formatted: Boolean = false
+    private var distanceRaw: Double = 0.0
+    private var distanceText: String = ""
+    private var formattedText: String = ""
     var isClosest = false
     var timesDug = 0
     var userInteractedWith = false
-    var dynamicOpacity = 0.99f
+    private var dynamicOpacity = 1.0f
     var inaccurateArrow = false
 
-    fun hasStrongerStateThan(other: Waypoint): Boolean = this.timesDug > other.timesDug || (this.userInteractedWith && !other.userInteractedWith)
+    fun hasStrongerStateThan(other: Waypoint): Boolean =
+        this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
 
     fun carryOverState(other: Waypoint) {
         val otherTimesDug = other.timesDug
@@ -108,7 +108,7 @@ class Waypoint(
                 val title = if (asSubtitle) "" else text
                 val subtitle = if (asSubtitle) text else null
 
-                Helper.showTitle(title, subtitle, 0, 1, 0) // 1 ticks because next tick this will be called again
+                Helper.showTitle(title, subtitle, 0, 1, 0, overwrite = false) // 1 ticks because next tick this will be called again. Overwrite false to not wipe rare mob title or use spade title.
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"
@@ -133,7 +133,7 @@ class Waypoint(
         val progress = ((distance - FADE_START_DISTANCE) /
             (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
 
-        return (MIN_OPACITY + ((MAX_OPACITY - MIN_OPACITY) * progress))
+        return (MIN_OPACITY + (MAX_OPACITY - MIN_OPACITY) * progress)
             .coerceIn(MIN_OPACITY, MAX_OPACITY)
     }
 
@@ -179,7 +179,7 @@ class Waypoint(
         inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
-        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 0.99f)
+        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0.2f, 1.0f)
 
         val dist = distanceRaw.roundToInt()
 
@@ -193,6 +193,7 @@ class Waypoint(
 
                 setWarpText()
             }
+
             "rareMob", "world" -> {
                 val newest = inqWaypoints.lastOrNull() == this
 
@@ -201,23 +202,22 @@ class Waypoint(
 
                 if (newest) {
                     setWarpText()
+                } else {
+                    this.formattedText = "$text$distanceText"
                 }
             }
+
             else -> {
                 this.formattedText = "$text$distanceText"
             }
         }
-        formatted = true
-    }
 
-    fun hide(): Waypoint {
-        this.hidden = true
-        return this
+        formatted = true
     }
 
     private fun applyAlpha(color: Int, alpha: Float): Int {
         val clampedAlpha = (alpha.coerceIn(0f, 1f) * 255f).toInt()
-        return (color and 0x00FFFFFF) or (clampedAlpha shl 24)
+        return color and 0x00FFFFFF or (clampedAlpha shl 24)
     }
 
     fun isOlderThan(duration: Duration): Boolean {

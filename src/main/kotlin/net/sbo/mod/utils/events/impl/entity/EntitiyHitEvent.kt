@@ -17,7 +17,7 @@ import net.minecraft.world.phys.EntityHitResult
 class EntitiyHitEvent (
     val player: Player,
     val world: Level,
-    val hand: InteractionHand,
+    private val hand: InteractionHand,
     val entity: Entity,
-    val hitResult: EntityHitResult?
+    private val hitResult: EntityHitResult?
 )

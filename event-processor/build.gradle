@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     id 'org.jetbrains.kotlin.jvm'
@@ -19,5 +19,5 @@ repositories {
 }
 
 dependencies {
-    implementation "com.google.devtools.ksp:symbol-processing-api:2.3.9"
+    implementation 'com.google.devtools.ksp:symbol-processing-api:2.3.9'
 }

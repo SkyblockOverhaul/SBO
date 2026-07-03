@@ -32,11 +32,11 @@ object ChatMessageQueue {
         lastSentAt = System.nanoTime()
     }
 
-    fun canSend(): Boolean {
+    private fun canSend(): Boolean {
         return 0L == lastSentAt || System.nanoTime() - lastSentAt > DELAY_NANOS
     }
 
-    fun send(player: LocalPlayer, message: String) {
+    private fun send(player: LocalPlayer, message: String) {
         onCommandOrMessageSent() // should be called by mixin, but just in case it doesn't for some reason
         player.connection.sendChat(message)
     }
@@ -52,7 +52,7 @@ object ChatMessageQueue {
         queue.enqueue(message)
     }
 
-    fun flush() {
+    private fun flush() {
         val player = mc.player ?: return
 
         if (queue.isEmpty) {

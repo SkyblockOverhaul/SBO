@@ -19,5 +19,5 @@ class GuiRenderEvent(
     val context: GuiGraphics,
     val mouseX: Int,
     val mouseY: Int,
-    val delta: Float
+    private val delta: Float
 )

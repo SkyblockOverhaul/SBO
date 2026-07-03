@@ -128,7 +128,7 @@ object SboDataObject {
 
         Files.newDirectoryStream(dir).use { stream ->
             for (path in stream) {
-                return if (Files.isDirectory(path)) {
+                return@isEffectivelyEmpty if (Files.isDirectory(path)) {
                     isEffectivelyEmpty(path)
                 } else {
                     false // file exists - not empty
@@ -196,11 +196,10 @@ object SboDataObject {
                             if (!Files.isDirectory(newDir)) {
                                 SBOKotlin.logger.error("[$modName] Expected directory but found file: $newDir")
                                 throw RuntimeException("$newDir is a file but supposed to be a directory")
-                            } else {
-                                val success = mergeDirectories(modName, oldDir, newDir)
-                                cleanupIfSafe(modName, oldDir, success)
-                                SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-insensitive FS)")
                             }
+                            val success = mergeDirectories(modName, oldDir, newDir)
+                            cleanupIfSafe(modName, oldDir, success)
+                            SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-insensitive FS)")
                         } else {
                             val tempDir = Files.createTempDirectory(baseDir, "${newName}_tmp_")
                             try {
@@ -263,7 +262,7 @@ object SboDataObject {
         saveAndBackupAllDataThreaded(dataDir, true)
     }
 
-    fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
+    private fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
         modConfigDir.mkdirs()
         val dataFile = File(modConfigDir, fileName)
@@ -465,12 +464,16 @@ object SboDataObject {
             }
         } catch (e: Exception) {
             SBOKotlin.logger.error("[$modName] Error reading sbo_achievements.json, resetting to default data.", e)
-            save(modName, defaultData, "sbo_achievements.json")
+            try {
+                save(modName, defaultData, "sbo_achievements.json")
+            } catch (saveError: Exception) {
+                SBOKotlin.logger.error("[$modName] Also failed to save default achievements data", saveError)
+            }
             defaultData
         }
     }
 
-    fun loadAllData(modName: String): SboConfigBundle {
+    private fun loadAllData(modName: String): SboConfigBundle {
         val sboData = load(modName, "SboData.json", SboData(), SboData::class.java)
         val achievementsData = loadAchievementsData(modName)
         val pastDianaEventsData = load(modName, "pastDianaEvents.json", PastDianaEventsData(), PastDianaEventsData::class.java)
@@ -632,7 +635,7 @@ object SboDataObject {
         }
     }
 
-    val configMapForSave = mapOf(
+    private val configMapForSave = mapOf(
         "SboData" to Pair({ save(dataDir, sboData, "SboData.json") }, sboData),
         "AchievementsData" to Pair({ save(dataDir, achievementsData, "sbo_achievements.json") }, achievementsData),
         "PastDianaEventsData" to Pair({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
@@ -650,7 +653,7 @@ object SboDataObject {
         }
     }
 
-    fun saveAllDataThreaded(modName: String) {
+    private fun saveAllDataThreaded(modName: String) {
         DATA_SAVER_EXECUTOR.execute {
             SBOKotlin.logger.info("[$modName] Saving all data to disk...")
             saveAllData()
@@ -658,7 +661,7 @@ object SboDataObject {
         }
     }
 
-    fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
+    private fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
         val future = DATA_SAVER_EXECUTOR.submit {
             SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
@@ -675,7 +678,7 @@ object SboDataObject {
      * Saves all data periodically based on the specified interval in minutes.
      * @param interval The interval in minutes at which to save the data.
      */
-    fun savePeriodically(interval: Int) {
+    private fun savePeriodically(interval: Int) {
         Register.onTick(20 * 60 * interval) { client ->
             saveAllDataThreaded(dataDir)
         }
@@ -698,6 +701,7 @@ object SboDataObject {
      * Writes JSON data to a temporary file, then replaces the original file with it
      * only after the temp file has finished fully writing. Performs atomic move to avoid
      * data loss if crash or power loss during the move.
+     * Includes retry logic to handle transient Windows lock errors (AV, indexing, etc.)
      */
     private fun writeJsonAtomically(file: File, data: Any) {
         val parentDirectory = file.parentFile
@@ -716,21 +720,55 @@ object SboDataObject {
             gson.toJson(data, writer)
         }
 
+        val maxAttempts = 5
+
+        for (attempt in 1..maxAttempts) {
+            try {
+                try {
+                    Files.move(
+                        tempFile,
+                        file.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE
+                    )
+                } catch (e: AtomicMoveNotSupportedException) {
+                    // Hopefully no power loss or crash because non-atomic move here
+                    // This code path won't be taken unless outdated OS, weird partition setup or OneDrive (lame)
+                    Files.move(
+                        tempFile,
+                        file.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING
+                    )
+                }
+                return // success
+            } catch (e: IOException) {
+                // AccessDeniedException, FileSystemException etc land here (Windows AV/indexing lock)
+                if (attempt < maxAttempts) {
+                    try {
+                        Thread.sleep(50L * attempt)
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        break
+                    }
+                }
+            }
+        }
+
+        // Give up after retries: try direct write as last resort (not atomic, but better than nothing)
+        SBOKotlin.logger.warn("[sbo] Atomic move failed, attempting direct write for ${file.name}")
         try {
-            Files.move(
-                tempFile,
-                file.toPath(),
-                StandardCopyOption.REPLACE_EXISTING,
-                StandardCopyOption.ATOMIC_MOVE
-            )
-        } catch (e: AtomicMoveNotSupportedException) {
-            // Hopefully no power loss or crash because non-atomic move here
-            // This code path won't be taken unless outdated OS, weird partition setup or OneDrive (lame)
-            Files.move(
-                tempFile,
-                file.toPath(),
-                StandardCopyOption.REPLACE_EXISTING
-            )
+            writerForFile(file).use { writer ->
+                gson.toJson(data, writer)
+            }
+            SBOKotlin.logger.info("[sbo] Direct write succeeded for ${file.name}")
+        } catch (e: IOException) {
+            SBOKotlin.logger.error("[sbo] Direct write also failed for ${file.name}", e)
+        } finally {
+            // Clean up temp file regardless of direct write outcome
+            try {
+                Files.deleteIfExists(tempFile)
+            } catch (_: IOException) {
+            }
         }
     }
 
@@ -740,7 +778,7 @@ object SboDataObject {
      *
      * @return A writer suitable for writing to the given file.
      */
-    fun writerForFile(file: File): Writer {
+    private fun writerForFile(file: File): Writer {
         return BufferedWriter(FileWriter(file))
     }
 

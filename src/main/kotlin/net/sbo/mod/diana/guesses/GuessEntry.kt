@@ -19,7 +19,7 @@ class GuessEntry(val guesses: List<SboVec>) {
         if (currentWaypoint != null) {
             if (currentWaypoint.userInteractedWith) {
                 // If the user interacted with the waypoint, we queue it to be removed when we get the "You dug out a Griffin Burrow!" chat message (dug 2 times).
-                BurrowDetector.queueRemoval(currentWaypoint, { currentWaypoint.timesDug != 1 })
+                BurrowDetector.queueRemoval(currentWaypoint) { currentWaypoint.timesDug != 1 }
             } else {
                 // Otherwise, we directly remove it (most likely a waypoint that was in a wrong position, so moveToNext was called before player can do any interaction, since this is checked every tick)
                 WaypointManager.removeWaypoint(currentWaypoint)
@@ -31,6 +31,7 @@ class GuessEntry(val guesses: List<SboVec>) {
         if (nextIndex in guesses.indices) {
             currentIndex = nextIndex
             WaypointManager.addArrowGuess(guesses[currentIndex])
+
             return true
         }
         return false

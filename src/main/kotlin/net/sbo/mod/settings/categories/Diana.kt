@@ -98,6 +98,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a title to guess normally when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby")
     }
 
+    var ongoingChainsDisplay by boolean(false) {
+        this.name = Literal("Ongoing Chains Display")
+        this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time, rarely 8 although one will finish very fast, going back to 7.")
+    }
+
     init {
         separator {
             this.title = "Diana Warp"
@@ -560,6 +565,9 @@ object Diana : CategoryKt("Diana") {
 
     var sphinxSolver by boolean(true) {
         this.name = Literal("Sphinx Solver")
-        this.description = Literal("Helps you solve the sphinx riddle by showing you the answer choices in chat and it automatically clicks the correct one for you when you click anywhere while the chat is open.")
+        this.description = Literal(
+            "Helps you solve the sphinx riddle by showing you the answer choices in chat and it automatically clicks the correct one for you when you click anywhere while the chat is open.\n" +
+                "Theres also the option to us a keybind in the mc keybinds menu but §c⚠ USE AT YOUR OWN RISK ⚠"
+        )
     }
 }
