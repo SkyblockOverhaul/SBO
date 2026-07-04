@@ -123,6 +123,8 @@ object ArrowGuessBurrow {
     @SboEvent
     fun onReceiveParticle(event: PacketReceiveEvent) {
         if (!Diana.arrowGuess) return
+        if (World.getWorld() != "Hub") return
+
         val packet = event.packet as? ClientboundLevelParticlesPacket ?: return
         if (!packet.isRelevant()) return
 
