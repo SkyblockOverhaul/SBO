@@ -121,7 +121,7 @@ object Customization : CategoryKt("Customization") {
         button {
             title = "Open Sound Folder"
             text = "open"
-            description = "Custom sounds go in here (sound must be a .ogg). You need to restart minecraft after adding a sound"
+            description = "Custom sounds go in here (Must be one of those extensions: .ogg, .mp3, .wav, .au, .aif, .aiff)."
             onClick {
                 val path = "${FabricLoader.getInstance().configDir}/sbo/sounds"
                 val directory = File(path)
@@ -136,6 +136,13 @@ object Customization : CategoryKt("Customization") {
                 }
             }
         }
+    }
+
+    var masterVolume by float(1.0f) {
+        this.name = Literal("Master Volume")
+        this.description = Literal("Set the volume for all sounds")
+        this.range = 0.0f..1.0f
+        this.slider = true
     }
 
     var rareMobSound by strings("exporb") {

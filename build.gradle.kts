@@ -321,6 +321,7 @@ dependencies {
     maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
 
     implementation(include("com.github.trilarion:java-vorbis-support:${property("vorbis.version")}")!!)
+    implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
 
     when (mcProject) {
         "26.1.2-fabric" -> {

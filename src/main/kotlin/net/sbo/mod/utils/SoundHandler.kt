@@ -12,6 +12,9 @@ import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.FloatControl
 import javax.sound.sampled.LineEvent
+import java.io.FileInputStream
+import javazoom.jl.player.Player
+import net.sbo.mod.settings.categories.Customization
 import kotlin.math.log10
 
 object SoundHandler {
@@ -72,48 +75,65 @@ object SoundHandler {
         }
     }
 
+
     fun playCustomSound(vararg sounds: String, volume: Float) {
         var sound = sounds[0]
         val listOfExt = listOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
 
-        // Check if the sound doesn't end with any extension in the list
+        // Assume the file is a .ogg if not specified
         if (listOfExt.none { sound.endsWith(it, ignoreCase = true) }) sound += ".ogg"
 
-        val file = File("config/sbo/sounds", sound)
+        logger.info("Playing sound: $sound")
 
+        val file = File("config/sbo/sounds", sound)
         if (!file.exists()) return
 
-        val clip = AudioSystem.getClip()
-        val inputStream = AudioSystem.getAudioInputStream(file)
+        // Annoying mp3 support
+        if (sound.endsWith(".mp3", ignoreCase = true)) {
+            Thread {
+                runCatching {
+                    val fileStream = FileInputStream(file)
+                    val player = Player(fileStream)
+                    player.play()
+                    player.close()
+                    fileStream.close()
+                }.onFailure { e ->
+                    logger.error("[$MOD_ID] Failed to play MP3 sound: $sound", e)
+                }
+            }.start()
+        } else {
+            // Original stuff for .ogg, .wav, .au, .aif, .aiff
+            val clip = AudioSystem.getClip()
+            val inputStream = AudioSystem.getAudioInputStream(file)
 
-        val decodedFormat = AudioFormat(
-            AudioFormat.Encoding.PCM_SIGNED,
-            inputStream.format.sampleRate,
-            16,
-            inputStream.format.channels,
-            inputStream.format.channels * 2,
-            inputStream.format.sampleRate,
-            false
-        )
+            val decodedFormat = AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED,
+                inputStream.format.sampleRate,
+                16,
+                inputStream.format.channels,
+                inputStream.format.channels * 2,
+                inputStream.format.sampleRate,
+                false
+            )
 
-        val stream = AudioSystem.getAudioInputStream(decodedFormat, inputStream)
+            val stream = AudioSystem.getAudioInputStream(decodedFormat, inputStream)
 
-        clip.open(stream)
+            clip.open(stream)
 
-        val gain = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
-        val volumePercent = volume.coerceIn(1f, 100f) / 100f // test if it is dependant to volume set in configs (require testing normally)
-        gain.value = (20 * log10(volumePercent.toDouble())).toFloat()
+            val gain = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+            val volumePercent = volume.coerceIn(1f, 100f) / 100f * Customization.masterVolume
+            gain.value = (20 * log10(volumePercent.toDouble())).toFloat()
 
-        // Closes the clip & streams once the sound is done playing
-        clip.addLineListener { event ->
-            if (event.type == LineEvent.Type.STOP) {
-                clip.close()
-                stream.close()
-                inputStream.close()
+            // Closes the clip & streams once the sound is done playing
+            clip.addLineListener { event ->
+                if (event.type == LineEvent.Type.STOP) {
+                    clip.close()
+                    stream.close()
+                    inputStream.close()
+                }
             }
+
+            clip.start()
         }
-
-        clip.start()
-
     }
 }
