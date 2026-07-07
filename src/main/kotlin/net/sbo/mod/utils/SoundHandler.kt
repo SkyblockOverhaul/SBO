@@ -38,11 +38,6 @@ object SoundHandler {
      * Copies the default sounds to /config/sbo/sounds
      */
     fun init() {
-        Register.command("playsoundtest") { args ->
-            val volume = if (args.size > 1) args[1].toFloat() else 100f
-            playCustomSound(args[0], volume = volume)
-        }
-
         val modContainer = FabricLoader.getInstance().getModContainer(MOD_ID).orElse(null)
 
         if (modContainer != null) {
