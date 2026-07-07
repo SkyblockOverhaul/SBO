@@ -35,8 +35,9 @@ object SoundHandler {
      * Copies the default sounds to /config/sbo/sounds
      */
     fun init() {
-        Register.command("playsoundtest") {
-            playCustomSound("fatass", volume = 100f)
+        Register.command("playsoundtest") { args ->
+            val volume = if (args.size > 1) args[1].toFloat() else 100f
+            playCustomSound(args[0], volume = volume)
         }
 
         val modContainer = FabricLoader.getInstance().getModContainer(MOD_ID).orElse(null)
@@ -72,8 +73,13 @@ object SoundHandler {
     }
 
     fun playCustomSound(vararg sounds: String, volume: Float) {
-        val sound = sounds[0]
-        val file = File("config/sbo/sounds", "$sound.ogg")
+        var sound = sounds[0]
+        val listOfExt = listOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
+
+        // Check if the sound doesn't end with any extension in the list
+        if (listOfExt.none { sound.endsWith(it, ignoreCase = true) }) sound += ".ogg"
+
+        val file = File("config/sbo/sounds", sound)
 
         if (!file.exists()) return
 
@@ -95,13 +101,15 @@ object SoundHandler {
         clip.open(stream)
 
         val gain = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
-        val volumePercent = volume.coerceIn(1f, 100f) / 100f
+        val volumePercent = volume.coerceIn(1f, 100f) / 100f // test if it is dependant to volume set in configs (require testing normally)
         gain.value = (20 * log10(volumePercent.toDouble())).toFloat()
 
+        // Closes the clip & streams once the sound is done playing
         clip.addLineListener { event ->
             if (event.type == LineEvent.Type.STOP) {
                 clip.close()
                 stream.close()
+                inputStream.close()
             }
         }
 
