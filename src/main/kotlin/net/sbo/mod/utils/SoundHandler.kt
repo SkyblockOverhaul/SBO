@@ -145,7 +145,7 @@ object SoundHandler {
         }
     }
 
-    fun playCustomSound(sounds: Array<String>, volume: Float, pitch: Float = 1f) {
+    fun playCustomSound(vararg sounds: String, volume: Float, pitch: Float = 1f) {
         if (sounds.isEmpty()) return
         playCustomSound(sounds[0], volume, pitch)
     }
