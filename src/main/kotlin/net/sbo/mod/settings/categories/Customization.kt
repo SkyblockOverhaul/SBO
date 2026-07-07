@@ -152,13 +152,13 @@ object Customization : CategoryKt("Customization") {
             text = "Test"
             description = "Test the custom sound in the box below"
             onClick {
-                SoundHandler.playCustomSound(*soundTest, volume = masterVolume)
+                SoundHandler.playCustomSound(*testSound, volume = masterVolume)
             }
         }
     }
 
-    var soundTest by strings("yippee") {
-        this.name = Literal("Sound Test")
+    var testSound by strings("yippee") {
+        this.name = Literal("Test Sound")
         this.description = Literal("Enter the filename of the sound you want to test. (enter filename)")
     }
 
