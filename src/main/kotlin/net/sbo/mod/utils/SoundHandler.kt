@@ -1,60 +1,48 @@
 package net.sbo.mod.utils
 
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.SharedConstants
-import net.minecraft.client.resources.sounds.SimpleSoundInstance
-import net.minecraft.server.packs.PackType
-import net.minecraft.sounds.SoundEvent
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.events.Register
 import java.io.File
 import java.nio.file.Files
+import javax.sound.sampled.AudioFormat
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.FloatControl
+import javax.sound.sampled.LineEvent
+import java.io.FileInputStream
+import javazoom.jl.player.Player
+import net.sbo.mod.settings.categories.Customization
+import kotlin.math.log10
 
 object SoundHandler {
     private val soundDir: File
-    private val generatedPackDir: File
+    private val configDir: File
 
     private val availableSounds = mutableSetOf<String>()
 
     init {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), SboDataObject.dataDir).apply { mkdirs() }
-        soundDir = File(modConfigDir, "sounds").apply { mkdirs() }
+        soundDir = File(modConfigDir, "sounds").apply { mkdirs() } // resources/assets/sbo/sounds/
 
-        val packsDir = File(FabricLoader.getInstance().gameDir.toFile(), "resourcepacks").apply { mkdirs() }
-        generatedPackDir = File(packsDir, "SBO Custom Sounds Data Pack").apply { mkdirs() }
+        configDir = File("config/sbo", "sounds").apply { mkdirs() } // /config/sbo/sounds/
     }
 
     fun getAvailableSoundsList(): List<String> = availableSounds.sorted().toList()
 
     fun hasSound(soundName: String): Boolean = soundName.isNotEmpty() && availableSounds.contains(soundName.lowercase())
 
-    private fun safeName(base: String): String {
-        val b = base.lowercase()
-        val sb = StringBuilder(b.length)
-        for (ch in b) {
-            when (ch) {
-                in 'a'..'z', in '0'..'9', '_', '-', '.', '/' -> sb.append(ch)
-                ' ' -> sb.append('_')
-                else -> sb.append('_')
-            }
-        }
-        return sb.toString()
-    }
-
-    private fun currentResourcePackFormat(): Int {
-        return try {
-            SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES).major()
-        } catch (tw: Throwable) {
-            logger.error("Error while determining current resource pack format, falling back to 48", tw)
-            48
-        }
-    }
-
+    /**
+     * Copies the default sounds to /config/sbo/sounds
+     */
     fun init() {
+        Register.command("playsoundtest") { args ->
+            val volume = if (args.size > 1) args[1].toFloat() else 100f
+            playCustomSound(args[0], volume = volume)
+        }
+
         val modContainer = FabricLoader.getInstance().getModContainer(MOD_ID).orElse(null)
 
         if (modContainer != null) {
@@ -85,117 +73,98 @@ object SoundHandler {
         } else {
             logger.warn("[$MOD_ID] Could not locate the mod container; built-in sounds will not be extracted.")
         }
-
-        val assetsSoundsDir = File(generatedPackDir, "assets/$MOD_ID/sounds").apply { mkdirs() }
-        val oggFiles = soundDir.listFiles { f -> f.isFile && f.extension.equals("ogg", ignoreCase = true) }?.toList() ?: emptyList()
-        val names = mutableListOf<String>()
-        oggFiles.forEach { src ->
-            val name = safeName(src.nameWithoutExtension)
-            names += name
-            availableSounds.add(name)
-            src.copyTo(File(assetsSoundsDir, "$name.ogg"), overwrite = true)
-        }
-
-        val soundsJsonFile = File(generatedPackDir, "assets/$MOD_ID/sounds.json")
-        val json = buildString {
-            append("{\n")
-            names.forEachIndexed { i, name ->
-                append("  \"$name\": { \"sounds\": [ { \"name\": \"$MOD_ID:$name\", \"stream\": true } ] }")
-                if (i < names.size - 1) append(",\n") else append("\n")
-            }
-            append("}\n")
-        }
-        soundsJsonFile.writeText(json)
-
-        val packFormat = currentResourcePackFormat()
-        val packMcmeta = File(generatedPackDir, "pack.mcmeta")
-        packMcmeta.writeText(
-            """
-            {
-              "pack": {
-                "description": "SBO Custom Sounds",
-                "pack_format": $packFormat,
-                "min_format": 65,
-                "max_format": 999
-              }
-            }
-            """.trimIndent()
-        )
-        writePackIcon()
-
-        logger.info("[$MOD_ID] Custom sounds ready. Found ${availableSounds.size} sounds. To enable: Options > Resource Packs > move 'SBO Custom Sounds Data Pack' to the right")
     }
 
-    private fun writePackIcon() {
-        val target = File(generatedPackDir, "pack.png")
-        val resPath = "assets/$MOD_ID/icon.png"
-        val stream = SoundHandler::class.java.classLoader.getResourceAsStream(resPath)
-        if (stream != null) {
-            runCatching {
-                stream.use { input ->
-                    target.outputStream().use { output ->
-                        input.copyTo(output)
+    /**
+     * Plays a custom sound.
+     * volume must be between 0 & 1
+     */
+    fun playCustomSound(vararg sounds: String, volume: Float) {
+        var sound = sounds[0]
+        val listOfExt = listOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
+        val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
+
+        // Assume the file is a .ogg if not specified
+        if (listOfExt.none { sound.endsWith(it, ignoreCase = true) }) sound += ".ogg"
+
+        logger.info("Playing sound: $sound")
+
+        val file = File("config/sbo/sounds", sound)
+        if (!file.exists()) return
+
+        // Annoying mp3 support
+        if (sound.endsWith(".mp3", ignoreCase = true)) {
+            Thread {
+                runCatching {
+                    val fileStream = FileInputStream(file)
+
+                    // Override the device implementation directly using the verified decompiled signatures
+                    val device = object : javazoom.jl.player.JavaSoundAudioDevice() {
+                        override fun writeImpl(samples: ShortArray, offs: Int, len: Int) {
+                            // Let the default logic initialize the 'source' field
+                            super.writeImpl(samples, offs, len)
+
+                            // Now adjust the volume once on the newly initialized stream
+                            runCatching {
+                                val sourceField = javazoom.jl.player.JavaSoundAudioDevice::class.java
+                                    .getDeclaredField("source").apply { isAccessible = true }
+                                val sourceLine = sourceField.get(this) as? javax.sound.sampled.SourceDataLine
+
+                                if (sourceLine != null && sourceLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                                    val gain = sourceLine.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+
+                                    // Calculate the volume target
+                                    val targetGain = (20 * log10(volumePercent.toDouble())).toFloat()
+
+                                    // Only update if it actually changed to reduce overhead across sequential frames
+                                    if (gain.value != targetGain) {
+                                        gain.value = targetGain
+                                    }
+                                }
+                            }
+                        }
                     }
+
+                    val player = Player(fileStream, device)
+                    player.play()
+                    player.close()
+                    fileStream.close()
+                }.onFailure { e ->
+                    logger.error("[$MOD_ID] Failed to play MP3 sound with volume: $sound", e)
                 }
-            }.onFailure {
-                logger.warn("[$MOD_ID] Failed to write pack icon: ${it.message}")
-            }
+            }.start()
         } else {
-            logger.info("[$MOD_ID] Pack icon not found at $resPath")
-        }
-    }
+            // Original stuff for .ogg, .wav, .au, .aif, .aiff
+            val clip = AudioSystem.getClip()
+            val inputStream = AudioSystem.getAudioInputStream(file)
 
-    fun playCustomSound(vararg sounds: String, volume: Float, pitch: Float = 1f) {
-        if (sounds.isEmpty()) return
-        playCustomSound(sounds[0], volume, pitch)
-    }
+            val decodedFormat = AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED,
+                inputStream.format.sampleRate,
+                16,
+                inputStream.format.channels,
+                inputStream.format.channels * 2,
+                inputStream.format.sampleRate,
+                false
+            )
 
-    fun playCustomSound(sound: String, volume: Float, pitch: Float = 1f) {
-        // Playing sounds off the Render thread causes a ConcurrentModificationException at SoundEngine#tickInGameSound due to a HashMap iteration, so we need this
-        mc.execute {
-            playCustomSoundNonThreadSafe(sound, volume, pitch)
-        }
-    }
+            val stream = AudioSystem.getAudioInputStream(decodedFormat, inputStream)
 
-    private fun playCustomSoundNonThreadSafe(sound: String, volume: Float, pitch: Float) {
-        if (sound.isEmpty()) return
+            clip.open(stream)
 
-        val packManager = mc.resourcePackRepository
-        val packId = "file/SBO Custom Sounds Data Pack"
+            val gain = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+            gain.value = (20 * log10(volumePercent.toDouble())).toFloat()
 
-        val safeSound = safeName(sound)
-        val packMissing = "§6[SBO] §cCustom sounds are inactive. §aGo to Options > Resource Packs > move '§lSBO Custom Sounds Data Pack§a' to the right (Active)"
-
-        if (!availableSounds.contains(safeSound)) {
-            val message = "Sound '$sound' not found. Available: ${availableSounds.joinToString()}"
-
-            if (availableSounds.isEmpty()) {
-                Chat.chat(packMissing)
-            } else {
-                Chat.chat("§6[SBO] §c$message")
+            // Closes the clip & streams once the sound is done playing
+            clip.addLineListener { event ->
+                if (event.type == LineEvent.Type.STOP) {
+                    clip.close()
+                    stream.close()
+                    inputStream.close()
+                }
             }
 
-            logger.warn("[$MOD_ID] $message")
-            return
+            clip.start()
         }
-
-        val id = SBOKotlin.userSuppliedId(safeSound) { invalidIdentifierException ->
-            Chat.chat("§6[SBO] §cInvalid sound name \"$sound\". Use letters, numbers, _ or -")
-            logger.error("Invalid sound ID: $sound", invalidIdentifierException)
-        }
-
-        if (id == null) {
-            Chat.chat("§6[SBO] §cUnknown error when creating Identifier for sound ID: $sound")
-            logger.error("Unknown error when creating Identifier for sound ID: $sound")
-            return
-        }
-
-        val event = SoundEvent.createVariableRangeEvent(id)
-
-        if (!packManager.selectedIds.contains(packId)) {
-            Chat.chat(packMissing)
-        }
-
-        mc.soundManager.play(SimpleSoundInstance.forUI(event, pitch, volume))
     }
 }
