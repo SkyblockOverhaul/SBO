@@ -75,10 +75,14 @@ object SoundHandler {
         }
     }
 
-
+    /**
+     * Plays a custom sound.
+     * volume must be between 0 & 1
+     */
     fun playCustomSound(vararg sounds: String, volume: Float) {
         var sound = sounds[0]
         val listOfExt = listOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
+        val volumePercent = volume.coerceIn(1f, 100f) / 100f * Customization.masterVolume
 
         // Assume the file is a .ogg if not specified
         if (listOfExt.none { sound.endsWith(it, ignoreCase = true) }) sound += ".ogg"
@@ -93,12 +97,40 @@ object SoundHandler {
             Thread {
                 runCatching {
                     val fileStream = FileInputStream(file)
-                    val player = Player(fileStream)
+
+                    // Override the device implementation directly using the verified decompiled signatures
+                    val device = object : javazoom.jl.player.JavaSoundAudioDevice() {
+                        override fun writeImpl(samples: ShortArray, offs: Int, len: Int) {
+                            // Let the default logic initialize the 'source' field
+                            super.writeImpl(samples, offs, len)
+
+                            // Now adjust the volume once on the newly initialized stream
+                            runCatching {
+                                val sourceField = javazoom.jl.player.JavaSoundAudioDevice::class.java
+                                    .getDeclaredField("source").apply { isAccessible = true }
+                                val sourceLine = sourceField.get(this) as? javax.sound.sampled.SourceDataLine
+
+                                if (sourceLine != null && sourceLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                                    val gain = sourceLine.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+
+                                    // Calculate the volume target
+                                    val targetGain = (20 * log10(volumePercent.toDouble())).toFloat()
+
+                                    // Only update if it actually changed to reduce overhead across sequential frames
+                                    if (gain.value != targetGain) {
+                                        gain.value = targetGain
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    val player = Player(fileStream, device)
                     player.play()
                     player.close()
                     fileStream.close()
                 }.onFailure { e ->
-                    logger.error("[$MOD_ID] Failed to play MP3 sound: $sound", e)
+                    logger.error("[$MOD_ID] Failed to play MP3 sound with volume: $sound", e)
                 }
             }.start()
         } else {
@@ -121,7 +153,6 @@ object SoundHandler {
             clip.open(stream)
 
             val gain = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
-            val volumePercent = volume.coerceIn(1f, 100f) / 100f * Customization.masterVolume
             gain.value = (20 * log10(volumePercent.toDouble())).toFloat()
 
             // Closes the clip & streams once the sound is done playing
