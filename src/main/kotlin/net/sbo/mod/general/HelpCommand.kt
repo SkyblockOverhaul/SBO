@@ -92,7 +92,7 @@ object HelpCommand {
                 return@command
             }
 
-            SoundHandler.playCustomSound(sound, volume)
+            SoundHandler.playCustomSound(sound, volume = volume)
             Chat.chat("§6[SBO] §aPlaying sound: §e$sound §aat volume §e$volume")
         }
     }

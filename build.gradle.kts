@@ -320,6 +320,8 @@ dependencies {
     maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
 
+    implementation("com.github.trilarion:java-vorbis-support:${property("soundsupport.version")}")
+
     when (mcProject) {
         "26.1.2-fabric" -> {
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
