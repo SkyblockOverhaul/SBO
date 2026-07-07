@@ -145,6 +145,11 @@ object SoundHandler {
         }
     }
 
+    fun playCustomSound(sounds: Array<String>, volume: Float, pitch: Float = 1f) {
+        if (sounds.isEmpty()) return
+        playCustomSound(sounds[0], volume, pitch)
+    }
+
     fun playCustomSound(sound: String, volume: Float, pitch: Float = 1f) {
         // Playing sounds off the Render thread causes a ConcurrentModificationException at SoundEngine#tickInGameSound due to a HashMap iteration, so we need this
         mc.execute {

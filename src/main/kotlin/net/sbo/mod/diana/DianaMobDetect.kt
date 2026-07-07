@@ -238,7 +238,7 @@ object DianaMobDetect {
 
         if (Diana.cocoonTitle) {
             showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b${mobName}", 10, 40, 10)
-            playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
+            playCustomSound(Customization.cocoonSound, Customization.cocoonVolume)
         }
     }
 

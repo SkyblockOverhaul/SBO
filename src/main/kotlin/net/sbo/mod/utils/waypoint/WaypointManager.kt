@@ -78,27 +78,27 @@ object WaypointManager {
                     val mobDisplayName = when (mobType) {
                         Diana.ReceiveList.INQ -> {
                             Helper.showTitle("§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(Customization.inqSound[0], Customization.inqVolume)
+                            playCustomSound(Customization.inqSound, Customization.inqVolume)
                             "§dInquisitor"
                         }
                         Diana.ReceiveList.KING -> {
                             Helper.showTitle("§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(Customization.kingSound[0], Customization.kingVolume)
+                            playCustomSound(Customization.kingSound, Customization.kingVolume)
                             "§6King Minos"
                         }
                         Diana.ReceiveList.MANTICORE -> {
                             Helper.showTitle("§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(Customization.mantiSound[0], Customization.mantiVolume)
+                            playCustomSound(Customization.mantiSound, Customization.mantiVolume)
                             "§2Manticore"
                         }
                         Diana.ReceiveList.SPHINX -> {
                             Helper.showTitle("§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(Customization.sphinxSound[0], Customization.sphinxVolume)
+                            playCustomSound(Customization.sphinxSound, Customization.sphinxVolume)
                             "§9Sphinx"
                         }
                         else -> {
                             Helper.showTitle("§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(Customization.rareMobSound[0], Customization.rareMobVolume)
+                            playCustomSound(Customization.rareMobSound, Customization.rareMobVolume)
                             "§3Rare Mob"
                         }
                     }
@@ -296,7 +296,7 @@ object WaypointManager {
         waypoints.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(waypoint)
 
         if (type == "burrow") {
-            playCustomSound(Customization.burrowFoundSound[0], Customization.burrowVolume)
+            playCustomSound(Customization.burrowFoundSound, Customization.burrowVolume)
         }
     }
 
