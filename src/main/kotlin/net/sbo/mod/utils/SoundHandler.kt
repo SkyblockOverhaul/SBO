@@ -82,7 +82,7 @@ object SoundHandler {
     fun playCustomSound(vararg sounds: String, volume: Float) {
         var sound = sounds[0]
         val listOfExt = listOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
-        val volumePercent = volume.coerceIn(1f, 100f) / 100f * Customization.masterVolume
+        val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
 
         // Assume the file is a .ogg if not specified
         if (listOfExt.none { sound.endsWith(it, ignoreCase = true) }) sound += ".ogg"

@@ -3,6 +3,7 @@ package net.sbo.mod.settings.categories
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import gg.essential.universal.UDesktop
 import net.fabricmc.loader.api.FabricLoader
+import net.sbo.mod.utils.SoundHandler
 import java.awt.Color
 import java.io.File
 
@@ -120,7 +121,7 @@ object Customization : CategoryKt("Customization") {
 
         button {
             title = "Open Sound Folder"
-            text = "open"
+            text = "Open"
             description = "Custom sounds go in here (Must be one of those extensions: .ogg, .mp3, .wav, .au, .aif, .aiff)."
             onClick {
                 val path = "${FabricLoader.getInstance().configDir}/sbo/sounds"
@@ -143,6 +144,22 @@ object Customization : CategoryKt("Customization") {
         this.description = Literal("Set the volume for all sounds")
         this.range = 0.0f..1.0f
         this.slider = true
+    }
+
+    init {
+        button {
+            title = "Test the sound below"
+            text = "Test"
+            description = "Test the custom sound in the box below"
+            onClick {
+                SoundHandler.playCustomSound(*soundTest, volume = masterVolume)
+            }
+        }
+    }
+
+    var soundTest by strings("yippee") {
+        this.name = Literal("Sound Test")
+        this.description = Literal("Enter the filename of the sound you want to test. (enter filename)")
     }
 
     var rareMobSound by strings("exporb") {
