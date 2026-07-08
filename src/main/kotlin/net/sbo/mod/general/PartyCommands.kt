@@ -154,6 +154,9 @@ object PartyCommands {
         PartyCommand(listOf("!foodls", "!brainfoodls", "!lsbrainfood", "!lsbrain"), { settings.dianaPartyCommands }) {
             fmt("Brain Food LS", dianaTrackerMayor.items.BRAIN_FOOD_LS, "BRAIN_FOOD_LS", "SPHINX_LS")
         },
+        PartyCommand(listOf("!braided", "!braideds"), { settings.dianaPartyCommands }) {
+            fmt("Braided feathers", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, "BRAIDED_GRIFFIN_FEATHER")
+        },
         PartyCommand(listOf("!kingshard", "!kingshards"), { settings.dianaPartyCommands }) {
             fmt("King Shards", dianaTrackerMayor.items.KING_MINOS_SHARD, "KING_MINOS_SHARD", "KING_MINOS")
         },
