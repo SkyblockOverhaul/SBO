@@ -116,6 +116,9 @@ object PartyCommands {
         PartyCommand(listOf("!manti", "!mantis"), { settings.dianaPartyCommands }) {
             fmt("Manticore", dianaTrackerMayor.mobs.MANTICORE, "MANTICORE")
         },
+        PartyCommand(listOf("!dye", "!dyes"), { settings.dianaPartyCommands }) {
+            fmt("Dye", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, "MYTHOLOGICAL_DYE")
+        },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayor.items.TOTAL_BURROWS
             val perHr = Helper.getBurrowsPerHr(dianaTrackerMayor, SboTimerManager.timerMayor)
