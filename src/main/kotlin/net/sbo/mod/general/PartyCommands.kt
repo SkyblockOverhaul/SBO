@@ -98,6 +98,24 @@ object PartyCommands {
         PartyCommand(listOf("!inq", "!inqs", "!inquisitor", "!inquis"), { settings.dianaPartyCommands }) {
             fmt("Inquisitor", dianaTrackerMayor.mobs.MINOS_INQUISITOR, "MINOS_INQUISITOR")
         },
+        PartyCommand(listOf("!kingls", "!kingsls"), { settings.dianaPartyCommands }) {
+            "King LS: ${dianaTrackerMayor.mobs.KING_MINOS_LS}"
+        },
+        PartyCommand(listOf("!king", "!kings"), { settings.dianaPartyCommands }) {
+            fmt("King", dianaTrackerMayor.mobs.KING_MINOS, "KING_MINOS")
+        },
+        PartyCommand(listOf("!sphinxls", "!sphinxsls"), { settings.dianaPartyCommands }) {
+            "Sphinx LS: ${dianaTrackerMayor.mobs.SPHINX_LS}"
+        },
+        PartyCommand(listOf("!sphinx", "!sphinxs"), { settings.dianaPartyCommands }) {
+            fmt("Sphinx", dianaTrackerMayor.mobs.SPHINX, "SPHINX")
+        },
+        PartyCommand(listOf("!mantils", "!mantisls"), { settings.dianaPartyCommands }) {
+            "Manticore LS: ${dianaTrackerMayor.mobs.MANTICORE_LS}"
+        },
+        PartyCommand(listOf("!manti", "!mantis"), { settings.dianaPartyCommands }) {
+            fmt("Manticore", dianaTrackerMayor.mobs.MANTICORE, "MANTICORE")
+        },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayor.items.TOTAL_BURROWS
             val perHr = Helper.getBurrowsPerHr(dianaTrackerMayor, SboTimerManager.timerMayor)
