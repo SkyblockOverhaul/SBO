@@ -135,8 +135,8 @@ Before you begin, you need to have a few things installed:
 - Adjustable opacity (dynamic or fixed)
 - Text scale, shadow, and distance cutoff settings
 
-#### Custom Sounds (`.ogg` files)
-Place in `config/sbo/sounds/` and restart Minecraft:
+#### Custom Sounds (`.ogg, .mp3, .wav, .au, .aif, .aiff` files)
+Place in `config/sbo/sounds/`:
 
 | Sound Event | Default |
 |-------------|---------|

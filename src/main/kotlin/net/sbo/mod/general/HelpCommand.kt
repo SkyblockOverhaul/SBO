@@ -6,7 +6,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent.ShowText
 import net.minecraft.network.chat.Style
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.SoundHandler
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 
@@ -33,7 +32,7 @@ object HelpCommand {
         mapOf("cmd" to "sboresetstatstracker", "desc" to "Resets the stats tracker"),
         mapOf("cmd" to "sboKey", "desc" to "Set your sbokey"),
         mapOf("cmd" to "sboClearKey", "desc" to "Reset your sbokey"),
-        mapOf("cmd" to "sbots <sound> [volume]", "desc" to "Test a custom sound (use filename without .ogg)")
+        mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui")
     )
 
     fun init() {
@@ -69,32 +68,6 @@ object HelpCommand {
             }
         }
         dropChances()
-        testSound()
-    }
-
-    private fun testSound() {
-        Register.command("sbots", "sbotsound", "sbotestsound") { args ->
-            if (args.isEmpty()) {
-                val available = SoundHandler.getAvailableSoundsList().take(10).joinToString(", ")
-                val more = if (SoundHandler.getAvailableSoundsList().size > 10) " and ${SoundHandler.getAvailableSoundsList().size - 10} more" else ""
-                Chat.chat("§6[SBO] §cUsage: /sbots <soundname> [volume]")
-                Chat.chat("§6[SBO] §eAvailable sounds: §a$available$more")
-                return@command
-            }
-
-            val sound = args[0]
-            val volume = args.getOrNull(1)?.toFloatOrNull() ?: 1.0f
-
-            if (!SoundHandler.hasSound(sound)) {
-                Chat.chat("§6[SBO] §cSound '$sound' not found.")
-                val available = SoundHandler.getAvailableSoundsList().take(5).joinToString(", ")
-                Chat.chat("§6[SBO] §eAvailable: $available")
-                return@command
-            }
-
-            SoundHandler.playCustomSound(sound, volume)
-            Chat.chat("§6[SBO] §aPlaying sound: §e$sound §aat volume §e$volume")
-        }
     }
 
     private fun dropChances() {
@@ -142,5 +115,4 @@ object HelpCommand {
             }
         }
     }
-
 }
