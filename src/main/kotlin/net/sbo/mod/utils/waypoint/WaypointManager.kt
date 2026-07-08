@@ -369,7 +369,7 @@ object WaypointManager {
 
     /**
      * Adds a spade guess waypoint.
-     * @param pos The position for the shovel guess waypoint.
+     * @param pos The position for the spade guess waypoint.
      */
     fun addSpadeGuess(pos: SboVec?) {
         if (pos == null) return

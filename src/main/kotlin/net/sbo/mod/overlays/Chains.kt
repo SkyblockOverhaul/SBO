@@ -86,8 +86,8 @@ object Chains : DirtyFlushableOverlay() {
 
         lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Chains"))
 
-        val chainsMax = if (chains > 7) chains else 7
-        val waypointsMax = if (waypoints > 7) waypoints else 7
+        val chainsMax = chains.coerceAtLeast(7)
+        val waypointsMax = waypoints.coerceAtLeast(7)
 
         lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/$chainsMax ($knownWStart pending start)"))
         lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/$waypointsMax ($knownW known, $arrowW arrow)"))
