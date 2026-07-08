@@ -29,14 +29,11 @@ object SoundHandler {
         scanUserSounds()
     }
 
-    fun getAvailableSoundsList(): List<String> = availableSounds.sorted().toList()
 
     /**
      * Returns available sounds with their file extensions (e.g., "sound.mp3", "music.ogg")
      */
     fun getAvailableSoundsWithExt(): List<String> = availableSoundsWithExt.sorted().toList()
-
-    fun hasSound(soundName: String): Boolean = soundName.isNotEmpty() && availableSounds.contains(soundName.lowercase())
 
     /**
      * Plays a custom sound.
