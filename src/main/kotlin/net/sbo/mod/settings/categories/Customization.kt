@@ -3,7 +3,7 @@ package net.sbo.mod.settings.categories
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import gg.essential.universal.UDesktop
 import net.fabricmc.loader.api.FabricLoader
-import net.sbo.mod.utils.SoundHandler
+import net.sbo.mod.guis.Guis
 import java.awt.Color
 import java.io.File
 
@@ -137,196 +137,20 @@ object Customization : CategoryKt("Customization") {
                 }
             }
         }
+
+        button {
+            title = "Sound Settings"
+            text = "Configure"
+            description = "Open GUI to configure all sound settings"
+            onClick {
+                Guis.openSoundGui(true)
+            }
+        }
     }
 
     var masterVolume by float(1.0f) {
         this.name = Literal("Master Volume")
         this.description = Literal("Set the volume for all sounds")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    init {
-        button {
-            title = "Test the sound below"
-            text = "Test"
-            description = "Test the custom sound in the box below"
-            onClick {
-                SoundHandler.playCustomSound(*testSound, volume = masterVolume)
-            }
-        }
-    }
-
-    var testSound by strings("yippee") {
-        this.name = Literal("Test Sound")
-        this.description = Literal("Enter the filename of the sound you want to test. (enter filename)")
-    }
-
-    var rareMobSound by strings("exporb") {
-        this.name = Literal("Rare Spawn Sound")
-        this.description = Literal("Set the sound that plays when an rare mob spawns. (enter filename)")
-    }
-    var rareMobVolume by float(1.0f) {
-        this.name = Literal("Rare Spawn Volume")
-        this.description = Literal("Set the volume of the rare mob spawn sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var inqSound by strings("") {
-        this.name = Literal("Inq Sound")
-        this.description = Literal("Set the sound that plays when an Inquisitor Spawn. (enter filename)")
-    }
-    var inqVolume by float(1.0f) {
-        this.name = Literal("Inq volume Volume")
-        this.description = Literal("Set the volume of the Inquisitor spawn sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var sphinxSound by strings("") {
-        this.name = Literal("Sphinx Sound")
-        this.description = Literal("Set the sound that plays when a Sphinx spawns. (enter filename)")
-    }
-    var sphinxVolume by float(1.0f) {
-        this.name = Literal("Sphinx Volume")
-        this.description = Literal("Set the volume of the Sphinx spawn sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var kingSound by strings("") {
-        this.name = Literal("King Minos Sound")
-        this.description = Literal("Set the sound that plays when King Minos spawns. (enter filename)")
-    }
-    var kingVolume by float(1.0f) {
-        this.name = Literal("King Minos Volume")
-        this.description = Literal("Set the volume of the King Minos spawn sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var mantiSound by strings("") {
-        this.name = Literal("Manticores Sound")
-        this.description = Literal("Set the sound that plays when a Manticore spawns. (enter filename)")
-    }
-    var mantiVolume by float(1.0f) {
-        this.name = Literal("Manticores Volume")
-        this.description = Literal("Set the volume of the Manticore spawn sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var cocoonSound by strings("") {
-        this.name = Literal("Cocoon Sound")
-        this.description = Literal("Set the sound that plays when a rare mob gets cocooned (enter filename)")
-    }
-    var cocoonVolume by float(1.0f) {
-        this.name = Literal("Cocoon Volume")
-        this.description = Literal("Set the volume of the cocooning sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var burrowFoundSound by strings("notification") {
-        this.name = Literal("Burrow Found Sound")
-        this.description = Literal("Set the sound that plays when you find a burrow. (enter filename)")
-    }
-    var burrowVolume by float(1.0f) {
-        this.name = Literal("Burrow Found Volume")
-        this.description = Literal("Set the volume of the burrow found sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var chimSound by strings("") {
-        this.name = Literal("Chimera Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a chimera book. (enter filename)")
-    }
-    var chimVolume by float(1.0f) {
-        this.name = Literal("Chimera Drop Volume")
-        this.description = Literal("Set the volume of the chimera drop sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var bfSound by strings("") {
-        this.name = Literal("Brain Food Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop Brain Food. (enter filename)")
-    }
-
-    var bfVolume by float(1.0f) {
-        this.name = Literal("Brain Food Drop Volume")
-        this.description = Literal("Set the volume of the Brain Food drop sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var coreSound by strings("") {
-        this.name = Literal("Manti-Core Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a Manti-Core. (enter filename)")
-    }
-
-    var coreVolume by float(1.0f) {
-        this.name = Literal("Manti-Core Drop Volume")
-        this.description = Literal("Set the volume of the Manti-Core drop sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var stingerSound by strings("") {
-        this.name = Literal("Fateful Stinger Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a Fateful Stinger. (enter filename)")
-    }
-
-    var stingerVolume by float(1.0f) {
-        this.name = Literal("Fateful Stinger Drop Volume")
-        this.description = Literal("Set the volume of the Fateful Stinger drop sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var woolSound by strings("") {
-        this.name = Literal("Shimmering Wool Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop Shimmering Wool. (enter filename)")
-    }
-
-    var woolVolume by float(1.0f) {
-        this.name = Literal("Shimmering Wool Drop Volume")
-        this.description = Literal("Set the volume of the Shimmering Wool drop sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var relicSound by strings("") {
-        this.name = Literal("Relic Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a minos relic. (enter filename)")
-    }
-    var relicVolume by float(1.0f) {
-        this.name = Literal("Relic Drop Volume")
-        this.description = Literal("Set the volume of the relic drop sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var stickSound by strings("") {
-        this.name = Literal("Daedalus Stick Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a daedalus stick.")
-    }
-    var stickVolume by float(1.0f) {
-        this.name = Literal("Daedalus Stick Drop Volume")
-        this.description = Literal("Set the volume of the daedalus stick drop sound")
-        this.range = 0.0f..1.0f
-        this.slider = true
-    }
-
-    var miscDropSound by strings("") {
-        this.name = Literal("Misc Drop Sound")
-        this.description = Literal("Set the sound that plays when you drop a crown of greed, washed-up souvenir, dwarf turtle shelmet, crochet tiger plushie, antique remedies, cretan urn or hilt of revelations. (enter filename)")
-    }
-    var miscDropVolume by float(1.0f) {
-        this.name = Literal("Misc Drop Volume")
-        this.description = Literal("Set the volume of the misc drop sound")
         this.range = 0.0f..1.0f
         this.slider = true
     }

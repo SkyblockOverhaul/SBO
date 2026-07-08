@@ -18,6 +18,7 @@ object SoundHandler {
     private val SUPPORTED_EXTENSIONS = setOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
     private val SOUND_DIR_PATH = "config/sbo/sounds"
     private val availableSounds = mutableSetOf<String>()
+    private val availableSoundsWithExt = mutableSetOf<String>()
 
     /**
      * Initializes sound system: extracts built-in sounds and scans for available sounds.
@@ -30,6 +31,11 @@ object SoundHandler {
 
     fun getAvailableSoundsList(): List<String> = availableSounds.sorted().toList()
 
+    /**
+     * Returns available sounds with their file extensions (e.g., "sound.mp3", "music.ogg")
+     */
+    fun getAvailableSoundsWithExt(): List<String> = availableSoundsWithExt.sorted().toList()
+
     fun hasSound(soundName: String): Boolean = soundName.isNotEmpty() && availableSounds.contains(soundName.lowercase())
 
     /**
@@ -37,23 +43,21 @@ object SoundHandler {
      * @param sounds Sound name (extension optional, .ogg assumed if missing)
      * @param volume Volume level (0-1), combined with master volume
      */
-    fun playCustomSound(vararg sounds: String, volume: Float) {
-        var sound = sounds[0]
-
+    fun playCustomSound(sound: String, volume: Float) {
         // Combine per-sound volume (0-1) with global master volume
         val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
 
         // Assume .ogg if no extension provided
-        if (SUPPORTED_EXTENSIONS.none { sound.endsWith(it, ignoreCase = true) }) sound += ".ogg"
+        var soundFile = if (SUPPORTED_EXTENSIONS.none { sound.endsWith(it, ignoreCase = true) }) sound + ".ogg" else sound
 
-        val file = File(SOUND_DIR_PATH, sound)
+        val file = File(SOUND_DIR_PATH, soundFile)
         if (!file.exists()) {
             logger.warn("[$MOD_ID] Sound file not found: ${file.absolutePath}")
             return
         }
 
         // Dispatch to appropriate player
-        if (sound.endsWith(".mp3", ignoreCase = true)) {
+        if (soundFile.endsWith(".mp3", ignoreCase = true)) {
             playMp3WithVolume(file, volumePercent)
         } else {
             playStandardAudio(file, volumePercent)
@@ -86,6 +90,7 @@ object SoundHandler {
                             }
                         }
                         availableSounds.add(sound.substringBeforeLast('.').lowercase())
+                        availableSoundsWithExt.add(sound)
                     }
             }
         }
@@ -98,6 +103,7 @@ object SoundHandler {
             ?.filter { file -> SUPPORTED_EXTENSIONS.any { ext -> file.name.endsWith(ext, ignoreCase = true) } }
             ?.forEach { file ->
                 availableSounds.add(file.name.substringBeforeLast('.').lowercase())
+                availableSoundsWithExt.add(file.name)
             }
     }
 
