@@ -304,18 +304,6 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces chimera/stick/relic on screen")
     }
 
-    var lootAnnouncerPrice by ObservableEntry(boolean(true) {
-            this.name = Literal("Show Price Title")
-            this.description = Literal("Shows chimera/stick/relic price as a subtitle on screen")
-        }
-    ) { old, new ->
-        if (old != new) {
-            if (new) {
-                lootAnnouncerScreen = true
-            }
-        }
-    }
-
     var lootAnnouncerParty by boolean(true) {
         this.name = Literal("Loot Party Announcer")
         this.description = Literal("Announces chimera/wool/stinger/food in party chat")

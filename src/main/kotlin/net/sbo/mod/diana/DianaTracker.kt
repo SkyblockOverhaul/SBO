@@ -729,7 +729,7 @@ object DianaTracker {
             else -> Triple("§f", -1, -1) // shouldn't happen
         }
 
-        val price = if (Diana.lootAnnouncerPrice) "§6${Helper.getItemPriceFormatted(itemId, amount)} coins" else ""
+        val price = "§6${Helper.getItemPriceFormatted(itemId, amount)} coins"
 
         val ls = gotLootShareRecently()
         val lsText = if (ls) " (LS)" else ""

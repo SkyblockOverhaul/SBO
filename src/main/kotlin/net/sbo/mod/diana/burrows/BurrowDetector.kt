@@ -63,12 +63,22 @@ object BurrowDetector {
 
         Register.command("sbodebugburrows") { // TODO: Maybe remove at some point once we're fully sure internal state cannot bug out
             for (known in burrows.values) {
-                WaypointManager.addWaypoint(Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, ttl = 30, type = "world"))
+                if (!WaypointManager.waypointExists("burrow", known.pos).first) {
+                    val wayp = Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, ttl = 30, type = "world")
+                    wayp.preventInvalidRemoval = true
+
+                    WaypointManager.addWaypoint(wayp)
+                }
             }
 
             for (arrow in ArrowGuessBurrow.allGuesses) {
                 val curr = arrow.getCurrent()
-                WaypointManager.addWaypoint(Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, ttl = 30, type = "world"))
+                if (!WaypointManager.waypointExists("arrow", curr).first) {
+                    val wayp = Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, ttl = 30, type = "world")
+                    wayp.preventInvalidRemoval = true
+
+                    WaypointManager.addWaypoint(wayp)
+                }
             }
         }
 
@@ -113,6 +123,17 @@ object BurrowDetector {
         chainExpirations.addLast(System.nanoTime() + CHAIN_DURATION_NS)
     }
 
+    private fun refreshChainTimer() {
+        purgeExpiredChains()
+
+        if (chainExpirations.isEmpty()) {
+            return
+        }
+
+        chainExpirations.removeFirst()
+        chainExpirations.addLast(System.nanoTime() + CHAIN_DURATION_NS)
+    }
+
     private fun parseTypeFromChatMsg(message: String): String {
         if (message.contains("Griffin Feather") || message.contains(" coins!") || message.contains("Mythos Fragment") || message.contains("Braided Griffin Feather") || message.contains("Myth the Fish")) {
             return "Treasure"
@@ -136,8 +157,13 @@ object BurrowDetector {
 
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
-        if (event.currentBurrow == 1) {
-            chainStart()
+        when {
+            event.currentBurrow == 1 -> chainStart()
+
+            event.currentBurrow != event.maxBurrow -> refreshChainTimer()
+
+            // last burrow: do nothing
+            // chainFinish() is already handled by chat
         }
 
         if (!Diana.closeBurrowDetection) return
@@ -295,8 +321,11 @@ object BurrowDetector {
 
                 if (knownWaypoint != null) {
                     removeFromInternalState(knownWaypoint.pos)
-                    ArrowGuessBurrow.removeFromInternalState(knownWaypoint.pos)
                     burrowHistory.add("${knownWaypoint.pos.x.toInt()} ${knownWaypoint.pos.y.toInt()} ${knownWaypoint.pos.z.toInt()}")
+                }
+
+                if (dugWaypoint.type == "arrow") {
+                    ArrowGuessBurrow.removeFromInternalState(knownWaypoint.pos)
                 }
 
                 WaypointManager.removeWaypoint(dugWaypoint)
@@ -306,20 +335,18 @@ object BurrowDetector {
         // Counted timesDug above already
         flushRemovals()
 
-        if (dugWaypoint?.type != "burrow" && burrowType != null) {
+        if (dugWaypoint != null && (dugWaypoint.type == "guess" || dugWaypoint.type == "arrow") && burrowType != null) {
             // The user dug a Guess waypoint before particles updated it into a real burrow type.
             // We promote it into a real burrow and preserve progression state.
             registerBurrow(
                 pos = pos,
                 type = burrowType,
                 source = "chat",
-                carriedTimesDug = dugWaypoint?.timesDug ?: expectedTimesDug
+                carriedTimesDug = expectedTimesDug
             )
 
-            if (dugWaypoint != null) {
-                burrowHistory.add("${dugWaypoint.pos.x.toInt()} ${dugWaypoint.pos.y.toInt()} ${dugWaypoint.pos.z.toInt()}")
-                WaypointManager.removeWaypoint(dugWaypoint)
-            }
+            burrowHistory.add("${dugWaypoint.pos.x.toInt()} ${dugWaypoint.pos.y.toInt()} ${dugWaypoint.pos.z.toInt()}")
+            WaypointManager.removeWaypoint(dugWaypoint)
         }
     }
 }

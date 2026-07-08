@@ -147,7 +147,7 @@ object WaypointManager {
 
             // Remove all waypoints that are not in radius of typical burrow locations x y z
             this.forEachWaypoint { waypoint ->
-                if (World.getWorld() != "Hub") return@forEachWaypoint
+                if (World.getWorld() != "Hub" || waypoint.preventInvalidRemoval) return@forEachWaypoint
 
                 val underWorld = waypoint.pos.y < 60
                 val aboveWorld = waypoint.pos.y > 105
@@ -368,10 +368,10 @@ object WaypointManager {
     }
 
     /**
-     * Adds a shovel guess waypoint.
+     * Adds a spade guess waypoint.
      * @param pos The position for the shovel guess waypoint.
      */
-    fun addShovelGuess(pos: SboVec?) {
+    fun addSpadeGuess(pos: SboVec?) {
         if (pos == null) return
 
         if (!waypointExists("burrow", pos).first) {

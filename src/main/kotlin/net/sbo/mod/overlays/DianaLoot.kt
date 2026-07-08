@@ -16,6 +16,7 @@ import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
+import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
 
 object DianaLoot : DirtyFlushableOverlay() {
@@ -24,7 +25,7 @@ object DianaLoot : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Loot", 10f, 10f,
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
     )
-        .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.checkDiana() || Helper.hasSpade) }
+        .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.hasSpade && World.getWorld() == "Hub") }
 
     private val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "${YELLOW}Change View",

@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting.*
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.data.SboDataObject.SBOConfigBundle
 import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
@@ -16,7 +17,7 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 object DianaStats : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Stats", 10f, 10f,
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
-    ).setCondition { Diana.statsTracker && (Helper.checkDiana() || Helper.hasSpade) }
+    ).setCondition { Diana.statsTracker && (Helper.hasSpade && World.getWorld() == "Hub") }
 
     fun init() {
         overlay.init()

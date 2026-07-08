@@ -349,9 +349,8 @@ object AchievementManager {
         }
     }
 
-    // The first pattern is with the Hypixel Skyblock Resourcepack, second one is before the resourcepack was added.
+    // The weird symbol is due to the Hypixel Skyblock Resourcepack
     private val COA_MF_PATTERN: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!
-    private val COA_MF_PATTERN_2: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")!! // TODO: Remove once alpha releases to main and resourcepack is forced.
 
     private fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
@@ -364,9 +363,8 @@ object AchievementManager {
             .map { it.removeFormatting() }
 
         val mfStr = loreLines.getValueFromLine(COA_MF_PATTERN)
-        val mfStr2 = loreLines.getValueFromLine(COA_MF_PATTERN_2)
 
-        val mf = if (mfStr.isNotEmpty()) mfStr.toDouble() else if (mfStr2.isNotEmpty()) mfStr2.toDouble() else -1
+        val mf = if (mfStr.isNotEmpty()) mfStr.toDouble() else -1
 
         if (mf == -1) {
             // Notify user to not be a silent failure point. Full lines are only logged to logs and not chat as it's long.

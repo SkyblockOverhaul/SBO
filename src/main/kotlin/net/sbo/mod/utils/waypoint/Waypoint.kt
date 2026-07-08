@@ -50,6 +50,7 @@ class Waypoint(
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
     var inaccurateArrow = false
+    var preventInvalidRemoval = false
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
         this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
