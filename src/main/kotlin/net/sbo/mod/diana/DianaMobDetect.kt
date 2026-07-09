@@ -12,6 +12,7 @@ import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
+import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -238,7 +239,7 @@ object DianaMobDetect {
 
         if (Diana.cocoonTitle) {
             showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b${mobName}", 10, 40, 10)
-            playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
+            playCustomSound(SboDataObject.soundSettingsData.cocoonSound, volume = SboDataObject.soundSettingsData.cocoonVolume)
         }
     }
 
