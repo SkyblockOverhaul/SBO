@@ -1,5 +1,6 @@
 package net.sbo.mod.utils
 
+import javazoom.jl.player.JavaSoundAudioDevice
 import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
@@ -8,11 +9,16 @@ import javazoom.jl.player.Player
 import java.io.File
 import java.io.FileInputStream
 import java.nio.file.Files
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.FloatControl
 import javax.sound.sampled.LineEvent
 import kotlin.math.log10
+import java.io.InputStream
+import javax.sound.sampled.AudioInputStream
+import javax.sound.sampled.Clip
 
 object SoundHandler {
     private val SUPPORTED_EXTENSIONS = setOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
@@ -20,13 +26,21 @@ object SoundHandler {
     private val availableSounds = mutableSetOf<String>()
     private val availableSoundsWithExt = mutableSetOf<String>()
 
+    // Thread pool for audio processing - bounded and daemon threads
+    private val AUDIO_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
+        Thread(r, "sbo-audio-thread").apply { isDaemon = true }
+    }
+
     /**
      * Initializes sound system: extracts built-in sounds and scans for available sounds.
      */
     fun init() {
         File(SOUND_DIR_PATH).apply { mkdirs() }
-        extractBuiltInSounds()
-        scanUserSounds()
+        // Defer the expensive operations to avoid blocking game startup
+        AUDIO_EXECUTOR.execute {
+            extractBuiltInSounds()
+            scanUserSounds()
+        }
     }
 
 
@@ -37,7 +51,7 @@ object SoundHandler {
 
     /**
      * Plays a custom sound.
-     * @param sounds Sound name (extension optional, .ogg assumed if missing)
+     * @param sound Sound name (extension optional, .ogg assumed if missing)
      * @param volume Volume level (0-1), combined with master volume
      */
     fun playCustomSound(sound: String, volume: Float) {
@@ -45,7 +59,7 @@ object SoundHandler {
         val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
 
         // Assume .ogg if no extension provided
-        var soundFile = if (SUPPORTED_EXTENSIONS.none { sound.endsWith(it, ignoreCase = true) }) sound + ".ogg" else sound
+        val soundFile = if (SUPPORTED_EXTENSIONS.none { sound.endsWith(it, ignoreCase = true) }) "$sound.ogg" else sound
 
         val file = File(SOUND_DIR_PATH, soundFile)
         if (!file.exists()) {
@@ -53,11 +67,15 @@ object SoundHandler {
             return
         }
 
-        // Dispatch to appropriate player
+        // Dispatch to appropriate player using thread pool
         if (soundFile.endsWith(".mp3", ignoreCase = true)) {
-            playMp3WithVolume(file, volumePercent)
+            AUDIO_EXECUTOR.execute {
+                playMp3WithVolume(file, volumePercent)
+            }
         } else {
-            playStandardAudio(file, volumePercent)
+            AUDIO_EXECUTOR.execute {
+                playStandardAudio(file, volumePercent)
+            }
         }
     }
 
@@ -105,7 +123,10 @@ object SoundHandler {
     }
 
     /** Converts linear volume (0-1) to decibels for audio control */
-    private fun volumeToDecibels(volume: Float): Float = (20 * log10(volume.toDouble())).toFloat()
+    private fun volumeToDecibels(volume: Float): Float {
+        if (volume <= 0.0001f) return -96f // Avoid log10(0)
+        return (20 * log10(volume.toDouble())).toFloat()
+    }
 
     /** Plays standard audio formats (.ogg, .wav, .au, .aif, .aiff) */
     private fun playStandardAudio(file: File, volumePercent: Float) {
@@ -117,20 +138,25 @@ object SoundHandler {
             return
         }
 
-        val decodedFormat = AudioFormat(
-            AudioFormat.Encoding.PCM_SIGNED,
-            inputStream.format.sampleRate,
-            16,
-            inputStream.format.channels,
-            inputStream.format.channels * 2,
-            inputStream.format.sampleRate,
-            false
-        )
-
         val stream = try {
-            AudioSystem.getAudioInputStream(decodedFormat, inputStream)
+            // Skip expensive format conversion if it's already PCM
+            if (inputStream.format.encoding == AudioFormat.Encoding.PCM_SIGNED) {
+                inputStream
+            } else {
+                // Only convert if necessary
+                val decodedFormat = AudioFormat(
+                    AudioFormat.Encoding.PCM_SIGNED,
+                    inputStream.format.sampleRate,
+                    16,
+                    inputStream.format.channels,
+                    inputStream.format.channels * 2,
+                    inputStream.format.sampleRate,
+                    false
+                )
+                AudioSystem.getAudioInputStream(decodedFormat, inputStream)
+            }
         } catch (e: Exception) {
-            logger.error("[$MOD_ID] Failed to convert audio format: ${file.name}", e)
+            logger.error("[$MOD_ID] Failed to process audio format: ${file.name}", e)
             runCatching { inputStream.close() }
             return
         }
@@ -149,40 +175,49 @@ object SoundHandler {
             gain.value = volumeToDecibels(volumePercent)
         }
 
+        // Use separate function for cleanup to ensure all resources are closed
+        cleanupOnAudioStop(clip, stream, inputStream)
+        clip.start()
+    }
+
+    /**
+     * Clean up audio resources when playback stops
+     */
+    private fun cleanupOnAudioStop(clip: Clip, stream: AudioInputStream, inputStream: InputStream) {
         clip.addLineListener { event ->
             if (event.type == LineEvent.Type.STOP) {
-                clip.close()
-                stream.close()
-                inputStream.close()
+                try {
+                    clip.close()
+                    stream.close()
+                    inputStream.close()
+                } catch (e: Exception) {
+                    logger.error("[$MOD_ID] Error closing audio resources", e)
+                }
             }
         }
-
-        clip.start()
     }
 
     /** Plays MP3 with volume control via custom audio device */
     private fun playMp3WithVolume(file: File, volumePercent: Float) {
-        Thread {
-            FileInputStream(file).use { fileStream ->
-                runCatching {
-                    val player = Player(fileStream, createVolumeAdjustedAudioDevice(volumePercent))
-                    player.play()
-                    player.close()
-                }.onFailure {
-                    logger.error("[$MOD_ID] Failed to play MP3 sound: ${file.name}", it)
-                }
+        FileInputStream(file).use { fileStream ->
+            runCatching {
+                val player = Player(fileStream, createVolumeAdjustedAudioDevice(volumePercent))
+                player.play()
+                player.close()
+            }.onFailure {
+                logger.error("[$MOD_ID] Failed to play MP3 sound: ${file.name}", it)
             }
-        }.start()
+        }
     }
 
     /** Creates a custom audio device that applies volume adjustment */
-    private fun createVolumeAdjustedAudioDevice(volumePercent: Float): javazoom.jl.player.JavaSoundAudioDevice {
-        return object : javazoom.jl.player.JavaSoundAudioDevice() {
+    private fun createVolumeAdjustedAudioDevice(volumePercent: Float): JavaSoundAudioDevice {
+        return object : JavaSoundAudioDevice() {
             override fun writeImpl(samples: ShortArray, offs: Int, len: Int) {
                 super.writeImpl(samples, offs, len)
 
                 runCatching {
-                    val sourceField = javazoom.jl.player.JavaSoundAudioDevice::class.java
+                    val sourceField = JavaSoundAudioDevice::class.java
                         .getDeclaredField("source").apply { isAccessible = true }
                     val sourceLine = sourceField.get(this) as? javax.sound.sampled.SourceDataLine
 
