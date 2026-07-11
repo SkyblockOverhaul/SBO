@@ -97,6 +97,10 @@ object ArrowGuessBurrow {
             current.x == target.x && current.y == target.y && current.z == target.z
         }
 
+        containList.forEach { entry ->
+            entry.removeAllWaypoints()
+        }
+
         allGuesses.removeAll(containList.toSet())
     }
 
@@ -114,6 +118,7 @@ object ArrowGuessBurrow {
         containList.forEach {
             if (!it.moveToNext()) {
                 toRemove.add(it)
+                it.removeAllWaypoints()
             }
         }
 
@@ -278,14 +283,29 @@ object ArrowGuessBurrow {
         val possibilities = candidates.filterValues { it.first == minValue }
         val withinRange = possibilities.filterValues { it.second.toInt() in range }.map { it.key }
 
-        if (withinRange.isNotEmpty()) {
-            allGuesses.add(GuessEntry(withinRange))
+        val first = withinRange.firstOrNull()
+        val hasOne = first != null
+
+        if (hasOne) {
+            val entry = GuessEntry(withinRange)
+
+            if (allGuesses.any { it.isEquivalentTo(entry) }) {
+                return first
+            }
+
+            allGuesses.add(entry)
+
+            WaypointManager.addArrowGuess(entry.getCurrent())
+
+            if (Diana.showArrowSubGuesses) {
+                entry.getRemaining().forEach {
+                    WaypointManager.addArrowSubGuess(it)
+                }
+            }
         }
 
-        val withinRangeFirst = withinRange.getOrNull(0)
-
         if (Diana.showTitleWhenFailure) {
-            spadeTitleShown = if (withinRangeFirst == null) {
+            spadeTitleShown = if (!hasOne) {
                 if (!spadeTitleShown) BurrowDetector.requestSpade("failure")
                 true
             } else {
@@ -293,7 +313,7 @@ object ArrowGuessBurrow {
             }
         }
 
-        return withinRangeFirst
+        return first
     }
 
     private fun checkMoveGuess() {
@@ -385,9 +405,7 @@ object ArrowGuessBurrow {
         if(!recentFoundArrows.add(arrow)) return this
 
         locations.clear()
-        findClosestValidBlockToRayNew(arrow, this)?.let {
-            WaypointManager.addArrowGuess(it)
-        }
+        findClosestValidBlockToRayNew(arrow, this)
 
         return this
     }

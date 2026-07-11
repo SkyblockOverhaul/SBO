@@ -1,5 +1,10 @@
 [versions]
 loom = "1.17.13"
+ksp = "2.3.10"
 
 [plugins]
 loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "loom" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+[libraries]
+ksp-symbol-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }

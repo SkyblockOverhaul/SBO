@@ -809,9 +809,7 @@ object DianaTracker {
         val custom = customMsg != null
         if (custom) msg = customMsg.removeFormatting()
 
-        if (replaceDropMessage) {
-            if (custom) Chat.chat(customMsg)
-        } else {
+        if (!replaceDropMessage) {
             val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
             val price = Helper.getItemPriceFormatted(itemId)
             val priceStr = if (price != "0") " (+$price coins)" else ""

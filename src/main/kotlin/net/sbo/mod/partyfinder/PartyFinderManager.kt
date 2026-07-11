@@ -291,18 +291,21 @@ object PartyFinderManager {
 
     fun getAllParties(
         partyType: String,
-        onComplete: ((List<Party>) -> Unit)? = null
+        onComplete: ((List<Party>) -> Unit)? = null,
+        onError: (() -> Unit)? = null
     ) {
-        Http.sendGetRequest("$API_URL/getAllParties?partytype=$partyType").toJson<GetAllParties>(true) { response ->
-            if (response.success) {
-                val partyList = response.parties
-                onComplete?.invoke(partyList)
-            } else {
-                Chat.chat("§6[SBO] §4Failed to get parties")
+        Http.sendGetRequest("$API_URL/getAllParties?partytype=$partyType")
+            .toJson<GetAllParties>(true) { response ->
+                if (response.success) {
+                    onComplete?.invoke(response.parties)
+                } else {
+                    Chat.chat("§6[SBO] §4Failed to get parties")
+                    onError?.invoke()
+                }
+            }.error { error ->
+                onError?.invoke()
+                Chat.chat("§6[SBO] §4Unexpected error while getting parties: ${error.message}")
             }
-        }.error { error ->
-            Chat.chat("§6[SBO] §4Unexpected error while getting parties: ${error.message}")
-        }
     }
 
     fun getActiveUsers(

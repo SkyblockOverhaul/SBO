@@ -49,7 +49,6 @@ class Waypoint(
     var timesDug = 0
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
-    var inaccurateArrow = false
     var preventInvalidRemoval = false
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
@@ -160,6 +159,9 @@ class Waypoint(
             "world" -> {
                 return Color(Customization.OtherWaypointColor)
             }
+            "subGuess" -> {
+                return Color(Customization.SubGuessColor)
+            }
         }
         return Color(255, 255, 255) // shouldn't happen
     }
@@ -208,6 +210,11 @@ class Waypoint(
                 }
             }
 
+            "subGuess" -> {
+                this.line = false
+                this.formattedText = "$text"
+            }
+
             else -> {
                 this.formattedText = "$text$distanceText"
             }
@@ -227,7 +234,6 @@ class Waypoint(
 
     fun render(context: WorldRenderContext) {
         if (!this.formatted || this.hidden) return
-        if (inaccurateArrow) return
 
         val rgbAndHex = getRgbAndHex()
 
@@ -243,7 +249,7 @@ class Waypoint(
             waypointOpacity,
             this.line,
             Diana.dianaLineWidth.toFloat(),
-            Diana.showBeaconBeam
+            if (type == "subGuess") false else Diana.showBeaconBeam
         )
     }
 }

@@ -143,8 +143,13 @@ class Overlay(
         return maxWidth
     }
 
+    private fun checkCondition(): Boolean {
+        // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
+        return condition() || editing
+    }
+
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
-        if (!condition()) return false
+        if (!checkCondition()) return false
         val totalWidth = width * scale
         val totalHeight = height * scale
 
@@ -157,8 +162,11 @@ class Overlay(
         val y: Int
     )
 
-    fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
-        if (!condition()) return
+    fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double, editing: Boolean = false) {
+        if (!checkCondition()) {
+            return
+        }
+
         val textRenderer = mc.font
 
         drawContext.pose().pushMatrix()

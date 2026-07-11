@@ -83,6 +83,11 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
+    var showArrowSubGuesses by boolean(false) {
+        this.name = Literal("Show Arrow Sub Guesses")
+        this.description = Literal("Displays the other possible arrow guess locations as gray (configurable) waypoints until the active guess advances. This is not recommended for inexperienced users to reduce confusion and is so defaults to being disabled.")
+    }
+
     var showBeaconBeam by boolean(true) {
         this.name = Literal("Show Beacon Beam")
         this.description = Literal("Shows a beacon beam for waypoints going to the sky if enabled.")
@@ -90,17 +95,17 @@ object Diana : CategoryKt("Diana") {
 
     var showTitleWhenFailure by boolean(false) {
         this.name = Literal("Show Title When Failure")
-        this.description = Literal("Shows a title to guess normally when the arrow guess fails to solve the burrow")
+        this.description = Literal("Shows a title to use spade when the arrow guess fails to solve the burrow. This might sometimes show wrongfully on a second solve attempt if the first was successfull and second failed for any reason.")
     }
 
-    var showTitleWhenChainEnd by boolean(false) {
-        this.name = Literal("Show Title When Chain End")
-        this.description = Literal("Shows a title to guess normally when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby")
+    var showTitleWhenChainEnds by boolean(true) {
+        this.name = Literal("Show Title When Chain Ends")
+        this.description = Literal("Shows a title to use spade when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby, which will usually point to a new Start burrow to hold up your concurrent chains.")
     }
 
     var ongoingChainsDisplay by boolean(false) {
         this.name = Literal("Ongoing Chains Display")
-        this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time, rarely 8 although one will finish very fast, going back to 7.")
+        this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time.")
     }
 
     init {
@@ -309,54 +314,29 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces chimera/wool/stinger/food in party chat")
     }
 
-    var chimMessageBool by boolean(false) {
-        this.name = Literal("Chim Message")
-        this.description = Literal("Enables custom chim message")
+    var customChimeraMessage by strings("") {
+        this.name = Literal("Custom Chimera Message")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop Amount this event and {percentage} for chimera/inquis ratio.")
     }
 
-    var customChimMessage by strings("&6[SBO] &6&lRARE DROP! &dChimera! &b+{mf} ✯ Magic Find &b#{amount}") {
-        this.name = Literal("Custom Chim Message Text")
-        this.description = Literal("use: {mf} for MagicFind, {amount} for drop Amount this event and {percentage} for chimera/inquis ratio.")
+    var customManticoreMessage by strings("") {
+        this.name = Literal("Custom Manti-core Message")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for core/manti ratio.")
     }
 
-    var coreMessageBool by boolean(false) {
-        this.name = Literal("Manti-Core Message")
-        this.description = Literal("Enables custom Manti-Core message (core/manti)")
+    var customFatefulStingerMessage by strings("") {
+        this.name = Literal("Custom Fateful Stinger Message")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for stinger/manti ratio.")
     }
 
-    var customCoreMessage by strings("&6[SBO] &6&lRARE DROP! &6Manti-Core! &b+{mf} ✯ Magic Find &b#{amount}") {
-        this.name = Literal("Custom Manti-Core Message Text")
-        this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for core/manti ratio.")
+    var customBrainFoodMessage by strings("") {
+        this.name = Literal("Custom Brain Food Message")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for food/sphinx ratio.")
     }
 
-    var stingerMessageBool by boolean(false) {
-        this.name = Literal("Fateful Stinger Message")
-        this.description = Literal("Enables custom Fateful Stinger message (stinger/manti)")
-    }
-
-    var customStingerMessage by strings("&6[SBO] &6&lRARE DROP! &dFateful Stinger! &b+{mf} ✯ Magic Find &b#{amount}") {
-        this.name = Literal("Custom Fateful Stinger Message Text")
-        this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for stinger/manti ratio.")
-    }
-
-    var bfMessageBool by boolean(false) {
-        this.name = Literal("Brain Food Message")
-        this.description = Literal("Enables custom Brain Food message (food/sphinx)")
-    }
-
-    var customBfMessage by strings("&6[SBO] &6&lRARE DROP! &5Brain Food! &b+{mf} ✯ Magic Find &b#{amount}") {
-        this.name = Literal("Custom Brain Food Message Text")
-        this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for food/sphinx ratio.")
-    }
-
-    var woolMessageBool by boolean(false) {
-        this.name = Literal("Shimmering Wool Message")
-        this.description = Literal("Enables custom Shimmering Wool message (wool/king)")
-    }
-
-    var customWoolMessage by strings("&6[SBO] &6&lRARE DROP! &6Shimmering Wool! &b+{mf} ✯ Magic Find &b#{amount}") {
-        this.name = Literal("Custom Shimmering Wool Message Text")
-        this.description = Literal("Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for wool/king ratio.")
+    var customShimmeringWoolMessage by strings("") {
+        this.name = Literal("Custom Shimmering Wool Message")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for wool/king ratio.")
     }
 
     init {
@@ -367,11 +347,11 @@ object Diana : CategoryKt("Diana") {
             onClick {
                 if (Helper.checkCustomDropMessage("Chimera", 400).first) {
                     val drops = mutableListOf<String>()
-                    if (chimMessageBool) drops.add("Chimera")
-                    if (bfMessageBool) drops.add("Brain Food")
-                    if (woolMessageBool) drops.add("Wool")
-                    if (coreMessageBool) drops.add("Core")
-                    if (stingerMessageBool) drops.add("Stinger")
+                    if (customChimeraMessage.isNotEmpty()) drops.add("Chimera")
+                    if (customBrainFoodMessage.isNotEmpty()) drops.add("Brain Food")
+                    if (customShimmeringWoolMessage.isNotEmpty()) drops.add("Wool")
+                    if (customManticoreMessage.isNotEmpty()) drops.add("Core")
+                    if (customFatefulStingerMessage.isNotEmpty()) drops.add("Stinger")
 
                     for (drop: String in drops) {
                         Chat.chat(
@@ -474,11 +454,6 @@ object Diana : CategoryKt("Diana") {
         this.name = Literal("Highlight Color")
         this.description = Literal("Color for the rare mob highlight effect")
         this.allowAlpha = true
-    }
-
-    var allWaypointsAreInqs by boolean(false) {
-        this.name = Literal("All Waypoints are Rare Mobs")
-        this.description = Literal("All coordinates from chat are considered rare mobs (King, Manti, Sphinx, Inq)")
     }
 
     var announceInqText by strings("") {

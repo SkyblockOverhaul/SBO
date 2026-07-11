@@ -66,7 +66,7 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim().lowercase()
             val playerName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                if ((!trailing.startsWith(" ") || rareMobs.contains(mob) || Diana.allWaypointsAreInqs) && Diana.receiveRareMob) {
+                if ((!trailing.startsWith(" ") || rareMobs.contains(mob)) && Diana.receiveRareMob) {
                     val mobType: Diana.ReceiveList = when (mob) {
                         "minos inquisitor", "inquisitor", "inq" -> Diana.ReceiveList.INQ
                         "king minos", "king" -> Diana.ReceiveList.KING
@@ -124,6 +124,7 @@ object WaypointManager {
             val knownBurrows = getWaypointsOfType("burrow")
             val shovelGuesses = getWaypointsOfType("guess")
             val arrowGuesses = getWaypointsOfType("arrow")
+            val subGuesses = getWaypointsOfType("subGuess")
 
             // These do not change location when using the shovel
             val allStaticBurrowWaypoints = knownBurrows + arrowGuesses
@@ -187,10 +188,21 @@ object WaypointManager {
                         removeWaypoint(arrowGuess)
                         ArrowGuessBurrow.removeOrMoveFromInternalState(arrowGuess.pos)
                     } else {
-                        arrowGuess.inaccurateArrow = true
+                        arrowGuess.hidden = true
                     }
                 } else {
-                    arrowGuess.inaccurateArrow = false
+                    arrowGuess.hidden = false
+                }
+            }
+
+            // Hide all invalid sub guesses as they can be under many grass blocks and unreachable often
+            subGuesses.forEach { subGuess ->
+                if (World.getWorld() != "Hub") return@forEach
+
+                if (!ArrowGuessBurrow.isBlockValid(subGuess.pos)) {
+                    subGuess.hidden = true
+                } else {
+                    subGuess.hidden = false
                 }
             }
 
@@ -393,6 +405,29 @@ object WaypointManager {
                 type = "arrow"
             )
         )
+    }
+
+    fun addArrowSubGuess(pos: SboVec?) {
+        if (pos == null) return
+
+        val exists = getWaypointsOfType("subGuess")
+            .any { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
+
+        if (exists) return
+
+        addWaypoint(
+            Waypoint(
+                text = "Possible",
+                x = pos.x,
+                y = pos.y,
+                z = pos.z,
+                type = "subGuess"
+            )
+        )
+    }
+
+    fun removeArrowSubGuess(pos: SboVec) {
+        removeWaypointAt(pos, "subGuess")
     }
 
     /**

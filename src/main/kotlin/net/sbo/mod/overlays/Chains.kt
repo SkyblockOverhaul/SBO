@@ -46,7 +46,7 @@ object Chains : DirtyFlushableOverlay() {
         val knownW = burrowWayps.filter { !it.hidden && it.text != "Start" }.size
         val knownWStart = burrowWayps.filter { it.text == "Start" }.size
 
-        val arrowW = WaypointManager.getWaypointsOfType("arrow").filter { !it.hidden && !it.inaccurateArrow }.size
+        val arrowW = WaypointManager.getWaypointsOfType("arrow").filter { !it.hidden }.size
 
         val waypoints = knownW + arrowW
         val waypointsColor = colorBasedOnAmount(waypoints)

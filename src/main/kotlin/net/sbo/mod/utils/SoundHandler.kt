@@ -165,6 +165,7 @@ object SoundHandler {
             clip.open(stream)
         } catch (e: Exception) {
             logger.error("[$MOD_ID] Failed to open audio stream: ${file.name}", e)
+            runCatching { clip.close() }
             runCatching { stream.close() }
             runCatching { inputStream.close() }
             return

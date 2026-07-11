@@ -52,6 +52,7 @@ object BurrowDetector {
             WaypointManager.removeAllOfType("world")
             WaypointManager.removeAllOfType("guess")
             WaypointManager.removeAllOfType("arrow")
+            WaypointManager.removeAllOfType("subGuess")
             WaypointManager.removeAllOfType("rareMob")
             WaypointManager.removeAllOfType("burrow")
             burrows.clear()
@@ -97,7 +98,7 @@ object BurrowDetector {
             refreshBurrows(false, 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
-            if (Diana.showTitleWhenChainEnd && anyClose.isEmpty()) requestSpade("chain")
+            if (Diana.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
         }
 
         Register.onChatMessage(Regex(""".*§eYou (?:just )?dug out(?!.*\(\d+/\d+\)$).*""")) { message, matchResult ->
@@ -184,13 +185,15 @@ object BurrowDetector {
 
             burrowHistory.add(posString)
             removeFromInternalState(pos)
-            ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
 
             WaypointManager.removeWaypointAt(pos, "burrow")
             WaypointManager.removeWaypointAt(pos, "arrow")
+            WaypointManager.removeWaypointAt(pos, "subGuess")
             WaypointManager.removeWaypointAt(pos, "guess")
             WaypointManager.removeWaypointAt(pos, "rareMob")
             WaypointManager.removeWaypointAt(pos, "world")
+
+            ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
         }
 
         burrowDetect(packet)

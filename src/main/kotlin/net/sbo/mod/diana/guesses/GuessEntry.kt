@@ -12,6 +12,18 @@ class GuessEntry(val guesses: List<SboVec>) {
 
     fun contains(vec: SboVec): Boolean = guesses.contains(vec)
 
+    fun getRemaining(): List<SboVec> = guesses.subList(currentIndex + 1, guesses.size)
+
+    fun isEquivalentTo(other: GuessEntry): Boolean = guesses.subList(currentIndex, guesses.size) == other.guesses.subList(other.currentIndex, other.guesses.size)
+
+    fun removeAllWaypoints() {
+        WaypointManager.removeWaypointAt(getCurrent(), "arrow")
+
+        getRemaining().forEach {
+            WaypointManager.removeWaypointAt(it, "subGuess")
+        }
+    }
+
     fun moveToNext(): Boolean {
         val current = getCurrent()
         val currentWaypoint = WaypointManager.getWaypointAt(current, "arrow")
@@ -29,11 +41,15 @@ class GuessEntry(val guesses: List<SboVec>) {
         val nextIndex = currentIndex + 1
 
         if (nextIndex in guesses.indices) {
+            val next = guesses[nextIndex]
             currentIndex = nextIndex
-            WaypointManager.addArrowGuess(guesses[currentIndex])
+
+            WaypointManager.removeArrowSubGuess(next)
+            WaypointManager.addArrowGuess(next)
 
             return true
         }
+
         return false
     }
 }

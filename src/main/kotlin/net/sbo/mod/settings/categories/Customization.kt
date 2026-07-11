@@ -28,6 +28,14 @@ object Customization : CategoryKt("Customization") {
         this.allowAlpha = true
     }
 
+    var SubGuessColor by color(
+        Color(0.55f, 0.55f, 0.55f).rgb
+    ) {
+        this.name = Literal("Sub Guess Color")
+        this.description = Literal("Color of inactive arrow guess locations (only used if \"Show Arrow Sub Guesses\" enabled in Diana category).")
+        this.allowAlpha = true
+    }
+
     var StartColor by color(
         Color(0.333f, 1.0f, 0.333f).rgb) {
         this.name = Literal("Start Burrow Color")
