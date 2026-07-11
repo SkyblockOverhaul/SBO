@@ -50,14 +50,14 @@ object OverlayManager {
         render(event.context, mc.screen)
     }
 
-    fun render(drawContext: GuiGraphics, renderScreen: Screen? = null, editing: Boolean = false) {
+    fun render(drawContext: GuiGraphics, renderScreen: Screen? = null) {
         if (!World.isInSkyblock()) return
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor
         for (overlay in overlays) {
             if (renderScreen == null && !mc.options.keyPlayerList.isDown && !mc.options.hideGui)
-                overlay.render(drawContext, mouseX, mouseY, editing = editing)
+                overlay.render(drawContext, mouseX, mouseY)
         }
     }
 
