@@ -69,6 +69,11 @@ object General : CategoryKt("General") {
         }
     }
 
+    var disableAchievements by boolean(false) {
+        this.name = Literal("Disable Achievements")
+        this.description = Literal("Disables the SBO Achievements. Note that, internally your achievements will still be tracked and unlocked, just that you won't be notified in chat, via a title, and a sound, when one unlocks, if this is option is enabled.")
+    }
+
     var achievementsButton by boolean(true) {
         this.name = Literal("Achievements Button")
         this.description = Literal("Shows the SBO Achievements button in the pause menu")

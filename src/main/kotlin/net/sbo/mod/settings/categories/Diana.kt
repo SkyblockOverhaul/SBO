@@ -372,21 +372,21 @@ object Diana : CategoryKt("Diana") {
 
     var rareTitleFadeIn by int(0) {
         this.name = Literal("Rare Title Fade In")
-        this.description = Literal("Fade-in (ticks) for rare mob titles")
+        this.description = Literal("Fade-in (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
     var rareTitleTime by int(90) {
         this.name = Literal("Rare Title Time")
-        this.description = Literal("Display time (ticks) for rare mob titles")
+        this.description = Literal("Display time (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
     var rareTitleFadeOut by int(20) {
         this.name = Literal("Rare Title Fade Out")
-        this.description = Literal("Fade-out (ticks) for rare mob titles")
+        this.description = Literal("Fade-out (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }

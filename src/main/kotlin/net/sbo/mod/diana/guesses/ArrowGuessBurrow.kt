@@ -88,6 +88,12 @@ object ArrowGuessBurrow {
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
 
+    fun removeSubGuessFromInternalState(pos: SboVec) {
+        allGuesses.forEach {
+            it.removeSubGuess(pos)
+        }
+    }
+
     fun removeFromInternalState(pos: SboVec) {
         val target = pos.roundLocationToBlock()
 
@@ -287,7 +293,7 @@ object ArrowGuessBurrow {
         val hasOne = first != null
 
         if (hasOne) {
-            val entry = GuessEntry(withinRange)
+            val entry = GuessEntry(withinRange.toMutableList())
 
             if (allGuesses.any { it.isEquivalentTo(entry) }) {
                 return first

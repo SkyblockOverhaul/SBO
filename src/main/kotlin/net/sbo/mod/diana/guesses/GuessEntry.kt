@@ -5,7 +5,7 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.WaypointManager
 import net.sbo.mod.diana.burrows.BurrowDetector
 
-class GuessEntry(val guesses: List<SboVec>) {
+class GuessEntry(val guesses: MutableList<SboVec>) {
     private var currentIndex = 0
 
     fun getCurrent(): SboVec = guesses[currentIndex]
@@ -15,6 +15,19 @@ class GuessEntry(val guesses: List<SboVec>) {
     fun getRemaining(): List<SboVec> = guesses.subList(currentIndex + 1, guesses.size)
 
     fun isEquivalentTo(other: GuessEntry): Boolean = guesses.subList(currentIndex, guesses.size) == other.guesses.subList(other.currentIndex, other.guesses.size)
+
+    fun removeSubGuess(pos: SboVec) {
+        val index = guesses.indexOfFirst {
+            it.roundLocationToBlock() == pos.roundLocationToBlock()
+        }
+
+        if (index == -1 || index <= currentIndex) {
+            return
+        }
+
+        guesses.removeAt(index)
+        WaypointManager.removeArrowSubGuess(pos)
+    }
 
     fun removeAllWaypoints() {
         WaypointManager.removeWaypointAt(getCurrent(), "arrow")

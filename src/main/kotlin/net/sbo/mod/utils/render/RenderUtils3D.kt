@@ -57,7 +57,7 @@ object RenderUtils3D {
             )
         }
 
-        if (text.isNotEmpty() && text != "§7") {
+        if (text.isNotEmpty()) {
             drawString(
                 context,
                 pos,

@@ -34,7 +34,6 @@ object Mayor {
     private var refreshingMayor: Boolean = false
     private var newMayor: Boolean = false
     private var outDatedApi: Boolean = false
-    private var sbYear: Int = 0
     var mayorElectedYear = 0
 
     fun init() {
@@ -53,28 +52,32 @@ object Mayor {
     }
 
     private fun updateMayorElection() {
-        val newDate = newMayorAtDate ?: return
-        if (newDate.time >= (skyblockDate?.time ?: return)) return
+        val skyDate = skyblockDate ?: return
 
-        newMayor = true
-        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        val electionThisYear = date(ELECTION_DAY, ELECTION_MONTH, currentYear)
+        if (newMayorAtDate == null || newMayorAtDate!!.time < skyDate.time) {
+            newMayor = true
 
-        if (electionThisYear.time > skyblockDate!!.time) {
-            mayorElectedYear = currentYear - 1
-            dateMayorElected = date(ELECTION_DAY, ELECTION_MONTH, currentYear - 1)
-            newMayorAtDate = electionThisYear
-        } else {
-            mayorElectedYear = currentYear
-            dateMayorElected = electionThisYear
-            newMayorAtDate = date(ELECTION_DAY, ELECTION_MONTH, currentYear + 1)
+            val calendar = Calendar.getInstance()
+            calendar.time = skyDate
+            val currentYear = calendar.get(Calendar.YEAR)
+
+            val electionThisYear = date(ELECTION_DAY, ELECTION_MONTH, currentYear)
+
+            if (electionThisYear.time > skyDate.time) {
+                mayorElectedYear = currentYear - 1
+                dateMayorElected = date(ELECTION_DAY, ELECTION_MONTH, currentYear - 1)
+                newMayorAtDate = electionThisYear
+            } else {
+                mayorElectedYear = currentYear
+                dateMayorElected = electionThisYear
+                newMayorAtDate = date(ELECTION_DAY, ELECTION_MONTH, currentYear + 1)
+            }
         }
     }
 
     private fun updateSbYear() {
         Calendar.getInstance().apply {
             time = skyblockDate!!
-            sbYear = get(Calendar.YEAR)
         }
     }
 
@@ -127,6 +130,7 @@ object Mayor {
     }
 
     private fun handleApiError(message: String) {
+        refreshingMayor = false
         mayorApiError = true
         applyFallback()
         SBOKotlin.logger.error("API error: $message")
@@ -176,8 +180,6 @@ object Mayor {
             day = if (day < DAYS_IN_MONTH) day + 1 else 1
             if (day == 1) month++
         }
-
-        floor(secondsSinceEpoch / SECONDS_PER_MINUTE).toInt() % 60
 
         return "$day.$month.$year"
     }
