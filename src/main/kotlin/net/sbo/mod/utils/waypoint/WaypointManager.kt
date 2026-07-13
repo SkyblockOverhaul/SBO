@@ -79,17 +79,32 @@ object WaypointManager {
                     }
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
 
+                    val existing = getWaypointsOfType("rareMob") + getWaypointsOfType("world")
+                    val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
+
+                    if (existing.any { it.pos.distanceTo(pos) <= 60 }) {
+                        return@onChatMessage
+                    }
+
                     val mobDisplayName = notifyRareMob(player, mobType)
 
                     addRareMobWaypoint(
                         player,
-                        SboVec(x.toDouble(), y.toDouble(), z.toDouble()),
+                        pos,
                         mobType,
                         selfName,
                         mobDisplayName
                     )
                 } else if (patcherWaypoints) {
                     if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(selfName)) return@onChatMessage
+
+                    val existing = getWaypointsOfType("rareMob") + getWaypointsOfType("world")
+                    val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
+
+                    if (existing.any { it.pos.distanceTo(pos) <= 60 }) {
+                        return@onChatMessage
+                    }
+
                     addWaypoint(Waypoint(player, x.toDouble(), y.toDouble(), z.toDouble(), ttl = 30, type = "world"))
                 }
             }

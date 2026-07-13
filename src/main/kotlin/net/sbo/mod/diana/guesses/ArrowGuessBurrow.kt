@@ -88,6 +88,14 @@ object ArrowGuessBurrow {
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
 
+    fun removeArrowGuessFromSubGuess(pos: SboVec) {
+        val target = pos.roundLocationToBlock()
+
+        allGuesses.removeAll { entry ->
+            entry.getRemaining().any { it.roundLocationToBlock() == target }
+        }
+    }
+
     fun removeSubGuessFromInternalState(pos: SboVec) {
         allGuesses.forEach {
             it.removeSubGuess(pos)

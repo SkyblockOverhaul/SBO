@@ -51,7 +51,7 @@ object DianaEvents {
     }
 
     private fun processBlockInteraction(pos: SboVec) {
-        val waypoint = WaypointManager.getWaypointAt(pos, "burrow") ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess")
+        val waypoint = WaypointManager.getWaypointAt(pos, "burrow") ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess") ?: WaypointManager.getWaypointAt(pos, "subGuess")
         if (waypoint != null) {
             waypoint.userInteractedWith = true
             lastWaypointClicked = waypoint.pos

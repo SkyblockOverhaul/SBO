@@ -162,6 +162,9 @@ class Waypoint(
             "subGuess" -> {
                 return Color(Customization.SubGuessColor)
             }
+            "debug" -> {
+                return Color(255, 255, 255)
+            }
         }
         return Color(255, 255, 255) // shouldn't happen
     }
@@ -210,7 +213,7 @@ class Waypoint(
                 }
             }
 
-            "subGuess" -> {
+            "subGuess", "debug" -> {
                 this.line = false
                 this.formattedText = "$text"
             }

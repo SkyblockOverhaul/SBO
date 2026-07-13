@@ -26,8 +26,8 @@ object BurrowDetector {
     private var lastDugOutBurrowPos: SboVec = SboVec(0.0, 0.0, 0.0)
     private val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
 
-    // Track recently removed burrow positions to prevent lingering particles from re-adding them
-    private val burrowHistory = EvictingQueue<String>(4)
+    private val RECENTLY_REMOVED_DURATION_NS = TimeUnit.SECONDS.toNanos(1)
+    private val recentlyRemoved = ConcurrentHashMap<String, Long>()
 
     private val CHAIN_DURATION_NS = TimeUnit.MINUTES.toNanos(30L)
 
@@ -47,6 +47,24 @@ object BurrowDetector {
         }
     }
 
+    private fun markRecentlyRemoved(pos: SboVec) {
+        val key = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
+        recentlyRemoved[key] = System.nanoTime()
+    }
+
+    private fun wasRecentlyRemoved(posString: String): Boolean {
+        val removedAt = recentlyRemoved[posString] ?: return false
+
+        val elapsed = System.nanoTime() - removedAt
+        if (elapsed <= RECENTLY_REMOVED_DURATION_NS) {
+            return true
+        }
+
+        // Expired; clean it up so the map doesn't grow forever.
+        recentlyRemoved.remove(posString, removedAt)
+        return false
+    }
+
     fun init() {
         Register.command("sboclearburrows", "sbocb") {
             WaypointManager.removeAllOfType("world")
@@ -55,8 +73,9 @@ object BurrowDetector {
             WaypointManager.removeAllOfType("subGuess")
             WaypointManager.removeAllOfType("rareMob")
             WaypointManager.removeAllOfType("burrow")
+            WaypointManager.removeAllOfType("debug")
             burrows.clear()
-            burrowHistory.clear()
+            recentlyRemoved.clear()
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
@@ -65,7 +84,7 @@ object BurrowDetector {
         Register.command("sbodebugburrows") { // TODO: Maybe remove at some point once we're fully sure internal state cannot bug out
             for (known in burrows.values) {
                 if (!WaypointManager.waypointExists("burrow", known.pos).first) {
-                    val wayp = Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, ttl = 30, type = "world")
+                    val wayp = Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, ttl = 30, type = "debug")
                     wayp.preventInvalidRemoval = true
 
                     WaypointManager.addWaypoint(wayp)
@@ -75,7 +94,7 @@ object BurrowDetector {
             for (arrow in ArrowGuessBurrow.allGuesses) {
                 val curr = arrow.getCurrent()
                 if (!WaypointManager.waypointExists("arrow", curr).first) {
-                    val wayp = Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, ttl = 30, type = "world")
+                    val wayp = Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, ttl = 30, type = "debug")
                     wayp.preventInvalidRemoval = true
 
                     WaypointManager.addWaypoint(wayp)
@@ -183,7 +202,7 @@ object BurrowDetector {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
             val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
-            burrowHistory.add(posString)
+            markRecentlyRemoved(pos)
             removeFromInternalState(pos)
 
             WaypointManager.removeWaypointAt(pos, "burrow")
@@ -192,6 +211,7 @@ object BurrowDetector {
             WaypointManager.removeWaypointAt(pos, "guess")
             WaypointManager.removeWaypointAt(pos, "rareMob")
             WaypointManager.removeWaypointAt(pos, "world")
+            WaypointManager.removeWaypointAt(pos, "debug")
 
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
         }
@@ -204,8 +224,7 @@ object BurrowDetector {
         val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
         val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
-        // Ignore particles from recently dug burrows to prevent lingering particles from re-adding them
-        if (burrowHistory.contains(posString)) return
+        if (wasRecentlyRemoved(posString)) return
 
         val type = when (particleType) {
             "FOOTSTEP" -> {
@@ -251,6 +270,7 @@ object BurrowDetector {
                 ?: WaypointManager.getWaypointAt(pos, "burrow")?.timesDug
                 ?: WaypointManager.getWaypointAt(pos, "arrow")?.timesDug
                 ?: WaypointManager.getWaypointAt(pos, "guess")?.timesDug
+                ?: WaypointManager.getWaypointAt(pos, "subGuess")?.timesDug
                 ?: 0
 
         val existing = burrow.waypoint
@@ -290,7 +310,7 @@ object BurrowDetector {
         val knownWaypoint = WaypointManager.getWaypointAt(pos, "burrow")
 
         // Try known burrow first, then arrow, then precise
-        val dugWaypoint = knownWaypoint ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess")
+        val dugWaypoint = knownWaypoint ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess") ?: WaypointManager.getWaypointAt(pos, "subGuess")
 
         if (null != dugWaypoint) {
             // Will only work if known burrow
@@ -322,13 +342,16 @@ object BurrowDetector {
                     Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.")
                 }
 
+                markRecentlyRemoved(dugWaypoint.pos)
+
                 if (knownWaypoint != null) {
                     removeFromInternalState(knownWaypoint.pos)
-                    burrowHistory.add("${knownWaypoint.pos.x.toInt()} ${knownWaypoint.pos.y.toInt()} ${knownWaypoint.pos.z.toInt()}")
                 }
 
                 if (dugWaypoint.type == "arrow") {
                     ArrowGuessBurrow.removeFromInternalState(dugWaypoint.pos)
+                } else if (dugWaypoint.type == "subGuess") {
+                    ArrowGuessBurrow.removeArrowGuessFromSubGuess(dugWaypoint.pos)
                 }
 
                 WaypointManager.removeWaypoint(dugWaypoint)
@@ -338,7 +361,7 @@ object BurrowDetector {
         // Counted timesDug above already
         flushRemovals()
 
-        if (dugWaypoint != null && (dugWaypoint.type == "guess" || dugWaypoint.type == "arrow") && burrowType != null) {
+        if (dugWaypoint != null && (dugWaypoint.type == "guess" || dugWaypoint.type == "arrow" || dugWaypoint.type == "subGuess") && burrowType != null) {
             // The user dug a Guess waypoint before particles updated it into a real burrow type.
             // We promote it into a real burrow and preserve progression state.
             registerBurrow(
@@ -348,7 +371,7 @@ object BurrowDetector {
                 carriedTimesDug = expectedTimesDug
             )
 
-            burrowHistory.add("${dugWaypoint.pos.x.toInt()} ${dugWaypoint.pos.y.toInt()} ${dugWaypoint.pos.z.toInt()}")
+            markRecentlyRemoved(dugWaypoint.pos)
             WaypointManager.removeWaypoint(dugWaypoint)
         }
     }
