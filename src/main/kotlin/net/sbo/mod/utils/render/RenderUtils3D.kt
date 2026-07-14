@@ -148,7 +148,7 @@ object RenderUtils3D {
      * @param lineWidth The width of the line.
      * @param alpha The alpha value for transparency (0.0 to 1.0).
      */
-    fun drawLineFromCursor(
+    private fun drawLineFromCursor(
         context: LevelRenderContext,
         target: SboVec,
         color: FloatArray,
@@ -214,7 +214,7 @@ object RenderUtils3D {
      * @param vec The position in the world where the beacon beam should be rendered.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to
      */
-    fun renderBeaconBeam(
+    private fun renderBeaconBeam(
         ctx: LevelRenderContext,
         vec: SboVec,
         colorComponents: FloatArray

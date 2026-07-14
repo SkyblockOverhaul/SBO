@@ -247,7 +247,7 @@ object WaypointManager {
             }
         }
 
-        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(WaypointRenderer)
+        LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
     }
 
     private fun addRareMobWaypoint(player: String, pos: SboVec, mobType: Diana.ReceiveList, playerName: String, mobDisplayName: String) {
