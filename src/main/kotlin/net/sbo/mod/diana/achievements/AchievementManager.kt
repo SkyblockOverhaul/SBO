@@ -276,7 +276,7 @@ object AchievementManager {
 
     @SboEvent
     fun trackBeKills(event: GuiOpenEvent) {
-        Helper.sleep(250) {
+        Helper.sleep(500) {
             val screen = event.screen
             if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Creatur", ignoreCase = true)) return@sleep
