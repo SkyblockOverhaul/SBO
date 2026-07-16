@@ -203,7 +203,7 @@ object AchievementManager {
         }
 
         when {
-            totalChimera >= 100 -> unlockAchievement(127)
+            totalChimera >= 128 -> unlockAchievement(127)
             totalChimera >= 64 -> unlockAchievement(125)
             totalChimera >= 32 -> unlockAchievement(11)
             totalChimera >= 16 -> unlockAchievement(9)
@@ -490,7 +490,7 @@ object AchievementManager {
         addAchievement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12)
         addAchievement(11, "Chimera VI", "Get 32 Chimera in one event", "Divine", 9)
         addAchievement(125, "Chimera VII", "Get 64 Chimera in one event", "Celestial", 11)
-        addAchievement(127, "Go outside now! Event over for ya!", "Get 100 Chimera in one event", "Impossible", 125)
+        addAchievement(127, "Chimera VIII", "Get 128 Chimera in one event", "Impossible", 125)
         addAchievement(13, "First lootshare Chimera", "Lootshare your first Chimera", "Legendary")
         addAchievement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Divine", 13)
         addAchievement(126, "Wtf?", "Get 32 lootshare Chimera in one event", "Celestial", 10)
