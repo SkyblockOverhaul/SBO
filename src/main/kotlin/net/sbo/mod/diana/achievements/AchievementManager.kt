@@ -157,6 +157,28 @@ object AchievementManager {
         val daedalusStickCount = itemsData.DAEDALUS_STICK
         val chimeraLsCount = itemsData.CHIMERA_LS
 
+        val totalRelics = itemsData.MINOS_RELIC //+ itemsData.MINOS_RELIC_LS
+        val totalDyes = itemsData.MYTHOLOGICAL_DYE
+        val totalStinger = itemsData.FATEFUL_STINGER + itemsData.FATEFUL_STINGER_LS
+        val totalCrowns = itemsData.CROWN_OF_GREED
+        val totalBraided = itemsData.BRAIDED_GRIFFIN_FEATHER
+        val totalFish = itemsData.MYTH_THE_FISH
+        val hasEverything = listOf(
+            totalChimera,
+            totalWools,
+            totalBrainFood,
+            totalCores,
+            daedalusStickCount,
+            totalRelics,
+            totalDyes,
+            totalStinger,
+            totalCrowns,
+            totalBraided,
+            totalFish
+        ).all { it >= 1 }
+
+        if (hasEverything) unlockAchievement(128)
+
         when {
             totalBurrows >= 25000 -> unlockAchievement(22)
             totalBurrows >= 20000 -> unlockAchievement(21)
@@ -181,6 +203,7 @@ object AchievementManager {
         }
 
         when {
+            totalChimera >= 128 -> unlockAchievement(127)
             totalChimera >= 64 -> unlockAchievement(125)
             totalChimera >= 32 -> unlockAchievement(11)
             totalChimera >= 16 -> unlockAchievement(9)
@@ -465,6 +488,7 @@ object AchievementManager {
         addAchievement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12)
         addAchievement(11, "Chimera VI", "Get 32 Chimera in one event", "Divine", 9)
         addAchievement(125, "Chimera VII", "Get 64 Chimera in one event", "Celestial", 11)
+        addAchievement(127, "Chimera VIII", "Get 128 Chimera in one event", "Impossible", 125)
         addAchievement(13, "First lootshare Chimera", "Lootshare your first Chimera", "Legendary")
         addAchievement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Divine", 13)
         addAchievement(126, "Wtf?", "Get 32 lootshare Chimera in one event", "Celestial", 10)
@@ -603,6 +627,8 @@ object AchievementManager {
 //        addAchievement(90, "Get a j*b", "Get top 10 king bestiary", "Mythic", repeatable = false) // TODO
 //        addAchievement(91, "King of the Hill", "Get top 1 king bestiary", "Impossible", repeatable = false) // TODO
 
+        addAchievement(128, "Got 'Em All", "Get every diana drop in 1 event", "Celestial")
+
         addAchievement(92, "Why am I not getting a wool???", "Hit a king with a shear", "Uncommon", hidden = true, repeatable = false)
         addAchievement(93, "Why are you doing this?", "Hit a Manticore with 'core' in item name", "Uncommon", hidden = true, repeatable = false)
         addAchievement(118, "No wool? Sell his soul to the devil!", "Get a King's soul", "Epic", hidden = true, repeatable = false)
@@ -615,6 +641,6 @@ object AchievementManager {
         addAchievement(121, "Capitalism on top!", "Get COA", "Rare", repeatable = false)
         addAchievement(122, "Inflation speedrun any%", "Get a 10m coins COA", "Epic", 121, repeatable = false)
         addAchievement(123, "Already? Damn that was fast!", "Get a 100m coins COA", "Legendary", 122, repeatable = false)
-        addAchievement(124, "All of that just for 2.5 mf", "Get a 1b coins COA", "Mythic", 123, repeatable = false)
+        addAchievement(124, "All of that just for 2.5 mf...", "Get a 1b coins COA", "Mythic", 123, repeatable = false)
     }
 }
