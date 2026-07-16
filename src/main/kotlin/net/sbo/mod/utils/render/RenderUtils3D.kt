@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.render
 
+import net.sbo.mod.utils.chat.ChatUtils
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
@@ -8,23 +9,33 @@ import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.util.ARGB
 import net.minecraft.util.Mth
+import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
+import kotlin.math.sqrt
 
 object RenderUtils3D {
     fun renderWaypoint(
         context: WorldRenderContext,
+        renderText: Boolean,
         text: String,
+        textWidth: Int,
+        //#if MC > 1.21.11
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
         pos: SboVec,
         colorComponents: FloatArray,
         hexColor: Int,
@@ -57,12 +68,16 @@ object RenderUtils3D {
             )
         }
 
-        if (text.isNotEmpty()) {
+        if (renderText) {
             drawString(
                 context,
                 pos,
                 1.5,
                 text,
+                textWidth,
+                //#if MC > 1.21.11
+                //$$ visualOrderText,
+                //#endif
                 hexColor,
                 Customization.waypointTextShadow,
                 Customization.waypointTextScale/100.0
@@ -104,6 +119,10 @@ object RenderUtils3D {
         pos: SboVec,
         yOffset: Double,
         text: String,
+        textWidth: Int,
+        //#if MC > 1.21.11
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
         color: Int,
         shadow: Boolean,
         scale: Double
@@ -113,7 +132,6 @@ object RenderUtils3D {
             val cameraPos = camera.position()
             val cameraYaw = camera.yRot()
             val cameraPitch = camera.xRot()
-            val textRenderer = mc.font
 
             val textWorldPos = Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
             val distance = cameraPos.distanceTo(textWorldPos)
@@ -126,25 +144,26 @@ object RenderUtils3D {
 
             scale(-dynamicScale.toFloat(), -dynamicScale.toFloat(), dynamicScale.toFloat())
 
-            val textWidth = textRenderer.width(text)
             val xOffset = -textWidth / 2f
-
-            val consumers = context.consumers()
 
             val layerType = Font.DisplayMode.SEE_THROUGH
 
-            textRenderer.drawInBatch(
+            //#if MC > 1.21.11
+            //$$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, 0f, visualOrderText, shadow, layerType, mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, mc.deltaTracker.getGameTimeDeltaPartialTick(true)), color, 0, 0)
+            //#else
+            mc.font.drawInBatch(
                 text,
                 xOffset,
                 0f,
                 color,
                 shadow,
                 last().pose(),
-                consumers,
+                context.consumers(),
                 layerType,
                 0,
                 0xF000F0
             )
+            //#endif
         }
     }
 
@@ -169,7 +188,6 @@ object RenderUtils3D {
 
             translate(cameraPos.reverse())
 
-            val consumers = context.consumers()
             val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
             val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
@@ -185,7 +203,36 @@ object RenderUtils3D {
             val nz = upVec.z.toFloat()
 
             val renderLayer = RenderTypes.LINES
-            val buffer = consumers.getBuffer(renderLayer)
+
+            //#if MC > 1.21.11
+            //$$ context.submitNodeCollector().submitCustomGeometry(
+            //$$     context.poseStack(),
+            //$$     renderLayer
+            //$$ ) { pose, consumer ->
+            //$$     consumer
+            //$$         .addVertex(
+            //$$             pose,
+            //$$             startPos.x.toFloat(),
+            //$$             startPos.y.toFloat(),
+            //$$             startPos.z.toFloat()
+            //$$         )
+            //$$         .setNormal(pose, nx, ny, nz)
+            //$$         .setColor(color[0], color[1], color[2], alpha)
+            //$$         .setLineWidth(lineWidth)
+            //$$ 
+            //$$     consumer
+            //$$         .addVertex(
+            //$$             pose,
+            //$$             endPos.x.toFloat(),
+            //$$             endPos.y.toFloat(),
+            //$$             endPos.z.toFloat()
+            //$$         )
+            //$$         .setNormal(pose, nx, ny, nz)
+            //$$         .setColor(color[0], color[1], color[2], alpha)
+            //$$         .setLineWidth(lineWidth)
+            //$$ }
+            //#else
+            val buffer = context.consumers().getBuffer(renderLayer)
             val matrixEntry = last()
 
             buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
@@ -197,8 +244,10 @@ object RenderUtils3D {
                 .setNormal(matrixEntry, nx, ny, nz)
                 .setColor(color[0], color[1], color[2], alpha)
                 .setLineWidth(lineWidth)
+            //#endif
         }
     }
+
     /**
      * Renders a beacon beam at the given location.
      * @param ctx The world render context.
@@ -212,9 +261,8 @@ object RenderUtils3D {
         colorComponents: FloatArray
     ) {
         val player = mc.player ?: return
-        if (vec.center().distanceTo(player.x, player.y, player.z) < 8) return
+        if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.beamDistance) return
 
-        val consumers = ctx.consumers()
         val world = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
         val cam = ctx.getCamera().position()
@@ -223,12 +271,32 @@ object RenderUtils3D {
         ctx.pushPop {
             translate(vec.x - cam.x, vec.y + 1.0 - cam.y, vec.z - cam.z)
 
+            //#if MC > 1.21.11
+            //$$ BeaconRenderer.submitBeaconBeam(
+            //$$     ctx.poseStack(),
+            //$$     ctx.submitNodeCollector(),
+            //$$     BeaconRenderer.BEAM_LOCATION,
+            //$$     1.0f,
+            //$$     Math.floorMod(world.gameTime, 40)
+            //$$         + partialTicks,
+            //$$     0,
+            //$$     320,
+            //$$     Color(
+            //$$         beamColor[0],
+            //$$         beamColor[1],
+            //$$          beamColor[2]
+            //$$     ).rgb,
+            //$$     0.2f,
+            //$$     0.25f
+            //$$ )
+            //#else
             renderBeam(
-                consumers,
+                ctx.consumers(),
                 partialTicks,
                 world.gameTime,
                 Color(beamColor[0], beamColor[1], beamColor[2]).rgb
             )
+            //#endif
         }
     }
 

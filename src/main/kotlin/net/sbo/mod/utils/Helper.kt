@@ -30,6 +30,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.regex.Pattern
@@ -45,10 +46,10 @@ object Helper {
     var allowSackTracking: Boolean = true
     var hasSpade: Boolean = false
     private var lastDianaMobDeath: Long = 0L
-    var lastInqDeath: Long = 0L
-    var lastKingDeath: Long = 0L
-    var lastSphinxDeath: Long = 0L
-    var lastMantiDeath: Long = 0L
+    private var lastInqDeath: Long = 0L
+    private var lastKingDeath: Long = 0L
+    private var lastSphinxDeath: Long = 0L
+    private var lastMantiDeath: Long = 0L
     var currentScreen: Screen? = null
 
     private var hasTrackedInq: Boolean = false
@@ -69,11 +70,13 @@ object Helper {
     )
 
     private fun onLootShare() {
-        lastLootShare = System.currentTimeMillis()
+        lastLootShare = System.nanoTime()
     }
 
     private fun notifyUserOfLs(mob: String) {
-        Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+        if (Diana.assumeAllLS) {
+            Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+        }
     }
 
     fun init() {
@@ -128,8 +131,8 @@ object Helper {
             name.contains("Minos Inquisitor") -> {
                 removeNearbyRareMobWaypoints()
                 removeNearbyRareMobWaypointsAt(pos)
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
                     notifyUserOfLs("Minos Inquisitor")
                     DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
@@ -137,13 +140,13 @@ object Helper {
                         hasTrackedInq = false
                     }
                 }
-                lastInqDeath = System.currentTimeMillis()
+                lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
                 removeNearbyRareMobWaypoints()
                 removeNearbyRareMobWaypointsAt(pos)
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
                     notifyUserOfLs("King Minos")
                     DianaTracker.trackItem("KING_MINOS_LS", 1)
@@ -151,12 +154,12 @@ object Helper {
                         hasTrackedKing = false
                     }
                 }
-                lastKingDeath = System.currentTimeMillis()
+                lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
                 removeNearbyRareMobWaypoints()
                 removeNearbyRareMobWaypointsAt(pos)
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
+                if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
                     DianaTracker.trackItem("SPHINX_LS", 1)
@@ -164,13 +167,13 @@ object Helper {
                         hasTrackedSphinx = false
                     }
                 }
-                lastSphinxDeath = System.currentTimeMillis()
+                lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
                 removeNearbyRareMobWaypoints()
                 removeNearbyRareMobWaypointsAt(pos)
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
                     notifyUserOfLs("Manticore")
                     DianaTracker.trackItem("MANTICORE_LS", 1)
@@ -178,13 +181,13 @@ object Helper {
                         hasTrackedManti = false
                     }
                 }
-                lastMantiDeath = System.currentTimeMillis()
+                lastMantiDeath = System.nanoTime()
             }
         }
 
         if (nearby) {
             allowSackTracking = true
-            lastDianaMobDeath = System.currentTimeMillis()
+            lastDianaMobDeath = System.nanoTime()
         }
     }
 
@@ -452,8 +455,20 @@ object Helper {
         return input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
     }
 
+    /**
+     * Returns the number of seconds since an epoch timestamp.
+     *
+     * The timestamp must originate from System.currentTimeMillis() or another
+     * Unix epoch source (e.g. Hypixel item NBT timestamp).
+     *
+     * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
+     */
     fun getSecondsPassed(timestamp: Long): Long {
         return (System.currentTimeMillis() - timestamp) / 1000
+    }
+
+    private fun getSecondsPassedSinceNano(timestamp: Long): Long {
+        return (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
     }
 
     private fun playerHasItem(sbId: String): Boolean {
@@ -671,11 +686,11 @@ object Helper {
      * @param timeframe The timeframe in seconds to check against. Default is 2 seconds.
      */
     fun gotLootShareRecently(timeframe: Long = 2): Boolean {
-        return getSecondsPassed(lastLootShare) <= timeframe
+        return getSecondsPassedSinceNano(lastLootShare) <= timeframe
     }
 
     fun dianaMobDiedRecently(seconds: Long = 2): Boolean {
-        return getSecondsPassed(lastDianaMobDeath) <= seconds
+        return getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
     }
 
     fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {

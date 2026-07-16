@@ -17,19 +17,19 @@ object General : CategoryKt("General") {
 
     var bobberOverlay by boolean(false) {
         this.name = Literal("Bobber Overlay")
-        this.description = Literal("Tracks the number of bobbers near you /sboguis to move the overlay")
+        this.description = Literal("Tracks the number of bobbers near you /sboguis to move the overlay.")
     }
 
     var legionOverlay by boolean(false) {
         this.name = Literal("Legion Overlay")
-        this.description = Literal("Tracks the players near you for legion buff /sboguis to move the overlay")
+        this.description = Literal("Tracks the players near you for legion buff /sboguis to move the overlay.")
     }
 
     init {
         button {
             title = "Move GUI's"
             text = "Move GUI's"
-            description = "Opens Gui Move Menu you can use /sboguis too"
+            description = "Opens Move GUI's Menu, you can also use /sboguis to open it."
             onClick {
                 mc.schedule {
                     mc.setScreen(OverlayEditScreen())
@@ -44,12 +44,12 @@ object General : CategoryKt("General") {
 
     var hideOwnWaypoints by select<HideOwnWaypoints> {
         this.name = Literal("Hide Own Waypoints")
-        this.description = Literal("Hides waypoints you created")
+        this.description = Literal("Hides waypoints you created.")
     }
 
     var patcherWaypoints by boolean(true) {
         this.name = Literal("Waypoints From Chat")
-        this.description = Literal("Creates waypoints from chat messages (format: x: 20, y: 60, z: 80)")
+        this.description = Literal("Creates waypoints from chat messages. (format: x: 20, y: 60, z: 80)")
     }
 
     init {
@@ -76,6 +76,6 @@ object General : CategoryKt("General") {
 
     var achievementsButton by boolean(true) {
         this.name = Literal("Achievements Button")
-        this.description = Literal("Shows the SBO Achievements button in the pause menu")
+        this.description = Literal("Shows the SBO Achievements button in the pause menu.")
     }
 }

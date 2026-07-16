@@ -1,10 +1,12 @@
 package net.sbo.mod.utils.waypoint
 
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.chat.ChatUtils
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
@@ -45,11 +47,27 @@ class Waypoint(
     private var distanceRaw: Double = 0.0
     private var distanceText: String = ""
     private var formattedText: String = ""
+        set(value) {
+            field = value
+            textWidth = mc.font.width(value)
+            hasText = value.isNotEmpty()
+
+            //#if MC > 1.21.11
+            //$$ visualOrderText = ChatUtils.fromLegacy(value).visualOrderText
+            //#endif
+        }
+    private var textWidth = mc.font.width(text)
+    private var hasText = text.isNotEmpty()
+
     var isClosest = false
     var timesDug = 0
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
     var preventInvalidRemoval = false
+
+    //#if MC > 1.21.11
+    //$$ private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
+    //#endif
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
         this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
@@ -245,7 +263,12 @@ class Waypoint(
 
         RenderUtils3D.renderWaypoint(
             context,
+            this.hasText,
             this.formattedText,
+            this.textWidth,
+            //#if MC > 1.21.11
+            //$$ this.visualOrderText,
+            //#endif
             this.pos,
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),

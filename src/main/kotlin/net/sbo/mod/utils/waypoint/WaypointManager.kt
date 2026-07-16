@@ -112,8 +112,7 @@ object WaypointManager {
 
         Register.onTick(1) { _ ->
             if (Diana.receiveRareMob && World.getWorld() == "Hub") {
-                detectRareMobsInWorld()
-                removeMissingRareMobWaypoints()
+                updateRareMobWaypoints()
             }
 
             val playerPos = Player.getLastPosition()
@@ -258,6 +257,10 @@ object WaypointManager {
         }
 
         WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
+
+        //#if MC > 1.21.11
+        //$$ WorldRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
+        //#endif
     }
 
     private fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
@@ -381,7 +384,7 @@ object WaypointManager {
         startY: Int,
         z: Int,
         predicate: (BlockState) -> Boolean,
-        maxDepth: Int = 15
+        maxDepth: Int = 10
     ): Int? {
         var y = startY
         var depth = 0
@@ -436,85 +439,70 @@ object WaypointManager {
         }
     }
 
-    private fun detectRareMobsInWorld() {
+    private fun updateRareMobWaypoints() {
+        if (!Diana.scanWorldForRareMob) return
+
         val level = mc.level ?: return
 
-        val existing = getWaypointsOfType("rareMob") + getWaypointsOfType("world")
-
-        level.entitiesForRendering().forEach { entity ->
-            val stand = entity as? ArmorStand ?: return@forEach
-
-            val pos = floorToGround(
-                level,
-                SboVec(stand.x, stand.y, stand.z)
-            )
-
-            if (existing.any { it.pos.distanceTo(pos) <= 60 }) return@forEach
-
-            val name = stand.name.string.lowercase()
-
-            if (name.contains("0/") || stand.isDeadOrDying()) {
-                // Rare mob is already dead; let's not race with the removal logic here
-                return@forEach
-            }
-
-            val mobType = when {
-                name.contains("king minos") -> Diana.ReceiveList.KING
-                name.contains("minos inquisitor") -> Diana.ReceiveList.INQ
-                name.contains("manticore") -> Diana.ReceiveList.MANTICORE
-                name.contains("sphinx") -> Diana.ReceiveList.SPHINX
-                else -> return@forEach
-            }
-
-            val displayName = notifyRareMob("", mobType)
-
-            addRareMobWaypoint(
-                player = "", // no owner for world-detected waypoints
-                pos = pos,
-                mobType = mobType,
-                selfName = "", // hide own waypoints won't work anyway as first parameter is empty string, so we don't need to pass self player's name either
-                mobDisplayName = displayName
-            )
-        }
-    }
-
-    private fun addRareMobWaypoint(player: String, pos: SboVec, mobType: Diana.ReceiveList, selfName: String, mobDisplayName: String) {
-        val hasOwner = player.isNotEmpty()
-
-        if (hasOwner && selfName.isNotEmpty()) {
-            when (mobType) {
-                Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(selfName)) return
-                Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING) && player.contains(selfName)) return
-                Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(selfName)) return
-                Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(selfName)) return
-                else -> {}
-            }
-        }
-
-        val owner = if (hasOwner) " §7($player§7)" else ""
-        addWaypoint(Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, ttl = 45, type = "rareMob"))
-    }
-
-    private fun removeMissingRareMobWaypoints() {
-        val level = mc.level ?: return
-
+        val existing = (getWaypointsOfType("rareMob") + getWaypointsOfType("world")).toMutableList()
         val rareMobPositions = mutableListOf<SboVec>()
 
         level.entitiesForRendering().forEach { entity ->
             val stand = entity as? ArmorStand ?: return@forEach
 
-            val name = stand.name.string.lowercase()
+            val name = stand.customName?.string ?: return@forEach
+            if (name.contains("0/")) return@forEach
 
-            if (
-                !name.contains("king minos") &&
-                !name.contains("minos inquisitor") &&
-                !name.contains("manticore") &&
-                !name.contains("sphinx")
-            ) return@forEach
+            val mobType = when {
+                name.contains("King Minos") -> Diana.ReceiveList.KING
+                name.contains("Minos Inquisitor") -> Diana.ReceiveList.INQ
+                name.contains("Manticore") -> Diana.ReceiveList.MANTICORE
+                name.contains("Sphinx") -> Diana.ReceiveList.SPHINX
+                else -> return@forEach
+            }
 
-            rareMobPositions += SboVec(stand.x, stand.y, stand.z)
+            if (stand.isDeadOrDying()) return@forEach
+
+            val standPos = SboVec(stand.x, stand.y, stand.z)
+            rareMobPositions += standPos
+
+            if (existing.none { it.pos.distanceTo(standPos) <= 60 }) {
+                val pos = floorToGround(level, standPos)
+
+                addRareMobWaypoint(
+                    player = "",
+                    pos = pos,
+                    mobType = mobType,
+                    selfName = "",
+                    mobDisplayName = notifyRareMob("", mobType)
+                )?.let(existing::add)
+            }
         }
 
+        removeStaleRareMobWaypoints(level, rareMobPositions)
+    }
+
+    private fun addRareMobWaypoint(player: String, pos: SboVec, mobType: Diana.ReceiveList, selfName: String, mobDisplayName: String): Waypoint? {
+        val hasOwner = player.isNotEmpty()
+
+        if (hasOwner && selfName.isNotEmpty()) {
+            when (mobType) {
+                Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(selfName)) return null
+                Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING) && player.contains(selfName)) return null
+                Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(selfName)) return null
+                Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(selfName)) return null
+                else -> {}
+            }
+        }
+
+        val owner = if (hasOwner) " §7($player§7)" else ""
+        val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, ttl = 45, type = "rareMob")
+
+        addWaypoint(waypoint)
+        return waypoint
+    }
+
+    private fun removeStaleRareMobWaypoints(level: ClientLevel, rareMobPositions: List<SboVec>) {
         (getWaypointsOfType("rareMob") + getWaypointsOfType("world")).forEach { waypoint ->
             val blockPos = waypoint.pos.roundLocationToBlock()
 
@@ -561,7 +549,7 @@ object WaypointManager {
      * @param context The world render context.
      */
     fun renderAllWaypoints(context: WorldRenderContext) {
-        if (World.getWorld() != "Hub") {
+        if (World.getWorld() != "Hub" || !Helper.hasSpade) {
             return
         }
 
@@ -575,11 +563,11 @@ object WaypointManager {
      * @param waypoint The waypoint to add.
      */
     fun addWaypoint(waypoint: Waypoint, playSound: Boolean = true) {
-        val type = waypoint.type.lowercase()
+        val type = waypoint.type
 
         waypoints.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(waypoint)
 
-        if (type == "burrow") {
+        if (type == "burrow" && playSound) {
             playCustomSound(SboDataObject.soundSettingsData.burrowFoundSound, volume = SboDataObject.soundSettingsData.burrowVolume)
         }
     }
@@ -592,7 +580,7 @@ object WaypointManager {
         if (closestWaypoint.first == waypoint) {
             closestWaypoint = null to 1000.0
         }
-        waypoints[waypoint.type.lowercase()]?.remove(waypoint)
+        waypoints[waypoint.type]?.remove(waypoint)
     }
 
     /**
@@ -601,7 +589,7 @@ object WaypointManager {
      * @param type The type of the waypoint to get.
      */
     fun getWaypointAt(pos: SboVec, type: String): Waypoint? {
-        val list = waypoints[type.lowercase()]
+        val list = waypoints[type]
         val waypoint = list?.find { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
         if (waypoint != null) {
             return waypoint
@@ -615,7 +603,7 @@ object WaypointManager {
      * @param type The type of the waypoint to remove.
      */
     fun removeWaypointAt(pos: SboVec, type: String) {
-        val list = waypoints[type.lowercase()]
+        val list = waypoints[type]
         val waypoint = list?.find { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
         if (waypoint != null) {
             list.remove(waypoint)
@@ -630,7 +618,7 @@ object WaypointManager {
      * @param type The type of waypoints to remove.
      */
     fun removeAllOfType(type: String) {
-        waypoints[type.lowercase()]?.clear()
+        waypoints[type]?.clear()
     }
 
     /**
@@ -646,7 +634,7 @@ object WaypointManager {
      * @param type The type of waypoints to remove.
      */
     private fun removeWithinDistanceFrom(pos: SboVec, type: String, distance: Int) {
-        val list = waypoints[type.lowercase()] ?: return
+        val list = waypoints[type] ?: return
         list.removeIf { it.pos.distanceTo(pos) < distance }
     }
 
@@ -688,7 +676,7 @@ object WaypointManager {
 
         addWaypoint(
             Waypoint(
-                text = "",
+                text = if (Diana.showTextOnSubGuess) "Possible" else "",
                 x = pos.x,
                 y = pos.y,
                 z = pos.z,
@@ -727,7 +715,7 @@ object WaypointManager {
      * @return A list of waypoints of the specified type.
      */
     fun getWaypointsOfType(type: String): List<Waypoint> {
-        return waypoints[type.lowercase()] ?: emptyList()
+        return waypoints[type] ?: emptyList()
     }
 
     fun getAllGuessesAndBurrows(): List<Waypoint> {

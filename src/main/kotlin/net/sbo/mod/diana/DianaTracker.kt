@@ -148,6 +148,7 @@ object DianaTracker {
 
     fun trackWithSacksMessage(itemName: String, amount: Int) {
         if (!allowSackTracking) return
+        if (!dianaMobDiedRecently(4)) return
         val item = itemName.replace("Ingot", "").trim()
         if (sackDrops.contains(item)) {
             trackItem(item, amount)
@@ -180,7 +181,7 @@ object DianaTracker {
 
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
-        if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
+        //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
                 DianaMobDetect.onRareSpawn(mob)

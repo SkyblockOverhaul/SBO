@@ -215,6 +215,7 @@ object ArrowGuessBurrow {
         }
         return emptyList()
     }
+
     private fun extendLine(
         line: MutableList<SboVec>,
         visited: MutableSet<SboVec>,
@@ -222,34 +223,34 @@ object ArrowGuessBurrow {
         numPoints: Int,
         maxDist: Double
     ): Boolean {
-        if (line.size == numPoints) return true
+        while (line.size < numPoints) {
+            var nextLoc: SboVec? = null
+            var minDist = Double.MAX_VALUE
 
-        var nextLoc: SboVec? = null
-        var minDist = Double.MAX_VALUE
+            for (location in locations) {
+                if (location in visited) continue
 
-        for (location in locations) {
-            if (visited.contains(location)) continue
-            val dist = line.last().distanceTo(location)
-            if (dist > maxDist) continue
+                val dist = line.last().distanceTo(location)
+                if (dist > maxDist) continue
 
-            val second = if (line.size > 1) line[1] else line[0]
-            if (!isCollinear(line.first(), second, location)) continue
-            if (dist < minDist) {
-                minDist = dist
-                nextLoc = location
+                val second = if (line.size > 1) line[1] else line[0]
+                if (!isCollinear(line.first(), second, location)) continue
+
+                if (dist < minDist) {
+                    minDist = dist
+                    nextLoc = location
+                }
             }
-        }
 
-        if (nextLoc != null) {
+            if (nextLoc == null) {
+                return false
+            }
+
             line.add(nextLoc)
             visited.add(nextLoc)
-            if (extendLine(line, visited, locations, numPoints, maxDist)) {
-                return true
-            }
-            line.removeLast()
-            visited.remove(nextLoc)
         }
-        return false
+
+        return true
     }
 
     private fun getPointsWithinDistance(origin: SboVec): Int {
