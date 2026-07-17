@@ -136,7 +136,7 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://maven.teamresourceful.com/repository/maven-public/")
+            maven("https://maven.teamresourceful.com/repository/maven-public")
         }
 
         filter {
@@ -147,7 +147,8 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://maven.terraformersmc.com/")
+            maven("https://maven.terraformersmc.com/releases")
+            maven("https://maven.operationpotato.com/mirror")
         }
 
         filter {
