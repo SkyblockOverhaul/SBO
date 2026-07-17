@@ -98,6 +98,27 @@ object PartyCommands {
         PartyCommand(listOf("!inq", "!inqs", "!inquisitor", "!inquis"), { settings.dianaPartyCommands }) {
             fmt("Inquisitor", dianaTrackerMayor.mobs.MINOS_INQUISITOR, "MINOS_INQUISITOR")
         },
+        PartyCommand(listOf("!kingls", "!kingsls"), { settings.dianaPartyCommands }) {
+            "King LS: ${dianaTrackerMayor.mobs.KING_MINOS_LS}"
+        },
+        PartyCommand(listOf("!king", "!kings"), { settings.dianaPartyCommands }) {
+            fmt("King", dianaTrackerMayor.mobs.KING_MINOS, "KING_MINOS")
+        },
+        PartyCommand(listOf("!sphinxls", "!sphinxsls"), { settings.dianaPartyCommands }) {
+            "Sphinx LS: ${dianaTrackerMayor.mobs.SPHINX_LS}"
+        },
+        PartyCommand(listOf("!sphinx", "!sphinxs"), { settings.dianaPartyCommands }) {
+            fmt("Sphinx", dianaTrackerMayor.mobs.SPHINX, "SPHINX")
+        },
+        PartyCommand(listOf("!mantils", "!mantisls"), { settings.dianaPartyCommands }) {
+            "Manticore LS: ${dianaTrackerMayor.mobs.MANTICORE_LS}"
+        },
+        PartyCommand(listOf("!manti", "!mantis"), { settings.dianaPartyCommands }) {
+            fmt("Manticore", dianaTrackerMayor.mobs.MANTICORE, "MANTICORE")
+        },
+        PartyCommand(listOf("!dye", "!dyes"), { settings.dianaPartyCommands }) {
+            fmt("Dye", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, "MYTHOLOGICAL_DYE")
+        },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayor.items.TOTAL_BURROWS
             val perHr = Helper.getBurrowsPerHr(dianaTrackerMayor, SboTimerManager.timerMayor)
@@ -132,6 +153,9 @@ object PartyCommands {
         },
         PartyCommand(listOf("!foodls", "!brainfoodls", "!lsbrainfood", "!lsbrain"), { settings.dianaPartyCommands }) {
             fmt("Brain Food LS", dianaTrackerMayor.items.BRAIN_FOOD_LS, "BRAIN_FOOD_LS", "SPHINX_LS")
+        },
+        PartyCommand(listOf("!braided", "!braideds"), { settings.dianaPartyCommands }) {
+            fmt("Braided feathers", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, "BRAIDED_GRIFFIN_FEATHER")
         },
         PartyCommand(listOf("!kingshard", "!kingshards"), { settings.dianaPartyCommands }) {
             fmt("King Shards", dianaTrackerMayor.items.KING_MINOS_SHARD, "KING_MINOS_SHARD", "KING_MINOS")
