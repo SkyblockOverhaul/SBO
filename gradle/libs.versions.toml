@@ -1,5 +1,5 @@
 [versions]
-loom = "1.17.14"
+loom = "1.17.16"
 
 [plugins]
 loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "loom" }
