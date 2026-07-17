@@ -14,6 +14,7 @@ import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.utils.collection.EvictingQueue
 import java.util.ArrayDeque
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.ConcurrentHashMap
@@ -24,6 +25,9 @@ object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
     private var lastDugOutBurrowPos: SboVec = SboVec(0.0, 0.0, 0.0)
     private val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
+
+    // Track recently removed burrow positions to prevent lingering particles from re-adding them
+    private val burrowHistory = EvictingQueue<String>(4)
 
     private val CHAIN_DURATION_NS = TimeUnit.MINUTES.toNanos(30L)
 
@@ -51,6 +55,7 @@ object BurrowDetector {
             WaypointManager.removeAllOfType("rareMob")
             WaypointManager.removeAllOfType("burrow")
             burrows.clear()
+            burrowHistory.clear()
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
@@ -149,7 +154,9 @@ object BurrowDetector {
 
         if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
+            val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
+            burrowHistory.add(posString)
             removeFromInternalState(pos)
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
 
@@ -166,6 +173,10 @@ object BurrowDetector {
     private fun burrowDetect(packet: ClientboundLevelParticlesPacket) {
         val particleType = ParticleTypes.getParticleType(packet) ?: return
         val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
+        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
+
+        // Ignore particles from recently dug burrows to prevent lingering particles from re-adding them
+        if (burrowHistory.contains(posString)) return
 
         val type = when (particleType) {
             "FOOTSTEP" -> {
@@ -285,6 +296,7 @@ object BurrowDetector {
                 if (knownWaypoint != null) {
                     removeFromInternalState(knownWaypoint.pos)
                     ArrowGuessBurrow.removeFromInternalState(knownWaypoint.pos)
+                    burrowHistory.add("${knownWaypoint.pos.x.toInt()} ${knownWaypoint.pos.y.toInt()} ${knownWaypoint.pos.z.toInt()}")
                 }
 
                 WaypointManager.removeWaypoint(dugWaypoint)
@@ -305,6 +317,7 @@ object BurrowDetector {
             )
 
             if (dugWaypoint != null) {
+                burrowHistory.add("${dugWaypoint.pos.x.toInt()} ${dugWaypoint.pos.y.toInt()} ${dugWaypoint.pos.z.toInt()}")
                 WaypointManager.removeWaypoint(dugWaypoint)
             }
         }

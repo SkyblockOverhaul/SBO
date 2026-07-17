@@ -49,6 +49,9 @@ object SboDataObject {
     @JvmField
     var overlayData: OverlayData = OverlayData()
 
+    @JvmField
+    var soundSettingsData: SoundSettingsData = SoundSettingsData()
+
     lateinit var SBOConfigBundle: SboConfigBundle
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private const val MAX_BACKUPS = 10
@@ -56,12 +59,6 @@ object SboDataObject {
     private val DATA_SAVER_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
         Thread(r, "sbo-data-saver-thread").apply { isDaemon = true }
     }
-
-//    private val DATA_SAVER_EXECUTOR: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
-//            .ofVirtual()
-//            .name("sbo-data-saver-thread-", 1) // sbo-data-saver-thread-1, sbo-data-saver-thread-2 etc. starting from 1 (second parameter)
-//            .factory() // virtual threads are daemon by default
-//    )
 
     private val caseSensitive by lazy { isCaseSensitive(FabricLoader.getInstance().configDir.toFile().toPath()) }
     val dataDir by lazy { normalizeConfigDir("sbo", FabricLoader.getInstance().configDir.toFile().toPath(), "SBO", "sbo", caseSensitive).fileName.toString() }
@@ -252,6 +249,7 @@ object SboDataObject {
         pfConfigState = SBOConfigBundle.partyFinderConfigState
         partyFinderData = SBOConfigBundle.partyFinderData
         overlayData = SBOConfigBundle.overlayData
+        soundSettingsData = SBOConfigBundle.soundSettingsData
         saveAllDataThreaded(dataDir)
         savePeriodically(5)
     }
@@ -483,7 +481,8 @@ object SboDataObject {
         val partyFinderConfigState = load(modName, "partyFinderConfigState.json", PartyFinderConfigState(), PartyFinderConfigState::class.java)
         val partyFinderData = load(modName, "partyFinderData.json", PartyFinderData(), PartyFinderData::class.java)
         val overlayData = load(modName, "overlayData.json", OverlayData(), OverlayData::class.java)
-        return SboConfigBundle(sboData, achievementsData, pastDianaEventsData, dianaTrackerTotalData, dianaTrackerSessionData, dianaTrackerMayorData, partyFinderConfigState, partyFinderData, overlayData)
+        val soundSettingsData = load(modName, "soundSettingsData.json", SoundSettingsData(), SoundSettingsData::class.java)
+        return SboConfigBundle(sboData, achievementsData, pastDianaEventsData, dianaTrackerTotalData, dianaTrackerSessionData, dianaTrackerMayorData, partyFinderConfigState, partyFinderData, overlayData, soundSettingsData)
     }
 
     private fun zipFolder(folderToZip: File, zipFilePath: File) {
@@ -571,6 +570,7 @@ object SboDataObject {
             saveToFolder(tempBackupDir, bundle.partyFinderConfigState, "partyFinderConfigState.json")
             saveToFolder(tempBackupDir, bundle.partyFinderData, "partyFinderData.json")
             saveToFolder(tempBackupDir, bundle.overlayData, "overlayData.json")
+            saveToFolder(tempBackupDir, bundle.soundSettingsData, "soundSettingsData.json")
 
             if (!tempBackupDir.exists() || tempBackupDir.listFiles()?.isEmpty() == true) {
                 throw IOException("Backup temp directory not properly created")
@@ -644,7 +644,8 @@ object SboDataObject {
         "DianaTrackerMayorData" to Pair({ save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json") }, dianaTrackerMayor),
         "PartyFinderConfigState" to Pair({ save(dataDir, pfConfigState, "partyFinderConfigState.json") }, pfConfigState),
         "PartyFinderData" to Pair({ save(dataDir, partyFinderData, "partyFinderData.json") }, partyFinderData),
-        "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData)
+        "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData),
+        "SoundSettingsData" to Pair({ save(dataDir, soundSettingsData, "soundSettingsData.json") }, soundSettingsData),
     )
 
     private fun saveAllData() {
