@@ -122,7 +122,7 @@ object PartyCommands {
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayor.items.TOTAL_BURROWS
             val perHr = Helper.getBurrowsPerHr(dianaTrackerMayor, SboTimerManager.timerMayor)
-            "Burrows: $burrows ($perHr/h)"
+            "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)"
         },
         PartyCommand(listOf("!relic", "!relics"), { settings.dianaPartyCommands }) {
             fmt("Relics", dianaTrackerMayor.items.MINOS_RELIC, "MINOS_RELIC", "MINOS_CHAMPION")
