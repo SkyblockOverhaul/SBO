@@ -29,7 +29,7 @@ object Diana : CategoryKt("Diana") {
     enum class SettingDiana {
         INSTASELL, SELLOFFER;
 
-        fun next(): SettingDiana {
+        operator fun next(): SettingDiana {
             return if (this == INSTASELL) {
                 SELLOFFER
             } else {
@@ -41,7 +41,7 @@ object Diana : CategoryKt("Diana") {
     enum class Tracker {
         OFF, TOTAL, EVENT, SESSION;
 
-        fun next(): Tracker {
+        operator fun next(): Tracker {
             val values = entries
             val currentIndex = ordinal
 

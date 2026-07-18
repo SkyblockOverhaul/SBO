@@ -244,7 +244,7 @@ object PartyCommands {
                     DianaStats.sendPlayerStats()
                 }
                 "!totalstats", "!totalstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
-                    DianaStats.sendPlayerStats(true)
+                    DianaStats.sendPlayerStats(total = true)
                 }
                 "!sessionstats", "!sessionstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     DianaStats.sendPlayerStats(null)

@@ -5,10 +5,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.decoration.ArmorStand
-import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.state.BlockState
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
@@ -20,18 +19,17 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
-import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
-import net.sbo.mod.utils.waypoint.calculateDynamicOpacity
-import net.sbo.mod.utils.render.WaypointRenderer
 import net.sbo.mod.utils.render.RenderUtils3D
+import net.sbo.mod.utils.render.WaypointRenderer
+import java.awt.Color
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
-import java.time.Duration
-import java.awt.Color
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 

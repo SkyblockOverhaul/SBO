@@ -151,7 +151,7 @@ object Customization : CategoryKt("Customization") {
             text = "Configure"
             description = "Open GUI to configure all sound settings."
             onClick {
-                Guis.openSoundGui(true)
+                Guis.openSoundGui(calledFromGUI = true)
             }
         }
     }

@@ -1,11 +1,12 @@
 package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.DianaEvents
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
@@ -13,11 +14,9 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
-import net.sbo.mod.utils.collection.EvictingQueue
-import java.util.ArrayDeque
-import java.util.concurrent.TimeUnit
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 import java.util.function.BooleanSupplier
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
@@ -104,7 +103,7 @@ object BurrowDetector {
 
         Register.onChatMessage(Regex("""^§c ☠ §7You .+$""")) { message, matchResult ->
             if ("Hub" != World.getWorld()) return@onChatMessage
-            refreshBurrows(true, 1)
+            refreshBurrows(deathOriginating = true, expectedTimesDug = 1)
         }
 
         Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
@@ -114,7 +113,7 @@ object BurrowDetector {
 
             // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
-            refreshBurrows(false, 2)
+            refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
             if (Diana.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
@@ -126,7 +125,11 @@ object BurrowDetector {
 
             // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
-            refreshBurrows(false, 1, parseTypeFromChatMsg(message.string))
+            refreshBurrows(
+                deathOriginating = false,
+                expectedTimesDug = 1,
+                burrowType = parseTypeFromChatMsg(message.string)
+            )
         }
     }
 
@@ -155,7 +158,7 @@ object BurrowDetector {
     }
 
     private fun parseTypeFromChatMsg(message: String): String {
-        if (message.contains("Griffin Feather") || message.contains(" coins!") || message.contains("Mythos Fragment") || message.contains("Braided Griffin Feather") || message.contains("Myth the Fish")) {
+        if ("Griffin Feather" in message || " coins!" in message || "Mythos Fragment" in message || "Braided Griffin Feather" in message || "Myth the Fish" in message) {
             return "Treasure"
         }
 
@@ -188,7 +191,7 @@ object BurrowDetector {
 
         if (!Diana.closeBurrowDetection) return
         lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
-        refreshBurrows(false, 2)
+        refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
     }
 
     @SboEvent

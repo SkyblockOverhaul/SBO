@@ -12,8 +12,8 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.PolynomialFitter
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
-import kotlin.math.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.*
 
 object PreciseGuessBurrow {
     private var particleLocations = mutableListOf<SboVec>()
@@ -62,7 +62,7 @@ object PreciseGuessBurrow {
         val player = SBOKotlin.mc.player
         val item = player?.mainHandItem
         if (item?.isEmpty == true) return
-        if (item == null || !item.hoverName.string.contains("Spade")) return
+        if (item == null || "Spade" !in item.hoverName.string) return
         if (System.nanoTime() - this.lastLavaParticle < TimeUnit.MILLISECONDS.toNanos(200L)) {
             event.isCanceled = true
             return

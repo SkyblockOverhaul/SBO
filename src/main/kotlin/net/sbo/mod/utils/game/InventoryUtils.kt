@@ -5,8 +5,8 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
-import kotlin.time.Duration
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 
 object InventoryUtils {
     private var currentItemId: String = "AIR"
@@ -70,12 +70,12 @@ object InventoryUtils {
         val now = System.nanoTime()
         val requiredNs = duration.inWholeNanoseconds
 
-        if (currentItemId.contains(itemId)) {
+        if (itemId in currentItemId) {
             if (now - currentItemStartTime >= requiredNs) return true
         }
 
         return heldHistory.any { (histId, histDuration, stoppedAt) ->
-            histId.contains(itemId) &&
+            itemId in histId &&
             histDuration >= requiredNs &&
             now - stoppedAt <= RECENT_HOLD_NS
         }

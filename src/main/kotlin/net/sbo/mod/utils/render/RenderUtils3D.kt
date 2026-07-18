@@ -20,9 +20,8 @@ import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.settings.categories.Debug
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
@@ -455,9 +454,7 @@ object RenderUtils3D {
     }
     //#endif
 
-    private fun WorldRenderContext.getCamera(): Camera {
-        return gameRenderer().mainCamera
-    }
+    private fun WorldRenderContext.getCamera(): Camera = gameRenderer().mainCamera
 
     private fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
         val matrix = matrices()

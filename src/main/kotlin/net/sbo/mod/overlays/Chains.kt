@@ -2,17 +2,17 @@ package net.sbo.mod.overlays
 
 import net.minecraft.ChatFormatting
 import net.minecraft.ChatFormatting.*
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Debug
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.utils.waypoint.WaypointManager
-import net.sbo.mod.utils.events.Register
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 
 object Chains : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Chains", 10f, 10f).setCondition { Diana.ongoingChainsDisplay && Helper.hasSpade && World.getWorld() == "Hub" }
@@ -94,15 +94,13 @@ object Chains : DirtyFlushableOverlay() {
 
         // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly
         val debug = Debug.debugMessages
-        if (issue || mismatch || debug) { // hide for less verbosity unless theres an issue or debug enabled
+        if (issue || debug) { // hide for less verbosity unless theres an issue or debug enabled
             failureTimes++
 
             // Only start showing for consistent issues lasting more than 4 seconds, otherwise this can flicker at times when a new burrow is being detected
             if (failureTimes >= 4 || debug) {
-                if (issue || debug) {
-                    lines.add(OverlayTextLine(""))
-                    lines.add(OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Status: $status"))
-                }
+                lines.add(OverlayTextLine(""))
+                lines.add(OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Status: $status"))
                 if (mismatch || debug) {
                     lines.add(OverlayTextLine("$GRAY - ${YELLOW}Internal State: $internalColor$internalState/7-8 ($known known, $arrows arrow)"))
                     lines.add(OverlayTextLine(""))

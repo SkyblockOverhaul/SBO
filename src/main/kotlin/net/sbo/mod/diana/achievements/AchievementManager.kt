@@ -9,8 +9,8 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.utils.Helper
@@ -90,9 +90,7 @@ object AchievementManager {
         achievement.loadState()
     }
 
-    private fun getAchievement(id: Int): Achievement? {
-        return achievements[id]
-    }
+    private fun getAchievement(id: Int): Achievement? = achievements[id]
 
     fun unlockAchievement(id: Int) {
         val achievement = getAchievement(id) ?: return
@@ -139,8 +137,8 @@ object AchievementManager {
         if (!isRareMob) return
         val item = event.player.mainHandItem
         val lookup = ItemLookup(item)
-        if (lookup.displayName.contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
-        if (lookup.displayName.contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
+        if (lookup.displayName.contains("Shears", ignoreCase = true) && "King Minos" in event.entity.name.string) unlockAchievement(92)
+        if (lookup.displayName.contains("Core", ignoreCase = true) && "Manticore" in event.entity.name.string) unlockAchievement(93)
     }
 
 
@@ -351,12 +349,12 @@ object AchievementManager {
             val mfSlot = slots[14]
             val trackingSlot = slots[15]
 
-            if (dmgSlot.item.hoverName.removeFormatting().contains("Storied Stinger V") && coinsSlot.item.hoverName.removeFormatting().contains("Deadly Greed V") && mfSlot.item.hoverName.removeFormatting().contains("Diana's Favor III") && trackingSlot.item.hoverName.removeFormatting().contains("Elusive Hunter II")) { // does not guarantee its maxed since it shows next tier instead of current if it's not maxed, but we still need the check so that we don't trigger achievement for maxing unrelated perks
+            if ("Storied Stinger V" in dmgSlot.item.hoverName.removeFormatting() && "Deadly Greed V" in coinsSlot.item.hoverName.removeFormatting() && "Diana's Favor III" in mfSlot.item.hoverName.removeFormatting() && "Elusive Hunter II" in trackingSlot.item.hoverName.removeFormatting()) { // does not guarantee its maxed since it shows next tier instead of current if it's not maxed, but we still need the check so that we don't trigger achievement for maxing unrelated perks
                 for (upgrade in listOf(dmgSlot, coinsSlot, mfSlot, trackingSlot)) {
                     val lookup = ItemLookup(upgrade.item)
                     var hasUnlocked = false
                     for (loreLine in lookup.loreList) {
-                        if (loreLine.removeFormatting().contains("UNLOCKED")) {
+                        if ("UNLOCKED" in loreLine.removeFormatting()) {
                             hasUnlocked = true
                             break
                         }
@@ -378,7 +376,7 @@ object AchievementManager {
     private fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
         val lookup = ItemLookup(helmet)
-        if (!lookup.displayName.contains("Crown of Avarice")) return
+        if ("Crown of Avarice" !in lookup.displayName) return
 
         unlockAchievement(121)
 
@@ -448,7 +446,7 @@ object AchievementManager {
                 if (stack.isEmpty) continue
 
                 val displayName: String = stack.hoverName.string.lowercase()
-                if (!displayName.contains("daedalus")) continue
+                if ("daedalus" !in displayName) continue
 
                 val customData: CustomData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
                 val nbt: CompoundTag = customData.copyTag()
@@ -470,7 +468,7 @@ object AchievementManager {
 
     private fun kingSoul() {
         Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
-            if (matchResult.groupValues[0].contains("King Minos")) unlockAchievement(118)
+            if ("King Minos" in matchResult.groupValues[0]) unlockAchievement(118)
         }
     }
 
@@ -599,7 +597,7 @@ object AchievementManager {
         addAchievement(58, "Keep the grind going", "Kill 25k Diana Mobs", "Epic", 57, repeatable = false)
         addAchievement(59, "I am not addicted", "Kill 50k Diana Mobs", "Legendary", 58, repeatable = false)
         addAchievement(60, "100k gang", "Kill 100k Diana Mobs", "Mythic", 59, repeatable = false)
-        addAchievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, true, repeatable = false)
+        addAchievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, hidden = true, repeatable = false)
 
         // Leaderboard
         addAchievement(62, "Mom look i am on the leaderboard", "Top 100 on the kills leaderboard", "Legendary", repeatable = false)
@@ -611,7 +609,7 @@ object AchievementManager {
         addAchievement(69, "Burrow Enthusiast", "Get 400 burrows/hour (5h playtime)", "Epic", 68)
         addAchievement(70, "Shovel Expert", "Get 450 burrows/hour (5h playtime)", "Legendary", 69)
         addAchievement(71, "Burrow Maniac", "Get 500 burrows/hour (5h playtime)", "Divine", 70)
-        addAchievement(72, "Nice macro!", "Get 600 burrows/hour (5h playtime)", "Impossible", 71, true)
+        addAchievement(72, "Nice macro!", "Get 600 burrows/hour (5h playtime)", "Impossible", 71, hidden = true)
 
         // Other
         addAchievement(73, "Can I craft a Chimera sword now?", "Get 1 stick & 2 chimeras in 1 event", "Epic")
