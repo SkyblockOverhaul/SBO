@@ -155,9 +155,11 @@ object SBOKotlin : ClientModInitializer {
 			}
 		}
 
-		if (FabricLoader.getInstance().isModLoaded("iris")) {
-			IrisCompatibility.init()
-		}
+        //#if MC < 26.1
+		//$$ if (FabricLoader.getInstance().isModLoaded("iris")) {
+		//$$ 	IrisCompatibility.init()
+		//$$ }
+		//#endif
 
 		logger.info("SBO-Kotlin initialized successfully!")
 	}

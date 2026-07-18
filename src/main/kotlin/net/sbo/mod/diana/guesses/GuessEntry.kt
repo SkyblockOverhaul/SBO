@@ -14,6 +14,9 @@ class GuessEntry(val guesses: MutableList<SboVec>) {
 
     fun getRemaining(): List<SboVec> = guesses.subList(currentIndex + 1, guesses.size)
 
+    fun getVisibleChain(): List<SboVec> =
+        guesses.subList(currentIndex, guesses.size)
+
     fun isEquivalentTo(other: GuessEntry): Boolean = guesses.subList(currentIndex, guesses.size) == other.guesses.subList(other.currentIndex, other.guesses.size)
 
     fun removeSubGuess(pos: SboVec) {

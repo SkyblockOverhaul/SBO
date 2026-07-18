@@ -510,7 +510,8 @@ object DianaTracker {
                 playCustomSound(SboDataObject.soundSettingsData.chimSound, volume = SboDataObject.soundSettingsData.chimVolume)
                 onRareDrop("Chimera", showMessageOrTitle = true,
                     trackLootshare = true,
-                    magicFind = magicfind
+                    magicFind = magicfind,
+                    enforceCooldown = false // lootsharing from own inquisitor is possible, which allows to drop 2 chimeras from a single inquisitor of yours, so we need to not early return if isItemOnCooldown
                 )
 
                 if (!isLootShare) {
@@ -688,8 +689,8 @@ object DianaTracker {
         SboDataObject.save("SboData")
     }
 
-    private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true) {
-        if (isItemOnCooldown.getOrDefault(item, false)) return
+    private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true, enforceCooldown: Boolean = true) {
+        if (isItemOnCooldown.getOrDefault(item, false) && enforceCooldown) return
 
         val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
 
@@ -781,9 +782,9 @@ object DianaTracker {
         }
 
         if (trackLootshare && isLootShare) {
-            trackItem(itemId + "_LS", amount)
+            trackItem(itemId + "_LS", amount, enforceCooldown)
         } else {
-            trackItem(itemId, amount)
+            trackItem(itemId, amount, enforceCooldown)
         }
     }
 
@@ -973,8 +974,8 @@ object DianaTracker {
         }
     }
 
-    fun trackItem(item: String, amount: Int) {
-        if (isItemOnCooldown.getOrDefault(item, false)) return
+    fun trackItem(item: String, amount: Int, enforceCooldown: Boolean = true) {
+        if (isItemOnCooldown.getOrDefault(item, false) && enforceCooldown) return
         isItemOnCooldown[item] = true
 
         checkMayorTracker()

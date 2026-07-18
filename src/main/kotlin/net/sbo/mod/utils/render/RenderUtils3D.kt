@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
+import net.minecraft.network.chat.Component
 import net.minecraft.util.ARGB
 import net.minecraft.util.Mth
 import net.minecraft.util.FormattedCharSequence
@@ -31,7 +32,7 @@ object RenderUtils3D {
     fun renderWaypoint(
         context: WorldRenderContext,
         renderText: Boolean,
-        text: String,
+        text: Component,
         textWidth: Int,
         //#if MC > 1.21.11
         //$$ visualOrderText: FormattedCharSequence,
@@ -118,7 +119,7 @@ object RenderUtils3D {
         context: WorldRenderContext,
         pos: SboVec,
         yOffset: Double,
-        text: String,
+        text: Component,
         textWidth: Int,
         //#if MC > 1.21.11
         //$$ visualOrderText: FormattedCharSequence,
@@ -145,23 +146,29 @@ object RenderUtils3D {
             scale(-dynamicScale.toFloat(), -dynamicScale.toFloat(), dynamicScale.toFloat())
 
             val xOffset = -textWidth / 2f
+            val yOffset = 0f
 
             val layerType = Font.DisplayMode.SEE_THROUGH
+            val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
+
+            val backgroundColor = 0
+
+            val packedLightCoords = mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, mc.deltaTracker.getGameTimeDeltaPartialTick(true))
 
             //#if MC > 1.21.11
-            //$$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, 0f, visualOrderText, shadow, layerType, mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, mc.deltaTracker.getGameTimeDeltaPartialTick(true)), color, 0, 0)
+            //$$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
             //#else
             mc.font.drawInBatch(
                 text,
                 xOffset,
-                0f,
+                yOffset,
                 color,
                 shadow,
                 last().pose(),
                 context.consumers(),
                 layerType,
-                0,
-                0xF000F0
+                backgroundColor,
+                packedLightCoords
             )
             //#endif
         }
@@ -182,20 +189,51 @@ object RenderUtils3D {
         lineWidth: Float,
         alpha: Float = 0.5f
     ) {
+        val camera = context.getCamera()
+
+        val startPos = camera.position()
+            .add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
+
+        val endPos = target.center()
+            .toVec3d()
+            .add(0.0, 0.5, 0.0)
+
+        drawLine(
+            context,
+            startPos,
+            endPos,
+            color,
+            lineWidth,
+            alpha
+        )
+    }
+
+    /**
+     * Draws a line from a start point to a target point in the world.
+     * @param context The world render context.
+     * @param startPos The start position in the world.
+     * @param target The target position in the world.
+     * @param color The RGB color of the line as a FloatArray (0.0 to 1.0).
+     * @param lineWidth The width of the line.
+     * @param alpha The alpha value for transparency (0.0 to 1.0).
+     */
+    fun drawLine(
+        context: WorldRenderContext,
+        startPos: Vec3,
+        endPos: Vec3,
+        color: FloatArray,
+        lineWidth: Float,
+        alpha: Float = 0.5f
+    ) {
         context.pushPop {
-            val camera = context.getCamera()
-            val cameraPos = camera.position()
+            val cameraPos = context.getCamera().position()
 
             translate(cameraPos.reverse())
-
-            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
-            val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
             val lineDir = endPos.subtract(startPos)
             val viewDir = startPos.subtract(cameraPos)
 
             val sideVec = lineDir.cross(viewDir).normalize()
-
             val upVec = sideVec.cross(lineDir).normalize()
 
             val nx = upVec.x.toFloat()
@@ -219,7 +257,7 @@ object RenderUtils3D {
             //$$         .setNormal(pose, nx, ny, nz)
             //$$         .setColor(color[0], color[1], color[2], alpha)
             //$$         .setLineWidth(lineWidth)
-            //$$ 
+            //$$
             //$$     consumer
             //$$         .addVertex(
             //$$             pose,
@@ -300,6 +338,7 @@ object RenderUtils3D {
         }
     }
 
+    //#if MC < 26.1
     private fun PoseStack.renderBeam(
         vertices: MultiBufferSource,
         partialTicks: Float,
@@ -414,6 +453,7 @@ object RenderUtils3D {
             .setOverlay(OverlayTexture.NO_OVERLAY)
             .setLight(15728880).setNormal(matrix, 0f, 1f, 0f)
     }
+    //#endif
 
     private fun WorldRenderContext.getCamera(): Camera {
         return gameRenderer().mainCamera

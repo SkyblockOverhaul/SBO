@@ -24,10 +24,13 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
+import net.sbo.mod.utils.waypoint.calculateDynamicOpacity
 import net.sbo.mod.utils.render.WaypointRenderer
+import net.sbo.mod.utils.render.RenderUtils3D
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.time.Duration
+import java.awt.Color
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
@@ -216,12 +219,12 @@ object WaypointManager {
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 30 blocks, or 75 if in an unloaded chunk, of each other
+            // Remove duplicate shovel guesses that are within 30 blocks of each other
             shovelGuesses.forEachIndexed { index, shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 75
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 30
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
@@ -534,14 +537,9 @@ object WaypointManager {
         }
     }
 
-    fun removeNearbyRareMobWaypoints() {
-        removeWithinDistance("rareMob", 30)
-        removeWithinDistance("world", 30)
-    }
-
-    fun removeNearbyRareMobWaypointsAt(pos: SboVec) {
-        removeWithinDistanceFrom(pos, "rareMob", 30)
-        removeWithinDistanceFrom(pos, "world", 30)
+    fun removeNearbyRareMobWaypointAt(pos: SboVec) {
+        removeWithinDistanceFrom(pos, "rareMob", 30, 1)
+        removeWithinDistanceFrom(pos, "world", 30, 1)
     }
 
     /**
@@ -555,6 +553,44 @@ object WaypointManager {
 
         this.forEachWaypoint { waypoint ->
             waypoint.render(context)
+        }
+
+        renderSubGuessLines(context)
+    }
+
+    private fun renderSubGuessLines(context: WorldRenderContext) {
+        val color = Color(Customization.SubGuessColor)
+
+        val rgb = floatArrayOf(
+            color.red / 255f,
+            color.green / 255f,
+            color.blue / 255f
+        )
+
+        ArrowGuessBurrow.allGuesses.forEach { guess ->
+            guess.getVisibleChain()
+                .zipWithNext { a, b ->
+                    val opacity =
+                        if (Customization.dynamicWaypointOpacity) {
+                            val distance = Player.getLastPosition().distanceTo(
+                                b.center()
+                            )
+
+                            calculateDynamicOpacity(distance)
+                        } else {
+                            (Customization.waypointOpacity / 100f)
+                                .coerceIn(0.2f, 1f)
+                        }
+
+                    RenderUtils3D.drawLine(
+                        context,
+                        a.center().toVec3d().add(0.0, 0.5, 0.0),
+                        b.center().toVec3d().add(0.0, 0.5, 0.0),
+                        rgb,
+                        Diana.dianaLineWidth.toFloat(),
+                        opacity
+                    )
+                }
         }
     }
 
@@ -622,20 +658,23 @@ object WaypointManager {
     }
 
     /**
-     * Removes all waypoints of a specific type that are within a certain distance from the player's last position.
+     * Removes limit number of waypoints of a specific type that are within a certain distance from the given position.
      * @param type The type of waypoints to remove.
      */
-    private fun removeWithinDistance(type: String, distance: Int) {
-        removeWithinDistanceFrom(Player.getLastPosition(), type, distance)
-    }
+    private fun removeWithinDistanceFrom(pos: SboVec, type: String, distance: Int, limit: Int) {
+        if (limit <= 0) return
 
-    /**
-     * Removes all waypoints of a specific type that are within a certain distance from the given position.
-     * @param type The type of waypoints to remove.
-     */
-    private fun removeWithinDistanceFrom(pos: SboVec, type: String, distance: Int) {
         val list = waypoints[type] ?: return
-        list.removeIf { it.pos.distanceTo(pos) < distance }
+
+        var removed = 0
+        val iterator = list.iterator()
+
+        while (iterator.hasNext() && removed < limit) {
+            if (iterator.next().pos.distanceTo(pos) < distance) {
+                iterator.remove()
+                removed++
+            }
+        }
     }
 
     /**

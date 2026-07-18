@@ -24,8 +24,7 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.http.Http
-import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypoints
-import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointsAt
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -115,7 +114,9 @@ object Helper {
             DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }*/
 
-        updateItemPriceInfo()
+        sleep(50) {
+            updateItemPriceInfo()
+        }
     }
 
     @SboEvent
@@ -129,8 +130,7 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
@@ -143,8 +143,7 @@ object Helper {
                 lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
@@ -157,8 +156,7 @@ object Helper {
                 lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
+                removeNearbyRareMobWaypointAt(pos)
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
@@ -170,8 +168,7 @@ object Helper {
                 lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
