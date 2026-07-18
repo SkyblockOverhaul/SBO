@@ -91,9 +91,17 @@ object ArrowGuessBurrow {
     fun removeArrowGuessFromSubGuess(pos: SboVec) {
         val target = pos.roundLocationToBlock()
 
-        allGuesses.removeAll { entry ->
-            entry.getRemaining().any { it.roundLocationToBlock() == target }
+        val toRemove = allGuesses.filter {
+            it.getRemaining().any { guess ->
+                guess.roundLocationToBlock() == target
+            }
         }
+
+        toRemove.forEach {
+            it.removeAllWaypoints()
+        }
+
+        allGuesses.removeAll(toRemove)
     }
 
     fun removeSubGuessFromInternalState(pos: SboVec) {

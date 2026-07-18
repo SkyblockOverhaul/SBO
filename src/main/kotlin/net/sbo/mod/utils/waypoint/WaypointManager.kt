@@ -571,16 +571,18 @@ object WaypointManager {
             guess.getVisibleChain()
                 .zipWithNext { a, b ->
                     val opacity =
-                        if (Customization.dynamicWaypointOpacity) {
-                            val distance = Player.getLastPosition().distanceTo(
-                                b.center()
-                            )
+                        (
+                            if (Customization.dynamicWaypointOpacity) {
+                                val distance = Player.getLastPosition().distanceTo(
+                                    b.center()
+                                )
 
-                            calculateDynamicOpacity(distance)
-                        } else {
-                            (Customization.waypointOpacity / 100f)
-                                .coerceIn(0.2f, 1f)
-                        }
+                                calculateDynamicOpacity(distance)
+                            } else {
+                                (Customization.waypointOpacity / 100f)
+                            }
+                        )
+                            .coerceIn(0.4f, 1f) // In-world path lines need a higher minimum opacity for readability.
 
                     RenderUtils3D.drawLine(
                         context,

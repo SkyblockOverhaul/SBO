@@ -348,11 +348,8 @@ object BurrowDetector {
                     removeFromInternalState(knownWaypoint.pos)
                 }
 
-                if (dugWaypoint.type == "arrow") {
-                    ArrowGuessBurrow.removeFromInternalState(dugWaypoint.pos)
-                } else if (dugWaypoint.type == "subGuess") {
-                    ArrowGuessBurrow.removeArrowGuessFromSubGuess(dugWaypoint.pos)
-                }
+                ArrowGuessBurrow.removeFromInternalState(dugWaypoint.pos)
+                ArrowGuessBurrow.removeArrowGuessFromSubGuess(dugWaypoint.pos)
 
                 WaypointManager.removeWaypoint(dugWaypoint)
             }
