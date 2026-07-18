@@ -739,14 +739,16 @@ object DianaTracker {
         var count = ""
 
         val rawCount = colorAndCount.second
-        val realCount = if (rawCount != -1) rawCount + 1 else -1 // we didn't call trackItem yet, avoids being #0
+        val realCount = if (rawCount != -1) rawCount + if (!ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
 
         val rawLsCount = colorAndCount.third
-        val realLsCount = if (rawLsCount != -1) rawLsCount + 1 else -1 // we didn't call trackItem yet, avoids being #0
+        val realLsCount = if (rawLsCount != -1) rawLsCount + if (ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
 
         if (realCount != -1) {
             count = if (realLsCount != -1 && ls) {
-                " Total #$realCount LS #$realLsCount"
+                " Total #${realCount + realLsCount} LS #$realLsCount"
+            } else if (realLsCount != -1) {
+                " #${realCount + realLsCount}"
             } else {
                 " #$realCount"
             }
