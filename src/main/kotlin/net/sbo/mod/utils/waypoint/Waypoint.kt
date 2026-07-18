@@ -241,7 +241,7 @@ class Waypoint(
 
             "subGuess", "debug" -> {
                 this.line = false
-                this.formattedText = "$text"
+                this.formattedText = text
             }
 
             else -> {

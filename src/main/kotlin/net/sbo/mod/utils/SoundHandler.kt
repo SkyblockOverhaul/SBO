@@ -1,28 +1,23 @@
 package net.sbo.mod.utils
 
 import javazoom.jl.player.JavaSoundAudioDevice
+import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.settings.categories.Customization
-import javazoom.jl.player.Player
 import java.io.File
 import java.io.FileInputStream
+import java.io.InputStream
 import java.nio.file.Files
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import javax.sound.sampled.AudioFormat
-import javax.sound.sampled.AudioSystem
-import javax.sound.sampled.FloatControl
-import javax.sound.sampled.LineEvent
+import javax.sound.sampled.*
 import kotlin.math.log10
-import java.io.InputStream
-import javax.sound.sampled.AudioInputStream
-import javax.sound.sampled.Clip
 
 object SoundHandler {
     private val SUPPORTED_EXTENSIONS = setOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
-    private val SOUND_DIR_PATH = "config/sbo/sounds"
+    private const val SOUND_DIR_PATH = "config/sbo/sounds"
     private val availableSounds = mutableSetOf<String>()
     private val availableSoundsWithExt = mutableSetOf<String>()
 
@@ -220,7 +215,7 @@ object SoundHandler {
                 runCatching {
                     val sourceField = JavaSoundAudioDevice::class.java
                         .getDeclaredField("source").apply { isAccessible = true }
-                    val sourceLine = sourceField.get(this) as? javax.sound.sampled.SourceDataLine
+                    val sourceLine = sourceField.get(this) as? SourceDataLine
 
                     if (sourceLine != null && sourceLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                         val gain = sourceLine.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl

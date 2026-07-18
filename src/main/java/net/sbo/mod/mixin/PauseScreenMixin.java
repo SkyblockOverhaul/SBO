@@ -18,13 +18,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PauseScreen.class)
-abstract class PauseScreenMixin {
+final class PauseScreenMixin {
     @Unique
     private int addedButtons;
     @Unique
     private boolean injected;
 
-    @Inject(method = "createPauseMenu", at = @At(value = "HEAD"))
+    @Inject(method = "createPauseMenu", at = @At("HEAD"))
     private void sbo$createPauseMenuHead(@NonNull final CallbackInfo ci) {
         addedButtons = 0;
         injected = false;

@@ -9,7 +9,6 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.NumberUtil.roundTo
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -101,7 +100,7 @@ object ArrowGuessBurrow {
             it.removeAllWaypoints()
         }
 
-        allGuesses.removeAll(toRemove)
+        allGuesses.removeAll(toRemove.toSet())
     }
 
     fun removeSubGuessFromInternalState(pos: SboVec) {
@@ -298,7 +297,7 @@ object ArrowGuessBurrow {
 
             val scaledDistance = distanceToRay * 500000 / distanceFromOrigin
 
-            candidates[candidateBlock] = Pair(scaledDistance.roundTo(2), distanceFromOrigin)
+            candidates[candidateBlock] = scaledDistance.roundTo(2) to distanceFromOrigin
         }
         if (candidates.isEmpty()) return null
 
@@ -356,7 +355,7 @@ object ArrowGuessBurrow {
                 continue
             }
             if (hasSpade) {
-                val isKnownBurrow = burrowLocations.contains(current)
+                val isKnownBurrow = current in burrowLocations
                 if (!isKnownBurrow && current.distanceSq(playerPos) < 900) { // 30 blocks
                     if (!guess.moveToNext()) {
                         toRemove.add(guess)
@@ -392,19 +391,11 @@ object ArrowGuessBurrow {
         val block = pos.getBlockAt()
         val isGrass = block == Blocks.GRASS_BLOCK
         val isAir = block == Blocks.AIR
-        val isGround = isGrass || isAir && recentClickedBlocks.contains(pos)
+        val isGround = isGrass || isAir && pos in recentClickedBlocks
 
         val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
 
         return isGround && isValidBlockAbove
-    }
-
-    private fun ClientboundLevelParticlesPacket.distanceToPlayer(): Double {
-        val player = SBOKotlin.mc.player ?: return Double.MAX_VALUE
-        val dx = this.x - player.x
-        val dy = this.y - player.y
-        val dz = this.z - player.z
-        return sqrt(dx * dx + dy * dy + dz * dz)
     }
 
     private fun AABB.isInside(vec: SboVec): Boolean {

@@ -15,7 +15,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 
 object Chains : DirtyFlushableOverlay() {
-    override val overlay = Overlay("Diana Chains", 10f, 10f).setCondition { Diana.ongoingChainsDisplay && (Helper.hasSpade && World.getWorld() == "Hub") }
+    override val overlay = Overlay("Diana Chains", 10f, 10f).setCondition { Diana.ongoingChainsDisplay && Helper.hasSpade && World.getWorld() == "Hub" }
 
     private var failureTimes = 0
 

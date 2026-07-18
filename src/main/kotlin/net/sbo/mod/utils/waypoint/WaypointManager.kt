@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Blocks
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.General.HideOwnWaypoints
@@ -517,10 +518,10 @@ object WaypointManager {
             val center = waypoint.pos.roundLocationToBlock().toBlockPos()
             val radius = 60
 
-            val minChunkX = (center.x - radius) shr 4
-            val maxChunkX = (center.x + radius) shr 4
-            val minChunkZ = (center.z - radius) shr 4
-            val maxChunkZ = (center.z + radius) shr 4
+            val minChunkX = center.x - radius shr 4
+            val maxChunkX = center.x + radius shr 4
+            val minChunkZ = center.z - radius shr 4
+            val maxChunkZ = center.z + radius shr 4
 
             for (chunkX in minChunkX..maxChunkX) {
                 for (chunkZ in minChunkZ..maxChunkZ) {
@@ -579,7 +580,7 @@ object WaypointManager {
 
                                 calculateDynamicOpacity(distance)
                             } else {
-                                (Customization.waypointOpacity / 100f)
+                                Customization.waypointOpacity / 100f
                             }
                         )
                             .coerceIn(0.4f, 1f) // In-world path lines need a higher minimum opacity for readability.

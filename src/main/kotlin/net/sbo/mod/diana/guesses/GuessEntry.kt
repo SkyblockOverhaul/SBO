@@ -1,16 +1,15 @@
 package net.sbo.mod.diana.guesses
 
-import net.sbo.mod.utils.math.SboVec
-import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.waypoint.WaypointManager
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.utils.math.SboVec
+import net.sbo.mod.utils.waypoint.WaypointManager
 
 class GuessEntry(val guesses: MutableList<SboVec>) {
     private var currentIndex = 0
 
     fun getCurrent(): SboVec = guesses[currentIndex]
 
-    fun contains(vec: SboVec): Boolean = guesses.contains(vec)
+    operator fun contains(vec: SboVec): Boolean = vec in guesses
 
     fun getRemaining(): List<SboVec> = guesses.subList(currentIndex + 1, guesses.size)
 

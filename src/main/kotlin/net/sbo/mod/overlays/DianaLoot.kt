@@ -25,7 +25,7 @@ object DianaLoot : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Loot", 10f, 10f,
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
     )
-        .setCondition { Diana.lootTracker != Diana.Tracker.OFF && (Helper.hasSpade && World.getWorld() == "Hub") }
+        .setCondition { Diana.lootTracker != Diana.Tracker.OFF && Helper.hasSpade && World.getWorld() == "Hub" }
 
     private val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "${YELLOW}Change View",

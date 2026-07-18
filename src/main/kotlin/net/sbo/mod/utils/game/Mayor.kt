@@ -9,7 +9,6 @@ import kotlin.math.floor
 
 object Mayor {
     private const val SKYBLOCK_EPOCH = 1560276000L
-    private const val SECONDS_PER_MINUTE = 0.8333333333333334
     private const val SECONDS_PER_MONTH = 37200.0
     private const val SECONDS_PER_DAY = 1200.0
     private const val SECONDS_PER_HOUR = 50.0
@@ -173,7 +172,6 @@ object Mayor {
         day = (day + dayDiff).let { if (it == 0) DAYS_IN_MONTH else it }
 
         val hourDiff = floor(secondsSinceEpoch / SECONDS_PER_HOUR).toInt() % 24
-        secondsSinceEpoch -= hourDiff * SECONDS_PER_HOUR.toLong()
         hour = (hour + hourDiff) % 24
 
         if (hour < 6) {

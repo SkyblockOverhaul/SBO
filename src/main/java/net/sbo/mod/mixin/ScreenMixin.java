@@ -15,8 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Screen.class)
-public abstract class ScreenMixin {
-
+final class ScreenMixin {
     @Inject(method = "render", at = @At("HEAD"))
     public void onRender(@NonNull final GuiGraphics context, final int mouseX, final int mouseY, final float delta, @NonNull final CallbackInfo ci) {
         final Minecraft client = Minecraft.getInstance();

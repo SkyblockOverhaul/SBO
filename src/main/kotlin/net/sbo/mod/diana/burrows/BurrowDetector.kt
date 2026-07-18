@@ -200,7 +200,6 @@ object BurrowDetector {
 
         if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
-            val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
             markRecentlyRemoved(pos)
             removeFromInternalState(pos)
@@ -213,6 +212,7 @@ object BurrowDetector {
             WaypointManager.removeWaypointAt(pos, "world")
             WaypointManager.removeWaypointAt(pos, "debug")
 
+            ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
         }
 
@@ -348,8 +348,8 @@ object BurrowDetector {
                     removeFromInternalState(knownWaypoint.pos)
                 }
 
-                ArrowGuessBurrow.removeFromInternalState(dugWaypoint.pos)
                 ArrowGuessBurrow.removeArrowGuessFromSubGuess(dugWaypoint.pos)
+                ArrowGuessBurrow.removeFromInternalState(dugWaypoint.pos)
 
                 WaypointManager.removeWaypoint(dugWaypoint)
             }

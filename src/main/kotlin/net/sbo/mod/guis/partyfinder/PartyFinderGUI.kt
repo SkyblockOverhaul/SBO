@@ -347,30 +347,30 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 Chat.chat("§6[SBO] §eA refresh is already in progress, please wait.")
             }
             return
-        } else {
-            refreshing = true
+        }
 
-            getAllParties(selectedPage,
-                onComplete = { parties ->
-                    refreshing = false
+        refreshing = true
 
-                    partyCache[selectedPage] = parties
+        getAllParties(selectedPage,
+            onComplete = { parties ->
+                refreshing = false
 
-                    getFilter(selectedPage) { filter ->
-                        Window.enqueueRenderOperation {
-                            if (filter != null) {
-                                filterPartyList(filter)
-                            } else {
-                                addPartyList(parties)
-                            }
+                partyCache[selectedPage] = parties
+
+                getFilter(selectedPage) { filter ->
+                    Window.enqueueRenderOperation {
+                        if (filter != null) {
+                            filterPartyList(filter)
+                        } else {
+                            addPartyList(parties)
                         }
                     }
-                },
-                onError = {
-                    refreshing = false
                 }
-            )
-        }
+            },
+            onError = {
+                refreshing = false
+            }
+        )
     }
 
     private fun updateOnlineUser() {

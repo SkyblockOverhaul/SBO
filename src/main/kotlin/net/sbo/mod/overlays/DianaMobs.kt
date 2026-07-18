@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 object DianaMobs : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Mobs", 10f, 10f,
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
-    ).setCondition { Diana.mobTracker != Diana.Tracker.OFF && (Helper.hasSpade && World.getWorld() == "Hub") }
+    ).setCondition { Diana.mobTracker != Diana.Tracker.OFF && Helper.hasSpade && World.getWorld() == "Hub" }
     private val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {
             Diana.mobTracker = Diana.mobTracker.next()
