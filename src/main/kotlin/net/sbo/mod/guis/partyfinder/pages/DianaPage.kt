@@ -28,21 +28,21 @@ class DianaPage(private val parent: PartyFinderGUI) {
     internal fun getPartyInfo(info: PartyPlayerStats): String {
         var formattedInfoString = ""
         val formattedInfo = listOf(
-            Pair("&9Name: &b", info.name),
-            Pair("&9Skyblock Level: ", Helper.matchLvlToColor(info.sbLvl)),
-            Pair("&9Uuid: &7", info.uuid),
-            Pair("&9Eman9: ", Helper.getNumberColor(info.emanLvl, 9)),
-            Pair("&9Clover: ", if (info.clover) "&a✔" else "&c✘"),
-            Pair("&9Looting 5: ", Helper.getNumberColor(info.daxeLootingLvl, 5)),
-            Pair("&9Chimera: ", Helper.getNumberColor(info.daxeChimLvl, 5)),
-            Pair("&9Griffin Item: ", Helper.getGriffinItemColor(info.griffinItem?.content)),
-            Pair("&9Griffin Rarity: ", Helper.getRarity(info.griffinRarity)),
-            Pair("&9Diana Kills: ", Helper.matchDianaKillsToColor(info.mythosKills)),
-            Pair("&9Leaderboard: &b#", info.killLeaderboard),
-            Pair("&9Magical Power: &b", info.magicalPower),
-            Pair("&9Enrichments: &b", info.enrichments),
-            Pair("&9Missing Enrichments: &b", info.missingEnrichments),
-            Pair("&9Warnings: &7", info.warnings.joinToString(", "))
+            "&9Name: &b" to info.name,
+            "&9Skyblock Level: " to Helper.matchLvlToColor(info.sbLvl),
+            "&9Uuid: &7" to info.uuid,
+            "&9Eman9: " to Helper.getNumberColor(info.emanLvl, 9),
+            "&9Clover: " to if (info.clover) "&a✔" else "&c✘",
+            "&9Looting 5: " to Helper.getNumberColor(info.daxeLootingLvl, 5),
+            "&9Chimera: " to Helper.getNumberColor(info.daxeChimLvl, 5),
+            "&9Griffin Item: " to Helper.getGriffinItemColor(info.griffinItem?.content),
+            "&9Griffin Rarity: " to Helper.getRarity(info.griffinRarity),
+            "&9Diana Kills: " to Helper.matchDianaKillsToColor(info.mythosKills),
+            "&9Leaderboard: &b#" to info.killLeaderboard,
+            "&9Magical Power: &b" to info.magicalPower,
+            "&9Enrichments: &b" to info.enrichments,
+            "&9Missing Enrichments: &b" to info.missingEnrichments,
+            "&9Warnings: &7" to info.warnings.joinToString(", ")
         )
         formattedInfo.forEach { (key, value) ->
             formattedInfoString += "$key$value\n\n"

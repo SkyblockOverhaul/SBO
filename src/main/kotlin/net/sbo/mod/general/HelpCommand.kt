@@ -47,7 +47,7 @@ object HelpCommand {
                 val cmd = command["cmd"]!!
                 val description = command["desc"]!!
 
-                val commandToRun = if (cmd.contains(" ")) cmd.substringBefore(" ") else cmd
+                val commandToRun = if (" " in cmd) cmd.substringBefore(" ") else cmd
 
                 val fullLineText = Component.literal("> ").withStyle(ChatFormatting.GRAY)
                     .append(Component.literal("/$cmd").withStyle(ChatFormatting.GREEN))
@@ -101,7 +101,7 @@ object HelpCommand {
             }
 
             val normalChances = Helper.getChance(mf, looting, rarity)
-            val lsChances = Helper.getChance(mf, looting, rarity, true)
+            val lsChances = Helper.getChance(mf, looting, rarity, lootshare = true)
 
             listOf(false, true).forEach { isLs ->
                 val chances = if (isLs) lsChances else normalChances

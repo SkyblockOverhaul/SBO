@@ -84,7 +84,7 @@ class Overlay(
     }
 
     private fun getLines(): List<OverlayTextLine> {
-        if (lines.isEmpty() && exampleView.isNotEmpty() && Helper.currentScreen is OverlayEditScreen) {
+        if (lines.isEmpty() && exampleView.isNotEmpty() && inEditingScreen()) {
             return exampleView
         }
         return lines
@@ -143,8 +143,17 @@ class Overlay(
         return maxWidth
     }
 
+    private fun inEditingScreen(): Boolean {
+        return Helper.currentScreen is OverlayEditScreen
+    }
+
+    private fun checkCondition(): Boolean {
+        // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
+        return condition() || inEditingScreen()
+    }
+
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
-        if (!condition()) return false
+        if (!checkCondition()) return false
         val totalWidth = width * scale
         val totalHeight = height * scale
 
@@ -158,7 +167,10 @@ class Overlay(
     )
 
     fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
-        if (!condition()) return
+        if (!checkCondition()) {
+            return
+        }
+
         val textRenderer = mc.font
 
         drawContext.pose().pushMatrix()
@@ -178,7 +190,7 @@ class Overlay(
             drawContext.drawString(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
-        if (Helper.currentScreen is OverlayEditScreen && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
+        if (inEditingScreen() && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 

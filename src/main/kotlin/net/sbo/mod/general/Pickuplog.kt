@@ -11,8 +11,8 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.InventorySlotUpdateEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
-import java.util.regex.Pattern
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 object Pickuplog {
     data class OverlayLineData(var amount: Int, val name: String, var modified: Long)
@@ -39,9 +39,9 @@ object Pickuplog {
 
         Register.onChatMessageCancelable(Pattern.compile("(.*?) item(.*?) (.*?)", Pattern.DOTALL)) { message, matchResult ->
             var cancel = true
-            if (World.isInSkyblock() && matchResult.group(1).contains("Sacks")) {
+            if (World.isInSkyblock() && "Sacks" in matchResult.group(1)) {
                 message.siblings.forEach { part ->
-                    if (part.string.contains(" item")) {
+                    if (" item" in part.string) {
                         val hover = part.style.hoverEvent
                         if (hover is HoverEvent.ShowText) {
                             val plain = hover.value().string
@@ -90,7 +90,7 @@ object Pickuplog {
                 newItems.add(newItem)
             } else if (newItem.count != oldItem.count) {
                 val countChange = newItem.count - oldItem.count
-                changedItemCounts.add(Pair(newItem, countChange))
+                changedItemCounts.add(newItem to countChange)
             }
         }
 

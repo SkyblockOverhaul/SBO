@@ -78,6 +78,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     internal lateinit var partyCount: UIText
     private var guiScale: Int? = null
 
+    private var refreshing = false
 
     init {
         create()
@@ -334,23 +335,42 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     internal fun updateCurrentPartyList(ignoreCooldown: Boolean = false) {
         val now = System.nanoTime()
-        if (!ignoreCooldown && now - this.lastRefreshTime < TimeUnit.MILLISECONDS.toNanos(1000)) {
-            Chat.chat("§6[SBO] §ePlease wait before refreshing the party list again.")
+        if (!ignoreCooldown && now - this.lastRefreshTime < TimeUnit.MILLISECONDS.toNanos(5000)) {
+            Chat.chat("§6[SBO] §ePlease wait 5 seconds before refreshing the party list again.")
             return
         }
         lastRefreshTime = now
-        getAllParties(selectedPage) { parties ->
-            partyCache[selectedPage] = parties
-            getFilter(selectedPage) { filter ->
-                Window.enqueueRenderOperation {
-                    if (filter != null) {
-                        filterPartyList(filter)
-                    } else {
-                        addPartyList(parties)
+
+        if (refreshing) {
+            // If ignoreCooldown is false means the user explicitly refreshed. Otherwise, we most likely tried to refresh due to a new party being queued by the user or delisted; in which case we should be silent if it was already trying to refresh.
+            if (!ignoreCooldown) {
+                Chat.chat("§6[SBO] §eA refresh is already in progress, please wait.")
+            }
+            return
+        }
+
+        refreshing = true
+
+        getAllParties(selectedPage,
+            onComplete = { parties ->
+                refreshing = false
+
+                partyCache[selectedPage] = parties
+
+                getFilter(selectedPage) { filter ->
+                    Window.enqueueRenderOperation {
+                        if (filter != null) {
+                            filterPartyList(filter)
+                        } else {
+                            addPartyList(parties)
+                        }
                     }
                 }
+            },
+            onError = {
+                refreshing = false
             }
-        }
+        )
     }
 
     private fun updateOnlineUser() {

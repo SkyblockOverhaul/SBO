@@ -51,7 +51,7 @@ object PartyCheck {
     ) {
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
         Http.sendGetRequest("$API_URL/partyInfo?party=$playerName&readCache=$readCache")
-            .toJson<PartyInfo>(true) { response ->
+            .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     val partyInfo = response.partyInfo
                     if (partyInfo.firstOrNull() != null) {
@@ -59,7 +59,7 @@ object PartyCheck {
                             printPartyInfo(partyInfo)
                             trackWithCheckPlayer(partyInfo[0])
                         } else if (!noMessage) {
-                            printPartyInfo(partyInfo, true)
+                            printPartyInfo(partyInfo, inviteButton = true)
                         }
                         onComplete?.invoke(partyInfo[0])
                     }
@@ -81,7 +81,7 @@ object PartyCheck {
             return
         }
         Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${partyMember.joinToString(",").replace("-", "")}")
-            .toJson<PartyInfo>(true) { response ->
+            .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     printPartyInfo(response.partyInfo)
                 }

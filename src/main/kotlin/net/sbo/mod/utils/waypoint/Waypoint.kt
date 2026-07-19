@@ -1,10 +1,13 @@
 package net.sbo.mod.utils.waypoint
 
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.chat.ChatUtils
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
@@ -17,6 +20,30 @@ private const val MIN_OPACITY = 0.2f
 private const val MAX_OPACITY = 1.0f
 private const val FADE_START_DISTANCE = 4.5
 private const val FADE_END_DISTANCE = 100.0
+
+internal fun calculateDynamicOpacity(distance: Double): Float {
+    if (!distance.isFinite()) {
+        return MAX_OPACITY
+    }
+
+    if (distance <= FADE_START_DISTANCE) {
+        return MIN_OPACITY
+    }
+
+    if (distance >= FADE_END_DISTANCE) {
+        return MAX_OPACITY
+    }
+
+    val progress = (
+        (distance - FADE_START_DISTANCE) /
+            (FADE_END_DISTANCE - FADE_START_DISTANCE)
+    ).toFloat()
+
+    return (
+        MIN_OPACITY +
+            (MAX_OPACITY - MIN_OPACITY) * progress
+    ).coerceIn(MIN_OPACITY, MAX_OPACITY)
+}
 
 /**
  * @class Waypoint
@@ -44,12 +71,30 @@ class Waypoint(
     private var formatted: Boolean = false
     private var distanceRaw: Double = 0.0
     private var distanceText: String = ""
-    private var formattedText: String = ""
+    private var component: Component = Component.nullToEmpty(text)
+    private var formattedText: String = text
+        set(value) {
+            field = value
+            textWidth = mc.font.width(value)
+            hasText = value.isNotEmpty()
+
+            component = ChatUtils.fromLegacy(value)
+            //#if MC > 1.21.11
+            //$$ visualOrderText = component.visualOrderText
+            //#endif
+        }
+    private var textWidth = mc.font.width(text)
+    private var hasText = text.isNotEmpty()
+
     var isClosest = false
     var timesDug = 0
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
-    var inaccurateArrow = false
+    var preventInvalidRemoval = false
+
+    //#if MC > 1.21.11
+    //$$ private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
+    //#endif
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
         this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
@@ -115,27 +160,8 @@ class Waypoint(
         }
     }
 
-    private fun updateDynamicOpacity(): Float {
-        val distance = this.distanceRaw
-
-        if (!distance.isFinite()) {
-            return MAX_OPACITY
-        }
-
-        if (distance <= FADE_START_DISTANCE) {
-            return MIN_OPACITY
-        }
-
-        if (distance >= FADE_END_DISTANCE) {
-            return MAX_OPACITY
-        }
-
-        val progress = ((distance - FADE_START_DISTANCE) /
-            (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
-
-        return (MIN_OPACITY + (MAX_OPACITY - MIN_OPACITY) * progress)
-            .coerceIn(MIN_OPACITY, MAX_OPACITY)
-    }
+    private fun updateDynamicOpacity(): Float =
+        calculateDynamicOpacity(distanceRaw)
 
     private fun getColor(): Color {
         when (this.type) {
@@ -158,6 +184,12 @@ class Waypoint(
             }
             "world" -> {
                 return Color(Customization.OtherWaypointColor)
+            }
+            "subGuess" -> {
+                return Color(Customization.SubGuessColor)
+            }
+            "debug" -> {
+                return Color(255, 255, 255)
             }
         }
         return Color(255, 255, 255) // shouldn't happen
@@ -207,6 +239,11 @@ class Waypoint(
                 }
             }
 
+            "subGuess", "debug" -> {
+                this.line = false
+                this.formattedText = text
+            }
+
             else -> {
                 this.formattedText = "$text$distanceText"
             }
@@ -226,7 +263,6 @@ class Waypoint(
 
     fun render(context: WorldRenderContext) {
         if (!this.formatted || this.hidden) return
-        if (inaccurateArrow) return
 
         val rgbAndHex = getRgbAndHex()
 
@@ -235,14 +271,19 @@ class Waypoint(
 
         RenderUtils3D.renderWaypoint(
             context,
-            this.formattedText,
+            this.hasText,
+            this.component,
+            this.textWidth,
+            //#if MC > 1.21.11
+            //$$ this.visualOrderText,
+            //#endif
             this.pos,
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),
             waypointOpacity,
             this.line,
             Diana.dianaLineWidth.toFloat(),
-            Diana.showBeaconBeam
+            if (type == "subGuess") false else Diana.showBeaconBeam
         )
     }
 }

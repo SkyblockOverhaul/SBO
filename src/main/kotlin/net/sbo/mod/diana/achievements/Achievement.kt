@@ -4,6 +4,7 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Debug
+import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.Chat.textComponent
@@ -36,7 +37,9 @@ class Achievement(
             this.description = this.description.substring(2)
             hiddenExtra = "§7[Secret Achievement] "
         }
+
         val player = mc.player
+
         if (this.rarity == "Divine" || this.rarity == "Impossible" || this.rarity == "Celestial") {
             Helper.showTitle("§kd§r $color$name §kd§r", "§aAchievement Unlocked!", 0, 50, 20)
             Chat.chat(textComponent("§6[SBO] §aAchievement Unlocked §7>> $color§kd§r $color$name §kd§r", "$hiddenExtra§a$description"))
@@ -64,11 +67,11 @@ class Achievement(
 
         SboDataObject.save("AchievementsData")
 
-        showUnlockEffects()
+        if (!General.disableAchievements) showUnlockEffects()
     }
 
     fun loadState() {
-        if (isUnlocked(true)) {
+        if (isUnlocked(total = true)) {
             AchievementManager.achievementsUnlockedTotal += 1
         } else {
             if (this.hidden) this.description = "§k" + this.description
