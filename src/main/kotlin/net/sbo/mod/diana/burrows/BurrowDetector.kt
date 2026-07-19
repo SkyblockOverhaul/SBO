@@ -215,7 +215,7 @@ object BurrowDetector {
             WaypointManager.removeWaypointAt(pos, "world")
             WaypointManager.removeWaypointAt(pos, "debug")
 
-            ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
+            ArrowGuessBurrow.removeSubGuessFromInternalState(pos)
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
         }
 
