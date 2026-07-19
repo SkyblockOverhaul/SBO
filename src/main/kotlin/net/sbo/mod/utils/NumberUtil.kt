@@ -13,4 +13,6 @@ object NumberUtil {
         val scale = 10.0.pow(precision)
         return round(this * scale) / scale
     }
+
+    fun Float.roundTo(precision: Int): Float = toDouble().roundTo(precision).toFloat()
 }
