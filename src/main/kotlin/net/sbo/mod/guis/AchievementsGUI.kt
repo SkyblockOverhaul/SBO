@@ -392,7 +392,5 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
         }
     }
 
-    private fun Float.toFixed(digits: Int): String {
-        return String.format("%.${digits}f", this)
-    }
+    private fun Float.toFixed(digits: Int): String = String.format("%.${digits}f", this)
 }

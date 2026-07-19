@@ -3,7 +3,6 @@ package net.sbo.mod.diana
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -22,13 +21,12 @@ import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
+import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import net.sbo.mod.utils.Player as SboPlayer
-import java.util.concurrent.TimeUnit
 
 object DianaMobDetect {
     private const val MYTHO_MOB_TYPE_CHAR = ""
-    private const val MYTHO_MOB_TYPE_CHAR_2 = "✿" // TODO: Remove once alpha releases to main and resourcepack is forced.
 
     private const val ANNOUNCE_DELAY_MS = 5_000L
 
@@ -181,9 +179,7 @@ object DianaMobDetect {
         }
     }
 
-    private fun hasMythoMobTypeChar(name: String): Boolean {
-        return name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true) || name.contains("§2$MYTHO_MOB_TYPE_CHAR_2", ignoreCase = true)
-    }
+    private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true)
 
     private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
         if (name.isEmpty() || name == "Armor Stand") return null

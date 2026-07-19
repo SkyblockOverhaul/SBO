@@ -32,9 +32,7 @@ object ChatMessageQueue {
         lastSentAt = System.nanoTime()
     }
 
-    private fun canSend(): Boolean {
-        return 0L == lastSentAt || System.nanoTime() - lastSentAt > DELAY_NANOS
-    }
+    private fun canSend(): Boolean = 0L == lastSentAt || System.nanoTime() - lastSentAt > DELAY_NANOS
 
     private fun send(player: LocalPlayer, message: String) {
         onCommandOrMessageSent() // should be called by mixin, but just in case it doesn't for some reason

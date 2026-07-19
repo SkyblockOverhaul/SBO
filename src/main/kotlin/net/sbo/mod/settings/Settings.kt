@@ -7,8 +7,8 @@ import net.sbo.mod.settings.categories.*
 
 object Settings : ConfigKt("sbo/config") {
     override val name: TranslatableValue
-        get() = Literal("SBO ${SBOKotlin.version}")
-    override val description = Literal("Mod for the Mythological Ritual event in hypixel skyblock and custom partyfinder")
+        get() = Literal("SBO ${SBOKotlin.version} for MC ${SBOKotlin.mcVersion}")
+    override val description = Literal("SBO is the ultimate diana mod for Hypixel Skyblock! FPS friendly, and packed with QOL features!")
 
     init {
         separator {

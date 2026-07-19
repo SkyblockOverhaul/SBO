@@ -17,49 +17,57 @@ object Customization : CategoryKt("Customization") {
     var ClosestGuessColor by color(
         Color(0.6f, 0.2f, 0.8f).rgb) {
         this.name = Literal("Closest Guess Color")
-        this.description = Literal("Pick a color for closest guess")
+        this.description = Literal("Pick a color for closest guess.")
         this.allowAlpha = true
     }
 
     var OtherGuessColor by color(
         Color(0.0f, 0.964f, 1.0f).rgb) {
         this.name = Literal("Other Guess Color")
-        this.description = Literal("Pick a color for other guesses")
+        this.description = Literal("Pick a color for other guesses.")
+        this.allowAlpha = true
+    }
+
+    var SubGuessColor by color(
+        Color(0.55f, 0.55f, 0.55f).rgb
+    ) {
+        this.name = Literal("Sub Guess Color")
+        this.description = Literal("Color of inactive arrow guess locations. (only used if \"Show Arrow Sub Guesses\" enabled in Diana category)")
         this.allowAlpha = true
     }
 
     var StartColor by color(
         Color(0.333f, 1.0f, 0.333f).rgb) {
         this.name = Literal("Start Burrow Color")
-        this.description = Literal("Pick a color for start burrows")
+        this.description = Literal("Pick a color for start burrows.")
         this.allowAlpha = true
     }
 
     var MobColor by color(
         Color(1.0f, 0.333f, 0.333f).rgb) {
         this.name = Literal("Mob Burrow Color")
-        this.description = Literal("Pick a color for mob burrows")
+        this.description = Literal("Pick a color for mob burrows.")
         this.allowAlpha = true
     }
 
     var TreasureColor by color(
         Color(1f, 0.666f, 0.0f).rgb) {
         this.name = Literal("Treasure Burrow Color")
-        this.description = Literal("Pick a color for treasure burrows")
+        this.description = Literal("Pick a color for treasure burrows.")
         this.allowAlpha = true
     }
 
     var RareMobColor by color(
         Color(1.0f, 0.84f, 0.0f).rgb) {
         this.name = Literal("Rare Mob Waypoint Color")
-        this.description = Literal("Pick a color for rare mob waypoints")
+        this.description = Literal("Pick a color for rare mob waypoints.")
         this.allowAlpha = true
     }
 
     var OtherWaypointColor by color(
         Color(0.0f, 0.2f, 1.0f).rgb) {
         this.name = Literal("Other Waypoint Color")
-        this.description = Literal("Pick a color for other waypoints, e.g., waypoints created from non-SBO player-sent coordinates (Separate from rare mob color).")
+        this.description = Literal("Pick a color for other waypoints, e.g., waypoints created from non-SBO player-sent coordinates. (Separate from rare mob color)")
         this.allowAlpha = true
     }
 
@@ -88,12 +96,12 @@ object Customization : CategoryKt("Customization") {
 
     var waypointTextShadow by boolean(true) {
         this.name = Literal("Waypoint Text Shadow")
-        this.description = Literal("Enables shadow for waypoint text")
+        this.description = Literal("Enables shadow for waypoint text.")
     }
 
     var waypointTextScale by float(0.7f) {
         this.name = Literal("Waypoint Text Scale")
-        this.description = Literal("Scale of the waypoint text")
+        this.description = Literal("Scale of the waypoint text.")
         this.range = 0.3f..2.0f
         this.slider = true
     }
@@ -122,7 +130,7 @@ object Customization : CategoryKt("Customization") {
         button {
             title = "Open Sound Folder"
             text = "Open"
-            description = "Custom sounds go in here (Must be one of those extensions: .ogg, .mp3, .wav, .au, .aif, .aiff)."
+            description = "Custom sounds go in here. (Must be one of those extensions: .ogg, .mp3, .wav, .au, .aif, .aiff)"
             onClick {
                 val path = "${FabricLoader.getInstance().configDir}/sbo/sounds"
                 val directory = File(path)
@@ -141,16 +149,16 @@ object Customization : CategoryKt("Customization") {
         button {
             title = "Sound Settings"
             text = "Configure"
-            description = "Open GUI to configure all sound settings"
+            description = "Open GUI to configure all sound settings."
             onClick {
-                Guis.openSoundGui(true)
+                Guis.openSoundGui(calledFromGUI = true)
             }
         }
     }
 
     var masterVolume by float(1.0f) {
         this.name = Literal("Master Volume")
-        this.description = Literal("Set the volume for all sounds")
+        this.description = Literal("Set the volume for all sounds.")
         this.range = 0.0f..1.0f
         this.slider = true
     }

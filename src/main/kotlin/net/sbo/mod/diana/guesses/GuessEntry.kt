@@ -1,16 +1,43 @@
 package net.sbo.mod.diana.guesses
 
-import net.sbo.mod.utils.math.SboVec
-import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.waypoint.WaypointManager
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.utils.math.SboVec
+import net.sbo.mod.utils.waypoint.WaypointManager
 
-class GuessEntry(val guesses: List<SboVec>) {
+class GuessEntry(val guesses: MutableList<SboVec>) {
     private var currentIndex = 0
 
     fun getCurrent(): SboVec = guesses[currentIndex]
 
-    fun contains(vec: SboVec): Boolean = guesses.contains(vec)
+    operator fun contains(vec: SboVec): Boolean = vec in guesses
+
+    fun getRemaining(): List<SboVec> = guesses.subList(currentIndex + 1, guesses.size)
+
+    fun getVisibleChain(): List<SboVec> =
+        guesses.subList(currentIndex, guesses.size)
+
+    fun isEquivalentTo(other: GuessEntry): Boolean = guesses.subList(currentIndex, guesses.size) == other.guesses.subList(other.currentIndex, other.guesses.size)
+
+    fun removeSubGuess(pos: SboVec) {
+        val index = guesses.indexOfFirst {
+            it.roundLocationToBlock() == pos.roundLocationToBlock()
+        }
+
+        if (index == -1 || index <= currentIndex) {
+            return
+        }
+
+        guesses.removeAt(index)
+        WaypointManager.removeArrowSubGuess(pos)
+    }
+
+    fun removeAllWaypoints() {
+        WaypointManager.removeWaypointAt(getCurrent(), "arrow")
+
+        getRemaining().forEach {
+            WaypointManager.removeWaypointAt(it, "subGuess")
+        }
+    }
 
     fun moveToNext(): Boolean {
         val current = getCurrent()
@@ -29,11 +56,15 @@ class GuessEntry(val guesses: List<SboVec>) {
         val nextIndex = currentIndex + 1
 
         if (nextIndex in guesses.indices) {
+            val next = guesses[nextIndex]
             currentIndex = nextIndex
-            WaypointManager.addArrowGuess(guesses[currentIndex])
+
+            WaypointManager.removeArrowSubGuess(next)
+            WaypointManager.addArrowGuess(next)
 
             return true
         }
+
         return false
     }
 }

@@ -148,6 +148,7 @@ object DianaTracker {
 
     fun trackWithSacksMessage(itemName: String, amount: Int) {
         if (!allowSackTracking) return
+        if (!dianaMobDiedRecently(4)) return
         val item = itemName.replace("Ingot", "").trim()
         if (sackDrops.contains(item)) {
             trackItem(item, amount)
@@ -180,7 +181,7 @@ object DianaTracker {
 
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
-        if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
+        //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
                 DianaMobDetect.onRareSpawn(mob)
@@ -509,7 +510,8 @@ object DianaTracker {
                 playCustomSound(SboDataObject.soundSettingsData.chimSound, volume = SboDataObject.soundSettingsData.chimVolume)
                 onRareDrop("Chimera", showMessageOrTitle = true,
                     trackLootshare = true,
-                    magicFind = magicfind
+                    magicFind = magicfind,
+                    enforceCooldown = false // lootsharing from own inquisitor is possible, which allows to drop 2 chimeras from a single inquisitor of yours, so we need to not early return if isItemOnCooldown
                 )
 
                 if (!isLootShare) {
@@ -687,8 +689,8 @@ object DianaTracker {
         SboDataObject.save("SboData")
     }
 
-    private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true) {
-        if (isItemOnCooldown.getOrDefault(item, false)) return
+    private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true, enforceCooldown: Boolean = true) {
+        if (isItemOnCooldown.getOrDefault(item, false) && enforceCooldown) return
 
         val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
 
@@ -729,7 +731,7 @@ object DianaTracker {
             else -> Triple("§f", -1, -1) // shouldn't happen
         }
 
-        val price = if (Diana.lootAnnouncerPrice) "§6${Helper.getItemPriceFormatted(itemId, amount)} coins" else ""
+        val price = "§6${Helper.getItemPriceFormatted(itemId, amount)} coins"
 
         val ls = gotLootShareRecently()
         val lsText = if (ls) " (LS)" else ""
@@ -737,14 +739,16 @@ object DianaTracker {
         var count = ""
 
         val rawCount = colorAndCount.second
-        val realCount = if (rawCount != -1) rawCount + 1 else -1 // we didn't call trackItem yet, avoids being #0
+        val realCount = if (rawCount != -1) rawCount + if (!ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
 
         val rawLsCount = colorAndCount.third
-        val realLsCount = if (rawLsCount != -1) rawLsCount + 1 else -1 // we didn't call trackItem yet, avoids being #0
+        val realLsCount = if (rawLsCount != -1) rawLsCount + if (ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
 
         if (realCount != -1) {
             count = if (realLsCount != -1 && ls) {
-                " Total #$realCount LS #$realLsCount"
+                " Total #${realCount + realLsCount} LS #$realLsCount"
+            } else if (realLsCount != -1) {
+                " #${realCount + realLsCount}"
             } else {
                 " #$realCount"
             }
@@ -780,9 +784,9 @@ object DianaTracker {
         }
 
         if (trackLootshare && isLootShare) {
-            trackItem(itemId + "_LS", amount)
+            trackItem(itemId + "_LS", amount, enforceCooldown)
         } else {
-            trackItem(itemId, amount)
+            trackItem(itemId, amount, enforceCooldown)
         }
     }
 
@@ -809,9 +813,7 @@ object DianaTracker {
         val custom = customMsg != null
         if (custom) msg = customMsg.removeFormatting()
 
-        if (replaceDropMessage) {
-            if (custom) Chat.chat(customMsg)
-        } else {
+        if (!replaceDropMessage) {
             val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
             val price = Helper.getItemPriceFormatted(itemId)
             val priceStr = if (price != "0") " (+$price coins)" else ""
@@ -974,8 +976,8 @@ object DianaTracker {
         }
     }
 
-    fun trackItem(item: String, amount: Int) {
-        if (isItemOnCooldown.getOrDefault(item, false)) return
+    fun trackItem(item: String, amount: Int, enforceCooldown: Boolean = true) {
+        if (isItemOnCooldown.getOrDefault(item, false) && enforceCooldown) return
         isItemOnCooldown[item] = true
 
         checkMayorTracker()
