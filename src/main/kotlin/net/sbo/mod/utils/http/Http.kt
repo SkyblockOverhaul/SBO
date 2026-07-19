@@ -13,7 +13,6 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.ThreadFactory
 
 object Http {
     private const val CONNECT_TIMEOUT = 20_000L
@@ -23,13 +22,12 @@ object Http {
         "SBO-Kotlin-Mod/${SBOKotlin.version}+${SharedConstants.getCurrentVersion().name()}"
 
     private val EXECUTOR: ExecutorService = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors() * 2,
-        ThreadFactory { runnable ->
-            Thread(runnable, "SBO Http Request Thread").apply {
-                isDaemon = true
-            }
+        Runtime.getRuntime().availableProcessors() * 2
+    ) { runnable ->
+        Thread(runnable, "SBO Http Request Thread").apply {
+            isDaemon = true
         }
-    )
+    }
 
     private val HTTP_3_OR_2: HttpClient.Version = http3WithFallback()
 
@@ -40,10 +38,10 @@ object Http {
         .build()
 
     private fun http3WithFallback(): HttpClient.Version {
-        try {
-            return HttpClient.Version.valueOf("HTTP_3") // Available since Java 26 (JEP 517: HTTP/3 for the HTTP Client API)
+        return try {
+            HttpClient.Version.valueOf("HTTP_3") // Available since Java 26 (JEP 517: HTTP/3 for the HTTP Client API)
         } catch (ignored: IllegalArgumentException) {
-            return HttpClient.Version.HTTP_2 // Fallback to baseline of HTTP/2
+            HttpClient.Version.HTTP_2 // Fallback to baseline of HTTP/2
         }
     }
 
@@ -117,15 +115,9 @@ object Http {
         }
     }
 
-    fun JsonObject.getBoolean(key: String): Boolean {
-        return this[key]?.jsonPrimitive?.booleanOrNull ?: false
-    }
+    fun JsonObject.getBoolean(key: String): Boolean = this[key]?.jsonPrimitive?.booleanOrNull ?: false
 
-    fun JsonObject.getString(key: String): String? {
-        return this[key]?.jsonPrimitive?.contentOrNull
-    }
+    fun JsonObject.getString(key: String): String? = this[key]?.jsonPrimitive?.contentOrNull
 
-    fun JsonObject.getInt(key: String): Int? {
-        return this[key]?.jsonPrimitive?.contentOrNull?.toIntOrNull()
-    }
+    fun JsonObject.getInt(key: String): Int? = this[key]?.jsonPrimitive?.contentOrNull?.toIntOrNull()
 }

@@ -24,14 +24,14 @@ object PartyPlayer {
                 return@command
             }
             cooldown = System.nanoTime()
-            getPartyPlayerStats(true) { stats ->
+            getPartyPlayerStats(forceRefresh = true) { stats ->
                 Chat.chat("§6[SBO] §aPlayer stats reloaded: ${stats.name} (SB Level: ${stats.sbLvl})")
             }
         }
 
         Register.onChatMessage(
             Regex("^Switching to profile (.*)$"),
-            true
+            noFormatting = true
         ) { _, _ ->
             sleep(2000) {
                 load()
@@ -40,7 +40,7 @@ object PartyPlayer {
     }
 
     fun load() {
-        getPartyPlayerStats(true) { stats ->
+        getPartyPlayerStats(forceRefresh = true) { stats ->
             Chat.chat("§6[SBO] §aPlayer stats loaded: ${stats.name} (SB Level: ${stats.sbLvl})")
         }
     }
@@ -53,7 +53,7 @@ object PartyPlayer {
             }
             refreshing = true
             Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${Player.getUUIDString().replace("-", "")}&readcache=false")
-                .toJson<PartyInfo>(true) { response ->
+                .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                     refreshing = false
                     if (response.success) {
                         lastUpdate = System.nanoTime()

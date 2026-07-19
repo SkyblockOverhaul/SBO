@@ -10,7 +10,5 @@ data class SphinxSession(
     /**
      * Check if all expected answers have been provided for this session.
      */
-    fun isComplete(): Boolean {
-        return answerTexts.size == expectedAnswers
-    }
+    fun isComplete(): Boolean = answerTexts.size == expectedAnswers
 }

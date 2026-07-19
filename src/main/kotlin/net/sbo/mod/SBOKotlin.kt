@@ -57,15 +57,6 @@ object SBOKotlin : ClientModInitializer {
 
 	fun id(path: String, owner: String = MOD_ID): Identifier = Identifier.fromNamespaceAndPath(owner, path)
 
-    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (IdentifierException) -> Unit): Identifier? {
-        return try {
-            id(path = path, owner = owner)
-        } catch (invalidIdentifierException: IdentifierException) {
-            onInvalid(invalidIdentifierException)
-            null
-        }
-    }
-
     fun toast(title: Component, message: Component) {
         mc.toastManager.addToast(
             SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, title, message)
@@ -155,9 +146,11 @@ object SBOKotlin : ClientModInitializer {
 			}
 		}
 
-		if (FabricLoader.getInstance().isModLoaded("iris")) {
-			IrisCompatibility.init()
-		}
+        //#if MC < 26.1
+		//$$ if (FabricLoader.getInstance().isModLoaded("iris")) {
+		//$$ 	IrisCompatibility.init()
+		//$$ }
+		//#endif
 
 		logger.info("SBO-Kotlin initialized successfully!")
 	}

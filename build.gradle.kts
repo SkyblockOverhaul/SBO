@@ -8,11 +8,11 @@ import java.lang.module.ModuleDescriptor.Version
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.0"
+    kotlin("plugin.serialization") version "2.4.10"
     alias(libs.plugins.loom)
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
-    id("com.google.devtools.ksp") version "2.3.9"
+    alias(libs.plugins.ksp)
 }
 
 private val mcProject: String = project.name
@@ -136,7 +136,7 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://maven.teamresourceful.com/repository/maven-public/")
+            maven("https://maven.teamresourceful.com/repository/maven-public")
         }
 
         filter {
@@ -147,7 +147,8 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://maven.terraformersmc.com/")
+            maven("https://maven.terraformersmc.com/releases")
+            maven("https://maven.operationpotato.com/mirror")
         }
 
         filter {

@@ -4,8 +4,8 @@ import net.minecraft.network.protocol.game.ClientboundLoginPacket
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
-import kotlin.math.max
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 object ServerStats {
     private var prevTime = 0L

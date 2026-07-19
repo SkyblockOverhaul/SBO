@@ -10,8 +10,8 @@ import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
-import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
+import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
 import java.util.concurrent.TimeUnit

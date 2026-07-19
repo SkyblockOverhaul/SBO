@@ -36,9 +36,7 @@ abstract class CacheSet<T : Any> : MutableSet<T> {
 
     override fun clear() = cache.clear()
 
-    override fun containsAll(elements: Collection<T>): Boolean {
-        return elements.all { it in cache }
-    }
+    override fun containsAll(elements: Collection<T>): Boolean = elements.all { it in cache }
 
     override fun iterator(): MutableIterator<T> = keys.iterator()
     override fun retainAll(elements: Collection<T>): Boolean {

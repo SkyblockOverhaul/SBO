@@ -23,8 +23,8 @@ import net.sbo.mod.utils.http.Http.getBoolean
 import net.sbo.mod.utils.http.Http.getInt
 import net.sbo.mod.utils.http.Http.getString
 import java.util.*
-import java.util.regex.Pattern
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 object PartyFinderManager {
     var creatingParty = false
@@ -110,7 +110,7 @@ object PartyFinderManager {
         Register.onChatMessageCancelable(
             Pattern.compile("§d(.*?) (.*?)§7: (.*?) join party request - id:(.*)", Pattern.DOTALL)
         ) { message, matchResult ->
-            if (matchResult.group(1).contains("From")) {
+            if ("From" in matchResult.group(1)) {
                 if (partyMemberCount < partySize) {
                     val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
 
@@ -195,7 +195,7 @@ object PartyFinderManager {
         this.partySize = size
         this.usedPf = true
 
-        HypixelModApi.sendPartyInfoPacket(true)
+        HypixelModApi.sendPartyInfoPacket(createParty = true)
     }
 
     private fun queueParty() {
@@ -223,7 +223,7 @@ object PartyFinderManager {
                         "&partytype=$partyType" +
                         "&partysize=$partySize" +
                         "&key=${sboData.sboKey}"
-            ).toJson<PartyAddResponse>(true) { response ->
+            ).toJson<PartyAddResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     val timeTaken = System.nanoTime() - currentTime
                     inQueue = true
@@ -272,7 +272,7 @@ object PartyFinderManager {
                         "&partytype=$partyType" +
                         "&partysize=$partySize" +
                         "&key=${sboData.sboKey}"
-            ).toJson<PartyUpdateResponse>(true) { response ->
+            ).toJson<PartyUpdateResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     val timeTaken = System.nanoTime() - currentTime
                     partyReqsMap = response.partyReqs!!
@@ -291,18 +291,21 @@ object PartyFinderManager {
 
     fun getAllParties(
         partyType: String,
-        onComplete: ((List<Party>) -> Unit)? = null
+        onComplete: ((List<Party>) -> Unit)? = null,
+        onError: (() -> Unit)? = null
     ) {
-        Http.sendGetRequest("$API_URL/getAllParties?partytype=$partyType").toJson<GetAllParties>(true) { response ->
-            if (response.success) {
-                val partyList = response.parties
-                onComplete?.invoke(partyList)
-            } else {
-                Chat.chat("§6[SBO] §4Failed to get parties")
+        Http.sendGetRequest("$API_URL/getAllParties?partytype=$partyType")
+            .toJson<GetAllParties>(ignoreUnknownKeys = true) { response ->
+                if (response.success) {
+                    onComplete?.invoke(response.parties)
+                } else {
+                    Chat.chat("§6[SBO] §4Failed to get parties")
+                    onError?.invoke()
+                }
+            }.error { error ->
+                onError?.invoke()
+                Chat.chat("§6[SBO] §4Unexpected error while getting parties: ${error.message}")
             }
-        }.error { error ->
-            Chat.chat("§6[SBO] §4Unexpected error while getting parties: ${error.message}")
-        }
     }
 
     fun getActiveUsers(
@@ -317,7 +320,7 @@ object PartyFinderManager {
 
     // todo: add a way to prevent inviting more player then party has space (maybe every user has 10 seconds to accept else next player gets invited)
     private fun invitePlayerIfMeetsReqs(playerName: String) {
-        PartyCheck.checkPlayer(playerName, true) { stats ->
+        PartyCheck.checkPlayer(playerName, noMessage = true) { stats ->
             if (checkIfPlayerMeetsReqs(stats, partyReqsMap)) {
                 if (partyMemberCount < partySize) {
                     Chat.command("p invite $playerName")
