@@ -4,8 +4,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
-import net.sbo.mod.utils.game.Mayor
-import net.sbo.mod.utils.game.Mayor.sbYear
+import net.sbo.mod.utils.game.Mayor.mayorElectedYear
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -87,7 +86,7 @@ object MedalIntegration {
     fun saveMinosRelicClip() = triggerEvent(minosRelicEvent)
 
     private fun clipTitle(dropName: String, dropNumber: Int): String {
-        return "[${sbYear} YEAR] $dropName #$dropNumber"
+        return "[${mayorElectedYear} YEAR] $dropName #$dropNumber"
     }
 
     private fun displayTitle(dropName: String, dropNumber: Int): String {
