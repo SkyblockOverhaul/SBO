@@ -375,7 +375,7 @@ object SboDataObject {
                     Int::class -> value.toIntOrNull()
                     String::class -> value
                     else -> {
-                        SBOKotlin.logger.warn("[$key] has an an Unsupported type: ${prop.returnType.classifier}")
+                        SBOKotlin.logger.warn("[$key] has an unsupported type: ${prop.returnType.classifier}")
                         null
                     }
                 }

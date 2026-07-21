@@ -179,7 +179,7 @@ object Chat {
      * @param separator The string to repeat. Defaults to -.
      * @return The message string that fills the chat line.
      */
-    fun getChatBreak(separator: String = "-", colorcodes: String = "§b"): String {
+    fun getChatBreak(separator: String = "-", colorCodes: String = "§b"): String {
         if (separator.isEmpty()) {
             return ""
         }
@@ -192,6 +192,6 @@ object Chat {
         }
 
         val repeatCount = chatWidth / separatorWidth
-        return colorcodes + separator.repeat(repeatCount)
+        return colorCodes + separator.repeat(repeatCount)
     }
 }

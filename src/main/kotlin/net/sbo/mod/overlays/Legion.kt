@@ -27,7 +27,7 @@ object Legion {
                     otherPlayer != player &&
 
                     (otherPlayer.uuid.version() == 4 || otherPlayer.uuid.version() == 1) &&
-                    getPlayerPing(mc, otherPlayer.uuid) > 0 &&
+                    getPlayerPing(otherPlayer.uuid) > 0 &&
                     otherPlayer.distanceTo(player) <= 30
                 }
                 .distinctBy { it.uuid }
@@ -36,7 +36,5 @@ object Legion {
         }
     }
 
-    private fun getPlayerPing(client: Minecraft, uuid: UUID): Int {
-        return client.connection?.getPlayerInfo(uuid)?.latency ?: 0
-    }
+    private fun getPlayerPing(uuid: UUID): Int = mc.connection?.getPlayerInfo(uuid)?.latency ?: 0
 }

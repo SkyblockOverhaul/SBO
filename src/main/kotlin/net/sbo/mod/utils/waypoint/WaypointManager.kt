@@ -4,9 +4,12 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.decoration.ArmorStand
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.state.BlockState
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.General.HideOwnWaypoints
@@ -16,15 +19,17 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
-import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
+import net.sbo.mod.utils.render.RenderUtils3D
 import net.sbo.mod.utils.render.WaypointRenderer
+import java.awt.Color
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
-import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
@@ -64,9 +69,9 @@ object WaypointManager {
 
             val trailing = match.groups["trailing"]?.value ?: ""
             val mob = trailing.replace("|", "").trim().lowercase()
-            val playerName = Player.getName() ?: ""
+            val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                if ((!trailing.startsWith(" ") || rareMobs.contains(mob) || Diana.allWaypointsAreInqs) && Diana.receiveRareMob) {
+                if ((!trailing.startsWith(" ") || rareMobs.contains(mob)) && Diana.receiveRareMob) {
                     val mobType: Diana.ReceiveList = when (mob) {
                         "minos inquisitor", "inquisitor", "inq" -> Diana.ReceiveList.INQ
                         "king minos", "king" -> Diana.ReceiveList.KING
@@ -76,54 +81,48 @@ object WaypointManager {
                     }
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
 
-                    val mobDisplayName = when (mobType) {
-                        Diana.ReceiveList.INQ -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(SboDataObject.soundSettingsData.inqSound, volume = SboDataObject.soundSettingsData.inqVolume)
-                            "§dInquisitor"
-                        }
-                        Diana.ReceiveList.KING -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(SboDataObject.soundSettingsData.kingSound, volume = SboDataObject.soundSettingsData.kingVolume)
-                            "§6King Minos"
-                        }
-                        Diana.ReceiveList.MANTICORE -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(SboDataObject.soundSettingsData.mantiSound, volume = SboDataObject.soundSettingsData.mantiVolume)
-                            "§2Manticore"
-                        }
-                        Diana.ReceiveList.SPHINX -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(SboDataObject.soundSettingsData.sphinxSound, volume = SboDataObject.soundSettingsData.sphinxVolume)
-                            "§9Sphinx"
-                        }
-                        else -> {
-                            Helper.showTitle("§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>", player, Diana.rareTitleFadeIn, Diana.rareTitleTime, Diana.rareTitleFadeOut)
-                            playCustomSound(SboDataObject.soundSettingsData.rareMobSound, volume = SboDataObject.soundSettingsData.rareMobVolume)
-                            "§3Rare Mob"
-                        }
+                    val existing = getWaypointsOfType("rareMob") + getWaypointsOfType("world")
+                    val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
+
+                    if (existing.any { it.pos.distanceTo(pos) <= 60 }) {
+                        return@onChatMessage
                     }
+
+                    val mobDisplayName = notifyRareMob(player, mobType)
 
                     addRareMobWaypoint(
                         player,
-                        SboVec(x.toDouble(), y.toDouble(), z.toDouble()),
+                        pos,
                         mobType,
-                        playerName,
+                        selfName,
                         mobDisplayName
                     )
                 } else if (patcherWaypoints) {
-                    if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(playerName)) return@onChatMessage
+                    if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(selfName)) return@onChatMessage
+
+                    val existing = getWaypointsOfType("rareMob") + getWaypointsOfType("world")
+                    val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
+
+                    if (existing.any { it.pos.distanceTo(pos) <= 60 }) {
+                        return@onChatMessage
+                    }
+
                     addWaypoint(Waypoint(player, x.toDouble(), y.toDouble(), z.toDouble(), ttl = 30, type = "world"))
                 }
             }
         }
 
         Register.onTick(1) { _ ->
+            if (Diana.receiveRareMob && World.getWorld() == "Hub") {
+                updateRareMobWaypoints()
+            }
+
             val playerPos = Player.getLastPosition()
 
             val knownBurrows = getWaypointsOfType("burrow")
             val shovelGuesses = getWaypointsOfType("guess")
             val arrowGuesses = getWaypointsOfType("arrow")
+            val subGuesses = getWaypointsOfType("subGuess")
 
             // These do not change location when using the shovel
             val allStaticBurrowWaypoints = knownBurrows + arrowGuesses
@@ -147,7 +146,7 @@ object WaypointManager {
 
             // Remove all waypoints that are not in radius of typical burrow locations x y z
             this.forEachWaypoint { waypoint ->
-                if (World.getWorld() != "Hub") return@forEachWaypoint
+                if (World.getWorld() != "Hub" || waypoint.preventInvalidRemoval) return@forEachWaypoint
 
                 val underWorld = waypoint.pos.y < 60
                 val aboveWorld = waypoint.pos.y > 105
@@ -187,10 +186,21 @@ object WaypointManager {
                         removeWaypoint(arrowGuess)
                         ArrowGuessBurrow.removeOrMoveFromInternalState(arrowGuess.pos)
                     } else {
-                        arrowGuess.inaccurateArrow = true
+                        arrowGuess.hidden = true
                     }
                 } else {
-                    arrowGuess.inaccurateArrow = false
+                    arrowGuess.hidden = false
+                }
+            }
+
+            // Remove all invalid sub guesses as they can be under many grass blocks and unreachable often
+            subGuesses.forEach { subGuess ->
+                if (World.getWorld() != "Hub") return@forEach
+
+                if (!ArrowGuessBurrow.isBlockValid(subGuess.pos)) {
+                    removeWaypoint(subGuess)
+
+                    ArrowGuessBurrow.removeSubGuessFromInternalState(subGuess.pos)
                 }
             }
 
@@ -208,12 +218,12 @@ object WaypointManager {
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 30 blocks, or 75 if in an unloaded chunk, of each other
+            // Remove duplicate shovel guesses that are within 30 blocks of each other
             shovelGuesses.forEachIndexed { index, shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= if (ArrowGuessBurrow.isBlockValid(shovelGuess.pos) || ArrowGuessBurrow.isBlockValid(otherGuess.pos)) 30 else 75
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 30
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
@@ -248,42 +258,340 @@ object WaypointManager {
             }
         }
 
-        LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
+        WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
+
+        //#if MC > 1.21.11
+        //$$ WorldRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
+        //#endif
     }
 
-    private fun addRareMobWaypoint(player: String, pos: SboVec, mobType: Diana.ReceiveList, playerName: String, mobDisplayName: String) {
-        when (mobType) {
-            Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(playerName)) return
-            Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING) && player.contains(playerName)) return
-            Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(playerName)) return
-            Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(playerName)) return
-            else -> {}
+    private fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
+        return when (mobType) {
+            Diana.ReceiveList.INQ -> {
+                Helper.showTitle(
+                    "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
+                    player.ifEmpty { null },
+                    Diana.rareTitleFadeIn,
+                    Diana.rareTitleTime,
+                    Diana.rareTitleFadeOut
+                )
+                playCustomSound(
+                    SboDataObject.soundSettingsData.inqSound,
+                    volume = SboDataObject.soundSettingsData.inqVolume
+                )
+                "§dInquisitor"
+            }
+
+            Diana.ReceiveList.KING -> {
+                Helper.showTitle(
+                    "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
+                    player.ifEmpty { null },
+                    Diana.rareTitleFadeIn,
+                    Diana.rareTitleTime,
+                    Diana.rareTitleFadeOut
+                )
+                playCustomSound(
+                    SboDataObject.soundSettingsData.kingSound,
+                    volume = SboDataObject.soundSettingsData.kingVolume
+                )
+                "§6King Minos"
+            }
+
+            Diana.ReceiveList.MANTICORE -> {
+                Helper.showTitle(
+                    "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
+                    player.ifEmpty { null },
+                    Diana.rareTitleFadeIn,
+                    Diana.rareTitleTime,
+                    Diana.rareTitleFadeOut
+                )
+                playCustomSound(
+                    SboDataObject.soundSettingsData.mantiSound,
+                    volume = SboDataObject.soundSettingsData.mantiVolume
+                )
+                "§2Manticore"
+            }
+
+            Diana.ReceiveList.SPHINX -> {
+                Helper.showTitle(
+                    "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
+                    player.ifEmpty { null },
+                    Diana.rareTitleFadeIn,
+                    Diana.rareTitleTime,
+                    Diana.rareTitleFadeOut
+                )
+                playCustomSound(
+                    SboDataObject.soundSettingsData.sphinxSound,
+                    volume = SboDataObject.soundSettingsData.sphinxVolume
+                )
+                "§9Sphinx"
+            }
+
+            else -> {
+                Helper.showTitle(
+                    "§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>",
+                    player.ifEmpty { null },
+                    Diana.rareTitleFadeIn,
+                    Diana.rareTitleTime,
+                    Diana.rareTitleFadeOut
+                )
+                playCustomSound(
+                    SboDataObject.soundSettingsData.rareMobSound,
+                    volume = SboDataObject.soundSettingsData.rareMobVolume
+                )
+                "§3Rare Mob"
+            }
+        }
+    }
+
+    private fun floorToGround(level: ClientLevel, pos: SboVec): SboVec {
+        val x = pos.x.roundToInt()
+        val y = pos.y.roundToInt()
+        val z = pos.z.roundToInt()
+
+        val isGrass: (BlockState) -> Boolean = {
+            it.`is`(Blocks.GRASS_BLOCK)
         }
 
-        addWaypoint(Waypoint("$mobDisplayName §7($player§7)", pos.x, pos.y, pos.z, ttl = 45, type = "rareMob"))
+        val isSolid: (BlockState) -> Boolean = {
+            !it.isAir()
+        }
+
+        // 1. Prefer grass directly below.
+        findGroundY(level, x, y, z, isGrass)?.let {
+            return SboVec(x.toDouble(), it.toDouble(), z.toDouble())
+        }
+
+        // 2. Prefer nearby grass over nearby solid blocks.
+        findNearby(level, x, y, z, isGrass)?.let {
+            return it
+        }
+
+        // 3. Fallback to any solid block directly below.
+        findGroundY(level, x, y, z, isSolid)?.let {
+            return SboVec(x.toDouble(), it.toDouble(), z.toDouble())
+        }
+
+        // 4. Last solid fallback.
+        findNearby(level, x, y, z, isSolid)?.let {
+            return it
+        }
+
+        return pos
     }
 
-    fun removeNearbyRareMobWaypoints() {
-        removeWithinDistance("rareMob", 30)
-        removeWithinDistance("world", 30)
+    private fun findGroundY(
+        level: ClientLevel,
+        x: Int,
+        startY: Int,
+        z: Int,
+        predicate: (BlockState) -> Boolean,
+        maxDepth: Int = 10
+    ): Int? {
+        var y = startY
+        var depth = 0
+
+        while (y > level.minY && depth++ < maxDepth) {
+            val state = level.getBlockState(BlockPos(x, y, z))
+            if (predicate(state)) {
+                return y
+            }
+            y--
+        }
+
+        return null
     }
 
-    fun removeNearbyRareMobWaypointsAt(pos: SboVec) {
-        removeWithinDistanceFrom(pos, "rareMob", 30)
-        removeWithinDistanceFrom(pos, "world", 30)
+    private fun findNearby(
+        level: ClientLevel,
+        x: Int,
+        startY: Int,
+        z: Int,
+        predicate: (BlockState) -> Boolean
+    ): SboVec? {
+        var best: BlockPos? = null
+        var bestDistance = Double.MAX_VALUE
+
+        for (dx in -3..3) {
+            for (dz in -3..3) {
+                val groundY = findGroundY(
+                    level,
+                    x + dx,
+                    startY,
+                    z + dz,
+                    predicate
+                ) ?: continue
+
+                val candidate = BlockPos(x + dx, groundY, z + dz)
+                val distance = candidate.distSqr(BlockPos(x, startY, z))
+
+                if (distance < bestDistance) {
+                    bestDistance = distance
+                    best = candidate
+                }
+            }
+        }
+
+        return best?.let {
+            SboVec(
+                it.x.toDouble(),
+                it.y.toDouble(),
+                it.z.toDouble()
+            )
+        }
+    }
+
+    private fun updateRareMobWaypoints() {
+        if (!Diana.scanWorldForRareMob) return
+
+        val level = mc.level ?: return
+
+        val existing = (getWaypointsOfType("rareMob") + getWaypointsOfType("world")).toMutableList()
+        val rareMobPositions = mutableListOf<SboVec>()
+
+        level.entitiesForRendering().forEach { entity ->
+            val stand = entity as? ArmorStand ?: return@forEach
+
+            val name = stand.customName?.string ?: return@forEach
+            if (name.contains("0/")) return@forEach
+
+            val mobType = when {
+                name.contains("King Minos") -> Diana.ReceiveList.KING
+                name.contains("Minos Inquisitor") -> Diana.ReceiveList.INQ
+                name.contains("Manticore") -> Diana.ReceiveList.MANTICORE
+                name.contains("Sphinx") -> Diana.ReceiveList.SPHINX
+                else -> return@forEach
+            }
+
+            if (stand.isDeadOrDying()) return@forEach
+
+            val standPos = SboVec(stand.x, stand.y, stand.z)
+            rareMobPositions += standPos
+
+            if (existing.none { it.pos.distanceTo(standPos) <= 60 }) {
+                val pos = floorToGround(level, standPos)
+
+                addRareMobWaypoint(
+                    player = "",
+                    pos = pos,
+                    mobType = mobType,
+                    selfName = "",
+                    mobDisplayName = notifyRareMob("", mobType)
+                )?.let(existing::add)
+            }
+        }
+
+        removeStaleRareMobWaypoints(level, rareMobPositions)
+    }
+
+    private fun addRareMobWaypoint(player: String, pos: SboVec, mobType: Diana.ReceiveList, selfName: String, mobDisplayName: String): Waypoint? {
+        val hasOwner = player.isNotEmpty()
+
+        if (hasOwner && selfName.isNotEmpty()) {
+            when (mobType) {
+                Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(selfName)) return null
+                Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING) && player.contains(selfName)) return null
+                Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(selfName)) return null
+                Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(selfName)) return null
+                else -> {}
+            }
+        }
+
+        val owner = if (hasOwner) " §7($player§7)" else ""
+        val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, ttl = 45, type = "rareMob")
+
+        addWaypoint(waypoint)
+        return waypoint
+    }
+
+    private fun removeStaleRareMobWaypoints(level: ClientLevel, rareMobPositions: List<SboVec>) {
+        (getWaypointsOfType("rareMob") + getWaypointsOfType("world")).forEach { waypoint ->
+            val blockPos = waypoint.pos.roundLocationToBlock()
+
+            // If the chunk waypoint is in is not loaded, no rare mob entity will exist, since the entity is not loaded as well.
+            if (!level.isLoaded(blockPos.toBlockPos()))
+                return@forEach
+
+            // The radius of a rare mob 60 blocks near the waypoint spans multiple chunks (> 16) so we need to also check that all the neighbor chunks relevant to our radius are loaded as well.
+            val center = waypoint.pos.roundLocationToBlock().toBlockPos()
+            val radius = 60
+
+            val minChunkX = center.x - radius shr 4
+            val maxChunkX = center.x + radius shr 4
+            val minChunkZ = center.z - radius shr 4
+            val maxChunkZ = center.z + radius shr 4
+
+            for (chunkX in minChunkX..maxChunkX) {
+                for (chunkZ in minChunkZ..maxChunkZ) {
+                    if (!level.hasChunk(chunkX, chunkZ)) {
+                        return@forEach
+                    }
+                }
+            }
+
+            // If the chunk waypoint is in and all the neighboring chunks in our radius distance is loaded but we were not able to find a rare mob entity in our radius distance to the waypoint, we should clean up the leftover stale rare mob waypoint by removing it.
+            if (rareMobPositions.none { it.distanceTo(waypoint.pos) <= radius }) {
+                removeWaypoint(waypoint)
+            }
+        }
+    }
+
+    fun removeNearbyRareMobWaypointAt(pos: SboVec) {
+        removeWithinDistanceFrom(pos, "rareMob", 30, 1)
+        removeWithinDistanceFrom(pos, "world", 30, 1)
     }
 
     /**
      * Renders all waypoints in the management system.
      * @param context The world render context.
      */
-    fun renderAllWaypoints(context: LevelRenderContext) {
-        if (World.getWorld() != "Hub") {
+    fun renderAllWaypoints(context: WorldRenderContext) {
+        if (World.getWorld() != "Hub" || !Helper.hasSpade) {
             return
         }
 
         this.forEachWaypoint { waypoint ->
             waypoint.render(context)
+        }
+
+        renderSubGuessLines(context)
+    }
+
+    private fun renderSubGuessLines(context: WorldRenderContext) {
+        val color = Color(Customization.SubGuessColor)
+
+        val rgb = floatArrayOf(
+            color.red / 255f,
+            color.green / 255f,
+            color.blue / 255f
+        )
+
+        ArrowGuessBurrow.allGuesses.forEach { guess ->
+            guess.getVisibleChain()
+                .zipWithNext { a, b ->
+                    val opacity =
+                        (
+                            if (Customization.dynamicWaypointOpacity) {
+                                val distance = Player.getLastPosition().distanceTo(
+                                    b.center()
+                                )
+
+                                calculateDynamicOpacity(distance)
+                            } else {
+                                Customization.waypointOpacity / 100f
+                            }
+                        )
+                            .coerceIn(0.4f, 1f) // In-world path lines need a higher minimum opacity for readability.
+
+                    RenderUtils3D.drawLine(
+                        context,
+                        a.center().toVec3d().add(0.0, 0.5, 0.0),
+                        b.center().toVec3d().add(0.0, 0.5, 0.0),
+                        rgb,
+                        Diana.dianaLineWidth.toFloat(),
+                        opacity
+                    )
+                }
         }
     }
 
@@ -292,11 +600,11 @@ object WaypointManager {
      * @param waypoint The waypoint to add.
      */
     fun addWaypoint(waypoint: Waypoint, playSound: Boolean = true) {
-        val type = waypoint.type.lowercase()
+        val type = waypoint.type
 
         waypoints.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(waypoint)
 
-        if (type == "burrow") {
+        if (type == "burrow" && playSound) {
             playCustomSound(SboDataObject.soundSettingsData.burrowFoundSound, volume = SboDataObject.soundSettingsData.burrowVolume)
         }
     }
@@ -309,7 +617,7 @@ object WaypointManager {
         if (closestWaypoint.first == waypoint) {
             closestWaypoint = null to 1000.0
         }
-        waypoints[waypoint.type.lowercase()]?.remove(waypoint)
+        waypoints[waypoint.type]?.remove(waypoint)
     }
 
     /**
@@ -318,7 +626,7 @@ object WaypointManager {
      * @param type The type of the waypoint to get.
      */
     fun getWaypointAt(pos: SboVec, type: String): Waypoint? {
-        val list = waypoints[type.lowercase()]
+        val list = waypoints[type]
         val waypoint = list?.find { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
         if (waypoint != null) {
             return waypoint
@@ -332,7 +640,7 @@ object WaypointManager {
      * @param type The type of the waypoint to remove.
      */
     fun removeWaypointAt(pos: SboVec, type: String) {
-        val list = waypoints[type.lowercase()]
+        val list = waypoints[type]
         val waypoint = list?.find { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
         if (waypoint != null) {
             list.remove(waypoint)
@@ -347,31 +655,34 @@ object WaypointManager {
      * @param type The type of waypoints to remove.
      */
     fun removeAllOfType(type: String) {
-        waypoints[type.lowercase()]?.clear()
+        waypoints[type]?.clear()
     }
 
     /**
-     * Removes all waypoints of a specific type that are within a certain distance from the player's last position.
+     * Removes limit number of waypoints of a specific type that are within a certain distance from the given position.
      * @param type The type of waypoints to remove.
      */
-    private fun removeWithinDistance(type: String, distance: Int) {
-        removeWithinDistanceFrom(Player.getLastPosition(), type, distance)
+    private fun removeWithinDistanceFrom(pos: SboVec, type: String, distance: Int, limit: Int) {
+        if (limit <= 0) return
+
+        val list = waypoints[type] ?: return
+
+        var removed = 0
+        val iterator = list.iterator()
+
+        while (iterator.hasNext() && removed < limit) {
+            if (iterator.next().pos.distanceTo(pos) < distance) {
+                iterator.remove()
+                removed++
+            }
+        }
     }
 
     /**
-     * Removes all waypoints of a specific type that are within a certain distance from the given position.
-     * @param type The type of waypoints to remove.
+     * Adds a spade guess waypoint.
+     * @param pos The position for the spade guess waypoint.
      */
-    private fun removeWithinDistanceFrom(pos: SboVec, type: String, distance: Int) {
-        val list = waypoints[type.lowercase()] ?: return
-        list.removeIf { it.pos.distanceTo(pos) < distance }
-    }
-
-    /**
-     * Adds a shovel guess waypoint.
-     * @param pos The position for the shovel guess waypoint.
-     */
-    fun addShovelGuess(pos: SboVec?) {
+    fun addSpadeGuess(pos: SboVec?) {
         if (pos == null) return
 
         if (!waypointExists("burrow", pos).first) {
@@ -393,6 +704,29 @@ object WaypointManager {
                 type = "arrow"
             )
         )
+    }
+
+    fun addArrowSubGuess(pos: SboVec?) {
+        if (pos == null) return
+
+        val exists = getWaypointsOfType("subGuess")
+            .any { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
+
+        if (exists) return
+
+        addWaypoint(
+            Waypoint(
+                text = if (Diana.showTextOnSubGuess) "Possible" else "",
+                x = pos.x,
+                y = pos.y,
+                z = pos.z,
+                type = "subGuess"
+            )
+        )
+    }
+
+    fun removeArrowSubGuess(pos: SboVec) {
+        removeWaypointAt(pos, "subGuess")
     }
 
     /**
@@ -421,7 +755,7 @@ object WaypointManager {
      * @return A list of waypoints of the specified type.
      */
     fun getWaypointsOfType(type: String): List<Waypoint> {
-        return waypoints[type.lowercase()] ?: emptyList()
+        return waypoints[type] ?: emptyList()
     }
 
     fun getAllGuessesAndBurrows(): List<Waypoint> {
