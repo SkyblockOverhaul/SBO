@@ -849,10 +849,10 @@ object WaypointManager {
         getClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
     }
 
-    fun warpToInq() {
-        val newestInq = getWaypointsOfType("rareMob").maxByOrNull { it.creationNs }
-        val newestWorldInq = getWaypointsOfType("world").maxByOrNull { it.creationNs }
-        val pos = newestInq?.pos ?: newestWorldInq?.pos ?: return
+    fun warpToRareMob() {
+        val newestRareMob = getWaypointsOfType("rareMob").maxByOrNull { it.creationNs }
+        val newestWorldRareMob = getWaypointsOfType("world").maxByOrNull { it.creationNs }
+        val pos = newestRareMob?.pos ?: newestWorldRareMob?.pos ?: return
         val warp = getClosestWarp(pos) ?: return
 
         executeWarpCommand(warp)
@@ -862,7 +862,7 @@ object WaypointManager {
         if (getWaypointsOfType("rareMob").isEmpty() && getWaypointsOfType("world").isEmpty()) {
             warpToGuess()
         } else {
-            warpToInq()
+            warpToRareMob()
         }
     }
 
