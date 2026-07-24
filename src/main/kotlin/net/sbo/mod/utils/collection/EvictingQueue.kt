@@ -10,9 +10,7 @@ internal class EvictingQueue<T>(private val maxSize: Int) {
         queue.add(item)
     }
 
-    fun contains(item: T): Boolean {
-        return queue.contains(item)
-    }
+    operator fun contains(item: T): Boolean = item in queue
 
     fun clear() {
         queue.clear()

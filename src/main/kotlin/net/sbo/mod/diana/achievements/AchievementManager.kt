@@ -9,8 +9,8 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.utils.Helper
@@ -90,9 +90,7 @@ object AchievementManager {
         achievement.loadState()
     }
 
-    private fun getAchievement(id: Int): Achievement? {
-        return achievements[id]
-    }
+    private fun getAchievement(id: Int): Achievement? = achievements[id]
 
     fun unlockAchievement(id: Int) {
         val achievement = getAchievement(id) ?: return
@@ -139,8 +137,8 @@ object AchievementManager {
         if (!isRareMob) return
         val item = event.player.mainHandItem
         val lookup = ItemLookup(item)
-        if (lookup.displayName.contains("Shears", true) && event.entity.name.string.contains("King Minos")) unlockAchievement(92)
-        if (lookup.displayName.contains("Core", true) && event.entity.name.string.contains("Manticore")) unlockAchievement(93)
+        if (lookup.displayName.contains("Shears", ignoreCase = true) && "King Minos" in event.entity.name.string) unlockAchievement(92)
+        if (lookup.displayName.contains("Core", ignoreCase = true) && "Manticore" in event.entity.name.string) unlockAchievement(93)
     }
 
 
@@ -156,6 +154,28 @@ object AchievementManager {
         val totalCores = itemsData.MANTI_CORE + itemsData.MANTI_CORE_LS
         val daedalusStickCount = itemsData.DAEDALUS_STICK
         val chimeraLsCount = itemsData.CHIMERA_LS
+
+        val totalRelics = itemsData.MINOS_RELIC //+ itemsData.MINOS_RELIC_LS
+        val totalDyes = itemsData.MYTHOLOGICAL_DYE
+        val totalStinger = itemsData.FATEFUL_STINGER + itemsData.FATEFUL_STINGER_LS
+        val totalCrowns = itemsData.CROWN_OF_GREED
+        val totalBraided = itemsData.BRAIDED_GRIFFIN_FEATHER
+        val totalFish = itemsData.MYTH_THE_FISH
+        val hasEverything = listOf(
+            totalChimera,
+            totalWools,
+            totalBrainFood,
+            totalCores,
+            daedalusStickCount,
+            totalRelics,
+            totalDyes,
+            totalStinger,
+            totalCrowns,
+            totalBraided,
+            totalFish
+        ).all { it >= 1 }
+
+        if (hasEverything) unlockAchievement(128)
 
         when {
             totalBurrows >= 25000 -> unlockAchievement(22)
@@ -181,6 +201,7 @@ object AchievementManager {
         }
 
         when {
+            totalChimera >= 128 -> unlockAchievement(127)
             totalChimera >= 64 -> unlockAchievement(125)
             totalChimera >= 32 -> unlockAchievement(11)
             totalChimera >= 16 -> unlockAchievement(9)
@@ -276,7 +297,7 @@ object AchievementManager {
 
     @SboEvent
     fun trackBeKills(event: GuiOpenEvent) {
-        Helper.sleep(200) {
+        Helper.sleep(500) {
             val screen = event.screen
             if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Creatur", ignoreCase = true)) return@sleep
@@ -328,12 +349,12 @@ object AchievementManager {
             val mfSlot = slots[14]
             val trackingSlot = slots[15]
 
-            if (dmgSlot.item.hoverName.removeFormatting().contains("Storied Stinger V") && coinsSlot.item.hoverName.removeFormatting().contains("Deadly Greed V") && mfSlot.item.hoverName.removeFormatting().contains("Diana's Favor III") && trackingSlot.item.hoverName.removeFormatting().contains("Elusive Hunter II")) { // does not guarantee its maxed since it shows next tier instead of current if it's not maxed, but we still need the check so that we don't trigger achievement for maxing unrelated perks
+            if ("Storied Stinger V" in dmgSlot.item.hoverName.removeFormatting() && "Deadly Greed V" in coinsSlot.item.hoverName.removeFormatting() && "Diana's Favor III" in mfSlot.item.hoverName.removeFormatting() && "Elusive Hunter II" in trackingSlot.item.hoverName.removeFormatting()) { // does not guarantee its maxed since it shows next tier instead of current if it's not maxed, but we still need the check so that we don't trigger achievement for maxing unrelated perks
                 for (upgrade in listOf(dmgSlot, coinsSlot, mfSlot, trackingSlot)) {
                     val lookup = ItemLookup(upgrade.item)
                     var hasUnlocked = false
                     for (loreLine in lookup.loreList) {
-                        if (loreLine.removeFormatting().contains("UNLOCKED")) {
+                        if ("UNLOCKED" in loreLine.removeFormatting()) {
                             hasUnlocked = true
                             break
                         }
@@ -349,14 +370,13 @@ object AchievementManager {
         }
     }
 
-    // The first pattern is with the Hypixel Skyblock Resourcepack, second one is before the resourcepack was added.
+    // The weird symbol is due to the Hypixel Skyblock Resourcepack
     private val COA_MF_PATTERN: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!
-    private val COA_MF_PATTERN_2: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+)✯ Magic Find ✿")!! // TODO: Remove once alpha releases to main and resourcepack is forced.
 
     private fun trackCOA() {
         val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
         val lookup = ItemLookup(helmet)
-        if (!lookup.displayName.contains("Crown of Avarice")) return
+        if ("Crown of Avarice" !in lookup.displayName) return
 
         unlockAchievement(121)
 
@@ -364,9 +384,8 @@ object AchievementManager {
             .map { it.removeFormatting() }
 
         val mfStr = loreLines.getValueFromLine(COA_MF_PATTERN)
-        val mfStr2 = loreLines.getValueFromLine(COA_MF_PATTERN_2)
 
-        val mf = if (mfStr.isNotEmpty()) mfStr.toDouble() else if (mfStr2.isNotEmpty()) mfStr2.toDouble() else -1
+        val mf = if (mfStr.isNotEmpty()) mfStr.toDouble() else -1
 
         if (mf == -1) {
             // Notify user to not be a silent failure point. Full lines are only logged to logs and not chat as it's long.
@@ -427,7 +446,7 @@ object AchievementManager {
                 if (stack.isEmpty) continue
 
                 val displayName: String = stack.hoverName.string.lowercase()
-                if (!displayName.contains("daedalus")) continue
+                if ("daedalus" !in displayName) continue
 
                 val customData: CustomData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
                 val nbt: CompoundTag = customData.copyTag()
@@ -449,7 +468,7 @@ object AchievementManager {
 
     private fun kingSoul() {
         Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
-            if (matchResult.groupValues[0].contains("King Minos")) unlockAchievement(118)
+            if ("King Minos" in matchResult.groupValues[0]) unlockAchievement(118)
         }
     }
 
@@ -467,6 +486,7 @@ object AchievementManager {
         addAchievement(9, "Chimera V", "Get 16 chimera in one event", "Mythic", 12)
         addAchievement(11, "Chimera VI", "Get 32 Chimera in one event", "Divine", 9)
         addAchievement(125, "Chimera VII", "Get 64 Chimera in one event", "Celestial", 11)
+        addAchievement(127, "Chimera VIII", "Get 128 Chimera in one event", "Impossible", 125)
         addAchievement(13, "First lootshare Chimera", "Lootshare your first Chimera", "Legendary")
         addAchievement(10, "Tf?", "Get 16 lootshare Chimera in one event", "Divine", 13)
         addAchievement(126, "Wtf?", "Get 32 lootshare Chimera in one event", "Celestial", 10)
@@ -577,7 +597,7 @@ object AchievementManager {
         addAchievement(58, "Keep the grind going", "Kill 25k Diana Mobs", "Epic", 57, repeatable = false)
         addAchievement(59, "I am not addicted", "Kill 50k Diana Mobs", "Legendary", 58, repeatable = false)
         addAchievement(60, "100k gang", "Kill 100k Diana Mobs", "Mythic", 59, repeatable = false)
-        addAchievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, true, repeatable = false)
+        addAchievement(61, "The grind never stops", "Kill 150k Diana Mobs", "Divine", 60, hidden = true, repeatable = false)
 
         // Leaderboard
         addAchievement(62, "Mom look i am on the leaderboard", "Top 100 on the kills leaderboard", "Legendary", repeatable = false)
@@ -589,7 +609,7 @@ object AchievementManager {
         addAchievement(69, "Burrow Enthusiast", "Get 400 burrows/hour (5h playtime)", "Epic", 68)
         addAchievement(70, "Shovel Expert", "Get 450 burrows/hour (5h playtime)", "Legendary", 69)
         addAchievement(71, "Burrow Maniac", "Get 500 burrows/hour (5h playtime)", "Divine", 70)
-        addAchievement(72, "Nice macro!", "Get 600 burrows/hour (5h playtime)", "Impossible", 71, true)
+        addAchievement(72, "Nice macro!", "Get 600 burrows/hour (5h playtime)", "Impossible", 71, hidden = true)
 
         // Other
         addAchievement(73, "Can I craft a Chimera sword now?", "Get 1 stick & 2 chimeras in 1 event", "Epic")
@@ -605,6 +625,8 @@ object AchievementManager {
 //        addAchievement(90, "Get a j*b", "Get top 10 king bestiary", "Mythic", repeatable = false) // TODO
 //        addAchievement(91, "King of the Hill", "Get top 1 king bestiary", "Impossible", repeatable = false) // TODO
 
+        addAchievement(128, "Got 'Em All", "Get every diana drop in 1 event", "Celestial")
+
         addAchievement(92, "Why am I not getting a wool???", "Hit a king with a shear", "Uncommon", hidden = true, repeatable = false)
         addAchievement(93, "Why are you doing this?", "Hit a Manticore with 'core' in item name", "Uncommon", hidden = true, repeatable = false)
         addAchievement(118, "No wool? Sell his soul to the devil!", "Get a King's soul", "Epic", hidden = true, repeatable = false)
@@ -617,6 +639,6 @@ object AchievementManager {
         addAchievement(121, "Capitalism on top!", "Get COA", "Rare", repeatable = false)
         addAchievement(122, "Inflation speedrun any%", "Get a 10m coins COA", "Epic", 121, repeatable = false)
         addAchievement(123, "Already? Damn that was fast!", "Get a 100m coins COA", "Legendary", 122, repeatable = false)
-        addAchievement(124, "All of that just for 2.5 mf", "Get a 1b coins COA", "Mythic", 123, repeatable = false)
+        addAchievement(124, "All of that just for 2.5 mf...", "Get a 1b coins COA", "Mythic", 123, repeatable = false)
     }
 }

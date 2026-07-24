@@ -28,7 +28,7 @@ object ChatHandler {
 
     private fun processMessage(message: Component): Boolean {
         val messageString = message.formattedString().replace("§r", "")
-        if (Debug.debugMessages && !messageString.contains("❈ Defense")) {
+        if (Debug.debugMessages && "❈ Defense" !in messageString) {
             println("Processing chat message: $messageString")
         }
 
