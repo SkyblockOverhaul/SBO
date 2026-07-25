@@ -46,6 +46,7 @@ object DianaTracker {
     private var allowScavTracking: Boolean = true
 
     var lastSpawnedMob: String? = null
+    var lastSpawnedMobTime: Long = 0L
 
     fun init() {
         Register.command("sboresetsession") {
@@ -124,7 +125,7 @@ object DianaTracker {
 
     private fun trackWithPickuplog(itemId: String) {
         when (itemId) {
-            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt Of Revelations", showMessageOrTitle = true,
+            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt Of Revelations", showMessageOrTitle = Diana.hiltDropMessage,
                 trackLootshare = false,
                 magicFind = 0,
                 actuallyRare = false // makes it show the chat message but not the title
@@ -181,6 +182,7 @@ object DianaTracker {
 
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
+        lastSpawnedMobTime = System.nanoTime()
         //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {

@@ -8,6 +8,7 @@ import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
@@ -45,6 +46,8 @@ object WaypointManager {
         "king",
         "sphinx"
     )
+
+    private const val HUB_WIZARD_MIN_GAP = 20.0
 
     fun init() {
         Register.command("sbosendping") { args ->
@@ -88,14 +91,15 @@ object WaypointManager {
                         return@onChatMessage
                     }
 
+                    val isOwnSpawn = player.contains(selfName)
                     val mobDisplayName = notifyRareMob(player, mobType)
 
                     addRareMobWaypoint(
                         player,
                         pos,
                         mobType,
-                        selfName,
-                        mobDisplayName
+                        mobDisplayName,
+                        isOwnSpawn
                     )
                 } else if (patcherWaypoints) {
                     if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(selfName)) return@onChatMessage
@@ -455,13 +459,23 @@ object WaypointManager {
             val name = stand.customName?.string ?: return@forEach
             if (name.contains("0/")) return@forEach
 
-            val mobType = when {
-                name.contains("King Minos") -> Diana.ReceiveList.KING
-                name.contains("Minos Inquisitor") -> Diana.ReceiveList.INQ
-                name.contains("Manticore") -> Diana.ReceiveList.MANTICORE
-                name.contains("Sphinx") -> Diana.ReceiveList.SPHINX
+            val (mobType, mobName) = when {
+                name.contains("King Minos") ->
+                    Diana.ReceiveList.KING to "King Minos"
+
+                name.contains("Minos Inquisitor") ->
+                    Diana.ReceiveList.INQ to "Minos Inquisitor"
+
+                name.contains("Manticore") ->
+                    Diana.ReceiveList.MANTICORE to "Manticore"
+
+                name.contains("Sphinx") ->
+                    Diana.ReceiveList.SPHINX to "Sphinx"
+
                 else -> return@forEach
             }
+
+            if (mobType !in Diana.ReceiveMobs) return@forEach
 
             if (stand.isDeadOrDying()) return@forEach
 
@@ -471,12 +485,16 @@ object WaypointManager {
             if (existing.none { it.pos.distanceTo(standPos) <= 60 }) {
                 val pos = floorToGround(level, standPos)
 
+                val isOwnSpawn =
+                    DianaTracker.lastSpawnedMob == mobName &&
+                    System.nanoTime() - DianaTracker.lastSpawnedMobTime <= TimeUnit.SECONDS.toNanos(5)
+
                 addRareMobWaypoint(
                     player = "",
                     pos = pos,
                     mobType = mobType,
-                    selfName = "",
-                    mobDisplayName = notifyRareMob("", mobType)
+                    mobDisplayName = notifyRareMob("", mobType),
+                    isOwnSpawn
                 )?.let(existing::add)
             }
         }
@@ -484,20 +502,24 @@ object WaypointManager {
         removeStaleRareMobWaypoints(level, rareMobPositions)
     }
 
-    private fun addRareMobWaypoint(player: String, pos: SboVec, mobType: Diana.ReceiveList, selfName: String, mobDisplayName: String): Waypoint? {
-        val hasOwner = player.isNotEmpty()
-
-        if (hasOwner && selfName.isNotEmpty()) {
+    private fun addRareMobWaypoint(
+        player: String,
+        pos: SboVec,
+        mobType: Diana.ReceiveList,
+        mobDisplayName: String,
+        isOwnSpawn: Boolean
+    ): Waypoint? {
+        if (isOwnSpawn) {
             when (mobType) {
-                Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ) && player.contains(selfName)) return null
-                Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING) && player.contains(selfName)) return null
-                Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE) && player.contains(selfName)) return null
-                Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX) && player.contains(selfName)) return null
+                Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ)) return null
+                Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING)) return null
+                Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE)) return null
+                Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX)) return null
                 else -> {}
             }
         }
 
-        val owner = if (hasOwner) " §7($player§7)" else ""
+        val owner = if (player.isNotEmpty()) " §7($player§7)" else ""
         val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, ttl = 45, type = "rareMob")
 
         addWaypoint(waypoint)
@@ -823,6 +845,34 @@ object WaypointManager {
                 secondClosestWarp = name
                 secondClosestWarpPoint = warp
                 secondClosestDistance = distance
+            }
+        }
+
+        val hubPoint = hubWarps["hub"]
+        val wizardPoint = additionalHubWarps["wizard"]
+
+        if (
+            closestWarp == "wizard" &&
+            secondClosestWarp == "hub" &&
+            hubPoint != null &&
+            wizardPoint != null
+        ) {
+            val hubDistance = if (Diana.ignoreYLevel) {
+                pos.distanceToIgnoringY(hubPoint.pos)
+            } else {
+                pos.distanceTo(hubPoint.pos)
+            }
+
+            val wizardDistance = if (Diana.ignoreYLevel) {
+                pos.distanceToIgnoringY(wizardPoint.pos)
+            } else {
+                pos.distanceTo(wizardPoint.pos)
+            }
+
+            if (wizardDistance - hubDistance < HUB_WIZARD_MIN_GAP) {
+                closestWarp = "hub"
+                closestWarpPoint = hubPoint
+                closestDistance = hubDistance
             }
         }
 

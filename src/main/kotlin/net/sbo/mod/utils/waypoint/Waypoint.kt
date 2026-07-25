@@ -150,10 +150,14 @@ class Waypoint(
                 val text = "§" + (if (this.type == "rareMob" || this.type == "world") "d" else "b") + "Warp §e$warpName$distanceText"
                 val asSubtitle = Customization.warpTitleAsSubtitle
 
-                val title = if (asSubtitle) "" else text
-                val subtitle = if (asSubtitle) text else null
+                val titleBusy = !mc.gui.title?.string.isNullOrEmpty() && mc.gui.titleTime > 0 // When asSubtitle is disabled, Helper.showTitle checks internally if busy or not; but when its subtitle, it appends warp subtitle inside another one, e.g. Use Spade one, with higher duration, causing warp title to keep showing as subtitle even after warping till the main title (e.g., Use Spade one) expires; this makes it delay warp title till the original title disappears which fixes the issue.
 
-                Helper.showTitle(title, subtitle, 0, 1, 0, overwrite = false) // 1 ticks because next tick this will be called again. Overwrite false to not wipe rare mob title or use spade title.
+                if (!asSubtitle || !titleBusy) {
+                    val title = if (asSubtitle) "" else text
+                    val subtitle = if (asSubtitle) text else null
+
+                    Helper.showTitle(title, subtitle, 0, 1, 0, overwrite = false) // 1 ticks because next tick this will be called again. Overwrite false to not wipe rare mob title or use spade title.
+                }
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"
@@ -230,7 +234,7 @@ class Waypoint(
                 val newest = inqWaypoints.lastOrNull() == this
 
                 if (newest) isClosest = true
-                this.line = newest && Diana.inqLine
+                this.line = newest && Diana.inqLine && this.distanceRaw >= 8.0
 
                 if (newest) {
                     setWarpText()

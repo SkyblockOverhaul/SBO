@@ -313,6 +313,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces relic/shelmet/plushie/remedies in chat.")
     }
 
+    var hiltDropMessage by boolean(true) {
+        this.name = Literal("Hilt of Revelations Drop Message")
+        this.description = Literal("Sends rare drop message for Hilt of Revelations, since Hypixel does not send one.")
+    }
+
     var lootAnnouncerScreen by boolean(true) {
         this.name = Literal("Loot Screen Announcer")
         this.description = Literal("Announces chimera/stick/relic on screen.")
@@ -490,6 +495,20 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Sends a text on King spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
     }
 
+    init {
+        button {
+            title = "Send All Test Messages"
+            text = "Send Test"
+            description = "Sends all test messages for the Rare Mob spawn message."
+            onClick {
+                Chat.chat("Inq Message: " + Helper.getSpawnMessage(announceInqText[0], "inq"))
+                Chat.chat("Sphinx Message: " + Helper.getSpawnMessage(announceSphinxText[0], "sphinx"))
+                Chat.chat("Manti Message: " + Helper.getSpawnMessage(announceMantiText[0], "manti"))
+                Chat.chat("King Message: " + Helper.getSpawnMessage(announceKingText[0], "king"))
+            }
+        }
+    }
+
     var announceCocoon by boolean(true) {
         this.name = Literal("Send Message On Cocoon")
         this.description = Literal("Sends a message to party chat on cocoon.")
@@ -513,20 +532,6 @@ object Diana : CategoryKt("Diana") {
     var NoShurikenMobs by select(NoShurikenList.INQ, NoShurikenList.MANTICORE, NoShurikenList.KING, NoShurikenList.SPHINX) {
         this.name = Literal("Select which Mobs to Check")
         this.description = Literal("Select which mobs to check for shuriken.")
-    }
-
-    init {
-        button {
-            title = "Send All Test Messages"
-            text = "Send Test"
-            description = "Sends all test messages for the Rare Mob spawn message."
-            onClick {
-                Chat.chat("Inq Message: " + Helper.getSpawnMessage(announceInqText[0], "inq"))
-                Chat.chat("Sphinx Message: " + Helper.getSpawnMessage(announceSphinxText[0], "sphinx"))
-                Chat.chat("Manti Message: " + Helper.getSpawnMessage(announceMantiText[0], "manti"))
-                Chat.chat("King Message: " + Helper.getSpawnMessage(announceKingText[0], "king"))
-            }
-        }
     }
 
     init {
