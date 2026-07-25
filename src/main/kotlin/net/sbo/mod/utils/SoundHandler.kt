@@ -23,7 +23,10 @@ object SoundHandler {
 
     // Thread pool for audio processing - bounded and daemon threads
     private val AUDIO_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
-        Thread(r, "sbo-audio-thread").apply { isDaemon = true }
+        Thread(r, "sbo-audio-thread").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY + 1 // audio processing needs slightly more priority for less latency
+        }
     }
 
     /**
