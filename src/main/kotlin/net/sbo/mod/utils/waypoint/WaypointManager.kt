@@ -809,6 +809,11 @@ object WaypointManager {
      * @return The name of the closest warp, or null if no warps are available.
      */
     fun getClosestWarp(pos: SboVec): String? {
+        if (BurrowDetector.pendingUseSpadeTitle != null) {
+            // Prevent warping before using spade.
+            return null
+        }
+
         var warps = hubWarps.filter { it.value.unlocked }.mapValues { it.value }
         for (warp in Diana.allowedWarps) {
             val warpName = warp.name.lowercase()

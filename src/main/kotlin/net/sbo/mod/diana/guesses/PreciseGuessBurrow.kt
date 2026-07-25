@@ -3,6 +3,7 @@ package net.sbo.mod.diana.guesses
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
@@ -63,6 +64,7 @@ object PreciseGuessBurrow {
         val item = player?.mainHandItem
         if (item?.isEmpty == true) return
         if (item == null || "Spade" !in item.hoverName.string) return
+        BurrowDetector.pendingUseSpadeTitle = null
         if (System.nanoTime() - this.lastLavaParticle < TimeUnit.MILLISECONDS.toNanos(200L)) {
             event.isCanceled = true
             return
