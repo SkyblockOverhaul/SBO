@@ -87,6 +87,24 @@ bloom {
         // addMessage --> addClientSystemMessage
         replacement("chat.addMessage(", "chat.addClientSystemMessage(")
     }
+
+    if (isMCVersionGreaterOrEqualTo("26.2")) {
+        replacement("mc.screen", "mc.gui.screen()")
+        replacement("mc.setScreen(", "mc.gui.setScreen(")
+        replacement("mc.toastManager", "mc.gui.toastManager()")
+        replacement("mc.gui.setTimes", "mc.gui.hud.setTimes")
+        replacement("mc.gui.setTitle", "mc.gui.hud.setTitle")
+        replacement("mc.gui.setSubtitle", "mc.gui.hud.setSubtitle")
+        replacement("mc.gui.titleTime", "mc.gui.hud.titleTime")
+        replacement("mc.gui.title", "mc.gui.hud.title")
+        replacement("mc.gui.subtitle", "mc.gui.hud.subtitle")
+        replacement("SystemToast.multiline(mc, ", "SystemToast(")
+        replacement("mc.gui.chat.addClientSystemMessage", "mc.gui.hud.chat.addClientSystemMessage")
+        replacement("formatting?.char", "formatting?.code")
+        replacement("mc.options.hideGui", "mc.gui.hud.isHidden()")
+        replacement("gameRenderer().mainCamera", "gameRenderer().mainCamera()")
+        replacement("com.mojang.blaze3d.vertex.VertexFormat.Mode", "com.mojang.blaze3d.PrimitiveTopology")
+    }
 }
 
 tasks.withType<KotlinJvmCompile>().configureEach {
@@ -325,6 +343,12 @@ dependencies {
     implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
 
     when (mcProject) {
+        "26.2-fabric" -> {
+            implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.2:${versionedProperty("rconfig.version")}")!!)
+            implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
+            implementation(include("gg.essential:universalcraft-26.2-fabric:${property("universalcraft.version")}")!!)
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
+        }
         "26.1.2-fabric" -> {
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
@@ -345,6 +369,7 @@ dependencies {
 
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
+        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspKotlin")
         "26.1.2-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
