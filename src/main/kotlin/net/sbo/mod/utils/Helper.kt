@@ -32,6 +32,7 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -114,8 +115,11 @@ object Helper {
             DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }*/
 
-        sleep(50) {
-            updateItemPriceInfo()
+        // Workaround to not timeout on the first requests since there is lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
+        sleep(1000) {
+            CompletableFuture.runAsync {
+                updateItemPriceInfo()
+            }
         }
     }
 
