@@ -137,7 +137,7 @@ class Waypoint(
         val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
 
         if (isClosest) {
-            val closest = WaypointManager.getClosestWarp(this.pos)
+            val closest = WaypointManager.getFinalClosestWarp(this.pos)
 
             this.formattedText = closest?.let {
                 "$text§7 (warp $it)${this.distanceText}$timesDugText"
