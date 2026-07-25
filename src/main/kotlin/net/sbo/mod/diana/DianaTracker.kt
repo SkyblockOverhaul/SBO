@@ -876,6 +876,7 @@ object DianaTracker {
 
     private fun resetMayorTracker(check: Boolean = false) {
         if (!check) {
+            if (dianaTrackerMayor.year == 0) dianaTrackerMayor.year = Mayor.mayorElectedYear
             pastDianaEventsData.events += dianaTrackerMayor.snapshot()
             SboDataObject.save("PastDianaEventsData")
         }
