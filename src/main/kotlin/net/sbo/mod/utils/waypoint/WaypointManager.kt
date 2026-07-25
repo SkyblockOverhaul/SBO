@@ -47,8 +47,6 @@ object WaypointManager {
         "sphinx"
     )
 
-    private const val HUB_WIZARD_MIN_GAP = 20.0
-
     fun init() {
         Register.command("sbosendping") { args ->
             val playerPos = Player.getLastPosition()
@@ -780,14 +778,22 @@ object WaypointManager {
         return waypoints[type] ?: emptyList()
     }
 
+    private fun getWarpPoint(name: String): WarpPoint? {
+        return hubWarps[name] ?: additionalHubWarps[name]
+    }
+
     fun getAllGuessesAndBurrows(): List<Waypoint> {
         return getWaypointsOfType("burrow") + getWaypointsOfType("arrow") + getWaypointsOfType("guess")
     }
 
     private fun getBestGuess(): Waypoint? {
+        return getBestGuessAt(Player.getLastPosition())
+    }
+
+    private fun getBestGuessAt(pos: SboVec): Waypoint? {
         return getAllGuessesAndBurrows()
             .filter { !it.hidden }
-            .minByOrNull { if (Diana.ignoreYLevel) it.distanceToPlayerIgnoringY() else it.distanceToPlayer() }
+            .minByOrNull { if (Diana.ignoreYLevel) it.pos.distanceToIgnoringY(pos) else it.pos.distanceTo(pos) }
     }
 
     private fun getClosestWaypointFrom(pos: SboVec): Pair<Waypoint, Double>? {
@@ -803,12 +809,15 @@ object WaypointManager {
             .minByOrNull { it.second }
     }
 
+    private fun getClosestWarp(pos: SboVec): String? = getClosestWarp(pos, Player.getLastPosition())
+
     /**
      * Gets the closest warp point to a given position.
      * @param pos The position to find the closest warp to.
+     * @param playerPos The player's position to warp from.
      * @return The name of the closest warp, or null if no warps are available.
      */
-    fun getClosestWarp(pos: SboVec): String? {
+    private fun getClosestWarp(pos: SboVec, playerPos: SboVec): String? {
         if (BurrowDetector.pendingUseSpadeTitle != null) {
             // Prevent warping before using spade.
             return null
@@ -825,7 +834,7 @@ object WaypointManager {
             }
         }
 
-        var playerDistance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(Player.getLastPosition()) else pos.distanceTo(Player.getLastPosition())
+        var playerDistance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(playerPos) else pos.distanceTo(playerPos)
 
         var closestWarp: String? = null
         var closestWarpPoint: WarpPoint? = null
@@ -853,34 +862,6 @@ object WaypointManager {
             }
         }
 
-        val hubPoint = hubWarps["hub"]
-        val wizardPoint = additionalHubWarps["wizard"]
-
-        if (
-            closestWarp == "wizard" &&
-            secondClosestWarp == "hub" &&
-            hubPoint != null &&
-            wizardPoint != null
-        ) {
-            val hubDistance = if (Diana.ignoreYLevel) {
-                pos.distanceToIgnoringY(hubPoint.pos)
-            } else {
-                pos.distanceTo(hubPoint.pos)
-            }
-
-            val wizardDistance = if (Diana.ignoreYLevel) {
-                pos.distanceToIgnoringY(wizardPoint.pos)
-            } else {
-                pos.distanceTo(wizardPoint.pos)
-            }
-
-            if (wizardDistance - hubDistance < HUB_WIZARD_MIN_GAP) {
-                closestWarp = "hub"
-                closestWarpPoint = hubPoint
-                closestDistance = hubDistance
-            }
-        }
-
         val preferredAgainst = secondClosestWarpPoint?.preferWarpAgainstCompetitive
 
         if (Diana.badWarpDistance > 0 && preferredAgainst != null && preferredAgainst == closestWarpPoint?.warpType && secondClosestDistance - closestDistance < Diana.badWarpDistance) {
@@ -889,7 +870,7 @@ object WaypointManager {
             closestDistance = secondClosestDistance
         }
 
-        if (Diana.ignoreYLevel) playerDistance = pos.distanceToIgnoringY(Player.getLastPosition())
+        if (Diana.ignoreYLevel) playerDistance = pos.distanceToIgnoringY(playerPos)
 
         val condition1 = playerDistance > closestDistance + Diana.warpDiff + (closestWarpPoint?.extraBlocks ?: 0)
         val condition2 = condition1 && (closestWaypoint.second > 60 || getWaypointsOfType("rareMob").isNotEmpty() || getWaypointsOfType("world").isNotEmpty())
@@ -899,16 +880,43 @@ object WaypointManager {
         return if (condition) closestWarp else null
     }
 
+    /**
+     * Gets the final closest warp point to a given target position.
+     * This method handles the case where a new warp would be suggested after warping to the current suggested warp by simulating up to four
+     * warps and picking the final warp.
+     * @param targetPos The target position to find the closest warp to.
+     * @return The name of the closest warp, or null if no warps are available.
+     */
+    fun getFinalClosestWarp(targetPos: SboVec): String? {
+        var simulatedPlayerPos = Player.getLastPosition()
+        var simulatedTargetPos = targetPos
+        var lastWarp: String? = null
+
+        repeat(4) {
+            val warp = getClosestWarp(simulatedTargetPos, simulatedPlayerPos) ?: return lastWarp
+            if (warp == lastWarp) return warp
+
+            lastWarp = warp
+            val warpPoint = getWarpPoint(warp) ?: return warp
+            val nextGuess = getBestGuessAt(warpPoint.pos) ?: return warp
+
+            simulatedPlayerPos = warpPoint.pos
+            simulatedTargetPos = nextGuess.pos
+        }
+
+        return lastWarp
+    }
+
     fun warpToGuess() {
         val bestGuess = getBestGuess() ?: return
-        getClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
+        getFinalClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
     }
 
     fun warpToRareMob() {
         val newestRareMob = getWaypointsOfType("rareMob").maxByOrNull { it.creationNs }
         val newestWorldRareMob = getWaypointsOfType("world").maxByOrNull { it.creationNs }
         val pos = newestRareMob?.pos ?: newestWorldRareMob?.pos ?: return
-        val warp = getClosestWarp(pos) ?: return
+        val warp = getFinalClosestWarp(pos) ?: return
 
         executeWarpCommand(warp)
     }
