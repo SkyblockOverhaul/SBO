@@ -575,6 +575,7 @@ object WaypointManager {
         }
 
         renderSubGuessLines(context)
+        renderGuessChainLines(context)
     }
 
     private fun renderSubGuessLines(context: WorldRenderContext) {
@@ -612,6 +613,51 @@ object WaypointManager {
                         opacity
                     )
                 }
+        }
+    }
+
+    private fun renderGuessChainLines(context: WorldRenderContext) {
+        if (!Diana.drawOptimalOrderLines) return
+
+        val ordered = getAllGuessesAndBurrows()
+            .asSequence()
+            .filter { !it.hidden }
+            .sortedBy {
+                if (Diana.ignoreYLevel) it.distanceToPlayerIgnoringY() else it.distanceToPlayer()
+            }
+            .toList()
+
+        if (ordered.size < 2) return
+
+        val color = Color(Customization.OptimalOrderLineColor)
+        val rgb = floatArrayOf(
+            color.red / 255f,
+            color.green / 255f,
+            color.blue / 255f
+        )
+
+        ordered.zipWithNext().forEach { (a, b) ->
+            val aPos = a.pos.toVec3d().add(0.0, 0.5, 0.0)
+            val bPos = b.pos.toVec3d().add(0.0, 0.5, 0.0)
+
+            val opacity =
+                (
+                    if (Customization.dynamicWaypointOpacity) {
+                        val distance = Player.getLastPosition().distanceTo(b.pos)
+                        calculateDynamicOpacity(distance)
+                    } else {
+                        Customization.waypointOpacity / 100f
+                    }
+                ).coerceIn(0.3f, 0.5f)
+
+            RenderUtils3D.drawLine(
+                context,
+                aPos,
+                bPos,
+                rgb,
+                (Diana.dianaLineWidth.toFloat() / 1.6f).coerceIn(1.0f, 20.0f),
+                opacity
+            )
         }
     }
 

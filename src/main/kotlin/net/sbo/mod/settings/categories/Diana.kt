@@ -92,6 +92,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows \"Possible\" text on sub guesses in addition to the block higlight. Might increase visual clutter in exchange of making subguesses more visible.")
     }
 
+    var drawOptimalOrderLines by boolean(false) {
+        this.name = Literal("Draw Optimal Order Lines")
+        this.description = Literal("Draws lines between burrows from closest to your current location to the farthest from current location (e.g., optimal order to do them in).")
+    }
+
     var showBeaconBeam by boolean(true) {
         this.name = Literal("Show Beacon Beam")
         this.description = Literal("Shows a beacon beam for waypoints going to the sky if enabled.")

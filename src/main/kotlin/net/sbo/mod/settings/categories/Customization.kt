@@ -36,6 +36,13 @@ object Customization : CategoryKt("Customization") {
         this.allowAlpha = true
     }
 
+    var OptimalOrderLineColor by color(
+        Color(1.0f, 1.0f, 1.0f).rgb) {
+        this.name = Literal("Optimal Order Line Color")
+        this.description = Literal("Pick a color for optimal order line color. (line drawn between guesses in the optimal order to them, only used if \"Draw Optimal Order Lines\" enabled in Diana category)")
+        this.allowAlpha = true
+    }
+
     var StartColor by color(
         Color(0.333f, 1.0f, 0.333f).rgb) {
         this.name = Literal("Start Burrow Color")
