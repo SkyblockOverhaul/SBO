@@ -1,6 +1,7 @@
 package net.sbo.mod.partyfinder
 
 import net.sbo.mod.SBOKotlin.API_URL
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
@@ -41,7 +42,7 @@ object PartyPlayer {
 
     fun load() {
         getPartyPlayerStats(forceRefresh = true) { stats ->
-            Chat.chat("§6[SBO] §aPlayer stats loaded: ${stats.name} (SB Level: ${stats.sbLvl})")
+            logger.info("§6[SBO] §aPlayer stats loaded: ${stats.name} (SB Level: ${stats.sbLvl})")
         }
     }
 

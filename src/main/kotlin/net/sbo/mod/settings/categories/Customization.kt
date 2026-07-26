@@ -10,7 +10,7 @@ import java.io.File
 object Customization : CategoryKt("Customization") {
     init {
         separator {
-            this.title = "Waypoint Customization"
+            this.title = "Guess Color Customization"
         }
     }
 
@@ -18,14 +18,14 @@ object Customization : CategoryKt("Customization") {
         Color(0.6f, 0.2f, 0.8f).rgb) {
         this.name = Literal("Closest Guess Color")
         this.description = Literal("Pick a color for closest guess.")
-        this.allowAlpha = true
+        this.allowAlpha = false
     }
 
     var OtherGuessColor by color(
         Color(0.0f, 0.964f, 1.0f).rgb) {
         this.name = Literal("Other Guess Color")
         this.description = Literal("Pick a color for other guesses.")
-        this.allowAlpha = true
+        this.allowAlpha = false
     }
 
     var SubGuessColor by color(
@@ -33,49 +33,105 @@ object Customization : CategoryKt("Customization") {
     ) {
         this.name = Literal("Sub Guess Color")
         this.description = Literal("Color of inactive arrow guess locations. (only used if \"Show Arrow Sub Guesses\" enabled in Diana category)")
-        this.allowAlpha = true
+        this.allowAlpha = false
     }
 
     var OptimalOrderLineColor by color(
         Color(1.0f, 1.0f, 1.0f).rgb) {
         this.name = Literal("Optimal Order Line Color")
         this.description = Literal("Pick a color for optimal order line color. (line drawn between guesses in the optimal order to them, only used if \"Draw Optimal Order Lines\" enabled in Diana category)")
-        this.allowAlpha = true
+        this.allowAlpha = false
+    }
+
+    init {
+        separator {
+            this.title = "Burrow Color Customization"
+        }
     }
 
     var StartColor by color(
         Color(0.333f, 1.0f, 0.333f).rgb) {
         this.name = Literal("Start Burrow Color")
         this.description = Literal("Pick a color for start burrows.")
-        this.allowAlpha = true
+        this.allowAlpha = false
     }
 
     var MobColor by color(
         Color(1.0f, 0.333f, 0.333f).rgb) {
         this.name = Literal("Mob Burrow Color")
         this.description = Literal("Pick a color for mob burrows.")
-        this.allowAlpha = true
+        this.allowAlpha = false
     }
 
     var TreasureColor by color(
         Color(1f, 0.666f, 0.0f).rgb) {
         this.name = Literal("Treasure Burrow Color")
         this.description = Literal("Pick a color for treasure burrows.")
-        this.allowAlpha = true
+        this.allowAlpha = false
+    }
+
+    init {
+        separator {
+            this.title = "Waypoint Color Customization"
+        }
     }
 
     var RareMobColor by color(
         Color(1.0f, 0.84f, 0.0f).rgb) {
         this.name = Literal("Rare Mob Waypoint Color")
         this.description = Literal("Pick a color for rare mob waypoints.")
-        this.allowAlpha = true
+        this.allowAlpha = false
     }
 
     var OtherWaypointColor by color(
         Color(0.0f, 0.2f, 1.0f).rgb) {
         this.name = Literal("Other Waypoint Color")
         this.description = Literal("Pick a color for other waypoints, e.g., waypoints created from non-SBO player-sent coordinates. (Separate from rare mob color)")
+        this.allowAlpha = false
+    }
+
+    init {
+        separator {
+            this.title = "Glow Color Customization"
+        }
+    }
+
+    var KingMinosGlowColor by color(
+        Color(1.0f, 0.55f, 0.0f).rgb
+    ) {
+        this.name = Literal("King Minos Glow Color")
+        this.description = Literal("Glow color for King Minos.")
         this.allowAlpha = true
+    }
+
+    var MinosInquisitorGlowColor by color(
+        Color(1.0f, 0.35f, 0.75f).rgb
+    ) {
+        this.name = Literal("Minos Inquisitor Glow Color")
+        this.description = Literal("Glow color for Minos Inquisitor.")
+        this.allowAlpha = true
+    }
+
+    var ManticoreGlowColor by color(
+        Color(0.0f, 0.45f, 0.0f).rgb
+    ) {
+        this.name = Literal("Manticore Glow Color")
+        this.description = Literal("Glow color for Manticore.")
+        this.allowAlpha = true
+    }
+
+    var SphinxGlowColor by color(
+        Color(0.35f, 0.8f, 1.0f).rgb
+    ) {
+        this.name = Literal("Sphinx Glow Color")
+        this.description = Literal("Glow color for Sphinx.")
+        this.allowAlpha = true
+    }
+
+    init {
+        separator {
+            this.title = "Waypoint Customization"
+        }
     }
 
     var dynamicWaypointOpacity by boolean(true) {
@@ -93,12 +149,6 @@ object Customization : CategoryKt("Customization") {
         this.range = 0..100
         this.name = Literal("Waypoint Text Opacity")
         this.description = Literal("The opacity of the text on the rendered waypoints. 50 will make it 50% transparent, 100% fully opaque, 0% fully invisible, etc. (default 100)")
-    }
-
-    init {
-        separator {
-            this.title = "Waypoint Text Customization"
-        }
     }
 
     var waypointTextShadow by boolean(true) {
@@ -122,6 +172,12 @@ object Customization : CategoryKt("Customization") {
     var showTimesDug by boolean(true) {
         this.name = Literal("Show Times Dug")
         this.description = Literal("Shows times dug on the waypoint text for known burrows.")
+    }
+
+    init {
+        separator {
+            this.title = "Warp Title Customization"
+        }
     }
 
     var warpTitleAsSubtitle by boolean(false) {

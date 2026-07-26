@@ -444,9 +444,9 @@ object WaypointManager {
     }
 
     private fun updateRareMobWaypoints() {
-        if (!Diana.scanWorldForRareMob) return
-
         val level = mc.level ?: return
+
+        val shouldAddWaypoints = Diana.scanWorldForRareMob
 
         val existing = (getWaypointsOfType("rareMob") + getWaypointsOfType("world")).toMutableList()
         val rareMobPositions = mutableListOf<SboVec>()
@@ -458,27 +458,20 @@ object WaypointManager {
             if (name.contains("0/")) return@forEach
 
             val (mobType, mobName) = when {
-                name.contains("King Minos") ->
-                    Diana.ReceiveList.KING to "King Minos"
-
-                name.contains("Minos Inquisitor") ->
-                    Diana.ReceiveList.INQ to "Minos Inquisitor"
-
-                name.contains("Manticore") ->
-                    Diana.ReceiveList.MANTICORE to "Manticore"
-
-                name.contains("Sphinx") ->
-                    Diana.ReceiveList.SPHINX to "Sphinx"
-
+                name.contains("King Minos") -> Diana.ReceiveList.KING to "King Minos"
+                name.contains("Minos Inquisitor") -> Diana.ReceiveList.INQ to "Minos Inquisitor"
+                name.contains("Manticore") -> Diana.ReceiveList.MANTICORE to "Manticore"
+                name.contains("Sphinx") -> Diana.ReceiveList.SPHINX to "Sphinx"
                 else -> return@forEach
             }
 
             if (mobType !in Diana.ReceiveMobs) return@forEach
-
             if (stand.isDeadOrDying()) return@forEach
 
             val standPos = SboVec(stand.x, stand.y, stand.z)
             rareMobPositions += standPos
+
+            if (!shouldAddWaypoints) return@forEach
 
             if (existing.none { it.pos.distanceTo(standPos) <= 60 }) {
                 val pos = floorToGround(level, standPos)
@@ -616,18 +609,39 @@ object WaypointManager {
         }
     }
 
+    private fun buildGreedyGuessChain(startPos: SboVec): List<Waypoint> {
+        val remaining = getAllGuessesAndBurrows()
+            .asSequence()
+            .filter { !it.hidden }
+            .toMutableList()
+
+        if (remaining.isEmpty()) return emptyList()
+
+        val chain = mutableListOf<Waypoint>()
+        var currentPos = startPos
+
+        while (remaining.isNotEmpty()) {
+            val next = remaining.minByOrNull { wp ->
+                if (Diana.ignoreYLevel) {
+                    wp.pos.distanceToIgnoringY(currentPos)
+                } else {
+                    wp.pos.distanceTo(currentPos)
+                }
+            } ?: break
+
+            chain += next
+            remaining.remove(next)
+            currentPos = next.pos
+        }
+
+        return chain
+    }
+
     private fun renderGuessChainLines(context: WorldRenderContext) {
         if (!Diana.drawOptimalOrderLines) return
 
-        val ordered = getAllGuessesAndBurrows()
-            .asSequence()
-            .filter { !it.hidden }
-            .sortedBy {
-                if (Diana.ignoreYLevel) it.distanceToPlayerIgnoringY() else it.distanceToPlayer()
-            }
-            .toList()
-
-        if (ordered.size < 2) return
+        val chain = buildGreedyGuessChain(Player.getLastPosition())
+        if (chain.size < 2) return
 
         val color = Color(Customization.OptimalOrderLineColor)
         val rgb = floatArrayOf(
@@ -636,15 +650,13 @@ object WaypointManager {
             color.blue / 255f
         )
 
-        ordered.zipWithNext().forEach { (a, b) ->
-            val aPos = a.pos.toVec3d().add(0.0, 0.5, 0.0)
-            val bPos = b.pos.toVec3d().add(0.0, 0.5, 0.0)
+        chain.zipWithNext().forEach { (a, b) ->
+            val bDistance = Player.getLastPosition().distanceTo(b.pos)
 
             val opacity =
                 (
                     if (Customization.dynamicWaypointOpacity) {
-                        val distance = Player.getLastPosition().distanceTo(b.pos)
-                        calculateDynamicOpacity(distance)
+                        calculateDynamicOpacity(bDistance)
                     } else {
                         Customization.waypointOpacity / 100f
                     }
@@ -652,8 +664,8 @@ object WaypointManager {
 
             RenderUtils3D.drawLine(
                 context,
-                aPos,
-                bPos,
+                a.pos.toVec3d().add(0.0, 0.5, 0.0),
+                b.pos.toVec3d().add(0.0, 0.5, 0.0),
                 rgb,
                 (Diana.dianaLineWidth.toFloat() / 1.6f).coerceIn(1.0f, 20.0f),
                 opacity

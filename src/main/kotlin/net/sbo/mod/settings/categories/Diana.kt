@@ -473,13 +473,6 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Highlights rare mobs (King, Manti, Sphinx, Inq) with a glowing effect.")
     }
 
-    var HighlightColor by color(
-        Color(0.0f, 0.964f, 1.0f).rgb) {
-        this.name = Literal("Highlight Color")
-        this.description = Literal("Color for the rare mob highlight effect.")
-        this.allowAlpha = true
-    }
-
     var announceInqText by strings("") {
         this.name = Literal("Send Text On Inq Spawn")
         this.description = Literal("Sends a text on Inq spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
