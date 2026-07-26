@@ -33,6 +33,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.World.isInSkyblock
+import net.sbo.mod.utils.medal.MedalIntegration
 import java.util.regex.Pattern
 
 object DianaTracker {
@@ -66,6 +67,10 @@ object DianaTracker {
             SboDataObject.save("SboData")
             SboTimerManager.timerSession.reset()
             DianaStats.updateLines()
+        }
+
+        Register.command("sbotestmedalclip", "sbomedaltest") { args ->
+            MedalIntegration.testClip(args.firstOrNull())
         }
 
         Register.onChatMessageCancelable(
@@ -337,6 +342,7 @@ object DianaTracker {
 
     private fun onBraidedDrop() {
         // TODO: add since message
+        MedalIntegration.saveBraidedFeatherClip()
         onRareDrop("Braided Griffin Feather", showMessageOrTitle = true,
             trackLootshare = false,
             magicFind = 0
@@ -355,6 +361,7 @@ object DianaTracker {
         ) { message, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase().trim()
             if (player.contains(Player.getName()?.lowercase()?.trim() ?: "")) {
+                MedalIntegration.saveMythologicalDyeClip()
                 onRareDrop(
                     "Mythological Dye",
                     showMessageOrTitle = true,
@@ -375,6 +382,7 @@ object DianaTracker {
 
         when {
             drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
+                MedalIntegration.saveWoolClip()
                 playCustomSound(SboDataObject.soundSettingsData.woolSound, volume = SboDataObject.soundSettingsData.woolVolume)
                 onRareDrop("Shimmering Wool", showMessageOrTitle = true,
                     trackLootshare = true,
@@ -420,6 +428,7 @@ object DianaTracker {
             }
             drop.contains("Manti-core") -> { // todo: add achievements for core
                 playCustomSound(SboDataObject.soundSettingsData.coreSound, volume = SboDataObject.soundSettingsData.coreVolume)
+                MedalIntegration.saveMantiCoreClip()
                 onRareDrop("Manti-core", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
@@ -464,6 +473,7 @@ object DianaTracker {
             }
             drop.contains("Fateful Stinger") -> { // todo: add achievements for stinger
                 playCustomSound(SboDataObject.soundSettingsData.stingerSound, volume = SboDataObject.soundSettingsData.stingerVolume)
+                MedalIntegration.saveFatefulStingerClip()
                 onRareDrop("Fateful Stinger", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
@@ -507,6 +517,7 @@ object DianaTracker {
             drop.contains("Enchanted Book") -> {
                 if (!drop.contains("Chimera")) return
 
+                MedalIntegration.saveChimeraClip()
                 playCustomSound(SboDataObject.soundSettingsData.chimSound, volume = SboDataObject.soundSettingsData.chimVolume)
                 onRareDrop("Chimera", showMessageOrTitle = true,
                     trackLootshare = true,
@@ -557,6 +568,7 @@ object DianaTracker {
                 }
             }
             drop.contains("Brain Food") -> { // todo: add achievements for food
+                MedalIntegration.saveBrainFoodClip()
                 playCustomSound(SboDataObject.soundSettingsData.bfSound, volume = SboDataObject.soundSettingsData.bfVolume)
                 onRareDrop("Brain Food", showMessageOrTitle = true,
                     trackLootshare = true,
@@ -603,6 +615,7 @@ object DianaTracker {
             }
             drop.contains("Daedalus Stick") -> {
                 playCustomSound(SboDataObject.soundSettingsData.stickSound, volume = SboDataObject.soundSettingsData.stickVolume)
+                MedalIntegration.saveDaedalusStickClip()
                 onRareDrop("Daedalus Stick", showMessageOrTitle = true,
                     trackLootshare = false,
                     magicFind = magicfind
@@ -623,6 +636,7 @@ object DianaTracker {
                 announceLootToParty("Daedalus Stick", "Daedalus Stick$mfPrefix", amount = dianaTrackerMayor.items.DAEDALUS_STICK)
             }
             drop.contains("Minos Relic") -> {
+                MedalIntegration.saveMinosRelicClip()
                 playCustomSound(SboDataObject.soundSettingsData.relicSound, volume = SboDataObject.soundSettingsData.relicVolume)
                 onRareDrop("Minos Relic", showMessageOrTitle = true,
                     trackLootshare = false,
@@ -643,6 +657,7 @@ object DianaTracker {
                 announceLootToParty("Minos Relic", "Minos Relic$mfPrefix", amount = dianaTrackerMayor.items.MINOS_RELIC)
             }
             drop.contains("Washed-up Souvenir") -> {
+                MedalIntegration.saveWashedUpSouvenirClip()
                 onRareDrop("Washed-up Souvenir", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
@@ -650,6 +665,7 @@ object DianaTracker {
                 playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
             }
             drop.contains("Dwarf Turtle Shelmet") -> {
+                MedalIntegration.saveDwarfTurtleShelmetClip()
                 onRareDrop("Dwarf Turtle Shelmet", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
@@ -657,6 +673,7 @@ object DianaTracker {
                 playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
             }
             drop.contains("Crochet Tiger Plushie") -> {
+                MedalIntegration.saveCrochetTigerPlushieClip()
                 onRareDrop("Crochet Tiger Plushie", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
@@ -664,6 +681,7 @@ object DianaTracker {
                 playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
             }
             drop.contains("Antique Remedies") -> {
+                MedalIntegration.saveAntiqueRemediesClip()
                 onRareDrop("Antique Remedies",
                     showMessageOrTitle = false,
                     trackLootshare = false,
@@ -672,6 +690,7 @@ object DianaTracker {
                 playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
             }
             drop.contains("Cretan Urn") -> {
+                MedalIntegration.saveCretanUrnClip()
                 onRareDrop("Cretan Urn", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
@@ -704,8 +723,11 @@ object DianaTracker {
             playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
 
             if (isCoG) {
+                MedalIntegration.saveCrownOfGreedClip()
                 // CoG is no longer a treasure and instead dropped by Minos King; worth announcing
                 announceLootToParty("Crown of Greed", "Crown of Greed$mfPrefix", amount = dianaTrackerMayor.items.CROWN_OF_GREED + 1) // we didn't call trackItem yet, so add + 1
+            } else {
+                MedalIntegration.saveHiltOfRevelationsClip()
             }
         }
 
@@ -944,6 +966,7 @@ object DianaTracker {
     private fun trackMythTheFish() {
         Register.onChatMessage(Regex("^(.*?) §eYou just dug out(.*?)$")) { message, matchResult ->
             if (matchResult.groupValues[2].contains("Myth the Fish")) {
+                MedalIntegration.saveMythTheFishClip()
                 onRareDrop("Myth the Fish",
                     showMessageOrTitle = true,
                     trackLootshare = false,

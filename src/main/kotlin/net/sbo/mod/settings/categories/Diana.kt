@@ -547,4 +547,5 @@ object Diana : CategoryKt("Diana") {
                 "Theres also the option to us a keybind in the mc keybinds menu but §c⚠ USE AT YOUR OWN RISK ⚠"
         )
     }
+
 }
