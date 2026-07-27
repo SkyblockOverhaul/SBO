@@ -36,7 +36,6 @@ import kotlin.math.roundToInt
 
 object WaypointManager {
     private val waypoints = ConcurrentHashMap<String, CopyOnWriteArrayList<Waypoint>>()
-    private var closestWaypoint: Pair<Waypoint?, Double> = null to 1000.0
     private val rareMobs: Set<String> = setOf(
         "minos inquisitor",
         "inquisitor",
@@ -249,7 +248,6 @@ object WaypointManager {
                 }
             }
 
-            closestWaypoint = getClosestWaypointFrom(playerPos) ?: null to 1000.0
             val bestGuessWp = getBestGuess()
 
             val rareWp = getWaypointsOfType("rareMob")
@@ -273,9 +271,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeIn,
-                    Diana.rareTitleTime,
-                    Diana.rareTitleFadeOut
+                    Diana.rareTitleFadeInTime,
+                    Diana.rareTitleStayTime,
+                    Diana.rareTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.inqSound,
@@ -288,9 +286,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeIn,
-                    Diana.rareTitleTime,
-                    Diana.rareTitleFadeOut
+                    Diana.rareTitleFadeInTime,
+                    Diana.rareTitleStayTime,
+                    Diana.rareTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.kingSound,
@@ -303,9 +301,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeIn,
-                    Diana.rareTitleTime,
-                    Diana.rareTitleFadeOut
+                    Diana.rareTitleFadeInTime,
+                    Diana.rareTitleStayTime,
+                    Diana.rareTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.mantiSound,
@@ -318,9 +316,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeIn,
-                    Diana.rareTitleTime,
-                    Diana.rareTitleFadeOut
+                    Diana.rareTitleFadeInTime,
+                    Diana.rareTitleStayTime,
+                    Diana.rareTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.sphinxSound,
@@ -333,9 +331,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeIn,
-                    Diana.rareTitleTime,
-                    Diana.rareTitleFadeOut
+                    Diana.rareTitleFadeInTime,
+                    Diana.rareTitleStayTime,
+                    Diana.rareTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.rareMobSound,
@@ -650,8 +648,12 @@ object WaypointManager {
             color.blue / 255f
         )
 
-        chain.zipWithNext().forEach { (a, b) ->
+        chain.zipWithNext().forEachIndexed { index, (a, b) ->
             val bDistance = Player.getLastPosition().distanceTo(b.pos)
+
+            if (index >= 2 && bDistance > 70) {
+                return@forEachIndexed
+            }
 
             val opacity =
                 (
@@ -692,9 +694,6 @@ object WaypointManager {
      * @param waypoint The waypoint to remove.
      */
     fun removeWaypoint(waypoint: Waypoint) {
-        if (closestWaypoint.first == waypoint) {
-            closestWaypoint = null to 1000.0
-        }
         waypoints[waypoint.type]?.remove(waypoint)
     }
 
@@ -722,9 +721,6 @@ object WaypointManager {
         val waypoint = list?.find { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
         if (waypoint != null) {
             list.remove(waypoint)
-            if (closestWaypoint.first == waypoint) {
-                closestWaypoint = null to 1000.0
-            }
         }
     }
 
@@ -854,19 +850,6 @@ object WaypointManager {
             .minByOrNull { if (Diana.ignoreYLevel) it.pos.distanceToIgnoringY(pos) else it.pos.distanceTo(pos) }
     }
 
-    private fun getClosestWaypointFrom(pos: SboVec): Pair<Waypoint, Double>? {
-        return getClosestWaypointFrom(pos, getAllGuessesAndBurrows())
-    }
-
-    private fun getClosestWaypointFrom(pos: SboVec, waypoints: List<Waypoint>): Pair<Waypoint, Double>? {
-        return waypoints
-            .filter { !it.hidden }
-            .map { waypoint ->
-                waypoint to pos.distanceTo(waypoint.pos)
-            }
-            .minByOrNull { it.second }
-    }
-
     private fun getClosestWarp(pos: SboVec): String? = getClosestWarp(pos, Player.getLastPosition())
 
     /**
@@ -928,14 +911,19 @@ object WaypointManager {
             closestDistance = secondClosestDistance
         }
 
-        if (Diana.ignoreYLevel) playerDistance = pos.distanceToIgnoringY(playerPos)
+        val extra = closestWarpPoint?.extraBlocks ?: 0
 
-        val condition1 = playerDistance > closestDistance + Diana.warpDiff + (closestWarpPoint?.extraBlocks ?: 0)
-        val condition2 = condition1 && (closestWaypoint.second > 60 || getWaypointsOfType("rareMob").isNotEmpty() || getWaypointsOfType("world").isNotEmpty())
+        val warpIsWorthIt =
+            playerDistance > closestDistance + Diana.warpDiff + extra
 
-        val condition = if (Diana.dontWarpIfBurrowClose) condition2 else condition1
+        val targetIsFarEnough =
+            !Diana.dontWarpIfBurrowClose ||
+            playerDistance > 60
 
-        return if (condition) closestWarp else null
+        return if (warpIsWorthIt && targetIsFarEnough)
+            closestWarp
+        else
+            null
     }
 
     /**
