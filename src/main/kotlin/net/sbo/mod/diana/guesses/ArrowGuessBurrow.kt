@@ -224,7 +224,8 @@ object ArrowGuessBurrow {
                 visited.add(start)
 
                 if (extendLine(line, visited, locations, SHAFT_LENGTH, PARTICLE_DETECTION_TOLERANCE)) {
-                    add(LineCandidate(line.toList(), scoreLine(line.toList()), line.size))
+                    val immutable = line.toList()
+                    add(LineCandidate(immutable, scoreLine(immutable), immutable.size))
                 }
             }
         }

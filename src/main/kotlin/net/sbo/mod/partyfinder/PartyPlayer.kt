@@ -42,7 +42,7 @@ object PartyPlayer {
 
     fun load() {
         getPartyPlayerStats(forceRefresh = true) { stats ->
-            logger.info("§6[SBO] §aPlayer stats loaded: ${stats.name} (SB Level: ${stats.sbLvl})")
+            logger.info("[SBO] Player stats loaded: ${stats.name} (SB Level: ${stats.sbLvl})")
         }
     }
 
