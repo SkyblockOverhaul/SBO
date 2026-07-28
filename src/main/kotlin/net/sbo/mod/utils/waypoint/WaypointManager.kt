@@ -651,7 +651,9 @@ object WaypointManager {
         chain.zipWithNext().forEachIndexed { index, (a, b) ->
             val bDistance = Player.getLastPosition().distanceTo(b.pos)
 
-            if (index >= 2 && bDistance > 70) {
+            // Always show the first line.
+            // Only show the 2nd and 3rd lines if the destination is nearby.
+            if (index > 0 && (index > 2 || bDistance > 50)) {
                 return@forEachIndexed
             }
 
@@ -920,7 +922,18 @@ object WaypointManager {
             !Diana.dontWarpIfBurrowClose ||
             playerDistance > 60
 
-        return if (warpIsWorthIt && targetIsFarEnough)
+        val playerToWarpDistance = closestWarpPoint?.let {
+            if (Diana.ignoreYLevel) {
+                playerPos.distanceToIgnoringY(it.pos)
+            } else {
+                playerPos.distanceTo(it.pos)
+            }
+        } ?: Double.MAX_VALUE
+
+        val warpIsFarEnough =
+            playerToWarpDistance > 60
+
+        return if (warpIsWorthIt && targetIsFarEnough && warpIsFarEnough)
             closestWarp
         else
             null

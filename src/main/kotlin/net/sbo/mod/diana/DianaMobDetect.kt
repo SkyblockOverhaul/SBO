@@ -43,7 +43,7 @@ object DianaMobDetect {
     private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
-    private val kingHitsRegex = """.*?(\d+)\s+hits.*""".toRegex()
+    private val kingHitsRegex = """.*?(\d+)\s+Hits.*""".toRegex()
 
     internal enum class RareDianaMob(val display: String) {
         INQ("Minos Inquisitor"),
@@ -58,7 +58,7 @@ object DianaMobDetect {
 
     private fun findKingHits(name: String): MatchResult? {
         if (World.getWorld() != "Hub") return null
-        if (!name.contains("hits")) return null
+        if (!name.contains("Hits")) return null
         return kingHitsRegex.find(name)
     }
 
@@ -200,7 +200,7 @@ object DianaMobDetect {
         if (name.isEmpty() || name == "Armor Stand") return null
 
         parseKingHits(name)?.let {
-            return OverlayTextLine("§6King Minos §7- §5$it hits")
+            return OverlayTextLine("§6King Minos §7- §5$it Hits")
         }
 
         if (!hasMythoMobTypeChar(name)) return null
