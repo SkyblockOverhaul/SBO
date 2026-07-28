@@ -7,6 +7,7 @@ import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.overlays.MagicFind
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.QOL
 import net.sbo.mod.utils.Helper
@@ -123,8 +124,14 @@ object DianaTracker {
     }
 
     fun trackWithPickuplog(item: Item) {
-        if (Helper.getSecondsPassed(item.creation) > 5) return
-//            if (!dianaMobDiedRecently(3)) return
+        val createdAt = item.creation
+        val secondsPassedSinceCreation = Helper.getSecondsPassed(createdAt)
+
+        if (secondsPassedSinceCreation > 6) {
+            if (Debug.debugMessages) Chat.chat("debug: not tracking item with creation older than 6 seconds. secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt")
+            return
+        }
+
         trackWithPickuplog(item.itemId)
     }
 
