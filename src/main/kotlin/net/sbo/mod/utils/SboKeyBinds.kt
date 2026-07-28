@@ -33,8 +33,8 @@ object SboKeyBinds {
         SBO_CATEGORY
     )
 
-    private val inqWarpKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.inq_warp",
+    private val rareMobWarpKey: KeyMapping = KeyMapping(
+        "key.sbo-kotlin.rare_mob_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
@@ -63,7 +63,7 @@ object SboKeyBinds {
 
     fun register() {
         KeyBindingHelper.registerKeyBinding(guessWarpKey)
-        KeyBindingHelper.registerKeyBinding(inqWarpKey)
+        KeyBindingHelper.registerKeyBinding(rareMobWarpKey)
         KeyBindingHelper.registerKeyBinding(generalWarpKey)
         KeyBindingHelper.registerKeyBinding(sendCoordsKey)
         KeyBindingHelper.registerKeyBinding(sphinxSolverKey)
@@ -103,8 +103,8 @@ object SboKeyBinds {
                 WaypointManager.warpToGuess()
             }
 
-            handlePressAction(inqWarpKey) {
-                WaypointManager.warpToInq()
+            handlePressAction(rareMobWarpKey) {
+                WaypointManager.warpToRareMob()
             }
 
             handlePressAction(generalWarpKey) {

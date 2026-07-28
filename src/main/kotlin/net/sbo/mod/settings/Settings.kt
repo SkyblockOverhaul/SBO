@@ -54,6 +54,7 @@ object Settings : ConfigKt("sbo/config") {
 
         category(General)
         category(Diana)
+        category(Medal)
         category(PartyCommands)
         category(Customization)
         category(PartyFinder)

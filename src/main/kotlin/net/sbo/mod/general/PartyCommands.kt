@@ -275,7 +275,7 @@ object PartyCommands {
             "wool", "wools" -> "Kings since wool: ${sboData.kingSinceWool}"
             "corels", "lscore" -> "Mantis since lootshare core: ${sboData.mantiSinceLsCore}"
             "woolls", "lswool" -> "Kings since lootshare wool: ${sboData.kingSinceLsWool}"
-            else -> "Mobs since inq: ${sboData.mobsSinceInq}"
+            else -> return
         }
         sendResponse(response)
     }
