@@ -53,6 +53,8 @@ object SoundHandler {
      * @param volume Volume level (0-1), combined with master volume
      */
     fun playCustomSound(sound: String, volume: Float) {
+        if (sound.isEmpty()) return
+
         // Combine per-sound volume (0-1) with global master volume
         val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
 
