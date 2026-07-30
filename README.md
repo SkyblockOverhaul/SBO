@@ -10,7 +10,7 @@
 
 ## What it does
 
-[SBO] SkyblockOverhaul is a feature‐rich Hypixel SkyBlock mod for Minecraft Fabric supporting all current Hypixel SkyBlock versions, designed primarily for the Diana event.
+[SBO] SkyblockOverhaul is a feature‐rich Hypixel SkyBlock mod for Minecraft Fabric supporting most current Hypixel SkyBlock versions, designed primarily for the Diana event.
 
 ---
 
