@@ -5,6 +5,12 @@ import net.minecraft.client.renderer.rendertype.RenderSetup
 import net.minecraft.client.renderer.rendertype.RenderType
 
 object SboRenderLayers {
+    val LINES_THROUGH_WALLS: RenderType = RenderType.create(
+        "sbo/lines_through_walls",
+        RenderSetup.builder(SboRenderPipelines.LINES_THROUGH_WALLS)
+            .createRenderSetup()
+    )
+
     //#if MC < 26.1
     val BEACON_BEAM_OPAQUE_THROUGH_WALLS: RenderType = RenderType.create(
         "sbo/beacon_beam_opaque_through_walls",

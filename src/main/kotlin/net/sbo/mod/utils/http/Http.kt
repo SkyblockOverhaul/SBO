@@ -15,8 +15,8 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 object Http {
-    private const val CONNECT_TIMEOUT = 20_000L
-    private const val REQUEST_TIMEOUT = 20_000L
+    private const val CONNECT_TIMEOUT = 30_000L
+    private const val REQUEST_TIMEOUT = 30_000L
 
     private val USER_AGENT =
         "SBO-Kotlin-Mod/${SBOKotlin.version}+${SharedConstants.getCurrentVersion().name()}"
@@ -60,21 +60,22 @@ object Http {
     fun sendGetRequest(urlString: String): HttpRequestHandle {
         val handle = HttpRequestHandle()
 
-        val uri = URI.create(urlString)
-        val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
-
-        val request = HttpRequest.newBuilder()
-            .version(httpVersion)
-            .uri(uri)
-            .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
-            .header("User-Agent", USER_AGENT)
-            .GET()
-            .build()
-
         EXECUTOR.execute {
             try {
+                val uri = URI.create(urlString)
+                val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
+
+                val request = HttpRequest.newBuilder()
+                    .version(httpVersion)
+                    .uri(uri)
+                    .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
+                    .header("User-Agent", USER_AGENT)
+                    .GET()
+                    .build()
+
                 val response = CLIENT.send(request, BodyHandlers.ofInputStream())
                 val code = response.statusCode()
+
                 handle.complete(
                     HttpResponse(
                         code,

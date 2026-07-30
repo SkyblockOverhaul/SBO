@@ -32,6 +32,8 @@ object BurrowDetector {
 
     private val chainExpirations = ArrayDeque<Long>()
 
+    var pendingUseSpadeTitle: String? = null
+
     val chains: Int
         get() {
             purgeExpiredChains()
@@ -131,6 +133,12 @@ object BurrowDetector {
                 burrowType = parseTypeFromChatMsg(message.string)
             )
         }
+
+        Register.onTick(1) {
+            pendingUseSpadeTitle?.let {
+                Helper.showTitle(it, "", 0, 1, 0)
+            }
+        }
     }
 
     private fun chainFinish() {
@@ -169,7 +177,8 @@ object BurrowDetector {
         if (World.getWorld() != "Hub") return
 
         val color = if (reason == "failure") "c" else "e"
-        Helper.showTitle("§${color}Use Spade!", "", 0, 60, 0)
+
+        pendingUseSpadeTitle = "§${color}Use Spade!"
         Chat.chat("§6[SBO] §${color}Use spade!")
     }
 
