@@ -30,6 +30,7 @@ loom {
 
     runs.configureEach {
         generateRunConfig.set(true)
+        preferGradleTask = true
     }
 }
 

@@ -9,6 +9,7 @@ import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.SoundHandler.playCustomSound
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import net.sbo.mod.utils.data.SboDataObject
@@ -42,6 +43,8 @@ object DianaMobDetect {
     private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
+    private val kingHitsRegex = """.*?(\d+)\s+Hits.*""".toRegex()
+
     internal enum class RareDianaMob(val display: String) {
         INQ("Minos Inquisitor"),
         KING("King Minos"),
@@ -52,6 +55,18 @@ object DianaMobDetect {
             fun fromName(name: String): RareDianaMob? = entries.firstOrNull { name.contains(it.display, ignoreCase = true) }
         }
     }
+
+    private fun findKingHits(name: String): MatchResult? {
+        if (World.getWorld() != "Hub") return null
+        if (!name.contains("Hits")) return null
+        return kingHitsRegex.find(name)
+    }
+
+    private fun isKingHitPhase(name: String) =
+        findKingHits(name) != null
+
+    private fun parseKingHits(name: String) =
+        findKingHits(name)?.groupValues?.getOrNull(1)?.toIntOrNull()
 
     private fun parseHealthFromName(name: String): Double? =
         healthRegex.find(name)?.groupValues?.get(1)?.let { raw ->
@@ -123,7 +138,7 @@ object DianaMobDetect {
                 }
 
                 val name = entity.customName?.formattedString() ?: entity.name.formattedString()
-                if (hasMythoMobTypeChar(name)) {
+                if (hasMythoMobTypeChar(name) || isKingHitPhase(name)) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
                 }
@@ -183,6 +198,11 @@ object DianaMobDetect {
 
     private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
         if (name.isEmpty() || name == "Armor Stand") return null
+
+        parseKingHits(name)?.let {
+            return OverlayTextLine("§6King Minos §7- §5$it Hits")
+        }
+
         if (!hasMythoMobTypeChar(name)) return null
 
         val health = parseHealthFromName(name)

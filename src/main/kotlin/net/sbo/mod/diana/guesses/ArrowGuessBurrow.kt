@@ -209,18 +209,52 @@ object ArrowGuessBurrow {
         return RaycastUtils.Ray(adjustedBase, adjustedTip.minus(adjustedBase).normalize())
     }
 
-    private fun findline(): List<SboVec> {
-        for (location in locations) {
-            val line = mutableListOf<SboVec>()
-            val visited = mutableSetOf<SboVec>()
-            line.add(location)
-            visited.add(location)
+    private data class LineCandidate(
+        val points: List<SboVec>,
+        val score: Double,
+        val support: Int
+    )
 
-            if (extendLine(line, visited, locations, SHAFT_LENGTH, PARTICLE_DETECTION_TOLERANCE)) {
-                return line.toList()
+    private fun findline(): List<SboVec> {
+        val candidates = buildList {
+            for (start in locations) {
+                val line = mutableListOf<SboVec>()
+                val visited = mutableSetOf<SboVec>()
+                line.add(start)
+                visited.add(start)
+
+                if (extendLine(line, visited, locations, SHAFT_LENGTH, PARTICLE_DETECTION_TOLERANCE)) {
+                    val immutable = line.toList()
+                    add(LineCandidate(immutable, scoreLine(immutable), immutable.size))
+                }
             }
         }
-        return emptyList()
+
+        return candidates
+            .minWithOrNull(
+                compareBy<LineCandidate> { it.score }
+                    .thenByDescending { it.support }
+            )
+            ?.points
+            .orEmpty()
+    }
+
+    private fun scoreLine(line: List<SboVec>): Double {
+        if (line.size < 2) return Double.POSITIVE_INFINITY
+
+        val origin = line.first()
+        val direction = line.last().minus(origin).normalize()
+
+        return line.sumOf { point ->
+            val toPoint = point.minus(origin)
+            val projection = direction.dotProduct(toPoint)
+            val closest = origin.add(
+                direction.x * projection,
+                direction.y * projection,
+                direction.z * projection
+            )
+            point.distanceTo(closest)
+        }
     }
 
     private fun extendLine(
@@ -277,7 +311,6 @@ object ArrowGuessBurrow {
             ?.index
             ?: return null
 
-
         val candidates = mutableMapOf<SboVec, Pair<Double, Double>>()
 
         val endPointArray = endPoint.toDoubleArray()
@@ -297,12 +330,17 @@ object ArrowGuessBurrow {
 
             val scaledDistance = distanceToRay * 500000 / distanceFromOrigin
 
-            candidates[candidateBlock] = scaledDistance.roundTo(2) to distanceFromOrigin
+            candidates[candidateBlock] = scaledDistance to distanceFromOrigin
         }
         if (candidates.isEmpty()) return null
 
-        val minValue = candidates.values.minOf { it.first }
-        val possibilities = candidates.filterValues { it.first == minValue }
+        val best = candidates.entries.minWithOrNull(
+            compareBy<Map.Entry<SboVec, Pair<Double, Double>>> { it.value.first }
+                .thenBy { it.value.second }
+        ) ?: return null
+
+        val bestScore = best.value.first
+        val possibilities = candidates.filterValues { abs(it.first - bestScore) <= 1e-6 }
         val withinRange = possibilities.filterValues { it.second.toInt() in range }.map { it.key }
 
         val first = withinRange.firstOrNull()

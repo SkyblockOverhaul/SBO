@@ -92,6 +92,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows \"Possible\" text on sub guesses in addition to the block higlight. Might increase visual clutter in exchange of making subguesses more visible.")
     }
 
+    var drawOptimalOrderLines by boolean(false) {
+        this.name = Literal("Draw Optimal Order Lines")
+        this.description = Literal("Draws lines between burrows from closest to your current location to the farthest from current location (e.g., optimal order to do them in).")
+    }
+
     var showBeaconBeam by boolean(true) {
         this.name = Literal("Show Beacon Beam")
         this.description = Literal("Shows a beacon beam for waypoints going to the sky if enabled.")
@@ -313,6 +318,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces relic/shelmet/plushie/remedies in chat.")
     }
 
+    var hiltDropMessage by boolean(true) {
+        this.name = Literal("Hilt of Revelations Drop Message")
+        this.description = Literal("Sends rare drop message for Hilt of Revelations, since Hypixel does not send one.")
+    }
+
     var lootAnnouncerScreen by boolean(true) {
         this.name = Literal("Loot Screen Announcer")
         this.description = Literal("Announces chimera/stick/relic on screen.")
@@ -379,22 +389,22 @@ object Diana : CategoryKt("Diana") {
         }
     }
 
-    var rareTitleFadeIn by int(0) {
-        this.name = Literal("Rare Title Fade In")
+    var rareTitleFadeInTime by int(0) {
+        this.name = Literal("Rare Title Fade In Time")
         this.description = Literal("Fade-in (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
-    var rareTitleTime by int(90) {
-        this.name = Literal("Rare Title Time")
+    var rareTitleStayTime by int(60) {
+        this.name = Literal("Rare Title Stay Time")
         this.description = Literal("Display time (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
-    var rareTitleFadeOut by int(20) {
-        this.name = Literal("Rare Title Fade Out")
+    var rareTitleFadeOutTime by int(0) {
+        this.name = Literal("Rare Title Fade Out Time")
         this.description = Literal("Fade-out (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
@@ -463,13 +473,6 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Highlights rare mobs (King, Manti, Sphinx, Inq) with a glowing effect.")
     }
 
-    var HighlightColor by color(
-        Color(0.0f, 0.964f, 1.0f).rgb) {
-        this.name = Literal("Highlight Color")
-        this.description = Literal("Color for the rare mob highlight effect.")
-        this.allowAlpha = true
-    }
-
     var announceInqText by strings("") {
         this.name = Literal("Send Text On Inq Spawn")
         this.description = Literal("Sends a text on Inq spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
@@ -488,6 +491,20 @@ object Diana : CategoryKt("Diana") {
     var announceKingText by strings("") {
         this.name = Literal("Send Text On King Spawn")
         this.description = Literal("Sends a text on King spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+    }
+
+    init {
+        button {
+            title = "Send All Test Messages"
+            text = "Send Test"
+            description = "Sends all test messages for the Rare Mob spawn message."
+            onClick {
+                Chat.chat("Inq Message: " + Helper.getSpawnMessage(announceInqText[0], "inq"))
+                Chat.chat("Sphinx Message: " + Helper.getSpawnMessage(announceSphinxText[0], "sphinx"))
+                Chat.chat("Manti Message: " + Helper.getSpawnMessage(announceMantiText[0], "manti"))
+                Chat.chat("King Message: " + Helper.getSpawnMessage(announceKingText[0], "king"))
+            }
+        }
     }
 
     var announceCocoon by boolean(true) {
@@ -513,20 +530,6 @@ object Diana : CategoryKt("Diana") {
     var NoShurikenMobs by select(NoShurikenList.INQ, NoShurikenList.MANTICORE, NoShurikenList.KING, NoShurikenList.SPHINX) {
         this.name = Literal("Select which Mobs to Check")
         this.description = Literal("Select which mobs to check for shuriken.")
-    }
-
-    init {
-        button {
-            title = "Send All Test Messages"
-            text = "Send Test"
-            description = "Sends all test messages for the Rare Mob spawn message."
-            onClick {
-                Chat.chat("Inq Message: " + Helper.getSpawnMessage(announceInqText[0], "inq"))
-                Chat.chat("Sphinx Message: " + Helper.getSpawnMessage(announceSphinxText[0], "sphinx"))
-                Chat.chat("Manti Message: " + Helper.getSpawnMessage(announceMantiText[0], "manti"))
-                Chat.chat("King Message: " + Helper.getSpawnMessage(announceKingText[0], "king"))
-            }
-        }
     }
 
     init {

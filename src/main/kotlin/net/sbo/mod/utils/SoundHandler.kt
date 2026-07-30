@@ -23,7 +23,10 @@ object SoundHandler {
 
     // Thread pool for audio processing - bounded and daemon threads
     private val AUDIO_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
-        Thread(r, "sbo-audio-thread").apply { isDaemon = true }
+        Thread(r, "sbo-audio-thread").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY + 1 // audio processing needs slightly more priority for less latency
+        }
     }
 
     /**
@@ -50,6 +53,8 @@ object SoundHandler {
      * @param volume Volume level (0-1), combined with master volume
      */
     fun playCustomSound(sound: String, volume: Float) {
+        if (sound.isEmpty()) return
+
         // Combine per-sound volume (0-1) with global master volume
         val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
 

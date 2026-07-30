@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.accessors.isSboGlowing
 import net.sbo.mod.utils.accessors.setSboGlowColor
 import net.sbo.mod.utils.events.Register
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
  * and settings, and updates their glow state accordingly.
  */
 object RareMobHighlight {
-    private val rareMobs = ConcurrentHashMap.newKeySet<Player>()
+    private val rareMobs = ConcurrentHashMap<Player, RareDianaMob>()
 
     fun init() {
         Register.onTick(4) {
@@ -36,8 +37,8 @@ object RareMobHighlight {
         if (event.entity is Player) {
             if (!Diana.HighlightRareMobs) return
             if (event.entity.uuid.version() == 4) return
-            if (RareDianaMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) }) {
-                rareMobs.add(event.entity)
+            RareDianaMob.fromName(event.entity.name.string)?.let {
+                rareMobs[event.entity] = it
             }
         }
     }
@@ -46,18 +47,17 @@ object RareMobHighlight {
     fun onEntityUnload(event: EntityUnloadEvent) {
         if (event.entity is Player) {
             if (!Diana.HighlightRareMobs) return
-            if (rareMobs.contains(event.entity)) {
+            if (rareMobs.remove(event.entity) != null) {
                 event.entity.isSboGlowing = false
-                rareMobs.remove(event.entity)
             }
         }
     }
 
     private fun ClientLevel.checkMobGlow() {
         val player = mc.player
-        val iterator = rareMobs.iterator()
+        val iterator = rareMobs.entries.iterator()
         while (iterator.hasNext()) {
-            val mob = iterator.next()
+            val (mob, type) = iterator.next()
 
             if (!mob.isAlive || mob.level() != this) {
                 mob.isSboGlowing = false
@@ -68,7 +68,14 @@ object RareMobHighlight {
             val hasLineOfSight = player != null && player.hasLineOfSight(mob)
             if (Diana.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
                 mob.isSboGlowing = true
-                mob.setSboGlowColor(Color(Diana.HighlightColor))
+                val color = when (type) {
+                    RareDianaMob.KING -> Customization.KingMinosGlowColor
+                    RareDianaMob.INQ -> Customization.MinosInquisitorGlowColor
+                    RareDianaMob.MANTI -> Customization.ManticoreGlowColor
+                    RareDianaMob.SPHINX -> Customization.SphinxGlowColor
+                }
+
+                mob.setSboGlowColor(Color(color))
             } else {
                 mob.isSboGlowing = false
             }

@@ -7,6 +7,7 @@ import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.overlays.MagicFind
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.QOL
 import net.sbo.mod.utils.Helper
@@ -47,6 +48,7 @@ object DianaTracker {
     private var allowScavTracking: Boolean = true
 
     var lastSpawnedMob: String? = null
+    var lastSpawnedMobTime: Long = 0L
 
     fun init() {
         Register.command("sboresetsession") {
@@ -122,14 +124,20 @@ object DianaTracker {
     }
 
     fun trackWithPickuplog(item: Item) {
-        if (Helper.getSecondsPassed(item.creation) > 5) return
-//            if (!dianaMobDiedRecently(3)) return
+        val createdAt = item.creation
+        val secondsPassedSinceCreation = Helper.getSecondsPassed(createdAt)
+
+        if (secondsPassedSinceCreation > 6) {
+            if (Debug.debugMessages) Chat.chat("debug: not tracking item with creation older than 6 seconds. secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt")
+            return
+        }
+
         trackWithPickuplog(item.itemId)
     }
 
     private fun trackWithPickuplog(itemId: String) {
         when (itemId) {
-            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt Of Revelations", showMessageOrTitle = true,
+            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt Of Revelations", showMessageOrTitle = Diana.hiltDropMessage,
                 trackLootshare = false,
                 magicFind = 0,
                 actuallyRare = false // makes it show the chat message but not the title
@@ -186,6 +194,7 @@ object DianaTracker {
 
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
+        lastSpawnedMobTime = System.nanoTime()
         //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
@@ -896,6 +905,7 @@ object DianaTracker {
 
     private fun resetMayorTracker(check: Boolean = false) {
         if (!check) {
+            if (dianaTrackerMayor.year == 0) dianaTrackerMayor.year = Mayor.mayorElectedYear
             pastDianaEventsData.events += dianaTrackerMayor.snapshot()
             SboDataObject.save("PastDianaEventsData")
         }
