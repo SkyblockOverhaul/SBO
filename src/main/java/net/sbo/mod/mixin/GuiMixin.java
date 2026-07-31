@@ -7,7 +7,6 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.render.RenderEvent;
-import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,12 +19,5 @@ final class GuiMixin {
     @Inject(method = "extractRenderState", at = @At(value = "RETURN"))
     private final void sbo$afterHudRender(@NonNull final DeltaTracker deltaTracker, final boolean shouldRenderLevel, final boolean resourcesLoaded, @NonNull final CallbackInfo ci, @Local @NonNull final GuiGraphicsExtractor graphics) {
         SBOEvent.INSTANCE.emit(new RenderEvent(graphics));
-    }
-
-    @Inject(method = "setScreen", at = @At("HEAD"))
-    private final void sbo$onSetScreen(@Nullable final Screen screen, @NonNull final CallbackInfo ci) {
-        if (screen != null) {
-            SBOEvent.INSTANCE.emit(new GuiOpenEvent(screen, ci));
-        }
     }
 }

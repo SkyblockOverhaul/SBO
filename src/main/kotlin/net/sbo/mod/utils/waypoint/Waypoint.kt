@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.waypoint
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
@@ -79,9 +79,7 @@ class Waypoint(
             hasText = value.isNotEmpty()
 
             component = ChatUtils.fromLegacy(value)
-            //#if MC > 1.21.11
-            //$$ visualOrderText = component.visualOrderText
-            //#endif
+            visualOrderText = component.visualOrderText
         }
     private var textWidth = mc.font.width(text)
     private var hasText = text.isNotEmpty()
@@ -92,9 +90,7 @@ class Waypoint(
     private var dynamicOpacity = 1.0f
     var preventInvalidRemoval = false
 
-    //#if MC > 1.21.11
-    //$$ private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
-    //#endif
+    private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
         this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
@@ -265,7 +261,7 @@ class Waypoint(
         return this.creationNs + duration.toNanos() < System.nanoTime()
     }
 
-    fun render(context: WorldRenderContext) {
+    fun render(context: LevelRenderContext) {
         if (!this.formatted || this.hidden) return
 
         val rgbAndHex = getRgbAndHex()
@@ -278,9 +274,7 @@ class Waypoint(
             this.hasText,
             this.component,
             this.textWidth,
-            //#if MC > 1.21.11
-            //$$ this.visualOrderText,
-            //#endif
+            this.visualOrderText,
             this.pos,
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),

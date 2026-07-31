@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.waypoint
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.decoration.ArmorStand
@@ -258,11 +258,7 @@ object WaypointManager {
             }
         }
 
-        WorldRenderEvents.BEFORE_TRANSLUCENT.register(WaypointRenderer)
-
-        //#if MC > 1.21.11
-        //$$ WorldRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
-        //#endif
+        LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
     }
 
     private fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
@@ -556,7 +552,7 @@ object WaypointManager {
      * Renders all waypoints in the management system.
      * @param context The world render context.
      */
-    fun renderAllWaypoints(context: WorldRenderContext) {
+    fun renderAllWaypoints(context: LevelRenderContext) {
         if (World.getWorld() != "Hub" || !Helper.hasSpade) {
             return
         }
@@ -569,7 +565,7 @@ object WaypointManager {
         renderGuessChainLines(context)
     }
 
-    private fun renderSubGuessLines(context: WorldRenderContext) {
+    private fun renderSubGuessLines(context: LevelRenderContext) {
         val color = Color(Customization.SubGuessColor)
 
         val rgb = floatArrayOf(
@@ -635,7 +631,7 @@ object WaypointManager {
         return chain
     }
 
-    private fun renderGuessChainLines(context: WorldRenderContext) {
+    private fun renderGuessChainLines(context: LevelRenderContext) {
         if (!Diana.drawOptimalOrderLines) return
 
         val chain = buildGreedyGuessChain(Player.getLastPosition())
