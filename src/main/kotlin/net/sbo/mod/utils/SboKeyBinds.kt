@@ -62,11 +62,11 @@ object SboKeyBinds {
     )
 
     fun register() {
-        KeyBindingHelper.registerKeyBinding(guessWarpKey)
-        KeyBindingHelper.registerKeyBinding(rareMobWarpKey)
-        KeyBindingHelper.registerKeyBinding(generalWarpKey)
-        KeyBindingHelper.registerKeyBinding(sendCoordsKey)
-        KeyBindingHelper.registerKeyBinding(sphinxSolverKey)
+        KeyMappingHelper.registerKeyBinding(guessWarpKey)
+        KeyMappingHelper.registerKeyBinding(rareMobWarpKey)
+        KeyMappingHelper.registerKeyBinding(generalWarpKey)
+        KeyMappingHelper.registerKeyBinding(sendCoordsKey)
+        KeyMappingHelper.registerKeyBinding(sphinxSolverKey)
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {
