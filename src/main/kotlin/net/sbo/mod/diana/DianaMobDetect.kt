@@ -93,6 +93,14 @@ object DianaMobDetect {
         mobHpOverlay.init()
         noShurikenOverlay.init()
 
+        Register.command("sbodebugentities") {
+            val level = mc.level ?: return@command
+
+            level.entitiesForRendering().forEach { entity ->
+                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string} at x=${entity.x},y=${entity.y},z=${entity.z}")
+            }
+        }
+
         Register.onChatMessage(
             Regex("^§a§lCAUGHT!.*?You cocooned a (?<name>.+?)!.*$")
         ) { _, matchResult ->
