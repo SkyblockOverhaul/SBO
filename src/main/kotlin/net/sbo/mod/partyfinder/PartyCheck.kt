@@ -10,6 +10,7 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
 import java.util.concurrent.TimeUnit
@@ -49,8 +50,9 @@ object PartyCheck {
         readCache: Boolean = true,
         onComplete: ((PartyPlayerStats)-> Unit)? = null
     ) {
+        if (!PartyFinderManager.hasSboKey()) return
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
-        Http.sendGetRequest("$API_URL/partyInfo?party=$playerName&readCache=$readCache")
+        Http.sendGetRequest("$API_URL/partyInfo?party=$playerName&readCache=$readCache&key=${sboData.sboKey}")
             .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     val partyInfo = response.partyInfo
@@ -80,7 +82,8 @@ object PartyCheck {
             Chat.chat("§6[SBO] §eNo party members found.")
             return
         }
-        Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${partyMember.joinToString(",").replace("-", "")}")
+        if (!PartyFinderManager.hasSboKey()) return
+        Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${partyMember.joinToString(",").replace("-", "")}&key=${sboData.sboKey}")
             .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     printPartyInfo(response.partyInfo)

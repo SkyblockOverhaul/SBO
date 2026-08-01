@@ -5,6 +5,7 @@ import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.utils.chat.Chat
@@ -115,7 +116,7 @@ object Guis {
     }
 
     private fun countActivePlayers() {
-        Http.sendGetRequest("https://api.skyblockoverhaul.com/countActiveUsers")
+        Http.sendGetRequest("$API_URL/countActiveUsers")
             .result { response ->
                 if (!response.isSuccessful) {
                     SBOKotlin.logger.error("Failed to count active players: ${response.code} ${response.message}")

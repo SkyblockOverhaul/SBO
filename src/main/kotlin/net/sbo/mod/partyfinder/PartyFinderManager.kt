@@ -72,6 +72,14 @@ object PartyFinderManager {
         Regex("^§r§eKicked (.+) because they were offline.$")
     )
 
+    fun hasSboKey(): Boolean {
+        if (sboData.sboKey.isEmpty()) {
+            Chat.chat("§6[SBO] §cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
+            return false
+        }
+        return true
+    }
+
     fun init() {
         Register.command("sborequeue") {
             if (!inQueue) {
@@ -144,7 +152,8 @@ object PartyFinderManager {
 
         Register.onTick(20 * 60 * 4) { // every 4 minutes
             if (inQueue) {
-                Http.sendGetRequest("$API_URL/queueUpdate?leaderId=${Player.getUUIDString().replace("-", "")}")
+                if (!hasSboKey()) return@onTick
+                Http.sendGetRequest("$API_URL/queueUpdate?leaderId=${Player.getUUIDString().replace("-", "")}&key=${sboData.sboKey}")
                     .toJsonObject { response ->
                         if (!response.getBoolean("Success")) {
                             inQueue = false
@@ -374,7 +383,11 @@ object PartyFinderManager {
     fun removePartyFromQueue(onComplete: ((Boolean) -> Unit)? = null) {
         if (inQueue) {
             inQueue = false
-            Http.sendGetRequest("$API_URL/unqueueParty?leaderId=${Player.getUUIDString().replace("-", "")}")
+            if (!hasSboKey()) {
+                onComplete?.invoke(false)
+                return
+            }
+            Http.sendGetRequest("$API_URL/unqueueParty?leaderId=${Player.getUUIDString().replace("-", "")}&key=${sboData.sboKey}")
                 .result { response ->
                     onComplete?.invoke(true)
                     Chat.chat("§6[SBO] §eParty removed from queue.")

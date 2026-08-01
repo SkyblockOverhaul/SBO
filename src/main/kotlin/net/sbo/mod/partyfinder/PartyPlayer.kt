@@ -8,6 +8,7 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
 import java.util.concurrent.TimeUnit
@@ -52,8 +53,12 @@ object PartyPlayer {
                 callback(stats)
                 return
             }
+            if (!PartyFinderManager.hasSboKey()) {
+                callback(stats)
+                return
+            }
             refreshing = true
-            Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${Player.getUUIDString().replace("-", "")}&readcache=false")
+            Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${Player.getUUIDString().replace("-", "")}&readcache=false&key=${sboData.sboKey}")
                 .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                     refreshing = false
                     if (response.success) {

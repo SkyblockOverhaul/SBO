@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.overlays.DianaLoot
@@ -626,7 +627,7 @@ object Helper {
                     SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
                 }
             }
-        Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
+        Http.sendGetRequest("$API_URL/ahItems")
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
