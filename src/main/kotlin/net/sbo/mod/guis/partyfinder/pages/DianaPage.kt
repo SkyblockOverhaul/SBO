@@ -14,13 +14,12 @@ import gg.essential.elementa.dsl.percent
 import gg.essential.elementa.dsl.pixels
 import net.sbo.mod.guis.partyfinder.GuiHandler
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
+import net.sbo.mod.partyfinder.PartyFinderManager.hasSboKey
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
-import net.sbo.mod.utils.data.SboDataObject.sboData
 import java.awt.Color
 
 
@@ -288,8 +287,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             if (pfConfigState.checkboxes.diana.looting5) reqString += "looting5,"
             val note = pfConfigState.inputs.diana.note
             val partyType = "Diana"
-            val sboKey = sboData.sboKey
-            if (sboKey.isEmpty() && !sboKey.startsWith("sbo")) Chat.chat("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
+            hasSboKey()
             parent.partyCreate(reqs = reqString, note = note, type = partyType)
             parent.closeCpWindow()
         }

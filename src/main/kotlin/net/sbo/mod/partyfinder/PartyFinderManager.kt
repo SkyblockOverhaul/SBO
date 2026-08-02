@@ -73,8 +73,9 @@ object PartyFinderManager {
     )
 
     fun hasSboKey(): Boolean {
-        if (sboData.sboKey.isEmpty()) {
-            Chat.chat("§6[SBO] §cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
+        val sboKey = sboData.sboKey
+        if (sboKey.isBlank() || !sboKey.startsWith("sbo")) {
+            Chat.chat("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
             return false
         }
         return true
@@ -162,7 +163,7 @@ object PartyFinderManager {
                     }
                     .error { error ->
                         inQueue = false
-                        Chat.chat("§6[SBO] §4Unexpected error")
+                        Chat.chat("§6[SBO] §4Unexpected error while updating party: $error")
                     }
             }
         }
@@ -392,7 +393,7 @@ object PartyFinderManager {
                     onComplete?.invoke(true)
                     Chat.chat("§6[SBO] §eParty removed from queue.")
                 }.error { error ->
-                    Chat.chat("§6[SBO] §4Unexpected error while removing party from queue")
+                    Chat.chat("§6[SBO] §4Unexpected error while removing party from queue: $error")
                 }
         } else if (creatingParty) {
             ghostParty = true

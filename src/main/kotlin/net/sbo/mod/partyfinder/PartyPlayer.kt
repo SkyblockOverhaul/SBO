@@ -1,5 +1,6 @@
 package net.sbo.mod.partyfinder
 
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
@@ -74,7 +75,7 @@ object PartyPlayer {
                 }
                 .error { error ->
                     refreshing = false
-                    println("[SBO] Failed to fetch party player stats: $error")
+                    logger.error("Failed to fetch party player stats: $error")
                     callback(stats)
                 }
 
