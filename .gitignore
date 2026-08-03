@@ -41,3 +41,5 @@ replay_*.log
 .kotlin/errors
 
 .kotlin/sessions
+
+graphify-out/
