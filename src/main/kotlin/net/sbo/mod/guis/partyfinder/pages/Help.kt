@@ -1,5 +1,4 @@
 package net.sbo.mod.guis.partyfinder.pages
-//todo: remake this with Vexel https://github.com/meowing-xyz/vexel
 
 import gg.essential.elementa.components.ScrollComponent
 import gg.essential.elementa.components.UIBlock
@@ -10,7 +9,7 @@ import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.percent
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
-import java.awt.Color
+import net.sbo.mod.guis.partyfinder.Theme
 
 class Help(private val parent: PartyFinderGUI) {
     internal fun render() {
@@ -21,17 +20,17 @@ class Help(private val parent: PartyFinderGUI) {
                 y = 0.percent()
                 width = 100.percent()
                 height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(UIBlock().constrain {
                     width = 100.percent()
                     height = 9.percent()
-                }.setColor(Color(0, 0, 0, 0))
+                }.setColor(Theme.TRANSPARENT)
                     .addChild(UIWrappedText("Help Page!").constrain {
                         x = 2.percent()
                         y = CenterConstraint()
                         width = 100.percent()
                         textScale = parent.getTextScaleOfScaleText(1.5f)
-                    }.setColor(Color(255, 255, 255, 255)))
+                    }.setColor(Theme.TEXT_PRIMARY))
                 )
                 .addChild(UIWrappedText(
                     "・ Not Getting any Join Requests?\n\n" +
@@ -50,7 +49,7 @@ class Help(private val parent: PartyFinderGUI) {
                     y = SiblingConstraint()
                     width = 100.percent()
                     textScale = parent.getTextScaleOfScaleText()
-                }.setColor(Color(255, 255, 255, 255)))
+                }.setColor(Theme.TEXT_PRIMARY))
             )
         }
     }
