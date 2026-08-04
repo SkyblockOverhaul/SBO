@@ -1,5 +1,4 @@
 package net.sbo.mod.guis.partyfinder.pages
-//todo: remake this with Vexel https://github.com/meowing-xyz/vexel
 
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIRoundedRectangle
@@ -14,13 +13,13 @@ import gg.essential.elementa.dsl.percent
 import gg.essential.elementa.dsl.pixels
 import net.sbo.mod.guis.partyfinder.GuiHandler
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
+import net.sbo.mod.guis.partyfinder.Theme
 import net.sbo.mod.partyfinder.PartyFinderManager.hasSboKey
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
-import java.awt.Color
 
 class CustomPage(private val parent: PartyFinderGUI) {
     internal fun getPartyInfo(info: PartyPlayerStats): String {
@@ -95,18 +94,18 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint()
             width = 100.percent()
             height = 70.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.cpWindow
+        }.setColor(Theme.TRANSPARENT) childOf parent.cpWindow
         val lvlbox = UIBlock().constrain {
             x = 0.percent()
             y = 5.pixels()
             width = 100.percent()
             height = 18.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         UIText("SbLvL").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
             textScale = parent.getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255)) childOf lvlbox
+        }.setColor(Theme.TEXT_PRIMARY) childOf lvlbox
         val lvlinput = GuiHandler.TextInput(
             list = "custom",
             key = "lvl",
@@ -115,8 +114,8 @@ class CustomPage(private val parent: PartyFinderGUI) {
             width = 90.percent(),
             height = 60.percent(),
             inputWidth = 90.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.INPUT_BG,
+            textColor = Theme.INPUT_TEXT,
             rounded = true
         )
         lvlinput.create().setChildOf(lvlbox)
@@ -131,12 +130,12 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 18.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         UIText("Mp").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
             textScale = parent.getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255)) childOf mpbox
+        }.setColor(Theme.TEXT_PRIMARY) childOf mpbox
         val mpinput = GuiHandler.TextInput(
             list = "custom",
             key = "mp",
@@ -145,8 +144,8 @@ class CustomPage(private val parent: PartyFinderGUI) {
             width = 90.percent(),
             height = 60.percent(),
             inputWidth = 90.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.INPUT_BG,
+            textColor = Theme.INPUT_TEXT,
             rounded = true
         )
         mpinput.create().setChildOf(mpbox)
@@ -161,12 +160,12 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 18.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         UIText("Party Size").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
             textScale = parent.getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255)) childOf partySizeBox
+        }.setColor(Theme.TEXT_PRIMARY) childOf partySizeBox
         val partySizeInput = GuiHandler.TextInput(
             list = "custom",
             key = "partySize",
@@ -175,8 +174,8 @@ class CustomPage(private val parent: PartyFinderGUI) {
             width = 90.percent(),
             height = 60.percent(),
             inputWidth = 90.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.INPUT_BG,
+            textColor = Theme.INPUT_TEXT,
             rounded = true
         )
         partySizeInput.create().setChildOf(partySizeBox)
@@ -191,12 +190,12 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 18.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         UIText("Note").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
             textScale = parent.getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255)) childOf noteBox
+        }.setColor(Theme.TEXT_PRIMARY) childOf noteBox
         val noteInput = GuiHandler.TextInput(
             list = "custom",
             key = "note",
@@ -205,8 +204,8 @@ class CustomPage(private val parent: PartyFinderGUI) {
             width = 90.percent(),
             height = 60.percent(),
             inputWidth = 90.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.INPUT_BG,
+            textColor = Theme.INPUT_TEXT,
             rounded = true
         )
         noteInput.create().setChildOf(noteBox)
@@ -220,7 +219,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 18.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         val eman9Checkbox = GuiHandler.Checkbox(
             list = "custom",
             key = "eman9",
@@ -228,33 +227,33 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 200),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.CHECKBOX_BG,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Eman9",
             rounded = true,
             roundness = 5f
         )
         eman9Checkbox.create().setChildOf(eman9Box)
-        eman9Checkbox.setBgBoxColor(Color(50, 50, 50, 200))
+        eman9Checkbox.setBgBoxColor(Theme.INPUT_BG)
         eman9Checkbox.textObject.setTextScale(parent.getTextScaleOfScaleText())
         parent.createBox = UIBlock().constrain {
             x = 0.percent()
             y = SiblingConstraint()
             width = 100.percent()
             height = 18.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.cpWindow
+        }.setColor(Theme.TRANSPARENT) childOf parent.cpWindow
         val createButton = GuiHandler.Button(
             text = "Create Party",
             x = CenterConstraint(),
             y = CenterConstraint(),
             width = 70.percent(),
             height = 60.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.BUTTON_DEFAULT,
+            textColor = Theme.TEXT_PRIMARY,
             parent = parent.createBox,
             rounded = true
         )
-        createButton.hoverEffect(Color(50, 50, 50, 200), Color(100, 100, 100, 200))
+        createButton.hoverEffect(Theme.BUTTON_DEFAULT, Theme.BUTTON_HOVER)
         createButton.setOnClick {
             val reqsMap = mapOf(
                 "lvl" to pfConfigState.inputs.custom.lvl,
@@ -286,7 +285,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = y1
             width = 15.percent()
             height = 15.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         parent.filterWindow.setX((parent.filterWindow.getLeft() - parent.filterWindow.getWidth()).pixels())
 
         parent.filterBox = UIRoundedRectangle(10f).constrain {
@@ -294,7 +293,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = 0.percent()
             width = 100.percent()
             height = 100.percent()
-        }.setColor(Color(50, 50, 50, 255)) childOf parent.filterWindow
+        }.setColor(Theme.FILTER_BOX_BG) childOf parent.filterWindow
         parent.filterBox.grabWindowFocus()
         parent.filterBox.onMouseClick {
             this.grabWindowFocus()
@@ -308,13 +307,13 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = 0.percent()
             width = 100.percent()
             height = 50.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val row2 = UIBlock().constrain {
             x = CenterConstraint()
             y = SiblingConstraint()
             width = 100.percent()
             height = 50.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val eman9Filter = GuiHandler.Checkbox(
             list = "custom",
             key = "eman9Filter",
@@ -322,15 +321,15 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 150),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.FILTER_TINT,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Eman9",
             rounded = true,
             roundness = 5f,
             filter = true
         )
         eman9Filter.create().setChildOf(row1)
-        eman9Filter.setBgBoxColor(Color(25, 25, 25, 200))
+        eman9Filter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         eman9Filter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         eman9Filter.setOnClick { setFilter() }
 
@@ -341,15 +340,15 @@ class CustomPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 150),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.FILTER_TINT,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Can I Join?",
             rounded = true,
             roundness = 5f,
             filter = true
         )
         canIjoinFilter.create().setChildOf(row2)
-        canIjoinFilter.setBgBoxColor(Color(25, 25, 25, 200))
+        canIjoinFilter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         canIjoinFilter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         canIjoinFilter.setOnClick { setFilter() }
     }
