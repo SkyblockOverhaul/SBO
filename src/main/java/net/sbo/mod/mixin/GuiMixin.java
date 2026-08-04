@@ -1,6 +1,5 @@
 package net.sbo.mod.mixin;
 
-import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Gui;
@@ -17,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Gui.class)
 final class GuiMixin {
     @Inject(method = "extractRenderState", at = @At(value = "RETURN"))
-    private final void sbo$afterHudRender(@NonNull final DeltaTracker deltaTracker, final boolean shouldRenderLevel, final boolean resourcesLoaded, @NonNull final CallbackInfo ci, @Local @NonNull final GuiGraphicsExtractor graphics) {
+    private final void sbo$afterHudRender(@NonNull final GuiGraphicsExtractor graphics, @NonNull final DeltaTracker deltaTracker, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new RenderEvent(graphics));
     }
 }
