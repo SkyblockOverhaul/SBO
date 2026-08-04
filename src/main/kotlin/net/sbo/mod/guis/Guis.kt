@@ -29,21 +29,21 @@ object Guis {
     private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
 
     fun openSboPf(calledFromGUI: Boolean = false) {
-//        if (!World.isInSkyblock()) {
-//            if (!calledFromGUI) {
-//                Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
-//                return
-//            }
-//            SBOKotlin.toast(
-//                    Component.literal("SBO").setStyle(
-//                        Style.EMPTY.withColor(ChatFormatting.GOLD)
-//                    ),
-//                    Component.literal("Join skyblock before opening Party Finder!").setStyle(
-//                        Style.EMPTY.withColor(ChatFormatting.RED)
-//                    )
-//            )
-//            return
-//        }
+        if (!World.isInSkyblock()) {
+            if (!calledFromGUI) {
+                Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
+                return
+            }
+            SBOKotlin.toast(
+                    Component.literal("SBO").setStyle(
+                        Style.EMPTY.withColor(ChatFormatting.GOLD)
+                    ),
+                    Component.literal("Join skyblock before opening Party Finder!").setStyle(
+                        Style.EMPTY.withColor(ChatFormatting.RED)
+                    )
+            )
+            return
+        }
         mc.schedule {
             if (partyFinderGui == null) {
                 partyFinderGui = PartyFinderGUI()
