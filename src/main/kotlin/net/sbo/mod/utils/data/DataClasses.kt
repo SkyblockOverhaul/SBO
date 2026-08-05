@@ -24,6 +24,18 @@ data class PartyInfo(
 )
 
 @Serializable
+data class PlayerInfoResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+
+    @SerialName("PlayerInfo")
+    val playerInfo: PartyPlayerStats? = null,
+
+    @SerialName("Error")
+    val error: String? = null
+)
+
+@Serializable
 data class PartyAddResponse(
     @SerialName("Success")
     val success: Boolean = false,

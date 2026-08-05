@@ -10,6 +10,7 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.data.PlayerInfoResponse
 import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
@@ -52,18 +53,18 @@ object PartyCheck {
     ) {
         if (!PartyFinderManager.hasSboKey()) return
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
-        Http.sendGetRequest("$API_URL/partyInfo?party=$playerName&readCache=$readCache&key=${sboData.sboKey}")
-            .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
+        Http.sendGetRequest("$API_URL/playerInfo?player=$playerName&readcache=$readCache&key=${sboData.sboKey}")
+            .toJson<PlayerInfoResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
-                    val partyInfo = response.partyInfo
-                    if (partyInfo.firstOrNull() != null) {
-                        if (!noMessage && partyInfo[0].uuid == Player.getUUIDString().replace("-", "")) {
-                            printPartyInfo(partyInfo)
-                            trackWithCheckPlayer(partyInfo[0])
+                    val playerInfo = response.playerInfo
+                    if (playerInfo != null) {
+                        if (!noMessage && playerInfo.uuid == Player.getUUIDString().replace("-", "")) {
+                            printPartyInfo(listOf(playerInfo))
+                            trackWithCheckPlayer(playerInfo)
                         } else if (!noMessage) {
-                            printPartyInfo(partyInfo, inviteButton = true)
+                            printPartyInfo(listOf(playerInfo), inviteButton = true)
                         }
-                        onComplete?.invoke(partyInfo[0])
+                        onComplete?.invoke(playerInfo)
                     }
                 }
             }

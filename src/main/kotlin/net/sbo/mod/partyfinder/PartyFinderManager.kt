@@ -154,7 +154,7 @@ object PartyFinderManager {
         Register.onTick(20 * 60 * 4) { // every 4 minutes
             if (inQueue) {
                 if (!hasSboKey()) return@onTick
-                Http.sendGetRequest("$API_URL/queueUpdate?leaderId=${Player.getUUIDString().replace("-", "")}&key=${sboData.sboKey}")
+                Http.sendGetRequest("$API_URL/refreshParty?leaderId=${Player.getUUIDString().replace("-", "")}&key=${sboData.sboKey}")
                     .toJsonObject { response ->
                         if (!response.getBoolean("Success")) {
                             inQueue = false
@@ -276,7 +276,7 @@ object PartyFinderManager {
             if (partyMember.size !in 2..<partySize) return
             val currentTime = System.nanoTime()
             Http.sendGetRequest(
-                "$API_URL/queuePartyUpdate?uuids=${partyMember.joinToString(",").replace("-", "")}" +
+                "$API_URL/updateQueuedParty?uuids=${partyMember.joinToString(",").replace("-", "")}" +
                         "&reqs=$partyReqs" +
                         "&note=${checkPartyNote(partyNote)}" +
                         "&partytype=$partyType" +
@@ -304,7 +304,7 @@ object PartyFinderManager {
         onComplete: ((List<Party>) -> Unit)? = null,
         onError: (() -> Unit)? = null
     ) {
-        Http.sendGetRequest("$API_URL/getAllParties?partytype=$partyType")
+        Http.sendGetRequest("$API_URL/listParties?partytype=$partyType")
             .toJson<GetAllParties>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     onComplete?.invoke(response.parties)
