@@ -384,27 +384,27 @@ object Diana : CategoryKt("Diana") {
 
     init {
         separator {
-            this.title = "Title Timings"
-            this.description = "Customize fade-in, display and fade-out ticks for titles."
+            this.title = "Rare Mob Title Timings"
+            this.description = "Customize fade-in, display and fade-out ticks for Rare Mob titles."
         }
     }
 
-    var rareTitleFadeInTime by int(0) {
-        this.name = Literal("Rare Title Fade In Time")
+    var rareMobTitleFadeInTime by int(0) {
+        this.name = Literal("Rare Mob Title Fade In Time")
         this.description = Literal("Fade-in (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
-    var rareTitleStayTime by int(60) {
-        this.name = Literal("Rare Title Stay Time")
+    var rareMobTitleStayTime by int(60) {
+        this.name = Literal("Rare Mob Title Stay Time")
         this.description = Literal("Display time (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
-    var rareTitleFadeOutTime by int(0) {
-        this.name = Literal("Rare Title Fade Out Time")
+    var rareMobTitleFadeOutTime by int(0) {
+        this.name = Literal("Rare Mob Title Fade Out Time")
         this.description = Literal("Fade-out (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true

@@ -267,9 +267,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeInTime,
-                    Diana.rareTitleStayTime,
-                    Diana.rareTitleFadeOutTime
+                    Diana.rareMobTitleFadeInTime,
+                    Diana.rareMobTitleStayTime,
+                    Diana.rareMobTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.inqSound,
@@ -282,9 +282,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeInTime,
-                    Diana.rareTitleStayTime,
-                    Diana.rareTitleFadeOutTime
+                    Diana.rareMobTitleFadeInTime,
+                    Diana.rareMobTitleStayTime,
+                    Diana.rareMobTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.kingSound,
@@ -297,9 +297,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeInTime,
-                    Diana.rareTitleStayTime,
-                    Diana.rareTitleFadeOutTime
+                    Diana.rareMobTitleFadeInTime,
+                    Diana.rareMobTitleStayTime,
+                    Diana.rareMobTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.mantiSound,
@@ -312,9 +312,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeInTime,
-                    Diana.rareTitleStayTime,
-                    Diana.rareTitleFadeOutTime
+                    Diana.rareMobTitleFadeInTime,
+                    Diana.rareMobTitleStayTime,
+                    Diana.rareMobTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.sphinxSound,
@@ -327,9 +327,9 @@ object WaypointManager {
                 Helper.showTitle(
                     "§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>",
                     player.ifEmpty { null },
-                    Diana.rareTitleFadeInTime,
-                    Diana.rareTitleStayTime,
-                    Diana.rareTitleFadeOutTime
+                    Diana.rareMobTitleFadeInTime,
+                    Diana.rareMobTitleStayTime,
+                    Diana.rareMobTitleFadeOutTime
                 )
                 playCustomSound(
                     SboDataObject.soundSettingsData.rareMobSound,
@@ -927,6 +927,7 @@ object WaypointManager {
         } ?: Double.MAX_VALUE
 
         val warpIsFarEnough =
+            !Diana.dontWarpIfBurrowClose ||
             playerToWarpDistance > 60
 
         return if (warpIsWorthIt && targetIsFarEnough && warpIsFarEnough)
