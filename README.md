@@ -10,7 +10,7 @@
 
 ## What it does
 
-[SBO] SkyblockOverhaul is a feature‐rich Hypixel SkyBlock mod for Minecraft Fabric supporting all current Hypixel SkyBlock versions, designed primarily for the Diana event.
+[SBO] SkyblockOverhaul is a feature‐rich Hypixel SkyBlock mod for Minecraft Fabric supporting most current Hypixel SkyBlock versions, designed primarily for the Diana event.
 
 ---
 
@@ -135,8 +135,8 @@ Before you begin, you need to have a few things installed:
 - Adjustable opacity (dynamic or fixed)
 - Text scale, shadow, and distance cutoff settings
 
-#### Custom Sounds (`.ogg` files)
-Place in `config/sbo/sounds/` and restart Minecraft:
+#### Custom Sounds (`.ogg, .mp3, .wav, .au, .aif, .aiff` files)
+Place in `config/sbo/sounds/`:
 
 | Sound Event | Default |
 |-------------|---------|

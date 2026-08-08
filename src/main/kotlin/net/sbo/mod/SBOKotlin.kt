@@ -49,22 +49,13 @@ object SBOKotlin : ClientModInitializer {
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
-	val configurator = Configurator(MOD_ID)
+	private val configurator = Configurator(MOD_ID)
 	val settings = Settings.register(configurator)
 
 	lateinit var version: String
 	lateinit var mcVersion: String
 
 	fun id(path: String, owner: String = MOD_ID): Identifier = Identifier.fromNamespaceAndPath(owner, path)
-
-    fun userSuppliedId(path: String, owner: String = MOD_ID, onInvalid: (IdentifierException) -> Unit): Identifier? {
-        return try {
-            id(path = path, owner = owner)
-        } catch (invalidIdentifierException: IdentifierException) {
-            onInvalid(invalidIdentifierException)
-            null
-        }
-    }
 
     fun toast(title: Component, message: Component) {
         mc.toastManager.addToast(
@@ -142,6 +133,7 @@ object SBOKotlin : ClientModInitializer {
 		SphinxSolver.init()
 		RareMobHighlight.init()
 		InventoryUtils.init()
+		Chains.init()
 
 		Register.onTick(100) { unregister ->
 			val player = mc.player
@@ -155,7 +147,7 @@ object SBOKotlin : ClientModInitializer {
 		}
 
 		if (FabricLoader.getInstance().isModLoaded("iris")) {
-			IrisCompatibility.init()
+		    IrisCompatibility.init()
 		}
 
 		logger.info("SBO-Kotlin initialized successfully!")

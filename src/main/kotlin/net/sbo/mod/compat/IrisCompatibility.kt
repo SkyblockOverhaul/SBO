@@ -8,8 +8,11 @@ object IrisCompatibility {
     fun init() {
         IrisApi.getInstance().apply {
             assignPipeline(SboRenderPipelines.LINES_THROUGH_WALLS, IrisProgram.LINES)
+
+            //#if MC < 26.1
             assignPipeline(SboRenderPipelines.BEACON_BEAM_OPAQUE_THROUGH_WALLS, IrisProgram.BEACON_BEAM)
             assignPipeline(SboRenderPipelines.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS, IrisProgram.BEACON_BEAM)
+            //#endif
         }
     }
 }

@@ -9,7 +9,6 @@ import kotlin.math.floor
 
 object Mayor {
     private const val SKYBLOCK_EPOCH = 1560276000L
-    private const val SECONDS_PER_MINUTE = 0.8333333333333334
     private const val SECONDS_PER_MONTH = 37200.0
     private const val SECONDS_PER_DAY = 1200.0
     private const val SECONDS_PER_HOUR = 50.0
@@ -21,20 +20,19 @@ object Mayor {
     private const val FALLBACK_MAYOR = "Diana"
     private const val FALLBACK_PERK = "Mythological Ritual"
 
-    var dateMayorElected: Date? = null
-    var newMayorAtDate: Date? = null
+    private var dateMayorElected: Date? = null
+    private var newMayorAtDate: Date? = null
     var mayor: String? = null
     var perks: MutableSet<String> = mutableSetOf()
-    var mayorApiError: Boolean = false
-    var apiLastUpdated: Long? = null
-    var minister: String? = null
+    private var mayorApiError: Boolean = false
+    private var apiLastUpdated: Long? = null
+    private var minister: String? = null
     var ministerPerk: String? = null
-    var skyblockDate: Date? = null
-    var skyblockDateString: String = ""
-    var refreshingMayor: Boolean = false
-    var newMayor: Boolean = false
-    var outDatedApi: Boolean = false
-    var sbYear: Int = 0
+    private var skyblockDate: Date? = null
+    private var skyblockDateString: String = ""
+    private var refreshingMayor: Boolean = false
+    private var newMayor: Boolean = false
+    private var outDatedApi: Boolean = false
     var mayorElectedYear = 0
 
     fun init() {
@@ -53,28 +51,32 @@ object Mayor {
     }
 
     private fun updateMayorElection() {
-        val newDate = newMayorAtDate ?: return
-        if (newDate.time >= (skyblockDate?.time ?: return)) return
+        val skyDate = skyblockDate ?: return
 
-        newMayor = true
-        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        val electionThisYear = date(ELECTION_DAY, ELECTION_MONTH, currentYear)
+        if (newMayorAtDate == null || newMayorAtDate!!.time < skyDate.time) {
+            newMayor = true
 
-        if (electionThisYear.time > skyblockDate!!.time) {
-            mayorElectedYear = currentYear - 1
-            dateMayorElected = date(ELECTION_DAY, ELECTION_MONTH, currentYear - 1)
-            newMayorAtDate = electionThisYear
-        } else {
-            mayorElectedYear = currentYear
-            dateMayorElected = electionThisYear
-            newMayorAtDate = date(ELECTION_DAY, ELECTION_MONTH, currentYear + 1)
+            val calendar = Calendar.getInstance()
+            calendar.time = skyDate
+            val currentYear = calendar.get(Calendar.YEAR)
+
+            val electionThisYear = date(ELECTION_DAY, ELECTION_MONTH, currentYear)
+
+            if (electionThisYear.time > skyDate.time) {
+                mayorElectedYear = currentYear - 1
+                dateMayorElected = date(ELECTION_DAY, ELECTION_MONTH, currentYear - 1)
+                newMayorAtDate = electionThisYear
+            } else {
+                mayorElectedYear = currentYear
+                dateMayorElected = electionThisYear
+                newMayorAtDate = date(ELECTION_DAY, ELECTION_MONTH, currentYear + 1)
+            }
         }
     }
 
     private fun updateSbYear() {
         Calendar.getInstance().apply {
             time = skyblockDate!!
-            sbYear = get(Calendar.YEAR)
         }
     }
 
@@ -87,7 +89,7 @@ object Mayor {
         newMayor = false
     }
 
-    internal fun getMayor() {
+    private fun getMayor() {
         mayor = null
         perks.clear()
         refreshingMayor = true
@@ -127,6 +129,7 @@ object Mayor {
     }
 
     private fun handleApiError(message: String) {
+        refreshingMayor = false
         mayorApiError = true
         applyFallback()
         SBOKotlin.logger.error("API error: $message")
@@ -169,15 +172,12 @@ object Mayor {
         day = (day + dayDiff).let { if (it == 0) DAYS_IN_MONTH else it }
 
         val hourDiff = floor(secondsSinceEpoch / SECONDS_PER_HOUR).toInt() % 24
-        secondsSinceEpoch -= hourDiff * SECONDS_PER_HOUR.toLong()
         hour = (hour + hourDiff) % 24
 
         if (hour < 6) {
             day = if (day < DAYS_IN_MONTH) day + 1 else 1
             if (day == 1) month++
         }
-
-        floor(secondsSinceEpoch / SECONDS_PER_MINUTE).toInt() % 60
 
         return "$day.$month.$year"
     }

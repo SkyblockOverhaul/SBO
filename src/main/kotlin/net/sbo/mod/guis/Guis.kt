@@ -10,18 +10,22 @@ import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
+import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
+import java.util.concurrent.TimeUnit
 
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
     var achievementsGui: AchievementsGUI? = null
+    private var soundGui: SoundGUI? = null
+
 //    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
-    private const val UPDATE_INTERVAL = 300_000L // 5 minutes in ms
+    private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
 
     fun openSboPf(calledFromGUI: Boolean = false) {
         if (!World.isInSkyblock()) {
@@ -48,6 +52,31 @@ object Guis {
         }
     }
 
+    fun openSoundGui(calledFromGUI: Boolean = false) {
+        if (!World.isInSkyblock()) {
+            if (!calledFromGUI) {
+                Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
+                return
+            }
+            SBOKotlin.toast(
+                Component.literal("SBO").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.GOLD)
+                ),
+                Component.literal("Join skyblock before opening Sounds!").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.RED)
+                )
+            )
+            return
+        }
+        mc.schedule {
+            if (soundGui == null) {
+                soundGui = SoundGUI()
+            }
+            UScreen.displayScreen(soundGui!!)
+            SBOEvent.emit(SoundsOpenEvent())
+        }
+    }
+
     fun register() {
         Register.command("sbopf") {
             openSboPf()
@@ -62,6 +91,10 @@ object Guis {
             }
         }
 
+        Register.command("sbosounds") {
+            openSoundGui()
+        }
+
         Register.command("sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
             mc.schedule {
                 if (pastEventsGui == null) {
@@ -71,17 +104,8 @@ object Guis {
             }
         }
 
-//        Register.command("vexeltest") {
-//            mc.send {
-//                if (vexelGui == null) {
-//                    vexelGui = VexelTest()
-//                }
-//                mc.setScreen(vexelGui!!)
-//            }
-//        }
-
         Register.onTick(20) {
-            val now = System.currentTimeMillis()
+            val now = System.nanoTime()
             if (now - lastUpdate > UPDATE_INTERVAL && !updating && World.isInSkyblock()) {
                 lastUpdate = now
                 updating = true

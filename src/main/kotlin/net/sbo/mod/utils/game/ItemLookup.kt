@@ -7,8 +7,8 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 
 class ItemLookup(private val stack: ItemStack) {
-    val customData: CustomData? by lazy(LazyThreadSafetyMode.NONE) { this.stack.get(DataComponents.CUSTOM_DATA) }
-    val nbt: CompoundTag? by lazy(LazyThreadSafetyMode.NONE) { this.customData?.copyTag() }
+    private val customData: CustomData? by lazy(LazyThreadSafetyMode.NONE) { this.stack[DataComponents.CUSTOM_DATA] }
+    private val nbt: CompoundTag? by lazy(LazyThreadSafetyMode.NONE) { this.customData?.copyTag() }
 
     val sbId: String by lazy(LazyThreadSafetyMode.NONE) { this.nbt?.getString("id")?.orElse("") ?: "" }
     val uuid: String by lazy(LazyThreadSafetyMode.NONE) { this.nbt?.getString("uuid")?.orElse("") ?: "" }
@@ -16,7 +16,7 @@ class ItemLookup(private val stack: ItemStack) {
 
     val displayName: String by lazy(LazyThreadSafetyMode.NONE) { this.stack.hoverName.toFormattedString() }
     val loreList: List<String> by lazy (LazyThreadSafetyMode.NONE) {
-        val lines = this.stack.get(DataComponents.LORE)?.lines ?: return@lazy emptyList()
+        val lines = this.stack[DataComponents.LORE]?.lines ?: return@lazy emptyList()
         lines.map { it.toFormattedString() }
     }
 }

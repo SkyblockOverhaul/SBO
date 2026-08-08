@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object DianaStats {
-    val STATS_PATTERN: Pattern = Pattern.compile(
+    private val STATS_PATTERN: Pattern = Pattern.compile(
         "§9Party §8> (.*?)§f: Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \\((.*?)\\) - Mobs: (.*?) \\((.*?)\\) - Inquisitors: (.*?) \\((.*?)\\) - LS Inqs: (.*?) - Chimeras: (.*?) \\((.*?)\\) - LS: (.*?) \\((.*?)\\) - Sticks: (.*?) \\((.*?)\\) - Relics: (.*?) \\((.*?)\\)(.*?)",
         Pattern.DOTALL
     )
@@ -25,8 +25,8 @@ object DianaStats {
             val statsMessage = ArrayList<String>()
             statsMessage.add("§9Party §8> ${matcher.group(1)}§f:")
             statsMessage.add("§ePlaytime: §b${matcher.group(2)}")
-            statsMessage.add("§aBurrows: §b${matcher.group(5)} §7(${matcher.group(6)}/h)")
-            statsMessage.add("§aMobs: §b${matcher.group(7)} §7(${matcher.group(8)}/h)")
+            statsMessage.add("§aBurrows: §b${matcher.group(5)} §7(${matcher.group(6)})")
+            statsMessage.add("§aMobs: §b${matcher.group(7)} §7(${matcher.group(8)})")
             statsMessage.add("§dInquisitors: §b${matcher.group(9)} §7(${matcher.group(10)}) §6LS: §b${matcher.group(11)}")
             statsMessage.add("§dChimeras: §b${matcher.group(12)} §7(${matcher.group(13)}) §6LS: §b${matcher.group(14)} §7(${matcher.group(15)})")
             statsMessage.add("§6Sticks: §b${matcher.group(16)} §7(${matcher.group(17)})")
@@ -37,7 +37,7 @@ object DianaStats {
         }
     }
 
-    fun getPlayerStats(total: Boolean? = false): PlayerStats {
+    private fun getPlayerStats(total: Boolean? = false): PlayerStats {
         val tracker: DianaTracker = when (total) {
             true -> SboDataObject.dianaTrackerTotal
             false -> SboDataObject.dianaTrackerMayor
@@ -62,7 +62,7 @@ object DianaStats {
             Diana.bazaarSettingDiana.toString(),
             Helper.formatNumber(totalValue / playTimeHrs)
         )
-        val stats = PlayerStats(
+        return PlayerStats(
             playtime = Helper.formatTime(playtime),
             profit = profit,
             burrows = Helper.formatNumber(tracker.items.TOTAL_BURROWS),
@@ -75,13 +75,17 @@ object DianaStats {
             chimeraDrops = tracker.items.CHIMERA,
             chimeraDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "CHIMERA", "MINOS_INQUISITOR")}%",
             chimeraLSDrops = tracker.items.CHIMERA_LS,
-            chimeraLSDropRate = "${"%.2f".format(Locale.US, if (tracker.mobs.MINOS_INQUISITOR_LS > 0) tracker.items.CHIMERA_LS.toDouble() / tracker.mobs.MINOS_INQUISITOR_LS.toDouble() * 100.0 else 0.0)}%",
+            chimeraLSDropRate = "${
+                "%.2f".format(
+                    Locale.US,
+                    if (tracker.mobs.MINOS_INQUISITOR_LS > 0) tracker.items.CHIMERA_LS.toDouble() / tracker.mobs.MINOS_INQUISITOR_LS.toDouble() * 100.0 else 0.0
+                )
+            }%",
             sticksDropped = tracker.items.DAEDALUS_STICK,
             stickDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "DAEDALUS_STICK", "MINOTAUR")}%",
             relicsDropped = tracker.items.MINOS_RELIC,
             relicDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "MINOS_RELIC", "MINOS_CHAMPION")}%"
         )
-        return stats
     }
 
     fun sendPlayerStats(total: Boolean? = false) {

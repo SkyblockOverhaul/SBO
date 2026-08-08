@@ -8,4 +8,4 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
  * @param screen The screen that is being opened.
  * @param ci The callback info to control the event flow.
  */
-class GuiOpenEvent(val screen: Screen, val ci: CallbackInfo)
+class GuiOpenEvent(val screen: Screen, private val ci: CallbackInfo)

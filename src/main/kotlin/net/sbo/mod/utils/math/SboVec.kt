@@ -105,7 +105,7 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
         val dx = other.x - x
         val dy = other.y - y
         val dz = other.z - z
-        return (dx * dx + dy * dy + dz * dz)
+        return dx * dx + dy * dy + dz * dz
     }
 
     fun isInLoadedChunk(): Boolean = SBOKotlin.mc.level?.isLoaded(toBlockPos()) ?: false
@@ -125,7 +125,7 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
         return ChunkCache.getBlockState(pos)
     }
 
-    fun dotProduct(other: SboVec): Double = (x * other.x) + (y * other.y) + (z * other.z)
+    fun dotProduct(other: SboVec): Double = x * other.x + y * other.y + z * other.z
 
     fun scale(scalar: Double): SboVec = SboVec(scalar * x, scalar * y, scalar * z)
 

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPacketListener.class)
 public class ScreenHandlerSlotUpdateS2CPacketMixin {
     @Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
-    private void onSlotUpdate(@NonNull ClientboundContainerSetSlotPacket packet, @NonNull CallbackInfo ci) {
+    private void onSlotUpdate(@NonNull final ClientboundContainerSetSlotPacket packet, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new InventorySlotUpdateEvent(packet));
     }
 }

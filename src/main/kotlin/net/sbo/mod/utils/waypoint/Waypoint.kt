@@ -1,23 +1,49 @@
 package net.sbo.mod.utils.waypoint
 
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.chat.ChatUtils
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import java.awt.Color
 import java.time.Duration
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 private const val MIN_OPACITY = 0.2f
-private const val MAX_OPACITY = 0.99f
+private const val MAX_OPACITY = 1.0f
 private const val FADE_START_DISTANCE = 4.5
 private const val FADE_END_DISTANCE = 100.0
+
+internal fun calculateDynamicOpacity(distance: Double): Float {
+    if (!distance.isFinite()) {
+        return MAX_OPACITY
+    }
+
+    if (distance <= FADE_START_DISTANCE) {
+        return MIN_OPACITY
+    }
+
+    if (distance >= FADE_END_DISTANCE) {
+        return MAX_OPACITY
+    }
+
+    val progress = (
+        (distance - FADE_START_DISTANCE) /
+            (FADE_END_DISTANCE - FADE_START_DISTANCE)
+    ).toFloat()
+
+    return (
+        MIN_OPACITY +
+            (MAX_OPACITY - MIN_OPACITY) * progress
+    ).coerceIn(MIN_OPACITY, MAX_OPACITY)
+}
 
 /**
  * @class Waypoint
@@ -42,17 +68,36 @@ class Waypoint(
     var pos: SboVec = SboVec(this.x, this.y, this.z)
     var hidden: Boolean = false
     val creationNs: Long = System.nanoTime()
-    var formatted: Boolean = false
-    var distanceRaw: Double = 0.0
-    var distanceText: String = ""
-    var formattedText: String = ""
+    private var formatted: Boolean = false
+    private var distanceRaw: Double = 0.0
+    private var distanceText: String = ""
+    private var component: Component = Component.nullToEmpty(text)
+    private var formattedText: String = text
+        set(value) {
+            field = value
+            textWidth = mc.font.width(value)
+            hasText = value.isNotEmpty()
+
+            component = ChatUtils.fromLegacy(value)
+            //#if MC > 1.21.11
+            //$$ visualOrderText = component.visualOrderText
+            //#endif
+        }
+    private var textWidth = mc.font.width(text)
+    private var hasText = text.isNotEmpty()
+
     var isClosest = false
     var timesDug = 0
     var userInteractedWith = false
-    var dynamicOpacity = 0.99f
-    var inaccurateArrow = false
+    private var dynamicOpacity = 1.0f
+    var preventInvalidRemoval = false
 
-    fun hasStrongerStateThan(other: Waypoint): Boolean = this.timesDug > other.timesDug || (this.userInteractedWith && !other.userInteractedWith)
+    //#if MC > 1.21.11
+    //$$ private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
+    //#endif
+
+    fun hasStrongerStateThan(other: Waypoint): Boolean =
+        this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
 
     fun carryOverState(other: Waypoint) {
         val otherTimesDug = other.timesDug
@@ -92,7 +137,7 @@ class Waypoint(
         val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
 
         if (isClosest) {
-            val closest = WaypointManager.getClosestWarp(this.pos)
+            val closest = WaypointManager.getFinalClosestWarp(this.pos)
 
             this.formattedText = closest?.let {
                 "$text§7 (warp $it)${this.distanceText}$timesDugText"
@@ -105,37 +150,22 @@ class Waypoint(
                 val text = "§" + (if (this.type == "rareMob" || this.type == "world") "d" else "b") + "Warp §e$warpName$distanceText"
                 val asSubtitle = Customization.warpTitleAsSubtitle
 
-                val title = if (asSubtitle) "" else text
-                val subtitle = if (asSubtitle) text else null
+                val titleBusy = !mc.gui.title?.string.isNullOrEmpty() && mc.gui.titleTime > 0 // When asSubtitle is disabled, Helper.showTitle checks internally if busy or not; but when its subtitle, it appends warp subtitle inside another one, e.g. Use Spade one, with higher duration, causing warp title to keep showing as subtitle even after warping till the main title (e.g., Use Spade one) expires; this makes it delay warp title till the original title disappears which fixes the issue.
 
-                Helper.showTitle(title, subtitle, 0, 1, 0) // 1 ticks because next tick this will be called again
+                if (!asSubtitle || !titleBusy) {
+                    val title = if (asSubtitle) "" else text
+                    val subtitle = if (asSubtitle) text else null
+
+                    Helper.showTitle(title, subtitle, 0, 1, 0, overwrite = false) // 1 ticks because next tick this will be called again. Overwrite false to not wipe rare mob title or use spade title.
+                }
             }
         } else {
             this.formattedText = "${this.text}${this.distanceText}$timesDugText"
         }
     }
 
-    private fun updateDynamicOpacity(): Float {
-        val distance = this.distanceRaw
-
-        if (!distance.isFinite()) {
-            return MAX_OPACITY
-        }
-
-        if (distance <= FADE_START_DISTANCE) {
-            return MIN_OPACITY
-        }
-
-        if (distance >= FADE_END_DISTANCE) {
-            return MAX_OPACITY
-        }
-
-        val progress = ((distance - FADE_START_DISTANCE) /
-            (FADE_END_DISTANCE - FADE_START_DISTANCE)).toFloat()
-
-        return (MIN_OPACITY + ((MAX_OPACITY - MIN_OPACITY) * progress))
-            .coerceIn(MIN_OPACITY, MAX_OPACITY)
-    }
+    private fun updateDynamicOpacity(): Float =
+        calculateDynamicOpacity(distanceRaw)
 
     private fun getColor(): Color {
         when (this.type) {
@@ -159,6 +189,12 @@ class Waypoint(
             "world" -> {
                 return Color(Customization.OtherWaypointColor)
             }
+            "subGuess" -> {
+                return Color(Customization.SubGuessColor)
+            }
+            "debug" -> {
+                return Color(255, 255, 255)
+            }
         }
         return Color(255, 255, 255) // shouldn't happen
     }
@@ -179,7 +215,7 @@ class Waypoint(
         inqWaypoints: List<Waypoint>
     ) {
         this.distanceRaw = distanceToPlayer()
-        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0f, 0.99f)
+        this.dynamicOpacity = if (Customization.dynamicWaypointOpacity) updateDynamicOpacity() else (Customization.waypointOpacity / 100.0).toFloat().coerceIn(0.2f, 1.0f)
 
         val dist = distanceRaw.roundToInt()
 
@@ -193,31 +229,36 @@ class Waypoint(
 
                 setWarpText()
             }
+
             "rareMob", "world" -> {
                 val newest = inqWaypoints.lastOrNull() == this
 
                 if (newest) isClosest = true
-                this.line = newest && Diana.inqLine
+                this.line = newest && Diana.inqLine && this.distanceRaw >= 8.0
 
                 if (newest) {
                     setWarpText()
+                } else {
+                    this.formattedText = "$text$distanceText"
                 }
             }
+
+            "subGuess", "debug" -> {
+                this.line = false
+                this.formattedText = text
+            }
+
             else -> {
                 this.formattedText = "$text$distanceText"
             }
         }
-        formatted = true
-    }
 
-    fun hide(): Waypoint {
-        this.hidden = true
-        return this
+        formatted = true
     }
 
     private fun applyAlpha(color: Int, alpha: Float): Int {
         val clampedAlpha = (alpha.coerceIn(0f, 1f) * 255f).toInt()
-        return (color and 0x00FFFFFF) or (clampedAlpha shl 24)
+        return color and 0x00FFFFFF or (clampedAlpha shl 24)
     }
 
     fun isOlderThan(duration: Duration): Boolean {
@@ -226,7 +267,6 @@ class Waypoint(
 
     fun render(context: WorldRenderContext) {
         if (!this.formatted || this.hidden) return
-        if (inaccurateArrow) return
 
         val rgbAndHex = getRgbAndHex()
 
@@ -235,14 +275,19 @@ class Waypoint(
 
         RenderUtils3D.renderWaypoint(
             context,
-            this.formattedText,
+            this.hasText,
+            this.component,
+            this.textWidth,
+            //#if MC > 1.21.11
+            //$$ this.visualOrderText,
+            //#endif
             this.pos,
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),
             waypointOpacity,
             this.line,
             Diana.dianaLineWidth.toFloat(),
-            Diana.showBeaconBeam
+            if (type == "subGuess") false else Diana.showBeaconBeam
         )
     }
 }

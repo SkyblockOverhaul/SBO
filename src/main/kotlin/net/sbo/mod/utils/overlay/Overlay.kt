@@ -83,8 +83,8 @@ class Overlay(
         lines = mutableListOf()
     }
 
-    fun getLines(): List<OverlayTextLine> {
-        if (lines.isEmpty() && exampleView.isNotEmpty() && Helper.currentScreen is OverlayEditScreen) {
+    private fun getLines(): List<OverlayTextLine> {
+        if (lines.isEmpty() && exampleView.isNotEmpty() && inEditingScreen()) {
             return exampleView
         }
         return lines
@@ -112,7 +112,7 @@ class Overlay(
         }
     }
 
-    fun getTotalHeight(): Int {
+    private fun getTotalHeight(): Int {
         val textRenderer = mc.font
         var totalHeight = 0
         for (line in getLines()) {
@@ -123,7 +123,7 @@ class Overlay(
         return totalHeight
     }
 
-    fun getTotalWidth(): Int {
+    private fun getTotalWidth(): Int {
         val textRenderer = mc.font
         var maxWidth = 0
         var currentWidth = 0
@@ -143,8 +143,17 @@ class Overlay(
         return maxWidth
     }
 
+    private fun inEditingScreen(): Boolean {
+        return Helper.currentScreen is OverlayEditScreen
+    }
+
+    private fun checkCondition(): Boolean {
+        // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
+        return condition() || inEditingScreen()
+    }
+
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
-        if (!condition()) return false
+        if (!checkCondition()) return false
         val totalWidth = width * scale
         val totalHeight = height * scale
 
@@ -158,14 +167,17 @@ class Overlay(
     )
 
     fun render(drawContext: GuiGraphics, mouseX: Double, mouseY: Double) {
-        if (!condition()) return
+        if (!checkCondition()) {
+            return
+        }
+
         val textRenderer = mc.font
 
         drawContext.pose().pushMatrix()
         drawContext.pose().scale(scale, scale)
 
-        var currentY = (y / scale)
-        var currentX = (x / scale)
+        var currentY = y / scale
+        var currentX = x / scale
 
         // We don't need thread safety as we are in method-local context
         // Making these vars lazy ensures they are only computed when needed (e.g., not computed if both of the if conditions below are false)
@@ -175,10 +187,10 @@ class Overlay(
 
         if (selected) {
             drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
-            drawContext.drawString(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", (currentX).toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
+            drawContext.drawString(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
-        if (Helper.currentScreen is OverlayEditScreen && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
+        if (inEditingScreen() && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
@@ -196,7 +208,7 @@ class Overlay(
 
             if (line.linebreak) {
                 currentY += textRenderer.lineHeight + 1
-                currentX = (x / scale)
+                currentX = x / scale
             } else {
                 currentX += line.width
             }

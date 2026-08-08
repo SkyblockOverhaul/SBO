@@ -5,7 +5,7 @@ import net.sbo.mod.utils.NumberUtil.roundTo
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 internal object ParticleTypes {
-    internal val PARTICLE_CHECKS = mutableMapOf(
+    private val PARTICLE_CHECKS = mutableMapOf(
         "ENCHANT" to ParticleCheck { packet ->
             packet.particle.type == MCParticleTypes.ENCHANT &&
                     packet.count == 5 &&
@@ -51,7 +51,7 @@ internal object ParticleTypes {
     fun getParticleType(packet: ClientboundLevelParticlesPacket): String? {
         PARTICLE_CHECKS.forEach { (type, check) ->
             if (check.typeCheck(packet)) {
-                return type
+                return@getParticleType type
             }
         }
         return null

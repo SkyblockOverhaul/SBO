@@ -32,11 +32,11 @@ object PartyCommands {
     //   }
     // For count+percent: use fmt("Label", count, "ITEM_KEY", "MOB_KEY")
 
-    val commandRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
+    private val commandRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
 
     val settings = PartyCommands
 
-    val carrot = listOf(
+    private val carrot = listOf(
         "As I see it, Carrot",
         "It is Carrot",
         "It is decidedly Carrot",
@@ -62,20 +62,20 @@ object PartyCommands {
         partyCommands()
     }
 
-    fun partyCommands() {
+    private fun partyCommands() {
         Register.command("sbopartycommands", "sbopcom") {
             help()
         }
     }
 
-    val helpCommands = listOf(
+    private val helpCommands = listOf(
         "!chim", "!chimls", "!stick", "!relic", "!feathers",
         "!profit", "!playtime", "!mobs", "!burrows", "!mf",
         "!stats <playername>",
         "!since (chim, chimls, relic, stick, inq, king, manti, core, corels, wool, woolls)"
     )
 
-    fun help() {
+    private fun help() {
         Chat.chat("§6[SBO] §eDiana party commands:")
         helpCommands.forEach {
             Chat.chat("§7> §a$it")
@@ -98,10 +98,31 @@ object PartyCommands {
         PartyCommand(listOf("!inq", "!inqs", "!inquisitor", "!inquis"), { settings.dianaPartyCommands }) {
             fmt("Inquisitor", dianaTrackerMayor.mobs.MINOS_INQUISITOR, "MINOS_INQUISITOR")
         },
+        PartyCommand(listOf("!kingls", "!kingsls"), { settings.dianaPartyCommands }) {
+            "King LS: ${dianaTrackerMayor.mobs.KING_MINOS_LS}"
+        },
+        PartyCommand(listOf("!king", "!kings"), { settings.dianaPartyCommands }) {
+            fmt("King", dianaTrackerMayor.mobs.KING_MINOS, "KING_MINOS")
+        },
+        PartyCommand(listOf("!sphinxls", "!sphinxsls"), { settings.dianaPartyCommands }) {
+            "Sphinx LS: ${dianaTrackerMayor.mobs.SPHINX_LS}"
+        },
+        PartyCommand(listOf("!sphinx", "!sphinxs"), { settings.dianaPartyCommands }) {
+            fmt("Sphinx", dianaTrackerMayor.mobs.SPHINX, "SPHINX")
+        },
+        PartyCommand(listOf("!mantils", "!mantisls"), { settings.dianaPartyCommands }) {
+            "Manticore LS: ${dianaTrackerMayor.mobs.MANTICORE_LS}"
+        },
+        PartyCommand(listOf("!manti", "!mantis"), { settings.dianaPartyCommands }) {
+            fmt("Manticore", dianaTrackerMayor.mobs.MANTICORE, "MANTICORE")
+        },
+        PartyCommand(listOf("!dye", "!dyes"), { settings.dianaPartyCommands }) {
+            fmt("Dye", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, "MYTHOLOGICAL_DYE")
+        },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayor.items.TOTAL_BURROWS
             val perHr = Helper.getBurrowsPerHr(dianaTrackerMayor, SboTimerManager.timerMayor)
-            "Burrows: $burrows ($perHr/h)"
+            "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)"
         },
         PartyCommand(listOf("!relic", "!relics"), { settings.dianaPartyCommands }) {
             fmt("Relics", dianaTrackerMayor.items.MINOS_RELIC, "MINOS_RELIC", "MINOS_CHAMPION")
@@ -132,6 +153,9 @@ object PartyCommands {
         },
         PartyCommand(listOf("!foodls", "!brainfoodls", "!lsbrainfood", "!lsbrain"), { settings.dianaPartyCommands }) {
             fmt("Brain Food LS", dianaTrackerMayor.items.BRAIN_FOOD_LS, "BRAIN_FOOD_LS", "SPHINX_LS")
+        },
+        PartyCommand(listOf("!braided", "!braideds"), { settings.dianaPartyCommands }) {
+            fmt("Braided feathers", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, "BRAIDED_GRIFFIN_FEATHER")
         },
         PartyCommand(listOf("!kingshard", "!kingshards"), { settings.dianaPartyCommands }) {
             fmt("King Shards", dianaTrackerMayor.items.KING_MINOS_SHARD, "KING_MINOS_SHARD", "KING_MINOS")
@@ -169,7 +193,7 @@ object PartyCommands {
             "Mobs: $totalMobs ($perHr/h)"
         },
         PartyCommand(listOf("!mf", "!magicfind"), { settings.dianaPartyCommands }) {
-            "Wools (${sboData.highestWoolMagicFind}% ✯) Chims (${sboData.highestChimMagicFind}% ✯) Foods (${sboData.highestFoodMagicFind}% ✯) Sticks (${sboData.highestStickMagicFind}% ✯)"
+            "Wool (${sboData.highestWoolMagicFind}% ✯) Manticore (${sboData.highestCoreMagicFind}% ✯) Stinger (${sboData.highestStingerMagicFind}% ✯) Chim (${sboData.highestChimMagicFind}% ✯) Relic (${sboData.highestRelicMagicFind}% ✯) Food (${sboData.highestFoodMagicFind}% ✯) Stick (${sboData.highestStickMagicFind}% ✯)"
         },
         PartyCommand(listOf("!playtime"), { settings.dianaPartyCommands }) {
             "Playtime: ${formatTime(dianaTrackerMayor.items.TIME)}"
@@ -193,7 +217,7 @@ object PartyCommands {
         return "$label: $count ($percent%)"
     }
 
-    fun registerPartyChatListeners() {
+    private fun registerPartyChatListeners() {
         DianaStats.registerReplaceStatsMessage()
         Register.onChatMessage(commandRegex) { message, matchResult ->
             val unformattedPlayerName = matchResult.groupValues[1]
@@ -217,10 +241,10 @@ object PartyCommands {
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
                 "!tps" -> if (settings.tpsCommand) sendResponse("${"%.2f".format(ServerStats.getTps())} TPS")
                 "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
-                    DianaStats.sendPlayerStats(false)
+                    DianaStats.sendPlayerStats()
                 }
                 "!totalstats", "!totalstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
-                    DianaStats.sendPlayerStats(true)
+                    DianaStats.sendPlayerStats(total = true)
                 }
                 "!sessionstats", "!sessionstat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     DianaStats.sendPlayerStats(null)
@@ -251,7 +275,7 @@ object PartyCommands {
             "wool", "wools" -> "Kings since wool: ${sboData.kingSinceWool}"
             "corels", "lscore" -> "Mantis since lootshare core: ${sboData.mantiSinceLsCore}"
             "woolls", "lswool" -> "Kings since lootshare wool: ${sboData.kingSinceLsWool}"
-            else -> "Mobs since inq: ${sboData.mobsSinceInq}"
+            else -> return
         }
         sendResponse(response)
     }

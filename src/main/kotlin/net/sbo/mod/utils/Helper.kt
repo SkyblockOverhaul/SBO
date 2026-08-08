@@ -22,13 +22,17 @@ import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
-import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypoints
+import net.sbo.mod.utils.math.SboVec
+import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -38,16 +42,15 @@ import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
 object Helper {
     private val MF_REGEX = Regex("""§b\(\+§b(\d+)""")
 
-    var lastLootShare: Long = 0L
+    private var lastLootShare: Long = 0L
     var allowSackTracking: Boolean = true
     var hasSpade: Boolean = false
-    var lastDianaMobDeath: Long = 0L
-    var lastInqDeath: Long = 0L
-    var lastKingDeath: Long = 0L
-    var lastSphinxDeath: Long = 0L
-    var lastMantiDeath: Long = 0L
+    private var lastDianaMobDeath: Long = 0L
+    private var lastInqDeath: Long = 0L
+    private var lastKingDeath: Long = 0L
+    private var lastSphinxDeath: Long = 0L
+    private var lastMantiDeath: Long = 0L
     var currentScreen: Screen? = null
-    var lastCocoon: Long = 0L
 
     private var hasTrackedInq: Boolean = false
     private var hasTrackedKing: Boolean = false
@@ -58,6 +61,8 @@ object Helper {
     private var priceDataAh: Map<String, Long> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
 
+    private var notifiedPriceUpdateError = false
+
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
             .ofVirtual()
             .name("sbo-callback-thread-", 1) // sbo-callback-thread-1, sbo-callback-thread-2 etc. starting from 1 (second parameter)
@@ -65,11 +70,13 @@ object Helper {
     )
 
     private fun onLootShare() {
-        lastLootShare = System.currentTimeMillis()
+        lastLootShare = System.nanoTime()
     }
 
     private fun notifyUserOfLs(mob: String) {
-        Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+        if (Diana.assumeAllLS) {
+            Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+        }
     }
 
     fun init() {
@@ -82,7 +89,7 @@ object Helper {
             hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
         }
 
-        Register.onTick(20 * 60 * 5) {
+        Register.onTick(20 * 60 * 10) {
             updateItemPriceInfo()
         }
 
@@ -108,23 +115,28 @@ object Helper {
             DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }*/
 
-        updateItemPriceInfo()
+        // Workaround to not timeout on the first requests since there is lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
+        sleep(1000) {
+            CompletableFuture.runAsync {
+                updateItemPriceInfo()
+            }
+        }
     }
 
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
-        handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!))
+        handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!), event.entity.blockPosition().toSboVec())
     }
 
-    private fun handleDianaMobDeath(name: String, dist: Float) {
+    private fun handleDianaMobDeath(name: String, dist: Float, pos: SboVec) {
         val nearby = dist <= 30
         val last = DianaTracker.lastSpawnedMob
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
-                removeNearbyRareMobWaypoints()
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
+                removeNearbyRareMobWaypointAt(pos)
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
                     notifyUserOfLs("Minos Inquisitor")
                     DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
@@ -132,12 +144,12 @@ object Helper {
                         hasTrackedInq = false
                     }
                 }
-                lastInqDeath = System.currentTimeMillis()
+                lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
-                removeNearbyRareMobWaypoints()
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
+                removeNearbyRareMobWaypointAt(pos)
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
                     notifyUserOfLs("King Minos")
                     DianaTracker.trackItem("KING_MINOS_LS", 1)
@@ -145,11 +157,11 @@ object Helper {
                         hasTrackedKing = false
                     }
                 }
-                lastKingDeath = System.currentTimeMillis()
+                lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
-                removeNearbyRareMobWaypoints()
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
+                removeNearbyRareMobWaypointAt(pos)
+                if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
                     DianaTracker.trackItem("SPHINX_LS", 1)
@@ -157,12 +169,12 @@ object Helper {
                         hasTrackedSphinx = false
                     }
                 }
-                lastSphinxDeath = System.currentTimeMillis()
+                lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
-                removeNearbyRareMobWaypoints()
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
+                removeNearbyRareMobWaypointAt(pos)
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
                     notifyUserOfLs("Manticore")
                     DianaTracker.trackItem("MANTICORE_LS", 1)
@@ -170,13 +182,13 @@ object Helper {
                         hasTrackedManti = false
                     }
                 }
-                lastMantiDeath = System.currentTimeMillis()
+                lastMantiDeath = System.nanoTime()
             }
         }
 
         if (nearby) {
             allowSackTracking = true
-            lastDianaMobDeath = System.currentTimeMillis()
+            lastDianaMobDeath = System.nanoTime()
         }
     }
 
@@ -233,14 +245,14 @@ object Helper {
                 ?.call(mobs) as? Int ?: 0
 
             if (mobCount <= 0) 0.0
-            else (itemCount.toDouble() / mobCount.toDouble() * 100)
+            else itemCount.toDouble() / mobCount.toDouble() * 100
         } else {
             val mobCount = mobs::class.memberProperties.firstOrNull { it.name == propertyName }
                 ?.call(mobs) as? Int ?: 0
             val totalMobsCount = mobs.TOTAL_MOBS
 
             if (totalMobsCount <= 0) 0.0
-            else (mobCount.toDouble() / totalMobsCount.toDouble() * 100)
+            else mobCount.toDouble() / totalMobsCount.toDouble() * 100
         }
         return "%.2f".format(Locale.US, result)
     }
@@ -248,13 +260,13 @@ object Helper {
     fun formatNumber(number: Number?, withCommas: Boolean = false): String {
         val num = number?.toDouble() ?: 0.0
 
-        if (withCommas) {
+        return if (withCommas) {
             // Format with commas
             val formatter = DecimalFormat("#,###")
-            return formatter.format(num)
+            formatter.format(num)
         } else {
             // Format with suffixes (k, m, b)
-            return when {
+            when {
                 num >= 1_000_000_000 -> "%.2fb".format(num / 1_000_000_000)
                 num >= 1_000_000 -> "%.1fm".format(num / 1_000_000)
                 num >= 1_000 -> "%.1fk".format(num / 1_000)
@@ -378,7 +390,7 @@ object Helper {
         }
     }
 
-    fun getCursorItemStack(): ItemStack? {
+    private fun getCursorItemStack(): ItemStack? {
         val handler = mc.player?.containerMenu ?: return null
         return handler.carried
     }
@@ -389,7 +401,7 @@ object Helper {
 
         if (getCursorItemStack()?.count != 0) return prevInv
 
-        for (slot in 0 until (inventory.size - 5)) {
+        for (slot in 0..<inventory.size - 5) {
             if (slot == 8) continue // Skip SB Star
             val stack: ItemStack = inventory[slot]
 
@@ -398,7 +410,6 @@ object Helper {
                 var item: Item
                 val lookup = ItemLookup(stack)
                 val sbId = lookup.sbId
-                // print for debugging the lore lines
                 var isChimera = false
                 if (sbId == "ENCHANTED_BOOK") {
                     val lore = lookup.loreList
@@ -445,11 +456,23 @@ object Helper {
         return input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
     }
 
+    /**
+     * Returns the number of seconds since an epoch timestamp.
+     *
+     * The timestamp must originate from System.currentTimeMillis() or another
+     * Unix epoch source (e.g. Hypixel item NBT timestamp).
+     *
+     * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
+     */
     fun getSecondsPassed(timestamp: Long): Long {
         return (System.currentTimeMillis() - timestamp) / 1000
     }
 
-    fun playerHasItem(sbId: String): Boolean {
+    private fun getSecondsPassedSinceNano(timestamp: Long): Long {
+        return (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
+    }
+
+    private fun playerHasItem(sbId: String): Boolean {
         val inv = Player.getPlayerInventory()
         for (i in inv.indices) {
             val stack = inv[i]
@@ -463,12 +486,22 @@ object Helper {
 
     private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
 
-    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && hasMythologicalRitualActive() && World.getWorld() == "Hub"
+    fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
+        val currentDurationTicks = mc.gui.titleTime
+        val currentTitle = mc.gui.title?.string
+        val currentSubtitle = mc.gui.subtitle?.string
 
-    fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
-        mc.gui.setTimes(fadeIn, time, fadeOut)
-        if (title != null) mc.gui.setTitle(Component.nullToEmpty(title))
-        if (subtitle != null) mc.gui.setSubtitle(Component.nullToEmpty(subtitle))
+        if (overwrite || time >= currentDurationTicks) {
+            mc.gui.setTimes(fadeIn, time, fadeOut)
+        }
+
+        if (title != null && (overwrite || currentTitle.isNullOrEmpty())) {
+            mc.gui.setTitle(Component.nullToEmpty(title))
+        }
+
+        if (subtitle != null && (overwrite || currentSubtitle.isNullOrEmpty())) {
+            mc.gui.setSubtitle(Component.nullToEmpty(subtitle))
+        }
     }
 
     fun checkCustomDropMessage(dropName: String, magicFind: Int): Pair<Boolean, String> {
@@ -490,11 +523,11 @@ object Helper {
         val template: String,
         val isEnabled: Boolean,
         val totalAmount: Int,
-        val mobCount: Int,
-        val dropCount: Int
+        private val mobCount: Int,
+        private val dropCount: Int
     ) {
         val percentage: Double
-            get() = if (mobCount > 0) (dropCount.toDouble() / mobCount) * 100 else 0.0
+            get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
     private fun getDropInfo(dropName: String): DropInfo? {
@@ -503,11 +536,31 @@ object Helper {
         val mobs = tracker.mobs
 
         return when (dropName.lowercase()) {
-            "chimera" -> DropInfo(Diana.customChimMessage[0].trim(), Diana.chimMessageBool, items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
-            "core" -> DropInfo(Diana.customCoreMessage[0].trim(), Diana.coreMessageBool, items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
-            "stinger" -> DropInfo(Diana.customStingerMessage[0].trim(), Diana.stingerMessageBool, items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
-            "brain food" -> DropInfo(Diana.customBfMessage[0].trim(), Diana.bfMessageBool, items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
-            "wool" -> DropInfo(Diana.customWoolMessage[0].trim(), Diana.woolMessageBool, items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
+            "chimera" -> {
+                val message = Diana.customChimeraMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
+            }
+
+            "core" -> {
+                val message = Diana.customManticoreMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
+            }
+
+            "stinger" -> {
+                val message = Diana.customFatefulStingerMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
+            }
+
+            "brain food" -> {
+                val message = Diana.customBrainFoodMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
+            }
+
+            "wool" -> {
+                val message = Diana.customShimmeringWoolMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
+            }
+
             else -> null
         }
     }
@@ -553,27 +606,12 @@ object Helper {
     fun getMagicFind(mf: String): Int {
         val mfMatch = MF_REGEX.find(mf)
         if (mfMatch != null) {
-            val mfValue = mfMatch.groupValues[1].toIntOrNull() ?: 0
-            return mfValue
+            return mfMatch.groupValues[1].toIntOrNull() ?: 0
         }
         return 0
     }
 
-    fun updateItemPriceInfo() {
-        Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
-            .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
-                priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
-                DianaLoot.updateLines()
-            }.error { error ->
-                if (priceDataAh.isEmpty()) {
-                    // no price data available - notify user
-                    Chat.chat("§6[SBO] §4Unexpected error while fetching AH item prices: $error")
-                } else {
-                    // if a previous request succeeded and this request failed, it might be temporary, and we still
-                    // have some price data even if outdated. so only log to logs
-                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
-                }
-            }
+    private fun updateItemPriceInfo() {
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse>(true) {
                 priceDataBazaar = it
@@ -586,6 +624,21 @@ object Helper {
                     // if a previous request succeeded and this request failed, it might be temporary, and we still
                     // have some price data even if outdated. so only log to logs
                     SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
+                }
+            }
+        Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
+            .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
+                priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
+                DianaLoot.updateLines()
+            }.error { error ->
+                if (priceDataAh.isEmpty() && !notifiedPriceUpdateError) {
+                    // no price data available - notify user 1 time
+                    Chat.chat("§6[SBO] §cUnexpected error while fetching AH item prices: $error")
+                    notifiedPriceUpdateError = true
+                } else {
+                    // if a previous request succeeded and this request failed, it might be temporary, and we still
+                    // have some price data even if outdated. so only log to logs
+                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
                 }
             }
     }
@@ -632,11 +685,11 @@ object Helper {
      * @param timeframe The timeframe in seconds to check against. Default is 2 seconds.
      */
     fun gotLootShareRecently(timeframe: Long = 2): Boolean {
-        return getSecondsPassed(lastLootShare) <= timeframe
+        return getSecondsPassedSinceNano(lastLootShare) <= timeframe
     }
 
     fun dianaMobDiedRecently(seconds: Long = 2): Boolean {
-        return getSecondsPassed(lastDianaMobDeath) <= seconds
+        return getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
     }
 
     fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {

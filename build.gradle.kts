@@ -1,34 +1,28 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import net.fabricmc.loom.task.RemapJarTask
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import net.fabricmc.loom.task.RemapJarTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.lang.module.ModuleDescriptor.Version
 
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.0"
-    id("net.fabricmc.fabric-loom-remap") version "1.17.12"
+    kotlin("plugin.serialization") version "2.4.10"
+    alias(libs.plugins.loom)
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
-    id("com.google.devtools.ksp") version "2.3.9"
+    alias(libs.plugins.ksp)
 }
 
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
 
-private fun versionedProperty(name: String): String {
-    return project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
-}
+private fun versionedProperty(name: String): String = project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
 
-private fun isUnobfuscatedMCVersion(): Boolean {
-    return isMCVersionGreaterOrEqualTo("26.1")
-}
+private fun isUnobfuscatedMCVersion(): Boolean = isMCVersionGreaterOrEqualTo("26.1")
 
-private fun isMCVersionGreaterOrEqualTo(version: String): Boolean {
-    return Version.parse(mcVersion) >= Version.parse(version)
-}
+private fun isMCVersionGreaterOrEqualTo(version: String): Boolean = Version.parse(mcVersion) >= Version.parse(version)
 
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.
@@ -36,6 +30,7 @@ loom {
 
     runs.configureEach {
         generateRunConfig.set(true)
+        preferGradleTask = true
     }
 }
 
@@ -70,7 +65,7 @@ bloom {
         replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")
         replacement("Lnet/minecraft/client/gui/Gui;render(", "Lnet/minecraft/client/gui/Gui;extractRenderState(")
         replacement("@Inject(method = \"render\", at = @At(value = \"INVOKE\", target = ", "@Inject(method = \"extractGui\", at = @At(value = \"INVOKE\", target = ")
-        replacement("private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, ", "private void afterHudRender(@NonNull DeltaTracker tickCounter, boolean tick, boolean resourcesLoaded, ")
+        replacement("private void afterHudRender(@NonNull final DeltaTracker tickCounter, final boolean tick, ", "private void afterHudRender(@NonNull final DeltaTracker tickCounter, final boolean tick, final boolean resourcesLoaded, ")
 
         // drawString --> text
         replacement("drawContext.drawString(", "drawContext.text(")
@@ -151,7 +146,7 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://maven.teamresourceful.com/repository/maven-public/")
+            maven("https://maven.teamresourceful.com/repository/maven-public")
         }
 
         filter {
@@ -162,7 +157,8 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://maven.terraformersmc.com/")
+            maven("https://maven.terraformersmc.com/releases")
+            maven("https://maven.operationpotato.com/mirror")
         }
 
         filter {
@@ -334,6 +330,9 @@ dependencies {
 
     maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
+
+    implementation(include("com.github.trilarion:java-vorbis-support:${property("vorbis.version")}")!!)
+    implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
 
     when (mcProject) {
         "26.1.2-fabric" -> {

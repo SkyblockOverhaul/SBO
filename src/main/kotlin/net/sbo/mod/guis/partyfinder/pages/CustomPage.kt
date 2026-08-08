@@ -27,15 +27,15 @@ class CustomPage(private val parent: PartyFinderGUI) {
     internal fun getPartyInfo(info: PartyPlayerStats): String {
         var formattedInfoString = ""
         val formattedInfo = listOf(
-            Pair("&9Name: &b", info.name),
-            Pair("&9Skyblock Level: ", Helper.matchLvlToColor(info.sbLvl)),
-            Pair("&9Uuid: &7", info.uuid),
-            Pair("&9Eman9: ", Helper.getNumberColor(info.emanLvl, 9)),
-            Pair("&9Clover: ", if (info.clover) "&a✔" else "&c✘"),
-            Pair("&9Magical Power: &b", info.magicalPower),
-            Pair("&9Enrichments: &b", info.enrichments),
-            Pair("&9Missing Enrichments: &b", info.missingEnrichments),
-            Pair("&9Warnings: &7", info.warnings.joinToString(", "))
+            "&9Name: &b" to info.name,
+            "&9Skyblock Level: " to Helper.matchLvlToColor(info.sbLvl),
+            "&9Uuid: &7" to info.uuid,
+            "&9Eman9: " to Helper.getNumberColor(info.emanLvl, 9),
+            "&9Clover: " to if (info.clover) "&a✔" else "&c✘",
+            "&9Magical Power: &b" to info.magicalPower,
+            "&9Enrichments: &b" to info.enrichments,
+            "&9Missing Enrichments: &b" to info.missingEnrichments,
+            "&9Warnings: &7" to info.warnings.joinToString(", ")
         )
         formattedInfo.forEach { (key, value) ->
             formattedInfoString += "$key$value\n\n"
@@ -106,7 +106,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         UIText("SbLvL").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale()
+            textScale = parent.getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255)) childOf lvlbox
         val lvlinput = GuiHandler.TextInput(
             list = "custom",
@@ -123,7 +123,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         lvlinput.create().setChildOf(lvlbox)
         lvlinput.onlyNumbers = true
         lvlinput.maxChars = 3
-        lvlinput.textInputText.setTextScale(parent.getTextScale())
+        lvlinput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
         if (pfConfigState.inputs.custom.lvl != 0) {
             lvlinput.textInputText.setText(pfConfigState.inputs.custom.lvl.toString())
         }
@@ -136,7 +136,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         UIText("Mp").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale()
+            textScale = parent.getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255)) childOf mpbox
         val mpinput = GuiHandler.TextInput(
             list = "custom",
@@ -153,7 +153,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         mpinput.create().setChildOf(mpbox)
         mpinput.onlyNumbers = true
         mpinput.maxChars = 4
-        mpinput.textInputText.setTextScale(parent.getTextScale())
+        mpinput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
         if (pfConfigState.inputs.custom.mp != 0) {
             mpinput.textInputText.setText(pfConfigState.inputs.custom.mp.toString())
         }
@@ -166,7 +166,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         UIText("Party Size").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale()
+            textScale = parent.getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255)) childOf partySizeBox
         val partySizeInput = GuiHandler.TextInput(
             list = "custom",
@@ -183,7 +183,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         partySizeInput.create().setChildOf(partySizeBox)
         partySizeInput.onlyNumbers = true
         partySizeInput.maxChars = 2
-        partySizeInput.textInputText.setTextScale(parent.getTextScale())
+        partySizeInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
         if (pfConfigState.inputs.custom.partySize != 0) {
             partySizeInput.textInputText.setText(pfConfigState.inputs.custom.partySize.toString())
         }
@@ -196,7 +196,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         UIText("Note").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
-            textScale = parent.getTextScale()
+            textScale = parent.getTextScaleOfScaleText()
         }.setColor(Color(255, 255, 255, 255)) childOf noteBox
         val noteInput = GuiHandler.TextInput(
             list = "custom",
@@ -212,7 +212,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         )
         noteInput.create().setChildOf(noteBox)
         noteInput.maxChars = 30
-        noteInput.textInputText.setTextScale(parent.getTextScale())
+        noteInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
         if (pfConfigState.inputs.custom.note.isNotEmpty()) {
             noteInput.textInputText.setText(pfConfigState.inputs.custom.note)
         }
@@ -237,7 +237,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         )
         eman9Checkbox.create().setChildOf(eman9Box)
         eman9Checkbox.setBgBoxColor(Color(50, 50, 50, 200))
-        eman9Checkbox.textObject.setTextScale(parent.getTextScale())
+        eman9Checkbox.textObject.setTextScale(parent.getTextScaleOfScaleText())
         parent.createBox = UIBlock().constrain {
             x = 0.percent()
             y = SiblingConstraint()
@@ -280,7 +280,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             parent.partyCreate(reqs = reqString, note = note, type = partyType, size = partySize)
             parent.closeCpWindow()
         }
-        createButton.textObject.setTextScale(parent.getTextScale())
+        createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
     }
 
     internal fun addCustomFilter(x1: PositionConstraint, y1: PositionConstraint) {
@@ -334,7 +334,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         )
         eman9Filter.create().setChildOf(row1)
         eman9Filter.setBgBoxColor(Color(25, 25, 25, 200))
-        eman9Filter.textObject.setTextScale(parent.getTextScale())
+        eman9Filter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         eman9Filter.setOnClick { setFilter() }
 
         val canIjoinFilter = GuiHandler.Checkbox(
@@ -353,7 +353,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         )
         canIjoinFilter.create().setChildOf(row2)
         canIjoinFilter.setBgBoxColor(Color(25, 25, 25, 200))
-        canIjoinFilter.textObject.setTextScale(parent.getTextScale())
+        canIjoinFilter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         canIjoinFilter.setOnClick { setFilter() }
     }
 }

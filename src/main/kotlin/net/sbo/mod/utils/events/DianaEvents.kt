@@ -2,8 +2,8 @@ package net.sbo.mod.utils.events
 
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.sbo.mod.SBOKotlin
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
@@ -15,9 +15,9 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.regex.Pattern
 
 object DianaEvents {
-    var lastBlockClicked: SboVec? = null
+    private var lastBlockClicked: SboVec? = null
     var lastWaypointClicked: SboVec? = null
-    var lastBurrowClicked: SboVec? = null
+    private var lastBurrowClicked: SboVec? = null
 
     internal fun init() {
         registerBurrowDug()
@@ -51,7 +51,7 @@ object DianaEvents {
     }
 
     private fun processBlockInteraction(pos: SboVec) {
-        val waypoint = WaypointManager.getWaypointAt(pos, "burrow") ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess")
+        val waypoint = WaypointManager.getWaypointAt(pos, "burrow") ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess") ?: WaypointManager.getWaypointAt(pos, "subGuess")
         if (waypoint != null) {
             waypoint.userInteractedWith = true
             lastWaypointClicked = waypoint.pos

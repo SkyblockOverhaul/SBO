@@ -10,7 +10,7 @@ import kotlin.math.min
  * The credits to this object go fully to the SkyHanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/RaycastUtils.kt
  */
 object RaycastUtils {
-    const val EPSILON = 1e-12
+    private const val EPSILON = 1e-12
 
     data class Ray(
         val origin: SboVec,
@@ -109,13 +109,13 @@ object RaycastUtils {
         return intersectionPoint.distance(point)
     }
 
-    fun intersectPlaneWithRay(plane: Plane, ray: Ray): SboVec {
+    private fun intersectPlaneWithRay(plane: Plane, ray: Ray): SboVec {
         val intersectionPointDistanceAlongRay =
             (plane.normal.dotProduct(plane.origin) - plane.normal.dotProduct(ray.origin)) / plane.normal.dotProduct(ray.direction)
         return ray.origin + ray.direction.scale(intersectionPointDistanceAlongRay)
     }
 
-    fun createOrthogonalPlaneToRayAtPoint(
+    private fun createOrthogonalPlaneToRayAtPoint(
         ray: Ray,
         point: SboVec,
     ): Plane {

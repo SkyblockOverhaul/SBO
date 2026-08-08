@@ -49,6 +49,9 @@ object SboDataObject {
     @JvmField
     var overlayData: OverlayData = OverlayData()
 
+    @JvmField
+    var soundSettingsData: SoundSettingsData = SoundSettingsData()
+
     lateinit var SBOConfigBundle: SboConfigBundle
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private const val MAX_BACKUPS = 10
@@ -56,12 +59,6 @@ object SboDataObject {
     private val DATA_SAVER_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
         Thread(r, "sbo-data-saver-thread").apply { isDaemon = true }
     }
-
-//    private val DATA_SAVER_EXECUTOR: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
-//            .ofVirtual()
-//            .name("sbo-data-saver-thread-", 1) // sbo-data-saver-thread-1, sbo-data-saver-thread-2 etc. starting from 1 (second parameter)
-//            .factory() // virtual threads are daemon by default
-//    )
 
     private val caseSensitive by lazy { isCaseSensitive(FabricLoader.getInstance().configDir.toFile().toPath()) }
     val dataDir by lazy { normalizeConfigDir("sbo", FabricLoader.getInstance().configDir.toFile().toPath(), "SBO", "sbo", caseSensitive).fileName.toString() }
@@ -128,7 +125,7 @@ object SboDataObject {
 
         Files.newDirectoryStream(dir).use { stream ->
             for (path in stream) {
-                return if (Files.isDirectory(path)) {
+                return@isEffectivelyEmpty if (Files.isDirectory(path)) {
                     isEffectivelyEmpty(path)
                 } else {
                     false // file exists - not empty
@@ -196,11 +193,10 @@ object SboDataObject {
                             if (!Files.isDirectory(newDir)) {
                                 SBOKotlin.logger.error("[$modName] Expected directory but found file: $newDir")
                                 throw RuntimeException("$newDir is a file but supposed to be a directory")
-                            } else {
-                                val success = mergeDirectories(modName, oldDir, newDir)
-                                cleanupIfSafe(modName, oldDir, success)
-                                SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-insensitive FS)")
                             }
+                            val success = mergeDirectories(modName, oldDir, newDir)
+                            cleanupIfSafe(modName, oldDir, success)
+                            SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-insensitive FS)")
                         } else {
                             val tempDir = Files.createTempDirectory(baseDir, "${newName}_tmp_")
                             try {
@@ -253,6 +249,7 @@ object SboDataObject {
         pfConfigState = SBOConfigBundle.partyFinderConfigState
         partyFinderData = SBOConfigBundle.partyFinderData
         overlayData = SBOConfigBundle.overlayData
+        soundSettingsData = SBOConfigBundle.soundSettingsData
         saveAllDataThreaded(dataDir)
         savePeriodically(5)
     }
@@ -263,7 +260,7 @@ object SboDataObject {
         saveAndBackupAllDataThreaded(dataDir, true)
     }
 
-    fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
+    private fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
         modConfigDir.mkdirs()
         val dataFile = File(modConfigDir, fileName)
@@ -378,7 +375,7 @@ object SboDataObject {
                     Int::class -> value.toIntOrNull()
                     String::class -> value
                     else -> {
-                        SBOKotlin.logger.warn("[$key] has an an Unsupported type: ${prop.returnType.classifier}")
+                        SBOKotlin.logger.warn("[$key] has an unsupported type: ${prop.returnType.classifier}")
                         null
                     }
                 }
@@ -474,7 +471,7 @@ object SboDataObject {
         }
     }
 
-    fun loadAllData(modName: String): SboConfigBundle {
+    private fun loadAllData(modName: String): SboConfigBundle {
         val sboData = load(modName, "SboData.json", SboData(), SboData::class.java)
         val achievementsData = loadAchievementsData(modName)
         val pastDianaEventsData = load(modName, "pastDianaEvents.json", PastDianaEventsData(), PastDianaEventsData::class.java)
@@ -484,7 +481,8 @@ object SboDataObject {
         val partyFinderConfigState = load(modName, "partyFinderConfigState.json", PartyFinderConfigState(), PartyFinderConfigState::class.java)
         val partyFinderData = load(modName, "partyFinderData.json", PartyFinderData(), PartyFinderData::class.java)
         val overlayData = load(modName, "overlayData.json", OverlayData(), OverlayData::class.java)
-        return SboConfigBundle(sboData, achievementsData, pastDianaEventsData, dianaTrackerTotalData, dianaTrackerSessionData, dianaTrackerMayorData, partyFinderConfigState, partyFinderData, overlayData)
+        val soundSettingsData = load(modName, "soundSettingsData.json", SoundSettingsData(), SoundSettingsData::class.java)
+        return SboConfigBundle(sboData, achievementsData, pastDianaEventsData, dianaTrackerTotalData, dianaTrackerSessionData, dianaTrackerMayorData, partyFinderConfigState, partyFinderData, overlayData, soundSettingsData)
     }
 
     private fun zipFolder(folderToZip: File, zipFilePath: File) {
@@ -572,6 +570,7 @@ object SboDataObject {
             saveToFolder(tempBackupDir, bundle.partyFinderConfigState, "partyFinderConfigState.json")
             saveToFolder(tempBackupDir, bundle.partyFinderData, "partyFinderData.json")
             saveToFolder(tempBackupDir, bundle.overlayData, "overlayData.json")
+            saveToFolder(tempBackupDir, bundle.soundSettingsData, "soundSettingsData.json")
 
             if (!tempBackupDir.exists() || tempBackupDir.listFiles()?.isEmpty() == true) {
                 throw IOException("Backup temp directory not properly created")
@@ -636,7 +635,7 @@ object SboDataObject {
         }
     }
 
-    val configMapForSave = mapOf(
+    private val configMapForSave = mapOf(
         "SboData" to Pair({ save(dataDir, sboData, "SboData.json") }, sboData),
         "AchievementsData" to Pair({ save(dataDir, achievementsData, "sbo_achievements.json") }, achievementsData),
         "PastDianaEventsData" to Pair({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
@@ -645,7 +644,8 @@ object SboDataObject {
         "DianaTrackerMayorData" to Pair({ save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json") }, dianaTrackerMayor),
         "PartyFinderConfigState" to Pair({ save(dataDir, pfConfigState, "partyFinderConfigState.json") }, pfConfigState),
         "PartyFinderData" to Pair({ save(dataDir, partyFinderData, "partyFinderData.json") }, partyFinderData),
-        "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData)
+        "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData),
+        "SoundSettingsData" to Pair({ save(dataDir, soundSettingsData, "soundSettingsData.json") }, soundSettingsData),
     )
 
     private fun saveAllData() {
@@ -654,7 +654,7 @@ object SboDataObject {
         }
     }
 
-    fun saveAllDataThreaded(modName: String) {
+    private fun saveAllDataThreaded(modName: String) {
         DATA_SAVER_EXECUTOR.execute {
             SBOKotlin.logger.info("[$modName] Saving all data to disk...")
             saveAllData()
@@ -662,7 +662,7 @@ object SboDataObject {
         }
     }
 
-    fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
+    private fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
         val future = DATA_SAVER_EXECUTOR.submit {
             SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
@@ -679,7 +679,7 @@ object SboDataObject {
      * Saves all data periodically based on the specified interval in minutes.
      * @param interval The interval in minutes at which to save the data.
      */
-    fun savePeriodically(interval: Int) {
+    private fun savePeriodically(interval: Int) {
         Register.onTick(20 * 60 * interval) { client ->
             saveAllDataThreaded(dataDir)
         }
@@ -779,7 +779,7 @@ object SboDataObject {
      *
      * @return A writer suitable for writing to the given file.
      */
-    fun writerForFile(file: File): Writer {
+    private fun writerForFile(file: File): Writer {
         return BufferedWriter(FileWriter(file))
     }
 

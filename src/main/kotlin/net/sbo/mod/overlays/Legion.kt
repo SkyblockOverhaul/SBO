@@ -10,9 +10,9 @@ import net.sbo.mod.utils.overlay.OverlayTextLine
 import java.util.*
 
 object Legion {
-    var legionCount: Int = 0
-    val overlay: Overlay = Overlay("legionOverlay", 10.0f, 10.0f, 1.0f)
-    val overlayText: OverlayTextLine = OverlayTextLine("")
+    private var legionCount: Int = 0
+    val overlay: Overlay = Overlay("legionOverlay", 10.0f, 10.0f)
+    private val overlayText: OverlayTextLine = OverlayTextLine("")
 
     fun init () {
         overlay.init()
@@ -27,7 +27,7 @@ object Legion {
                     otherPlayer != player &&
 
                     (otherPlayer.uuid.version() == 4 || otherPlayer.uuid.version() == 1) &&
-                    getPlayerPing(mc, otherPlayer.uuid) > 0 &&
+                    getPlayerPing(otherPlayer.uuid) > 0 &&
                     otherPlayer.distanceTo(player) <= 30
                 }
                 .distinctBy { it.uuid }
@@ -36,7 +36,5 @@ object Legion {
         }
     }
 
-    fun getPlayerPing(client: Minecraft, uuid: UUID): Int {
-        return client.connection?.getPlayerInfo(uuid)?.latency ?: 0
-    }
+    private fun getPlayerPing(uuid: UUID): Int = mc.connection?.getPlayerInfo(uuid)?.latency ?: 0
 }
