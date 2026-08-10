@@ -1,5 +1,5 @@
 [versions]
-loom = "1.17.18"
+loom = "1.17.19"
 ksp = "2.3.11"
 
 [plugins]
