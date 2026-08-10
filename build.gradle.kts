@@ -20,8 +20,6 @@ private val mcVersion: String = mcProject.replace("-fabric", "")
 
 private fun versionedProperty(name: String): String = project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
 
-private fun isUnobfuscatedMCVersion(): Boolean = isMCVersionGreaterOrEqualTo("26.1")
-
 private fun isMCVersionGreaterOrEqualTo(version: String): Boolean = Version.parse(mcVersion) >= Version.parse(version)
 
 loom {
@@ -154,13 +152,6 @@ afterEvaluate {
             destinationDirectory.set(newBuildDestinationDirectory)
             archiveBaseName.set(jarName)
         }
-
-        if (!isUnobfuscatedMCVersion()) {
-            named<RemapJarTask>("remapJar") {
-                destinationDirectory.set(newBuildDestinationDirectory)
-                archiveBaseName.set(jarName)
-            }
-        }
     }
 }
 
@@ -255,27 +246,8 @@ tasks.named<ProcessResources>("processResources") {
 dependencies {
     minecraft("com.mojang:minecraft:${mcVersion}")
 
-    val mappingsConfig = configurations.findByName("mappings")
-
-    if (null != mappingsConfig) {
-        dependencies.add(
-            mappingsConfig.name,
-            loom.officialMojangMappings()
-        )
-    }
-
-    val modImplementationConfig = configurations.findByName("modImplementation")
-
-    fun DependencyHandler.maybeModImplementation(dependencyNotation: Any) {
-        if (null != modImplementationConfig) {
-            add(modImplementationConfig.name, dependencyNotation)
-        } else {
-            implementation(dependencyNotation)
-        }
-    }
-
-    maybeModImplementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
-    maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
+    implementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
     ksp(project(":event-processor"))
@@ -283,8 +255,8 @@ dependencies {
 
     implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
 
-    maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
-    maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
+    implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
+    implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
 
     implementation(include("com.github.trilarion:java-vorbis-support:${property("vorbis.version")}")!!)
     implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
