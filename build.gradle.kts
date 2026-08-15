@@ -87,6 +87,15 @@ bloom {
 
         // addMessage --> addClientSystemMessage
         replacement("chat.addMessage(", "chat.addClientSystemMessage(")
+
+        // ChunkPos.asLong --> ChunkPos.pack (26.1+)
+        replacement("ChunkPos.asLong", "ChunkPos.pack")
+
+        // ChunkPos(BlockPos) --> ChunkPos(Int, Int) (26.1+)
+        replacement("ChunkPos(pos)", "ChunkPos(pos.x, pos.z)")
+
+        // ChunkPos.x / ChunkPos.z --> getX() / getZ() (26.1+)
+        replacement("LevelChunk chunk = getChunk(pos.x, pos.z, ChunkStatus.FULL, false);", "LevelChunk chunk = getChunk(pos.x(), pos.z(), ChunkStatus.FULL, false);")
     }
 }
 
