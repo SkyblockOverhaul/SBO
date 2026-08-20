@@ -81,7 +81,7 @@ object WaypointManager {
                     }
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
 
-                    val existing = getWaypointsOfType("rareMob") + getWaypointsOfType("world")
+                    val existing = getWaypointsOfType("rareMob")
                     val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
 
                     if (existing.any { it.pos.distanceTo(pos) <= 60 }) {
@@ -100,13 +100,6 @@ object WaypointManager {
                     )
                 } else if (patcherWaypoints) {
                     if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(selfName)) return@onChatMessage
-
-                    val existing = getWaypointsOfType("rareMob") + getWaypointsOfType("world")
-                    val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
-
-                    if (existing.any { it.pos.distanceTo(pos) <= 60 }) {
-                        return@onChatMessage
-                    }
 
                     addWaypoint(Waypoint(player, x.toDouble(), y.toDouble(), z.toDouble(), ttl = 30, type = "world"))
                 }
@@ -147,7 +140,7 @@ object WaypointManager {
 
             // Remove all waypoints that are not in radius of typical burrow locations x y z
             this.forEachWaypoint { waypoint ->
-                if (World.getWorld() != "Hub" || waypoint.preventInvalidRemoval) return@forEachWaypoint
+                if (World.getWorld() != "Hub" || waypoint.preventInvalidRemoval || waypoint.type == "world") return@forEachWaypoint
 
                 val underWorld = waypoint.pos.y < 60
                 val aboveWorld = waypoint.pos.y > 105
@@ -442,7 +435,7 @@ object WaypointManager {
 
         val shouldAddWaypoints = Diana.scanWorldForRareMob
 
-        val existing = (getWaypointsOfType("rareMob") + getWaypointsOfType("world")).toMutableList()
+        val existing = getWaypointsOfType("rareMob").toMutableList()
         val rareMobPositions = mutableListOf<SboVec>()
 
         level.entitiesForRendering().forEach { entity ->
@@ -512,7 +505,7 @@ object WaypointManager {
     }
 
     private fun removeStaleRareMobWaypoints(level: ClientLevel, rareMobPositions: List<SboVec>) {
-        (getWaypointsOfType("rareMob") + getWaypointsOfType("world")).forEach { waypoint ->
+        getWaypointsOfType("rareMob").forEach { waypoint ->
             val blockPos = waypoint.pos.roundLocationToBlock()
 
             // If the chunk waypoint is in is not loaded, no rare mob entity will exist, since the entity is not loaded as well.
@@ -545,7 +538,6 @@ object WaypointManager {
 
     fun removeNearbyRareMobWaypointAt(pos: SboVec) {
         removeWithinDistanceFrom(pos, "rareMob", 30, 1)
-        removeWithinDistanceFrom(pos, "world", 30, 1)
     }
 
     /**
@@ -554,6 +546,9 @@ object WaypointManager {
      */
     fun renderAllWaypoints(context: LevelRenderContext) {
         if (World.getWorld() != "Hub" || !Helper.hasSpade) {
+            getWaypointsOfType("world").forEach { waypoint ->
+                waypoint.render(context)
+            }
             return
         }
 
@@ -970,15 +965,14 @@ object WaypointManager {
 
     fun warpToRareMob() {
         val newestRareMob = getWaypointsOfType("rareMob").maxByOrNull { it.creationNs }
-        val newestWorldRareMob = getWaypointsOfType("world").maxByOrNull { it.creationNs }
-        val pos = newestRareMob?.pos ?: newestWorldRareMob?.pos ?: return
+        val pos = newestRareMob?.pos ?: return
         val warp = getFinalClosestWarp(pos) ?: return
 
         executeWarpCommand(warp)
     }
 
     fun warpBoth() {
-        if (getWaypointsOfType("rareMob").isEmpty() && getWaypointsOfType("world").isEmpty()) {
+        if (getWaypointsOfType("rareMob").isEmpty()) {
             warpToGuess()
         } else {
             warpToRareMob()

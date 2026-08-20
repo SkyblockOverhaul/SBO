@@ -143,7 +143,7 @@ class Waypoint(
             if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
                 val warpName = closest.replaceFirstChar(Char::titlecase)
 
-                val text = "§" + (if (this.type == "rareMob" || this.type == "world") "d" else "b") + "Warp §e$warpName$distanceText"
+                val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName$distanceText"
                 val asSubtitle = Customization.warpTitleAsSubtitle
 
                 val titleBusy = !mc.gui.title?.string.isNullOrEmpty() && mc.gui.titleTime > 0 // When asSubtitle is disabled, Helper.showTitle checks internally if busy or not; but when its subtitle, it appends warp subtitle inside another one, e.g. Use Spade one, with higher duration, causing warp title to keep showing as subtitle even after warping till the main title (e.g., Use Spade one) expires; this makes it delay warp title till the original title disappears which fixes the issue.
@@ -226,7 +226,7 @@ class Waypoint(
                 setWarpText()
             }
 
-            "rareMob", "world" -> {
+            "rareMob" -> {
                 val newest = inqWaypoints.lastOrNull() == this
 
                 if (newest) isClosest = true
@@ -239,12 +239,18 @@ class Waypoint(
                 }
             }
 
+            "world" -> {
+                this.line = false
+                this.formattedText = "$text$distanceText"
+            }
+
             "subGuess", "debug" -> {
                 this.line = false
                 this.formattedText = text
             }
 
             else -> {
+                this.line = false
                 this.formattedText = "$text$distanceText"
             }
         }
