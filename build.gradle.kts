@@ -48,7 +48,6 @@ bloom {
         replacement("formatting?.char", "formatting?.code")
         replacement("mc.options.hideGui", "mc.gui.hud.isHidden()")
         replacement("gameRenderer().mainCamera", "gameRenderer().mainCamera()")
-        replacement("com.mojang.blaze3d.vertex.VertexFormat.Mode", "com.mojang.blaze3d.PrimitiveTopology")
     }
 }
 

@@ -1,11 +1,8 @@
 package net.sbo.mod.utils.render
 
-import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.platform.CompareOp
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
-import com.mojang.blaze3d.vertex.VertexFormat.Mode
 import net.minecraft.client.renderer.RenderPipelines
 import net.sbo.mod.SBOKotlin
 
