@@ -97,7 +97,7 @@ object DianaMobDetect {
             val level = mc.level ?: return@command
 
             level.entitiesForRendering().forEach { entity ->
-                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string} at x=${entity.x},y=${entity.y},z=${entity.z}")
+                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string} and with health ${entity.health}/${entity.maxHealth} at x=${entity.x},y=${entity.y},z=${entity.z}")
             }
         }
 
