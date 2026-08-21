@@ -99,20 +99,20 @@ object Http {
      */
     private fun statusMessage(code: Int): String {
         return when (code) {
-            400 -> "Bad request"
+            400 -> "Bad Request"
             401 -> "Unauthorized"
             403 -> "Forbidden"
-            404 -> "Not found"
-            408 -> "Request timed out"
+            404 -> "Not Found"
+            408 -> "Request Timed Out"
             409 -> "Conflict"
-            418 -> "Invalid request"
-            422 -> "Invalid data"
-            429 -> "Too many requests"
-            500 -> "Server error"
-            502 -> "Bad gateway"
-            503 -> "Service unavailable"
-            504 -> "Gateway timeout"
-            else -> "HTTP error $code"
+            418 -> "Invalid Request"
+            422 -> "Invalid Data"
+            429 -> "Too Many Requests"
+            500 -> "Server Error"
+            502 -> "Bad Gateway"
+            503 -> "Service Unavailable"
+            504 -> "Gateway Timeout"
+            else -> "HTTP Error $code"
         }
     }
 

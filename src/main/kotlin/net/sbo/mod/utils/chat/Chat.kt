@@ -47,7 +47,7 @@ object Chat {
 
     private fun sendClientMessage(message: Component) {
         mc.execute {
-            mc.gui.chat.addMessage(message)
+            mc.gui.chat.addClientSystemMessage(message)
         }
     }
 

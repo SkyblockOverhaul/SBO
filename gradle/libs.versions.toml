@@ -3,7 +3,7 @@ loom = "1.17.19"
 ksp = "2.3.11"
 
 [plugins]
-loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "loom" }
+loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [libraries]

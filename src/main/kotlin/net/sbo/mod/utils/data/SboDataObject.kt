@@ -189,7 +189,7 @@ object SboDataObject {
                 // Windows: case-insensitive, normalize folder name if needed
                 if (Files.isDirectory(oldDir)) {
                     try {
-                        if (Files.exists(newDir)) {
+                        if (Files.exists(newDir) && !Files.isSameFile(oldDir, newDir)) {
                             if (!Files.isDirectory(newDir)) {
                                 SBOKotlin.logger.error("[$modName] Expected directory but found file: $newDir")
                                 throw RuntimeException("$newDir is a file but supposed to be a directory")

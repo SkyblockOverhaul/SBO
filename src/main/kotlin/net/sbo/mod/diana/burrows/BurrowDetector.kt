@@ -125,7 +125,7 @@ object BurrowDetector {
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 
-            // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
+            // We need to update lastDugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
             refreshBurrows(
                 deathOriginating = false,
