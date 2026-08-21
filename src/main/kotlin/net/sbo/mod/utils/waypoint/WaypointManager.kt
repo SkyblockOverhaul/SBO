@@ -81,10 +81,10 @@ object WaypointManager {
                     }
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
 
-                    val existing = getWaypointsOfType("rareMob")
                     val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
 
-                    if (existing.any { it.pos.distanceTo(pos) <= 60 }) {
+                    val existing = getWaypointsOfType("rareMob")
+                    if (existing.any { it.pos.distanceTo(pos) <= 10 }) {
                         return@onChatMessage
                     }
 
