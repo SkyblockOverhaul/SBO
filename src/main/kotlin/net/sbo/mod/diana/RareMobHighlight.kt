@@ -65,7 +65,7 @@ object RareMobHighlight {
                 continue
             }
 
-            val hasLineOfSight = player != null && player.hasLineOfSight(mob)
+            val hasLineOfSight = player != null && player.hasLineOfSight(mob) // TODO: Migrate this to what Skyblocker uses (Custom depth-tested glow rather than a simple lineOfSight check)
             if (Diana.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
                 mob.isSboGlowing = true
                 val color = when (type) {
