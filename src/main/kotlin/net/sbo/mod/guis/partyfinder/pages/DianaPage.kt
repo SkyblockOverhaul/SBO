@@ -1,5 +1,4 @@
 package net.sbo.mod.guis.partyfinder.pages
-//todo: remake this with Vexel https://github.com/meowing-xyz/vexel
 
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIRoundedRectangle
@@ -14,14 +13,13 @@ import gg.essential.elementa.dsl.percent
 import gg.essential.elementa.dsl.pixels
 import net.sbo.mod.guis.partyfinder.GuiHandler
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
+import net.sbo.mod.guis.partyfinder.Theme
+import net.sbo.mod.partyfinder.PartyFinderManager.hasSboKey
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
-import net.sbo.mod.utils.data.SboDataObject.sboData
-import java.awt.Color
 
 
 class DianaPage(private val parent: PartyFinderGUI) {
@@ -110,18 +108,18 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint()
             width = 100.percent()
             height = 68.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.cpWindow
+        }.setColor(Theme.TRANSPARENT) childOf parent.cpWindow
         val lvlbox = UIBlock().constrain {
             x = 0.percent()
             y = 5.percent()
             width = 100.percent()
             height = 23.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         UIText("SbLvL").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
             textScale = parent.getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255)) childOf lvlbox
+        }.setColor(Theme.TEXT_PRIMARY) childOf lvlbox
         val lvlInput = GuiHandler.TextInput(
             list = "diana",
             key = "lvl",
@@ -130,8 +128,8 @@ class DianaPage(private val parent: PartyFinderGUI) {
             width = 90.percent(),
             height = 60.percent(),
             inputWidth = 90.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.INPUT_BG,
+            textColor = Theme.INPUT_TEXT,
             rounded = true
         )
         lvlInput.create().setChildOf(lvlbox)
@@ -147,12 +145,12 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 23.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         UIText("Kills").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
             textScale = parent.getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255)) childOf killsBox
+        }.setColor(Theme.TEXT_PRIMARY) childOf killsBox
         val killsInput = GuiHandler.TextInput(
             list = "diana",
             key = "kills",
@@ -161,8 +159,8 @@ class DianaPage(private val parent: PartyFinderGUI) {
             width = 90.percent(),
             height = 60.percent(),
             inputWidth = 90.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.INPUT_BG,
+            textColor = Theme.INPUT_TEXT,
             rounded = true
         )
         killsInput.create().setChildOf(killsBox)
@@ -178,12 +176,12 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 23.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         UIText("Note ").constrain {
             x = 5.percent()
             y = SiblingConstraint(5f)
             textScale = parent.getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255)) childOf noteBox
+        }.setColor(Theme.TEXT_PRIMARY) childOf noteBox
         val noteInput = GuiHandler.TextInput(
             list = "diana",
             key = "note",
@@ -192,8 +190,8 @@ class DianaPage(private val parent: PartyFinderGUI) {
             width = 90.percent(),
             height = 50.percent(),
             inputWidth = 90.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.INPUT_BG,
+            textColor = Theme.INPUT_TEXT,
             rounded = true
         )
         noteInput.create().setChildOf(noteBox)
@@ -208,13 +206,13 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 20.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.reqsBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         val eman9box = UIBlock().constrain {
             x = 0.percent()
             y = 0.percent()
             width = 50.percent()
             height = 100.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf l5e9box
+        }.setColor(Theme.TRANSPARENT) childOf l5e9box
         val eman9checkbox = GuiHandler.Checkbox(
             list = "diana",
             key = "eman9",
@@ -222,21 +220,21 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 200),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.CHECKBOX_BG,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Eman9",
             rounded = true,
             roundness = 5f
         )
         eman9checkbox.create().setChildOf(eman9box)
-        eman9checkbox.setBgBoxColor(Color(50, 50, 50, 200))
+        eman9checkbox.setBgBoxColor(Theme.INPUT_BG)
         eman9checkbox.textObject.setTextScale(parent.getTextScaleOfScaleText())
         val looting5box = UIBlock().constrain {
             x = SiblingConstraint()
             y = 0.percent()
             width = 50.percent()
             height = 100.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf l5e9box
+        }.setColor(Theme.TRANSPARENT) childOf l5e9box
         val looting5checkbox = GuiHandler.Checkbox(
             list = "diana",
             key = "looting5",
@@ -244,14 +242,14 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 200),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.CHECKBOX_BG,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Looting5",
             rounded = true,
             roundness = 5f
         )
         looting5checkbox.create().setChildOf(looting5box)
-        looting5checkbox.setBgBoxColor(Color(50, 50, 50, 200))
+        looting5checkbox.setBgBoxColor(Theme.INPUT_BG)
         looting5checkbox.textObject.setTextScale(parent.getTextScaleOfScaleText())
 
         parent.createBox = UIBlock().constrain {
@@ -259,7 +257,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = SiblingConstraint(5f)
             width = 100.percent()
             height = 20.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.cpWindow
+        }.setColor(Theme.TRANSPARENT) childOf parent.cpWindow
 
         val createButton = GuiHandler.Button(
             text = "Create Party",
@@ -267,30 +265,23 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 70.percent(),
             height = 60.percent(),
-            color = Color(50, 50, 50, 200),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.BUTTON_DEFAULT,
+            textColor = Theme.TEXT_PRIMARY,
             parent = parent.createBox,
             rounded = true
         )
-        createButton.hoverEffect(Color(50, 50, 50, 200), Color(100, 100, 100, 200))
+        createButton.hoverEffect(Theme.BUTTON_DEFAULT, Theme.BUTTON_HOVER)
         createButton.setOnClick {
-            val reqsMap = mapOf(
-                "lvl" to pfConfigState.inputs.diana.lvl,
-                "kills" to pfConfigState.inputs.diana.kills
+            val reqs = Reqs(
+                lvl = pfConfigState.inputs.diana.lvl,
+                kills = pfConfigState.inputs.diana.kills,
+                eman9 = pfConfigState.checkboxes.diana.eman9,
+                looting5 = pfConfigState.checkboxes.diana.looting5
             )
-            var reqString = ""
-            reqsMap.forEach { (key, value) ->
-                if (value != 0) {
-                    reqString += "$key$value,"
-                }
-            }
-            if (pfConfigState.checkboxes.diana.eman9) reqString += "eman9,"
-            if (pfConfigState.checkboxes.diana.looting5) reqString += "looting5,"
             val note = pfConfigState.inputs.diana.note
             val partyType = "Diana"
-            val sboKey = sboData.sboKey
-            if (sboKey.isEmpty() && !sboKey.startsWith("sbo")) Chat.chat("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
-            parent.partyCreate(reqs = reqString, note = note, type = partyType)
+            hasSboKey()
+            parent.partyCreate(reqs = reqs, note = note, type = partyType)
             parent.closeCpWindow()
         }
         createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
@@ -302,7 +293,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = y1
             width = 15.percent()
             height = 20.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         parent.filterWindow.setX((parent.filterWindow.getLeft() - parent.filterWindow.getWidth()).pixels())
 
         parent.filterBox = UIRoundedRectangle(10f).constrain {
@@ -310,7 +301,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = 0.percent()
             width = 100.percent()
             height = 100.percent()
-        }.setColor(Color(50,50,50,255)) childOf parent.filterWindow
+        }.setColor(Theme.FILTER_BOX_BG) childOf parent.filterWindow
         parent.filterBox.grabWindowFocus()
         parent.filterBox.onMouseClick {
             this.grabWindowFocus()
@@ -324,19 +315,19 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = 0.percent()
             width = 100.percent()
             height = 33.33f.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val row2 = UIBlock().constrain {
             x = CenterConstraint()
             y = SiblingConstraint()
             width = 100.percent()
             height = 33.33f.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val row3 = UIBlock().constrain {
             x = CenterConstraint()
             y = SiblingConstraint()
             width = 100.percent()
             height = 33.33f.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf parent.filterBox
+        }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val eman9Filter = GuiHandler.Checkbox(
             list = "diana",
             key = "eman9Filter",
@@ -344,15 +335,15 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 150),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.FILTER_TINT,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Eman9",
             rounded = true,
             roundness = 5f,
             filter = true
         )
         eman9Filter.create().setChildOf(row1)
-        eman9Filter.setBgBoxColor(Color(25, 25, 25, 200))
+        eman9Filter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         eman9Filter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         eman9Filter.setOnClick { setFilter() }
 
@@ -363,15 +354,15 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 150),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.FILTER_TINT,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Looting 5",
             rounded = true,
             roundness = 5f,
             filter = true
         )
         looting5Filter.create().setChildOf(row2)
-        looting5Filter.setBgBoxColor(Color(25, 25, 25, 200))
+        looting5Filter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         looting5Filter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         looting5Filter.setOnClick { setFilter() }
 
@@ -382,15 +373,15 @@ class DianaPage(private val parent: PartyFinderGUI) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 80.percent(),
-            color = Color(0, 0, 0, 150),
-            checkedColor = Color(0, 110, 250, 255),
+            color = Theme.FILTER_TINT,
+            checkedColor = Theme.CHECKBOX_CHECKED,
             text = "Can I Join?",
             rounded = true,
             roundness = 5f,
             filter = true
         )
         canIjoinFilter.create().setChildOf(row3)
-        canIjoinFilter.setBgBoxColor(Color(25, 25, 25, 200))
+        canIjoinFilter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         canIjoinFilter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         canIjoinFilter.setOnClick { setFilter() }
     }

@@ -1,6 +1,5 @@
 package net.sbo.mod.partyfinder
 
-import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
@@ -10,8 +9,9 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.data.PlayerInfoResponse
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.http.Http
+import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object PartyCheck {
@@ -46,22 +46,21 @@ object PartyCheck {
     fun checkPlayer(
         playerName: String,
         noMessage: Boolean = false,
-        readCache: Boolean = true,
         onComplete: ((PartyPlayerStats)-> Unit)? = null
     ) {
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
-        Http.sendGetRequest("$API_URL/partyInfo?party=$playerName&readCache=$readCache")
-            .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
+        SboApi.playerInfo(playerName)
+            .toJson<PlayerInfoResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
-                    val partyInfo = response.partyInfo
-                    if (partyInfo.firstOrNull() != null) {
-                        if (!noMessage && partyInfo[0].uuid == Player.getUUIDString().replace("-", "")) {
-                            printPartyInfo(partyInfo)
-                            trackWithCheckPlayer(partyInfo[0])
+                    val playerInfo = response.playerInfo
+                    if (playerInfo != null) {
+                        if (!noMessage && playerInfo.uuid == Player.getUUIDString().replace("-", "")) {
+                            printPartyInfo(listOf(playerInfo))
+                            trackWithCheckPlayer(playerInfo)
                         } else if (!noMessage) {
-                            printPartyInfo(partyInfo, inviteButton = true)
+                            printPartyInfo(listOf(playerInfo), inviteButton = true)
                         }
-                        onComplete?.invoke(partyInfo[0])
+                        onComplete?.invoke(playerInfo)
                     }
                 }
             }
@@ -80,7 +79,8 @@ object PartyCheck {
             Chat.chat("§6[SBO] §eNo party members found.")
             return
         }
-        Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${partyMember.joinToString(",").replace("-", "")}")
+        if (!PartyFinderManager.hasSboKey()) return
+        SboApi.partyInfoByUuids(partyMember.map { it.replace("-", "") })
             .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     printPartyInfo(response.partyInfo)

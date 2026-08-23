@@ -132,7 +132,7 @@ object Mayor {
         refreshingMayor = false
         mayorApiError = true
         applyFallback()
-        SBOKotlin.logger.error("API error: $message")
+        SBOKotlin.logger.error("API Mayor error: $message")
     }
 
     private fun applyFallback() {

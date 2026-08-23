@@ -55,9 +55,35 @@ object Http {
      * Sends an asynchronous HTTP GET request.
      *
      * @param urlString The URL to send the request to.
+     * @param headers Additional request headers, e.g. the `x-sbo-key` header for authenticated SBO endpoints.
      * @return An [HttpRequestHandle] to which .result() and .error() can be chained.
      */
-    fun sendGetRequest(urlString: String): HttpRequestHandle {
+    fun sendGetRequest(urlString: String, headers: Map<String, String> = emptyMap()): HttpRequestHandle =
+        send(urlString, headers) { it.GET() }
+
+    /**
+     * Sends an asynchronous HTTP POST request with a JSON body.
+     *
+     * The `Content-Type: application/json` header is set automatically.
+     *
+     * @param urlString The URL to send the request to.
+     * @param body The JSON body to send. Defaults to an empty object for endpoints that take no payload.
+     * @param headers Additional request headers, e.g. the `x-sbo-key` header for authenticated SBO endpoints.
+     * @return An [HttpRequestHandle] to which .result() and .error() can be chained.
+     */
+    fun sendPostRequest(
+        urlString: String,
+        body: String = "{}",
+        headers: Map<String, String> = emptyMap()
+    ): HttpRequestHandle = send(urlString, headers + ("Content-Type" to "application/json")) {
+        it.POST(HttpRequest.BodyPublishers.ofString(body, Charsets.UTF_8))
+    }
+
+    private fun send(
+        urlString: String,
+        headers: Map<String, String>,
+        method: (HttpRequest.Builder) -> HttpRequest.Builder
+    ): HttpRequestHandle {
         val handle = HttpRequestHandle()
 
         EXECUTOR.execute {
@@ -65,15 +91,15 @@ object Http {
                 val uri = URI.create(urlString)
                 val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
 
-                val request = HttpRequest.newBuilder()
+                val builder = HttpRequest.newBuilder()
                     .version(httpVersion)
                     .uri(uri)
                     .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
                     .header("User-Agent", USER_AGENT)
-                    .GET()
-                    .build()
 
-                val response = CLIENT.send(request, BodyHandlers.ofInputStream())
+                headers.forEach { (name, value) -> builder.header(name, value) }
+
+                val response = CLIENT.send(method(builder).build(), BodyHandlers.ofInputStream())
                 val code = response.statusCode()
 
                 handle.complete(

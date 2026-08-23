@@ -1,5 +1,4 @@
 package net.sbo.mod.guis.partyfinder
-//todo: remake this with Vexel https://github.com/meowing-xyz/vexel
 
 import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import gg.essential.elementa.ElementaVersion
@@ -38,7 +37,6 @@ import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderRefreshListEvent
-import java.awt.Color
 import java.util.concurrent.TimeUnit
 
 class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
@@ -70,7 +68,6 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     private lateinit var playerNameBase: UIComponent
     private lateinit var partyListContainer: UIComponent
     internal lateinit var noParties : UIComponent
-    private lateinit var partyShowType : UIComponent
     internal lateinit var reqsBox: UIComponent
     internal lateinit var createBox: UIComponent
     internal lateinit var filterBox: UIComponent
@@ -154,15 +151,6 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     internal fun getTextScaleOfScaleText(base: Float = 1f): PixelConstraint {
         return if (base + PartyFinder.scaleText <= 0f) 0.1f.pixels()
         else (base + PartyFinder.scaleText).pixels()
-    }
-
-    private fun getMemberColor(members: Int, patySize: Int): Color {
-        val ratio = members.toFloat() / patySize.toFloat()
-        return if (ratio < 0.5f)  {
-            Color(0,255,0,255)
-        } else {
-            Color(255,165,0,255)
-        }
     }
 
     internal fun getFilter(pageType: String, callback: (((Party) -> Boolean)?) -> Unit) {
@@ -287,7 +275,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }
     }
 
-    internal fun partyCreate(reqs: String, note: String, type: String, size: Int = 6) {
+    internal fun partyCreate(reqs: Reqs, note: String, type: String, size: Int = 6) {
         createParty(
             reqs = reqs,
             note = note,
@@ -319,15 +307,15 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         elementToHighlight.forEach { element ->
             if (element.obj is UIBlock) {
                 if (element.page == selectedPage) {
-                    element.obj.setColor(Color(50, 50, 50, 255))
+                    element.obj.setColor(Theme.DARK_GRAY)
                 } else {
-                    element.obj.setColor(Color(0, 0, 0, 0))
+                    element.obj.setColor(Theme.TRANSPARENT)
                 }
             } else {
                 if (element.page == selectedPage) {
-                    element.obj.setColor(Color(50, 50, 255, 200))
+                    element.obj.setColor(Theme.ROYAL_BLUE)
                 } else {
-                    element.obj.setColor(Color(255, 255, 255, 255))
+                    element.obj.setColor(Theme.WHITE)
                 }
             }
         }
@@ -413,12 +401,12 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = finalY
             width = 75.percent()
             height = 5.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.PAGE_BLOCK)
 
         val text = UIText("・ $pageTitle").constrain {
             y = CenterConstraint()
             textScale = getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255))
+        }.setColor(Theme.PAGE_TITLE)
 
         block.onMouseClick {
             if (selectedPage == pageTitle) return@onMouseClick
@@ -436,11 +424,11 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         block.addChild(text)
             .onMouseEnter {
                 if (selectedPage == pageTitle) return@onMouseEnter
-                block.setColor(Color(50, 50, 50, 150))
+                block.setColor(Theme.PAGE_HOVER_IN)
             }
             .onMouseLeave {
                 if (selectedPage == pageTitle) return@onMouseLeave
-                block.setColor(Color(0, 0, 0, 0))
+                block.setColor(Theme.PAGE_HOVER_OUT)
             }
 
         categoryBlock.addChild(block)
@@ -449,7 +437,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 y = if (isSubPage) SiblingConstraint(0f, true) else SiblingConstraint(),
                 width = 75.percent(),
                 height = 0.3f.percent(),
-                color = Color(0, 110, 250, 255)
+                color = Theme.PAGE_CATEGORY_LINE
             ).get())
 
         elementToHighlight.add(HighlightElement(pageTitle, text, "pageTitle"))
@@ -472,24 +460,24 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = SiblingConstraint()
             width = 100.percent()
             height = 22.percent()
-        }.setColor(Color(0, 0, 0, 150))
-            .enableEffect(OutlineEffect(Color(0, 110, 250, 255), 1f))
+        }.setColor(Theme.PARTY_LIST_BG)
+            .enableEffect(OutlineEffect(Theme.PARTY_LIST_OUTLINE, 1f))
             .addChild(UIBlock().constrain {
                 width = 20.percent()
                 height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(UIText(party.leaderName).constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     textScale = getTextScaleOfScaleText()
-                }.setColor(Color(85, 255, 255, 255)))
+                }.setColor(Theme.PARTY_LIST_LEADER))
             )
             .addChild(GuiHandler.UILine(
                 x = SiblingConstraint(),
                 y = CenterConstraint(),
                 width = 0.3f.percent(),
                 height = 80.percent(),
-                color = Color(0, 110, 250, 255),
+                color = Theme.PARTY_LIST_INFO_SEPARATOR,
                 rounded = true
             ).get())
 
@@ -498,25 +486,25 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint()
             width = 50.percent()
             height = 100.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
             .addChild(UIBlock().constrain {
                 x = CenterConstraint()
                 y = 0.pixels
                 width = 100.percent()
                 height = 50.percent()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(UIBlock().constrain {
                     x = CenterConstraint()
                     y = SiblingConstraint()
                     width = 90.percent()
                     height = 100.percent()
-                }.setColor(Color(0, 0, 0, 0))
+                }.setColor(Theme.TRANSPARENT)
                     .addChild(UIWrappedText(reqsString).constrain {
                         x = 0.pixels
                         y = CenterConstraint()
                         width = 100.percent()
                         textScale = getTextScaleOfScaleText()
-                    }.setColor(Color(255, 255, 255, 255)))
+                    }.setColor(Theme.TEXT_PRIMARY))
                 )
             )
             .addChild(UIBlock().constrain {
@@ -524,19 +512,19 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 y = SiblingConstraint()
                 width = 100.percent()
                 height = 50.percent()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(UIBlock().constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     width = 90.percent()
                     height = 100.percent()
-                }.setColor(Color(0, 0, 0, 0))
+                }.setColor(Theme.TRANSPARENT)
                     .addChild(UIWrappedText("&bNote: &7" + party.note.replace("%20", " ")).constrain {
                         x = 0.pixels
                         y = CenterConstraint()
                         width = 100.percent()
                         textScale = getTextScaleOfScaleText()
-                    }.setColor(Color(255, 255, 255, 255)))
+                    }.setColor(Theme.TEXT_PRIMARY))
                 )
             )
 
@@ -546,7 +534,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 y = CenterConstraint(),
                 width = 0.3f.percent(),
                 height = 80.percent(),
-                color = Color(0, 110, 250, 255),
+                color = Theme.PARTY_LIST_INFO_SEPARATOR,
                 rounded = true
             ).get())
             .addChild(UIBlock().constrain {
@@ -554,19 +542,19 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 y = CenterConstraint()
                 width = 10.percent()
                 height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(UIText("${party.partyMembersCount}/${party.partySize}").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     textScale = getTextScaleOfScaleText()
-                }.setColor(getMemberColor(party.partyMembersCount, party.partySize)))
+                }.setColor(Theme.getMemberColor(party.partyMembersCount, party.partySize)))
             )
             .addChild(GuiHandler.UILine(
                 x = SiblingConstraint(),
                 y = CenterConstraint(),
                 width = 0.3f.percent(),
                 height = 80.percent(),
-                color = Color(0, 110, 250, 255),
+                color = Theme.PARTY_LIST_INFO_SEPARATOR,
                 rounded = true
             ).get())
 
@@ -575,7 +563,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint()
             width = FillConstraint()
             height = 100.percent()
-        }.setColor(Color(50, 50, 50, 0))
+        }.setColor(Theme.TRANSPARENT)
 
         val joinButton = GuiHandler.Button(
             text = "Join",
@@ -583,8 +571,8 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint(),
             width = 70.percent(),
             height = 40.percent(),
-            color = Color(30, 30, 30, 255),
-            textColor = Color(0, 255, 0, 255),
+            color = Theme.BUTTON_JOIN_BG,
+            textColor = Theme.BUTTON_JOIN_TEXT,
             rounded = true
         )
         joinBlock.addChild(joinButton.uiObject)
@@ -597,22 +585,22 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
         joinButton.uiObject.onMouseEnter {
             if (filterWindowOpened) return@onMouseEnter
-            this.setColor(Color(70, 70, 70, 200))
-            partyBlock.setColor(Color(0, 0, 0, 150))
+            this.setColor(Theme.BUTTON_JOIN_HOVER_IN)
+            partyBlock.setColor(Theme.BLACK_HALF_TRANS)
         }
         joinButton.uiObject.onMouseLeave {
             if (filterWindowOpened) return@onMouseLeave
-            this.setColor(Color(30, 30, 30, 255))
-            partyBlock.setColor(Color(0, 0, 0, 220))
+            this.setColor(Theme.BUTTON_JOIN_HOVER_OUT)
+            partyBlock.setColor(Theme.BLACK_SEMI_TRANS)
         }
 
         partyBlock.onMouseEnter {
             if (filterWindowOpened) return@onMouseEnter
-            partyBlock.setColor(Color(0, 0, 0, 220))
+            partyBlock.setColor(Theme.BLACK_SEMI_TRANS)
         }
         partyBlock.onMouseLeave {
             if (filterWindowOpened) return@onMouseLeave
-            partyBlock.setColor(Color(0, 0, 0, 150))
+            partyBlock.setColor(Theme.BLACK_HALF_TRANS)
         }
 
         partyBlock.onMouseClick {
@@ -656,25 +644,25 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint()
             width = 60.percent()
             height = 65.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         infobase = UIRoundedRectangle(10f).constrain {
             x = 0.percent()
             y = 0.percent()
             width = 100.percent()
             height = 100.percent()
-        }.setColor(Color(30, 30, 30, 240)) childOf partyInfoWindow
+        }.setColor(Theme.INFO_BG) childOf partyInfoWindow
         val infoDisplay = UIRoundedRectangle(10f).constrain {
             x = SiblingConstraint()
             y = CenterConstraint()
             width = 48.percent()
             height = 95.percent()
-        }.setColor(Color(0, 0, 0, 150))
+        }.setColor(Theme.BLACK_HALF_TRANS)
         val infoScroll = ScrollComponent().constrain {
             x = 0.percent()
             y = 0.percent()
             width = 100.percent()
             height = 100.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         infobase.addChild(playerNameBase)
         infoDisplay.addChild(infoScroll)
         infobase.addChild(infoDisplay)
@@ -686,14 +674,14 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 y = CenterConstraint()
                 width = 60.percent()
                 height = 70.percent()
-            }.setColor(Color(0, 0, 0, 150))
+            }.setColor(Theme.BLACK_HALF_TRANS)
                 .addChild(UIText(party.name).constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     textScale = getTextScaleOfScaleText()
-                }.setColor(Color(255, 255, 255, 255)))
+                }.setColor(Theme.TEXT_PRIMARY))
             playerBlock.onMouseEnter {
-                playerBlock.setColor(Color(50, 50, 50, 255))
+                playerBlock.setColor(Theme.INFO_PLAYER_HOVER_IN)
                 infoScroll.clearChildren()
                 infoScroll.addChild(UIWrappedText(infoString).constrain {
                     x = 4.percent()
@@ -703,14 +691,14 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 })
             }
             playerBlock.onMouseLeave {
-                playerBlock.setColor(Color(0, 0, 0, 200))
+                playerBlock.setColor(Theme.INFO_PLAYER_HOVER_OUT)
             }
             playerNameBase.addChild(UIBlock().constrain {
                 x = 0.percent()
                 y = SiblingConstraint(0f)
                 width = 100.percent()
                 height = objheight.pixels()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(playerBlock)
             )
         }
@@ -723,31 +711,25 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = 7.percent(),
             width = 100.percent(),
             height = 0.3f.percent(),
-            color = Color(0, 110, 250, 255)
+            color = Theme.PARTY_LIST_SEPARATOR
         ).get()
         partyCount = UIText("").constrain {
             x = SiblingConstraint()
             y = CenterConstraint()
             textScale = getTextScaleOfScaleText()
         }
-        partyCount.setColor(Color(255, 255, 255, 255))
-//        val filterSvgComp = SVGComponent.ofResource("/assets/sbo-kotlin/svgs/filter.svg").constrain {
-//            x = CenterConstraint()
-//            y = CenterConstraint()
-//            width = getIconScale()
-//            height = getIconScale()
-//        }.setColor(Color(0, 110, 250, 255))
+        partyCount.setColor(Theme.TEXT_PRIMARY)
         val filterText = UIText("Filter").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
             textScale = getTextScaleOfScaleText()
-        }.setColor(Color(0, 110, 250, 255))
+        }.setColor(Theme.PARTY_LIST_FILTER)
         val filterBlock = UIBlock().constrain {
             x = SiblingConstraint()
             y = CenterConstraint()
             width = 8.percent()
             height = 80.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         filterBlock.addChild(filterText)
         filterBlock.onMouseClick {
             val x = filterBlock.getLeft() + filterBlock.getWidth() / 2f
@@ -755,110 +737,86 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             addFilterPage(listName, x.pixels(), y.pixels())
         }
         filterBlock.onMouseEnter {
-            filterText.setColor(Color(50, 50, 255, 200))
+            filterText.setColor(Theme.PARTY_LIST_FILTER_HOVER_IN)
         }
         filterBlock.onMouseLeave {
-            filterText.setColor(Color(0, 110, 250, 255))
+            filterText.setColor(Theme.PARTY_LIST_FILTER_HOVER_OUT)
         }
-//        val refreshSvgComp = SVGComponent.ofResource("/assets/sbo-kotlin/svgs/refresh.svg").constrain {
-//            x = CenterConstraint()
-//            y = CenterConstraint()
-//            width = getIconScale()
-//            height = getIconScale()
-//        }.setColor(Color(0, 110, 250, 255))
         val refreshText = UIText("Refresh").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
             textScale = getTextScaleOfScaleText()
-        }.setColor(Color(0, 110, 250, 255))
+        }.setColor(Theme.PARTY_LIST_REFRESH)
         val refreshBlock = UIBlock().constrain {
             x = SiblingConstraint(5f)
             y = CenterConstraint()
             width = 8.percent()
             height = 80.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         refreshBlock.addChild(refreshText)
         refreshBlock.onMouseClick {
             updateCurrentPartyList()
         }
         refreshBlock.onMouseEnter {
-            refreshText.setColor(Color(50, 50, 255, 200))
+            refreshText.setColor(Theme.PARTY_LIST_REFRESH_HOVER_IN)
         }
         refreshBlock.onMouseLeave {
-            refreshText.setColor(Color(0, 110, 250, 255))
+            refreshText.setColor(Theme.PARTY_LIST_REFRESH_HOVER_OUT)
         }
-//        val unqueuePartySvgComp = SVGComponent.ofResource("/assets/sbo-kotlin/svgs/user-minus.svg").constrain {
-//            x = CenterConstraint()
-//            y = CenterConstraint()
-//            width = getIconScale()
-//            height = getIconScale()
-//        }.setColor(Color(0, 110, 250, 255))
         val unqueuePartyText = UIText("Delete").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
             textScale = getTextScaleOfScaleText()
-        }.setColor(Color(255, 0, 0, 255))
+        }.setColor(Theme.PARTY_LIST_UNQUEUE)
         val unqueuePartyBlock = UIBlock().constrain {
             x = SiblingConstraint(5f)
             y = CenterConstraint()
             width = 8.percent()
             height = 80.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         unqueuePartyBlock.addChild(unqueuePartyText)
         unqueuePartyBlock.onMouseClick {
             unqueueParty()
         }
         unqueuePartyBlock.onMouseEnter {
-            unqueuePartyText.setColor(Color(50, 50, 255, 200))
+            unqueuePartyText.setColor(Theme.PARTY_LIST_UNQUEUE_HOVER_IN)
         }
         unqueuePartyBlock.onMouseLeave {
-            unqueuePartyText.setColor(Color(255, 0, 0, 255))
+            unqueuePartyText.setColor(Theme.PARTY_LIST_UNQUEUE_HOVER_OUT)
         }
-//        val createPartySvgComp = SVGComponent.ofResource("/assets/sbo-kotlin/svgs/user-plus.svg").constrain {
-//            x = CenterConstraint()
-//            y = CenterConstraint()
-//            width = getIconScale()
-//            height = getIconScale()
-//        }.setColor(Color(0, 255, 0, 255))
         val createPartyText = UIText("Create").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
             textScale = getTextScaleOfScaleText()
-        }.setColor(Color(0, 255, 0, 255))
+        }.setColor(Theme.PARTY_LIST_CREATE)
         val createPartyBlock = UIBlock().constrain {
             x = SiblingConstraint(5f)
             y = CenterConstraint()
             width = 8.percent()
             height = 80.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         createPartyBlock.addChild(createPartyText)
         createPartyBlock.onMouseClick {
             createParty()
         }
         createPartyBlock.onMouseEnter {
-            createPartyText.setColor(Color(50, 50, 255, 200))
+            createPartyText.setColor(Theme.PARTY_LIST_CREATE_HOVER_IN)
         }
         createPartyBlock.onMouseLeave {
-            createPartyText.setColor(Color(0, 255, 0, 255))
+            createPartyText.setColor(Theme.PARTY_LIST_CREATE_HOVER_OUT)
         }
         // maybe add svgfix if needed
         contentBlock.addChild(line)
         contentBlock.addChild(UIBlock().constrain {
             width = 100.percent()
             height = 7.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
             .addChild(UIBlock().constrain {
                 x = 1.percent()
                 y = CenterConstraint()
                 width = 20.percent()
                 height = 70.percent()
-            }.setColor(Color(0, 0, 0, 0))
-//                .addChild(SVGComponent.ofResource("/assets/sbo-kotlin/svgs/users-group.svg").constrain {
-//                    x = CenterConstraint()
-//                    y = CenterConstraint()
-//                    width = getIconScale()
-//                    height = getIconScale()
-//                }.setColor(Color(0, 110, 250, 255)))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(partyCount)
             )
 
@@ -867,18 +825,17 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 y = CenterConstraint()
                 width = 42.percent()
                 height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(UIText(listName).constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     textScale = getTextScaleOfScaleText(1.5f)
-                }.setColor(Color(255, 255, 255, 255)))
+                }.setColor(Theme.TEXT_PRIMARY))
             )
             .addChild(filterBlock)
             .addChild(refreshBlock)
             .addChild(unqueuePartyBlock)
             .addChild(createPartyBlock)
-            // add svgfix here if needed
         )
     }
 
@@ -895,7 +852,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = 100.percent(),
             (btn.textObject.getWidth() + 10).pixels(),
             10.percent(),
-            Color(0, 110, 250, 255)
+            Theme.BUTTON_TITLE_DISC_GIT_PAT_UNDERLINE
         ).get())
     }
 
@@ -905,7 +862,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             height = 100.percent()
             x = 0.percent()
             y = 0.percent()
-        }.setColor(Color(0, 0, 0, 100)) childOf window
+        }.setColor(Theme.CREATE_FILTER_BG) childOf window
         filterBackground.hide()
         filterWindow = UIRoundedRectangle(10f) childOf window
         filterWindow.hide()
@@ -917,22 +874,22 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             height = 40.percent()
             x = CenterConstraint()
             y = CenterConstraint()
-        }.setColor(Color(30, 30, 30, 240))
+        }.setColor(Theme.CREATE_BG)
             .addChild(UIBlock().constrain {
                 width = 100.percent()
                 height = 12.percent()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(UIText("Create Party").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     textScale = getTextScaleOfScaleText(1.5f)
-                }.setColor(Color(255, 255, 255, 255))))
+                }.setColor(Theme.TEXT_PRIMARY)))
             .addChild(GuiHandler.UILine(
                 x = 0.percent(),
                 y = SiblingConstraint(),
                 width = 100.percent(),
                 height = 1f.percent(),
-                color = Color(0, 110, 250, 255)
+                color = Theme.SBO_BLUE
             ).get())
 
         window.addChild(cpWindow)
@@ -943,14 +900,14 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             height = 65.percent()
             x = CenterConstraint()
             y = CenterConstraint()
-        }.setColor(Color(30, 30, 30, 240)) childOf window
+        }.setColor(Theme.BASE) childOf window
         //-----------------Title Block-----------------
         GuiHandler.UILine(
             x = 0.percent(),
             y = 5.percent(),
             width = 100.percent(),
             height = 0.3f.percent(),
-            color = Color(0, 110, 250, 255),
+            color = Theme.SBO_BLUE,
             parent = base
         )
         onlineUserBlock = UIBlock().constrain {
@@ -958,7 +915,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint()
             width = 40.percent()
             height = 80.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
 
         onlineUserText = UIText("Online: 0").constrain {
             x = 0.percent()
@@ -969,33 +926,33 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         titleBlock = UIBlock().constrain {
             width = 100.percent()
             height = 5.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
             .setChildOf(base)
             .addChild(UIBlock().constrain {
                 width = 25.percent()
                 height = 100.percent()
                 x = SiblingConstraint()
                 y = CenterConstraint()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(onlineUserBlock))
             .addChild(UIBlock().constrain {
                 width = 35.percent()
                 height = 100.percent()
                 x = CenterConstraint()
                 y = CenterConstraint()
-            }.setColor(Color(0, 0, 0, 0))
+            }.setColor(Theme.TRANSPARENT)
                 .addChild(
                 UIText("SBO Party Finder").constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     textScale = getTextScaleOfScaleText()
-                }.setColor(Color(255, 255, 255, 255)))
+                }.setColor(Theme.TEXT_PRIMARY))
             )
         val discordBlock = UIBlock().constrain {
             width = 11.percent()
             height = 100.percent()
             x = SiblingConstraint()
-        }.setColor(Color(0, 0, 0, 0)) childOf titleBlock
+        }.setColor(Theme.TRANSPARENT) childOf titleBlock
 
         val discord = GuiHandler.Button(
             text = "Discord",
@@ -1003,11 +960,11 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 60.percent(),
-            color = Color(0, 0, 0, 0),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.TRANSPARENT,
+            textColor = Theme.TEXT_PRIMARY,
             parent = discordBlock
         )
-            .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
+            .textHoverEffect(Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_OUT, Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_IN)
             .setTextOnClick {
                 SBOKotlin.openInBrowser("https://discord.gg/QvM6b9jsJD")
             }
@@ -1017,7 +974,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             width = 11.percent()
             height = 100.percent()
             x = SiblingConstraint()
-        }.setColor(Color(0, 0, 0, 0)) childOf titleBlock
+        }.setColor(Theme.TRANSPARENT) childOf titleBlock
 
         val github = GuiHandler.Button(
             text = "GitHub",
@@ -1025,11 +982,11 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 60.percent(),
-            color = Color(0, 0, 0, 0),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.TRANSPARENT,
+            textColor = Theme.TEXT_PRIMARY,
             parent = githubBlock
         )
-            .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
+            .textHoverEffect(Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_OUT, Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_IN)
             .setTextOnClick {
                 SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO")
             }
@@ -1039,7 +996,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             width = 11.percent()
             height = 100.percent()
             x = SiblingConstraint()
-        }.setColor(Color(0, 0, 0, 0)) childOf titleBlock
+        }.setColor(Theme.TRANSPARENT) childOf titleBlock
 
         val patreon = GuiHandler.Button(
             text = "Patreon",
@@ -1047,22 +1004,16 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = CenterConstraint(),
             width = 80.percent(),
             height = 60.percent(),
-            color = Color(0, 0, 0, 0),
-            textColor = Color(255, 255, 255, 255),
+            color = Theme.TRANSPARENT,
+            textColor = Theme.TEXT_PRIMARY,
             parent = patreonBlock
         )
-            .textHoverEffect(Color(255,255,255,255), Color(50, 50, 255, 200))
+            .textHoverEffect(Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_OUT, Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_IN)
             .setTextOnClick {
                 SBOKotlin.openInBrowser("https://www.patreon.com/Skyblock_Overhaul")
             }
-        patreon.textObject.setTextScale(getTextScaleOfScaleText())
-        patreon.uiObject.addChild(GuiHandler.UILine(
-            x = CenterConstraint(),
-            y = 100.percent(),
-            (patreon.textObject.getWidth() + 10).pixels(),
-            10.percent(),
-            Color(0, 110, 250, 255)
-        ).get())
+        stpBtn(patreon)
+
         //-----------------End Title Block-----------------
         //-----------------Category Block-----------------
         GuiHandler.UILine(
@@ -1070,7 +1021,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             y = 5.percent(),
             width = 0.2f.percent(),
             height = 95.percent(),
-            color = Color(0, 110, 250, 255),
+            color = Theme.SBO_BLUE,
             parent = base
         )
         categoryBlock = UIBlock().constrain {
@@ -1078,7 +1029,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             height = 94.3f.percent()
             x = 0.percent()
             y = 5.7f.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf base
+        }.setColor(Theme.TRANSPARENT) childOf base
         //-----------------End Category Block-----------------
         //-----------------Content Block-----------------
         contentBlock = UIBlock().constrain {
@@ -1086,7 +1037,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             height = 94.7f.percent()
             x = 15.2f.percent()
             y = 5.3f.percent()
-        }.setColor(Color(0, 0, 0, 0)) childOf base
+        }.setColor(Theme.TRANSPARENT) childOf base
         //-----------------End Content Block-----------------
         //-----------------Party Info-----------------
         playerNameBase = UIBlock().constrain {
@@ -1094,7 +1045,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             height = 100.percent()
             x = 0.percent()
             y = 0.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         //-----------------End Party Info-----------------
         //-----------------Party List-----------------
         partyListContainer = ScrollComponent().constrain {
@@ -1102,88 +1053,14 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             height = 92.3.percent()
             x = 0.percent()
             y = 7.3f.percent()
-        }.setColor(Color(0, 0, 0, 0))
+        }.setColor(Theme.TRANSPARENT)
         noParties = UIText("No parties found").constrain {
             x = CenterConstraint()
             y = CenterConstraint()
             textScale = getTextScaleOfScaleText()
-        }.setColor(Color(255, 255, 255, 255))
+        }.setColor(Theme.TEXT_PRIMARY)
         partyListContainer.addChild(noParties)
         noParties.hide()
-        partyShowType = UIBlock().constrain {
-            width = 100.percent()
-            height = 7.percent()
-            x = 0.percent()
-            y = 0.percent()
-        }.setColor(Color(0, 0, 0, 150))
-            .addChild(UIBlock().constrain {
-                width = 20.percent()
-                height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
-                .addChild(UIText("Leader").constrain {
-                    x = CenterConstraint()
-                    y = CenterConstraint()
-                    textScale = getTextScaleOfScaleText()
-                }.setColor(Color(85, 255, 255, 255)))
-            )
-            .addChild(GuiHandler.UILine(
-                x = SiblingConstraint(),
-                y = CenterConstraint(),
-                width = 0.3f.percent(),
-                height = 80.percent(),
-                color = Color(0, 110, 250, 255),
-                rounded = true,
-                ).get())
-            .addChild(UIBlock().constrain {
-                x = SiblingConstraint()
-                y = CenterConstraint()
-                width = 50.percent()
-                height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
-                .addChild(UIText("Reqs/Note").constrain {
-                    x = CenterConstraint()
-                    y = CenterConstraint()
-                    textScale = getTextScaleOfScaleText()
-                }.setColor(Color(85, 255, 255, 255))))
-            .addChild(GuiHandler.UILine(
-                x = SiblingConstraint(),
-                y = CenterConstraint(),
-                width = 0.3f.percent(),
-                height = 80.percent(),
-                color = Color(0, 110, 250, 255),
-                rounded = true,
-            ).get())
-            .addChild(UIBlock().constrain {
-                x = SiblingConstraint()
-                y = CenterConstraint()
-                width = 10.percent()
-                height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
-                .addChild(UIText("Members").constrain {
-                    x = CenterConstraint()
-                    y = CenterConstraint()
-                    textScale = getTextScaleOfScaleText()
-                }.setColor(Color(85, 255, 255, 255))))
-            .addChild(GuiHandler.UILine(
-                x = SiblingConstraint(),
-                y = CenterConstraint(),
-                width = 0.3f.percent(),
-                height = 80.percent(),
-                color = Color(0, 110, 250, 255),
-                rounded = true,
-            ).get())
-            .addChild(UIBlock().constrain {
-                x = SiblingConstraint()
-                y = CenterConstraint()
-                width = FillConstraint()
-                height = 100.percent()
-            }.setColor(Color(0, 0, 0, 0))
-                .addChild(UIText("Button").constrain {
-                    x = CenterConstraint()
-                    y = CenterConstraint()
-                    textScale = getTextScaleOfScaleText()
-                }.setColor(Color(85, 255, 255, 255)))
-            )
         //-----------------Pages-----------------
         addPage("Home", homePage::render, isSubPage = true, y1 = 93.percent())
         addPage("Help", helpPage::render, isSubPage = true)

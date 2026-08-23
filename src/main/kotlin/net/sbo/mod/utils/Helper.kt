@@ -22,6 +22,7 @@ import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
+import net.sbo.mod.utils.http.SboApi
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import java.math.BigDecimal
@@ -613,26 +614,20 @@ object Helper {
                 DianaLoot.updateLines()
             }.error { error ->
                 if (priceDataBazaar == null) {
-                    // no price data available - notify user
                     Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
                 } else {
-                    // if a previous request succeeded and this request failed, it might be temporary, and we still
-                    // have some price data even if outdated. so only log to logs
                     SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
                 }
             }
-        Http.sendGetRequest("https://api.skyblockoverhaul.com/ahItems")
+        SboApi.ahItems()
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
                 if (priceDataAh.isEmpty() && !notifiedPriceUpdateError) {
-                    // no price data available - notify user 1 time
                     Chat.chat("§6[SBO] §cUnexpected error while fetching AH item prices: $error")
                     notifiedPriceUpdateError = true
                 } else {
-                    // if a previous request succeeded and this request failed, it might be temporary, and we still
-                    // have some price data even if outdated. so only log to logs
                     SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
                 }
             }

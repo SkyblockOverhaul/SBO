@@ -2,13 +2,11 @@ package net.sbo.mod.partyfinder
 
 import gg.essential.universal.utils.toFormattedString
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
-import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
-import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.*
 import net.sbo.mod.utils.data.SboDataObject.sboData
@@ -18,15 +16,17 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.ChatMessageEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderRefreshListEvent
-import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.Http.getBoolean
 import net.sbo.mod.utils.http.Http.getInt
 import net.sbo.mod.utils.http.Http.getString
+import net.sbo.mod.utils.http.SboApi
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object PartyFinderManager {
+    const val MAX_PARTY_SIZE = 6
+
     var creatingParty = false
     var inQueue = false
     private var updateBool = false
@@ -40,8 +40,7 @@ object PartyFinderManager {
     private var isLeader = false
     private var partyNote = ""
     private var partyType = ""
-    private var partyReqs = ""
-    private var partyReqsMap = Reqs()
+    private var partyReqs = Reqs()
     var isInParty = false
 
     private val playersSentRequest = mutableMapOf<String, Long>()
@@ -71,6 +70,15 @@ object PartyFinderManager {
         Regex("^(.+) §r§ewas removed from your party because they disconnected.$"),
         Regex("^§r§eKicked (.+) because they were offline.$")
     )
+
+    fun hasSboKey(): Boolean {
+        val sboKey = sboData.sboKey
+        if (sboKey.isBlank() || !sboKey.startsWith("sbo")) {
+            Chat.chat("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
+            return false
+        }
+        return true
+    }
 
     fun init() {
         Register.command("sborequeue") {
@@ -144,7 +152,8 @@ object PartyFinderManager {
 
         Register.onTick(20 * 60 * 4) { // every 4 minutes
             if (inQueue) {
-                Http.sendGetRequest("$API_URL/queueUpdate?leaderId=${Player.getUUIDString().replace("-", "")}")
+                if (!hasSboKey()) return@onTick
+                SboApi.refreshParty()
                     .toJsonObject { response ->
                         if (!response.getBoolean("Success")) {
                             inQueue = false
@@ -153,7 +162,7 @@ object PartyFinderManager {
                     }
                     .error { error ->
                         inQueue = false
-                        Chat.chat("§6[SBO] §4Unexpected error")
+                        Chat.chat("§6[SBO] §4Unexpected error while updating party: $error")
                     }
             }
         }
@@ -183,7 +192,7 @@ object PartyFinderManager {
     }
 
     fun createParty(
-        reqs: String,
+        reqs: Reqs,
         note: String,
         type: String,
         size: Int,
@@ -192,11 +201,19 @@ object PartyFinderManager {
         this.partyReqs = reqs
         this.partyNote = note
         this.partyType = type
-        this.partySize = size
+        this.partySize = if (size <= 0) MAX_PARTY_SIZE else size.coerceAtMost(MAX_PARTY_SIZE)
         this.usedPf = true
 
         HypixelModApi.sendPartyInfoPacket(createParty = true)
     }
+
+    private fun partyRequest() = PartyRequest(
+        uuids = partyMember.map { it.replace("-", "") },
+        reqs = partyReqs,
+        partyType = partyType,
+        note = checkPartyNote(partyNote),
+        partySize = partySize
+    )
 
     private fun queueParty() {
         if (!this.creatingParty) return
@@ -216,19 +233,14 @@ object PartyFinderManager {
 
         try {
             val currentTime = System.nanoTime()
-            Http.sendGetRequest(
-                "$API_URL/createParty?uuids=${partyMember.joinToString(",").replace("-", "")}" +
-                        "&reqs=$partyReqs" +
-                        "&note=${checkPartyNote(partyNote)}" +
-                        "&partytype=$partyType" +
-                        "&partysize=$partySize" +
-                        "&key=${sboData.sboKey}"
-            ).toJson<PartyAddResponse>(ignoreUnknownKeys = true) { response ->
+            SboApi.createParty(partyRequest())
+                .toJson<PartyAddResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     val timeTaken = System.nanoTime() - currentTime
                     inQueue = true
                     creatingParty = false
-                    partyReqsMap = response.partyReqs!!
+                    response.partyReqs?.let { partyReqs = it }
+                    response.partySize?.let { partySize = it }
                     SBOEvent.emit(PartyFinderRefreshListEvent())
 
                     if (ghostParty) {
@@ -265,17 +277,12 @@ object PartyFinderManager {
         if (inQueue && isInParty && isLeader) {
             if (partyMember.size !in 2..<partySize) return
             val currentTime = System.nanoTime()
-            Http.sendGetRequest(
-                "$API_URL/queuePartyUpdate?uuids=${partyMember.joinToString(",").replace("-", "")}" +
-                        "&reqs=$partyReqs" +
-                        "&note=${checkPartyNote(partyNote)}" +
-                        "&partytype=$partyType" +
-                        "&partysize=$partySize" +
-                        "&key=${sboData.sboKey}"
-            ).toJson<PartyUpdateResponse>(ignoreUnknownKeys = true) { response ->
+            SboApi.updateQueuedParty(partyRequest())
+                .toJson<PartyUpdateResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     val timeTaken = System.nanoTime() - currentTime
-                    partyReqsMap = response.partyReqs!!
+                    response.partyReqs?.let { partyReqs = it }
+                    response.partySize?.let { partySize = it }
                     Chat.chat("§6[SBO] §eParty updated successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
                 } else {
                     inQueue = false
@@ -294,7 +301,7 @@ object PartyFinderManager {
         onComplete: ((List<Party>) -> Unit)? = null,
         onError: (() -> Unit)? = null
     ) {
-        Http.sendGetRequest("$API_URL/getAllParties?partytype=$partyType")
+        SboApi.listParties(partyType)
             .toJson<GetAllParties>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     onComplete?.invoke(response.parties)
@@ -311,7 +318,7 @@ object PartyFinderManager {
     fun getActiveUsers(
         onComplete: ((Int) -> Unit)? = null
     ) {
-        Http.sendGetRequest("$API_URL/activeUsers").toJsonObject { response ->
+        SboApi.activeUsers().toJsonObject { response ->
             onComplete?.invoke(response.getInt("activeUsers") ?: 0)
         }.error { error ->
             Chat.chat("§6[SBO] §4Unexpected error while getting active users: ${error.message}")
@@ -321,7 +328,7 @@ object PartyFinderManager {
     // todo: add a way to prevent inviting more player then party has space (maybe every user has 10 seconds to accept else next player gets invited)
     private fun invitePlayerIfMeetsReqs(playerName: String) {
         PartyCheck.checkPlayer(playerName, noMessage = true) { stats ->
-            if (checkIfPlayerMeetsReqs(stats, partyReqsMap)) {
+            if (checkIfPlayerMeetsReqs(stats, partyReqs)) {
                 if (partyMemberCount < partySize) {
                     Chat.command("p invite $playerName")
                     Chat.chat("§6[SBO] §eInvited $playerName to the party.")
@@ -374,12 +381,21 @@ object PartyFinderManager {
     fun removePartyFromQueue(onComplete: ((Boolean) -> Unit)? = null) {
         if (inQueue) {
             inQueue = false
-            Http.sendGetRequest("$API_URL/unqueueParty?leaderId=${Player.getUUIDString().replace("-", "")}")
-                .result { response ->
+            if (!hasSboKey()) {
+                onComplete?.invoke(false)
+                return
+            }
+            SboApi.unqueueParty()
+                .toJsonObject { response ->
                     onComplete?.invoke(true)
-                    Chat.chat("§6[SBO] §eParty removed from queue.")
+                    if (response.getBoolean("Success")) {
+                        Chat.chat("§6[SBO] §eParty removed from queue.")
+                    } else {
+                        Chat.chat("§6[SBO] §4${response.getString("Error") ?: "Failed to remove party from queue."}")
+                    }
                 }.error { error ->
-                    Chat.chat("§6[SBO] §4Unexpected error while removing party from queue")
+                    onComplete?.invoke(false)
+                    Chat.chat("§6[SBO] §4Unexpected error while removing party from queue: $error")
                 }
         } else if (creatingParty) {
             ghostParty = true
@@ -457,9 +473,8 @@ object PartyFinderManager {
     }
 
     private fun checkPartyNote(note: String): String {
-        // allowed characters a-z, A-Z, 0-9, comma, dot, exclamation mark, hyphen, underscore, question mark
-        return note.replace(Regex("[^a-zA-Z0-9 ,.!?\\-_]"), "")
+        return note.replace(Regex("[^\\p{L}\\p{N} ,.!?\\-_]"), "")
             .take(30)
-            .trim().replace(" ", "%20")
+            .trim()
     }
 }

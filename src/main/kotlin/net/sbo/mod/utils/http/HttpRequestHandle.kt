@@ -2,7 +2,9 @@ package net.sbo.mod.utils.http
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.InputStream
 
 /**
@@ -28,6 +30,32 @@ data class HttpResponse(
 ) {
     /** Returns true if the HTTP code is in the success range (200-299). */
     val isSuccessful: Boolean get() = code in 200..299
+}
+
+@PublishedApi
+internal fun httpErrorOf(response: HttpResponse): Exception {
+    val fallback = "HTTP request failed with code: ${response.code} ${response.message}"
+    val body = try {
+        response.body?.string()
+    } catch (_: Exception) {
+        null
+    }
+    if (body.isNullOrBlank()) return Exception(fallback)
+
+    val detail = try {
+        val json = Json.parseToJsonElement(body).jsonObject
+        val error = json["Error"]?.jsonPrimitive?.contentOrNull
+        val message = json["message"]?.jsonPrimitive?.contentOrNull
+        when {
+            !error.isNullOrBlank() -> error
+            !message.isNullOrBlank() -> message
+            else -> null
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+    return Exception(if (detail == null) fallback else "$detail (HTTP ${response.code})")
 }
 
 /**
@@ -78,7 +106,7 @@ class HttpRequestHandle {
                     }
                 }
             } else {
-                this.fail(Exception("HTTP request failed with code: ${response.code} ${response.message}"))
+                this.fail(httpErrorOf(response))
             }
         }
         return this
@@ -104,7 +132,7 @@ class HttpRequestHandle {
                     }
                 }
             } else {
-                this.fail(Exception("HTTP request failed with code: ${response.code} ${response.message}"))
+                this.fail(httpErrorOf(response))
             }
         }
         return this
