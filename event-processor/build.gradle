@@ -6,11 +6,11 @@ plugins {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 25
 }
 
 tasks.withType(KotlinJvmCompile).configureEach {
-    compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+    compilerOptions.jvmTarget.set(JvmTarget.JVM_25)
 }
 
 repositories {
@@ -19,5 +19,5 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.devtools.ksp:symbol-processing-api:2.3.9'
+    implementation(libs.ksp.symbol.api)
 }

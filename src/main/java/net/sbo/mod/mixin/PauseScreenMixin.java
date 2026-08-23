@@ -18,22 +18,22 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PauseScreen.class)
-abstract class PauseScreenMixin {
+final class PauseScreenMixin {
     @Unique
-    private int addedButtons;
+    private int sbo$addedButtons;
     @Unique
-    private boolean injected;
+    private boolean sbo$injected;
 
-    @Inject(method = "createPauseMenu", at = @At(value = "HEAD"))
-    private void sbo$createPauseMenuHead(@NonNull final CallbackInfo ci) {
-        addedButtons = 0;
-        injected = false;
+    @Inject(method = "createPauseMenu", at = @At("HEAD"))
+    private final void sbo$createPauseMenuHead(@NonNull final CallbackInfo ci) {
+        sbo$addedButtons = 0;
+        sbo$injected = false;
     }
 
     @Inject(method = "createPauseMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
-    private void sbo$onAddChild(@NonNull final CallbackInfo ci, @Local @NonNull final RowHelper helper) {
-        if (addedButtons == 0 && !injected && General.INSTANCE.getAchievementsButton()) {
-            injected = true;
+    private final void sbo$onAddChild(@NonNull final CallbackInfo ci, @Local @NonNull final RowHelper helper) {
+        if (sbo$addedButtons == 0 && !sbo$injected && General.INSTANCE.getAchievementsButton()) {
+            sbo$injected = true;
 
             final Button custom = Button.builder(
                     Component.literal("SBO Achievements"),
@@ -48,6 +48,6 @@ abstract class PauseScreenMixin {
             helper.addChild(custom, 2);
         }
 
-        addedButtons++;
+        sbo$addedButtons++;
     }
 }

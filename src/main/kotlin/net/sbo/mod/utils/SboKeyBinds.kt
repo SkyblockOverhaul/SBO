@@ -2,7 +2,7 @@ package net.sbo.mod.utils
 
 import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.sbo.mod.SBOKotlin
@@ -33,8 +33,8 @@ object SboKeyBinds {
         SBO_CATEGORY
     )
 
-    private val inqWarpKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.inq_warp",
+    private val rareMobWarpKey: KeyMapping = KeyMapping(
+        "key.sbo-kotlin.rare_mob_warp",
         InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_UNKNOWN,
         SBO_CATEGORY
@@ -62,11 +62,11 @@ object SboKeyBinds {
     )
 
     fun register() {
-        KeyBindingHelper.registerKeyBinding(guessWarpKey)
-        KeyBindingHelper.registerKeyBinding(inqWarpKey)
-        KeyBindingHelper.registerKeyBinding(generalWarpKey)
-        KeyBindingHelper.registerKeyBinding(sendCoordsKey)
-        KeyBindingHelper.registerKeyBinding(sphinxSolverKey)
+        KeyMappingHelper.registerKeyMapping(guessWarpKey)
+        KeyMappingHelper.registerKeyMapping(rareMobWarpKey)
+        KeyMappingHelper.registerKeyMapping(generalWarpKey)
+        KeyMappingHelper.registerKeyMapping(sendCoordsKey)
+        KeyMappingHelper.registerKeyMapping(sphinxSolverKey)
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {
@@ -103,8 +103,8 @@ object SboKeyBinds {
                 WaypointManager.warpToGuess()
             }
 
-            handlePressAction(inqWarpKey) {
-                WaypointManager.warpToInq()
+            handlePressAction(rareMobWarpKey) {
+                WaypointManager.warpToRareMob()
             }
 
             handlePressAction(generalWarpKey) {

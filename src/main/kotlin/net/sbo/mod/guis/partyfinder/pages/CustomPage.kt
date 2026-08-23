@@ -27,15 +27,15 @@ class CustomPage(private val parent: PartyFinderGUI) {
     internal fun getPartyInfo(info: PartyPlayerStats): String {
         var formattedInfoString = ""
         val formattedInfo = listOf(
-            Pair("&9Name: &b", info.name),
-            Pair("&9Skyblock Level: ", Helper.matchLvlToColor(info.sbLvl)),
-            Pair("&9Uuid: &7", info.uuid),
-            Pair("&9Eman9: ", Helper.getNumberColor(info.emanLvl, 9)),
-            Pair("&9Clover: ", if (info.clover) "&a✔" else "&c✘"),
-            Pair("&9Magical Power: &b", info.magicalPower),
-            Pair("&9Enrichments: &b", info.enrichments),
-            Pair("&9Missing Enrichments: &b", info.missingEnrichments),
-            Pair("&9Warnings: &7", info.warnings.joinToString(", "))
+            "&9Name: &b" to info.name,
+            "&9Skyblock Level: " to Helper.matchLvlToColor(info.sbLvl),
+            "&9Uuid: &7" to info.uuid,
+            "&9Eman9: " to Helper.getNumberColor(info.emanLvl, 9),
+            "&9Clover: " to if (info.clover) "&a✔" else "&c✘",
+            "&9Magical Power: &b" to info.magicalPower,
+            "&9Enrichments: &b" to info.enrichments,
+            "&9Missing Enrichments: &b" to info.missingEnrichments,
+            "&9Warnings: &7" to info.warnings.joinToString(", ")
         )
         formattedInfo.forEach { (key, value) ->
             formattedInfoString += "$key$value\n\n"

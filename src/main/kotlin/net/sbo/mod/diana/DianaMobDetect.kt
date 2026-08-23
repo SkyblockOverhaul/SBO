@@ -1,17 +1,19 @@
 package net.sbo.mod.diana
 
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.SoundHandler.playCustomSound
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
+import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -21,13 +23,12 @@ import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
+import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import net.sbo.mod.utils.Player as SboPlayer
-import java.util.concurrent.TimeUnit
 
 object DianaMobDetect {
     private const val MYTHO_MOB_TYPE_CHAR = ""
-    private const val MYTHO_MOB_TYPE_CHAR_2 = "✿" // TODO: Remove once alpha releases to main and resourcepack is forced.
 
     private const val ANNOUNCE_DELAY_MS = 5_000L
 
@@ -43,6 +44,8 @@ object DianaMobDetect {
     private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
+    private val kingHitsRegex = """.*?(\d+)\s+Hits.*""".toRegex()
+
     internal enum class RareDianaMob(val display: String) {
         INQ("Minos Inquisitor"),
         KING("King Minos"),
@@ -53,6 +56,18 @@ object DianaMobDetect {
             fun fromName(name: String): RareDianaMob? = entries.firstOrNull { name.contains(it.display, ignoreCase = true) }
         }
     }
+
+    private fun findKingHits(name: String): MatchResult? {
+        if (World.getWorld() != "Hub") return null
+        if (!name.contains("Hits")) return null
+        return kingHitsRegex.find(name)
+    }
+
+    private fun isKingHitPhase(name: String) =
+        findKingHits(name) != null
+
+    private fun parseKingHits(name: String) =
+        findKingHits(name)?.groupValues?.getOrNull(1)?.toIntOrNull()
 
     private fun parseHealthFromName(name: String): Double? =
         healthRegex.find(name)?.groupValues?.get(1)?.let { raw ->
@@ -78,6 +93,16 @@ object DianaMobDetect {
     fun init() {
         mobHpOverlay.init()
         noShurikenOverlay.init()
+
+        Register.command("sbodebugentities") {
+            val level = mc.level ?: return@command
+
+            level.entitiesForRendering().forEach { entity ->
+                val health = (entity as? LivingEntity)?.let { " with health ${it.health}/${it.maxHealth}" } ?: ""
+
+                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string}$health at x=${entity.x},y=${entity.y},z=${entity.z}")
+            }
+        }
 
         Register.onChatMessage(
             Regex("^§a§lCAUGHT!.*?You cocooned a (?<name>.+?)!.*$")
@@ -124,7 +149,7 @@ object DianaMobDetect {
                 }
 
                 val name = entity.customName?.formattedString() ?: entity.name.formattedString()
-                if (hasMythoMobTypeChar(name)) {
+                if (hasMythoMobTypeChar(name) || isKingHitPhase(name)) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
                 }
@@ -180,12 +205,15 @@ object DianaMobDetect {
         }
     }
 
-    private fun hasMythoMobTypeChar(name: String): Boolean {
-        return name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true) || name.contains("§2$MYTHO_MOB_TYPE_CHAR_2", ignoreCase = true)
-    }
+    private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true)
 
     private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
         if (name.isEmpty() || name == "Armor Stand") return null
+
+        parseKingHits(name)?.let {
+            return OverlayTextLine("§6King Minos §7- §5$it Hits")
+        }
+
         if (!hasMythoMobTypeChar(name)) return null
 
         val health = parseHealthFromName(name)
@@ -238,7 +266,7 @@ object DianaMobDetect {
 
         if (Diana.cocoonTitle) {
             showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b${mobName}", 10, 40, 10)
-            playCustomSound(Customization.cocoonSound[0], Customization.cocoonVolume)
+            playCustomSound(SboDataObject.soundSettingsData.cocoonSound, volume = SboDataObject.soundSettingsData.cocoonVolume)
         }
     }
 

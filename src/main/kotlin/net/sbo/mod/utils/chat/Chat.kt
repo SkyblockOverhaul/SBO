@@ -47,13 +47,13 @@ object Chat {
 
     private fun sendClientMessage(message: Component) {
         mc.execute {
-            mc.gui.chat.addMessage(message)
+            mc.gui.chat.addClientSystemMessage(message)
         }
     }
 
     /**
      * Shows a local chat message only visible to the player.
-     * @param string The message to display in the chat.
+     * @param message The message to display in the chat.
      */
     fun chat(message: String) {
         sendClientMessage(Component.nullToEmpty(message))
@@ -61,7 +61,7 @@ object Chat {
 
     /**
      * Shows a local chat message only visible to the player.
-     * @param text The message to display in the chat.
+     * @param message The message to display in the chat.
      */
     fun chat(message: Component) {
         sendClientMessage(message)
@@ -179,7 +179,7 @@ object Chat {
      * @param separator The string to repeat. Defaults to -.
      * @return The message string that fills the chat line.
      */
-    fun getChatBreak(separator: String = "-", colorcodes: String = "§b"): String {
+    fun getChatBreak(separator: String = "-", colorCodes: String = "§b"): String {
         if (separator.isEmpty()) {
             return ""
         }
@@ -192,6 +192,6 @@ object Chat {
         }
 
         val repeatCount = chatWidth / separatorWidth
-        return colorcodes + separator.repeat(repeatCount)
+        return colorCodes + separator.repeat(repeatCount)
     }
 }

@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8.7",
+  "mixinextras": {
+    "minVersion": "0.5.4"
+  },
+  "package": "net.sbo.mod.mixin",
+  "compatibilityLevel": "JAVA_${java_version_major}",
+  "client": [
+    "PauseScreenMixin",
+    "GuiMixin",
+    "PacketMixin",
+    "PlayerInteractMixin",
+    "ScreenHandlerSlotUpdateS2CPacketMixin",
+    "ScreenMixin",
+    "EntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

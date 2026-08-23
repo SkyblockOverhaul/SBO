@@ -21,17 +21,17 @@ import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
-import net.sbo.mod.utils.http.Http
-import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypoints
-import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointsAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -45,10 +45,10 @@ object Helper {
     var allowSackTracking: Boolean = true
     var hasSpade: Boolean = false
     private var lastDianaMobDeath: Long = 0L
-    var lastInqDeath: Long = 0L
-    var lastKingDeath: Long = 0L
-    var lastSphinxDeath: Long = 0L
-    var lastMantiDeath: Long = 0L
+    private var lastInqDeath: Long = 0L
+    private var lastKingDeath: Long = 0L
+    private var lastSphinxDeath: Long = 0L
+    private var lastMantiDeath: Long = 0L
     var currentScreen: Screen? = null
 
     private var hasTrackedInq: Boolean = false
@@ -60,7 +60,7 @@ object Helper {
     private var priceDataAh: Map<String, Long> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
 
-    var notifiedPriceUpdateError = false
+    private var notifiedPriceUpdateError = false
 
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
             .ofVirtual()
@@ -69,11 +69,13 @@ object Helper {
     )
 
     private fun onLootShare() {
-        lastLootShare = System.currentTimeMillis()
+        lastLootShare = System.nanoTime()
     }
 
     private fun notifyUserOfLs(mob: String) {
-        Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+        if (Diana.assumeAllLS) {
+            Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+        }
     }
 
     fun init() {
@@ -112,7 +114,12 @@ object Helper {
             DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }*/
 
-        updateItemPriceInfo()
+        // Workaround to not timeout on the first requests since there is lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
+        sleep(1000) {
+            CompletableFuture.runAsync {
+                updateItemPriceInfo()
+            }
+        }
     }
 
     @SboEvent
@@ -126,10 +133,8 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedInq) {
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
                     notifyUserOfLs("Minos Inquisitor")
                     DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
@@ -137,13 +142,11 @@ object Helper {
                         hasTrackedInq = false
                     }
                 }
-                lastInqDeath = System.currentTimeMillis()
+                lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedKing) {
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
                     notifyUserOfLs("King Minos")
                     DianaTracker.trackItem("KING_MINOS_LS", 1)
@@ -151,12 +154,10 @@ object Helper {
                         hasTrackedKing = false
                     }
                 }
-                lastKingDeath = System.currentTimeMillis()
+                lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedSphinx) {
+                if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
                     DianaTracker.trackItem("SPHINX_LS", 1)
@@ -164,13 +165,11 @@ object Helper {
                         hasTrackedSphinx = false
                     }
                 }
-                lastSphinxDeath = System.currentTimeMillis()
+                lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
-                removeNearbyRareMobWaypoints()
-                removeNearbyRareMobWaypointsAt(pos)
-                if (lsOverride) onLootShare() // makes the getSecondsPassed condition below always pass
-                if (getSecondsPassed(lastLootShare) < 2 && !hasTrackedManti) {
+                if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
+                if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
                     notifyUserOfLs("Manticore")
                     DianaTracker.trackItem("MANTICORE_LS", 1)
@@ -178,13 +177,13 @@ object Helper {
                         hasTrackedManti = false
                     }
                 }
-                lastMantiDeath = System.currentTimeMillis()
+                lastMantiDeath = System.nanoTime()
             }
         }
 
         if (nearby) {
             allowSackTracking = true
-            lastDianaMobDeath = System.currentTimeMillis()
+            lastDianaMobDeath = System.nanoTime()
         }
     }
 
@@ -452,8 +451,20 @@ object Helper {
         return input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
     }
 
+    /**
+     * Returns the number of seconds since an epoch timestamp.
+     *
+     * The timestamp must originate from System.currentTimeMillis() or another
+     * Unix epoch source (e.g. Hypixel item NBT timestamp).
+     *
+     * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
+     */
     fun getSecondsPassed(timestamp: Long): Long {
         return (System.currentTimeMillis() - timestamp) / 1000
+    }
+
+    private fun getSecondsPassedSinceNano(timestamp: Long): Long {
+        return (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
     }
 
     private fun playerHasItem(sbId: String): Boolean {
@@ -469,8 +480,6 @@ object Helper {
     }
 
     private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
-
-    fun checkDiana(): Boolean = Debug.itsAlwaysDiana || hasSpade && hasMythologicalRitualActive() && World.getWorld() == "Hub"
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
         val currentDurationTicks = mc.gui.titleTime
@@ -522,11 +531,31 @@ object Helper {
         val mobs = tracker.mobs
 
         return when (dropName.lowercase()) {
-            "chimera" -> DropInfo(Diana.customChimMessage[0].trim(), Diana.chimMessageBool, items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
-            "core" -> DropInfo(Diana.customCoreMessage[0].trim(), Diana.coreMessageBool, items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
-            "stinger" -> DropInfo(Diana.customStingerMessage[0].trim(), Diana.stingerMessageBool, items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
-            "brain food" -> DropInfo(Diana.customBfMessage[0].trim(), Diana.bfMessageBool, items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
-            "wool" -> DropInfo(Diana.customWoolMessage[0].trim(), Diana.woolMessageBool, items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
+            "chimera" -> {
+                val message = Diana.customChimeraMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
+            }
+
+            "core" -> {
+                val message = Diana.customManticoreMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
+            }
+
+            "stinger" -> {
+                val message = Diana.customFatefulStingerMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
+            }
+
+            "brain food" -> {
+                val message = Diana.customBrainFoodMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
+            }
+
+            "wool" -> {
+                val message = Diana.customShimmeringWoolMessage[0].trim()
+                DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
+            }
+
             else -> null
         }
     }
@@ -651,11 +680,11 @@ object Helper {
      * @param timeframe The timeframe in seconds to check against. Default is 2 seconds.
      */
     fun gotLootShareRecently(timeframe: Long = 2): Boolean {
-        return getSecondsPassed(lastLootShare) <= timeframe
+        return getSecondsPassedSinceNano(lastLootShare) <= timeframe
     }
 
     fun dianaMobDiedRecently(seconds: Long = 2): Boolean {
-        return getSecondsPassed(lastDianaMobDeath) <= seconds
+        return getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
     }
 
     fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {

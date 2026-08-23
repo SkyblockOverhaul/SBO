@@ -8,7 +8,7 @@
   "compatibilityLevel": "JAVA_${java_version_major}",
   "client": [
     "PauseScreenMixin",
-    "GameRenderMixin",
+    "GuiMixin",
     "MinecraftMixin",
     "PacketMixin",
     "PlayerInteractMixin",

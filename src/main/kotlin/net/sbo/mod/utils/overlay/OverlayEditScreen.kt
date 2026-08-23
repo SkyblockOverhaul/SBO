@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
@@ -15,9 +15,9 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     private var lastMouseX = 0.0
     private var lastMouseY = 0.0
 
-    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(context, mouseX, mouseY, delta)
-        this.renderMenuBackground(context)
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        super.extractRenderState(context, mouseX, mouseY, delta)
+        this.extractMenuBackground(context)
         OverlayManager.render(context)
     }
 

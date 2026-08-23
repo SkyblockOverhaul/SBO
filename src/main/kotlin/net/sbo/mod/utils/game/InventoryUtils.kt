@@ -5,12 +5,17 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
 object InventoryUtils {
     private var currentItemId: String = "AIR"
-    private var currentItemStartTime: Long = System.currentTimeMillis()
-    private val heldHistory = mutableListOf<Triple<String, Long, Long>>()
+    private var currentItemStartTime: Long = System.nanoTime()
+    private val heldHistory = mutableListOf<Triple<String, Long, Long>>() // durationNs, stoppedAtNs
+
+    private val MIN_HOLD_NS = TimeUnit.MILLISECONDS.toNanos(50L)
+    private val HISTORY_RETENTION_NS = TimeUnit.SECONDS.toNanos(5L)
+    private val RECENT_HOLD_NS = TimeUnit.MILLISECONDS.toNanos(200L)
 
     fun init() {
         Register.onTick(1) {
@@ -25,14 +30,14 @@ object InventoryUtils {
         val stack = client.player?.mainHandItem ?: ItemStack.EMPTY
 
         val newItemId = getInternalName(stack)
-        val now = System.currentTimeMillis()
+        val now = System.nanoTime()
 
         if (newItemId != currentItemId) {
             val durationHeld = now - currentItemStartTime
-            if (durationHeld > 50) {
+            if (durationHeld >= MIN_HOLD_NS) {
                 heldHistory.add(Triple(currentItemId, durationHeld, now))
             }
-            heldHistory.removeAll { (_, _, timestampStopped) -> now - timestampStopped > 5000 }
+            heldHistory.removeAll { (_, _, timestampStopped) -> now - timestampStopped > HISTORY_RETENTION_NS }
             currentItemId = newItemId
             currentItemStartTime = now
         }
@@ -62,17 +67,17 @@ object InventoryUtils {
         itemId: String,
         duration: Duration
     ): Boolean {
-        val now = System.currentTimeMillis()
-        val requiredMs = duration.inWholeMilliseconds
+        val now = System.nanoTime()
+        val requiredNs = duration.inWholeNanoseconds
 
-        if (currentItemId.contains(itemId)) {
-            if (now - currentItemStartTime >= requiredMs) return true
+        if (itemId in currentItemId) {
+            if (now - currentItemStartTime >= requiredNs) return true
         }
 
         return heldHistory.any { (histId, histDuration, stoppedAt) ->
-            histId.contains(itemId) &&
-            histDuration >= requiredMs &&
-            now - stoppedAt <= 200
+            itemId in histId &&
+            histDuration >= requiredNs &&
+            now - stoppedAt <= RECENT_HOLD_NS
         }
     }
 }

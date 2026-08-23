@@ -1,29 +1,37 @@
 package net.sbo.mod.utils.render
 
+import net.sbo.mod.utils.chat.ChatUtils
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
+import net.minecraft.network.chat.Component
 import net.minecraft.util.ARGB
 import net.minecraft.util.Mth
+import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
+import kotlin.math.sqrt
 
 object RenderUtils3D {
     fun renderWaypoint(
-        context: WorldRenderContext,
-        text: String,
+        context: LevelRenderContext,
+        renderText: Boolean,
+        text: Component,
+        textWidth: Int,
+        visualOrderText: FormattedCharSequence,
         pos: SboVec,
         colorComponents: FloatArray,
         hexColor: Int,
@@ -56,12 +64,14 @@ object RenderUtils3D {
             )
         }
 
-        if (text.isNotEmpty() && text != "§7") {
+        if (renderText) {
             drawString(
                 context,
                 pos,
                 1.5,
                 text,
+                textWidth,
+                visualOrderText,
                 hexColor,
                 Customization.waypointTextShadow,
                 Customization.waypointTextScale/100.0
@@ -99,10 +109,12 @@ object RenderUtils3D {
      * @param scale The scale of the text.
      */
     private fun drawString(
-        context: WorldRenderContext,
+        context: LevelRenderContext,
         pos: SboVec,
         yOffset: Double,
-        text: String,
+        text: Component,
+        textWidth: Int,
+        visualOrderText: FormattedCharSequence,
         color: Int,
         shadow: Boolean,
         scale: Double
@@ -112,7 +124,6 @@ object RenderUtils3D {
             val cameraPos = camera.position()
             val cameraYaw = camera.yRot()
             val cameraPitch = camera.xRot()
-            val textRenderer = mc.font
 
             val textWorldPos = Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
             val distance = cameraPos.distanceTo(textWorldPos)
@@ -125,25 +136,17 @@ object RenderUtils3D {
 
             scale(-dynamicScale.toFloat(), -dynamicScale.toFloat(), dynamicScale.toFloat())
 
-            val textWidth = textRenderer.width(text)
             val xOffset = -textWidth / 2f
-
-            val consumers = context.consumers()
+            val yOffset = 0f
 
             val layerType = Font.DisplayMode.SEE_THROUGH
+            val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
 
-            textRenderer.drawInBatch(
-                text,
-                xOffset,
-                0f,
-                color,
-                shadow,
-                last().pose(),
-                consumers,
-                layerType,
-                0,
-                0xF000F0
-            )
+            val backgroundColor = 0
+
+            val packedLightCoords = mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, mc.deltaTracker.getGameTimeDeltaPartialTick(true))
+
+            context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
         }
     }
 
@@ -156,27 +159,57 @@ object RenderUtils3D {
      * @param alpha The alpha value for transparency (0.0 to 1.0).
      */
     private fun drawLineFromCursor(
-        context: WorldRenderContext,
+        context: LevelRenderContext,
         target: SboVec,
         color: FloatArray,
         lineWidth: Float,
         alpha: Float = 0.5f
     ) {
+        val camera = context.getCamera()
+
+        val startPos = camera.position()
+            .add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
+
+        val endPos = target.center()
+            .toVec3d()
+            .add(0.0, 0.5, 0.0)
+
+        drawLine(
+            context,
+            startPos,
+            endPos,
+            color,
+            lineWidth,
+            alpha
+        )
+    }
+
+    /**
+     * Draws a line from a start point to a target point in the world.
+     * @param context The world render context.
+     * @param startPos The start position in the world.
+     * @param target The target position in the world.
+     * @param color The RGB color of the line as a FloatArray (0.0 to 1.0).
+     * @param lineWidth The width of the line.
+     * @param alpha The alpha value for transparency (0.0 to 1.0).
+     */
+    fun drawLine(
+        context: LevelRenderContext,
+        startPos: Vec3,
+        endPos: Vec3,
+        color: FloatArray,
+        lineWidth: Float,
+        alpha: Float = 0.5f
+    ) {
         context.pushPop {
-            val camera = context.getCamera()
-            val cameraPos = camera.position()
+            val cameraPos = context.getCamera().position()
 
             translate(cameraPos.reverse())
-
-            val consumers = context.consumers()
-            val startPos = cameraPos.add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
-            val endPos = target.center().toVec3d().add(0.0, 0.5, 0.0)
 
             val lineDir = endPos.subtract(startPos)
             val viewDir = startPos.subtract(cameraPos)
 
             val sideVec = lineDir.cross(viewDir).normalize()
-
             val upVec = sideVec.cross(lineDir).normalize()
 
             val nx = upVec.x.toFloat()
@@ -184,20 +217,36 @@ object RenderUtils3D {
             val nz = upVec.z.toFloat()
 
             val renderLayer = SboRenderLayers.LINES_THROUGH_WALLS
-            val buffer = consumers.getBuffer(renderLayer)
-            val matrixEntry = last()
 
-            buffer.addVertex(matrixEntry, startPos.x.toFloat(), startPos.y.toFloat(), startPos.z.toFloat())
-                .setNormal(matrixEntry, nx, ny, nz)
-                .setColor(color[0], color[1], color[2], alpha)
-                .setLineWidth(lineWidth)
+            context.submitNodeCollector().submitCustomGeometry(
+                context.poseStack(),
+                renderLayer
+            ) { pose, consumer ->
+                consumer
+                    .addVertex(
+                        pose,
+                        startPos.x.toFloat(),
+                        startPos.y.toFloat(),
+                        startPos.z.toFloat()
+                   )
+                    .setNormal(pose, nx, ny, nz)
+                    .setColor(color[0], color[1], color[2], alpha)
+                    .setLineWidth(lineWidth)
 
-            buffer.addVertex(matrixEntry, endPos.x.toFloat(), endPos.y.toFloat(), endPos.z.toFloat())
-                .setNormal(matrixEntry, nx, ny, nz)
-                .setColor(color[0], color[1], color[2], alpha)
-                .setLineWidth(lineWidth)
+                consumer
+                    .addVertex(
+                        pose,
+                        endPos.x.toFloat(),
+                        endPos.y.toFloat(),
+                        endPos.z.toFloat()
+                    )
+                    .setNormal(pose, nx, ny, nz)
+                    .setColor(color[0], color[1], color[2], alpha)
+                    .setLineWidth(lineWidth)
+            }
         }
     }
+
     /**
      * Renders a beacon beam at the given location.
      * @param ctx The world render context.
@@ -206,14 +255,13 @@ object RenderUtils3D {
      * @param phase Whether the beam should render through walls.
      */
     private fun renderBeaconBeam(
-        ctx: WorldRenderContext,
+        ctx: LevelRenderContext,
         vec: SboVec,
         colorComponents: FloatArray
     ) {
         val player = mc.player ?: return
-        if (vec.center().distanceTo(player.x, player.y, player.z) < 8) return
+        if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.beamDistance) return
 
-        val consumers = ctx.consumers()
         val world = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)
         val cam = ctx.getCamera().position()
@@ -222,136 +270,30 @@ object RenderUtils3D {
         ctx.pushPop {
             translate(vec.x - cam.x, vec.y + 1.0 - cam.y, vec.z - cam.z)
 
-            renderBeam(
-                consumers,
-                partialTicks,
-                world.gameTime,
-                Color(beamColor[0], beamColor[1], beamColor[2]).rgb
+            BeaconRenderer.submitBeaconBeam(
+                ctx.poseStack(),
+                ctx.submitNodeCollector(),
+                BeaconRenderer.BEAM_LOCATION,
+                1.0f,
+                Math.floorMod(world.gameTime, 40)
+                    + partialTicks,
+                0,
+                320,
+                Color(
+                    beamColor[0],
+                    beamColor[1],
+                     beamColor[2]
+                ).rgb,
+                0.2f,
+                0.25f
             )
         }
     }
 
-    private fun PoseStack.renderBeam(
-        vertices: MultiBufferSource,
-        partialTicks: Float,
-        worldTime: Long,
-        color: Int
-    ) {
-        val opaqueLayer = SboRenderLayers.BEACON_BEAM_OPAQUE_THROUGH_WALLS
-        val translucentLayer = SboRenderLayers.BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS
-        val heightScale = 1f
-        val height = 320
-        val innerRadius = 0.2f
-        val outerRadius = 0.25f
-        val time = Math.floorMod(worldTime, 40) + partialTicks
-        val fixedTime = -time
-        val wavePhase = Mth.frac(fixedTime * 0.2f - Mth.floor(fixedTime * 0.1f).toFloat())
-        val animationStep = -1f + wavePhase
-        var renderYOffest = height.toFloat() * heightScale * (0.5f / innerRadius) + animationStep
+    private fun LevelRenderContext.getCamera(): Camera = gameRenderer().mainCamera
 
-        pushPop {
-            translate(0.5, 0.0, 0.5)
-
-            pushPop {
-                mulPose(Axis.YP.rotationDegrees(time * 2.25f - 45f))
-
-                renderBeamLayer(
-                    vertices.getBuffer(opaqueLayer),
-                    color,
-                    0f,
-                    innerRadius,
-                    innerRadius,
-                    0f,
-                    -innerRadius,
-                    0f,
-                    0f,
-                    -innerRadius,
-                    renderYOffest,
-                    animationStep
-                )
-            }
-
-            renderYOffest = height.toFloat() * heightScale + animationStep
-
-            renderBeamLayer(
-                vertices.getBuffer(translucentLayer),
-                ARGB.color(32, color),
-                -outerRadius,
-                -outerRadius,
-                outerRadius,
-                -outerRadius,
-                -outerRadius,
-                outerRadius,
-                outerRadius,
-                outerRadius,
-                renderYOffest,
-                animationStep
-            )
-        }
-    }
-
-    private fun PoseStack.renderBeamLayer(
-        vertices: VertexConsumer,
-        color: Int,
-        x1: Float,
-        z1: Float,
-        x2: Float,
-        z2: Float,
-        x3: Float,
-        z3: Float,
-        x4: Float,
-        z4: Float,
-        v1: Float,
-        v2: Float
-    ) {
-        val entry = last()
-        renderBeamFace(entry, vertices, color, x1, z1, x2, z2, v1, v2)
-        renderBeamFace(entry, vertices, color, x4, z4, x3, z3, v1, v2)
-        renderBeamFace(entry, vertices, color, x2, z2, x4, z4, v1, v2)
-        renderBeamFace(entry, vertices, color, x3, z3, x1, z1, v1, v2)
-    }
-
-    private fun renderBeamFace(
-        matrix: PoseStack.Pose,
-        vertices: VertexConsumer,
-        color: Int,
-        x1: Float,
-        z1: Float,
-        x2: Float,
-        z2: Float,
-        v1: Float,
-        v2: Float
-    ) {
-        renderBeamVertex(matrix, vertices, color, 320, x1, z1, 1f, v1)
-        renderBeamVertex(matrix, vertices, color, 0, x1, z1, 1f, v2)
-        renderBeamVertex(matrix, vertices, color, 0, x2, z2, 0f, v2)
-        renderBeamVertex(matrix, vertices, color, 320, x2, z2, 0f, v1)
-    }
-
-    private fun renderBeamVertex(
-        matrix: PoseStack.Pose,
-        vertices: VertexConsumer,
-        color: Int,
-        y: Int,
-        x: Float,
-        z: Float,
-        u: Float,
-        v: Float
-    ) {
-        vertices
-            .addVertex(matrix, x, y.toFloat(), z)
-            .setColor(color)
-            .setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(15728880).setNormal(matrix, 0f, 1f, 0f)
-    }
-
-    private fun WorldRenderContext.getCamera(): Camera {
-        return gameRenderer().mainCamera
-    }
-
-    private fun WorldRenderContext.pushPop(function: PoseStack.() -> Unit) {
-        val matrix = matrices()
+    private fun LevelRenderContext.pushPop(function: PoseStack.() -> Unit) {
+        val matrix = poseStack()
         matrix.pushPop(function)
     }
 
