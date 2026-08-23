@@ -2,12 +2,13 @@ package net.sbo.mod.partyfinder
 
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.data.PlayerInfoResponse
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
@@ -88,12 +89,12 @@ object PartyPlayer {
         }
 
         refreshing = true
-        SboApi.partyInfoByUuids(listOf(Player.getUUIDString().replace("-", "")), readCache = !bypassCache)
-            .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
+        SboApi.playerInfo(Player.getName() ?: "", readCache = !bypassCache)
+            .toJson<PlayerInfoResponse>(ignoreUnknownKeys = true) { response ->
                 refreshing = false
                 if (response.success) {
                     lastUpdate = System.nanoTime()
-                    stats = response.partyInfo.firstOrNull() ?: PartyPlayerStats()
+                    stats = response.playerInfo ?: PartyPlayerStats()
                     if (stats.sbLvl == -1) {
                         Chat.chat("§6[SBO] §cYour stats are not available, please try again later.")
                     } else {
@@ -101,7 +102,7 @@ object PartyPlayer {
                     }
                     callback(stats)
                 } else {
-                    fail(Exception("Unknown error"))
+                    fail(Exception(response.error ?: "Unknown error"))
                 }
             }
             .error { error -> fail(error) }

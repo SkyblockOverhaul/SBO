@@ -46,8 +46,8 @@ object SboApi {
 
     fun countActiveUsers(): HttpRequestHandle = post("/countActiveUsers")
 
-    fun playerInfo(player: String): HttpRequestHandle =
-        get("/playerInfo?player=${encode(player)}")
+    fun playerInfo(player: String, readCache: Boolean = true): HttpRequestHandle =
+        get("/playerInfo?player=${encode(player)}" + if (readCache) "" else "&readcache=false")
 
     fun playerInfoByUuid(uuid: String): HttpRequestHandle =
         get("/playerInfoByUuid?uuid=${encode(uuid)}")
