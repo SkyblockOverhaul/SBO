@@ -48,7 +48,6 @@ object PartyCheck {
         noMessage: Boolean = false,
         onComplete: ((PartyPlayerStats)-> Unit)? = null
     ) {
-        if (!PartyFinderManager.hasSboKey()) return
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
         SboApi.playerInfo(playerName)
             .toJson<PlayerInfoResponse>(ignoreUnknownKeys = true) { response ->
