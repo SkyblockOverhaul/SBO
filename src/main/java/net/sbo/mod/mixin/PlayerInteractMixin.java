@@ -10,22 +10,18 @@ import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MultiPlayerGameMode.class)
-public class PlayerInteractMixin {
-
-    @Unique
-    private final @NonNull Minecraft client = Minecraft.getInstance();
-
+final class PlayerInteractMixin {
     @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
-    private void onInteractItem(@NonNull final CallbackInfoReturnable<InteractionResult> cir) {
-        if (client.player != null) {
+    private final void sbo$onInteractItem(@NonNull final CallbackInfoReturnable<InteractionResult> cir) {
+        var player = Minecraft.getInstance().player;
+        if (player != null) {
             final PlayerInteractEvent event = new PlayerInteractEvent(
-                    "useItem", null, client.player, client.player.level(), false
+                    "useItem", null, player, player.level(), false
             );
             SBOEvent.INSTANCE.emit(event);
 
@@ -37,7 +33,7 @@ public class PlayerInteractMixin {
     }
 
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
-    private void onInteractBlock(@NonNull final LocalPlayer player, @NonNull final InteractionHand hand, @NonNull final BlockHitResult hitResult, @NonNull final CallbackInfoReturnable<InteractionResult> cir) {
+    private final void sbo$onInteractBlock(@NonNull final LocalPlayer player, @NonNull final InteractionHand hand, @NonNull final BlockHitResult hitResult, @NonNull final CallbackInfoReturnable<InteractionResult> cir) {
         if (hand == InteractionHand.MAIN_HAND) {
             final PlayerInteractEvent event = new PlayerInteractEvent(
                     "useBlock", hitResult.getBlockPos(), player, player.level(), false

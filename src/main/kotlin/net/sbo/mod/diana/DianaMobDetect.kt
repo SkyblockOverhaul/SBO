@@ -1,5 +1,6 @@
 package net.sbo.mod.diana
 
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
@@ -92,6 +93,16 @@ object DianaMobDetect {
     fun init() {
         mobHpOverlay.init()
         noShurikenOverlay.init()
+
+        Register.command("sbodebugentities") {
+            val level = mc.level ?: return@command
+
+            level.entitiesForRendering().forEach { entity ->
+                val health = (entity as? LivingEntity)?.let { " with health ${it.health}/${it.maxHealth}" } ?: ""
+
+                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string}$health at x=${entity.x},y=${entity.y},z=${entity.z}")
+            }
+        }
 
         Register.onChatMessage(
             Regex("^§a§lCAUGHT!.*?You cocooned a (?<name>.+?)!.*$")

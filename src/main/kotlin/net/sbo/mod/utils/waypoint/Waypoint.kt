@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.waypoint
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
@@ -79,9 +79,7 @@ class Waypoint(
             hasText = value.isNotEmpty()
 
             component = ChatUtils.fromLegacy(value)
-            //#if MC > 1.21.11
-            //$$ visualOrderText = component.visualOrderText
-            //#endif
+            visualOrderText = component.visualOrderText
         }
     private var textWidth = mc.font.width(text)
     private var hasText = text.isNotEmpty()
@@ -92,9 +90,7 @@ class Waypoint(
     private var dynamicOpacity = 1.0f
     var preventInvalidRemoval = false
 
-    //#if MC > 1.21.11
-    //$$ private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
-    //#endif
+    private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
         this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
@@ -147,7 +143,7 @@ class Waypoint(
             if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
                 val warpName = closest.replaceFirstChar(Char::titlecase)
 
-                val text = "§" + (if (this.type == "rareMob" || this.type == "world") "d" else "b") + "Warp §e$warpName$distanceText"
+                val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName$distanceText"
                 val asSubtitle = Customization.warpTitleAsSubtitle
 
                 val titleBusy = !mc.gui.title?.string.isNullOrEmpty() && mc.gui.titleTime > 0 // When asSubtitle is disabled, Helper.showTitle checks internally if busy or not; but when its subtitle, it appends warp subtitle inside another one, e.g. Use Spade one, with higher duration, causing warp title to keep showing as subtitle even after warping till the main title (e.g., Use Spade one) expires; this makes it delay warp title till the original title disappears which fixes the issue.
@@ -230,7 +226,7 @@ class Waypoint(
                 setWarpText()
             }
 
-            "rareMob", "world" -> {
+            "rareMob" -> {
                 val newest = inqWaypoints.lastOrNull() == this
 
                 if (newest) isClosest = true
@@ -243,12 +239,18 @@ class Waypoint(
                 }
             }
 
+            "world" -> {
+                this.line = false
+                this.formattedText = "$text$distanceText"
+            }
+
             "subGuess", "debug" -> {
                 this.line = false
                 this.formattedText = text
             }
 
             else -> {
+                this.line = false
                 this.formattedText = "$text$distanceText"
             }
         }
@@ -265,7 +267,7 @@ class Waypoint(
         return this.creationNs + duration.toNanos() < System.nanoTime()
     }
 
-    fun render(context: WorldRenderContext) {
+    fun render(context: LevelRenderContext) {
         if (!this.formatted || this.hidden) return
 
         val rgbAndHex = getRgbAndHex()
@@ -278,9 +280,7 @@ class Waypoint(
             this.hasText,
             this.component,
             this.textWidth,
-            //#if MC > 1.21.11
-            //$$ this.visualOrderText,
-            //#endif
+            this.visualOrderText,
             this.pos,
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),

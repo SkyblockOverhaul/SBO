@@ -239,7 +239,7 @@ object PartyCommands {
                 "!promote" -> if (settings.moteCommand) sendCommand("p promote ${secondArg ?: playerName}")
                 "!c", "!carrot" -> if (settings.carrotCommand) sendResponse(carrot.random())
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
-                "!tps" -> if (settings.tpsCommand) sendResponse("${"%.2f".format(ServerStats.getTps())} TPS")
+                "!tps" -> if (settings.tpsCommand) sendResponse(ServerStats.getTpsString())
                 "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     DianaStats.sendPlayerStats()
                 }
