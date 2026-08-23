@@ -74,10 +74,6 @@ object PartyPlayer {
             callback(stats)
             return
         }
-        if (!PartyFinderManager.hasSboKey()) {
-            callback(stats)
-            return
-        }
 
         val bypassCache = forceRefresh && cacheBypassReadyIn() == 0L
         if (bypassCache) lastCacheBypass = System.nanoTime()
