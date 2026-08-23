@@ -255,17 +255,11 @@ class CustomPage(private val parent: PartyFinderGUI) {
         )
         createButton.hoverEffect(Theme.BUTTON_DEFAULT, Theme.BUTTON_HOVER)
         createButton.setOnClick {
-            val reqsMap = mapOf(
-                "lvl" to pfConfigState.inputs.custom.lvl,
-                "mp" to pfConfigState.inputs.custom.mp
+            val reqs = Reqs(
+                lvl = pfConfigState.inputs.custom.lvl,
+                mp = pfConfigState.inputs.custom.mp,
+                eman9 = pfConfigState.checkboxes.custom.eman9
             )
-            var reqString = ""
-            reqsMap.forEach { (key, value) ->
-                if (value != 0) {
-                    reqString += "$key$value,"
-                }
-            }
-            if (pfConfigState.checkboxes.custom.eman9) reqString += "eman9,"
             val note = pfConfigState.inputs.custom.note
             val partyType = "Custom"
             val partySize = pfConfigState.inputs.custom.partySize
@@ -273,7 +267,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
                 parent.closeCpWindow()
                 return@setOnClick
             }
-            parent.partyCreate(reqs = reqString, note = note, type = partyType, size = partySize)
+            parent.partyCreate(reqs = reqs, note = note, type = partyType, size = partySize)
             parent.closeCpWindow()
         }
         createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())

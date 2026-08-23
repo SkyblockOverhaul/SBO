@@ -49,6 +49,9 @@ data class PartyAddResponse(
     @SerialName("PartyReqs")
     val partyReqs: Reqs? = null,
 
+    @SerialName("PartySize")
+    val partySize: Int? = null,
+
     @SerialName("Error")
     val error: String? = null
 )
@@ -64,8 +67,27 @@ data class PartyUpdateResponse(
     @SerialName("PartyReqs")
     val partyReqs: Reqs? = null,
 
+    @SerialName("PartySize")
+    val partySize: Int? = null,
+
     @SerialName("Error")
     val error: String? = null
+)
+
+@Serializable
+data class PartyRequest(
+    val uuids: List<String>,
+    val reqs: Reqs,
+    val partyType: String = "Diana",
+    val note: String = "",
+    val partySize: Int = 6
+)
+
+/** Body of `POST /v2/partyInfo` and `POST /v2/partyInfoByUuids` */
+@Serializable
+data class MembersRequest(
+    val members: List<String>,
+    val readcache: Boolean = true
 )
 
 @Serializable

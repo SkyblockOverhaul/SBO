@@ -5,7 +5,6 @@ import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
-import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.utils.chat.Chat
@@ -14,7 +13,7 @@ import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
-import net.sbo.mod.utils.http.Http
+import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object Guis {
@@ -116,7 +115,7 @@ object Guis {
     }
 
     private fun countActivePlayers() {
-        Http.sendGetRequest("$API_URL/countActiveUsers")
+        SboApi.countActiveUsers()
             .result { response ->
                 if (!response.isSuccessful) {
                     SBOKotlin.logger.error("Failed to count active players: ${response.code} ${response.message}")

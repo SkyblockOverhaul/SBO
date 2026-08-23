@@ -1,6 +1,5 @@
 package net.sbo.mod.partyfinder
 
-import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
@@ -11,9 +10,8 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyInfo
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.PlayerInfoResponse
-import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.http.Http
+import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object PartyCheck {
@@ -48,12 +46,11 @@ object PartyCheck {
     fun checkPlayer(
         playerName: String,
         noMessage: Boolean = false,
-        readCache: Boolean = true,
         onComplete: ((PartyPlayerStats)-> Unit)? = null
     ) {
         if (!PartyFinderManager.hasSboKey()) return
         if (!noMessage) Chat.chat("§6[SBO] §eChecking player: §b$playerName")
-        Http.sendGetRequest("$API_URL/playerInfo?player=$playerName&readcache=$readCache&key=${sboData.sboKey}")
+        SboApi.playerInfo(playerName)
             .toJson<PlayerInfoResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     val playerInfo = response.playerInfo
@@ -84,7 +81,7 @@ object PartyCheck {
             return
         }
         if (!PartyFinderManager.hasSboKey()) return
-        Http.sendGetRequest("$API_URL/partyInfoByUuids?uuids=${partyMember.joinToString(",").replace("-", "")}&key=${sboData.sboKey}")
+        SboApi.partyInfoByUuids(partyMember.map { it.replace("-", "") })
             .toJson<PartyInfo>(ignoreUnknownKeys = true) { response ->
                 if (response.success) {
                     printPartyInfo(response.partyInfo)

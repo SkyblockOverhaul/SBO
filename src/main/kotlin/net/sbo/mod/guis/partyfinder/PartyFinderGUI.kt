@@ -275,7 +275,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }
     }
 
-    internal fun partyCreate(reqs: String, note: String, type: String, size: Int = 6) {
+    internal fun partyCreate(reqs: Reqs, note: String, type: String, size: Int = 6) {
         createParty(
             reqs = reqs,
             note = note,

@@ -272,22 +272,16 @@ class DianaPage(private val parent: PartyFinderGUI) {
         )
         createButton.hoverEffect(Theme.BUTTON_DEFAULT, Theme.BUTTON_HOVER)
         createButton.setOnClick {
-            val reqsMap = mapOf(
-                "lvl" to pfConfigState.inputs.diana.lvl,
-                "kills" to pfConfigState.inputs.diana.kills
+            val reqs = Reqs(
+                lvl = pfConfigState.inputs.diana.lvl,
+                kills = pfConfigState.inputs.diana.kills,
+                eman9 = pfConfigState.checkboxes.diana.eman9,
+                looting5 = pfConfigState.checkboxes.diana.looting5
             )
-            var reqString = ""
-            reqsMap.forEach { (key, value) ->
-                if (value != 0) {
-                    reqString += "$key$value,"
-                }
-            }
-            if (pfConfigState.checkboxes.diana.eman9) reqString += "eman9,"
-            if (pfConfigState.checkboxes.diana.looting5) reqString += "looting5,"
             val note = pfConfigState.inputs.diana.note
             val partyType = "Diana"
             hasSboKey()
-            parent.partyCreate(reqs = reqString, note = note, type = partyType)
+            parent.partyCreate(reqs = reqs, note = note, type = partyType)
             parent.closeCpWindow()
         }
         createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
