@@ -199,6 +199,7 @@ object SboDataObject {
                             SBOKotlin.logger.info("[$modName] Merged config folder from $oldDir to $newDir (case-insensitive FS)")
                         } else {
                             val tempDir = Files.createTempDirectory(baseDir, "${newName}_tmp_")
+                            Files.delete(tempDir)
                             try {
                                 Files.move(oldDir, tempDir)
                                 Files.move(tempDir, newDir)

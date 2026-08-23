@@ -71,7 +71,7 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim().lowercase()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                if ((!trailing.startsWith(" ") || rareMobs.contains(mob)) && Diana.receiveRareMob) {
+                if (rareMobs.contains(mob) && Diana.receiveRareMob) {
                     val mobType: Diana.ReceiveList = when (mob) {
                         "minos inquisitor", "inquisitor", "inq" -> Diana.ReceiveList.INQ
                         "king minos", "king" -> Diana.ReceiveList.KING
@@ -432,6 +432,7 @@ object WaypointManager {
 
     private fun updateRareMobWaypoints() {
         val level = mc.level ?: return
+        val player = mc.player ?: return
 
         val shouldAddWaypoints = Diana.scanWorldForRareMob
 
@@ -459,6 +460,9 @@ object WaypointManager {
             rareMobPositions += standPos
 
             if (!shouldAddWaypoints) return@forEach
+
+            // Best-effort to not be considered a cheat
+            if (!player.hasLineOfSight(entity)) return@forEach
 
             if (existing.none { it.pos.distanceTo(standPos) <= 60 }) {
                 val pos = floorToGround(level, standPos)
@@ -534,10 +538,6 @@ object WaypointManager {
                 removeWaypoint(waypoint)
             }
         }
-    }
-
-    fun removeNearbyRareMobWaypointAt(pos: SboVec) {
-        removeWithinDistanceFrom(pos, "rareMob", 30, 1)
     }
 
     /**
