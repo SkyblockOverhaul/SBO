@@ -115,6 +115,8 @@ data class SboData(
     var b2bFood: Boolean = false,
     var sphinxSinceLsFood: Int = 0,
     var b2bFoodLs: Boolean = false,
+
+    var lastStatsProfile: String = "",
 )
 
 data class AchievementsData(
