@@ -89,6 +89,7 @@ class Waypoint(
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
     var preventInvalidRemoval = false
+    var rareMobMissingTicks: Int = 0
 
     private var visualOrderText = ChatUtils.fromLegacy(text).visualOrderText
 
