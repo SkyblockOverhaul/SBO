@@ -103,7 +103,7 @@ object Diana : CategoryKt("Diana") {
     }
 
     var beamDistance by int(8) {
-        this.name = Literal("Beam Distance")
+        this.name = Literal("Beacon Beam Distance")
         this.description = Literal("Hide the beam when this many blocks or more close to it.")
     }
 
@@ -144,7 +144,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("If enabled, the warp key will not warp you if you are within 60 blocks of a burrow.")
     }
 
-    var warpDiff by int(10) {
+    var warpDiff by int(22) {
         this.range = 0..60
         this.slider = true
         this.name = Literal("Warp Block Difference")
