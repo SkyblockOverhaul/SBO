@@ -112,7 +112,7 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a title to use spade when the arrow guess fails to solve the burrow. This might sometimes show wrongfully on a second solve attempt if the first was successfull and second failed for any reason.")
     }
 
-    var showTitleWhenChainEnds by boolean(true) {
+    var showTitleWhenChainEnds by boolean(false) {
         this.name = Literal("Show Title When Chain Ends")
         this.description = Literal("Shows a title to use spade when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby, which will usually point to a new Start burrow to hold up your concurrent chains.")
     }
