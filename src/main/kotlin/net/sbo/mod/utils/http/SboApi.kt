@@ -2,6 +2,7 @@ package net.sbo.mod.utils.http
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.utils.data.MembersRequest
 import net.sbo.mod.utils.data.PartyRequest
@@ -12,13 +13,27 @@ import java.nio.charset.StandardCharsets
 /**
  * Thin client for the SBO backend.
  *
- * the SBO key travels in the `x-sbo-key` header
+ * the SBO key travels in the `x-sbo-key` header, the mod version in the `X-SBO-Version` header
  */
 object SboApi {
     private val json = Json { encodeDefaults = false }
+    
+    private val VERSION_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9.+_-]{0,31}")
 
-    private fun headers(): Map<String, String> =
-        sboData.sboKey.takeIf { it.isNotBlank() }?.let { mapOf("x-sbo-key" to it) } ?: emptyMap()
+    private var cachedVersion: String? = null
+
+    private fun modVersion(): String? {
+        cachedVersion?.let { return it }
+        val version = runCatching { SBOKotlin.version }.getOrNull()
+            ?.takeIf { VERSION_PATTERN.matches(it) } ?: return null
+        cachedVersion = version
+        return version
+    }
+
+    private fun headers(): Map<String, String> = buildMap {
+        sboData.sboKey.takeIf { it.isNotBlank() }?.let { put("x-sbo-key", it) }
+        modVersion()?.let { put("X-SBO-Version", it) }
+    }
 
     private fun post(path: String, body: String = "{}"): HttpRequestHandle =
         Http.sendPostRequest("$API_URL$path", body, headers())
