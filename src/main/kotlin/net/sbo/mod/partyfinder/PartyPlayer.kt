@@ -65,8 +65,6 @@ object PartyPlayer {
             }
         }
 
-        // The confirmation, not "Switching to profile": while the switch is in flight the tab list
-        // still holds the old profile.
         Register.onChatMessage(
             Regex("^Your profile was changed to: (\\S+)"),
             noFormatting = true
@@ -91,7 +89,6 @@ object PartyPlayer {
 
     /**
      * Refetches with readCache=false, for /sboreloadstats.
-     *
      * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
      */
     fun reloadStats(
@@ -107,7 +104,6 @@ object PartyPlayer {
 
     /**
      * Reads through the API cache, unless the profile or the name changed.
-     *
      * @param forceRefresh Skips the 10 minute freshness check.
      * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
      */
@@ -141,8 +137,6 @@ object PartyPlayer {
             if (onError != null) onError(error) else callback(stats)
         }
 
-        // Off the render thread there is no player while a profile switch is still loading, an
-        // empty name would just come back as "Player not found".
         val name = Player.getName()?.takeIf { it.isNotBlank() }
         if (name == null) {
             fail(Exception("No player name available"))
@@ -155,8 +149,6 @@ object PartyPlayer {
             .toJson<PlayerInfoResponse>(ignoreUnknownKeys = true) { response ->
                 refreshing = false
                 if (response.success) {
-                    // The client knows the current name, so a stale one means the server cache is
-                    // outdated and needs one refetch to pick the rename up.
                     if (readCache && nameOutdated(response.playerInfo) && cacheBypassReadyIn() == 0L) {
                         fetch(readCache = false, profile = profile, onError = onError, callback = callback)
                         return@toJson
