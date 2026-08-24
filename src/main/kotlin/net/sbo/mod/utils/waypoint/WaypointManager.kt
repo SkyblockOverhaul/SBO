@@ -34,6 +34,9 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
+private const val RARE_MOB_STALE_TICKS = 40
+private const val RARE_MOB_VALIDATION_DISTANCE = 30.0
+
 object WaypointManager {
     private val waypoints = ConcurrentHashMap<String, CopyOnWriteArrayList<Waypoint>>()
     private val rareMobs: Set<String> = setOf(
@@ -508,33 +511,31 @@ object WaypointManager {
         return waypoint
     }
 
-    private fun removeStaleRareMobWaypoints(level: ClientLevel, rareMobPositions: List<SboVec>) {
+    private fun removeStaleRareMobWaypoints(
+        level: ClientLevel,
+        rareMobPositions: List<SboVec>
+    ) {
+        val player = mc.player ?: return
+        val playerPos = SboVec(player.x, player.y, player.z)
+
         getWaypointsOfType("rareMob").forEach { waypoint ->
-            val blockPos = waypoint.pos.roundLocationToBlock()
-
-            // If the chunk waypoint is in is not loaded, no rare mob entity will exist, since the entity is not loaded as well.
-            if (!level.isLoaded(blockPos.toBlockPos()))
+            if (playerPos.distanceTo(waypoint.pos) > RARE_MOB_VALIDATION_DISTANCE) {
+                waypoint.rareMobMissingTicks = 0
                 return@forEach
-
-            // The radius of a rare mob 60 blocks near the waypoint spans multiple chunks (> 16) so we need to also check that all the neighbor chunks relevant to our radius are loaded as well.
-            val center = waypoint.pos.roundLocationToBlock().toBlockPos()
-            val radius = 60
-
-            val minChunkX = center.x - radius shr 4
-            val maxChunkX = center.x + radius shr 4
-            val minChunkZ = center.z - radius shr 4
-            val maxChunkZ = center.z + radius shr 4
-
-            for (chunkX in minChunkX..maxChunkX) {
-                for (chunkZ in minChunkZ..maxChunkZ) {
-                    if (!level.hasChunk(chunkX, chunkZ)) {
-                        return@forEach
-                    }
-                }
             }
 
-            // If the chunk waypoint is in and all the neighboring chunks in our radius distance is loaded but we were not able to find a rare mob entity in our radius distance to the waypoint, we should clean up the leftover stale rare mob waypoint by removing it.
-            if (rareMobPositions.none { it.distanceTo(waypoint.pos) <= radius }) {
+            val mobPresent = rareMobPositions.any {
+                it.distanceTo(waypoint.pos) <= RARE_MOB_VALIDATION_DISTANCE
+            }
+
+            if (mobPresent) {
+                waypoint.rareMobMissingTicks = 0
+                return@forEach
+            }
+
+            waypoint.rareMobMissingTicks++
+
+            if (waypoint.rareMobMissingTicks >= RARE_MOB_STALE_TICKS) {
                 removeWaypoint(waypoint)
             }
         }
