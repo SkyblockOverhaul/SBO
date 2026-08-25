@@ -959,6 +959,22 @@ object WaypointManager {
         return lastWarp
     }
 
+    private fun getFinalClosestWarpToFixedTarget(targetPos: SboVec): String? {
+        var simulatedPlayerPos = Player.getLastPosition()
+        var lastWarp: String? = null
+
+        repeat(4) {
+            val warp = getClosestWarp(targetPos, simulatedPlayerPos) ?: return lastWarp
+            if (warp == lastWarp) return warp
+
+            lastWarp = warp
+            val warpPoint = getWarpPoint(warp) ?: return warp
+            simulatedPlayerPos = warpPoint.pos
+        }
+
+        return lastWarp
+    }
+
     fun warpToGuess() {
         val bestGuess = getBestGuess() ?: return
         getFinalClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
@@ -967,7 +983,7 @@ object WaypointManager {
     fun warpToRareMob() {
         val newestRareMob = getWaypointsOfType("rareMob").maxByOrNull { it.creationNs }
         val pos = newestRareMob?.pos ?: return
-        val warp = getFinalClosestWarp(pos) ?: return
+        val warp = getFinalClosestWarpToFixedTarget(pos) ?: return
 
         executeWarpCommand(warp)
     }
