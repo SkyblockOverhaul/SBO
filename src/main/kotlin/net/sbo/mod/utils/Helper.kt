@@ -526,7 +526,7 @@ object Helper {
             get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
-    private fun getCustomMessage(message: Array<String>): String {
+    private fun getCustomMessage(message: Array<out String>): String {
         return message.firstOrNull()?.trim() ?: ""
     }
 
