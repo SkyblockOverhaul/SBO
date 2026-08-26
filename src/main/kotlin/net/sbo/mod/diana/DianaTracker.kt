@@ -127,12 +127,35 @@ object DianaTracker {
         val createdAt = item.creation
         val secondsPassedSinceCreation = Helper.getSecondsPassed(createdAt)
 
-        if (secondsPassedSinceCreation > 6) {
-            if (Debug.debugMessages) Chat.chat("debug: not tracking item with creation older than 6 seconds. secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt")
+        if (secondsPassedSinceCreation <= 6) {
+            trackWithPickuplog(item.itemId)
             return
         }
 
-        trackWithPickuplog(item.itemId)
+        val isDianaDrop = when (item.itemId) {
+            "HILT_OF_REVELATIONS", "CROWN_OF_GREED" -> true
+            else -> false
+        }
+
+        if (isDianaDrop && Helper.dianaMobDiedRecently(4)) {
+            // Happens if user's OS time is not close (within 6 seconds) to the server's time for any reason. We can't use System.nanoTime comparision because server sends it in unix-time (milliseconds since epoch), and using System.currentTimeMillis depends on OS clock via NTP synchronization to be within 6 seconds of Hypixel's NTP synchronized clock.
+
+            if (Debug.debugMessages) {
+                Chat.chat(
+                    "debug: creation timestamp unreliable, using Diana death fallback. " +
+                        "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
+                )
+            }
+            trackWithPickuplog(item.itemId)
+            return
+        }
+
+        if (Debug.debugMessages) {
+            Chat.chat(
+                "debug: not tracking item with creation older than 6 seconds. " +
+                    "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
+            )
+        }
     }
 
     private fun trackWithPickuplog(itemId: String) {
