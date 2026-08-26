@@ -562,6 +562,8 @@ object WaypointManager {
     }
 
     private fun renderSubGuessLines(context: LevelRenderContext) {
+        if (!Diana.showArrowSubGuesses) return
+
         val color = Color(Customization.SubGuessColor)
 
         val rgb = floatArrayOf(
