@@ -6,6 +6,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.utils.chat.Chat
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -138,6 +139,7 @@ object SoundHandler {
             AudioSystem.getAudioInputStream(file)
         } catch (e: Exception) {
             logger.error("[$MOD_ID] Failed to read audio file: ${file.name}", e)
+            Chat.chat("§c[SBO] Something went wrong while reading the file ${file.name} try using an another format and if the issue persist, please contact us")
             return
         }
 
