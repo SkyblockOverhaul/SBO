@@ -226,6 +226,8 @@ object BurrowDetector {
 
             ArrowGuessBurrow.removeSubGuessFromInternalState(pos)
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
+
+            return
         }
 
         burrowDetect(packet)
@@ -274,7 +276,9 @@ object BurrowDetector {
 
         burrow.type = type
 
+        ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
         ArrowGuessBurrow.removeFromInternalState(pos)
+        WaypointManager.removeWaypointAt(pos, "guess")
 
         val existingTimesDug =
             carriedTimesDug
