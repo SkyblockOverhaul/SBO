@@ -114,7 +114,7 @@ object Chains : DirtyFlushableOverlay() {
         } else {
             // don't confuse user with known/arrow and mismatches etc., simple overlay mode
             if (knownStart >= 1) {
-                lines.add(OverlayTextLine("$GRAY - ${GREEN}Pending Start: ${colorBasedOnAmount(knownStart)}$knownStart"))
+                lines.add(OverlayTextLine("$GRAY - ${GREEN}Pending Start: ${colorBasedOnAmount(knownWStart)}$knownWStart"))
             }
             lines.add(OverlayTextLine("$GRAY - ${AQUA}Active: $waypointsColor$waypoints"))
         }
