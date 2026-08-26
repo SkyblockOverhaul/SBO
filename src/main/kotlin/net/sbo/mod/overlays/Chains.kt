@@ -89,12 +89,12 @@ object Chains : DirtyFlushableOverlay() {
         val chainsMax = chains.coerceAtLeast(7)
         val waypointsMax = waypoints.coerceAtLeast(7)
 
+        val debug = Debug.debugMessages
         if (debug) {
             lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/$chainsMax ($knownWStart pending start)"))
             lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/$waypointsMax ($knownW known, $arrowW arrow)"))
 
             // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly
-            val debug = Debug.debugMessages
             if (issue) { // hide for less verbosity unless theres an issue
                 failureTimes++
 
@@ -113,7 +113,7 @@ object Chains : DirtyFlushableOverlay() {
             }
         } else {
             // don't confuse user with known/arrow and mismatches etc., simple overlay mode
-            if (knownStart >= 1) {
+            if (knownWStart >= 1) {
                 lines.add(OverlayTextLine("$GRAY - ${GREEN}Pending Start: ${colorBasedOnAmount(knownWStart)}$knownWStart"))
             }
             lines.add(OverlayTextLine("$GRAY - ${AQUA}Active: $waypointsColor$waypoints"))
