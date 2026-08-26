@@ -239,6 +239,7 @@ object AchievementManager {
 
         if (itemsData.MANTI_CORE_LS >= 1) unlockAchievement(114)
         if (totalCores >= 1) unlockAchievement(113)
+        if (totalCores >= 3 ) unlockAchievement(129)
 
         if (totalBrainFood >= 5) unlockAchievement(85)
 
@@ -518,6 +519,7 @@ object AchievementManager {
         addAchievement(110, "b2b2b Manticore", "Spawn 3 Manticores in a row", "Celestial")
         addAchievement(113, "First core", "Drop your first Manti-core", "Mythic")
         addAchievement(94, "Back-to-Back core", "Drop 2 Manti-cores in a row", "Celestial")
+        addAchievement(129, "Oh baby a triple!", "Get 3 manti-cores in 1 event", "Celestial", repeatable = false)
         addAchievement(114, "First Lootshare core", "Lootshare your first Manti-core", "Legendary")
         addAchievement(95, "Back-to-Back Lootshare core", "Lootshare 2 Manti-cores in a row", "Impossible")
 

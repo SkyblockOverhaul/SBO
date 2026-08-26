@@ -45,7 +45,10 @@ object SoundHandler {
     /**
      * Returns available sounds with their file extensions (e.g., "sound.mp3", "music.ogg")
      */
-    fun getAvailableSoundsWithExt(): List<String> = availableSoundsWithExt.sorted().toList()
+    fun getAvailableSoundsWithExt(): List<String> {
+        scanUserSounds() // Update to avoid the user having to restart minecraft to see his added sound
+        return availableSoundsWithExt.sorted().toList()
+    }
 
     /**
      * Plays a custom sound.
@@ -112,7 +115,7 @@ object SoundHandler {
     }
 
     /** Scans the config directory for user-added sounds */
-    private fun scanUserSounds() {
+    fun scanUserSounds() {
         File(SOUND_DIR_PATH).listFiles()
             ?.filter { it.isFile }
             ?.filter { file -> SUPPORTED_EXTENSIONS.any { ext -> file.name.endsWith(ext, ignoreCase = true) } }
