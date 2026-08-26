@@ -174,7 +174,7 @@ object BurrowDetector {
     }
 
     fun requestSpade(reason: String) {
-        if (World.getWorld() != "Hub" || !Diana.spadeGuess) return
+        if (!Diana.spadeGuess || !Helper.hasSpade || World.getWorld() != "Hub") return
 
         val color = if (reason == "failure") "c" else "e"
 
