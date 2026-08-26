@@ -79,7 +79,7 @@ object Chains : DirtyFlushableOverlay() {
                 "${GOLD}More waypoints than chains started - possible issue with waypoint cleanup"
 
             else ->
-                "${DARK_RED}Internal state mismatch! Please report this!"
+                "${DARK_RED}Internal state mismatch!"
         }
 
         val lines = mutableListOf<OverlayTextLine>()
