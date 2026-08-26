@@ -933,54 +933,42 @@ object DianaTracker {
     }
 
     private fun trackShardsWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("^(.*?) You charmed a (.*?) and captured (.*?) Shards §7from it.$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(2).removeFormatting()
-            val amount = matchResult.group(3).removeFormatting().toIntOrNull() ?: 0
+        Register.onChatMessageCancelable(
+            Pattern.compile(
+                "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §a(.*?) Shards?§7!$",
+                Pattern.DOTALL
+            )
+        ) { message, matchResult ->
+            val shard = matchResult.group(3).removeFormatting()
+            val amount = matchResult.group(2).toIntOrNull() ?: 0
+
             when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
                 "Sphinx" -> trackItem("SPHINX_SHARD", amount)
                 "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
                 "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
                 "Harpy" -> trackItem("HARPY_SHARD", amount)
+                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
+                // "Minos Hunter" intentionally skipped until its tracker entry exists.
             }
             true
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("^(.*?) You charmed a (.*?) and captured its §9Shard§7.$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(
+            Pattern.compile(
+                "^§e§lLOOT SHARE §fYou received §b(\\d+) §5(.*?) §fShards? for assisting §b(.*?)§f!$",
+                Pattern.DOTALL
+            )
+        ) { message, matchResult ->
             val shard = matchResult.group(2).removeFormatting()
-            val amount = 1
-            when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
-                "Sphinx" -> trackItem("SPHINX_SHARD", amount)
-                "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
-                "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
-                "Harpy" -> trackItem("HARPY_SHARD", amount)
-            }
-            true
-        }
+            val amount = matchResult.group(1).toIntOrNull() ?: 0
 
-        Register.onChatMessageCancelable(Pattern.compile("^§aYou caught (.*?) (.*?) §aShards(.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(2).removeFormatting()
-            val amount = matchResult.group(1).removeFormatting().replace("x", "").trim().toIntOrNull() ?: 0
             when (shard) {
                 "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
                 "Sphinx" -> trackItem("SPHINX_SHARD", amount)
                 "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
                 "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
                 "Harpy" -> trackItem("HARPY_SHARD", amount)
-            }
-            true
-        }
-
-        Register.onChatMessageCancelable(Pattern.compile("^§aYou caught a (.*?) §aShard!$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(1).removeFormatting()
-            val amount = 1
-            when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
-                "Sphinx" -> trackItem("SPHINX_SHARD", amount)
-                "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
-                "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
-                "Harpy" -> trackItem("HARPY_SHARD", amount)
+                // "Minos Hunter" intentionally skipped until its tracker entry exists.
             }
             true
         }
