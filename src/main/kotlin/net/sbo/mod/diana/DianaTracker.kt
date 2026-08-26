@@ -834,7 +834,7 @@ object DianaTracker {
             Chat.chat("§6[SBO] §cLootshared a $item!")
             when (itemId) {
                 "DAEDALUS_STICK" -> unlockAchievement(15)
-                "CHIMERA" -> unlockAchievement(16)
+                "CHIMERA" -> unlockAchievement(13)
             }
         } else {
             when (itemId) {
