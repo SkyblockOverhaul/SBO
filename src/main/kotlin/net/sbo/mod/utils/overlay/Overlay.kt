@@ -200,7 +200,11 @@ class Overlay(
         for (line in lines) {
             if (!line.checkCondition()) continue
 
-            val lineX = currentX.toInt()
+            val lineX = if (line.centered) {
+                currentX.toInt() + (totalWidth - line.width) / 2
+            } else {
+                currentX.toInt()
+            }
             val lineY = currentY.toInt()
 
             lineStates += LineRenderState(line, lineX, lineY)
