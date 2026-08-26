@@ -786,7 +786,20 @@ object DianaTracker {
         }
 
         if (Diana.lootAnnouncerChat && showMessageOrTitle) {
-            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
+            val customMsg = when (itemId) {
+                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind)
+                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind)
+                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind)
+                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind)
+                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind)
+                else -> Pair(false, "")
+            }
+
+            if (customMsg.first) {
+                Chat.chat(customMsg.second)
+            } else {
+                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
+            }
         }
 
         if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare) {
