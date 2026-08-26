@@ -958,7 +958,7 @@ object DianaTracker {
     private fun trackShardsWithChat() {
         Register.onChatMessageCancelable(
             Pattern.compile(
-                "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §a(.*?) Shards?§7!$",
+                "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §[0-9a-f](.*?) Shards?§7!$",
                 Pattern.DOTALL
             )
         ) { message, matchResult ->
@@ -978,7 +978,7 @@ object DianaTracker {
 
         Register.onChatMessageCancelable(
             Pattern.compile(
-                "^§e§lLOOT SHARE §fYou received §b(\\d+) §5(.*?) §fShards? for assisting §b(.*?)§f!$",
+                "^§e§lLOOT SHARE §fYou received §b(\\d+) §[0-9a-f](.*?) §fShards for assisting §b(.*?)§f!$",
                 Pattern.DOTALL
             )
         ) { message, matchResult ->
