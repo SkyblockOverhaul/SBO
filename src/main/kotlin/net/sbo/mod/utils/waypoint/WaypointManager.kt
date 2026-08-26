@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
-private const val RARE_MOB_STALE_TICKS = 40
+private const val RARE_MOB_STALE_TICKS = 20
 private const val RARE_MOB_VALIDATION_DISTANCE = 30.0
 
 object WaypointManager {
@@ -464,10 +464,10 @@ object WaypointManager {
 
             if (!shouldAddWaypoints) return@forEach
 
-            // Best-effort to not be considered a cheat
-            if (!player.hasLineOfSight(entity)) return@forEach
-
             if (existing.none { it.pos.distanceTo(standPos) <= 60 }) {
+                // Best-effort to not be considered a cheat
+                if (!player.hasLineOfSight(entity)) return@forEach
+
                 val pos = floorToGround(level, standPos)
 
                 val isOwnSpawn =
