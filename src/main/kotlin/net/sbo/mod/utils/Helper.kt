@@ -527,7 +527,7 @@ object Helper {
     }
 
     private fun getCustomMessage(message: Array<out String>): String {
-        return message.firstOrNull()?.trim() ?: ""
+        return message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
     }
 
     private fun getDropInfo(dropName: String): DropInfo? {
