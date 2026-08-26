@@ -959,7 +959,7 @@ object WaypointManager {
         return lastWarp
     }
 
-    private fun getFinalClosestWarpToFixedTarget(targetPos: SboVec): String? {
+    fun getFinalClosestWarpToFixedTarget(targetPos: SboVec): String? {
         var simulatedPlayerPos = Player.getLastPosition()
         var lastWarp: String? = null
 
