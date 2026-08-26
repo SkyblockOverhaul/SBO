@@ -161,7 +161,7 @@ object DianaTracker {
 
     fun trackWithSacksMessage(itemName: String, amount: Int) {
         if (!allowSackTracking) return
-        if (!dianaMobDiedRecently(4)) return
+        if (!dianaMobDiedRecently(30)) return
         val item = itemName.replace("Ingot", "").trim()
         if (sackDrops.contains(item)) {
             trackItem(item, amount)
