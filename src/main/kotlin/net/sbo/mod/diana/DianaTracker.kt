@@ -785,7 +785,10 @@ object DianaTracker {
             else -> Triple("§f", -1, -1) // shouldn't happen
         }
 
-        val price = "§6${Helper.getItemPriceFormatted(itemId, amount)} coins"
+        val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
+        val price = "§6$priceRaw coins"
+
+        val priceText = if (priceRaw != "0") "(+$price)" else ""
 
         val ls = gotLootShareRecently()
         val lsText = if (ls) " (LS)" else ""
@@ -827,7 +830,7 @@ object DianaTracker {
             if (customMsg.first) {
                 Chat.chat(customMsg.second)
             } else {
-                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
+                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6$priceText")
             }
         }
 
