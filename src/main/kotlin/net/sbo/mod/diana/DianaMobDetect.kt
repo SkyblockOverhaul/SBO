@@ -80,7 +80,7 @@ object DianaMobDetect {
 
     private fun parseStarFromName(name: String): Boolean = name.contains("✯")//todo: implement overlay for star check
 
-    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert)
+    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
 
     private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
