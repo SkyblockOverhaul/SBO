@@ -309,6 +309,8 @@ data class OverlayData(
 data class SoundSettingsData(
     var rareMobSound: String = "",
     var rareMobVolume: Float = 1.0f,
+    var lowHpSound: String = "",
+    var lowHpVolume: Float = 1.0f,
     var inqSound: String = "",
     var inqVolume: Float = 1.0f,
     var sphinxSound: String = "",

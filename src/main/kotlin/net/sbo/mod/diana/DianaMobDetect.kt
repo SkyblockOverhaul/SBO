@@ -9,6 +9,7 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.utils.SoundHandler
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
@@ -276,6 +277,7 @@ object DianaMobDetect {
         if (!shouldAlertForMob(name)) return
         val hpThreshold = if (Diana.hpAlert > 0.0) Diana.hpAlert * 1_000_000 else 0.0
         if (hpThreshold > 0.0 && health <= hpThreshold) {
+            playCustomSound(SboDataObject.soundSettingsData.lowHpSound, SboDataObject.soundSettingsData.lowHpVolume)
             showTitle("§cHP LOW!", null, 10, 40, 10)
             warned.add(id)
         }

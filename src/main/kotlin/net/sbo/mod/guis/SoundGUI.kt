@@ -22,6 +22,7 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
 
     private val soundSettings = listOf(
         SoundSetting("Rare Mob Spawn", { SboDataObject.soundSettingsData.rareMobSound }, { SboDataObject.soundSettingsData.rareMobVolume }, { v -> SboDataObject.soundSettingsData.rareMobSound = v }, { v -> SboDataObject.soundSettingsData.rareMobVolume = v }),
+        SoundSetting("Rare Mob Low HP", { SboDataObject.soundSettingsData.lowHpSound }, { SboDataObject.soundSettingsData.lowHpVolume }, { v -> SboDataObject.soundSettingsData.lowHpSound = v }, { v -> SboDataObject.soundSettingsData.lowHpVolume = v }),
         SoundSetting("Inquisitor Spawn", { SboDataObject.soundSettingsData.inqSound }, { SboDataObject.soundSettingsData.inqVolume }, { v -> SboDataObject.soundSettingsData.inqSound = v }, { v -> SboDataObject.soundSettingsData.inqVolume = v }),
         SoundSetting("Sphinx Spawn", { SboDataObject.soundSettingsData.sphinxSound }, { SboDataObject.soundSettingsData.sphinxVolume }, { v -> SboDataObject.soundSettingsData.sphinxSound = v }, { v -> SboDataObject.soundSettingsData.sphinxVolume = v }),
         SoundSetting("King Minos Spawn", { SboDataObject.soundSettingsData.kingSound }, { SboDataObject.soundSettingsData.kingVolume }, { v -> SboDataObject.soundSettingsData.kingSound = v }, { v -> SboDataObject.soundSettingsData.kingVolume = v }),
