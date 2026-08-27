@@ -788,7 +788,7 @@ object DianaTracker {
         val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
         val price = "§6$priceRaw coins"
 
-        val priceText = if (priceRaw != "0") "(+$price)" else ""
+        val priceText = if (priceRaw != "0") " (+$price)" else ""
 
         val ls = gotLootShareRecently()
         val lsText = if (ls) " (LS)" else ""
