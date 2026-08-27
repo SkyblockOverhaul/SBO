@@ -9,7 +9,6 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
-import net.sbo.mod.utils.SoundHandler
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
@@ -81,7 +80,7 @@ object DianaMobDetect {
 
     private fun parseStarFromName(name: String): Boolean = name.contains("✯")//todo: implement overlay for star check
 
-    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
+    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && Diana.hpAlert > 0.0
 
     private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
@@ -212,7 +211,7 @@ object DianaMobDetect {
         if (name.isEmpty() || name == "Armor Stand") return null
 
         parseKingHits(name)?.let {
-            return OverlayTextLine("§6King Minos §7- §5$it Hits", centered = true)
+            return OverlayTextLine("§6King Minos §7- §5$it Hits")
         }
 
         if (!hasMythoMobTypeChar(name)) return null
