@@ -500,13 +500,13 @@ object Helper {
         }
     }
 
-    fun checkCustomDropMessage(dropName: String, magicFind: Int): Pair<Boolean, String> {
+    fun checkCustomDropMessage(dropName: String, magicFind: Int, amountOverride: Int? = null): Pair<Boolean, String> {
         val info = getDropInfo(dropName) ?: return Pair(false, "")
 
         if (!info.isEnabled) return Pair(false, "")
 
         val resultText = info.template
-            .replace("{amount}", info.totalAmount.toString())
+            .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace('&', '§')

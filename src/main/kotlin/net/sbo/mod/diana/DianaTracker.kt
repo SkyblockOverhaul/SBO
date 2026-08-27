@@ -808,13 +808,19 @@ object DianaTracker {
             }
         }
 
+        val totalCount = if (realLsCount != -1) {
+            realCount + realLsCount
+        } else {
+            realCount
+        }
+
         if (Diana.lootAnnouncerChat && showMessageOrTitle) {
             val customMsg = when (itemId) {
-                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind)
-                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind)
-                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind)
-                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind)
-                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind)
+                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind, totalCount)
+                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind, totalCount)
+                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind, totalCount)
+                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind, totalCount)
+                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind, totalCount)
                 else -> Pair(false, "")
             }
 
