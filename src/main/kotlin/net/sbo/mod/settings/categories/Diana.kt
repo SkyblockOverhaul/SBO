@@ -122,6 +122,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time.")
     }
 
+    var simpleChainsOverlayMode by boolean(true) {
+        this.name = Literal("Simple Chains Overlay Mode")
+        this.description = Literal("Only shows Pending Start and Active waypoint amount, never showing internal state mismatch issues aimed at users that want to troubleshoot/debug mod issues.")
+    }
+
     init {
         separator {
             this.title = "Diana Warp"

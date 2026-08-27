@@ -90,12 +90,12 @@ object Chains : DirtyFlushableOverlay() {
         val waypointsMax = waypoints.coerceAtLeast(7)
 
         val debug = Debug.debugMessages
-        if (debug) {
+        if (!Diana.simpleChainsOverlayMode) {
             lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/$chainsMax ($knownWStart pending start)"))
             lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/$waypointsMax ($knownW known, $arrowW arrow)"))
 
             // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly
-            if (issue) { // hide for less verbosity unless theres an issue
+            if (issue || debug) { // hide for less verbosity unless theres an issue
                 failureTimes++
 
                 // Only start showing for consistent issues lasting more than 4 seconds, otherwise this can flicker at times when a new burrow is being detected
