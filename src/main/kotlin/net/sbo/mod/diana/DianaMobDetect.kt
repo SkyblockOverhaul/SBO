@@ -278,7 +278,7 @@ object DianaMobDetect {
         val soundHpThreshold = if (Diana.soundHpAlert > 0.0) Diana.soundHpAlert * 1_000_000 else 0.0
 
         if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
-            playCustomSound(SboDataObject.soundSettingsData.lowHpSound, SboDataObject.soundSettingsData.lowHpVolume) // Play the sound regardless of the hp alert setting
+            playCustomSound(SboDataObject.soundSettingsData.lowHpSound, SboDataObject.soundSettingsData.lowHpVolume)
             warned.add(id)
         }
 
