@@ -278,7 +278,14 @@ object DianaMobDetect {
         val soundHpThreshold = if (Diana.soundHpAlert > 0.0) Diana.soundHpAlert * 1_000_000 else 0.0
 
         if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
-            playCustomSound(SboDataObject.soundSettingsData.lowHpSound, SboDataObject.soundSettingsData.lowHpVolume)
+            when (RareDianaMob.fromName(name)) {
+                RareDianaMob.INQ -> playCustomSound(SboDataObject.soundSettingsData.lowInqHpSound, SboDataObject.soundSettingsData.lowInqHpVoume)
+                RareDianaMob.KING ->  playCustomSound(SboDataObject.soundSettingsData.lowKingHpSound, SboDataObject.soundSettingsData.lowKingHpVoume)
+                RareDianaMob.SPHINX -> playCustomSound(SboDataObject.soundSettingsData.lowSphinxHpSound, SboDataObject.soundSettingsData.lowSphinxHpVoume)
+                RareDianaMob.MANTI -> playCustomSound(SboDataObject.soundSettingsData.lowMantiHpSound, SboDataObject.soundSettingsData.lowMantiHpVoume)
+                else -> {}
+            }
+
             warned.add(id)
         }
 
