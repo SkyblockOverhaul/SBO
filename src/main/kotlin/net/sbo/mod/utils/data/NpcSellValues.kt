@@ -19,6 +19,7 @@ val npcSellValueMap = mapOf(
     "DAEDALUS_STICK" to 1000000,
     "CROWN_OF_GREED" to 1000000,
     "BRAIN_FOOD" to 1000000,
+    "FATEFUL_STINGER" to 1000000,
     "MANTI_CORE" to 5000000,
     "SHIMMERING_WOOL" to 5000000,
 )
