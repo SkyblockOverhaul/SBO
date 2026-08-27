@@ -266,19 +266,19 @@ object BurrowDetector {
     ) {
         if (!Diana.closeBurrowDetection) return
 
-        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
+        ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
+        ArrowGuessBurrow.removeFromInternalState(pos)
+        WaypointManager.removeWaypointAt(pos, "guess")
 
         if (WaypointManager.waypointExists("burrow", pos).first) return
+
+        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
         val burrow = burrows.getOrPut(posString) {
             Burrow(pos)
         }
 
         burrow.type = type
-
-        ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
-        ArrowGuessBurrow.removeFromInternalState(pos)
-        WaypointManager.removeWaypointAt(pos, "guess")
 
         val existingTimesDug =
             carriedTimesDug
