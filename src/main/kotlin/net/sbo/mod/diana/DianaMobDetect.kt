@@ -81,7 +81,7 @@ object DianaMobDetect {
 
     private fun parseStarFromName(name: String): Boolean = name.contains("✯")//todo: implement overlay for star check
 
-    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && Diana.hpAlert > 0.0
+    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
 
     private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
@@ -212,7 +212,7 @@ object DianaMobDetect {
         if (name.isEmpty() || name == "Armor Stand") return null
 
         parseKingHits(name)?.let {
-            return OverlayTextLine("§6King Minos §7- §5$it Hits")
+            return OverlayTextLine("§6King Minos §7- §5$it Hits", centered = true)
         }
 
         if (!hasMythoMobTypeChar(name)) return null
@@ -276,8 +276,10 @@ object DianaMobDetect {
         if (id in defeated || id in warned) return
         if (!shouldAlertForMob(name)) return
         val hpThreshold = if (Diana.hpAlert > 0.0) Diana.hpAlert * 1_000_000 else 0.0
-        if (hpThreshold > 0.0 && health <= hpThreshold) {
-            playCustomSound(SboDataObject.soundSettingsData.lowHpSound, SboDataObject.soundSettingsData.lowHpVolume)
+        val soundHpThreshold = if (Diana.soundHpAlert > 0.0) Diana.soundHpAlert * 1_000_000 else 0.0
+
+        if (health <= soundHpThreshold && soundHpThreshold > 0.0) playCustomSound(SboDataObject.soundSettingsData.lowHpSound, SboDataObject.soundSettingsData.lowHpVolume) // Play the sound regardless of the hp alert setting
+        if (health <= hpThreshold && hpThreshold > 0.0) {
             showTitle("§cHP LOW!", null, 10, 40, 10)
             warned.add(id)
         }

@@ -522,6 +522,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Sends a title alert when a Rare Mob is below the set HP value in Million. (0 to disable)")
     }
 
+    var soundHpAlert by double(0.0) {
+        this.name = Literal("Sound HP Alert")
+        this.description = Literal("Sends the sound \"Rare Mob HP\" when a Rare Mob is melow the set HP value in Million. (0 to disable)")
+    }
+
     var noShurikenOverlay by boolean(true) {
         this.name = Literal("No Shuriken Overlay")
         this.description = Literal("Shows an overlay when the RareMob has no shuriken applied, /sboguis to move it.")
