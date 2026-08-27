@@ -224,7 +224,7 @@ object DianaMobDetect {
             warned.remove(id)
             SBOEvent.emit(DianaMobDeathEvent(name, entity))
         }
-        return OverlayTextLine(name)
+        return OverlayTextLine(name, centered = true)
     }
 
     private fun checkStarlessMob(
