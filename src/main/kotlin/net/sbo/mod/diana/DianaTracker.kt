@@ -142,7 +142,7 @@ object DianaTracker {
 
             if (Debug.debugMessages) {
                 Chat.chat(
-                    "debug: creation timestamp unreliable, using Diana death fallback. " +
+                    "SBO(debug): creation timestamp unreliable, using Diana death fallback. " +
                         "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
                 )
             }
@@ -152,7 +152,7 @@ object DianaTracker {
 
         if (Debug.debugMessages) {
             Chat.chat(
-                "debug: not tracking item with creation older than 6 seconds. " +
+                "SBO(debug): not tracking item with creation older than 6 seconds. " +
                     "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
             )
         }
