@@ -742,11 +742,11 @@ object WaypointManager {
         val list = waypoints[type] ?: return
 
         var removed = 0
-        val iterator = list.iterator()
 
-        while (iterator.hasNext() && removed < limit) {
-            if (iterator.next().pos.distanceTo(pos) < distance) {
-                iterator.remove()
+        for (waypoint in list) {
+            if (removed >= limit) break
+
+            if (waypoint.pos.distanceTo(pos) < distance && list.remove(waypoint)) {
                 removed++
             }
         }
