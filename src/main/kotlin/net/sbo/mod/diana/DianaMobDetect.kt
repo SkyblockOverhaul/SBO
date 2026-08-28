@@ -278,10 +278,13 @@ object DianaMobDetect {
         val soundHpThreshold = if (Diana.soundHpAlert > 0.0) Diana.soundHpAlert * 1_000_000 else 0.0
 
         if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
-            if (name.contains("Minos Inquisitor")) playCustomSound(SboDataObject.soundSettingsData.lowInqHpSound, SboDataObject.soundSettingsData.lowInqHpVoume)
-            else if (name.contains("Minos King")) playCustomSound(SboDataObject.soundSettingsData.lowKingHpSound, SboDataObject.soundSettingsData.lowKingHpVoume)
-            else if (name.contains("Manticore")) playCustomSound(SboDataObject.soundSettingsData.lowMantiHpSound, SboDataObject.soundSettingsData.lowMantiHpVoume)
-            else if (name.contains("Sphinx")) playCustomSound(SboDataObject.soundSettingsData.lowSphinxHpSound, SboDataObject.soundSettingsData.lowSphinxHpVoume)
+            when (RareDianaMob.fromName(name)) {
+                RareDianaMob.INQ -> playCustomSound(SboDataObject.soundSettingsData.lowInqHpSound, SboDataObject.soundSettingsData.lowInqHpVoume)
+                RareDianaMob.KING ->  playCustomSound(SboDataObject.soundSettingsData.lowKingHpSound, SboDataObject.soundSettingsData.lowKingHpVoume)
+                RareDianaMob.SPHINX -> playCustomSound(SboDataObject.soundSettingsData.lowSphinxHpSound, SboDataObject.soundSettingsData.lowSphinxHpVoume)
+                RareDianaMob.MANTI -> playCustomSound(SboDataObject.soundSettingsData.lowMantiHpSound, SboDataObject.soundSettingsData.lowMantiHpVoume)
+                else -> {}
+            }
 
             warned.add(id)
         }
@@ -290,7 +293,6 @@ object DianaMobDetect {
             showTitle("§cHP LOW!", null, 10, 40, 10)
             warned.add(id)
         }
-
     }
 
     fun onRareSpawn(mob: String) {
