@@ -298,6 +298,17 @@ object DianaMobDetect {
     }
 
     fun onRareSpawn(mob: String) {
+        val player: String = mc.player?.displayName?.string ?: "null"
+        val mobType: Diana.ReceiveList = when (mob) {
+            RareDianaMob.INQ.display -> Diana.ReceiveList.INQ
+            RareDianaMob.KING.display -> Diana.ReceiveList.KING
+            RareDianaMob.SPHINX.display -> Diana.ReceiveList.SPHINX
+            RareDianaMob.MANTI.display -> Diana.ReceiveList.MANTICORE
+            else -> Diana.ReceiveList.OTHER
+        }
+
+        WaypointManager.notifyRareMob(player, mobType)
+
         if (Diana.shareRareMob) {
             val mobType = when (mob) {
                 RareDianaMob.INQ.display -> Diana.ShareList.INQ
@@ -311,17 +322,6 @@ object DianaMobDetect {
             val playerPos = SboPlayer.getLastPosition()
             Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob")
         }
-
-        val player: String = mc.player?.displayName?.string ?: "null"
-        val mobType: Diana.ReceiveList = when (mob) {
-            RareDianaMob.INQ.display -> Diana.ReceiveList.INQ
-            RareDianaMob.KING.display -> Diana.ReceiveList.KING
-            RareDianaMob.SPHINX.display -> Diana.ReceiveList.SPHINX
-            RareDianaMob.MANTI.display -> Diana.ReceiveList.MANTICORE
-            else -> Diana.ReceiveList.OTHER
-        }
-
-        WaypointManager.notifyRareMob(player, mobType)
 
         when (mob) {
             RareDianaMob.INQ.display -> {
