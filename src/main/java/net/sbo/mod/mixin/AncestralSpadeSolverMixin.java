@@ -20,6 +20,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 final class AncestralSpadeSolverMixin {
     @ModifyReturnValue(method = "isEnabled", at = @At("RETURN"))
     private final boolean sbo$disableAncestralSpadeSolverIfSBOEnabled(final boolean isEnabled) {
-        return isEnabled && !Diana.INSTANCE.spadeGuess;
+        return isEnabled && !Diana.INSTANCE.getSpadeGuess();
     }
 }

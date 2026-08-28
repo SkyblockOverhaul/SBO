@@ -25,21 +25,21 @@ final class NearbyBurrowsSolverMixin {
     // no isEnabled() in this class, accesses config field directly, kind of hacky way to ci.cancel them but whatever
     @Inject(method = "onParticles", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnParticlesIfSBOEnabled(@NonNull @Coerce final Object event, @NonNull final CallbackInfo ci) {
-        if (Diana.INSTANCE.closeBurrowDetection) {
+        if (Diana.INSTANCE.getCloseBurrowDetection()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "onRender", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnRenderIfSBOEnabled(@NonNull @Coerce final Object event, @NonNull final CallbackInfo ci) {
-        if (Diana.INSTANCE.closeBurrowDetection) {
+        if (Diana.INSTANCE.getCloseBurrowDetection()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "onBlockClick", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnBlockClickIfSBOEnabled(@NonNull final BlockPos blockPos, @NonNull final CallbackInfo ci) {
-        if (Diana.INSTANCE.closeBurrowDetection) {
+        if (Diana.INSTANCE.getCloseBurrowDetection()) {
             ci.cancel();
         }
     }

@@ -20,6 +20,6 @@ import org.spongepowered.asm.mixin.injection.At;
 final class MythologicalRitualMixin {
     @ModifyReturnValue(method = "isActive", at = @At("RETURN"))
     private static final boolean sbo$disableSkyblockerMythologicalRitualHelperIfSBOEnabled(final boolean isActive) {
-        return isActive && !Diana.INSTANCE.arrowGuess;
+        return isActive && !Diana.INSTANCE.getArrowGuess();
     }
 }
