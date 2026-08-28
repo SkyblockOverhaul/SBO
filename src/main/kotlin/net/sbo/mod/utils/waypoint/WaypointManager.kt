@@ -261,7 +261,7 @@ object WaypointManager {
         val mobName: String
     )
 
-    private fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
+    fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
         val mobData = when (mobType) {
             Diana.ReceiveList.INQ -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
