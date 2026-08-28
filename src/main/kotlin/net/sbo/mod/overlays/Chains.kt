@@ -79,7 +79,7 @@ object Chains : DirtyFlushableOverlay() {
                 "${GOLD}More waypoints than chains started - possible issue with waypoint cleanup"
 
             else ->
-                "${DARK_RED}Internal state mismatch! Please report this!"
+                "${DARK_RED}Internal state mismatch!"
         }
 
         val lines = mutableListOf<OverlayTextLine>()
@@ -89,26 +89,34 @@ object Chains : DirtyFlushableOverlay() {
         val chainsMax = chains.coerceAtLeast(7)
         val waypointsMax = waypoints.coerceAtLeast(7)
 
-        lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/$chainsMax ($knownWStart pending start)"))
-        lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/$waypointsMax ($knownW known, $arrowW arrow)"))
-
-        // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly
         val debug = Debug.debugMessages
-        if (issue || debug) { // hide for less verbosity unless theres an issue or debug enabled
-            failureTimes++
+        if (debug) {
+            lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/$chainsMax ($knownWStart pending start)"))
+            lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/$waypointsMax ($knownW known, $arrowW arrow)"))
 
-            // Only start showing for consistent issues lasting more than 4 seconds, otherwise this can flicker at times when a new burrow is being detected
-            if (failureTimes >= 4 || debug) {
-                lines.add(OverlayTextLine(""))
-                lines.add(OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Status: $status"))
-                if (mismatch || debug) {
-                    lines.add(OverlayTextLine("$GRAY - ${YELLOW}Internal State: $internalColor$internalState/7-8 ($known known, $arrows arrow)"))
+            // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly
+            if (issue) { // hide for less verbosity unless theres an issue
+                failureTimes++
+
+                // Only start showing for consistent issues lasting more than 4 seconds, otherwise this can flicker at times when a new burrow is being detected
+                if (failureTimes >= 4 || debug) {
                     lines.add(OverlayTextLine(""))
-                    lines.add(OverlayTextLine("$GRAY - ${DARK_AQUA}Run /sbodebugburrows to add waypoints at internal state locations that don't have one"))
+                    lines.add(OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Status: $status"))
+                    if (mismatch || debug) {
+                        lines.add(OverlayTextLine("$GRAY - ${YELLOW}Internal State: $internalColor$internalState/7-8 ($known known, $arrows arrow)"))
+                        lines.add(OverlayTextLine(""))
+                        lines.add(OverlayTextLine("$GRAY - ${DARK_AQUA}Run /sbodebugburrows to add waypoints at internal state locations that don't have one"))
+                    }
                 }
+            } else {
+                failureTimes = 0
             }
         } else {
-            failureTimes = 0
+            // don't confuse user with known/arrow and mismatches etc., simple overlay mode
+            if (knownWStart >= 1) {
+                lines.add(OverlayTextLine("$GRAY - ${GREEN}Pending Start: ${colorBasedOnAmount(knownWStart)}$knownWStart"))
+            }
+            lines.add(OverlayTextLine("$GRAY - ${AQUA}Active: $waypointsColor$waypoints"))
         }
 
         return lines

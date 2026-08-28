@@ -526,6 +526,10 @@ object Helper {
             get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
+    private fun getCustomMessage(message: Array<out String>): String {
+        return message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
+    }
+
     private fun getDropInfo(dropName: String): DropInfo? {
         val tracker = SboDataObject.dianaTrackerMayor
         val items = tracker.items
@@ -533,27 +537,27 @@ object Helper {
 
         return when (dropName.lowercase()) {
             "chimera" -> {
-                val message = Diana.customChimeraMessage[0].trim()
+                val message = getCustomMessage(Diana.customChimeraMessage)
                 DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
             }
 
             "core" -> {
-                val message = Diana.customManticoreMessage[0].trim()
+                val message = getCustomMessage(Diana.customManticoreMessage)
                 DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
             }
 
             "stinger" -> {
-                val message = Diana.customFatefulStingerMessage[0].trim()
+                val message = getCustomMessage(Diana.customFatefulStingerMessage)
                 DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
             }
 
             "brain food" -> {
-                val message = Diana.customBrainFoodMessage[0].trim()
+                val message = getCustomMessage(Diana.customBrainFoodMessage)
                 DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
             }
 
             "wool" -> {
-                val message = Diana.customShimmeringWoolMessage[0].trim()
+                val message = getCustomMessage(Diana.customShimmeringWoolMessage)
                 DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
             }
 

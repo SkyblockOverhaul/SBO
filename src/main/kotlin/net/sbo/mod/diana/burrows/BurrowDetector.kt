@@ -174,7 +174,7 @@ object BurrowDetector {
     }
 
     fun requestSpade(reason: String) {
-        if (World.getWorld() != "Hub") return
+        if (!Diana.spadeGuess || !Helper.hasSpade || World.getWorld() != "Hub") return
 
         val color = if (reason == "failure") "c" else "e"
 
@@ -226,6 +226,8 @@ object BurrowDetector {
 
             ArrowGuessBurrow.removeSubGuessFromInternalState(pos)
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
+
+            return
         }
 
         burrowDetect(packet)
@@ -274,7 +276,9 @@ object BurrowDetector {
 
         burrow.type = type
 
+        ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
         ArrowGuessBurrow.removeFromInternalState(pos)
+        WaypointManager.removeWaypointAt(pos, "guess")
 
         val existingTimesDug =
             carriedTimesDug

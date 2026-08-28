@@ -127,12 +127,35 @@ object DianaTracker {
         val createdAt = item.creation
         val secondsPassedSinceCreation = Helper.getSecondsPassed(createdAt)
 
-        if (secondsPassedSinceCreation > 6) {
-            if (Debug.debugMessages) Chat.chat("debug: not tracking item with creation older than 6 seconds. secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt")
+        if (secondsPassedSinceCreation <= 6) {
+            trackWithPickuplog(item.itemId)
             return
         }
 
-        trackWithPickuplog(item.itemId)
+        val isDianaDrop = when (item.itemId) {
+            "HILT_OF_REVELATIONS", "CROWN_OF_GREED" -> true
+            else -> false
+        }
+
+        if (isDianaDrop && Helper.dianaMobDiedRecently(4)) {
+            // Happens if user's OS time is not close (within 6 seconds) to the server's time for any reason. We can't use System.nanoTime comparision because server sends it in unix-time (milliseconds since epoch), and using System.currentTimeMillis depends on OS clock via NTP synchronization to be within 6 seconds of Hypixel's NTP synchronized clock.
+
+            if (Debug.debugMessages) {
+                Chat.chat(
+                    "debug: creation timestamp unreliable, using Diana death fallback. " +
+                        "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
+                )
+            }
+            trackWithPickuplog(item.itemId)
+            return
+        }
+
+        if (Debug.debugMessages) {
+            Chat.chat(
+                "debug: not tracking item with creation older than 6 seconds. " +
+                    "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
+            )
+        }
     }
 
     private fun trackWithPickuplog(itemId: String) {
@@ -161,7 +184,7 @@ object DianaTracker {
 
     fun trackWithSacksMessage(itemName: String, amount: Int) {
         if (!allowSackTracking) return
-        if (!dianaMobDiedRecently(4)) return
+        if (!dianaMobDiedRecently(30)) return
         val item = itemName.replace("Ingot", "").trim()
         if (sackDrops.contains(item)) {
             trackItem(item, amount)
@@ -769,11 +792,11 @@ object DianaTracker {
 
         var count = ""
 
-        val rawCount = colorAndCount.second
-        val realCount = if (rawCount != -1) rawCount + if (!ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
-
         val rawLsCount = colorAndCount.third
         val realLsCount = if (rawLsCount != -1) rawLsCount + if (ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
+
+        val rawCount = colorAndCount.second
+        val realCount = if (rawCount != -1) rawCount + if (!ls || rawLsCount == -1) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
 
         if (realCount != -1) {
             count = if (realLsCount != -1 && ls) {
@@ -786,7 +809,20 @@ object DianaTracker {
         }
 
         if (Diana.lootAnnouncerChat && showMessageOrTitle) {
-            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
+            val customMsg = when (itemId) {
+                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind)
+                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind)
+                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind)
+                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind)
+                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind)
+                else -> Pair(false, "")
+            }
+
+            if (customMsg.first) {
+                Chat.chat(customMsg.second)
+            } else {
+                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
+            }
         }
 
         if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare) {
@@ -798,7 +834,7 @@ object DianaTracker {
             Chat.chat("§6[SBO] §cLootshared a $item!")
             when (itemId) {
                 "DAEDALUS_STICK" -> unlockAchievement(15)
-                "CHIMERA" -> unlockAchievement(16)
+                "CHIMERA" -> unlockAchievement(13)
             }
         } else {
             when (itemId) {
@@ -920,54 +956,42 @@ object DianaTracker {
     }
 
     private fun trackShardsWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("^(.*?) You charmed a (.*?) and captured (.*?) Shards §7from it.$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(2).removeFormatting()
-            val amount = matchResult.group(3).removeFormatting().toIntOrNull() ?: 0
+        Register.onChatMessageCancelable(
+            Pattern.compile(
+                "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §[0-9a-f](.*?) Shards?§7!$",
+                Pattern.DOTALL
+            )
+        ) { message, matchResult ->
+            val shard = matchResult.group(3).removeFormatting()
+            val amount = matchResult.group(2).toIntOrNull() ?: 0
+
             when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
                 "Sphinx" -> trackItem("SPHINX_SHARD", amount)
                 "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
                 "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
                 "Harpy" -> trackItem("HARPY_SHARD", amount)
+                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
+                // "Minos Hunter" intentionally skipped until its tracker entry exists.
             }
             true
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("^(.*?) You charmed a (.*?) and captured its §9Shard§7.$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(
+            Pattern.compile(
+                "^§e§lLOOT SHARE §fYou received §b(\\d+) §[0-9a-f](.*?) §fShards for assisting §b(.*?)§f!$",
+                Pattern.DOTALL
+            )
+        ) { message, matchResult ->
             val shard = matchResult.group(2).removeFormatting()
-            val amount = 1
-            when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
-                "Sphinx" -> trackItem("SPHINX_SHARD", amount)
-                "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
-                "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
-                "Harpy" -> trackItem("HARPY_SHARD", amount)
-            }
-            true
-        }
+            val amount = matchResult.group(1).toIntOrNull() ?: 0
 
-        Register.onChatMessageCancelable(Pattern.compile("^§aYou caught (.*?) (.*?) §aShards(.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(2).removeFormatting()
-            val amount = matchResult.group(1).removeFormatting().replace("x", "").trim().toIntOrNull() ?: 0
             when (shard) {
                 "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
                 "Sphinx" -> trackItem("SPHINX_SHARD", amount)
                 "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
                 "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
                 "Harpy" -> trackItem("HARPY_SHARD", amount)
-            }
-            true
-        }
-
-        Register.onChatMessageCancelable(Pattern.compile("^§aYou caught a (.*?) §aShard!$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(1).removeFormatting()
-            val amount = 1
-            when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
-                "Sphinx" -> trackItem("SPHINX_SHARD", amount)
-                "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
-                "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
-                "Harpy" -> trackItem("HARPY_SHARD", amount)
+                // "Minos Hunter" intentionally skipped until its tracker entry exists.
             }
             true
         }
