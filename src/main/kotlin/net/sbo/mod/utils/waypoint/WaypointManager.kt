@@ -541,6 +541,10 @@ object WaypointManager {
         }
     }
 
+    fun removeNearbyRareMobWaypointAt(pos: SboVec) {
+        removeWithinDistanceFrom(pos, "rareMob", 30, 1)
+    }
+
     /**
      * Renders all waypoints in the management system.
      * @param context The world render context.
