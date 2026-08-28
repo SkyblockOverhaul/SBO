@@ -950,7 +950,7 @@ object WaypointManager {
         var simulatedTargetPos = targetPos
         var lastWarp: String? = null
 
-        repeat(4) {
+        repeat(10) {
             val warp = getClosestWarp(simulatedTargetPos, simulatedPlayerPos) ?: return lastWarp
             if (warp == lastWarp) return warp
 
@@ -969,7 +969,7 @@ object WaypointManager {
         var simulatedPlayerPos = Player.getLastPosition()
         var lastWarp: String? = null
 
-        repeat(4) {
+        repeat(10) {
             val warp = getClosestWarp(targetPos, simulatedPlayerPos) ?: return lastWarp
             if (warp == lastWarp) return warp
 
