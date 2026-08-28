@@ -9,6 +9,8 @@ import net.sbo.mod.settings.categories.Customization
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.VarHandle
 import java.nio.file.Files
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
