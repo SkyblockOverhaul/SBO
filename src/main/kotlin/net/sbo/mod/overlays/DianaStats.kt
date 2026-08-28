@@ -12,7 +12,9 @@ import net.sbo.mod.utils.overlay.*
 object DianaStats : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Stats", 10f, 10f,
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
-    ).setCondition { Diana.statsTracker && Helper.hasSpade && World.getWorld() == "Hub" }
+    )
+        .setCondition { Diana.statsTracker }
+        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
 
     fun init() {
         overlay.init()

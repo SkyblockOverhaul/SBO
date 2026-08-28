@@ -53,6 +53,10 @@ object BurrowDetector {
         recentlyRemoved[key] = System.nanoTime()
     }
 
+    fun wasRecentlyRemoved(pos: SboVec): Boolean {
+        return wasRecentlyRemoved("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}")
+    }
+
     private fun wasRecentlyRemoved(posString: String): Boolean {
         val removedAt = recentlyRemoved[posString] ?: return false
 

@@ -755,7 +755,7 @@ object WaypointManager {
     fun addSpadeGuess(pos: SboVec?) {
         if (pos == null) return
 
-        if (!waypointExists("burrow", pos).first) {
+        if (!waypointExists("burrow", pos).first && !waypointExists("guess", pos).first && !BurrowDetector.wasRecentlyRemoved(pos)) {
             val waypoint = Waypoint("Spade Guess", pos.x, pos.y, pos.z, type = "guess")
             addWaypoint(waypoint)
         }
