@@ -298,7 +298,6 @@ object DianaMobDetect {
     }
 
     fun onRareSpawn(mob: String) {
-        val player: String = mc.player?.displayName?.string ?: "null"
         val mobType: Diana.ReceiveList = when (mob) {
             RareDianaMob.INQ.display -> Diana.ReceiveList.INQ
             RareDianaMob.KING.display -> Diana.ReceiveList.KING
@@ -307,7 +306,7 @@ object DianaMobDetect {
             else -> Diana.ReceiveList.OTHER
         }
 
-        WaypointManager.notifyRareMob(player, mobType)
+        WaypointManager.notifyRareMob("", mobType)
 
         if (Diana.shareRareMob) {
             val mobType = when (mob) {
