@@ -310,7 +310,7 @@ object WaypointManager {
             Diana.rareMobTitleFadeOutTime
         )
 
-        playCustomSound(mobData.sound, mobData.volume)
+        if (!player.contains(Player.getName() ?: "")) playCustomSound(mobData.sound, mobData.volume)
 
         return mobData.mobName
     }
