@@ -369,7 +369,7 @@ object Diana : CategoryKt("Diana") {
             text = "Send Test"
             description = "Sends a test message for all rare drop messages."
             onClick {
-                if (Helper.checkCustomDropMessage("Chimera", 400).first) {
+                if (Helper.checkCustomDropMessage("Chimera", 400, false).first) {
                     val drops = mutableListOf<String>()
                     if (customChimeraMessage.isNotEmpty()) drops.add("Chimera")
                     if (customBrainFoodMessage.isNotEmpty()) drops.add("Brain Food")
@@ -379,7 +379,7 @@ object Diana : CategoryKt("Diana") {
 
                     for (drop: String in drops) {
                         Chat.chat(
-                            Helper.checkCustomDropMessage(drop, 400).second
+                            Helper.checkCustomDropMessage(drop, 400, false).second
                         )
                     }
                 }
