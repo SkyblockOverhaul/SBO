@@ -3,10 +3,14 @@ package net.sbo.mod.utils
 import javazoom.jl.player.JavaSoundAudioDevice
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.network.chat.Component
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.events.Register
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -23,7 +27,7 @@ object SoundHandler {
     private val availableSoundsWithExt = mutableSetOf<String>()
 
     // Thread pool for audio processing - bounded and daemon threads
-    private val AUDIO_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
+    private val AUDIO_EXECUTOR: ExecutorService = Executors.newFixedThreadPool(3) { r ->
         Thread(r, "sbo-audio-thread").apply {
             isDaemon = true
             priority = Thread.NORM_PRIORITY + 1 // audio processing needs slightly more priority for less latency
@@ -40,6 +44,21 @@ object SoundHandler {
             extractBuiltInSounds()
             scanUserSounds()
         }
+
+        // Test TODO: Remove before committing
+        Register.command("testSound") { _ ->
+            listOf(
+                "§9Party §8> §b[MVP§2+§b] anti_knocback§f: x: -17, y: 83, z: 146 | Minos Inquisitor" to 500L,
+                "§9Party §8> §b[MVP§2+§b] anti_knocback§f: x: -238, y: 91, z: 124 | King Minos" to 1000L
+            ).forEach { (message, delay) ->
+                Helper.sleep(delay) {
+                    val packet = ClientboundSystemChatPacket(Component.literal(message), false)
+                    mc.player?.connection?.handleSystemChat(packet)
+                }
+
+            }
+        }
+
     }
 
 
