@@ -236,10 +236,12 @@ object AchievementManager {
         }
 
         if (itemsData.SHIMMERING_WOOL_LS >= 1) unlockAchievement(111)
+        if (totalCrowns >= 10) unlockAchievement(131)
 
         if (itemsData.MANTI_CORE_LS >= 1) unlockAchievement(114)
         if (totalCores >= 1) unlockAchievement(113)
         if (totalCores >= 3 ) unlockAchievement(129)
+        if (totalStinger >= 1) unlockAchievement(130)
 
         if (totalBrainFood >= 5) unlockAchievement(85)
 
@@ -474,6 +476,8 @@ object AchievementManager {
     }
 
     private fun addAllAchievements() {
+        // Last added achievement id: 131
+
         // inquisitor
         addAchievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic")
         addAchievement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine")
@@ -522,6 +526,7 @@ object AchievementManager {
         addAchievement(129, "Oh baby a triple!", "Get 3 manti-cores in 1 event", "Celestial")
         addAchievement(114, "First Lootshare core", "Lootshare your first Manti-core", "Legendary")
         addAchievement(95, "Back-to-Back Lootshare core", "Lootshare 2 Manti-cores in a row", "Impossible")
+        addAchievement(130, "I can turn into a bee now", "Drop 1 Stinger", "Epic")
 
         // King Minos
         addAchievement(116, "Why do i hear boss music?", "get your first King Minos", "Legendary", repeatable = false)
@@ -531,6 +536,7 @@ object AchievementManager {
         addAchievement(81, "Back-to-Back Wool", "Get 2 Wools in a row", "Impossible")
         addAchievement(111, "First Lootshare Wool", "Lootshare your first Wool", "Divine")
         addAchievement(82, "Back-to-Back Lootshare Wool", "Lootshare 2 Wools in a row", "Impossible")
+        addAchievement(131, "Very greedy I see", "Get 10 Crown of Greeds in 1 event", "Legendary")
 //        addAchievement(88, "Let your party cope!", "Die to your Minos King", "Rare") // TODO
 
         // Burrows
