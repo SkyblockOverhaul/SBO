@@ -450,7 +450,7 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("wool", magicfind)
+                val customMsg = Helper.checkCustomDropMessage("wool", magicfind, isLootShare)
                 if (customMsg.first) {
                     announceLootToParty("Shimmering Wool", customMsg.second, true)
                 } else {
@@ -495,7 +495,7 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("core", magicfind)
+                val customMsg = Helper.checkCustomDropMessage("core", magicfind, isLootShare)
                 if (customMsg.first) {
                     announceLootToParty("Manti-core", customMsg.second, true)
                 } else {
@@ -538,7 +538,7 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("Stinger", magicfind)
+                val customMsg = Helper.checkCustomDropMessage("Stinger", magicfind, isLootShare)
                 if (customMsg.first) {
                     announceLootToParty("Fateful Stinger", customMsg.second, true)
                 } else {
@@ -592,7 +592,7 @@ object DianaTracker {
                     }
                 }
 
-                val customChimMsg = Helper.checkCustomDropMessage("Chimera", magicfind)
+                val customChimMsg = Helper.checkCustomDropMessage("Chimera", magicfind, isLootShare)
                 if (customChimMsg.first) {
                     announceLootToParty("Chimera", customChimMsg.second, true)
                 } else {
@@ -638,7 +638,7 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("Brain Food", magicfind)
+                val customMsg = Helper.checkCustomDropMessage("Brain Food", magicfind, isLootShare)
                 if (customMsg.first) {
                     announceLootToParty("Brain Food", customMsg.second, true)
                 } else {
@@ -810,11 +810,11 @@ object DianaTracker {
 
         if (Diana.lootAnnouncerChat && showMessageOrTitle) {
             val customMsg = when (itemId) {
-                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind)
-                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind)
-                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind)
-                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind)
-                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind)
+                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind, ls)
+                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind, ls)
+                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind, ls)
+                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind, ls)
+                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind, ls)
                 else -> Pair(false, "")
             }
 

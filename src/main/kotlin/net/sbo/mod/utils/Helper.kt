@@ -500,7 +500,7 @@ object Helper {
         }
     }
 
-    fun checkCustomDropMessage(dropName: String, magicFind: Int): Pair<Boolean, String> {
+    fun checkCustomDropMessage(dropName: String, magicFind: Int, isLootshare: Boolean): Pair<Boolean, String> {
         val info = getDropInfo(dropName) ?: return Pair(false, "")
 
         if (!info.isEnabled) return Pair(false, "")
@@ -510,6 +510,7 @@ object Helper {
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace('&', '§')
+            .replace("{since}", getSinceDrop(dropName, isLootshare))
             .replace("+ ✯ Magic Find ", "") // prevent nonsense magic find when hypixel doesn't put it into the message (mob killed by someone else)
 
         return Pair(true, resultText)
@@ -524,6 +525,18 @@ object Helper {
     ) {
         val percentage: Double
             get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
+    }
+
+    private fun getSinceDrop(dropName: String, isLootshare: Boolean): String {
+        val data = SboDataObject.sboData;
+        return when (dropName.lowercase()) {
+            "wool" -> if (isLootshare) data.kingSinceLsWool else data.kingSinceWool;
+            "core" -> if (isLootshare) data.mantiSinceLsCore else data.mantiSinceCore;
+            "stinger" -> if (isLootshare) data.mantiSinceLsCore else data.mantiSinceCore;
+            "chimera" -> if (isLootshare) data.inqsSinceLsChim else data.inqsSinceChim;
+            "brain food" -> if (isLootshare) data.sphinxSinceLsFood else data.sphinxSinceFood;
+            else -> "ErrorGettingSince"
+        } as String
     }
 
     private fun getCustomMessage(message: Array<out String>): String {
