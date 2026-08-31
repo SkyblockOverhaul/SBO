@@ -330,7 +330,7 @@ object Diana : CategoryKt("Diana") {
 
     var announceCrownOfGreed by boolean(true) {
         this.name = Literal("Crown Of Greed display")
-        this.description = Literal("Whether you want §6\"Crown Of Greed\"§r to appear on your screen when dropping one")
+        this.description = Literal("Whether you want \"§6Crown Of Greed§r\" to appear on your screen when dropping one")
     }
 
     var lootAnnouncerParty by boolean(true) {

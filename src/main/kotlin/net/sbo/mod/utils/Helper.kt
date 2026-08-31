@@ -530,13 +530,13 @@ object Helper {
     private fun getSinceDrop(dropName: String, isLootshare: Boolean): String {
         val data = SboDataObject.sboData;
         return when (dropName.lowercase()) {
-            "wool" -> if (isLootshare) data.kingSinceLsWool else data.kingSinceWool;
-            "core" -> if (isLootshare) data.mantiSinceLsCore else data.mantiSinceCore;
-            "stinger" -> if (isLootshare) data.mantiSinceLsCore else data.mantiSinceCore;
-            "chimera" -> if (isLootshare) data.inqsSinceLsChim else data.inqsSinceChim;
-            "brain food" -> if (isLootshare) data.sphinxSinceLsFood else data.sphinxSinceFood;
+            "wool" -> if (isLootshare) data.kingSinceLsWool.toString() else data.kingSinceWool.toString()
+            "core" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
+            "stinger" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
+            "chimera" -> if (isLootshare) data.inqsSinceLsChim.toString() else data.inqsSinceChim.toString()
+            "brain food" -> if (isLootshare) data.sphinxSinceLsFood.toString() else data.sphinxSinceFood.toString()
             else -> "ErrorGettingSince"
-        } as String
+        }
     }
 
     private fun getCustomMessage(message: Array<out String>): String {
