@@ -44,21 +44,6 @@ object SoundHandler {
             extractBuiltInSounds()
             scanUserSounds()
         }
-
-        // Test TODO: Remove before committing
-        Register.command("testSound") { _ ->
-            listOf(
-                "§9Party §8> §b[MVP§2+§b] anti_knocback§f: x: -17, y: 83, z: 146 | Minos Inquisitor" to 500L,
-                "§9Party §8> §b[MVP§2+§b] anti_knocback§f: x: -238, y: 91, z: 124 | King Minos" to 1000L
-            ).forEach { (message, delay) ->
-                Helper.sleep(delay) {
-                    val packet = ClientboundSystemChatPacket(Component.literal(message), false)
-                    mc.player?.connection?.handleSystemChat(packet)
-                }
-
-            }
-        }
-
     }
 
 
