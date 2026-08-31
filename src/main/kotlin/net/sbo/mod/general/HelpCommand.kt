@@ -101,7 +101,7 @@ object HelpCommand {
             }
 
             postTrackingChances.forEach { (mob, chance) ->
-                val formattedChance = "§b%.2f%% §7(§b1/%.0f§7)".format(chance * 100, (1 / chance * 10))
+                val formattedChance = "§b%.2f%% §7(§b1/%.0f§7)".format(chance * 100, (1 / chance))
                 Chat.chat("§6[SBO] §e$mob $formattedChance [TRACKING:$tracking]")
             }
         }
