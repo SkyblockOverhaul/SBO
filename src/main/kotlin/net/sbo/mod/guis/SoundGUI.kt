@@ -353,13 +353,13 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
                 // Separator line between settings
                 if (index != group.lastIndex) GuiHandler.UILine(
                     x = 0.pixels,
-                    y = (rowY + 65).pixels,
+                    y = (rowY + 66).pixels,
                     width = 100.percent(),
                     height = 1f.pixels,
                     color = Color(80, 80, 80, 100)
                 ).get().setChildOf(contentPanel)
 
-                rowY += if (index != group.lastIndex) 70 else 80
+                rowY += if (index != group.lastIndex) 70 else 85
             }
         }
 
