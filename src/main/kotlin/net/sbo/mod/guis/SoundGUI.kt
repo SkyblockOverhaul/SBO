@@ -149,10 +149,12 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
 
         var rowY = 0
 
-        soundSettings.forEach { (group, groupName) ->
+        soundSettings.forEachIndexed { ind, (group, groupName) ->
+            val addedY = if (ind == 0) 10 else 5
+
             val groupTitle = UIBlock().constrain {
                 x = 10.pixel
-                y = rowY.pixels
+                y = (rowY + addedY).pixels
                 width = 100.percent()
                 height = 25f.pixels
                 color = contentPanel.getColor().toConstraint()
@@ -172,7 +174,7 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
                 color = Color.WHITE
             ).get().setChildOf(groupTitle)
 
-            rowY += 45
+            rowY += 45 + addedY
 
             group.forEachIndexed { index, setting ->
                 // Current values
