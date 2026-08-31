@@ -328,6 +328,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces chimera/stick/relic on screen.")
     }
 
+    var announceCrownOfGreed by boolean(true) {
+        this.name = Literal("Crown Of Greed display")
+        this.description = Literal("Whether you want §6\"Crown Of Greed\"§r to appear on your screen when dropping one")
+    }
+
     var lootAnnouncerParty by boolean(true) {
         this.name = Literal("Loot Party Announcer")
         this.description = Literal("Announces chimera/wool/stinger/food in party chat.")

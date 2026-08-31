@@ -825,7 +825,7 @@ object DianaTracker {
             }
         }
 
-        if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare) {
+        if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare && (!isCoG || Diana.announceCrownOfGreed)) {
             Helper.showTitle("${colorAndCount.first}§l$item$lsText!", price, 0, 25, 35)
         }
 
