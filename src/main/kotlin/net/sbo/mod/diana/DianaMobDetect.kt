@@ -211,7 +211,7 @@ object DianaMobDetect {
         if (name.isEmpty() || name == "Armor Stand") return null
 
         parseKingHits(name)?.let {
-            return OverlayTextLine("§6King Minos §7- §5$it Hits")
+            return OverlayTextLine("§6King Minos §7- §5$it Hits", centered = true)
         }
 
         if (!hasMythoMobTypeChar(name)) return null
@@ -224,7 +224,7 @@ object DianaMobDetect {
             warned.remove(id)
             SBOEvent.emit(DianaMobDeathEvent(name, entity))
         }
-        return OverlayTextLine(name)
+        return OverlayTextLine(name, centered = true)
     }
 
     private fun checkStarlessMob(

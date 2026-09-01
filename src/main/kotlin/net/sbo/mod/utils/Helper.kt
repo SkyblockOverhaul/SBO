@@ -25,6 +25,7 @@ import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -134,6 +135,7 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
@@ -146,6 +148,7 @@ object Helper {
                 lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
@@ -158,6 +161,7 @@ object Helper {
                 lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
@@ -169,6 +173,7 @@ object Helper {
                 lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
@@ -500,13 +505,13 @@ object Helper {
         }
     }
 
-    fun checkCustomDropMessage(dropName: String, magicFind: Int): Pair<Boolean, String> {
+    fun checkCustomDropMessage(dropName: String, magicFind: Int, amountOverride: Int? = null): Pair<Boolean, String> {
         val info = getDropInfo(dropName) ?: return Pair(false, "")
 
         if (!info.isEnabled) return Pair(false, "")
 
         val resultText = info.template
-            .replace("{amount}", info.totalAmount.toString())
+            .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace('&', '§')
@@ -526,6 +531,10 @@ object Helper {
             get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
+    private fun getCustomMessage(message: Array<out String>): String {
+        return message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
+    }
+
     private fun getDropInfo(dropName: String): DropInfo? {
         val tracker = SboDataObject.dianaTrackerMayor
         val items = tracker.items
@@ -533,27 +542,27 @@ object Helper {
 
         return when (dropName.lowercase()) {
             "chimera" -> {
-                val message = Diana.customChimeraMessage[0].trim()
+                val message = getCustomMessage(Diana.customChimeraMessage)
                 DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
             }
 
             "core" -> {
-                val message = Diana.customManticoreMessage[0].trim()
+                val message = getCustomMessage(Diana.customManticoreMessage)
                 DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
             }
 
             "stinger" -> {
-                val message = Diana.customFatefulStingerMessage[0].trim()
+                val message = getCustomMessage(Diana.customFatefulStingerMessage)
                 DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
             }
 
             "brain food" -> {
-                val message = Diana.customBrainFoodMessage[0].trim()
+                val message = getCustomMessage(Diana.customBrainFoodMessage)
                 DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
             }
 
             "wool" -> {
-                val message = Diana.customShimmeringWoolMessage[0].trim()
+                val message = getCustomMessage(Diana.customShimmeringWoolMessage)
                 DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
             }
 

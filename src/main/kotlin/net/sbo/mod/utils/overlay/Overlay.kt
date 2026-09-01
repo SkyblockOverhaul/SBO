@@ -43,6 +43,7 @@ class Overlay(
 ) {
     private var lines = mutableListOf<OverlayTextLine>()
     private var condition: () -> Boolean = { true }
+    private var extraCondition: () -> Boolean = { true }
 
     var selected: Boolean = false
 
@@ -60,6 +61,11 @@ class Overlay(
 
     fun setCondition(condition: () -> Boolean): Overlay {
         this.condition = condition
+        return this
+    }
+
+    fun setExtraCondition(condition: () -> Boolean): Overlay {
+        this.extraCondition = condition
         return this
     }
 
@@ -148,8 +154,12 @@ class Overlay(
     }
 
     private fun checkCondition(): Boolean {
+        return condition() && checkExtraCondition()
+    }
+
+    private fun checkExtraCondition(): Boolean {
         // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
-        return condition() || inEditingScreen()
+        return extraCondition() || inEditingScreen()
     }
 
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
@@ -200,7 +210,11 @@ class Overlay(
         for (line in lines) {
             if (!line.checkCondition()) continue
 
-            val lineX = currentX.toInt()
+            val lineX = if (line.centered) {
+                currentX.toInt() + (totalWidth - line.width) / 2
+            } else {
+                currentX.toInt()
+            }
             val lineY = currentY.toInt()
 
             lineStates += LineRenderState(line, lineX, lineY)
