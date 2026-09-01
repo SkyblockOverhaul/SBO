@@ -785,6 +785,7 @@ object DianaTracker {
             else -> Triple("§f", -1, -1) // shouldn't happen
         }
 
+        val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(itemId, amount) == 0L
         val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
         val price = "§6$priceRaw coins"
 
@@ -830,12 +831,12 @@ object DianaTracker {
             if (customMsg.first) {
                 Chat.chat(customMsg.second)
             } else {
-                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6$priceText")
+            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count${if (hidePrice) "" else "§6 (+$price)"}")
             }
         }
 
         if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare) {
-            Helper.showTitle("${colorAndCount.first}§l$item$lsText!", price, 0, 25, 35)
+            Helper.showTitle("${colorAndCount.first}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
         }
 
         val isLootShare = gotLootShareRecently()

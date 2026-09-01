@@ -656,20 +656,17 @@ object Helper {
 
         val bzProduct = priceDataBazaar?.products?.get(id)
         val bazaarPrice = if (Diana.bazaarSettingDiana == Diana.SettingDiana.INSTASELL) {
-            bzProduct?.quick_status?.sellPrice
+            bzProduct?.quick_status?.sellPrice ?: 0.0
         } else {
-            bzProduct?.quick_status?.buyPrice
-        }
-
-        if (bazaarPrice != null && bazaarPrice > 0.0) {
-            return (bazaarPrice * amount).roundToLong()
+            bzProduct?.quick_status?.buyPrice ?: 0.0
         }
 
         val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
-        val preferNpc = Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
-        val bestUnitPrice = if (npcPrice > ahPrice || preferNpc) npcPrice else ahPrice
+        val preferNpc = Diana.ironmanOverrides || (Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS"))
+        val bestMarketPrice = kotlin.math.max(bazaarPrice, ahPrice)
+        val bestUnitPrice = if (npcPrice > bestMarketPrice || preferNpc) npcPrice else bestMarketPrice
 
         return (bestUnitPrice * amount).roundToLong()
     }

@@ -88,9 +88,9 @@ object DianaLoot : DirtyFlushableOverlay() {
         LootItemData("DAEDALUS_STICK", "Daedalus Stick", GOLD, isRarerDrop = true, dropMobId = "MINOTAUR"),
         LootItemData("MINOTAUR_SHARD", "Minotaur Shard", GOLD, isRarerDrop = true),
         LootItemData("CROWN_OF_GREED", "Crown of Greed", GOLD, isRarerDrop = true),
-        LootItemData("WASHED_UP_SOUVENIR", "Washed-up Souvenir", GOLD, isRarerDrop = true),
         LootItemData("GRIFFIN_FEATHER", "Griffin Feather", GOLD),
         LootItemData("MYTHOS_FRAGMENT", "Mytho Fragment", GOLD),
+        LootItemData("WASHED_UP_SOUVENIR", "Washed-up Souvenir", GOLD, isRarerDrop = true),
         LootItemData("CRETAN_URN", "Cretan Urn", DARK_GREEN),
         LootItemData("DWARF_TURTLE_SHELMET", "Dwarf Turtle Shelmet", DARK_GREEN),
         LootItemData("CROCHET_TIGER_PLUSHIE", "Crochet Tiger Plushie", DARK_GREEN),
@@ -138,13 +138,15 @@ object DianaLoot : DirtyFlushableOverlay() {
     private fun createLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
         val itemName = data.id
         val amount = tracker.getAmountOf(itemName)
-        val formattedName = "${data.color}${data.name}: ${AQUA}${Helper.formatNumber(amount, withCommas = true)}"
+        val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        val formattedName = "$color${data.name}: ${AQUA}${Helper.formatNumber(amount, withCommas = true)}"
         val price = Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOne(tracker.items, tracker.mobs, itemName, dropId)
         }
         val percentText = percent?.let { " $GRAY($AQUA${it}%$GRAY)" } ?: ""
-        val formattedText = "$GOLD$price $GRAY| $formattedName$percentText"
+        val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(itemName.replace("_LS", ""), amount) == 0L
+        val formattedText = "${if (hidePrice) "$DARK_GRAY  -  " else "$GOLD$price"} $GRAY| $formattedName$percentText"
         val line = OverlayTextLine(formattedText).onClick { hideLine(itemName) }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
@@ -163,8 +165,9 @@ object DianaLoot : DirtyFlushableOverlay() {
         val amountBase = tracker.getAmountOf(itemNameBase)
         val amountLs = tracker.getAmountOf(itemNameLs)
         val totalAmount = amountBase + amountLs
-        val priceLs = Helper.getItemPriceFormatted(itemNameLs.replace("_LS", ""), amountLs)
-        val priceCombined = Helper.getItemPriceFormatted(itemNameBase, totalAmount)
+        val hidePrices = Diana.ironmanOverrides && Helper.getItemPrice(itemNameBase, totalAmount) == 0L
+        val priceLs = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(itemNameLs.replace("_LS", ""), amountLs)}"
+        val priceCombined = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(itemNameBase, totalAmount)}"
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOne(tracker.items, tracker.mobs, itemNameBase, dropId)
         }
@@ -173,10 +176,11 @@ object DianaLoot : DirtyFlushableOverlay() {
             calcPercentOne(tracker.items, tracker.mobs, itemNameLs, dropLsId)
         }
         val percentLsText = percentLs?.let { " $GRAY($AQUA${it}%$GRAY)" } ?: ""
-        val baseText = "$GOLD$priceCombined $GRAY| ${data.color}${data.name}: $AQUA${Helper.formatNumber(amountBase,
+        val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        val baseText = "$priceCombined $GRAY| $color${data.name}: $AQUA${Helper.formatNumber(amountBase,
             withCommas = true
         )}$percentText"
-        val lsText = "$GOLD$priceLs $GRAY| ${data.color}${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${Helper.formatNumber(amountLs,
+        val lsText = "$priceLs $GRAY| $color${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${Helper.formatNumber(amountLs,
             withCommas = true
         )}$percentLsText"
         val combinedText = "$baseText $GRAY[${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(amountLs, withCommas = true)}$GRAY]"

@@ -202,7 +202,7 @@ object PartyCommands {
             val playtime = dianaTrackerMayor.items.TIME
             val playTimeHrs = playtime.toDouble() / TimeUnit.HOURS.toMillis(1)
             val profit = DianaLoot.totalProfit(dianaTrackerMayor)
-            val offerType = Diana.bazaarSettingDiana.toString()
+            val offerType = if (Diana.ironmanOverrides) "NPC Sell" else Diana.bazaarSettingDiana.toString()
             val profitHour = profit / playTimeHrs
             "Profit: ${formatNumber(profit)} (${Helper.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"
         },
