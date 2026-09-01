@@ -10,7 +10,9 @@ import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
 
 object MagicFind : DirtyFlushableOverlay() {
-    override val overlay = Overlay("Diana MagicFind", 10f, 10f).setCondition { Diana.magicFindTracker && Helper.hasSpade && World.getWorld() == "Hub" }
+    override val overlay = Overlay("Diana MagicFind", 10f, 10f)
+        .setCondition { Diana.magicFindTracker }
+        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
 
     fun init() {
         overlay.init()

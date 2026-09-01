@@ -23,12 +23,14 @@ import net.sbo.mod.general.PartyCommands
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.Guis
 import net.sbo.mod.overlays.*
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.partyfinder.PartyCheck
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.*
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
@@ -142,6 +144,14 @@ object SBOKotlin : ClientModInitializer {
 				DianaTracker.checkMayorTracker()
 				PartyPlayer.load()
 				unlockAchievement(38)
+				Register.onTick(100) { unregister ->
+				    if (Debug.debugMessages) {
+				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.")
+				    }
+				    Chat.chat("§6[SBO] §aSetting your particle quality to extreme automatically for best solver accuracy. This is harmless and done for you to have a better experience. You can ignore this and the next message about particles per tick sent by Hypixel.")
+				    Chat.command("particlequality extreme")
+				    unregister()
+				}
 				unregister()
 			}
 		}

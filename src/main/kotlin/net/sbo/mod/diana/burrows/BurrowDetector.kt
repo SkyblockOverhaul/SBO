@@ -53,6 +53,10 @@ object BurrowDetector {
         recentlyRemoved[key] = System.nanoTime()
     }
 
+    fun wasRecentlyRemoved(pos: SboVec): Boolean {
+        return wasRecentlyRemoved("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}")
+    }
+
     private fun wasRecentlyRemoved(posString: String): Boolean {
         val removedAt = recentlyRemoved[posString] ?: return false
 
@@ -174,7 +178,7 @@ object BurrowDetector {
     }
 
     fun requestSpade(reason: String) {
-        if (World.getWorld() != "Hub" || !Diana.spadeGuess) return
+        if (!Diana.spadeGuess || !Helper.hasSpade || World.getWorld() != "Hub") return
 
         val color = if (reason == "failure") "c" else "e"
 
@@ -226,6 +230,8 @@ object BurrowDetector {
 
             ArrowGuessBurrow.removeSubGuessFromInternalState(pos)
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
+
+            return
         }
 
         burrowDetect(packet)
@@ -264,17 +270,19 @@ object BurrowDetector {
     ) {
         if (!Diana.closeBurrowDetection) return
 
-        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
+        ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
+        ArrowGuessBurrow.removeFromInternalState(pos)
+        WaypointManager.removeWaypointAt(pos, "guess")
 
         if (WaypointManager.waypointExists("burrow", pos).first) return
+
+        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
         val burrow = burrows.getOrPut(posString) {
             Burrow(pos)
         }
 
         burrow.type = type
-
-        ArrowGuessBurrow.removeFromInternalState(pos)
 
         val existingTimesDug =
             carriedTimesDug

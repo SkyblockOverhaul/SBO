@@ -9,6 +9,8 @@ import net.sbo.mod.settings.categories.Customization
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.VarHandle
 import java.nio.file.Files
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -56,7 +58,9 @@ object SoundHandler {
         if (sound.isEmpty()) return
 
         // Combine per-sound volume (0-1) with global master volume
-        val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
+        val volumePercent = (volume * Customization.masterVolume).coerceIn(0f, 1f)
+
+        if (volumePercent == 0f) return
 
         // Assume .ogg if no extension provided
         val soundFile = if (SUPPORTED_EXTENSIONS.none { sound.endsWith(it, ignoreCase = true) }) "$sound.ogg" else sound
@@ -211,6 +215,12 @@ object SoundHandler {
         }
     }
 
+    private val JAVA_SOUND_SOURCE_HANDLE: VarHandle = run {
+        val lookup = MethodHandles.privateLookupIn(JavaSoundAudioDevice::class.java, MethodHandles.lookup())
+
+        lookup.findVarHandle(JavaSoundAudioDevice::class.java, "source", SourceDataLine::class.java)
+    }
+
     /** Creates a custom audio device that applies volume adjustment */
     private fun createVolumeAdjustedAudioDevice(volumePercent: Float): JavaSoundAudioDevice {
         return object : JavaSoundAudioDevice() {
@@ -218,9 +228,7 @@ object SoundHandler {
                 super.writeImpl(samples, offs, len)
 
                 runCatching {
-                    val sourceField = JavaSoundAudioDevice::class.java
-                        .getDeclaredField("source").apply { isAccessible = true }
-                    val sourceLine = sourceField.get(this) as? SourceDataLine
+                    val sourceLine = JAVA_SOUND_SOURCE_HANDLE.get(this) as? SourceDataLine
 
                     if (sourceLine != null && sourceLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                         val gain = sourceLine.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
