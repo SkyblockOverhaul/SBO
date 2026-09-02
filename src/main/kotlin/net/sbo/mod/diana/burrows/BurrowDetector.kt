@@ -4,6 +4,7 @@ import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.Register
@@ -84,6 +85,14 @@ object BurrowDetector {
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
+        }
+
+        Register.command("sboaddtestwaypoint") {
+            val pos = Player.getLastPosition()
+            val wayp = Waypoint("Test", pos.x, pos.y, pos.z, ttl = 30, type = "debug")
+            wayp.preventInvalidRemoval = true
+
+            WaypointManager.addWaypoint(wayp)
         }
 
         Register.command("sbodebugburrows") { // TODO: Maybe remove at some point once we're fully sure internal state cannot bug out

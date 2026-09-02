@@ -514,6 +514,7 @@ object Helper {
             .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
+            .replace("{price}", getItemPriceFormatted(info.itemId))
             .replace('&', '§')
             .replace("+ ✯ Magic Find ", "") // prevent nonsense magic find when hypixel doesn't put it into the message (mob killed by someone else)
 
@@ -524,6 +525,7 @@ object Helper {
         val template: String,
         val isEnabled: Boolean,
         val totalAmount: Int,
+        val itemId: String,
         private val mobCount: Int,
         private val dropCount: Int
     ) {
@@ -543,27 +545,27 @@ object Helper {
         return when (dropName.lowercase()) {
             "chimera" -> {
                 val message = getCustomMessage(Diana.customChimeraMessage)
-                DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
+                DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, "CHIMERA", mobs.MINOS_INQUISITOR, items.CHIMERA)
             }
 
             "core" -> {
                 val message = getCustomMessage(Diana.customManticoreMessage)
-                DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
+                DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, "MANTI_CORE", mobs.MANTICORE, items.MANTI_CORE)
             }
 
             "stinger" -> {
                 val message = getCustomMessage(Diana.customFatefulStingerMessage)
-                DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
+                DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, "FATEFUL_STINGER", mobs.MANTICORE, items.FATEFUL_STINGER)
             }
 
             "brain food" -> {
                 val message = getCustomMessage(Diana.customBrainFoodMessage)
-                DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
+                DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, "BRAIN_FOOD", mobs.SPHINX, items.BRAIN_FOOD)
             }
 
             "wool" -> {
                 val message = getCustomMessage(Diana.customShimmeringWoolMessage)
-                DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
+                DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, "SHIMMERING_WOOL", mobs.KING_MINOS, items.SHIMMERING_WOOL)
             }
 
             else -> null

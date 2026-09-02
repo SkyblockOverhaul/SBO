@@ -15,6 +15,8 @@
      private var tpsIndex = 0
      private var tpsCount = 0
 
+     var lastPacket = 0L
+
      private fun addTpsSample(tps: Float) {
          tpsLog[tpsIndex] = tps
          tpsIndex = (tpsIndex + 1) % TPS_HISTORY
@@ -49,6 +51,7 @@
          when (event.packet) {
              is ClientboundSetTimePacket -> {
                  val currentTime = System.nanoTime()
+                 lastPacket = currentTime
                  if (prevTime != 0L) {
                      val deltaTime = currentTime - prevTime
                      averageTps = (TimeUnit.MILLISECONDS.toNanos(20000L).toFloat() / max(1, deltaTime)).coerceIn(0f, 20f)

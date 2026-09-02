@@ -91,7 +91,7 @@ object Chains : DirtyFlushableOverlay() {
         val chainsMax = chains.coerceAtLeast(7)
         val waypointsMax = waypoints.coerceAtLeast(7)
 
-        val debug = Debug.debugMessages
+        val debug = Debug.debugOnlyMessages
         if (!Diana.simpleChainsOverlayMode) {
             lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/$chainsMax ($knownWStart pending start)"))
             lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/$waypointsMax ($knownW known, $arrowW arrow)"))

@@ -14,6 +14,7 @@ import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.RareMobHighlight
+import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
@@ -41,6 +42,7 @@ import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.slf4j.LoggerFactory
+import java.util.regex.Pattern
 
 object SBOKotlin : ClientModInitializer {
 	@JvmField
@@ -136,6 +138,7 @@ object SBOKotlin : ClientModInitializer {
 		RareMobHighlight.init()
 		InventoryUtils.init()
 		Chains.init()
+		MuteBuggedSpadeSounds.init()
 
 		Register.onTick(100) { unregister ->
 			val player = mc.player
@@ -144,12 +147,15 @@ object SBOKotlin : ClientModInitializer {
 				DianaTracker.checkMayorTracker()
 				PartyPlayer.load()
 				unlockAchievement(38)
+				Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
+				    unregister()
+				    false
+				}
+				Chat.command("particlequality extreme")
 				Register.onTick(100) { unregister ->
-				    if (Debug.debugMessages) {
+				    if (Debug.debugOnlyMessages) {
 				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.")
 				    }
-				    Chat.chat("§6[SBO] §aSetting your particle quality to extreme automatically for best solver accuracy. This is harmless and done for you to have a better experience. You can ignore this and the next message about particles per tick sent by Hypixel.")
-				    Chat.command("particlequality extreme")
 				    unregister()
 				}
 				unregister()

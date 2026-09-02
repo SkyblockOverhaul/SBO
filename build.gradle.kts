@@ -181,11 +181,11 @@ tasks.named<ProcessResources>("processResources") {
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
 
-    val elementaVersion = project.property("elementa.version")
+    val elementaVersion = libs.versions.elementa.get()
     val hmApiVersion = versionedProperty("hmapi.version")
     val resourcefulConfigVersion = versionedProperty("rconfig.version")
     val resourcefulConfigKtVersion = versionedProperty("rconfigkt.version")
-    val universalCraftVersion = project.property("universalcraft.version")
+    val universalCraftVersion = libs.versions.universalcraft.get()
 
     val modName = project.property("mod.name")
     val modDescription = project.property("mod.description")
@@ -193,8 +193,7 @@ tasks.named<ProcessResources>("processResources") {
     val modVersion = project.property("mod.version")
     val modGroup = project.property("mod.group")
 
-    // 26.1 onwards switched back to proper SemVer so we use ~ to accept compatible patch updates; for older versions do an exact requirement as even patch level version updates (e.g 1.21.10 to 1.21.11) are incompatible with each other.
-    val mcVersionConstraint = if (isMCVersionGreaterOrEqualTo("26.1")) "~$mcVersion" else "=$mcVersion"
+    val mcVersionConstraint = project.findProperty("mc$mcVersion.constraint")?.toString() ?: "~$mcVersion"
 
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
@@ -252,7 +251,7 @@ dependencies {
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
+    implementation(include(libs.elementa.get())!!)
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
@@ -264,13 +263,13 @@ dependencies {
         "26.2-fabric" -> {
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.2:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
-            implementation(include("gg.essential:universalcraft-26.2-fabric:${property("universalcraft.version")}")!!)
+            implementation(include(libs.universalcraft262.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
         }
         "26.1.2-fabric" -> {
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
-            implementation(include("gg.essential:universalcraft-26.1-fabric:${property("universalcraft.version")}")!!)
+            implementation(include(libs.universalcraft261.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")

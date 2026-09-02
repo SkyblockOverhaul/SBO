@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8.7",
   "mixinextras": {
-    "minVersion": "0.5.4"
+    "minVersion": "0.5.5"
   },
   "compatibilityLevel": "JAVA_${java_version_major}",
   "package": "net.sbo.mod.mixin",
@@ -16,7 +16,8 @@
     "EntityMixin",
     "MythologicalRitualMixin",
     "AncestralSpadeSolverMixin",
-    "NearbyBurrowsSolverMixin"
+    "NearbyBurrowsSolverMixin",
+    "SoundEngineMixin"
   ],
   "injectors": {
     "defaultRequire": 1

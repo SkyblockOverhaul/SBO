@@ -17,6 +17,7 @@ import net.sbo.mod.utils.events.impl.game.TickEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.game.ServerStats
 import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
@@ -24,6 +25,7 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.sqrt
@@ -86,6 +88,8 @@ object ArrowGuessBurrow {
     val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
+
+    val invalidCache = HashSet<SboVec>()
 
     fun removeArrowGuessFromSubGuess(pos: SboVec) {
         val target = pos.roundLocationToBlock()
@@ -420,7 +424,9 @@ object ArrowGuessBurrow {
     }
 
     internal fun isBlockValid(pos: SboVec): Boolean {
-        if (!HUB_BOUNDS.isInside(pos)) return false 
+        if (!HUB_BOUNDS.isInside(pos)) return false
+        if (pos in invalidCache) return false
+
         if (!pos.isInLoadedChunk()) return true
         return isBlockTrulyValid(pos)
     }
@@ -431,9 +437,15 @@ object ArrowGuessBurrow {
         val isAir = block == Blocks.AIR
         val isGround = isGrass || isAir && pos in recentClickedBlocks
 
-        val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
+        val isValidBlockAbove = pos.up().getBlockAt() == Blocks.AIR
+        val valid = isGround && isValidBlockAbove
 
-        return isGround && isValidBlockAbove
+        // Second condition is for an edge case where you would mine an arrow guess block and your network goes off - recentClickedBlocks would stop having the block after 4 seconds, and since network went off the server will not be able to put grass block back in again. So we check that server connection is healthy before proceeding to cache it as invalid.
+        if (!valid && (System.nanoTime() - ServerStats.lastPacket) < TimeUnit.SECONDS.toNanos(4L)) {
+            invalidCache.add(pos)
+        }
+
+        return valid
     }
 
     private fun AABB.isInside(vec: SboVec): Boolean {

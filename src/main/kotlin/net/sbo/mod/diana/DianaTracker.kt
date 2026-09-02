@@ -140,7 +140,7 @@ object DianaTracker {
         if (isDianaDrop && Helper.dianaMobDiedRecently(4)) {
             // Happens if user's OS time is not close (within 6 seconds) to the server's time for any reason. We can't use System.nanoTime comparision because server sends it in unix-time (milliseconds since epoch), and using System.currentTimeMillis depends on OS clock via NTP synchronization to be within 6 seconds of Hypixel's NTP synchronized clock.
 
-            if (Debug.debugMessages) {
+            if (Debug.debugOnlyMessages) {
                 Chat.chat(
                     "SBO(debug): creation timestamp unreliable, using Diana death fallback. " +
                         "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
@@ -150,7 +150,7 @@ object DianaTracker {
             return
         }
 
-        if (Debug.debugMessages) {
+        if (Debug.debugOnlyMessages) {
             Chat.chat(
                 "SBO(debug): not tracking item with creation older than 6 seconds. " +
                     "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"

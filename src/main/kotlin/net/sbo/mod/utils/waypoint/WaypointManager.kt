@@ -255,6 +255,7 @@ object WaypointManager {
         }
 
         LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
+        LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(WaypointRenderer)
     }
 
     private fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
@@ -551,7 +552,7 @@ object WaypointManager {
      */
     fun renderAllWaypoints(context: LevelRenderContext) {
         if (World.getWorld() != "Hub" || !Helper.hasSpade) {
-            getWaypointsOfType("world").forEach { waypoint ->
+            (getWaypointsOfType("world") + getWaypointsOfType("debug")).forEach { waypoint ->
                 waypoint.render(context)
             }
             return

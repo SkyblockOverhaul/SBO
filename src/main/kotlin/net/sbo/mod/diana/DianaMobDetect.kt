@@ -1,5 +1,6 @@
 package net.sbo.mod.diana
 
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
@@ -98,9 +99,29 @@ object DianaMobDetect {
             val level = mc.level ?: return@command
 
             level.entitiesForRendering().forEach { entity ->
-                val health = (entity as? LivingEntity)?.let { " with health ${it.health}/${it.maxHealth}" } ?: ""
+                val health = (entity as? LivingEntity)?.let {
+                    " with health ${it.health}/${it.maxHealth}"
+                } ?: ""
 
-                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string}$health at x=${entity.x},y=${entity.y},z=${entity.z}")
+                val passengers = entity.passengers
+                    .takeIf { it.isNotEmpty() }
+                    ?.joinToString(", ") { passenger ->
+                        "${passenger.javaClass.simpleName} (${passenger.name.string})"
+                    }
+                    ?.let { " with passengers [$it]" }
+                    ?: ""
+
+                val rider = entity.vehicle
+                    ?.let {
+                        " riding ${it.javaClass.simpleName} (${it.name.string})"
+                    }
+                    ?: ""
+
+                Chat.chat(
+                    "§6[SBO] §eEntity with type ${entity.javaClass.simpleName} " +
+                    "with name ${entity.name.string}$health$passengers$rider " +
+                    "at x=${entity.x},y=${entity.y},z=${entity.z}"
+                )
             }
         }
 
