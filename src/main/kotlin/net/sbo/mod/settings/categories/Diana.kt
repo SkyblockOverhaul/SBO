@@ -122,6 +122,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time.")
     }
 
+    var simpleChainsOverlayMode by boolean(true) {
+        this.name = Literal("Simple Chains Overlay Mode")
+        this.description = Literal("Only shows Pending Start and Active waypoint amount, never showing internal state mismatch issues aimed at users that want to troubleshoot/debug mod issues.")
+    }
+
     init {
         separator {
             this.title = "Diana Warp"
@@ -225,6 +230,11 @@ object Diana : CategoryKt("Diana") {
     var npcPriceOverrides by boolean(false) {
         this.name = Literal("NPC Price Overrides")
         this.description = Literal("Always prefers NPC prices for select items; such as the Pet Item drops like Cretan Urn, Dwarf Turtle Shelmet, Antique Remedies, Washed Up Souvenir and Crochet Tiger Plushie, along with Hilt of Revelations, useful if NPC selling them.")
+    }
+
+    var ironmanOverrides by boolean(false) {
+        this.name = Literal("Ironman Overrides")
+        this.description = Literal("Only show NPC prices for all items; other items will be displayed as having no monetary value.")
     }
 
     var excludeCoinsFromProfit by boolean(false) {

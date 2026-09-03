@@ -25,6 +25,7 @@ import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -134,6 +135,7 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
@@ -146,6 +148,7 @@ object Helper {
                 lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
@@ -158,6 +161,7 @@ object Helper {
                 lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
@@ -169,6 +173,7 @@ object Helper {
                 lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
@@ -500,13 +505,13 @@ object Helper {
         }
     }
 
-    fun checkCustomDropMessage(dropName: String, magicFind: Int, isLootshare: Boolean): Pair<Boolean, String> {
+    fun checkCustomDropMessage(dropName: String, magicFind: Int, isLootshare: Boolean, amountOverride: Int? = null): Pair<Boolean, String> {
         val info = getDropInfo(dropName) ?: return Pair(false, "")
 
         if (!info.isEnabled) return Pair(false, "")
 
         val resultText = info.template
-            .replace("{amount}", info.totalAmount.toString())
+            .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace('&', '§')
@@ -664,20 +669,17 @@ object Helper {
 
         val bzProduct = priceDataBazaar?.products?.get(id)
         val bazaarPrice = if (Diana.bazaarSettingDiana == Diana.SettingDiana.INSTASELL) {
-            bzProduct?.quick_status?.sellPrice
+            bzProduct?.quick_status?.sellPrice ?: 0.0
         } else {
-            bzProduct?.quick_status?.buyPrice
-        }
-
-        if (bazaarPrice != null && bazaarPrice > 0.0) {
-            return (bazaarPrice * amount).roundToLong()
+            bzProduct?.quick_status?.buyPrice ?: 0.0
         }
 
         val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
-        val preferNpc = Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
-        val bestUnitPrice = if (npcPrice > ahPrice || preferNpc) npcPrice else ahPrice
+        val preferNpc = Diana.ironmanOverrides || (Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS"))
+        val bestMarketPrice = kotlin.math.max(bazaarPrice, ahPrice)
+        val bestUnitPrice = if (npcPrice > bestMarketPrice || preferNpc) npcPrice else bestMarketPrice
 
         return (bestUnitPrice * amount).roundToLong()
     }

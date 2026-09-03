@@ -4,8 +4,8 @@
   "mixinextras": {
     "minVersion": "0.5.4"
   },
-  "package": "net.sbo.mod.mixin",
   "compatibilityLevel": "JAVA_${java_version_major}",
+  "package": "net.sbo.mod.mixin",
   "client": [
     "PauseScreenMixin",
     "GuiMixin",
@@ -13,12 +13,16 @@
     "PlayerInteractMixin",
     "ScreenHandlerSlotUpdateS2CPacketMixin",
     "ScreenMixin",
-    "EntityMixin"
+    "EntityMixin",
+    "MythologicalRitualMixin",
+    "AncestralSpadeSolverMixin",
+    "NearbyBurrowsSolverMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "overwrites": {
-    "requireAnnotations": true
+    "requireAnnotations": true,
+    "conformVisibility": true
   }
 }

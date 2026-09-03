@@ -259,7 +259,9 @@ object PartyFinderManager {
                 } else {
                     val errorMessage = response.error ?: "Unknown error"
                     Chat.chat("§6[SBO] §4Failed to create party: ${errorMessage.replace("&", "§")}")
-
+                    if (errorMessage.contains("requirement")) {
+                        Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.")
+                    }
                 }
 
             }.error { error ->
@@ -373,7 +375,7 @@ object PartyFinderManager {
                     playersSentRequest[partyLeader] = System.nanoTime()
                 }
             } else {
-                Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party.")
+                Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party. Ensure all your APIs are on and run /sboreloadstats to resync if you think this is an error.")
             }
         }
     }

@@ -3,7 +3,7 @@ package net.sbo.mod.settings.categories
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import net.sbo.mod.guis.Guis
 
-object PartyFinder : CategoryKt("PartyFinder") {
+object PartyFinder : CategoryKt("Party Finder") {
     var autoInvite by boolean(true) {
         this.name = Literal("Auto Invite")
         this.description = Literal("Auto invites players that send you a join request and meet the party requirements.")

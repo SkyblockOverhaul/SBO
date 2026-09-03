@@ -6,8 +6,8 @@ import net.sbo.mod.SBOKotlin
 object Credits : CategoryKt("Credits") {
     init {
         button {
-            title = "Skyhanni"
-            description = "Spade guess (bloxigus) and Arrow guess (SidOfThe7Cs)"
+            title = "SkyHanni"
+            description = "Spade Guess (bloxigus) and Arrow Guess (SidOfThe7Cs)"
             text = "Open"
             onClick {
                 SBOKotlin.openInBrowser("https://github.com/hannibal002/SkyHanni")

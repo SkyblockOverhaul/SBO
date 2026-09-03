@@ -520,6 +520,10 @@ object WaypointManager {
         }
     }
 
+    fun removeNearbyRareMobWaypointAt(pos: SboVec) {
+        removeWithinDistanceFrom(pos, "rareMob", 30, 1)
+    }
+
     /**
      * Renders all waypoints in the management system.
      * @param context The world render context.
@@ -717,11 +721,11 @@ object WaypointManager {
         val list = waypoints[type] ?: return
 
         var removed = 0
-        val iterator = list.iterator()
 
-        while (iterator.hasNext() && removed < limit) {
-            if (iterator.next().pos.distanceTo(pos) < distance) {
-                iterator.remove()
+        for (waypoint in list) {
+            if (removed >= limit) break
+
+            if (waypoint.pos.distanceTo(pos) < distance && list.remove(waypoint)) {
                 removed++
             }
         }
@@ -734,7 +738,7 @@ object WaypointManager {
     fun addSpadeGuess(pos: SboVec?) {
         if (pos == null) return
 
-        if (!waypointExists("burrow", pos).first) {
+        if (!waypointExists("burrow", pos).first && !waypointExists("guess", pos).first && !BurrowDetector.wasRecentlyRemoved(pos)) {
             val waypoint = Waypoint("Spade Guess", pos.x, pos.y, pos.z, type = "guess")
             addWaypoint(waypoint)
         }
@@ -925,7 +929,7 @@ object WaypointManager {
         var simulatedTargetPos = targetPos
         var lastWarp: String? = null
 
-        repeat(4) {
+        repeat(10) {
             val warp = getClosestWarp(simulatedTargetPos, simulatedPlayerPos) ?: return lastWarp
             if (warp == lastWarp) return warp
 
@@ -944,7 +948,7 @@ object WaypointManager {
         var simulatedPlayerPos = Player.getLastPosition()
         var lastWarp: String? = null
 
-        repeat(4) {
+        repeat(10) {
             val warp = getClosestWarp(targetPos, simulatedPlayerPos) ?: return lastWarp
             if (warp == lastWarp) return warp
 

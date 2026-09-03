@@ -142,7 +142,7 @@ object DianaTracker {
 
             if (Debug.debugMessages) {
                 Chat.chat(
-                    "debug: creation timestamp unreliable, using Diana death fallback. " +
+                    "SBO(debug): creation timestamp unreliable, using Diana death fallback. " +
                         "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
                 )
             }
@@ -152,7 +152,7 @@ object DianaTracker {
 
         if (Debug.debugMessages) {
             Chat.chat(
-                "debug: not tracking item with creation older than 6 seconds. " +
+                "SBO(debug): not tracking item with creation older than 6 seconds. " +
                     "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
             )
         }
@@ -785,7 +785,11 @@ object DianaTracker {
             else -> Triple("§f", -1, -1) // shouldn't happen
         }
 
-        val price = "§6${Helper.getItemPriceFormatted(itemId, amount)} coins"
+        val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(itemId, amount) == 0L
+        val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
+        val price = "§6$priceRaw coins"
+
+        val priceText = if (priceRaw != "0") " (+$price)" else ""
 
         val ls = gotLootShareRecently()
         val lsText = if (ls) " (LS)" else ""
@@ -808,25 +812,31 @@ object DianaTracker {
             }
         }
 
+        val totalCount = if (realLsCount != -1) {
+            realCount + realLsCount
+        } else {
+            realCount
+        }
+
         if (Diana.lootAnnouncerChat && showMessageOrTitle) {
             val customMsg = when (itemId) {
-                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind, ls)
-                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind, ls)
-                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind, ls)
-                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind, ls)
-                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind, ls)
+                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind, ls, totalCount)
+                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind, ls, totalCount)
+                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind, ls, totalCount)
+                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind, ls, totalCount)
+                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind, ls, totalCount)
                 else -> Pair(false, "")
             }
 
             if (customMsg.first) {
                 Chat.chat(customMsg.second)
             } else {
-                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
+            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count${if (hidePrice) "" else "§6 (+$price)"}")
             }
         }
 
         if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare && (!isCoG || Diana.announceCrownOfGreed)) {
-            Helper.showTitle("${colorAndCount.first}§l$item$lsText!", price, 0, 25, 35)
+            Helper.showTitle("${colorAndCount.first}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
         }
 
         val isLootShare = gotLootShareRecently()
