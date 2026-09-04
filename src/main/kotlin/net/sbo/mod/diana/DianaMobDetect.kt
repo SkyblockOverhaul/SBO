@@ -6,6 +6,7 @@ import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
@@ -55,6 +56,15 @@ object DianaMobDetect {
 
         companion object {
             fun fromName(name: String): RareDianaMob? = entries.firstOrNull { name.contains(it.display, ignoreCase = true) }
+        }
+
+        fun getGlowColor(): Int {
+            return when (this) {
+                RareDianaMob.KING -> Customization.KingMinosGlowColor
+                RareDianaMob.INQ -> Customization.MinosInquisitorGlowColor
+                RareDianaMob.MANTI -> Customization.ManticoreGlowColor
+                RareDianaMob.SPHINX -> Customization.SphinxGlowColor
+            }
         }
     }
 

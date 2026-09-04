@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.lang.module.ModuleDescriptor.Version
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     java
@@ -125,6 +126,7 @@ repositories {
 
         filter {
             includeModule("net.azureaaron", "hm-api")
+            includeModule("net.azureaaron", "render-chest")
         }
     }
 
@@ -162,10 +164,49 @@ tasks.withType<KotlinJvmCompile> {
     compilerOptions.jvmTarget.set(JvmTarget.fromTarget(versionedProperty("java.version")))
 }
 
-tasks.matching { it.name.contains("Test") || it.name.contains("test") }.configureEach {
-    // One of the tasks create problems since preprocessTestCode reads output of kspTestKotlin without depending on it,
-    // We don't have any tests anyway; so this OK to disable to work around the error.
-    enabled = false
+val runDirectory = rootProject.file("run")
+runDirectory.mkdirs()
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging {
+        showStackTraces = true
+        //showStandardStreams = true // enable if troubleshooting failures
+        exceptionFormat = TestExceptionFormat.FULL
+    }
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+    workingDir(file(runDirectory))
+    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+    jvmArgs(
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED",
+        "-XX:+EnableDynamicAgentLoading",
+        // Tests start NPE-ing without this on Java 25
+        "-Dnet.bytebuddy.experimental=true",
+        // Resolves warning: "Final field mappings in class org.spongepowered.asm.mixin.refmap.ReferenceMapper has been mutated reflectively by class org.spongepowered.include.com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1 in unnamed module"
+        // Ideally Mixin would make the field not final or use a different GSON serilization path, but here we are
+        "--enable-final-field-mutation=ALL-UNNAMED",
+    )
+}
+
+val mixinTestRuntime = configurations.create("mixinTestRuntime") {
+    isCanBeConsumed = false
+    extendsFrom(configurations.testRuntimeClasspath.get())
+}
+
+val mixinTest = tasks.register<Test>("mixinTest") {
+    description = "Audits mixin application under Fabric Loader."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().output + sourceSets.main.get().output + mixinTestRuntime
+    filter {
+        includeTestsMatching("net.sbo.mod.test.MixinTest")
+    }
+}
+
+tasks.test {
+    dependsOn(mixinTest)
+    exclude("net/sbo/mod/test/MixinTest.class")
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -245,6 +286,11 @@ dependencies {
     minecraft("com.mojang:minecraft:${mcVersion}")
 
     implementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
+
+    mixinTestRuntime("net.fabricmc:fabric-loader-junit:${property("fabricloader.version")}")
+    testImplementation(libs.junit)
+    testRuntimeOnly(libs.junit.launcher)
+
     implementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
@@ -261,6 +307,9 @@ dependencies {
 
     when (mcProject) {
         "26.2-fabric" -> {
+            // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
+            implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
+
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.2:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
             implementation(include(libs.universalcraft262.get())!!)
@@ -284,3 +333,11 @@ tasks.findByName("preprocessCode")?.apply {
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 }
+
+tasks.findByName("preprocessTestCode")?.apply {
+    when (mcProject) {
+        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspTestKotlin")
+        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
+    }
+}
+

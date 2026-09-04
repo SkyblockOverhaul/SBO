@@ -53,6 +53,9 @@
     "resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
     "universalcraft": ">=${universalcraft_version}"
   },
+  "breaks": {
+    "noammaddons": "<1.2.5"
+  },
   "custom": {
     "modmenu": {
       "update_checker": true,

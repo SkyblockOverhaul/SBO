@@ -4,6 +4,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlaySoundEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.settings.categories.Diana
 
 object MuteBuggedSpadeSounds {
     fun init() {
@@ -15,7 +16,7 @@ object MuteBuggedSpadeSounds {
      */
     @SboEvent
     fun onPlaySound(event: PlaySoundEvent) {
-        if (World.getWorld() != "Hub" || !Helper.hasSpade) return
+        if (!Diana.muteBuggedSpadeSounds || World.getWorld() != "Hub" || !Helper.hasSpade) return
 
         val sound = event.sound
         val isRealMusic = sound.pitch == 1f && sound.volume == 1f && sound.x == 0.0 && sound.y == 0.0 && sound.z == 0.0

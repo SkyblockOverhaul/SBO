@@ -6,22 +6,10 @@
   },
   "compatibilityLevel": "JAVA_${java_version_major}",
   "package": "net.sbo.mod.mixin",
-  "client": [
-    "PauseScreenMixin",
-    "GuiMixin",
-    "MinecraftMixin",
-    "PacketMixin",
-    "PlayerInteractMixin",
-    "ScreenHandlerSlotUpdateS2CPacketMixin",
-    "ScreenMixin",
-    "EntityMixin",
-    "MythologicalRitualMixin",
-    "AncestralSpadeSolverMixin",
-    "NearbyBurrowsSolverMixin",
-    "SoundEngineMixin"
-  ],
+  "plugin": "net.sbo.mod.mixinbase.SBOMixinPlugin",
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 1,
+    "maxShiftBy": 2
   },
   "overwrites": {
     "requireAnnotations": true,

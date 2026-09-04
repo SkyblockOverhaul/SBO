@@ -117,6 +117,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a title to use spade when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby, which will usually point to a new Start burrow to hold up your concurrent chains.")
     }
 
+    var muteBuggedSpadeSounds by boolean(true) {
+        this.name = Literal("Mute Bugged Spade Sounds")
+        this.description = Literal("Fixes an Hypixel issue where using the Ancestral, Archaic or the Deific spade sometimes would play a bugged Minecraft music that does not end and could be scary for people. This does the exact same thing SkyHanni option under the same name does, which is to cancel the bugged music from playing, until Hypixel fixes the issue server-side.")
+    }
+
     var ongoingChainsDisplay by boolean(false) {
         this.name = Literal("Ongoing Chains Display")
         this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time.")

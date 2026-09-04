@@ -3,6 +3,7 @@ loom = "1.17.20"
 ksp = "2.3.11"
 elementa = "762"
 universalcraft = "517"
+junit = "6.1.3"
 
 [plugins]
 loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }
@@ -15,3 +16,6 @@ elementa = { group = "gg.essential", name = "elementa", version.ref = "elementa"
 
 universalcraft261 = { group = "gg.essential", name = "universalcraft-26.1-fabric", version.ref = "universalcraft" }
 universalcraft262 = { group = "gg.essential", name = "universalcraft-26.2-fabric", version.ref = "universalcraft" }
+
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }

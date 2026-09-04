@@ -27,15 +27,4 @@ final class ClientPacketListenerMixin {
     private final void sbo$onSendCommand(@NonNull final String command, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new SentCommandEvent(command));
     }
-
-    @Inject(method = "handleParticleEvent", at = @At("HEAD"))
-    private final void sbo$onParticlePacket(@NonNull final ClientboundLevelParticlesPacket packet, @NonNull final CallbackInfo ci) {
-        SBOEvent.INSTANCE.emit(new PacketReceiveEvent(packet));
-    }
-
-    @WrapOperation(method = "handleBundlePacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/Packet;handle(Lnet/minecraft/network/PacketListener;)V"))
-    private final void sbo$onBundlePacket(@NonNull final Packet<?> packet, @NonNull final PacketListener listener, @NonNull final Operation<Void> original) {
-        SBOEvent.INSTANCE.emit(new PacketReceiveEvent(packet));
-        original.call(packet, listener);
-    }
 }
