@@ -257,83 +257,62 @@ object WaypointManager {
         LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
     }
 
-    private fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
-        return when (mobType) {
-            Diana.ReceiveList.INQ -> {
-                Helper.showTitle(
-                    "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
-                    player.ifEmpty { null },
-                    Diana.rareMobTitleFadeInTime,
-                    Diana.rareMobTitleStayTime,
-                    Diana.rareMobTitleFadeOutTime
-                )
-                playCustomSound(
-                    SboDataObject.soundSettingsData.inqSound,
-                    volume = SboDataObject.soundSettingsData.inqVolume
-                )
+    private data class RareMobData(
+        val title: String,
+        val sound: String,
+        val volume: Float,
+        val mobName: String
+    )
+
+    fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
+        val mobData = when (mobType) {
+            Diana.ReceiveList.INQ -> RareMobData(
+                "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
+                SboDataObject.soundSettingsData.inqSound,
+                SboDataObject.soundSettingsData.inqVolume,
                 "§dInquisitor"
-            }
+            )
 
-            Diana.ReceiveList.KING -> {
-                Helper.showTitle(
-                    "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
-                    player.ifEmpty { null },
-                    Diana.rareMobTitleFadeInTime,
-                    Diana.rareMobTitleStayTime,
-                    Diana.rareMobTitleFadeOutTime
-                )
-                playCustomSound(
-                    SboDataObject.soundSettingsData.kingSound,
-                    volume = SboDataObject.soundSettingsData.kingVolume
-                )
+            Diana.ReceiveList.KING -> RareMobData(
+                "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
+                SboDataObject.soundSettingsData.kingSound,
+                SboDataObject.soundSettingsData.kingVolume,
                 "§6King Minos"
-            }
+            )
 
-            Diana.ReceiveList.MANTICORE -> {
-                Helper.showTitle(
-                    "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
-                    player.ifEmpty { null },
-                    Diana.rareMobTitleFadeInTime,
-                    Diana.rareMobTitleStayTime,
-                    Diana.rareMobTitleFadeOutTime
-                )
-                playCustomSound(
-                    SboDataObject.soundSettingsData.mantiSound,
-                    volume = SboDataObject.soundSettingsData.mantiVolume
-                )
+            Diana.ReceiveList.MANTICORE -> RareMobData(
+                "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
+                SboDataObject.soundSettingsData.mantiSound,
+                SboDataObject.soundSettingsData.mantiVolume,
                 "§2Manticore"
-            }
+            )
 
-            Diana.ReceiveList.SPHINX -> {
-                Helper.showTitle(
-                    "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
-                    player.ifEmpty { null },
-                    Diana.rareMobTitleFadeInTime,
-                    Diana.rareMobTitleStayTime,
-                    Diana.rareMobTitleFadeOutTime
-                )
-                playCustomSound(
-                    SboDataObject.soundSettingsData.sphinxSound,
-                    volume = SboDataObject.soundSettingsData.sphinxVolume
-                )
+            Diana.ReceiveList.SPHINX -> RareMobData(
+                "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
+                SboDataObject.soundSettingsData.sphinxSound,
+                SboDataObject.soundSettingsData.sphinxVolume,
                 "§9Sphinx"
-            }
+            )
 
-            else -> {
-                Helper.showTitle(
-                    "§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>",
-                    player.ifEmpty { null },
-                    Diana.rareMobTitleFadeInTime,
-                    Diana.rareMobTitleStayTime,
-                    Diana.rareMobTitleFadeOutTime
-                )
-                playCustomSound(
-                    SboDataObject.soundSettingsData.rareMobSound,
-                    volume = SboDataObject.soundSettingsData.rareMobVolume
-                )
+            else -> RareMobData(
+                "§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>",
+                SboDataObject.soundSettingsData.rareMobSound,
+                SboDataObject.soundSettingsData.rareMobVolume,
                 "§3Rare Mob"
-            }
+            )
         }
+
+        if (Diana.ReceiveMobs.contains(mobType)) Helper.showTitle(
+            mobData.title,
+            player.ifEmpty { null },
+            Diana.rareMobTitleFadeInTime,
+            Diana.rareMobTitleStayTime,
+            Diana.rareMobTitleFadeOutTime
+        )
+
+        if (!player.contains(Player.getName() ?: "")) playCustomSound(mobData.sound, mobData.volume)
+
+        return mobData.mobName
     }
 
     private fun floorToGround(level: ClientLevel, pos: SboVec): SboVec {

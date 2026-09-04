@@ -338,6 +338,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces chimera/stick/relic on screen.")
     }
 
+    var announceCrownOfGreed by boolean(true) {
+        this.name = Literal("Crown Of Greed display")
+        this.description = Literal("Whether you want \"§6Crown Of Greed§r\" to appear on your screen when dropping one")
+    }
+
     var lootAnnouncerParty by boolean(true) {
         this.name = Literal("Loot Party Announcer")
         this.description = Literal("Announces chimera/wool/stinger/food in party chat.")
@@ -374,7 +379,7 @@ object Diana : CategoryKt("Diana") {
             text = "Send Test"
             description = "Sends a test message for all rare drop messages."
             onClick {
-                if (Helper.checkCustomDropMessage("Chimera", 400).first) {
+                if (Helper.checkCustomDropMessage("Chimera", 400, false).first) {
                     val drops = mutableListOf<String>()
                     if (customChimeraMessage.isNotEmpty()) drops.add("Chimera")
                     if (customBrainFoodMessage.isNotEmpty()) drops.add("Brain Food")
@@ -384,7 +389,7 @@ object Diana : CategoryKt("Diana") {
 
                     for (drop: String in drops) {
                         Chat.chat(
-                            Helper.checkCustomDropMessage(drop, 400).second
+                            Helper.checkCustomDropMessage(drop, 400, false).second
                         )
                     }
                 }
@@ -530,6 +535,11 @@ object Diana : CategoryKt("Diana") {
     var hpAlert by double(0.0) {
         this.name = Literal("HP Alert")
         this.description = Literal("Sends a title alert when a Rare Mob is below the set HP value in Million. (0 to disable)")
+    }
+
+    var soundHpAlert by double(0.0) {
+        this.name = Literal("Sound HP Alert")
+        this.description = Literal("Sends the Low HP sound when the Rare Mob is below the set HP value in Million. (0 to disable)")
     }
 
     var noShurikenOverlay by boolean(true) {

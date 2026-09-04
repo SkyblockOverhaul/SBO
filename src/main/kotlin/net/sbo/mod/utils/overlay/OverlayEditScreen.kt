@@ -76,23 +76,37 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     override fun keyPressed(keyInput: KeyEvent): Boolean {
         val keyCode = keyInput.key
         selectedOverlay?.let {
-            val step = 1f
+            val step = when {
+                keyInput.hasControlDown() && keyInput.hasShiftDown() -> 0.05f
+                keyInput.hasControlDown() -> 0.5f
+                keyInput.hasShiftDown() -> 0.01f
+                else -> 0.1f
+            }
+
             when (keyCode) {
                 GLFW.GLFW_KEY_UP -> {
-                    it.y -= step
+                    it.y -= 1f
                     overlayData.overlays[it.name]?.y = it.y
                 }
                 GLFW.GLFW_KEY_DOWN -> {
-                    it.y += step
+                    it.y += 1f
                     overlayData.overlays[it.name]?.y = it.y
                 }
                 GLFW.GLFW_KEY_LEFT -> {
-                    it.x -= step
+                    it.x -= 1f
                     overlayData.overlays[it.name]?.x = it.x
                 }
                 GLFW.GLFW_KEY_RIGHT -> {
-                    it.x += step
+                    it.x += 1f
                     overlayData.overlays[it.name]?.x = it.x
+                }
+                GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> {
+                    it.scale = (it.scale + step).coerceIn(0.5f, 5.0f)
+                    overlayData.overlays[it.name]?.scale = it.scale
+                }
+                GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> {
+                    it.scale = (it.scale - step).coerceIn(0.5f, 5.0f)
+                    overlayData.overlays[it.name]?.scale = it.scale
                 }
                 else -> return@keyPressed super.keyPressed(keyInput)
             }
