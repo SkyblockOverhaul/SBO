@@ -1,6 +1,5 @@
 package net.sbo.mod.diana
 
-import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
@@ -48,23 +47,14 @@ object DianaMobDetect {
 
     private val kingHitsRegex = """.*?(\d+)\s+Hits.*""".toRegex()
 
-    internal enum class RareDianaMob(val display: String) {
-        INQ("Minos Inquisitor"),
-        KING("King Minos"),
-        SPHINX("Sphinx"),
-        MANTI("Manticore");
+    internal enum class RareDianaMob(val display: String, val glowColor: Int) {
+        INQ("Minos Inquisitor", Customization.KingMinosGlowColor),
+        KING("King Minos", Customization.MinosInquisitorGlowColor),
+        SPHINX("Sphinx", Customization.ManticoreGlowColor),
+        MANTI("Manticore", Customization.SphinxGlowColor);
 
         companion object {
             fun fromName(name: String): RareDianaMob? = entries.firstOrNull { name.contains(it.display, ignoreCase = true) }
-        }
-
-        fun getGlowColor(): Int {
-            return when (this) {
-                RareDianaMob.KING -> Customization.KingMinosGlowColor
-                RareDianaMob.INQ -> Customization.MinosInquisitorGlowColor
-                RareDianaMob.MANTI -> Customization.ManticoreGlowColor
-                RareDianaMob.SPHINX -> Customization.SphinxGlowColor
-            }
         }
     }
 
@@ -89,7 +79,7 @@ object DianaMobDetect {
             }
         }
 
-    private fun parseStarFromName(name: String): Boolean = name.contains("✯")//todo: implement overlay for star check
+    private fun parseStarFromName(name: String): Boolean = name.contains("✯")
 
     private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && Diana.hpAlert > 0.0
 
@@ -292,11 +282,11 @@ object DianaMobDetect {
 
     private fun announceCocoon(mobName: String) {
         if (Diana.announceCocoon) {
-            Chat.pc("Cocooned a ${mobName}!")
+            Chat.pc("Cocooned a $mobName!")
         }
 
         if (Diana.cocoonTitle) {
-            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b${mobName}", 10, 40, 10)
+            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b$mobName", 10, 40, 10)
             playCustomSound(SboDataObject.soundSettingsData.cocoonSound, volume = SboDataObject.soundSettingsData.cocoonVolume)
         }
     }

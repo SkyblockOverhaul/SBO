@@ -258,7 +258,7 @@ object SboDataObject {
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
         // Game is closing, if we do not block till save is complete, the game might close before save is complete, and so we might do a partial save which corrupts and resets stuff on the next launch.
-        saveAndBackupAllDataThreaded(dataDir, true)
+        saveAndBackupAllDataThreadedBlocking(dataDir)
     }
 
     private fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
@@ -637,16 +637,16 @@ object SboDataObject {
     }
 
     private val configMapForSave = mapOf(
-        "SboData" to Pair({ save(dataDir, sboData, "SboData.json") }, sboData),
-        "AchievementsData" to Pair({ save(dataDir, achievementsData, "sbo_achievements.json") }, achievementsData),
-        "PastDianaEventsData" to Pair({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
-        "DianaTrackerTotalData" to Pair({ save(dataDir, dianaTrackerTotal, "dianaTrackerTotal.json") }, dianaTrackerTotal),
-        "DianaTrackerSessionData" to Pair({ save(dataDir, dianaTrackerSession, "dianaTrackerSession.json") }, dianaTrackerSession),
-        "DianaTrackerMayorData" to Pair({ save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json") }, dianaTrackerMayor),
-        "PartyFinderConfigState" to Pair({ save(dataDir, pfConfigState, "partyFinderConfigState.json") }, pfConfigState),
-        "PartyFinderData" to Pair({ save(dataDir, partyFinderData, "partyFinderData.json") }, partyFinderData),
-        "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData),
-        "SoundSettingsData" to Pair({ save(dataDir, soundSettingsData, "soundSettingsData.json") }, soundSettingsData),
+        "SboData" to ({ save(dataDir, sboData, "SboData.json") } to sboData),
+        "AchievementsData" to ({ save(dataDir, achievementsData, "sbo_achievements.json") } to achievementsData),
+        "PastDianaEventsData" to ({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") } to pastDianaEventsData),
+        "DianaTrackerTotalData" to ({ save(dataDir, dianaTrackerTotal, "dianaTrackerTotal.json") } to dianaTrackerTotal),
+        "DianaTrackerSessionData" to ({ save(dataDir, dianaTrackerSession, "dianaTrackerSession.json") } to dianaTrackerSession),
+        "DianaTrackerMayorData" to ({ save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json") } to dianaTrackerMayor),
+        "PartyFinderConfigState" to ({ save(dataDir, pfConfigState, "partyFinderConfigState.json") } to pfConfigState),
+        "PartyFinderData" to ({ save(dataDir, partyFinderData, "partyFinderData.json") } to partyFinderData),
+        "OverlayData" to ({ save(dataDir, overlayData, "overlayData.json") } to overlayData),
+        "SoundSettingsData" to ({ save(dataDir, soundSettingsData, "soundSettingsData.json") } to soundSettingsData),
     )
 
     private fun saveAllData() {
@@ -663,17 +663,13 @@ object SboDataObject {
         }
     }
 
-    private fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
-        val future = DATA_SAVER_EXECUTOR.submit {
+    private fun saveAndBackupAllDataThreadedBlocking(modName: String) {
+        DATA_SAVER_EXECUTOR.submit {
             SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
             SBOKotlin.logger.info("All data saved successfully.")
             createBackup(modName)
-        }
-
-        if (block) {
-            future.get()
-        }
+        }.get()
     }
 
     /**
@@ -780,9 +776,7 @@ object SboDataObject {
      *
      * @return A writer suitable for writing to the given file.
      */
-    private fun writerForFile(file: File): Writer {
-        return BufferedWriter(FileWriter(file))
-    }
+    private fun writerForFile(file: File): Writer = BufferedWriter(FileWriter(file))
 
     /**
      * Saves the specified config by its name.

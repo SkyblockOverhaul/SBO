@@ -8,7 +8,6 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.*
@@ -20,7 +19,6 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
 import net.sbo.mod.utils.math.SboVec
@@ -309,13 +307,9 @@ object Helper {
 
     private val COLOR_REGEX: Regex = Regex("§.")
 
-    fun String.removeFormatting(): String {
-        return this.replace(COLOR_REGEX, "")
-    }
+    fun String.removeFormatting(): String = this.replace(COLOR_REGEX, "")
 
-    fun Component.removeFormatting(): String {
-        return this.string.replace(COLOR_REGEX, "")
-    }
+    fun Component.removeFormatting(): String = this.string.replace(COLOR_REGEX, "")
 
     fun matchLvlToColor(lvl: Int): String {
         return when {
@@ -453,9 +447,7 @@ object Helper {
         return invItems
     }
 
-    fun toUpperSnakeCase(input: String): String {
-        return input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
-    }
+    fun toUpperSnakeCase(input: String): String = input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
 
     /**
      * Returns the number of seconds since an epoch timestamp.
@@ -465,13 +457,9 @@ object Helper {
      *
      * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
      */
-    fun getSecondsPassed(timestamp: Long): Long {
-        return (System.currentTimeMillis() - timestamp) / 1000
-    }
+    fun getSecondsPassed(timestamp: Long): Long = (System.currentTimeMillis() - timestamp) / 1000
 
-    private fun getSecondsPassedSinceNano(timestamp: Long): Long {
-        return (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
-    }
+    private fun getSecondsPassedSinceNano(timestamp: Long): Long = (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
 
     private fun playerHasItem(sbId: String): Boolean {
         val inv = Player.getPlayerInventory()
@@ -484,8 +472,6 @@ object Helper {
         }
         return false
     }
-
-    private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
         val currentDurationTicks = mc.gui.titleTime
@@ -506,9 +492,9 @@ object Helper {
     }
 
     fun checkCustomDropMessage(dropName: String, magicFind: Int, amountOverride: Int? = null): Pair<Boolean, String> {
-        val info = getDropInfo(dropName) ?: return Pair(false, "")
+        val info = getDropInfo(dropName) ?: return false to ""
 
-        if (!info.isEnabled) return Pair(false, "")
+        if (!info.isEnabled) return false to ""
 
         val resultText = info.template
             .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
@@ -518,7 +504,7 @@ object Helper {
             .replace('&', '§')
             .replace("+ ✯ Magic Find ", "") // prevent nonsense magic find when hypixel doesn't put it into the message (mob killed by someone else)
 
-        return Pair(true, resultText)
+        return true to resultText
     }
 
     data class DropInfo(
@@ -533,9 +519,8 @@ object Helper {
             get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
-    private fun getCustomMessage(message: Array<out String>): String {
-        return message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
-    }
+    private fun getCustomMessage(message: Array<out String>): String =
+        message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
 
     private fun getDropInfo(dropName: String): DropInfo? {
         val tracker = SboDataObject.dianaTrackerMayor
@@ -606,9 +591,7 @@ object Helper {
         }
     }
 
-    fun toTitleCase(input: String): String {
-        return input.lowercase().replaceFirstChar { char -> char.uppercase() }
-    }
+    fun toTitleCase(input: String): String = input.lowercase().replaceFirstChar { char -> char.uppercase() }
 
     fun getMagicFind(mf: String): Int {
         val mfMatch = MF_REGEX.find(mf)
@@ -651,7 +634,7 @@ object Helper {
             sbId.endsWith("_SHARD") || sbId.endsWith("_DYE") -> {
                 val suffix = sbId.substringAfterLast('_')   // "SHARD"
                 val name = sbId.substringBeforeLast('_')   // "WITHER"
-                "${suffix}_${name}"
+                "${suffix}_$name"
             }
             else -> sbId
         }
@@ -666,7 +649,8 @@ object Helper {
         val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
-        val preferNpc = Diana.ironmanOverrides || (Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS"))
+        val preferNpc =
+            Diana.ironmanOverrides || Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
         val bestMarketPrice = kotlin.math.max(bazaarPrice, ahPrice)
         val bestUnitPrice = if (npcPrice > bestMarketPrice || preferNpc) npcPrice else bestMarketPrice
 
@@ -682,13 +666,9 @@ object Helper {
      * Checks if the player has received loot share recently.
      * @param timeframe The timeframe in seconds to check against. Default is 2 seconds.
      */
-    fun gotLootShareRecently(timeframe: Long = 2): Boolean {
-        return getSecondsPassedSinceNano(lastLootShare) <= timeframe
-    }
+    fun gotLootShareRecently(timeframe: Long = 2): Boolean = getSecondsPassedSinceNano(lastLootShare) <= timeframe
 
-    fun dianaMobDiedRecently(seconds: Long = 2): Boolean {
-        return getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
-    }
+    fun dianaMobDiedRecently(seconds: Long = 2): Boolean = getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
 
     fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
@@ -728,9 +708,7 @@ object Helper {
         return "§eChance: §b$percent%$fraction $label"
     }
 
-    fun getMagicFindAndLooting(mf: Int, looting: Int): String {
-        return " §7[MF:$mf] [L:$looting]"
-    }
+    fun getMagicFindAndLooting(mf: Int, looting: Int): String = " §7[MF:$mf] [L:$looting]"
 
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0

@@ -28,14 +28,18 @@ object ChatMessageQueue {
         onCommandOrMessageSent()
     }
 
-    fun onCommandOrMessageSent() {
+    private fun onCommandOrMessageSent() {
         lastSentAt = System.nanoTime()
     }
 
     private fun canSend(): Boolean = 0L == lastSentAt || System.nanoTime() - lastSentAt > DELAY_NANOS
 
     private fun send(player: LocalPlayer, message: String) {
-        player.connection.sendChat(message)
+        if (message.startsWith("/")) {
+            player.connection.sendCommand(message.substring(1))
+        } else {
+            player.connection.sendChat(message)
+        }
     }
 
     fun queue(message: String) {

@@ -5,7 +5,6 @@ import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.accessors.isSboGlowing
 import net.sbo.mod.utils.accessors.setSboGlowColor
 import net.sbo.mod.utils.events.Register
@@ -46,7 +45,7 @@ object RareMobHighlight {
         //$$    if (!Diana.HighlightRareMobs) GlowConstants.NO_GLOW
         //$$
         //$$    // Minecraft already renders all glow as opaque, and non-opaque values are reserved by Render Chest.
-        //$$    rareMobs[entity]?.getGlowColor()?.let(ARGB::opaque) ?: GlowConstants.NO_GLOW
+        //$$    rareMobs[entity]?.glowColor?.let(ARGB::opaque) ?: GlowConstants.NO_GLOW
         //$$ }
         //#endif
     }
@@ -88,7 +87,7 @@ object RareMobHighlight {
             val hasLineOfSight = player != null && player.hasLineOfSight(mob)
             if (Diana.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
                 mob.isSboGlowing = true
-                mob.setSboGlowColor(Color(type.getGlowColor()))
+                mob.setSboGlowColor(Color(type.glowColor))
             } else {
                 mob.isSboGlowing = false
             }

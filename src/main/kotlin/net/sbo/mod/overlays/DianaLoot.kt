@@ -139,12 +139,12 @@ object DianaLoot : DirtyFlushableOverlay() {
         val itemName = data.id
         val amount = tracker.getAmountOf(itemName)
         val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
-        val formattedName = "$color${data.name}: ${AQUA}${Helper.formatNumber(amount, withCommas = true)}"
+        val formattedName = "$color${data.name}: $AQUA${Helper.formatNumber(amount, withCommas = true)}"
         val price = Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOne(tracker.items, tracker.mobs, itemName, dropId)
         }
-        val percentText = percent?.let { " $GRAY($AQUA${it}%$GRAY)" } ?: ""
+        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
         val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(itemName.replace("_LS", ""), amount) == 0L
         val formattedText = "${if (hidePrice) "$DARK_GRAY  -  " else "$GOLD$price"} $GRAY| $formattedName$percentText"
         val line = OverlayTextLine(formattedText).onClick { hideLine(itemName) }
@@ -171,11 +171,11 @@ object DianaLoot : DirtyFlushableOverlay() {
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOne(tracker.items, tracker.mobs, itemNameBase, dropId)
         }
-        val percentText = percent?.let { " $GRAY($AQUA${it}%$GRAY)" } ?: ""
+        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
         val percentLs = data.dropMobLsId?.let { dropLsId ->
             calcPercentOne(tracker.items, tracker.mobs, itemNameLs, dropLsId)
         }
-        val percentLsText = percentLs?.let { " $GRAY($AQUA${it}%$GRAY)" } ?: ""
+        val percentLsText = percentLs?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
         val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         val baseText = "$priceCombined $GRAY| $color${data.name}: $AQUA${Helper.formatNumber(amountBase,
             withCommas = true
@@ -238,9 +238,9 @@ object DianaLoot : DirtyFlushableOverlay() {
     private fun updateControlLines(lines: MutableList<OverlayTextLine>, isCraftingOpen: Boolean) {
         val screenOpen = isCraftingOpen || isCraftingScreenOpen()
         val sellTypeText = if (isSellTypeHovered) {
-            "$YELLOW${UNDERLINE}${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
+            "$YELLOW$UNDERLINE${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
         } else {
-            "${YELLOW}${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
+            "$YELLOW${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
         }
         changeSellType.text = sellTypeText
 
@@ -373,7 +373,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         val text = if (timer.isRunning()) {
             "${YELLOW}Playtime: $AQUA$formattedTime"
         } else {
-            "${YELLOW}Playtime: $AQUA$formattedTime ${GRAY}[${RED}PAUSED${GRAY}]"
+            "${YELLOW}Playtime: $AQUA$formattedTime $GRAY[${RED}PAUSED$GRAY]"
         }
         timerLine.text = text
     }

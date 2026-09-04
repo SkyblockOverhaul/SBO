@@ -118,8 +118,10 @@ object SoundHandler {
     /** Scans the config directory for user-added sounds */
     private fun scanUserSounds() {
         File(SOUND_DIR_PATH).listFiles()
+            ?.asSequence()
             ?.filter { it.isFile }
             ?.filter { file -> SUPPORTED_EXTENSIONS.any { ext -> file.name.endsWith(ext, ignoreCase = true) } }
+            ?.toList()
             ?.forEach { file ->
                 availableSounds.add(file.name.substringBeforeLast('.').lowercase())
                 availableSoundsWithExt.add(file.name)

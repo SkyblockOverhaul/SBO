@@ -1,7 +1,5 @@
 package net.sbo.mod.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
@@ -9,7 +7,6 @@ import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent;
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent;
-import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

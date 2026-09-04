@@ -22,12 +22,12 @@ object Mayor {
 
     private var dateMayorElected: Date? = null
     private var newMayorAtDate: Date? = null
-    var mayor: String? = null
-    var perks: MutableSet<String> = mutableSetOf()
+    private var mayor: String? = null
+    private var perks: MutableSet<String> = mutableSetOf()
     private var mayorApiError: Boolean = false
     private var apiLastUpdated: Long? = null
     private var minister: String? = null
-    var ministerPerk: String? = null
+    private var ministerPerk: String? = null
     private var skyblockDate: Date? = null
     private var skyblockDateString: String = ""
     private var refreshingMayor: Boolean = false

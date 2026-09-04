@@ -104,7 +104,7 @@ object WaypointManager {
                 } else if (patcherWaypoints) {
                     if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(selfName)) return@onChatMessage
 
-                    addWaypoint(Waypoint(player, x.toDouble(), y.toDouble(), z.toDouble(), ttl = 30, type = "world"))
+                    addWaypoint(Waypoint(player, x.toDouble(), y.toDouble(), z.toDouble(), type = "world", ttl = 30))
                 }
             }
         }
@@ -113,8 +113,6 @@ object WaypointManager {
             if (Diana.receiveRareMob && World.getWorld() == "Hub") {
                 updateRareMobWaypoints()
             }
-
-            val playerPos = Player.getLastPosition()
 
             val knownBurrows = getWaypointsOfType("burrow")
             val shovelGuesses = getWaypointsOfType("guess")
@@ -219,7 +217,7 @@ object WaypointManager {
             shovelGuesses.forEachIndexed { index, shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
-                shovelGuesses.drop(index + 1).firstOrNull { otherGuess ->
+                shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
                     shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 30
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
@@ -506,16 +504,13 @@ object WaypointManager {
         }
 
         val owner = if (player.isNotEmpty()) " §7($player§7)" else ""
-        val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, ttl = 45, type = "rareMob")
+        val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, type = "rareMob", ttl = 45)
 
         addWaypoint(waypoint)
         return waypoint
     }
 
-    private fun removeStaleRareMobWaypoints(
-        level: ClientLevel,
-        rareMobPositions: List<SboVec>
-    ) {
+    private fun removeStaleRareMobWaypoints(rareMobPositions: List<SboVec>) {
         val player = mc.player ?: return
         val playerPos = SboVec(player.x, player.y, player.z)
 
@@ -829,29 +824,20 @@ object WaypointManager {
      * @param type The type of waypoints to retrieve.
      * @return A list of waypoints of the specified type.
      */
-    fun getWaypointsOfType(type: String): List<Waypoint> {
-        return waypoints[type] ?: emptyList()
-    }
+    fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type] ?: emptyList()
 
-    private fun getWarpPoint(name: String): WarpPoint? {
-        return hubWarps[name] ?: additionalHubWarps[name]
-    }
+    private fun getWarpPoint(name: String): WarpPoint? = hubWarps[name] ?: additionalHubWarps[name]
 
-    fun getAllGuessesAndBurrows(): List<Waypoint> {
-        return getWaypointsOfType("burrow") + getWaypointsOfType("arrow") + getWaypointsOfType("guess")
-    }
+    fun getAllGuessesAndBurrows(): List<Waypoint> = getWaypointsOfType("burrow") + getWaypointsOfType("arrow") + getWaypointsOfType("guess")
 
-    private fun getBestGuess(): Waypoint? {
-        return getBestGuessAt(Player.getLastPosition())
-    }
+    private fun getBestGuess(): Waypoint? = getBestGuessAt(Player.getLastPosition())
 
     private fun getBestGuessAt(pos: SboVec): Waypoint? {
         return getAllGuessesAndBurrows()
+            .asSequence()
             .filter { !it.hidden }
             .minByOrNull { if (Diana.ignoreYLevel) it.pos.distanceToIgnoringY(pos) else it.pos.distanceTo(pos) }
     }
-
-    private fun getClosestWarp(pos: SboVec): String? = getClosestWarp(pos, Player.getLastPosition())
 
     /**
      * Gets the closest warp point to a given position.
@@ -876,7 +862,7 @@ object WaypointManager {
             }
         }
 
-        var playerDistance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(playerPos) else pos.distanceTo(playerPos)
+        val playerDistance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(playerPos) else pos.distanceTo(playerPos)
 
         var closestWarp: String? = null
         var closestWarpPoint: WarpPoint? = null

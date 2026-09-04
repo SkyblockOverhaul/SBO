@@ -60,8 +60,8 @@ internal fun calculateDynamicOpacity(distance: Double): Float {
  * @param x The x-coordinate of the waypoint.
  * @param y The y-coordinate of the waypoint.
  * @param z The z-coordinate of the waypoint.
- * @param ttl The time to live for the waypoint in seconds (0 for infinite).
  * @param type The type of the waypoint for customization.
+ * @param ttl The time to live for the waypoint in seconds (0 for infinite).
  * @param line Whether to draw a line to the waypoint.
  */
 class Waypoint(
@@ -69,8 +69,8 @@ class Waypoint(
     val x: Double,
     val y: Double,
     val z: Double,
+    val type: String,
     val ttl: Long = 1800,
-    val type: String = "normal",
     var line: Boolean = false
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
@@ -129,14 +129,6 @@ class Waypoint(
         val dz = playerPos.z - this.pos.z
 
         return sqrt(dx * dx + dy * dy + dz * dz)
-    }
-
-    fun distanceToPlayerIgnoringY(): Double {
-        val playerPos = Player.getLastPosition()
-        val dx = playerPos.x - this.pos.x
-        val dz = playerPos.z - this.pos.z
-
-        return sqrt(dx * dx + dz * dz)
     }
 
     private fun setDistanceText() {
@@ -311,9 +303,7 @@ class Waypoint(
         return color and 0x00FFFFFF or (clampedAlpha shl 24)
     }
 
-    fun isOlderThan(duration: Duration): Boolean {
-        return this.creationNs + duration.toNanos() < System.nanoTime()
-    }
+    fun isOlderThan(duration: Duration): Boolean = this.creationNs + duration.toNanos() < System.nanoTime()
 
     fun render(context: LevelRenderContext) {
         if (!this.formatted || this.hidden) return

@@ -237,13 +237,9 @@ object MedalIntegration {
         )
     }
 
-    private fun clipTitle(dropName: String, dropNumber: Int): String {
-        return "[${mayorElectedYear} YEAR] $dropName #$dropNumber"
-    }
+    private fun clipTitle(dropName: String, dropNumber: Int): String = "[$mayorElectedYear YEAR] $dropName #$dropNumber"
 
-    private fun displayTitle(dropName: String, dropNumber: Int): String {
-        return "$dropName #$dropNumber"
-    }
+    private fun displayTitle(dropName: String, dropNumber: Int): String = "$dropName #$dropNumber"
 
     fun testClip(clip: String?) {
         if (!Medal.medalEnabled) {

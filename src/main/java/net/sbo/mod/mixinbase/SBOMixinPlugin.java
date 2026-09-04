@@ -5,6 +5,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -18,7 +19,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Adapted from https://raw.githubusercontent.com/hannibal002/SkyHanni/refs/heads/beta/src/main/java/at/hannibal2/skyhanni/mixins/init/SkyHanniMixinPlugin.java
+ * Adapted from <a href="https://raw.githubusercontent.com/hannibal002/SkyHanni/refs/heads/beta/src/main/java/at/hannibal2/skyhanni/mixins/init/SkyHanniMixinPlugin.java">...</a>
  */
 public final class SBOMixinPlugin implements IMixinConfigPlugin {
     private static final @NonNull String MIXIN_BASE_DIR = "net/sbo/mod/mixin/";
@@ -35,7 +36,7 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
 
     private static final @NonNull URL baseUrl(@NonNull final URL classUrl) {
         final var string = classUrl.toString();
-        if (classUrl.getProtocol().equals("jar")) {
+        if ("jar".equals(classUrl.getProtocol())) {
             try {
                 return new URI(string.substring(4, string.lastIndexOf('!'))).toURL();
             } catch (final URISyntaxException | MalformedURLException e) {
@@ -69,7 +70,7 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
                 .map(it -> file.relativize(it).toString())
                 .forEach(it -> SBOMixinPlugin.tryAddMixinClass(it, mixins));
         } catch (final IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -82,7 +83,7 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
                 zis.closeEntry();
             }
         } catch (final IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

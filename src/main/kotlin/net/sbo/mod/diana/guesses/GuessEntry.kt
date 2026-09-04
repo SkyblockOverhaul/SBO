@@ -4,7 +4,7 @@ import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
 
-class GuessEntry(val guesses: MutableList<SboVec>) {
+class GuessEntry(private val guesses: MutableList<SboVec>) {
     private var currentIndex = 0
 
     fun getCurrent(): SboVec = guesses[currentIndex]

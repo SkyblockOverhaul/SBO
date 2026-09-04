@@ -1,19 +1,14 @@
 package net.sbo.mod.utils.render
 
-import net.sbo.mod.utils.chat.ChatUtils
 import com.mojang.blaze3d.vertex.PoseStack
-import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.network.chat.Component
-import net.minecraft.util.ARGB
-import net.minecraft.util.Mth
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
@@ -84,7 +79,7 @@ object RenderUtils3D {
                 visualOrderText,
                 hexColor,
                 Customization.waypointTextShadow,
-                if (Customization.lookAlike) (1.5 * Customization.waypointTextScale) / 12.0 else Customization.waypointTextScale / 100.0
+                if (Customization.lookAlike) 1.5 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
             )
 
             if (secondaryText != null && secondaryVisualOrderText != null) {
@@ -98,7 +93,7 @@ object RenderUtils3D {
                     secondaryVisualOrderText,
                     hexColor,
                     Customization.waypointTextShadow,
-                    if (Customization.lookAlike) (1.7 * Customization.waypointTextScale) / 12.0 else Customization.waypointTextScale / 100.0
+                    if (Customization.lookAlike) 1.7 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
                 )
             }
         }
@@ -167,37 +162,28 @@ object RenderUtils3D {
 
             val textWorldPos = Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
             val distance = cameraPos.distanceTo(textWorldPos)
-            val distForScale = distance.coerceIn(5.0, 50.0)
+
+            val player = mc.player!!
+            val eyeHeight = player.getEyeHeight(player.pose)
+
+            val x = pos.x + 0.5
+            val y = pos.y + worldYOffset
+            val z = pos.z + 0.5
+
+            val dX = x - cameraPos.x
+            val dY = y - (cameraPos.y + eyeHeight)
+            val dZ = z - cameraPos.z
+
+            val distToPlayer = sqrt(dX * dX + dY * dY + dZ * dZ).coerceAtLeast(5.0)
+            val distRender = distToPlayer.coerceAtMost(50.0)
+
             val dynamicScale = if (Customization.lookAlike) {
-                val player = mc.player!!
-                val eyeHeight = player.getEyeHeight(player.pose)
-                val x = pos.x + 0.5
-                val y = pos.y + worldYOffset
-                val z = pos.z + 0.5
-                val dX = x - cameraPos.x
-                val dY = y - (cameraPos.y + eyeHeight)
-                val dZ = z - cameraPos.z
-                val distToPlayer = sqrt(dX * dX + dY * dY + dZ * dZ).coerceAtLeast(5.0)
-                val distRender = distToPlayer.coerceAtMost(50.0)
                 distRender * scale * 0.05
             } else {
                 max(distance, 2.5) * scale
             }
 
             val renderPos = if (Customization.lookAlike) {
-                val player = mc.player!!
-                val eyeHeight = player.getEyeHeight(player.pose)
-
-                val x = pos.x + 0.5
-                val y = pos.y + worldYOffset
-                val z = pos.z + 0.5
-
-                val dX = x - cameraPos.x
-                val dY = y - (cameraPos.y + eyeHeight)
-                val dZ = z - cameraPos.z
-
-                val distToPlayer = sqrt(dX * dX + dY * dY + dZ * dZ).coerceAtLeast(5.0)
-                val distRender = distToPlayer.coerceAtMost(50.0)
                 val compression = distRender / distToPlayer
 
                 Vec3(

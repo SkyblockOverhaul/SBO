@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(SoundEngine.class)
 final class SoundEngineMixin {
     /**
-     * Adapted from https://github.com/hannibal002/SkyHanni/blob/b06eb22e41436d73538c89ab6fc05154e7ee2b80/src/main/java/at/hannibal2/skyhanni/mixins/transformers/MixinSoundEngine.java#L27
+     * Adapted from <a href="https://github.com/hannibal002/SkyHanni/blob/b06eb22e41436d73538c89ab6fc05154e7ee2b80/src/main/java/at/hannibal2/skyhanni/mixins/transformers/MixinSoundEngine.java#L27">...</a>
      */
     @Inject(method = "play", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/sounds/SoundInstance;getVolume()F"), cancellable = true)
     private final void sbo$onPlaySound(@NonNull final SoundInstance sound, @NonNull final CallbackInfoReturnable<SoundEngine.PlayResult> cir) {

@@ -22,10 +22,6 @@
          tpsIndex = (tpsIndex + 1) % TPS_HISTORY
          if (tpsCount < TPS_HISTORY) tpsCount++
      }
- 
-     fun getTps(): Float {
-         return averageTps
-     }
 
      /**
       * Output format and sample size matches Odin's. https://github.com/odtheking/Odin/pull/124
@@ -36,7 +32,7 @@
          var max = tpsLog[0]
          var min = tpsLog[0]
          var total = 0f
-         for (i in 0 until tpsCount) {
+         for (i in 0..<tpsCount) {
              val tps = tpsLog[i]
              max = maxOf(max, tps)
              min = minOf(min, tps)

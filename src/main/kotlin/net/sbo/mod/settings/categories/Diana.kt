@@ -11,7 +11,6 @@ import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
-import java.awt.Color
 
 object Diana : CategoryKt("Diana") {
     enum class ShareList {

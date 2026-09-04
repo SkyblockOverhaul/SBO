@@ -4,7 +4,6 @@ import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.IdentifierException
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
