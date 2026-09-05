@@ -53,7 +53,6 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
 
     fun add(x: Int = 0, y: Int = 0, z: Int = 0): SboVec = SboVec(this.x + x, this.y + y, this.z + z)
 
-
     fun roundLocationToBlock(): SboVec = SboVec(floor(this.x), floor(this.y), floor(this.z))
 
     fun toVec3d(): Vec3 = Vec3(this.x, this.y, this.z)
@@ -63,8 +62,6 @@ data class SboVec(var x: Double, var y: Double, var z: Double) {
     fun toDoubleArray(): DoubleArray = doubleArrayOf(this.x, this.y, this.z)
 
     fun length(): Double = sqrt(x * x + y * y + z * z)
-
-    fun roundToBlock() = SboVec(floor(x), floor(y), floor(z))
 
     fun normalize() = length().let { SboVec(x / it, y / it, z / it) }
 

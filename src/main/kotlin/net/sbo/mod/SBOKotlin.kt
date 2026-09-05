@@ -155,6 +155,10 @@ object SBOKotlin : ClientModInitializer {
 				    if (Debug.debugOnlyMessages) {
 				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.")
 				    }
+				    val renderDist = mc.options.renderDistance().get()
+				    if (renderDist < 10) {
+				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 10 from the vanilla options menu.")
+				    }
 				    unregister()
 				}
 				unregister()

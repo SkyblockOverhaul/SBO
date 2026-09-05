@@ -343,7 +343,7 @@ object Diana : CategoryKt("Diana") {
     }
 
     var announceCrownOfGreed by boolean(true) {
-        this.name = Literal("Crown Of Greed display")
+        this.name = Literal("Crown Of Greed Title")
         this.description = Literal("Whether you want \"§6Crown Of Greed§r\" to appear on your screen when dropping one")
     }
 
@@ -354,27 +354,27 @@ object Diana : CategoryKt("Diana") {
 
     var customChimeraMessage by strings("") {
         this.name = Literal("Custom Chimera Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop Amount this event and {percentage} for chimera/inquis ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop Amount this event, {since} for inquis took to drop chim, {price} for chim price, and {percentage} for chimera/inquis ratio. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customManticoreMessage by strings("") {
         this.name = Literal("Custom Manti-core Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for core/manti ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop core, {price} for manti price, and {percentage} for core/manti ratio. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customFatefulStingerMessage by strings("") {
         this.name = Literal("Custom Fateful Stinger Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for stinger/manti ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop stinger, {price} for stinger price, and {percentage} for stinger/manti ratio. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customBrainFoodMessage by strings("") {
         this.name = Literal("Custom Brain Food Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for food/sphinx ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for sphinx took to drop food, {price} for food price, and {percentage} for food/sphinx ratio. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customShimmeringWoolMessage by strings("") {
         this.name = Literal("Custom Shimmering Wool Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for wool/king ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for king took to drop wool, {price} for wool price, and {percentage} for wool/king ratio. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     init {
@@ -494,22 +494,22 @@ object Diana : CategoryKt("Diana") {
 
     var announceInqText by strings("") {
         this.name = Literal("Send Text On Inq Spawn")
-        this.description = Literal("Sends a text on Inq spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on Inq spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     var announceMantiText by strings("") {
         this.name = Literal("Send Text On Manti Spawn")
-        this.description = Literal("Sends a text on Manti spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on Manti spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     var announceSphinxText by strings("") {
         this.name = Literal("Send Text On Sphinx Spawn")
-        this.description = Literal("Sends a text on Sphinx spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on Sphinx spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     var announceKingText by strings("") {
         this.name = Literal("Send Text On King Spawn")
-        this.description = Literal("Sends a text on King spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on King spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     init {

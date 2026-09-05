@@ -16,6 +16,8 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+version = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
 
@@ -152,6 +154,7 @@ afterEvaluate {
         jar {
             destinationDirectory.set(newBuildDestinationDirectory)
             archiveBaseName.set(jarName)
+            archiveVersion.set("")
         }
     }
 }
@@ -211,6 +214,25 @@ val mixinTest = tasks.register<Test>("mixinTest") {
 tasks.test {
     dependsOn(mixinTest)
     exclude("net/sbo/mod/test/MixinTest.class")
+}
+
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes(
+            "Sealed" to "true",
+            "Automatic-Module-Name" to "sbo",
+            "Specification-Title" to "SBO",
+            "Specification-Version" to project.version.toString(),
+            "Specification-Vendor" to "SBO",
+            "Implementation-Title" to "SBO",
+            "Implementation-Version" to project.version.toString(),
+            "Implementation-Vendor" to "SBO"
+        )
+    }
+
+    from(rootProject.file("LICENSE")) {
+        rename { "LICENSE_sbo" }
+    }
 }
 
 tasks.named<ProcessResources>("processResources") {

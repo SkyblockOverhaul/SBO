@@ -53,8 +53,14 @@
     "resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
     "universalcraft": ">=${universalcraft_version}"
   },
+  "suggests": {
+    "modmenu": "*"
+  },
   "breaks": {
     "noammaddons": "<1.2.5"
+  },
+  "conflicts": {
+    "sbo-kotlin": "*"
   },
   "custom": {
     "modmenu": {

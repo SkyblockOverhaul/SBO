@@ -292,7 +292,7 @@ object ArrowGuessBurrow {
         for (i in 1..iterations) {
             val axisValue = originArray[axisIndex] + i * sign(directionArray[axisIndex])
             val candidatePoint = RaycastUtils.findPointOnRay(ray, axisIndex, axisValue) ?: continue
-            val candidateBlock = candidatePoint.roundToBlock()
+            val candidateBlock = candidatePoint.roundLocationToBlock()
             if (!isBlockValid(candidateBlock)) continue
             val blockCenter = candidateBlock.add(0.5, 0.5, 0.5)
             val distanceToRay = RaycastUtils.findDistanceToRay(ray, blockCenter)

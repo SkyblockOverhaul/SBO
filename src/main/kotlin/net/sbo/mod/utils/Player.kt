@@ -5,6 +5,8 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.math.SboVec
 import java.util.*
 
+val ZERO_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
 object Player {
     fun getLastPosition(): SboVec {
         val player = mc.player ?: return SboVec.ZERO
@@ -13,7 +15,7 @@ object Player {
 
     fun getUUIDString(): String = mc.player?.stringUUID ?: ""
 
-    fun getUUID(): UUID = mc.player?.uuid ?: UUID.fromString("00000000-0000-0000-0000-000000000000")
+    fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
     fun getPlayerInventory(): List<ItemStack> {
         val inventory = mc.player?.inventory?.toList()
