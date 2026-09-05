@@ -9,7 +9,7 @@ import net.sbo.mod.utils.math.SboVec
  * @property setting An optional name for an associated setting.
  */
 data class WarpPoint(
-    val pos: SboVec = SboVec(0.0, 0.0, 0.0),
+    val pos: SboVec,
     val unlocked: Boolean,
     private val setting: String? = null, // Nullable, since not all warps have a setting
     val warpType: AdditionalHubWarps? = null, // null for hub, set for all others

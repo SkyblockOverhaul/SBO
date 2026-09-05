@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.lang.module.ModuleDescriptor.Version
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     java
@@ -14,6 +15,8 @@ plugins {
     id("dev.deftu.gradle.tools.bloom")
     alias(libs.plugins.ksp)
 }
+
+version = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
 
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
@@ -125,6 +128,7 @@ repositories {
 
         filter {
             includeModule("net.azureaaron", "hm-api")
+            includeModule("net.azureaaron", "render-chest")
         }
     }
 
@@ -150,6 +154,7 @@ afterEvaluate {
         jar {
             destinationDirectory.set(newBuildDestinationDirectory)
             archiveBaseName.set(jarName)
+            archiveVersion.set("")
         }
     }
 }
@@ -162,10 +167,72 @@ tasks.withType<KotlinJvmCompile> {
     compilerOptions.jvmTarget.set(JvmTarget.fromTarget(versionedProperty("java.version")))
 }
 
-tasks.matching { it.name.contains("Test") || it.name.contains("test") }.configureEach {
-    // One of the tasks create problems since preprocessTestCode reads output of kspTestKotlin without depending on it,
-    // We don't have any tests anyway; so this OK to disable to work around the error.
-    enabled = false
+val runDirectory = rootProject.file("run")
+runDirectory.mkdirs()
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging {
+        showStackTraces = true
+        //showStandardStreams = true // enable if troubleshooting failures
+        exceptionFormat = TestExceptionFormat.FULL
+    }
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+    workingDir(file(runDirectory))
+    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+    jvmArgs(
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED",
+        "-XX:+EnableDynamicAgentLoading",
+        // Tests start NPE-ing without this on Java 25
+        "-Dnet.bytebuddy.experimental=true",
+    )
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_26)) {
+        jvmArgs(
+            // Resolves warning: "Final field mappings in class org.spongepowered.asm.mixin.refmap.ReferenceMapper has been mutated reflectively by class org.spongepowered.include.com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1 in unnamed module"
+            // Ideally Mixin would make the field not final or use a different GSON serilization path, but here we are
+            "--enable-final-field-mutation=ALL-UNNAMED",
+        )
+    }
+}
+
+val mixinTestRuntime = configurations.create("mixinTestRuntime") {
+    isCanBeConsumed = false
+    extendsFrom(configurations.testRuntimeClasspath.get())
+}
+
+val mixinTest = tasks.register<Test>("mixinTest") {
+    description = "Audits mixin application under Fabric Loader."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().output + sourceSets.main.get().output + mixinTestRuntime
+    filter {
+        includeTestsMatching("net.sbo.mod.test.MixinTest")
+    }
+}
+
+tasks.test {
+    dependsOn(mixinTest)
+    exclude("net/sbo/mod/test/MixinTest.class")
+}
+
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes(
+            "Sealed" to "true",
+            "Automatic-Module-Name" to "sbo",
+            "Specification-Title" to "SBO",
+            "Specification-Version" to project.version.toString(),
+            "Specification-Vendor" to "SBO",
+            "Implementation-Title" to "SBO",
+            "Implementation-Version" to project.version.toString(),
+            "Implementation-Vendor" to "SBO"
+        )
+    }
+
+    from(rootProject.file("LICENSE")) {
+        rename { "LICENSE_sbo" }
+    }
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -181,11 +248,11 @@ tasks.named<ProcessResources>("processResources") {
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
 
-    val elementaVersion = project.property("elementa.version")
+    val elementaVersion = libs.versions.elementa.get()
     val hmApiVersion = versionedProperty("hmapi.version")
     val resourcefulConfigVersion = versionedProperty("rconfig.version")
     val resourcefulConfigKtVersion = versionedProperty("rconfigkt.version")
-    val universalCraftVersion = project.property("universalcraft.version")
+    val universalCraftVersion = libs.versions.universalcraft.get()
 
     val modName = project.property("mod.name")
     val modDescription = project.property("mod.description")
@@ -193,8 +260,7 @@ tasks.named<ProcessResources>("processResources") {
     val modVersion = project.property("mod.version")
     val modGroup = project.property("mod.group")
 
-    // 26.1 onwards switched back to proper SemVer so we use ~ to accept compatible patch updates; for older versions do an exact requirement as even patch level version updates (e.g 1.21.10 to 1.21.11) are incompatible with each other.
-    val mcVersionConstraint = if (isMCVersionGreaterOrEqualTo("26.1")) "~$mcVersion" else "=$mcVersion"
+    val mcVersionConstraint = project.findProperty("mc$mcVersion.constraint")?.toString() ?: "~$mcVersion"
 
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
@@ -246,13 +312,18 @@ dependencies {
     minecraft("com.mojang:minecraft:${mcVersion}")
 
     implementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
+
+    mixinTestRuntime("net.fabricmc:fabric-loader-junit:${property("fabricloader.version")}")
+    testImplementation(libs.junit)
+    testRuntimeOnly(libs.junit.launcher)
+
     implementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
+    implementation(include(libs.elementa.get())!!)
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
@@ -262,15 +333,18 @@ dependencies {
 
     when (mcProject) {
         "26.2-fabric" -> {
+            // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
+            implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
+
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.2:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
-            implementation(include("gg.essential:universalcraft-26.2-fabric:${property("universalcraft.version")}")!!)
+            implementation(include(libs.universalcraft262.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
         }
         "26.1.2-fabric" -> {
             implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
             implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
-            implementation(include("gg.essential:universalcraft-26.1-fabric:${property("universalcraft.version")}")!!)
+            implementation(include(libs.universalcraft261.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
@@ -285,3 +359,11 @@ tasks.findByName("preprocessCode")?.apply {
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 }
+
+tasks.findByName("preprocessTestCode")?.apply {
+    when (mcProject) {
+        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspTestKotlin")
+        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
+    }
+}
+

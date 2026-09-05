@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object PartyFinderManager {
-    const val MAX_PARTY_SIZE = 6
+    private const val MAX_PARTY_SIZE = 6
 
     var creatingParty = false
     var inQueue = false

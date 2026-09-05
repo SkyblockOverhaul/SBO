@@ -137,10 +137,10 @@ object DianaTracker {
             else -> false
         }
 
-        if (isDianaDrop && Helper.dianaMobDiedRecently(4)) {
+        if (isDianaDrop && dianaMobDiedRecently(4)) {
             // Happens if user's OS time is not close (within 6 seconds) to the server's time for any reason. We can't use System.nanoTime comparision because server sends it in unix-time (milliseconds since epoch), and using System.currentTimeMillis depends on OS clock via NTP synchronization to be within 6 seconds of Hypixel's NTP synchronized clock.
 
-            if (Debug.debugMessages) {
+            if (Debug.debugOnlyMessages) {
                 Chat.chat(
                     "SBO(debug): creation timestamp unreliable, using Diana death fallback. " +
                         "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
@@ -150,7 +150,7 @@ object DianaTracker {
             return
         }
 
-        if (Debug.debugMessages) {
+        if (Debug.debugOnlyMessages) {
             Chat.chat(
                 "SBO(debug): not tracking item with creation older than 6 seconds. " +
                     "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
@@ -349,7 +349,7 @@ object DianaTracker {
             "Stranded Nymph" -> trackMob(mob, 1)
             "Siamese Lynxes" -> trackMob(mob, 1)
             "Minos Hunter" -> trackMob(mob, 1)
-            else -> Chat.chat("§6[SBO] §cUnknown diana mob spawned: ${mob}. Please report this.")
+            else -> Chat.chat("§6[SBO] §cUnknown diana mob spawned: $mob. Please report this.")
         }
     }
 
@@ -785,11 +785,9 @@ object DianaTracker {
             else -> Triple("§f", -1, -1) // shouldn't happen
         }
 
-        val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(itemId, amount) == 0L
+        val hidePrice = Helper.getItemPrice(itemId, amount) == 0L
         val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
         val price = "§6$priceRaw coins"
-
-        val priceText = if (priceRaw != "0") " (+$price)" else ""
 
         val ls = gotLootShareRecently()
         val lsText = if (ls) " (LS)" else ""
@@ -825,13 +823,13 @@ object DianaTracker {
                 "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind, ls, totalCount)
                 "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind, ls, totalCount)
                 "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind, ls, totalCount)
-                else -> Pair(false, "")
+                else -> false to ""
             }
 
             if (customMsg.first) {
                 Chat.chat(customMsg.second)
             } else {
-            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count${if (hidePrice) "" else "§6 (+$price)"}")
+                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count${if (hidePrice) "" else "§6 (+$price)"}")
             }
         }
 

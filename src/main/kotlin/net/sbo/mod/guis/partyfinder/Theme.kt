@@ -6,14 +6,14 @@ object Theme {
     val TRANSPARENT = Color(0, 0, 0, 0)
     val WHITE = Color(255, 255, 255, 255)
     val DARK_GRAY = Color(50, 50, 50, 255)
-    val LIGHT_GRAY = Color(100, 100, 100, 200)
+    private val LIGHT_GRAY = Color(100, 100, 100, 200)
     val ROYAL_BLUE = Color(50, 50, 255, 200)
     val SBO_BLUE = Color(0, 110, 250, 255)
-    val AQUA = Color(85, 255, 255, 255)
+    private val AQUA = Color(85, 255, 255, 255)
     val BLACK_SEMI_TRANS = Color(0, 0, 0, 200)
     val BLACK_HALF_TRANS = Color(0, 0, 0, 150)
-    val GREEN = Color(0, 255, 0, 255)
-    val ORANGE = Color(255,165,0,255)
+    private val GREEN = Color(0, 255, 0, 255)
+    private val ORANGE = Color(255,165,0,255)
     val RED = Color(255, 0, 0, 255)
 
 

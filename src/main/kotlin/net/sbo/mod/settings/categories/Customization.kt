@@ -134,6 +134,11 @@ object Customization : CategoryKt("Customization") {
         }
     }
 
+    var lookAlike by boolean(false) {
+        this.name = Literal("Look Alike")
+        this.description = Literal("Mimics visuals of SkyHanni on the block outline opacity and guess/distance text. This can help if you are migrating between the mods and can't get used to the look of another.")
+    }
+
     var dynamicWaypointOpacity by boolean(true) {
         this.name = Literal("Dynamic Waypoint Opacity")
         this.description = Literal("Uses a dynamic waypoint opacity that changes based on how far or close you are to the waypoints. If you enable this, the Waypoint Opacity setting below will not take effect.")

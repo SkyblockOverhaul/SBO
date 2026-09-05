@@ -11,17 +11,11 @@ import net.sbo.mod.utils.data.SboDataObject.overlayData
 import net.sbo.mod.utils.game.World
 import java.awt.Color
 
-fun isCraftingScreenOpen(): Boolean {
-    return CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
-}
+fun isCraftingScreenOpen(): Boolean = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
 
-val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean {
-    return screen is ChatScreen
-}
+val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean = screen is ChatScreen
 
-val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean {
-    return screen is InventoryScreen
-}
+val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean = screen is InventoryScreen
 
 /**
  * Represents an overlay that can display text lines on the screen.
@@ -149,18 +143,13 @@ class Overlay(
         return maxWidth
     }
 
-    private fun inEditingScreen(): Boolean {
-        return Helper.currentScreen is OverlayEditScreen
-    }
+    private fun inEditingScreen(): Boolean = Helper.currentScreen is OverlayEditScreen
 
-    private fun checkCondition(): Boolean {
-        return condition() && checkExtraCondition()
-    }
+    private fun checkCondition(): Boolean = condition() && checkExtraCondition()
 
-    private fun checkExtraCondition(): Boolean {
+    private fun checkExtraCondition(): Boolean =
         // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
-        return extraCondition() || inEditingScreen()
-    }
+        extraCondition() || inEditingScreen()
 
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
         if (!checkCondition()) return false

@@ -1,29 +1,30 @@
 package net.sbo.mod.utils.render
 
-import net.sbo.mod.utils.chat.ChatUtils
 import com.mojang.blaze3d.vertex.PoseStack
-import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.client.Camera
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.network.chat.Component
-import net.minecraft.util.ARGB
-import net.minecraft.util.Mth
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.sqrt
+import org.joml.Matrix4f
+//#if MC > 26.1
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.SubmitRenderPhases
+//$$ import net.minecraft.client.renderer.feature.TextFeatureRenderer
+//#endif
 
 object RenderUtils3D {
     fun renderWaypoint(
@@ -32,6 +33,9 @@ object RenderUtils3D {
         text: Component,
         textWidth: Int,
         visualOrderText: FormattedCharSequence,
+        secondaryText: Component?,
+        secondaryTextWidth: Int,
+        secondaryVisualOrderText: FormattedCharSequence?,
         pos: SboVec,
         colorComponents: FloatArray,
         hexColor: Int,
@@ -68,14 +72,30 @@ object RenderUtils3D {
             drawString(
                 context,
                 pos,
-                1.5,
+                if (Customization.lookAlike) 1.0 else 1.5,
+                0.0,
                 text,
                 textWidth,
                 visualOrderText,
                 hexColor,
                 Customization.waypointTextShadow,
-                Customization.waypointTextScale/100.0
+                if (Customization.lookAlike) 1.5 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
             )
+
+            if (secondaryText != null && secondaryVisualOrderText != null) {
+                drawString(
+                    context,
+                    pos,
+                    if (Customization.lookAlike) 1.0 else 11.5,
+                    if (Customization.lookAlike) 10.0 else 0.0,
+                    secondaryText,
+                    secondaryTextWidth,
+                    secondaryVisualOrderText,
+                    hexColor,
+                    Customization.waypointTextShadow,
+                    if (Customization.lookAlike) 1.7 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
+                )
+            }
         }
     }
 
@@ -99,6 +119,20 @@ object RenderUtils3D {
         Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
     }
 
+    private val legacyDrawString = mutableListOf<DrawInBatchParameters>()
+
+    class DrawInBatchParameters(
+        val text: Component,
+        val xOffset: Float,
+        val yOffset: Float,
+        val color: Int,
+        val shadow: Boolean,
+        val layerType: Font.DisplayMode,
+        val backgroundColor: Int,
+        val packedLightCoords: Int,
+        val pose: Matrix4f
+    )
+
     /**
      * Draws a string in the 3D world that always faces the player.
      * @param context The matrix stack for transformations.
@@ -111,7 +145,8 @@ object RenderUtils3D {
     private fun drawString(
         context: LevelRenderContext,
         pos: SboVec,
-        yOffset: Double,
+        worldYOffset: Double,
+        screenYOffset: Double,
         text: Component,
         textWidth: Int,
         visualOrderText: FormattedCharSequence,
@@ -127,12 +162,45 @@ object RenderUtils3D {
 
             val textWorldPos = Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
             val distance = cameraPos.distanceTo(textWorldPos)
-            val dynamicScale = max(distance, 2.5) * scale
 
-            translate(pos.x + 0.5 - cameraPos.x, pos.y + yOffset + - cameraPos.y, pos.z + 0.5 - cameraPos.z)
+            val player = mc.player!!
+            val eyeHeight = player.getEyeHeight(player.pose)
+
+            val x = pos.x + 0.5
+            val y = pos.y + worldYOffset
+            val z = pos.z + 0.5
+
+            val dX = x - cameraPos.x
+            val dY = y - (cameraPos.y + eyeHeight)
+            val dZ = z - cameraPos.z
+
+            val distToPlayer = sqrt(dX * dX + dY * dY + dZ * dZ).coerceAtLeast(5.0)
+            val distRender = distToPlayer.coerceAtMost(50.0)
+
+            val dynamicScale = if (Customization.lookAlike) {
+                distRender * scale * 0.05
+            } else {
+                max(distance, 2.5) * scale
+            }
+
+            val renderPos = if (Customization.lookAlike) {
+                val compression = distRender / distToPlayer
+
+                Vec3(
+                    cameraPos.x + dX * compression,
+                    cameraPos.y + eyeHeight + (y + 20.0 * distToPlayer / 300.0 - (cameraPos.y + eyeHeight)) * compression,
+                    cameraPos.z + dZ * compression
+                )
+            } else {
+                Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5)
+            }
+
+            translate(renderPos.x - cameraPos.x, renderPos.y - cameraPos.y, renderPos.z - cameraPos.z)
 
             mulPose(Axis.YP.rotationDegrees(-cameraYaw))
             mulPose(Axis.XP.rotationDegrees(cameraPitch))
+
+            if (Customization.lookAlike) translate(0.0, -screenYOffset * dynamicScale, 0.0)
 
             scale(-dynamicScale.toFloat(), -dynamicScale.toFloat(), dynamicScale.toFloat())
 
@@ -146,8 +214,81 @@ object RenderUtils3D {
 
             val packedLightCoords = mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, mc.deltaTracker.getGameTimeDeltaPartialTick(true))
 
-            context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
+            // Workaround for https://mojira.dev/MC-298659
+            // Adapted from https://github.com/hannibal002/SkyHanni/pull/6458
+
+            // 26.3 and above: Use submitText triggered from COLLECT_SUBMITS and submitted at COLLECT_SUBMITS since bug is fixed.
+            // 26.2: Use submitCustom triggered from COLLECT_SUBMITS and submitted at SubmitRenderPhases.AFTER_TERRAIN with TextFeatureRenderer.Submit.
+            // 26.1.2: Add to a list triggered from COLLECT_SUBMITS which submits at AFTER_TRANSLUCENT_TERRAIN later with the legacy Font#drawInBatch method, unless Debug.useNodeCollector is true.
+
+            //#if MC > 26.2
+            //$$ val useNodeCollector = true
+            //#else
+            val useNodeCollector = Debug.forceNodeCollector
+            //#endif
+
+            if (useNodeCollector) {
+                context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
+            } else {
+                //#if MC > 26.1
+                //$$ context.submitNodeCollector().submitCustom(
+                //$$    SubmitRenderPhases.AFTER_TERRAIN,
+                //$$    TextFeatureRenderer.Submit(
+                //$$        Matrix4f(last().pose()),
+                //$$        xOffset,
+                //$$        yOffset,
+                //$$        visualOrderText,
+                //$$        shadow,
+                //$$        layerType,
+                //$$        packedLightCoords,
+                //$$        color,
+                //$$        backgroundColor,
+                //$$        outlineColor,
+                //$$    ),
+                //$$ )
+                //#else
+                legacyDrawString.add(
+                    DrawInBatchParameters(
+                        text,
+                        xOffset,
+                        yOffset,
+                        color,
+                        shadow,
+                        layerType,
+                        backgroundColor,
+                        packedLightCoords,
+                        Matrix4f(last().pose())
+                    )
+                )
+                //#endif    
+            }
         }
+    }
+
+    fun flushLegacyDrawString(context: LevelRenderContext) {
+        //#if MC > 26.1
+        //#else
+        val iterator = legacyDrawString.iterator()
+
+        while (iterator.hasNext()) {
+            val params = iterator.next()
+
+            mc.font.drawInBatch(
+                params.text,
+                params.xOffset,
+                params.yOffset,
+                params.color,
+                params.shadow,
+                params.pose,
+                context.bufferSource(),
+                params.layerType,
+                params.backgroundColor,
+                params.packedLightCoords
+            )
+
+            iterator.remove()
+        }
+        //#endif
     }
 
     /**

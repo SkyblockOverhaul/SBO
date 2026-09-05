@@ -14,6 +14,60 @@ object Credits : CategoryKt("Credits") {
             }
         }
 
+        button {
+            title = "ResourcefulConfig"
+            description = "Config library and Config UI (TeamResourceful)"
+            text = "Open"
+            onClick {
+                SBOKotlin.openInBrowser("https://github.com/Team-Resourceful/Resourceful-Config")
+            }
+        }
+
+        button {
+            title = "Elementa"
+            description = "UI library (SparkUniverse)"
+            text = "Open"
+            onClick {
+                SBOKotlin.openInBrowser("https://github.com/SparkUniverse/Elementa")
+            }
+        }
+
+        button {
+            title = "UniversalCraft"
+            description = "Compatibility layer (SparkUniverse)"
+            text = "Open"
+            onClick {
+                SBOKotlin.openInBrowser("https://github.com/SparkUniverse/UniversalCraft")
+            }
+        }
+
+        button {
+            title = "hm-api"
+            description = "Hypixel Mod API wrapper (AzureAaron)"
+            text = "Open"
+            onClick {
+                SBOKotlin.openInBrowser("https://github.com/AzureAaron/hm-api")
+            }
+        }
+
+        button {
+            title = "RenderChest"
+            description = "Glow API (AzureAaron)"
+            text = "Open"
+            onClick {
+                SBOKotlin.openInBrowser("https://github.com/AzureAaron/RenderChest")
+            }
+        }
+
+        button {
+            title = "Fabric API"
+            description = "Modding API (FabricMC)"
+            text = "Open"
+            onClick {
+                SBOKotlin.openInBrowser("https://github.com/FabricMC/fabric-api")
+            }
+        }
+
         separator {
             title = "Special Thanks"
             description = """

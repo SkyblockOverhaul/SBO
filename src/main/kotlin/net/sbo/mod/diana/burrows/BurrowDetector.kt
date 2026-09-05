@@ -4,6 +4,7 @@ import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.Register
@@ -22,7 +23,7 @@ import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
-    private var lastDugOutBurrowPos: SboVec = SboVec(0.0, 0.0, 0.0)
+    private var lastDugOutBurrowPos: SboVec = SboVec.ZERO
     private val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
 
     private val RECENTLY_REMOVED_DURATION_NS = TimeUnit.SECONDS.toNanos(1)
@@ -53,9 +54,7 @@ object BurrowDetector {
         recentlyRemoved[key] = System.nanoTime()
     }
 
-    fun wasRecentlyRemoved(pos: SboVec): Boolean {
-        return wasRecentlyRemoved("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}")
-    }
+    fun wasRecentlyRemoved(pos: SboVec): Boolean = wasRecentlyRemoved("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}")
 
     private fun wasRecentlyRemoved(posString: String): Boolean {
         val removedAt = recentlyRemoved[posString] ?: return false
@@ -86,10 +85,18 @@ object BurrowDetector {
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
+        Register.command("sboaddtestwaypoint") {
+            val pos = Player.getLastPosition()
+            val wayp = Waypoint("Test", pos.x, pos.y, pos.z, type = "debug", ttl = 30)
+            wayp.preventInvalidRemoval = true
+
+            WaypointManager.addWaypoint(wayp)
+        }
+
         Register.command("sbodebugburrows") { // TODO: Maybe remove at some point once we're fully sure internal state cannot bug out
             for (known in burrows.values) {
                 if (!WaypointManager.waypointExists("burrow", known.pos).first) {
-                    val wayp = Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, ttl = 30, type = "debug")
+                    val wayp = Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, type = "debug", ttl = 30)
                     wayp.preventInvalidRemoval = true
 
                     WaypointManager.addWaypoint(wayp)
@@ -99,7 +106,7 @@ object BurrowDetector {
             for (arrow in ArrowGuessBurrow.allGuesses) {
                 val curr = arrow.getCurrent()
                 if (!WaypointManager.waypointExists("arrow", curr).first) {
-                    val wayp = Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, ttl = 30, type = "debug")
+                    val wayp = Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, type = "debug", ttl = 30)
                     wayp.preventInvalidRemoval = true
 
                     WaypointManager.addWaypoint(wayp)
@@ -118,7 +125,7 @@ object BurrowDetector {
             chainFinish()
 
             // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
-            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
@@ -130,7 +137,7 @@ object BurrowDetector {
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 
             // We need to update lastDugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
-            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(
                 deathOriginating = false,
                 expectedTimesDug = 1,
@@ -203,7 +210,7 @@ object BurrowDetector {
         }
 
         if (!Diana.closeBurrowDetection) return
-        lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+        lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
     }
 
