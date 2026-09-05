@@ -3,9 +3,14 @@ package net.sbo.mod.utils
 import javazoom.jl.player.JavaSoundAudioDevice
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.network.chat.Component
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.events.Register
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -24,7 +29,7 @@ object SoundHandler {
     private val availableSoundsWithExt = mutableSetOf<String>()
 
     // Thread pool for audio processing - bounded and daemon threads
-    private val AUDIO_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
+    private val AUDIO_EXECUTOR: ExecutorService = Executors.newFixedThreadPool(3) { r ->
         Thread(r, "sbo-audio-thread").apply {
             isDaemon = true
             priority = Thread.NORM_PRIORITY + 1 // audio processing needs slightly more priority for less latency
@@ -47,7 +52,10 @@ object SoundHandler {
     /**
      * Returns available sounds with their file extensions (e.g., "sound.mp3", "music.ogg")
      */
-    fun getAvailableSoundsWithExt(): List<String> = availableSoundsWithExt.sorted().toList()
+    fun getAvailableSoundsWithExt(): List<String> {
+        scanUserSounds() // Update to avoid the user having to restart minecraft to see his added sound
+        return availableSoundsWithExt.sorted().toList()
+    }
 
     /**
      * Plays a custom sound.
@@ -116,7 +124,7 @@ object SoundHandler {
     }
 
     /** Scans the config directory for user-added sounds */
-    private fun scanUserSounds() {
+    fun scanUserSounds() {
         File(SOUND_DIR_PATH).listFiles()
             ?.asSequence()
             ?.filter { it.isFile }
@@ -141,6 +149,7 @@ object SoundHandler {
             AudioSystem.getAudioInputStream(file)
         } catch (e: Exception) {
             logger.error("[$MOD_ID] Failed to read audio file: ${file.name}", e)
+            Chat.chat("§c[SBO] Something went wrong while reading the file ${file.name} try using an another format and if the issue persist, please contact us")
             return
         }
 

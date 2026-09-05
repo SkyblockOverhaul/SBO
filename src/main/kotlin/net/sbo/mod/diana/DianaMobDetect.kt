@@ -3,6 +3,7 @@ package net.sbo.mod.diana
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.Customization
@@ -24,6 +25,7 @@ import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
+import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import net.sbo.mod.utils.Player as SboPlayer
@@ -81,7 +83,7 @@ object DianaMobDetect {
 
     private fun parseStarFromName(name: String): Boolean = name.contains("✯")
 
-    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && Diana.hpAlert > 0.0
+    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
 
     private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
@@ -296,13 +298,37 @@ object DianaMobDetect {
         if (id in defeated || id in warned) return
         if (!shouldAlertForMob(name)) return
         val hpThreshold = if (Diana.hpAlert > 0.0) Diana.hpAlert * 1_000_000 else 0.0
-        if (hpThreshold > 0.0 && health <= hpThreshold) {
+        val soundHpThreshold = if (Diana.soundHpAlert > 0.0) Diana.soundHpAlert * 1_000_000 else 0.0
+
+        if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
+            when (RareDianaMob.fromName(name)) {
+                RareDianaMob.INQ -> playCustomSound(SboDataObject.soundSettingsData.lowInqHpSound, SboDataObject.soundSettingsData.lowInqHpVoume)
+                RareDianaMob.KING ->  playCustomSound(SboDataObject.soundSettingsData.lowKingHpSound, SboDataObject.soundSettingsData.lowKingHpVoume)
+                RareDianaMob.SPHINX -> playCustomSound(SboDataObject.soundSettingsData.lowSphinxHpSound, SboDataObject.soundSettingsData.lowSphinxHpVoume)
+                RareDianaMob.MANTI -> playCustomSound(SboDataObject.soundSettingsData.lowMantiHpSound, SboDataObject.soundSettingsData.lowMantiHpVoume)
+                else -> {}
+            }
+
+            warned.add(id)
+        }
+
+        if (health <= hpThreshold && hpThreshold > 0.0) {
             showTitle("§cHP LOW!", null, 10, 40, 10)
             warned.add(id)
         }
     }
 
     fun onRareSpawn(mob: String) {
+        val mobType: Diana.ReceiveList = when (mob) {
+            RareDianaMob.INQ.display -> Diana.ReceiveList.INQ
+            RareDianaMob.KING.display -> Diana.ReceiveList.KING
+            RareDianaMob.SPHINX.display -> Diana.ReceiveList.SPHINX
+            RareDianaMob.MANTI.display -> Diana.ReceiveList.MANTICORE
+            else -> Diana.ReceiveList.OTHER
+        }
+
+        WaypointManager.notifyRareMob("", mobType)
+
         if (Diana.shareRareMob) {
             val mobType = when (mob) {
                 RareDianaMob.INQ.display -> Diana.ShareList.INQ

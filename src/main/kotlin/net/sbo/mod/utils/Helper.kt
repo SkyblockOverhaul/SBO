@@ -491,7 +491,7 @@ object Helper {
         }
     }
 
-    fun checkCustomDropMessage(dropName: String, magicFind: Int, amountOverride: Int? = null): Pair<Boolean, String> {
+    fun checkCustomDropMessage(dropName: String, magicFind: Int, isLootshare: Boolean, amountOverride: Int? = null): Pair<Boolean, String> {
         val info = getDropInfo(dropName) ?: return false to ""
 
         if (!info.isEnabled) return false to ""
@@ -502,6 +502,7 @@ object Helper {
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace("{price}", getItemPriceFormatted(info.itemId))
             .replace('&', '§')
+            .replace("{since}", getSinceDrop(dropName, isLootshare))
             .replace("+ ✯ Magic Find ", "") // prevent nonsense magic find when hypixel doesn't put it into the message (mob killed by someone else)
 
         return true to resultText
@@ -522,6 +523,18 @@ object Helper {
     private fun getCustomMessage(message: Array<out String>): String =
         message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
 
+    private fun getSinceDrop(dropName: String, isLootshare: Boolean): String {
+        val data = SboDataObject.sboData
+        return when (dropName.lowercase()) {
+            "wool" -> if (isLootshare) data.kingSinceLsWool.toString() else data.kingSinceWool.toString()
+            "core" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
+            "stinger" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
+            "chimera" -> if (isLootshare) data.inqsSinceLsChim.toString() else data.inqsSinceChim.toString()
+            "brain food" -> if (isLootshare) data.sphinxSinceLsFood.toString() else data.sphinxSinceFood.toString()
+            else -> "ErrorGettingSince"
+        }
+    }
+  
     private fun getDropInfo(dropName: String): DropInfo? {
         val tracker = SboDataObject.dianaTrackerMayor
         val items = tracker.items
