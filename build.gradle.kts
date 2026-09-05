@@ -183,10 +183,14 @@ tasks.withType<Test> {
         "-XX:+EnableDynamicAgentLoading",
         // Tests start NPE-ing without this on Java 25
         "-Dnet.bytebuddy.experimental=true",
-        // Resolves warning: "Final field mappings in class org.spongepowered.asm.mixin.refmap.ReferenceMapper has been mutated reflectively by class org.spongepowered.include.com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1 in unnamed module"
-        // Ideally Mixin would make the field not final or use a different GSON serilization path, but here we are
-        "--enable-final-field-mutation=ALL-UNNAMED",
     )
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_26)) {
+        jvmArgs(
+            // Resolves warning: "Final field mappings in class org.spongepowered.asm.mixin.refmap.ReferenceMapper has been mutated reflectively by class org.spongepowered.include.com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1 in unnamed module"
+            // Ideally Mixin would make the field not final or use a different GSON serilization path, but here we are
+            "--enable-final-field-mutation=ALL-UNNAMED",
+        )
+    }
 }
 
 val mixinTestRuntime = configurations.create("mixinTestRuntime") {
