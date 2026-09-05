@@ -462,7 +462,7 @@ object WaypointManager {
             }
         }
 
-        removeStaleRareMobWaypoints(level, rareMobPositions)
+        removeStaleRareMobWaypoints(rareMobPositions)
     }
 
     private fun addRareMobWaypoint(
