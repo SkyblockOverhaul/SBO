@@ -1,5 +1,5 @@
 [versions]
-loom = "1.17.20"
+loom = "1.18.1"
 ksp = "2.3.12"
 elementa = "774"
 universalcraft = "530"
