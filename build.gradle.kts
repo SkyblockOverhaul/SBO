@@ -8,7 +8,7 @@ import java.lang.module.ModuleDescriptor.Version
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.10"
+    kotlin("plugin.serialization") version "2.4.20"
     alias(libs.plugins.loom)
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
