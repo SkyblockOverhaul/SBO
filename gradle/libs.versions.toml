@@ -1,7 +1,6 @@
 [versions]
 ksp = "2.3.12"
 loom = "1.18.2"
-ksp = "2.3.12"
 elementa = "774"
 universalcraft = "530"
 junit = "6.1.3"
