@@ -1,6 +1,6 @@
 [versions]
+ksp = "2.3.12"
 loom = "1.18.2"
-ksp = "2.3.11"
 
 [plugins]
 loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }
