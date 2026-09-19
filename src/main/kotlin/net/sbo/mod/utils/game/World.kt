@@ -7,9 +7,7 @@ object World {
      * Retrieves the current world name from the TabList.
      * If the world name is not found, it returns "None".
      */
-    fun getWorld(): String {
-        return TabList.findInfo("Area: ") ?: "None"
-    }
+    fun getWorld(): String = TabList.findInfo("Area: ") ?: "None"
 
     /**
      * Checks if the player is currently in Skyblock.

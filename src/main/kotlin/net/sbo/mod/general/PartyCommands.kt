@@ -14,7 +14,6 @@ import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.chat.ChatMessageQueue
 import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
 import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
@@ -90,34 +89,34 @@ object PartyCommands {
 
     private val dianaCommands = listOf(
         PartyCommand(listOf("!chim", "!chimera", "!chims", "!chimeras", "!book", "!books"), { settings.dianaPartyCommands }) {
-            fmt("Chimera", dianaTrackerMayor.items.CHIMERA, "CHIMERA", "MINOS_INQUISITOR") + " +${dianaTrackerMayor.items.CHIMERA_LS} LS"
+            fmt("Chimera", dianaTrackerMayor.items.CHIMERA, dianaTrackerMayor.mobs.MINOS_INQUISITOR) + " +${dianaTrackerMayor.items.CHIMERA_LS} LS"
         },
         PartyCommand(listOf("!inqsls", "!inquisitorls", "!inquisls", "!lsinq", "!lsinqs", "!lsinquisitor", "!lsinquis"), { settings.dianaPartyCommands }) {
             "Inquisitor LS: ${dianaTrackerMayor.mobs.MINOS_INQUISITOR_LS}"
         },
         PartyCommand(listOf("!inq", "!inqs", "!inquisitor", "!inquis"), { settings.dianaPartyCommands }) {
-            fmt("Inquisitor", dianaTrackerMayor.mobs.MINOS_INQUISITOR, "MINOS_INQUISITOR")
+            fmt("Inquisitor", dianaTrackerMayor.mobs.MINOS_INQUISITOR, dianaTrackerMayor.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!kingls", "!kingsls"), { settings.dianaPartyCommands }) {
             "King LS: ${dianaTrackerMayor.mobs.KING_MINOS_LS}"
         },
         PartyCommand(listOf("!king", "!kings"), { settings.dianaPartyCommands }) {
-            fmt("King", dianaTrackerMayor.mobs.KING_MINOS, "KING_MINOS")
+            fmt("King", dianaTrackerMayor.mobs.KING_MINOS, dianaTrackerMayor.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!sphinxls", "!sphinxsls"), { settings.dianaPartyCommands }) {
             "Sphinx LS: ${dianaTrackerMayor.mobs.SPHINX_LS}"
         },
         PartyCommand(listOf("!sphinx", "!sphinxs"), { settings.dianaPartyCommands }) {
-            fmt("Sphinx", dianaTrackerMayor.mobs.SPHINX, "SPHINX")
+            fmt("Sphinx", dianaTrackerMayor.mobs.SPHINX, dianaTrackerMayor.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!mantils", "!mantisls"), { settings.dianaPartyCommands }) {
             "Manticore LS: ${dianaTrackerMayor.mobs.MANTICORE_LS}"
         },
         PartyCommand(listOf("!manti", "!mantis"), { settings.dianaPartyCommands }) {
-            fmt("Manticore", dianaTrackerMayor.mobs.MANTICORE, "MANTICORE")
+            fmt("Manticore", dianaTrackerMayor.mobs.MANTICORE, dianaTrackerMayor.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!dye", "!dyes"), { settings.dianaPartyCommands }) {
-            fmt("Dye", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, "MYTHOLOGICAL_DYE")
+            fmt("Dye", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, dianaTrackerMayor.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayor.items.TOTAL_BURROWS
@@ -125,61 +124,61 @@ object PartyCommands {
             "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)"
         },
         PartyCommand(listOf("!relic", "!relics"), { settings.dianaPartyCommands }) {
-            fmt("Relics", dianaTrackerMayor.items.MINOS_RELIC, "MINOS_RELIC", "MINOS_CHAMPION")
+            fmt("Relics", dianaTrackerMayor.items.MINOS_RELIC, dianaTrackerMayor.mobs.MINOS_CHAMPION)
         },
         PartyCommand(listOf("!chimls", "!chimerals", "!bookls", "!lschim", "!lsbook", "!lootsharechim", "!lschimera"), { settings.dianaPartyCommands }) {
-            fmt("Chimera LS", dianaTrackerMayor.items.CHIMERA_LS, "CHIMERA_LS", "MINOS_INQUISITOR_LS")
+            fmt("Chimera LS", dianaTrackerMayor.items.CHIMERA_LS, dianaTrackerMayor.mobs.MINOS_INQUISITOR_LS)
         },
         PartyCommand(listOf("!core", "!manticore"), { settings.dianaPartyCommands }) {
-            fmt("Cores", dianaTrackerMayor.items.MANTI_CORE, "MANTI_CORE", "MANTICORE")
+            fmt("Cores", dianaTrackerMayor.items.MANTI_CORE, dianaTrackerMayor.mobs.MANTICORE)
         },
         PartyCommand(listOf("!corels", "!manticorels", "!lscore", "!lsmanticore"), { settings.dianaPartyCommands }) {
-            fmt("Core LS", dianaTrackerMayor.items.MANTI_CORE_LS, "MANTI_CORE_LS", "MANTICORE_LS")
+            fmt("Core LS", dianaTrackerMayor.items.MANTI_CORE_LS, dianaTrackerMayor.mobs.MANTICORE_LS)
         },
         PartyCommand(listOf("!stinger", "!fatefulstinger"), { settings.dianaPartyCommands }) {
-            fmt("Stingers", dianaTrackerMayor.items.FATEFUL_STINGER, "FATEFUL_STINGER", "MANTICORE")
+            fmt("Stingers", dianaTrackerMayor.items.FATEFUL_STINGER, dianaTrackerMayor.mobs.MANTICORE)
         },
         PartyCommand(listOf("!stingerls", "!fatefulstingerls", "!lsstinger", "!lsfatefulstinger"), { settings.dianaPartyCommands }) {
-            fmt("Stinger LS", dianaTrackerMayor.items.FATEFUL_STINGER_LS, "FATEFUL_STINGER_LS", "MANTICORE_LS")
+            fmt("Stinger LS", dianaTrackerMayor.items.FATEFUL_STINGER_LS, dianaTrackerMayor.mobs.MANTICORE_LS)
         },
         PartyCommand(listOf("!wool", "!shimmering", "!shimmeringwool"), { settings.dianaPartyCommands }) {
-            fmt("Wool", dianaTrackerMayor.items.SHIMMERING_WOOL, "SHIMMERING_WOOL", "KING_MINOS")
+            fmt("Wool", dianaTrackerMayor.items.SHIMMERING_WOOL, dianaTrackerMayor.mobs.KING_MINOS)
         },
         PartyCommand(listOf("!woolls", "!shimmeringwoolls", "!lsshimmering", "!lsshimmeringwool"), { settings.dianaPartyCommands }) {
-            fmt("Wool LS", dianaTrackerMayor.items.SHIMMERING_WOOL_LS, "SHIMMERING_WOOL_LS", "KING_MINOS_LS")
+            fmt("Wool LS", dianaTrackerMayor.items.SHIMMERING_WOOL_LS, dianaTrackerMayor.mobs.KING_MINOS_LS)
         },
         PartyCommand(listOf("!food", "!brainfood", "!brain"), { settings.dianaPartyCommands }) {
-            fmt("Brain Food", dianaTrackerMayor.items.BRAIN_FOOD, "BRAIN_FOOD", "SPHINX")
+            fmt("Brain Food", dianaTrackerMayor.items.BRAIN_FOOD, dianaTrackerMayor.mobs.SPHINX)
         },
         PartyCommand(listOf("!foodls", "!brainfoodls", "!lsbrainfood", "!lsbrain"), { settings.dianaPartyCommands }) {
-            fmt("Brain Food LS", dianaTrackerMayor.items.BRAIN_FOOD_LS, "BRAIN_FOOD_LS", "SPHINX_LS")
+            fmt("Brain Food LS", dianaTrackerMayor.items.BRAIN_FOOD_LS, dianaTrackerMayor.mobs.SPHINX_LS)
         },
         PartyCommand(listOf("!braided", "!braideds"), { settings.dianaPartyCommands }) {
-            fmt("Braided feathers", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, "BRAIDED_GRIFFIN_FEATHER")
+            fmt("Braided feathers", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, dianaTrackerMayor.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!kingshard", "!kingshards"), { settings.dianaPartyCommands }) {
-            fmt("King Shards", dianaTrackerMayor.items.KING_MINOS_SHARD, "KING_MINOS_SHARD", "KING_MINOS")
+            fmt("King Shards", dianaTrackerMayor.items.KING_MINOS_SHARD, dianaTrackerMayor.mobs.KING_MINOS)
         },
         PartyCommand(listOf("!sphinxshard", "!sphinxshards"), { settings.dianaPartyCommands }) {
-            fmt("Sphinx Shards", dianaTrackerMayor.items.SPHINX_SHARD, "SPHINX_SHARD", "SPHINX")
+            fmt("Sphinx Shards", dianaTrackerMayor.items.SPHINX_SHARD, dianaTrackerMayor.mobs.SPHINX)
         },
         PartyCommand(listOf("!minotaurshard", "!minotaurshards"), { settings.dianaPartyCommands }) {
-            fmt("Minotaur Shards", dianaTrackerMayor.items.MINOTAUR_SHARD, "MINOTAUR_SHARD", "MINOTAUR")
+            fmt("Minotaur Shards", dianaTrackerMayor.items.MINOTAUR_SHARD, dianaTrackerMayor.mobs.MINOTAUR)
         },
         PartyCommand(listOf("!certanshard", "!certanshards"), { settings.dianaPartyCommands }) {
-            fmt("Certan Shards", dianaTrackerMayor.items.CRETAN_BULL_SHARD, "CRETAN_BULL_SHARD", "CRETAN_BULL")
+            fmt("Certan Shards", dianaTrackerMayor.items.CRETAN_BULL_SHARD, dianaTrackerMayor.mobs.CRETAN_BULL)
         },
         PartyCommand(listOf("!mythofrag", "!frags"), { settings.dianaPartyCommands }) {
             "Mytho Frags: ${dianaTrackerMayor.items.MYTHOS_FRAGMENT}"
         },
         PartyCommand(listOf("!urns", "!urn", "!cretanurn"), { settings.dianaPartyCommands }) {
-            fmt("Urns", dianaTrackerMayor.items.CRETAN_URN, "CRETAN_URN", "CRETAN_BULL")
+            fmt("Urns", dianaTrackerMayor.items.CRETAN_URN, dianaTrackerMayor.mobs.CRETAN_BULL)
         },
         PartyCommand(listOf("!hilt", "!hiltofrevelations"), { settings.dianaPartyCommands }) {
-            fmt("Hilts", dianaTrackerMayor.items.HILT_OF_REVELATIONS, "HILT_OF_REVELATIONS", "MINOS_HUNTER")
+            fmt("Hilts", dianaTrackerMayor.items.HILT_OF_REVELATIONS, dianaTrackerMayor.mobs.MINOS_HUNTER)
         },
         PartyCommand(listOf("!sticks", "!stick"), { settings.dianaPartyCommands }) {
-            fmt("Sticks", dianaTrackerMayor.items.DAEDALUS_STICK, "DAEDALUS_STICK", "MINOTAUR")
+            fmt("Sticks", dianaTrackerMayor.items.DAEDALUS_STICK, dianaTrackerMayor.mobs.MINOTAUR)
         },
         PartyCommand(listOf("!feathers", "!feather"), { settings.dianaPartyCommands }) {
             "Feathers: ${dianaTrackerMayor.items.GRIFFIN_FEATHER}"
@@ -212,8 +211,8 @@ object PartyCommands {
         dianaCommands.flatMap { cmd -> cmd.aliases.map { it to cmd } }.toMap()
     }
 
-    private fun fmt(label: String, count: Int, itemKey: String, mobKey: String? = null): String {
-        val percent = calcPercentOne(dianaTrackerMayor.items, dianaTrackerMayor.mobs, itemKey, mobKey)
+    private fun fmt(label: String, count: Int, denominator: Int): String {
+        val percent = calcPercentOne(count, denominator)
         return "$label: $count ($percent%)"
     }
 
@@ -282,7 +281,6 @@ object PartyCommands {
 
     private fun sendCommand(cmd: String) = Chat.command(cmd)
     private fun sendResponse(msg: String) {
-        ChatMessageQueue.onCommandOrMessageSent() // always force the 250ms delay just in case for now since some users report hypixel blocks sometimes
         Chat.pc(msg)
     }
 }

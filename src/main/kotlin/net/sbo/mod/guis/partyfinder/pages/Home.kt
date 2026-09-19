@@ -8,7 +8,6 @@ import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.percent
-import net.sbo.mod.guis.partyfinder.GuiHandler
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.guis.partyfinder.Theme
 

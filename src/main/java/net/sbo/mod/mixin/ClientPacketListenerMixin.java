@@ -1,7 +1,5 @@
 package net.sbo.mod.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
@@ -9,7 +7,6 @@ import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent;
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent;
-import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,16 +23,5 @@ final class ClientPacketListenerMixin {
     @Inject(method = "sendCommand", at = @At("HEAD"))
     private final void sbo$onSendCommand(@NonNull final String command, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new SentCommandEvent(command));
-    }
-
-    @Inject(method = "handleParticleEvent", at = @At("HEAD"))
-    private final void sbo$onParticlePacket(@NonNull final ClientboundLevelParticlesPacket packet, @NonNull final CallbackInfo ci) {
-        SBOEvent.INSTANCE.emit(new PacketReceiveEvent(packet));
-    }
-
-    @WrapOperation(method = "handleBundlePacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/Packet;handle(Lnet/minecraft/network/PacketListener;)V"))
-    private final void sbo$onBundlePacket(@NonNull final Packet<?> packet, @NonNull final PacketListener listener, @NonNull final Operation<Void> original) {
-        SBOEvent.INSTANCE.emit(new PacketReceiveEvent(packet));
-        original.call(packet, listener);
     }
 }

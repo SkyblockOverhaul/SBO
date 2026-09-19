@@ -65,9 +65,7 @@ class OverlayTextLine(
         return this
     }
 
-    fun checkCondition(): Boolean {
-        return condition()
-    }
+    fun checkCondition(): Boolean = condition()
 
     /**
      * Executes the mouse enter action when the mouse enters the text line.

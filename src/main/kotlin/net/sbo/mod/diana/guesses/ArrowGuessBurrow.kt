@@ -8,7 +8,6 @@ import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.NumberUtil.roundTo
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -17,6 +16,7 @@ import net.sbo.mod.utils.events.impl.game.TickEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.game.ServerStats
 import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
@@ -24,12 +24,10 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.sign
-import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.seconds
-
-//todo: when not precise and normal guess was used remove latest arrow guess waypoint
 
 /**
  * A utility object to guess the location of Griffin Burrows based on arrow particle effects.
@@ -48,35 +46,6 @@ object ArrowGuessBurrow {
     private val HUB_BOUNDS_MAX = SboVec(175.0, 105.0, 205.0)
     private val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
 
-    private val allowedBlocksAboveGround = buildList {
-        add(Blocks.AIR)
-        add(Blocks.DANDELION)
-        add(Blocks.SPRUCE_FENCE)
-        add(Blocks.OAK_LEAVES)
-        add(Blocks.SPRUCE_LEAVES)
-        add(Blocks.BIRCH_LEAVES)
-        add(Blocks.JUNGLE_LEAVES)
-        add(Blocks.ACACIA_LEAVES)
-        add(Blocks.DARK_OAK_LEAVES)
-        add(Blocks.SHORT_GRASS)
-        add(Blocks.FERN)
-        add(Blocks.SUNFLOWER)
-        add(Blocks.LILAC)
-        add(Blocks.TALL_GRASS)
-        add(Blocks.LARGE_FERN)
-        add(Blocks.ROSE_BUSH)
-        add(Blocks.PEONY)
-        add(Blocks.POPPY)
-        add(Blocks.BLUE_ORCHID)
-        add(Blocks.ALLIUM)
-        add(Blocks.AZURE_BLUET)
-        add(Blocks.RED_TULIP)
-        add(Blocks.ORANGE_TULIP)
-        add(Blocks.WHITE_TULIP)
-        add(Blocks.PINK_TULIP)
-        add(Blocks.OXEYE_DAISY)
-    }
-
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
 
     private var spadeTitleShown = false
@@ -86,6 +55,8 @@ object ArrowGuessBurrow {
     val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
+
+    private val invalidCache = HashSet<SboVec>()
 
     fun removeArrowGuessFromSubGuess(pos: SboVec) {
         val target = pos.roundLocationToBlock()
@@ -321,7 +292,7 @@ object ArrowGuessBurrow {
         for (i in 1..iterations) {
             val axisValue = originArray[axisIndex] + i * sign(directionArray[axisIndex])
             val candidatePoint = RaycastUtils.findPointOnRay(ray, axisIndex, axisValue) ?: continue
-            val candidateBlock = candidatePoint.roundToBlock()
+            val candidateBlock = candidatePoint.roundLocationToBlock()
             if (!isBlockValid(candidateBlock)) continue
             val blockCenter = candidateBlock.add(0.5, 0.5, 0.5)
             val distanceToRay = RaycastUtils.findDistanceToRay(ray, blockCenter)
@@ -420,7 +391,9 @@ object ArrowGuessBurrow {
     }
 
     internal fun isBlockValid(pos: SboVec): Boolean {
-        if (!HUB_BOUNDS.isInside(pos)) return false 
+        if (!HUB_BOUNDS.isInside(pos)) return false
+        if (pos in invalidCache) return false
+
         if (!pos.isInLoadedChunk()) return true
         return isBlockTrulyValid(pos)
     }
@@ -431,9 +404,15 @@ object ArrowGuessBurrow {
         val isAir = block == Blocks.AIR
         val isGround = isGrass || isAir && pos in recentClickedBlocks
 
-        val isValidBlockAbove = pos.up().getBlockAt() in allowedBlocksAboveGround
+        val isValidBlockAbove = pos.up().getBlockAt() == Blocks.AIR
+        val valid = isGround && isValidBlockAbove
 
-        return isGround && isValidBlockAbove
+        // Second condition is for an edge case where you would mine an arrow guess block and your network goes off - recentClickedBlocks would stop having the block after 4 seconds, and since network went off the server will not be able to put grass block back in again. So we check that server connection is healthy before proceeding to cache it as invalid.
+        if (!valid && System.nanoTime() - ServerStats.lastPacket < TimeUnit.SECONDS.toNanos(4L)) {
+            invalidCache.add(pos)
+        }
+
+        return valid
     }
 
     private fun AABB.isInside(vec: SboVec): Boolean {
@@ -450,7 +429,7 @@ object ArrowGuessBurrow {
         return parameters is DustParticleOptions
     }
 
-    private fun SboVec.isCloseToLastBurrow(): Boolean = DianaEvents.lastWaypointClicked?.let { this.distanceTo(it) <= 7 } ?: true // null at startup then never null, pass condition if its null since we do not know but it is probably close
+    private fun SboVec.isCloseToLastBurrow(): Boolean = DianaEvents.lastWaypointClicked?.let { this.distanceTo(it) <= 7 } ?: true // null at startup then never null, pass condition if its null since we do not know, but it is probably close
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this

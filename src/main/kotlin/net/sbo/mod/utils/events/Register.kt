@@ -21,7 +21,7 @@ object Register {
      *
      * @param name The name of the command.
      * @param aliases Optional aliases for the command.
-     * @param action The action to execute when the command is invoked.
+     * @param action The action to execute. It receives the command arguments.
      */
     fun command(
         name: String,
@@ -40,7 +40,10 @@ object Register {
                         ClientCommands.argument("args", StringArgumentType.greedyString())
                             .executes {
                                 val argsString = StringArgumentType.getString(it, "args")
-                                val args = argsString.split(' ').filter { s -> s.isNotEmpty() }.toTypedArray()
+                                val args = argsString.split(' ')
+                                    .filter { s -> s.isNotEmpty() }
+                                    .toTypedArray()
+
                                 action(args)
                                 1
                             }
@@ -56,10 +59,14 @@ object Register {
 
     /**
      * Registers a tick event that executes an action every specified number of ticks.
+     *
      * @param tick The number of ticks after which the action should be executed.
      * @param action The action to execute. It receives a lambda to unregister itself.
      */
-    fun onTick(tick: Int, action: (unregister: () -> Unit) -> Unit) {
+    fun onTick(
+        tick: Int,
+        action: (unregister: () -> Unit) -> Unit
+    ) {
         val task: TickScheduler.ScheduledTask = TickScheduler.ScheduledTask(tick) {
             var remove = false
 
@@ -75,7 +82,6 @@ object Register {
 
     /**
      * Registers an event that listens for chat messages that match a regex.
-     * The action receives both the message and the regex match result for easy value extraction.
      *
      * @param regex The regular expression to filter messages with.
      * @param action The action to execute. It receives the message and the `MatchResult`.
@@ -100,15 +106,36 @@ object Register {
 
     /**
      * Registers an event that listens for chat messages that match a regex.
-     * The action receives both the message and the regex matcher for easy value extraction.
-     * If the action returns true, the message will be canceled (not displayed in chat).
      *
-     * @param regex The regular expression to filter messages with.
-     * @param action The action to execute. It receives the message and the `Matcher`.
+     * If the action returns false, the message will be canceled.
+     *
+     * This is the original API and remains unchanged for existing callers.
      */
     fun onChatMessageCancelable(
         regex: Pattern,
         action: (message: Component, matchResult: Matcher) -> Boolean
+    ) {
+        ChatHandler.registerHandler(regex, action)
+    }
+
+    /**
+     * Registers an event that listens for chat messages that match a regex.
+     *
+     * If the action returns false, the message will be canceled.
+     *
+     * The action also receives an unregister callback. Calling unregister()
+     * removes this handler after the current message has finished processing.
+     *
+     * This is useful for one-shot chat hooks that should stop listening after
+     * successfully canceling a message.
+     */
+    fun onChatMessageCancelable(
+        regex: Pattern,
+        action: (
+            message: Component,
+            matchResult: Matcher,
+            unregister: () -> Unit
+        ) -> Boolean
     ) {
         ChatHandler.registerHandler(regex, action)
     }
