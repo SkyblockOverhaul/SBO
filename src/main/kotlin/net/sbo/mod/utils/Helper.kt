@@ -60,8 +60,6 @@ object Helper {
     private var priceDataAh: Map<String, Long> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
 
-    private var notifiedPriceUpdateError = false
-
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
             .ofVirtual()
             .name("sbo-callback-thread-", 1) // sbo-callback-thread-1, sbo-callback-thread-2 etc. starting from 1 (second parameter)
@@ -635,23 +633,14 @@ object Helper {
                 priceDataBazaar = it
                 DianaLoot.updateLines()
             }.error { error ->
-                if (priceDataBazaar == null) {
-                    Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
-                } else {
-                    SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
-                }
+                SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
             }
         SboApi.ahItems()
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
-                if (priceDataAh.isEmpty() && !notifiedPriceUpdateError) {
-                    Chat.chat("§6[SBO] §cUnexpected error while fetching AH item prices: $error")
-                    notifiedPriceUpdateError = true
-                } else {
-                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
-                }
+                SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
             }
     }
 
