@@ -24,7 +24,6 @@ import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
     private var lastDugOutBurrowPos: SboVec = SboVec.ZERO
-    private val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
 
     private val RECENTLY_REMOVED_DURATION_NS = TimeUnit.SECONDS.toNanos(1)
     private val recentlyRemoved = ConcurrentHashMap<String, Long>()
@@ -319,18 +318,6 @@ object BurrowDetector {
         WaypointManager.addWaypoint(waypoint, source == "particle")
     }
 
-    fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
-        toRemove[waypoint] = condition
-    }
-
-    private fun flushRemovals() {
-        toRemove.forEach { (waypoint, condition) ->
-            if (condition.asBoolean) {
-                WaypointManager.removeWaypoint(waypoint)
-            }
-        }
-    }
-
     private fun refreshBurrows(deathOriginating: Boolean, expectedTimesDug: Int, burrowType: String? = null) {
         val pos = lastDugOutBurrowPos
 
@@ -383,7 +370,7 @@ object BurrowDetector {
         }
 
         // Counted timesDug above already
-        flushRemovals()
+        ArrowGuessBurrow.flushRemovals()
 
         if (dugWaypoint != null && (dugWaypoint.type == "guess" || dugWaypoint.type == "arrow" || dugWaypoint.type == "subGuess") && burrowType != null) {
             // The user dug a Guess waypoint before particles updated it into a real burrow type.

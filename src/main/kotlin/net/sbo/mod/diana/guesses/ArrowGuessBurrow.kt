@@ -20,8 +20,10 @@ import net.sbo.mod.utils.game.ServerStats
 import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
+import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
+import java.util.function.BooleanSupplier
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
@@ -56,7 +58,21 @@ object ArrowGuessBurrow {
 
     val allGuesses = CopyOnWriteArrayList<GuessEntry>()
 
+    private val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
+
     private val invalidCache = HashSet<SboVec>()
+
+    fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
+        toRemove[waypoint] = condition
+    }
+
+    fun flushRemovals() {
+        toRemove.forEach { (waypoint, condition) ->
+            if (condition.asBoolean) {
+                WaypointManager.removeWaypoint(waypoint)
+            }
+        }
+    }
 
     fun removeArrowGuessFromSubGuess(pos: SboVec) {
         val target = pos.roundLocationToBlock()
