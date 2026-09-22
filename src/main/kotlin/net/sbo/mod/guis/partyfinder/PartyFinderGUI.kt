@@ -29,9 +29,12 @@ import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.CustomFilters
+import net.sbo.mod.utils.data.DianaFilters
 import net.sbo.mod.utils.data.HighlightElement
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.data.PlayerStats
 import net.sbo.mod.utils.data.Reqs
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -110,20 +113,14 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     override fun onKeyPressed(keyCode: Int, typedChar: Char, modifiers: UKeyboard.Modifiers?) {
         if (keyCode == UKeyboard.KEY_ESCAPE) {
-            if (cpWindowOpened) {
-                closeCpWindow()
-                return
+            when {
+                cpWindowOpened -> closeCpWindow()
+                filterWindowOpened -> closeFilterWindow()
+                partyInfoOpened -> closePartyInfoWindow()
+                else -> super.onKeyPressed(keyCode, typedChar, modifiers)
             }
-            if (filterWindowOpened) {
-                closeFilterWindow()
-                return
-            }
-            if (partyInfoOpened) {
-                closePartyInfoWindow()
-                return
-            }
+            return
         }
-
         super.onKeyPressed(keyCode, typedChar, modifiers)
     }
 
@@ -155,49 +152,52 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     internal fun getFilter(pageType: String, callback: (((Party) -> Boolean)?) -> Unit) {
         getPartyPlayerStats { stats ->
-            val filter = when (pageType) {
-                "Diana" -> {
-                    val isEman9 = pfConfigState.filters.diana.eman9Filter
-                    val isLooting5 = pfConfigState.filters.diana.looting5Filter
-                    val canIJoin = pfConfigState.filters.diana.canIjoinFilter
-
-                    if (!isEman9 && !isLooting5 && !canIJoin) null
-                    else fun(party: Party): Boolean {
-                        if (isEman9 && !party.reqs.eman9) return false
-                        if (isLooting5 && !party.reqs.looting5) return false
-                        if (canIJoin) {
-                            party.reqs.let { req ->
-                                if (req.lvl > 0 && stats.sbLvl < req.lvl) return false
-                                if (req.kills > 0 && stats.mythosKills < req.kills) return false
-                                if (req.eman9 && !stats.eman9) return false
-                                if (req.looting5 && !stats.looting5daxe) return false
-                            }
-                        }
-                        return true
-                    }
-                }
-                "Custom" -> {
-                    val isEman9 = pfConfigState.filters.custom.eman9Filter
-                    val canIJoin = pfConfigState.filters.custom.canIjoinFilter
-
-                    if (!isEman9 && !canIJoin) null
-                    else fun(party: Party): Boolean {
-                        if (isEman9 && !party.reqs.eman9) return false
-                        if (canIJoin) {
-                            party.reqs.let { req ->
-                                if (req.lvl > 0 && stats.sbLvl < req.lvl) return false
-                                if (req.mp > 0 && stats.magicalPower < req.mp) return false
-                            }
-                        }
-                        return true
-                    }
-                }
+            val filter: ((Party) -> Boolean)? = when (pageType) {
+                "Diana" -> createDianaFilter(pfConfigState.filters.diana, stats)
+                "Custom" -> createCustomFilter(pfConfigState.filters.custom, stats)
                 else -> null
             }
             callback(filter)
         }
     }
 
+    private fun createDianaFilter(config: DianaFilters, stats: PartyPlayerStats): ((Party) -> Boolean)? {
+        val isEman9 = config.eman9Filter
+        val isLooting5 = config.looting5Filter
+        val canIJoin = config.canIjoinFilter
+
+        if (!isEman9 && !isLooting5 && !canIJoin) return null
+        return { party ->
+            val req = party.reqs
+            when {
+                isEman9 && !req.eman9 -> false
+                isLooting5 && !party.reqs.looting5 -> false
+                canIJoin && req.lvl > 0 && stats.sbLvl < req.lvl -> false
+                canIJoin && req.kills > 0 && stats.mythosKills < req.kills -> false
+                canIJoin && req.eman9 && !stats.eman9 -> false
+                canIJoin && req.looting5 && !stats.looting5daxe -> false
+                else -> true
+            }
+        }
+    }
+
+    private fun createCustomFilter(config: CustomFilters, stats: PartyPlayerStats): ((Party) -> Boolean)? {
+        val isEman9 = config.eman9Filter
+        val canIJoin = config.canIjoinFilter
+
+        if (!isEman9 && !canIJoin) return null
+
+        return { party ->
+            val req = party.reqs
+            when {
+                isEman9 && !req.eman9 -> false
+                canIJoin && req.lvl > 0 && stats.sbLvl < req.lvl -> false
+                canIJoin && req.mp > 0 && stats.magicalPower < req.mp -> false
+                else -> true
+            }
+
+        }
+    }
 
     private fun getPartyInfo(type: String, list: PartyPlayerStats) : String {
         return when (type) {
@@ -208,13 +208,15 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     private fun joinParty(leader: String, reqs: Reqs) {
-        if (!PartyFinderManager.inQueue && !PartyFinderManager.isInParty) {
-            sendJoinRequest(leader, reqs)
-        } else {
-            val leaderCheck = leader == mc.player?.name?.string
-            if (PartyFinderManager.inQueue && !PartyFinderManager.isInParty && !leaderCheck) Chat.chat("§6[SBO] §eYou are already in queue.")
-            if (PartyFinderManager.isInParty && !PartyFinderManager.inQueue && !leaderCheck) Chat.chat("§6[SBO] §eYou are already in a party.")
-            if (leaderCheck) Chat.chat("§6[SBO] §eYou can't join your own party.")
+        val isSelf = leader == mc.player?.name?.string
+        val inQueue = PartyFinderManager.inQueue
+        val inParty = PartyFinderManager.isInParty
+
+        when {
+            isSelf -> Chat.chat("§6[SBO] §eYou can't join your own party.")
+            inQueue -> Chat.chat("§6[SBO] §eYou are already in queue.")
+            inParty -> Chat.chat("§6[SBO] §eYou are already in a party.")
+            else -> sendJoinRequest(leader, reqs)
         }
     }
 
@@ -305,19 +307,17 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     private fun updatePageHighlight() {
         elementToHighlight.forEach { element ->
-            if (element.obj is UIBlock) {
-                if (element.page == selectedPage) {
-                    element.obj.setColor(Theme.DARK_GRAY)
-                } else {
-                    element.obj.setColor(Theme.TRANSPARENT)
-                }
-            } else {
-                if (element.page == selectedPage) {
-                    element.obj.setColor(Theme.ROYAL_BLUE)
-                } else {
-                    element.obj.setColor(Theme.WHITE)
-                }
+            val isSelected = element.page == selectedPage
+            val isBlock = element.obj is UIBlock
+
+            val color = when {
+                isBlock && isSelected -> Theme.DARK_GRAY
+                isBlock -> Theme.TRANSPARENT
+                isSelected -> Theme.ROYAL_BLUE
+                else -> Theme.WHITE
             }
+
+            element.obj.setColor(color)
         }
     }
 
@@ -381,13 +381,8 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         openFilterWindow()
 
         when (listName) {
-            "Diana Party List" -> {
-                dianaPage.addDianaFilter(x,y)
-            }
-
-            "Custom Party List" -> {
-                customPage.addCustomFilter(x, y)
-            }
+            "Diana Party List" -> dianaPage.addDianaFilter(x,y)
+            "Custom Party List" -> customPage.addCustomFilter(x, y)
             else -> return
         }
     }
@@ -612,27 +607,26 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
 
     private fun renderPartyList(list: List<Party>) {
+        partyListContainer.clearChildren()
+
         if (list.isEmpty()) {
-            partyListContainer.clearChildren()
             noParties.unhide(true)
             return
         }
-        partyListContainer.clearChildren()
+
         list.forEach { party ->
-            when (selectedPage) {
-                "Diana" -> dianaPage.getReqsString(party.reqs) { reqsString ->
-                    val partyBlock = createPartyBlock(party, reqsString)
-                    partyListContainer.addChild(partyBlock)
-                }
-                "Custom" -> customPage.getReqsString(party.reqs) { reqsString ->
-                    val partyBlock = createPartyBlock(party, reqsString)
-                    partyListContainer.addChild(partyBlock)
-                }
-                else -> {
-                    val partyBlock = createPartyBlock(party, "No requirements available.")
-                    partyListContainer.addChild(partyBlock)
-                }
+            getReqsStringForPage(party) { reqsString ->
+                val partyBlock = createPartyBlock(party, reqsString)
+                partyListContainer.addChild(partyBlock)
             }
+        }
+    }
+
+    private fun getReqsStringForPage(party: Party, callback: (String) -> Unit) {
+        when (selectedPage) {
+            "Diana" -> dianaPage.getReqsString(party.reqs, callback)
+            "Custom" -> customPage.getReqsString(party.reqs, callback)
+            else -> callback("No requirements available.")
         }
     }
 
