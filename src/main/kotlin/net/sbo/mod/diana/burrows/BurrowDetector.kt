@@ -299,13 +299,6 @@ object BurrowDetector {
                 ?: WaypointManager.getWaypointAt(pos, "subGuess")?.timesDug
                 ?: 0
 
-        val existing = burrow.waypoint
-
-        if (existing != null) {
-            existing.timesDug = existingTimesDug
-            return
-        }
-
         val waypoint = Waypoint(
             type,
             pos.x, pos.y, pos.z,
