@@ -1,6 +1,5 @@
 package net.sbo.mod.guis.partyfinder
 
-import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
@@ -13,7 +12,6 @@ import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.universal.UKeyboard
 import net.sbo.mod.SBOKotlin
-import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.pages.CustomPage
 import net.sbo.mod.guis.partyfinder.pages.DianaPage
@@ -34,9 +32,7 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.HighlightElement
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
-import net.sbo.mod.utils.data.PlayerStats
 import net.sbo.mod.utils.data.Reqs
-import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderRefreshListEvent
