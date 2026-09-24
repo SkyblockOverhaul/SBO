@@ -2,7 +2,7 @@
 ksp = "2.3.12"
 loom = "1.18.2"
 elementa = "774"
-universalcraft = "534"
+universalcraft = "536"
 junit = "6.1.3"
 
 [plugins]
