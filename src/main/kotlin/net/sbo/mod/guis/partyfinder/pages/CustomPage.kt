@@ -17,7 +17,6 @@ import net.sbo.mod.guis.partyfinder.Theme
 import net.sbo.mod.partyfinder.PartyFinderManager.hasSboKey
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.CustomFilters
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
@@ -28,6 +27,10 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
     override val pageName: String = "Custom"
     override val partyType: String = "Custom"
     override val listDisplayName: String = "Custom Party List"
+    override val showPartyList: Boolean get() = true
+    override val pageOrder: Int get() = 1
+    override val configKey: String get() = "custom"
+    override fun createPartyWindowHeight(): Float = 54f
 
     override fun getPartyInfo(info: PartyPlayerStats): String {
         var formattedInfoString = ""
@@ -94,8 +97,6 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
 
     override fun createParty() {
         parent.openCpWindow()
-        parent.cpWindow.setWidth(20.percent())
-        parent.cpWindow.setHeight(54.percent())
         parent.reqsBox = UIBlock().constrain {
             x = 0.percent()
             y = SiblingConstraint()
@@ -114,7 +115,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf lvlbox
         val lvlinput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "lvl",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -144,7 +145,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf mpbox
         val mpinput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "mp",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -174,7 +175,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf partySizeBox
         val partySizeInput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "partySize",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -204,7 +205,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf noteBox
         val noteInput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "note",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -228,7 +229,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
             height = 18.percent()
         }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         val eman9Checkbox = GuiHandler.Checkbox(
-            list = "custom",
+            list = configKey,
             key = "eman9",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -316,7 +317,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
             height = 50.percent()
         }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val eman9Filter = GuiHandler.Checkbox(
-            list = "custom",
+            list = configKey,
             key = "eman9Filter",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -335,7 +336,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
         eman9Filter.setOnClick { setFilter() }
 
         val canIjoinFilter = GuiHandler.Checkbox(
-            list = "custom",
+            list = configKey,
             key = "canIjoinFilter",
             x = CenterConstraint(),
             y = CenterConstraint(),

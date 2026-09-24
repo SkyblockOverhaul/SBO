@@ -16,6 +16,7 @@ class Home(private val parent: PartyFinderGUI) : PartyPage {
     override val pageName: String = "Home"
     override val partyType: String = ""
     override val listDisplayName: String = ""
+    override val pageOrder: Int get() = 100
 
     override fun render() {
         Window.enqueueRenderOperation { parent.noParties.hide()

@@ -20,6 +20,7 @@ import net.sbo.mod.guis.partyfinder.pages.DianaPage
 import net.sbo.mod.guis.partyfinder.pages.Help
 import net.sbo.mod.guis.partyfinder.pages.Home
 import net.sbo.mod.guis.partyfinder.pages.PartyPage
+import net.sbo.mod.guis.partyfinder.pages.SettingsPage
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyFinderManager.createParty
 import net.sbo.mod.partyfinder.PartyFinderManager.getActiveUsers
@@ -45,8 +46,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     private val elementToHighlight: MutableList<HighlightElement> = mutableListOf()
     internal var selectedPage: String = "Home"
-    private val pages: MutableMap<String, () -> Unit> = mutableMapOf()
-    private val partyPages: MutableMap<String, PartyPage> = mutableMapOf()
+    private val pages: MutableMap<String, PartyPage> = mutableMapOf()
     private var currentPage: PartyPage? = null
     private var partyCache: MutableMap<String, List<Party>> = mutableMapOf()
     private var lastRefreshTime: Long = 0L
@@ -58,6 +58,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     private val customPage = CustomPage(this)
     private val homePage = Home(this)
     private val helpPage = Help(this)
+    private val settingsPage = SettingsPage(this)
 
     private lateinit var filterBackground: UIComponent
     internal lateinit var filterWindow : UIComponent
@@ -197,13 +198,17 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     internal fun closeFilterWindow() {
         filterBackground.hide()
         filterWindow.hide()
+        if (this::filterBox.isInitialized) window.removeChild(filterBox)
         checkWindows()
         filterWindowOpened = false
     }
 
     internal fun openCpWindow() {
+        closeFilterWindow()
         base.hide()
         cpWindow.unhide(true)
+        cpWindow.setWidth(currentPage?.createPartyWindowWidth()?.percent ?: 20f.percent())
+        cpWindow.setHeight(currentPage?.createPartyWindowHeight()?.percent ?: 40f.percent())
         cpWindowOpened = true
     }
 
@@ -252,11 +257,12 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     private fun updateSelectedPage() {
         val page = pages[selectedPage] ?: return
-        currentPage = partyPages[selectedPage]
+        currentPage = page
+        currentPage?.onPageSelected()
         contentBlock.clearChildren()
         contentBlock.addChild(partyListContainer)
         Helper.sleep(100) {
-            page()
+            page.render()
         }
     }
 
@@ -337,8 +343,9 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         currentPage?.addFilter(x, y)
     }
 
-    private fun addPage(pageTitle: String, pageContent: () -> Unit, isSubPage: Boolean = false, y1: PositionConstraint? = null, isClickable: Boolean = false) {
-        pages[pageTitle] = pageContent
+    private fun addPage(page: PartyPage, isSubPage: Boolean = false, y1: PositionConstraint? = null, actionOnly: Boolean = false) {
+        val pageTitle = page.pageName
+        pages[pageTitle] = page
         val finalY = y1 ?: if (isSubPage) SiblingConstraint(0f, true) else SiblingConstraint()
 
         val block = UIBlock().constrain {
@@ -354,17 +361,21 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }.setColor(Theme.PAGE_TITLE)
 
         block.onMouseClick {
+            if (actionOnly) {
+                page.render()
+                return@onMouseClick
+            }
             if (selectedPage == pageTitle) return@onMouseClick
-            if (isClickable) return@onMouseClick pageContent()
             selectedPage = pageTitle
-            currentPage = partyPages[pageTitle]
+            currentPage = page
+            currentPage?.onPageSelected()
             contentBlock.clearChildren()
             partyListContainer.clearChildren()
-            if (selectedPage != "Home" && selectedPage != "Help" && selectedPage != "Settings") {
+            if (currentPage?.showPartyList == true) {
                 contentBlock.addChild(partyListContainer)
             }
             updatePageHighlight()
-            pageContent()
+            page.render()
         }
 
         block.addChild(text)
@@ -780,12 +791,6 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         )
     }
 
-    private fun settings() {
-        mc.schedule {
-            displayScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
-        }
-    }
-
     private fun stpBtn(btn: GuiHandler.Button) {
         btn.textObject.setTextScale(getTextScaleOfScaleText())
         btn.uiObject.addChild(GuiHandler.UILine(
@@ -1003,14 +1008,11 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         partyListContainer.addChild(noParties)
         noParties.hide()
         //-----------------Pages-----------------
-        partyPages["Home"] = homePage
-        partyPages["Help"] = helpPage
-        partyPages["Diana"] = dianaPage
-        partyPages["Custom"] = customPage
-        addPage("Home", homePage::render, isSubPage = true, y1 = 93.percent())
-        addPage("Help", helpPage::render, isSubPage = true)
-        addPage("Settings", ::settings, isSubPage = true, isClickable = true)
-        addPage("Diana", pageContent = { dianaPage.render() }, y1 = 0.percent())
-        addPage("Custom", pageContent = { customPage.render() })
+        // Party pages first (top of list), then sub-pages
+        addPage(dianaPage, y1 = 0.percent())
+        addPage(customPage)
+        addPage(homePage, isSubPage = true, y1 = 93.percent())
+        addPage(helpPage, isSubPage = true)
+        addPage(settingsPage, isSubPage = true, actionOnly = true)
     }
 }

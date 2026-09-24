@@ -15,6 +15,7 @@ class Help(private val parent: PartyFinderGUI) : PartyPage {
     override val pageName: String = "Help"
     override val partyType: String = ""
     override val listDisplayName: String = ""
+    override val pageOrder: Int get() = 101
 
     override fun render() {
         Window.enqueueRenderOperation {
