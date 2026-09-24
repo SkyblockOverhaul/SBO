@@ -17,13 +17,19 @@ import net.sbo.mod.guis.partyfinder.Theme
 import net.sbo.mod.partyfinder.PartyFinderManager.hasSboKey
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 
 
-class DianaPage(private val parent: PartyFinderGUI) {
-    internal fun getPartyInfo(info: PartyPlayerStats): String {
+class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
+
+    override val pageName: String = "Diana"
+    override val partyType: String = "Diana"
+    override val listDisplayName: String = "Diana Party List"
+
+    override fun getPartyInfo(info: PartyPlayerStats): String {
         var formattedInfoString = ""
         val formattedInfo = listOf(
             "&9Name: &b" to info.name,
@@ -48,15 +54,15 @@ class DianaPage(private val parent: PartyFinderGUI) {
         return formattedInfoString
     }
 
-    private fun setFilter() {
-        parent.getFilter(parent.selectedPage) { filter ->
+    override fun setFilter() {
+        parent.getFilter { filter ->
             Window.enqueueRenderOperation {
                 parent.filterPartyList(filter)
             }
         }
     }
 
-    internal fun getReqsString(reqs: Reqs?, callback: (String) -> Unit) {
+    override fun getReqsString(reqs: Reqs?, callback: (String) -> Unit) {
         if (reqs == null) {
             callback("")
             return
@@ -92,14 +98,14 @@ class DianaPage(private val parent: PartyFinderGUI) {
         }
     }
 
-    internal fun render() {
+    override fun render() {
         Window.enqueueRenderOperation {
-            parent.addPartyListFunctions("Diana Party List", ::createParty)
+            parent.addPartyListFunctions(listDisplayName, ::createParty)
             parent.updateCurrentPartyList(true)
         }
     }
 
-    private fun createParty() {
+    override fun createParty() {
         parent.openCpWindow()
         parent.cpWindow.setWidth(20.percent())
         parent.cpWindow.setHeight(40.percent())
@@ -287,7 +293,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
     }
 
-    internal fun addDianaFilter(x1: PositionConstraint, y1: PositionConstraint) {
+    override fun addFilter(x1: PositionConstraint, y1: PositionConstraint) {
         parent.filterWindow.constrain {
             x = x1
             y = y1
@@ -384,5 +390,26 @@ class DianaPage(private val parent: PartyFinderGUI) {
         canIjoinFilter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         canIjoinFilter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         canIjoinFilter.setOnClick { setFilter() }
+    }
+
+    override fun createFilterConfig(stats: PartyPlayerStats): ((Party) -> Boolean)? {
+        val config = pfConfigState.filters.diana
+        val isEman9 = config.eman9Filter
+        val isLooting5 = config.looting5Filter
+        val canIJoin = config.canIjoinFilter
+
+        if (!isEman9 && !isLooting5 && !canIJoin) return null
+        return { party ->
+            val req = party.reqs
+            when {
+                isEman9 && !req.eman9 -> false
+                isLooting5 && !party.reqs.looting5 -> false
+                canIJoin && req.lvl > 0 && stats.sbLvl < req.lvl -> false
+                canIJoin && req.kills > 0 && stats.mythosKills < req.kills -> false
+                canIJoin && req.eman9 && !stats.eman9 -> false
+                canIJoin && req.looting5 && !stats.looting5daxe -> false
+                else -> true
+            }
+        }
     }
 }
