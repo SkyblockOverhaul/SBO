@@ -149,8 +149,8 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     internal fun getTextScaleOfScaleText(base: Float = 1f): PixelConstraint {
-        return if (base + PartyFinder.scaleText <= 0f) 0.1f.pixels()
-        else (base + PartyFinder.scaleText).pixels()
+        return if (base <= 0f) 0.1f.pixels()
+        else base.pixels()
     }
 
     internal fun getFilter(pageType: String, callback: (((Party) -> Boolean)?) -> Unit) {
