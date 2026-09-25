@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
@@ -46,13 +47,13 @@ object DianaMobDetect {
     private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
-    private val kingHitsRegex = """.*?(\d+)\s+Hits.*""".toRegex()
+    private val kingHitsRegex = """(?:§[0-9a-fk-or])*.*?(\d+)\s+Hits.*""".toRegex()
 
-    internal enum class RareDianaMob(val display: String) {
-        INQ("Minos Inquisitor"),
-        KING("King Minos"),
-        SPHINX("Sphinx"),
-        MANTI("Manticore");
+    internal enum class RareDianaMob(val display: String, val glowColor: Int) {
+        INQ("Minos Inquisitor", Customization.MinosInquisitorGlowColor),
+        KING("King Minos", Customization.KingMinosGlowColor),
+        SPHINX("Sphinx", Customization.SphinxGlowColor),
+        MANTI("Manticore", Customization.ManticoreGlowColor);
 
         companion object {
             fun fromName(name: String): RareDianaMob? = entries.firstOrNull { name.contains(it.display, ignoreCase = true) }
@@ -80,7 +81,7 @@ object DianaMobDetect {
             }
         }
 
-    private fun parseStarFromName(name: String): Boolean = name.contains("✯")//todo: implement overlay for star check
+    private fun parseStarFromName(name: String): Boolean = name.contains("✯")
 
     private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
 
@@ -100,9 +101,29 @@ object DianaMobDetect {
             val level = mc.level ?: return@command
 
             level.entitiesForRendering().forEach { entity ->
-                val health = (entity as? LivingEntity)?.let { " with health ${it.health}/${it.maxHealth}" } ?: ""
+                val health = (entity as? LivingEntity)?.let {
+                    " with health ${it.health}/${it.maxHealth}"
+                } ?: ""
 
-                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string}$health at x=${entity.x},y=${entity.y},z=${entity.z}")
+                val passengers = entity.passengers
+                    .takeIf { it.isNotEmpty() }
+                    ?.joinToString(", ") { passenger ->
+                        "${passenger.javaClass.simpleName} (${passenger.name.string})"
+                    }
+                    ?.let { " with passengers [$it]" }
+                    ?: ""
+
+                val rider = entity.vehicle
+                    ?.let {
+                        " riding ${it.javaClass.simpleName} (${it.name.string})"
+                    }
+                    ?: ""
+
+                Chat.chat(
+                    "§6[SBO] §eEntity with type ${entity.javaClass.simpleName} " +
+                    "with name ${entity.name.string}$health$passengers$rider " +
+                    "at x=${entity.x},y=${entity.y},z=${entity.z}"
+                )
             }
         }
 
@@ -207,7 +228,7 @@ object DianaMobDetect {
         }
     }
 
-    private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true)
+    private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR") || name.contains("§2✿")
 
     private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
         if (name.isEmpty() || name == "Armor Stand") return null
@@ -263,11 +284,11 @@ object DianaMobDetect {
 
     private fun announceCocoon(mobName: String) {
         if (Diana.announceCocoon) {
-            Chat.pc("Cocooned a ${mobName}!")
+            Chat.pc("Cocooned a $mobName!")
         }
 
         if (Diana.cocoonTitle) {
-            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b${mobName}", 10, 40, 10)
+            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b$mobName", 10, 40, 10)
             playCustomSound(SboDataObject.soundSettingsData.cocoonSound, volume = SboDataObject.soundSettingsData.cocoonVolume)
         }
     }

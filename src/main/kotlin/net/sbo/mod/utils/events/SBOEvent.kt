@@ -161,7 +161,6 @@ object SBOEvent {
     }
 
     /** Convenience inline version for type inference. Returns an unregister function. */
-    inline fun <reified T : Any> on(priority: Int = SboEvent.Priority.NORMAL, noinline callback: (T) -> Unit): () -> Unit {
-        return on(T::class, priority, callback)
-    }
+    inline fun <reified T : Any> on(priority: Int = SboEvent.Priority.NORMAL, noinline callback: (T) -> Unit): () -> Unit =
+        on(T::class, priority, callback)
 }

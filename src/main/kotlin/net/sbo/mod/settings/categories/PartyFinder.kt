@@ -14,13 +14,6 @@ object PartyFinder : CategoryKt("Party Finder") {
         this.description = Literal("Automatically requeues the party after a member leaves.")
     }
 
-    var scaleText by float(0f) {
-        this.name = Literal("Text Scale")
-        this.description = Literal("Change the size of the text.")
-        this.range = -2f..2f
-        this.slider = true
-    }
-
     init {
         button {
             title = "Open Party Finder"

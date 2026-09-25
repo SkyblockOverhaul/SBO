@@ -17,6 +17,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.reflect.KMutableProperty1
@@ -62,6 +64,9 @@ object SboDataObject {
 
     private val caseSensitive by lazy { isCaseSensitive(FabricLoader.getInstance().configDir.toFile().toPath()) }
     val dataDir by lazy { normalizeConfigDir("sbo", FabricLoader.getInstance().configDir.toFile().toPath(), "SBO", "sbo", caseSensitive).fileName.toString() }
+
+    private val dirtyConfigs = ConcurrentHashMap.newKeySet<String>()
+    private val dirtySaveQueued = AtomicBoolean(false)
 
     private fun isCaseSensitive(baseDir: Path): Boolean {
         val tempDir = try {
@@ -253,12 +258,13 @@ object SboDataObject {
         soundSettingsData = SBOConfigBundle.soundSettingsData
         saveAllDataThreaded(dataDir)
         savePeriodically(5)
+        Register.onTick(20) { saveDirtyData() }
     }
 
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
         // Game is closing, if we do not block till save is complete, the game might close before save is complete, and so we might do a partial save which corrupts and resets stuff on the next launch.
-        saveAndBackupAllDataThreaded(dataDir, true)
+        saveAndBackupAllDataThreadedBlocking(dataDir)
     }
 
     private fun <T> load(modName: String, fileName: String, defaultData: T, type: Class<T>): T {
@@ -637,16 +643,16 @@ object SboDataObject {
     }
 
     private val configMapForSave = mapOf(
-        "SboData" to Pair({ save(dataDir, sboData, "SboData.json") }, sboData),
-        "AchievementsData" to Pair({ save(dataDir, achievementsData, "sbo_achievements.json") }, achievementsData),
-        "PastDianaEventsData" to Pair({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") }, pastDianaEventsData),
-        "DianaTrackerTotalData" to Pair({ save(dataDir, dianaTrackerTotal, "dianaTrackerTotal.json") }, dianaTrackerTotal),
-        "DianaTrackerSessionData" to Pair({ save(dataDir, dianaTrackerSession, "dianaTrackerSession.json") }, dianaTrackerSession),
-        "DianaTrackerMayorData" to Pair({ save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json") }, dianaTrackerMayor),
-        "PartyFinderConfigState" to Pair({ save(dataDir, pfConfigState, "partyFinderConfigState.json") }, pfConfigState),
-        "PartyFinderData" to Pair({ save(dataDir, partyFinderData, "partyFinderData.json") }, partyFinderData),
-        "OverlayData" to Pair({ save(dataDir, overlayData, "overlayData.json") }, overlayData),
-        "SoundSettingsData" to Pair({ save(dataDir, soundSettingsData, "soundSettingsData.json") }, soundSettingsData),
+        "SboData" to ({ save(dataDir, sboData, "SboData.json") } to sboData),
+        "AchievementsData" to ({ save(dataDir, achievementsData, "sbo_achievements.json") } to achievementsData),
+        "PastDianaEventsData" to ({ save(dataDir, pastDianaEventsData, "pastDianaEvents.json") } to pastDianaEventsData),
+        "DianaTrackerTotalData" to ({ save(dataDir, dianaTrackerTotal, "dianaTrackerTotal.json") } to dianaTrackerTotal),
+        "DianaTrackerSessionData" to ({ save(dataDir, dianaTrackerSession, "dianaTrackerSession.json") } to dianaTrackerSession),
+        "DianaTrackerMayorData" to ({ save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json") } to dianaTrackerMayor),
+        "PartyFinderConfigState" to ({ save(dataDir, pfConfigState, "partyFinderConfigState.json") } to pfConfigState),
+        "PartyFinderData" to ({ save(dataDir, partyFinderData, "partyFinderData.json") } to partyFinderData),
+        "OverlayData" to ({ save(dataDir, overlayData, "overlayData.json") } to overlayData),
+        "SoundSettingsData" to ({ save(dataDir, soundSettingsData, "soundSettingsData.json") } to soundSettingsData),
     )
 
     private fun saveAllData() {
@@ -663,17 +669,13 @@ object SboDataObject {
         }
     }
 
-    private fun saveAndBackupAllDataThreaded(modName: String, block: Boolean = false) {
-        val future = DATA_SAVER_EXECUTOR.submit {
+    private fun saveAndBackupAllDataThreadedBlocking(modName: String) {
+        DATA_SAVER_EXECUTOR.submit {
             SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
             SBOKotlin.logger.info("All data saved successfully.")
             createBackup(modName)
-        }
-
-        if (block) {
-            future.get()
-        }
+        }.get()
     }
 
     /**
@@ -780,28 +782,46 @@ object SboDataObject {
      *
      * @return A writer suitable for writing to the given file.
      */
-    private fun writerForFile(file: File): Writer {
-        return BufferedWriter(FileWriter(file))
-    }
+    private fun writerForFile(file: File): Writer = BufferedWriter(FileWriter(file))
 
     /**
-     * Saves the specified config by its name.
+     * Marks the specified config as needing to be saved.
+     * The config will be written to disk on the next periodic save tick.
      * If the config name is not valid, it will log a warning.
      * @param configName The name of the config to save.
      */
     fun save(configName: String) {
-        DATA_SAVER_EXECUTOR.execute {
-            configMapForSave[configName]?.first?.invoke()
-                ?: SBOKotlin.logger.warn("[$configName] is not a valid config name. Please use a valid config name")
+        if (configMapForSave.containsKey(configName)) {
+            dirtyConfigs.add(configName)
+        } else {
+            SBOKotlin.logger.warn("[$configName] is not a valid config name. Please use a valid config name")
+        }
+    }
+
+    private fun saveDirtyData() {
+        if (dirtyConfigs.isEmpty() || !dirtySaveQueued.compareAndSet(false, true)) return
+
+        try {
+            DATA_SAVER_EXECUTOR.execute {
+                try {
+                    while (true) {
+                        val configName = dirtyConfigs.firstOrNull() ?: break
+                        if (!dirtyConfigs.remove(configName)) continue
+                        configMapForSave[configName]?.first?.invoke()
+                    }
+                } finally {
+                    dirtySaveQueued.set(false)
+                }
+            }
+        } catch (e: RuntimeException) {
+            dirtySaveQueued.set(false)
+            throw e
         }
     }
 
     fun saveTrackerData() {
-        DATA_SAVER_EXECUTOR.execute {
-            save(dataDir, dianaTrackerTotal, "dianaTrackerTotal.json")
-            save(dataDir, dianaTrackerSession, "dianaTrackerSession.json")
-            save(dataDir, dianaTrackerMayor, "dianaTrackerMayor.json")
-            SBOKotlin.logger.debug("[SBO] Diana Tracker data saved successfully.")
-        }
+        save("DianaTrackerTotalData")
+        save("DianaTrackerSessionData")
+        save("DianaTrackerMayorData")
     }
 }

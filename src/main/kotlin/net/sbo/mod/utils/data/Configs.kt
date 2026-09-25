@@ -2,6 +2,11 @@ package net.sbo.mod.utils.data
 
 import com.google.gson.annotations.SerializedName
 import net.sbo.mod.utils.game.Mayor
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
+
+private val itemProperties: Map<String, KProperty1<DianaItemsData, *>> =
+    DianaItemsData::class.memberProperties.associateBy { it.name }
 
 interface DianaTracker {
     var items: DianaItemsData
@@ -25,13 +30,7 @@ interface DianaTracker {
     }
 
     fun getAmountOf(itemId: String): Int {
-        return when {
-            items.COINS.toString() == itemId -> items.COINS.toInt()
-            else -> {
-                val itemField = DianaItemsData::class.members.find { it.name == itemId }
-                itemField?.call(items) as? Int ?: 0
-            }
-        }
+        return (itemProperties[itemId]?.get(items) as? Number)?.toInt() ?: 0
     }
 }
 

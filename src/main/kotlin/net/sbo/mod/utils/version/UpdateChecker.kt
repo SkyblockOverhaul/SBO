@@ -15,9 +15,7 @@ object UpdateChecker {
     private var latestId: String? = null
     var isUpdateAvailable = false
 
-    private fun String.extractCoreVersion(): String {
-        return VERSION_REGEX.find(this)?.value ?: this
-    }
+    private fun String.extractCoreVersion(): String = VERSION_REGEX.find(this)?.value ?: this
 
     fun check() {
         val mcVersion = SBOKotlin.mcVersion
@@ -46,7 +44,7 @@ object UpdateChecker {
     internal fun printUpdateMessage() {
         val breakLine = Chat.getChatBreak(" ", "§a§m")
 
-        val versionUrl = "https://modrinth.com/mod/skyblock-overhaul/version/${latestId}"
+        val versionUrl = "https://modrinth.com/mod/skyblock-overhaul/version/$latestId"
 
         SBOKotlin.toast(
                 Component.literal("SBO").setStyle(
@@ -59,7 +57,7 @@ object UpdateChecker {
 
         Chat.chat(breakLine)
         Chat.clickableChat(
-            "§6[SBO] §eUpdate available: §a${latestVersion} §b[Click]",
+            "§6[SBO] §eUpdate available: §a$latestVersion §b[Click]",
             "§eOpen Version on Modrinth"
         ) { SBOKotlin.openInBrowser(versionUrl) }
         Chat.chat(breakLine)

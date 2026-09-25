@@ -1,6 +1,5 @@
 package net.sbo.mod.utils.http
 
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL

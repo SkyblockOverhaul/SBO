@@ -1,6 +1,5 @@
 package net.sbo.mod.overlays
 
-import net.minecraft.client.Minecraft
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.events.Register

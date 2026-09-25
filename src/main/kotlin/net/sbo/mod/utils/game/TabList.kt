@@ -45,9 +45,7 @@ object TabList {
      * Returns a list of all PlayerListEntry objects from the current tab list.
      * Each PlayerListEntry object contains detailed information about a player.
      */
-    private fun getTabEntries(): Collection<PlayerInfo?> {
-        return mc.player?.connection?.onlinePlayers ?: emptyList()
-    }
+    private fun getTabEntries(): Collection<PlayerInfo?> = mc.player?.connection?.onlinePlayers ?: emptyList()
 
     /**
      * Finds the value associated with a specific key in the tab list entries.

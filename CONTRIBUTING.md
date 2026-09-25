@@ -13,8 +13,8 @@ Thanks for your interest in contributing! This document will help you get starte
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/SkyblockOverhaul/SBO-Kotlin.git
-cd SBO-Kotlin
+git clone https://github.com/SkyblockOverhaul/SBO.git
+cd SBO
 ```
 
 ### 2. Open in IntelliJ IDEA
@@ -37,8 +37,8 @@ Or use the **Run** configuration that Gradle generates in IntelliJ.
 ./gradlew build
 
 # Build for specific version
-./gradlew :1.21.11-fabric:build
 ./gradlew :26.1.2-fabric:build
+./gradlew :26.2-fabric:build
 ```
 
 Built JARs will be in `build/versions/`.
