@@ -381,7 +381,7 @@ object ArrowGuessBurrow {
             }
             if (hasSpade) {
                 val isKnownBurrow = current in burrowLocations
-                if (!isKnownBurrow && current.distanceSq(playerPos) < 900) { // 30 blocks
+                if (!isKnownBurrow && current.distanceSq(playerPos) <= 1024) { // 32 blocks
                     if (!guess.moveToNext()) {
                         toRemove.add(guess)
                     }

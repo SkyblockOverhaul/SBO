@@ -199,26 +199,26 @@ object WaypointManager {
                 }
             }
 
-            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 30 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
+            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 32 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
             shovelGuesses.forEach { shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
                     val waypointBlock = staticBurrow.pos.roundLocationToBlock()
 
-                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 30
+                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 32
                 }?.let { staticBurrow ->
                     staticBurrow.carryOverState(shovelGuess)
                     removeWaypoint(shovelGuess)
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 30 blocks of each other
+            // Remove duplicate shovel guesses that are within 32 blocks of each other
             shovelGuesses.forEachIndexed { index, shovelGuess ->
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 30
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 32
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
@@ -520,7 +520,7 @@ object WaypointManager {
     }
 
     fun removeNearbyRareMobWaypointAt(pos: SboVec) {
-        removeWithinDistanceFrom(pos, "rareMob", 30, 1)
+        removeWithinDistanceFrom(pos, "rareMob", 32, 1)
     }
 
     /**
