@@ -17,9 +17,4 @@ object Debug : CategoryKt("Debug") {
         this.name = Literal("Enable Repeatable Achievements")
         this.description = Literal("Allows you to unlock repeatable achievements for each new event.")
     }
-
-    var forceNodeCollector by boolean(false) {
-        this.name = Literal("Force Node Collector")
-        this.description = Literal("Forces node collector based rendering on 26.1.2 even though it has issues with rendering on top of water and leaves. Do not use other than testing.")
-    }
 }

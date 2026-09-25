@@ -219,54 +219,47 @@ object RenderUtils3D {
 
             // 26.3 and above: Use submitText triggered from COLLECT_SUBMITS and submitted at COLLECT_SUBMITS since bug is fixed.
             // 26.2: Use submitCustom triggered from COLLECT_SUBMITS and submitted at SubmitRenderPhases.AFTER_TERRAIN with TextFeatureRenderer.Submit.
-            // 26.1.2: Add to a list triggered from COLLECT_SUBMITS which submits at AFTER_TRANSLUCENT_TERRAIN later with the legacy Font#drawInBatch method, unless Debug.useNodeCollector is true.
+            // 26.1.2: Add to a list triggered from COLLECT_SUBMITS which submits at AFTER_TRANSLUCENT_TERRAIN later with the legacy Font#drawInBatch method.
 
             //#if MC > 26.2
-            //$$ val useNodeCollector = true
+            //$$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
+            //#elseif MC > 26.1
+            //$$ context.submitNodeCollector().submitCustom(
+            //$$    SubmitRenderPhases.AFTER_TERRAIN,
+            //$$    TextFeatureRenderer.Submit(
+            //$$        Matrix4f(last().pose()),
+            //$$        xOffset,
+            //$$        yOffset,
+            //$$        visualOrderText,
+            //$$        shadow,
+            //$$        layerType,
+            //$$        packedLightCoords,
+            //$$        color,
+            //$$        backgroundColor,
+            //$$        outlineColor,
+            //$$    ),
+            //$$ )
             //#else
-            val useNodeCollector = Debug.forceNodeCollector
-            //#endif
-
-            if (useNodeCollector) {
-                context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
-            } else {
-                //#if MC > 26.1
-                //$$ context.submitNodeCollector().submitCustom(
-                //$$    SubmitRenderPhases.AFTER_TERRAIN,
-                //$$    TextFeatureRenderer.Submit(
-                //$$        Matrix4f(last().pose()),
-                //$$        xOffset,
-                //$$        yOffset,
-                //$$        visualOrderText,
-                //$$        shadow,
-                //$$        layerType,
-                //$$        packedLightCoords,
-                //$$        color,
-                //$$        backgroundColor,
-                //$$        outlineColor,
-                //$$    ),
-                //$$ )
-                //#else
-                legacyDrawString.add(
-                    DrawInBatchParameters(
-                        text,
-                        xOffset,
-                        yOffset,
-                        color,
-                        shadow,
-                        layerType,
-                        backgroundColor,
-                        packedLightCoords,
-                        Matrix4f(last().pose())
-                    )
+            legacyDrawString.add(
+                DrawInBatchParameters(
+                    text,
+                    xOffset,
+                    yOffset,
+                    color,
+                    shadow,
+                    layerType,
+                    backgroundColor,
+                    packedLightCoords,
+                    Matrix4f(last().pose())
                 )
-                //#endif    
-            }
+            )
+            //#endif    
         }
     }
 
     fun flushLegacyDrawString(context: LevelRenderContext) {
         //#if MC > 26.1
+        //$$ throw IllegalStateException("legacy code-path called in 26.2+")
         //#else
         val iterator = legacyDrawString.iterator()
 

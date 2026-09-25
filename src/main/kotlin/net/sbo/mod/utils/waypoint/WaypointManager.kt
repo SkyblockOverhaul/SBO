@@ -253,7 +253,10 @@ object WaypointManager {
         }
 
         LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
+
+        //#if MC < 26.2
         LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(WaypointRenderer)
+        //#endif
     }
 
     private data class RareMobData(

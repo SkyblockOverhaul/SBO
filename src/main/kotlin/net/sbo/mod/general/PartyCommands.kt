@@ -281,6 +281,6 @@ object PartyCommands {
 
     private fun sendCommand(cmd: String) = Chat.command(cmd)
     private fun sendResponse(msg: String) {
-        Chat.pc(msg)
+        Chat.pc("[SBO] $msg")
     }
 }

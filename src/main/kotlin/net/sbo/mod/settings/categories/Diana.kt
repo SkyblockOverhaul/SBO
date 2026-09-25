@@ -149,8 +149,8 @@ object Diana : CategoryKt("Diana") {
     }
 
     var dontWarpIfBurrowClose by boolean(true) {
-        this.name = Literal("Don't Warp If a Burrow is nearby")
-        this.description = Literal("If enabled, the warp key will not warp you if you are within 60 blocks of a burrow.")
+        this.name = Literal("Don't Warp If Close")
+        this.description = Literal("If enabled, the warp key will not warp you if you are already within 60 blocks of a warp target (burrow, guess or rare mob waypoint).")
     }
 
     var warpDiff by int(22) {
