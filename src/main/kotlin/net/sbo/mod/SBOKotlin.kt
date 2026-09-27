@@ -156,6 +156,11 @@ object SBOKotlin : ClientModInitializer {
 			}
 		}
 
+		// Test tick for dontShowAgain
+		Register.onTick(120) {
+			Chat.chat("§6[SBO] §eThis is a test message! Click me to never see this again.", true)
+		}
+
 		if (FabricLoader.getInstance().isModLoaded("iris")) {
 		    IrisCompatibility.init()
 		}

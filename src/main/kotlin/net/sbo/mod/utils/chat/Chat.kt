@@ -8,6 +8,7 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.General
+import net.sbo.mod.utils.data.SboDataObject
 import net.sbo.mod.utils.events.ClickActionManager
 
 object Chat {
@@ -51,20 +52,59 @@ object Chat {
         }
     }
 
-    /**
-     * Shows a local chat message only visible to the player.
-     * @param message The message to display in the chat.
-     */
-    fun chat(message: String) {
-        sendClientMessage(Component.nullToEmpty(message))
+    private fun createDontShowAgainAction(messageText: String): Pair<ClickEvent, HoverEvent> {
+        val actionId = ClickActionManager.registerAction {
+            SboDataObject.sboData.suppressedMessages.add(messageText)
+            SboDataObject.save("SboData")
+            sendClientMessage(Component.literal("§6[SBO] §aMessage suppressed. You won't see this again."))
+        }
+        val hoverText = Component.literal("Click the message to not show it again").withStyle(ChatFormatting.YELLOW)
+        return ClickEvent.RunCommand("/__sbo_run_clickable_action $actionId") to HoverEvent.ShowText(hoverText)
     }
 
     /**
      * Shows a local chat message only visible to the player.
      * @param message The message to display in the chat.
+     * @param dontShowAgain If true, adds a click action to suppress this message permanently.
      */
-    fun chat(message: Component) {
-        sendClientMessage(message)
+    fun chat(message: String, dontShowAgain: Boolean = false) {
+        if (SboDataObject.sboData.suppressedMessages.contains(message)) return
+
+        val styledText: Component = if (dontShowAgain) {
+            val (clickEvent, hoverEvent) = createDontShowAgainAction(message)
+            Component.literal(message).setStyle(
+                Style.EMPTY
+                    .withClickEvent(clickEvent)
+                    .withHoverEvent(hoverEvent)
+            )
+        } else {
+            Component.nullToEmpty(message)
+        }
+
+        sendClientMessage(styledText)
+    }
+
+    /**
+     * Shows a local chat message only visible to the player.
+     * @param message The message to display in the chat.
+     * @param dontShowAgain If true, adds a click action to suppress this message permanently.
+     */
+    fun chat(message: Component, dontShowAgain: Boolean = false) {
+        val messageText = message.string
+        if (SboDataObject.sboData.suppressedMessages.contains(messageText)) return
+
+        val styledText: Component = if (dontShowAgain) {
+            val (clickEvent, hoverEvent) = createDontShowAgainAction(messageText)
+            message.copy().setStyle(
+                message.style
+                    .withClickEvent(clickEvent)
+                    .withHoverEvent(hoverEvent)
+            )
+        } else {
+            message
+        }
+
+        sendClientMessage(styledText)
     }
 
     /**
@@ -132,17 +172,31 @@ object Chat {
      * Sends a chat message with multiple text components.
      * This is useful for combining multiple Text objects into one message.
      * @param textComponents The list of Text components to combine and send.
+     * @param dontShowAgain If true, adds a click action to suppress this message permanently.
      */
-    fun chat(vararg textComponents: Component) {
+    fun chat(vararg textComponents: Component, dontShowAgain: Boolean = false) {
         if (textComponents.isEmpty()) return
 
         val combinedText = Component.literal("")
-
         textComponents.forEach { component ->
             combinedText.append(component)
         }
 
-        sendClientMessage(combinedText)
+        val messageText = combinedText.string
+        if (SboDataObject.sboData.suppressedMessages.contains(messageText)) return
+
+        val styledText: Component = if (dontShowAgain) {
+            val (clickEvent, hoverEvent) = createDontShowAgainAction(messageText)
+            combinedText.setStyle(
+                Style.EMPTY
+                    .withClickEvent(clickEvent)
+                    .withHoverEvent(hoverEvent)
+            )
+        } else {
+            combinedText
+        }
+
+        sendClientMessage(styledText)
     }
 
     /**

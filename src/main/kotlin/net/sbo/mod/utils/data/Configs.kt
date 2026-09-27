@@ -77,6 +77,7 @@ data class SboData(
     var highestStingerMagicFind: Int = 0,
     var highestRelicMagicFind: Int = 0,
     var hideTrackerLines: MutableList<String> = mutableListOf(),
+    var suppressedMessages: MutableSet<String> = mutableSetOf(),
     var partyBlacklist: List<String> = emptyList(),
     var achievementFilter: String = "Locked",
     var lastKingDate: Long = 0,
