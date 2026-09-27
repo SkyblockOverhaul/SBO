@@ -281,6 +281,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
         createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
     }
 
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     override fun addFilter(x1: PositionConstraint, y1: PositionConstraint) {
         parent.filterWindow.constrain {
             x = x1

@@ -130,14 +130,14 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             }
 
             val leftPercents = mutableListOf(
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SHIMMERING_WOOL", "KING_MINOS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SHIMMERING_WOOL_LS", "KING_MINOS_LS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTI_CORE", "MANTICORE")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTI_CORE_LS", "MANTICORE_LS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"CHIMERA", "MINOS_INQUISITOR")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"CHIMERA_LS", "MINOS_INQUISITOR_LS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_RELIC", "MINOS_CHAMPION")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"DAEDALUS_STICK", "MINOTAUR")}%§7)"
+                "§7(§b${Helper.calcPercentOne(data.items.SHIMMERING_WOOL, data.mobs.KING_MINOS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items.SHIMMERING_WOOL_LS, data.mobs.KING_MINOS_LS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items.MANTI_CORE, data.mobs.MANTICORE)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items.MANTI_CORE_LS, data.mobs.MANTICORE_LS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items.CHIMERA, data.mobs.MINOS_INQUISITOR)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items.CHIMERA_LS, data.mobs.MINOS_INQUISITOR_LS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items.MINOS_RELIC, data.mobs.MINOS_CHAMPION)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.items.DAEDALUS_STICK, data.mobs.MINOTAUR)}%§7)"
             )
 
             val leftData = mutableListOf(
@@ -173,22 +173,22 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
             createBlock(leftData, 0)
 
             val rightPercents = mutableListOf(
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"KING_MINOS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"KING_MINOS_LS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTICORE")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MANTICORE_LS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_INQUISITOR")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_INQUISITOR_LS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SPHINX")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SPHINX_LS")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_CHAMPION")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOTAUR")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"GAIA_CONSTRUCT")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"HARPY")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"CRETAN_BULL")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"STRANDED_NYMPH")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"SIAMESE_LYNXES")}%§7)",
-                "§7(§b${Helper.calcPercentOne(data.items, data.mobs,"MINOS_HUNTER")}%§7)"
+                "§7(§b${Helper.calcPercentOne(data.mobs.KING_MINOS, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.KING_MINOS_LS, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.MANTICORE, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.MANTICORE_LS, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.MINOS_INQUISITOR, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.MINOS_INQUISITOR_LS, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.SPHINX, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.SPHINX_LS, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.MINOS_CHAMPION, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.MINOTAUR, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.GAIA_CONSTRUCT, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.HARPY, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.CRETAN_BULL, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.STRANDED_NYMPH, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.SIAMESE_LYNXES, data.mobs.TOTAL_MOBS)}%§7)",
+                "§7(§b${Helper.calcPercentOne(data.mobs.MINOS_HUNTER, data.mobs.TOTAL_MOBS)}%§7)"
             )
 
             val rightData = mutableListOf(

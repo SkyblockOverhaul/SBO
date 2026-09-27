@@ -174,9 +174,7 @@ object SboTimerManager {
             }
         }
 
-        fun getHourTime(): Double {
-            return getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
-        }
+        fun getHourTime(): Double = getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
 
         fun updateActivity() {
             start()

@@ -70,10 +70,13 @@ object DianaStats {
             totalMobs = Helper.formatNumber(tracker.mobs.TOTAL_MOBS),
             mobsPerHour = "%.2f".format(Locale.US, mobsPerHour),
             inquisitors = tracker.mobs.MINOS_INQUISITOR,
-            inqPercentage = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "MINOS_INQUISITOR")}%",
+            inqPercentage = "${Helper.calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)}%",
             lsInqs = Helper.formatNumber(tracker.mobs.MINOS_INQUISITOR_LS, withCommas = true),
             chimeraDrops = tracker.items.CHIMERA,
-            chimeraDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "CHIMERA", "MINOS_INQUISITOR")}%",
+            chimeraDropRate = "${Helper.calcPercentOne(
+                tracker.items.CHIMERA,
+                tracker.mobs.MINOS_INQUISITOR
+            )}%",
             chimeraLSDrops = tracker.items.CHIMERA_LS,
             chimeraLSDropRate = "${
                 "%.2f".format(
@@ -82,9 +85,15 @@ object DianaStats {
                 )
             }%",
             sticksDropped = tracker.items.DAEDALUS_STICK,
-            stickDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "DAEDALUS_STICK", "MINOTAUR")}%",
+            stickDropRate = "${Helper.calcPercentOne(
+                tracker.items.DAEDALUS_STICK,
+                tracker.mobs.MINOTAUR
+            )}%",
             relicsDropped = tracker.items.MINOS_RELIC,
-            relicDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "MINOS_RELIC", "MINOS_CHAMPION")}%"
+            relicDropRate = "${Helper.calcPercentOne(
+                tracker.items.MINOS_RELIC,
+                tracker.mobs.MINOS_CHAMPION
+            )}%"
         )
     }
 

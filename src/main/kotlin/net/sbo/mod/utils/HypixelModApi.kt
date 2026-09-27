@@ -42,7 +42,7 @@ object HypixelModApi {
 
     private fun handlePacket(packet: HypixelS2CPacket) {
         when (packet) {
-            is HelloS2CPacket -> onHelloPacket(packet)
+            is HelloS2CPacket -> onHelloPacket()
             is LocationUpdateS2CPacket -> onLocationUpdatePacket(packet)
             is PartyInfoS2CPacket -> onPartyInfoPacket(packet)
             is ErrorS2CPacket -> onErrorPacket(packet)
@@ -55,7 +55,7 @@ object HypixelModApi {
         mode = packet.mode.orElse("")
     }
 
-    private fun onHelloPacket(packet: HelloS2CPacket) {
+    private fun onHelloPacket() {
         isOnHypixel = true
         sendPartyInfoPacket()
     }

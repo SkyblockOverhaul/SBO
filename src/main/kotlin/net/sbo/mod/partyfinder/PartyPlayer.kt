@@ -1,8 +1,6 @@
 package net.sbo.mod.partyfinder
 
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.logger
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
@@ -91,7 +89,7 @@ object PartyPlayer {
      * Refetches with readCache=false, for /sboreloadstats.
      * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
      */
-    fun reloadStats(
+    private fun reloadStats(
         onError: ((Exception) -> Unit)? = null,
         callback: (PartyPlayerStats) -> Unit
     ) {
