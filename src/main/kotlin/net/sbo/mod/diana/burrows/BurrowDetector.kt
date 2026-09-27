@@ -3,6 +3,7 @@ package net.sbo.mod.diana.burrows
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
@@ -23,6 +24,7 @@ import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
+    private val internalStateWaypoints = mutableMapOf<String, Waypoint>()
     private var lastDugOutBurrowPos: SboVec = SboVec.ZERO
 
     private val RECENTLY_REMOVED_DURATION_NS = TimeUnit.SECONDS.toNanos(1)
@@ -145,10 +147,51 @@ object BurrowDetector {
         }
 
         Register.onTick(1) {
+            updateInternalStateWaypoints()
             pendingUseSpadeTitle?.let {
                 Helper.showTitle(it, "", 0, 1, 0)
             }
         }
+    }
+
+    private fun updateInternalStateWaypoints() {
+        if (!Debug.showInternalStateWaypoints) {
+            internalStateWaypoints.values.forEach(WaypointManager::removeWaypoint)
+            internalStateWaypoints.clear()
+            return
+        }
+
+        val candidates = linkedMapOf<String, Pair<String, SboVec>>()
+        burrows.values.forEach { known ->
+            if (!WaypointManager.waypointExists("burrow", known.pos).first) {
+                candidates.putIfAbsent(blockKey(known.pos), "Internal Known (Debug)" to known.pos)
+            }
+        }
+        ArrowGuessBurrow.allGuesses.forEach { arrow ->
+            val pos = arrow.getCurrent()
+            if (!WaypointManager.waypointExists("arrow", pos).first) {
+                candidates.putIfAbsent(blockKey(pos), "Internal Arrow (Debug)" to pos)
+            }
+        }
+
+        val existingDebugBlocks = WaypointManager.getWaypointsOfType("debug").mapTo(mutableSetOf()) { blockKey(it.pos) }
+        internalStateWaypoints.keys.filter { it !in candidates }.forEach { key ->
+            internalStateWaypoints.remove(key)?.let(WaypointManager::removeWaypoint)
+        }
+
+        candidates.forEach { (key, candidate) ->
+            if (key in internalStateWaypoints || key in existingDebugBlocks) return@forEach
+            val (text, pos) = candidate
+            val waypoint = Waypoint(text, pos.x, pos.y, pos.z, type = "debug", ttl = 0)
+            waypoint.preventInvalidRemoval = true
+            WaypointManager.addWaypoint(waypoint)
+            internalStateWaypoints[key] = waypoint
+        }
+    }
+
+    private fun blockKey(pos: SboVec): String {
+        val block = pos.roundLocationToBlock()
+        return "${block.x.toInt()} ${block.y.toInt()} ${block.z.toInt()}"
     }
 
     private fun chainFinish() {
