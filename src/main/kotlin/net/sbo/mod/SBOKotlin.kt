@@ -153,11 +153,11 @@ object SBOKotlin : ClientModInitializer {
 				Chat.command("particlequality extreme")
 				Register.onTick(100) { unregister ->
 				    if (Debug.debugOnlyMessages) {
-				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.")
+				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.", true)
 				    }
 				    val renderDist = mc.options.renderDistance().get()
 				    if (renderDist < 10) {
-				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 10 from the vanilla options menu.")
+				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 10 from the vanilla options menu.", true)
 				    }
 				    unregister()
 				}

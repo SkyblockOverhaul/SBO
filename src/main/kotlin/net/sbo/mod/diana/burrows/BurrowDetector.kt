@@ -232,7 +232,7 @@ object BurrowDetector {
         val color = if (reason == "failure") "c" else "e"
 
         pendingUseSpadeTitle = "§${color}Use Spade!"
-        Chat.chat("§6[SBO] §${color}Use spade!")
+        Chat.chat("§6[SBO] §${color}Use spade!", true)
     }
 
     fun removeFromInternalState(pos: SboVec) {
@@ -389,7 +389,7 @@ object BurrowDetector {
             if (removalCondition) {
                 if (death) {
                     chainFinish() // dying finishes (fails) a chain
-                    Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.")
+                    Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.", true)
                 }
 
                 markRecentlyRemoved(dugWaypoint.pos)

@@ -72,7 +72,7 @@ object Helper {
 
     private fun notifyUserOfLs(mob: String) {
         if (Diana.assumeAllLS) {
-            Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+            Chat.chat("§6[SBO] §eRegistered Lootshare $mob!", true)
         }
     }
 

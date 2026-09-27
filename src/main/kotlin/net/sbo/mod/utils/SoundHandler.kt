@@ -149,7 +149,7 @@ object SoundHandler {
             AudioSystem.getAudioInputStream(file)
         } catch (e: Exception) {
             logger.error("[$MOD_ID] Failed to read audio file: ${file.name}", e)
-            Chat.chat("§c[SBO] Something went wrong while reading the file ${file.name} try using an another format and if the issue persist, please contact us")
+            Chat.chat("§c[SBO] Something went wrong while reading the audio file ${file.name}! Please try using an another file format such as .mp3 and if the issue persists, please contact the developers.")
             return
         }
 
