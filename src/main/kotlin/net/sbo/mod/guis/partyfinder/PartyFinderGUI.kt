@@ -1,6 +1,5 @@
 package net.sbo.mod.guis.partyfinder
 
-import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
@@ -13,12 +12,13 @@ import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.universal.UKeyboard
 import net.sbo.mod.SBOKotlin
-import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.pages.CustomPage
 import net.sbo.mod.guis.partyfinder.pages.DianaPage
 import net.sbo.mod.guis.partyfinder.pages.Help
 import net.sbo.mod.guis.partyfinder.pages.Home
+import net.sbo.mod.guis.partyfinder.pages.PartyPage
+import net.sbo.mod.guis.partyfinder.pages.SettingsPage
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyFinderManager.createParty
 import net.sbo.mod.partyfinder.PartyFinderManager.getActiveUsers
@@ -33,7 +33,6 @@ import net.sbo.mod.utils.data.HighlightElement
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
-import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderRefreshListEvent
@@ -43,7 +42,8 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     private val elementToHighlight: MutableList<HighlightElement> = mutableListOf()
     internal var selectedPage: String = "Home"
-    private val pages: MutableMap<String, () -> Unit> = mutableMapOf()
+    private val pages: MutableMap<String, PartyPage> = mutableMapOf()
+    private var currentPage: PartyPage? = null
     private var partyCache: MutableMap<String, List<Party>> = mutableMapOf()
     private var lastRefreshTime: Long = 0L
     private var cpWindowOpened: Boolean = false
@@ -54,6 +54,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     private val customPage = CustomPage(this)
     private val homePage = Home(this)
     private val helpPage = Help(this)
+    private val settingsPage = SettingsPage(this)
 
     private lateinit var filterBackground: UIComponent
     internal lateinit var filterWindow : UIComponent
@@ -110,20 +111,14 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     override fun onKeyPressed(keyCode: Int, typedChar: Char, modifiers: UKeyboard.Modifiers?) {
         if (keyCode == UKeyboard.KEY_ESCAPE) {
-            if (cpWindowOpened) {
-                closeCpWindow()
-                return
+            when {
+                cpWindowOpened -> closeCpWindow()
+                filterWindowOpened -> closeFilterWindow()
+                partyInfoOpened -> closePartyInfoWindow()
+                else -> super.onKeyPressed(keyCode, typedChar, modifiers)
             }
-            if (filterWindowOpened) {
-                closeFilterWindow()
-                return
-            }
-            if (partyInfoOpened) {
-                closePartyInfoWindow()
-                return
-            }
+            return
         }
-
         super.onKeyPressed(keyCode, typedChar, modifiers)
     }
 
@@ -153,68 +148,27 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         else base.pixels()
     }
 
-    internal fun getFilter(pageType: String, callback: (((Party) -> Boolean)?) -> Unit) {
+    internal fun getFilter(callback: (((Party) -> Boolean)?) -> Unit) {
         getPartyPlayerStats { stats ->
-            val filter = when (pageType) {
-                "Diana" -> {
-                    val isEman9 = pfConfigState.filters.diana.eman9Filter
-                    val isLooting5 = pfConfigState.filters.diana.looting5Filter
-                    val canIJoin = pfConfigState.filters.diana.canIjoinFilter
-
-                    if (!isEman9 && !isLooting5 && !canIJoin) null
-                    else fun(party: Party): Boolean {
-                        if (isEman9 && !party.reqs.eman9) return false
-                        if (isLooting5 && !party.reqs.looting5) return false
-                        if (canIJoin) {
-                            party.reqs.let { req ->
-                                if (req.lvl > 0 && stats.sbLvl < req.lvl) return false
-                                if (req.kills > 0 && stats.mythosKills < req.kills) return false
-                                if (req.eman9 && !stats.eman9) return false
-                                if (req.looting5 && !stats.looting5daxe) return false
-                            }
-                        }
-                        return true
-                    }
-                }
-                "Custom" -> {
-                    val isEman9 = pfConfigState.filters.custom.eman9Filter
-                    val canIJoin = pfConfigState.filters.custom.canIjoinFilter
-
-                    if (!isEman9 && !canIJoin) null
-                    else fun(party: Party): Boolean {
-                        if (isEman9 && !party.reqs.eman9) return false
-                        if (canIJoin) {
-                            party.reqs.let { req ->
-                                if (req.lvl > 0 && stats.sbLvl < req.lvl) return false
-                                if (req.mp > 0 && stats.magicalPower < req.mp) return false
-                            }
-                        }
-                        return true
-                    }
-                }
-                else -> null
-            }
+            val filter = currentPage?.createFilterConfig(stats)
             callback(filter)
         }
     }
 
-
-    private fun getPartyInfo(type: String, list: PartyPlayerStats) : String {
-        return when (type) {
-            "Diana" -> dianaPage.getPartyInfo(list)
-            "Custom" -> customPage.getPartyInfo(list)
-            else -> "No party info available."
-        }
+    private fun getPartyInfo(list: PartyPlayerStats) : String {
+        return currentPage?.getPartyInfo(list) ?: "No party info available."
     }
 
     private fun joinParty(leader: String, reqs: Reqs) {
-        if (!PartyFinderManager.inQueue && !PartyFinderManager.isInParty) {
-            sendJoinRequest(leader, reqs)
-        } else {
-            val leaderCheck = leader == mc.player?.name?.string
-            if (PartyFinderManager.inQueue && !PartyFinderManager.isInParty && !leaderCheck) Chat.chat("§6[SBO] §eYou are already in queue.")
-            if (PartyFinderManager.isInParty && !PartyFinderManager.inQueue && !leaderCheck) Chat.chat("§6[SBO] §eYou are already in a party.")
-            if (leaderCheck) Chat.chat("§6[SBO] §eYou can't join your own party.")
+        val isSelf = leader == mc.player?.name?.string
+        val inQueue = PartyFinderManager.inQueue
+        val inParty = PartyFinderManager.isInParty
+
+        when {
+            isSelf -> Chat.chat("§6[SBO] §eYou can't join your own party.")
+            inQueue -> Chat.chat("§6[SBO] §eYou are already in queue.")
+            inParty -> Chat.chat("§6[SBO] §eYou are already in a party.")
+            else -> sendJoinRequest(leader, reqs)
         }
     }
 
@@ -240,13 +194,17 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     internal fun closeFilterWindow() {
         filterBackground.hide()
         filterWindow.hide()
+        if (this::filterBox.isInitialized) window.removeChild(filterBox)
         checkWindows()
         filterWindowOpened = false
     }
 
     internal fun openCpWindow() {
+        closeFilterWindow()
         base.hide()
         cpWindow.unhide(true)
+        cpWindow.setWidth(currentPage?.createPartyWindowWidth()?.percent ?: 20f.percent())
+        cpWindow.setHeight(currentPage?.createPartyWindowHeight()?.percent ?: 40f.percent())
         cpWindowOpened = true
     }
 
@@ -294,30 +252,29 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     }
 
     private fun updateSelectedPage() {
-        if (selectedPage.isNotEmpty() && pages.containsKey(selectedPage)) {
-            contentBlock.clearChildren()
-            contentBlock.addChild(partyListContainer)
-            Helper.sleep(100) {
-                pages[selectedPage]?.invoke()
-            }
+        val page = pages[selectedPage] ?: return
+        currentPage = page
+        currentPage?.onPageSelected()
+        contentBlock.clearChildren()
+        contentBlock.addChild(partyListContainer)
+        Helper.sleep(100) {
+            page.render()
         }
     }
 
     private fun updatePageHighlight() {
         elementToHighlight.forEach { element ->
-            if (element.obj is UIBlock) {
-                if (element.page == selectedPage) {
-                    element.obj.setColor(Theme.DARK_GRAY)
-                } else {
-                    element.obj.setColor(Theme.TRANSPARENT)
-                }
-            } else {
-                if (element.page == selectedPage) {
-                    element.obj.setColor(Theme.ROYAL_BLUE)
-                } else {
-                    element.obj.setColor(Theme.WHITE)
-                }
+            val isSelected = element.page == selectedPage
+            val isBlock = element.obj is UIBlock
+
+            val color = when {
+                isBlock && isSelected -> Theme.DARK_GRAY
+                isBlock -> Theme.TRANSPARENT
+                isSelected -> Theme.ROYAL_BLUE
+                else -> Theme.WHITE
             }
+
+            element.obj.setColor(color)
         }
     }
 
@@ -345,7 +302,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
                 partyCache[selectedPage] = parties
 
-                getFilter(selectedPage) { filter ->
+                getFilter { filter ->
                     Window.enqueueRenderOperation {
                         if (filter != null) {
                             filterPartyList(filter)
@@ -373,27 +330,18 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         partyCount.setText("Parties: $count")
     }
 
-    private fun addFilterPage(listName: String, x: PositionConstraint, y: PositionConstraint) {
+    private fun addFilterPage(x: PositionConstraint, y: PositionConstraint) {
         if (filterWindowOpened) {
             filterWindowOpened = false
             return
         }
         openFilterWindow()
-
-        when (listName) {
-            "Diana Party List" -> {
-                dianaPage.addDianaFilter(x,y)
-            }
-
-            "Custom Party List" -> {
-                customPage.addCustomFilter(x, y)
-            }
-            else -> return
-        }
+        currentPage?.addFilter(x, y)
     }
 
-    private fun addPage(pageTitle: String, pageContent: () -> Unit, isSubPage: Boolean = false, y1: PositionConstraint? = null, isClickable: Boolean = false) {
-        pages[pageTitle] = pageContent
+    private fun addPage(page: PartyPage, isSubPage: Boolean = false, y1: PositionConstraint? = null, actionOnly: Boolean = false) {
+        val pageTitle = page.pageName
+        pages[pageTitle] = page
         val finalY = y1 ?: if (isSubPage) SiblingConstraint(0f, true) else SiblingConstraint()
 
         val block = UIBlock().constrain {
@@ -409,16 +357,21 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         }.setColor(Theme.PAGE_TITLE)
 
         block.onMouseClick {
+            if (actionOnly) {
+                page.render()
+                return@onMouseClick
+            }
             if (selectedPage == pageTitle) return@onMouseClick
-            if (isClickable) return@onMouseClick pageContent()
             selectedPage = pageTitle
+            currentPage = page
+            currentPage?.onPageSelected()
             contentBlock.clearChildren()
             partyListContainer.clearChildren()
-            if (selectedPage != "Home" && selectedPage != "Help" && selectedPage != "Settings") {
+            if (currentPage?.showPartyList == true) {
                 contentBlock.addChild(partyListContainer)
             }
             updatePageHighlight()
-            pageContent()
+            page.render()
         }
 
         block.addChild(text)
@@ -612,28 +565,23 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
 
     private fun renderPartyList(list: List<Party>) {
+        partyListContainer.clearChildren()
+
         if (list.isEmpty()) {
-            partyListContainer.clearChildren()
             noParties.unhide(true)
             return
         }
-        partyListContainer.clearChildren()
+
         list.forEach { party ->
-            when (selectedPage) {
-                "Diana" -> dianaPage.getReqsString(party.reqs) { reqsString ->
-                    val partyBlock = createPartyBlock(party, reqsString)
-                    partyListContainer.addChild(partyBlock)
-                }
-                "Custom" -> customPage.getReqsString(party.reqs) { reqsString ->
-                    val partyBlock = createPartyBlock(party, reqsString)
-                    partyListContainer.addChild(partyBlock)
-                }
-                else -> {
-                    val partyBlock = createPartyBlock(party, "No requirements available.")
-                    partyListContainer.addChild(partyBlock)
-                }
+            getReqsStringForPage(party) { reqsString ->
+                val partyBlock = createPartyBlock(party, reqsString)
+                partyListContainer.addChild(partyBlock)
             }
         }
+    }
+
+    private fun getReqsStringForPage(party: Party, callback: (String) -> Unit) {
+        currentPage?.getReqsString(party.reqs, callback) ?: callback("No requirements available.")
     }
 
     private fun renderPartyInfo(partyInfoList: List<PartyPlayerStats>) {
@@ -668,7 +616,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         infobase.addChild(infoDisplay)
         partyInfoList.forEach { party ->
             val objheight = infobase.getHeight() / 6
-            val infoString = getPartyInfo(selectedPage, party)
+            val infoString = getPartyInfo(party)
             val playerBlock = UIRoundedRectangle(10f).constrain {
                 x = CenterConstraint()
                 y = CenterConstraint()
@@ -705,7 +653,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
 
     }
 
-    internal fun addPartyListFunctions(listName: String, createParty: () -> Unit) {
+    internal fun addPartyListFunctions(listDisplayName: String, createParty: () -> Unit) {
         val line = GuiHandler.UILine(
             x = 0.percent(),
             y = 7.percent(),
@@ -734,7 +682,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         filterBlock.onMouseClick {
             val x = filterBlock.getLeft() + filterBlock.getWidth() / 2f
             val y = line.getBottom()
-            addFilterPage(listName, x.pixels(), y.pixels())
+            addFilterPage(x.pixels(), y.pixels())
         }
         filterBlock.onMouseEnter {
             filterText.setColor(Theme.PARTY_LIST_FILTER_HOVER_IN)
@@ -826,7 +774,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 width = 42.percent()
                 height = 100.percent()
             }.setColor(Theme.TRANSPARENT)
-                .addChild(UIText(listName).constrain {
+                .addChild(UIText(listDisplayName).constrain {
                     x = CenterConstraint()
                     y = CenterConstraint()
                     textScale = getTextScaleOfScaleText(1.5f)
@@ -837,12 +785,6 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
             .addChild(unqueuePartyBlock)
             .addChild(createPartyBlock)
         )
-    }
-
-    private fun settings() {
-        mc.schedule {
-            displayScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
-        }
     }
 
     private fun stpBtn(btn: GuiHandler.Button) {
@@ -1062,10 +1004,11 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         partyListContainer.addChild(noParties)
         noParties.hide()
         //-----------------Pages-----------------
-        addPage("Home", homePage::render, isSubPage = true, y1 = 93.percent())
-        addPage("Help", helpPage::render, isSubPage = true)
-        addPage("Settings", ::settings, isSubPage = true, isClickable = true)
-        addPage("Diana", dianaPage::render, y1 = 0.percent())
-        addPage("Custom", customPage::render)
+        // Party pages first (top of list), then sub-pages
+        addPage(dianaPage, y1 = 0.percent())
+        addPage(customPage)
+        addPage(homePage, isSubPage = true, y1 = 93.percent())
+        addPage(helpPage, isSubPage = true)
+        addPage(settingsPage, isSubPage = true, actionOnly = true)
     }
 }

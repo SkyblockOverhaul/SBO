@@ -17,12 +17,22 @@ import net.sbo.mod.guis.partyfinder.Theme
 import net.sbo.mod.partyfinder.PartyFinderManager.hasSboKey
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
 import net.sbo.mod.utils.data.SboDataObject.pfConfigState
 
-class CustomPage(private val parent: PartyFinderGUI) {
-    internal fun getPartyInfo(info: PartyPlayerStats): String {
+class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
+
+    override val pageName: String = "Custom"
+    override val partyType: String = "Custom"
+    override val listDisplayName: String = "Custom Party List"
+    override val showPartyList: Boolean get() = true
+    override val pageOrder: Int get() = 1
+    override val configKey: String get() = "custom"
+    override fun createPartyWindowHeight(): Float = 54f
+
+    override fun getPartyInfo(info: PartyPlayerStats): String {
         var formattedInfoString = ""
         val formattedInfo = listOf(
             "&9Name: &b" to info.name,
@@ -41,15 +51,15 @@ class CustomPage(private val parent: PartyFinderGUI) {
         return formattedInfoString
     }
 
-    private fun setFilter() {
-        parent.getFilter(parent.selectedPage) { filter ->
+    override fun setFilter() {
+        parent.getFilter { filter ->
             Window.enqueueRenderOperation {
                 parent.filterPartyList(filter)
             }
         }
     }
 
-    internal fun getReqsString(reqs: Reqs?, callback: (String) -> Unit) {
+    override fun getReqsString(reqs: Reqs?, callback: (String) -> Unit) {
         if (reqs == null) {
             callback("")
             return
@@ -78,17 +88,15 @@ class CustomPage(private val parent: PartyFinderGUI) {
         }
     }
 
-    internal fun render() {
+    override fun render() {
         Window.enqueueRenderOperation {
-            parent.addPartyListFunctions("Custom Party List", ::createParty)
+            parent.addPartyListFunctions(listDisplayName, ::createParty)
             parent.updateCurrentPartyList(true)
         }
     }
 
-    private fun createParty() {
+    override fun createParty() {
         parent.openCpWindow()
-        parent.cpWindow.setWidth(20.percent())
-        parent.cpWindow.setHeight(54.percent())
         parent.reqsBox = UIBlock().constrain {
             x = 0.percent()
             y = SiblingConstraint()
@@ -107,7 +115,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf lvlbox
         val lvlinput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "lvl",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -137,7 +145,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf mpbox
         val mpinput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "mp",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -167,7 +175,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf partySizeBox
         val partySizeInput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "partySize",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -197,7 +205,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf noteBox
         val noteInput = GuiHandler.TextInput(
-            list = "custom",
+            list = configKey,
             key = "note",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -221,7 +229,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             height = 18.percent()
         }.setColor(Theme.TRANSPARENT) childOf parent.reqsBox
         val eman9Checkbox = GuiHandler.Checkbox(
-            list = "custom",
+            list = configKey,
             key = "eman9",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -273,7 +281,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
     }
 
-    internal fun addCustomFilter(x1: PositionConstraint, y1: PositionConstraint) {
+    override fun addFilter(x1: PositionConstraint, y1: PositionConstraint) {
         parent.filterWindow.constrain {
             x = x1
             y = y1
@@ -309,7 +317,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
             height = 50.percent()
         }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val eman9Filter = GuiHandler.Checkbox(
-            list = "custom",
+            list = configKey,
             key = "eman9Filter",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -328,7 +336,7 @@ class CustomPage(private val parent: PartyFinderGUI) {
         eman9Filter.setOnClick { setFilter() }
 
         val canIjoinFilter = GuiHandler.Checkbox(
-            list = "custom",
+            list = configKey,
             key = "canIjoinFilter",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -345,5 +353,23 @@ class CustomPage(private val parent: PartyFinderGUI) {
         canIjoinFilter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         canIjoinFilter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         canIjoinFilter.setOnClick { setFilter() }
+    }
+
+    override fun createFilterConfig(stats: PartyPlayerStats): ((Party) -> Boolean)? {
+        val config = pfConfigState.filters.custom
+        val isEman9 = config.eman9Filter
+        val canIJoin = config.canIjoinFilter
+
+        if (!isEman9 && !canIJoin) return null
+
+        return { party ->
+            val req = party.reqs
+            when {
+                isEman9 && !req.eman9 -> false
+                canIJoin && req.lvl > 0 && stats.sbLvl < req.lvl -> false
+                canIJoin && req.mp > 0 && stats.magicalPower < req.mp -> false
+                else -> true
+            }
+        }
     }
 }

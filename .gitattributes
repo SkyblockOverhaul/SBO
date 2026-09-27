@@ -7,6 +7,9 @@
 # These are Windows script files and should use crlf
 *.bat           text eol=crlf
 
+# Kotlin files always use LF
+*.kt           text eol=lf
+
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 
