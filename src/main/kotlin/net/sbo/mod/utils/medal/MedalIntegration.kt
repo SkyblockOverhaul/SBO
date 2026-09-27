@@ -237,7 +237,7 @@ object MedalIntegration {
         )
     }
 
-    private fun clipTitle(dropName: String, dropNumber: Int): String = "[$mayorElectedYear YEAR] $dropName #$dropNumber"
+    private fun clipTitle(dropName: String, dropNumber: Int): String = "[YEAR $mayorElectedYear] $dropName #$dropNumber"
 
     private fun displayTitle(dropName: String, dropNumber: Int): String = "$dropName #$dropNumber"
 

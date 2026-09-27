@@ -18,6 +18,7 @@ import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
 import net.sbo.mod.utils.data.SboDataObject.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.ServerStats
+import net.sbo.mod.utils.version.UpdateChecker
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -249,6 +250,7 @@ object PartyCommands {
                     DianaStats.sendPlayerStats(null)
                 }
                 "!version" -> sendResponse("SBO version: ${SBOKotlin.version} | Minecraft version: ${SBOKotlin.mcVersion}")
+                "!mod" -> sendResponse("https://modrinth.com/mod/${UpdateChecker.MODRINTH_ID}")
                 "!help" -> if (settings.dianaPartyCommands) {
                     help()
                     sendResponse("Available diana party commands: ${helpCommands.joinToString(",")}")
