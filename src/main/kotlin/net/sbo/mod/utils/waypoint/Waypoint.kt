@@ -66,7 +66,10 @@ class Waypoint(
             visualOrderText = component.visualOrderText
             textWidth = mc.font.width(visualOrderText)
         }
-    private var textWidth = mc.font.width(text)
+    // Font.width may lazily bake and upload glyphs, which is render-thread only.
+    // A waypoint is sometimes constructed while handling a network packet, before
+    // format() runs on the client thread and fills this cache.
+    private var textWidth = 0
     private var hasText = text.isNotEmpty()
 
     var isClosest = false
