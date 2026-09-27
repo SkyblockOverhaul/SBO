@@ -86,7 +86,7 @@ object Helper {
             hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
         }
 
-        Register.onTick(20 * 60 * 10) {
+        Register.onTick(20 * 60 * 5) {
             updateItemPriceInfo()
         }
 
