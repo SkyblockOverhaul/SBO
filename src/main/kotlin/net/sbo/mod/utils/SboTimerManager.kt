@@ -117,7 +117,7 @@ object SboTimerManager {
                     TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
 
                 if (this == timerTotal) { // message is sent three times otherwise for each timer
-                    Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.")
+                    Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.", true)
                 }
 
                 pause()

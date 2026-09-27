@@ -392,7 +392,7 @@ object AchievementManager {
 
         if (mf == -1) {
             // Notify user to not be a silent failure point. Full lines are only logged to logs and not chat as it's long.
-            Chat.chat("§6[SBO] §cFailed to determine how much Magic Find your CoA gives for the 1B CoA achievement. Logs will have more information.")
+            Chat.chat("§6[SBO] §cFailed to determine how much Magic Find your CoA gives for the 1B CoA achievement. Logs will have more information.", true)
 
             logger.warn("Failed to determine how much Magic Find users CoA gives for the 1B CoA achievement - CoA lore lines:")
 

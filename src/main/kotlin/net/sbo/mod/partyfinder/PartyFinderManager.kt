@@ -254,14 +254,14 @@ object PartyFinderManager {
                     }
 
                     Chat.chat("§6[SBO] §aParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
-                    Chat.chat("§6[SBO] §ePlease note that for people to be able to join your party, you MUST set direct message privacy to \"Anyone\" in /settings -> Social Settings in the Hypixel Lobby. If you have already done so, you can ignore this message.")
+                    Chat.chat("§6[SBO] §ePlease note that for people to be able to join your party, you MUST set direct message privacy to \"Anyone\" in /settings -> Social Settings in the Hypixel Lobby. If you have already done so, you can click to hide this message.", true)
 
                     if (isInParty) Chat.pc("[SBO] Party now in queue.")
                 } else {
                     val errorMessage = response.error ?: "Unknown error"
                     Chat.chat("§6[SBO] §4Failed to create party: ${errorMessage.replace("&", "§")}")
                     if (errorMessage.contains("requirement")) {
-                        Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.")
+                        Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.", true)
                     }
                 }
 

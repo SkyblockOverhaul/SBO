@@ -300,11 +300,11 @@ object MedalIntegration {
                     if (showSuccess) Chat.chat("§6[SBO] §aClipping ${event.displayName}.")
                 } else {
                     SBOKotlin.logger.warn("Medal clip failed for ${event.eventName}: HTTP ${response.statusCode()}")
-                    Chat.chat("§6[SBO] §cFailed to clip. Medal may not be running.")
+                    Chat.chat("§6[SBO] §cFailed to clip. Medal may not be running.", true)
                 }
             } catch (error: Exception) {
                 SBOKotlin.logger.warn("Medal clip failed for ${event.eventName}", error)
-                Chat.chat("§6[SBO] §cFailed to clip. Medal may not be running.")
+                Chat.chat("§6[SBO] §cFailed to clip. Medal may not be running.", true)
             }
         }
     }
