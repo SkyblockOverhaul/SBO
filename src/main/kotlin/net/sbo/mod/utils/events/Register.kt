@@ -113,9 +113,10 @@ object Register {
      */
     fun onChatMessageCancelable(
         regex: Pattern,
+        noFormatting: Boolean = false,
         action: (message: Component, matchResult: Matcher) -> Boolean
     ) {
-        ChatHandler.registerHandler(regex, action)
+        ChatHandler.registerHandler(regex, noFormatting, action)
     }
 
     /**
@@ -131,12 +132,13 @@ object Register {
      */
     fun onChatMessageCancelable(
         regex: Pattern,
+        noFormatting: Boolean = false,
         action: (
             message: Component,
             matchResult: Matcher,
             unregister: () -> Unit
         ) -> Boolean
     ) {
-        ChatHandler.registerHandler(regex, action)
+        ChatHandler.registerHandler(regex, noFormatting, action)
     }
 }

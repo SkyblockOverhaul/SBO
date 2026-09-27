@@ -2,6 +2,7 @@ package net.sbo.mod.utils.chat
 
 import net.minecraft.network.chat.Component
 import net.sbo.mod.settings.categories.Debug
+import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.ChatMessageAllowEvent
@@ -25,11 +26,13 @@ object ChatHandler {
 
     fun registerHandler(
         pattern: Pattern,
+        noFormatting: Boolean = false,
         action: (Component, Matcher) -> Boolean
     ) {
         messageHandlers.add(
             ChatRule(
                 pattern = pattern,
+                noFormatting = noFormatting,
                 action = { message, matcher, _ ->
                     action(message, matcher)
                 }
@@ -39,6 +42,7 @@ object ChatHandler {
 
     fun registerHandler(
         pattern: Pattern,
+        noFormatting: Boolean = false,
         action: (
             Component,
             Matcher,
@@ -48,6 +52,7 @@ object ChatHandler {
         messageHandlers.add(
             ChatRule(
                 pattern = pattern,
+                noFormatting = noFormatting,
                 action = action
             )
         )
@@ -66,7 +71,9 @@ object ChatHandler {
 
         while (iterator.hasNext()) {
             val rule = iterator.next()
-            val matcher = rule.pattern.matcher(messageString)
+            val matcher = rule.pattern.matcher(
+                if (rule.noFormatting) messageString.removeFormatting() else messageString
+            )
 
             if (!matcher.find()) {
                 continue
@@ -92,6 +99,7 @@ object ChatHandler {
 
     private data class ChatRule(
         val pattern: Pattern,
+        val noFormatting: Boolean,
         val action: (
             message: Component,
             matcher: Matcher,
