@@ -253,7 +253,8 @@ object PartyFinderManager {
                         Chat.clickableChat("§6[SBO] §eClick to dequeue party", "Dequeue Party", "/sbodequeue")
                     }
 
-                    Chat.chat("§6[SBO] §eParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
+                    Chat.chat("§6[SBO] §aParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
+                    Chat.chat("§6[SBO] §ePlease note that for people to be able to join your party, you MUST set direct message privacy to \"Anyone\" in /settings -> Social Settings in the Hypixel Lobby. If you have already done so, you can ignore this message.")
 
                     if (isInParty) Chat.pc("[SBO] Party now in queue.")
                 } else {
