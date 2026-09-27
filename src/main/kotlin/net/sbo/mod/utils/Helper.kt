@@ -513,6 +513,7 @@ object Helper {
             .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
+            .replace("{lstext}", if (isLootshare) "(LS)" else "")
             .replace("{price}", getItemPriceFormatted(info.itemId))
             .replace('&', '§')
             .replace("{since}", getSinceDrop(dropName, isLootshare))

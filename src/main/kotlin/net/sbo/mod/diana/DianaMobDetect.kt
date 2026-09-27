@@ -340,7 +340,8 @@ object DianaMobDetect {
 
             if (mobType !in Diana.ShareMobs) return
             val playerPos = SboPlayer.getLastPosition()
-            Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob")
+            val message = "x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob"
+            if (Diana.shareRareMobInPublicChat) Chat.allChat(message) else Chat.pc(message)
         }
 
         when (mob) {

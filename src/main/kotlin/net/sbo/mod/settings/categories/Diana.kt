@@ -354,27 +354,27 @@ object Diana : CategoryKt("Diana") {
 
     var customChimeraMessage by strings("") {
         this.name = Literal("Custom Chimera Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop Amount this event, {since} for inquis took to drop chim, {price} for chim price, and {percentage} for chimera/inquis ratio. Colors can be used with & and a color code (stripped when announcing to party).")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop Amount this event, {since} for inquis took to drop chim, {price} for chim price, {percentage} for chimera/inquis ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customManticoreMessage by strings("") {
         this.name = Literal("Custom Manti-core Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop core, {price} for manti price, and {percentage} for core/manti ratio. Colors can be used with & and a color code (stripped when announcing to party).")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop core, {price} for manti price, {percentage} for core/manti ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customFatefulStingerMessage by strings("") {
         this.name = Literal("Custom Fateful Stinger Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop stinger, {price} for stinger price, and {percentage} for stinger/manti ratio. Colors can be used with & and a color code (stripped when announcing to party).")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop stinger, {price} for stinger price, {percentage} for stinger/manti ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customBrainFoodMessage by strings("") {
         this.name = Literal("Custom Brain Food Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for sphinx took to drop food, {price} for food price, and {percentage} for food/sphinx ratio. Colors can be used with & and a color code (stripped when announcing to party).")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for sphinx took to drop food, {price} for food price, {percentage} for food/sphinx ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customShimmeringWoolMessage by strings("") {
         this.name = Literal("Custom Shimmering Wool Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for king took to drop wool, {price} for wool price, and {percentage} for wool/king ratio. Colors can be used with & and a color code (stripped when announcing to party).")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for king took to drop wool, {price} for wool price, {percentage} for wool/king ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     init {
@@ -461,7 +461,12 @@ object Diana : CategoryKt("Diana") {
 
     var shareRareMob by boolean(true) {
         this.name = Literal("Share Rare-Mob")
-        this.description = Literal("Sends the coordinates of rare mobs to your party. (King, Manti, Sphinx, Inq)")
+        this.description = Literal("Sends the coordinates of rare mobs to your party or public chat. (King, Manti, Sphinx, Inq)")
+    }
+
+    var shareRareMobInPublicChat by boolean(false) {
+        this.name = Literal("Share Rare-Mob in Public Chat")
+        this.description = Literal("Send rare mob coordinates to public chat instead of party chat.")
     }
 
     var ShareMobs by select(ShareList.INQ, ShareList.MANTICORE, ShareList.KING, ShareList.SPHINX) {

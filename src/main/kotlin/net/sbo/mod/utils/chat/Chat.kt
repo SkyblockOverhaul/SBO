@@ -32,6 +32,11 @@ object Chat {
         }
     }
 
+    /** Sends a message to public chat via Hypixel's /ac command. */
+    fun allChat(text: String) {
+        command("ac $text")
+    }
+
     /**
      * Sends a command to the server.
      * This correctly simulates a player typing a command.
