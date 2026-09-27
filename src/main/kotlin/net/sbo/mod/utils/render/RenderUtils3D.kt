@@ -176,11 +176,16 @@ object RenderUtils3D {
 
             val distToPlayer = sqrt(dX * dX + dY * dY + dZ * dZ).coerceAtLeast(5.0)
             val distRender = distToPlayer.coerceAtMost(50.0)
+            val maxTextDistance = (mc.options.renderDistance().get() * 16.0 - 4.0).coerceAtLeast(5.0)
+            val textPos = Vec3(pos.x + 0.5, pos.y + 1.5, pos.z + 0.5)
+            val textOffset = textPos.subtract(cameraPos)
+            val textDistance = textOffset.length()
+            val effectiveDistance = minOf(distance, maxTextDistance)
 
             val dynamicScale = if (Customization.lookAlike) {
                 distRender * scale * 0.05
             } else {
-                max(distance, 2.5) * scale
+                max(effectiveDistance, 2.5) * scale
             }
 
             val renderPos = if (Customization.lookAlike) {
@@ -192,7 +197,11 @@ object RenderUtils3D {
                     cameraPos.z + dZ * compression
                 )
             } else {
-                Vec3(pos.x + 0.5, pos.y + 1.5, pos.z + 0.5)
+                if (textDistance > maxTextDistance) {
+                    cameraPos.add(textOffset.scale(maxTextDistance / textDistance))
+                } else {
+                    textPos
+                }
             }
 
             translate(renderPos.x - cameraPos.x, renderPos.y - cameraPos.y, renderPos.z - cameraPos.z)

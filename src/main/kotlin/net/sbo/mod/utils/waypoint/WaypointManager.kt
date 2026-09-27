@@ -74,7 +74,7 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim().lowercase()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                if (rareMobs.contains(mob) && Diana.receiveRareMob) {
+                if (Diana.receiveRareMob && rareMobs.contains(mob)) {
                     val mobType: Diana.ReceiveList = when (mob) {
                         "minos inquisitor", "inquisitor", "inq" -> Diana.ReceiveList.INQ
                         "king minos", "king" -> Diana.ReceiveList.KING
