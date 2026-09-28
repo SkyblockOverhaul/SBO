@@ -6,22 +6,16 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.OverlayValues
-import net.sbo.mod.utils.data.SboDataObject.overlayData
+import net.sbo.mod.utils.data.configs.overlay.OverlayValues
+import net.sbo.mod.utils.data.DataManager.overlayData
 import net.sbo.mod.utils.game.World
 import java.awt.Color
 
-fun isCraftingScreenOpen(): Boolean {
-    return CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
-}
+fun isCraftingScreenOpen(): Boolean = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
 
-val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean {
-    return screen is ChatScreen
-}
+val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean = screen is ChatScreen
 
-val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean {
-    return screen is InventoryScreen
-}
+val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean = screen is InventoryScreen
 
 /**
  * Represents an overlay that can display text lines on the screen.
@@ -43,6 +37,7 @@ class Overlay(
 ) {
     private var lines = mutableListOf<OverlayTextLine>()
     private var condition: () -> Boolean = { true }
+    private var extraCondition: () -> Boolean = { true }
 
     var selected: Boolean = false
 
@@ -60,6 +55,11 @@ class Overlay(
 
     fun setCondition(condition: () -> Boolean): Overlay {
         this.condition = condition
+        return this
+    }
+
+    fun setExtraCondition(condition: () -> Boolean): Overlay {
+        this.extraCondition = condition
         return this
     }
 
@@ -143,14 +143,13 @@ class Overlay(
         return maxWidth
     }
 
-    private fun inEditingScreen(): Boolean {
-        return Helper.currentScreen is OverlayEditScreen
-    }
+    private fun inEditingScreen(): Boolean = Helper.currentScreen is OverlayEditScreen
 
-    private fun checkCondition(): Boolean {
+    fun checkCondition(): Boolean = condition() && checkExtraCondition()
+
+    private fun checkExtraCondition(): Boolean =
         // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
-        return condition() || inEditingScreen()
-    }
+        extraCondition() || inEditingScreen()
 
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
         if (!checkCondition()) return false
@@ -200,7 +199,11 @@ class Overlay(
         for (line in lines) {
             if (!line.checkCondition()) continue
 
-            val lineX = currentX.toInt()
+            val lineX = if (line.centered) {
+                currentX.toInt() + (totalWidth - line.width) / 2
+            } else {
+                currentX.toInt()
+            }
             val lineY = currentY.toInt()
 
             lineStates += LineRenderState(line, lineX, lineY)

@@ -11,8 +11,13 @@ import gg.essential.elementa.dsl.percent
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.guis.partyfinder.Theme
 
-class Help(private val parent: PartyFinderGUI) {
-    internal fun render() {
+class Help(private val parent: PartyFinderGUI) : PartyPage {
+    override val pageName: String = "Help"
+    override val partyType: String = ""
+    override val listDisplayName: String = ""
+    override val pageOrder: Int get() = 101
+
+    override fun render() {
         Window.enqueueRenderOperation {
             parent.noParties.hide()
             parent.contentBlock.addChild(ScrollComponent().constrain {
@@ -35,11 +40,9 @@ class Help(private val parent: PartyFinderGUI) {
                 .addChild(UIWrappedText(
                     "・ Not Getting any Join Requests?\n\n" +
                             "   ・ Enable private Messages!\n\n" +
-                            "   ・ /settings -> Social Settings.\n\n" +
+                            "   ・ /settings -> Social Settings in the Hypixel Lobby.\n\n" +
                             "・ Requirements don't update?\n\n" +
-                            "   ・ Wait 10mins and make sure you have all API enabled in SkyBlock settings.\n\n" +
-                            "・ Text is too small or too big?\n\n" +
-                            "   ・ Open party finder settings\n\n" +
+                            "   ・ Wait 10mins and make sure you have all API enabled in SkyBlock settings, and try doing /sboreloadstats.\n\n" +
                             "・ Not seeing your party in the list?\n\n" +
                             "   ・ Make sure you have the right filters set.\n\n" +
                             "・ Still having issues?\n\n" +

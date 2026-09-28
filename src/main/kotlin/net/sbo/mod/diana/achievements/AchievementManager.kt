@@ -17,13 +17,13 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTrackerMayorData
+import net.sbo.mod.utils.data.configs.diana.DianaTrackerMayorData
 import net.sbo.mod.utils.data.PartyPlayerStats
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.achievementsData
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
-import net.sbo.mod.utils.data.SboDataObject.pastDianaEventsData
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.achievementsData
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
+import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
@@ -66,7 +66,7 @@ object AchievementManager {
             achievementsData.currentEventAchievements.clear()
             achievementsData.lastEventYear = -1
 
-            SboDataObject.save("AchievementsData")
+            DataManager.save(DataManager::achievementsData)
             Chat.chat("§6[SBO] §eAchievements locked")
         }
 
@@ -236,9 +236,12 @@ object AchievementManager {
         }
 
         if (itemsData.SHIMMERING_WOOL_LS >= 1) unlockAchievement(111)
+        if (totalCrowns >= 10) unlockAchievement(131)
 
         if (itemsData.MANTI_CORE_LS >= 1) unlockAchievement(114)
         if (totalCores >= 1) unlockAchievement(113)
+        if (totalCores >= 3 ) unlockAchievement(129)
+        if (totalStinger >= 1) unlockAchievement(130)
 
         if (totalBrainFood >= 5) unlockAchievement(85)
 
@@ -248,7 +251,7 @@ object AchievementManager {
         if (mobsData.SPHINX >= 1) unlockAchievement(115)
         if (mobsData.MANTICORE >= 1) unlockAchievement(112)
 
-        if (totalProfit(dianaTrackerMayor) >= 1_000_000_000L) unlockAchievement(84)
+        if (totalProfit(dianaTrackerMayorData) >= 1_000_000_000L) unlockAchievement(84)
         trackCOA()
     }
 
@@ -389,7 +392,7 @@ object AchievementManager {
 
         if (mf == -1) {
             // Notify user to not be a silent failure point. Full lines are only logged to logs and not chat as it's long.
-            Chat.chat("§6[SBO] §cFailed to determine how much Magic Find your CoA gives for the 1B CoA achievement. Logs will have more information.")
+            Chat.chat("§6[SBO] §cFailed to determine how much Magic Find your CoA gives for the 1B CoA achievement. Logs will have more information.", true)
 
             logger.warn("Failed to determine how much Magic Find users CoA gives for the 1B CoA achievement - CoA lore lines:")
 
@@ -473,6 +476,8 @@ object AchievementManager {
     }
 
     private fun addAllAchievements() {
+        // Last added achievement id: 131
+
         // inquisitor
         addAchievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic")
         addAchievement(2, "b2b2b Chimera", "Get 3 Chimera in a row", "Divine")
@@ -518,8 +523,10 @@ object AchievementManager {
         addAchievement(110, "b2b2b Manticore", "Spawn 3 Manticores in a row", "Celestial")
         addAchievement(113, "First core", "Drop your first Manti-core", "Mythic")
         addAchievement(94, "Back-to-Back core", "Drop 2 Manti-cores in a row", "Celestial")
+        addAchievement(129, "Oh baby a triple!", "Get 3 manti-cores in 1 event", "Celestial")
         addAchievement(114, "First Lootshare core", "Lootshare your first Manti-core", "Legendary")
         addAchievement(95, "Back-to-Back Lootshare core", "Lootshare 2 Manti-cores in a row", "Impossible")
+        addAchievement(130, "I can turn into a bee now", "Drop 1 Stinger", "Epic")
 
         // King Minos
         addAchievement(116, "Why do i hear boss music?", "get your first King Minos", "Legendary", repeatable = false)
@@ -529,6 +536,7 @@ object AchievementManager {
         addAchievement(81, "Back-to-Back Wool", "Get 2 Wools in a row", "Impossible")
         addAchievement(111, "First Lootshare Wool", "Lootshare your first Wool", "Divine")
         addAchievement(82, "Back-to-Back Lootshare Wool", "Lootshare 2 Wools in a row", "Impossible")
+        addAchievement(131, "Very greedy I see", "Get 10 Crown of Greeds in 1 event", "Legendary")
 //        addAchievement(88, "Let your party cope!", "Die to your Minos King", "Rare") // TODO
 
         // Burrows

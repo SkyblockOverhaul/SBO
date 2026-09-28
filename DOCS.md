@@ -375,10 +375,7 @@ The mod uses Mixins for Minecraft hooks. Mixin configs are in `src/main/resource
    }
    ```
 
-2. Register in `sbo.mixins.json`:
-   ```json
-   "MyMixin"
-   ```
+2. There is no need to add the Mixin to `sbo.mixins.json`, as we have a Mixin plugin that automatically discovers them.
 
 ---
 

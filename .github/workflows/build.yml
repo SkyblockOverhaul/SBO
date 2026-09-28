@@ -10,10 +10,10 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v7
       - name: setup jdk
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
-          java-version: '25'
-          distribution: 'microsoft'
+          java-version: '27'
+          distribution: 'oracle'
       - name: setup gradle
         uses: gradle/actions/setup-gradle@v6.3.0
         with:

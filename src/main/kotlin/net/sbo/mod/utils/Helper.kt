@@ -8,7 +8,6 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.*
@@ -18,13 +17,12 @@ import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
-import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
+import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -37,7 +35,10 @@ import java.util.regex.Pattern
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 import kotlin.reflect.full.memberProperties
-import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
+import net.sbo.mod.utils.data.configs.diana.DianaItemsData
+import net.sbo.mod.utils.data.configs.diana.DianaMobsData
+import net.sbo.mod.utils.data.configs.npcSellValueMap
+import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
 object Helper {
     private val MF_REGEX = Regex("""§b\(\+§b(\d+)""")
@@ -61,8 +62,6 @@ object Helper {
     private var priceDataAh: Map<String, Long> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
 
-    private var notifiedPriceUpdateError = false
-
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
             .ofVirtual()
             .name("sbo-callback-thread-", 1) // sbo-callback-thread-1, sbo-callback-thread-2 etc. starting from 1 (second parameter)
@@ -75,7 +74,7 @@ object Helper {
 
     private fun notifyUserOfLs(mob: String) {
         if (Diana.assumeAllLS) {
-            Chat.chat("§6[SBO] §eRegistered Lootshare $mob!")
+            Chat.chat("§6[SBO] §eRegistered Lootshare $mob!", true)
         }
     }
 
@@ -89,7 +88,7 @@ object Helper {
             hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
         }
 
-        Register.onTick(20 * 60 * 10) {
+        Register.onTick(20 * 60 * 5) {
             updateItemPriceInfo()
         }
 
@@ -134,6 +133,7 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
@@ -146,6 +146,7 @@ object Helper {
                 lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
@@ -158,6 +159,7 @@ object Helper {
                 lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
@@ -169,6 +171,7 @@ object Helper {
                 lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
+                removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
@@ -227,13 +230,13 @@ object Helper {
         name = name.replace(Regex("[^a-zA-Z0-9_]"), "")
         return name.trim()
     }
-    
+
     /**
      * Calculate percentage of one property to another.
      * If [mobName] is provided, it calculates the percentage of [propertyName] from [items] to [mobName] from [mobs].
      * If [mobName] is null, it calculates the percentage of [propertyName] from [mobs] to total mobs.
      */
-    fun calcPercentOne(items: DianaItemsData, mobs: DianaMobsData, propertyName: String, mobName: String? = null): String {
+    fun calcPercentOneReflectively(items: DianaItemsData, mobs: DianaMobsData, propertyName: String, mobName: String? = null): String {
         val result: Double = if (mobName != null) {
             val itemCount = items::class.memberProperties.firstOrNull { it.name == propertyName }
                 ?.call(items) as? Int ?: 0
@@ -242,6 +245,7 @@ object Helper {
 
             if (mobCount <= 0) 0.0
             else itemCount.toDouble() / mobCount.toDouble() * 100
+
         } else {
             val mobCount = mobs::class.memberProperties.firstOrNull { it.name == propertyName }
                 ?.call(mobs) as? Int ?: 0
@@ -250,23 +254,37 @@ object Helper {
             if (totalMobsCount <= 0) 0.0
             else mobCount.toDouble() / totalMobsCount.toDouble() * 100
         }
+
         return "%.2f".format(Locale.US, result)
     }
+
+    fun calcPercentOne(itemCount: Int, mobCount: Int): String {
+        val result = if (mobCount <= 0) {
+            0.0
+        } else {
+            itemCount.toDouble() / mobCount * 100
+        }
+
+        return "%.2f".format(Locale.US, result)
+    }
+
+    private val NUMBER_FORMAT = DecimalFormat("#,###")
+    private val BILLION_FORMAT = DecimalFormat("0.00b")
+    private val MILLION_FORMAT = DecimalFormat("0.0m")
+    private val THOUSAND_FORMAT = DecimalFormat("0.0k")
+    private val INTEGER_FORMAT = DecimalFormat("0")
 
     fun formatNumber(number: Number?, withCommas: Boolean = false): String {
         val num = number?.toDouble() ?: 0.0
 
         return if (withCommas) {
-            // Format with commas
-            val formatter = DecimalFormat("#,###")
-            formatter.format(num)
+            NUMBER_FORMAT.format(num)
         } else {
-            // Format with suffixes (k, m, b)
             when {
-                num >= 1_000_000_000 -> "%.2fb".format(num / 1_000_000_000)
-                num >= 1_000_000 -> "%.1fm".format(num / 1_000_000)
-                num >= 1_000 -> "%.1fk".format(num / 1_000)
-                else -> "%.0f".format(num)
+                num >= 1_000_000_000 -> BILLION_FORMAT.format(num / 1_000_000_000)
+                num >= 1_000_000 -> MILLION_FORMAT.format(num / 1_000_000)
+                num >= 1_000 -> THOUSAND_FORMAT.format(num / 1_000)
+                else -> INTEGER_FORMAT.format(num)
             }
         }
     }
@@ -304,13 +322,9 @@ object Helper {
 
     private val COLOR_REGEX: Regex = Regex("§.")
 
-    fun String.removeFormatting(): String {
-        return this.replace(COLOR_REGEX, "")
-    }
+    fun String.removeFormatting(): String = this.replace(COLOR_REGEX, "")
 
-    fun Component.removeFormatting(): String {
-        return this.string.replace(COLOR_REGEX, "")
-    }
+    fun Component.removeFormatting(): String = this.string.replace(COLOR_REGEX, "")
 
     fun matchLvlToColor(lvl: Int): String {
         return when {
@@ -448,9 +462,7 @@ object Helper {
         return invItems
     }
 
-    fun toUpperSnakeCase(input: String): String {
-        return input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
-    }
+    fun toUpperSnakeCase(input: String): String = input.replace("-", " ").split(" ").joinToString("_") { it.uppercase() }
 
     /**
      * Returns the number of seconds since an epoch timestamp.
@@ -460,13 +472,9 @@ object Helper {
      *
      * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
      */
-    fun getSecondsPassed(timestamp: Long): Long {
-        return (System.currentTimeMillis() - timestamp) / 1000
-    }
+    fun getSecondsPassed(timestamp: Long): Long = (System.currentTimeMillis() - timestamp) / 1000
 
-    private fun getSecondsPassedSinceNano(timestamp: Long): Long {
-        return (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
-    }
+    private fun getSecondsPassedSinceNano(timestamp: Long): Long = (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
 
     private fun playerHasItem(sbId: String): Boolean {
         val inv = Player.getPlayerInventory()
@@ -479,8 +487,6 @@ object Helper {
         }
         return false
     }
-
-    private fun hasMythologicalRitualActive(): Boolean = Mayor.mayor == "Jerry" || Mayor.mayor == "Aura" || Mayor.ministerPerk == "Mythological Ritual" || Mayor.perks.contains("Mythological Ritual")
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
         val currentDurationTicks = mc.gui.titleTime
@@ -500,25 +506,29 @@ object Helper {
         }
     }
 
-    fun checkCustomDropMessage(dropName: String, magicFind: Int): Pair<Boolean, String> {
-        val info = getDropInfo(dropName) ?: return Pair(false, "")
+    fun checkCustomDropMessage(dropName: String, magicFind: Int, isLootshare: Boolean, amountOverride: Int? = null): Pair<Boolean, String> {
+        val info = getDropInfo(dropName) ?: return false to ""
 
-        if (!info.isEnabled) return Pair(false, "")
+        if (!info.isEnabled) return false to ""
 
         val resultText = info.template
-            .replace("{amount}", info.totalAmount.toString())
+            .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
+            .replace("{lstext}", if (isLootshare) "(LS)" else "")
+            .replace("{price}", getItemPriceFormatted(info.itemId))
             .replace('&', '§')
+            .replace("{since}", getSinceDrop(dropName, isLootshare))
             .replace("+ ✯ Magic Find ", "") // prevent nonsense magic find when hypixel doesn't put it into the message (mob killed by someone else)
 
-        return Pair(true, resultText)
+        return true to resultText
     }
 
     data class DropInfo(
         val template: String,
         val isEnabled: Boolean,
         val totalAmount: Int,
+        val itemId: String,
         private val mobCount: Int,
         private val dropCount: Int
     ) {
@@ -526,35 +536,50 @@ object Helper {
             get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
+    private fun getCustomMessage(message: Array<out String>): String =
+        message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
+
+    private fun getSinceDrop(dropName: String, isLootshare: Boolean): String {
+        val data = DataManager.sboData
+        return when (dropName.lowercase()) {
+            "wool" -> if (isLootshare) data.kingSinceLsWool.toString() else data.kingSinceWool.toString()
+            "core" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
+            "stinger" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
+            "chimera" -> if (isLootshare) data.inqsSinceLsChim.toString() else data.inqsSinceChim.toString()
+            "brain food" -> if (isLootshare) data.sphinxSinceLsFood.toString() else data.sphinxSinceFood.toString()
+            else -> "ErrorGettingSince"
+        }
+    }
+  
     private fun getDropInfo(dropName: String): DropInfo? {
-        val tracker = SboDataObject.dianaTrackerMayor
+        val tracker = DataManager.dianaTrackerMayorData
         val items = tracker.items
         val mobs = tracker.mobs
 
         return when (dropName.lowercase()) {
             "chimera" -> {
-                val message = Diana.customChimeraMessage[0].trim()
-                DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, mobs.MINOS_INQUISITOR, items.CHIMERA)
+                val message = getCustomMessage(Diana.customChimeraMessage)
+                DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, "CHIMERA", mobs.MINOS_INQUISITOR, items.CHIMERA)
             }
 
             "core" -> {
-                val message = Diana.customManticoreMessage[0].trim()
-                DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, mobs.MANTICORE, items.MANTI_CORE)
+                val message = getCustomMessage(Diana.customManticoreMessage)
+                DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, "MANTI_CORE", mobs.MANTICORE, items.MANTI_CORE)
             }
 
             "stinger" -> {
-                val message = Diana.customFatefulStingerMessage[0].trim()
-                DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, mobs.MANTICORE, items.FATEFUL_STINGER)
+                val message = getCustomMessage(Diana.customFatefulStingerMessage)
+                DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, "FATEFUL_STINGER", mobs.MANTICORE, items.FATEFUL_STINGER)
             }
 
             "brain food" -> {
-                val message = Diana.customBrainFoodMessage[0].trim()
-                DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, mobs.SPHINX, items.BRAIN_FOOD)
+                val message = getCustomMessage(Diana.customBrainFoodMessage)
+                DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, "BRAIN_FOOD", mobs.SPHINX, items.BRAIN_FOOD)
             }
 
             "wool" -> {
-                val message = Diana.customShimmeringWoolMessage[0].trim()
-                DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, mobs.KING_MINOS, items.SHIMMERING_WOOL)
+                val message = getCustomMessage(Diana.customShimmeringWoolMessage)
+                DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, "SHIMMERING_WOOL", mobs.KING_MINOS, items.SHIMMERING_WOOL)
             }
 
             else -> null
@@ -562,14 +587,14 @@ object Helper {
     }
 
     fun getSpawnMessage(message: String, mob: String): String {
-        val mobs = SboDataObject.dianaTrackerMayor.mobs
-        val items = SboDataObject.dianaTrackerMayor.items
-        val sboData = SboDataObject.sboData
+        val mobs = DataManager.dianaTrackerMayorData.mobs
+        val items = DataManager.dianaTrackerMayorData.items
+        val sboData = DataManager.sboData
 
-        val kingPercent = calcPercentOne(items, mobs, "KING_MINOS")
-        val manticorePercent = calcPercentOne(items, mobs, "MANTICORE")
-        val inqPercent = calcPercentOne(items, mobs, "MINOS_INQUISITOR")
-        val sphinxPercent = calcPercentOne(items, mobs, "SPHINX")
+        val kingPercent = calcPercentOne(mobs.KING_MINOS, mobs.TOTAL_MOBS)
+        val manticorePercent = calcPercentOne(mobs.MANTICORE, mobs.TOTAL_MOBS)
+        val inqPercent = calcPercentOne(mobs.MINOS_INQUISITOR, mobs.TOTAL_MOBS)
+        val sphinxPercent = calcPercentOne(mobs.SPHINX, mobs.TOTAL_MOBS)
 
         when (mob.lowercase()) {
             "minos inquisitor", "inq" -> {
@@ -595,9 +620,7 @@ object Helper {
         }
     }
 
-    fun toTitleCase(input: String): String {
-        return input.lowercase().replaceFirstChar { char -> char.uppercase() }
-    }
+    fun toTitleCase(input: String): String = input.lowercase().replaceFirstChar { char -> char.uppercase() }
 
     fun getMagicFind(mf: String): Int {
         val mfMatch = MF_REGEX.find(mf)
@@ -613,23 +636,14 @@ object Helper {
                 priceDataBazaar = it
                 DianaLoot.updateLines()
             }.error { error ->
-                if (priceDataBazaar == null) {
-                    Chat.chat("§6[SBO] §4Unexpected error while fetching Bazaar item prices: $error")
-                } else {
-                    SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
-                }
+                SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
             }
         SboApi.ahItems()
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
-                if (priceDataAh.isEmpty() && !notifiedPriceUpdateError) {
-                    Chat.chat("§6[SBO] §cUnexpected error while fetching AH item prices: $error")
-                    notifiedPriceUpdateError = true
-                } else {
-                    SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
-                }
+                SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
             }
     }
 
@@ -640,27 +654,25 @@ object Helper {
             sbId.endsWith("_SHARD") || sbId.endsWith("_DYE") -> {
                 val suffix = sbId.substringAfterLast('_')   // "SHARD"
                 val name = sbId.substringBeforeLast('_')   // "WITHER"
-                "${suffix}_${name}"
+                "${suffix}_$name"
             }
             else -> sbId
         }
 
         val bzProduct = priceDataBazaar?.products?.get(id)
         val bazaarPrice = if (Diana.bazaarSettingDiana == Diana.SettingDiana.INSTASELL) {
-            bzProduct?.quick_status?.sellPrice
+            bzProduct?.quick_status?.sellPrice ?: 0.0
         } else {
-            bzProduct?.quick_status?.buyPrice
-        }
-
-        if (bazaarPrice != null && bazaarPrice > 0.0) {
-            return (bazaarPrice * amount).roundToLong()
+            bzProduct?.quick_status?.buyPrice ?: 0.0
         }
 
         val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
-        val preferNpc = Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
-        val bestUnitPrice = if (npcPrice > ahPrice || preferNpc) npcPrice else ahPrice
+        val preferNpc =
+            Diana.ironmanOverrides || Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
+        val bestMarketPrice = kotlin.math.max(bazaarPrice, ahPrice)
+        val bestUnitPrice = if (npcPrice > bestMarketPrice || preferNpc) npcPrice else bestMarketPrice
 
         return (bestUnitPrice * amount).roundToLong()
     }
@@ -674,13 +686,9 @@ object Helper {
      * Checks if the player has received loot share recently.
      * @param timeframe The timeframe in seconds to check against. Default is 2 seconds.
      */
-    fun gotLootShareRecently(timeframe: Long = 2): Boolean {
-        return getSecondsPassedSinceNano(lastLootShare) <= timeframe
-    }
+    fun gotLootShareRecently(timeframe: Long = 2): Boolean = getSecondsPassedSinceNano(lastLootShare) <= timeframe
 
-    fun dianaMobDiedRecently(seconds: Long = 2): Boolean {
-        return getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
-    }
+    fun dianaMobDiedRecently(seconds: Long = 2): Boolean = getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
 
     fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
@@ -720,9 +728,7 @@ object Helper {
         return "§eChance: §b$percent%$fraction $label"
     }
 
-    fun getMagicFindAndLooting(mf: Int, looting: Int): String {
-        return " §7[MF:$mf] [L:$looting]"
-    }
+    fun getMagicFindAndLooting(mf: Int, looting: Int): String = " §7[MF:$mf] [L:$looting]"
 
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0

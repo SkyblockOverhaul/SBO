@@ -2,24 +2,17 @@
   "required": true,
   "minVersion": "0.8.7",
   "mixinextras": {
-    "minVersion": "0.5.4"
+    "minVersion": "0.5.5"
   },
-  "package": "net.sbo.mod.mixin",
   "compatibilityLevel": "JAVA_${java_version_major}",
-  "client": [
-    "PauseScreenMixin",
-    "GuiMixin",
-    "MinecraftMixin",
-    "PacketMixin",
-    "PlayerInteractMixin",
-    "ScreenHandlerSlotUpdateS2CPacketMixin",
-    "ScreenMixin",
-    "EntityMixin"
-  ],
+  "package": "net.sbo.mod.mixin",
+  "plugin": "net.sbo.mod.mixinbase.SBOMixinPlugin",
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 1,
+    "maxShiftBy": 2
   },
   "overwrites": {
-    "requireAnnotations": true
+    "requireAnnotations": true,
+    "conformVisibility": true
   }
 }

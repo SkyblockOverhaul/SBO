@@ -4,17 +4,27 @@ import net.sbo.mod.utils.events.Register
 
 abstract class DirtyFlushableOverlay {
     private var dirty = false
+
     abstract val overlay: Overlay
 
     init {
-        Register.onTick(1) { flushUpdateLines() }
+        Register.onTick(1) {
+            flushUpdateLines()
+        }
     }
 
-    fun updateLines() { dirty = true }
+    fun updateLines() {
+        dirty = true
+    }
+
     private fun flushUpdateLines() {
-        if (!dirty) return
+        if (!dirty || !overlay.checkCondition()) {
+            return
+        }
+
         overlay.setLines(generateLines())
         dirty = false
     }
+
     abstract fun generateLines(): List<OverlayTextLine>
 }

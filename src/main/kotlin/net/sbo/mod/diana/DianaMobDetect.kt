@@ -3,8 +3,10 @@ package net.sbo.mod.diana
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
@@ -13,7 +15,7 @@ import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -23,6 +25,7 @@ import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
+import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import net.sbo.mod.utils.Player as SboPlayer
@@ -44,13 +47,13 @@ object DianaMobDetect {
     private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
 
-    private val kingHitsRegex = """.*?(\d+)\s+Hits.*""".toRegex()
+    private val kingHitsRegex = """(?:§[0-9a-fk-or])*.*?(\d+)\s+Hits.*""".toRegex()
 
-    internal enum class RareDianaMob(val display: String) {
-        INQ("Minos Inquisitor"),
-        KING("King Minos"),
-        SPHINX("Sphinx"),
-        MANTI("Manticore");
+    internal enum class RareDianaMob(val display: String, val glowColor: Int) {
+        INQ("Minos Inquisitor", Customization.MinosInquisitorGlowColor),
+        KING("King Minos", Customization.KingMinosGlowColor),
+        SPHINX("Sphinx", Customization.SphinxGlowColor),
+        MANTI("Manticore", Customization.ManticoreGlowColor);
 
         companion object {
             fun fromName(name: String): RareDianaMob? = entries.firstOrNull { name.contains(it.display, ignoreCase = true) }
@@ -78,9 +81,9 @@ object DianaMobDetect {
             }
         }
 
-    private fun parseStarFromName(name: String): Boolean = name.contains("✯")//todo: implement overlay for star check
+    private fun parseStarFromName(name: String): Boolean = name.contains("✯")
 
-    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && Diana.hpAlert > 0.0
+    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
 
     private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
@@ -98,9 +101,29 @@ object DianaMobDetect {
             val level = mc.level ?: return@command
 
             level.entitiesForRendering().forEach { entity ->
-                val health = (entity as? LivingEntity)?.let { " with health ${it.health}/${it.maxHealth}" } ?: ""
+                val health = (entity as? LivingEntity)?.let {
+                    " with health ${it.health}/${it.maxHealth}"
+                } ?: ""
 
-                Chat.chat("§6[SBO] §eEntity with type ${entity.javaClass.simpleName} with name ${entity.name.string}$health at x=${entity.x},y=${entity.y},z=${entity.z}")
+                val passengers = entity.passengers
+                    .takeIf { it.isNotEmpty() }
+                    ?.joinToString(", ") { passenger ->
+                        "${passenger.javaClass.simpleName} (${passenger.name.string})"
+                    }
+                    ?.let { " with passengers [$it]" }
+                    ?: ""
+
+                val rider = entity.vehicle
+                    ?.let {
+                        " riding ${it.javaClass.simpleName} (${it.name.string})"
+                    }
+                    ?: ""
+
+                Chat.chat(
+                    "§6[SBO] §eEntity with type ${entity.javaClass.simpleName} " +
+                    "with name ${entity.name.string}$health$passengers$rider " +
+                    "at x=${entity.x},y=${entity.y},z=${entity.z}"
+                )
             }
         }
 
@@ -205,13 +228,13 @@ object DianaMobDetect {
         }
     }
 
-    private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR", ignoreCase = true)
+    private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR") || name.contains("§2✿")
 
     private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
         if (name.isEmpty() || name == "Armor Stand") return null
 
         parseKingHits(name)?.let {
-            return OverlayTextLine("§6King Minos §7- §5$it Hits")
+            return OverlayTextLine("§6King Minos §7- §5$it Hits", centered = true)
         }
 
         if (!hasMythoMobTypeChar(name)) return null
@@ -224,7 +247,7 @@ object DianaMobDetect {
             warned.remove(id)
             SBOEvent.emit(DianaMobDeathEvent(name, entity))
         }
-        return OverlayTextLine(name)
+        return OverlayTextLine(name, centered = true)
     }
 
     private fun checkStarlessMob(
@@ -261,12 +284,12 @@ object DianaMobDetect {
 
     private fun announceCocoon(mobName: String) {
         if (Diana.announceCocoon) {
-            Chat.pc("Cocooned a ${mobName}!")
+            Chat.pc("Cocooned a $mobName!")
         }
 
         if (Diana.cocoonTitle) {
-            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b${mobName}", 10, 40, 10)
-            playCustomSound(SboDataObject.soundSettingsData.cocoonSound, volume = SboDataObject.soundSettingsData.cocoonVolume)
+            showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b$mobName", 10, 40, 10)
+            playCustomSound(DataManager.soundSettingsData.cocoonSound, volume = DataManager.soundSettingsData.cocoonVolume)
         }
     }
 
@@ -275,13 +298,37 @@ object DianaMobDetect {
         if (id in defeated || id in warned) return
         if (!shouldAlertForMob(name)) return
         val hpThreshold = if (Diana.hpAlert > 0.0) Diana.hpAlert * 1_000_000 else 0.0
-        if (hpThreshold > 0.0 && health <= hpThreshold) {
+        val soundHpThreshold = if (Diana.soundHpAlert > 0.0) Diana.soundHpAlert * 1_000_000 else 0.0
+
+        if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
+            when (RareDianaMob.fromName(name)) {
+                RareDianaMob.INQ -> playCustomSound(DataManager.soundSettingsData.lowInqHpSound, DataManager.soundSettingsData.lowInqHpVoume)
+                RareDianaMob.KING ->  playCustomSound(DataManager.soundSettingsData.lowKingHpSound, DataManager.soundSettingsData.lowKingHpVoume)
+                RareDianaMob.SPHINX -> playCustomSound(DataManager.soundSettingsData.lowSphinxHpSound, DataManager.soundSettingsData.lowSphinxHpVoume)
+                RareDianaMob.MANTI -> playCustomSound(DataManager.soundSettingsData.lowMantiHpSound, DataManager.soundSettingsData.lowMantiHpVoume)
+                else -> {}
+            }
+
+            warned.add(id)
+        }
+
+        if (health <= hpThreshold && hpThreshold > 0.0) {
             showTitle("§cHP LOW!", null, 10, 40, 10)
             warned.add(id)
         }
     }
 
     fun onRareSpawn(mob: String) {
+        val mobType: Diana.ReceiveList = when (mob) {
+            RareDianaMob.INQ.display -> Diana.ReceiveList.INQ
+            RareDianaMob.KING.display -> Diana.ReceiveList.KING
+            RareDianaMob.SPHINX.display -> Diana.ReceiveList.SPHINX
+            RareDianaMob.MANTI.display -> Diana.ReceiveList.MANTICORE
+            else -> Diana.ReceiveList.OTHER
+        }
+
+        WaypointManager.notifyRareMob("", mobType)
+
         if (Diana.shareRareMob) {
             val mobType = when (mob) {
                 RareDianaMob.INQ.display -> Diana.ShareList.INQ
@@ -293,7 +340,8 @@ object DianaMobDetect {
 
             if (mobType !in Diana.ShareMobs) return
             val playerPos = SboPlayer.getLastPosition()
-            Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob")
+            val message = "x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob"
+            if (Diana.shareRareMobInPublicChat) Chat.allChat(message) else Chat.pc(message)
         }
 
         when (mob) {

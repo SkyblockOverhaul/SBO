@@ -9,7 +9,7 @@ import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.*
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object PartyFinderManager {
-    const val MAX_PARTY_SIZE = 6
+    private const val MAX_PARTY_SIZE = 6
 
     var creatingParty = false
     var inQueue = false
@@ -104,14 +104,14 @@ object PartyFinderManager {
                 Chat.chat("§6[SBO] §cInvalid key format! get one in our Discord")
             } else {
                 sboData.sboKey = args[0]
-                SboDataObject.save("SboData")
+                DataManager.save(DataManager::sboData)
                 Chat.chat("§6[SBO] §aKey has been set")
             }
         }
 
         Register.command("sboClearKey") {
             sboData.sboKey = ""
-            SboDataObject.save("SboData")
+            DataManager.save(DataManager::sboData)
             Chat.chat("§6[SBO] §aKey has been cleared")
         }
 
@@ -253,13 +253,16 @@ object PartyFinderManager {
                         Chat.clickableChat("§6[SBO] §eClick to dequeue party", "Dequeue Party", "/sbodequeue")
                     }
 
-                    Chat.chat("§6[SBO] §eParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
+                    Chat.chat("§6[SBO] §aParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
+                    Chat.chat("§6[SBO] §ePlease note that for people to be able to join your party, you MUST set direct message privacy to \"Anyone\" in /settings -> Social Settings in the Hypixel Lobby. If you have already done so, you can click to hide this message.", true)
 
                     if (isInParty) Chat.pc("[SBO] Party now in queue.")
                 } else {
                     val errorMessage = response.error ?: "Unknown error"
                     Chat.chat("§6[SBO] §4Failed to create party: ${errorMessage.replace("&", "§")}")
-
+                    if (errorMessage.contains("requirement")) {
+                        Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.", true)
+                    }
                 }
 
             }.error { error ->
@@ -373,7 +376,7 @@ object PartyFinderManager {
                     playersSentRequest[partyLeader] = System.nanoTime()
                 }
             } else {
-                Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party.")
+                Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party. Ensure all your APIs are on and run /sboreloadstats to resync if you think this is an error.")
             }
         }
     }

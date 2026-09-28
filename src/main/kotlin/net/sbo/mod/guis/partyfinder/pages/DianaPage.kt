@@ -17,13 +17,22 @@ import net.sbo.mod.guis.partyfinder.Theme
 import net.sbo.mod.partyfinder.PartyFinderManager.hasSboKey
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
-import net.sbo.mod.utils.data.SboDataObject.pfConfigState
+import net.sbo.mod.utils.data.DataManager.partyFinderConfigState
 
 
-class DianaPage(private val parent: PartyFinderGUI) {
-    internal fun getPartyInfo(info: PartyPlayerStats): String {
+class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
+
+    override val pageName: String = "Diana"
+    override val partyType: String = "Diana"
+    override val listDisplayName: String = "Diana Party List"
+    override val showPartyList: Boolean get() = true
+    override val pageOrder: Int get() = 0
+    override val configKey: String get() = "diana"
+
+    override fun getPartyInfo(info: PartyPlayerStats): String {
         var formattedInfoString = ""
         val formattedInfo = listOf(
             "&9Name: &b" to info.name,
@@ -48,15 +57,15 @@ class DianaPage(private val parent: PartyFinderGUI) {
         return formattedInfoString
     }
 
-    private fun setFilter() {
-        parent.getFilter(parent.selectedPage) { filter ->
+    override fun setFilter() {
+        parent.getFilter { filter ->
             Window.enqueueRenderOperation {
                 parent.filterPartyList(filter)
             }
         }
     }
 
-    internal fun getReqsString(reqs: Reqs?, callback: (String) -> Unit) {
+    override fun getReqsString(reqs: Reqs?, callback: (String) -> Unit) {
         if (reqs == null) {
             callback("")
             return
@@ -92,17 +101,15 @@ class DianaPage(private val parent: PartyFinderGUI) {
         }
     }
 
-    internal fun render() {
+    override fun render() {
         Window.enqueueRenderOperation {
-            parent.addPartyListFunctions("Diana Party List", ::createParty)
+            parent.addPartyListFunctions(listDisplayName, ::createParty)
             parent.updateCurrentPartyList(true)
         }
     }
 
-    private fun createParty() {
+    override fun createParty() {
         parent.openCpWindow()
-        parent.cpWindow.setWidth(20.percent())
-        parent.cpWindow.setHeight(40.percent())
         parent.reqsBox = UIBlock().constrain {
             x = 0.percent()
             y = SiblingConstraint()
@@ -121,7 +128,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf lvlbox
         val lvlInput = GuiHandler.TextInput(
-            list = "diana",
+            list = configKey,
             key = "lvl",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -136,8 +143,8 @@ class DianaPage(private val parent: PartyFinderGUI) {
         lvlInput.onlyNumbers = true
         lvlInput.maxChars = 3
         lvlInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.diana.lvl > 0) {
-            lvlInput.textInputText.setText(pfConfigState.inputs.diana.lvl.toString())
+        if (partyFinderConfigState.inputs.diana.lvl > 0) {
+            lvlInput.textInputText.setText(partyFinderConfigState.inputs.diana.lvl.toString())
         }
 
         val killsBox = UIBlock().constrain {
@@ -152,7 +159,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf killsBox
         val killsInput = GuiHandler.TextInput(
-            list = "diana",
+            list = configKey,
             key = "kills",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -167,8 +174,8 @@ class DianaPage(private val parent: PartyFinderGUI) {
         killsInput.onlyNumbers = true
         killsInput.maxChars = 6
         killsInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.diana.kills > 0) {
-            killsInput.textInputText.setText(pfConfigState.inputs.diana.kills.toString())
+        if (partyFinderConfigState.inputs.diana.kills > 0) {
+            killsInput.textInputText.setText(partyFinderConfigState.inputs.diana.kills.toString())
         }
 
         val noteBox = UIBlock().constrain {
@@ -183,7 +190,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             textScale = parent.getTextScaleOfScaleText()
         }.setColor(Theme.TEXT_PRIMARY) childOf noteBox
         val noteInput = GuiHandler.TextInput(
-            list = "diana",
+            list = configKey,
             key = "note",
             x = CenterConstraint(),
             y = SiblingConstraint(5f),
@@ -197,8 +204,8 @@ class DianaPage(private val parent: PartyFinderGUI) {
         noteInput.create().setChildOf(noteBox)
         noteInput.maxChars = 30
         noteInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.diana.note.isNotEmpty()) {
-            noteInput.textInputText.setText(pfConfigState.inputs.diana.note)
+        if (partyFinderConfigState.inputs.diana.note.isNotEmpty()) {
+            noteInput.textInputText.setText(partyFinderConfigState.inputs.diana.note)
         }
 
         val l5e9box = UIBlock().constrain {
@@ -214,7 +221,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             height = 100.percent()
         }.setColor(Theme.TRANSPARENT) childOf l5e9box
         val eman9checkbox = GuiHandler.Checkbox(
-            list = "diana",
+            list = configKey,
             key = "eman9",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -236,7 +243,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             height = 100.percent()
         }.setColor(Theme.TRANSPARENT) childOf l5e9box
         val looting5checkbox = GuiHandler.Checkbox(
-            list = "diana",
+            list = configKey,
             key = "looting5",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -273,12 +280,12 @@ class DianaPage(private val parent: PartyFinderGUI) {
         createButton.hoverEffect(Theme.BUTTON_DEFAULT, Theme.BUTTON_HOVER)
         createButton.setOnClick {
             val reqs = Reqs(
-                lvl = pfConfigState.inputs.diana.lvl,
-                kills = pfConfigState.inputs.diana.kills,
-                eman9 = pfConfigState.checkboxes.diana.eman9,
-                looting5 = pfConfigState.checkboxes.diana.looting5
+                lvl = partyFinderConfigState.inputs.diana.lvl,
+                kills = partyFinderConfigState.inputs.diana.kills,
+                eman9 = partyFinderConfigState.checkboxes.diana.eman9,
+                looting5 = partyFinderConfigState.checkboxes.diana.looting5
             )
-            val note = pfConfigState.inputs.diana.note
+            val note = partyFinderConfigState.inputs.diana.note
             val partyType = "Diana"
             hasSboKey()
             parent.partyCreate(reqs = reqs, note = note, type = partyType)
@@ -287,7 +294,8 @@ class DianaPage(private val parent: PartyFinderGUI) {
         createButton.textObject.setTextScale(parent.getTextScaleOfScaleText())
     }
 
-    internal fun addDianaFilter(x1: PositionConstraint, y1: PositionConstraint) {
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    override fun addFilter(x1: PositionConstraint, y1: PositionConstraint) {
         parent.filterWindow.constrain {
             x = x1
             y = y1
@@ -329,7 +337,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
             height = 33.33f.percent()
         }.setColor(Theme.TRANSPARENT) childOf parent.filterBox
         val eman9Filter = GuiHandler.Checkbox(
-            list = "diana",
+            list = configKey,
             key = "eman9Filter",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -348,7 +356,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         eman9Filter.setOnClick { setFilter() }
 
         val looting5Filter = GuiHandler.Checkbox(
-            list = "diana",
+            list = configKey,
             key = "looting5Filter",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -367,7 +375,7 @@ class DianaPage(private val parent: PartyFinderGUI) {
         looting5Filter.setOnClick { setFilter() }
 
         val canIjoinFilter = GuiHandler.Checkbox(
-            list = "diana",
+            list = configKey,
             key = "canIjoinFilter",
             x = CenterConstraint(),
             y = CenterConstraint(),
@@ -384,5 +392,26 @@ class DianaPage(private val parent: PartyFinderGUI) {
         canIjoinFilter.setBgBoxColor(Theme.CHECKBOX_FILTER_BG)
         canIjoinFilter.textObject.setTextScale(parent.getTextScaleOfScaleText())
         canIjoinFilter.setOnClick { setFilter() }
+    }
+
+    override fun createFilterConfig(stats: PartyPlayerStats): ((Party) -> Boolean)? {
+        val config = partyFinderConfigState.filters.diana
+        val isEman9 = config.eman9Filter
+        val isLooting5 = config.looting5Filter
+        val canIJoin = config.canIjoinFilter
+
+        if (!isEman9 && !isLooting5 && !canIJoin) return null
+        return { party ->
+            val req = party.reqs
+            when {
+                isEman9 && !req.eman9 -> false
+                isLooting5 && !party.reqs.looting5 -> false
+                canIJoin && req.lvl > 0 && stats.sbLvl < req.lvl -> false
+                canIJoin && req.kills > 0 && stats.mythosKills < req.kills -> false
+                canIJoin && req.eman9 && !stats.eman9 -> false
+                canIJoin && req.looting5 && !stats.looting5daxe -> false
+                else -> true
+            }
+        }
     }
 }

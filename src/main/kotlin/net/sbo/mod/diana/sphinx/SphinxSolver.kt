@@ -48,7 +48,7 @@ object SphinxSolver {
             for (sphinxQuestion in SphinxQuestions.QUESTIONS) {
                 if (sphinxQuestion.question.equals(questionText.removeFormatting(), ignoreCase = true)) {
                     Helper.sleep(100) {
-                        Chat.chat("§6[SBO] §bClick anywhere on the screen to answer while the chat is open.")
+                        Chat.chat("§6[SBO] §bClick anywhere on the screen to answer while the chat is open.", true)
                     }
                 }
             }

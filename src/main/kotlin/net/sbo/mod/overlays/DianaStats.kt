@@ -4,15 +4,17 @@ import net.minecraft.ChatFormatting.*
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.data.SboDataObject.SBOConfigBundle
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 
 object DianaStats : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Stats", 10f, 10f,
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
-    ).setCondition { Diana.statsTracker && Helper.hasSpade && World.getWorld() == "Hub" }
+    )
+        .setCondition { Diana.statsTracker }
+        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
 
     fun init() {
         overlay.init()
@@ -22,7 +24,7 @@ object DianaStats : DirtyFlushableOverlay() {
     private fun createStatLine(name: String, formattedText: String): OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick {
             if (!isCraftingScreenOpen()) return@onClick
-            val hideList = SBOConfigBundle.sboData.hideTrackerLines
+            val hideList = DataManager.sboData.hideTrackerLines
             if (name in hideList) {
                 hideList.remove(name)
             } else {
@@ -30,10 +32,10 @@ object DianaStats : DirtyFlushableOverlay() {
             }
             updateLines()
         }.setCondition {
-            val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in SBOConfigBundle.sboData.hideTrackerLines)
+            val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in DataManager.sboData.hideTrackerLines)
             meetsManualHideCondition
         }
-        if (name in SBOConfigBundle.sboData.hideTrackerLines) {
+        if (name in DataManager.sboData.hideTrackerLines) {
             line.text = "$GRAY$STRIKETHROUGH${formattedText.removeFormatting()}"
         }
         return line

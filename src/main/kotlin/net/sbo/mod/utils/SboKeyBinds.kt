@@ -99,12 +99,12 @@ object SboKeyBinds {
 
     private fun registerKeyBindListener() {
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { _: Minecraft ->
-            handlePressAction(guessWarpKey) {
-                WaypointManager.warpToGuess()
-            }
-
             handlePressAction(rareMobWarpKey) {
                 WaypointManager.warpToRareMob()
+            }
+
+            handlePressAction(guessWarpKey) {
+                WaypointManager.warpToGuess()
             }
 
             handlePressAction(generalWarpKey) {

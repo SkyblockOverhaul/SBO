@@ -3,12 +3,19 @@ package net.sbo.mod.utils
 import javazoom.jl.player.JavaSoundAudioDevice
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.network.chat.Component
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Customization
+import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.events.Register
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.VarHandle
 import java.nio.file.Files
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -22,7 +29,7 @@ object SoundHandler {
     private val availableSoundsWithExt = mutableSetOf<String>()
 
     // Thread pool for audio processing - bounded and daemon threads
-    private val AUDIO_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
+    private val AUDIO_EXECUTOR: ExecutorService = Executors.newFixedThreadPool(3) { r ->
         Thread(r, "sbo-audio-thread").apply {
             isDaemon = true
             priority = Thread.NORM_PRIORITY + 1 // audio processing needs slightly more priority for less latency
@@ -45,7 +52,10 @@ object SoundHandler {
     /**
      * Returns available sounds with their file extensions (e.g., "sound.mp3", "music.ogg")
      */
-    fun getAvailableSoundsWithExt(): List<String> = availableSoundsWithExt.sorted().toList()
+    fun getAvailableSoundsWithExt(): List<String> {
+        scanUserSounds() // Update to avoid the user having to restart minecraft to see his added sound
+        return availableSoundsWithExt.sorted().toList()
+    }
 
     /**
      * Plays a custom sound.
@@ -56,7 +66,9 @@ object SoundHandler {
         if (sound.isEmpty()) return
 
         // Combine per-sound volume (0-1) with global master volume
-        val volumePercent = volume.coerceIn(0f, 1f) * Customization.masterVolume
+        val volumePercent = (volume * Customization.masterVolume).coerceIn(0f, 1f)
+
+        if (volumePercent == 0f) return
 
         // Assume .ogg if no extension provided
         val soundFile = if (SUPPORTED_EXTENSIONS.none { sound.endsWith(it, ignoreCase = true) }) "$sound.ogg" else sound
@@ -112,10 +124,12 @@ object SoundHandler {
     }
 
     /** Scans the config directory for user-added sounds */
-    private fun scanUserSounds() {
+    fun scanUserSounds() {
         File(SOUND_DIR_PATH).listFiles()
+            ?.asSequence()
             ?.filter { it.isFile }
             ?.filter { file -> SUPPORTED_EXTENSIONS.any { ext -> file.name.endsWith(ext, ignoreCase = true) } }
+            ?.toList()
             ?.forEach { file ->
                 availableSounds.add(file.name.substringBeforeLast('.').lowercase())
                 availableSoundsWithExt.add(file.name)
@@ -135,6 +149,7 @@ object SoundHandler {
             AudioSystem.getAudioInputStream(file)
         } catch (e: Exception) {
             logger.error("[$MOD_ID] Failed to read audio file: ${file.name}", e)
+            Chat.chat("§c[SBO] Something went wrong while reading the audio file ${file.name}! Please try using an another file format such as .mp3 and if the issue persists, please contact the developers.")
             return
         }
 
@@ -211,6 +226,12 @@ object SoundHandler {
         }
     }
 
+    private val JAVA_SOUND_SOURCE_HANDLE: VarHandle = run {
+        val lookup = MethodHandles.privateLookupIn(JavaSoundAudioDevice::class.java, MethodHandles.lookup())
+
+        lookup.findVarHandle(JavaSoundAudioDevice::class.java, "source", SourceDataLine::class.java)
+    }
+
     /** Creates a custom audio device that applies volume adjustment */
     private fun createVolumeAdjustedAudioDevice(volumePercent: Float): JavaSoundAudioDevice {
         return object : JavaSoundAudioDevice() {
@@ -218,9 +239,7 @@ object SoundHandler {
                 super.writeImpl(samples, offs, len)
 
                 runCatching {
-                    val sourceField = JavaSoundAudioDevice::class.java
-                        .getDeclaredField("source").apply { isAccessible = true }
-                    val sourceLine = sourceField.get(this) as? SourceDataLine
+                    val sourceLine = JAVA_SOUND_SOURCE_HANDLE.get(this) as? SourceDataLine
 
                     if (sourceLine != null && sourceLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                         val gain = sourceLine.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl

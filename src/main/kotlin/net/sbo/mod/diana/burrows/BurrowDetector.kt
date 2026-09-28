@@ -3,7 +3,9 @@ package net.sbo.mod.diana.burrows
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.Register
@@ -22,8 +24,8 @@ import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 object BurrowDetector {
     internal val burrows = ConcurrentHashMap<String, Burrow>()
-    private var lastDugOutBurrowPos: SboVec = SboVec(0.0, 0.0, 0.0)
-    private val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
+    private val internalStateWaypoints = mutableMapOf<String, Waypoint>()
+    private var lastDugOutBurrowPos: SboVec = SboVec.ZERO
 
     private val RECENTLY_REMOVED_DURATION_NS = TimeUnit.SECONDS.toNanos(1)
     private val recentlyRemoved = ConcurrentHashMap<String, Long>()
@@ -52,6 +54,8 @@ object BurrowDetector {
         val key = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
         recentlyRemoved[key] = System.nanoTime()
     }
+
+    fun wasRecentlyRemoved(pos: SboVec): Boolean = wasRecentlyRemoved("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}")
 
     private fun wasRecentlyRemoved(posString: String): Boolean {
         val removedAt = recentlyRemoved[posString] ?: return false
@@ -82,10 +86,18 @@ object BurrowDetector {
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
+        Register.command("sboaddtestwaypoint") {
+            val pos = Player.getLastPosition()
+            val wayp = Waypoint("Test", pos.x, pos.y, pos.z, type = "debug", ttl = 30)
+            wayp.preventInvalidRemoval = true
+
+            WaypointManager.addWaypoint(wayp)
+        }
+
         Register.command("sbodebugburrows") { // TODO: Maybe remove at some point once we're fully sure internal state cannot bug out
             for (known in burrows.values) {
                 if (!WaypointManager.waypointExists("burrow", known.pos).first) {
-                    val wayp = Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, ttl = 30, type = "debug")
+                    val wayp = Waypoint("Internal Known (Debug)", known.pos.x, known.pos.y, known.pos.z, type = "debug", ttl = 30)
                     wayp.preventInvalidRemoval = true
 
                     WaypointManager.addWaypoint(wayp)
@@ -95,7 +107,7 @@ object BurrowDetector {
             for (arrow in ArrowGuessBurrow.allGuesses) {
                 val curr = arrow.getCurrent()
                 if (!WaypointManager.waypointExists("arrow", curr).first) {
-                    val wayp = Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, ttl = 30, type = "debug")
+                    val wayp = Waypoint("Internal Arrow (Debug)", curr.x, curr.y, curr.z, type = "debug", ttl = 30)
                     wayp.preventInvalidRemoval = true
 
                     WaypointManager.addWaypoint(wayp)
@@ -114,7 +126,7 @@ object BurrowDetector {
             chainFinish()
 
             // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
-            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
@@ -126,7 +138,7 @@ object BurrowDetector {
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 
             // We need to update lastDugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
-            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+            lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(
                 deathOriginating = false,
                 expectedTimesDug = 1,
@@ -135,10 +147,51 @@ object BurrowDetector {
         }
 
         Register.onTick(1) {
+            updateInternalStateWaypoints()
             pendingUseSpadeTitle?.let {
                 Helper.showTitle(it, "", 0, 1, 0)
             }
         }
+    }
+
+    private fun updateInternalStateWaypoints() {
+        if (!Debug.showInternalStateWaypoints) {
+            internalStateWaypoints.values.forEach(WaypointManager::removeWaypoint)
+            internalStateWaypoints.clear()
+            return
+        }
+
+        val candidates = linkedMapOf<String, Pair<String, SboVec>>()
+        burrows.values.forEach { known ->
+            if (!WaypointManager.waypointExists("burrow", known.pos).first) {
+                candidates.putIfAbsent(blockKey(known.pos), "Internal Known (Debug)" to known.pos)
+            }
+        }
+        ArrowGuessBurrow.allGuesses.forEach { arrow ->
+            val pos = arrow.getCurrent()
+            if (!WaypointManager.waypointExists("arrow", pos).first) {
+                candidates.putIfAbsent(blockKey(pos), "Internal Arrow (Debug)" to pos)
+            }
+        }
+
+        val existingDebugBlocks = WaypointManager.getWaypointsOfType("debug").mapTo(mutableSetOf()) { blockKey(it.pos) }
+        internalStateWaypoints.keys.filter { it !in candidates }.forEach { key ->
+            internalStateWaypoints.remove(key)?.let(WaypointManager::removeWaypoint)
+        }
+
+        candidates.forEach { (key, candidate) ->
+            if (key in internalStateWaypoints || key in existingDebugBlocks) return@forEach
+            val (text, pos) = candidate
+            val waypoint = Waypoint(text, pos.x, pos.y, pos.z, type = "debug", ttl = 0)
+            waypoint.preventInvalidRemoval = true
+            WaypointManager.addWaypoint(waypoint)
+            internalStateWaypoints[key] = waypoint
+        }
+    }
+
+    private fun blockKey(pos: SboVec): String {
+        val block = pos.roundLocationToBlock()
+        return "${block.x.toInt()} ${block.y.toInt()} ${block.z.toInt()}"
     }
 
     private fun chainFinish() {
@@ -174,12 +227,12 @@ object BurrowDetector {
     }
 
     fun requestSpade(reason: String) {
-        if (World.getWorld() != "Hub" || !Diana.spadeGuess) return
+        if (!Diana.spadeGuess || !Helper.hasSpade || World.getWorld() != "Hub") return
 
         val color = if (reason == "failure") "c" else "e"
 
         pendingUseSpadeTitle = "§${color}Use Spade!"
-        Chat.chat("§6[SBO] §${color}Use spade!")
+        Chat.chat("§6[SBO] §${color}Use spade!", true)
     }
 
     fun removeFromInternalState(pos: SboVec) {
@@ -199,7 +252,7 @@ object BurrowDetector {
         }
 
         if (!Diana.closeBurrowDetection) return
-        lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec(0.0, 0.0, 0.0)
+        lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
     }
 
@@ -226,6 +279,8 @@ object BurrowDetector {
 
             ArrowGuessBurrow.removeSubGuessFromInternalState(pos)
             ArrowGuessBurrow.removeOrMoveFromInternalState(pos)
+
+            return
         }
 
         burrowDetect(packet)
@@ -264,17 +319,19 @@ object BurrowDetector {
     ) {
         if (!Diana.closeBurrowDetection) return
 
-        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
+        ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
+        ArrowGuessBurrow.removeFromInternalState(pos)
+        WaypointManager.removeWaypointAt(pos, "guess")
 
         if (WaypointManager.waypointExists("burrow", pos).first) return
+
+        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
 
         val burrow = burrows.getOrPut(posString) {
             Burrow(pos)
         }
 
         burrow.type = type
-
-        ArrowGuessBurrow.removeFromInternalState(pos)
 
         val existingTimesDug =
             carriedTimesDug
@@ -284,13 +341,6 @@ object BurrowDetector {
                 ?: WaypointManager.getWaypointAt(pos, "guess")?.timesDug
                 ?: WaypointManager.getWaypointAt(pos, "subGuess")?.timesDug
                 ?: 0
-
-        val existing = burrow.waypoint
-
-        if (existing != null) {
-            existing.timesDug = existingTimesDug
-            return
-        }
 
         val waypoint = Waypoint(
             type,
@@ -302,18 +352,6 @@ object BurrowDetector {
 
         burrow.waypoint = waypoint
         WaypointManager.addWaypoint(waypoint, source == "particle")
-    }
-
-    fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
-        toRemove[waypoint] = condition
-    }
-
-    private fun flushRemovals() {
-        toRemove.forEach { (waypoint, condition) ->
-            if (condition.asBoolean) {
-                WaypointManager.removeWaypoint(waypoint)
-            }
-        }
     }
 
     private fun refreshBurrows(deathOriginating: Boolean, expectedTimesDug: Int, burrowType: String? = null) {
@@ -351,7 +389,7 @@ object BurrowDetector {
             if (removalCondition) {
                 if (death) {
                     chainFinish() // dying finishes (fails) a chain
-                    Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.")
+                    Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.", true)
                 }
 
                 markRecentlyRemoved(dugWaypoint.pos)
@@ -368,7 +406,7 @@ object BurrowDetector {
         }
 
         // Counted timesDug above already
-        flushRemovals()
+        ArrowGuessBurrow.flushRemovals()
 
         if (dugWaypoint != null && (dugWaypoint.type == "guess" || dugWaypoint.type == "arrow" || dugWaypoint.type == "subGuess") && burrowType != null) {
             // The user dug a Guess waypoint before particles updated it into a real burrow type.

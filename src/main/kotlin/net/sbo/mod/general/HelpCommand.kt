@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Style
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
+import kotlin.math.roundToInt
 
 object HelpCommand {
     private val commands = arrayOf(
@@ -20,6 +21,7 @@ object HelpCommand {
         mapOf("cmd" to "sboimporttracker <profilename>", "desc" to "Import skyhanni tracker"), //todo: add sboimporttracker command
         mapOf("cmd" to "sboimporttrackerundo", "desc" to "Undo the tracker import"), // todo: add sboimporttrackerundo command
         mapOf("cmd" to "sbodc", "desc" to "Diana dropchances"),
+        mapOf("cmd" to "sbosc", "desc" to "Diana spawnchances"),
         mapOf("cmd" to "sbopartyblacklist", "desc" to "Party commands blacklisting"), // todo: add sbopartyblacklist command
         mapOf("cmd" to "sbobacktrackachievements", "desc" to "Backtrack achievements"),
         mapOf("cmd" to "sboachievements", "desc" to "Opens the achievements GUI"),
@@ -68,13 +70,47 @@ object HelpCommand {
                 Chat.chat(styledText)
             }
         }
+
         dropChances()
+        spawnChances()
+    }
+
+    private fun spawnChances() {
+        Register.command("sbosc", "sbospawnchances") { args ->
+            if (args.isEmpty()) {
+                Chat.chat("§6[SBO] §ePlease provide a tracking value. /sbodc <tracking>")
+                return@command
+            }
+
+            val tracking = args[0].toIntOrNull()
+
+            if (tracking == null) {
+                Chat.chat("§6[SBO] §ePlease provide valid numbers. /sbodc 75")
+                return@command
+            }
+
+            val defaultChances =  mapOf(
+                "Inquisitor" to 0.013,
+                "Sphinx" to 0.013,
+                "Manticore" to 0.0026,
+                "Minos King" to 0.0026
+            )
+
+            val postTrackingChances = defaultChances.mapValues { (_, chance) ->
+                chance * (1 + tracking / 100.0)
+            }
+
+            postTrackingChances.forEach { (mob, chance) ->
+                val formattedChance = "§b%.2f%% §7(§b1/%.0f§7)".format(chance * 100, (1 / chance))
+                Chat.chat("§6[SBO] §e$mob $formattedChance [TRACKING:$tracking]")
+            }
+        }
     }
 
     private fun dropChances() {
         Register.command("sbodc", "sbodropchances") { args ->
-            if (args.size < 2) {
-                Chat.chat("§6[SBO] §ePlease provide mf/looting values. /sbodc <mf> <looting> <griffinrairty>")
+            if (args.size < 3) {
+                Chat.chat("§6[SBO] §ePlease provide mf/looting values aswell as pet rarity. /sbodc <mf> <looting> <griffinrairty>")
                 return@command
             }
 

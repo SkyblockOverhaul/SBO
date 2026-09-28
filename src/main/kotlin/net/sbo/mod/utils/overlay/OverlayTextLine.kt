@@ -10,7 +10,8 @@ import java.awt.Color
 class OverlayTextLine(
     var text: String,
     private var shadow: Boolean = true,
-    var linebreak: Boolean = true
+    var linebreak: Boolean = true,
+    var centered: Boolean = false
 ) {
     private var orderedText: FormattedCharSequence? = null
     private var orderedTextSource: String? = null
@@ -64,9 +65,7 @@ class OverlayTextLine(
         return this
     }
 
-    fun checkCondition(): Boolean {
-        return condition()
-    }
+    fun checkCondition(): Boolean = condition()
 
     /**
      * Executes the mouse enter action when the mouse enters the text line.
