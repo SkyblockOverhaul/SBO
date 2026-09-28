@@ -6,8 +6,8 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.OverlayValues
-import net.sbo.mod.utils.data.SboDataObject.overlayData
+import net.sbo.mod.utils.data.configs.overlay.OverlayValues
+import net.sbo.mod.utils.data.DataManager.overlayData
 import net.sbo.mod.utils.game.World
 import java.awt.Color
 

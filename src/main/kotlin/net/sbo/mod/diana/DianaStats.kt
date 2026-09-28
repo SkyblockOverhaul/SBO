@@ -5,8 +5,8 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTracker
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -39,9 +39,9 @@ object DianaStats {
 
     private fun getPlayerStats(total: Boolean? = false): PlayerStats {
         val tracker: DianaTracker = when (total) {
-            true -> SboDataObject.dianaTrackerTotal
-            false -> SboDataObject.dianaTrackerMayor
-            else -> SboDataObject.dianaTrackerSession
+            true -> DataManager.dianaTrackerTotal
+            false -> DataManager.dianaTrackerMayor
+            else -> DataManager.dianaTrackerSession
         }
 
         val timer: SboTimerManager.SBOTimer = when (total) {

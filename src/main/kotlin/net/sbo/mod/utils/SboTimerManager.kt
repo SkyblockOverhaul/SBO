@@ -2,8 +2,8 @@ package net.sbo.mod.utils
 
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTracker
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
@@ -13,13 +13,13 @@ import java.util.concurrent.TimeUnit
 object SboTimerManager {
     internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
     val timerMayor = SBOTimer(
-        tracker = SboDataObject.dianaTrackerMayor
+        tracker = DataManager.dianaTrackerMayor
     )
     val timerTotal = SBOTimer(
-        tracker = SboDataObject.dianaTrackerTotal
+        tracker = DataManager.dianaTrackerTotal
     )
     val timerSession = SBOTimer(
-        tracker = SboDataObject.dianaTrackerSession
+        tracker = DataManager.dianaTrackerSession
     )
 
     fun init() {

@@ -21,7 +21,7 @@ import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
@@ -270,36 +270,36 @@ object WaypointManager {
         val mobData = when (mobType) {
             Diana.ReceiveList.INQ -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
-                SboDataObject.soundSettingsData.inqSound,
-                SboDataObject.soundSettingsData.inqVolume,
+                DataManager.soundSettingsData.inqSound,
+                DataManager.soundSettingsData.inqVolume,
                 "§dInquisitor"
             )
 
             Diana.ReceiveList.KING -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
-                SboDataObject.soundSettingsData.kingSound,
-                SboDataObject.soundSettingsData.kingVolume,
+                DataManager.soundSettingsData.kingSound,
+                DataManager.soundSettingsData.kingVolume,
                 "§6King Minos"
             )
 
             Diana.ReceiveList.MANTICORE -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
-                SboDataObject.soundSettingsData.mantiSound,
-                SboDataObject.soundSettingsData.mantiVolume,
+                DataManager.soundSettingsData.mantiSound,
+                DataManager.soundSettingsData.mantiVolume,
                 "§2Manticore"
             )
 
             Diana.ReceiveList.SPHINX -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
-                SboDataObject.soundSettingsData.sphinxSound,
-                SboDataObject.soundSettingsData.sphinxVolume,
+                DataManager.soundSettingsData.sphinxSound,
+                DataManager.soundSettingsData.sphinxVolume,
                 "§9Sphinx"
             )
 
             else -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>",
-                SboDataObject.soundSettingsData.rareMobSound,
-                SboDataObject.soundSettingsData.rareMobVolume,
+                DataManager.soundSettingsData.rareMobSound,
+                DataManager.soundSettingsData.rareMobVolume,
                 "§3Rare Mob"
             )
         }
@@ -663,7 +663,7 @@ object WaypointManager {
         waypoints.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(waypoint)
 
         if (type == "burrow" && playSound) {
-            playCustomSound(SboDataObject.soundSettingsData.burrowFoundSound, volume = SboDataObject.soundSettingsData.burrowVolume)
+            playCustomSound(DataManager.soundSettingsData.burrowFoundSound, volume = DataManager.soundSettingsData.burrowVolume)
         }
     }
 

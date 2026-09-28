@@ -9,7 +9,7 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.data.SboDataObject.SBOConfigBundle
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
@@ -65,19 +65,19 @@ object DianaMobs : DirtyFlushableOverlay() {
     private fun createLine(name: String, formattedText: String, amount: Int) : OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick {
             if (!isCraftingScreenOpen()) return@onClick
-            if (name in SBOConfigBundle.sboData.hideTrackerLines) {
-                SBOConfigBundle.sboData.hideTrackerLines.remove(name)
+            if (name in DataManager.sboData.hideTrackerLines) {
+                DataManager.sboData.hideTrackerLines.remove(name)
             } else {
-                SBOConfigBundle.sboData.hideTrackerLines.add(name)
+                DataManager.sboData.hideTrackerLines.add(name)
             }
             updateLines()
         }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in SBOConfigBundle.sboData.hideTrackerLines)
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
-        if (name in SBOConfigBundle.sboData.hideTrackerLines) {
+        if (name in DataManager.sboData.hideTrackerLines) {
             line.text = "$GRAY$STRIKETHROUGH${formattedText.removeFormatting()}"
         }
         return line
@@ -86,9 +86,9 @@ object DianaMobs : DirtyFlushableOverlay() {
     override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.mobTracker
         val tracker = when (type) {
-            Diana.Tracker.TOTAL -> SBOConfigBundle.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> SBOConfigBundle.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> SBOConfigBundle.dianaTrackerSessionData
+            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotal
+            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayor
+            Diana.Tracker.SESSION -> DataManager.dianaTrackerSession
             Diana.Tracker.OFF -> {
                 return emptyList()
             }

@@ -7,8 +7,8 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.PlayerInfoResponse
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.http.SboApi
@@ -41,7 +41,7 @@ object PartyPlayer {
     private fun rememberProfile(profile: String?) {
         if (profile == null || profile.equals(sboData.lastStatsProfile, ignoreCase = true)) return
         sboData.lastStatsProfile = profile
-        SboDataObject.save("SboData")
+        DataManager.save("SboData")
     }
 
     private fun cacheBypassReadyIn(): Long =

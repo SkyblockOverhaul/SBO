@@ -36,7 +36,9 @@ import java.util.regex.Pattern
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 import kotlin.reflect.full.memberProperties
-import net.sbo.mod.utils.data.DianaTracker as DianaTrackerDataClass
+import net.sbo.mod.utils.data.configs.diana.DianaItemsData
+import net.sbo.mod.utils.data.configs.diana.DianaMobsData
+import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
 object Helper {
     private val MF_REGEX = Regex("""§b\(\+§b(\d+)""")
@@ -538,7 +540,7 @@ object Helper {
         message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
 
     private fun getSinceDrop(dropName: String, isLootshare: Boolean): String {
-        val data = SboDataObject.sboData
+        val data = DataManager.sboData
         return when (dropName.lowercase()) {
             "wool" -> if (isLootshare) data.kingSinceLsWool.toString() else data.kingSinceWool.toString()
             "core" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
@@ -550,7 +552,7 @@ object Helper {
     }
   
     private fun getDropInfo(dropName: String): DropInfo? {
-        val tracker = SboDataObject.dianaTrackerMayor
+        val tracker = DataManager.dianaTrackerMayor
         val items = tracker.items
         val mobs = tracker.mobs
 
@@ -585,9 +587,9 @@ object Helper {
     }
 
     fun getSpawnMessage(message: String, mob: String): String {
-        val mobs = SboDataObject.dianaTrackerMayor.mobs
-        val items = SboDataObject.dianaTrackerMayor.items
-        val sboData = SboDataObject.sboData
+        val mobs = DataManager.dianaTrackerMayor.mobs
+        val items = DataManager.dianaTrackerMayor.items
+        val sboData = DataManager.sboData
 
         val kingPercent = calcPercentOne(mobs.KING_MINOS, mobs.TOTAL_MOBS)
         val manticorePercent = calcPercentOne(mobs.MANTICORE, mobs.TOTAL_MOBS)

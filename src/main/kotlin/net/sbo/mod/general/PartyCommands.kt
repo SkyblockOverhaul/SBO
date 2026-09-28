@@ -14,8 +14,8 @@ import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayor
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.ServerStats
 import net.sbo.mod.utils.version.UpdateChecker

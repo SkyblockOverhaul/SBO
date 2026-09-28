@@ -9,7 +9,7 @@ import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.*
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -104,14 +104,14 @@ object PartyFinderManager {
                 Chat.chat("§6[SBO] §cInvalid key format! get one in our Discord")
             } else {
                 sboData.sboKey = args[0]
-                SboDataObject.save("SboData")
+                DataManager.save("SboData")
                 Chat.chat("§6[SBO] §aKey has been set")
             }
         }
 
         Register.command("sboClearKey") {
             sboData.sboKey = ""
-            SboDataObject.save("SboData")
+            DataManager.save("SboData")
             Chat.chat("§6[SBO] §aKey has been cleared")
         }
 

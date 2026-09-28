@@ -20,7 +20,7 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
-import net.sbo.mod.utils.data.SboDataObject.pfConfigState
+import net.sbo.mod.utils.data.DataManager.pfConfigState
 
 class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
 

@@ -31,7 +31,7 @@ import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.*
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.Mayor
@@ -91,7 +91,7 @@ object SBOKotlin : ClientModInitializer {
 		UpdateChecker.check()
 
 		// Load configuration and data
-		SboDataObject.init()
+		DataManager.init()
 
 		// Load Custom Sound System
 		SoundHandler.init()

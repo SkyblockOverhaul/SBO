@@ -17,13 +17,13 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTrackerMayorData
+import net.sbo.mod.utils.data.configs.diana.DianaTrackerMayorData
 import net.sbo.mod.utils.data.PartyPlayerStats
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.achievementsData
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
-import net.sbo.mod.utils.data.SboDataObject.pastDianaEventsData
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.achievementsData
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayor
+import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
@@ -66,7 +66,7 @@ object AchievementManager {
             achievementsData.currentEventAchievements.clear()
             achievementsData.lastEventYear = -1
 
-            SboDataObject.save("AchievementsData")
+            DataManager.save("AchievementsData")
             Chat.chat("§6[SBO] §eAchievements locked")
         }
 

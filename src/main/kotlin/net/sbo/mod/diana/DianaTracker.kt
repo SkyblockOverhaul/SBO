@@ -20,15 +20,15 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.data.Item
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerSession
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerTotal
-import net.sbo.mod.utils.data.SboDataObject.pastDianaEventsData
-import net.sbo.mod.utils.data.SboDataObject.saveTrackerData
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayor
+import net.sbo.mod.utils.data.DataManager.dianaTrackerSession
+import net.sbo.mod.utils.data.DataManager.dianaTrackerTotal
+import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
+import net.sbo.mod.utils.data.DataManager.saveTrackerData
+import net.sbo.mod.utils.data.DataManager.sboData
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
@@ -66,7 +66,7 @@ object DianaTracker {
             sboData.minotaursSinceStick = 0
             sboData.champsSinceRelic = 0
             sboData.inqsSinceLsChim = 0
-            SboDataObject.save("SboData")
+            DataManager.save("SboData")
             SboTimerManager.timerSession.reset()
             DianaStats.updateLines()
         }
@@ -212,7 +212,7 @@ object DianaTracker {
 
     fun trackMobOnSpawnAndSave(mob: String, fromCocoon: Boolean = false) {
         onMobSpawn(mob, fromCocoon)
-        SboDataObject.save("SboData")
+        DataManager.save("SboData")
     }
 
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
@@ -415,7 +415,7 @@ object DianaTracker {
         when {
             drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
                 MedalIntegration.saveWoolClip()
-                playCustomSound(SboDataObject.soundSettingsData.woolSound, volume = SboDataObject.soundSettingsData.woolVolume)
+                playCustomSound(DataManager.soundSettingsData.woolSound, volume = DataManager.soundSettingsData.woolVolume)
                 onRareDrop("Shimmering Wool", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
@@ -459,7 +459,7 @@ object DianaTracker {
 
             }
             drop.contains("Manti-core") -> { // todo: add achievements for core
-                playCustomSound(SboDataObject.soundSettingsData.coreSound, volume = SboDataObject.soundSettingsData.coreVolume)
+                playCustomSound(DataManager.soundSettingsData.coreSound, volume = DataManager.soundSettingsData.coreVolume)
                 MedalIntegration.saveMantiCoreClip()
                 onRareDrop("Manti-core", showMessageOrTitle = true,
                     trackLootshare = true,
@@ -504,7 +504,7 @@ object DianaTracker {
 
             }
             drop.contains("Fateful Stinger") -> { // todo: add achievements for stinger
-                playCustomSound(SboDataObject.soundSettingsData.stingerSound, volume = SboDataObject.soundSettingsData.stingerVolume)
+                playCustomSound(DataManager.soundSettingsData.stingerSound, volume = DataManager.soundSettingsData.stingerVolume)
                 MedalIntegration.saveFatefulStingerClip()
                 onRareDrop("Fateful Stinger", showMessageOrTitle = true,
                     trackLootshare = true,
@@ -550,7 +550,7 @@ object DianaTracker {
                 if (!drop.contains("Chimera")) return
 
                 MedalIntegration.saveChimeraClip()
-                playCustomSound(SboDataObject.soundSettingsData.chimSound, volume = SboDataObject.soundSettingsData.chimVolume)
+                playCustomSound(DataManager.soundSettingsData.chimSound, volume = DataManager.soundSettingsData.chimVolume)
                 onRareDrop("Chimera", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind,
@@ -601,7 +601,7 @@ object DianaTracker {
             }
             drop.contains("Brain Food") -> { // todo: add achievements for food
                 MedalIntegration.saveBrainFoodClip()
-                playCustomSound(SboDataObject.soundSettingsData.bfSound, volume = SboDataObject.soundSettingsData.bfVolume)
+                playCustomSound(DataManager.soundSettingsData.bfSound, volume = DataManager.soundSettingsData.bfVolume)
                 onRareDrop("Brain Food", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
@@ -646,7 +646,7 @@ object DianaTracker {
                 }
             }
             drop.contains("Daedalus Stick") -> {
-                playCustomSound(SboDataObject.soundSettingsData.stickSound, volume = SboDataObject.soundSettingsData.stickVolume)
+                playCustomSound(DataManager.soundSettingsData.stickSound, volume = DataManager.soundSettingsData.stickVolume)
                 MedalIntegration.saveDaedalusStickClip()
                 onRareDrop("Daedalus Stick", showMessageOrTitle = true,
                     trackLootshare = false,
@@ -669,7 +669,7 @@ object DianaTracker {
             }
             drop.contains("Minos Relic") -> {
                 MedalIntegration.saveMinosRelicClip()
-                playCustomSound(SboDataObject.soundSettingsData.relicSound, volume = SboDataObject.soundSettingsData.relicVolume)
+                playCustomSound(DataManager.soundSettingsData.relicSound, volume = DataManager.soundSettingsData.relicVolume)
                 onRareDrop("Minos Relic", showMessageOrTitle = true,
                     trackLootshare = false,
                     magicFind = magicfind
@@ -694,7 +694,7 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
             drop.contains("Dwarf Turtle Shelmet") -> {
                 MedalIntegration.saveDwarfTurtleShelmetClip()
@@ -702,7 +702,7 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
             drop.contains("Crochet Tiger Plushie") -> {
                 MedalIntegration.saveCrochetTigerPlushieClip()
@@ -710,7 +710,7 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
             drop.contains("Antique Remedies") -> {
                 MedalIntegration.saveAntiqueRemediesClip()
@@ -719,7 +719,7 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
             drop.contains("Cretan Urn") -> {
                 MedalIntegration.saveCretanUrnClip()
@@ -727,7 +727,7 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
             drop.contains("Hilt of Revelations") -> {
                 onRareDrop("Hilt of Revelations", showMessageOrTitle = false,
@@ -737,7 +737,7 @@ object DianaTracker {
                 // sound played by onRareDrop for hilt
             }
         }
-        SboDataObject.save("SboData")
+        DataManager.save("SboData")
     }
 
     private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true, enforceCooldown: Boolean = true) {
@@ -752,7 +752,7 @@ object DianaTracker {
 
         if (isCoG || itemId == "HILT_OF_REVELATIONS") {
             // onRareDrop for these drops are called from both the pickup log tracker and rare drop message, so we need to handle the sound and announceLootToParty here instead of rare drop message handler to make both pickuplog and rare drop message trigger the sound/party announce while preventing duplicates (due to isItemOnCooldown check above)
-            playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+            playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
 
             if (isCoG) {
                 MedalIntegration.saveCrownOfGreedClip()
@@ -951,7 +951,7 @@ object DianaTracker {
         if (!check) {
             if (dianaTrackerMayor.year == 0) dianaTrackerMayor.year = Mayor.mayorElectedYear
             pastDianaEventsData.events += dianaTrackerMayor.snapshot()
-            SboDataObject.save("PastDianaEventsData")
+            DataManager.save("PastDianaEventsData")
         }
         dianaTrackerMayor.reset()
         dianaTrackerMayor.year = Mayor.mayorElectedYear
@@ -1034,7 +1034,7 @@ object DianaTracker {
         if (sboData.mobsSinceManti >= 2) sboData.b2bManti = false
         sboData.mobsSinceSphinx += amount
         if (sboData.mobsSinceSphinx >= 2) sboData.b2bSphinx = false
-        SboDataObject.save("SboData")
+        DataManager.save("SboData")
 
         sleep(500) {
             isMobOnCooldown[item] = false

@@ -15,7 +15,7 @@ import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -289,7 +289,7 @@ object DianaMobDetect {
 
         if (Diana.cocoonTitle) {
             showTitle("§r§6§l<§b§l§kO§6§l> §b§lCOCOON! §6§l<§b§l§kO§6§l>", "§b$mobName", 10, 40, 10)
-            playCustomSound(SboDataObject.soundSettingsData.cocoonSound, volume = SboDataObject.soundSettingsData.cocoonVolume)
+            playCustomSound(DataManager.soundSettingsData.cocoonSound, volume = DataManager.soundSettingsData.cocoonVolume)
         }
     }
 
@@ -302,10 +302,10 @@ object DianaMobDetect {
 
         if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
             when (RareDianaMob.fromName(name)) {
-                RareDianaMob.INQ -> playCustomSound(SboDataObject.soundSettingsData.lowInqHpSound, SboDataObject.soundSettingsData.lowInqHpVoume)
-                RareDianaMob.KING ->  playCustomSound(SboDataObject.soundSettingsData.lowKingHpSound, SboDataObject.soundSettingsData.lowKingHpVoume)
-                RareDianaMob.SPHINX -> playCustomSound(SboDataObject.soundSettingsData.lowSphinxHpSound, SboDataObject.soundSettingsData.lowSphinxHpVoume)
-                RareDianaMob.MANTI -> playCustomSound(SboDataObject.soundSettingsData.lowMantiHpSound, SboDataObject.soundSettingsData.lowMantiHpVoume)
+                RareDianaMob.INQ -> playCustomSound(DataManager.soundSettingsData.lowInqHpSound, DataManager.soundSettingsData.lowInqHpVoume)
+                RareDianaMob.KING ->  playCustomSound(DataManager.soundSettingsData.lowKingHpSound, DataManager.soundSettingsData.lowKingHpVoume)
+                RareDianaMob.SPHINX -> playCustomSound(DataManager.soundSettingsData.lowSphinxHpSound, DataManager.soundSettingsData.lowSphinxHpVoume)
+                RareDianaMob.MANTI -> playCustomSound(DataManager.soundSettingsData.lowMantiHpSound, DataManager.soundSettingsData.lowMantiHpVoume)
                 else -> {}
             }
 

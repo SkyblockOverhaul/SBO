@@ -5,8 +5,8 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.overlayData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.overlayData
 import org.lwjgl.glfw.GLFW
 
 class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
@@ -118,6 +118,6 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     override fun removed() {
         super.removed()
         OverlayManager.overlays.forEach { it.selected = false }
-        SboDataObject.save("OverlayData")
+        DataManager.save("OverlayData")
     }
 }

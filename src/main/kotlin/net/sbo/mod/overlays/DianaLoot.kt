@@ -8,8 +8,8 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOneReflectively
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.SboTimerManager
-import net.sbo.mod.utils.data.DianaTracker
-import net.sbo.mod.utils.data.SboDataObject.SBOConfigBundle
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
@@ -68,7 +68,7 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     fun resetSession() {
         SboTimerManager.timerSession.reset()
-        SBOConfigBundle.dianaTrackerSessionData.reset().save()
+        DataManager.dianaTrackerSession.reset().save()
         updateLines()
         DianaMobs.updateLines()
     }
@@ -130,7 +130,7 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     private fun hideLine(name: String) {
         if (!isCraftingScreenOpen()) return
-        val hideList = SBOConfigBundle.sboData.hideTrackerLines
+        val hideList = DataManager.sboData.hideTrackerLines
         if (name in hideList) hideList.remove(name) else hideList.add(name)
         updateLines()
     }
@@ -150,10 +150,10 @@ object DianaLoot : DirtyFlushableOverlay() {
         val line = OverlayTextLine(formattedText).onClick { hideLine(itemName) }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemName in SBOConfigBundle.sboData.hideTrackerLines)
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemName in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
-        if (itemName in SBOConfigBundle.sboData.hideTrackerLines) {
+        if (itemName in DataManager.sboData.hideTrackerLines) {
             line.text = "$GRAY$STRIKETHROUGH${formattedText.removeFormatting()}"
         }
         return line
@@ -188,7 +188,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         val line = OverlayTextLine(combinedText).onClick { hideLine(itemNameBase) }
             .setCondition {
                 val meetsZeroValueCondition = totalAmount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemNameBase in SBOConfigBundle.sboData.hideTrackerLines)
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemNameBase in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
             .onHover { drawContext, textRenderer ->
@@ -203,7 +203,7 @@ object DianaLoot : DirtyFlushableOverlay() {
                     mouseX, mouseY, textRenderer
                 )
             }
-        if (itemNameBase in SBOConfigBundle.sboData.hideTrackerLines) {
+        if (itemNameBase in DataManager.sboData.hideTrackerLines) {
             line.text = "$GRAY$STRIKETHROUGH${combinedText.removeFormatting()}"
         }
         return line
@@ -228,9 +228,9 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     private fun getDianaTracker(type: Diana.Tracker): DianaTracker? {
         return when (type) {
-            Diana.Tracker.TOTAL -> SBOConfigBundle.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> SBOConfigBundle.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> SBOConfigBundle.dianaTrackerSessionData
+            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotal
+            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayor
+            Diana.Tracker.SESSION -> DataManager.dianaTrackerSession
             Diana.Tracker.OFF -> null
         }
     }
@@ -281,7 +281,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         val totalBurrows = tracker.items.TOTAL_BURROWS
         val totalProfitValue = totalProfit(tracker)
         val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
-        val totalEvents = SBOConfigBundle.pastDianaEventsData.events.size
+        val totalEvents = DataManager.pastDianaEventsData.events.size
 
         val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
         val bphText = if (burrowsPerHr.isNaN()) "" else " $GRAY[$AQUA$burrowsPerHr$GRAY/${AQUA}hr$GRAY]"
@@ -350,9 +350,9 @@ object DianaLoot : DirtyFlushableOverlay() {
     private fun updateTimerText() {
         val type = Diana.lootTracker
         val tracker = when (type) {
-            Diana.Tracker.TOTAL -> SBOConfigBundle.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> SBOConfigBundle.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> SBOConfigBundle.dianaTrackerSessionData
+            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotal
+            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayor
+            Diana.Tracker.SESSION -> DataManager.dianaTrackerSession
             Diana.Tracker.OFF -> {
                 timerLine.text = ""
                 return

@@ -3,7 +3,7 @@ package net.sbo.mod.utils.medal
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.Medal
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayor
 import net.sbo.mod.utils.game.Mayor.mayorElectedYear
 import java.net.URI
 import java.net.http.HttpClient

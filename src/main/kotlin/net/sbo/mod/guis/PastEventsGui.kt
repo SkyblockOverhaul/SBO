@@ -16,11 +16,11 @@ import gg.essential.universal.UKeyboard
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.DianaTracker
-import net.sbo.mod.utils.data.DianaTrackerTotalData
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerTotal
-import net.sbo.mod.utils.data.SboDataObject.pastDianaEventsData
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
+import net.sbo.mod.utils.data.configs.diana.DianaTrackerTotalData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.dianaTrackerTotal
+import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
 import java.awt.Color
 
 class PastEventsGui : WindowScreen(ElementaVersion.V10) {
@@ -357,7 +357,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
                 confirmButton.onMouseClick {
                     pastDianaEventsData.events = pastDianaEventsData.events.filterNot { it.year == event.year }
                     renderEvents()
-                    SboDataObject.save(SboDataObject.dataDir, pastDianaEventsData, "pastDianaEvents.json")
+                    DataManager.save("PastDianaEventsData")
                     confirmOverlayOutline.hide()
                 }
 

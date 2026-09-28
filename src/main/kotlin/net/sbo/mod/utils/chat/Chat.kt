@@ -8,7 +8,7 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.General
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.ClickActionManager
 
 object Chat {
@@ -59,8 +59,8 @@ object Chat {
 
     private fun createDontShowAgainAction(messageText: String): Pair<ClickEvent, HoverEvent> {
         val actionId = ClickActionManager.registerAction {
-            SboDataObject.sboData.suppressedMessages.add(messageText)
-            SboDataObject.save("SboData")
+            DataManager.sboData.suppressedMessages.add(messageText)
+            DataManager.save("SboData")
             sendClientMessage(Component.literal("§6[SBO] §aMessage suppressed. You won't see this again."))
         }
         val hoverText = Component.literal("Click the message to not show it again").withStyle(ChatFormatting.YELLOW)
@@ -73,7 +73,7 @@ object Chat {
      * @param dontShowAgain If true, adds a click action to suppress this message permanently.
      */
     fun chat(message: String, dontShowAgain: Boolean = false) {
-        if (SboDataObject.sboData.suppressedMessages.contains(message)) return
+        if (DataManager.sboData.suppressedMessages.contains(message)) return
 
         val styledText: Component = if (dontShowAgain) {
             val (clickEvent, hoverEvent) = createDontShowAgainAction(message)
@@ -96,7 +96,7 @@ object Chat {
      */
     fun chat(message: Component, dontShowAgain: Boolean = false) {
         val messageText = message.string
-        if (SboDataObject.sboData.suppressedMessages.contains(messageText)) return
+        if (DataManager.sboData.suppressedMessages.contains(messageText)) return
 
         val styledText: Component = if (dontShowAgain) {
             val (clickEvent, hoverEvent) = createDontShowAgainAction(messageText)
@@ -188,7 +188,7 @@ object Chat {
         }
 
         val messageText = combinedText.string
-        if (SboDataObject.sboData.suppressedMessages.contains(messageText)) return
+        if (DataManager.sboData.suppressedMessages.contains(messageText)) return
 
         val styledText: Component = if (dontShowAgain) {
             val (clickEvent, hoverEvent) = createDontShowAgainAction(messageText)
