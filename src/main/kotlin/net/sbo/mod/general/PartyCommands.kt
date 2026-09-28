@@ -14,7 +14,7 @@ import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DataManager.dianaTrackerMayor
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.ServerStats
@@ -90,118 +90,118 @@ object PartyCommands {
 
     private val dianaCommands = listOf(
         PartyCommand(listOf("!chim", "!chimera", "!chims", "!chimeras", "!book", "!books"), { settings.dianaPartyCommands }) {
-            fmt("Chimera", dianaTrackerMayor.items.CHIMERA, dianaTrackerMayor.mobs.MINOS_INQUISITOR) + " +${dianaTrackerMayor.items.CHIMERA_LS} LS"
+            fmt("Chimera", dianaTrackerMayorData.items.CHIMERA, dianaTrackerMayorData.mobs.MINOS_INQUISITOR) + " +${dianaTrackerMayorData.items.CHIMERA_LS} LS"
         },
         PartyCommand(listOf("!inqsls", "!inquisitorls", "!inquisls", "!lsinq", "!lsinqs", "!lsinquisitor", "!lsinquis"), { settings.dianaPartyCommands }) {
-            "Inquisitor LS: ${dianaTrackerMayor.mobs.MINOS_INQUISITOR_LS}"
+            "Inquisitor LS: ${dianaTrackerMayorData.mobs.MINOS_INQUISITOR_LS}"
         },
         PartyCommand(listOf("!inq", "!inqs", "!inquisitor", "!inquis"), { settings.dianaPartyCommands }) {
-            fmt("Inquisitor", dianaTrackerMayor.mobs.MINOS_INQUISITOR, dianaTrackerMayor.mobs.TOTAL_MOBS)
+            fmt("Inquisitor", dianaTrackerMayorData.mobs.MINOS_INQUISITOR, dianaTrackerMayorData.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!kingls", "!kingsls"), { settings.dianaPartyCommands }) {
-            "King LS: ${dianaTrackerMayor.mobs.KING_MINOS_LS}"
+            "King LS: ${dianaTrackerMayorData.mobs.KING_MINOS_LS}"
         },
         PartyCommand(listOf("!king", "!kings"), { settings.dianaPartyCommands }) {
-            fmt("King", dianaTrackerMayor.mobs.KING_MINOS, dianaTrackerMayor.mobs.TOTAL_MOBS)
+            fmt("King", dianaTrackerMayorData.mobs.KING_MINOS, dianaTrackerMayorData.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!sphinxls", "!sphinxsls"), { settings.dianaPartyCommands }) {
-            "Sphinx LS: ${dianaTrackerMayor.mobs.SPHINX_LS}"
+            "Sphinx LS: ${dianaTrackerMayorData.mobs.SPHINX_LS}"
         },
         PartyCommand(listOf("!sphinx", "!sphinxs"), { settings.dianaPartyCommands }) {
-            fmt("Sphinx", dianaTrackerMayor.mobs.SPHINX, dianaTrackerMayor.mobs.TOTAL_MOBS)
+            fmt("Sphinx", dianaTrackerMayorData.mobs.SPHINX, dianaTrackerMayorData.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!mantils", "!mantisls"), { settings.dianaPartyCommands }) {
-            "Manticore LS: ${dianaTrackerMayor.mobs.MANTICORE_LS}"
+            "Manticore LS: ${dianaTrackerMayorData.mobs.MANTICORE_LS}"
         },
         PartyCommand(listOf("!manti", "!mantis"), { settings.dianaPartyCommands }) {
-            fmt("Manticore", dianaTrackerMayor.mobs.MANTICORE, dianaTrackerMayor.mobs.TOTAL_MOBS)
+            fmt("Manticore", dianaTrackerMayorData.mobs.MANTICORE, dianaTrackerMayorData.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!dye", "!dyes"), { settings.dianaPartyCommands }) {
-            fmt("Dye", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, dianaTrackerMayor.mobs.TOTAL_MOBS)
+            fmt("Dye", dianaTrackerMayorData.items.MYTHOLOGICAL_DYE, dianaTrackerMayorData.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
-            val burrows = dianaTrackerMayor.items.TOTAL_BURROWS
-            val perHr = Helper.getBurrowsPerHr(dianaTrackerMayor, SboTimerManager.timerMayor)
+            val burrows = dianaTrackerMayorData.items.TOTAL_BURROWS
+            val perHr = Helper.getBurrowsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
             "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)"
         },
         PartyCommand(listOf("!relic", "!relics"), { settings.dianaPartyCommands }) {
-            fmt("Relics", dianaTrackerMayor.items.MINOS_RELIC, dianaTrackerMayor.mobs.MINOS_CHAMPION)
+            fmt("Relics", dianaTrackerMayorData.items.MINOS_RELIC, dianaTrackerMayorData.mobs.MINOS_CHAMPION)
         },
         PartyCommand(listOf("!chimls", "!chimerals", "!bookls", "!lschim", "!lsbook", "!lootsharechim", "!lschimera"), { settings.dianaPartyCommands }) {
-            fmt("Chimera LS", dianaTrackerMayor.items.CHIMERA_LS, dianaTrackerMayor.mobs.MINOS_INQUISITOR_LS)
+            fmt("Chimera LS", dianaTrackerMayorData.items.CHIMERA_LS, dianaTrackerMayorData.mobs.MINOS_INQUISITOR_LS)
         },
         PartyCommand(listOf("!core", "!manticore"), { settings.dianaPartyCommands }) {
-            fmt("Cores", dianaTrackerMayor.items.MANTI_CORE, dianaTrackerMayor.mobs.MANTICORE)
+            fmt("Cores", dianaTrackerMayorData.items.MANTI_CORE, dianaTrackerMayorData.mobs.MANTICORE)
         },
         PartyCommand(listOf("!corels", "!manticorels", "!lscore", "!lsmanticore"), { settings.dianaPartyCommands }) {
-            fmt("Core LS", dianaTrackerMayor.items.MANTI_CORE_LS, dianaTrackerMayor.mobs.MANTICORE_LS)
+            fmt("Core LS", dianaTrackerMayorData.items.MANTI_CORE_LS, dianaTrackerMayorData.mobs.MANTICORE_LS)
         },
         PartyCommand(listOf("!stinger", "!fatefulstinger"), { settings.dianaPartyCommands }) {
-            fmt("Stingers", dianaTrackerMayor.items.FATEFUL_STINGER, dianaTrackerMayor.mobs.MANTICORE)
+            fmt("Stingers", dianaTrackerMayorData.items.FATEFUL_STINGER, dianaTrackerMayorData.mobs.MANTICORE)
         },
         PartyCommand(listOf("!stingerls", "!fatefulstingerls", "!lsstinger", "!lsfatefulstinger"), { settings.dianaPartyCommands }) {
-            fmt("Stinger LS", dianaTrackerMayor.items.FATEFUL_STINGER_LS, dianaTrackerMayor.mobs.MANTICORE_LS)
+            fmt("Stinger LS", dianaTrackerMayorData.items.FATEFUL_STINGER_LS, dianaTrackerMayorData.mobs.MANTICORE_LS)
         },
         PartyCommand(listOf("!wool", "!shimmering", "!shimmeringwool"), { settings.dianaPartyCommands }) {
-            fmt("Wool", dianaTrackerMayor.items.SHIMMERING_WOOL, dianaTrackerMayor.mobs.KING_MINOS)
+            fmt("Wool", dianaTrackerMayorData.items.SHIMMERING_WOOL, dianaTrackerMayorData.mobs.KING_MINOS)
         },
         PartyCommand(listOf("!woolls", "!shimmeringwoolls", "!lsshimmering", "!lsshimmeringwool"), { settings.dianaPartyCommands }) {
-            fmt("Wool LS", dianaTrackerMayor.items.SHIMMERING_WOOL_LS, dianaTrackerMayor.mobs.KING_MINOS_LS)
+            fmt("Wool LS", dianaTrackerMayorData.items.SHIMMERING_WOOL_LS, dianaTrackerMayorData.mobs.KING_MINOS_LS)
         },
         PartyCommand(listOf("!food", "!brainfood", "!brain"), { settings.dianaPartyCommands }) {
-            fmt("Brain Food", dianaTrackerMayor.items.BRAIN_FOOD, dianaTrackerMayor.mobs.SPHINX)
+            fmt("Brain Food", dianaTrackerMayorData.items.BRAIN_FOOD, dianaTrackerMayorData.mobs.SPHINX)
         },
         PartyCommand(listOf("!foodls", "!brainfoodls", "!lsbrainfood", "!lsbrain"), { settings.dianaPartyCommands }) {
-            fmt("Brain Food LS", dianaTrackerMayor.items.BRAIN_FOOD_LS, dianaTrackerMayor.mobs.SPHINX_LS)
+            fmt("Brain Food LS", dianaTrackerMayorData.items.BRAIN_FOOD_LS, dianaTrackerMayorData.mobs.SPHINX_LS)
         },
         PartyCommand(listOf("!braided", "!braideds"), { settings.dianaPartyCommands }) {
-            fmt("Braided feathers", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, dianaTrackerMayor.mobs.TOTAL_MOBS)
+            fmt("Braided feathers", dianaTrackerMayorData.items.BRAIDED_GRIFFIN_FEATHER, dianaTrackerMayorData.mobs.TOTAL_MOBS)
         },
         PartyCommand(listOf("!kingshard", "!kingshards"), { settings.dianaPartyCommands }) {
-            fmt("King Shards", dianaTrackerMayor.items.KING_MINOS_SHARD, dianaTrackerMayor.mobs.KING_MINOS)
+            fmt("King Shards", dianaTrackerMayorData.items.KING_MINOS_SHARD, dianaTrackerMayorData.mobs.KING_MINOS)
         },
         PartyCommand(listOf("!sphinxshard", "!sphinxshards"), { settings.dianaPartyCommands }) {
-            fmt("Sphinx Shards", dianaTrackerMayor.items.SPHINX_SHARD, dianaTrackerMayor.mobs.SPHINX)
+            fmt("Sphinx Shards", dianaTrackerMayorData.items.SPHINX_SHARD, dianaTrackerMayorData.mobs.SPHINX)
         },
         PartyCommand(listOf("!minotaurshard", "!minotaurshards"), { settings.dianaPartyCommands }) {
-            fmt("Minotaur Shards", dianaTrackerMayor.items.MINOTAUR_SHARD, dianaTrackerMayor.mobs.MINOTAUR)
+            fmt("Minotaur Shards", dianaTrackerMayorData.items.MINOTAUR_SHARD, dianaTrackerMayorData.mobs.MINOTAUR)
         },
         PartyCommand(listOf("!certanshard", "!certanshards"), { settings.dianaPartyCommands }) {
-            fmt("Certan Shards", dianaTrackerMayor.items.CRETAN_BULL_SHARD, dianaTrackerMayor.mobs.CRETAN_BULL)
+            fmt("Certan Shards", dianaTrackerMayorData.items.CRETAN_BULL_SHARD, dianaTrackerMayorData.mobs.CRETAN_BULL)
         },
         PartyCommand(listOf("!mythofrag", "!frags"), { settings.dianaPartyCommands }) {
-            "Mytho Frags: ${dianaTrackerMayor.items.MYTHOS_FRAGMENT}"
+            "Mytho Frags: ${dianaTrackerMayorData.items.MYTHOS_FRAGMENT}"
         },
         PartyCommand(listOf("!urns", "!urn", "!cretanurn"), { settings.dianaPartyCommands }) {
-            fmt("Urns", dianaTrackerMayor.items.CRETAN_URN, dianaTrackerMayor.mobs.CRETAN_BULL)
+            fmt("Urns", dianaTrackerMayorData.items.CRETAN_URN, dianaTrackerMayorData.mobs.CRETAN_BULL)
         },
         PartyCommand(listOf("!hilt", "!hiltofrevelations"), { settings.dianaPartyCommands }) {
-            fmt("Hilts", dianaTrackerMayor.items.HILT_OF_REVELATIONS, dianaTrackerMayor.mobs.MINOS_HUNTER)
+            fmt("Hilts", dianaTrackerMayorData.items.HILT_OF_REVELATIONS, dianaTrackerMayorData.mobs.MINOS_HUNTER)
         },
         PartyCommand(listOf("!sticks", "!stick"), { settings.dianaPartyCommands }) {
-            fmt("Sticks", dianaTrackerMayor.items.DAEDALUS_STICK, dianaTrackerMayor.mobs.MINOTAUR)
+            fmt("Sticks", dianaTrackerMayorData.items.DAEDALUS_STICK, dianaTrackerMayorData.mobs.MINOTAUR)
         },
         PartyCommand(listOf("!feathers", "!feather"), { settings.dianaPartyCommands }) {
-            "Feathers: ${dianaTrackerMayor.items.GRIFFIN_FEATHER}"
+            "Feathers: ${dianaTrackerMayorData.items.GRIFFIN_FEATHER}"
         },
         PartyCommand(listOf("!coins", "!coin"), { settings.dianaPartyCommands }) {
-            "Coins: ${formatNumber(dianaTrackerMayor.items.COINS, withCommas = true)}"
+            "Coins: ${formatNumber(dianaTrackerMayorData.items.COINS, withCommas = true)}"
         },
         PartyCommand(listOf("!mobs", "!mob"), { settings.dianaPartyCommands }) {
-            val totalMobs = dianaTrackerMayor.mobs.TOTAL_MOBS
-            val perHr = Helper.getMobsPerHr(dianaTrackerMayor, SboTimerManager.timerMayor)
+            val totalMobs = dianaTrackerMayorData.mobs.TOTAL_MOBS
+            val perHr = Helper.getMobsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
             "Mobs: $totalMobs ($perHr/h)"
         },
         PartyCommand(listOf("!mf", "!magicfind"), { settings.dianaPartyCommands }) {
             "Wool (${sboData.highestWoolMagicFind}% ✯) Manticore (${sboData.highestCoreMagicFind}% ✯) Stinger (${sboData.highestStingerMagicFind}% ✯) Chim (${sboData.highestChimMagicFind}% ✯) Relic (${sboData.highestRelicMagicFind}% ✯) Food (${sboData.highestFoodMagicFind}% ✯) Stick (${sboData.highestStickMagicFind}% ✯)"
         },
         PartyCommand(listOf("!playtime"), { settings.dianaPartyCommands }) {
-            "Playtime: ${formatTime(dianaTrackerMayor.items.TIME)}"
+            "Playtime: ${formatTime(dianaTrackerMayorData.items.TIME)}"
         },
         PartyCommand(listOf("!profits", "!profit"), { settings.dianaPartyCommands }) {
-            val playtime = dianaTrackerMayor.items.TIME
+            val playtime = dianaTrackerMayorData.items.TIME
             val playTimeHrs = playtime.toDouble() / TimeUnit.HOURS.toMillis(1)
-            val profit = DianaLoot.totalProfit(dianaTrackerMayor)
+            val profit = DianaLoot.totalProfit(dianaTrackerMayorData)
             val offerType = if (Diana.ironmanOverrides) "NPC Sell" else Diana.bazaarSettingDiana.toString()
             val profitHour = profit / playTimeHrs
             "Profit: ${formatNumber(profit)} (${Helper.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"

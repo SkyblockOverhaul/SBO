@@ -41,16 +41,16 @@ object DataManager {
     var pastDianaEventsData: PastDianaEventsData = PastDianaEventsData()
 
     @JvmField @DataField("dianaTrackerTotal.json")
-    var dianaTrackerTotal: DianaTrackerTotalData = DianaTrackerTotalData()
+    var dianaTrackerTotalData: DianaTrackerTotalData = DianaTrackerTotalData()
 
     @JvmField @DataField("dianaTrackerSession.json")
-    var dianaTrackerSession: DianaTrackerSessionData = DianaTrackerSessionData()
+    var dianaTrackerSessionData: DianaTrackerSessionData = DianaTrackerSessionData()
 
     @JvmField @DataField("dianaTrackerMayor.json")
-    var dianaTrackerMayor: DianaTrackerMayorData = DianaTrackerMayorData()
+    var dianaTrackerMayorData: DianaTrackerMayorData = DianaTrackerMayorData()
 
     @JvmField @DataField("partyFinderConfigState.json")
-    var pfConfigState: PartyFinderConfigState = PartyFinderConfigState()
+    var partyFinderConfigState: PartyFinderConfigState = PartyFinderConfigState()
 
     @JvmField @DataField("overlayData.json")
     var overlayData: OverlayData = OverlayData()
@@ -170,6 +170,7 @@ object DataManager {
                 val data = loadDataForFile(modName, fileName, field.type as Class<Any>) { field.type.getDeclaredConstructor().newInstance() }
                 field.set(this, data)
             }
+        SBOKotlin.logger.info("All data loaded successfully.")
     }
 
     /**
@@ -767,15 +768,15 @@ object DataManager {
 
     fun updatePfConfigState(category: String, list: String, key: String, value: Boolean) {
         val categoryInstance: Any? = when (category) {
-            "filters" -> pfConfigState.filters
-            "checkboxes" -> pfConfigState.checkboxes
+            "filters" -> partyFinderConfigState.filters
+            "checkboxes" -> partyFinderConfigState.checkboxes
             else -> null
         }
 
         if (categoryInstance != null) {
             val listInstance: Any? = when (list) {
-                "diana" -> if (category == "filters") pfConfigState.filters.diana else pfConfigState.checkboxes.diana
-                "custom" -> if (category == "filters") pfConfigState.filters.custom else pfConfigState.checkboxes.custom
+                "diana" -> if (category == "filters") partyFinderConfigState.filters.diana else partyFinderConfigState.checkboxes.diana
+                "custom" -> if (category == "filters") partyFinderConfigState.filters.custom else partyFinderConfigState.checkboxes.custom
                 else -> null
             }
 
@@ -793,8 +794,8 @@ object DataManager {
         if (category != "inputs" && category != "textInputTexts") return
 
         val listInstance: Any? = when (list) {
-            "diana" -> pfConfigState.inputs.diana
-            "custom" -> pfConfigState.inputs.custom
+            "diana" -> partyFinderConfigState.inputs.diana
+            "custom" -> partyFinderConfigState.inputs.custom
             else -> null
         }
 

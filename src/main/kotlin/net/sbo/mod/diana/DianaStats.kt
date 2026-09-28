@@ -39,9 +39,9 @@ object DianaStats {
 
     private fun getPlayerStats(total: Boolean? = false): PlayerStats {
         val tracker: DianaTracker = when (total) {
-            true -> DataManager.dianaTrackerTotal
-            false -> DataManager.dianaTrackerMayor
-            else -> DataManager.dianaTrackerSession
+            true -> DataManager.dianaTrackerTotalData
+            false -> DataManager.dianaTrackerMayorData
+            else -> DataManager.dianaTrackerSessionData
         }
 
         val timer: SboTimerManager.SBOTimer = when (total) {

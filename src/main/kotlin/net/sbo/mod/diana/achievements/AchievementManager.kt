@@ -21,7 +21,7 @@ import net.sbo.mod.utils.data.configs.diana.DianaTrackerMayorData
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.DataManager.achievementsData
-import net.sbo.mod.utils.data.DataManager.dianaTrackerMayor
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
 import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
@@ -251,7 +251,7 @@ object AchievementManager {
         if (mobsData.SPHINX >= 1) unlockAchievement(115)
         if (mobsData.MANTICORE >= 1) unlockAchievement(112)
 
-        if (totalProfit(dianaTrackerMayor) >= 1_000_000_000L) unlockAchievement(84)
+        if (totalProfit(dianaTrackerMayorData) >= 1_000_000_000L) unlockAchievement(84)
         trackCOA()
     }
 

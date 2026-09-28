@@ -23,7 +23,7 @@ class Achievement(
     val color = AchievementManager.rarityColorDict[rarity] ?: "§f"
 
     private fun checkYearReset() {
-        val currentYear = DataManager.dianaTrackerMayor.year
+        val currentYear = DataManager.dianaTrackerMayorData.year
         if (achievementsData.lastEventYear != currentYear) {
             achievementsData.currentEventAchievements.clear()
             achievementsData.lastEventYear = currentYear

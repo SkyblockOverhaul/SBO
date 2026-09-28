@@ -20,7 +20,7 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
-import net.sbo.mod.utils.data.DataManager.pfConfigState
+import net.sbo.mod.utils.data.DataManager.partyFinderConfigState
 
 
 class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
@@ -143,8 +143,8 @@ class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
         lvlInput.onlyNumbers = true
         lvlInput.maxChars = 3
         lvlInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.diana.lvl > 0) {
-            lvlInput.textInputText.setText(pfConfigState.inputs.diana.lvl.toString())
+        if (partyFinderConfigState.inputs.diana.lvl > 0) {
+            lvlInput.textInputText.setText(partyFinderConfigState.inputs.diana.lvl.toString())
         }
 
         val killsBox = UIBlock().constrain {
@@ -174,8 +174,8 @@ class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
         killsInput.onlyNumbers = true
         killsInput.maxChars = 6
         killsInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.diana.kills > 0) {
-            killsInput.textInputText.setText(pfConfigState.inputs.diana.kills.toString())
+        if (partyFinderConfigState.inputs.diana.kills > 0) {
+            killsInput.textInputText.setText(partyFinderConfigState.inputs.diana.kills.toString())
         }
 
         val noteBox = UIBlock().constrain {
@@ -204,8 +204,8 @@ class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
         noteInput.create().setChildOf(noteBox)
         noteInput.maxChars = 30
         noteInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.diana.note.isNotEmpty()) {
-            noteInput.textInputText.setText(pfConfigState.inputs.diana.note)
+        if (partyFinderConfigState.inputs.diana.note.isNotEmpty()) {
+            noteInput.textInputText.setText(partyFinderConfigState.inputs.diana.note)
         }
 
         val l5e9box = UIBlock().constrain {
@@ -280,12 +280,12 @@ class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
         createButton.hoverEffect(Theme.BUTTON_DEFAULT, Theme.BUTTON_HOVER)
         createButton.setOnClick {
             val reqs = Reqs(
-                lvl = pfConfigState.inputs.diana.lvl,
-                kills = pfConfigState.inputs.diana.kills,
-                eman9 = pfConfigState.checkboxes.diana.eman9,
-                looting5 = pfConfigState.checkboxes.diana.looting5
+                lvl = partyFinderConfigState.inputs.diana.lvl,
+                kills = partyFinderConfigState.inputs.diana.kills,
+                eman9 = partyFinderConfigState.checkboxes.diana.eman9,
+                looting5 = partyFinderConfigState.checkboxes.diana.looting5
             )
-            val note = pfConfigState.inputs.diana.note
+            val note = partyFinderConfigState.inputs.diana.note
             val partyType = "Diana"
             hasSboKey()
             parent.partyCreate(reqs = reqs, note = note, type = partyType)
@@ -395,7 +395,7 @@ class DianaPage(private val parent: PartyFinderGUI) : PartyPage {
     }
 
     override fun createFilterConfig(stats: PartyPlayerStats): ((Party) -> Boolean)? {
-        val config = pfConfigState.filters.diana
+        val config = partyFinderConfigState.filters.diana
         val isEman9 = config.eman9Filter
         val isLooting5 = config.looting5Filter
         val canIJoin = config.canIjoinFilter

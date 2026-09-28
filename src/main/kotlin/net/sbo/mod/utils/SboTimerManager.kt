@@ -13,13 +13,13 @@ import java.util.concurrent.TimeUnit
 object SboTimerManager {
     internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
     val timerMayor = SBOTimer(
-        tracker = DataManager.dianaTrackerMayor
+        tracker = DataManager.dianaTrackerMayorData
     )
     val timerTotal = SBOTimer(
-        tracker = DataManager.dianaTrackerTotal
+        tracker = DataManager.dianaTrackerTotalData
     )
     val timerSession = SBOTimer(
-        tracker = DataManager.dianaTrackerSession
+        tracker = DataManager.dianaTrackerSessionData
     )
 
     fun init() {

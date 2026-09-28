@@ -13,7 +13,7 @@ import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.Effect
 import gg.essential.elementa.events.UIClickEvent
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.data.DataManager.pfConfigState
+import net.sbo.mod.utils.data.DataManager.partyFinderConfigState
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
 
@@ -144,15 +144,15 @@ object GuiHandler {
         private var checked: Boolean = if (filter) {
             when (list) {
                 "diana" -> when (key) {
-                    "eman9Filter" -> pfConfigState.filters.diana.eman9Filter
-                    "looting5Filter" -> pfConfigState.filters.diana.looting5Filter
-                    "canIjoinFilter" -> pfConfigState.filters.diana.canIjoinFilter
+                    "eman9Filter" -> partyFinderConfigState.filters.diana.eman9Filter
+                    "looting5Filter" -> partyFinderConfigState.filters.diana.looting5Filter
+                    "canIjoinFilter" -> partyFinderConfigState.filters.diana.canIjoinFilter
                     else -> false // Default case if key is not found
                 }
 
                 "custom" -> when (key) {
-                    "eman9Filter" -> pfConfigState.filters.custom.eman9Filter
-                    "canIjoinFilter" -> pfConfigState.filters.custom.canIjoinFilter
+                    "eman9Filter" -> partyFinderConfigState.filters.custom.eman9Filter
+                    "canIjoinFilter" -> partyFinderConfigState.filters.custom.canIjoinFilter
                     else -> false // Default case if key is not found
                 }
 
@@ -161,13 +161,13 @@ object GuiHandler {
         } else {
             when (list) {
                 "diana" -> when (key) {
-                    "eman9" -> pfConfigState.checkboxes.diana.eman9
-                    "looting5" -> pfConfigState.checkboxes.diana.looting5
+                    "eman9" -> partyFinderConfigState.checkboxes.diana.eman9
+                    "looting5" -> partyFinderConfigState.checkboxes.diana.looting5
                     else -> false
                 }
 
                 "custom" -> when (key) {
-                    "eman9" -> pfConfigState.checkboxes.custom.eman9
+                    "eman9" -> partyFinderConfigState.checkboxes.custom.eman9
                     else -> false
                 }
 
@@ -256,7 +256,7 @@ object GuiHandler {
         fun getValue(): String {
             return when (list) {
                 "custom" -> {
-                    val custom = pfConfigState.inputs.custom
+                    val custom = partyFinderConfigState.inputs.custom
                     when (key) {
                         "lvl" -> custom.lvl.toString()
                         "mp" -> custom.mp.toString()
@@ -266,7 +266,7 @@ object GuiHandler {
                     }
                 }
                 "diana" -> {
-                    val diana = pfConfigState.inputs.diana
+                    val diana = partyFinderConfigState.inputs.diana
                     when (key) {
                         "kills" -> diana.kills.toString()
                         "lvl" -> diana.lvl.toString()

@@ -19,14 +19,14 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.data.configs.diana.DianaTrackerTotalData
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.data.DataManager.dianaTrackerTotal
+import net.sbo.mod.utils.data.DataManager.dianaTrackerTotalData
 import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
 import java.awt.Color
 
 class PastEventsGui : WindowScreen(ElementaVersion.V10) {
     private var pastEvents = pastDianaEventsData
     private val events = pastEvents.events.reversed()
-    private var totalEvents = dianaTrackerTotal
+    private var totalEvents = dianaTrackerTotalData
     private var isOverlayHidden = true
     private lateinit var eventContainer: UIBlock
     private lateinit var scroll: ScrollComponent

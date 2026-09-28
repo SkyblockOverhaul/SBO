@@ -20,7 +20,7 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.Party
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.Reqs
-import net.sbo.mod.utils.data.DataManager.pfConfigState
+import net.sbo.mod.utils.data.DataManager.partyFinderConfigState
 
 class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
 
@@ -130,8 +130,8 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
         lvlinput.onlyNumbers = true
         lvlinput.maxChars = 3
         lvlinput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.custom.lvl != 0) {
-            lvlinput.textInputText.setText(pfConfigState.inputs.custom.lvl.toString())
+        if (partyFinderConfigState.inputs.custom.lvl != 0) {
+            lvlinput.textInputText.setText(partyFinderConfigState.inputs.custom.lvl.toString())
         }
         val mpbox = UIBlock().constrain {
             x = 0.percent()
@@ -160,8 +160,8 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
         mpinput.onlyNumbers = true
         mpinput.maxChars = 4
         mpinput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.custom.mp != 0) {
-            mpinput.textInputText.setText(pfConfigState.inputs.custom.mp.toString())
+        if (partyFinderConfigState.inputs.custom.mp != 0) {
+            mpinput.textInputText.setText(partyFinderConfigState.inputs.custom.mp.toString())
         }
         val partySizeBox = UIBlock().constrain {
             x = 0.percent()
@@ -190,8 +190,8 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
         partySizeInput.onlyNumbers = true
         partySizeInput.maxChars = 2
         partySizeInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.custom.partySize != 0) {
-            partySizeInput.textInputText.setText(pfConfigState.inputs.custom.partySize.toString())
+        if (partyFinderConfigState.inputs.custom.partySize != 0) {
+            partySizeInput.textInputText.setText(partyFinderConfigState.inputs.custom.partySize.toString())
         }
         val noteBox = UIBlock().constrain {
             x = 0.percent()
@@ -219,8 +219,8 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
         noteInput.create().setChildOf(noteBox)
         noteInput.maxChars = 30
         noteInput.textInputText.setTextScale(parent.getTextScaleOfScaleText())
-        if (pfConfigState.inputs.custom.note.isNotEmpty()) {
-            noteInput.textInputText.setText(pfConfigState.inputs.custom.note)
+        if (partyFinderConfigState.inputs.custom.note.isNotEmpty()) {
+            noteInput.textInputText.setText(partyFinderConfigState.inputs.custom.note)
         }
         val eman9Box = UIBlock().constrain {
             x = 0.percent()
@@ -264,13 +264,13 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
         createButton.hoverEffect(Theme.BUTTON_DEFAULT, Theme.BUTTON_HOVER)
         createButton.setOnClick {
             val reqs = Reqs(
-                lvl = pfConfigState.inputs.custom.lvl,
-                mp = pfConfigState.inputs.custom.mp,
-                eman9 = pfConfigState.checkboxes.custom.eman9
+                lvl = partyFinderConfigState.inputs.custom.lvl,
+                mp = partyFinderConfigState.inputs.custom.mp,
+                eman9 = partyFinderConfigState.checkboxes.custom.eman9
             )
-            val note = pfConfigState.inputs.custom.note
+            val note = partyFinderConfigState.inputs.custom.note
             val partyType = "Custom"
-            val partySize = pfConfigState.inputs.custom.partySize
+            val partySize = partyFinderConfigState.inputs.custom.partySize
             if (!hasSboKey()) {
                 parent.closeCpWindow()
                 return@setOnClick
@@ -357,7 +357,7 @@ class CustomPage(private val parent: PartyFinderGUI) : PartyPage {
     }
 
     override fun createFilterConfig(stats: PartyPlayerStats): ((Party) -> Boolean)? {
-        val config = pfConfigState.filters.custom
+        val config = partyFinderConfigState.filters.custom
         val isEman9 = config.eman9Filter
         val canIJoin = config.canIjoinFilter
 

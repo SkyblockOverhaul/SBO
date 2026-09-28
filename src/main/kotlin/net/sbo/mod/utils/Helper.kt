@@ -552,7 +552,7 @@ object Helper {
     }
   
     private fun getDropInfo(dropName: String): DropInfo? {
-        val tracker = DataManager.dianaTrackerMayor
+        val tracker = DataManager.dianaTrackerMayorData
         val items = tracker.items
         val mobs = tracker.mobs
 
@@ -587,8 +587,8 @@ object Helper {
     }
 
     fun getSpawnMessage(message: String, mob: String): String {
-        val mobs = DataManager.dianaTrackerMayor.mobs
-        val items = DataManager.dianaTrackerMayor.items
+        val mobs = DataManager.dianaTrackerMayorData.mobs
+        val items = DataManager.dianaTrackerMayorData.items
         val sboData = DataManager.sboData
 
         val kingPercent = calcPercentOne(mobs.KING_MINOS, mobs.TOTAL_MOBS)

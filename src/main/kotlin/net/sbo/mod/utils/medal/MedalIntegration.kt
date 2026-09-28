@@ -3,7 +3,7 @@ package net.sbo.mod.utils.medal
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.settings.categories.Medal
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DataManager.dianaTrackerMayor
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
 import net.sbo.mod.utils.game.Mayor.mayorElectedYear
 import java.net.URI
 import java.net.http.HttpClient
@@ -34,7 +34,7 @@ object MedalIntegration {
         get() = event(
             eventId = "1",
             dropName = "Chimera Drop",
-            dropNumber = dianaTrackerMayor.items.CHIMERA + dianaTrackerMayor.items.CHIMERA_LS + 1,
+            dropNumber = dianaTrackerMayorData.items.CHIMERA + dianaTrackerMayorData.items.CHIMERA_LS + 1,
             enabled = Medal.medalChimeraEnabled
         )
 
@@ -42,7 +42,7 @@ object MedalIntegration {
         get() = event(
             eventId = "2",
             dropName = "Shimmering Wool Drop",
-            dropNumber = dianaTrackerMayor.items.SHIMMERING_WOOL + dianaTrackerMayor.items.SHIMMERING_WOOL_LS + 1,
+            dropNumber = dianaTrackerMayorData.items.SHIMMERING_WOOL + dianaTrackerMayorData.items.SHIMMERING_WOOL_LS + 1,
             enabled = Medal.medalWoolEnabled
         )
 
@@ -50,7 +50,7 @@ object MedalIntegration {
         get() = event(
             eventId = "3",
             dropName = "Brainfood Drop",
-            dropNumber = dianaTrackerMayor.items.BRAIN_FOOD + dianaTrackerMayor.items.BRAIN_FOOD_LS + 1,
+            dropNumber = dianaTrackerMayorData.items.BRAIN_FOOD + dianaTrackerMayorData.items.BRAIN_FOOD_LS + 1,
             enabled = Medal.medalBrainFoodEnabled
         )
 
@@ -58,7 +58,7 @@ object MedalIntegration {
         get() = event(
             eventId = "4",
             dropName = "Minos Relic Drop",
-            dropNumber = dianaTrackerMayor.items.MINOS_RELIC + 1,
+            dropNumber = dianaTrackerMayorData.items.MINOS_RELIC + 1,
             enabled = Medal.medalMinosRelicEnabled
         )
 
@@ -66,7 +66,7 @@ object MedalIntegration {
         get() = event(
             eventId = "5",
             dropName = "Manti-core Drop",
-            dropNumber = dianaTrackerMayor.items.MANTI_CORE + dianaTrackerMayor.items.MANTI_CORE_LS + 1,
+            dropNumber = dianaTrackerMayorData.items.MANTI_CORE + dianaTrackerMayorData.items.MANTI_CORE_LS + 1,
             enabled = Medal.medalMantiCoreEnabled
         )
 
@@ -74,7 +74,7 @@ object MedalIntegration {
         get() = event(
             eventId = "6",
             dropName = "Fateful Stinger Drop",
-            dropNumber = dianaTrackerMayor.items.FATEFUL_STINGER + dianaTrackerMayor.items.FATEFUL_STINGER_LS + 1,
+            dropNumber = dianaTrackerMayorData.items.FATEFUL_STINGER + dianaTrackerMayorData.items.FATEFUL_STINGER_LS + 1,
             enabled = Medal.medalFatefulStingerEnabled
         )
 
@@ -82,7 +82,7 @@ object MedalIntegration {
         get() = event(
             eventId = "7",
             dropName = "Daedalus Stick Drop",
-            dropNumber = dianaTrackerMayor.items.DAEDALUS_STICK + 1,
+            dropNumber = dianaTrackerMayorData.items.DAEDALUS_STICK + 1,
             enabled = Medal.medalDaedalusStickEnabled
         )
 
@@ -90,7 +90,7 @@ object MedalIntegration {
         get() = event(
             eventId = "8",
             dropName = "Braided Griffin Feather Drop",
-            dropNumber = dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER + 1,
+            dropNumber = dianaTrackerMayorData.items.BRAIDED_GRIFFIN_FEATHER + 1,
             enabled = Medal.medalBraidedGriffinFeatherEnabled
         )
 
@@ -98,7 +98,7 @@ object MedalIntegration {
         get() = event(
             eventId = "9",
             dropName = "Mythological Dye Drop",
-            dropNumber = dianaTrackerMayor.items.MYTHOLOGICAL_DYE + 1,
+            dropNumber = dianaTrackerMayorData.items.MYTHOLOGICAL_DYE + 1,
             enabled = Medal.medalMythologicalDyeEnabled
         )
 
@@ -106,7 +106,7 @@ object MedalIntegration {
         get() = event(
             eventId = "10",
             dropName = "Myth the Fish Drop",
-            dropNumber = dianaTrackerMayor.items.MYTH_THE_FISH + 1,
+            dropNumber = dianaTrackerMayorData.items.MYTH_THE_FISH + 1,
             enabled = Medal.medalMythTheFishEnabled
         )
 
@@ -114,7 +114,7 @@ object MedalIntegration {
         get() = event(
             eventId = "11",
             dropName = "Crown of Greed Drop",
-            dropNumber = dianaTrackerMayor.items.CROWN_OF_GREED + 1,
+            dropNumber = dianaTrackerMayorData.items.CROWN_OF_GREED + 1,
             enabled = Medal.medalCrownOfGreedEnabled
         )
 
@@ -122,7 +122,7 @@ object MedalIntegration {
         get() = event(
             eventId = "12",
             dropName = "Hilt of Revelations Drop",
-            dropNumber = dianaTrackerMayor.items.HILT_OF_REVELATIONS + 1,
+            dropNumber = dianaTrackerMayorData.items.HILT_OF_REVELATIONS + 1,
             enabled = Medal.medalHiltOfRevelationsEnabled
         )
 
@@ -130,7 +130,7 @@ object MedalIntegration {
         get() = event(
             eventId = "13",
             dropName = "Washed-up Souvenir Drop",
-            dropNumber = dianaTrackerMayor.items.WASHED_UP_SOUVENIR + 1,
+            dropNumber = dianaTrackerMayorData.items.WASHED_UP_SOUVENIR + 1,
             enabled = Medal.medalWashedUpSouvenirEnabled
         )
 
@@ -138,7 +138,7 @@ object MedalIntegration {
         get() = event(
             eventId = "14",
             dropName = "Dwarf Turtle Shelmet Drop",
-            dropNumber = dianaTrackerMayor.items.DWARF_TURTLE_SHELMET + 1,
+            dropNumber = dianaTrackerMayorData.items.DWARF_TURTLE_SHELMET + 1,
             enabled = Medal.medalDwarfTurtleShelmetEnabled
         )
 
@@ -146,7 +146,7 @@ object MedalIntegration {
         get() = event(
             eventId = "15",
             dropName = "Crochet Tiger Plushie Drop",
-            dropNumber = dianaTrackerMayor.items.CROCHET_TIGER_PLUSHIE + 1,
+            dropNumber = dianaTrackerMayorData.items.CROCHET_TIGER_PLUSHIE + 1,
             enabled = Medal.medalCrochetTigerPlushieEnabled
         )
 
@@ -154,7 +154,7 @@ object MedalIntegration {
         get() = event(
             eventId = "16",
             dropName = "Antique Remedies Drop",
-            dropNumber = dianaTrackerMayor.items.ANTIQUE_REMEDIES + 1,
+            dropNumber = dianaTrackerMayorData.items.ANTIQUE_REMEDIES + 1,
             enabled = Medal.medalAntiqueRemediesEnabled
         )
 
@@ -162,7 +162,7 @@ object MedalIntegration {
         get() = event(
             eventId = "17",
             dropName = "Cretan Urn Drop",
-            dropNumber = dianaTrackerMayor.items.CRETAN_URN + 1,
+            dropNumber = dianaTrackerMayorData.items.CRETAN_URN + 1,
             enabled = Medal.medalCretanUrnEnabled
         )
 

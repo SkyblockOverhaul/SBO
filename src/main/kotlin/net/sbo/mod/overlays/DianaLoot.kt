@@ -68,7 +68,7 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     fun resetSession() {
         SboTimerManager.timerSession.reset()
-        DataManager.dianaTrackerSession.reset().save()
+        DataManager.dianaTrackerSessionData.reset().save()
         updateLines()
         DianaMobs.updateLines()
     }
@@ -228,9 +228,9 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     private fun getDianaTracker(type: Diana.Tracker): DianaTracker? {
         return when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotal
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayor
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSession
+            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
+            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
+            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
             Diana.Tracker.OFF -> null
         }
     }
@@ -350,9 +350,9 @@ object DianaLoot : DirtyFlushableOverlay() {
     private fun updateTimerText() {
         val type = Diana.lootTracker
         val tracker = when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotal
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayor
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSession
+            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
+            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
+            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
             Diana.Tracker.OFF -> {
                 timerLine.text = ""
                 return

@@ -86,9 +86,9 @@ object DianaMobs : DirtyFlushableOverlay() {
     override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.mobTracker
         val tracker = when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotal
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayor
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSession
+            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
+            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
+            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
             Diana.Tracker.OFF -> {
                 return emptyList()
             }
