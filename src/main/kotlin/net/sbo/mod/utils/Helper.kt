@@ -17,7 +17,6 @@ import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
-import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
@@ -38,6 +37,7 @@ import kotlin.math.roundToLong
 import kotlin.reflect.full.memberProperties
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
 import net.sbo.mod.utils.data.configs.diana.DianaMobsData
+import net.sbo.mod.utils.data.configs.npcSellValueMap
 import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
 object Helper {

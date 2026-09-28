@@ -1,4 +1,4 @@
-package net.sbo.mod.utils.data
+package net.sbo.mod.utils.data.configs
 
 val npcSellValueMap = mapOf(
     "ENCHANTED_GOLD" to 480,
