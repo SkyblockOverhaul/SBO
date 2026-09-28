@@ -44,6 +44,15 @@ object Settings : ConfigKt("sbo/config") {
         }
 
         button {
+            title = "Ko-fi"
+            description = "Buy us a coffee on Ko-fi ☕"
+            text = "Support"
+            onClick {
+                SBOKotlin.openInBrowser("https://ko-fi.com/skyblock_overhaul")
+            }
+        }
+
+        button {
             title = "Website"
             description = "Explore our website for tracking Magic Find upgrades"
             text = "Visit"

@@ -19,6 +19,7 @@ import net.sbo.mod.guis.partyfinder.pages.Help
 import net.sbo.mod.guis.partyfinder.pages.Home
 import net.sbo.mod.guis.partyfinder.pages.PartyPage
 import net.sbo.mod.guis.partyfinder.pages.SettingsPage
+import net.sbo.mod.guis.partyfinder.pages.SupportPage
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyFinderManager.createParty
 import net.sbo.mod.partyfinder.PartyFinderManager.getActiveUsers
@@ -26,7 +27,6 @@ import net.sbo.mod.partyfinder.PartyFinderManager.getAllParties
 import net.sbo.mod.partyfinder.PartyFinderManager.removePartyFromQueue
 import net.sbo.mod.partyfinder.PartyFinderManager.sendJoinRequest
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
-import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.HighlightElement
@@ -55,6 +55,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
     private val homePage = Home(this)
     private val helpPage = Help(this)
     private val settingsPage = SettingsPage(this)
+    private val supportPage = SupportPage(this)
 
     private lateinit var filterBackground: UIComponent
     internal lateinit var filterWindow : UIComponent
@@ -893,7 +894,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         val discordBlock = UIBlock().constrain {
             width = 11.percent()
             height = 100.percent()
-            x = SiblingConstraint()
+            x = 89.percent()
         }.setColor(Theme.TRANSPARENT) childOf titleBlock
 
         val discord = GuiHandler.Button(
@@ -915,7 +916,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         val githubBlock = UIBlock().constrain {
             width = 11.percent()
             height = 100.percent()
-            x = SiblingConstraint()
+            x = SiblingConstraint(alignOpposite = true)
         }.setColor(Theme.TRANSPARENT) childOf titleBlock
 
         val github = GuiHandler.Button(
@@ -933,28 +934,6 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
                 SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO")
             }
         stpBtn(github)
-
-        val patreonBlock = UIBlock().constrain {
-            width = 11.percent()
-            height = 100.percent()
-            x = SiblingConstraint()
-        }.setColor(Theme.TRANSPARENT) childOf titleBlock
-
-        val patreon = GuiHandler.Button(
-            text = "Patreon",
-            x = CenterConstraint(),
-            y = CenterConstraint(),
-            width = 80.percent(),
-            height = 60.percent(),
-            color = Theme.TRANSPARENT,
-            textColor = Theme.TEXT_PRIMARY,
-            parent = patreonBlock
-        )
-            .textHoverEffect(Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_OUT, Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_IN)
-            .setTextOnClick {
-                SBOKotlin.openInBrowser("https://www.patreon.com/Skyblock_Overhaul")
-            }
-        stpBtn(patreon)
 
         //-----------------End Title Block-----------------
         //-----------------Category Block-----------------
@@ -1009,6 +988,7 @@ class PartyFinderGUI : WindowScreen(ElementaVersion.V10) {
         addPage(customPage)
         addPage(homePage, isSubPage = true, y1 = 93.percent())
         addPage(helpPage, isSubPage = true)
+        addPage(supportPage, isSubPage = true)
         addPage(settingsPage, isSubPage = true, actionOnly = true)
     }
 }
