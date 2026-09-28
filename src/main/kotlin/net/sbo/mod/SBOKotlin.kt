@@ -79,7 +79,7 @@ object SBOKotlin : ClientModInitializer {
 			.map { it.metadata.version.friendlyString }
 			.orElse("unknown")!!
 
-		logger.info("Initializing SBO-Kotlin, version: $version...")
+		logger.info("Initializing SBO, version: $version...")
 
 		// Initialize Mayor Data
 		Mayor.init()
@@ -169,6 +169,6 @@ object SBOKotlin : ClientModInitializer {
 		    IrisCompatibility.init()
 		}
 
-		logger.info("SBO-Kotlin initialized successfully!")
+		logger.info("SBO initialized successfully!")
 	}
 }
