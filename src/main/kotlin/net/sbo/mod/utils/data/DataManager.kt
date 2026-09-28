@@ -26,22 +26,43 @@ import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.*
 import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.full.declaredFunctions
+import kotlin.reflect.full.declaredMemberProperties
 
 /**
  * Central class for all data operations.
  * Manages atomic writes, backup, executor, and registry.
  */
 object DataManager {
-    @JvmField var sboData: SboData = SboData()
-    @JvmField var achievementsData: AchievementsData = AchievementsData()
-    @JvmField var pastDianaEventsData: PastDianaEventsData = PastDianaEventsData()
-    @JvmField var dianaTrackerTotal: DianaTrackerTotalData = DianaTrackerTotalData()
-    @JvmField var dianaTrackerSession: DianaTrackerSessionData = DianaTrackerSessionData()
-    @JvmField var dianaTrackerMayor: DianaTrackerMayorData = DianaTrackerMayorData()
-    @JvmField var pfConfigState: PartyFinderConfigState = PartyFinderConfigState()
-    @JvmField var partyFinderData: PartyFinderData = PartyFinderData()
-    @JvmField var overlayData: OverlayData = OverlayData()
-    @JvmField var soundSettingsData: SoundSettingsData = SoundSettingsData()
+    @JvmField @DataField("SboData.json")
+    var sboData: SboData = SboData()
+
+    @JvmField @DataField("sbo_achievements.json")
+    var achievementsData: AchievementsData = AchievementsData()
+
+    @JvmField @DataField("pastDianaEvents.json")
+    var pastDianaEventsData: PastDianaEventsData = PastDianaEventsData()
+
+    @JvmField @DataField("dianaTrackerTotal.json")
+    var dianaTrackerTotal: DianaTrackerTotalData = DianaTrackerTotalData()
+
+    @JvmField @DataField("dianaTrackerSession.json")
+    var dianaTrackerSession: DianaTrackerSessionData = DianaTrackerSessionData()
+
+    @JvmField @DataField("dianaTrackerMayor.json")
+    var dianaTrackerMayor: DianaTrackerMayorData = DianaTrackerMayorData()
+
+    @JvmField @DataField("partyFinderConfigState.json")
+    var pfConfigState: PartyFinderConfigState = PartyFinderConfigState()
+
+    @JvmField @DataField("partyFinderData.json")
+    var partyFinderData: PartyFinderData = PartyFinderData()
+
+    @JvmField @DataField("overlayData.json")
+    var overlayData: OverlayData = OverlayData()
+
+    @JvmField @DataField("soundSettingsData.json")
+    var soundSettingsData: SoundSettingsData = SoundSettingsData()
 
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private const val MAX_BACKUPS = 10
@@ -57,7 +78,35 @@ object DataManager {
     private val dirtySaveQueued = AtomicBoolean(false)
 
     init {
-        DataRegistry.registerAll()
+        registerDataFields()
+    }
+
+    /**
+     * Registers all @DataField annotated fields with DataRegistry using reflection.
+     * Called once at init time.
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun registerDataFields() {
+        val clazz = this::class.java
+        clazz.declaredFields
+            .filter { it.isAnnotationPresent(DataField::class.java) }
+            .forEach { field ->
+                val annotation = field.getAnnotation(DataField::class.java)
+                val fieldName = field.name
+                val fileName = annotation.fileName
+                val entryName = fieldName.replaceFirstChar { it.uppercase() }
+                val fieldType = field.type as Class<Any>
+
+                // Create a getter that reads the field value via reflection
+                val getter = {
+                    field.isAccessible = true
+                    field.get(this) as Any
+                }
+
+                // Register with DataRegistry
+                val entry = ConfigEntry(entryName, fileName, fieldType, getter)
+                DataRegistry.register(entry)
+            }
     }
 
     fun init() {
@@ -117,16 +166,30 @@ object DataManager {
     }
 
     private fun loadAllData(modName: String) {
-        sboData = load(modName, "SboData.json", SboData::class.java) { SboData() }
-        achievementsData = loadAchievementsData(modName)
-        pastDianaEventsData = load(modName, "pastDianaEvents.json", PastDianaEventsData::class.java) { PastDianaEventsData() }
-        dianaTrackerTotal = loadDianaTrackerData(modName, "dianaTrackerTotal.json", DianaTrackerTotalData::class.java) { DianaTrackerTotalData() }
-        dianaTrackerSession = loadDianaTrackerData(modName, "dianaTrackerSession.json", DianaTrackerSessionData::class.java) { DianaTrackerSessionData() }
-        dianaTrackerMayor = loadDianaTrackerData(modName, "dianaTrackerMayor.json", DianaTrackerMayorData::class.java) { DianaTrackerMayorData() }
-        pfConfigState = load(modName, "partyFinderConfigState.json", PartyFinderConfigState::class.java) { PartyFinderConfigState() }
-        partyFinderData = load(modName, "partyFinderData.json", PartyFinderData::class.java) { PartyFinderData() }
-        overlayData = load(modName, "overlayData.json", OverlayData::class.java) { OverlayData() }
-        soundSettingsData = load(modName, "soundSettingsData.json", SoundSettingsData::class.java) { SoundSettingsData() }
+        this::class.java.declaredFields
+            .filter { it.isAnnotationPresent(DataField::class.java) }
+            .forEach { field ->
+                field.isAccessible = true
+                val annotation = field.getAnnotation(DataField::class.java)
+                val fileName = annotation.fileName
+                @Suppress("UNCHECKED_CAST")
+                val data = loadDataForFile(modName, fileName, field.type as Class<Any>) { field.type.getDeclaredConstructor().newInstance() }
+                field.set(this, data)
+            }
+    }
+
+    /**
+     * Loads data for a specific file, using special loaders for certain files.
+     */
+    @Suppress("UNCHECKED_CAST", "USELESS_CAST")
+    private fun loadDataForFile(modName: String, fileName: String, fieldType: Class<*>, defaultSupplier: () -> Any): Any {
+        return when (fileName) {
+            "sbo_achievements.json" -> loadAchievementsData(modName)
+            "dianaTrackerTotal.json", "dianaTrackerSession.json", "dianaTrackerMayor.json" -> {
+                loadDianaTrackerData(modName, fileName, fieldType as Class<DianaTracker>, defaultSupplier as () -> DianaTracker)
+            }
+            else -> load(modName, fileName, fieldType as Class<Any>, defaultSupplier)
+        }
     }
 
     private fun <T : DianaTracker> loadDianaTrackerData(modName: String, fileName: String, clazz: Class<T>, defaultSupplier: () -> T): T {
