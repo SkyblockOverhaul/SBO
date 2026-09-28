@@ -68,7 +68,8 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     fun resetSession() {
         SboTimerManager.timerSession.reset()
-        DataManager.dianaTrackerSessionData.reset().save()
+        DataManager.dianaTrackerSessionData.reset()
+        DataManager.save(DataManager::dianaTrackerSessionData)
         updateLines()
         DianaMobs.updateLines()
     }

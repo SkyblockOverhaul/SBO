@@ -18,16 +18,6 @@ interface DianaTracker {
         return this
     }
 
-    fun save(): DianaTracker {
-        when(this) {
-            is DianaTrackerTotalData -> DataManager.save("DianaTrackerTotalData")
-            is DianaTrackerSessionData -> DataManager.save("DianaTrackerSessionData")
-            is DianaTrackerMayorData -> DataManager.save("DianaTrackerMayorData")
-            else -> {}
-        }
-        return this
-    }
-
     fun getAmountOf(itemId: String): Int {
         return (itemProperties[itemId]?.get(items) as? Number)?.toInt() ?: 0
     }

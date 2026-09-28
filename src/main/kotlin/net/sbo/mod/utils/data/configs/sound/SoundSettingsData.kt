@@ -42,5 +42,5 @@ data class SoundSettingsData(
     var miscDropSound: String = "",
     var miscDropVolume: Float = 1.0f
 ) {
-    fun save() = DataManager.save("SoundSettingsData")
+    fun save() = DataManager.save(DataManager::soundSettingsData)
 }

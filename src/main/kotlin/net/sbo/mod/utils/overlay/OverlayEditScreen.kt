@@ -118,6 +118,6 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     override fun removed() {
         super.removed()
         OverlayManager.overlays.forEach { it.selected = false }
-        DataManager.save("OverlayData")
+        DataManager.save(DataManager::overlayData)
     }
 }

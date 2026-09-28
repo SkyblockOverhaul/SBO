@@ -66,7 +66,7 @@ object DianaTracker {
             sboData.minotaursSinceStick = 0
             sboData.champsSinceRelic = 0
             sboData.inqsSinceLsChim = 0
-            DataManager.save("SboData")
+            DataManager.save(DataManager::sboData)
             SboTimerManager.timerSession.reset()
             DianaStats.updateLines()
         }
@@ -212,7 +212,7 @@ object DianaTracker {
 
     fun trackMobOnSpawnAndSave(mob: String, fromCocoon: Boolean = false) {
         onMobSpawn(mob, fromCocoon)
-        DataManager.save("SboData")
+        DataManager.save(DataManager::sboData)
     }
 
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
@@ -737,7 +737,7 @@ object DianaTracker {
                 // sound played by onRareDrop for hilt
             }
         }
-        DataManager.save("SboData")
+        DataManager.save(DataManager::sboData)
     }
 
     private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true, enforceCooldown: Boolean = true) {
@@ -929,7 +929,7 @@ object DianaTracker {
     fun checkMayorTracker() {
         if (dianaTrackerMayorData.year == 0) {
             dianaTrackerMayorData.year = Mayor.mayorElectedYear
-            dianaTrackerMayorData.save()
+            DataManager.save(DataManager::dianaTrackerMayorData)
             return
         }
 
@@ -951,11 +951,11 @@ object DianaTracker {
         if (!check) {
             if (dianaTrackerMayorData.year == 0) dianaTrackerMayorData.year = Mayor.mayorElectedYear
             pastDianaEventsData.events += dianaTrackerMayorData.snapshot()
-            DataManager.save("PastDianaEventsData")
+            DataManager.save(DataManager::pastDianaEventsData)
         }
         dianaTrackerMayorData.reset()
         dianaTrackerMayorData.year = Mayor.mayorElectedYear
-        dianaTrackerMayorData.save()
+        DataManager.save(DataManager::dianaTrackerMayorData)
         SboTimerManager.timerMayor.reset()
         SboTimerManager.activeTimers.forEach { it.pause() }
         DianaMobs.updateLines()
@@ -1034,7 +1034,7 @@ object DianaTracker {
         if (sboData.mobsSinceManti >= 2) sboData.b2bManti = false
         sboData.mobsSinceSphinx += amount
         if (sboData.mobsSinceSphinx >= 2) sboData.b2bSphinx = false
-        DataManager.save("SboData")
+        DataManager.save(DataManager::sboData)
 
         sleep(500) {
             isMobOnCooldown[item] = false

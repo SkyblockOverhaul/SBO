@@ -41,7 +41,7 @@ object PartyPlayer {
     private fun rememberProfile(profile: String?) {
         if (profile == null || profile.equals(sboData.lastStatsProfile, ignoreCase = true)) return
         sboData.lastStatsProfile = profile
-        DataManager.save("SboData")
+        DataManager.save(DataManager::sboData)
     }
 
     private fun cacheBypassReadyIn(): Long =

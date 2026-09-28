@@ -183,7 +183,7 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
             val options = AchievementFilter.entries.toTypedArray()
             filterType = options[(filterType.ordinal + 1) % options.size]
             sboData.achievementFilter = filterType.name
-            DataManager.save("SboData")
+            DataManager.save(DataManager::sboData)
             updateAchievementList()
             renderAchievements()
         }

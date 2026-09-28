@@ -66,7 +66,7 @@ object AchievementManager {
             achievementsData.currentEventAchievements.clear()
             achievementsData.lastEventYear = -1
 
-            DataManager.save("AchievementsData")
+            DataManager.save(DataManager::achievementsData)
             Chat.chat("§6[SBO] §eAchievements locked")
         }
 

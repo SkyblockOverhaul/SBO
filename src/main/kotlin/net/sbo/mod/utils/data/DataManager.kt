@@ -25,6 +25,7 @@ import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.*
 import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty0
 
 /**
  * Central class for all data operations.
@@ -151,11 +152,12 @@ object DataManager {
         writeJsonAtomically(dataFile, data as Any)
     }
 
-    fun save(configName: String) {
-        if (DataRegistry.contains(configName)) {
-            dirtyConfigs.add(configName)
+    fun <T : Any> save(property: KProperty0<T>) {
+        val entryName = property.name.replaceFirstChar { it.uppercase() }
+        if (DataRegistry.contains(entryName)) {
+            dirtyConfigs.add(entryName)
         } else {
-            SBOKotlin.logger.warn("[$configName] is not a valid config name.")
+            SBOKotlin.logger.warn("[$entryName] is not a valid config name.")
         }
     }
 
@@ -761,9 +763,9 @@ object DataManager {
     }
 
     fun saveTrackerData() {
-        save("DianaTrackerTotalData")
-        save("DianaTrackerSessionData")
-        save("DianaTrackerMayorData")
+        save(::dianaTrackerTotalData)
+        save(::dianaTrackerSessionData)
+        save(::dianaTrackerMayorData)
     }
 
     fun updatePfConfigState(category: String, list: String, key: String, value: Boolean) {
@@ -784,7 +786,7 @@ object DataManager {
                 val property = listInstance::class.members.find { it.name == key }
                 if (property is KMutableProperty1<*, *> && property.getter.call(listInstance) != value) {
                     property.setter.call(listInstance, value)
-                    save("PartyFinderConfigState")
+                    save(::partyFinderConfigState)
                 }
             }
         }
@@ -813,7 +815,7 @@ object DataManager {
                 if (currentValue != convertedValue) {
                     if (convertedValue != null) {
                         property.setter.call(listInstance, convertedValue)
-                        save("PartyFinderConfigState")
+                        save(::partyFinderConfigState)
                     }
                 }
             }

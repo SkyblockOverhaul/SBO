@@ -8,5 +8,5 @@ data class AchievementsData(
     var currentEventAchievements: MutableMap<Int, Boolean> = mutableMapOf(),
     var lastEventYear: Int = -1
 ) {
-    fun save() = DataManager.save("AchievementsData")
+    fun save() = DataManager.save(DataManager::achievementsData)
 }

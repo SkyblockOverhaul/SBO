@@ -104,14 +104,14 @@ object PartyFinderManager {
                 Chat.chat("§6[SBO] §cInvalid key format! get one in our Discord")
             } else {
                 sboData.sboKey = args[0]
-                DataManager.save("SboData")
+                DataManager.save(DataManager::sboData)
                 Chat.chat("§6[SBO] §aKey has been set")
             }
         }
 
         Register.command("sboClearKey") {
             sboData.sboKey = ""
-            DataManager.save("SboData")
+            DataManager.save(DataManager::sboData)
             Chat.chat("§6[SBO] §aKey has been cleared")
         }
 

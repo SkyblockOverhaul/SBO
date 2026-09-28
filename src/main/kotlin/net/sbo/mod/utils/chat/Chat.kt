@@ -60,7 +60,7 @@ object Chat {
     private fun createDontShowAgainAction(messageText: String): Pair<ClickEvent, HoverEvent> {
         val actionId = ClickActionManager.registerAction {
             DataManager.sboData.suppressedMessages.add(messageText)
-            DataManager.save("SboData")
+            DataManager.save(DataManager::sboData)
             sendClientMessage(Component.literal("§6[SBO] §aMessage suppressed. You won't see this again."))
         }
         val hoverText = Component.literal("Click the message to not show it again").withStyle(ChatFormatting.YELLOW)

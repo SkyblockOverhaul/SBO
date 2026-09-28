@@ -27,7 +27,7 @@ class Achievement(
         if (achievementsData.lastEventYear != currentYear) {
             achievementsData.currentEventAchievements.clear()
             achievementsData.lastEventYear = currentYear
-            DataManager.save("AchievementsData")
+            DataManager.save(DataManager::achievementsData)
         }
     }
 
@@ -65,7 +65,7 @@ class Achievement(
         }
         AchievementManager.achievementsUnlockedTotal += 1
 
-        DataManager.save("AchievementsData")
+        DataManager.save(DataManager::achievementsData)
 
         if (!General.disableAchievements) showUnlockEffects()
     }

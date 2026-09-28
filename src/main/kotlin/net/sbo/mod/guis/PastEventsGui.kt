@@ -357,7 +357,7 @@ class PastEventsGui : WindowScreen(ElementaVersion.V10) {
                 confirmButton.onMouseClick {
                     pastDianaEventsData.events = pastDianaEventsData.events.filterNot { it.year == event.year }
                     renderEvents()
-                    DataManager.save("PastDianaEventsData")
+                    DataManager.save(DataManager::pastDianaEventsData)
                     confirmOverlayOutline.hide()
                 }
 

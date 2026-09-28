@@ -7,5 +7,5 @@ data class PartyFinderConfigState(
     var inputs: Inputs = Inputs(),
     var filters: Filters = Filters()
 ) {
-    fun save() = DataManager.save("PartyFinderConfigState")
+    fun save() = DataManager.save(DataManager::partyFinderConfigState)
 }

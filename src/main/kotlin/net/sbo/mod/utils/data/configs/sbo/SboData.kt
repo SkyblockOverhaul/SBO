@@ -62,5 +62,5 @@ data class SboData(
 
     var lastStatsProfile: String = "",
 ) {
-    fun save() = DataManager.save("SboData")
+    fun save() = DataManager.save(DataManager::sboData)
 }
