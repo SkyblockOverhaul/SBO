@@ -18,7 +18,7 @@ import net.sbo.mod.guis.partyfinder.Theme
 import java.awt.Color
 
 class SupportPage(private val parent: PartyFinderGUI) : PartyPage {
-    override val pageName: String = "Support Us"
+    override val pageName: String = "Donate"
     override val partyType: String = ""
     override val listDisplayName: String = ""
     override val pageOrder: Int get() = 103
@@ -36,7 +36,7 @@ class SupportPage(private val parent: PartyFinderGUI) : PartyPage {
                     width = 100.percent()
                     height = 9.percent()
                 }.setColor(Theme.TRANSPARENT)
-                    .addChild(UIWrappedText("Support Us").constrain {
+                    .addChild(UIWrappedText("Donate Page").constrain {
                         x = 2.percent()
                         y = CenterConstraint()
                         width = 100.percent()
@@ -71,23 +71,15 @@ class SupportPage(private val parent: PartyFinderGUI) : PartyPage {
             y = SiblingConstraint(5f)
         }.setColor(Theme.TRANSPARENT)
 
-        // Patreon Button
-        val patreonBlock = UIBlock().constrain {
-            width = 160.pixels
-            height = 50.pixels
-            x = CenterConstraint()
-            y = CenterConstraint()
-        }.setColor(Theme.TRANSPARENT) childOf buttonsBlock
-
         val patreon = GuiHandler.Button(
             text = "Patreon",
-            x = CenterConstraint(),
+            x = 2.percent(),
             y = CenterConstraint(),
-            width = 80.percent(),
-            height = 60.percent(),
+            width = 140.pixels,
+            height = 30.pixels,
             color = Color(200, 50, 50),
             textColor = Theme.TEXT_PRIMARY,
-            parent = patreonBlock,
+            parent = buttonsBlock,
             rounded = true,
         )
             .hoverEffect(Color(200, 50, 50), Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_IN)
@@ -95,23 +87,15 @@ class SupportPage(private val parent: PartyFinderGUI) : PartyPage {
                 SBOKotlin.openInBrowser("https://www.patreon.com/Skyblock_Overhaul")
             }
 
-        // Ko-fi Button
-        val kofiBlock = UIBlock().constrain {
-            width = 160.pixels
-            height = 50.pixels
-            x = SiblingConstraint(15f, alignOpposite = true)
-            y = CenterConstraint()
-        }.setColor(Theme.TRANSPARENT) childOf buttonsBlock
-
         val kofi = GuiHandler.Button(
             text = "Ko-fi",
-            x = CenterConstraint(),
+            x = SiblingConstraint(15f),
             y = CenterConstraint(),
-            width = 80.percent(),
-            height = 60.percent(),
+            width = 140.pixels,
+            height = 30.pixels,
             color = Color(30, 150, 180),
             textColor = Theme.TEXT_PRIMARY,
-            parent = kofiBlock,
+            parent = buttonsBlock,
             rounded = true,
         )
             .hoverEffect(Color(30, 150, 180), Theme.BUTTON_TITLE_DISC_GIT_PAT_HOVER_IN)
