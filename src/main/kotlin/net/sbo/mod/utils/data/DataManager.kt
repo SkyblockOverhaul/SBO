@@ -14,7 +14,6 @@ import net.sbo.mod.utils.data.configs.achievements.AchievementsData
 import net.sbo.mod.utils.data.configs.diana.*
 import net.sbo.mod.utils.data.configs.overlay.OverlayData
 import net.sbo.mod.utils.data.configs.partyfinder.PartyFinderConfigState
-import net.sbo.mod.utils.data.configs.partyfinder.PartyFinderData
 import net.sbo.mod.utils.data.configs.sbo.SboData
 import net.sbo.mod.utils.data.configs.sound.SoundSettingsData
 import java.io.*
@@ -26,8 +25,6 @@ import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.*
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.full.declaredFunctions
-import kotlin.reflect.full.declaredMemberProperties
 
 /**
  * Central class for all data operations.
@@ -54,9 +51,6 @@ object DataManager {
 
     @JvmField @DataField("partyFinderConfigState.json")
     var pfConfigState: PartyFinderConfigState = PartyFinderConfigState()
-
-    @JvmField @DataField("partyFinderData.json")
-    var partyFinderData: PartyFinderData = PartyFinderData()
 
     @JvmField @DataField("overlayData.json")
     var overlayData: OverlayData = OverlayData()
