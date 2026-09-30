@@ -1,7 +1,7 @@
 package net.sbo.mod.general
 
 import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
+import com.google.gson.Gson
 import kotlinx.serialization.json.Json
 import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin
@@ -15,6 +15,7 @@ import net.sbo.mod.utils.data.CloudUploadRequest
 import net.sbo.mod.utils.data.CloudUploadResponse
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.DataManager.sboData
+import net.sbo.mod.utils.data.configs.sbo.CloudSyncState
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
@@ -44,16 +45,19 @@ object CloudSync {
     private const val CONFIG_ENTRY = "config"
     private const val SBO_DATA_FILE = "SboData.json"
 
-    private val LOCAL_ONLY = listOf("sboKey", "cloudSyncVersion", "cloudSyncCounter", "cloudSyncHash")
+    private val LOCAL_ONLY = listOf("sboKey", "cloudSync")
     private val NOT_SYNCED = setOf("pastDianaEvents.json")
 
     private const val CLOSE_UPLOAD_TIMEOUT_SECONDS = 5L
     private const val AUTO_UPLOAD_MINUTES = 5
 
     private val json = Json { ignoreUnknownKeys = true }
+    private val gson = Gson()
     private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
     private var checkedThisSession = false
+
+    private fun state(): CloudSyncState = sboData.cloudSync.getOrPut(Player.accountUuid()) { CloudSyncState() }
 
     @Volatile private var autoPaused = false
     @Volatile private var uploadInFlight: CountDownLatch? = null
@@ -124,12 +128,12 @@ object CloudSync {
     }
 
     private fun autoDecide(slot: CloudSlotMeta?) {
-        val dirty = runCatching { hashOf(collectFiles()) != sboData.cloudSyncHash }.getOrDefault(true)
-        SBOKotlin.logger.info("[CloudSync] join check: cloud=${slot?.version} local=${sboData.cloudSyncVersion} dirty=$dirty")
+        val dirty = runCatching { hashOf(collectFiles()) != state().hash }.getOrDefault(true)
+        SBOKotlin.logger.info("[CloudSync] join check: cloud=${slot?.version} local=${state().version} dirty=$dirty")
         when {
             slot == null -> upload(auto = true)
-            slot.version == sboData.cloudSyncVersion -> if (dirty) upload(auto = true)
-            !dirty && sboData.cloudSyncVersion != 0 -> download(auto = true)
+            slot.version == state().version -> if (dirty) upload(auto = true)
+            !dirty && state().version != 0 -> download(auto = true)
             else -> {
                 autoPaused = true
                 Chat.chat("$PREFIX§eAuto sync: the cloud has a save from another PC, but this PC has changes that were never uploaded.")
@@ -191,9 +195,7 @@ object CloudSync {
     private fun withLocalFields(files: Map<String, String>): Map<String, String> {
         val raw = files[SBO_DATA_FILE] ?: return files
         val sbo = JsonParser.parseString(raw).asJsonObject
-        sbo.add("cloudSyncVersion", JsonPrimitive(sboData.cloudSyncVersion))
-        sbo.add("cloudSyncCounter", JsonPrimitive(sboData.cloudSyncCounter))
-        sbo.add("cloudSyncHash", JsonPrimitive(sboData.cloudSyncHash))
+        sbo.add("cloudSync", gson.toJsonTree(sboData.cloudSync))
         return files + (SBO_DATA_FILE to sbo.toString())
     }
 
@@ -208,12 +210,13 @@ object CloudSync {
             return null
         }
         val hash = hashOf(files)
-        if (auto && hash == sboData.cloudSyncHash) {
+        val state = state()
+        if (auto && hash == state.hash) {
             SBOKotlin.logger.info("[CloudSync] auto upload skipped, nothing changed")
             return null
         }
 
-        val counter = maxOf(System.currentTimeMillis(), sboData.cloudSyncCounter + 1)
+        val counter = maxOf(System.currentTimeMillis(), state.counter + 1)
         val uuid = Player.accountUuid()
         val signature = CloudSyncKeys.key(uuid)?.let { CloudSyncKeys.sign(it, signedBytes(uuid, counter, files)) }
         val envelope = json.encodeToString(CloudEnvelope(counter = counter, files = files, sig = signature))
@@ -221,14 +224,14 @@ object CloudSync {
         val done = CountDownLatch(1)
         uploadInFlight = done
         if (!auto) Chat.chat("$PREFIX§eUploading config and data...")
-        SboApi.cloudUpload(SLOT, CloudUploadRequest(envelope, sboData.cloudSyncVersion, force))
+        SboApi.cloudUpload(SLOT, CloudUploadRequest(envelope, state.version, force))
             .toJson<CloudUploadResponse>(ignoreUnknownKeys = true) { response ->
                 try {
                     when {
                         response.success -> {
-                            sboData.cloudSyncVersion = response.version
-                            sboData.cloudSyncCounter = counter
-                            sboData.cloudSyncHash = hash
+                            state.version = response.version
+                            state.counter = counter
+                            state.hash = hash
                             sboData.save()
                             SBOKotlin.logger.info("[CloudSync] uploaded version ${response.version} (auto=$auto)")
                             if (!auto) {
@@ -257,7 +260,7 @@ object CloudSync {
     }
 
     private fun conflict(cloudVersion: Int) {
-        Chat.chat("$PREFIX§eThe cloud has a newer save (version $cloudVersion) than this PC (version ${sboData.cloudSyncVersion}).")
+        Chat.chat("$PREFIX§eThe cloud has a newer save (version $cloudVersion) than this PC (version ${state().version}).")
         Chat.clickableChat("$PREFIX§b[Download cloud save]", "Replace your local config and data with the cloud ones") { download() }
         Chat.clickableChat("$PREFIX§c[Overwrite cloud save]", "Replace the cloud save with your local config and data") { upload(force = true) }
     }
@@ -315,7 +318,7 @@ object CloudSync {
             Chat.chat("$PREFIX§4The signature does not match. Either this PC has a different sync password, or the save was changed on the server. Not loaded.")
             return null
         }
-        if (envelope.counter < sboData.cloudSyncCounter && !allowOlder) {
+        if (envelope.counter < state().counter && !allowOlder) {
             Chat.chat("$PREFIX§eThe cloud save is older than the newest one this PC has seen. Someone may have restored an old copy.")
             Chat.clickableChat("$PREFIX§c[Load it anyway]", "It is signed by you, just older") { download(allowOlder = true) }
             return null
@@ -349,9 +352,9 @@ object CloudSync {
         }
         Guis.resetCachedGuis()
 
-        sboData.cloudSyncVersion = version
-        sboData.cloudSyncCounter = maxOf(sboData.cloudSyncCounter, envelope.counter)
-        sboData.cloudSyncHash = runCatching { hashOf(collectFiles()) }.getOrDefault("")
+        state().version = version
+        state().counter = maxOf(state().counter, envelope.counter)
+        state().hash = runCatching { hashOf(collectFiles()) }.getOrDefault("")
         sboData.save()
         if (auto) {
             Chat.chat("$PREFIX§aAuto sync: loaded the newer cloud save from your other PC.")
@@ -378,7 +381,7 @@ object CloudSync {
                 val updated = DATE_FORMAT.format(Instant.ofEpochMilli(slot.updatedAt))
                 val size = "%.1f KB".format(slot.size / 1024.0)
                 Chat.chat("$PREFIX§eCloud save: version §b${slot.version}§e, $size, updated §b$updated")
-                Chat.chat("$PREFIX§eThis PC is on version §b${sboData.cloudSyncVersion}")
+                Chat.chat("$PREFIX§eThis PC is on version §b${state().version}")
             }
             .error { Chat.chat("$PREFIX§4Could not check the cloud: ${it.message}") }
     }
@@ -388,8 +391,8 @@ object CloudSync {
             SboApi.cloudDelete(SLOT)
                 .toJsonObject { response ->
                     if (response.getBoolean("Success")) {
-                        sboData.cloudSyncVersion = 0
-                        sboData.cloudSyncHash = ""
+                        state().version = 0
+                        state().hash = ""
                         sboData.save()
                         Chat.chat("$PREFIX§aCloud save deleted.")
                         if (CloudSyncSettings.autoSync) Chat.chat("$PREFIX§eAuto sync is on and will upload again. Turn it off to keep the cloud empty.")

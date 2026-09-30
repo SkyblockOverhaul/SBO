@@ -62,9 +62,13 @@ data class SboData(
 
     var lastStatsProfile: String = "",
 
-    var cloudSyncVersion: Int = 0, // 0 = never synced
-    var cloudSyncCounter: Long = 0,
-    var cloudSyncHash: String = "", // last synced state
+    var cloudSync: MutableMap<String, CloudSyncState> = mutableMapOf(), // account uuid -> state
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }
+
+data class CloudSyncState(
+    var version: Int = 0, // 0 = never synced
+    var counter: Long = 0,
+    var hash: String = "", // last synced state
+)
