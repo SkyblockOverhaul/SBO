@@ -644,8 +644,8 @@ object WaypointManager {
 
             RenderUtils3D.drawLine(
                 context,
-                a.pos.toVec3d().add(0.0, 0.5, 0.0),
-                b.pos.toVec3d().add(0.0, 0.5, 0.0),
+                a.pos.toVec3d().add(0.5, 1.0, 0.5),
+                b.pos.toVec3d().add(0.5, 1.0, 0.5),
                 rgb,
                 (Diana.dianaLineWidth.toFloat() / 1.6f).coerceIn(1.0f, 20.0f),
                 opacity
