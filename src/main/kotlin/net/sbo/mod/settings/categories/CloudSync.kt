@@ -1,6 +1,7 @@
 package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.utils.data.cloud.CloudSync
 
 object CloudSync : CategoryKt("Cloud Sync") {
     init {
@@ -26,7 +27,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
             description = "Saves your current SBO config and data in the cloud."
             text = "Upload"
             onClick {
-                net.sbo.mod.general.CloudSync.upload()
+                CloudSync.upload()
             }
         }
 
@@ -35,7 +36,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
             description = "Replaces your SBO config and data with the cloud save. Your current state is backed up first."
             text = "Download"
             onClick {
-                net.sbo.mod.general.CloudSync.download()
+                CloudSync.download()
             }
         }
 
@@ -44,7 +45,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
             description = "Shows what is stored in the cloud."
             text = "Check"
             onClick {
-                net.sbo.mod.general.CloudSync.status()
+                CloudSync.status()
             }
         }
 
@@ -53,7 +54,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
             description = "Deletes your save from the cloud. Asks for confirmation in chat."
             text = "Delete"
             onClick {
-                net.sbo.mod.general.CloudSync.delete()
+                CloudSync.delete()
             }
         }
     }

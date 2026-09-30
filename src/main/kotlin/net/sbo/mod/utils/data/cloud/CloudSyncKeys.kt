@@ -1,4 +1,4 @@
-package net.sbo.mod.general
+package net.sbo.mod.utils.data.cloud
 
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.HomeStore

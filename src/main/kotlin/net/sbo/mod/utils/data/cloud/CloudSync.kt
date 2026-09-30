@@ -1,11 +1,14 @@
-package net.sbo.mod.general
+package net.sbo.mod.utils.data.cloud
 
-import com.google.gson.JsonParser
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import kotlinx.serialization.json.Json
 import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.guis.Guis
+import net.sbo.mod.settings.categories.CloudSync
+import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.CloudEnvelope
 import net.sbo.mod.utils.data.CloudSlotMeta
@@ -14,7 +17,6 @@ import net.sbo.mod.utils.data.CloudStatusResponse
 import net.sbo.mod.utils.data.CloudUploadRequest
 import net.sbo.mod.utils.data.CloudUploadResponse
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.data.configs.sbo.CloudSyncState
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -24,8 +26,6 @@ import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.http.Http.getBoolean
 import net.sbo.mod.utils.http.Http.getString
 import net.sbo.mod.utils.http.SboApi
-import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.SboKey
 import java.io.File
 import java.security.MessageDigest
 import java.time.Instant
@@ -35,7 +35,6 @@ import java.util.Base64
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import net.sbo.mod.settings.categories.CloudSync as CloudSyncSettings
 
 object CloudSync {
     private const val SLOT = "sbo"
@@ -57,7 +56,7 @@ object CloudSync {
 
     private var checkedThisSession = false
 
-    private fun state(): CloudSyncState = sboData.cloudSync.getOrPut(Player.accountUuid()) { CloudSyncState() }
+    private fun state(): CloudSyncState = DataManager.sboData.cloudSync.getOrPut(Player.accountUuid()) { CloudSyncState() }
 
     @Volatile private var autoPaused = false
     @Volatile private var uploadInFlight: CountDownLatch? = null
@@ -102,7 +101,7 @@ object CloudSync {
     }
 
     private fun autoActive(): Boolean =
-        CloudSyncSettings.autoSync && !autoPaused && SboKey.get().isNotBlank()
+        CloudSync.autoSync && !autoPaused && SboKey.get().isNotBlank()
 
     private fun pauseAuto(reason: String) {
         SBOKotlin.logger.warn("[CloudSync] auto sync paused: $reason")
@@ -195,7 +194,7 @@ object CloudSync {
     private fun withLocalFields(files: Map<String, String>): Map<String, String> {
         val raw = files[SBO_DATA_FILE] ?: return files
         val sbo = JsonParser.parseString(raw).asJsonObject
-        sbo.add("cloudSync", gson.toJsonTree(sboData.cloudSync))
+        sbo.add("cloudSync", gson.toJsonTree(DataManager.sboData.cloudSync))
         return files + (SBO_DATA_FILE to sbo.toString())
     }
 
@@ -232,7 +231,7 @@ object CloudSync {
                             state.version = response.version
                             state.counter = counter
                             state.hash = hash
-                            sboData.save()
+                            DataManager.sboData.save()
                             SBOKotlin.logger.info("[CloudSync] uploaded version ${response.version} (auto=$auto)")
                             if (!auto) {
                                 autoPaused = false
@@ -355,7 +354,7 @@ object CloudSync {
         state().version = version
         state().counter = maxOf(state().counter, envelope.counter)
         state().hash = runCatching { hashOf(collectFiles()) }.getOrDefault("")
-        sboData.save()
+        DataManager.sboData.save()
         if (auto) {
             Chat.chat("$PREFIX§aAuto sync: loaded the newer cloud save from your other PC.")
         } else {
@@ -393,9 +392,9 @@ object CloudSync {
                     if (response.getBoolean("Success")) {
                         state().version = 0
                         state().hash = ""
-                        sboData.save()
+                        DataManager.sboData.save()
                         Chat.chat("$PREFIX§aCloud save deleted.")
-                        if (CloudSyncSettings.autoSync) Chat.chat("$PREFIX§eAuto sync is on and will upload again. Turn it off to keep the cloud empty.")
+                        if (CloudSync.autoSync) Chat.chat("$PREFIX§eAuto sync is on and will upload again. Turn it off to keep the cloud empty.")
                     } else {
                         Chat.chat("$PREFIX§4Delete failed: ${response.getString("Error")}")
                     }
