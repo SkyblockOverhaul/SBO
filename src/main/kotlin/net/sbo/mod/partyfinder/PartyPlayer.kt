@@ -1,16 +1,14 @@
 package net.sbo.mod.partyfinder
 
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.logger
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.PlayerInfoResponse
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.http.SboApi
@@ -43,7 +41,7 @@ object PartyPlayer {
     private fun rememberProfile(profile: String?) {
         if (profile == null || profile.equals(sboData.lastStatsProfile, ignoreCase = true)) return
         sboData.lastStatsProfile = profile
-        SboDataObject.save("SboData")
+        DataManager.save(DataManager::sboData)
     }
 
     private fun cacheBypassReadyIn(): Long =
@@ -91,7 +89,7 @@ object PartyPlayer {
      * Refetches with readCache=false, for /sboreloadstats.
      * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
      */
-    fun reloadStats(
+    private fun reloadStats(
         onError: ((Exception) -> Unit)? = null,
         callback: (PartyPlayerStats) -> Unit
     ) {

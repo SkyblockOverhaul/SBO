@@ -13,7 +13,7 @@ import net.minecraft.network.chat.TextColor
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.Achievement
 import net.sbo.mod.diana.achievements.AchievementManager
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import java.awt.Color
 import kotlin.math.floor
 
@@ -31,7 +31,7 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
     private var filterType = AchievementFilter.DEFAULT
     private var typeFilter = TypeFilter.ALL
     private var achievementList: List<Achievement> = emptyList()
-    private var sboData = SboDataObject.sboData
+    private var sboData = DataManager.sboData
     private var searchQuery = ""
 
     private lateinit var contentPanel: UIComponent
@@ -183,7 +183,7 @@ class AchievementsGUI : WindowScreen(ElementaVersion.V10) {
             val options = AchievementFilter.entries.toTypedArray()
             filterType = options[(filterType.ordinal + 1) % options.size]
             sboData.achievementFilter = filterType.name
-            SboDataObject.save("SboData")
+            DataManager.save(DataManager::sboData)
             updateAchievementList()
             renderAchievements()
         }

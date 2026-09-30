@@ -2,6 +2,7 @@ package net.sbo.mod.utils.chat
 
 import net.minecraft.network.chat.Component
 import net.sbo.mod.settings.categories.Debug
+import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.ChatMessageAllowEvent
@@ -19,26 +20,77 @@ object ChatHandler {
             event.isAllowed = true
             return
         }
+
         event.isAllowed = processMessage(event.message)
     }
 
-    fun registerHandler(pattern: Pattern, action: (Component, Matcher) -> Boolean) {
-        messageHandlers.add(ChatRule(pattern, action))
+    fun registerHandler(
+        pattern: Pattern,
+        noFormatting: Boolean = false,
+        action: (Component, Matcher) -> Boolean
+    ) {
+        messageHandlers.add(
+            ChatRule(
+                pattern = pattern,
+                noFormatting = noFormatting,
+                action = { message, matcher, _ ->
+                    action(message, matcher)
+                }
+            )
+        )
+    }
+
+    fun registerHandler(
+        pattern: Pattern,
+        noFormatting: Boolean = false,
+        action: (
+            Component,
+            Matcher,
+            () -> Unit
+        ) -> Boolean
+    ) {
+        messageHandlers.add(
+            ChatRule(
+                pattern = pattern,
+                noFormatting = noFormatting,
+                action = action
+            )
+        )
     }
 
     private fun processMessage(message: Component): Boolean {
         val messageString = message.formattedString().replace("§r", "")
-        if (Debug.debugMessages && "❈ Defense" !in messageString) {
+
+        if (Debug.debugOnlyMessages && "❈ Defense" !in messageString) {
             println("Processing chat message: $messageString")
         }
 
         var allowMessage = true
 
-        messageHandlers.forEach { rule ->
-            val matcher = rule.pattern.matcher(messageString)
-            if (matcher.find()) {
-                val result = rule.action(message, matcher)
-                if (!result) allowMessage = false
+        val iterator = messageHandlers.iterator()
+
+        while (iterator.hasNext()) {
+            val rule = iterator.next()
+            val matcher = rule.pattern.matcher(
+                if (rule.noFormatting) messageString.removeFormatting() else messageString
+            )
+
+            if (!matcher.find()) {
+                continue
+            }
+
+            var unregister = false
+
+            val result = rule.action(message, matcher) {
+                unregister = true
+            }
+
+            if (!result) {
+                allowMessage = false
+
+                if (unregister) {
+                    iterator.remove()
+                }
             }
         }
 
@@ -47,6 +99,11 @@ object ChatHandler {
 
     private data class ChatRule(
         val pattern: Pattern,
-        val action: (Component, Matcher) -> Boolean
+        val noFormatting: Boolean,
+        val action: (
+            message: Component,
+            matcher: Matcher,
+            unregister: () -> Unit
+        ) -> Boolean
     )
 }

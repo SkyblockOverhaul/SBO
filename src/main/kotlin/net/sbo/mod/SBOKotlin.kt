@@ -4,7 +4,6 @@ import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.IdentifierException
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
@@ -14,6 +13,7 @@ import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.RareMobHighlight
+import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
@@ -31,7 +31,7 @@ import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.*
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.Mayor
@@ -41,6 +41,7 @@ import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.slf4j.LoggerFactory
+import java.util.regex.Pattern
 
 object SBOKotlin : ClientModInitializer {
 	@JvmField
@@ -78,7 +79,7 @@ object SBOKotlin : ClientModInitializer {
 			.map { it.metadata.version.friendlyString }
 			.orElse("unknown")!!
 
-		logger.info("Initializing SBO-Kotlin, version: $version...")
+		logger.info("Initializing SBO, version: $version...")
 
 		// Initialize Mayor Data
 		Mayor.init()
@@ -90,7 +91,7 @@ object SBOKotlin : ClientModInitializer {
 		UpdateChecker.check()
 
 		// Load configuration and data
-		SboDataObject.init()
+		DataManager.init()
 
 		// Load Custom Sound System
 		SoundHandler.init()
@@ -136,6 +137,7 @@ object SBOKotlin : ClientModInitializer {
 		RareMobHighlight.init()
 		InventoryUtils.init()
 		Chains.init()
+		MuteBuggedSpadeSounds.init()
 
 		Register.onTick(100) { unregister ->
 			val player = mc.player
@@ -144,12 +146,19 @@ object SBOKotlin : ClientModInitializer {
 				DianaTracker.checkMayorTracker()
 				PartyPlayer.load()
 				unlockAchievement(38)
+				Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
+				    unregister()
+				    false
+				}
+				Chat.command("particlequality extreme")
 				Register.onTick(100) { unregister ->
-				    if (Debug.debugMessages) {
-				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.")
+				    if (Debug.debugOnlyMessages) {
+				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.", true)
 				    }
-				    Chat.chat("§6[SBO] §aSetting your particle quality to extreme automatically for best solver accuracy. This is harmless and done for you to have a better experience. You can ignore this and the next message about particles per tick sent by Hypixel.")
-				    Chat.command("particlequality extreme")
+				    val renderDist = mc.options.renderDistance().get()
+				    if (renderDist < 10) {
+				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 10 from the vanilla options menu.", true)
+				    }
 				    unregister()
 				}
 				unregister()
@@ -160,6 +169,6 @@ object SBOKotlin : ClientModInitializer {
 		    IrisCompatibility.init()
 		}
 
-		logger.info("SBO-Kotlin initialized successfully!")
+		logger.info("SBO initialized successfully!")
 	}
 }

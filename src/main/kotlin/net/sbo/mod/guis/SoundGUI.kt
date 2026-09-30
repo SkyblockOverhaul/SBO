@@ -10,7 +10,7 @@ import gg.essential.universal.UKeyboard
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.GuiHandler
 import net.sbo.mod.utils.SoundHandler
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
 import java.awt.Color
@@ -24,31 +24,31 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
 
     private val soundSettings = listOf(
         listOf(
-            SoundSetting("Rare Mob Spawn", { SboDataObject.soundSettingsData.rareMobSound }, { SboDataObject.soundSettingsData.rareMobVolume }, { v -> SboDataObject.soundSettingsData.rareMobSound = v }, { v -> SboDataObject.soundSettingsData.rareMobVolume = v }),
-            SoundSetting("Inquisitor Spawn", { SboDataObject.soundSettingsData.inqSound }, { SboDataObject.soundSettingsData.inqVolume }, { v -> SboDataObject.soundSettingsData.inqSound = v }, { v -> SboDataObject.soundSettingsData.inqVolume = v }),
-            SoundSetting("Sphinx Spawn", { SboDataObject.soundSettingsData.sphinxSound }, { SboDataObject.soundSettingsData.sphinxVolume }, { v -> SboDataObject.soundSettingsData.sphinxSound = v }, { v -> SboDataObject.soundSettingsData.sphinxVolume = v }),
-            SoundSetting("King Minos Spawn", { SboDataObject.soundSettingsData.kingSound }, { SboDataObject.soundSettingsData.kingVolume }, { v -> SboDataObject.soundSettingsData.kingSound = v }, { v -> SboDataObject.soundSettingsData.kingVolume = v }),
-            SoundSetting("Manticore Spawn", { SboDataObject.soundSettingsData.mantiSound }, { SboDataObject.soundSettingsData.mantiVolume }, { v -> SboDataObject.soundSettingsData.mantiSound = v }, { v -> SboDataObject.soundSettingsData.mantiVolume = v }),
-            SoundSetting("Cocoon", { SboDataObject.soundSettingsData.cocoonSound }, { SboDataObject.soundSettingsData.cocoonVolume }, { v -> SboDataObject.soundSettingsData.cocoonSound = v }, { v -> SboDataObject.soundSettingsData.cocoonVolume = v }),
-            SoundSetting("Burrow Found", { SboDataObject.soundSettingsData.burrowFoundSound }, { SboDataObject.soundSettingsData.burrowVolume }, { v -> SboDataObject.soundSettingsData.burrowFoundSound = v }, { v -> SboDataObject.soundSettingsData.burrowVolume = v }),
+            SoundSetting("Rare Mob Spawn", { DataManager.soundSettingsData.rareMobSound }, { DataManager.soundSettingsData.rareMobVolume }, { v -> DataManager.soundSettingsData.rareMobSound = v }, { v -> DataManager.soundSettingsData.rareMobVolume = v }),
+            SoundSetting("Inquisitor Spawn", { DataManager.soundSettingsData.inqSound }, { DataManager.soundSettingsData.inqVolume }, { v -> DataManager.soundSettingsData.inqSound = v }, { v -> DataManager.soundSettingsData.inqVolume = v }),
+            SoundSetting("Sphinx Spawn", { DataManager.soundSettingsData.sphinxSound }, { DataManager.soundSettingsData.sphinxVolume }, { v -> DataManager.soundSettingsData.sphinxSound = v }, { v -> DataManager.soundSettingsData.sphinxVolume = v }),
+            SoundSetting("King Minos Spawn", { DataManager.soundSettingsData.kingSound }, { DataManager.soundSettingsData.kingVolume }, { v -> DataManager.soundSettingsData.kingSound = v }, { v -> DataManager.soundSettingsData.kingVolume = v }),
+            SoundSetting("Manticore Spawn", { DataManager.soundSettingsData.mantiSound }, { DataManager.soundSettingsData.mantiVolume }, { v -> DataManager.soundSettingsData.mantiSound = v }, { v -> DataManager.soundSettingsData.mantiVolume = v }),
+            SoundSetting("Cocoon", { DataManager.soundSettingsData.cocoonSound }, { DataManager.soundSettingsData.cocoonVolume }, { v -> DataManager.soundSettingsData.cocoonSound = v }, { v -> DataManager.soundSettingsData.cocoonVolume = v }),
+            SoundSetting("Burrow Found", { DataManager.soundSettingsData.burrowFoundSound }, { DataManager.soundSettingsData.burrowVolume }, { v -> DataManager.soundSettingsData.burrowFoundSound = v }, { v -> DataManager.soundSettingsData.burrowVolume = v }),
         ) to "Spawns",
 
         listOf(
-            SoundSetting("Inquisitor Low HP", { SboDataObject.soundSettingsData.lowInqHpSound }, { SboDataObject.soundSettingsData.lowInqHpVoume }, { v -> SboDataObject.soundSettingsData.lowInqHpSound = v }, { v -> SboDataObject.soundSettingsData.lowInqHpVoume = v }),
-            SoundSetting("Sphinx Low HP", { SboDataObject.soundSettingsData.lowSphinxHpSound }, { SboDataObject.soundSettingsData.lowSphinxHpVoume }, { v -> SboDataObject.soundSettingsData.lowSphinxHpSound = v }, { v -> SboDataObject.soundSettingsData.lowSphinxHpVoume = v }),
-            SoundSetting("King Minos Low HP", { SboDataObject.soundSettingsData.lowKingHpSound }, { SboDataObject.soundSettingsData.lowKingHpVoume }, { v -> SboDataObject.soundSettingsData.lowKingHpSound = v }, { v -> SboDataObject.soundSettingsData.lowKingHpVoume = v }),
-            SoundSetting("Manticore Low HP", { SboDataObject.soundSettingsData.lowMantiHpSound }, { SboDataObject.soundSettingsData.lowMantiHpVoume }, { v -> SboDataObject.soundSettingsData.lowMantiHpSound = v }, { v -> SboDataObject.soundSettingsData.lowMantiHpVoume = v }),
+            SoundSetting("Inquisitor Low HP", { DataManager.soundSettingsData.lowInqHpSound }, { DataManager.soundSettingsData.lowInqHpVoume }, { v -> DataManager.soundSettingsData.lowInqHpSound = v }, { v -> DataManager.soundSettingsData.lowInqHpVoume = v }),
+            SoundSetting("Sphinx Low HP", { DataManager.soundSettingsData.lowSphinxHpSound }, { DataManager.soundSettingsData.lowSphinxHpVoume }, { v -> DataManager.soundSettingsData.lowSphinxHpSound = v }, { v -> DataManager.soundSettingsData.lowSphinxHpVoume = v }),
+            SoundSetting("King Minos Low HP", { DataManager.soundSettingsData.lowKingHpSound }, { DataManager.soundSettingsData.lowKingHpVoume }, { v -> DataManager.soundSettingsData.lowKingHpSound = v }, { v -> DataManager.soundSettingsData.lowKingHpVoume = v }),
+            SoundSetting("Manticore Low HP", { DataManager.soundSettingsData.lowMantiHpSound }, { DataManager.soundSettingsData.lowMantiHpVoume }, { v -> DataManager.soundSettingsData.lowMantiHpSound = v }, { v -> DataManager.soundSettingsData.lowMantiHpVoume = v }),
         ) to "Low HPs",
 
         listOf(
-            SoundSetting("Chimera Drop", { SboDataObject.soundSettingsData.chimSound }, { SboDataObject.soundSettingsData.chimVolume }, { v -> SboDataObject.soundSettingsData.chimSound = v }, { v -> SboDataObject.soundSettingsData.chimVolume = v }),
-            SoundSetting("Brain Food Drop", { SboDataObject.soundSettingsData.bfSound }, { SboDataObject.soundSettingsData.bfVolume }, { v -> SboDataObject.soundSettingsData.bfSound = v }, { v -> SboDataObject.soundSettingsData.bfVolume = v }),
-            SoundSetting("Manti-Core Drop", { SboDataObject.soundSettingsData.coreSound }, { SboDataObject.soundSettingsData.coreVolume }, { v -> SboDataObject.soundSettingsData.coreSound = v }, { v -> SboDataObject.soundSettingsData.coreVolume = v }),
-            SoundSetting("Fateful Stinger Drop", { SboDataObject.soundSettingsData.stingerSound }, { SboDataObject.soundSettingsData.stingerVolume }, { v -> SboDataObject.soundSettingsData.stingerSound = v }, { v -> SboDataObject.soundSettingsData.stingerVolume = v }),
-            SoundSetting("Shimmering Wool Drop", { SboDataObject.soundSettingsData.woolSound }, { SboDataObject.soundSettingsData.woolVolume }, { v -> SboDataObject.soundSettingsData.woolSound = v }, { v -> SboDataObject.soundSettingsData.woolVolume = v }),
-            SoundSetting("Minos Relic Drop", { SboDataObject.soundSettingsData.relicSound }, { SboDataObject.soundSettingsData.relicVolume }, { v -> SboDataObject.soundSettingsData.relicSound = v }, { v -> SboDataObject.soundSettingsData.relicVolume = v }),
-            SoundSetting("Daedalus Stick Drop", { SboDataObject.soundSettingsData.stickSound }, { SboDataObject.soundSettingsData.stickVolume }, { v -> SboDataObject.soundSettingsData.stickSound = v }, { v -> SboDataObject.soundSettingsData.stickVolume = v }),
-            SoundSetting("Misc Drop", { SboDataObject.soundSettingsData.miscDropSound }, { SboDataObject.soundSettingsData.miscDropVolume }, { v -> SboDataObject.soundSettingsData.miscDropSound = v }, { v -> SboDataObject.soundSettingsData.miscDropVolume = v })
+            SoundSetting("Chimera Drop", { DataManager.soundSettingsData.chimSound }, { DataManager.soundSettingsData.chimVolume }, { v -> DataManager.soundSettingsData.chimSound = v }, { v -> DataManager.soundSettingsData.chimVolume = v }),
+            SoundSetting("Brain Food Drop", { DataManager.soundSettingsData.bfSound }, { DataManager.soundSettingsData.bfVolume }, { v -> DataManager.soundSettingsData.bfSound = v }, { v -> DataManager.soundSettingsData.bfVolume = v }),
+            SoundSetting("Manti-Core Drop", { DataManager.soundSettingsData.coreSound }, { DataManager.soundSettingsData.coreVolume }, { v -> DataManager.soundSettingsData.coreSound = v }, { v -> DataManager.soundSettingsData.coreVolume = v }),
+            SoundSetting("Fateful Stinger Drop", { DataManager.soundSettingsData.stingerSound }, { DataManager.soundSettingsData.stingerVolume }, { v -> DataManager.soundSettingsData.stingerSound = v }, { v -> DataManager.soundSettingsData.stingerVolume = v }),
+            SoundSetting("Shimmering Wool Drop", { DataManager.soundSettingsData.woolSound }, { DataManager.soundSettingsData.woolVolume }, { v -> DataManager.soundSettingsData.woolSound = v }, { v -> DataManager.soundSettingsData.woolVolume = v }),
+            SoundSetting("Minos Relic Drop", { DataManager.soundSettingsData.relicSound }, { DataManager.soundSettingsData.relicVolume }, { v -> DataManager.soundSettingsData.relicSound = v }, { v -> DataManager.soundSettingsData.relicVolume = v }),
+            SoundSetting("Daedalus Stick Drop", { DataManager.soundSettingsData.stickSound }, { DataManager.soundSettingsData.stickVolume }, { v -> DataManager.soundSettingsData.stickSound = v }, { v -> DataManager.soundSettingsData.stickVolume = v }),
+            SoundSetting("Misc Drop", { DataManager.soundSettingsData.miscDropSound }, { DataManager.soundSettingsData.miscDropVolume }, { v -> DataManager.soundSettingsData.miscDropSound = v }, { v -> DataManager.soundSettingsData.miscDropVolume = v })
         ) to "Drops"
     )
 
@@ -105,7 +105,7 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
 
     override fun onScreenClose() {
         super.onScreenClose()
-        SboDataObject.soundSettingsData.save()
+        DataManager.soundSettingsData.save()
         if (mc.options.guiScale().get() != 2 || guiScale == null) return
         mc.options.guiScale().set(guiScale!!) // restore original gui scale
         guiScale = null

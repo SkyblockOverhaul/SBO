@@ -8,12 +8,16 @@ import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.percent
-import net.sbo.mod.guis.partyfinder.GuiHandler
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.guis.partyfinder.Theme
 
-class Home(private val parent: PartyFinderGUI) {
-    internal fun render() {
+class Home(private val parent: PartyFinderGUI) : PartyPage {
+    override val pageName: String = "Home"
+    override val partyType: String = ""
+    override val listDisplayName: String = ""
+    override val pageOrder: Int get() = 100
+
+    override fun render() {
         Window.enqueueRenderOperation { parent.noParties.hide()
             parent.contentBlock.addChild(ScrollComponent().constrain {
                 x = 0.percent()

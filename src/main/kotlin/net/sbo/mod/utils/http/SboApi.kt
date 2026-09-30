@@ -1,12 +1,11 @@
 package net.sbo.mod.utils.http
 
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.utils.data.MembersRequest
 import net.sbo.mod.utils.data.PartyRequest
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager.sboData
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
