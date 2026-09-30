@@ -15,6 +15,9 @@ object Player {
 
     fun getUUIDString(): String = mc.player?.stringUUID ?: ""
 
+    // Works in the main menu
+    fun accountUuid(): String = mc.user.profileId.toString().replace("-", "").lowercase()
+
     fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
     fun getPlayerInventory(): List<ItemStack> {

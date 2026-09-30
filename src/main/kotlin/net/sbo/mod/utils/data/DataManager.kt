@@ -296,6 +296,32 @@ object DataManager {
         }
     }
 
+    // === CLOUD SYNC ===
+
+    fun exportAll(): Map<String, String> = DataRegistry.entries.associate { entry ->
+        @Suppress("UNCHECKED_CAST")
+        val typedEntry = entry as ConfigEntry<Any>
+        typedEntry.fileName to gson.toJson(typedEntry.getter())
+    }
+
+    // Main thread only
+    fun importAll(files: Map<String, String>) {
+        val parsed = this::class.java.declaredFields
+            .filter { it.isAnnotationPresent(DataField::class.java) }
+            .mapNotNull { field ->
+                val json = files[field.getAnnotation(DataField::class.java).fileName] ?: return@mapNotNull null
+                val value = gson.fromJson(json, field.type) ?: throw JsonSyntaxException("${field.name} is empty")
+                field to value
+            }
+
+        saveAndBackupAllDataThreadedBlocking(dataDir)
+        parsed.forEach { (field, value) ->
+            field.isAccessible = true
+            field.set(this, value)
+        }
+        saveAllDataThreaded(dataDir)
+    }
+
     // === BACKUP ===
 
     private fun createBackup(modName: String) {

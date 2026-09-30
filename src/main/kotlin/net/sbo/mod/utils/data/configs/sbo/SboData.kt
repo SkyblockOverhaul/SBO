@@ -32,7 +32,7 @@ data class SboData(
     var b2bChimLs: Boolean = false,
     var b2bInq: Boolean = false,
     var b2bChimLsInq: Boolean = false,
-    var sboKey: String = "",
+    var sboKey: String = "", // legacy, moved to ~/.sbo
     var b2bStreakCounter: MutableMap<String, Int> = mutableMapOf(),
 
     var mobsSinceKing: Int = 0,
@@ -61,6 +61,10 @@ data class SboData(
     var b2bFoodLs: Boolean = false,
 
     var lastStatsProfile: String = "",
+
+    var cloudSyncVersion: Int = 0, // 0 = never synced
+    var cloudSyncCounter: Long = 0,
+    var cloudSyncHash: String = "", // last synced state
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }
