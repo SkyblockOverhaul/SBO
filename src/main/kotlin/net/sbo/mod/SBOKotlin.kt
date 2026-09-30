@@ -22,6 +22,7 @@ import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.Guis
+import net.sbo.mod.guis.guilib.GuiLibTest
 import net.sbo.mod.overlays.*
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.partyfinder.PartyCheck
@@ -110,6 +111,7 @@ object SBOKotlin : ClientModInitializer {
 		}
 
 		Guis.register()
+		GuiLibTest.register()
 		HelpCommand.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
