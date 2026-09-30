@@ -283,6 +283,7 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("resourcefulconfig_version", resourcefulConfigVersion)
     inputs.property("resourcefulconfigkt_version", resourcefulConfigKtVersion)
     inputs.property("universalcraft_version", universalCraftVersion)
+    inputs.property("guilib_version", project.property("guilib.version"))
     inputs.property("modmenu_version", modMenuVersion)
 
     val expandProperties = mapOf(
@@ -305,6 +306,7 @@ tasks.named<ProcessResources>("processResources") {
         "resourcefulconfig_version" to resourcefulConfigVersion,
         "resourcefulconfigkt_version" to resourcefulConfigKtVersion,
         "universalcraft_version" to universalCraftVersion,
+        "guilib_version" to project.property("guilib.version"),
         "modmenu_version" to modMenuVersion,
     ) + inputs.properties
 
