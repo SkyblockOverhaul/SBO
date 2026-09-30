@@ -28,3 +28,15 @@ listOf(
 }
 
 rootProject.buildFileName = "root.gradle.kts"
+
+// GuiLib (web-style UI library) lives in its own repository. It normally comes from the SkyblockOverhaul Maven repo;
+// when ../SBO-GuiLib is checked out it is built from source instead (composite build). Disable with -Pguilib.local=false.
+val guiLibDir = file("../SBO-GuiLib")
+if (guiLibDir.isDirectory && providers.gradleProperty("guilib.local").orNull != "false") {
+    includeBuild(guiLibDir) {
+        dependencySubstitution {
+            substitute(module("net.sbo:guilib-26.1.2-fabric")).using(project(":26.1.2-fabric"))
+            substitute(module("net.sbo:guilib-26.2-fabric")).using(project(":26.2-fabric"))
+        }
+    }
+}

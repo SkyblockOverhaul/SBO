@@ -83,6 +83,16 @@ repositories {
 
     exclusiveContent {
         forRepository {
+            maven("https://skyblockoverhaul.github.io/maven")
+        }
+
+        filter {
+            includeGroup("net.sbo")
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
             maven("https://repo.essential.gg/repository/maven-public")
         }
 
@@ -319,6 +329,9 @@ dependencies {
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
     implementation(include(libs.elementa.get())!!)
+
+    // GuiLib (see settings.gradle.kts for building it from a local checkout). Not used by any code yet.
+    implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
