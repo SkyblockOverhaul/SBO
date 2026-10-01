@@ -237,6 +237,8 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-field-input select { min-width: 90px; }
 .pf-any-of { display: flex; flex-direction: column; gap: 2px; }
 .pf-any-of select.multiple { width: 100%; }
+/* The column would stretch the toggle to the width of the dropdown */
+.pf-any-of .pf-match { align-self: flex-start; }
 .pf-tier-row { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 7px; }
 .pf-own { color: var(--muted); font-size: 7px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pf-own.ok { color: var(--ok); }
