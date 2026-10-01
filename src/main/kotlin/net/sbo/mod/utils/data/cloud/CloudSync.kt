@@ -27,6 +27,7 @@ import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.http.Http.getBoolean
 import net.sbo.mod.utils.http.Http.getString
 import net.sbo.mod.utils.http.SboApi
+import net.sbo.mod.utils.overlay.OverlayManager
 import java.io.File
 import java.security.MessageDigest
 import java.time.Instant
@@ -64,6 +65,8 @@ object CloudSync {
     @Volatile private var autoPaused = false
     @Volatile private var uploadInFlight: CountDownLatch? = null
 
+    @Volatile private var downloadWaitingForPassword = false
+
     fun init() {
         Register.onTick(20 * 60 * AUTO_UPLOAD_MINUTES) { _ ->
             if (SBOKotlin.mc.level == null || !autoActive()) return@onTick
@@ -75,32 +78,64 @@ object CloudSync {
         Register.command(PASSWORD_COMMAND) { args ->
             val password = args.joinToString(" ")
             if (password.length < CloudSyncKeys.MIN_PASSWORD_LENGTH) {
-                Chat.chat("$PREFIX§cUsage: /$PASSWORD_COMMAND <password>, at least ${CloudSyncKeys.MIN_PASSWORD_LENGTH} characters.")
+                Chat.chat("$PREFIX§cType /$PASSWORD_COMMAND followed by a password with at least ${CloudSyncKeys.MIN_PASSWORD_LENGTH} characters.")
                 return@command
             }
             setPassword(password)
         }
 
         Register.command("sboclearsyncpassword") {
-            Chat.clickableChat("$PREFIX§c[Click to remove the sync password from this PC]", "Downloads are no longer verified afterwards") {
+            Chat.clickableChat("$PREFIX§c[Click to remove your sync password from this PC]", "You can set it again any time with /$PASSWORD_COMMAND") {
                 CloudSyncKeys.removeKey()
                 Chat.chat("$PREFIX§aSync password removed from this PC.")
             }
         }
     }
 
+    // Asks whether the cloud save or this PC's data should win
+    private fun askWhichToKeep() {
+        Chat.clickableChat("$PREFIX§b[Load cloud save]", "Use the settings and data from your cloud save on this PC. A backup is made first.") { download() }
+        Chat.clickableChat("$PREFIX§c[Keep this PC's data]", "Replace your cloud save with the settings and data from this PC. The cloud save is lost.") { upload(force = true) }
+    }
+
     private fun setPassword(password: String) {
-        Chat.chat("$PREFIX§eSaving sync password...")
+        Chat.chat("$PREFIX§eSaving password...")
         thread(name = "SBO Cloud Key", isDaemon = true) {
             try {
                 CloudSyncKeys.setPassword(password.toCharArray())
-                Chat.chat("$PREFIX§aSync password set. Use the same password on every PC, SBO cannot recover it.")
-                Chat.chat("$PREFIX§eUpload once so the cloud copy is protected.")
+                Chat.chat("$PREFIX§aPassword saved. Use the exact same password on all your PCs. Write it down, it cannot be reset.")
+                if (downloadWaitingForPassword) {
+                    downloadWaitingForPassword = false
+                    download()
+                } else {
+                    nextStepAfterPassword()
+                }
             } catch (e: Exception) {
                 SBOKotlin.logger.error("Failed to save the sync password", e)
-                Chat.chat("$PREFIX§4Could not save the sync password: ${e.message}")
+                Chat.chat("$PREFIX§4Could not save the password: ${e.message}")
             }
         }
+    }
+
+    // Suggests download or upload depending on what the cloud has
+    private fun nextStepAfterPassword() {
+        SboApi.cloudStatus()
+            .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
+                if (!response.success) return@toJson
+                val slot = response.slots.find { it.slot == SLOT }
+                when {
+                    slot == null -> Chat.chat("$PREFIX§eFrom now on your cloud save is protected with this password.")
+                    slot.version != state().version -> {
+                        Chat.chat("$PREFIX§eYour cloud save has data this PC does not have yet.")
+                        Chat.clickableChat("$PREFIX§b[Load cloud save]", "Use the settings and data from your cloud save on this PC. A backup is made first.") { download() }
+                    }
+                    else -> {
+                        Chat.chat("$PREFIX§eClick below once so your cloud save is protected with the password too.")
+                        Chat.clickableChat("$PREFIX§b[Protect cloud save]", "Uploads this PC's settings and data again, now protected with your password") { upload() }
+                    }
+                }
+            }
+            .error { SBOKotlin.logger.warn("[CloudSync] status after password failed: ${it.message}") }
     }
 
     private fun autoActive(): Boolean =
@@ -110,7 +145,8 @@ object CloudSync {
         SBOKotlin.logger.warn("[CloudSync] auto sync paused: $reason")
         if (autoPaused) return
         autoPaused = true
-        Chat.chat("$PREFIX§cAuto sync paused for this session: $reason")
+        Chat.chat("$PREFIX§cAuto sync stopped for now: $reason")
+        Chat.chat("$PREFIX§eIt starts again after you click Upload or Download in /sbo under Cloud Sync.")
     }
 
     @SboEvent
@@ -136,11 +172,16 @@ object CloudSync {
             slot == null -> upload(auto = true)
             slot.version == state().version -> if (dirty) upload(auto = true)
             !dirty && state().version != 0 -> download(auto = true)
+            state().version == 0 -> {
+                autoPaused = true
+                Chat.chat("$PREFIX§eYou already have a cloud save from another PC. Do you want to use it here?")
+                askWhichToKeep()
+                Chat.chat("$PREFIX§7Not sure? Load the cloud save, your current data is backed up first.")
+            }
             else -> {
                 autoPaused = true
-                Chat.chat("$PREFIX§eAuto sync: the cloud has a save from another PC, but this PC has changes that were never uploaded.")
-                Chat.clickableChat("$PREFIX§b[Load cloud save]", "Replace this PC's config and data with the cloud save") { download() }
-                Chat.clickableChat("$PREFIX§c[Keep this PC's data]", "Overwrite the cloud save with this PC's config and data") { upload(force = true) }
+                Chat.chat("$PREFIX§eYour cloud save and this PC both have changes the other one does not have. Which one do you want to keep?")
+                askWhichToKeep()
             }
         }
     }
@@ -219,7 +260,7 @@ object CloudSync {
     private fun upload(force: Boolean = false, auto: Boolean): CountDownLatch? {
         val files = runCatching { collectFiles() }.getOrElse {
             SBOKotlin.logger.error("Failed to collect data for the cloud upload", it)
-            Chat.chat("$PREFIX§4Could not read your SBO data: ${it.message}")
+            Chat.chat("$PREFIX§4Could not read your SBO settings and data: ${it.message}")
             return null
         }
         val hash = hashOf(files)
@@ -236,7 +277,7 @@ object CloudSync {
 
         val done = CountDownLatch(1)
         uploadInFlight = done
-        if (!auto) Chat.chat("$PREFIX§eUploading config and data...")
+        if (!auto) Chat.chat("$PREFIX§eUploading your settings and data...")
         SboApi.cloudUpload(SLOT, CloudUploadRequest(envelope, state.version, force))
             .toJson<CloudUploadResponse>(ignoreUnknownKeys = true) { response ->
                 try {
@@ -249,13 +290,13 @@ object CloudSync {
                             SBOKotlin.logger.info("[CloudSync] uploaded version ${response.version} (auto=$auto)")
                             if (!auto) {
                                 autoPaused = false
-                                val protection = if (signature != null) "signed" else "not signed, no sync password set"
-                                Chat.chat("$PREFIX§aConfig and data uploaded to the cloud ($protection).")
+                                Chat.chat("$PREFIX§aUploaded. Your cloud save is up to date.")
+                                if (signature == null) Chat.chat("$PREFIX§7Tip: protect your cloud save with /$PASSWORD_COMMAND <password>")
                             }
                         }
                         response.conflict -> {
                             if (auto) autoPaused = true
-                            conflict(response.version)
+                            conflict()
                         }
                         auto -> pauseAuto("upload failed: ${response.error}")
                         else -> Chat.chat("$PREFIX§4Upload failed: ${response.error}")
@@ -272,18 +313,17 @@ object CloudSync {
         return done
     }
 
-    private fun conflict(cloudVersion: Int) {
-        Chat.chat("$PREFIX§eThe cloud has a newer save (version $cloudVersion) than this PC (version ${state().version}).")
-        Chat.clickableChat("$PREFIX§b[Download cloud save]", "Replace your local config and data with the cloud ones") { download() }
-        Chat.clickableChat("$PREFIX§c[Overwrite cloud save]", "Replace the cloud save with your local config and data") { upload(force = true) }
+    private fun conflict() {
+        Chat.chat("$PREFIX§eYour cloud save was changed on another PC. Which one do you want to keep?")
+        askWhichToKeep()
     }
 
-    fun download(allowOlder: Boolean = false) {
-        download(allowOlder, auto = false)
+    fun download(allowOlder: Boolean = false, allowUnsigned: Boolean = false) {
+        download(allowOlder, allowUnsigned, auto = false)
     }
 
-    private fun download(allowOlder: Boolean = false, auto: Boolean) {
-        if (!auto) Chat.chat("$PREFIX§eDownloading config and data...")
+    private fun download(allowOlder: Boolean = false, allowUnsigned: Boolean = false, auto: Boolean) {
+        if (!auto) Chat.chat("$PREFIX§eLoading your cloud save...")
         SboApi.cloudDownload(SLOT)
             .toJson<CloudSlotResponse>(ignoreUnknownKeys = true) { response ->
                 if (!response.success) {
@@ -291,7 +331,7 @@ object CloudSync {
                     else Chat.chat("$PREFIX§4Download failed: ${response.error}")
                     return@toJson
                 }
-                val envelope = verified(response.data, allowOlder)
+                val envelope = verified(response.data, allowOlder, allowUnsigned)
                 if (envelope == null) {
                     if (auto) autoPaused = true
                     return@toJson
@@ -305,10 +345,10 @@ object CloudSync {
     }
 
     // null if the save can't be trusted
-    private fun verified(data: String, allowOlder: Boolean): CloudEnvelope? {
+    private fun verified(data: String, allowOlder: Boolean, allowUnsigned: Boolean): CloudEnvelope? {
         val envelope = runCatching { json.decodeFromString<CloudEnvelope>(data) }.getOrNull()
         if (envelope == null || CONFIG_ENTRY !in envelope.files) {
-            Chat.chat("$PREFIX§4The cloud save has an unknown format. Update SBO or upload again.")
+            Chat.chat("$PREFIX§4Your cloud save could not be read. Update SBO and try again.")
             return null
         }
 
@@ -316,24 +356,27 @@ object CloudSync {
         val key = CloudSyncKeys.key(uuid)
         if (key == null) {
             if (envelope.sig != null) {
-                Chat.chat("$PREFIX§eThis cloud save is protected by a sync password. Set it first: /$PASSWORD_COMMAND <password>")
+                downloadWaitingForPassword = true
+                Chat.chat("$PREFIX§eYour cloud save is protected with a password. Type /$PASSWORD_COMMAND <password> with the password from your other PC, loading then continues on its own.")
                 return null
             }
             return envelope
         }
 
         if (envelope.sig == null) {
-            Chat.chat("$PREFIX§4The cloud save is not signed, so it could have been changed on the server. Not loaded.")
-            Chat.chat("$PREFIX§eUpload from a PC with your sync password to protect it again.")
+            if (allowUnsigned) return envelope
+            Chat.chat("$PREFIX§eYour cloud save was uploaded without a password, so SBO cannot check that it really comes from you. It was not loaded.")
+            Chat.clickableChat("$PREFIX§c[Load it anyway]", "Only do this if you uploaded it yourself from a PC without a password") { download(allowUnsigned = true) }
             return null
         }
         if (!CloudSyncKeys.verify(key, signedBytes(uuid, envelope.counter, envelope.files), envelope.sig)) {
-            Chat.chat("$PREFIX§4The signature does not match. Either this PC has a different sync password, or the save was changed on the server. Not loaded.")
+            Chat.chat("$PREFIX§4The password on this PC is not the one your cloud save was protected with. It was not loaded.")
+            Chat.chat("$PREFIX§eType /$PASSWORD_COMMAND <password> with the password from your other PC and try again.")
             return null
         }
         if (envelope.counter < state().counter && !allowOlder) {
-            Chat.chat("$PREFIX§eThe cloud save is older than the newest one this PC has seen. Someone may have restored an old copy.")
-            Chat.clickableChat("$PREFIX§c[Load it anyway]", "It is signed by you, just older") { download(allowOlder = true) }
+            Chat.chat("$PREFIX§eYour cloud save is older than data this PC already had. It was not loaded.")
+            Chat.clickableChat("$PREFIX§c[Load it anyway]", "Replaces your newer settings and data on this PC with the older cloud save. A backup is made first.") { download(allowOlder = true) }
             return null
         }
         return envelope
@@ -346,7 +389,7 @@ object CloudSync {
             DataManager.importAll(withLocalFields(envelope.files - CONFIG_ENTRY))
         } catch (e: Exception) {
             SBOKotlin.logger.error("Failed to apply the cloud data", e)
-            Chat.chat("$PREFIX§4Could not apply the cloud save, nothing was changed.")
+            Chat.chat("$PREFIX§4Your cloud save could not be loaded, nothing on this PC was changed.")
             if (auto) autoPaused = true
             return
         }
@@ -361,25 +404,26 @@ object CloudSync {
                 backup.copyTo(config, overwrite = true)
                 SBOKotlin.settings.load { }
             }
-            Chat.chat("$PREFIX§4Could not apply the cloud config, your old one was restored. Your data was loaded.")
+            Chat.chat("$PREFIX§4Your settings could not be loaded from the cloud, your old settings were kept. Everything else was loaded.")
         }
         Guis.resetCachedGuis()
+        OverlayManager.reloadPositions()
 
         state().version = version
         state().counter = maxOf(state().counter, envelope.counter)
         state().hash = runCatching { hashOf(collectFiles()) }.getOrDefault("")
         DataManager.sboData.save()
         if (auto) {
-            Chat.chat("$PREFIX§aAuto sync: loaded the newer cloud save from your other PC.")
+            Chat.chat("$PREFIX§aAuto sync: loaded your newer settings and data from your other PC.")
         } else {
             autoPaused = false
-            Chat.chat("$PREFIX§aCloud save loaded. Backups: ${backup.name} and config/sbo/backup. Reopen /sbo to see the changes.")
+            Chat.chat("$PREFIX§aCloud save loaded. Your old settings and data were backed up.")
         }
     }
 
     fun status() {
-        val password = if (CloudSyncKeys.hasKey()) "§aset" else "§cnot set §7(/$PASSWORD_COMMAND)"
-        Chat.chat("$PREFIX§eSync password on this PC: $password")
+        val password = if (CloudSyncKeys.hasKey()) "§aset" else "§7not set (optional, /$PASSWORD_COMMAND)"
+        Chat.chat("$PREFIX§ePassword on this PC: $password")
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
                 if (!response.success) {
@@ -388,19 +432,30 @@ object CloudSync {
                 }
                 val slot = response.slots.find { it.slot == SLOT }
                 if (slot == null) {
-                    Chat.chat("$PREFIX§eNothing stored in the cloud yet.")
+                    Chat.chat("$PREFIX§eYou have no cloud save yet. Click Upload to create one.")
                     return@toJson
                 }
                 val updated = DATE_FORMAT.format(Instant.ofEpochMilli(slot.updatedAt))
-                val size = "%.1f KB".format(slot.size / 1024.0)
-                Chat.chat("$PREFIX§eCloud save: version §b${slot.version}§e, $size, updated §b$updated")
-                Chat.chat("$PREFIX§eThis PC is on version §b${state().version}")
+                Chat.chat("$PREFIX§eLast upload: §b$updated")
+                SBOKotlin.mc.schedule { Chat.chat("$PREFIX${syncState(slot)}") }
             }
             .error { Chat.chat("$PREFIX§4Could not check the cloud: ${it.message}") }
     }
 
+    // CollectFiles saves the config
+    private fun syncState(slot: CloudSlotMeta): String {
+        val dirty = runCatching { hashOf(collectFiles()) != state().hash }.getOrDefault(true)
+        return when {
+            state().version == 0 -> "§eThis PC has not used your cloud save yet. Click Download to load it here."
+            slot.version != state().version && dirty -> "§eYour cloud save and this PC both have changes the other one does not have."
+            slot.version != state().version -> "§eYour cloud save is newer than this PC. Click Download to get it."
+            dirty -> "§eThis PC has changes that are not in your cloud save yet. Click Upload to save them."
+            else -> "§aThis PC and your cloud save are the same."
+        }
+    }
+
     fun delete() {
-        Chat.clickableChat("$PREFIX§c[Click to delete your cloud save]", "This cannot be undone") {
+        Chat.clickableChat("$PREFIX§c[Click to delete your cloud save]", "Deletes it for good. The settings and data on this PC stay.") {
             SboApi.cloudDelete(SLOT)
                 .toJsonObject { response ->
                     if (response.getBoolean("Success")) {
@@ -408,7 +463,7 @@ object CloudSync {
                         state().hash = ""
                         DataManager.sboData.save()
                         Chat.chat("$PREFIX§aCloud save deleted.")
-                        if (CloudSync.autoSync) Chat.chat("$PREFIX§eAuto sync is on and will upload again. Turn it off to keep the cloud empty.")
+                        if (CloudSync.autoSync) Chat.chat("$PREFIX§eAuto Sync is on and will upload this PC's data again soon. Turn off Auto Sync in /sbo if you want no cloud save.")
                     } else {
                         Chat.chat("$PREFIX§4Delete failed: ${response.getString("Error")}")
                     }

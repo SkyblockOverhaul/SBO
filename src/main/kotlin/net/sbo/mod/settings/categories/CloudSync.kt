@@ -7,24 +7,24 @@ object CloudSync : CategoryKt("Cloud Sync") {
     init {
         separator {
             this.title = "Cloud Save"
-            this.description = "Supporter feature: save your SBO config, trackers, achievements and other SBO data on the SBO server and load them on any PC. Needs your sbo key (/sbokey)."
+            this.description = "Supporter feature: keeps your SBO settings, trackers, achievements and other SBO data online, so you can load them on any PC. Needs your SBO key (/sbokey)."
         }
     }
 
     var autoSync by boolean(false) {
         this.name = Literal("Auto Sync")
-        this.description = Literal("Loads a newer cloud save from another PC when you join a world, and uploads your changes every 5 minutes while playing, when you leave a server and when you close the game.")
+        this.description = Literal("Does Upload and Download for you. When you join, it loads newer data from your other PC. While playing, it saves your changes every 5 minutes, when you leave a server and when you close the game.")
     }
 
     init {
         separator {
             this.title = "Sync Password (optional)"
-            this.description = "Set it with /sbosyncpassword <password> on every PC. Uploads are then signed and a save changed on the server is refused. SBO cannot recover it. Remove it with /sboclearsyncpassword."
+            this.description = "Extra protection: only PCs with this password can load your cloud save. Type /sbosyncpassword <password> on every PC, with the same password everywhere. Write it down, it cannot be reset. Remove it with /sboclearsyncpassword."
         }
 
         button {
             title = "Upload"
-            description = "Saves your current SBO config and data in the cloud."
+            description = "Saves the SBO settings and data from this PC as your cloud save."
             text = "Upload"
             onClick {
                 CloudSync.upload()
@@ -33,7 +33,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
 
         button {
             title = "Download"
-            description = "Replaces your SBO config and data with the cloud save. Your current state is backed up first."
+            description = "Replaces the SBO settings and data on this PC with your cloud save. A backup is made first."
             text = "Download"
             onClick {
                 CloudSync.download()
@@ -42,7 +42,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
 
         button {
             title = "Status"
-            description = "Shows what is stored in the cloud."
+            description = "Shows when you last uploaded and whether this PC is up to date."
             text = "Check"
             onClick {
                 CloudSync.status()
@@ -51,7 +51,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
 
         button {
             title = "Delete Cloud Save"
-            description = "Deletes your save from the cloud. Asks for confirmation in chat."
+            description = "Deletes your cloud save. The data on this PC stays. Asks for confirmation in chat."
             text = "Delete"
             onClick {
                 CloudSync.delete()

@@ -314,7 +314,9 @@ object DataManager {
                 field to value
             }
 
-        saveAndBackupAllDataThreadedBlocking(dataDir)
+        // Snapshot before the swap, the single thread executor backs it up before the next save
+        val snapshot = exportAll()
+        DATA_SAVER_EXECUTOR.execute { createBackup(dataDir, snapshot) }
         parsed.forEach { (field, value) ->
             field.isAccessible = true
             field.set(this, value)
@@ -324,7 +326,8 @@ object DataManager {
 
     // === BACKUP ===
 
-    private fun createBackup(modName: String) {
+    // snapshot: file name to json, null backs up the current data
+    private fun createBackup(modName: String, snapshot: Map<String, String>? = null) {
         try {
             val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
             val backupDir = File(modConfigDir, "backup")
@@ -336,10 +339,14 @@ object DataManager {
             val tempBackupDir = File(backupDir, "SBOBackup_$timestamp")
             tempBackupDir.mkdirs()
 
-            DataRegistry.entries.forEach { entry ->
-                @Suppress("UNCHECKED_CAST")
-                val typedEntry = entry as ConfigEntry<Any>
-                saveToFolder(tempBackupDir, typedEntry.getter(), typedEntry.fileName)
+            if (snapshot != null) {
+                snapshot.forEach { (fileName, json) -> File(tempBackupDir, fileName).writeText(json) }
+            } else {
+                DataRegistry.entries.forEach { entry ->
+                    @Suppress("UNCHECKED_CAST")
+                    val typedEntry = entry as ConfigEntry<Any>
+                    saveToFolder(tempBackupDir, typedEntry.getter(), typedEntry.fileName)
+                }
             }
 
             if (!tempBackupDir.exists() || tempBackupDir.listFiles()?.isEmpty() == true) {
