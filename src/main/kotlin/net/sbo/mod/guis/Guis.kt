@@ -27,6 +27,13 @@ object Guis {
     private var lastUpdate = 0L
     private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
 
+    fun resetCachedGuis() {
+        partyFinderGui = null
+        pastEventsGui = null
+        achievementsGui = null
+        soundGui = null
+    }
+
     fun openSboPf(calledFromGUI: Boolean = false) {
         if (!World.isInSkyblock()) {
             if (!calledFromGUI) {

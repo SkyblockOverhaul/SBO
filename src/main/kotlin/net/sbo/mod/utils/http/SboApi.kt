@@ -3,14 +3,15 @@ package net.sbo.mod.utils.http
 import kotlinx.serialization.json.Json
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
+import net.sbo.mod.utils.data.CloudUploadRequest
 import net.sbo.mod.utils.data.MembersRequest
 import net.sbo.mod.utils.data.PartyRequest
-import net.sbo.mod.utils.data.DataManager.sboData
+import net.sbo.mod.utils.SboKey
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 /**
- * Thin client for the SBO backend.
+ * Client for the SBO backend.
  *
  * the SBO key travels in the `x-sbo-key` header, the mod version in the `X-SBO-Version` header
  */
@@ -30,7 +31,7 @@ object SboApi {
     }
 
     private fun headers(): Map<String, String> = buildMap {
-        sboData.sboKey.takeIf { it.isNotBlank() }?.let { put("x-sbo-key", it) }
+        SboKey.get().takeIf { it.isNotBlank() }?.let { put("x-sbo-key", it) }
         modVersion()?.let { put("X-SBO-Version", it) }
     }
 
@@ -72,4 +73,13 @@ object SboApi {
     fun activeUsers(): HttpRequestHandle = get("/activeUsers")
 
     fun ahItems(): HttpRequestHandle = get("/ahItems")
+
+    fun cloudStatus(): HttpRequestHandle = get("/cloudSync")
+
+    fun cloudDownload(slot: String): HttpRequestHandle = get("/cloudSync/${encode(slot)}")
+
+    fun cloudUpload(slot: String, request: CloudUploadRequest): HttpRequestHandle =
+        post("/cloudSync/${encode(slot)}", json.encodeToString(request))
+
+    fun cloudDelete(slot: String): HttpRequestHandle = post("/cloudSync/${encode(slot)}/delete")
 }

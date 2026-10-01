@@ -42,15 +42,20 @@ class Overlay(
     var selected: Boolean = false
 
     fun init() {
-        if (overlayData.overlays.containsKey(name)) {
-            val data = overlayData.overlays[name]!!
+        loadPosition()
+        OverlayManager.overlays.add(this)
+    }
+
+    // Reads the stored position, or stores the current one if missing
+    fun loadPosition() {
+        val data = overlayData.overlays[name]
+        if (data != null) {
             x = data.x
             y = data.y
             scale = data.scale
         } else {
             overlayData.overlays[name] = OverlayValues(x, y, scale)
         }
-        OverlayManager.overlays.add(this)
     }
 
     fun setCondition(condition: () -> Boolean): Overlay {

@@ -18,6 +18,7 @@ import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.sphinx.SphinxSolver
+import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
 import net.sbo.mod.general.Pickuplog
@@ -111,6 +112,7 @@ object SBOKotlin : ClientModInitializer {
 
 		Guis.register()
 		HelpCommand.init()
+		CloudSync.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
 		WaypointManager.init()

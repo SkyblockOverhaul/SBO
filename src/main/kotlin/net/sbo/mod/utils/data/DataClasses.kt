@@ -91,6 +91,60 @@ data class MembersRequest(
 )
 
 @Serializable
+data class CloudUploadRequest(
+    val data: String,
+    val baseVersion: Int,
+    val force: Boolean = false
+)
+
+@Serializable
+data class CloudEnvelope(
+    val v: Int = 1,
+    val counter: Long,
+    val files: Map<String, String>,
+    val sig: String? = null
+)
+
+@Serializable
+data class CloudUploadResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    @SerialName("Error")
+    val error: String? = null,
+    @SerialName("Conflict")
+    val conflict: Boolean = false,
+    val version: Int = 0
+)
+
+@Serializable
+data class CloudSlotResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    @SerialName("Error")
+    val error: String? = null,
+    val data: String = "",
+    val version: Int = 0,
+    val updatedAt: Long = 0
+)
+
+@Serializable
+data class CloudSlotMeta(
+    val slot: String,
+    val version: Int,
+    val size: Int,
+    val updatedAt: Long
+)
+
+@Serializable
+data class CloudStatusResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    @SerialName("Error")
+    val error: String? = null,
+    val slots: List<CloudSlotMeta> = emptyList()
+)
+
+@Serializable
 data class HypixelBazaarResponse(
     val success: Boolean = false,
     val lastUpdated: Long = 0,

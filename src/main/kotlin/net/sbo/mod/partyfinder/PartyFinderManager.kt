@@ -7,9 +7,9 @@ import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
+import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.*
-import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -72,7 +72,7 @@ object PartyFinderManager {
     )
 
     fun hasSboKey(): Boolean {
-        val sboKey = sboData.sboKey
+        val sboKey = SboKey.get()
         if (sboKey.isBlank() || !sboKey.startsWith("sbo")) {
             Chat.chat("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
             return false
@@ -103,15 +103,13 @@ object PartyFinderManager {
             } else if (args[0].startsWith("sbo").not()) {
                 Chat.chat("§6[SBO] §cInvalid key format! get one in our Discord")
             } else {
-                sboData.sboKey = args[0]
-                DataManager.save(DataManager::sboData)
+                SboKey.set(args[0])
                 Chat.chat("§6[SBO] §aKey has been set")
             }
         }
 
         Register.command("sboClearKey") {
-            sboData.sboKey = ""
-            DataManager.save(DataManager::sboData)
+            SboKey.clear()
             Chat.chat("§6[SBO] §aKey has been cleared")
         }
 
