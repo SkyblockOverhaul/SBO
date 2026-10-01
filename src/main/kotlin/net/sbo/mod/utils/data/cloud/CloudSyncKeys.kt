@@ -10,7 +10,7 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 object CloudSyncKeys {
-    const val MIN_PASSWORD_LENGTH = 8
+    const val MIN_PASSWORD_LENGTH = 3
     private const val ITERATIONS = 600_000
 
     // uuid -> base64 key
