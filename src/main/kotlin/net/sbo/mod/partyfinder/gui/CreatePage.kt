@@ -94,8 +94,9 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         }
 
         h3(className = "pf-section") { +"Party size" }
-        segmented(value = draft.partySize.toString(), onChange = { size -> change { partySize = size.toInt() } }, className = "pf-sizes") {
-            for (size in target.minSize..target.maxSize) option(size.toString(), if (size == target.maxSize) "$size (full)" else sizeLabel(size))
+        div(className = "pf-size-row") {
+            numberInput(value = draft.partySize, onChange = { size -> change { partySize = size } }, min = target.minSize, max = target.maxSize)
+            span(className = "pf-muted") { +(if (draft.partySize == target.maxSize) "full party" else sizeLabel(draft.partySize)) }
         }
         p(className = "pf-hint") { +"How many players your party should have, you included. ${target.label} parties can have up to ${target.maxSize}." }
 

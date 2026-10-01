@@ -7,7 +7,9 @@ data class PartyFinderConfigState(
     var drafts: MutableMap<String, PartyDraft> = mutableMapOf(),
     // Favorite category or subcategory keys, in the order the player sorted them
     var favorites: MutableList<String> = mutableListOf(),
-    var startWithFavorites: Boolean = false
+    var startWithFavorites: Boolean = false,
+    // Party list filters per party key
+    var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf()
 ) {
     fun save() = DataManager.save(DataManager::partyFinderConfigState)
 }
