@@ -42,4 +42,4 @@ replay_*.log
 
 .kotlin/sessions
 graphify-out/
-/.claude/summary
+/.claude/

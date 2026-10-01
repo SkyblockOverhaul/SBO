@@ -51,7 +51,8 @@
     "hm-api": ">=${hm_api_version}",
     "resourcefulconfig": ">=${resourcefulconfig_version}",
     "resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
-    "universalcraft": ">=${universalcraft_version}"
+    "universalcraft": ">=${universalcraft_version}",
+    "guilib": ">=${guilib_version}"
   },
   "suggests": {
     "modmenu": ">=${modmenu_version}"
