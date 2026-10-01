@@ -362,7 +362,7 @@ private fun NodeBuilder.partyCard(
                 span(className = "pf-age") { +ago(party.createdAt) }
                 if (!mine) joinButton(full, problems, target, onJoin)
             }
-            if (party.note.isNotBlank()) div(className = "pf-note") { +party.note }
+            if (party.note.isNotBlank()) noteView(party.note)
             div(className = "pf-reqs") {
                 var any = false
                 target.reqs.forEach { def ->
@@ -393,6 +393,19 @@ private fun NodeBuilder.partyCard(
                 }
             }
         }
+    }
+}
+
+/** At most two lines in the card; longer notes show in full on hover. */
+private fun NodeBuilder.noteView(note: String) {
+    // Rough guess when two lines won't fit; GuiLib can't tell us if the text got clipped
+    val long = note.length > 60 || note.count { it == '\n' } >= 2 || note.split(' ', '\n').any { it.length > 25 }
+    if (!long) {
+        div(className = "pf-note") { +note }
+        return
+    }
+    tooltip(content = { div(className = "pf-tip-note") { +note } }, className = "pf-tip") {
+        div(className = "pf-note") { +note }
     }
 }
 
