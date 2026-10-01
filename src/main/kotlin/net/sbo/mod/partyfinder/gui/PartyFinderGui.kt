@@ -221,15 +221,18 @@ object PartyFinderGui {
         val category = target.category
         div(className = "pf-toolbar") {
             h2(className = "pf-heading") { +category.label }
+            // Pills wrap onto more lines instead of scrolling sideways
             if (category.subcategories.size > 1) {
-                tabs(value = target.subType, onChange = { onSub("${category.id}/$it") }, variant = "pills", className = "pf-subs", key = "subs:${category.id}") {
-                    category.subcategories.forEach { sub ->
-                        val subTarget = PartyCategories.target(category.id, sub.id) ?: return@forEach
-                        tab(sub.id, subLabel(subTarget))
+                div(className = "pf-subs-row") {
+                    tabs(value = target.subType, onChange = { onSub("${category.id}/$it") }, variant = "pills", className = "pf-subs", key = "subs:${category.id}") {
+                        category.subcategories.forEach { sub ->
+                            val subTarget = PartyCategories.target(category.id, sub.id) ?: return@forEach
+                            tab(sub.id, subLabel(subTarget))
+                        }
                     }
-                }
-                span(className = "pf-sub-star", title = "Pin ${target.label} to favorites") {
-                    starIcon(target.key in favorites) { onStar(target.key) }
+                    span(className = "pf-sub-star", title = "Pin ${target.label} to favorites") {
+                        starIcon(target.key in favorites) { onStar(target.key) }
+                    }
                 }
             }
         }

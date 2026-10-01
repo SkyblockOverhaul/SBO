@@ -1,8 +1,9 @@
 /* SBO party finder (GuiLib). px are GUI pixels, default text is 8px. */
 :root {
-    --accent: #e8a33d;
-    --accent-hover: #f0b65a;
-    --guilib-accent: #e8a33d;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --aqua: #55ffff;
+    --guilib-accent: #006efa;
     --bg: #1e1f22;
     --panel: #2b2d31;
     --panel-2: #313338;
@@ -23,10 +24,9 @@ body {
 .pf-window {
     display: flex;
     flex-direction: column;
-    width: 94vw;
-    height: 92vh;
-    max-width: 620px;
-    max-height: 420px;
+    /* min() instead of max-height: children are laid out against the capped height */
+    width: min(94vw, 620px);
+    height: min(92vh, 420px);
     background-color: var(--bg);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -44,7 +44,7 @@ body {
     background-color: var(--panel);
     border-bottom: 1px solid var(--border);
 }
-.pf-title { font-weight: bold; color: var(--accent); white-space: nowrap; padding-bottom: 3px; }
+.pf-title { font-weight: bold; color: var(--aqua); white-space: nowrap; padding-bottom: 3px; }
 .pf-nav .guilib-tab-list { border-bottom-width: 0; }
 .pf-spacer { flex-grow: 1; }
 .pf-queue {
@@ -97,7 +97,7 @@ body {
     transition: background-color 120ms;
 }
 .pf-side-item:hover { background-color: var(--panel-2); }
-.pf-side-item.active { background-color: rgba(232, 163, 61, 0.22); color: #ffffff; }
+.pf-side-item.active { background-color: rgba(0, 110, 250, 0.3); color: #ffffff; }
 .pf-side-label { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pf-fav-list { min-height: 4px; }
 
@@ -108,24 +108,26 @@ body {
 
 .pf-main { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; padding: 6px 8px; }
 
-.pf-toolbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.pf-toolbar { display: flex; flex-direction: column; gap: 3px; margin-bottom: 4px; }
 .pf-heading { margin: 0; font-size: 10px; }
-.pf-subs { flex-shrink: 1; min-width: 0; }
-.pf-sub-star { display: flex; align-items: center; }
+.pf-subs-row { display: flex; align-items: flex-start; gap: 4px; }
+.pf-subs { flex-grow: 1; min-width: 0; }
+.pf-subs .guilib-tab-list { flex-wrap: wrap; row-gap: 2px; overflow: visible; }
+.pf-sub-star { display: flex; align-items: center; padding-top: 3px; }
 
 .pf-message { padding: 20px 10px; text-align: center; color: var(--muted); }
 .pf-banner {
     padding: 3px 6px;
     margin-bottom: 4px;
     border-radius: 3px;
-    background-color: rgba(232, 163, 61, 0.14);
-    border: 1px solid rgba(232, 163, 61, 0.45);
-    color: #f2d7a8;
+    background-color: rgba(0, 110, 250, 0.14);
+    border: 1px solid rgba(0, 110, 250, 0.5);
+    color: #bcd9ff;
 }
 .pf-hint { margin: 1px 0 3px 0; color: var(--muted); font-size: 7px; }
 .pf-muted { color: var(--muted); }
 
-button.primary { background-color: var(--accent); border-color: var(--accent); color: #1e1f22; font-weight: 600; }
+button.primary { background-color: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; }
 button.primary:hover { background-color: var(--accent-hover); }
 button.primary:disabled { background-color: #4e5058; border-color: #4e5058; color: #949ba4; }
 .pf-small { padding: 0 4px; font-size: 7px; }
@@ -135,8 +137,19 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 @keyframes pf-spin { to { transform: rotate(360deg); } }
 
 /* ---- party list ---- */
-.pf-list-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.pf-list-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-bottom: 4px; }
 .pf-count { color: var(--muted); white-space: nowrap; }
+.pf-filter-button { padding: 1px 6px; }
+.pf-filter-button.active { background-color: rgba(0, 110, 250, 0.3); border-color: var(--accent); color: #ffffff; }
+.pf-search { flex: 1 1 60px; min-width: 50px; max-width: 120px; font-size: 7px; }
+
+.pf-dialog.pf-filter-dialog { width: 300px; max-width: 94vw; }
+.pf-filter-row { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; }
+.pf-filter-row:hover { background-color: var(--card); }
+.pf-filter-label { width: 110px; flex-shrink: 0; color: #dbdee1; }
+.pf-filter-input { flex-grow: 1; min-width: 0; }
+.pf-filter-input .guilib-number { width: 80px; }
+.pf-filter-input select { min-width: 110px; }
 .pf-list { flex-grow: 1; min-height: 0; padding-right: 2px; }
 
 .pf-card {
@@ -163,7 +176,7 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
     white-space: nowrap;
 }
 .pf-tag.mine { background-color: rgba(87, 201, 107, 0.2); color: var(--ok); }
-.pf-tag.size { background-color: rgba(232, 163, 61, 0.2); color: var(--accent); }
+.pf-tag.size { background-color: rgba(0, 110, 250, 0.25); color: var(--aqua); }
 .pf-tag.option { color: var(--muted); }
 .pf-age { color: var(--muted); font-size: 7px; white-space: nowrap; }
 .pf-join { padding: 1px 8px; }
@@ -200,7 +213,7 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-tip-text { color: #dbdee1; }
 .pf-tip-accuracy { margin-top: 2px; color: var(--muted); }
 .pf-tip-accuracy.estimated { color: var(--estimated); }
-.pf-tip-own { margin-top: 2px; color: var(--accent); }
+.pf-tip-own { margin-top: 2px; color: var(--aqua); }
 .pf-stat-label { white-space: nowrap; }
 
 /* ---- forms ---- */
@@ -227,6 +240,8 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-own.ok { color: var(--ok); }
 .pf-own.bad { color: var(--bad); }
 .pf-note-input { width: 100%; }
+.pf-size-row { display: flex; align-items: center; gap: 6px; padding: 2px 4px; }
+.pf-size-row .guilib-number { width: 80px; }
 .pf-form-buttons { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
 
 .pf-dialog { width: 180px; }

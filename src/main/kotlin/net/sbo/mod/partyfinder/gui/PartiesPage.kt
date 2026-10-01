@@ -5,6 +5,7 @@ import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.b
 import net.sbo.guilib.core.dsl.button
+import net.sbo.guilib.core.dsl.checkbox
 import net.sbo.guilib.core.dsl.chips
 import net.sbo.guilib.core.dsl.classNames
 import net.sbo.guilib.core.dsl.collapse
@@ -12,18 +13,23 @@ import net.sbo.guilib.core.dsl.contextMenu
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.h3
 import net.sbo.guilib.core.dsl.img
+import net.sbo.guilib.core.dsl.input
 import net.sbo.guilib.core.dsl.modal
+import net.sbo.guilib.core.dsl.numberInput
 import net.sbo.guilib.core.dsl.p
 import net.sbo.guilib.core.dsl.playerHead
 import net.sbo.guilib.core.dsl.radioGroup
 import net.sbo.guilib.core.dsl.scroll
+import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
+import net.sbo.guilib.core.event.KeyboardEvent
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCheck
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.partyfinder.PartyListFilters
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.ReqMatcher
@@ -31,6 +37,8 @@ import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 import java.util.UUID
 
 internal data class PartiesProps(
@@ -47,16 +55,21 @@ internal data class PartiesProps(
 /** The parties of one party type with filters, details, the right click menu and joining. */
 internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val target = props.target
+    val config = DataManager.partyFinderConfigState
     var parties by useState<List<PartyView>?>(null)
     var error by useState<String?>(null)
     var loading by useState(false)
-    var filters by useState(listOf<String>())
+    var search by useState("")
+    var filtersOpen by useState(false)
+    var filterVersion by useState(0)
     var hidden by useState(setOf<String>())
     var expanded by useState<String?>(null)
     var joining by useState<PartyView?>(null)
     var role by useState<String?>(null)
     val refresh = useState(0)
     val loadKey = useRef("")
+    // Set by the refresh button and F5, so only those show a toast
+    val manual = useRef(false)
     val toast = useToast()
     val clipboard = useClipboard()
 
@@ -74,26 +87,49 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     parties = list
                     error = null
                     loading = false
+                    if (manual.current) toast.success("Party list refreshed, ${list.size} ${if (list.size == 1) "party" else "parties"} found.")
                 }
+                manual.current = false
             }, onError = { e ->
                 if (loadKey.current == key) {
                     error = ProblemText.error(e)
                     loading = false
+                    if (manual.current) toast.error("Could not refresh the party list. ${ProblemText.error(e)}")
                 }
+                manual.current = false
             })
         }
         load()
         setInterval(30_000) { load() }
     }
 
+    fun refreshNow() {
+        if (loading) return
+        manual.current = true
+        refresh.update { it + 1 }
+    }
+
+    useDocumentEvent("keydown") { e ->
+        e as KeyboardEvent
+        if (e.key == "F5" && !e.repeat) {
+            e.preventDefault()
+            refreshNow()
+        }
+    }
+
+    // filterVersion makes the page read the saved filter again after a change
+    val filter = filterVersion.let { config.listFilters[target.key] ?: PartyListFilter() }
+    fun setFilter(block: PartyListFilter.() -> Unit) {
+        val next = filter.edited(block)
+        if (next == PartyListFilter()) config.listFilters.remove(target.key) else config.listFilters[target.key] = next
+        config.save()
+        filterVersion++
+    }
+
     val me = props.own
     val myId = OwnStats.uuid()
-    val all = parties.orEmpty()
-    val visible = all
-        .filter { it.id !in hidden }
-        .filter { "notFull" !in filters || !ReqMatcher.isFull(it) }
-        .filter { "canJoin" !in filters || me == null || it.id == myId || ReqMatcher.checkJoin(it, target, me).isEmpty() }
-        .sortedWith(compareByDescending<PartyView> { it.id == myId }.thenByDescending { it.createdAt })
+    val all = parties.orEmpty().filter { it.id !in hidden }
+    val visible = PartyListFilters.apply(all, filter, target, me, myId, search)
 
     fun copy(text: String, what: String) {
         clipboard.set(text)
@@ -110,10 +146,27 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     }
 
     div(className = "pf-list-bar") {
-        chips(values = filters, onChange = { filters = it }, className = "pf-filters") {
+        chips(
+            values = listOfNotNull("canJoin".takeIf { filter.canJoin }, "notFull".takeIf { filter.notFull }),
+            onChange = { values -> setFilter { canJoin = "canJoin" in values; notFull = "notFull" in values } },
+            className = "pf-filters"
+        ) {
             option("canJoin", "Can I join")
             option("notFull", "Not full")
         }
+        val count = filter.dialogCount()
+        button(
+            className = classNames("pf-small", "pf-filter-button", "active" to (count > 0)),
+            title = "More filters and sorting",
+            onClick = { filtersOpen = true }
+        ) { +(if (count > 0) "Filters ($count)" else "Filters") }
+        input(
+            type = "text",
+            value = search,
+            onChange = { search = it.value },
+            placeholder = "Search player or note",
+            className = "pf-search"
+        )
         span(className = "pf-count") {
             +"${visible.size} ${if (visible.size == 1) "party" else "parties"}"
         }
@@ -125,8 +178,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         div(className = "pf-spacer")
         button(
             className = classNames("pf-icon-button", "loading" to loading),
-            title = "Refresh the list",
-            onClick = { refresh.update { it + 1 } }
+            title = "Refresh the list (F5)",
+            onClick = { refreshNow() }
         ) {
             img(src = "${StatView.ICONS}/refresh.svg", className = "pf-icon")
         }
@@ -142,7 +195,12 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             parties == null && error != null -> message("Could not load the parties. $error")
             parties == null -> message("Loading parties...")
             visible.isEmpty() && all.isEmpty() -> message("There are no ${target.label} parties right now. Create one under \"Create Party\".")
-            visible.isEmpty() -> message("No party matches your filters.")
+            visible.isEmpty() -> message("No party matches your filters.") {
+                button(onClick = {
+                    search = ""
+                    setFilter { canJoin = false; notFull = false; sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); withNote = false }
+                }) { +"Clear filters" }
+            }
             else -> visible.forEach { party ->
                 partyCard(
                     party, target, me,
@@ -167,6 +225,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         }
     }
 
+    filterDialog(filtersOpen, target, filter, ::setFilter, onClose = { filtersOpen = false })
+
     modal(open = joining != null, onClose = { joining = null }, className = "pf-dialog") {
         val party = joining ?: return@modal
         h3 { +"Join ${party.leader?.name ?: "party"}" }
@@ -181,6 +241,82 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                 joining = null
             }) { +"Send join request" }
         }
+    }
+}
+
+/** More filters and the sorting. Changes apply right away. */
+private fun NodeBuilder.filterDialog(
+    open: Boolean,
+    target: PartyTarget,
+    filter: PartyListFilter,
+    setFilter: (PartyListFilter.() -> Unit) -> Unit,
+    onClose: () -> Unit
+) {
+    modal(open = open, onClose = onClose, className = "pf-dialog pf-filter-dialog") {
+        h3 { +"Filters" }
+        p(className = "pf-hint") { +"Only parties that match everything you set here are shown. Your own party is always shown." }
+        div(className = "pf-filter-list") {
+            filterRow("Party size", "Only parties of these sizes. Pick none to see all sizes.") {
+                chips(values = filter.sizes.map { it.toString() }, onChange = { values -> setFilter { sizes = values.map { it.toInt() }.toMutableList() } }) {
+                    for (size in target.minSize..target.maxSize) option(size.toString(), sizeLabel(size))
+                }
+            }
+            filterRow("Free spots", "Only parties with at least this many free spots.") {
+                numberInput(
+                    value = filter.minFreeSlots.takeIf { it > 0 },
+                    onChange = { v -> setFilter { minFreeSlots = v ?: 0 } },
+                    allowEmpty = true,
+                    min = 0,
+                    max = target.maxSize - 1,
+                    placeholder = "any"
+                )
+            }
+            target.options.forEach { partyOption ->
+                filterRow(partyOption.label, null, key = partyOption.id) {
+                    select(value = filter.options[partyOption.id] ?: "", onChange = { e ->
+                        setFilter { if (e.value.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = e.value }
+                    }) {
+                        option("", "Show all")
+                        partyOption.values.forEach { option(it.id, it.label) }
+                    }
+                }
+            }
+            if (target.roles.isNotEmpty()) {
+                filterRow("My roles", "Only parties that look for one of these roles. Parties that don't ask for roles take everyone.") {
+                    chips(values = filter.roles, onChange = { values -> setFilter { roles = values.toMutableList() } }) {
+                        target.roles.forEach { option(it.id, it.label) }
+                    }
+                }
+            }
+            filterRow("Note", null) {
+                checkbox(checked = filter.withNote, onChange = { e -> setFilter { withNote = e.checked } }, label = "Only parties with a note")
+            }
+            filterRow("Sort by", null) {
+                select(value = filter.sort, onChange = { e -> setFilter { sort = e.value } }) {
+                    option(PartyListFilter.SORT_NEWEST, "Newest first")
+                    option(PartyListFilter.SORT_OLDEST, "Oldest first")
+                    option(PartyListFilter.SORT_MOST_FREE, "Most free spots")
+                    option(PartyListFilter.SORT_ALMOST_FULL, "Almost full first")
+                    option(PartyListFilter.SORT_FEWEST_REQS, "Fewest requirements")
+                }
+            }
+        }
+        div(className = "pf-dialog-buttons") {
+            button(onClick = {
+                setFilter { sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); withNote = false; sort = PartyListFilter.SORT_NEWEST }
+            }) { +"Reset filters" }
+            button(className = "primary", onClick = { onClose() }) { +"Done" }
+        }
+    }
+}
+
+private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null, control: NodeBuilder.() -> Unit) {
+    div(className = "pf-filter-row", key = key ?: label) {
+        div(className = "pf-filter-label") {
+            div { +label }
+            if (hint != null) div(className = "pf-hint") { +hint }
+        }
+        div(className = "pf-filter-input") { control() }
     }
 }
 
