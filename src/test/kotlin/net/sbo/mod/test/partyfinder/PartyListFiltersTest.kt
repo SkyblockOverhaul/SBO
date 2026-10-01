@@ -54,7 +54,7 @@ class PartyListFiltersTest {
     }
 
     @Test
-    fun filtersBySizeFreeSpotsNoteAndSearch() {
+    fun filtersBySizeFreeSpotsAndSearch() {
         val parties = listOf(
             party("a", size = 2, members = 1, note = "chill run"),
             party("b", size = 4, members = 3),
@@ -62,7 +62,6 @@ class PartyListFiltersTest {
         )
         assertEquals(listOf("a"), ids(parties, PartyListFilter(sizes = mutableListOf(2))))
         assertEquals(listOf("c"), ids(parties, PartyListFilter(minFreeSlots = 2)))
-        assertEquals(listOf("a"), ids(parties, PartyListFilter(withNote = true)))
         assertEquals(listOf("c"), ids(parties, PartyListFilter(), search = "rolex"))
         assertEquals(listOf("a"), ids(parties, PartyListFilter(), search = "CHILL"))
     }
@@ -74,9 +73,8 @@ class PartyListFiltersTest {
             party("b", roles = listOf("support")),
             party("c")
         )
-        // A party without the field counts as its default value
-        assertEquals(listOf("a"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "only"))))
-        assertEquals(listOf("b", "c"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "any"))).sorted())
+        // Ironman is not a list filter (an old saved value is ignored), "Can I join" checks it
+        assertEquals(listOf("a", "b", "c"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "only"))).sorted())
         // Parties without wanted roles take everyone
         assertEquals(listOf("a", "c"), ids(parties, PartyListFilter(roles = mutableListOf("dps"))).sorted())
     }
@@ -89,12 +87,13 @@ class PartyListFiltersTest {
             party("mid", createdAt = 2, members = 4, reqs = 1),
             party("me", createdAt = 0, members = 4)
         )
-        assertEquals(listOf("me", "new", "mid", "old"), ids(parties, PartyListFilter(), myId = "me"))
-        assertEquals(listOf("me", "old", "mid", "new"), ids(parties, PartyListFilter(sort = PartyListFilter.SORT_OLDEST), myId = "me"))
+        // Longest waiting first, also for old saved sorts
+        assertEquals(listOf("me", "old", "mid", "new"), ids(parties, PartyListFilter(), myId = "me"))
+        assertEquals(listOf("me", "old", "mid", "new"), ids(parties, PartyListFilter(sort = "newest"), myId = "me"))
         assertEquals(listOf("me", "new", "old", "mid"), ids(parties, PartyListFilter(sort = PartyListFilter.SORT_MOST_FREE), myId = "me"))
         assertEquals(listOf("me", "old", "new", "mid"), ids(parties, PartyListFilter(sort = PartyListFilter.SORT_ALMOST_FULL), myId = "me"))
         assertEquals(listOf("me", "new", "mid", "old"), ids(parties, PartyListFilter(sort = PartyListFilter.SORT_FEWEST_REQS), myId = "me"))
         // The own party ignores filters
-        assertEquals(listOf("me"), ids(parties, PartyListFilter(withNote = true), myId = "me"))
+        assertEquals(listOf("me"), ids(parties, PartyListFilter(minFreeSlots = 5), myId = "me"))
     }
 }

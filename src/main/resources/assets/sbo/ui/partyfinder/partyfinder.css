@@ -230,6 +230,8 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 }
 .pf-field:hover { background-color: var(--card); }
 .pf-field-label { color: #dbdee1; }
+/* Grid cells stretch, so the tooltip would also show right of the label */
+.pf-field > .guilib-tooltip-anchor { justify-self: start; }
 .pf-field-input { min-width: 0; }
 .pf-field-input .guilib-number { width: 80px; }
 .pf-field-input select { min-width: 90px; }

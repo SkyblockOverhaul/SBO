@@ -191,7 +191,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                             labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), "$label or better") }
                         }
                     } else {
-                        numberInput(value = number, onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 0, placeholder = "any")
+                        numberInput(value = number, onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 0)
                     }
                 }
                 "flag" -> checkbox(

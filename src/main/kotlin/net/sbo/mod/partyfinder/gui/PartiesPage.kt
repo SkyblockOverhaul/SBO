@@ -5,7 +5,6 @@ import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.b
 import net.sbo.guilib.core.dsl.button
-import net.sbo.guilib.core.dsl.checkbox
 import net.sbo.guilib.core.dsl.chips
 import net.sbo.guilib.core.dsl.classNames
 import net.sbo.guilib.core.dsl.collapse
@@ -198,7 +197,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             visible.isEmpty() -> message("No party matches your filters.") {
                 button(onClick = {
                     search = ""
-                    setFilter { canJoin = false; notFull = false; sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); withNote = false }
+                    setFilter { canJoin = false; notFull = false; sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear() }
                 }) { +"Clear filters" }
             }
             else -> visible.forEach { party ->
@@ -266,12 +265,11 @@ private fun NodeBuilder.filterDialog(
                     value = filter.minFreeSlots.takeIf { it > 0 },
                     onChange = { v -> setFilter { minFreeSlots = v ?: 0 } },
                     allowEmpty = true,
-                    min = 0,
-                    max = target.maxSize - 1,
-                    placeholder = "any"
+                    min = 1,
+                    max = target.maxSize - 1
                 )
             }
-            target.options.forEach { partyOption ->
+            PartyListFilters.filterableOptions(target).forEach { partyOption ->
                 filterRow(partyOption.label, null, key = partyOption.id) {
                     select(value = filter.options[partyOption.id] ?: "", onChange = { e ->
                         setFilter { if (e.value.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = e.value }
@@ -288,13 +286,10 @@ private fun NodeBuilder.filterDialog(
                     }
                 }
             }
-            filterRow("Note", null) {
-                checkbox(checked = filter.withNote, onChange = { e -> setFilter { withNote = e.checked } }, label = "Only parties with a note")
-            }
-            filterRow("Sort by", null) {
-                select(value = filter.sort, onChange = { e -> setFilter { sort = e.value } }) {
-                    option(PartyListFilter.SORT_NEWEST, "Newest first")
-                    option(PartyListFilter.SORT_OLDEST, "Oldest first")
+            filterRow("Sort by", "Parties that wait longest come first, also when two parties are equal.") {
+                val sorts = listOf(PartyListFilter.SORT_MOST_FREE, PartyListFilter.SORT_ALMOST_FULL, PartyListFilter.SORT_FEWEST_REQS)
+                select(value = filter.sort.takeIf { it in sorts } ?: PartyListFilter.SORT_DEFAULT, onChange = { e -> setFilter { sort = e.value } }) {
+                    option(PartyListFilter.SORT_DEFAULT, "Default")
                     option(PartyListFilter.SORT_MOST_FREE, "Most free spots")
                     option(PartyListFilter.SORT_ALMOST_FULL, "Almost full first")
                     option(PartyListFilter.SORT_FEWEST_REQS, "Fewest requirements")
@@ -303,7 +298,7 @@ private fun NodeBuilder.filterDialog(
         }
         div(className = "pf-dialog-buttons") {
             button(onClick = {
-                setFilter { sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); withNote = false; sort = PartyListFilter.SORT_NEWEST }
+                setFilter { sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); sort = PartyListFilter.SORT_DEFAULT }
             }) { +"Reset filters" }
             button(className = "primary", onClick = { onClose() }) { +"Done" }
         }

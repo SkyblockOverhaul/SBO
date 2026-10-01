@@ -2,6 +2,7 @@ package net.sbo.mod.partyfinder
 
 import kotlinx.serialization.json.JsonNull
 import net.sbo.mod.partyfinder.api.MemberView
+import net.sbo.mod.partyfinder.api.PartyOption
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 
@@ -19,15 +20,18 @@ object PartyListFilters {
         val visible = parties.filter { party ->
             party.id == myId || matches(party, filter, target, me, query)
         }
+        // Ties always go to the party that waits longest, old saved sorts fall back to that too
         val order = when (filter.sort) {
-            PartyListFilter.SORT_OLDEST -> compareBy<PartyView> { it.createdAt }
-            PartyListFilter.SORT_MOST_FREE -> compareByDescending<PartyView> { freeSlots(it) }.thenByDescending { it.createdAt }
-            PartyListFilter.SORT_ALMOST_FULL -> compareBy<PartyView> { if (freeSlots(it) > 0) freeSlots(it) else Int.MAX_VALUE }.thenByDescending { it.createdAt }
-            PartyListFilter.SORT_FEWEST_REQS -> compareBy<PartyView> { reqCount(it) }.thenByDescending { it.createdAt }
-            else -> compareByDescending<PartyView> { it.createdAt }
+            PartyListFilter.SORT_MOST_FREE -> compareByDescending<PartyView> { freeSlots(it) }
+            PartyListFilter.SORT_ALMOST_FULL -> compareBy<PartyView> { if (freeSlots(it) > 0) freeSlots(it) else Int.MAX_VALUE }
+            PartyListFilter.SORT_FEWEST_REQS -> compareBy<PartyView> { reqCount(it) }
+            else -> compareBy<PartyView> { 0 }
         }
-        return visible.sortedWith(compareByDescending<PartyView> { it.id == myId }.then(order))
+        return visible.sortedWith(compareByDescending<PartyView> { it.id == myId }.then(order).thenBy { it.createdAt })
     }
+
+    /** Party fields the filter dialog offers. Ironman is left out, "Can I join" checks it against the own account. */
+    fun filterableOptions(target: PartyTarget): List<PartyOption> = target.options.filter { it.id != "ironman" }
 
     fun freeSlots(party: PartyView): Int = (party.partySize - party.memberCount).coerceAtLeast(0)
 
@@ -38,9 +42,9 @@ object PartyListFilters {
         if (filter.canJoin && me != null && ReqMatcher.checkJoin(party, target, me).isNotEmpty()) return false
         if (filter.sizes.isNotEmpty() && party.partySize !in filter.sizes) return false
         if (freeSlots(party) < filter.minFreeSlots) return false
-        if (filter.withNote && party.note.isBlank()) return false
+        val options = filterableOptions(target)
         for ((id, wanted) in filter.options) {
-            val option = target.options.firstOrNull { it.id == id } ?: continue
+            val option = options.firstOrNull { it.id == id } ?: continue
             if ((party.options[id] ?: option.default) != wanted) return false
         }
         // Parties without wanted roles take everyone
