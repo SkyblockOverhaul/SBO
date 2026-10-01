@@ -8,6 +8,7 @@ import net.sbo.guilib.core.dsl.h3
 import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.p
 import net.sbo.guilib.core.dsl.scroll
+import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.sortableList
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
@@ -32,6 +33,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     var autoInvite by useState(PartyFinder.autoInvite)
     var autoRequeue by useState(PartyFinder.autoRequeue)
     var startWithFavorites by useState(config.startWithFavorites)
+    var autoRefresh by useState(config.autoRefreshSeconds)
     var reloading by useState(false)
     val toast = useToast()
 
@@ -56,6 +58,22 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 PartyFinder.autoRequeue = e.checked
                 Settings.save()
             })
+        }
+
+        h3(className = "pf-section") { +"Party list" }
+        settingRow(
+            "Refresh automatically",
+            "How often the party list loads new parties by itself. You can always refresh with the button or F5."
+        ) {
+            segmented(value = autoRefresh.toString(), onChange = { value ->
+                autoRefresh = value.toInt()
+                config.autoRefreshSeconds = autoRefresh
+                config.save()
+            }) {
+                option("0", "Off")
+                option("30", "30 s")
+                option("60", "60 s")
+            }
         }
 
         h3(className = "pf-section") { +"Favorites" }

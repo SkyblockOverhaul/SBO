@@ -72,7 +72,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val toast = useToast()
     val clipboard = useClipboard()
 
-    useEffect(target.key, props.reload, props.queuedAt, refresh.value) {
+    val autoRefresh = config.autoRefreshSeconds
+    useEffect(target.key, props.reload, props.queuedAt, refresh.value, autoRefresh) {
         val key = target.key
         if (loadKey.current != key) {
             parties = null
@@ -99,7 +100,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             })
         }
         load()
-        setInterval(30_000) { load() }
+        if (autoRefresh > 0) setInterval(autoRefresh * 1000L) { load() }
     }
 
     fun refreshNow() {

@@ -8,6 +8,8 @@ data class PartyFinderConfigState(
     // Favorite category or subcategory keys, in the order the player sorted them
     var favorites: MutableList<String> = mutableListOf(),
     var startWithFavorites: Boolean = false,
+    // Seconds between automatic reloads of the party list, 0 = off
+    var autoRefreshSeconds: Int = 30,
     // Party list filters per party key
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf()
 ) {
