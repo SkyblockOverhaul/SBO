@@ -188,11 +188,13 @@ data class RolesBody(
 data class CheckBody(
     val partyType: String,
     val subType: String = "",
-    val uuids: List<String>,
+    /** Exactly one of [uuids] and [names]; the backend only takes uuids with a key. */
+    val uuids: List<String>? = null,
     val partyId: String? = null,
     val role: String? = null,
     val options: Map<String, String>? = null,
-    val readcache: Boolean? = null
+    val readcache: Boolean? = null,
+    val names: List<String>? = null
 )
 
 @Serializable

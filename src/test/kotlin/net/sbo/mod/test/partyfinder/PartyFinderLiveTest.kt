@@ -46,8 +46,9 @@ class PartyFinderLiveTest {
         "504b14df86ea44c1b04f54f747f47982" // HotMenFeet
     )
 
-    private inline fun <reified T> call(method: String, path: String, body: String? = null): Result<T> {
-        val request = HttpRequest.newBuilder(URI.create("$api$path")).header("x-sbo-key", key)
+    private inline fun <reified T> call(method: String, path: String, body: String? = null, withKey: Boolean = true): Result<T> {
+        val request = HttpRequest.newBuilder(URI.create("$api$path"))
+        if (withKey) request.header("x-sbo-key", key)
         if (body != null) request.header("Content-Type", "application/json")
         request.method(method, if (body == null) HttpRequest.BodyPublishers.noBody() else HttpRequest.BodyPublishers.ofString(body))
         val response = client.send(request.build(), HttpResponse.BodyHandlers.ofString())
@@ -62,6 +63,18 @@ class PartyFinderLiveTest {
             else -> "{}"
         }
         return call<T>("POST", path, text).getOrThrow()
+    }
+
+    @Test
+    fun ownStatsByNameWithoutKey() {
+        assumeTrue(key.isNotEmpty(), "SBO_TEST_KEY not set")
+        // Like /partyInfo: names work without a key, uuids don't (no uuid probing for bots)
+        val byName = call<CheckData>("POST", "/pf/members/check",
+            PartyFinderApi.json.encodeToString(CheckBody("diana", names = listOf("D4rkswift"))), withKey = false).getOrThrow()
+        assertEquals(leader, byName.members.single().uuid)
+        val byUuid = call<CheckData>("POST", "/pf/members/check",
+            PartyFinderApi.json.encodeToString(CheckBody("diana", uuids = listOf(leader))), withKey = false)
+        assertEquals("INVALID_KEY", (byUuid.exceptionOrNull() as? PartyFinderApi.PfException)?.error?.code)
     }
 
     @Test

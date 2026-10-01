@@ -5,6 +5,7 @@ import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
 import java.util.concurrent.ConcurrentHashMap
 
@@ -40,8 +41,15 @@ object OwnStats {
             onError(PfError(PfError.INVALID_REQUEST, "Not in a world"))
             return
         }
+        val readcache = if (force) false else null
+        // Without a key the backend only looks players up by name, like /partyInfo
+        val body = if (SboKey.get().startsWith("sbo") || uuidOverride != null) {
+            CheckBody(target.partyType, target.subType, listOf(uuid), readcache = readcache)
+        } else {
+            CheckBody(target.partyType, target.subType, names = listOf(Player.getName() ?: Player.accountName()), readcache = readcache)
+        }
         PartyFinderApi.checkMembers(
-            CheckBody(target.partyType, target.subType, listOf(uuid), readcache = if (force) false else null),
+            body,
             onError = onError
         ) { data ->
             val me = data.members.firstOrNull()
