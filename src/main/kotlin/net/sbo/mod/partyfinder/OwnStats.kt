@@ -14,6 +14,12 @@ object OwnStats {
 
     private val cache = ConcurrentHashMap<String, Pair<Long, MemberView>>()
 
+    // Dev party finder simulation plays as another player, null otherwise
+    internal var uuidOverride: String? = null
+
+    /** The player's uuid without dashes. */
+    fun uuid(): String = uuidOverride ?: Player.getUUIDString().replace("-", "")
+
     fun init() {
         Register.onChatMessage(Regex("^Your profile was changed to: "), noFormatting = true) { _, _ -> clear() }
     }
@@ -29,7 +35,7 @@ object OwnStats {
             callback(hit.second)
             return
         }
-        val uuid = Player.getUUIDString().replace("-", "")
+        val uuid = uuid()
         if (uuid.isEmpty()) {
             onError(PfError(PfError.INVALID_REQUEST, "Not in a world"))
             return

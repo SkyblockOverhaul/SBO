@@ -15,7 +15,6 @@ import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
-import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
@@ -96,7 +95,7 @@ object PartyFinderManager {
         return true
     }
 
-    private fun myUuid(): String = Player.getUUIDString().replace("-", "")
+    private fun myUuid(): String = OwnStats.uuid()
 
     fun init() {
         Register.command("sborequeue") {

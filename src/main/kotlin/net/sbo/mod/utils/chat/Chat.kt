@@ -51,7 +51,11 @@ object Chat {
         }
     }
 
+    // Dev party finder simulation reads local messages here, null otherwise
+    internal var localMessageHook: ((String) -> Unit)? = null
+
     private fun sendClientMessage(message: Component) {
+        localMessageHook?.invoke(message.string)
         mc.execute {
             mc.gui.chat.addClientSystemMessage(message)
         }

@@ -32,6 +32,8 @@ loom {
         preferGradleTask = true
         // Points the dev client at another backend, e.g. -PsboApiUrl=http://localhost:3000
         findProperty("sboApiUrl")?.let { property("sbo.apiUrl", it.toString()) }
+        // Dev only: runs the party finder simulation with this SBO key, see PartyFinderSimulation
+        findProperty("sboPfSimulate")?.let { property("sbo.pfSimulate", it.toString()) }
     }
 }
 
@@ -51,6 +53,8 @@ bloom {
         replacement("formatting?.char", "formatting?.code")
         replacement("mc.options.hideGui", "mc.gui.hud.isHidden()")
         replacement("gameRenderer().mainCamera", "gameRenderer().mainCamera()")
+        replacement("mc.overlay", "mc.gui.overlay()")
+        replacement("mc.chatListener", "mc.gui.chatListener()")
     }
 }
 

@@ -24,6 +24,9 @@ object HypixelModApi {
     private val partyInfoListeners = mutableListOf<(isInParty: Boolean, isLeader: Boolean, members: List<String>) -> Unit>()
     private val errorListeners = mutableListOf<(packet: ErrorS2CPacket) -> Unit>()
 
+    // Dev party finder simulation answers party info requests instead of Hypixel, null otherwise
+    internal var partyInfoOverride: (() -> Unit)? = null
+
     fun init() {
         HypixelPacketEvents.HELLO.register(::handlePacket)
         HypixelPacketEvents.PARTY_INFO.register(::handlePacket)
@@ -75,7 +78,14 @@ object HypixelModApi {
             this.isLeader = true
             membersList.add(Player.getUUIDString())
         }
-        this.partyMembers = membersList
+        deliverPartyInfo(isInParty, isLeader, membersList)
+    }
+
+    /** Passes party info to the listeners; [members] start with the leader. */
+    internal fun deliverPartyInfo(isInParty: Boolean, isLeader: Boolean, members: List<String>) {
+        this.isInParty = isInParty
+        this.isLeader = isLeader
+        this.partyMembers = members
 
         partyInfoListeners.forEach { listener ->
             listener(this.isInParty, this.isLeader, this.partyMembers)
@@ -102,6 +112,11 @@ object HypixelModApi {
     }
 
     fun sendPartyInfoPacket(createParty: Boolean = false) {
+        partyInfoOverride?.let { answer ->
+            if (createParty) PartyFinderManager.creatingParty = true
+            answer()
+            return
+        }
         try {
             if (isOnHypixel) {
                 if (createParty) PartyFinderManager.creatingParty = true

@@ -30,6 +30,7 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.StatReporter
 import net.sbo.mod.partyfinder.PartyFinderTestCommand
+import net.sbo.mod.partyfinder.PartyFinderSimulation
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
@@ -128,6 +129,7 @@ object SBOKotlin : ClientModInitializer {
 		OwnStats.init()
 		StatReporter.init()
 		PartyFinderTestCommand.init()
+		PartyFinderSimulation.init()
 		PartyCheck.init()
 		BurrowDetector.init()
 		DianaTracker.init()
