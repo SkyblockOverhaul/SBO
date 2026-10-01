@@ -9,9 +9,9 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.FileTime
 
-// Stored in <game dir>/sbo so shared configs don't include it
+// Stored in <game dir>/.sbo so shared configs don't include it
 class LocalStore(fileName: String) {
-    private val file: Path = FabricLoader.getInstance().gameDir.resolve("sbo").resolve(fileName)
+    private val file: Path = FabricLoader.getInstance().gameDir.resolve(".sbo").resolve(fileName)
     private val gson = Gson()
     private val mapType = object : TypeToken<MutableMap<String, String>>() {}.type
 

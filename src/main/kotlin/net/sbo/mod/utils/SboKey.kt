@@ -3,7 +3,7 @@ package net.sbo.mod.utils
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.data.LocalStore
 
-// Saved in <game dir>/sbo/sbo-auth.json
+// Saved in <game dir>/.sbo/sbo-auth.json
 object SboKey {
     private val store = LocalStore("sbo-auth.json")
 
