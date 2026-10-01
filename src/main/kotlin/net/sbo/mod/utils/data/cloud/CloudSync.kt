@@ -1,6 +1,7 @@
 package net.sbo.mod.utils.data.cloud
 
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import kotlinx.serialization.json.Json
 import net.fabricmc.loader.api.FabricLoader
@@ -45,7 +46,9 @@ object CloudSync {
     private const val SBO_DATA_FILE = "SboData.json"
 
     private val LOCAL_ONLY = listOf("sboKey", "cloudSync")
-    private val NOT_SYNCED = setOf("pastDianaEvents.json")
+
+    private const val PAST_EVENTS_FILE = "pastDianaEvents.json"
+    private const val MAX_PAST_EVENTS = 100
 
     private const val CLOSE_UPLOAD_TIMEOUT_SECONDS = 5L
     private const val AUTO_UPLOAD_MINUTES = 5
@@ -181,12 +184,23 @@ object CloudSync {
 
     private fun collectFiles(): Map<String, String> {
         SBOKotlin.settings.save()
-        val files = (DataManager.exportAll() - NOT_SYNCED).toMutableMap()
+        // Compact json, the data files are pretty printed on disk
+        val files = DataManager.exportAll().mapValues { (_, raw) -> JsonParser.parseString(raw).toString() }.toMutableMap()
         files[CONFIG_ENTRY] = configFile().readText()
         files[SBO_DATA_FILE]?.let { raw ->
             val sbo = JsonParser.parseString(raw).asJsonObject
             LOCAL_ONLY.forEach { sbo.remove(it) }
             files[SBO_DATA_FILE] = sbo.toString()
+        }
+        files[PAST_EVENTS_FILE]?.let { raw ->
+            val past = JsonParser.parseString(raw).asJsonObject
+            val events = past.getAsJsonArray("events") ?: return@let
+            if (events.size() <= MAX_PAST_EVENTS) return@let
+            // Newest events are at the end
+            val newest = JsonArray()
+            events.toList().takeLast(MAX_PAST_EVENTS).forEach(newest::add)
+            past.add("events", newest)
+            files[PAST_EVENTS_FILE] = past.toString()
         }
         return files
     }
@@ -329,7 +343,7 @@ object CloudSync {
         val config = configFile()
         val backup = backupFile(config)
         try {
-            DataManager.importAll(withLocalFields(envelope.files - CONFIG_ENTRY - NOT_SYNCED))
+            DataManager.importAll(withLocalFields(envelope.files - CONFIG_ENTRY))
         } catch (e: Exception) {
             SBOKotlin.logger.error("Failed to apply the cloud data", e)
             Chat.chat("$PREFIX§4Could not apply the cloud save, nothing was changed.")
