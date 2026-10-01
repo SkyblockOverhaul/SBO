@@ -86,14 +86,14 @@ object PartyFinderManager {
         Regex("^§r§eKicked (.+) because they were offline.$")
     )
 
-    /** The open party finder GUI shows results here too, because chat is hidden behind it. */
+    /** Set while the party finder GUI is open: results go there as toasts instead of the chat hidden behind it. */
     @Volatile
     var listener: ((success: Boolean, text: String) -> Unit)? = null
 
-    // Chat message that the GUI also shows
+    // Toast while the GUI is open, chat otherwise
     private fun tell(text: String, success: Boolean) {
-        Chat.chat(text)
-        listener?.invoke(success, text.replace(Regex("§."), "").removePrefix("[SBO] "))
+        val gui = listener
+        if (gui != null) gui(success, text.replace(Regex("§."), "").removePrefix("[SBO] ")) else Chat.chat(text)
     }
 
     fun hasSboKey(): Boolean {
@@ -319,16 +319,21 @@ object PartyFinderManager {
         }) { party ->
             queuedParty = party
             val timeTaken = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime)
-            Chat.chat("§6[SBO] §eParty updated successfully! Time taken: ${timeTaken}ms")
+            tell("§6[SBO] §eParty updated successfully! Time taken: ${timeTaken}ms", true)
         }
     }
 
     private fun reportFailure(action: String, error: PfError) {
+        val gui = listener
+        if (gui != null) {
+            val target = draft?.let { PartyCategories.target(it.partyType, it.subType) }
+            val details = error.problems.joinToString("") { "\n${it.name}: ${ProblemText.describe(it, target)}" }
+            val tip = if (error.code == PfError.REQS_NOT_MET) "\nPlayers who don't meet them should turn their API on and type /sboreloadstats." else ""
+            gui(false, "Failed to $action: ${ProblemText.error(error)}$details$tip")
+            return
+        }
         Chat.chat("§6[SBO] §4Failed to $action: ${ProblemText.error(error)}")
         printProblems(error.problems)
-        val target = draft?.let { PartyCategories.target(it.partyType, it.subType) }
-        val details = error.problems.joinToString("") { "\n${it.name}: ${ProblemText.describe(it, target)}" }
-        listener?.invoke(false, "Failed to $action: ${ProblemText.error(error)}$details")
         if (error.code == PfError.REQS_NOT_MET) {
             Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.", true)
         }
@@ -346,7 +351,8 @@ object PartyFinderManager {
         onError: ((PfError) -> Unit)? = null
     ) {
         PartyFinderApi.parties(partyType, subType, onError = { error ->
-            Chat.chat("§6[SBO] §4Failed to get parties: ${ProblemText.error(error)}")
+            // The open GUI shows the error in the list
+            if (listener == null) Chat.chat("§6[SBO] §4Failed to get parties: ${ProblemText.error(error)}")
             onError?.invoke(error)
         }) { parties -> onComplete?.invoke(parties) }
     }
@@ -432,7 +438,12 @@ object PartyFinderManager {
         }) { me ->
             val problems = ReqMatcher.checkJoin(party, target, me, role)
             if (problems.isNotEmpty()) {
-                listener?.invoke(false, "You don't meet the requirements: " + problems.joinToString("; ") { ProblemText.describe(it, target) })
+                val gui = listener
+                if (gui != null) {
+                    gui(false, "You don't meet the requirements: " + problems.joinToString("; ") { ProblemText.describe(it, target) } +
+                        "\nIf you think this is wrong, turn your API on and type /sboreloadstats.")
+                    return@get
+                }
                 Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party:")
                 problems.forEach { Chat.chat("§7• §c${ProblemText.describe(it, target)}") }
                 Chat.chat("§6[SBO] §eEnsure all your APIs are on and run /sboreloadstats to resync if you think this is an error.")

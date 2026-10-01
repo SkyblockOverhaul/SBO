@@ -99,6 +99,15 @@ class PartyFinderLogicTest {
         assertFalse(ReqMatcher.meets("anyOf", items("TERROR" to null), terrorFiery))
         assertTrue(ReqMatcher.meets("anyOf", items("AURORA" to null), buildJsonArray { add(JsonPrimitive("AURORA")) }))
         assertFalse(ReqMatcher.meets("anyOf", JsonNull, buildJsonArray { add(JsonPrimitive("AURORA")) }))
+
+        // { "match": "all" } needs every pick, like the backend
+        val allOf = buildJsonObject {
+            put("match", "all")
+            put("picks", buildJsonArray { add(buildJsonObject { put("id", "TERROR"); put("minTier", "FIERY") }); add(JsonPrimitive("AURORA")) })
+        }
+        assertTrue(ReqMatcher.meets("anyOf", items("TERROR" to "INFERNAL", "AURORA" to null), allOf))
+        assertFalse(ReqMatcher.meets("anyOf", items("TERROR" to "INFERNAL"), allOf))
+        assertFalse(ReqMatcher.meets("anyOf", items("TERROR" to "HOT", "AURORA" to null), allOf))
     }
 
     @Test

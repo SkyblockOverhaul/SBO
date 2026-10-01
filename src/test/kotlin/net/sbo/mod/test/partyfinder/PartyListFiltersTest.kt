@@ -90,9 +90,9 @@ class PartyListFiltersTest {
         // Longest waiting first, also for old saved sorts
         assertEquals(listOf("me", "old", "mid", "new"), ids(parties, PartyListFilter(), myId = "me"))
         assertEquals(listOf("me", "old", "mid", "new"), ids(parties, PartyListFilter(sort = "newest"), myId = "me"))
+        assertEquals(listOf("me", "old", "mid", "new"), ids(parties, PartyListFilter(sort = "fewestReqs"), myId = "me"))
         assertEquals(listOf("me", "new", "old", "mid"), ids(parties, PartyListFilter(sort = PartyListFilter.SORT_MOST_FREE), myId = "me"))
         assertEquals(listOf("me", "old", "new", "mid"), ids(parties, PartyListFilter(sort = PartyListFilter.SORT_ALMOST_FULL), myId = "me"))
-        assertEquals(listOf("me", "new", "mid", "old"), ids(parties, PartyListFilter(sort = PartyListFilter.SORT_FEWEST_REQS), myId = "me"))
         // The own party ignores filters
         assertEquals(listOf("me"), ids(parties, PartyListFilter(minFreeSlots = 5), myId = "me"))
     }

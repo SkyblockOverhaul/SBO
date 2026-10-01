@@ -28,13 +28,15 @@ object ReqMatcher {
         "rarity" -> rarityRank(have.text()) >= rarityRank(need.text()).coerceAtLeast(0)
         "anyOf" -> {
             val owned = (have as? JsonArray).orEmpty().mapNotNull { it.pickId()?.let { id -> id to it.field("tier") } }
-            (need as? JsonArray).orEmpty().any { pick ->
-                val id = pick.pickId() ?: return@any false
+            val hasPick = { pick: JsonElement ->
+                val id = pick.pickId()
                 val minTier = pick.field("minTier")
-                owned.any { (ownedId, tier) ->
+                id != null && owned.any { (ownedId, tier) ->
                     ownedId == id && (minTier == null || tierRank(tier ?: "BASIC") >= tierRank(minTier))
                 }
             }
+            val picks = picks(need)
+            if (matchesAll(need)) picks.isNotEmpty() && picks.all(hasPick) else picks.any(hasPick)
         }
         else -> false
     }
@@ -73,6 +75,15 @@ object ReqMatcher {
         }
         return problems
     }
+
+    /** Picks of an anyOf value: a list asks for one of them, `{ "match": "all", "picks": [...] }` for all. */
+    fun picks(need: JsonElement?): List<JsonElement> = when (need) {
+        is JsonArray -> need
+        is JsonObject -> (need["picks"] as? JsonArray).orEmpty()
+        else -> emptyList()
+    }
+
+    fun matchesAll(need: JsonElement?): Boolean = need is JsonObject && need.field("match") == "all"
 
     fun isFull(party: PartyView): Boolean = party.memberCount >= party.partySize
 

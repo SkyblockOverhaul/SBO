@@ -1,6 +1,5 @@
 package net.sbo.mod.partyfinder
 
-import kotlinx.serialization.json.JsonNull
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyOption
 import net.sbo.mod.partyfinder.api.PartyView
@@ -24,7 +23,6 @@ object PartyListFilters {
         val order = when (filter.sort) {
             PartyListFilter.SORT_MOST_FREE -> compareByDescending<PartyView> { freeSlots(it) }
             PartyListFilter.SORT_ALMOST_FULL -> compareBy<PartyView> { if (freeSlots(it) > 0) freeSlots(it) else Int.MAX_VALUE }
-            PartyListFilter.SORT_FEWEST_REQS -> compareBy<PartyView> { reqCount(it) }
             else -> compareBy<PartyView> { 0 }
         }
         return visible.sortedWith(compareByDescending<PartyView> { it.id == myId }.then(order).thenBy { it.createdAt })
@@ -34,8 +32,6 @@ object PartyListFilters {
     fun filterableOptions(target: PartyTarget): List<PartyOption> = target.options.filter { it.id != "ironman" }
 
     fun freeSlots(party: PartyView): Int = (party.partySize - party.memberCount).coerceAtLeast(0)
-
-    fun reqCount(party: PartyView): Int = party.reqs.values.count { it !is JsonNull }
 
     private fun matches(party: PartyView, filter: PartyListFilter, target: PartyTarget, me: MemberView?, query: String): Boolean {
         if (filter.notFull && ReqMatcher.isFull(party)) return false

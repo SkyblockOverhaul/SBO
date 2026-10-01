@@ -287,12 +287,11 @@ private fun NodeBuilder.filterDialog(
                 }
             }
             filterRow("Sort by", "Parties that wait longest come first, also when two parties are equal.") {
-                val sorts = listOf(PartyListFilter.SORT_MOST_FREE, PartyListFilter.SORT_ALMOST_FULL, PartyListFilter.SORT_FEWEST_REQS)
+                val sorts = listOf(PartyListFilter.SORT_MOST_FREE, PartyListFilter.SORT_ALMOST_FULL)
                 select(value = filter.sort.takeIf { it in sorts } ?: PartyListFilter.SORT_DEFAULT, onChange = { e -> setFilter { sort = e.value } }) {
                     option(PartyListFilter.SORT_DEFAULT, "Default")
                     option(PartyListFilter.SORT_MOST_FREE, "Most free spots")
                     option(PartyListFilter.SORT_ALMOST_FULL, "Almost full first")
-                    option(PartyListFilter.SORT_FEWEST_REQS, "Fewest requirements")
                 }
             }
         }

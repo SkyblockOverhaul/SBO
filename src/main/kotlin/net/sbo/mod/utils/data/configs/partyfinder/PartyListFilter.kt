@@ -26,6 +26,5 @@ data class PartyListFilter(
         const val SORT_DEFAULT = "default"
         const val SORT_MOST_FREE = "mostFree"
         const val SORT_ALMOST_FULL = "almostFull"
-        const val SORT_FEWEST_REQS = "fewestReqs"
     }
 }

@@ -30,7 +30,11 @@ object ProblemText {
             when (def?.type) {
                 "flag" -> "$label: needed, but missing"
                 "rarity" -> "$label: needs ${rarity(problem.need)} or better, has ${value(problem.stat, problem.have)}"
-                "anyOf" -> "$label: needs one of ${picks(problem.need, def.choices)}, has none of them"
+                "anyOf" -> if (ReqMatcher.matchesAll(problem.need)) {
+                    "$label: needs all of ${picks(problem.need, def.choices)}, is missing some"
+                } else {
+                    "$label: needs one of ${picks(problem.need, def.choices)}, has none of them"
+                }
                 else -> "$label: needs at least ${value(problem.stat, problem.need)}, has ${value(problem.stat, problem.have)}"
             }
         }
@@ -88,7 +92,7 @@ object ProblemText {
     private fun rarity(value: JsonElement): String = value.text()?.let { title(it) } ?: "none"
 
     private fun picks(need: JsonElement, choices: List<ItemChoice>): String =
-        (need as? JsonArray).orEmpty().joinToString(", ") { pick ->
+        ReqMatcher.picks(need).joinToString(", ") { pick ->
             val id = (pick as? JsonObject)?.get("id")?.text() ?: pick.text() ?: "?"
             val label = choices.firstOrNull { it.id == id }?.label ?: id
             val minTier = (pick as? JsonObject)?.get("minTier")?.text()

@@ -1,7 +1,7 @@
 package net.sbo.mod.partyfinder.gui
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
@@ -191,7 +191,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                             labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), "$label or better") }
                         }
                     } else {
-                        numberInput(value = number, onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 0)
+                        numberInput(value = number, onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 1)
                     }
                 }
                 "flag" -> checkbox(
@@ -206,7 +206,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                         ReqMatcher.RARITIES.forEach { option(it, "${title(it)} or better") }
                     }
                 }
-                "anyOf" -> anyOfInput(def, saved as? JsonArray, ::save)
+                "anyOf" -> anyOfInput(def, saved, ::save)
             }
         }
         if (own != null) {
@@ -218,22 +218,24 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
     }
 }
 
-/** Pick any of several items; sets with tiers (Kuudra armor) also get a lowest tier. */
-private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonArray?, save: (String?) -> Unit) {
-    val picks = saved.orEmpty().mapNotNull { pick ->
+/** Pick several items, players need one or all of them; sets with tiers (Kuudra armor) also get a lowest tier. */
+private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (String?) -> Unit) {
+    val all = ReqMatcher.matchesAll(saved)
+    val picks = ReqMatcher.picks(saved).mapNotNull { pick ->
         when (pick) {
             is JsonObject -> (pick["id"] as? JsonPrimitive)?.contentOrNull?.let { it to (pick["minTier"] as? JsonPrimitive)?.contentOrNull }
             is JsonPrimitive -> pick.contentOrNull?.let { it to null }
             else -> null
         }
     }
-    fun store(next: List<Pair<String, String?>>) {
+    fun store(next: List<Pair<String, String?>>, matchAll: Boolean = all) {
         if (next.isEmpty()) return save(null)
-        save(buildJsonArray {
+        val list = buildJsonArray {
             next.forEach { (id, minTier) ->
                 if (minTier == null) add(JsonPrimitive(id)) else add(buildJsonObject { put("id", id); put("minTier", minTier) })
             }
-        }.toString())
+        }
+        save((if (matchAll) buildJsonObject { put("match", "all"); put("picks", list) } else list).toString())
     }
 
     div(className = "pf-any-of") {
@@ -245,6 +247,12 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonArray?, save: (String
             searchPlaceholder = "Search..."
         ) {
             def.choices.forEach { option(it.id, it.label) }
+        }
+        if (picks.size > 1) {
+            segmented(value = if (all) "all" else "any", onChange = { mode -> store(picks, mode == "all") }, className = "pf-match") {
+                option("any", "Any of these")
+                option("all", "All of these")
+            }
         }
         picks.forEach { (id, minTier) ->
             val choice: ItemChoice = def.choices.firstOrNull { it.id == id } ?: return@forEach

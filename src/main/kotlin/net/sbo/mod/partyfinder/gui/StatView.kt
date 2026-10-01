@@ -47,7 +47,7 @@ internal object StatView {
     fun need(def: ReqDef, need: JsonElement): String = when (def.type) {
         "flag" -> "needed"
         "rarity" -> "${ProblemText.title((need as? JsonPrimitive)?.contentOrNull ?: "")} or better"
-        "anyOf" -> (need as? JsonArray).orEmpty().joinToString(" or ") { pick ->
+        "anyOf" -> ReqMatcher.picks(need).joinToString(if (ReqMatcher.matchesAll(need)) " and " else " or ") { pick ->
             val id = (pick as? JsonObject)?.get("id")?.let { (it as? JsonPrimitive)?.contentOrNull }
                 ?: (pick as? JsonPrimitive)?.contentOrNull ?: "?"
             val label = def.choices.firstOrNull { it.id == id }?.label ?: ProblemText.title(id)
