@@ -182,8 +182,6 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-join { padding: 1px 8px; }
 /* Two lines at most; GuiLib has no line-clamp, so the rest (and over-long words) is clipped */
 .pf-note { margin-top: 2px; color: #e3e5e8; white-space: pre-wrap; line-height: 10px; max-height: 20px; overflow: hidden; }
-.pf-card > .guilib-tooltip-anchor { display: block; }
-.pf-tip-note { white-space: pre-wrap; color: #e3e5e8; }
 .pf-reqs { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 3px; }
 .pf-req {
     display: inline-block;
