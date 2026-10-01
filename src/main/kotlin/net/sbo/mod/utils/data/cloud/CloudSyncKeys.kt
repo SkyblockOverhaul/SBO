@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.data.cloud
 
 import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.data.HomeStore
+import net.sbo.mod.utils.data.LocalStore
 import java.security.MessageDigest
 import java.util.Base64
 import javax.crypto.Mac
@@ -14,7 +14,7 @@ object CloudSyncKeys {
     private const val ITERATIONS = 600_000
 
     // uuid -> base64 key
-    private val store = HomeStore("cloud-keys.json")
+    private val store = LocalStore("cloud-auth.json")
 
     fun key(uuid: String = Player.accountUuid()): ByteArray? =
         store[uuid]?.let { runCatching { Base64.getDecoder().decode(it) }.getOrNull() }

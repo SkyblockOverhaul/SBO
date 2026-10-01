@@ -2,16 +2,16 @@ package net.sbo.mod.utils.data
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.FileTime
-import java.nio.file.attribute.PosixFilePermissions
 
-// Stored in ~/.sbo so shared configs don't include it
-class HomeStore(fileName: String) {
-    private val file: Path = Path.of(System.getProperty("user.home"), ".sbo", fileName)
+// Stored in <game dir>/sbo so shared configs don't include it
+class LocalStore(fileName: String) {
+    private val file: Path = FabricLoader.getInstance().gameDir.resolve("sbo").resolve(fileName)
     private val gson = Gson()
     private val mapType = object : TypeToken<MutableMap<String, String>>() {}.type
 
@@ -43,7 +43,6 @@ class HomeStore(fileName: String) {
         Files.createDirectories(file.parent)
         val tmp = file.resolveSibling("${file.fileName}.tmp")
         Files.writeString(tmp, gson.toJson(values))
-        runCatching { Files.setPosixFilePermissions(tmp, PosixFilePermissions.fromString("rw-------")) }
         Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
         cache = values
         cachedAt = runCatching { Files.getLastModifiedTime(file) }.getOrNull()
