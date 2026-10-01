@@ -23,6 +23,17 @@ private fun versionedProperty(name: String): String = project.property("${name}.
 
 private fun isMCVersionGreaterOrEqualTo(version: String): Boolean = Version.parse(mcVersion) >= Version.parse(version)
 
+// Dev only: GuiLib's screenshot automation, compiled unchanged from a local SBO-GuiLib checkout. Only on runClient's classpath, never packaged.
+val guiLibDevDir: File = rootProject.file("../SBO-GuiLib/src/dev")
+val guiLibDev: SourceSet? = if (guiLibDevDir.isDirectory && findProperty("guilib.local") != "false") {
+    sourceSets.create("guilibDev") {
+        java.setSrcDirs(emptyList<File>())
+        resources.setSrcDirs(listOf(guiLibDevDir.resolve("resources")))
+        compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+        runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
+    }.also { kotlin.sourceSets.named("guilibDev") { kotlin.setSrcDirs(listOf(guiLibDevDir.resolve("kotlin"))) } }
+} else null
+
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.
     accessWidenerPath = file("src/main/resources/sbo.classtweaker")
@@ -34,6 +45,20 @@ loom {
         findProperty("sboApiUrl")?.let { property("sbo.apiUrl", it.toString()) }
         // Dev only: runs the party finder simulation with this SBO key, see PartyFinderSimulation
         findProperty("sboPfSimulate")?.let { property("sbo.pfSimulate", it.toString()) }
+        // Dev only: own party finder stats of this player (uuid), e.g. to test the GUI in the main menu
+        findProperty("sboPfDevUuid")?.let { property("sbo.pfDevUuid", it.toString()) }
+    }
+
+    if (guiLibDev != null) {
+        mods {
+            create("sbo") { sourceSet(sourceSets.main.get()) }
+            create("guilib-dev") { sourceSet(guiLibDev) }
+        }
+        // Screenshots: -Pguilib.dev.shots=call:<object>.<method>, see DevAutomation in SBO-GuiLib
+        runs.named("client") {
+            source(guiLibDev)
+            project.properties.filterKeys { it.startsWith("guilib.dev.") }.forEach { (k, v) -> vmArg("-D$k=$v") }
+        }
     }
 }
 

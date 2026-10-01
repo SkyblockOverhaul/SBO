@@ -64,18 +64,9 @@ object ReqMatcher {
         return problems
     }
 
-    /**
-     * "Can I join?" for [me] on [party]. Slayer carry parties where the leader carries check nobody.
-     * A [role] is only checked when given, the joiner picks it later.
-     */
+    /** "Can I join?" for [me] on [party]. A [role] is only checked when given, the joiner picks it later. */
     fun checkJoin(party: PartyView, target: PartyTarget, me: MemberView, role: String? = null): List<Problem> {
-        val leaderCarries = party.partyType == "slayer" &&
-            party.options["purpose"] == "carry" && party.options["carrySide"] == "i_carry"
-        val problems = if (leaderCarries) {
-            check(me.name, me.stats, emptyMap(), target, party.options)
-        } else {
-            check(me.name, me.stats, party.reqs, target, party.options)
-        }.toMutableList()
+        val problems = check(me.name, me.stats, party.reqs, target, party.options).toMutableList()
         val wanted = party.roles.wanted
         if (role != null && wanted.isNotEmpty() && role !in wanted) {
             problems += Problem(me.name, "role", JsonPrimitive(role), JsonArray(wanted.map { JsonPrimitive(it) }))

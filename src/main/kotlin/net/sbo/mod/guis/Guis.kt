@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
@@ -31,23 +32,8 @@ object Guis {
     }
 
     fun openSboPf(calledFromGUI: Boolean = false) {
-        if (!World.isInSkyblock()) {
-            if (!calledFromGUI) {
-                Chat.chat("§6[SBO] §cYou can only use this command in Skyblock.")
-                return
-            }
-            SBOKotlin.toast(
-                    Component.literal("SBO").setStyle(
-                        Style.EMPTY.withColor(ChatFormatting.GOLD)
-                    ),
-                    Component.literal("Join skyblock before opening Party Finder!").setStyle(
-                        Style.EMPTY.withColor(ChatFormatting.RED)
-                    )
-            )
-            return
-        }
-        // The new party finder GUI replaces the old one in a later update
-        Chat.chat("§6[SBO] §eThe party finder is being rebuilt and will be back in the next update.")
+        // TODO 4f: only in SkyBlock again once testing is done (calledFromGUI shows a toast instead of chat)
+        mc.schedule { PartyFinderGui.open() }
     }
 
     fun openSoundGui(calledFromGUI: Boolean = false) {

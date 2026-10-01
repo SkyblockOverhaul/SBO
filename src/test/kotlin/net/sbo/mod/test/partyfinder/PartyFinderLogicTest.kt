@@ -123,16 +123,13 @@ class PartyFinderLogicTest {
     }
 
     @Test
-    fun slayerCarryByLeaderChecksNobody() {
+    fun slayerTradingChecksEveryone() {
         val party = PartyView(
             id = "leader", partyType = "slayer", subType = "voidgloom", partySize = 4,
-            reqs = mapOf("slayerLevel" to n(9)),
-            options = mapOf("purpose" to "carry", "carrySide" to "i_carry", "ironman" to "any")
+            reqs = mapOf("slayerLevel" to n(9)), options = mapOf("ironman" to "any")
         )
         val me = MemberView(uuid = "me", name = "x", stats = mapOf("slayerLevel" to n(1)))
-        assertTrue(ReqMatcher.checkJoin(party, target("slayer", "voidgloom"), me).isEmpty())
-        val looking = party.copy(options = party.options + ("carrySide" to "looking"))
-        assertEquals(1, ReqMatcher.checkJoin(looking, target("slayer", "voidgloom"), me).size)
+        assertEquals(1, ReqMatcher.checkJoin(party, target("slayer", "voidgloom"), me).size)
     }
 
     @Test

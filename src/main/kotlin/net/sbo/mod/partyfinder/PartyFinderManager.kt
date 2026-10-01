@@ -86,10 +86,20 @@ object PartyFinderManager {
         Regex("^§r§eKicked (.+) because they were offline.$")
     )
 
+    /** The open party finder GUI shows results here too, because chat is hidden behind it. */
+    @Volatile
+    var listener: ((success: Boolean, text: String) -> Unit)? = null
+
+    // Chat message that the GUI also shows
+    private fun tell(text: String, success: Boolean) {
+        Chat.chat(text)
+        listener?.invoke(success, text.replace(Regex("§."), "").removePrefix("[SBO] "))
+    }
+
     fun hasSboKey(): Boolean {
         val sboKey = SboKey.get()
         if (sboKey.isBlank() || !sboKey.startsWith("sbo")) {
-            Chat.chat("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
+            tell("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.", false)
             return false
         }
         return true
@@ -204,11 +214,11 @@ object PartyFinderManager {
         PartyCategories.get { data ->
             val target = data?.let { PartyCategories.target(newDraft.partyType, newDraft.subType) }
             if (target == null) {
-                Chat.chat("§6[SBO] §4Could not load the party types from the SBO server. Please try again later.")
+                tell("§6[SBO] §4Could not load the party types from the SBO server. Please try again later.", false)
                 return@get
             }
             if (!target.open) {
-                Chat.chat("§6[SBO] §4${target.label} parties can only be created while the event is running.")
+                tell("§6[SBO] §4${target.label} parties can only be created while the event is running.", false)
                 return@get
             }
             draft = newDraft.copy(
@@ -258,15 +268,15 @@ object PartyFinderManager {
         if (!this.creatingParty) return
         creatingParty = false
         if (partyMember.size > partySize) {
-            Chat.chat("§6[SBO] §4Party is over the limit. ${partyMember.size}/$partySize")
+            tell("§6[SBO] §4Party is over the limit. ${partyMember.size}/$partySize", false)
             return
         }
         if (inQueue) {
-            Chat.chat("§6[SBO] §4Party is already in the queue.")
+            tell("§6[SBO] §4Party is already in the queue.", false)
             return
         }
         if (!isLeader) {
-            Chat.chat("§6[SBO] §4You must be the party leader to queue the party.")
+            tell("§6[SBO] §4You must be the party leader to queue the party.", false)
             return
         }
 
@@ -289,7 +299,7 @@ object PartyFinderManager {
                 Chat.clickableChat("§6[SBO] §eClick to dequeue party", "Dequeue Party", "/sbodequeue")
             }
 
-            Chat.chat("§6[SBO] §aParty created successfully! Time taken: ${timeTaken}ms")
+            tell("§6[SBO] §aParty created successfully! Time taken: ${timeTaken}ms", true)
             Chat.chat("§6[SBO] §ePlease note that for people to be able to join your party, you MUST set direct message privacy to \"Anyone\" in /settings -> Social Settings in the Hypixel Lobby. If you have already done so, you can click to hide this message.", true)
 
             if (isInParty) Chat.pc("[SBO] Party now in queue.")
@@ -316,6 +326,9 @@ object PartyFinderManager {
     private fun reportFailure(action: String, error: PfError) {
         Chat.chat("§6[SBO] §4Failed to $action: ${ProblemText.error(error)}")
         printProblems(error.problems)
+        val target = draft?.let { PartyCategories.target(it.partyType, it.subType) }
+        val details = error.problems.joinToString("") { "\n${it.name}: ${ProblemText.describe(it, target)}" }
+        listener?.invoke(false, "Failed to $action: ${ProblemText.error(error)}$details")
         if (error.code == PfError.REQS_NOT_MET) {
             Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.", true)
         }
@@ -398,33 +411,34 @@ object PartyFinderManager {
         val leaderName = party.leader?.name?.takeIf { it.isNotBlank() } ?: return
         val target = PartyCategories.target(party.partyType, party.subType)
         if (target == null) {
-            Chat.chat("§6[SBO] §4This party type is unknown. Please reopen the party finder.")
+            tell("§6[SBO] §4This party type is unknown. Please reopen the party finder.", false)
             return
         }
         if (ReqMatcher.isFull(party)) {
-            Chat.chat("§6[SBO] §cThis party is already full.")
+            tell("§6[SBO] §cThis party is already full.", false)
             return
         }
         if (party.roles.wanted.isNotEmpty() && role == null) {
-            Chat.chat("§6[SBO] §cThis party asks for roles. Please pick the role you want to play.")
+            tell("§6[SBO] §cThis party asks for roles. Please pick the role you want to play.", false)
             return
         }
         val lastSent = playersSentRequest[leaderName]
         if (lastSent != null && System.nanoTime() - lastSent < JOIN_REQUEST_COOLDOWN) {
-            Chat.chat("§6[SBO] §cYou have already sent a request to this player recently.")
+            tell("§6[SBO] §cYou have already sent a request to this player recently.", false)
             return
         }
         OwnStats.get(target, onError = { error ->
-            Chat.chat("§6[SBO] §4Could not load your stats: ${ProblemText.error(error)}")
+            tell("§6[SBO] §4Could not load your stats: ${ProblemText.error(error)}", false)
         }) { me ->
             val problems = ReqMatcher.checkJoin(party, target, me, role)
             if (problems.isNotEmpty()) {
+                listener?.invoke(false, "You don't meet the requirements: " + problems.joinToString("; ") { ProblemText.describe(it, target) })
                 Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party:")
                 problems.forEach { Chat.chat("§7• §c${ProblemText.describe(it, target)}") }
                 Chat.chat("§6[SBO] §eEnsure all your APIs are on and run /sboreloadstats to resync if you think this is an error.")
                 return@get
             }
-            Chat.chat("§6[SBO] §eSending join request to $leaderName...")
+            tell("§6[SBO] §eSending join request to $leaderName...", true)
             Chat.command("msg $leaderName ${JoinRequest.message(myUuid(), role)}")
             playersSentRequest[leaderName] = System.nanoTime()
         }
@@ -440,10 +454,10 @@ object PartyFinderManager {
             }
             PartyFinderApi.removeParty(onError = { error ->
                 onComplete?.invoke(false)
-                Chat.chat("§6[SBO] §4Failed to remove party from queue: ${ProblemText.error(error)}")
+                tell("§6[SBO] §4Failed to remove party from queue: ${ProblemText.error(error)}", false)
             }) {
                 onComplete?.invoke(true)
-                Chat.chat("§6[SBO] §eParty removed from queue.")
+                tell("§6[SBO] §eParty removed from queue.", true)
             }
         } else if (creatingParty) {
             ghostParty = true

@@ -1,7 +1,7 @@
 {
   "success": true,
   "data": {
-    "version": "52a3aad7cacd",
+    "version": "60049e763791",
     "stats": [
       {
         "id": "sbLevel",
@@ -1237,36 +1237,6 @@
               }
             ],
             "default": "any"
-          },
-          {
-            "id": "purpose",
-            "label": "Purpose",
-            "values": [
-              {
-                "id": "trading",
-                "label": "Trading"
-              },
-              {
-                "id": "carry",
-                "label": "Carry"
-              }
-            ],
-            "default": "trading"
-          },
-          {
-            "id": "carrySide",
-            "label": "Carry",
-            "values": [
-              {
-                "id": "i_carry",
-                "label": "I carry"
-              },
-              {
-                "id": "looking",
-                "label": "Looking for a carrier"
-              }
-            ],
-            "default": "i_carry"
           }
         ],
         "roles": [],

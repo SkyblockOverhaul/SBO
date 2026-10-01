@@ -14,11 +14,11 @@ object OwnStats {
 
     private val cache = ConcurrentHashMap<String, Pair<Long, MemberView>>()
 
-    // Dev party finder simulation plays as another player, null otherwise
-    internal var uuidOverride: String? = null
+    // Dev only: the simulation or -PsboPfDevUuid plays as another player, null otherwise
+    internal var uuidOverride: String? = System.getProperty("sbo.pfDevUuid")?.takeIf { it.isNotBlank() }
 
-    /** The player's uuid without dashes. */
-    fun uuid(): String = uuidOverride ?: Player.getUUIDString().replace("-", "")
+    /** The player's uuid without dashes, also in the main menu. */
+    fun uuid(): String = uuidOverride ?: Player.getUUIDString().replace("-", "").ifEmpty { Player.accountUuid() }
 
     fun init() {
         Register.onChatMessage(Regex("^Your profile was changed to: "), noFormatting = true) { _, _ -> clear() }
