@@ -408,3 +408,13 @@ tasks.findByName("preprocessTestCode")?.apply {
     }
 }
 
+tasks.findByName("preprocessGuilibDevCode")?.apply {
+    when (mcProject) {
+        "26.2-fabric" -> {
+            dependsOn(":26.1.2-fabric:kspGuilibDevKotlin")
+            mustRunAfter("kspGuilibDevKotlin")
+        }
+        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
+    }
+}
+
