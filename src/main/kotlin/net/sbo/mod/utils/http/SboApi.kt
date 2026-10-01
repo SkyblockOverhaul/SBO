@@ -35,13 +35,13 @@ object SboApi {
         modVersion()?.let { put("X-SBO-Version", it) }
     }
 
-    private fun post(path: String, body: String = "{}"): HttpRequestHandle =
+    internal fun post(path: String, body: String = "{}"): HttpRequestHandle =
         Http.sendPostRequest("$API_URL$path", body, headers())
 
-    private fun get(path: String): HttpRequestHandle =
+    internal fun get(path: String): HttpRequestHandle =
         Http.sendGetRequest("$API_URL$path", headers())
 
-    private fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
+    internal fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
 
     fun createParty(request: PartyRequest): HttpRequestHandle =
         post("/createParty", json.encodeToString(request))

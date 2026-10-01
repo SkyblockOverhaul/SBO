@@ -6,18 +6,15 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
-import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object Guis {
-    private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
     var achievementsGui: AchievementsGUI? = null
     private var soundGui: SoundGUI? = null
@@ -28,7 +25,6 @@ object Guis {
     private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
 
     fun resetCachedGuis() {
-        partyFinderGui = null
         pastEventsGui = null
         achievementsGui = null
         soundGui = null
@@ -50,13 +46,8 @@ object Guis {
             )
             return
         }
-        mc.schedule {
-            if (partyFinderGui == null) {
-                partyFinderGui = PartyFinderGUI()
-            }
-            UScreen.displayScreen(partyFinderGui!!)
-            SBOEvent.emit(PartyFinderOpenEvent())
-        }
+        // The new party finder GUI replaces the old one in a later update
+        Chat.chat("§6[SBO] §eThe party finder is being rebuilt and will be back in the next update.")
     }
 
     fun openSoundGui(calledFromGUI: Boolean = false) {

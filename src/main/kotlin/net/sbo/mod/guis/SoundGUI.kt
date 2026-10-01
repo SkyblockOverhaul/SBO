@@ -8,7 +8,6 @@ import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.*
 import gg.essential.universal.UKeyboard
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.partyfinder.GuiHandler
 import net.sbo.mod.utils.SoundHandler
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -166,7 +165,7 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
                 textScale = 1.1.pixels
             }.setColor(Color.WHITE) childOf groupTitle
 
-            GuiHandler.UILine(
+            UILine(
                 x = 0.pixels,
                 y = 25.pixels,
                 width = 100.percent(),
@@ -351,7 +350,7 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
                 sliderOutline.onMouseLeave { sliderOutline.setColor(Color.WHITE) }
 
                 // Separator line between settings
-                if (index != group.lastIndex) GuiHandler.UILine(
+                if (index != group.lastIndex) UILine(
                     x = 0.pixels,
                     y = (rowY + 66).pixels,
                     width = 100.percent(),

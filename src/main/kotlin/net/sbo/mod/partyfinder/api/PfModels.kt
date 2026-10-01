@@ -1,0 +1,208 @@
+package net.sbo.mod.partyfinder.api
+
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+
+/** Error of a `/pf` call. Codes come from the backend, plus [PfError.NETWORK] and [PfError.BAD_RESPONSE] from the mod. */
+@Serializable
+data class PfError(
+    val code: String = "UNKNOWN",
+    val message: String = "",
+    val problems: List<Problem> = emptyList()
+) {
+    companion object {
+        const val NETWORK = "NETWORK"
+        const val BAD_RESPONSE = "BAD_RESPONSE"
+        const val REQS_NOT_MET = "REQS_NOT_MET"
+        const val PARTY_FULL = "PARTY_FULL"
+        const val PARTY_NOT_FOUND = "PARTY_NOT_FOUND"
+        const val PARTY_TOO_OLD = "PARTY_TOO_OLD"
+        const val CATEGORY_CLOSED = "CATEGORY_CLOSED"
+        const val DEFINITIONS_OUTDATED = "DEFINITIONS_OUTDATED"
+        const val INVALID_REQUEST = "INVALID_REQUEST"
+        const val INVALID_KEY = "INVALID_KEY"
+        const val NO_PROFILE = "NO_PROFILE"
+        const val HYPIXEL_UNAVAILABLE = "HYPIXEL_UNAVAILABLE"
+        const val RATE_LIMITED = "RATE_LIMITED"
+        const val INTERNAL_ERROR = "INTERNAL_ERROR"
+    }
+}
+
+/** One failed requirement: [stat] is a stat id, `role` or `ironman`. */
+@Serializable
+data class Problem(
+    val name: String = "",
+    val stat: String = "",
+    val have: JsonElement = JsonNull,
+    val need: JsonElement = JsonNull
+)
+
+// GET /pf/categories
+
+@Serializable
+data class CategoriesData(
+    val version: String,
+    val stats: List<StatDef> = emptyList(),
+    val categories: List<CategoryDef> = emptyList()
+)
+
+@Serializable
+data class StatDef(
+    val id: String,
+    val label: String = id,
+    val info: String = "",
+    /** exact, calculated, minimum or reported */
+    val accuracy: String = "exact",
+    /** number, flag, rarity, items or breakdown */
+    val kind: String = "number",
+    val unverifiedUpTo: Double? = null,
+    val valueLabels: List<String> = emptyList()
+)
+
+@Serializable
+data class ReqDef(
+    val stat: String,
+    /** min, flag, rarity or anyOf */
+    val type: String,
+    val choices: List<ItemChoice> = emptyList()
+)
+
+@Serializable
+data class ItemChoice(
+    val id: String,
+    val label: String = id,
+    val tiers: Boolean = false,
+    val minLevel: Int? = null
+)
+
+@Serializable
+data class PartyOption(
+    val id: String,
+    val label: String = id,
+    val values: List<OptionValue> = emptyList(),
+    val default: String = ""
+)
+
+@Serializable
+data class OptionValue(val id: String, val label: String = id)
+
+@Serializable
+data class RoleDef(val id: String, val label: String = id)
+
+@Serializable
+data class CategoryDef(
+    val id: String,
+    val label: String = id,
+    val minSize: Int = 2,
+    val maxSize: Int = 6,
+    val reqs: List<ReqDef> = emptyList(),
+    val display: List<String> = emptyList(),
+    val options: List<PartyOption> = emptyList(),
+    val roles: List<RoleDef> = emptyList(),
+    val subcategories: List<SubcategoryDef> = emptyList()
+)
+
+@Serializable
+data class SubcategoryDef(
+    val id: String,
+    val label: String = id,
+    val reqs: List<ReqDef> = emptyList(),
+    val display: List<String> = emptyList(),
+    val options: List<PartyOption> = emptyList(),
+    val maxSize: Int? = null,
+    val event: String? = null,
+    val open: Boolean = true,
+    val opensAt: Long? = null
+)
+
+// Party list and member stats
+
+@Serializable
+data class PartiesData(val parties: List<PartyView> = emptyList())
+
+@Serializable
+data class PartyView(
+    /** Leader uuid without dashes. */
+    val id: String,
+    val partyType: String,
+    val subType: String = "",
+    val partySize: Int = 6,
+    val memberCount: Int = 1,
+    val note: String = "",
+    val createdAt: Long = 0,
+    val reqs: Map<String, JsonElement> = emptyMap(),
+    val options: Map<String, String> = emptyMap(),
+    val roles: WantedRoles = WantedRoles(),
+    val members: List<MemberView> = emptyList()
+) {
+    val leader: MemberView? get() = members.firstOrNull { it.uuid == id } ?: members.firstOrNull()
+}
+
+@Serializable
+data class WantedRoles(val wanted: List<String> = emptyList())
+
+@Serializable
+data class MemberView(
+    val uuid: String,
+    val name: String = "",
+    val role: String? = null,
+    val updatedAt: Long = 0,
+    /** By stat id, `null` means no data. */
+    val stats: Map<String, JsonElement> = emptyMap(),
+    /** Stats the mod reported itself, e.g. `bph` with its scope. */
+    val reported: Map<String, ReportedStat> = emptyMap()
+)
+
+@Serializable
+data class ReportedStat(val scope: String = "")
+
+@Serializable
+data class CheckData(
+    val members: List<MemberView> = emptyList(),
+    val problems: List<Problem> = emptyList()
+)
+
+// Request bodies
+
+@Serializable
+data class PartyBody(
+    val partyType: String,
+    val subType: String = "",
+    val version: String = "",
+    val uuids: List<String>,
+    val partySize: Int,
+    val note: String = "",
+    val reqs: Map<String, JsonElement> = emptyMap(),
+    val options: Map<String, String> = emptyMap(),
+    val roles: RolesBody = RolesBody()
+)
+
+@Serializable
+data class RolesBody(
+    val wanted: List<String> = emptyList(),
+    val members: Map<String, String> = emptyMap()
+)
+
+@Serializable
+data class CheckBody(
+    val partyType: String,
+    val subType: String = "",
+    val uuids: List<String>,
+    val partyId: String? = null,
+    val role: String? = null,
+    val options: Map<String, String>? = null,
+    val readcache: Boolean? = null
+)
+
+@Serializable
+data class StatsReportBody(val bph: BphReport)
+
+@Serializable
+data class BphReport(
+    val value: Double,
+    /** current or lastEvent */
+    val scope: String,
+    val hours: Double,
+    val burrows: Long
+)

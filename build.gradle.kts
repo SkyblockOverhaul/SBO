@@ -30,6 +30,8 @@ loom {
     runs.configureEach {
         generateRunConfig.set(true)
         preferGradleTask = true
+        // Points the dev client at another backend, e.g. -PsboApiUrl=http://localhost:3000
+        findProperty("sboApiUrl")?.let { property("sbo.apiUrl", it.toString()) }
     }
 }
 
