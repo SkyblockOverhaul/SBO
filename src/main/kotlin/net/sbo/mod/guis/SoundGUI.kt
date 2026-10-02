@@ -18,6 +18,8 @@ import java.awt.Color
 class SoundGUI : WindowScreen(ElementaVersion.V10) {
     private lateinit var contentPanel: UIComponent
     private lateinit var scrollComponent: ScrollComponent
+    private var picker: UIComponent? = null
+    private var backdrop: UIComponent? = null
     private var guiScale: Int? = null
 
     private val soundSettings = listOf(
@@ -77,11 +79,22 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
         renderSettings()
         window.onKeyType { typedChar, keyCode ->
             if (keyCode == UKeyboard.KEY_ESCAPE) {
+                val shouldReOpen = picker != null
+                hideSoundPicker()
+
                 mc.schedule {
                     displayScreen(null)
+                    if (shouldReOpen) Guis.openSoundGui(true) // I haven't found any other way to just close the sound picking when pressing ESC without opening the pause menu
                 }
             }
         }
+    }
+
+    private fun hideSoundPicker() {
+        picker?.hide()
+        backdrop?.hide()
+        picker = null
+        backdrop = null
     }
 
     private fun onScreenOpen() {
@@ -371,36 +384,34 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
 
     private fun showSoundPicker(title: String, options: List<String>, onSelect: (String) -> Unit) {
         // Backdrop to block clicks on background
-        val backdrop = UIBlock().constrain {
+        backdrop = UIBlock().constrain {
             x = 0.pixels
             y = 0.pixels
             width = 100.percent
             height = 100.percent
-        }.setColor(Color(0, 0, 0, 150))
-        backdrop.childOf(window)
+        }.setColor(Color(0, 0, 0, 150)) childOf(window)
 
-        val picker = UIRoundedRectangle(5f).constrain {
+        picker = UIRoundedRectangle(5f).constrain {
             x = CenterConstraint()
             y = CenterConstraint()
             width = 300.pixels
             height = 350.pixels
-        }.setColor(Color(40, 40, 40))
-        picker.childOf(window)
+        }.setColor(Color(40, 40, 40)) childOf(window)
 
         // Title
         UIText("Select $title").constrain {
             x = CenterConstraint()
             y = 15.pixels
             textScale = 1.1.pixels
-        }.setColor(Color.WHITE) childOf picker
+        }.setColor(Color.WHITE) childOf picker!!
 
         // Close button
         val closeBtn = UIRoundedRectangle(5f).constrain {
-            x = (picker.getRight() - 35).pixels
+            x = (picker!!.getWidth() - 35).pixels
             y = 15.pixels
             width = 25.pixels
             height = 25.pixels
-        }.setColor(Color.RED)
+        }.setColor(Color.RED) childOf picker!!
 
         UIText("X").constrain {
             x = CenterConstraint()
@@ -408,9 +419,12 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
         }.setColor(Color.WHITE) childOf closeBtn
 
         closeBtn.onMouseClick {
-            picker.hide()
-            backdrop.hide()
+            renderSettings()
+            hideSoundPicker()
         }
+
+        closeBtn.onMouseEnter { closeBtn.setColor(Color(255, 80, 80)) }
+        closeBtn.onMouseLeave { closeBtn.setColor(Color.RED) }
 
         // Scroll component - use fixed sizes to avoid circular constraints
         val scroll = ScrollComponent().constrain {
@@ -418,7 +432,7 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
             y = 50.pixels
             width = 280.pixels
             height = 290.pixels
-        } childOf picker
+        } childOf picker!!
         scroll.setColor(Color(0, 0, 0, 0))
 
         // Option buttons
@@ -439,8 +453,7 @@ class SoundGUI : WindowScreen(ElementaVersion.V10) {
             btn childOf scroll
             btn.onMouseClick {
                 onSelect(option)
-                picker.hide()
-                backdrop.hide()
+                hideSoundPicker()
             }
             btn.onMouseEnter { btn.setColor(Color(80, 80, 80)) }
             btn.onMouseLeave { btn.setColor(Color(60, 60, 60)) }
