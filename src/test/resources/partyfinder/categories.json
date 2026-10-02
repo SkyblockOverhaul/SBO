@@ -1,7 +1,7 @@
 {
   "success": true,
   "data": {
-    "version": "74e43ced364b",
+    "version": "7f7a14f1f96e",
     "stats": [
       {
         "id": "sbLevel",
@@ -102,10 +102,9 @@
         "label": "Fishing Armor",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Fishing armor sets the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Fishing armor sets the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       },
       {
@@ -113,10 +112,9 @@
         "label": "Fishing Rod",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Fishing rods the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Fishing rods the player owns. Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       },
       {
@@ -232,10 +230,9 @@
         "label": "Pickaxe / Drill",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Mining tools the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Mining tools the player owns. Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       },
       {
@@ -271,10 +268,9 @@
         "label": "Kuudra Weapon",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Kuudra weapons the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Kuudra weapons the player owns. Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       },
       {
@@ -282,10 +278,9 @@
         "label": "Kuudra Armor",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Kuudra armor sets with their best tier (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Kuudra armor sets with their best tier (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       },
       {
@@ -300,10 +295,9 @@
         "label": "Chimera on Ragnarock",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Highest Chimera enchantment level on a Ragnarock Axe. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Highest Chimera enchantment level on a Ragnarock Axe. Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       },
       {
@@ -388,10 +382,9 @@
         "label": "Slayer Weapon",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Weapons for this slayer boss the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Weapons for this slayer boss the player owns. Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       },
       {
@@ -399,10 +392,9 @@
         "label": "Slayer Armor",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Armor sets for this slayer boss the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "info": "Armor sets for this slayer boss the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
-          "inventory",
-          "vault"
+          "inventory"
         ]
       }
     ],
