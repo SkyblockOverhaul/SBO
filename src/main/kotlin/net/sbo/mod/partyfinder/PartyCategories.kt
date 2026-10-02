@@ -80,6 +80,9 @@ object PartyCategories {
     }
 }
 
+// Lead time for listing event parties, same as EARLY_LISTING_MS in the backend calendar
+private const val EARLY_LISTING_MS = 60 * 60 * 1000L
+
 /** What one party is built and checked against, like `resolveTarget` in the backend. */
 data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?) {
     val partyType: String get() = category.id
@@ -91,6 +94,10 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?) {
     val maxSize: Int get() = sub?.maxSize ?: category.maxSize
     val open: Boolean get() = sub?.open ?: true
     val opensAt: Long? get() = sub?.opensAt
+    val createOpen: Boolean get() = sub?.createOpen ?: open
+
+    /** When parties for a closed event can be listed, same lead time as the backend. */
+    val createOpensAt: Long? get() = opensAt?.let { it - EARLY_LISTING_MS }
 
     val reqs: List<ReqDef> = mergeBy({ it.stat }, category.reqs, sub?.reqs.orEmpty())
     val options: List<PartyOption> = mergeBy({ it.id }, category.options, sub?.options.orEmpty())

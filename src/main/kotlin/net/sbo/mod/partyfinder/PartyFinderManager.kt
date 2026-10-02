@@ -217,8 +217,9 @@ object PartyFinderManager {
                 tell("§6[SBO] §4Could not load the party types from the SBO server. Please try again later.", false)
                 return@get
             }
-            if (!target.open) {
-                tell("§6[SBO] §4${target.label} parties can only be created while the event is running.", false)
+            if (!target.createOpen) {
+                val text = if (target.opensAt == null) "can only be created while the event is running" else "can be listed from one hour before the event starts"
+                tell("§6[SBO] §4${target.label} parties $text.", false)
                 return@get
             }
             draft = newDraft.copy(

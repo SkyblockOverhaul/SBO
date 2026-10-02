@@ -359,6 +359,7 @@ private fun NodeBuilder.partyCard(
                 if (mine) span(className = "pf-tag mine") { +"Your party" }
                 span(className = "pf-tag", title = "Players in the party / party size") { +"${party.memberCount}/${party.partySize}" }
                 if (party.partySize < target.maxSize) span(className = "pf-tag size") { +sizeLabel(party.partySize) }
+                target.opensAt?.takeIf { !target.open }?.let { span(className = "pf-tag option") { +"Event starts in ${until(it)}" } }
                 target.options.forEach { option ->
                     val value = party.options[option.id] ?: return@forEach
                     if (value == "any") return@forEach

@@ -80,11 +80,18 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
     }
 
     scroll(className = "pf-form") {
-        if (!target.open) {
+        val opensAt = target.opensAt
+        if (!target.open && target.createOpen && opensAt != null) {
+            div(className = "pf-banner") { +"This event starts in ${until(opensAt)}. You can already list your party." }
+        } else if (!target.open) {
             div(className = "pf-banner") {
                 img(src = "${StatView.ICONS}/lock.svg", className = "pf-icon")
-                +" ${target.label} parties can only be created while the event is running."
-                target.opensAt?.let { +" It starts in ${until(it)}." }
+                val listable = target.createOpensAt
+                if (listable == null) {
+                    +" ${target.label} parties can only be created while the event is running."
+                } else {
+                    +" ${target.label} parties can be listed from one hour before the event starts, that is in ${until(listable)}."
+                }
             }
         }
         if (!hasKey) {
@@ -147,7 +154,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
 
         div(className = "pf-form-buttons") {
             button(onClick = { draft = PartyDraft(target.partyType, target.subType, target.maxSize) }) { +"Reset" }
-            button(className = "primary", disabled = !target.open || !hasKey, onClick = { submit() }) {
+            button(className = "primary", disabled = !target.createOpen || !hasKey, onClick = { submit() }) {
                 +(if (props.inQueue) "Update party" else "Create party")
             }
         }
