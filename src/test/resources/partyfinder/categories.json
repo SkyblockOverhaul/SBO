@@ -1,7 +1,7 @@
 {
   "success": true,
   "data": {
-    "version": "7f7a14f1f96e",
+    "version": "fd9c88985958",
     "stats": [
       {
         "id": "sbLevel",
@@ -30,7 +30,7 @@
         "accuracy": "minimum",
         "kind": "number",
         "unverifiedUpTo": 19,
-        "info": "Tracking raises the chance for rare Diana mobs. SBO adds up what the Hypixel API shows: Golden Fleece, attributes, Mythic Griffin, Elusive Hunter, Enderman Slayer 9, Future Calories and Century Cake. Brain Food, Mason Jar, Diana's Bookshelf, Beacon and the Carnival perk are invisible, so the real value can be up to 19 higher. Mayor bonuses are not counted.",
+        "info": "Tracking raises the chance for rare Diana mobs. Mayor bonuses are not counted.",
         "apis": [
           "inventory"
         ]
@@ -54,7 +54,7 @@
         "label": "Burrows per Hour",
         "accuracy": "reported",
         "kind": "number",
-        "info": "Burrows dug per hour, measured by the SBO mod while digging (current event after one hour, otherwise the last event). Sent by the player's own mod, so it is not checked by Hypixel."
+        "info": "Burrows dug per hour, measured by the SBO mod while digging (current event after one hour, otherwise the last event). Sent by the player's own mod, and cannot be checked with Hypixel API."
       },
       {
         "id": "dianaRank",
@@ -78,6 +78,7 @@
         "label": "Fishing Level",
         "accuracy": "exact",
         "kind": "number",
+        "max": 50,
         "info": "Fishing Level of this player.",
         "apis": [
           "skills"
@@ -199,6 +200,7 @@
         "label": "Mining Level",
         "accuracy": "exact",
         "kind": "number",
+        "max": 60,
         "info": "Mining Level of this player.",
         "apis": [
           "skills"
@@ -209,6 +211,7 @@
         "label": "HotM Level",
         "accuracy": "exact",
         "kind": "number",
+        "max": 10,
         "info": "Heart of the Mountain tier. Glacite Mineshafts need tier 7."
       },
       {
@@ -295,6 +298,7 @@
         "label": "Chimera on Ragnarock",
         "accuracy": "exact",
         "kind": "number",
+        "max": 5,
         "info": "Highest Chimera enchantment level on a Ragnarock Axe. Found in inventory, wardrobe, ender chest or backpacks.",
         "apis": [
           "inventory"
@@ -319,7 +323,8 @@
         "label": "Crimson Serendipity",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Level of the Crimson Serendipity attribute (0 to 10), it raises the Vanquisher spawn chance."
+        "max": 10,
+        "info": "Level of the Crimson Serendipity attribute, it raises the Vanquisher spawn chance."
       },
       {
         "id": "witherPiper",
@@ -340,7 +345,8 @@
         "label": "Timecharms",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Rift Timecharms the player has collected (up to 8)."
+        "max": 8,
+        "info": "Rift Timecharms the player has collected."
       },
       {
         "id": "livingTimecharm",
@@ -361,6 +367,7 @@
         "label": "Slayer Level",
         "accuracy": "exact",
         "kind": "number",
+        "max": 9,
         "info": "Slayer level for the boss of this party."
       },
       {
@@ -368,7 +375,8 @@
         "label": "Highest Tier Killed",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Highest tier of this slayer boss the player has killed (1 to 5)."
+        "max": 5,
+        "info": "Highest tier of this slayer boss the player has killed."
       },
       {
         "id": "slayerTierKills",

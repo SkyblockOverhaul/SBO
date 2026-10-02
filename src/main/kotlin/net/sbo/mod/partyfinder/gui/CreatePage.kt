@@ -185,13 +185,14 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                 "min" -> {
                     val number = (saved as? JsonPrimitive)?.doubleOrNull?.toInt()
                     val labels = PartyCategories.stat(stat)?.valueLabels.orEmpty()
+                    val max = PartyCategories.stat(stat)?.max ?: Int.MAX_VALUE
                     if (labels.isNotEmpty()) {
                         select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }) {
                             option("0", "Any")
                             labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), "$label or better") }
                         }
                     } else {
-                        numberInput(value = number, onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 1)
+                        numberInput(value = number?.coerceAtMost(max), onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 1, max = max)
                     }
                 }
                 "flag" -> checkbox(
