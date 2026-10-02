@@ -77,7 +77,7 @@ internal object StatView {
             val more = stat.unverifiedUpTo?.let { " The real value can be up to ${ProblemText.number(it)} higher." } ?: ""
             "Estimated: SBO only counts what it can check, so this is the lowest possible value.$more"
         }
-        "reported" -> "Estimated: sent by the player's own SBO mod, Hypixel can not confirm it."
+        "reported" -> "Estimated: sent by the player's own SBO mod, cannot be verified by Hypixel API."
         "calculated" -> "Calculated by SBO, can differ a little from the game."
         else -> "Exact value."
     }
