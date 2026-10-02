@@ -1,0 +1,255 @@
+/* Built-in party finder themes. PartyFinderThemes puts pf-theme-<id> on the body, plus pf-hypixel (Hypixel colors),
+   pf-recomb (items one rarity higher), pf-light (dark icons) and pf-marks (a mark on requirements you don't meet).
+   SBO Dark is the default in partyfinder.css. */
+
+/* Okabe-Ito colors, readable with red-green color blindness */
+body.pf-theme-colorblind {
+    --ok: #56b4e9;
+    --ok-soft: rgba(86, 180, 233, 0.18);
+    --ok-border: rgba(86, 180, 233, 0.65);
+    --bad: #e69f00;
+    --bad-border: rgba(230, 159, 0, 0.75);
+    --estimated: #cc79a7;
+    --danger: #d55e00;
+    --toast-success: #56b4e9;
+    --toast-error: #e69f00;
+    --menu-danger: #e69f00;
+}
+
+body.pf-theme-high-contrast {
+    --bg: #000000;
+    --panel: #000000;
+    --panel-2: #1a1a1a;
+    --card: #0a0a0a;
+    --card-hover: #1a1a1a;
+    --border: #ffffff;
+    --border-hover: #ffff55;
+    --text: #ffffff;
+    --text-strong: #ffffff;
+    --text-soft: #ffffff;
+    --subtle: #e6e6e6;
+    --muted: #d0d0d0;
+    --dim: #c0c0c0;
+    --title: #55ffff;
+    --accent: #0060df;
+    --accent-hover: #1a7aff;
+    --accent-soft: rgba(61, 155, 255, 0.35);
+    --accent-faint: rgba(61, 155, 255, 0.25);
+    --banner-bg: #001a40;
+    --banner-border: #55aaff;
+    --banner-text: #ffffff;
+    --ok: #55ff55;
+    --ok-soft: rgba(85, 255, 85, 0.2);
+    --ok-border: #55ff55;
+    --bad: #ff5555;
+    --bad-border: #ff5555;
+    --danger: #ff3333;
+    --estimated: #ff99ff;
+    --input-bg: #000000;
+    --input-border: #ffffff;
+    --input-border-hover: #ffff55;
+    --control: #1a1a1a;
+    --control-border: #ffffff;
+    --control-hover: #333333;
+    --control-active: #000000;
+    --menu: #000000;
+    --popup: #000000;
+    --highlight: #333333;
+    --disabled: #333333;
+    --disabled-text: #aaaaaa;
+    --backdrop: rgba(0, 0, 0, 0.75);
+    --scrollbar-thumb: #ffffffcc;
+    --scrollbar-track: #ffffff20;
+}
+
+body.pf-theme-light {
+    --bg: #f2f3f5;
+    --panel: #e3e5e8;
+    --panel-2: #d7dade;
+    --card: #ffffff;
+    --card-hover: #f7f8fa;
+    --border: #c9cdd2;
+    --border-hover: #9ba1a9;
+    --text: #1f2124;
+    --text-strong: #000000;
+    --text-soft: #2e3338;
+    --subtle: #4e5560;
+    --muted: #5c6370;
+    --dim: #747b86;
+    --title: #0063d6;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-soft: rgba(0, 110, 250, 0.18);
+    --accent-faint: rgba(0, 110, 250, 0.1);
+    --banner-bg: rgba(0, 110, 250, 0.08);
+    --banner-border: rgba(0, 110, 250, 0.4);
+    --banner-text: #003d82;
+    --ok: #1e8a3c;
+    --ok-soft: rgba(30, 138, 60, 0.12);
+    --ok-border: rgba(30, 138, 60, 0.6);
+    --bad: #c93030;
+    --bad-border: rgba(201, 48, 48, 0.6);
+    --danger: #d83c3e;
+    --estimated: #7a4cc2;
+    --input-bg: #ffffff;
+    --input-border: #c4c9ce;
+    --input-border-hover: #9ba1a9;
+    --control: #e3e5e8;
+    --control-border: #c4c9ce;
+    --control-hover: #d7dade;
+    --control-active: #c9cdd2;
+    --menu: #ffffff;
+    --popup: #ffffff;
+    --highlight: #e3e5e8;
+    --disabled: #d7dade;
+    --disabled-text: #8a9099;
+    --backdrop: rgba(0, 0, 0, 0.3);
+    --shadow: rgba(0, 0, 0, 0.25);
+    --scrollbar-thumb: #00000060;
+    --scrollbar-track: #00000010;
+    --menu-danger: #c93030;
+}
+
+body.pf-theme-midnight {
+    --bg: #0b0c0e;
+    --panel: #121316;
+    --panel-2: #1a1b1f;
+    --card: #101114;
+    --card-hover: #15161a;
+    --border: #23252a;
+    --border-hover: #34373e;
+    --text: #c9ccd1;
+    --text-strong: #e6e8eb;
+    --text-soft: #b4b8bf;
+    --subtle: #9a9fa7;
+    --muted: #7a7f88;
+    --dim: #686d75;
+    --title: #7fc4d6;
+    --accent: #2f6fd6;
+    --accent-hover: #3d7ee6;
+    --accent-soft: rgba(47, 111, 214, 0.28);
+    --accent-faint: rgba(47, 111, 214, 0.16);
+    --banner-bg: rgba(47, 111, 214, 0.12);
+    --banner-border: rgba(47, 111, 214, 0.4);
+    --banner-text: #a9c4ec;
+    --ok: #4fae63;
+    --ok-soft: rgba(79, 174, 99, 0.14);
+    --ok-border: rgba(79, 174, 99, 0.5);
+    --bad: #cf5a5a;
+    --bad-border: rgba(207, 90, 90, 0.55);
+    --danger: #b8393b;
+    --estimated: #a993c9;
+    --input-bg: #0b0c0e;
+    --input-border: #2c2f35;
+    --input-border-hover: #3d4048;
+    --control: #1d1f24;
+    --control-border: #2c2f35;
+    --control-hover: #25282e;
+    --control-active: #16171b;
+    --menu: #121316;
+    --popup: #08090a;
+    --highlight: #23252a;
+    --disabled: #23252a;
+    --disabled-text: #686d75;
+    --backdrop: rgba(0, 0, 0, 0.65);
+    --scrollbar-thumb: #ffffff50;
+    --scrollbar-track: #00000030;
+}
+
+/* Minecraft text colors and one color per party type, used with Hypixel colors */
+body {
+    --mc-black: #000000;
+    --mc-dark-blue: #0000aa;
+    --mc-dark-green: #00aa00;
+    --mc-dark-aqua: #00aaaa;
+    --mc-dark-red: #aa0000;
+    --mc-dark-purple: #aa00aa;
+    --mc-gold: #ffaa00;
+    --mc-gray: #aaaaaa;
+    --mc-dark-gray: #555555;
+    --mc-blue: #5555ff;
+    --mc-green: #55ff55;
+    --mc-aqua: #55ffff;
+    --mc-red: #ff5555;
+    --mc-light-purple: #ff55ff;
+    --mc-yellow: #ffff55;
+    --mc-white: #ffffff;
+    --type-diana: var(--mc-gold);
+    --type-fishing: var(--mc-aqua);
+    --type-mining: var(--mc-dark-aqua);
+    --type-kuudra: var(--mc-red);
+    --type-vanquisher: var(--mc-dark-purple);
+    --type-rift: var(--mc-light-purple);
+    --type-safari: var(--mc-green);
+    --type-slayer: var(--mc-dark-red);
+    --type-custom: var(--mc-gray);
+}
+
+body.pf-hypixel .pf-c-black { color: var(--mc-black); }
+body.pf-hypixel .pf-c-dark-blue { color: var(--mc-dark-blue); }
+body.pf-hypixel .pf-c-dark-green { color: var(--mc-dark-green); }
+body.pf-hypixel .pf-c-dark-aqua { color: var(--mc-dark-aqua); }
+body.pf-hypixel .pf-c-dark-red { color: var(--mc-dark-red); }
+body.pf-hypixel .pf-c-dark-purple { color: var(--mc-dark-purple); }
+body.pf-hypixel .pf-c-gold { color: var(--mc-gold); }
+body.pf-hypixel .pf-c-gray { color: var(--mc-gray); }
+body.pf-hypixel .pf-c-dark-gray { color: var(--mc-dark-gray); }
+body.pf-hypixel .pf-c-blue { color: var(--mc-blue); }
+body.pf-hypixel .pf-c-green { color: var(--mc-green); }
+body.pf-hypixel .pf-c-aqua { color: var(--mc-aqua); }
+body.pf-hypixel .pf-c-red { color: var(--mc-red); }
+body.pf-hypixel .pf-c-light-purple { color: var(--mc-light-purple); }
+body.pf-hypixel .pf-c-yellow { color: var(--mc-yellow); }
+body.pf-hypixel .pf-c-white { color: var(--mc-white); }
+
+/* Items in their base rarity, with pf-recomb one higher */
+body.pf-hypixel .pf-r-common { color: var(--mc-white); }
+body.pf-hypixel .pf-r-uncommon { color: var(--mc-green); }
+body.pf-hypixel .pf-r-rare { color: var(--mc-blue); }
+body.pf-hypixel .pf-r-epic { color: var(--mc-dark-purple); }
+body.pf-hypixel .pf-r-legendary { color: var(--mc-gold); }
+body.pf-hypixel .pf-r-mythic { color: var(--mc-light-purple); }
+body.pf-hypixel .pf-r-divine { color: var(--mc-aqua); }
+body.pf-hypixel .pf-r-special { color: var(--mc-red); }
+body.pf-hypixel .pf-r-very-special { color: var(--mc-red); }
+body.pf-hypixel .pf-r-ultimate { color: var(--mc-dark-red); }
+body.pf-hypixel.pf-recomb .pf-r-common { color: var(--mc-green); }
+body.pf-hypixel.pf-recomb .pf-r-uncommon { color: var(--mc-blue); }
+body.pf-hypixel.pf-recomb .pf-r-rare { color: var(--mc-dark-purple); }
+body.pf-hypixel.pf-recomb .pf-r-epic { color: var(--mc-gold); }
+body.pf-hypixel.pf-recomb .pf-r-legendary { color: var(--mc-light-purple); }
+body.pf-hypixel.pf-recomb .pf-r-mythic { color: var(--mc-aqua); }
+body.pf-hypixel.pf-recomb .pf-r-divine { color: var(--mc-aqua); }
+body.pf-hypixel.pf-recomb .pf-r-special { color: var(--mc-red); }
+body.pf-hypixel.pf-recomb .pf-r-very-special { color: var(--mc-red); }
+body.pf-hypixel.pf-recomb .pf-r-ultimate { color: var(--mc-dark-red); }
+
+.pf-type-dot { display: none; width: 4px; height: 4px; border-radius: 2px; flex-shrink: 0; }
+body.pf-hypixel .pf-type-dot { display: inline-block; }
+body.pf-hypixel .pf-type-dot.pf-type-diana { background-color: var(--type-diana); }
+body.pf-hypixel .pf-heading.pf-type-diana { color: var(--type-diana); }
+body.pf-hypixel .pf-type-dot.pf-type-fishing { background-color: var(--type-fishing); }
+body.pf-hypixel .pf-heading.pf-type-fishing { color: var(--type-fishing); }
+body.pf-hypixel .pf-type-dot.pf-type-mining { background-color: var(--type-mining); }
+body.pf-hypixel .pf-heading.pf-type-mining { color: var(--type-mining); }
+body.pf-hypixel .pf-type-dot.pf-type-kuudra { background-color: var(--type-kuudra); }
+body.pf-hypixel .pf-heading.pf-type-kuudra { color: var(--type-kuudra); }
+body.pf-hypixel .pf-type-dot.pf-type-vanquisher { background-color: var(--type-vanquisher); }
+body.pf-hypixel .pf-heading.pf-type-vanquisher { color: var(--type-vanquisher); }
+body.pf-hypixel .pf-type-dot.pf-type-rift { background-color: var(--type-rift); }
+body.pf-hypixel .pf-heading.pf-type-rift { color: var(--type-rift); }
+body.pf-hypixel .pf-type-dot.pf-type-safari { background-color: var(--type-safari); }
+body.pf-hypixel .pf-heading.pf-type-safari { color: var(--type-safari); }
+body.pf-hypixel .pf-type-dot.pf-type-slayer { background-color: var(--type-slayer); }
+body.pf-hypixel .pf-heading.pf-type-slayer { color: var(--type-slayer); }
+body.pf-hypixel .pf-type-dot.pf-type-custom { background-color: var(--type-custom); }
+body.pf-hypixel .pf-heading.pf-type-custom { color: var(--type-custom); }
+
+/* Icons that need a dark version on a light background */
+.pf-on-light { display: none; }
+body.pf-light .pf-on-light { display: inline; }
+body.pf-light .pf-on-dark { display: none; }
+
+/* GuiLib draws dashed borders solid, so requirements you don't meet get a mark instead */
+.pf-mark { display: none; }
+body.pf-marks .pf-mark { display: inline; font-weight: bold; color: var(--bad); }

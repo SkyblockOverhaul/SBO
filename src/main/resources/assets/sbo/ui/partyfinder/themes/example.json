@@ -1,0 +1,21 @@
+{
+  "name": "Example (Purple Night)",
+  "description": "An example theme. Open the theme folder, copy this file and change the colors to make your own.",
+  "base": "sbo-dark",
+  "hypixelColors": true,
+  "marks": false,
+  "colors": {
+    "bg": "#16121f",
+    "panel": "#1f1a2b",
+    "panel-2": "#2a2338",
+    "card": "#1c1727",
+    "card-hover": "#241e32",
+    "border": "#3a3150",
+    "accent": "#8b5cf6",
+    "accent-hover": "#a37bff",
+    "accent-soft": "#8b5cf64d",
+    "accent-faint": "#8b5cf62e",
+    "title": "#d8b4fe",
+    "type-diana": "#ffd166"
+  }
+}

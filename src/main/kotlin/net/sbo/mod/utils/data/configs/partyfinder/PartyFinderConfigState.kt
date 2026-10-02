@@ -14,6 +14,10 @@ data class PartyFinderConfigState(
     var font: String = "inter",
     // Own GUI scale of the party finder window, null = Minecraft's GUI scale
     var uiScale: Float? = null,
+    // Theme id, see PartyFinderThemes; custom themes are "custom:<file name>"
+    var theme: String = "sbo-dark",
+    // Hypixel colors show items one rarity higher
+    var recombobulated: Boolean = false,
     // Party list filters per party key
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf()
 ) {

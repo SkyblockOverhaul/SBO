@@ -130,12 +130,7 @@ object ProblemText {
             tierPick(label, (pick as? JsonObject)?.get("minTier")?.text())
         }
 
-    private fun choiceLabel(statId: String, id: String): String =
-        PartyCategories.categories.asSequence()
-            .flatMap { c -> c.reqs.asSequence() + c.subcategories.asSequence().flatMap { it.reqs.asSequence() } }
-            .filter { it.stat == statId }
-            .flatMap { it.choices.asSequence() }
-            .firstOrNull { it.id == id }?.label ?: title(id)
+    fun choiceLabel(statId: String, id: String): String = PartyCategories.choice(statId, id)?.label ?: title(id)
 
     private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
 }

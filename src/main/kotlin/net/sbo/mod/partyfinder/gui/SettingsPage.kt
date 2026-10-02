@@ -29,7 +29,11 @@ internal data class SettingsProps(
     val font: String,
     val onFont: (String) -> Unit,
     val uiScale: Float?,
-    val onScale: (Float?) -> Unit
+    val onScale: (Float?) -> Unit,
+    val theme: PartyFinderThemes.Theme,
+    val onTheme: (PartyFinderThemes.Theme) -> Unit,
+    val recombobulated: Boolean,
+    val onRecombobulated: (Boolean) -> Unit
 )
 
 /** Party finder settings inside the window, independent of the config menu. */
@@ -40,6 +44,8 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     var startWithFavorites by useState(config.startWithFavorites)
     var autoRefresh by useState(config.autoRefreshSeconds)
     var reloading by useState(false)
+    // Read again every time the settings open, so new theme files show up without a restart
+    val themes = useStateLazy { PartyFinderThemes.all() }
     val toast = useToast()
 
     scroll(className = "pf-form guilib-autohide") {
@@ -82,6 +88,32 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
         }
 
         h3(className = "pf-section") { +"Look" }
+        settingRow(
+            "Theme",
+            "The colors of the party finder. What the picked theme does is shown below."
+        ) {
+            select(value = props.theme.id, onChange = { e ->
+                themes.value.firstOrNull { it.id == e.value }?.let(props.onTheme)
+            }, className = "pf-theme-select") {
+                themes.value.forEach { theme -> option(theme.id, theme.label) }
+            }
+        }
+        p(className = "pf-hint pf-theme-info") { +props.theme.description }
+        settingRow(
+            "Your own themes",
+            "Put theme files into this folder. The README in it explains every color, example.json is a theme to copy."
+        ) {
+            button(onClick = {
+                PartyFinderThemes.openFolder()
+                themes.set(PartyFinderThemes.all())
+            }) { +"Open theme folder" }
+        }
+        settingRow(
+            "Recombobulated items",
+            "Shows item names one rarity higher, like after a Recombobulator 3000, since most players use one on their gear. Only for themes with Hypixel colors."
+        ) {
+            switch(checked = props.recombobulated, onChange = { e -> props.onRecombobulated(e.checked) }, id = "pf-recomb-switch")
+        }
         settingRow(
             "Font",
             "The font of the party finder window. Minecraft looks like the game, the others are easier to read."

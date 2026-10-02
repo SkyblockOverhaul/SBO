@@ -1,18 +1,63 @@
 /* SBO party finder (GuiLib). px are GUI pixels, default text is 8px. */
-:root {
-    --accent: #006efa;
-    --accent-hover: #2a88ff;
-    --aqua: #55ffff;
-    --guilib-accent: #006efa;
+/* Colors of the SBO Dark theme. themes.css overrides them per theme, custom theme files set them on the body. */
+body {
     --bg: #1e1f22;
     --panel: #2b2d31;
     --panel-2: #313338;
     --card: #26282c;
+    --card-hover: #2a2c31;
     --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
     --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
     --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
     --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
     --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    color: var(--text);
+    --guilib-accent: var(--accent);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-border: var(--input-border);
+    --guilib-text-muted: var(--subtle);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
 }
 
 /* Fonts picked in the settings, PartyFinderGui puts the class on the body */
@@ -60,7 +105,7 @@ body {
 }
 @keyframes pf-slide { from { opacity: 0; transform: translateX(-6px); } }
 .pf-panel-head { display: flex; align-items: center; gap: 3px; }
-.pf-panel-name { flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #ffffff; }
+.pf-panel-name { flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-strong); }
 .pf-panel-sub { margin: 1px 0 3px 0; color: var(--muted); font-size: 7px; }
 .pf-panel-stats { flex-grow: 1; min-height: 0; padding-right: 3px; }
 .pf-panel-row {
@@ -73,7 +118,7 @@ body {
     border-bottom: 1px solid var(--card);
     font-size: 7px;
 }
-.pf-panel-value { color: #ffffff; text-align: right; }
+.pf-panel-value { color: var(--text-strong); text-align: right; }
 .pf-panel-value.estimated { color: var(--estimated); }
 .pf-panel-value.missing { color: var(--muted); }
 .pf-panel-value.ok { color: var(--ok); }
@@ -89,7 +134,7 @@ body {
     background-color: var(--panel);
     border-bottom: 1px solid var(--border);
 }
-.pf-title { font-weight: bold; color: var(--aqua); white-space: nowrap; padding-bottom: 3px; }
+.pf-title { font-weight: bold; color: var(--title); white-space: nowrap; padding-bottom: 3px; }
 .pf-nav .guilib-tab-list { border-bottom-width: 0; }
 .pf-spacer { flex-grow: 1; }
 /* Clips instead of pushing the close button out of a narrow window */
@@ -102,8 +147,8 @@ body {
     padding: 1px 2px 1px 6px;
     margin-bottom: 3px;
     border-radius: 3px;
-    background-color: rgba(87, 201, 107, 0.15);
-    border: 1px solid rgba(87, 201, 107, 0.5);
+    background-color: var(--ok-soft);
+    border: 1px solid var(--ok-border);
     white-space: nowrap;
 }
 .pf-queue-text { cursor: pointer; color: var(--ok); }
@@ -113,7 +158,7 @@ body {
     background-color: transparent;
     border-color: transparent;
 }
-.pf-close:hover { background-color: #da373c; }
+.pf-close:hover { background-color: var(--danger); }
 
 /* ---- layout ---- */
 .pf-body { display: flex; flex-grow: 1; min-height: 0; }
@@ -140,12 +185,12 @@ body {
     padding: 3px 4px 3px 6px;
     margin-bottom: 1px;
     border-radius: 3px;
-    color: #dbdee1;
+    color: var(--text-soft);
     cursor: pointer;
     transition: background-color 120ms;
 }
 .pf-side-item:hover { background-color: var(--panel-2); }
-.pf-side-item.active { background-color: rgba(0, 110, 250, 0.3); color: #ffffff; }
+.pf-side-item.active { background-color: var(--accent-soft); color: var(--text-strong); }
 .pf-side-label { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pf-fav-list { min-height: 4px; }
 
@@ -168,18 +213,18 @@ body {
     padding: 3px 6px;
     margin-bottom: 4px;
     border-radius: 3px;
-    background-color: rgba(0, 110, 250, 0.14);
-    border: 1px solid rgba(0, 110, 250, 0.5);
-    color: #bcd9ff;
+    background-color: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    color: var(--banner-text);
 }
 .pf-hint { margin: 1px 0 3px 0; color: var(--muted); font-size: 7px; }
 .pf-muted { color: var(--muted); }
 
-button.primary { background-color: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; }
+button.primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
 button.primary:hover { background-color: var(--accent-hover); }
-button.primary:disabled { background-color: #4e5058; border-color: #4e5058; color: #949ba4; }
+button.primary:disabled { background-color: var(--disabled); border-color: var(--disabled); color: var(--disabled-text); }
 .pf-small { padding: 0 4px; font-size: 7px; }
-.pf-small.danger:hover { background-color: #da373c; border-color: #da373c; }
+.pf-small.danger:hover { background-color: var(--danger); border-color: var(--danger); }
 .pf-icon-button { padding: 2px 3px; }
 .pf-icon-button.loading .pf-icon { animation: pf-spin 800ms linear infinite; }
 @keyframes pf-spin { to { transform: rotate(360deg); } }
@@ -188,15 +233,15 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-list-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-bottom: 4px; }
 .pf-count { color: var(--muted); white-space: nowrap; }
 .pf-filter-button { padding: 1px 6px; }
-.pf-filter-button.active { background-color: rgba(0, 110, 250, 0.3); border-color: var(--accent); color: #ffffff; }
+.pf-filter-button.active { background-color: var(--accent-soft); border-color: var(--accent); color: var(--text-strong); }
 .pf-search { flex: 1 1 60px; min-width: 50px; max-width: 120px; font-size: 7px; }
 
 .pf-dialog.pf-filter-dialog { width: 300px; max-width: 94vw; }
 .pf-filter-row { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; }
 .pf-filter-row:hover { background-color: var(--card); }
-.pf-filter-section { margin-top: 4px; padding: 3px 4px 0 4px; border-top: 1px solid var(--border); color: #dbdee1; font-weight: bold; }
+.pf-filter-section { margin-top: 4px; padding: 3px 4px 0 4px; border-top: 1px solid var(--border); color: var(--text-soft); font-weight: bold; }
 .pf-filter-section .pf-hint { font-weight: normal; }
-.pf-filter-label { width: 110px; flex-shrink: 0; color: #dbdee1; }
+.pf-filter-label { width: 110px; flex-shrink: 0; color: var(--text-soft); }
 .pf-filter-input { flex-grow: 1; min-width: 0; }
 .pf-filter-input .guilib-number { width: 80px; }
 .pf-filter-input select { min-width: 110px; }
@@ -211,27 +256,27 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
     cursor: pointer;
     transition: border-color 120ms, background-color 120ms;
 }
-.pf-card:hover { border-color: #5a5d66; background-color: #2a2c31; }
-.pf-card.mine { border-color: rgba(87, 201, 107, 0.6); }
+.pf-card:hover { border-color: var(--border-hover); background-color: var(--card-hover); }
+.pf-card.mine { border-color: var(--ok-border); }
 .pf-card.full { opacity: 0.65; }
 .pf-card-head { display: flex; align-items: center; gap: 4px; }
-.pf-leader { color: #ffffff; }
+.pf-leader { color: var(--text-strong); }
 .pf-head { width: 8px; height: 8px; margin-right: 3px; }
 .pf-tag {
     padding: 0 3px;
     border-radius: 2px;
     background-color: var(--panel-2);
-    color: #dbdee1;
+    color: var(--text-soft);
     font-size: 7px;
     white-space: nowrap;
 }
-.pf-tag.mine { background-color: rgba(87, 201, 107, 0.2); color: var(--ok); }
-.pf-tag.size { background-color: rgba(0, 110, 250, 0.25); color: var(--aqua); }
+.pf-tag.mine { background-color: var(--ok-soft); color: var(--ok); }
+.pf-tag.size { background-color: var(--accent-soft); color: var(--title); }
 .pf-tag.option { color: var(--muted); }
 .pf-age { color: var(--muted); font-size: 7px; white-space: nowrap; }
 .pf-join { padding: 1px 8px; }
 /* Two lines at most; GuiLib has no line-clamp, so the rest (and over-long words) is clipped */
-.pf-note { margin-top: 2px; color: #e3e5e8; white-space: pre-wrap; line-height: 10px; max-height: 20px; overflow: hidden; }
+.pf-note { margin-top: 2px; color: var(--text-soft); white-space: pre-wrap; line-height: 10px; max-height: 20px; overflow: hidden; }
 .pf-reqs { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 3px; }
 .pf-req {
     display: inline-block;
@@ -242,15 +287,15 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
     font-size: 7px;
 }
 .pf-req-label { color: var(--muted); }
-.pf-req.ok { border-color: rgba(87, 201, 107, 0.55); }
-.pf-req.bad { border-color: rgba(238, 92, 92, 0.6); }
+.pf-req.ok { border-color: var(--ok-border); }
+.pf-req.bad { border-color: var(--bad-border); }
 .pf-roles { margin-top: 2px; color: var(--muted); font-size: 7px; }
 
 .pf-members { margin-top: 4px; padding-top: 3px; border-top: 1px solid var(--border); cursor: default; }
 .pf-member { padding: 2px 3px; border-radius: 3px; cursor: pointer; }
 .pf-member:hover { background-color: var(--panel-2); }
-.pf-member.inspected { background-color: rgba(0, 110, 250, 0.18); }
-.pf-member-name { color: #ffffff; }
+.pf-member.inspected { background-color: var(--accent-faint); }
+.pf-member-name { color: var(--text-strong); }
 .pf-member-role { color: var(--muted); font-size: 7px; }
 .pf-member-stats { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 1px; }
 .pf-stat { display: inline-block; padding: 0 3px; border-radius: 2px; background-color: var(--panel-2); font-size: 7px; }
@@ -259,20 +304,22 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-stat.missing { color: var(--muted); }
 
 .pf-legend { margin: 4px 2px; color: var(--muted); font-size: 6px; }
+.pf-legend-ok { color: var(--ok); }
+.pf-legend-bad { color: var(--bad); }
 
 /* ---- tooltips ---- */
 .guilib-tooltip.pf-tip { max-width: 220px; }
 .pf-tip-title { margin-bottom: 1px; }
-.pf-tip-text { color: #dbdee1; }
+.pf-tip-text { color: var(--text-soft); }
 .pf-tip-accuracy { margin-top: 2px; color: var(--muted); }
 .pf-tip-accuracy.estimated { color: var(--estimated); }
 .pf-tip-api { margin-top: 2px; color: var(--muted); }
-.pf-tip-own { margin-top: 2px; color: var(--aqua); }
+.pf-tip-own { margin-top: 2px; color: var(--title); }
 .pf-stat-label { white-space: nowrap; }
 
 /* ---- forms ---- */
 .pf-form { flex-grow: 1; min-height: 0; padding-right: 4px; }
-.pf-section { margin: 6px 0 1px 0; font-size: 8px; color: #ffffff; }
+.pf-section { margin: 6px 0 1px 0; font-size: 8px; color: var(--text-strong); }
 .pf-fields { display: flex; flex-direction: column; gap: 2px; }
 .pf-field {
     display: grid;
@@ -283,7 +330,7 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
     border-radius: 3px;
 }
 .pf-field:hover { background-color: var(--card); }
-.pf-field-label { color: #dbdee1; }
+.pf-field-label { color: var(--text-soft); }
 /* Grid cells stretch, so the tooltip would also show right of the label */
 .pf-field > .guilib-tooltip-anchor { justify-self: start; }
 .pf-field-input { min-width: 0; }
@@ -309,7 +356,7 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-setting { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; }
 .pf-setting:hover { background-color: var(--card); }
 .pf-setting-text { flex-grow: 1; min-width: 0; }
-.pf-setting-title { color: #ffffff; }
+.pf-setting-title { color: var(--text-strong); }
 .pf-fav-row { display: flex; align-items: center; gap: 4px; padding: 2px 4px; margin-bottom: 1px; border-radius: 3px; background-color: var(--card); cursor: grab; }
 .pf-fav-name { flex-grow: 1; }
 .pf-grip { opacity: 0.8; }
@@ -324,16 +371,77 @@ textarea:scrolling, textarea:hover,
 .guilib-select-menu:scrolling, .guilib-select-menu:hover,
 .guilib-modal:scrolling, .guilib-modal:hover,
 .guilib-tab-list:scrolling, .guilib-tab-list:hover {
-    scrollbar-color: var(--guilib-scrollbar-thumb, #ffffff80) var(--guilib-scrollbar-track, #00000020);
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
     transition: scrollbar-color 120ms;
 }
+
+/* ---- GuiLib widgets in theme colors ----
+   Workaround: GuiLib's own stylesheet uses fixed colors. Author rules always beat it, also its :hover/:focus/.selected
+   rules, so every state that sets one of these properties is repeated here. Can go once GuiLib reads its colors from variables. */
+button { background-color: var(--control); border-color: var(--control-border); color: var(--text); }
+button:hover { background-color: var(--control-hover); }
+button:active { background-color: var(--control-active); }
+button:focus { border-color: var(--accent); }
+input, textarea, select { background-color: var(--input-bg); border-color: var(--input-border); color: var(--text); }
+input:hover, textarea:hover, select:hover { border-color: var(--input-border-hover); }
+input:focus, textarea:focus, select:focus, select[open] { border-color: var(--accent); }
+input[type=checkbox]:checked { background-color: var(--accent); border-color: var(--accent); }
+.guilib-check { color: var(--accent-text); }
+.guilib-placeholder { color: var(--dim); }
+.guilib-select-arrow { color: var(--subtle); }
+.guilib-select-menu { background-color: var(--menu); border-color: var(--input-border); color: var(--text); }
+.guilib-option.highlighted { background-color: var(--highlight); }
+.guilib-option-check { border-color: var(--input-border); }
+.guilib-tooltip { background-color: var(--popup); border-color: var(--border); color: var(--text); }
+.guilib-modal-backdrop { background-color: var(--backdrop); }
+.guilib-modal { background-color: var(--menu); border-color: var(--input-border); color: var(--text); }
+.guilib-number { background-color: var(--input-bg); border-color: var(--input-border); }
+.guilib-number:hover { border-color: var(--input-border-hover); }
+.guilib-number:focus-within { border-color: var(--accent); }
+.guilib-number-input, .guilib-number-input:hover, .guilib-number-input:focus { background-color: transparent; border-color: transparent; }
+.guilib-number-dec, .guilib-number-inc, .guilib-number-dec:focus, .guilib-number-inc:focus {
+    background-color: var(--menu);
+    border-color: var(--input-border);
+    color: var(--subtle);
+}
+.guilib-number-dec:hover, .guilib-number-inc:hover { background-color: var(--control); color: var(--text-strong); }
+.guilib-number-dec:active, .guilib-number-inc:active { background-color: var(--accent); color: var(--accent-text); }
+.guilib-chip { background-color: var(--input-bg); border-color: var(--input-border); color: var(--subtle); }
+.guilib-chip:hover { border-color: var(--dim); color: var(--text); }
+.guilib-chip:focus { border-color: var(--text-strong); }
+.guilib-chip.selected { background-color: var(--accent-soft); border-color: var(--accent); color: var(--text-strong); }
+.guilib-segmented { background-color: var(--input-bg); border-color: var(--input-border); }
+.guilib-segment:hover { color: var(--text); }
+.guilib-segment.selected { color: var(--accent-text); }
+.guilib-tabs.underline > .guilib-tab-list { border-bottom-color: var(--border); }
+.guilib-tab:hover { color: var(--text); }
+.guilib-tab.active { color: var(--text-strong); }
+.guilib-tabs.pills .guilib-tab.active { color: var(--accent-text); }
+.guilib-switch-track { background-color: var(--disabled); border-color: var(--input-border-hover); }
+.guilib-switch.checked .guilib-switch-track { background-color: var(--accent); border-color: var(--accent); }
+.guilib-radio-dot { background-color: var(--input-bg); border-color: var(--input-border); }
+.guilib-radio:hover .guilib-radio-dot { border-color: var(--dim); }
+.guilib-radio.checked .guilib-radio-dot { background-color: var(--accent-text); border-color: var(--accent); }
+.guilib-toast { background-color: var(--popup); border-color: var(--border); color: var(--text); }
+.guilib-toast.success .guilib-toast-accent { background-color: var(--toast-success); }
+.guilib-toast.warning .guilib-toast-accent { background-color: var(--toast-warning); }
+.guilib-toast.error .guilib-toast-accent { background-color: var(--toast-error); }
+.guilib-toast-message { color: var(--text-soft); }
+.guilib-toast-close { color: var(--dim); }
+.guilib-toast:hover .guilib-toast-close { color: var(--text); }
+.guilib-menu { background-color: var(--popup); border-color: var(--border); color: var(--text); }
+.guilib-menu-item.highlighted { background-color: var(--accent); color: var(--accent-text); }
+.guilib-menu-item.danger { color: var(--menu-danger); }
+.guilib-menu-item.danger.highlighted { background-color: var(--toast-error); color: var(--accent-text); }
+.guilib-menu-shortcut, .guilib-menu-header { color: var(--dim); }
+.guilib-menu-separator { background-color: var(--border); }
 
 /* ---- small windows ---- */
 @media (max-width: 520px) {
     .pf-sidebar { width: 80px; }
     /* Too narrow for both: the panel covers the right part of the window */
     .pf-stage.with-panel .pf-window { width: 94vw; }
-    .pf-panel { position: absolute; top: 0; right: 0; bottom: 0; height: auto; box-shadow: 0 0 12px rgba(0, 0, 0, 0.6); }
+    .pf-panel { position: absolute; top: 0; right: 0; bottom: 0; height: auto; box-shadow: 0 0 12px var(--shadow); }
     .pf-field { grid-template-columns: 100px minmax(0, 1fr); }
     .pf-own { grid-column: 2; text-align: left; }
 }

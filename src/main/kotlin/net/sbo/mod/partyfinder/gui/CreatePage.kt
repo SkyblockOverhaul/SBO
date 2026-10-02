@@ -221,7 +221,16 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
             val need = saved
             val meets = need?.let { StatView.meets(def, it, own) }
             val text = "You: ${StatView.value(stat, own.stats[stat])}"
-            span(className = classNames("pf-own", "ok" to (meets == true), "bad" to (meets == false)), title = text) { +text }
+            span(className = classNames("pf-own", "ok" to (meets == true), "bad" to (meets == false)), title = text) {
+                if (meets == false) span(className = "pf-mark") { +"× " }
+                // Met or not shows in the text color, Hypixel colors only without a requirement
+                if (meets == null) {
+                    +"You: "
+                    pieces(StatView.valuePieces(stat, own.stats[stat]))
+                } else {
+                    +text
+                }
+            }
         }
     }
 }

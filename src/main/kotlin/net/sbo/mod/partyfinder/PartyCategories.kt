@@ -3,6 +3,7 @@ package net.sbo.mod.partyfinder
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.partyfinder.api.CategoriesData
 import net.sbo.mod.partyfinder.api.CategoryDef
+import net.sbo.mod.partyfinder.api.ItemChoice
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.partyfinder.api.PartyOption
 import net.sbo.mod.partyfinder.api.ReqDef
@@ -68,6 +69,14 @@ object PartyCategories {
     val categories: List<CategoryDef> get() = data?.categories.orEmpty()
 
     fun stat(id: String): StatDef? = data?.stats?.firstOrNull { it.id == id }
+
+    /** An item choice of a stat, looked up in every category that asks for it. */
+    fun choice(statId: String, id: String): ItemChoice? =
+        categories.asSequence()
+            .flatMap { c -> c.reqs.asSequence() + c.subcategories.asSequence().flatMap { it.reqs.asSequence() } }
+            .filter { it.stat == statId }
+            .flatMap { it.choices.asSequence() }
+            .firstOrNull { it.id == id }
 
     fun category(id: String): CategoryDef? = data?.categories?.firstOrNull { it.id.equals(id.trim(), ignoreCase = true) }
 

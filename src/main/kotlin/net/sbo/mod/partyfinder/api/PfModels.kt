@@ -77,7 +77,9 @@ data class ItemChoice(
     val id: String,
     val label: String = id,
     val tiers: Boolean = false,
-    val minLevel: Int? = null
+    val minLevel: Int? = null,
+    // Base rarity ("LEGENDARY"), pets have none
+    val rarity: String? = null
 )
 
 @Serializable

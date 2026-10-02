@@ -190,7 +190,9 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             title = "Refresh the list (F5)",
             onClick = { refreshNow() }
         ) {
-            img(src = "${StatView.ICONS}/refresh.svg", className = "pf-icon")
+            // GuiLib can't recolor SVGs, light themes show a dark copy
+            img(src = "${StatView.ICONS}/refresh.svg", className = "pf-icon pf-on-dark")
+            img(src = "${StatView.ICONS}/refresh-dark.svg", className = "pf-icon pf-on-light")
         }
     }
     if (me == null && props.ownError != null) {
@@ -235,7 +237,11 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         }
         if (visible.isNotEmpty()) {
             div(className = "pf-legend") {
-                +"Green: you meet it, red: you don't. A + means at least this much, a ~ means estimated. Hover a value for details, click a player for all stats. Right click a party or player for more."
+                +"Requirements: "
+                span(className = "pf-legend-ok") { +"you meet it" }
+                +", "
+                span(className = "pf-legend-bad") { +"you don't" }
+                +". A + means at least this much, a ~ means estimated. Hover a value for details, click a player for all stats. Right click a party or player for more."
             }
         }
     }
@@ -427,8 +433,9 @@ private fun NodeBuilder.partyCard(
                     val meets = if (mine) null else StatView.meets(def, need, me)
                     tooltip(content = { statInfo(def.stat, me) }, className = "pf-tip") {
                         span(className = classNames("pf-req", "ok" to (meets == true), "bad" to (meets == false))) {
+                            if (meets == false) span(className = "pf-mark") { +"× " }
                             span(className = "pf-req-label") { +"${StatView.label(def.stat)}: " }
-                            +StatView.need(def, need)
+                            pieces(StatView.needPieces(def, need))
                         }
                     }
                 }
@@ -524,7 +531,7 @@ private fun NodeBuilder.memberRow(
                     tooltip(content = { statInfo(id) }, className = "pf-tip", key = id) {
                         span(className = classNames("pf-stat", "estimated" to StatView.estimated(id), "missing" to (value == null || value is JsonNull))) {
                             span(className = "pf-stat-name") { +"${StatView.label(id)} " }
-                            +StatView.value(id, value)
+                            pieces(StatView.valuePieces(id, value))
                             if (lastEvent) span(className = "pf-muted") { +" (last event)" }
                         }
                     }

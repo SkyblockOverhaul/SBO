@@ -27,7 +27,7 @@ import net.sbo.mod.utils.data.DataManager
 
 /** The party finder window: party types on the left, parties, the create form and settings on the right. */
 object PartyFinderGui {
-    private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css")
+    private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/partyfinder/themes.css")
 
     /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others are declared in the CSS. */
     internal val FONTS = linkedMapOf(
@@ -72,6 +72,22 @@ object PartyFinderGui {
         FONTS.keys.forEach { id -> useBodyClass("pf-font-$id", font == id) }
         var uiScale by useState(config.uiScale?.takeIf { it in SCALES })
         useScreenScale(uiScale)
+        var theme by useState(PartyFinderThemes.find(config.theme))
+        var recombobulated by useState(config.recombobulated)
+        // On the body like the font, so modals, tooltips and toasts follow the theme
+        PartyFinderThemes.BASES.forEach { base -> useBodyClass("pf-theme-$base", theme.base == base) }
+        useBodyClass("pf-hypixel", theme.hypixelColors)
+        useBodyClass("pf-recomb", recombobulated)
+        useBodyClass("pf-marks", theme.marks)
+        useBodyClass("pf-light", theme.light)
+        val document = useDocument()
+        useEffect(theme) {
+            val body = document.body
+            // Kept here, the cleanup would read the next theme from the state
+            val colors = theme.colors
+            colors.forEach { (name, value) -> body.setStyleProperty("--$name", value) }
+            onCleanup { colors.keys.forEach { body.removeStyleProperty("--$it") } }
+        }
         // Ticks so countdowns of closed events stay current
         val clock = useState(System.currentTimeMillis())
         var queued by useState(PartyFinderManager.queuedParty)
@@ -173,6 +189,7 @@ object PartyFinderGui {
                                 sortableList(favorites, key = { it }, onReorder = { saveFavorites(it) }, className = "pf-fav-list") { key, _ ->
                                     val fav = if (data != null) targetOf(key) else null
                                     sideItem(
+                                        type = key.substringBefore('/'),
                                         label = when {
                                             fav == null -> key
                                             '/' in key -> fav.label
@@ -188,6 +205,7 @@ object PartyFinderGui {
                             div(className = "pf-side-title") { +"Party Types" }
                             data?.categories?.forEach { category ->
                                 sideItem(
+                                    type = category.id,
                                     label = category.label,
                                     active = target?.partyType == category.id,
                                     favorite = category.id in favorites,
@@ -215,6 +233,18 @@ object PartyFinderGui {
                                     onScale = { scale ->
                                         uiScale = scale
                                         config.uiScale = scale
+                                        config.save()
+                                    },
+                                    theme = theme,
+                                    onTheme = { picked ->
+                                        theme = picked
+                                        config.theme = picked.id
+                                        config.save()
+                                    },
+                                    recombobulated = recombobulated,
+                                    onRecombobulated = { on ->
+                                        recombobulated = on
+                                        config.recombobulated = on
                                         config.save()
                                     }
                                 ),
@@ -251,6 +281,7 @@ object PartyFinderGui {
     }
 
     private fun NodeBuilder.sideItem(
+        type: String,
         label: String,
         active: Boolean,
         favorite: Boolean,
@@ -260,6 +291,8 @@ object PartyFinderGui {
         id: String? = null
     ) {
         div(className = classNames("pf-side-item", "active" to active), id = id, key = key, onClick = { onSelect() }) {
+            // Party type color, only shown with Hypixel colors
+            span(className = "pf-type-dot pf-type-$type")
             span(className = "pf-side-label") { +label }
             starIcon(favorite, onStar)
         }
@@ -280,7 +313,7 @@ object PartyFinderGui {
     private fun NodeBuilder.toolbar(target: PartyTarget, favorites: List<String>, onSub: (String) -> Unit, onStar: (String) -> Unit) {
         val category = target.category
         div(className = "pf-toolbar") {
-            h2(className = "pf-heading") { +category.label }
+            h2(className = "pf-heading pf-type-${category.id}") { +category.label }
             // Pills wrap onto more lines instead of scrolling sideways
             if (category.subcategories.size > 1) {
                 div(className = "pf-subs-row") {

@@ -31,39 +31,131 @@ internal object StatView {
     fun label(statId: String): String = PartyCategories.stat(statId)?.label ?: statId
 
     /** A value with its accuracy mark: "42+" for checked minimums, "~620" for estimates. */
-    fun value(statId: String, value: JsonElement?): String {
-        val text = ProblemText.value(statId, value)
-        if (value == null || value is JsonNull) return text
+    fun value(statId: String, value: JsonElement?): String = valuePieces(statId, value).joinToString("") { it.text }
+
+    /** [value] in pieces, colored by themes with Hypixel colors. */
+    fun valuePieces(statId: String, value: JsonElement?): List<Piece> {
+        if (value == null || value is JsonNull) return listOf(Piece(ProblemText.value(statId, value)))
+        val pieces = when {
+            value is JsonArray && value.isNotEmpty() -> value.flatMapIndexed { i, item ->
+                val id = (item as? JsonObject)?.get("id")?.text() ?: item.text() ?: "?"
+                val tier = (item as? JsonObject)?.get("tier")?.text()
+                val label = ProblemText.choiceLabel(statId, id)
+                val piece = Piece(if (tier != null && tier != "BASIC") "${ProblemText.title(tier)} $label" else label, itemColor(statId, id))
+                if (i == 0) listOf(piece) else listOf(Piece(", "), piece)
+            }
+            else -> listOf(Piece(ProblemText.value(statId, value), valueColor(statId, value)))
+        }
         return when (PartyCategories.stat(statId)?.accuracy) {
-            "minimum" -> "$text+"
-            "reported", "calculated" -> "~$text"
-            else -> text
+            "minimum" -> pieces + Piece("+")
+            "reported", "calculated" -> listOf(Piece("~")) + pieces
+            else -> pieces
         }
     }
 
     fun estimated(statId: String): Boolean = PartyCategories.stat(statId)?.accuracy.let { it != null && it != "exact" }
 
     /** What a requirement asks for, e.g. "50+", "Legendary or better", "Terror Armor (Fiery or better)". */
-    fun need(def: ReqDef, need: JsonElement): String = when (def.type) {
-        "flag" -> "needed"
-        "rarity" -> ProblemText.rarityNeed((need as? JsonPrimitive)?.contentOrNull)
-        "anyOf" -> ReqMatcher.picks(need).joinToString(if (ReqMatcher.matchesAll(need)) " and " else " or ") { pick ->
-            val id = (pick as? JsonObject)?.get("id")?.let { (it as? JsonPrimitive)?.contentOrNull }
-                ?: (pick as? JsonPrimitive)?.contentOrNull ?: "?"
-            val label = def.choices.firstOrNull { it.id == id }?.label ?: ProblemText.title(id)
-            ProblemText.tierPick(label, ((pick as? JsonObject)?.get("minTier") as? JsonPrimitive)?.contentOrNull)
+    fun need(def: ReqDef, need: JsonElement): String = needPieces(def, need).joinToString("") { it.text }
+
+    /** [need] in pieces, colored by themes with Hypixel colors. */
+    fun needPieces(def: ReqDef, need: JsonElement): List<Piece> = when (def.type) {
+        "flag" -> listOf(Piece("needed"))
+        "rarity" -> {
+            val rarity = (need as? JsonPrimitive)?.contentOrNull
+            listOf(Piece(ProblemText.rarityNeed(rarity), rarityColor(rarity)))
+        }
+        "anyOf" -> ReqMatcher.picks(need).flatMapIndexed { i, pick ->
+            val id = (pick as? JsonObject)?.get("id")?.text() ?: pick.text() ?: "?"
+            val choice = def.choices.firstOrNull { it.id == id }
+            val text = ProblemText.tierPick(choice?.label ?: ProblemText.title(id), (pick as? JsonObject)?.get("minTier")?.text())
+            val color = choice?.rarity?.let(::itemRarityClass)
+            // The tier note in brackets stays uncolored
+            val bracket = text.indexOf(" (")
+            val pieces = if (bracket > 0) listOf(Piece(text.substring(0, bracket), color), Piece(text.substring(bracket))) else listOf(Piece(text, color))
+            if (i == 0) pieces else listOf(Piece(if (ReqMatcher.matchesAll(need)) " and " else " or ")) + pieces
         }
         else -> {
             val number = (need as? JsonPrimitive)?.doubleOrNull
             val labels = PartyCategories.stat(def.stat)?.valueLabels.orEmpty()
             when {
-                number != null && labels.isNotEmpty() ->
-                    ProblemText.orBetter(labels.getOrNull(number.toInt()) ?: ProblemText.number(number), number.toInt() >= labels.lastIndex)
-                number != null -> "${ProblemText.number(number)}+"
-                else -> ProblemText.value(def.stat, need)
+                number != null && labels.isNotEmpty() -> listOf(Piece(
+                    ProblemText.orBetter(labels.getOrNull(number.toInt()) ?: ProblemText.number(number), number.toInt() >= labels.lastIndex),
+                    numberColor(def.stat, number)
+                ))
+                number != null -> listOf(Piece(ProblemText.number(number), numberColor(def.stat, number)), Piece("+"))
+                else -> listOf(Piece(ProblemText.value(def.stat, need)))
             }
         }
     }
+
+    private fun valueColor(statId: String, value: JsonElement): String? {
+        val primitive = value as? JsonPrimitive ?: return null
+        if (PartyCategories.stat(statId)?.kind == "rarity") return rarityColor(primitive.contentOrNull)
+        return primitive.doubleOrNull?.let { numberColor(statId, it) }
+    }
+
+    private fun itemColor(statId: String, id: String): String? = PartyCategories.choice(statId, id)?.rarity?.let(::itemRarityClass)
+
+    // Items can be recombobulated, so they get rarity classes the theme can shift one up
+    private fun itemRarityClass(rarity: String): String = "pf-r-" + rarity.lowercase(Locale.US).replace('_', '-')
+
+    /** Minecraft color of a rarity, like item names in game. */
+    fun rarityColor(rarity: String?): String? = when (rarity?.uppercase(Locale.US)) {
+        "COMMON" -> "pf-c-white"
+        "UNCOMMON" -> "pf-c-green"
+        "RARE" -> "pf-c-blue"
+        "EPIC" -> "pf-c-dark-purple"
+        "LEGENDARY" -> "pf-c-gold"
+        "MYTHIC" -> "pf-c-light-purple"
+        "DIVINE" -> "pf-c-aqua"
+        "SPECIAL", "VERY_SPECIAL" -> "pf-c-red"
+        "ULTIMATE" -> "pf-c-dark-red"
+        else -> null
+    }
+
+    /** Colors for numbers the game colors too: SkyBlock level prefix, Trophy Fisher title, Diana kills like /sboc. */
+    fun numberColor(statId: String, number: Double): String? {
+        val n = number.toInt()
+        return when (statId) {
+            "sbLevel" -> "pf-c-" + when {
+                n >= 480 -> "dark-red"
+                n >= 440 -> "red"
+                n >= 400 -> "gold"
+                n >= 360 -> "dark-purple"
+                n >= 320 -> "light-purple"
+                n >= 280 -> "blue"
+                n >= 240 -> "dark-aqua"
+                n >= 200 -> "aqua"
+                n >= 160 -> "dark-green"
+                n >= 120 -> "green"
+                n >= 80 -> "yellow"
+                n >= 40 -> "white"
+                else -> "gray"
+            }
+            // Novice, Adept, Expert, Master in the bronze, silver, gold and diamond trophy fish colors
+            "trophyFisher" -> when (n) {
+                1 -> "pf-c-dark-gray"
+                2 -> "pf-c-gray"
+                3 -> "pf-c-gold"
+                4 -> "pf-c-aqua"
+                else -> null
+            }
+            "dianaKills" -> "pf-c-" + when {
+                n >= 200_000 -> "gold"
+                n >= 150_000 -> "yellow"
+                n >= 100_000 -> "red"
+                n >= 75_000 -> "light-purple"
+                n >= 50_000 -> "blue"
+                n >= 25_000 -> "green"
+                n >= 10_000 -> "dark-green"
+                else -> "gray"
+            }
+            else -> null
+        }
+    }
+
+    private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
 
     /** True or false when [own] stats are known, null otherwise. */
     fun meets(def: ReqDef, need: JsonElement, own: MemberView?): Boolean? {
@@ -81,6 +173,13 @@ internal object StatView {
         "calculated" -> "Calculated by SBO, can differ a little from the game."
         else -> "Exact value."
     }
+}
+
+/** A piece of a value text; [color] is a CSS class ("pf-c-gold", "pf-r-epic") that only themes with Hypixel colors color. */
+internal data class Piece(val text: String, val color: String? = null)
+
+internal fun NodeBuilder.pieces(pieces: List<Piece>) {
+    pieces.forEach { piece -> if (piece.color == null) +piece.text else span(className = piece.color) { +piece.text } }
 }
 
 /** Label of a stat with an info icon; hovering shows what the stat means and where it comes from. */
@@ -103,7 +202,10 @@ internal fun NodeBuilder.statInfo(statId: String, own: MemberView? = null) {
         div(className = classNames("pf-tip-accuracy", "estimated" to (stat.accuracy != "exact"))) { +StatView.accuracyText(stat) }
         if (stat.accuracy != "reported") div(className = "pf-tip-api") { +ProblemText.apiHint(stat.apis) }
     }
-    if (own != null) div(className = "pf-tip-own") { +"You: ${StatView.value(statId, own.stats[statId])}" }
+    if (own != null) div(className = "pf-tip-own") {
+        +"You: "
+        pieces(StatView.valuePieces(statId, own.stats[statId]))
+    }
 }
 
 internal fun sizeLabel(size: Int): String = when (size) {

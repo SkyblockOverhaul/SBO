@@ -47,12 +47,25 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
                             "missing" to (value == null || value is JsonNull),
                             "ok" to (meets == true),
                             "bad" to (meets == false)
-                        )) { +StatView.value(id, value) }
+                        )) {
+                            if (meets == false) span(className = "pf-mark") { +"× " }
+                            // Met or not shows in the text color, Hypixel colors only without a requirement
+                            if (meets == null) pieces(StatView.valuePieces(id, value)) else +StatView.value(id, value)
+                        }
                     }
-                    if (def != null && need != null) div(className = "pf-panel-need") { +"Party needs: ${StatView.need(def, need)}" }
+                    if (def != null && need != null) div(className = "pf-panel-need") {
+                        +"Party needs: "
+                        pieces(StatView.needPieces(def, need))
+                    }
                 }
             }
         }
-        div(className = "pf-legend") { +"Green or red: what this party asks for. Hover a stat for details and your own value." }
+        div(className = "pf-legend") {
+            +"Values the party asks for: "
+            span(className = "pf-legend-ok") { +"met" }
+            +" or "
+            span(className = "pf-legend-bad") { +"not met" }
+            +". Hover a stat for details and your own value."
+        }
     }
 }
