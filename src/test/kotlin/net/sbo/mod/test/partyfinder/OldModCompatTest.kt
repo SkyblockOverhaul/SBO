@@ -69,6 +69,7 @@ class OldModCompatTest {
         assertNotNull(party, "old list shows the party")
         assertEquals(2, party!!.partyMembersCount)
         assertEquals(100, party.reqs.lvl)
+        assertTrue(party.reqs.eman9 && party.reqs.looting5, "eman9 and looting5 stay for old mods")
         assertEquals("old mod", party.note)
         assertTrue(party.partyInfo.all { it.name.isNotEmpty() && it.sbLvl > 0 })
 
@@ -82,7 +83,6 @@ class OldModCompatTest {
         assertFalse(tooHigh.success)
         assertFalse(tooHigh.error.isNullOrBlank(), "old mods show the error text")
 
-        // Parties of new mods, also other types, must not break the old list
         assertTrue(success(send("POST", "/unqueueParty")), "unqueue")
         assertTrue(list("Diana").none { it.leader == leader })
 
@@ -105,16 +105,11 @@ class OldModCompatTest {
     }
 
     @Test
-    fun newModPartiesShowInOldList() {
+    fun newModPartiesStayOutOfOldList() {
         assumeTrue(key.isNotEmpty(), "SBO_TEST_KEY not set")
+        // Old and new mods have separate queues
         val body = """{"partyType":"diana","uuids":["$leader"],"partySize":5,"reqs":{"tracking":5,"griffin":"RARE"},"note":"new mod"}"""
-        send("POST", "/pf/parties", body)
-        val party = list("Diana").first { it.leader == leader }
-        assertEquals(5, party.partySize)
-        assertEquals("new mod", party.note)
-        val kuudra = """{"partyType":"kuudra","subType":"basic","uuids":["$leader"],"partySize":4}"""
-        send("POST", "/pf/parties", kuudra)
-        // A kuudra party of new mods is not shown to old mods and does not break their list
+        assertTrue(send("POST", "/pf/parties", body).contains("\"success\":true"))
         assertTrue(list("Diana").none { it.leader == leader })
         list("Custom")
         send("POST", "/pf/parties/remove")
