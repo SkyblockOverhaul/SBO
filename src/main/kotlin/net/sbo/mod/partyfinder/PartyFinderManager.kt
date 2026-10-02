@@ -74,6 +74,13 @@ object PartyFinderManager {
         Regex("^(.+)§r§e has promoted §r(.+) §r§eto Party Leader$")
     )
 
+    private val ownJoinRegex = Regex("^§r§eYou have joined §r(.+)'s? §r§eparty!$")
+
+    /** Goes up when the player joined a party, the open party list reloads then. */
+    @Volatile
+    var joinedParties = 0
+        private set
+
     private val partyJoinRegexes = listOf(
         Regex("^(.+) §r§ejoined the party.$"),
         Regex("^§r§eYou have joined §r(.+)'s? §r§eparty!$")
@@ -492,6 +499,12 @@ object PartyFinderManager {
                 memberRoles.clear()
                 removePartyFromQueue()
             }
+        }
+        ownJoinRegex.matchEntire(text)?.let { joined ->
+            // Hypixel already says it in chat, so only a toast while the GUI is open
+            listener?.invoke(true, "You joined ${Helper.getPlayerName(joined.groupValues[1])}'s party.")
+            // The leader's mod updates the listed party first
+            sleep(3000) { joinedParties++ }
         }
         partyJoinRegexes.forEach {
             if (it.matches(text)) {

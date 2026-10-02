@@ -52,7 +52,9 @@ internal data class PartiesProps(
     val onEdit: () -> Unit,
     // Uuid of the player shown in the side panel
     val inspected: String?,
-    val onInspect: (InspectedPlayer) -> Unit
+    val onInspect: (InspectedPlayer) -> Unit,
+    // Reloads the list after the player joined a party
+    val joinedParties: Int
 )
 
 /** The parties of one party type with filters, details, the right click menu and joining. */
@@ -77,7 +79,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val clipboard = useClipboard()
 
     val autoRefresh = config.autoRefreshSeconds
-    useEffect(target.key, props.reload, props.queuedAt, refresh.value, autoRefresh) {
+    useEffect(target.key, props.reload, props.queuedAt, props.joinedParties, refresh.value, autoRefresh) {
         val key = target.key
         if (loadKey.current != key) {
             parties = null

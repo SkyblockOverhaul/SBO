@@ -76,6 +76,7 @@ object PartyFinderGui {
         val clock = useState(System.currentTimeMillis())
         var queued by useState(PartyFinderManager.queuedParty)
         var inQueue by useState(PartyFinderManager.inQueue)
+        var joinedParties by useState(PartyFinderManager.joinedParties)
         val currentKey = useRef("")
         val toast = useToast()
 
@@ -91,6 +92,7 @@ object PartyFinderGui {
         useInterval(1000) {
             queued = PartyFinderManager.queuedParty
             inQueue = PartyFinderManager.inQueue
+            joinedParties = PartyFinderManager.joinedParties
         }
         useInterval(30_000) { clock.set(System.currentTimeMillis()) }
 
@@ -221,7 +223,8 @@ object PartyFinderGui {
                                     PartiesPage(
                                         PartiesProps(
                                             target, own, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
-                                            inspected = inspected?.member?.uuid, onInspect = { inspected = it }
+                                            inspected = inspected?.member?.uuid, onInspect = { inspected = it },
+                                        joinedParties = joinedParties
                                         ),
                                         key = "list"
                                     )
