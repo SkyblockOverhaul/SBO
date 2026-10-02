@@ -309,6 +309,20 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-fav-name { flex-grow: 1; }
 .pf-grip { opacity: 0.8; }
 
+/* ---- scrollbars ---- */
+/* GuiLib widgets that scroll on their own, same idle-hiding scrollbar as .guilib-autohide (rule copied from GuiLib ua.css) */
+textarea, .guilib-select-menu, .guilib-modal, .guilib-tab-list {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 300ms ease 600ms;
+}
+textarea:scrolling, textarea:hover,
+.guilib-select-menu:scrolling, .guilib-select-menu:hover,
+.guilib-modal:scrolling, .guilib-modal:hover,
+.guilib-tab-list:scrolling, .guilib-tab-list:hover {
+    scrollbar-color: var(--guilib-scrollbar-thumb, #ffffff80) var(--guilib-scrollbar-track, #00000020);
+    transition: scrollbar-color 120ms;
+}
+
 /* ---- small windows ---- */
 @media (max-width: 520px) {
     .pf-sidebar { width: 80px; }
