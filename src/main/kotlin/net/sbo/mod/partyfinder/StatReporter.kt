@@ -15,12 +15,19 @@ import java.math.RoundingMode
 /** Sends stats only the mod can measure to the backend. For now burrows per hour from the Diana mayor tracker. */
 object StatReporter {
     private const val INTERVAL_TICKS = 20 * 60 * 15
+    private const val STARTUP_DELAY_TICKS = 20 * 30
+    private const val HOUR_MS = 60 * 60 * 1000.0
     private const val MIN_HOURS = 1.0
     private const val MAX_BPH = 1500.0
 
     private var lastSent: BphReport? = null
 
     fun init() {
+        // Once shortly after the start, so short sessions report too
+        Register.onTick(STARTUP_DELAY_TICKS) { unregister ->
+            unregister()
+            report()
+        }
         Register.onTick(INTERVAL_TICKS) { report() }
     }
 
@@ -29,7 +36,12 @@ object StatReporter {
         val tracker = DataManager.dianaTrackerMayorData
         // The mayor tracker resets when Diana is elected again, until then it holds the last event
         val current = tracker.year != 0 && tracker.year >= Mayor.mayorElectedYear
-        val next = bphReport(tracker.items.TOTAL_BURROWS.toLong(), SboTimerManager.timerMayor.getHourTime(), current) ?: return
+        // Less than an hour in the current event: the newest past event with enough data instead
+        val next = bphReport(tracker.items.TOTAL_BURROWS.toLong(), SboTimerManager.timerMayor.getHourTime(), current)
+            ?: DataManager.pastDianaEventsData.events.asReversed().firstNotNullOfOrNull { event ->
+                bphReport(event.items.TOTAL_BURROWS.toLong(), event.items.TIME / HOUR_MS, current = false)
+            }
+            ?: return
         if (next == lastSent) return
         PartyFinderApi.reportStats(
             StatsReportBody(next),
