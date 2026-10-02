@@ -36,6 +36,7 @@ import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 import java.util.UUID
@@ -218,6 +219,10 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     checkStats = { name ->
                         PartyCheck.checkPlayer(name)
                         toast.info("The stats of $name are shown in chat.")
+                    },
+                    partyCommand = { command, text ->
+                        Chat.command(command)
+                        toast.info(text)
                     }
                 )
             }
@@ -332,7 +337,8 @@ private fun NodeBuilder.partyCard(
     inspected: String?,
     onInspect: (InspectedPlayer) -> Unit,
     copy: (String, String) -> Unit,
-    checkStats: (String) -> Unit
+    checkStats: (String) -> Unit,
+    partyCommand: (command: String, text: String) -> Unit
 ) {
     val leaderName = party.leader?.name?.takeIf { it.isNotBlank() } ?: "Unknown"
     val full = ReqMatcher.isFull(party)
@@ -398,7 +404,10 @@ private fun NodeBuilder.partyCard(
                 div(className = "pf-members", onClick = { e -> e.stopPropagation() }) {
                     val statIds = (target.reqs.map { it.stat }.filter { party.reqs[it] != null } + target.display).distinct()
                     party.members.forEach { member ->
-                        memberRow(member, party, target, statIds, member.uuid == inspected, { onInspect(InspectedPlayer(member, party)) }, copy, checkStats)
+                        memberRow(
+                            member, party, target, statIds, member.uuid == inspected, { onInspect(InspectedPlayer(member, party)) },
+                            manage = mine && member.uuid != party.id, copy, checkStats, partyCommand
+                        )
                     }
                 }
             }
@@ -428,8 +437,11 @@ private fun NodeBuilder.memberRow(
     statIds: List<String>,
     inspected: Boolean,
     onInspect: () -> Unit,
+    // Other members of the own party: transfer and kick
+    manage: Boolean,
     copy: (String, String) -> Unit,
-    checkStats: (String) -> Unit
+    checkStats: (String) -> Unit,
+    partyCommand: (command: String, text: String) -> Unit
 ) {
     val name = member.name.ifBlank { "Unknown" }
     contextMenu(menu = {
@@ -437,6 +449,11 @@ private fun NodeBuilder.memberRow(
         item("Show all stats") { onInspect() }
         item("Copy name") { copy(name, "Name") }
         item("Check stats") { checkStats(name) }
+        if (manage) {
+            separator()
+            item("Make party leader") { partyCommand("p transfer $name", "Making $name the party leader...") }
+            item("Kick from party", danger = true) { partyCommand("p kick $name", "Kicking $name from the party...") }
+        }
     }, className = "pf-member-anchor", key = member.uuid) {
         div(className = classNames("pf-member", "inspected" to inspected), onClick = { onInspect() }) {
             span(className = "pf-member-name") {
