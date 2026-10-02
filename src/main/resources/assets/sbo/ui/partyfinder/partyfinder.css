@@ -15,6 +15,15 @@
     --estimated: #c9a7f0;
 }
 
+/* Fonts picked in the settings, PartyFinderGui puts the class on the body */
+@font-face { font-family: "nunito"; src: url("sbo:fonts/nunito-400.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "nunito"; src: url("sbo:fonts/nunito-700.ttf") format("truetype"); font-weight: 700; }
+@font-face { font-family: "jetbrains-mono"; src: url("sbo:fonts/jetbrains-mono-400.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "jetbrains-mono"; src: url("sbo:fonts/jetbrains-mono-700.ttf") format("truetype"); font-weight: 700; }
+body.pf-font-minecraft { font-family: minecraft; }
+body.pf-font-nunito { font-family: nunito; }
+body.pf-font-jetbrains-mono { font-family: jetbrains-mono; }
+
 body {
     display: flex;
     align-items: center;

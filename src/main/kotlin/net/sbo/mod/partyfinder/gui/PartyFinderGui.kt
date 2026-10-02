@@ -17,8 +17,6 @@ import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tabs
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
-import net.sbo.guilib.fabric.font.FontManager
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
@@ -31,45 +29,17 @@ import net.sbo.mod.utils.data.DataManager
 object PartyFinderGui {
     private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css")
 
-    /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others with SBO. */
+    /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others are declared in the CSS. */
     internal val FONTS = linkedMapOf(
         "inter" to "Inter",
         "minecraft" to "Minecraft",
         "nunito" to "Nunito",
         "jetbrains-mono" to "JetBrains Mono"
     )
-    private var fontsRegistered = false
-
-    // Page and party type to show after reopening for a font change
-    private var reopenPage: String? = null
-    private var reopenKey: String? = null
 
     /** Opens the window. Must run on the client thread. */
     fun open() {
-        registerFonts()
-        val font = DataManager.partyFinderConfigState.font
-        // The font sheet sets the body font, so dialogs, menus and toasts use it too
-        val sheets = if (font in FONTS && font != "inter") STYLES + "sbo:ui/partyfinder/fonts/$font.css" else STYLES
-        GuiLib.open(App, sheets, title = "SBO Party Finder")
-    }
-
-    /** Saves the font and reopens the window with it on the same page. */
-    internal fun changeFont(font: String, page: String, key: String) {
-        val config = DataManager.partyFinderConfigState
-        config.font = font
-        config.save()
-        reopenPage = page
-        reopenKey = key
-        mc.execute { open() }
-    }
-
-    private fun registerFonts() {
-        if (fontsRegistered) return
-        fontsRegistered = true
-        for (id in listOf("nunito", "jetbrains-mono")) {
-            FontManager.register(id, 400, false, "sbo:fonts/$id-400.ttf")
-            FontManager.register(id, 700, false, "sbo:fonts/$id-700.ttf")
-        }
+        GuiLib.open(App, STYLES, title = "SBO Party Finder")
     }
 
     /** "kuudra/infernal" or "diana" to its target; a category alone means its first subcategory. */
@@ -87,15 +57,16 @@ object PartyFinderGui {
         val config = DataManager.partyFinderConfigState
         var data by useState(PartyCategories.data)
         var failed by useState(false)
-        var selected by useState(reopenKey ?: startKey())
-        var page by useState(reopenPage ?: "parties")
-        reopenKey = null
-        reopenPage = null
+        var selected by useState(startKey())
+        var page by useState("parties")
         var favorites by useState(config.favorites.toList())
         var own by useState<MemberView?>(null)
         var ownError by useState<String?>(null)
         var reload by useState(0)
         var inspected by useState<InspectedPlayer?>(null)
+        var font by useState(config.font.takeIf { it in FONTS } ?: "inter")
+        // On the body, so modals, tooltips and toasts use the font too
+        FONTS.keys.forEach { id -> useBodyClass("pf-font-$id", font == id) }
         // Ticks so countdowns of closed events stay current
         val clock = useState(System.currentTimeMillis())
         var queued by useState(PartyFinderManager.queuedParty)
@@ -213,7 +184,11 @@ object PartyFinderGui {
                     main(className = "pf-main") {
                         when {
                             page == "settings" -> SettingsPage(
-                                SettingsProps(target, favorites, ::saveFavorites, { reload++ }, config.font) { font -> changeFont(font, page, selected) },
+                                SettingsProps(target, favorites, ::saveFavorites, { reload++ }, font) { id ->
+                                    font = id
+                                    config.font = id
+                                    config.save()
+                                },
                                 key = "settings"
                             )
                             target == null && failed -> message("Could not load the party types from the SBO server.") {
