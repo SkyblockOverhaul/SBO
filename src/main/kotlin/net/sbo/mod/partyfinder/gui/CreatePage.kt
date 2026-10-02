@@ -194,12 +194,19 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                     val labels = PartyCategories.stat(stat)?.valueLabels.orEmpty()
                     val max = PartyCategories.stat(stat)?.max ?: Int.MAX_VALUE
                     if (labels.isNotEmpty()) {
-                        select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }) {
+                        select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }, className = number?.let { StatView.numberColor(stat, it.toDouble()) }) {
                             option("0", "Any")
                             labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex)) }
                         }
                     } else {
-                        numberInput(value = number?.coerceAtMost(max), onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 1, max = max)
+                        numberInput(
+                            value = number?.coerceAtMost(max),
+                            onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) },
+                            allowEmpty = true,
+                            min = 1,
+                            max = max,
+                            className = number?.let { StatView.numberColor(stat, it.toDouble()) }
+                        )
                     }
                 }
                 "flag" -> checkbox(
@@ -209,7 +216,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                 )
                 "rarity" -> {
                     val rarity = (saved as? JsonPrimitive)?.contentOrNull ?: ""
-                    select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }) {
+                    select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }, className = StatView.rarityColor(rarity)) {
                         option("", "Any")
                         ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it)) }
                     }
@@ -221,15 +228,10 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
             val need = saved
             val meets = need?.let { StatView.meets(def, it, own) }
             val text = "You: ${StatView.value(stat, own.stats[stat])}"
+            // Always met or not met colors, never Hypixel colors
             span(className = classNames("pf-own", "ok" to (meets == true), "bad" to (meets == false)), title = text) {
                 if (meets == false) span(className = "pf-mark") { +"× " }
-                // Met or not shows in the text color, Hypixel colors only without a requirement
-                if (meets == null) {
-                    +"You: "
-                    pieces(StatView.valuePieces(stat, own.stats[stat]))
-                } else {
-                    +text
-                }
+                +text
             }
         }
     }

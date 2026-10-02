@@ -114,7 +114,7 @@ Hypixel colors (only used when hypixelColors is true)
   These are the Minecraft text colors. Item rarities, the SkyBlock level and Trophy Fisher titles use them,
   e.g. Legendary is mc-gold and Mythic is mc-light-purple.
 
-Party types (only used when hypixelColors is true; dot in the side bar and the heading)
+Party types (only used when hypixelColors is true; name in the side bar and the heading)
   type-diana       gold           type-fishing  aqua           type-mining  dark aqua
   type-kuudra      red            type-vanquisher dark purple  type-rift    light purple
   type-safari      green          type-slayer   dark red       type-custom  gray

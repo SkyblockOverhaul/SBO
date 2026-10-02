@@ -110,7 +110,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
         }
         settingRow(
             "Recombobulated items",
-            "Shows item names one rarity higher, like after a Recombobulator 3000, since most players use one on their gear. Only for themes with Hypixel colors."
+            "Shows item names one rarity higher, like after a Recombobulator 3000. Only for themes with Hypixel colors."
         ) {
             switch(checked = props.recombobulated, onChange = { e -> props.onRecombobulated(e.checked) }, id = "pf-recomb-switch")
         }

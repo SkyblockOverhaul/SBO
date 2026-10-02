@@ -290,9 +290,8 @@ object PartyFinderGui {
         key: Any? = null,
         id: String? = null
     ) {
-        div(className = classNames("pf-side-item", "active" to active), id = id, key = key, onClick = { onSelect() }) {
-            // Party type color, only shown with Hypixel colors
-            span(className = "pf-type-dot pf-type-$type")
+        // pf-type-* colors the name with Hypixel colors
+        div(className = classNames("pf-side-item", "pf-type-$type", "active" to active), id = id, key = key, onClick = { onSelect() }) {
             span(className = "pf-side-label") { +label }
             starIcon(favorite, onStar)
         }
