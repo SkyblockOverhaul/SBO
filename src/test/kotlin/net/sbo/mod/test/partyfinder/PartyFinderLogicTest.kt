@@ -45,7 +45,7 @@ class PartyFinderLogicTest {
     fun readsTheRealContract() {
         val data = PartyCategories.data!!
         assertEquals(
-            listOf("diana", "fishing", "mining", "kuudra", "vanquisher", "rift", "slayer", "custom"),
+            listOf("diana", "fishing", "mining", "kuudra", "vanquisher", "rift", "safari", "slayer", "custom"),
             data.categories.map { it.id }
         )
         assertEquals(19.0, PartyCategories.stat("tracking")?.unverifiedUpTo)
