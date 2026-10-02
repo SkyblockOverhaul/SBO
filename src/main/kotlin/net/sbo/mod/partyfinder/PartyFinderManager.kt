@@ -151,7 +151,7 @@ object PartyFinderManager {
             if ("From" in matchResult.group(1) && partyMemberCount < partySize) {
                 val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
                 val request = JoinRequest.parse(matchResult.group(4) ?: "")
-                if (PartyFinder.autoInvite && request.uuid != null) {
+                if (PartyFinder.autoInvite) {
                     invitePlayerIfMeetsReqs(playerName, request)
                 } else {
                     showJoinRequest(playerName, request.role)
@@ -382,9 +382,9 @@ object PartyFinderManager {
     // todo: add a way to prevent inviting more player then party has space (maybe every user has 10 seconds to accept else next player gets invited)
     private fun invitePlayerIfMeetsReqs(playerName: String, request: JoinRequest) {
         val current = draft ?: return showJoinRequest(playerName, request.role)
-        val uuid = request.uuid ?: return showJoinRequest(playerName, request.role)
+        // The sender's name comes from Hypixel, so it can't be faked like a uuid in the text
         PartyFinderApi.checkMembers(
-            CheckBody(current.partyType, current.subType, listOf(uuid), partyId = myUuid(), role = request.role),
+            CheckBody(current.partyType, current.subType, names = listOf(playerName), partyId = myUuid(), role = request.role),
             onError = { error ->
                 if (error.code == PfError.PARTY_FULL) return@checkMembers
                 Chat.chat("§6[SBO] §eCould not check §b$playerName§e: ${ProblemText.error(error)}")
@@ -392,7 +392,6 @@ object PartyFinderManager {
             }
         ) { data ->
             val member = data.members.firstOrNull()
-            // The uuid comes from the message, so it has to belong to the player who sent it
             if (member == null || !member.name.equals(playerName, ignoreCase = true)) {
                 showJoinRequest(playerName, request.role)
                 return@checkMembers
@@ -403,7 +402,7 @@ object PartyFinderManager {
                 return@checkMembers
             }
             if (partyMemberCount < partySize) {
-                request.role?.let { memberRoles[uuid] = it }
+                request.role?.let { memberRoles[member.uuid] = it }
                 Chat.command("p invite $playerName")
                 Chat.chat("§6[SBO] §eInvited $playerName to the party.")
             }
@@ -447,7 +446,7 @@ object PartyFinderManager {
                 return@get
             }
             tell("§6[SBO] §eSending join request to $leaderName...", true)
-            Chat.command("msg $leaderName ${JoinRequest.message(myUuid(), role)}")
+            Chat.command("msg $leaderName ${JoinRequest.message(role)}")
             playersSentRequest[leaderName] = System.nanoTime()
         }
     }
@@ -553,27 +552,17 @@ object PartyFinderManager {
 }
 
 /**
- * The text of a join request whisper. New mods put their uuid (32 hex digits) into `id:`,
- * old mods a random uuid with dashes, so only the new ones can be auto invited.
+ * The text of a join request whisper. `id:` is a random uuid like old mods send, so Hypixel never
+ * sees the same message twice; who asks comes from the whisper's sender name.
  */
-data class JoinRequest(val uuid: String?, val role: String?) {
+data class JoinRequest(val role: String?) {
     companion object {
-        private val UUID = Regex("^([0-9a-fA-F]{32})(?![0-9a-fA-F-])")
         private val ROLE = Regex("\\brole:([a-z_]{1,32})")
 
         /** [text] is everything after `id:`. */
-        fun parse(text: String): JoinRequest {
-            val trimmed = text.trim()
-            return JoinRequest(
-                UUID.find(trimmed)?.groupValues?.get(1)?.lowercase(),
-                ROLE.find(trimmed)?.groupValues?.get(1)
-            )
-        }
+        fun parse(text: String): JoinRequest = JoinRequest(ROLE.find(text)?.groupValues?.get(1))
 
-        // Random tail, Hypixel blocks the same message twice in a row
-        fun message(uuid: String, role: String?, nonce: String = randomNonce()): String =
-            "[SBO] join party request - id:$uuid" + (role?.let { " role:$it" } ?: "") + " n:$nonce"
-
-        private fun randomNonce(): String = java.util.UUID.randomUUID().toString().take(6)
+        fun message(role: String?, id: String = java.util.UUID.randomUUID().toString()): String =
+            "[SBO] join party request - id:$id" + (role?.let { " role:$it" } ?: "")
     }
 }

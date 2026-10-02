@@ -7,32 +7,27 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class PartyFinderMessagesTest {
-    private val uuid = "0123456789abcdef0123456789abcdef"
-
     @Test
     fun joinRequestRoundTrip() {
-        val message = JoinRequest.message(uuid, "crowd_control", nonce = "3f9a1c")
-        assertEquals("[SBO] join party request - id:$uuid role:crowd_control n:3f9a1c", message)
-        assertEquals(JoinRequest(uuid, "crowd_control"), JoinRequest.parse(message.substringAfter("id:")))
-        // Two requests never send the same text
-        assert(JoinRequest.message(uuid, null) != JoinRequest.message(uuid, null))
-        assertEquals(JoinRequest(uuid, null), JoinRequest.parse(JoinRequest.message(uuid, null).substringAfter("id:")))
-        assertEquals(JoinRequest(uuid, null), JoinRequest.parse("$uuid§r"))
-        assertEquals(JoinRequest(uuid, "dps"), JoinRequest.parse("${uuid.uppercase()} role:dps§r"))
+        val message = JoinRequest.message("crowd_control", id = "123e4567-e89b-12d3-a456-426614174000")
+        assertEquals("[SBO] join party request - id:123e4567-e89b-12d3-a456-426614174000 role:crowd_control", message)
+        assertEquals(JoinRequest("crowd_control"), JoinRequest.parse(message.substringAfter("id:")))
+        // A random id each time, Hypixel blocks the same message twice in a row
+        assert(JoinRequest.message(null) != JoinRequest.message(null))
+        assertEquals(JoinRequest("dps"), JoinRequest.parse("123e4567-e89b-12d3-a456-426614174000 role:dps\u00a7r"))
     }
 
     @Test
     fun joinCommandFitsTheChatLimit() {
         // Longest name (16) and the longest role the leader accepts (32); Minecraft allows 256 characters
-        val command = "/msg ${"a".repeat(16)} " + JoinRequest.message("0".repeat(32), "r".repeat(32))
+        val command = "/msg ${"a".repeat(16)} " + JoinRequest.message("r".repeat(32))
         assert(command.length <= 256) { "${command.length} characters" }
     }
 
     @Test
-    fun oldModsHaveNoUuid() {
-        // Old mods send a random uuid with dashes
-        assertEquals(JoinRequest(null, null), JoinRequest.parse("123e4567-e89b-12d3-a456-426614174000"))
-        assertEquals(JoinRequest(null, null), JoinRequest.parse("not a uuid"))
+    fun oldModRequestsHaveNoRole() {
+        assertEquals(JoinRequest(null), JoinRequest.parse("123e4567-e89b-12d3-a456-426614174000"))
+        assertEquals(JoinRequest(null), JoinRequest.parse("not a uuid"))
     }
 
     @Test
