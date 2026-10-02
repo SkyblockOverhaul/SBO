@@ -32,8 +32,8 @@ object PartyListFilters {
         return visible.sortedWith(compareByDescending<PartyView> { it.id == myId }.then(order).thenBy { it.createdAt })
     }
 
-    /** Party fields the filter dialog offers. Ironman is left out, "Can I join" checks it against the own account. */
-    fun filterableOptions(target: PartyTarget): List<PartyOption> = target.options.filter { it.id != "ironman" }
+    /** Party fields the filter dialog offers. */
+    fun filterableOptions(target: PartyTarget): List<PartyOption> = target.options
 
     /** Requirements the filter dialog offers, item lists are left out. */
     fun filterableReqs(target: PartyTarget): List<ReqDef> = target.reqs.filter { it.type in REQ_TYPES }

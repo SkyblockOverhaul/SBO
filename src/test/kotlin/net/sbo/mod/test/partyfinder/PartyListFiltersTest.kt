@@ -73,8 +73,9 @@ class PartyListFiltersTest {
             party("b", roles = listOf("support")),
             party("c")
         )
-        // Ironman is not a list filter (an old saved value is ignored), "Can I join" checks it
-        assertEquals(listOf("a", "b", "c"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "only"))).sorted())
+        assertEquals(listOf("a"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "only"))))
+        // Parties without the field count as its default (anyone)
+        assertEquals(listOf("b", "c"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "any"))).sorted())
         // Parties without wanted roles take everyone
         assertEquals(listOf("a", "c"), ids(parties, PartyListFilter(roles = mutableListOf("dps"))).sorted())
     }
