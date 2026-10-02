@@ -9,6 +9,7 @@ import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.p
 import net.sbo.guilib.core.dsl.scroll
 import net.sbo.guilib.core.dsl.segmented
+import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.sortableList
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
@@ -24,7 +25,9 @@ internal data class SettingsProps(
     val target: PartyTarget?,
     val favorites: List<String>,
     val onFavorites: (List<String>) -> Unit,
-    val onStatsReloaded: () -> Unit
+    val onStatsReloaded: () -> Unit,
+    val font: String,
+    val onFont: (String) -> Unit
 )
 
 /** Party finder settings inside the window, independent of the config menu. */
@@ -73,6 +76,16 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 option("0", "Off")
                 option("30", "30 s")
                 option("60", "60 s")
+            }
+        }
+
+        h3(className = "pf-section") { +"Look" }
+        settingRow(
+            "Font",
+            "The font of the party finder window. Minecraft looks like the game, the others are easier to read."
+        ) {
+            select(value = props.font, onChange = { e -> props.onFont(e.value) }) {
+                PartyFinderGui.FONTS.forEach { (id, label) -> option(id, label) }
             }
         }
 
