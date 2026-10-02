@@ -11,15 +11,18 @@ data class PartyListFilter(
     var options: MutableMap<String, String> = mutableMapOf(),
     // Roles the player wants to play, empty means all
     var roles: MutableList<String> = mutableListOf(),
+    // Stat id to the least the party has to ask for (number, rarity or "true"), missing means all
+    var reqs: MutableMap<String, String> = mutableMapOf(),
     var sort: String = SORT_DEFAULT
 ) {
     /** Filters set in the filter dialog (not the quick filters and not the sorting). */
     fun dialogCount(): Int =
-        listOf(sizes.isNotEmpty(), minFreeSlots > 0, options.isNotEmpty(), roles.isNotEmpty()).count { it }
+        listOf(sizes.isNotEmpty(), minFreeSlots > 0, options.isNotEmpty(), roles.isNotEmpty()).count { it } + reqs.size
 
     /** A copy with its own collections, so state changes never touch the saved config. */
     fun edited(block: PartyListFilter.() -> Unit): PartyListFilter =
-        copy(sizes = sizes.toMutableList(), options = options.toMutableMap(), roles = roles.toMutableList()).apply(block)
+        copy(sizes = sizes.toMutableList(), options = options.toMutableMap(), roles = roles.toMutableList(), reqs = reqs.toMutableMap())
+            .apply(block)
 
     companion object {
         // Longest waiting first, so queuing again never moves a party up

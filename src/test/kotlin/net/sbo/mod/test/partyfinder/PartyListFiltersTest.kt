@@ -96,4 +96,29 @@ class PartyListFiltersTest {
         // The own party ignores filters
         assertEquals(listOf("me"), ids(parties, PartyListFilter(minFreeSlots = 5), myId = "me"))
     }
+
+    @Test
+    fun filtersByWhatPartiesAskFor() {
+        fun asking(id: String, vararg reqs: Pair<String, kotlinx.serialization.json.JsonElement>) =
+            party(id).copy(reqs = reqs.toMap())
+        val diana = PartyCategories.target("diana")!!
+        val parties = listOf(
+            asking("high", "tracking" to JsonPrimitive(50), "griffin" to JsonPrimitive("MYTHIC")),
+            asking("low", "tracking" to JsonPrimitive(20), "griffin" to JsonPrimitive("RARE")),
+            asking("none")
+        )
+        fun dianaIds(filter: PartyListFilter) = PartyListFilters.apply(parties, filter, diana, null, null).map { it.id }
+        assertEquals(listOf("high", "low"), dianaIds(PartyListFilter(reqs = mutableMapOf("tracking" to "20"))))
+        assertEquals(listOf("high"), dianaIds(PartyListFilter(reqs = mutableMapOf("tracking" to "40"))))
+        assertEquals(listOf("high"), dianaIds(PartyListFilter(reqs = mutableMapOf("griffin" to "LEGENDARY"))))
+        assertEquals(listOf("high", "low", "none"), dianaIds(PartyListFilter()))
+        // Item lists are not offered
+        assertEquals(listOf("tracking", "griffin", "dianaKills", "sbLevel", "magicalPower", "bph"), PartyListFilters.filterableReqs(diana).map { it.stat })
+        assertEquals(false, PartyListFilters.filterableReqs(PartyCategories.target("kuudra", "infernal")!!).any { it.type == "anyOf" })
+
+        val bacte = PartyCategories.target("rift", "bacte")!!
+        val rift = listOf(asking("charm", "livingTimecharm" to JsonPrimitive(true)), asking("free"))
+        assertEquals(listOf("charm"), PartyListFilters.apply(rift, PartyListFilter(reqs = mutableMapOf("livingTimecharm" to "true")), bacte, null, null).map { it.id })
+        assertEquals(1, PartyListFilter(reqs = mutableMapOf("livingTimecharm" to "true")).dialogCount())
+    }
 }

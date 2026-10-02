@@ -1,12 +1,16 @@
 package net.sbo.mod.partyfinder
 
+import kotlinx.serialization.json.JsonPrimitive
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyOption
 import net.sbo.mod.partyfinder.api.PartyView
+import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 
 /** Applies the party list filters and sorting. The own party always stays on top. */
 object PartyListFilters {
+    private val REQ_TYPES = setOf("min", "rarity", "flag")
+
     fun apply(
         parties: List<PartyView>,
         filter: PartyListFilter,
@@ -31,6 +35,15 @@ object PartyListFilters {
     /** Party fields the filter dialog offers. Ironman is left out, "Can I join" checks it against the own account. */
     fun filterableOptions(target: PartyTarget): List<PartyOption> = target.options.filter { it.id != "ironman" }
 
+    /** Requirements the filter dialog offers, item lists are left out. */
+    fun filterableReqs(target: PartyTarget): List<ReqDef> = target.reqs.filter { it.type in REQ_TYPES }
+
+    /** Whether the party asks for at least [wanted]; parties that don't ask for the stat never do. */
+    fun asksAtLeast(party: PartyView, def: ReqDef, wanted: String): Boolean {
+        val need = if (def.type == "min") wanted.toDoubleOrNull()?.let(::JsonPrimitive) ?: return true else JsonPrimitive(wanted)
+        return ReqMatcher.meets(def.type, party.reqs[def.stat], need)
+    }
+
     fun freeSlots(party: PartyView): Int = (party.partySize - party.memberCount).coerceAtLeast(0)
 
     private fun matches(party: PartyView, filter: PartyListFilter, target: PartyTarget, me: MemberView?, query: String): Boolean {
@@ -42,6 +55,11 @@ object PartyListFilters {
         for ((id, wanted) in filter.options) {
             val option = options.firstOrNull { it.id == id } ?: continue
             if ((party.options[id] ?: option.default) != wanted) return false
+        }
+        val reqs = filterableReqs(target)
+        for ((stat, wanted) in filter.reqs) {
+            val def = reqs.firstOrNull { it.stat == stat } ?: continue
+            if (!asksAtLeast(party, def, wanted)) return false
         }
         // Parties without wanted roles take everyone
         if (filter.roles.isNotEmpty() && party.roles.wanted.isNotEmpty() && party.roles.wanted.none { it in filter.roles }) return false

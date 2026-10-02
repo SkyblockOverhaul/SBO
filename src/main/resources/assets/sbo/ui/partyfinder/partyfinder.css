@@ -194,6 +194,8 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-dialog.pf-filter-dialog { width: 300px; max-width: 94vw; }
 .pf-filter-row { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; }
 .pf-filter-row:hover { background-color: var(--card); }
+.pf-filter-section { margin-top: 4px; padding: 3px 4px 0 4px; border-top: 1px solid var(--border); color: #dbdee1; font-weight: bold; }
+.pf-filter-section .pf-hint { font-weight: normal; }
 .pf-filter-label { width: 110px; flex-shrink: 0; color: #dbdee1; }
 .pf-filter-input { flex-grow: 1; min-width: 0; }
 .pf-filter-input .guilib-number { width: 80px; }

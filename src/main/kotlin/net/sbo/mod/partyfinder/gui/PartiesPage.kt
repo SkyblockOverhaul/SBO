@@ -5,6 +5,7 @@ import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.b
 import net.sbo.guilib.core.dsl.button
+import net.sbo.guilib.core.dsl.checkbox
 import net.sbo.guilib.core.dsl.chips
 import net.sbo.guilib.core.dsl.classNames
 import net.sbo.guilib.core.dsl.collapse
@@ -26,6 +27,7 @@ import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.core.event.KeyboardEvent
 import net.sbo.mod.partyfinder.OwnStats
+import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyCheck
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyListFilters
@@ -35,6 +37,7 @@ import net.sbo.mod.partyfinder.ReqMatcher
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.Problem
+import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.chat.Chat
@@ -204,7 +207,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             visible.isEmpty() -> message("No party matches your filters.") {
                 button(onClick = {
                     search = ""
-                    setFilter { canJoin = false; notFull = false; sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear() }
+                    setFilter { canJoin = false; notFull = false; sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); reqs.clear() }
                 }) { +"Clear filters" }
             }
             else -> visible.forEach { party ->
@@ -292,6 +295,14 @@ private fun NodeBuilder.filterDialog(
                     }
                 }
             }
+            val reqs = PartyListFilters.filterableReqs(target)
+            if (reqs.isNotEmpty()) {
+                div(className = "pf-filter-section") {
+                    div { +"Requirements" }
+                    div(className = "pf-hint") { +"Only parties that ask for at least this much. Parties that don't ask for it are hidden." }
+                }
+                reqs.forEach { def -> reqFilterRow(def, filter.reqs[def.stat], setFilter) }
+            }
             if (target.roles.isNotEmpty()) {
                 filterRow("My roles", "Only parties that look for one of these roles. Parties that don't ask for roles take everyone.") {
                     chips(values = filter.roles, onChange = { values -> setFilter { roles = values.toMutableList() } }) {
@@ -310,9 +321,36 @@ private fun NodeBuilder.filterDialog(
         }
         div(className = "pf-dialog-buttons") {
             button(onClick = {
-                setFilter { sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); sort = PartyListFilter.SORT_DEFAULT }
+                setFilter { sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); reqs.clear(); sort = PartyListFilter.SORT_DEFAULT }
             }) { +"Reset filters" }
             button(className = "primary", onClick = { onClose() }) { +"Done" }
+        }
+    }
+}
+
+/** One requirement in the filter dialog; an empty field shows all parties. */
+private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (PartyListFilter.() -> Unit) -> Unit) {
+    val stat = PartyCategories.stat(def.stat)
+    fun save(value: String?) = setFilter { if (value == null) reqs.remove(def.stat) else reqs[def.stat] = value }
+    filterRow(stat?.label ?: def.stat, null, key = "req:${def.stat}") {
+        val labels = stat?.valueLabels.orEmpty()
+        when {
+            def.type == "flag" -> checkbox(checked = wanted == "true", onChange = { e -> save(if (e.checked) "true" else null) }, label = "Party requires it")
+            def.type == "rarity" -> select(value = wanted ?: "", onChange = { e -> save(e.value.ifEmpty { null }) }) {
+                option("", "Show all")
+                ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it)) }
+            }
+            labels.isNotEmpty() -> select(value = wanted ?: "", onChange = { e -> save(e.value.ifEmpty { null }) }) {
+                option("", "Show all")
+                labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex)) }
+            }
+            else -> numberInput(
+                value = wanted?.toDoubleOrNull()?.toInt(),
+                onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) },
+                allowEmpty = true,
+                min = 1,
+                max = stat?.max ?: Int.MAX_VALUE
+            )
         }
     }
 }
