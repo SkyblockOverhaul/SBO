@@ -22,6 +22,13 @@ class PartyFinderMessagesTest {
     }
 
     @Test
+    fun joinCommandFitsTheChatLimit() {
+        // Longest name (16) and the longest role the leader accepts (32); Minecraft allows 256 characters
+        val command = "/msg ${"a".repeat(16)} " + JoinRequest.message("0".repeat(32), "r".repeat(32))
+        assert(command.length <= 256) { "${command.length} characters" }
+    }
+
+    @Test
     fun oldModsHaveNoUuid() {
         // Old mods send a random uuid with dashes
         assertEquals(JoinRequest(null, null), JoinRequest.parse("123e4567-e89b-12d3-a456-426614174000"))
