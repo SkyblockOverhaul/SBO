@@ -343,6 +343,20 @@ tasks.named<ProcessResources>("processResources") {
     filesMatching(expandedFiles) {
         expand(expandProperties)
     }
+
+    if (mcProject == "26.3-fabric") {
+        doLast {
+            // Diana-V2 declares GuiLib but has no consumers yet. Its 26.3 artifact is unpublished.
+            // Keep the existing dependency on older targets; do not substitute an incompatible JAR.
+            val metadata = destinationDir.resolve("fabric.mod.json")
+            @Suppress("UNCHECKED_CAST")
+            val json = groovy.json.JsonSlurper().parse(metadata) as MutableMap<String, Any>
+            @Suppress("UNCHECKED_CAST")
+            val dependencies = json["depends"] as MutableMap<String, Any>
+            dependencies.remove("guilib")
+            metadata.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json)) + "\n")
+        }
+    }
 }
 
 dependencies {
@@ -363,7 +377,9 @@ dependencies {
     implementation(include(libs.elementa.get())!!)
 
     // GuiLib (see settings.gradle.kts for building it from a local checkout). Not used by any code yet.
-    implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
+    if (mcProject != "26.3-fabric") {
+        implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
+    }
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")

@@ -2,6 +2,13 @@
 
 Use the committed Gradle wrapper and a Java 25 JDK. The genuine multiversion target is `:26.3-fabric`; older targets remain part of its source-generation chain. The mod version stays 0.6.0 and the production output is `build/versions/SBO-0.6.0+26.3-fabric.jar`.
 
+This contribution targets the development branch `Diana-V2`. That branch newly
+declares GuiLib 0.4.1 without any source consumers. Its `guilib-26.3-fabric`
+artifact is not published. The 26.3 target therefore omits this unused dependency
+and its generated Fabric requirement; both older targets retain it. No existing
+GUI or feature implementation is removed. A future GuiLib consumer must add a
+genuine compatible library build before making it required on 26.3.
+
 The original publisher repository at `https://maven.azureaaron.net/releases` remains the default for HM API and RenderChest. `-PportDependencyRepository=...` optionally adds a caller-selected Maven repository ahead of that publisher, restricted to the same two modules. Relative paths resolve against the SBO root; absolute paths or file URIs are suitable for an external local repository. No workspace repository is assumed.
 
 ## Preparing RenderChest
