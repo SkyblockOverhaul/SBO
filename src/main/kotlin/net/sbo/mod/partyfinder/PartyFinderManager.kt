@@ -570,7 +570,10 @@ data class JoinRequest(val uuid: String?, val role: String?) {
             )
         }
 
-        fun message(uuid: String, role: String?): String =
-            "[SBO] join party request - id:$uuid" + (role?.let { " role:$it" } ?: "")
+        // Random tail, Hypixel blocks the same message twice in a row
+        fun message(uuid: String, role: String?, nonce: String = randomNonce()): String =
+            "[SBO] join party request - id:$uuid" + (role?.let { " role:$it" } ?: "") + " n:$nonce"
+
+        private fun randomNonce(): String = java.util.UUID.randomUUID().toString().take(6)
     }
 }

@@ -11,9 +11,12 @@ class PartyFinderMessagesTest {
 
     @Test
     fun joinRequestRoundTrip() {
-        val message = JoinRequest.message(uuid, "crowd_control")
-        assertEquals("[SBO] join party request - id:$uuid role:crowd_control", message)
+        val message = JoinRequest.message(uuid, "crowd_control", nonce = "3f9a1c")
+        assertEquals("[SBO] join party request - id:$uuid role:crowd_control n:3f9a1c", message)
         assertEquals(JoinRequest(uuid, "crowd_control"), JoinRequest.parse(message.substringAfter("id:")))
+        // Two requests never send the same text
+        assert(JoinRequest.message(uuid, null) != JoinRequest.message(uuid, null))
+        assertEquals(JoinRequest(uuid, null), JoinRequest.parse(JoinRequest.message(uuid, null).substringAfter("id:")))
         assertEquals(JoinRequest(uuid, null), JoinRequest.parse("$uuid§r"))
         assertEquals(JoinRequest(uuid, "dps"), JoinRequest.parse("${uuid.uppercase()} role:dps§r"))
     }
