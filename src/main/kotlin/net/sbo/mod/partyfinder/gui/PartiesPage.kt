@@ -192,7 +192,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         }
     }
 
-    scroll(className = "pf-list") {
+    scroll(className = "pf-list guilib-autohide") {
         when {
             parties == null && error != null -> message("Could not load the parties. $error")
             parties == null -> message("Loading parties...")

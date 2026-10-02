@@ -151,7 +151,7 @@ object PartyFinderGui {
 
                 div(className = "pf-body") {
                     aside(className = "pf-sidebar") {
-                        scroll(className = "pf-side-scroll") {
+                        scroll(className = "pf-side-scroll guilib-autohide") {
                             div(className = "pf-side-title") { +"Favorites" }
                             if (favorites.isEmpty()) {
                                 p(className = "pf-hint") { +"Click a star to pin a party type here." }

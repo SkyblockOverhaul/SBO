@@ -79,7 +79,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         toast.info("Creating your party, this takes a few seconds...")
     }
 
-    scroll(className = "pf-form") {
+    scroll(className = "pf-form guilib-autohide") {
         val opensAt = target.opensAt
         if (!target.open && target.createOpen && opensAt != null) {
             div(className = "pf-banner") { +"This event starts in ${until(opensAt)}. You can already list your party." }

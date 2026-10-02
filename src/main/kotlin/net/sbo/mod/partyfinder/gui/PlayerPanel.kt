@@ -32,7 +32,7 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
         div(className = "pf-panel-sub") {
             +(if (member.uuid == party.id) "Leader, ${target.label}" else target.label)
         }
-        scroll(className = "pf-panel-stats") {
+        scroll(className = "pf-panel-stats guilib-autohide") {
             (target.reqs.map { it.stat } + target.display).distinct().forEach { id ->
                 val value = member.stats[id]
                 val def = target.req(id)

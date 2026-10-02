@@ -42,7 +42,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     var reloading by useState(false)
     val toast = useToast()
 
-    scroll(className = "pf-form") {
+    scroll(className = "pf-form guilib-autohide") {
         h3(className = "pf-section") { +"Your party" }
         settingRow(
             "Auto invite",
