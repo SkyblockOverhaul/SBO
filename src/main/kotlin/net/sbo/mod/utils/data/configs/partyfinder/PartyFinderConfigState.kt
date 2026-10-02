@@ -12,6 +12,8 @@ data class PartyFinderConfigState(
     var autoRefreshSeconds: Int = 30,
     // Font id of the party finder window, see PartyFinderGui.FONTS
     var font: String = "inter",
+    // Own GUI scale of the party finder window, null = Minecraft's GUI scale
+    var uiScale: Float? = null,
     // Party list filters per party key
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf()
 ) {

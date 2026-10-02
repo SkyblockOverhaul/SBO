@@ -27,7 +27,9 @@ internal data class SettingsProps(
     val onFavorites: (List<String>) -> Unit,
     val onStatsReloaded: () -> Unit,
     val font: String,
-    val onFont: (String) -> Unit
+    val onFont: (String) -> Unit,
+    val uiScale: Float?,
+    val onScale: (Float?) -> Unit
 )
 
 /** Party finder settings inside the window, independent of the config menu. */
@@ -88,6 +90,14 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 PartyFinderGui.FONTS.forEach { (id, label) -> option(id, label) }
             }
         }
+        settingRow(
+            "Size",
+            "How big the party finder window is. Auto uses your Minecraft GUI scale."
+        ) {
+            select(value = scaleId(props.uiScale), onChange = { e -> props.onScale(e.value.toFloatOrNull()) }, className = "pf-scale-select") {
+                PartyFinderGui.SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Auto" else scaleId(scale)) }
+            }
+        }
 
         h3(className = "pf-section") { +"Favorites" }
         settingRow(
@@ -144,4 +154,11 @@ private fun NodeBuilder.settingRow(title: String, text: String, control: NodeBui
         }
         control()
     }
+}
+
+// "auto", "2" or "2.5"
+private fun scaleId(scale: Float?): String = when {
+    scale == null -> "auto"
+    scale % 1f == 0f -> scale.toInt().toString()
+    else -> scale.toString()
 }

@@ -37,6 +37,9 @@ object PartyFinderGui {
         "jetbrains-mono" to "JetBrains Mono"
     )
 
+    /** Selectable window sizes; null follows the Minecraft GUI scale. */
+    internal val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
+
     /** Opens the window. Must run on the client thread. */
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Party Finder")
@@ -67,6 +70,8 @@ object PartyFinderGui {
         var font by useState(config.font.takeIf { it in FONTS } ?: "inter")
         // On the body, so modals, tooltips and toasts use the font too
         FONTS.keys.forEach { id -> useBodyClass("pf-font-$id", font == id) }
+        var uiScale by useState(config.uiScale?.takeIf { it in SCALES })
+        useScreenScale(uiScale)
         // Ticks so countdowns of closed events stay current
         val clock = useState(System.currentTimeMillis())
         var queued by useState(PartyFinderManager.queuedParty)
@@ -184,11 +189,21 @@ object PartyFinderGui {
                     main(className = "pf-main") {
                         when {
                             page == "settings" -> SettingsPage(
-                                SettingsProps(target, favorites, ::saveFavorites, { reload++ }, font) { id ->
-                                    font = id
-                                    config.font = id
-                                    config.save()
-                                },
+                                SettingsProps(
+                                    target, favorites, ::saveFavorites, { reload++ },
+                                    font = font,
+                                    onFont = { id ->
+                                        font = id
+                                        config.font = id
+                                        config.save()
+                                    },
+                                    uiScale = uiScale,
+                                    onScale = { scale ->
+                                        uiScale = scale
+                                        config.uiScale = scale
+                                        config.save()
+                                    }
+                                ),
                                 key = "settings"
                             )
                             target == null && failed -> message("Could not load the party types from the SBO server.") {
