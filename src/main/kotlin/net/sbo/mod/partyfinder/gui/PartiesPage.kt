@@ -452,14 +452,18 @@ private fun NodeBuilder.memberRow(
         item("Check stats") { checkStats(name) }
         if (manage) {
             separator()
-            // Promoting a moderator would make them the leader, so only for known plain members
-            if (HypixelModApi.partyRole(member.uuid) == "MEMBER") {
-                item("Make moderator") {
-                    HypixelModApi.markModerator(member.uuid)
+            item("Make party leader") { partyCommand("p transfer $name", "Making $name the party leader...") }
+            // Promoting a moderator would make them the leader, so promote only known plain members
+            when (HypixelModApi.partyRole(member.uuid)) {
+                "MEMBER" -> item("Make moderator") {
+                    HypixelModApi.markRole(member.uuid, "MODERATOR")
                     partyCommand("p promote $name", "Making $name a party moderator...")
                 }
+                "MODERATOR" -> item("Remove moderator") {
+                    HypixelModApi.markRole(member.uuid, "MEMBER")
+                    partyCommand("p demote $name", "Making $name a normal member again...")
+                }
             }
-            item("Make party leader") { partyCommand("p transfer $name", "Making $name the party leader...") }
             item("Kick from party", danger = true) { partyCommand("p kick $name", "Kicking $name from the party...") }
         }
     }, className = "pf-member-anchor", key = member.uuid) {

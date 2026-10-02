@@ -99,9 +99,9 @@ object HypixelModApi {
     /** LEADER, MODERATOR or MEMBER from the last party packet, null when unknown. */
     fun partyRole(uuid: String): String? = partyRoles[uuid.replace("-", "")]
 
-    /** After a promote, until the next party packet confirms it. */
-    fun markModerator(uuid: String) {
-        partyRoles = partyRoles + (uuid.replace("-", "") to "MODERATOR")
+    /** After a promote or demote, until the next party packet confirms it. */
+    fun markRole(uuid: String, role: String) {
+        partyRoles = partyRoles + (uuid.replace("-", "") to role)
     }
 
     fun onPartyInfo(listener: (isInParty: Boolean, isLeader: Boolean, members: List<String>) -> Unit) {
