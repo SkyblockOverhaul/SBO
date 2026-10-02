@@ -15,6 +15,22 @@ import java.util.Locale
 
 /** Turns requirement problems and stat values into short English texts for chat and GUI. */
 object ProblemText {
+    private const val RELOAD = "/sboreloadstats"
+    private val API_NAMES = mapOf("inventory" to "Inventory API", "vault" to "Vault API", "skills" to "Skills API")
+
+    /** Player's own stats look wrong. */
+    const val OWN_RELOAD_HINT = "Wrong or old stats? Turn on your Hypixel API settings and type $RELOAD."
+
+    /** Party leader whose members miss requirements. */
+    const val MEMBERS_RELOAD_HINT = "Players who don't meet them should turn on their Hypixel API settings and type $RELOAD."
+
+    /** Tooltip line under every stat from the Hypixel API; [apis] are the API settings it needs. */
+    fun apiHint(apis: List<String>): String {
+        val names = apis.map { API_NAMES[it] ?: it }
+        val where = if (names.isEmpty()) "their Hypixel API settings" else "the ${names.joinToString(" and ")} in their Hypixel settings"
+        return "From the Hypixel API. Wrong or old? The player has to turn on $where and type $RELOAD."
+    }
+
     /** E.g. "Tracking: needs at least 50, has 42". */
     fun describe(problem: Problem, target: PartyTarget?): String = when (problem.stat) {
         "ironman" -> if (problem.need.text() == "only") "this party is only for Ironman players" else "this party is not for Ironman players"

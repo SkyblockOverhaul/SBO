@@ -104,7 +104,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
 
         h3(className = "pf-section") { +"Your stats" }
         p(className = "pf-hint") {
-            +"SBO loads your SkyBlock stats from Hypixel and keeps them for up to 2 days. Reload them after you got new gear or leveled up. Your Hypixel API settings have to be on."
+            +"Reload your stats after you got new gear or leveled up. ${ProblemText.OWN_RELOAD_HINT}"
         }
         val target = props.target
         button(disabled = target == null || reloading, onClick = {

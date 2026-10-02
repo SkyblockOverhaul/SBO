@@ -1,28 +1,28 @@
 {
   "success": true,
   "data": {
-    "version": "60049e763791",
+    "version": "74e43ced364b",
     "stats": [
       {
         "id": "sbLevel",
         "label": "SkyBlock Level",
         "accuracy": "exact",
         "kind": "number",
-        "info": "The player's SkyBlock level. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "The player's SkyBlock level."
       },
       {
         "id": "magicalPower",
         "label": "Magical Power",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Magical Power from the accessory bag, as Hypixel reports it. If Hypixel sends none, SBO calculates it from the accessories. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Magical Power from the accessory bag, as Hypixel reports it. If Hypixel sends none, SBO calculates it from the accessories."
       },
       {
         "id": "ironman",
         "label": "Ironman",
         "accuracy": "exact",
         "kind": "flag",
-        "info": "Whether the player plays an Ironman profile. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Whether the player plays an Ironman profile."
       },
       {
         "id": "tracking",
@@ -30,21 +30,24 @@
         "accuracy": "minimum",
         "kind": "number",
         "unverifiedUpTo": 19,
-        "info": "Tracking raises the chance for rare Diana mobs. SBO adds up what the Hypixel API shows: Golden Fleece, attributes, Mythic Griffin, Elusive Hunter, Enderman Slayer 9, Future Calories and Century Cake. Brain Food, Mason Jar, Diana's Bookshelf, Beacon and the Carnival perk are invisible, so the real value can be up to 19 higher. Mayor bonuses are not counted. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Tracking raises the chance for rare Diana mobs. SBO adds up what the Hypixel API shows: Golden Fleece, attributes, Mythic Griffin, Elusive Hunter, Enderman Slayer 9, Future Calories and Century Cake. Brain Food, Mason Jar, Diana's Bookshelf, Beacon and the Carnival perk are invisible, so the real value can be up to 19 higher. Mayor bonuses are not counted.",
+        "apis": [
+          "inventory"
+        ]
       },
       {
         "id": "griffin",
         "label": "Griffin Pet",
         "accuracy": "exact",
         "kind": "rarity",
-        "info": "Rarity of the best Griffin pet the player owns. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Rarity of the best Griffin pet the player owns."
       },
       {
         "id": "dianaKills",
         "label": "Diana Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Mythological creatures killed on this profile. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Mythological creatures killed on this profile."
       },
       {
         "id": "bph",
@@ -58,49 +61,63 @@
         "label": "Leaderboard Rank",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Place on the SBO Diana kills leaderboard (best profile counts). From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Place on the SBO Diana kills leaderboard (best profile counts)."
       },
       {
         "id": "enrichments",
         "label": "Enrichments",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many accessories have an enrichment. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many accessories have an enrichment.",
+        "apis": [
+          "inventory"
+        ]
       },
       {
         "id": "fishingLevel",
         "label": "Fishing Level",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Fishing Level of this player. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own. Shows 0 when the Skills API is off."
+        "info": "Fishing Level of this player.",
+        "apis": [
+          "skills"
+        ]
       },
       {
         "id": "seaCreatureKills",
         "label": "Sea Creature Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "All sea creatures this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "All sea creatures this player has killed."
       },
       {
         "id": "fishingPet",
         "label": "Fishing Pet",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Fishing pets the player owns. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Fishing pets the player owns."
       },
       {
         "id": "fishingArmor",
         "label": "Fishing Armor",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Fishing armor sets the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Fishing armor sets the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       },
       {
         "id": "fishingRod",
         "label": "Fishing Rod",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Fishing rods the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Fishing rods the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       },
       {
         "id": "trophyFisher",
@@ -114,252 +131,279 @@
           "Expert",
           "Master"
         ],
-        "info": "Highest Trophy Fisher title from Odger (Novice, Adept, Expert, Master). Lord Jawbus needs Adept. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Highest Trophy Fisher title from Odger (Novice, Adept, Expert, Master). Lord Jawbus needs Adept."
       },
       {
         "id": "jawbusKills",
         "label": "Lord Jawbus Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Lord Jawbus this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Lord Jawbus this player has killed."
       },
       {
         "id": "thunderKills",
         "label": "Thunder Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Thunder this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Thunder this player has killed."
       },
       {
         "id": "ragnarokKills",
         "label": "Ragnarok Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Ragnarok this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Ragnarok this player has killed."
       },
       {
         "id": "wikiTikiKills",
         "label": "Wiki Tiki Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Wiki Tiki this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Wiki Tiki this player has killed."
       },
       {
         "id": "grimReaperKills",
         "label": "Grim Reaper Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Grim Reapers this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Grim Reapers this player has killed."
       },
       {
         "id": "phantomFisherKills",
         "label": "Phantom Fisher Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Phantom Fishers this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Phantom Fishers this player has killed."
       },
       {
         "id": "reindrakeKills",
         "label": "Reindrake Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Reindrakes this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Reindrakes this player has killed."
       },
       {
         "id": "yetiKills",
         "label": "Yeti Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Yetis this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Yetis this player has killed."
       },
       {
         "id": "sharkKills",
         "label": "Shark Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Sharks killed during Fishing Festivals. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Sharks killed during Fishing Festivals."
       },
       {
         "id": "miningLevel",
         "label": "Mining Level",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Mining Level of this player. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own. Shows 0 when the Skills API is off."
+        "info": "Mining Level of this player.",
+        "apis": [
+          "skills"
+        ]
       },
       {
         "id": "hotmLevel",
         "label": "HotM Level",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Heart of the Mountain tier. Glacite Mineshafts need tier 7. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Heart of the Mountain tier. Glacite Mineshafts need tier 7."
       },
       {
         "id": "mineshaftsEntered",
         "label": "Mineshafts Entered",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Glacite Mineshafts the player has entered. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Glacite Mineshafts the player has entered."
       },
       {
         "id": "vanguardCorpses",
         "label": "Vanguard Corpses",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Vanguard corpses looted in Mineshafts. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Vanguard corpses looted in Mineshafts."
       },
       {
         "id": "miningTool",
         "label": "Pickaxe / Drill",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Mining tools the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Mining tools the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       },
       {
         "id": "miningPet",
         "label": "Mining Pet",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Mining pets the player owns. Glacite Golem and Scatha count from level 100. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Mining pets the player owns. Glacite Golem and Scatha count from level 100."
       },
       {
         "id": "scathaKills",
         "label": "Scatha Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Scathas this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Scathas this player has killed."
       },
       {
         "id": "kuudraCompletions",
         "label": "Kuudra Completions",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Kuudra runs finished in the tier of this party. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Kuudra runs finished in the tier of this party."
       },
       {
         "id": "kuudraCompletionsAll",
         "label": "Kuudra Completions per Tier",
         "accuracy": "exact",
         "kind": "breakdown",
-        "info": "Kuudra runs finished in every tier. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Kuudra runs finished in every tier."
       },
       {
         "id": "kuudraWeapon",
         "label": "Kuudra Weapon",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Kuudra weapons the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Kuudra weapons the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       },
       {
         "id": "kuudraArmor",
         "label": "Kuudra Armor",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Kuudra armor sets with their best tier (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Kuudra armor sets with their best tier (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       },
       {
         "id": "kuudraPet",
         "label": "Kuudra Pet",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Pets used in Kuudra that the player owns. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Pets used in Kuudra that the player owns."
       },
       {
         "id": "chimeraLevel",
         "label": "Chimera on Ragnarock",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Highest Chimera enchantment level on a Ragnarock Axe. Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Highest Chimera enchantment level on a Ragnarock Axe. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       },
       {
         "id": "vanquisherKills",
         "label": "Vanquisher Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How many Vanquishers this player has killed. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How many Vanquishers this player has killed."
       },
       {
         "id": "kuudraPetRarity",
         "label": "Kuudra Pet",
         "accuracy": "exact",
         "kind": "rarity",
-        "info": "Rarity of the best Kuudra pet, it raises the Vanquisher spawn chance. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Rarity of the best Kuudra pet, it raises the Vanquisher spawn chance."
       },
       {
         "id": "crimsonSerendipity",
         "label": "Crimson Serendipity",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Level of the Crimson Serendipity attribute (0 to 10), it raises the Vanquisher spawn chance. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Level of the Crimson Serendipity attribute (0 to 10), it raises the Vanquisher spawn chance."
       },
       {
         "id": "witherPiper",
         "label": "Wither Piper",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Level of the Wither Piper perk from the Crimson Isle, it raises the Vanquisher spawn chance. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Level of the Wither Piper perk from the Crimson Isle, it raises the Vanquisher spawn chance."
       },
       {
         "id": "bacteKills",
         "label": "Bacte Kills",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How often the player has defeated Bacte in the Rift. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How often the player has defeated Bacte in the Rift."
       },
       {
         "id": "timecharms",
         "label": "Timecharms",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Rift Timecharms the player has collected (up to 8). From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Rift Timecharms the player has collected (up to 8)."
       },
       {
         "id": "livingTimecharm",
         "label": "Living Timecharm",
         "accuracy": "exact",
         "kind": "flag",
-        "info": "Whether the player has the Living Timecharm, needed to fight Bacte. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Whether the player has the Living Timecharm, needed to fight Bacte."
       },
       {
         "id": "enigmaSouls",
         "label": "Enigma Souls",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Enigma Souls found in the Rift. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Enigma Souls found in the Rift."
       },
       {
         "id": "slayerLevel",
         "label": "Slayer Level",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Slayer level for the boss of this party. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Slayer level for the boss of this party."
       },
       {
         "id": "slayerHighestTier",
         "label": "Highest Tier Killed",
         "accuracy": "exact",
         "kind": "number",
-        "info": "Highest tier of this slayer boss the player has killed (1 to 5). From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Highest tier of this slayer boss the player has killed (1 to 5)."
       },
       {
         "id": "slayerTierKills",
         "label": "Kills in this Tier",
         "accuracy": "exact",
         "kind": "number",
-        "info": "How often the player has killed the boss in the tier this party plays. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "How often the player has killed the boss in the tier this party plays."
       },
       {
         "id": "slayerWeapon",
         "label": "Slayer Weapon",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Weapons for this slayer boss the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Weapons for this slayer boss the player owns. Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       },
       {
         "id": "slayerArmor",
         "label": "Slayer Armor",
         "accuracy": "exact",
         "kind": "items",
-        "info": "Armor sets for this slayer boss the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault. Needs the Inventory API turned on. From the Hypixel API, can be up to 2 days old. Type /sboreloadstats to refresh your own."
+        "info": "Armor sets for this slayer boss the player owns (chestplate and leggings count as the set). Found in inventory, wardrobe, ender chest, backpacks or vault.",
+        "apis": [
+          "inventory",
+          "vault"
+        ]
       }
     ],
     "categories": [
@@ -729,7 +773,7 @@
             ],
             "event": "spooky",
             "open": false,
-            "opensAt": 1790912100000
+            "opensAt": 1791358500000
           },
           {
             "id": "winter",

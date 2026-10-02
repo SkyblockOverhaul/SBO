@@ -79,7 +79,7 @@ internal object StatView {
         }
         "reported" -> "Estimated: sent by the player's own SBO mod, Hypixel can not confirm it."
         "calculated" -> "Calculated by SBO, can differ a little from the game."
-        else -> "Exact value from the Hypixel API."
+        else -> "Exact value."
     }
 }
 
@@ -101,6 +101,7 @@ internal fun NodeBuilder.statInfo(statId: String, own: MemberView? = null) {
     if (stat != null) {
         if (stat.info.isNotBlank()) div(className = "pf-tip-text") { +stat.info }
         div(className = classNames("pf-tip-accuracy", "estimated" to (stat.accuracy != "exact"))) { +StatView.accuracyText(stat) }
+        if (stat.accuracy != "reported") div(className = "pf-tip-api") { +ProblemText.apiHint(stat.apis) }
     }
     if (own != null) div(className = "pf-tip-own") { +"You: ${StatView.value(statId, own.stats[statId])}" }
 }

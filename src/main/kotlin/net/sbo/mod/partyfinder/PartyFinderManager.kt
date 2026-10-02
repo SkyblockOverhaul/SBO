@@ -328,15 +328,12 @@ object PartyFinderManager {
         if (gui != null) {
             val target = draft?.let { PartyCategories.target(it.partyType, it.subType) }
             val details = error.problems.joinToString("") { "\n${it.name}: ${ProblemText.describe(it, target)}" }
-            val tip = if (error.code == PfError.REQS_NOT_MET) "\nPlayers who don't meet them should turn their API on and type /sboreloadstats." else ""
+            val tip = if (error.code == PfError.REQS_NOT_MET) "\n${ProblemText.MEMBERS_RELOAD_HINT}" else ""
             gui(false, "Failed to $action: ${ProblemText.error(error)}$details$tip")
             return
         }
         Chat.chat("§6[SBO] §4Failed to $action: ${ProblemText.error(error)}")
         printProblems(error.problems)
-        if (error.code == PfError.REQS_NOT_MET) {
-            Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.", true)
-        }
     }
 
     private fun printProblems(problems: List<Problem>) {
@@ -441,12 +438,11 @@ object PartyFinderManager {
                 val gui = listener
                 if (gui != null) {
                     gui(false, "You don't meet the requirements: " + problems.joinToString("; ") { ProblemText.describe(it, target) } +
-                        "\nIf you think this is wrong, turn your API on and type /sboreloadstats.")
+                        "\n${ProblemText.OWN_RELOAD_HINT}")
                     return@get
                 }
                 Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party:")
                 problems.forEach { Chat.chat("§7• §c${ProblemText.describe(it, target)}") }
-                Chat.chat("§6[SBO] §eEnsure all your APIs are on and run /sboreloadstats to resync if you think this is an error.")
                 return@get
             }
             tell("§6[SBO] §eSending join request to $leaderName...", true)

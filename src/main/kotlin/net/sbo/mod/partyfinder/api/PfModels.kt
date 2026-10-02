@@ -57,7 +57,9 @@ data class StatDef(
     /** number, flag, rarity, items or breakdown */
     val kind: String = "number",
     val unverifiedUpTo: Double? = null,
-    val valueLabels: List<String> = emptyList()
+    val valueLabels: List<String> = emptyList(),
+    /** Hypixel API settings the value needs, e.g. inventory */
+    val apis: List<String> = emptyList()
 )
 
 @Serializable
