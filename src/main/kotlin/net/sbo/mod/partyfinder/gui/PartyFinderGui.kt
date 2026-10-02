@@ -95,6 +95,7 @@ object PartyFinderGui {
         var own by useState<MemberView?>(null)
         var ownError by useState<String?>(null)
         var reload by useState(0)
+        var inspected by useState<InspectedPlayer?>(null)
         // Ticks so countdowns of closed events stay current
         val clock = useState(System.currentTimeMillis())
         var queued by useState(PartyFinderManager.queuedParty)
@@ -131,6 +132,9 @@ object PartyFinderGui {
             }
         }
 
+        // The panel belongs to one party type
+        useEffect(target?.key) { inspected = null }
+
         fun saveFavorites(next: List<String>) {
             favorites = next
             config.favorites = next.toMutableList()
@@ -144,89 +148,100 @@ object PartyFinderGui {
             if (page == "settings") page = "parties"
         }
 
-        div(className = "pf-window") {
-            header(className = "pf-header") {
-                span(className = "pf-title") { +"Party Finder" }
-                tabs(value = page, onChange = { page = it }, className = "pf-nav") {
-                    tab("parties", "Parties")
-                    tab("create", if (inQueue) "Edit Party" else "Create Party")
-                    tab("settings", "Settings")
-                }
-                div(className = "pf-spacer")
-                val mine = queued
-                if (inQueue && mine != null) {
-                    val label = PartyCategories.target(mine.partyType, mine.subType)?.label ?: mine.partyType
-                    div(className = "pf-queue", title = "Your party is listed, players can ask to join") {
-                        span(className = "pf-queue-text", onClick = { select("${mine.partyType}/${mine.subType}") }) {
-                            +"Your party: $label ${mine.memberCount}/${mine.partySize}"
-                        }
-                        button(className = "pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
+        val panel = inspected?.takeIf { page == "parties" && target != null }
+        // Window and panel are centered together, so the window moves left when the panel opens
+        div(className = classNames("pf-stage", "with-panel" to (panel != null))) {
+            div(className = "pf-window") {
+                header(className = "pf-header") {
+                    span(className = "pf-title") { +"Party Finder" }
+                    tabs(value = page, onChange = { page = it }, className = "pf-nav") {
+                        tab("parties", "Parties")
+                        tab("create", if (inQueue) "Edit Party" else "Create Party")
+                        tab("settings", "Settings")
                     }
+                    div(className = "pf-spacer")
+                    val mine = queued
+                    if (inQueue && mine != null) {
+                        val label = PartyCategories.target(mine.partyType, mine.subType)?.label ?: mine.partyType
+                        div(className = "pf-queue", title = "Your party is listed, players can ask to join") {
+                            span(className = "pf-queue-text", onClick = { select("${mine.partyType}/${mine.subType}") }) {
+                                +"Your party: $label ${mine.memberCount}/${mine.partySize}"
+                            }
+                            button(className = "pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
+                        }
+                    }
+                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
                 }
-                button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
-            }
 
-            div(className = "pf-body") {
-                aside(className = "pf-sidebar") {
-                    scroll(className = "pf-side-scroll") {
-                        div(className = "pf-side-title") { +"Favorites" }
-                        if (favorites.isEmpty()) {
-                            p(className = "pf-hint") { +"Click a star to pin a party type here." }
-                        } else {
-                            sortableList(favorites, key = { it }, onReorder = { saveFavorites(it) }, className = "pf-fav-list") { key, _ ->
-                                val fav = if (data != null) targetOf(key) else null
+                div(className = "pf-body") {
+                    aside(className = "pf-sidebar") {
+                        scroll(className = "pf-side-scroll") {
+                            div(className = "pf-side-title") { +"Favorites" }
+                            if (favorites.isEmpty()) {
+                                p(className = "pf-hint") { +"Click a star to pin a party type here." }
+                            } else {
+                                sortableList(favorites, key = { it }, onReorder = { saveFavorites(it) }, className = "pf-fav-list") { key, _ ->
+                                    val fav = if (data != null) targetOf(key) else null
+                                    sideItem(
+                                        label = when {
+                                            fav == null -> key
+                                            '/' in key -> fav.label
+                                            else -> fav.category.label
+                                        },
+                                        active = fav != null && fav.key == target?.key,
+                                        favorite = true,
+                                        onSelect = { select(key) },
+                                        onStar = { toggleFavorite(key) }
+                                    )
+                                }
+                            }
+                            div(className = "pf-side-title") { +"Party Types" }
+                            data?.categories?.forEach { category ->
                                 sideItem(
-                                    label = when {
-                                        fav == null -> key
-                                        '/' in key -> fav.label
-                                        else -> fav.category.label
-                                    },
-                                    active = fav != null && fav.key == target?.key,
-                                    favorite = true,
-                                    onSelect = { select(key) },
-                                    onStar = { toggleFavorite(key) }
+                                    label = category.label,
+                                    active = target?.partyType == category.id,
+                                    favorite = category.id in favorites,
+                                    onSelect = { select(category.id) },
+                                    onStar = { toggleFavorite(category.id) },
+                                    key = category.id,
+                                    id = "pf-cat-${category.id}"
                                 )
                             }
                         }
-                        div(className = "pf-side-title") { +"Party Types" }
-                        data?.categories?.forEach { category ->
-                            sideItem(
-                                label = category.label,
-                                active = target?.partyType == category.id,
-                                favorite = category.id in favorites,
-                                onSelect = { select(category.id) },
-                                onStar = { toggleFavorite(category.id) },
-                                key = category.id,
-                                id = "pf-cat-${category.id}"
-                            )
-                        }
                     }
-                }
 
-                main(className = "pf-main") {
-                    when {
-                        page == "settings" -> SettingsPage(
-                            SettingsProps(target, favorites, ::saveFavorites, { reload++ }, config.font) { font -> changeFont(font, page, selected) },
-                            key = "settings"
-                        )
-                        target == null && failed -> message("Could not load the party types from the SBO server.") {
-                            button(onClick = {
-                                failed = false
-                                PartyCategories.get(force = true) { loaded -> if (loaded == null) failed = true else data = loaded }
-                            }) { +"Try again" }
-                        }
-                        target == null -> message("Loading party types...")
-                        else -> {
-                            toolbar(target, favorites, onSub = { select(it) }, onStar = { toggleFavorite(it) })
-                            if (page == "create") {
-                                CreatePage(CreateProps(target, own, inQueue), key = "create:${target.key}")
-                            } else {
-                                PartiesPage(PartiesProps(target, own, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" }), key = "list")
+                    main(className = "pf-main") {
+                        when {
+                            page == "settings" -> SettingsPage(
+                                SettingsProps(target, favorites, ::saveFavorites, { reload++ }, config.font) { font -> changeFont(font, page, selected) },
+                                key = "settings"
+                            )
+                            target == null && failed -> message("Could not load the party types from the SBO server.") {
+                                button(onClick = {
+                                    failed = false
+                                    PartyCategories.get(force = true) { loaded -> if (loaded == null) failed = true else data = loaded }
+                                }) { +"Try again" }
+                            }
+                            target == null -> message("Loading party types...")
+                            else -> {
+                                toolbar(target, favorites, onSub = { select(it) }, onStar = { toggleFavorite(it) })
+                                if (page == "create") {
+                                    CreatePage(CreateProps(target, own, inQueue), key = "create:${target.key}")
+                                } else {
+                                    PartiesPage(
+                                        PartiesProps(
+                                            target, own, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
+                                            inspected = inspected?.member?.uuid, onInspect = { inspected = it }
+                                        ),
+                                        key = "list"
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+            if (panel != null && target != null) playerPanel(panel, target, own) { inspected = null }
         }
     }
 

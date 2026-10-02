@@ -35,6 +35,42 @@ body {
 }
 @keyframes pf-fade { from { opacity: 0; transform: translateY(6px); } }
 
+/* ---- player panel right of the window ---- */
+.pf-stage { position: relative; display: flex; align-items: stretch; gap: 4px; }
+.pf-stage.with-panel .pf-window { width: min(calc(94vw - 154px), 620px); }
+.pf-panel {
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+    height: min(92vh, 420px);
+    padding: 5px 4px 4px 6px;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    animation: pf-slide 150ms ease-out;
+}
+@keyframes pf-slide { from { opacity: 0; transform: translateX(-6px); } }
+.pf-panel-head { display: flex; align-items: center; gap: 3px; }
+.pf-panel-name { flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #ffffff; }
+.pf-panel-sub { margin: 1px 0 3px 0; color: var(--muted); font-size: 7px; }
+.pf-panel-stats { flex-grow: 1; min-height: 0; padding-right: 3px; }
+.pf-panel-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    column-gap: 4px;
+    padding: 2px 0;
+    border-bottom: 1px solid var(--card);
+    font-size: 7px;
+}
+.pf-panel-value { color: #ffffff; text-align: right; }
+.pf-panel-value.estimated { color: var(--estimated); }
+.pf-panel-value.missing { color: var(--muted); }
+.pf-panel-value.ok { color: var(--ok); }
+.pf-panel-value.bad { color: var(--bad); }
+.pf-panel-need { width: 100%; color: var(--muted); font-size: 6px; }
+
 /* ---- header ---- */
 .pf-header {
     display: flex;
@@ -197,7 +233,9 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 .pf-roles { margin-top: 2px; color: var(--muted); font-size: 7px; }
 
 .pf-members { margin-top: 4px; padding-top: 3px; border-top: 1px solid var(--border); cursor: default; }
-.pf-member { padding: 2px 0; }
+.pf-member { padding: 2px 3px; border-radius: 3px; cursor: pointer; }
+.pf-member:hover { background-color: var(--panel-2); }
+.pf-member.inspected { background-color: rgba(0, 110, 250, 0.18); }
 .pf-member-name { color: #ffffff; }
 .pf-member-role { color: var(--muted); font-size: 7px; }
 .pf-member-stats { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 1px; }
@@ -265,6 +303,9 @@ button.primary:disabled { background-color: #4e5058; border-color: #4e5058; colo
 /* ---- small windows ---- */
 @media (max-width: 520px) {
     .pf-sidebar { width: 80px; }
+    /* Too narrow for both: the panel covers the right part of the window */
+    .pf-stage.with-panel .pf-window { width: 94vw; }
+    .pf-panel { position: absolute; top: 0; right: 0; bottom: 0; height: auto; box-shadow: 0 0 12px rgba(0, 0, 0, 0.6); }
     .pf-field { grid-template-columns: 100px minmax(0, 1fr); }
     .pf-own { grid-column: 2; text-align: left; }
 }

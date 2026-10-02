@@ -47,7 +47,10 @@ internal data class PartiesProps(
     val reload: Int,
     val queuedAt: Long,
     val inQueue: Boolean,
-    val onEdit: () -> Unit
+    val onEdit: () -> Unit,
+    // Uuid of the player shown in the side panel
+    val inspected: String?,
+    val onInspect: (InspectedPlayer) -> Unit
 )
 
 /** The parties of one party type with filters, details, the right click menu and joining. */
@@ -209,6 +212,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     onJoin = { join(party) },
                     onHide = { hidden = hidden + party.id },
                     onEdit = props.onEdit,
+                    inspected = props.inspected,
+                    onInspect = props.onInspect,
                     copy = ::copy,
                     checkStats = { name ->
                         PartyCheck.checkPlayer(name)
@@ -219,7 +224,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         }
         if (visible.isNotEmpty()) {
             div(className = "pf-legend") {
-                +"Green: you meet it, red: you don't. A + means at least this much, a ~ means estimated. Hover a value for details. Right click a party or player for more."
+                +"Green: you meet it, red: you don't. A + means at least this much, a ~ means estimated. Hover a value for details, click a player for all stats. Right click a party or player for more."
             }
         }
     }
@@ -324,6 +329,8 @@ private fun NodeBuilder.partyCard(
     onJoin: () -> Unit,
     onHide: () -> Unit,
     onEdit: () -> Unit,
+    inspected: String?,
+    onInspect: (InspectedPlayer) -> Unit,
     copy: (String, String) -> Unit,
     checkStats: (String) -> Unit
 ) {
@@ -389,7 +396,9 @@ private fun NodeBuilder.partyCard(
                 // Clicks on players keep the card open
                 div(className = "pf-members", onClick = { e -> e.stopPropagation() }) {
                     val statIds = (target.reqs.map { it.stat }.filter { party.reqs[it] != null } + target.display).distinct()
-                    party.members.forEach { member -> memberRow(member, party, target, statIds, copy, checkStats) }
+                    party.members.forEach { member ->
+                        memberRow(member, party, target, statIds, member.uuid == inspected, { onInspect(InspectedPlayer(member, party)) }, copy, checkStats)
+                    }
                 }
             }
         }
@@ -416,16 +425,19 @@ private fun NodeBuilder.memberRow(
     party: PartyView,
     target: PartyTarget,
     statIds: List<String>,
+    inspected: Boolean,
+    onInspect: () -> Unit,
     copy: (String, String) -> Unit,
     checkStats: (String) -> Unit
 ) {
     val name = member.name.ifBlank { "Unknown" }
     contextMenu(menu = {
         header(name)
+        item("Show all stats") { onInspect() }
         item("Copy name") { copy(name, "Name") }
         item("Check stats") { checkStats(name) }
     }, className = "pf-member-anchor", key = member.uuid) {
-        div(className = "pf-member") {
+        div(className = classNames("pf-member", "inspected" to inspected), onClick = { onInspect() }) {
             span(className = "pf-member-name") {
                 playerHead(uuidOf(member.uuid), className = "pf-head")
                 +name
@@ -452,5 +464,5 @@ private fun NodeBuilder.memberRow(
 }
 
 // Backend uuids have no dashes
-private fun uuidOf(id: String): Any =
+internal fun uuidOf(id: String): Any =
     runCatching { UUID.fromString(id.replace(Regex("(.{8})(.{4})(.{4})(.{4})(.{12})"), "$1-$2-$3-$4-$5")) }.getOrDefault(id)
