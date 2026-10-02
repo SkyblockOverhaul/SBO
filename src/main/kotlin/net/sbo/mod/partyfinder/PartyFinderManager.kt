@@ -30,7 +30,9 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object PartyFinderManager {
-    private const val NOTE_MAX_LENGTH = 100
+    const val NOTE_MAX_LENGTH = 100
+    // The party list shows two lines of a note
+    const val NOTE_MAX_LINES = 2
     private val JOIN_REQUEST_COOLDOWN = TimeUnit.MINUTES.toNanos(1)
 
     var creatingParty = false
@@ -559,9 +561,15 @@ object PartyFinderManager {
 
     /** Same filter as the backend: letters, digits, spaces, line breaks and ,.!?-_ */
     fun checkPartyNote(note: String): String {
-        return note.replace(Regex("[^\\p{L}\\p{N}\\s,.!?\\-_]"), "")
+        return limitNoteLines(note.replace(Regex("[^\\p{L}\\p{N}\\s,.!?\\-_]"), ""))
             .take(NOTE_MAX_LENGTH)
             .trim()
+    }
+
+    /** Line breaks after the second line become spaces, like pasting into the note field. */
+    fun limitNoteLines(note: String): String {
+        val lines = note.replace("\r\n", "\n").replace('\r', '\n').split('\n', limit = NOTE_MAX_LINES)
+        return (lines.dropLast(1) + lines.last().replace('\n', ' ')).joinToString("\n")
     }
 }
 

@@ -46,19 +46,19 @@ internal object StatView {
     /** What a requirement asks for, e.g. "50+", "Legendary or better", "Terror Armor (Fiery or better)". */
     fun need(def: ReqDef, need: JsonElement): String = when (def.type) {
         "flag" -> "needed"
-        "rarity" -> "${ProblemText.title((need as? JsonPrimitive)?.contentOrNull ?: "")} or better"
+        "rarity" -> ProblemText.rarityNeed((need as? JsonPrimitive)?.contentOrNull)
         "anyOf" -> ReqMatcher.picks(need).joinToString(if (ReqMatcher.matchesAll(need)) " and " else " or ") { pick ->
             val id = (pick as? JsonObject)?.get("id")?.let { (it as? JsonPrimitive)?.contentOrNull }
                 ?: (pick as? JsonPrimitive)?.contentOrNull ?: "?"
             val label = def.choices.firstOrNull { it.id == id }?.label ?: ProblemText.title(id)
-            val minTier = ((pick as? JsonObject)?.get("minTier") as? JsonPrimitive)?.contentOrNull
-            if (minTier != null) "$label (${ProblemText.title(minTier)} or better)" else label
+            ProblemText.tierPick(label, ((pick as? JsonObject)?.get("minTier") as? JsonPrimitive)?.contentOrNull)
         }
         else -> {
             val number = (need as? JsonPrimitive)?.doubleOrNull
             val labels = PartyCategories.stat(def.stat)?.valueLabels.orEmpty()
             when {
-                number != null && labels.isNotEmpty() -> "${labels.getOrNull(number.toInt()) ?: ProblemText.number(number)} or better"
+                number != null && labels.isNotEmpty() ->
+                    ProblemText.orBetter(labels.getOrNull(number.toInt()) ?: ProblemText.number(number), number.toInt() >= labels.lastIndex)
                 number != null -> "${ProblemText.number(number)}+"
                 else -> ProblemText.value(def.stat, need)
             }

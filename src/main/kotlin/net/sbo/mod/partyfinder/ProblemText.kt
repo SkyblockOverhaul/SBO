@@ -45,7 +45,7 @@ object ProblemText {
             val def = target?.req(problem.stat)
             when (def?.type) {
                 "flag" -> "$label: needed, but missing"
-                "rarity" -> "$label: needs ${rarity(problem.need)} or better, has ${value(problem.stat, problem.have)}"
+                "rarity" -> "$label: needs ${rarityNeed(problem.need.text())}, has ${value(problem.stat, problem.have)}"
                 "anyOf" -> if (ReqMatcher.matchesAll(problem.need)) {
                     "$label: needs all of ${picks(problem.need, def.choices)}, is missing some"
                 } else {
@@ -107,12 +107,27 @@ object ProblemText {
 
     private fun rarity(value: JsonElement): String = value.text()?.let { title(it) } ?: "none"
 
+    /** "Legendary or better", just "Mythic" when nothing is better. */
+    fun orBetter(label: String, top: Boolean): String = if (top) label else "$label or better"
+
+    fun rarityNeed(rarity: String?): String =
+        orBetter(title(rarity ?: ""), ReqMatcher.rarityRank(rarity) == ReqMatcher.RARITIES.lastIndex)
+
+    /** "Terror Armor (Fiery or better)", "Infernal Terror Armor" at the top tier, any tier for Basic. */
+    fun tierPick(label: String, minTier: String?): String {
+        val rank = minTier?.let { ReqMatcher.tierRank(it) } ?: return label
+        return when (rank) {
+            0 -> label
+            ReqMatcher.KUUDRA_TIERS.lastIndex -> "${title(minTier)} $label"
+            else -> "$label (${title(minTier)} or better)"
+        }
+    }
+
     private fun picks(need: JsonElement, choices: List<ItemChoice>): String =
         ReqMatcher.picks(need).joinToString(", ") { pick ->
             val id = (pick as? JsonObject)?.get("id")?.text() ?: pick.text() ?: "?"
             val label = choices.firstOrNull { it.id == id }?.label ?: id
-            val minTier = (pick as? JsonObject)?.get("minTier")?.text()
-            if (minTier != null) "$label (${title(minTier)} or better)" else label
+            tierPick(label, (pick as? JsonObject)?.get("minTier")?.text())
         }
 
     private fun choiceLabel(statId: String, id: String): String =

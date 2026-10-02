@@ -8,6 +8,7 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import net.sbo.mod.partyfinder.PartyCategories
+import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.ReqMatcher
@@ -16,6 +17,7 @@ import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.WantedRoles
+import net.sbo.mod.partyfinder.gui.StatView
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -155,5 +157,23 @@ class PartyFinderLogicTest {
             "Kuudra Armor: needs one of Terror Armor (Fiery or better), has none of them",
             ProblemText.describe(problem, target("kuudra", "basic"))
         )
+    }
+
+    @Test
+    fun topValuesHaveNothingBetter() {
+        val def = target("kuudra", "infernal").req("kuudraArmor")!!
+        fun armor(tier: String) = JsonArray(listOf(buildJsonObject { put("id", "CRIMSON"); put("minTier", tier) }))
+        assertEquals("Infernal Crimson Armor", StatView.need(def, armor("INFERNAL")))
+        assertEquals("Crimson Armor (Fiery or better)", StatView.need(def, armor("FIERY")))
+        assertEquals("Crimson Armor", StatView.need(def, armor("BASIC")))
+        assertEquals("Mythic", ProblemText.rarityNeed("MYTHIC"))
+        assertEquals("Legendary or better", ProblemText.rarityNeed("LEGENDARY"))
+    }
+
+    @Test
+    fun noteKeepsTwoLines() {
+        assertEquals("a\nb c d", PartyFinderManager.limitNoteLines("a\nb\nc\r\nd"))
+        assertEquals("one line", PartyFinderManager.limitNoteLines("one line"))
+        assertEquals("a\nb c", PartyFinderManager.checkPartyNote("a\nb\nc"))
     }
 }

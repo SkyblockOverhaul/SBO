@@ -41,8 +41,6 @@ import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
 
 internal data class CreateProps(val target: PartyTarget, val own: MemberView?, val inQueue: Boolean)
 
-private const val NOTE_MAX_LENGTH = 100
-private const val NOTE_MAX_LINES = 3
 private val json = Json { ignoreUnknownKeys = true }
 
 /** Form for a new party (or a changed one while the own party is listed). Starts with the last input for this party type. */
@@ -139,17 +137,19 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         }
 
         h3(className = "pf-section") { +"Note" }
+        // Drafts saved before the two line limit may have more lines
+        val note = PartyFinderManager.limitNoteLines(draft.note)
         textarea(
-            value = draft.note,
-            onChange = { e -> change { note = e.value } },
+            value = note,
+            onChange = { e -> change { this.note = e.value } },
             placeholder = "What are you planning? e.g. \"chill party, need one more\"",
-            rows = NOTE_MAX_LINES,
-            maxLength = NOTE_MAX_LENGTH,
-            maxLines = NOTE_MAX_LINES,
+            rows = PartyFinderManager.NOTE_MAX_LINES,
+            maxLength = PartyFinderManager.NOTE_MAX_LENGTH,
+            maxLines = PartyFinderManager.NOTE_MAX_LINES,
             className = "pf-note-input"
         )
         p(className = "pf-hint") {
-            +"${draft.note.length}/$NOTE_MAX_LENGTH. Letters, numbers, spaces and , . ! ? - _ only, other characters are removed."
+            +"${note.length}/${PartyFinderManager.NOTE_MAX_LENGTH}. Letters, numbers, spaces and , . ! ? - _ only, other characters are removed."
         }
 
         div(className = "pf-form-buttons") {
@@ -196,7 +196,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                     if (labels.isNotEmpty()) {
                         select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }) {
                             option("0", "Any")
-                            labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), "$label or better") }
+                            labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex)) }
                         }
                     } else {
                         numberInput(value = number?.coerceAtMost(max), onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) }, allowEmpty = true, min = 1, max = max)
@@ -211,7 +211,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                     val rarity = (saved as? JsonPrimitive)?.contentOrNull ?: ""
                     select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }) {
                         option("", "Any")
-                        ReqMatcher.RARITIES.forEach { option(it, "${title(it)} or better") }
+                        ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it)) }
                     }
                 }
                 "anyOf" -> anyOfInput(def, saved, ::save)
