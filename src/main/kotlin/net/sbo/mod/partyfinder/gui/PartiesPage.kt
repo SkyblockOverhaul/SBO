@@ -45,7 +45,6 @@ internal data class PartiesProps(
     val own: MemberView?,
     val ownError: String?,
     val reload: Int,
-    // Reloads the list when the own party changes
     val queuedAt: Long,
     val inQueue: Boolean,
     val onEdit: () -> Unit
@@ -67,7 +66,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     var role by useState<String?>(null)
     val refresh = useState(0)
     val loadKey = useRef("")
-    // Set by the refresh button and F5, so only those show a toast
+    // Set by the refresh button and F5
     val manual = useRef(false)
     val toast = useToast()
     val clipboard = useClipboard()
