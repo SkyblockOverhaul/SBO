@@ -92,6 +92,9 @@ body {
 .pf-title { font-weight: bold; color: var(--aqua); white-space: nowrap; padding-bottom: 3px; }
 .pf-nav .guilib-tab-list { border-bottom-width: 0; }
 .pf-spacer { flex-grow: 1; }
+/* Clips instead of pushing the close button out of a narrow window */
+.pf-online { display: flex; align-items: center; gap: 3px; min-width: 0; overflow: hidden; padding-bottom: 3px; color: var(--muted); font-size: 7px; white-space: nowrap; }
+.pf-online-dot { width: 4px; height: 4px; border-radius: 2px; background-color: var(--ok); }
 .pf-queue {
     display: flex;
     align-items: center;
@@ -331,4 +334,12 @@ textarea:scrolling, textarea:hover,
     .pf-panel { position: absolute; top: 0; right: 0; bottom: 0; height: auto; box-shadow: 0 0 12px rgba(0, 0, 0, 0.6); }
     .pf-field { grid-template-columns: 100px minmax(0, 1fr); }
     .pf-own { grid-column: 2; text-align: left; }
+}
+@media (max-width: 400px) {
+    .pf-header { gap: 4px; }
+    .pf-online-label { display: none; }
+}
+/* No room for the count next to the tabs */
+@media (max-width: 360px) {
+    .pf-online { display: none; }
 }

@@ -362,14 +362,15 @@ object PartyFinderManager {
         }) { parties -> onComplete?.invoke(parties) }
     }
 
+    /** Number of SBO users that sent a request in the last 5 minutes. */
     fun getActiveUsers(
-        onComplete: ((Int) -> Unit)? = null
+        onError: ((Exception) -> Unit)? = null,
+        onComplete: (Int) -> Unit
     ) {
         SboApi.activeUsers().toJsonObject { response ->
-            onComplete?.invoke(response.getInt("activeUsers") ?: 0)
-        }.error { error ->
-            Chat.chat("§6[SBO] §4Unexpected error while getting active users: ${error.message}")
-        }
+            val count = response.getInt("activeUsers")
+            if (count != null) onComplete(count) else onError?.invoke(Exception("No activeUsers in the response"))
+        }.error { error -> onError?.invoke(error) }
     }
 
     private fun showJoinRequest(playerName: String, role: String?) {

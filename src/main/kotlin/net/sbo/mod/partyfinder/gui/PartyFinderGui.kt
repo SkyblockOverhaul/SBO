@@ -77,6 +77,7 @@ object PartyFinderGui {
         var queued by useState(PartyFinderManager.queuedParty)
         var inQueue by useState(PartyFinderManager.inQueue)
         var joinedParties by useState(PartyFinderManager.joinedParties)
+        var onlineUsers by useState<Int?>(null)
         val currentKey = useRef("")
         val toast = useToast()
 
@@ -95,6 +96,10 @@ object PartyFinderGui {
             joinedParties = PartyFinderManager.joinedParties
         }
         useInterval(30_000) { clock.set(System.currentTimeMillis()) }
+        // The server counts users of the last 5 minutes, so once a minute is enough
+        fun loadOnlineUsers() = PartyFinderManager.getActiveUsers(onError = { onlineUsers = null }) { onlineUsers = it }
+        useEffect { loadOnlineUsers() }
+        useInterval(60_000) { loadOnlineUsers() }
 
         val target = data?.let { loaded ->
             targetOf(selected) ?: loaded.categories.firstOrNull()?.let { PartyCategories.target(it.id) }
@@ -138,6 +143,13 @@ object PartyFinderGui {
                         tab("settings", "Settings")
                     }
                     div(className = "pf-spacer")
+                    onlineUsers?.let { count ->
+                        div(className = "pf-online", title = "Players using SBO right now.") {
+                            span(className = "pf-online-dot")
+                            span { +"$count" }
+                            span(className = "pf-online-label") { +"online" }
+                        }
+                    }
                     val mine = queued
                     if (inQueue && mine != null) {
                         val label = PartyCategories.target(mine.partyType, mine.subType)?.label ?: mine.partyType
