@@ -36,6 +36,7 @@ import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
+import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
@@ -451,6 +452,13 @@ private fun NodeBuilder.memberRow(
         item("Check stats") { checkStats(name) }
         if (manage) {
             separator()
+            // Promoting a moderator would make them the leader, so only for known plain members
+            if (HypixelModApi.partyRole(member.uuid) == "MEMBER") {
+                item("Make moderator") {
+                    HypixelModApi.markModerator(member.uuid)
+                    partyCommand("p promote $name", "Making $name a party moderator...")
+                }
+            }
             item("Make party leader") { partyCommand("p transfer $name", "Making $name the party leader...") }
             item("Kick from party", danger = true) { partyCommand("p kick $name", "Kicking $name from the party...") }
         }
@@ -460,6 +468,7 @@ private fun NodeBuilder.memberRow(
                 playerHead(uuidOf(member.uuid), className = "pf-head")
                 +name
                 if (member.uuid == party.id) span(className = "pf-member-role") { +" leader" }
+                else if (manage && HypixelModApi.partyRole(member.uuid) == "MODERATOR") span(className = "pf-member-role") { +" moderator" }
                 member.role?.let { id ->
                     span(className = "pf-member-role") { +" as ${target.roles.firstOrNull { it.id == id }?.label ?: id}" }
                 }

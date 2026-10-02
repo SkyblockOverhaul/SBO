@@ -18,6 +18,8 @@ object HypixelModApi {
     private var isLeader: Boolean = false
     private var isInParty: Boolean = false
     private var partyMembers: List<String> = emptyList()
+    // Party role per member uuid without dashes: LEADER, MODERATOR or MEMBER
+    private var partyRoles: Map<String, String> = emptyMap()
     private var mode: String = ""
 
     // listeners
@@ -40,6 +42,7 @@ object HypixelModApi {
         isLeader = false
         isInParty = false
         partyMembers = emptyList()
+        partyRoles = emptyMap()
         mode = ""
     }
 
@@ -65,6 +68,7 @@ object HypixelModApi {
 
     private fun onPartyInfoPacket(packet: PartyInfoS2CPacket) {
         this.isInParty = packet.inParty
+        partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() } ?: emptyMap()
 
         val membersList = packet.members?.map { it.key.toString() }?.toMutableList() ?: mutableListOf()
         if (isInParty) {
@@ -90,6 +94,14 @@ object HypixelModApi {
         partyInfoListeners.forEach { listener ->
             listener(this.isInParty, this.isLeader, this.partyMembers)
         }
+    }
+
+    /** LEADER, MODERATOR or MEMBER from the last party packet, null when unknown. */
+    fun partyRole(uuid: String): String? = partyRoles[uuid.replace("-", "")]
+
+    /** After a promote, until the next party packet confirms it. */
+    fun markModerator(uuid: String) {
+        partyRoles = partyRoles + (uuid.replace("-", "") to "MODERATOR")
     }
 
     fun onPartyInfo(listener: (isInParty: Boolean, isLeader: Boolean, members: List<String>) -> Unit) {
