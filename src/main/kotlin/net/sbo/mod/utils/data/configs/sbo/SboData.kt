@@ -71,4 +71,5 @@ data class CloudSyncState(
     var version: Int = 0, // 0 = never synced
     var counter: Long = 0,
     var hash: String = "", // last synced state
+    var autoSync: Boolean? = null, // null = not set on this PC yet
 )

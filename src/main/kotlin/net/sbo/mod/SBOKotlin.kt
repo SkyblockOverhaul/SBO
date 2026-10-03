@@ -58,8 +58,11 @@ object SBOKotlin : ClientModInitializer {
 
 	private val configurator = Configurator(MOD_ID)
 
-	// Before the config registers, it drops the old master volume option from the file
-	init { SoundHandler.readLegacyMasterVolume() }
+	// Before the config registers, it drops the options that moved out of it (master volume, auto sync)
+	init {
+		SoundHandler.readLegacyMasterVolume()
+		CloudSync.readLegacyAutoSync()
+	}
 
 	val settings = Settings.register(configurator)
 
