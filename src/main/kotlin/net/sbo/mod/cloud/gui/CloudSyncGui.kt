@@ -141,27 +141,34 @@ object CloudSyncGui {
                     }
                 }
 
-                setting("Auto Sync", "Uploads and downloads for you. Only for this PC.") {
+                div(className = "cs-actions") {
+                    button(className = "cs-primary", disabled = locked, title = "Saves this PC's data in the cloud", onClick = { CloudSync.upload() }) { +"Upload" }
+                    button(disabled = locked || !hasSave, title = "Loads your cloud save on this PC. A backup is made first.", onClick = { CloudSync.download() }) { +"Download" }
+                    button(disabled = locked || !hasSave, title = "Shows what is different", onClick = { onCompare() }) { +"Compare" }
+                    div(className = "cs-spacer")
+                    button(className = "cs-danger", disabled = locked || !hasSave, title = "Deletes your cloud save", onClick = { confirmDelete = true }) { +"Delete" }
+                }
+
+                setting("Auto Sync", "Saves and loads for you.") {
                     switch(checked = CloudSync.autoSync, onChange = { CloudSync.autoSync = it.checked })
                 }
                 details("How it works", className = "cs-info") {
                     infoLine("• On join: loads newer data or uploads your changes")
-                    infoLine("• Every 5 min: uploads, only if something changed")
+                    infoLine("• Every 30 min: uploads, only if something changed")
                     infoLine("• Leaving a server or closing the game: uploads")
                     infoLine("• Both sides changed: nothing is overwritten, you pick here")
                     infoLine("• Auto Sync off: only Upload and Download")
-                    infoLine("• Saved: settings, trackers, achievements, last 100 Diana events, party finder, overlays, sounds")
+                    infoLine("• Saved: settings, trackers, achievements, past Diana events, party finder, overlays, sounds")
                     infoLine("• Not saved: SBO key and sign key")
                 }
 
-                div(className = "cs-setting cs-key") {
-                    div(className = "cs-setting-title") { +"Sign Key" }
+                details(if (CloudSyncKeys.hasKey()) "Sign Key (on)" else "Sign Key (optional)", className = "cs-info") {
                     div(className = "cs-key-row") {
                         input(
                             className = "cs-key-input",
                             type = if (showKey) "text" else "password",
                             value = signKey,
-                            placeholder = if (CloudSyncKeys.hasKey()) "Set, enter it again to show it" else "Optional",
+                            placeholder = if (CloudSyncKeys.hasKey()) "Set, type it again to see it" else "No key",
                             maxLength = 64,
                             onInput = { signKey = it.value }
                         )
@@ -176,24 +183,15 @@ object CloudSyncGui {
                             showKey = true
                         }) { +"New" }
                     }
-                    div(className = "cs-hint") {
-                        +"Protects your cloud save: only PCs with the same sign key can load it. Write it down, it cannot be recovered. Save it empty to remove it."
-                    }
+                    infoLine("Only PCs with this key can load your cloud save. Use the same key on every PC and write it down.")
                 }
 
-                div(className = "cs-actions") {
-                    button(className = "cs-primary", disabled = locked, title = "Saves the settings and data from this PC as your cloud save", onClick = { CloudSync.upload() }) { +"Upload" }
-                    button(disabled = locked || !hasSave, title = "Replaces the settings and data on this PC with your cloud save. A backup is made first.", onClick = { CloudSync.download() }) { +"Download" }
-                    button(disabled = locked || !hasSave, title = "Shows what is different between this PC and your cloud save", onClick = { onCompare() }) { +"Compare" }
-                    div(className = "cs-spacer")
-                    button(className = "cs-danger", disabled = locked || !hasSave, title = "Deletes your cloud save. The data on this PC stays.", onClick = { confirmDelete = true }) { +"Delete" }
-                }
             }
         }
 
         modal(open = confirmDelete, onClose = { confirmDelete = false }, className = "cs-modal") {
             div(className = "cs-modal-title") { +"Delete your cloud save?" }
-            div(className = "cs-modal-text") { +"It is deleted for good. The settings and data on this PC stay." }
+            div(className = "cs-modal-text") { +"Your data on this PC stays." }
             div(className = "cs-buttons cs-modal-buttons") {
                 button(onClick = { confirmDelete = false }) { +"Cancel" }
                 button(className = "cs-danger-filled", onClick = {
@@ -274,7 +272,7 @@ object CloudSyncGui {
             windowHeader("Backups", size, onBack)
             scroll(className = "cs-body guilib-autohide") {
                 div(className = "cs-hint cs-backups-hint") {
-                    +"SBO backs up your trackers, achievements and other SBO data when you close the game and before a cloud save is loaded. The newest 10 are kept. Your /sbo settings are not part of it."
+                    +"SBO makes a backup every time you close the game. The newest 10 are kept."
                 }
                 if (backups.isEmpty()) div(className = "cs-center cs-empty") { +"No backups yet. SBO makes one when you close the game." }
                 backups.forEach { backup ->
@@ -293,7 +291,7 @@ object CloudSyncGui {
             val backup = confirm ?: return@modal
             div(className = "cs-modal-title") { +"Load this backup?" }
             div(className = "cs-modal-text") {
-                +"Your trackers, achievements and other SBO data go back to ${DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt))}. Your current data is backed up first."
+                +"Your SBO data goes back to ${DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt))}. Your current data is backed up first."
             }
             div(className = "cs-buttons cs-modal-buttons") {
                 button(onClick = { confirm = null }) { +"Cancel" }
@@ -382,14 +380,14 @@ object CloudSyncGui {
 
     private fun NodeBuilder.statusCard(status: CloudSync.Status?, busy: String?, refreshWait: Long, refreshing: Boolean, onRefresh: () -> Unit) {
         val (tone, text) = when (status?.state) {
-            null -> "idle" to "Checking your cloud save..."
+            null -> "idle" to "Checking..."
             SyncState.NO_SBO_KEY -> "bad" to "Cloud Sync needs your SBO key first."
-            SyncState.NO_SAVE -> "warn" to "You have no cloud save yet. Click Upload to create one."
-            SyncState.NOT_USED_HERE -> "warn" to "This PC has not used your cloud save yet. Click Download to load it here, or Compare first."
-            SyncState.BOTH_CHANGED -> "bad" to "Your cloud save and this PC both have changes. Click Compare to see them and pick what to keep."
-            SyncState.CLOUD_NEWER -> "warn" to "Your cloud save is newer than this PC. Click Download to get it."
-            SyncState.PC_CHANGED -> "warn" to "This PC has changes that are not in your cloud save yet. Click Upload to save them."
-            SyncState.SAME -> "ok" to "This PC and your cloud save are the same."
+            SyncState.NO_SAVE -> "warn" to "No cloud save yet. Click Upload."
+            SyncState.NOT_USED_HERE -> "warn" to "Not loaded on this PC yet. Click Download."
+            SyncState.BOTH_CHANGED -> "bad" to "This PC and the cloud both changed. Click Compare."
+            SyncState.CLOUD_NEWER -> "warn" to "The cloud is newer. Click Download."
+            SyncState.PC_CHANGED -> "warn" to "This PC has new changes. Click Upload."
+            SyncState.SAME -> "ok" to "Everything is up to date."
             SyncState.ERROR -> "bad" to (status.error?.replaceFirstChar(Char::uppercaseChar) ?: "Something went wrong.")
         }
         div(className = classNames("cs-status", tone)) {
@@ -398,7 +396,7 @@ object CloudSyncGui {
                 div(className = "cs-status-title") { +(busy ?: text) }
                 if (status != null && status.updatedAt > 0) {
                     div(className = "cs-hint") {
-                        +"Last upload: ${DATE_FORMAT.format(Instant.ofEpochMilli(status.updatedAt))} · ${(status.size + 1023) / 1024} KB"
+                        +"Last upload: ${DATE_FORMAT.format(Instant.ofEpochMilli(status.updatedAt))}"
                     }
                 }
             }

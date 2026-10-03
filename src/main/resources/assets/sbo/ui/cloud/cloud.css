@@ -174,7 +174,7 @@ body {
 .cs-setting-title { color: var(--text-strong); }
 .cs-info { margin: 0 4px 2px 4px; }
 .cs-info .guilib-details-summary { padding: 1px 0; color: var(--title); font-size: 7px; }
-.cs-info .guilib-details-content { padding: 0 0 2px 10px; }
+.cs-info .guilib-details-content { padding: 0 6px 4px 10px; }
 .cs-info-line { margin-top: 2px; color: var(--subtle); font-size: 7px; }
 .cs-steps {
     padding: 5px 6px;
@@ -191,7 +191,8 @@ body {
 .cs-key-input { flex-grow: 1; min-width: 0; }
 
 .cs-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.cs-actions { display: flex; gap: 4px; margin-top: 6px; padding: 0 4px; }
+.cs-actions { display: flex; gap: 4px; margin: 2px 0 6px 0; padding: 0 4px; }
+.cs-info .cs-key-row { margin-top: 2px; }
 .cs-primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .cs-primary:hover { background-color: var(--accent-hover); }
 .cs-danger { color: var(--menu-danger); }

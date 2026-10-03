@@ -55,7 +55,7 @@ object CloudSync {
     private const val STATUS_MAX_AGE_MS = 5 * 60 * 1000L
     // Refresh button: at most one request in this time
     private const val REFRESH_COOLDOWN_MS = 30 * 1000L
-    private const val AUTO_UPLOAD_MINUTES = 5
+    private const val AUTO_UPLOAD_MINUTES = 30
 
     private val json = Json { ignoreUnknownKeys = true }
     private val gson = Gson()
