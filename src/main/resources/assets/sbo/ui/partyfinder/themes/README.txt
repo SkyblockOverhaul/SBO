@@ -126,5 +126,5 @@ Trophy Fisher titles (only used when hypixelColors is true)
 
 Party types (only used when hypixelColors is true; name in the side bar and the heading)
   type-diana       gold           type-fishing  aqua           type-mining  dark aqua
-  type-kuudra      red            type-vanquisher dark purple  type-rift    light purple
+  type-kuudra      red            type-bestiary   dark purple  type-rift    light purple
   type-safari      green          type-slayer   dark red       type-custom  gray

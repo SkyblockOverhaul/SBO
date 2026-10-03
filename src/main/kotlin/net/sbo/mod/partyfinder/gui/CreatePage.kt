@@ -120,8 +120,18 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                     div(className = "pf-field", key = partyOption.id) {
                         span(className = "pf-field-label") { +partyOption.label }
                         div(className = "pf-field-input") {
-                            segmented(value = draft.options[partyOption.id] ?: partyOption.default, onChange = { value -> change { options[partyOption.id] = value } }) {
-                                partyOption.values.forEach { option(it.id, it.label) }
+                            if (partyOption.multiple) {
+                                multiSelect(
+                                    values = partyOption.picks(draft.options[partyOption.id] ?: partyOption.default),
+                                    onChange = { ids -> change { options[partyOption.id] = partyOption.picks(ids.joinToString(",")).joinToString(",") } },
+                                    placeholder = "Any"
+                                ) {
+                                    partyOption.values.forEach { option(it.id, it.label) }
+                                }
+                            } else {
+                                segmented(value = draft.options[partyOption.id] ?: partyOption.default, onChange = { value -> change { options[partyOption.id] = value } }) {
+                                    partyOption.values.forEach { option(it.id, it.label) }
+                                }
                             }
                         }
                     }

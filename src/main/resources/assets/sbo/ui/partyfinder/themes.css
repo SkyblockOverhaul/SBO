@@ -220,7 +220,7 @@ body {
     --type-fishing: var(--mc-aqua);
     --type-mining: var(--mc-dark-aqua);
     --type-kuudra: var(--mc-red);
-    --type-vanquisher: var(--mc-dark-purple);
+    --type-bestiary: var(--mc-dark-purple);
     --type-rift: var(--mc-light-purple);
     --type-safari: var(--mc-green);
     --type-slayer: var(--mc-dark-red);
@@ -304,8 +304,8 @@ body.pf-hypixel .pf-side-item.pf-type-mining .pf-side-label { color: var(--type-
 body.pf-hypixel .pf-heading.pf-type-mining { color: var(--type-mining); }
 body.pf-hypixel .pf-side-item.pf-type-kuudra .pf-side-label { color: var(--type-kuudra); }
 body.pf-hypixel .pf-heading.pf-type-kuudra { color: var(--type-kuudra); }
-body.pf-hypixel .pf-side-item.pf-type-vanquisher .pf-side-label { color: var(--type-vanquisher); }
-body.pf-hypixel .pf-heading.pf-type-vanquisher { color: var(--type-vanquisher); }
+body.pf-hypixel .pf-side-item.pf-type-bestiary .pf-side-label { color: var(--type-bestiary); }
+body.pf-hypixel .pf-heading.pf-type-bestiary { color: var(--type-bestiary); }
 body.pf-hypixel .pf-side-item.pf-type-rift .pf-side-label { color: var(--type-rift); }
 body.pf-hypixel .pf-heading.pf-type-rift { color: var(--type-rift); }
 body.pf-hypixel .pf-side-item.pf-type-safari .pf-side-label { color: var(--type-safari); }

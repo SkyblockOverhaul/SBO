@@ -125,4 +125,18 @@ class PartyListFiltersTest {
         assertEquals(listOf("charm"), PartyListFilters.apply(rift, PartyListFilter(reqs = mutableMapOf("livingTimecharm" to "true")), bacte, null, null).map { it.id })
         assertEquals(1, PartyListFilter(reqs = mutableMapOf("livingTimecharm" to "true")).dialogCount())
     }
+
+    @Test
+    fun filtersFieldsWithSeveralValues() {
+        val minibosses = PartyCategories.target("bestiary", "minibosses")!!
+        val bosses = minibosses.option("bosses")!!
+        assertEquals(listOf("bladesoul", "ashfang"), bosses.picks("ashfang,nope,bladesoul"))
+        val parties = listOf(
+            party("two", options = mapOf("bosses" to "bladesoul,ashfang")),
+            party("one", options = mapOf("bosses" to "magma_boss")),
+            party("none")
+        )
+        val filter = PartyListFilter(options = mutableMapOf("bosses" to "ashfang"))
+        assertEquals(listOf("two"), PartyListFilters.apply(parties, filter, minibosses, null, null).map { it.id })
+    }
 }

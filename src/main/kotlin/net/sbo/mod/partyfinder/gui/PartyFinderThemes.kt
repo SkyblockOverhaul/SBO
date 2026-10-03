@@ -63,7 +63,7 @@ internal object PartyFinderThemes {
         "black", "dark-blue", "dark-green", "dark-aqua", "dark-red", "dark-purple", "gold", "gray",
         "dark-gray", "blue", "green", "aqua", "red", "light-purple", "yellow", "white"
     ).map { "mc-$it" } + listOf(
-        "diana", "fishing", "mining", "kuudra", "vanquisher", "rift", "safari", "slayer", "custom"
+        "diana", "fishing", "mining", "kuudra", "bestiary", "rift", "safari", "slayer", "custom"
     ).map { "type-$it" } + listOf("novice", "adept", "expert", "master").map { "trophy-$it" } + listOf("tint", "tint-strong", "star")
 
     // #rgb, #rgba, #rrggbb or #rrggbbaa, nothing else reaches the style

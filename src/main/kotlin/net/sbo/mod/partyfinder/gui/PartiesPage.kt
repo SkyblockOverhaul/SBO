@@ -419,8 +419,12 @@ private fun NodeBuilder.partyCard(
                 target.opensAt?.takeIf { !target.open }?.let { span(className = "pf-tag option") { +"Event starts in ${until(it)}" } }
                 target.options.forEach { option ->
                     val value = party.options[option.id] ?: return@forEach
-                    if (value == "any") return@forEach
-                    val label = option.values.firstOrNull { it.id == value }?.label ?: value
+                    if (value == "any" || value.isEmpty()) return@forEach
+                    val label = if (option.multiple) {
+                        option.picks(value).mapNotNull { id -> option.values.firstOrNull { it.id == id }?.label }.joinToString(", ")
+                    } else {
+                        option.values.firstOrNull { it.id == value }?.label ?: value
+                    }
                     span(className = "pf-tag option") { +"${option.label}: $label" }
                 }
                 div(className = "pf-spacer")

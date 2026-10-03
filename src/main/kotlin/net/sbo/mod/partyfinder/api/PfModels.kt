@@ -92,8 +92,16 @@ data class PartyOption(
     val id: String,
     val label: String = id,
     val values: List<OptionValue> = emptyList(),
-    val default: String = ""
-)
+    val default: String = "",
+    // Several values at once, sent as a comma separated list of ids
+    val multiple: Boolean = false
+) {
+    /** Picked value ids of a [multiple] field, in definition order. */
+    fun picks(value: String?): List<String> {
+        val picked = value.orEmpty().split(',')
+        return values.map { it.id }.filter { it in picked }
+    }
+}
 
 @Serializable
 data class OptionValue(val id: String, val label: String = id)

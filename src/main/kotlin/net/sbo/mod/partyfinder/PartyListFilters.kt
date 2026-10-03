@@ -54,7 +54,9 @@ object PartyListFilters {
         val options = filterableOptions(target)
         for ((id, wanted) in filter.options) {
             val option = options.firstOrNull { it.id == id } ?: continue
-            if ((party.options[id] ?: option.default) != wanted) return false
+            val value = party.options[id] ?: option.default
+            // A field with several values matches when the party picked the wanted one
+            if (if (option.multiple) wanted !in option.picks(value) else value != wanted) return false
         }
         val reqs = filterableReqs(target)
         for ((stat, wanted) in filter.reqs) {
