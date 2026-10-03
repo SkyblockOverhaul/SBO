@@ -47,10 +47,10 @@ object PartyFinderGui {
         GuiLib.open(App, STYLES, title = "SBO Party Finder")
     }
 
-    /** "kuudra/infernal" or "diana" to its target; a category alone means its first subcategory. */
+    /** "kuudra/infernal" or "diana" to its target; a category with subcategories alone means all of them. */
     internal fun targetOf(key: String): PartyTarget? {
         val parts = key.split('/', limit = 2)
-        return PartyCategories.target(parts[0], parts.getOrElse(1) { "" })
+        return PartyCategories.target(parts[0], parts.getOrElse(1) { PartyTarget.ALL })
     }
 
     private fun startKey(): String {
@@ -66,6 +66,9 @@ object PartyFinderGui {
         var page by useState("parties")
         var favorites by useState(config.favorites.toList())
         var own by useState<MemberView?>(null)
+        var ownBySub by useState(mapOf<String, MemberView>())
+        // Answers arrive one by one, the ref always holds all of them so far
+        val ownCollected = useRef(mapOf<String, MemberView>())
         var ownError by useState<String?>(null)
         var reload by useState(0)
         var inspected by useState<InspectedPlayer?>(null)
@@ -126,12 +129,24 @@ object PartyFinderGui {
         useEffect(target?.key, reload) {
             val t = target ?: return@useEffect
             currentKey.current = t.key
-            own = OwnStats.cached(t)
+            // All loads the stats of every subcategory, tier stats like Kuudra completions differ between them
+            val targets = t.subTargets()
+            own = OwnStats.cached(targets.first())
+            ownCollected.current = targets.mapNotNull { x -> OwnStats.cached(x)?.let { x.key to it } }.toMap()
+            ownBySub = ownCollected.current
             ownError = null
-            OwnStats.get(t, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { me ->
-                if (currentKey.current == t.key) own = me
+            targets.forEach { x ->
+                OwnStats.get(x, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { me ->
+                    if (currentKey.current == t.key) {
+                        ownCollected.current = ownCollected.current + (x.key to me)
+                        ownBySub = ownCollected.current
+                        if (x == targets.first()) own = me
+                    }
+                }
             }
         }
+
+        fun ownFor(t: PartyTarget): MemberView? = if (target?.all == true) ownBySub[t.key] else own
 
         // The panel belongs to one party type
         useEffect(target?.key) { inspected = null }
@@ -274,13 +289,15 @@ object PartyFinderGui {
                             }
                             target == null -> message("Loading party types...")
                             else -> {
-                                toolbar(target, favorites, onSub = { select(it) }, onStar = { toggleFavorite(it) })
+                                // A party belongs to one subcategory, so creating starts on the first one
+                                val shown = if (page == "create" && target.all) target.subTargets().first() else target
+                                toolbar(shown, favorites, showAll = page != "create", onSub = { select(it) }, onStar = { toggleFavorite(it) })
                                 if (page == "create") {
-                                    CreatePage(CreateProps(target, own, inQueue), key = "create:${target.key}")
+                                    CreatePage(CreateProps(shown, ownFor(shown) ?: own, inQueue), key = "create:${shown.key}")
                                 } else {
                                     PartiesPage(
                                         PartiesProps(
-                                            target, own, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
+                                            target, own, ::ownFor, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
                                             inspected = inspected?.member?.uuid, onInspect = { inspected = it },
                                         joinedParties = joinedParties
                                         ),
@@ -292,7 +309,10 @@ object PartyFinderGui {
                     }
                 }
             }
-            if (panel != null && target != null) playerPanel(panel, target, own) { inspected = null }
+            if (panel != null && target != null) {
+                val panelTarget = target.forParty(panel.party)
+                playerPanel(panel, panelTarget, ownFor(panelTarget)) { inspected = null }
+            }
         }
     }
 
@@ -325,7 +345,7 @@ object PartyFinderGui {
         )
     }
 
-    private fun NodeBuilder.toolbar(target: PartyTarget, favorites: List<String>, onSub: (String) -> Unit, onStar: (String) -> Unit) {
+    private fun NodeBuilder.toolbar(target: PartyTarget, favorites: List<String>, showAll: Boolean, onSub: (String) -> Unit, onStar: (String) -> Unit) {
         val category = target.category
         div(className = "pf-toolbar") {
             h2(className = "pf-heading pf-type-${category.id}") { +category.label }
@@ -333,6 +353,7 @@ object PartyFinderGui {
             if (category.subcategories.size > 1) {
                 div(className = "pf-subs-row") {
                     tabs(value = target.subType, onChange = { onSub("${category.id}/$it") }, variant = "pills", className = "pf-subs", key = "subs:${category.id}") {
+                        if (showAll) tab(PartyTarget.ALL, "All")
                         category.subcategories.forEach { sub ->
                             val subTarget = PartyCategories.target(category.id, sub.id) ?: return@forEach
                             tab(sub.id, subLabel(subTarget))

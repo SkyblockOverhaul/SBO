@@ -6,6 +6,7 @@ import net.sbo.mod.partyfinder.api.CategoryDef
 import net.sbo.mod.partyfinder.api.ItemChoice
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.partyfinder.api.PartyOption
+import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.api.RoleDef
 import net.sbo.mod.partyfinder.api.StatDef
@@ -83,6 +84,7 @@ object PartyCategories {
     /** Category with its subcategory applied; an unknown [subType] falls back to the first subcategory. */
     fun target(partyType: String, subType: String = ""): PartyTarget? {
         val category = category(partyType) ?: return null
+        if (subType.trim().equals(PartyTarget.ALL, ignoreCase = true) && category.subcategories.size > 1) return PartyTarget(category, null, all = true)
         val sub = category.subcategories.firstOrNull { it.id.equals(subType.trim(), ignoreCase = true) }
             ?: category.subcategories.firstOrNull()
         return PartyTarget(category, sub)
@@ -92,15 +94,22 @@ object PartyCategories {
 // Lead time for listing event parties, same as EARLY_LISTING_MS in the backend calendar
 private const val EARLY_LISTING_MS = 60 * 60 * 1000L
 
-/** What one party is built and checked against, like `resolveTarget` in the backend. */
-data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?) {
+/**
+ * What one party is built and checked against, like `resolveTarget` in the backend.
+ * With [all] it stands for the parties of every subcategory; each of them has its own target, see [forParty].
+ */
+data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val all: Boolean = false) {
     val partyType: String get() = category.id
-    val subType: String get() = sub?.id ?: ""
+    val subType: String get() = if (all) ALL else sub?.id ?: ""
+    // All shares the key of the category, so its star is the one of the party type
     val key: String get() = if (sub == null) partyType else "$partyType/$subType"
     val label: String get() = if (sub == null) category.label else "${category.label}: ${sub.label}"
 
     val minSize: Int get() = category.minSize
-    val maxSize: Int get() = sub?.maxSize ?: category.maxSize
+    val maxSize: Int get() = when {
+        all -> category.subcategories.maxOf { it.maxSize ?: category.maxSize }
+        else -> sub?.maxSize ?: category.maxSize
+    }
     val open: Boolean get() = sub?.open ?: true
     val opensAt: Long? get() = sub?.opensAt
     val createOpen: Boolean get() = sub?.createOpen ?: open
@@ -119,9 +128,17 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?) {
 
     fun clampSize(size: Int): Int = size.coerceIn(minSize, maxSize)
 
-    private companion object {
+    /** The subcategory target a listed party belongs to; itself unless this is [all]. */
+    fun forParty(party: PartyView): PartyTarget = if (all) PartyCategories.target(partyType, party.subType) ?: this else this
+
+    /** Subcategory targets the own stats are needed for. */
+    fun subTargets(): List<PartyTarget> =
+        if (all) category.subcategories.mapNotNull { PartyCategories.target(partyType, it.id) } else listOf(this)
+
+    companion object {
+        const val ALL = "all"
         // Later entries replace earlier ones with the same key
-        fun <T> mergeBy(key: (T) -> String, vararg lists: List<T>): List<T> {
+        private fun <T> mergeBy(key: (T) -> String, vararg lists: List<T>): List<T> {
             val byKey = LinkedHashMap<String, T>()
             lists.forEach { list -> list.forEach { byKey[key(it)] = it } }
             return byKey.values.toList()

@@ -307,6 +307,8 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 }
 .pf-tag.mine { background-color: var(--ok-soft); color: var(--ok); }
 .pf-tag.size { background-color: var(--accent-soft); color: var(--title); }
+/* Subcategory of a party in the list of all subcategories */
+.pf-tag.sub { background-color: var(--accent); color: var(--accent-text); }
 .pf-tag.option { color: var(--muted); }
 .pf-age { color: var(--muted); font-size: 7px; white-space: nowrap; }
 .pf-join { padding: 1px 8px; }

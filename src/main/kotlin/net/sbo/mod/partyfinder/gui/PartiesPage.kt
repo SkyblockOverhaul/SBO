@@ -48,6 +48,8 @@ import java.util.UUID
 internal data class PartiesProps(
     val target: PartyTarget,
     val own: MemberView?,
+    // Own stats for the subcategory of a party, differs from own only in the list of all subcategories
+    val ownFor: (PartyTarget) -> MemberView?,
     val ownError: String?,
     val reload: Int,
     val queuedAt: Long,
@@ -138,7 +140,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val me = props.own
     val myId = OwnStats.uuid()
     val all = parties.orEmpty().filter { it.id !in hidden }
-    val visible = PartyListFilters.apply(all, filter, target, me, myId, search)
+    val visible = PartyListFilters.apply(all, filter, target, me, myId, search, props.ownFor)
 
     fun copy(text: String, what: String) {
         clipboard.set(text)
@@ -211,8 +213,10 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                 }) { +"Clear filters" }
             }
             else -> visible.forEach { party ->
+                val partyTarget = target.forParty(party)
                 partyCard(
-                    party, target, me,
+                    party, partyTarget, props.ownFor(partyTarget),
+                    showSub = target.all,
                     mine = party.id == myId,
                     expanded = party.id == expanded,
                     onToggle = { expanded = if (expanded == party.id) null else party.id },
@@ -379,6 +383,7 @@ private fun NodeBuilder.partyCard(
     party: PartyView,
     target: PartyTarget,
     me: MemberView?,
+    showSub: Boolean,
     mine: Boolean,
     expanded: Boolean,
     onToggle: () -> Unit,
@@ -413,6 +418,8 @@ private fun NodeBuilder.partyCard(
             div(className = "pf-card-head") {
                 party.leader?.let { playerHead(uuidOf(it.uuid), className = "pf-head") }
                 b(className = "pf-leader") { +leaderName }
+                // In the list of all subcategories every party says which one it was created in
+                if (showSub) target.sub?.let { span(className = "pf-tag sub", title = "Created as a ${target.label} party") { +it.label } }
                 if (mine) span(className = "pf-tag mine") { +"Your party" }
                 span(className = "pf-tag", title = "Players in the party / party size") { +"${party.memberCount}/${party.partySize}" }
                 if (party.partySize < target.maxSize) span(className = "pf-tag size") { +sizeLabel(party.partySize) }

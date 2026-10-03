@@ -139,4 +139,20 @@ class PartyListFiltersTest {
         val filter = PartyListFilter(options = mutableMapOf("bosses" to "ashfang"))
         assertEquals(listOf("two"), PartyListFilters.apply(parties, filter, minibosses, null, null).map { it.id })
     }
+
+    @Test
+    fun allSubcategoriesCheckEachPartyAgainstItsOwnSubcategory() {
+        val all = PartyCategories.target("kuudra", "all")!!
+        assertEquals("kuudra", all.key)
+        assertEquals("all", all.subType)
+        val basic = party("basic").copy(subType = "basic", reqs = mapOf("kuudraCompletions" to JsonPrimitive(10)))
+        val infernal = party("infernal").copy(reqs = mapOf("kuudraCompletions" to JsonPrimitive(10)))
+        assertEquals("basic", all.forParty(basic).subType)
+        // Own completions differ per tier: 50 in Basic, 2 in Infernal
+        val own = mapOf("kuudra/basic" to 50, "kuudra/infernal" to 2).mapValues { (_, n) ->
+            MemberView(uuid = "me", name = "me", stats = mapOf("kuudraCompletions" to JsonPrimitive(n)))
+        }
+        val visible = PartyListFilters.apply(listOf(basic, infernal), PartyListFilter(canJoin = true), all, null, null, ownFor = { own[it.key] })
+        assertEquals(listOf("basic"), visible.map { it.id })
+    }
 }
