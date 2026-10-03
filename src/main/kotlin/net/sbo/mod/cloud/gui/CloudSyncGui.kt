@@ -12,10 +12,12 @@ import net.sbo.guilib.core.dsl.input
 import net.sbo.guilib.core.dsl.modal
 import net.sbo.guilib.core.dsl.scroll
 import net.sbo.guilib.core.dsl.segmented
+import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.cloud.CloudArea
 import net.sbo.mod.utils.data.cloud.CloudSide
 import net.sbo.mod.utils.data.cloud.CloudSync
@@ -29,6 +31,7 @@ import java.time.format.DateTimeFormatter
 object CloudSyncGui {
     private val STYLES = listOf("sbo:ui/cloud/cloud.css")
     private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+    private val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
 
     /** Opens the window. Must run on the client thread. */
     fun open() {
@@ -38,6 +41,13 @@ object CloudSyncGui {
     private val App = component("CloudSync") {
         val toast = useToast()
         var comparing by useState(false)
+        var uiScale by useState(DataManager.sboData.cloudSyncUiScale?.takeIf { it in SCALES })
+        useScreenScale(uiScale)
+        val size = WindowSize(uiScale) { scale ->
+            uiScale = scale
+            DataManager.sboData.cloudSyncUiScale = scale
+            DataManager.sboData.save()
+        }
 
         // Toasts of CloudSync land here while the window is open
         useEffect {
@@ -45,13 +55,16 @@ object CloudSyncGui {
             onCleanup { CloudSync.toaster = null }
         }
 
-        if (comparing) ComparePage(CompareProps(onBack = { comparing = false }))
-        else MainPage(MainProps(onCompare = { comparing = true }))
+        if (comparing) ComparePage(CompareProps(size, onBack = { comparing = false }))
+        else MainPage(MainProps(size, onCompare = { comparing = true }))
     }
 
-    private data class MainProps(val onCompare: () -> Unit)
+    // Window size picker in the header
+    private data class WindowSize(val scale: Float?, val onChange: (Float?) -> Unit)
 
-    private val MainPage = component<MainProps>("CloudSyncMain") { (onCompare) ->
+    private data class MainProps(val size: WindowSize, val onCompare: () -> Unit)
+
+    private val MainPage = component<MainProps>("CloudSyncMain") { (size, onCompare) ->
         var status by useState<CloudSync.Status?>(null)
         var revision by useState(0)
         var signKey by useState(CloudSyncKeys.text() ?: "")
@@ -91,7 +104,7 @@ object CloudSyncGui {
         val hasSave = status?.state !in setOf(SyncState.NO_SAVE, SyncState.NO_SBO_KEY, SyncState.ERROR, null)
 
         div(className = "cs-window") {
-            windowHeader("Cloud Sync")
+            windowHeader("Cloud Sync", size)
             scroll(className = "cs-body guilib-autohide") {
                 statusCard(status, busy, refreshWait, refreshing || busy != null) { refresh() }
 
@@ -121,16 +134,17 @@ object CloudSyncGui {
                     }
                 }
 
-                setting("Auto Sync", "Uploads and downloads for you, see below when. Only for this PC.") {
+                setting("Auto Sync", "Uploads and downloads for you. Only for this PC.") {
                     switch(checked = CloudSync.autoSync, onChange = { CloudSync.autoSync = it.checked })
                 }
-                details("When is it saved?", className = "cs-info") {
-                    infoLine("With Auto Sync on, SBO checks your cloud save once when you join a server: newer data from your other PC is loaded here, changes from this PC are uploaded.")
-                    infoLine("While you play it uploads every 5 minutes, but only if something changed.")
-                    infoLine("It also uploads when you leave a server and when you close the game.")
-                    infoLine("If this PC and your cloud save both changed, nothing is overwritten. SBO asks you here what to keep.")
-                    infoLine("With Auto Sync off nothing happens on its own, use Upload and Download.")
-                    infoLine("Saved: settings, Diana trackers, achievements, your last 100 Diana events, party finder, overlay positions and sounds. Not saved: your SBO key and sign key.")
+                details("How it works", className = "cs-info") {
+                    infoLine("• On join: loads newer data or uploads your changes")
+                    infoLine("• Every 5 min: uploads, only if something changed")
+                    infoLine("• Leaving a server or closing the game: uploads")
+                    infoLine("• Both sides changed: nothing is overwritten, you pick here")
+                    infoLine("• Auto Sync off: only Upload and Download")
+                    infoLine("• Saved: settings, trackers, achievements, last 100 Diana events, party finder, overlays, sounds")
+                    infoLine("• Not saved: SBO key and sign key")
                 }
 
                 div(className = "cs-setting cs-key") {
@@ -183,9 +197,9 @@ object CloudSyncGui {
         }
     }
 
-    private data class CompareProps(val onBack: () -> Unit)
+    private data class CompareProps(val size: WindowSize, val onBack: () -> Unit)
 
-    private val ComparePage = component<CompareProps>("CloudSyncCompare") { (onBack) ->
+    private val ComparePage = component<CompareProps>("CloudSyncCompare") { (size, onBack) ->
         var result by useState<CompareResult?>(null)
         var choices by useState(emptyMap<String, CloudSide>())
 
@@ -195,7 +209,7 @@ object CloudSyncGui {
         fun pick(id: String, side: CloudSide) { choices = choices + (id to side) }
 
         div(className = "cs-window cs-wide") {
-            windowHeader("Compare", onBack)
+            windowHeader("Compare", size, onBack)
             when (val r = result) {
                 null -> div(className = "cs-body cs-center") { +"Loading your cloud save..." }
                 is CompareResult.Failed -> div(className = "cs-body cs-center") {
@@ -287,11 +301,15 @@ object CloudSyncGui {
         }
     }
 
-    private fun NodeBuilder.windowHeader(title: String, onBack: (() -> Unit)? = null) {
+    private fun NodeBuilder.windowHeader(title: String, size: WindowSize, onBack: (() -> Unit)? = null) {
         header(className = "cs-header") {
             if (onBack != null) button(className = "cs-icon", title = "Back", onClick = { onBack() }) { +"←" }
             span(className = "cs-title") { +title }
             div(className = "cs-spacer")
+            span(className = "cs-size-label") { +"Size" }
+            select(value = scaleId(size.scale), onChange = { e -> size.onChange(e.value.toFloatOrNull()) }, className = "cs-size") {
+                SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Auto" else scaleId(scale), title = if (scale == null) "Uses your Minecraft GUI scale" else null) }
+            }
             button(className = "cs-icon cs-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
         }
     }
@@ -344,6 +362,12 @@ object CloudSyncGui {
                 infoLine("3. Open this window again with /sbocloud. New supporter roles can take a few minutes.")
             }
         }
+    }
+
+    private fun scaleId(scale: Float?): String = when {
+        scale == null -> "auto"
+        scale % 1f == 0f -> scale.toInt().toString()
+        else -> scale.toString()
     }
 
     private fun NodeBuilder.infoLine(text: String) {

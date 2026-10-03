@@ -122,6 +122,8 @@ body {
 .cs-icon { padding: 1px 5px; background-color: transparent; border-color: transparent; }
 .cs-header .cs-icon:first-child { margin-left: -6px; }
 .cs-close:hover { background-color: var(--danger); }
+.cs-size-label { color: var(--muted); font-size: 7px; }
+.cs-size { min-width: 46px; padding-top: 0; padding-bottom: 0; }
 
 .cs-body { flex-grow: 1; min-height: 0; padding: 6px 8px 8px 8px; }
 .cs-center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--subtle); }
@@ -144,7 +146,7 @@ body {
 .cs-status.bad .cs-dot { background-color: var(--bad); }
 .cs-status-text { flex-grow: 1; min-width: 0; }
 .cs-status-title { color: var(--text-strong); }
-.cs-refresh { align-self: flex-start; color: var(--subtle); }
+.cs-refresh { align-self: center; color: var(--subtle); }
 .cs-refresh:hover { color: var(--text-strong); }
 .cs-refresh-icon { width: 8px; height: 8px; }
 
