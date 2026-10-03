@@ -53,6 +53,8 @@ object CloudSync {
     private const val CLOSE_UPLOAD_TIMEOUT_SECONDS = 5L
     // The status endpoint allows few requests, known info is reused this long
     private const val STATUS_MAX_AGE_MS = 5 * 60 * 1000L
+    // Refresh button: at most one request in this time
+    private const val REFRESH_COOLDOWN_MS = 30 * 1000L
     private const val AUTO_UPLOAD_MINUTES = 5
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -378,11 +380,17 @@ object CloudSync {
         return files + (SBO_DATA_FILE to sbo.toString())
     }
 
-    // Callback on the client thread; asks the server only if the known info is old
-    fun fetchStatus(callback: (Status) -> Unit) {
+    // Milliseconds until the refresh button may ask the server again
+    fun refreshWaitMs(): Long = maxOf(0L, (lastStatusRequest + REFRESH_COOLDOWN_MS) - System.currentTimeMillis())
+
+    @Volatile private var lastStatusRequest = 0L
+
+    // Callback on the client thread; asks the server only if the known info is old or refresh is set
+    fun fetchStatus(refresh: Boolean = false, callback: (Status) -> Unit) {
         if (SboKey.get().isBlank()) return callback(Status(SyncState.NO_SBO_KEY))
-        val known = cloudInfo?.takeIf { System.currentTimeMillis() - it.at < STATUS_MAX_AGE_MS }
+        val known = cloudInfo?.takeIf { System.currentTimeMillis() - it.at < STATUS_MAX_AGE_MS && !(refresh && refreshWaitMs() == 0L) }
         if (known != null) return SBOKotlin.mc.schedule { callback(statusOf(known.slot)) }
+        lastStatusRequest = System.currentTimeMillis()
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
                 if (response.success) remember(response.slots.find { it.slot == SLOT })

@@ -7,6 +7,7 @@ import net.sbo.guilib.core.dsl.classNames
 import net.sbo.guilib.core.dsl.details
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.header
+import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.input
 import net.sbo.guilib.core.dsl.modal
 import net.sbo.guilib.core.dsl.scroll
@@ -55,6 +56,9 @@ object CloudSyncGui {
         var revision by useState(0)
         var signKey by useState(CloudSyncKeys.text() ?: "")
         var confirmDelete by useState(false)
+        var showKey by useState(false)
+        var refreshing by useState(false)
+        var refreshWait by useState(0L)
         val forceUpdate = useForceUpdate()
         val busy = CloudSync.busy
 
@@ -69,15 +73,33 @@ object CloudSyncGui {
         useEffect(revision) {
             CloudSync.fetchStatus { status = it }
         }
+        // Keeps the refresh button's wait time current
+        useInterval(1000) { refreshWait = CloudSync.refreshWaitMs() }
+
+        fun refresh() {
+            refreshing = true
+            CloudSync.fetchStatus(refresh = true) {
+                status = it
+                refreshing = false
+                refreshWait = CloudSync.refreshWaitMs()
+            }
+        }
 
         val noSboKey = status?.state == SyncState.NO_SBO_KEY
+        val notSupporter = status?.state == SyncState.ERROR && status?.error?.contains("supporter", ignoreCase = true) == true
         val locked = busy != null || noSboKey || status == null
         val hasSave = status?.state !in setOf(SyncState.NO_SAVE, SyncState.NO_SBO_KEY, SyncState.ERROR, null)
 
         div(className = "cs-window") {
             windowHeader("Cloud Sync")
             scroll(className = "cs-body guilib-autohide") {
-                statusCard(status, busy)
+                statusCard(status, busy, refreshWait, refreshing || busy != null) { refresh() }
+
+                // Without key or supporter status nothing below works, only the steps to fix it
+                if (noSboKey || notSupporter) {
+                    setupSteps(noSboKey)
+                    return@scroll
+                }
 
                 CloudSync.question?.let { question ->
                     div(className = "cs-question") {
@@ -99,8 +121,16 @@ object CloudSyncGui {
                     }
                 }
 
-                setting("Auto Sync", "Loads newer data from your other PC when you join and saves your changes while you play. Only for this PC.") {
-                    switch(checked = CloudSync.autoSync, disabled = noSboKey, onChange = { CloudSync.autoSync = it.checked })
+                setting("Auto Sync", "Uploads and downloads for you, see below when. Only for this PC.") {
+                    switch(checked = CloudSync.autoSync, onChange = { CloudSync.autoSync = it.checked })
+                }
+                details("When is it saved?", className = "cs-info") {
+                    infoLine("With Auto Sync on, SBO checks your cloud save once when you join a server: newer data from your other PC is loaded here, changes from this PC are uploaded.")
+                    infoLine("While you play it uploads every 5 minutes, but only if something changed.")
+                    infoLine("It also uploads when you leave a server and when you close the game.")
+                    infoLine("If this PC and your cloud save both changed, nothing is overwritten. SBO asks you here what to keep.")
+                    infoLine("With Auto Sync off nothing happens on its own, use Upload and Download.")
+                    infoLine("Saved: settings, Diana trackers, achievements, your last 100 Diana events, party finder, overlay positions and sounds. Not saved: your SBO key and sign key.")
                 }
 
                 div(className = "cs-setting cs-key") {
@@ -108,17 +138,22 @@ object CloudSyncGui {
                     div(className = "cs-key-row") {
                         input(
                             className = "cs-key-input",
+                            type = if (showKey) "text" else "password",
                             value = signKey,
                             placeholder = if (CloudSyncKeys.hasKey()) "Set, enter it again to show it" else "Optional",
                             maxLength = 64,
                             onInput = { signKey = it.value }
                         )
+                        button(title = if (showKey) "Hides the sign key" else "Shows the sign key", onClick = { showKey = !showKey }) { +if (showKey) "Hide" else "Show" }
                         button(
                             disabled = busy != null,
                             title = if (signKey.isBlank()) "Removes the sign key from this PC" else "Saves the sign key on this PC",
                             onClick = { CloudSync.saveSignKey(signKey) }
                         ) { +"Save" }
-                        button(title = "Fills in a new random sign key, click Save to use it", onClick = { signKey = CloudSyncKeys.generate() }) { +"New" }
+                        button(title = "Fills in a new random sign key, click Save to use it", onClick = {
+                            signKey = CloudSyncKeys.generate()
+                            showKey = true
+                        }) { +"New" }
                     }
                     div(className = "cs-hint") {
                         +"Protects your cloud save: only PCs with the same sign key can load it. Write it down, it cannot be recovered. Save it empty to remove it."
@@ -261,17 +296,17 @@ object CloudSyncGui {
         }
     }
 
-    private fun NodeBuilder.statusCard(status: CloudSync.Status?, busy: String?) {
+    private fun NodeBuilder.statusCard(status: CloudSync.Status?, busy: String?, refreshWait: Long, refreshing: Boolean, onRefresh: () -> Unit) {
         val (tone, text) = when (status?.state) {
             null -> "idle" to "Checking your cloud save..."
-            SyncState.NO_SBO_KEY -> "bad" to "Set your SBO key first: get it on the SBO Discord with /generatesbokey, then type /sbokey <key>."
+            SyncState.NO_SBO_KEY -> "bad" to "Cloud Sync needs your SBO key first."
             SyncState.NO_SAVE -> "warn" to "You have no cloud save yet. Click Upload to create one."
             SyncState.NOT_USED_HERE -> "warn" to "This PC has not used your cloud save yet. Click Download to load it here, or Compare first."
             SyncState.BOTH_CHANGED -> "bad" to "Your cloud save and this PC both have changes. Click Compare to see them and pick what to keep."
             SyncState.CLOUD_NEWER -> "warn" to "Your cloud save is newer than this PC. Click Download to get it."
             SyncState.PC_CHANGED -> "warn" to "This PC has changes that are not in your cloud save yet. Click Upload to save them."
             SyncState.SAME -> "ok" to "This PC and your cloud save are the same."
-            SyncState.ERROR -> "bad" to (status.error ?: "Something went wrong.")
+            SyncState.ERROR -> "bad" to (status.error?.replaceFirstChar(Char::uppercaseChar) ?: "Something went wrong.")
         }
         div(className = classNames("cs-status", tone)) {
             div(className = "cs-dot")
@@ -283,7 +318,36 @@ object CloudSyncGui {
                     }
                 }
             }
+            if (status?.state != SyncState.NO_SBO_KEY) {
+                button(
+                    className = "cs-icon cs-refresh",
+                    disabled = refreshing || refreshWait > 0,
+                    title = if (refreshWait > 0) "Check again in ${(refreshWait + 999) / 1000} s" else "Checks your cloud save again, e.g. after you uploaded on another PC",
+                    onClick = { onRefresh() }
+                ) { img("sbo:ui/cloud/refresh.svg", className = "cs-refresh-icon") }
+            }
         }
+    }
+
+    private fun NodeBuilder.setupSteps(noSboKey: Boolean) {
+        div(className = "cs-steps") {
+            if (noSboKey) {
+                div(className = "cs-steps-title") { +"How to set it up:" }
+                infoLine("1. On the SBO Discord, type /generatesbokey. The bot sends you your SBO key.")
+                infoLine("2. In Minecraft, type /sbokey followed by your key.")
+                infoLine("3. Open this window again with /sbocloud.")
+                div(className = "cs-hint") { +"Cloud Sync is a supporter feature (Patreon, Ko-fi or Discord booster)." }
+            } else {
+                div(className = "cs-steps-title") { +"Already a supporter? Check these:" }
+                infoLine("1. Your SBO key is set on this Minecraft account: type /sbokey followed by your key.")
+                infoLine("2. The key comes from /generatesbokey on the SBO Discord, typed with the Discord account that has the supporter role or boosts the server.")
+                infoLine("3. Open this window again with /sbocloud. New supporter roles can take a few minutes.")
+            }
+        }
+    }
+
+    private fun NodeBuilder.infoLine(text: String) {
+        div(className = "cs-info-line") { +text }
     }
 
     private fun NodeBuilder.setting(title: String, text: String, control: NodeBuilder.() -> Unit) {

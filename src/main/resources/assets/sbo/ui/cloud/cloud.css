@@ -144,6 +144,9 @@ body {
 .cs-status.bad .cs-dot { background-color: var(--bad); }
 .cs-status-text { flex-grow: 1; min-width: 0; }
 .cs-status-title { color: var(--text-strong); }
+.cs-refresh { align-self: flex-start; color: var(--subtle); }
+.cs-refresh:hover { color: var(--text-strong); }
+.cs-refresh-icon { width: 8px; height: 8px; }
 
 .cs-question {
     padding: 5px 6px;
@@ -166,6 +169,20 @@ body {
 .cs-setting:hover { background-color: var(--card); }
 .cs-setting-text { flex-grow: 1; min-width: 0; }
 .cs-setting-title { color: var(--text-strong); }
+.cs-info { margin: 0 4px 2px 4px; }
+.cs-info .guilib-details-summary { padding: 1px 0; color: var(--title); font-size: 7px; }
+.cs-info .guilib-details-content { padding: 0 0 2px 10px; }
+.cs-info-line { margin-top: 2px; color: var(--subtle); font-size: 7px; }
+.cs-steps {
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background-color: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    border-radius: 4px;
+}
+.cs-steps-title { color: var(--banner-text); margin-bottom: 2px; }
+.cs-steps .cs-info-line { font-size: 8px; color: var(--text-soft); }
+.cs-steps .cs-hint { margin-top: 4px; }
 .cs-key { flex-direction: column; align-items: stretch; gap: 2px; }
 .cs-key-row { display: flex; gap: 4px; }
 .cs-key-input { flex-grow: 1; min-width: 0; }
