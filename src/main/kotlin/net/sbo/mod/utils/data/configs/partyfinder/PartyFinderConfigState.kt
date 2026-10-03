@@ -8,6 +8,8 @@ data class PartyFinderConfigState(
     // Favorite category or subcategory keys, in the order the player sorted them
     var favorites: MutableList<String> = mutableListOf(),
     var startWithFavorites: Boolean = false,
+    // Favorite party types show only under Favorites in the sidebar
+    var favoritesOnlyOnce: Boolean = false,
     // Seconds between automatic reloads of the party list, 0 = off
     var autoRefreshSeconds: Int = 30,
     // Font id of the party finder window, see PartyFinderGui.FONTS

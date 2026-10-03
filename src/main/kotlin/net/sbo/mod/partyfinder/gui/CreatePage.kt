@@ -228,10 +228,13 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                     label = "Required"
                 )
                 "rarity" -> {
-                    val rarity = (saved as? JsonPrimitive)?.contentOrNull ?: ""
+                    // The lowest rarity asks for nothing, e.g. everyone playing Diana has at least a Common Griffin
+                    val lowest = ReqMatcher.RARITIES.first()
+                    val rarity = (saved as? JsonPrimitive)?.contentOrNull?.takeUnless { it.equals(lowest, ignoreCase = true) } ?: ""
                     select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }) {
-                        option("", "Any")
-                        ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it)) }
+                        ReqMatcher.RARITIES.forEachIndexed { i, it ->
+                            option(if (i == 0) "" else it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it))
+                        }
                     }
                 }
                 "anyOf" -> anyOfInput(def, saved, ::save)

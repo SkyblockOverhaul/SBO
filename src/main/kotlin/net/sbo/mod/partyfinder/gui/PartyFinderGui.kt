@@ -76,6 +76,7 @@ object PartyFinderGui {
         useScreenScale(uiScale)
         var theme by useState(PartyFinderThemes.find(config.theme))
         var recombobulated by useState(config.recombobulated)
+        var favoritesOnlyOnce by useState(config.favoritesOnlyOnce)
         // On the body like the font, so modals, tooltips and toasts follow the theme
         PartyFinderThemes.BASES.forEach { base -> useBodyClass("pf-theme-$base", theme.base == base) }
         useBodyClass("pf-hypixel", theme.hypixelColors)
@@ -203,7 +204,7 @@ object PartyFinderGui {
                                 }
                             }
                             div(className = "pf-side-title") { +"Party Types" }
-                            data?.categories?.forEach { category ->
+                            data?.categories?.filterNot { favoritesOnlyOnce && it.id in favorites }?.forEach { category ->
                                 sideItem(
                                     type = category.id,
                                     label = category.label,
@@ -254,6 +255,12 @@ object PartyFinderGui {
                                     onRecombobulated = { on ->
                                         recombobulated = on
                                         config.recombobulated = on
+                                        config.save()
+                                    },
+                                    favoritesOnlyOnce = favoritesOnlyOnce,
+                                    onFavoritesOnlyOnce = { on ->
+                                        favoritesOnlyOnce = on
+                                        config.favoritesOnlyOnce = on
                                         config.save()
                                     }
                                 ),
