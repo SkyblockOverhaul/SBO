@@ -200,5 +200,6 @@ class PartyFinderLogicTest {
         assertEquals("a\nb c d", PartyFinderManager.limitNoteLines("a\nb\nc\r\nd"))
         assertEquals("one line", PartyFinderManager.limitNoteLines("one line"))
         assertEquals("a\nb c", PartyFinderManager.checkPartyNote("a\nb\nc"))
+        assertEquals("unique + sparkling", PartyFinderManager.checkPartyNote("unique + sparkling"))
     }
 }
