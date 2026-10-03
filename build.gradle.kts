@@ -34,6 +34,32 @@ loom {
 }
 
 bloom {
+    if (isMCVersionGreaterOrEqualTo("26.3")) {
+        replacement("com.mojang.blaze3d.pipeline.RenderPipeline", "com.mojang.renderpearl.api.pipeline.RenderPipeline")
+        replacement("com.mojang.blaze3d.pipeline.DepthStencilState", "com.mojang.renderpearl.api.pipeline.DepthStencilState")
+        replacement("com.mojang.blaze3d.platform.CompareOp", "com.mojang.renderpearl.api.pipeline.CompareOp")
+        replacement("Util.getPlatform().openUri(url)", "com.mojang.blaze3d.Blaze3D.openUri(java.net.URI(url))")
+        // Hypixel's legacy particle speed is copied to all three axes by the 26.3 packet constructor.
+        replacement(".maxSpeed", ".xMaxSpeed()")
+        replacement("InputConstants.Type.KEYSYM", "InputConstants.Type.KEYBOARD")
+        replacement("import org.lwjgl.glfw.GLFW", "")
+        replacement("GLFW.GLFW_KEY_UNKNOWN", "com.mojang.blaze3d.platform.InputConstants.UNKNOWN.value")
+        // Elementa delivers UniversalCraft keycodes; native Screen events deliver physical key IDs.
+        replacement("GLFW.GLFW_KEY_BACKSPACE", "gg.essential.universal.UKeyboard.KEY_BACKSPACE")
+        replacement("GLFW.GLFW_KEY_DELETE", "gg.essential.universal.UKeyboard.KEY_DELETE")
+        replacement("GLFW.GLFW_KEY_UP", "com.mojang.blaze3d.platform.InputConstants.KEY_UP")
+        replacement("GLFW.GLFW_KEY_DOWN", "com.mojang.blaze3d.platform.InputConstants.KEY_DOWN")
+        replacement("GLFW.GLFW_KEY_LEFT", "com.mojang.blaze3d.platform.InputConstants.KEY_LEFT")
+        replacement("GLFW.GLFW_KEY_RIGHT", "com.mojang.blaze3d.platform.InputConstants.KEY_RIGHT")
+        replacement("GLFW.GLFW_KEY_EQUAL", "com.mojang.blaze3d.platform.InputConstants.KEY_EQUALS")
+        replacement("GLFW.GLFW_KEY_KP_ADD", "com.mojang.blaze3d.platform.InputConstants.KEY_ADD")
+        replacement("GLFW.GLFW_KEY_MINUS", "com.mojang.blaze3d.platform.InputConstants.KEY_MINUS")
+        replacement("GLFW.GLFW_KEY_KP_SUBTRACT", "org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_MINUS")
+        replacement("click.buttonInfo().button", "net.sbo.mod.utils.InputCompatibility.mouseButton(click.buttonInfo().button)")
+        replacement("mulPose(Axis.YP.rotationDegrees(-cameraYaw))", "rotateDegrees(Axis.YP, -cameraYaw)")
+        replacement("mulPose(Axis.XP.rotationDegrees(cameraPitch))", "rotateDegrees(Axis.XP, cameraPitch)")
+        replacement("DefaultTooltipPositioner.INSTANCE, null)", "DefaultTooltipPositioner.INSTANCE, null, false)")
+    }
     if (isMCVersionGreaterOrEqualTo("26.2")) {
         replacement("mc.screen", "mc.gui.screen()")
         replacement("mc.setScreen(", "mc.gui.setScreen(")
@@ -59,7 +85,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
         args.addAll(
             listOf(
-                "-Xbackend-threads=0", // 0 means use 1 thread per core. Default value is 1 which is single threaded and doesn't scale, often bottlenecks compilation
+                "-Xbackend-threads=4", // Keep compilation bounded alongside the other migration builds.
                 "-jvm-default=no-compatibility", // this not a library mod or API, no need to generate additional DefaultImpls classes (which is bigger jar size and more compile time)
             )
         )
@@ -124,9 +150,13 @@ repositories {
     }
 
     exclusiveContent {
-        forRepository {
-            maven("https://maven.azureaaron.net/releases")
+        // Optional caller-supplied repository for publisher builds awaiting a Maven release.
+        val portRepository = providers.gradleProperty("portDependencyRepository").orNull?.let { repository ->
+            require(repository.isNotBlank()) { "portDependencyRepository must be a repository URI or path" }
+            maven(rootProject.uri(repository))
         }
+        val publisherRepository = maven("https://maven.azureaaron.net/releases")
+        forRepositories(*listOfNotNull(portRepository, publisherRepository).toTypedArray())
 
         filter {
             includeModule("net.azureaaron", "hm-api")
@@ -313,6 +343,20 @@ tasks.named<ProcessResources>("processResources") {
     filesMatching(expandedFiles) {
         expand(expandProperties)
     }
+
+    if (mcProject == "26.3-fabric") {
+        doLast {
+            // Diana-V2 declares GuiLib but has no consumers yet. Its 26.3 artifact is unpublished.
+            // Keep the existing dependency on older targets; do not substitute an incompatible JAR.
+            val metadata = destinationDir.resolve("fabric.mod.json")
+            @Suppress("UNCHECKED_CAST")
+            val json = groovy.json.JsonSlurper().parse(metadata) as MutableMap<String, Any>
+            @Suppress("UNCHECKED_CAST")
+            val dependencies = json["depends"] as MutableMap<String, Any>
+            dependencies.remove("guilib")
+            metadata.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json)) + "\n")
+        }
+    }
 }
 
 dependencies {
@@ -333,7 +377,9 @@ dependencies {
     implementation(include(libs.elementa.get())!!)
 
     // GuiLib (see settings.gradle.kts for building it from a local checkout). Not used by any code yet.
-    implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
+    if (mcProject != "26.3-fabric") {
+        implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
+    }
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
@@ -342,6 +388,13 @@ dependencies {
     implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
 
     when (mcProject) {
+        "26.3-fabric" -> {
+            implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
+            implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.3:${versionedProperty("rconfig.version")}")!!)
+            implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
+            implementation(include(libs.universalcraft263.get())!!)
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.3-fabric")
+        }
         "26.2-fabric" -> {
             // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
             implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
@@ -365,6 +418,7 @@ dependencies {
 
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspKotlin")
         "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
@@ -372,8 +426,8 @@ tasks.findByName("preprocessCode")?.apply {
 
 tasks.findByName("preprocessTestCode")?.apply {
     when (mcProject) {
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspTestKotlin")
         "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspTestKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 }
-
