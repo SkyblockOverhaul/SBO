@@ -133,12 +133,12 @@ internal object StatView {
                 n >= 40 -> "white"
                 else -> "gray"
             }
-            // Novice, Adept, Expert, Master in the bronze, silver, gold and diamond trophy fish colors
+            // Novice, Adept, Expert, Master in bronze, silver, gold and diamond
             "trophyFisher" -> when (n) {
-                1 -> "pf-c-dark-gray"
-                2 -> "pf-c-gray"
-                3 -> "pf-c-gold"
-                4 -> "pf-c-aqua"
+                1 -> "pf-trophy-novice"
+                2 -> "pf-trophy-adept"
+                3 -> "pf-trophy-expert"
+                4 -> "pf-trophy-master"
                 else -> null
             }
             "dianaKills" -> "pf-c-" + when {

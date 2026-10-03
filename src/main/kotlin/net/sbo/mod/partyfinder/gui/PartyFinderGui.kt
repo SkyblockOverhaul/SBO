@@ -79,7 +79,6 @@ object PartyFinderGui {
         useBodyClass("pf-hypixel", theme.hypixelColors)
         useBodyClass("pf-recomb", recombobulated)
         useBodyClass("pf-marks", theme.marks)
-        useBodyClass("pf-light", theme.light)
         val document = useDocument()
         useEffect(theme) {
             val body = document.body

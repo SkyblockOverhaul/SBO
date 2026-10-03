@@ -35,7 +35,8 @@ base           The built-in theme you start from. Everything you don't set in "c
                One of: sbo-dark, hypixel, colorblind, high-contrast, light, midnight
 hypixelColors  true colors values like Hypixel does (item rarities, SkyBlock level, Trophy Fisher, party types).
                Without it, the setting of the base theme is used.
-marks          true puts a "x" in front of requirements you don't meet. Without it, the base theme decides.
+marks          true gives requirements you don't meet a dashed border (a "x" in front where there is no border).
+               Without it, the base theme decides.
 colors         Only the colors you want to change. Unknown names are ignored.
 
 Colors are written as #rgb, #rgba, #rrggbb or #rrggbbaa, for example "#ff8800" or "#ff880080".
@@ -105,14 +106,23 @@ Popups
   toast-warning      #faa61a    Stripe of warnings
   toast-error        #ed4245    Stripe of error messages
   menu-danger        #f47b7d    Red entries in right click menus
+  tint               #ffffff0f  Light shine on tabs and segments under the mouse (use a dark one on light themes)
+  tint-strong        #ffffff14  The same for a focused segment
+
+Icons
+  star               #f0b232    Filled favorite star
+  The other icons use text-soft (refresh), dim (empty star), muted (info) and input-border-hover (drag handle).
 
 Hypixel colors (only used when hypixelColors is true)
   mc-black #000000      mc-dark-blue #0000aa   mc-dark-green #00aa00   mc-dark-aqua #00aaaa
   mc-dark-red #aa0000   mc-dark-purple #aa00aa mc-gold #ffaa00         mc-gray #aaaaaa
   mc-dark-gray #555555  mc-blue #5555ff        mc-green #55ff55        mc-aqua #55ffff
   mc-red #ff5555        mc-light-purple #ff55ff mc-yellow #ffff55      mc-white #ffffff
-  These are the Minecraft text colors. Item rarities, the SkyBlock level and Trophy Fisher titles use them,
+  These are the Minecraft text colors. Item rarities and the SkyBlock level use them,
   e.g. Legendary is mc-gold and Mythic is mc-light-purple.
+
+Trophy Fisher titles (only used when hypixelColors is true)
+  trophy-novice #cd7f32 (bronze)   trophy-adept #c9d1d9 (silver)   trophy-expert #ffaa00 (gold)   trophy-master #5ce1e6 (diamond)
 
 Party types (only used when hypixelColors is true; name in the side bar and the heading)
   type-diana       gold           type-fishing  aqua           type-mining  dark aqua

@@ -1,5 +1,5 @@
 /* Built-in party finder themes. PartyFinderThemes puts pf-theme-<id> on the body, plus pf-hypixel (Hypixel colors),
-   pf-recomb (items one rarity higher), pf-light (dark icons) and pf-marks (a mark on requirements you don't meet).
+   pf-recomb (items one rarity higher) and pf-marks (dashed border or a mark on requirements you don't meet).
    SBO Dark is the default in partyfinder.css. */
 
 /* Okabe-Ito colors, readable with red-green color blindness */
@@ -63,6 +63,8 @@ body.pf-theme-high-contrast {
 }
 
 body.pf-theme-light {
+    --tint: rgba(0, 0, 0, 0.05);
+    --tint-strong: rgba(0, 0, 0, 0.08);
     --bg: #f2f3f5;
     --panel: #e3e5e8;
     --panel-2: #d7dade;
@@ -220,6 +222,18 @@ body.pf-hypixel .pf-c-light-purple input { color: var(--mc-light-purple); }
 body.pf-hypixel .pf-c-yellow input { color: var(--mc-yellow); }
 body.pf-hypixel .pf-c-white input { color: var(--mc-white); }
 
+/* Trophy Fisher titles in bronze, silver, gold and diamond */
+body {
+    --trophy-novice: #cd7f32;
+    --trophy-adept: #c9d1d9;
+    --trophy-expert: #ffaa00;
+    --trophy-master: #5ce1e6;
+}
+body.pf-hypixel .pf-trophy-novice, body.pf-hypixel .pf-trophy-novice input { color: var(--trophy-novice); }
+body.pf-hypixel .pf-trophy-adept, body.pf-hypixel .pf-trophy-adept input { color: var(--trophy-adept); }
+body.pf-hypixel .pf-trophy-expert, body.pf-hypixel .pf-trophy-expert input { color: var(--trophy-expert); }
+body.pf-hypixel .pf-trophy-master, body.pf-hypixel .pf-trophy-master input { color: var(--trophy-master); }
+
 /* Items in their base rarity, with pf-recomb one higher */
 body.pf-hypixel .pf-r-common { color: var(--mc-white); }
 body.pf-hypixel .pf-r-uncommon { color: var(--mc-green); }
@@ -261,11 +275,7 @@ body.pf-hypixel .pf-heading.pf-type-slayer { color: var(--type-slayer); }
 body.pf-hypixel .pf-side-item.pf-type-custom .pf-side-label { color: var(--type-custom); }
 body.pf-hypixel .pf-heading.pf-type-custom { color: var(--type-custom); }
 
-/* Icons that need a dark version on a light background */
-.pf-on-light { display: none; }
-body.pf-light .pf-on-light { display: inline; }
-body.pf-light .pf-on-dark { display: none; }
-
-/* GuiLib draws dashed borders solid, so requirements you don't meet get a mark instead */
+/* Requirements you don't meet: dashed border on chips, a mark in front of texts without a border */
+body.pf-marks .pf-req.bad { border-style: dashed; }
 .pf-mark { display: none; }
 body.pf-marks .pf-mark { display: inline; font-weight: bold; color: var(--bad); }

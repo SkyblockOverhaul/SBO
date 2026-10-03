@@ -90,12 +90,12 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
         h3(className = "pf-section") { +"Look" }
         settingRow(
             "Theme",
-            "The colors of the party finder. What the picked theme does is shown below."
+            "The colors of the party finder. Hover a theme in the list to see what it does."
         ) {
             select(value = props.theme.id, onChange = { e ->
                 themes.value.firstOrNull { it.id == e.value }?.let(props.onTheme)
             }, className = "pf-theme-select") {
-                themes.value.forEach { theme -> option(theme.id, theme.label) }
+                themes.value.forEach { theme -> option(theme.id, theme.label, title = theme.description) }
             }
         }
         p(className = "pf-hint pf-theme-info") { +props.theme.description }

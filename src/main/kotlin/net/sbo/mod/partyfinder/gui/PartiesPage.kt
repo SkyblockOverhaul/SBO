@@ -190,9 +190,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             title = "Refresh the list (F5)",
             onClick = { refreshNow() }
         ) {
-            // GuiLib can't recolor SVGs, light themes show a dark copy
-            img(src = "${StatView.ICONS}/refresh.svg", className = "pf-icon pf-on-dark")
-            img(src = "${StatView.ICONS}/refresh-dark.svg", className = "pf-icon pf-on-light")
+            img(src = "${StatView.ICONS}/refresh.svg", className = "pf-icon")
         }
     }
     if (me == null && props.ownError != null) {
@@ -438,7 +436,6 @@ private fun NodeBuilder.partyCard(
                     val meets = if (mine) null else StatView.meets(def, need, me)
                     tooltip(content = { statInfo(def.stat, me) }, className = "pf-tip") {
                         span(className = classNames("pf-req", "ok" to (meets == true), "bad" to (meets == false))) {
-                            if (meets == false) span(className = "pf-mark") { +"× " }
                             span(className = "pf-req-label") { +"${StatView.label(def.stat)}: " }
                             pieces(StatView.needPieces(def, need))
                         }

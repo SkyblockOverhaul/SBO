@@ -40,7 +40,7 @@ class PartyFinderThemesTest {
         assertEquals("pf-c-white", StatView.numberColor("sbLevel", 40.0))
         assertEquals("pf-c-dark-green", StatView.numberColor("sbLevel", 199.0))
         assertEquals(listOf(Piece("Mythic", "pf-c-light-purple")), StatView.valuePieces("griffin", JsonPrimitive("MYTHIC")))
-        assertEquals(listOf(Piece("Adept", "pf-c-gray")), StatView.valuePieces("trophyFisher", JsonPrimitive(2)))
+        assertEquals(listOf(Piece("Adept", "pf-trophy-adept")), StatView.valuePieces("trophyFisher", JsonPrimitive(2)))
         assertEquals("pf-c-gold", StatView.numberColor("dianaKills", 250_000.0))
         // Stats without game colors stay plain
         assertNull(StatView.numberColor("magicalPower", 1855.0))
@@ -86,7 +86,7 @@ class PartyFinderThemesTest {
         assertEquals(PartyFinderThemes.DEFAULT, minimal.base)
         assertFalse(minimal.hypixelColors)
         val light = PartyFinderThemes.load(themeFile("example.json", """{ "base": "light", "marks": true }"""))!!
-        assertTrue(light.light && light.marks && light.example)
+        assertTrue(light.base == "light" && light.marks && light.example)
     }
 
     @Test

@@ -21,15 +21,12 @@ internal object PartyFinderThemes {
         // Built-in color set the theme starts from, see themes.css
         val base: String,
         val hypixelColors: Boolean = false,
-        // Marks requirements a player doesn't meet with a "×"
+        // Requirements a player doesn't meet get a dashed border, or a "×" where there is no border
         val marks: Boolean = false,
         // Own colors of a custom theme, variable name without "--" to value
         val colors: Map<String, String> = emptyMap(),
         val example: Boolean = false
-    ) {
-        // Light backgrounds need the dark icon versions
-        val light: Boolean get() = base == "light"
-    }
+    )
 
     val BUILT_IN = listOf(
         Theme(DEFAULT, "SBO Dark", "The standard SBO look: dark gray with SBO blue.", DEFAULT),
@@ -40,7 +37,7 @@ internal object PartyFinderThemes {
         ),
         Theme(
             "colorblind", "Colorblind Friendly",
-            "Blue and orange instead of green and red, made for red-green color blindness. Requirements you don't meet also get a × in front.",
+            "Blue and orange instead of green and red, made for red-green color blindness. Requirements you don't meet also get a dashed border.",
             "colorblind", marks = true
         ),
         Theme("high-contrast", "High Contrast", "Black background, white text and strong borders. Easier to read.", "high-contrast"),
@@ -66,7 +63,7 @@ internal object PartyFinderThemes {
         "dark-gray", "blue", "green", "aqua", "red", "light-purple", "yellow", "white"
     ).map { "mc-$it" } + listOf(
         "diana", "fishing", "mining", "kuudra", "vanquisher", "rift", "safari", "slayer", "custom"
-    ).map { "type-$it" }
+    ).map { "type-$it" } + listOf("novice", "adept", "expert", "master").map { "trophy-$it" } + listOf("tint", "tint-strong", "star")
 
     // #rgb, #rgba, #rrggbb or #rrggbbaa, nothing else reaches the style
     private val COLOR_VALUE = Regex("^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")

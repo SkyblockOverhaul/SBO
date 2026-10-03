@@ -50,14 +50,43 @@ body {
     --toast-warning: #faa61a;
     --toast-error: #ed4245;
     --menu-danger: #f47b7d;
-    color: var(--text);
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
     --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
     --guilib-surface: var(--menu);
     --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
     --guilib-border: var(--input-border);
-    --guilib-text-muted: var(--subtle);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
     --guilib-scrollbar-thumb: var(--scrollbar-thumb);
     --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
 }
 
 /* Fonts picked in the settings, PartyFinderGui puts the class on the body */
@@ -195,9 +224,13 @@ body {
 .pf-fav-list { min-height: 4px; }
 
 .pf-icon { width: 8px; height: 8px; }
-.pf-star { cursor: pointer; opacity: 0.55; transition: opacity 120ms; }
+/* Icons are drawn in currentColor, so themes color them here */
+.pf-icon-button .pf-icon { color: var(--text-soft); }
+.pf-icon-button:hover .pf-icon { color: var(--text-strong); }
+.pf-star { cursor: pointer; color: var(--dim); opacity: 0.55; transition: opacity 120ms; }
 .pf-star:hover, .pf-star.on { opacity: 1; }
-.pf-info { width: 6px; height: 6px; margin-left: 2px; opacity: 0.8; }
+.pf-star.on { color: var(--star); }
+.pf-info { width: 6px; height: 6px; margin-left: 2px; color: var(--muted); opacity: 0.8; }
 
 .pf-main { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; padding: 6px 8px; }
 
@@ -359,7 +392,7 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-setting-title { color: var(--text-strong); }
 .pf-fav-row { display: flex; align-items: center; gap: 4px; padding: 2px 4px; margin-bottom: 1px; border-radius: 3px; background-color: var(--card); cursor: grab; }
 .pf-fav-name { flex-grow: 1; }
-.pf-grip { opacity: 0.8; }
+.pf-grip { color: var(--input-border-hover); opacity: 0.8; }
 
 /* ---- scrollbars ---- */
 /* GuiLib widgets that scroll on their own, same idle-hiding scrollbar as .guilib-autohide (rule copied from GuiLib ua.css) */
@@ -375,66 +408,10 @@ textarea:scrolling, textarea:hover,
     transition: scrollbar-color 120ms;
 }
 
-/* ---- GuiLib widgets in theme colors ----
-   Workaround: GuiLib's own stylesheet uses fixed colors. Author rules always beat it, also its :hover/:focus/.selected
-   rules, so every state that sets one of these properties is repeated here. Can go once GuiLib reads its colors from variables. */
-button { background-color: var(--control); border-color: var(--control-border); color: var(--text); }
-button:hover { background-color: var(--control-hover); }
-button:active { background-color: var(--control-active); }
-button:focus { border-color: var(--accent); }
-input, textarea, select { background-color: var(--input-bg); border-color: var(--input-border); color: var(--text); }
-input:hover, textarea:hover, select:hover { border-color: var(--input-border-hover); }
-input:focus, textarea:focus, select:focus, select[open] { border-color: var(--accent); }
-input[type=checkbox]:checked { background-color: var(--accent); border-color: var(--accent); }
-.guilib-check { color: var(--accent-text); }
-.guilib-placeholder { color: var(--dim); }
-.guilib-select-arrow { color: var(--subtle); }
-.guilib-select-menu { background-color: var(--menu); border-color: var(--input-border); color: var(--text); }
-.guilib-option.highlighted { background-color: var(--highlight); }
-.guilib-option-check { border-color: var(--input-border); }
-.guilib-tooltip { background-color: var(--popup); border-color: var(--border); color: var(--text); }
-.guilib-modal-backdrop { background-color: var(--backdrop); }
-.guilib-modal { background-color: var(--menu); border-color: var(--input-border); color: var(--text); }
-.guilib-number { background-color: var(--input-bg); border-color: var(--input-border); }
-.guilib-number:hover { border-color: var(--input-border-hover); }
-.guilib-number:focus-within { border-color: var(--accent); }
-.guilib-number-input, .guilib-number-input:hover, .guilib-number-input:focus { background-color: transparent; border-color: transparent; }
-.guilib-number-dec, .guilib-number-inc, .guilib-number-dec:focus, .guilib-number-inc:focus {
-    background-color: var(--menu);
-    border-color: var(--input-border);
-    color: var(--subtle);
-}
-.guilib-number-dec:hover, .guilib-number-inc:hover { background-color: var(--control); color: var(--text-strong); }
-.guilib-number-dec:active, .guilib-number-inc:active { background-color: var(--accent); color: var(--accent-text); }
-.guilib-chip { background-color: var(--input-bg); border-color: var(--input-border); color: var(--subtle); }
-.guilib-chip:hover { border-color: var(--dim); color: var(--text); }
-.guilib-chip:focus { border-color: var(--text-strong); }
-.guilib-chip.selected { background-color: var(--accent-soft); border-color: var(--accent); color: var(--text-strong); }
-.guilib-segmented { background-color: var(--input-bg); border-color: var(--input-border); }
-.guilib-segment:hover { color: var(--text); }
-.guilib-segment.selected { color: var(--accent-text); }
-.guilib-tabs.underline > .guilib-tab-list { border-bottom-color: var(--border); }
-.guilib-tab:hover { color: var(--text); }
-.guilib-tab.active { color: var(--text-strong); }
-.guilib-tabs.pills .guilib-tab.active { color: var(--accent-text); }
-.guilib-switch-track { background-color: var(--disabled); border-color: var(--input-border-hover); }
-.guilib-switch.checked .guilib-switch-track { background-color: var(--accent); border-color: var(--accent); }
-.guilib-radio-dot { background-color: var(--input-bg); border-color: var(--input-border); }
-.guilib-radio:hover .guilib-radio-dot { border-color: var(--dim); }
-.guilib-radio.checked .guilib-radio-dot { background-color: var(--accent-text); border-color: var(--accent); }
-.guilib-toast { background-color: var(--popup); border-color: var(--border); color: var(--text); }
-.guilib-toast.success .guilib-toast-accent { background-color: var(--toast-success); }
-.guilib-toast.warning .guilib-toast-accent { background-color: var(--toast-warning); }
-.guilib-toast.error .guilib-toast-accent { background-color: var(--toast-error); }
-.guilib-toast-message { color: var(--text-soft); }
-.guilib-toast-close { color: var(--dim); }
-.guilib-toast:hover .guilib-toast-close { color: var(--text); }
-.guilib-menu { background-color: var(--popup); border-color: var(--border); color: var(--text); }
-.guilib-menu-item.highlighted { background-color: var(--accent); color: var(--accent-text); }
-.guilib-menu-item.danger { color: var(--menu-danger); }
-.guilib-menu-item.danger.highlighted { background-color: var(--toast-error); color: var(--accent-text); }
-.guilib-menu-shortcut, .guilib-menu-header { color: var(--dim); }
-.guilib-menu-separator { background-color: var(--border); }
+/* ---- GuiLib widgets ----
+   The --guilib-* variables above color them. Selected pills and segments sit on the accent color, so their text uses
+   the text color for accent backgrounds (text-strong would be black on blue in light themes). */
+.guilib-tabs.pills .guilib-tab.active, .guilib-segment.selected { color: var(--accent-text); }
 
 /* ---- small windows ---- */
 @media (max-width: 520px) {
