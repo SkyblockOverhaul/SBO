@@ -453,7 +453,9 @@ private fun NodeBuilder.partyCard(
             collapse(open = expanded) {
                 // Clicks on players keep the card open
                 div(className = "pf-members", onClick = { e -> e.stopPropagation() }) {
+                    // Only plain values here, item lists and the all tiers breakdown stay in the player panel
                     val statIds = (target.reqs.map { it.stat }.filter { party.reqs[it] != null } + target.display).distinct()
+                        .filter { PartyCategories.stat(it)?.kind !in setOf("items", "breakdown") }
                     party.members.forEach { member ->
                         memberRow(
                             member, party, target, statIds, member.uuid == inspected, { onInspect(InspectedPlayer(member, party)) },

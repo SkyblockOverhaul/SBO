@@ -83,7 +83,11 @@ internal object StatView {
                     ProblemText.orBetter(labels.getOrNull(number.toInt()) ?: ProblemText.number(number), number.toInt() >= labels.lastIndex),
                     numberColor(def.stat, number)
                 ))
-                number != null -> listOf(Piece(ProblemText.number(number), numberColor(def.stat, number)), Piece("+"))
+                number != null -> {
+                    // Nothing is above the highest value, so it gets no "+"
+                    val top = PartyCategories.stat(def.stat)?.max?.let { number >= it } == true
+                    listOfNotNull(Piece(ProblemText.number(number), numberColor(def.stat, number)), Piece("+").takeUnless { top })
+                }
                 else -> listOf(Piece(ProblemText.value(def.stat, need)))
             }
         }
