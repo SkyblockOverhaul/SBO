@@ -54,6 +54,10 @@ object SBOKotlin : ClientModInitializer {
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
 	private val configurator = Configurator(MOD_ID)
+
+	// Before the config registers, it drops the old master volume option from the file
+	init { SoundHandler.readLegacyMasterVolume() }
+
 	val settings = Settings.register(configurator)
 
 	lateinit var version: String

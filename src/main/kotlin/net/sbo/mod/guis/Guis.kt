@@ -7,10 +7,10 @@ import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
+import net.sbo.mod.sounds.gui.SoundsGui
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
-import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.SboApi
@@ -20,7 +20,6 @@ object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
     var achievementsGui: AchievementsGUI? = null
-    private var soundGui: SoundGUI? = null
 
 //    private var vexelGui: VexelTest? = null
     private var updating = false
@@ -31,7 +30,6 @@ object Guis {
         partyFinderGui = null
         pastEventsGui = null
         achievementsGui = null
-        soundGui = null
     }
 
     fun openSboPf(calledFromGUI: Boolean = false) {
@@ -75,13 +73,7 @@ object Guis {
             )
             return
         }
-        mc.schedule {
-            if (soundGui == null) {
-                soundGui = SoundGUI()
-            }
-            UScreen.displayScreen(soundGui!!)
-            SBOEvent.emit(SoundsOpenEvent())
-        }
+        mc.schedule { SoundsGui.open() }
     }
 
     fun register() {
