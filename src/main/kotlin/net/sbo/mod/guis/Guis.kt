@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.achievements.gui.AchievementsGui
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 import net.sbo.mod.sounds.gui.SoundsGui
 import net.sbo.mod.utils.chat.Chat
@@ -19,7 +20,6 @@ import java.util.concurrent.TimeUnit
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
     private var pastEventsGui: PastEventsGui? = null
-    var achievementsGui: AchievementsGUI? = null
 
 //    private var vexelGui: VexelTest? = null
     private var updating = false
@@ -29,7 +29,6 @@ object Guis {
     fun resetCachedGuis() {
         partyFinderGui = null
         pastEventsGui = null
-        achievementsGui = null
     }
 
     fun openSboPf(calledFromGUI: Boolean = false) {
@@ -82,12 +81,7 @@ object Guis {
         }
 
         Register.command("sboachievements") {
-            mc.schedule {
-                if (achievementsGui == null) {
-                    achievementsGui = AchievementsGUI()
-                }
-                UScreen.displayScreen(achievementsGui!!)
-            }
+            mc.schedule { AchievementsGui.open() }
         }
 
         Register.command("sbosounds") {

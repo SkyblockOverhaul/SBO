@@ -1,6 +1,7 @@
 package net.sbo.mod.utils.data.configs.sbo
 
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.configs.achievements.AchievementsView
 
 data class SboData(
     var effects: List<Effect> = emptyList(),
@@ -23,6 +24,8 @@ data class SboData(
     var suppressedMessages: MutableSet<String> = mutableSetOf(),
     var partyBlacklist: List<String> = emptyList(),
     var achievementFilter: String = "Locked",
+    // null until the achievements window saves it, then achievementFilter is no longer used
+    var achievementsView: AchievementsView? = null,
     var lastKingDate: Long = 0,
     var lastMantiDate: Long = 0,
     var lastInqDate: Long = 0,
