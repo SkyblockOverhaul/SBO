@@ -12,6 +12,7 @@ import net.sbo.mod.cloud.gui.CloudSyncGui
 import net.sbo.mod.guis.Guis
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.CloudEnvelope
 import net.sbo.mod.utils.data.CloudSlotMeta
 import net.sbo.mod.utils.data.CloudSlotResponse
@@ -266,6 +267,26 @@ object CloudSync {
                 block(slot)
             }
             .error { SBOKotlin.logger.warn("[CloudSync] status failed: ${it.message}") }
+    }
+
+    // Fresh install: offers the cloud save right after /sbokey, if there is one this PC never used
+    fun onSboKeySet() {
+        cloudInfo = null
+        if (state().version != 0) return
+        SboApi.cloudStatus()
+            .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
+                // Not a supporter or no save: nothing to offer
+                if (!response.success) return@toJson
+                val slot = response.slots.find { it.slot == SLOT } ?: return@toJson
+                remember(slot)
+                SBOKotlin.mc.schedule {
+                    notify("info", "You have a cloud save. Click Load in chat to use it on this PC.")
+                    Chat.chat("§6[SBO] §eYou have a cloud save. Load your settings and data on this PC?")
+                    Chat.clickableChat("§6[SBO] §b[Load cloud save]", "Loads your settings and data from the cloud. A backup is made first.") { download() }
+                    Chat.clickableChat("§6[SBO] §7[Open Cloud Sync]", "Opens the Cloud Sync window") { SBOKotlin.mc.schedule { CloudSyncGui.open() } }
+                }
+            }
+            .error { SBOKotlin.logger.warn("[CloudSync] status after /sbokey failed: ${it.message}") }
     }
 
     private fun autoActive(): Boolean = autoSync && !autoPaused && SboKey.get().isNotBlank()
