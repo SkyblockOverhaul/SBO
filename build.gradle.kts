@@ -23,6 +23,17 @@ private fun versionedProperty(name: String): String = project.property("${name}.
 
 private fun isMCVersionGreaterOrEqualTo(version: String): Boolean = Version.parse(mcVersion) >= Version.parse(version)
 
+// Dev only: GuiLib's screenshot automation, compiled unchanged from a local SBO-GuiLib checkout. Only on runClient's classpath, never packaged.
+val guiLibDevDir: File = rootProject.file("../SBO-GuiLib/src/dev")
+val guiLibDev: SourceSet? = if (guiLibDevDir.isDirectory && findProperty("guilib.local") != "false") {
+    sourceSets.create("guilibDev") {
+        java.setSrcDirs(emptyList<File>())
+        resources.setSrcDirs(listOf(guiLibDevDir.resolve("resources")))
+        compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+        runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
+    }.also { kotlin.sourceSets.named("guilibDev") { kotlin.setSrcDirs(listOf(guiLibDevDir.resolve("kotlin"))) } }
+} else null
+
 loom {
     // Some stuff were made private / package-private in later versions, so we need this.
     accessWidenerPath = file("src/main/resources/sbo.classtweaker")
@@ -30,6 +41,20 @@ loom {
     runs.configureEach {
         generateRunConfig.set(true)
         preferGradleTask = true
+        // Points the dev client at another backend, e.g. -PsboApiUrl=http://localhost:3000
+        findProperty("sboApiUrl")?.let { property("sbo.apiUrl", it.toString()) }
+    }
+
+    if (guiLibDev != null) {
+        mods {
+            create("sbo") { sourceSet(sourceSets.main.get()) }
+            create("guilib-dev") { sourceSet(guiLibDev) }
+        }
+        // Screenshots: -Pguilib.dev.shots=call:<object>.<method>, see DevAutomation in SBO-GuiLib
+        runs.named("client") {
+            source(guiLibDev)
+            project.properties.filterKeys { it.startsWith("guilib.dev.") }.forEach { (k, v) -> vmArg("-D$k=$v") }
+        }
     }
 }
 
@@ -377,3 +402,13 @@ tasks.findByName("preprocessTestCode")?.apply {
     }
 }
 
+
+tasks.findByName("preprocessGuilibDevCode")?.apply {
+    when (mcProject) {
+        "26.2-fabric" -> {
+            dependsOn(":26.1.2-fabric:kspGuilibDevKotlin")
+            mustRunAfter("kspGuilibDevKotlin")
+        }
+        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
+    }
+}
