@@ -26,6 +26,7 @@ import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.textarea
+import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
@@ -103,7 +104,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
             numberInput(value = draft.partySize, onChange = { size -> change { partySize = size } }, min = target.minSize, max = target.maxSize)
             span(className = "pf-muted") { +(if (draft.partySize == target.maxSize) "full party" else sizeLabel(draft.partySize)) }
         }
-        p(className = "pf-hint") { +"How many players your party should have, you included. ${target.label} parties can have up to ${target.maxSize}." }
+        p(className = "pf-hint") { +"${target.label} parties can have up to ${target.maxSize} players." }
 
         h3(className = "pf-section") { +"Requirements" }
         p(className = "pf-hint") { +"Players who don't meet these can't join. Leave a field empty or at \"Any\" for no requirement. Your own value is shown on the right." }
@@ -142,7 +143,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         textarea(
             value = note,
             onChange = { e -> change { this.note = e.value } },
-            placeholder = "What are you planning? e.g. \"chill party, need one more\"",
+            placeholder = "Write a short note for your party",
             rows = PartyFinderManager.NOTE_MAX_LINES,
             maxLength = PartyFinderManager.NOTE_MAX_LENGTH,
             maxLines = PartyFinderManager.NOTE_MAX_LINES,
@@ -154,13 +155,13 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
 
         div(className = "pf-form-buttons") {
             button(onClick = { draft = PartyDraft(target.partyType, target.subType, target.maxSize) }) { +"Reset" }
-            button(className = "primary", disabled = !target.createOpen || !hasKey, onClick = { submit() }) {
-                +(if (props.inQueue) "Update party" else "Create party")
+            val createHint = "You must be alone or the party leader. Everyone already in your party has to meet the requirements too." +
+                (if (props.inQueue) " Updating replaces the party you have listed right now." else "")
+            tooltip(createHint, placement = "top", className = "pf-tip") {
+                button(className = "primary", disabled = !target.createOpen || !hasKey, onClick = { submit() }) {
+                    +(if (props.inQueue) "Update party" else "Create party")
+                }
             }
-        }
-        p(className = "pf-hint") {
-            +"You must be alone or the party leader. Everyone already in your party has to meet the requirements too."
-            if (props.inQueue) +" Updating replaces the party you have listed right now."
         }
     }
 }
