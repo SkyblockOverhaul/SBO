@@ -14,7 +14,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
         button {
             title = "Cloud Sync"
             text = "Open"
-            description = "Open the Cloud Sync window (/sbocloud): upload, download, compare, Auto Sync and your sign key."
+            description = "Open the Cloud Sync window (/sbocloud): upload, download, compare, Auto Sync, your sign key and the backups SBO made on this PC (backups work without supporter status)."
             onClick {
                 SBOKotlin.mc.schedule { CloudSyncGui.open() }
             }

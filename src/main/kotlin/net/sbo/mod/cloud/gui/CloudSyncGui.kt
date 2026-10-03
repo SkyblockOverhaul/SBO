@@ -17,6 +17,7 @@ import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.utils.data.Backups
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.cloud.CloudArea
 import net.sbo.mod.utils.data.cloud.CloudSide
@@ -24,6 +25,7 @@ import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.utils.data.cloud.CloudSync.CompareResult
 import net.sbo.mod.utils.data.cloud.CloudSync.SyncState
 import net.sbo.mod.utils.data.cloud.CloudSyncKeys
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -40,7 +42,7 @@ object CloudSyncGui {
 
     private val App = component("CloudSync") {
         val toast = useToast()
-        var comparing by useState(false)
+        var page by useState(Page.MAIN)
         var uiScale by useState(DataManager.sboData.cloudSyncUiScale?.takeIf { it in SCALES })
         useScreenScale(uiScale)
         val size = WindowSize(uiScale) { scale ->
@@ -55,16 +57,21 @@ object CloudSyncGui {
             onCleanup { CloudSync.toaster = null }
         }
 
-        if (comparing) ComparePage(CompareProps(size, onBack = { comparing = false }))
-        else MainPage(MainProps(size, onCompare = { comparing = true }))
+        when (page) {
+            Page.MAIN -> MainPage(MainProps(size, onCompare = { page = Page.COMPARE }, onBackups = { page = Page.BACKUPS }))
+            Page.COMPARE -> ComparePage(CompareProps(size, onBack = { page = Page.MAIN }))
+            Page.BACKUPS -> BackupsPage(BackupsProps(size, onBack = { page = Page.MAIN }))
+        }
     }
+
+    private enum class Page { MAIN, COMPARE, BACKUPS }
 
     // Window size picker in the header
     private data class WindowSize(val scale: Float?, val onChange: (Float?) -> Unit)
 
-    private data class MainProps(val size: WindowSize, val onCompare: () -> Unit)
+    private data class MainProps(val size: WindowSize, val onCompare: () -> Unit, val onBackups: () -> Unit)
 
-    private val MainPage = component<MainProps>("CloudSyncMain") { (size, onCompare) ->
+    private val MainPage = component<MainProps>("CloudSyncMain") { (size, onCompare, onBackups) ->
         var status by useState<CloudSync.Status?>(null)
         var revision by useState(0)
         var signKey by useState(CloudSyncKeys.text() ?: "")
@@ -104,7 +111,7 @@ object CloudSyncGui {
         val hasSave = status?.state !in setOf(SyncState.NO_SAVE, SyncState.NO_SBO_KEY, SyncState.ERROR, null)
 
         div(className = "cs-window") {
-            windowHeader("Cloud Sync", size)
+            windowHeader("Cloud Sync", size, onBackups = onBackups)
             scroll(className = "cs-body guilib-autohide") {
                 statusCard(status, busy, refreshWait, refreshing || busy != null) { refresh() }
 
@@ -253,6 +260,64 @@ object CloudSyncGui {
         }
     }
 
+    private data class BackupsProps(val size: WindowSize, val onBack: () -> Unit)
+
+    private val BackupsPage = component<BackupsProps>("CloudSyncBackups") { (size, onBack) ->
+        val toast = useToast()
+        var backups by useState(Backups.list())
+        var confirm by useState<Backups.Backup?>(null)
+
+        // Loading one adds a new backup in the background
+        useInterval(2000) { backups = Backups.list() }
+
+        div(className = "cs-window cs-wide") {
+            windowHeader("Backups", size, onBack)
+            scroll(className = "cs-body guilib-autohide") {
+                div(className = "cs-hint cs-backups-hint") {
+                    +"SBO backs up your trackers, achievements and other SBO data when you close the game and before a cloud save is loaded. The newest 10 are kept. Your /sbo settings are not part of it."
+                }
+                if (backups.isEmpty()) div(className = "cs-center cs-empty") { +"No backups yet. SBO makes one when you close the game." }
+                backups.forEach { backup ->
+                    div(className = "cs-backup", key = backup.file.name) {
+                        div(className = "cs-backup-text") {
+                            div(className = "cs-backup-date") { +DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt)) }
+                            div(className = "cs-hint") { +"${ago(backup.createdAt)} · ${(backup.size + 1023) / 1024} KB" }
+                        }
+                        button(title = "Puts your SBO data back to this backup", onClick = { confirm = backup }) { +"Load" }
+                    }
+                }
+            }
+        }
+
+        modal(open = confirm != null, onClose = { confirm = null }, className = "cs-modal") {
+            val backup = confirm ?: return@modal
+            div(className = "cs-modal-title") { +"Load this backup?" }
+            div(className = "cs-modal-text") {
+                +"Your trackers, achievements and other SBO data go back to ${DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt))}. Your current data is backed up first."
+            }
+            div(className = "cs-buttons cs-modal-buttons") {
+                button(onClick = { confirm = null }) { +"Cancel" }
+                button(className = "cs-primary", onClick = {
+                    confirm = null
+                    runCatching { Backups.load(backup) }
+                        .onSuccess { toast.success("Backup from ${DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt))} loaded.", title = "Backups") }
+                        .onFailure { toast.error("Could not load the backup: ${it.message}", title = "Backups", durationMs = 6000) }
+                }) { +"Load backup" }
+            }
+        }
+    }
+
+    // "5 min ago", "3 h ago", "2 days ago"
+    private fun ago(time: Long): String {
+        val minutes = Duration.ofMillis(System.currentTimeMillis() - time).toMinutes()
+        return when {
+            minutes < 1 -> "just now"
+            minutes < 60 -> "$minutes min ago"
+            minutes < 48 * 60 -> "${minutes / 60} h ago"
+            else -> "${minutes / (24 * 60)} days ago"
+        }
+    }
+
     private fun allIds(areas: List<CloudArea>): List<String> =
         areas.flatMap { area -> if (area.perField) area.fields.map { it.id } else listOf(area.file) }
 
@@ -301,11 +366,12 @@ object CloudSyncGui {
         }
     }
 
-    private fun NodeBuilder.windowHeader(title: String, size: WindowSize, onBack: (() -> Unit)? = null) {
+    private fun NodeBuilder.windowHeader(title: String, size: WindowSize, onBack: (() -> Unit)? = null, onBackups: (() -> Unit)? = null) {
         header(className = "cs-header") {
             if (onBack != null) button(className = "cs-icon", title = "Back", onClick = { onBack() }) { +"←" }
             span(className = "cs-title") { +title }
             div(className = "cs-spacer")
+            if (onBackups != null) button(className = "cs-header-button", title = "Load one of the backups SBO made on this PC", onClick = { onBackups() }) { +"Backups" }
             span(className = "cs-size-label") { +"Size" }
             select(value = scaleId(size.scale), onChange = { e -> size.onChange(e.value.toFloatOrNull()) }, className = "cs-size") {
                 SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Auto" else scaleId(scale), title = if (scale == null) "Uses your Minecraft GUI scale" else null) }

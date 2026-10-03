@@ -123,6 +123,7 @@ body {
 .cs-header .cs-icon:first-child { margin-left: -6px; }
 .cs-close:hover { background-color: var(--danger); }
 .cs-size-label { color: var(--muted); font-size: 7px; }
+.cs-header-button { padding: 0 5px; font-size: 7px; }
 .cs-size { min-width: 46px; padding-top: 0; padding-bottom: 0; }
 
 .cs-body { flex-grow: 1; min-height: 0; padding: 6px 8px 8px 8px; }
@@ -225,6 +226,22 @@ body {
 .cs-value { color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs-pick .guilib-segment { max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs-more { padding: 2px 6px 3px 6px; }
+
+.cs-backups-hint { margin: 0 2px 6px 2px; }
+.cs-empty { padding: 12px 0; }
+.cs-backup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    margin-bottom: 3px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+.cs-backup:hover { background-color: var(--card-hover); }
+.cs-backup-text { flex-grow: 1; min-width: 0; }
+.cs-backup-date { color: var(--text-strong); }
 .cs-columns { color: var(--muted); font-size: 7px; }
 .cs-columns:hover { background-color: transparent; }
 
