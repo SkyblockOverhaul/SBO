@@ -20,6 +20,7 @@ import net.sbo.guilib.core.dsl.p
 import net.sbo.guilib.core.dsl.playerHead
 import net.sbo.guilib.core.dsl.radioGroup
 import net.sbo.guilib.core.dsl.scroll
+import net.sbo.guilib.core.dsl.multiSelect
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tooltip
@@ -320,6 +321,19 @@ private fun NodeBuilder.filterDialog(
                 )
             }
             PartyListFilters.filterableOptions(target).forEach { partyOption ->
+                if (PartyListFilters.filtersSeveral(partyOption)) {
+                    // Old saved filters hold one value, a comma list of one
+                    filterRow(partyOption.label, "Only parties with one of these. Parties set to \"Any\" are always shown.", key = partyOption.id) {
+                        multiSelect(
+                            values = partyOption.picks(filter.options[partyOption.id]),
+                            onChange = { ids -> setFilter { if (ids.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = partyOption.picks(ids.joinToString(",")).joinToString(",") } },
+                            placeholder = "Show all"
+                        ) {
+                            PartyListFilters.filterValues(partyOption).forEach { option(it.id, it.label) }
+                        }
+                    }
+                    return@forEach
+                }
                 filterRow(partyOption.label, null, key = partyOption.id) {
                     select(value = filter.options[partyOption.id] ?: "", onChange = { e ->
                         setFilter { if (e.value.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = e.value }

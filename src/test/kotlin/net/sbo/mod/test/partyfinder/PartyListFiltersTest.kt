@@ -138,7 +138,8 @@ class PartyListFiltersTest {
             party("none")
         )
         val filter = PartyListFilter(options = mutableMapOf("bosses" to "ashfang"))
-        assertEquals(listOf("two"), PartyListFilters.apply(parties, filter, minibosses, null, null).map { it.id })
+        // No pick means any boss
+        assertEquals(listOf("two", "none"), PartyListFilters.apply(parties, filter, minibosses, null, null).map { it.id })
     }
 
     @Test
@@ -155,6 +156,35 @@ class PartyListFiltersTest {
         }
         val visible = PartyListFilters.apply(listOf(basic, infernal), PartyListFilter(canJoin = true), all, null, null, meFor = { _, t -> own[t.key] })
         assertEquals(listOf("basic"), visible.map { it.id })
+    }
+
+    @Test
+    fun filtersSeveralBossesAndLocations() {
+        fun matching(target: PartyTarget, filter: Map<String, String>, vararg parties: Pair<String, Map<String, String>>) =
+            PartyListFilters.apply(parties.map { (id, options) -> party(id, options = options) }, PartyListFilter(options = filter.toMutableMap()), target, null, null)
+                .map { it.id }
+        val minibosses = PartyCategories.target("bestiary", "minibosses")!!
+        val bosses = arrayOf(
+            "ashfang" to mapOf("bosses" to "ashfang"),
+            "duke" to mapOf("bosses" to "barbarian_duke_x"),
+            "both" to mapOf("bosses" to "bladesoul,ashfang"),
+            // No pick means all bosses
+            "all" to emptyMap()
+        )
+        assertEquals(listOf("ashfang", "both", "all"), matching(minibosses, mapOf("bosses" to "ashfang"), *bosses))
+        assertEquals(listOf("ashfang", "duke", "both", "all"), matching(minibosses, mapOf("bosses" to "ashfang,barbarian_duke_x"), *bosses))
+
+        val lava = PartyCategories.target("fishing", "lava")!!
+        val places = arrayOf(
+            "isle" to mapOf("location" to "crimson_isle"),
+            "hollows" to mapOf("location" to "crystal_hollows"),
+            "anywhere" to mapOf("location" to "any")
+        )
+        assertEquals(listOf("isle", "anywhere"), matching(lava, mapOf("location" to "crimson_isle"), *places))
+        assertEquals(listOf("isle", "hollows", "anywhere"), matching(lava, mapOf("location" to "crimson_isle,crystal_hollows"), *places))
+        // Fields with up to three values keep one exact value
+        val ironman = arrayOf("only" to mapOf("ironman" to "only"), "any" to mapOf("ironman" to "any"))
+        assertEquals(listOf("only"), matching(lava, mapOf("ironman" to "only"), *ironman))
     }
 
     @Test

@@ -10,6 +10,7 @@ import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 /** Applies the party list filters and sorting. The own party always stays on top. */
 object PartyListFilters {
     private val REQ_TYPES = setOf("min", "rarity", "flag")
+    private const val ANY = "any"
 
     fun apply(
         parties: List<PartyView>,
@@ -38,6 +39,23 @@ object PartyListFilters {
     /** Party fields the filter dialog offers. */
     fun filterableOptions(target: PartyTarget): List<PartyOption> = target.options
 
+    /** Fields with many values or several picks, the filter dialog offers several values for them. */
+    fun filtersSeveral(option: PartyOption): Boolean = option.multiple || option.values.size > 3
+
+    /** Values the filter dialog offers for a field; "any" is left out, such parties always match. */
+    fun filterValues(option: PartyOption) = option.values.filter { !filtersSeveral(option) || it.id != ANY }
+
+    /** Whether the party's value of [option] matches the [wanted] filter value (a comma list for several values). */
+    fun optionMatches(party: PartyView, option: PartyOption, wanted: String): Boolean {
+        val value = party.options[option.id] ?: option.default
+        if (!filtersSeveral(option)) return value == wanted
+        val picked = option.picks(wanted) - ANY
+        if (picked.isEmpty() || value == ANY) return true
+        // No picks on a field with several values means all of them, like the bosses
+        val partyPicks = if (option.multiple) option.picks(value).ifEmpty { option.values.map { it.id } } else listOf(value)
+        return partyPicks.any { it in picked }
+    }
+
     /** Requirements the filter dialog offers, item lists are left out. */
     fun filterableReqs(target: PartyTarget): List<ReqDef> = target.reqs.filter { it.type in REQ_TYPES }
 
@@ -57,9 +75,7 @@ object PartyListFilters {
         val options = filterableOptions(target)
         for ((id, wanted) in filter.options) {
             val option = options.firstOrNull { it.id == id } ?: continue
-            val value = party.options[id] ?: option.default
-            // A field with several values matches when the party picked the wanted one
-            if (if (option.multiple) wanted !in option.picks(value) else value != wanted) return false
+            if (!optionMatches(party, option, wanted)) return false
         }
         val reqs = filterableReqs(target)
         for ((stat, wanted) in filter.reqs) {
