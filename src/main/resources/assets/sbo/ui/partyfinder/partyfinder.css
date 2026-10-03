@@ -296,7 +296,10 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-card:hover { border-color: var(--border-hover); background-color: var(--card-hover); }
 .pf-card.mine { border-color: var(--ok-border); }
 .pf-card.full { opacity: 0.65; }
-.pf-card-head { display: flex; align-items: center; gap: 4px; }
+/* Wraps in narrow windows instead of pushing the join button out */
+.pf-card-head { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 4px; }
+.pf-card-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }
+.pf-card-tags .pf-tag { white-space: normal; }
 .pf-leader { color: var(--text-strong); }
 .pf-head { width: 8px; height: 8px; margin-right: 3px; }
 .pf-tag {

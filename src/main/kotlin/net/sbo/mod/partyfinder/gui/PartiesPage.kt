@@ -449,21 +449,27 @@ private fun NodeBuilder.partyCard(
                 if (mine) span(className = "pf-tag mine") { +"Your party" }
                 span(className = "pf-tag", title = "Players in the party / party size") { +"${party.memberCount}/${party.partySize}" }
                 if (party.partySize < target.maxSize) span(className = "pf-tag size") { +sizeLabel(party.partySize) }
-                target.opensAt?.takeIf { !target.open }?.let { span(className = "pf-tag option") { +"Event starts in ${until(it)}" } }
-                target.options.forEach { option ->
-                    val value = party.options[option.id] ?: return@forEach
-                    if (value == "any" || value.isEmpty()) return@forEach
-                    val label = if (option.multiple) {
-                        option.picks(value).mapNotNull { id -> option.values.firstOrNull { it.id == id }?.label }.joinToString(", ")
-                    } else {
-                        option.values.firstOrNull { it.id == value }?.label ?: value
-                    }
-                    span(className = "pf-tag option") { +"${option.label}: $label" }
-                }
                 div(className = "pf-spacer")
                 span(className = "pf-age") { +ago(party.createdAt) }
                 if (!mine) joinButton(full, problems, target, onJoin)
             }
+            // Party fields get their own row that wraps, long ones would push the join button out of the window
+            val tags = buildList {
+                target.opensAt?.takeIf { !target.open }?.let { add("Event starts in ${until(it)}") }
+                target.options.forEach { option ->
+                    val value = party.options[option.id] ?: return@forEach
+                    if (value == "any" || value.isEmpty()) return@forEach
+                    val label = if (option.multiple) {
+                        val picks = option.picks(value)
+                        if (picks.size == option.values.size) "All"
+                        else picks.mapNotNull { id -> option.values.firstOrNull { it.id == id }?.label }.joinToString(", ")
+                    } else {
+                        option.values.firstOrNull { it.id == value }?.label ?: value
+                    }
+                    add("${option.label}: $label")
+                }
+            }
+            if (tags.isNotEmpty()) div(className = "pf-card-tags") { tags.forEach { span(className = "pf-tag option") { +it } } }
             if (party.note.isNotBlank()) div(className = "pf-note") { +party.note }
             div(className = "pf-reqs") {
                 var any = false
