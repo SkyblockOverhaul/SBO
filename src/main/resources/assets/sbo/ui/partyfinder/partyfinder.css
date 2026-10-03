@@ -431,8 +431,19 @@ textarea:scrolling, textarea:hover,
     .pf-field { grid-template-columns: 100px minmax(0, 1fr); }
     .pf-own { grid-column: 2; text-align: left; }
 }
+.pf-narrow-only { display: none; }
+@media (max-width: 520px) {
+    .pf-wide-only { display: none; }
+    .pf-narrow-only { display: block; }
+}
 @media (max-width: 400px) {
     .pf-header { gap: 4px; }
+}
+/* Low windows: pills and filter bar scroll away with the parties instead of taking most of the height */
+@media (max-height: 300px) {
+    .pf-main-list { overflow-y: auto; }
+    .pf-main-list > * { flex-shrink: 0; }
+    .pf-main-list .pf-list { flex-grow: 0; overflow: visible; }
 }
 /* No room for the count next to the tabs */
 @media (max-width: 360px) {

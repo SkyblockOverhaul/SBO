@@ -252,7 +252,8 @@ object PartyFinderGui {
                         }
                     }
 
-                    main(className = "pf-main") {
+                    // pf-main-list lets low windows scroll the toolbar away with the parties
+                    main(className = classNames("pf-main", "pf-main-list guilib-autohide" to (page != "settings" && page != "create"))) {
                         when {
                             page == "settings" -> SettingsPage(
                                 SettingsProps(

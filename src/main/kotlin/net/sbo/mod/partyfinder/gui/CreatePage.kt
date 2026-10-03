@@ -148,8 +148,17 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                                     partyOption.values.forEach { option(it.id, it.label) }
                                 }
                             } else {
-                                segmented(value = draft.options[partyOption.id] ?: partyOption.default, onChange = { value -> change { options[partyOption.id] = value } }) {
-                                    partyOption.values.forEach { option(it.id, it.label) }
+                                // Narrow windows cut the segments off, the CSS shows the dropdown there instead
+                                val value = draft.options[partyOption.id] ?: partyOption.default
+                                div(className = "pf-wide-only") {
+                                    segmented(value = value, onChange = { picked -> change { options[partyOption.id] = picked } }) {
+                                        partyOption.values.forEach { option(it.id, it.label) }
+                                    }
+                                }
+                                div(className = "pf-narrow-only") {
+                                    select(value = value, onChange = { e -> change { options[partyOption.id] = e.value } }) {
+                                        partyOption.values.forEach { option(it.id, it.label) }
+                                    }
                                 }
                             }
                         }
