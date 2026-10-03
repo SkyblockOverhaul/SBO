@@ -21,6 +21,7 @@ import net.sbo.mod.partyfinder.gui.StatView
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
@@ -171,6 +172,27 @@ class PartyFinderLogicTest {
         assertEquals("Crimson Armor", StatView.need(def, armor("BASIC")))
         assertEquals("Mythic", ProblemText.rarityNeed("MYTHIC"))
         assertEquals("Legendary or better", ProblemText.rarityNeed("LEGENDARY"))
+    }
+
+    @Test
+    fun petsCanAskForARarity() {
+        val def = target("kuudra", "infernal").req("kuudraPet")!!
+        assertEquals("minRarity", def.choices.first { it.id == "ENDER_DRAGON" }.minimumField)
+        // Golden Dragon only exists as Legendary, nothing to choose
+        assertNull(def.choices.first { it.id == "GOLDEN_DRAGON" }.minimumField)
+
+        val legendary = JsonArray(listOf(buildJsonObject { put("id", "ENDER_DRAGON"); put("minRarity", "LEGENDARY") }))
+        fun pet(rarity: String?) = buildJsonArray { add(buildJsonObject { put("id", "ENDER_DRAGON"); rarity?.let { put("rarity", it) } }) }
+        assertTrue(ReqMatcher.meets("anyOf", pet("LEGENDARY"), legendary))
+        assertFalse(ReqMatcher.meets("anyOf", pet("EPIC"), legendary))
+        assertFalse(ReqMatcher.meets("anyOf", pet(null), legendary))
+        assertTrue(ReqMatcher.meets("anyOf", pet("EPIC"), buildJsonArray { add(JsonPrimitive("ENDER_DRAGON")) }))
+
+        assertEquals("Legendary Ender Dragon", StatView.need(def, legendary))
+        assertEquals("Legendary Ender Dragon", ProblemText.value("kuudraPet", pet("LEGENDARY")))
+        val fishing = target("fishing", "water").req("fishingPet")!!
+        val flyingFish = JsonArray(listOf(buildJsonObject { put("id", "FLYING_FISH"); put("minRarity", "EPIC") }))
+        assertEquals("Flying Fish (Epic or better)", StatView.need(fishing, flyingFish))
     }
 
     @Test

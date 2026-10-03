@@ -40,8 +40,14 @@ internal object StatView {
             value is JsonArray && value.isNotEmpty() -> value.flatMapIndexed { i, item ->
                 val id = (item as? JsonObject)?.get("id")?.text() ?: item.text() ?: "?"
                 val tier = (item as? JsonObject)?.get("tier")?.text()
+                val rarity = (item as? JsonObject)?.get("rarity")?.text()
                 val label = ProblemText.choiceLabel(statId, id)
-                val piece = Piece(if (tier != null && tier != "BASIC") "${ProblemText.title(tier)} $label" else label, itemColor(statId, id))
+                val piece = when {
+                    // Pets show the rarity the player owns, in its color
+                    rarity != null -> Piece("${ProblemText.title(rarity)} $label", rarityColor(rarity))
+                    tier != null && tier != "BASIC" -> Piece("${ProblemText.title(tier)} $label", itemColor(statId, id))
+                    else -> Piece(label, itemColor(statId, id))
+                }
                 if (i == 0) listOf(piece) else listOf(Piece(", "), piece)
             }
             else -> listOf(Piece(ProblemText.value(statId, value), valueColor(statId, value)))
@@ -68,8 +74,10 @@ internal object StatView {
         "anyOf" -> ReqMatcher.picks(need).flatMapIndexed { i, pick ->
             val id = (pick as? JsonObject)?.get("id")?.text() ?: pick.text() ?: "?"
             val choice = def.choices.firstOrNull { it.id == id }
-            val text = ProblemText.tierPick(choice?.label ?: ProblemText.title(id), (pick as? JsonObject)?.get("minTier")?.text())
-            val color = choice?.rarity?.let(::itemRarityClass)
+            val text = ProblemText.choicePick(choice?.label ?: ProblemText.title(id), pick, choice)
+            // Pets have no base rarity, they take the color of the rarity the party asks for
+            val minRarity = (pick as? JsonObject)?.get("minRarity")?.text()
+            val color = choice?.rarity?.let(::itemRarityClass) ?: (minRarity ?: choice?.rarities?.singleOrNull())?.let(::rarityColor)
             // The tier note in brackets stays uncolored
             val bracket = text.indexOf(" (")
             val pieces = if (bracket > 0) listOf(Piece(text.substring(0, bracket), color), Piece(text.substring(bracket))) else listOf(Piece(text, color))

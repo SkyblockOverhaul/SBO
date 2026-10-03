@@ -79,8 +79,13 @@ data class ItemChoice(
     val tiers: Boolean = false,
     val minLevel: Int? = null,
     // Base rarity ("LEGENDARY"), pets have none
-    val rarity: String? = null
-)
+    val rarity: String? = null,
+    // Rarities a pet exists in, lowest first; with more than one the creator may ask for a minimum
+    val rarities: List<String> = emptyList()
+) {
+    /** Field of a pick that holds its lowest tier or rarity, null when the creator can't choose one. */
+    val minimumField: String? get() = if (tiers) "minTier" else if (rarities.size > 1) "minRarity" else null
+}
 
 @Serializable
 data class PartyOption(

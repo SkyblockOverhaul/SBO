@@ -90,8 +90,13 @@ object ProblemText {
             is JsonArray -> if (value.isEmpty()) "none" else value.joinToString(", ") { item ->
                 val id = (item as? JsonObject)?.get("id")?.text() ?: item.text() ?: "?"
                 val tier = (item as? JsonObject)?.get("tier")?.text()
+                val rarity = (item as? JsonObject)?.get("rarity")?.text()
                 val label = choiceLabel(statId, id)
-                if (tier != null && tier != "BASIC") "${title(tier)} $label" else label
+                when {
+                    rarity != null -> "${title(rarity)} $label"
+                    tier != null && tier != "BASIC" -> "${title(tier)} $label"
+                    else -> label
+                }
             }
             is JsonObject -> value.entries.joinToString(", ") { (key, v) -> "${title(key)} ${value(statId, v)}" }
         }
@@ -123,11 +128,28 @@ object ProblemText {
         }
     }
 
+    /** "Ender Dragon (Legendary or better)", "Legendary Ender Dragon" at the pet's top rarity, any rarity for its lowest. */
+    fun rarityPick(label: String, minRarity: String, rarities: List<String>): String {
+        val rank = rarities.indexOf(minRarity.uppercase(Locale.US))
+        return when {
+            rank <= 0 -> label
+            rank == rarities.lastIndex -> "${title(minRarity)} $label"
+            else -> "$label (${title(minRarity)} or better)"
+        }
+    }
+
+    /** One anyOf pick with its lowest tier or rarity. */
+    fun choicePick(label: String, pick: JsonElement, choice: ItemChoice?): String {
+        val minRarity = (pick as? JsonObject)?.get("minRarity")?.text()
+        if (minRarity != null) return rarityPick(label, minRarity, choice?.rarities.orEmpty())
+        return tierPick(label, (pick as? JsonObject)?.get("minTier")?.text())
+    }
+
     private fun picks(need: JsonElement, choices: List<ItemChoice>): String =
         ReqMatcher.picks(need).joinToString(", ") { pick ->
             val id = (pick as? JsonObject)?.get("id")?.text() ?: pick.text() ?: "?"
-            val label = choices.firstOrNull { it.id == id }?.label ?: id
-            tierPick(label, (pick as? JsonObject)?.get("minTier")?.text())
+            val choice = choices.firstOrNull { it.id == id }
+            choicePick(choice?.label ?: id, pick, choice)
         }
 
     fun choiceLabel(statId: String, id: String): String = PartyCategories.choice(statId, id)?.label ?: title(id)

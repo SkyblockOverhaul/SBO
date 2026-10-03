@@ -50,8 +50,8 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
                         }
                     }
                     if (def != null && need != null) div(className = "pf-panel-need") {
-                        +"Party needs: "
-                        pieces(StatView.needPieces(def, need))
+                        // Stays gray, Hypixel colors are only for the player's values
+                        +"Party needs: ${StatView.need(def, need)}"
                     }
                 }
             }

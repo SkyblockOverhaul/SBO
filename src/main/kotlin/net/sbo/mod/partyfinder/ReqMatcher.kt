@@ -27,12 +27,15 @@ object ReqMatcher {
         "flag" -> have.primitive()?.booleanOrNull == true
         "rarity" -> rarityRank(have.text()) >= rarityRank(need.text()).coerceAtLeast(0)
         "anyOf" -> {
-            val owned = (have as? JsonArray).orEmpty().mapNotNull { it.pickId()?.let { id -> id to it.field("tier") } }
+            val owned = (have as? JsonArray).orEmpty()
             val hasPick = { pick: JsonElement ->
                 val id = pick.pickId()
                 val minTier = pick.field("minTier")
-                id != null && owned.any { (ownedId, tier) ->
-                    ownedId == id && (minTier == null || tierRank(tier ?: "BASIC") >= tierRank(minTier))
+                val minRarity = pick.field("minRarity")
+                id != null && owned.any { item ->
+                    item.pickId() == id
+                        && (minTier == null || tierRank(item.field("tier") ?: "BASIC") >= tierRank(minTier))
+                        && (minRarity == null || rarityRank(item.field("rarity")) >= rarityRank(minRarity))
                 }
             }
             val picks = picks(need)

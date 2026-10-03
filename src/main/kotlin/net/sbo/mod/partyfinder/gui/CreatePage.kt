@@ -240,12 +240,14 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
     }
 }
 
-/** Pick several items, players need one or all of them; sets with tiers (Kuudra armor) also get a lowest tier. */
+/** Pick several items, players need one or all of them; Kuudra armor gets a lowest tier, pets a lowest rarity. */
 private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (String?) -> Unit) {
     val all = ReqMatcher.matchesAll(saved)
     val picks = ReqMatcher.picks(saved).mapNotNull { pick ->
         when (pick) {
-            is JsonObject -> (pick["id"] as? JsonPrimitive)?.contentOrNull?.let { it to (pick["minTier"] as? JsonPrimitive)?.contentOrNull }
+            is JsonObject -> (pick["id"] as? JsonPrimitive)?.contentOrNull?.let {
+                it to ((pick["minTier"] ?: pick["minRarity"]) as? JsonPrimitive)?.contentOrNull
+            }
             is JsonPrimitive -> pick.contentOrNull?.let { it to null }
             else -> null
         }
@@ -253,8 +255,9 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
     fun store(next: List<Pair<String, String?>>, matchAll: Boolean = all) {
         if (next.isEmpty()) return save(null)
         val list = buildJsonArray {
-            next.forEach { (id, minTier) ->
-                if (minTier == null) add(JsonPrimitive(id)) else add(buildJsonObject { put("id", id); put("minTier", minTier) })
+            next.forEach { (id, minimum) ->
+                val field = def.choices.firstOrNull { it.id == id }?.minimumField
+                if (minimum == null || field == null) add(JsonPrimitive(id)) else add(buildJsonObject { put("id", id); put(field, minimum) })
             }
         }
         save((if (matchAll) buildJsonObject { put("match", "all"); put("picks", list) } else list).toString())
@@ -268,7 +271,8 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
             searchable = def.choices.size > 8,
             searchPlaceholder = "Search..."
         ) {
-            def.choices.forEach { option(it.id, it.label, className = it.rarity?.let(StatView::itemRarityClass)) }
+            // Pets that exist in one rarity only take its color
+            def.choices.forEach { option(it.id, it.label, className = it.rarity?.let(StatView::itemRarityClass) ?: it.rarities.singleOrNull()?.let(StatView::rarityColor)) }
         }
         if (picks.size > 1) {
             segmented(value = if (all) "all" else "any", onChange = { mode -> store(picks, mode == "all") }, className = "pf-match") {
@@ -276,16 +280,22 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
                 option("all", "All of these")
             }
         }
-        picks.forEach { (id, minTier) ->
+        picks.forEach { (id, minimum) ->
             val choice: ItemChoice = def.choices.firstOrNull { it.id == id } ?: return@forEach
-            if (!choice.tiers) return@forEach
+            if (choice.minimumField == null) return@forEach
             div(className = "pf-tier-row", key = id) {
                 span { +"${choice.label}, at least " }
-                select(value = minTier ?: "", onChange = { e ->
+                select(value = minimum ?: "", onChange = { e ->
                     store(picks.map { if (it.first == id) id to e.value.takeIf { v -> v.isNotEmpty() } else it })
                 }) {
-                    option("", "any tier")
-                    ReqMatcher.KUUDRA_TIERS.forEach { option(it, ProblemText.title(it)) }
+                    if (choice.tiers) {
+                        option("", "any tier")
+                        ReqMatcher.KUUDRA_TIERS.forEach { option(it, ProblemText.title(it)) }
+                    } else {
+                        // The lowest rarity is the same as any
+                        option("", "any rarity")
+                        choice.rarities.drop(1).forEach { option(it, ProblemText.title(it), className = StatView.rarityColor(it)) }
+                    }
                 }
             }
         }
