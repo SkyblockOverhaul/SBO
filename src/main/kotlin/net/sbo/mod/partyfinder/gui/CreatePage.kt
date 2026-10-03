@@ -142,6 +142,11 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                                 ) {
                                     partyOption.values.forEach { option(it.id, it.label) }
                                 }
+                            } else if (partyOption.values.size > 3) {
+                                // Too many values side by side, e.g. the hotspot locations
+                                select(value = draft.options[partyOption.id] ?: partyOption.default, onChange = { e -> change { options[partyOption.id] = e.value } }) {
+                                    partyOption.values.forEach { option(it.id, it.label) }
+                                }
                             } else {
                                 segmented(value = draft.options[partyOption.id] ?: partyOption.default, onChange = { value -> change { options[partyOption.id] = value } }) {
                                     partyOption.values.forEach { option(it.id, it.label) }
