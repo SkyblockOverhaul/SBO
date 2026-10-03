@@ -150,8 +150,6 @@ body {
 .pf-panel-value { color: var(--text-strong); text-align: right; }
 .pf-panel-value.estimated { color: var(--estimated); }
 .pf-panel-value.missing { color: var(--muted); }
-.pf-panel-value.ok { color: var(--ok); }
-.pf-panel-value.bad { color: var(--bad); }
 .pf-panel-need { width: 100%; color: var(--muted); font-size: 6px; }
 
 /* ---- header ---- */

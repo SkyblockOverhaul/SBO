@@ -37,20 +37,16 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
                 val value = member.stats[id]
                 val def = target.req(id)
                 val need = party.reqs[id]?.takeIf { it !is JsonNull }
-                val meets = if (def != null && need != null) StatView.meets(def, need, member) else null
                 div(className = "pf-panel-row", key = id) {
                     statLabel(id, own)
                     tooltip(content = { statInfo(id, own) }, className = "pf-tip") {
+                        // Members already meet the party's requirements, so values keep the theme colors
                         span(className = classNames(
                             "pf-panel-value",
                             "estimated" to StatView.estimated(id),
-                            "missing" to (value == null || value is JsonNull),
-                            "ok" to (meets == true),
-                            "bad" to (meets == false)
+                            "missing" to (value == null || value is JsonNull)
                         )) {
-                            if (meets == false) span(className = "pf-mark") { +"× " }
-                            // Met or not shows in the text color, Hypixel colors only without a requirement
-                            if (meets == null) pieces(StatView.valuePieces(id, value)) else +StatView.value(id, value)
+                            pieces(StatView.valuePieces(id, value))
                         }
                     }
                     if (def != null && need != null) div(className = "pf-panel-need") {
@@ -59,13 +55,6 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
                     }
                 }
             }
-        }
-        div(className = "pf-legend") {
-            +"Values the party asks for: "
-            span(className = "pf-legend-ok") { +"met" }
-            +" or "
-            span(className = "pf-legend-bad") { +"not met" }
-            +". Hover a stat for details and your own value."
         }
     }
 }
