@@ -335,11 +335,12 @@ private fun NodeBuilder.filterDialog(
                     return@forEach
                 }
                 filterRow(partyOption.label, null, key = partyOption.id) {
-                    select(value = filter.options[partyOption.id] ?: "", onChange = { e ->
+                    val shown = filter.options[partyOption.id]?.takeIf { value -> PartyListFilters.filterValues(partyOption).any { it.id == value } }
+                    select(value = shown ?: "", onChange = { e ->
                         setFilter { if (e.value.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = e.value }
                     }) {
                         option("", "Show all")
-                        partyOption.values.forEach { option(it.id, it.label) }
+                        PartyListFilters.filterValues(partyOption).forEach { option(it.id, it.label) }
                     }
                 }
             }
@@ -386,7 +387,8 @@ private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (P
             def.type == "flag" -> checkbox(checked = wanted == "true", onChange = { e -> save(if (e.checked) "true" else null) }, label = "Party requires it")
             def.type == "rarity" -> select(value = wanted ?: "", onChange = { e -> save(e.value.ifEmpty { null }) }) {
                 option("", "Show all")
-                ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it)) }
+                // Common asks for nothing, like in create
+                ReqMatcher.RARITIES.drop(1).forEach { option(it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it)) }
             }
             labels.isNotEmpty() -> select(
                 value = wanted ?: "",

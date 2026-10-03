@@ -42,13 +42,14 @@ object PartyListFilters {
     /** Fields with many values or several picks, the filter dialog offers several values for them. */
     fun filtersSeveral(option: PartyOption): Boolean = option.multiple || option.values.size > 3
 
-    /** Values the filter dialog offers for a field; "any" is left out, such parties always match. */
-    fun filterValues(option: PartyOption) = option.values.filter { !filtersSeveral(option) || it.id != ANY }
+    /** Values the filter dialog offers for a field; "any" is left out, "Show all" covers it. */
+    fun filterValues(option: PartyOption) = option.values.filter { it.id != ANY }
 
     /** Whether the party's value of [option] matches the [wanted] filter value (a comma list for several values). */
     fun optionMatches(party: PartyView, option: PartyOption, wanted: String): Boolean {
         val value = party.options[option.id] ?: option.default
-        if (!filtersSeveral(option)) return value == wanted
+        // Old saved filters may still hold "any"
+        if (!filtersSeveral(option)) return wanted == ANY || value == wanted
         val picked = option.picks(wanted) - ANY
         if (picked.isEmpty() || value == ANY) return true
         // No picks on a field with several values means all of them, like the bosses

@@ -79,7 +79,7 @@ class PartyListFiltersTest {
         )
         assertEquals(listOf("a"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "only"))))
         // Parties without the field count as its default (anyone)
-        assertEquals(listOf("b", "c"), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "any"))).sorted())
+        assertEquals(emptyList<String>(), ids(parties, PartyListFilter(options = mutableMapOf("ironman" to "none"))))
         // Parties without wanted roles take everyone
         assertEquals(listOf("a", "c"), ids(parties, PartyListFilter(roles = mutableListOf("dps"))).sorted())
     }
@@ -185,6 +185,9 @@ class PartyListFiltersTest {
         // Fields with up to three values keep one exact value
         val ironman = arrayOf("only" to mapOf("ironman" to "only"), "any" to mapOf("ironman" to "any"))
         assertEquals(listOf("only"), matching(lava, mapOf("ironman" to "only"), *ironman))
+        // "Any" is not offered, an old saved "any" shows all
+        assertEquals(listOf("only", "any"), matching(lava, mapOf("ironman" to "any"), *ironman))
+        assertEquals(listOf("only", "none"), PartyListFilters.filterValues(lava.option("ironman")!!).map { it.id })
     }
 
     @Test
