@@ -6,9 +6,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.achievements.gui.AchievementsGui
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
-import net.sbo.mod.sounds.gui.SoundsGui
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent

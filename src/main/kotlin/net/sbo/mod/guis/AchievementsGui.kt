@@ -1,4 +1,4 @@
-package net.sbo.mod.achievements.gui
+package net.sbo.mod.guis
 
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder

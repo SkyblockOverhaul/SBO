@@ -6,7 +6,7 @@ import net.minecraft.client.gui.layouts.GridLayout.RowHelper;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.network.chat.Component;
 import net.sbo.mod.SBOKotlin;
-import net.sbo.mod.achievements.gui.AchievementsGui;
+import net.sbo.mod.guis.AchievementsGui;
 import net.sbo.mod.settings.categories.General;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
