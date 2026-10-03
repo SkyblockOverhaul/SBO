@@ -422,7 +422,6 @@ textarea:scrolling, textarea:hover,
 }
 @media (max-width: 400px) {
     .pf-header { gap: 4px; }
-    .pf-online-label { display: none; }
 }
 /* No room for the count next to the tabs */
 @media (max-width: 360px) {

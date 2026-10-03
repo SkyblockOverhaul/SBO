@@ -162,7 +162,6 @@ object PartyFinderGui {
                         div(className = "pf-online", title = "Players using SBO right now.") {
                             span(className = "pf-online-dot")
                             span { +"$count" }
-                            span(className = "pf-online-label") { +"online" }
                         }
                     }
                     val mine = queued
@@ -170,7 +169,7 @@ object PartyFinderGui {
                         val label = PartyCategories.target(mine.partyType, mine.subType)?.label ?: mine.partyType
                         div(className = "pf-queue", title = "Your party is listed, players can ask to join") {
                             span(className = "pf-queue-text", onClick = { select("${mine.partyType}/${mine.subType}") }) {
-                                +"Your party: $label ${mine.memberCount}/${mine.partySize}"
+                                +"$label ${mine.memberCount}/${mine.partySize}"
                             }
                             button(className = "pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
                         }
