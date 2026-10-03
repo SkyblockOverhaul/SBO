@@ -139,8 +139,30 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
 
     val me = props.own
     val myId = OwnStats.uuid()
+
+    // Parties with another slayer tier (or other fields stats depend on) need own stats for it
+    val ownVersion = useRef(0)
+    var ownLoaded by useState(0)
+    val ownLoading = useRef(setOf<String>())
+    fun meFor(party: PartyView, partyTarget: PartyTarget): MemberView? =
+        if (OwnStats.statOptions(partyTarget, party.options) == OwnStats.statOptions(partyTarget)) props.ownFor(partyTarget)
+        else OwnStats.cached(partyTarget, party.options)
+    useEffect(parties) {
+        parties.orEmpty().forEach { party ->
+            val partyTarget = target.forParty(party)
+            val options = OwnStats.statOptions(partyTarget, party.options)
+            val key = "${partyTarget.key}?$options"
+            if (options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null || key in ownLoading.current) return@forEach
+            ownLoading.current = ownLoading.current + key
+            OwnStats.get(partyTarget, options, onError = { ownLoading.current = ownLoading.current - key }) {
+                ownLoading.current = ownLoading.current - key
+                ownVersion.current++
+                ownLoaded = ownVersion.current
+            }
+        }
+    }
     val all = parties.orEmpty().filter { it.id !in hidden }
-    val visible = PartyListFilters.apply(all, filter, target, me, myId, search, props.ownFor)
+    val visible = PartyListFilters.apply(all, filter, target, me, myId, search, ::meFor)
 
     fun copy(text: String, what: String) {
         clipboard.set(text)
@@ -219,7 +241,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             else -> visible.forEach { party ->
                 val partyTarget = target.forParty(party)
                 partyCard(
-                    party, partyTarget, props.ownFor(partyTarget),
+                    party, partyTarget, meFor(party, partyTarget),
                     showSub = target.all,
                     mine = party.id == myId,
                     expanded = party.id == expanded,

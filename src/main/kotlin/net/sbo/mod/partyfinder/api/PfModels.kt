@@ -94,7 +94,9 @@ data class PartyOption(
     val values: List<OptionValue> = emptyList(),
     val default: String = "",
     // Several values at once, sent as a comma separated list of ids
-    val multiple: Boolean = false
+    val multiple: Boolean = false,
+    // Stats read this field (e.g. the slayer tier), own stats are loaded per value
+    val affectsStats: Boolean = false
 ) {
     /** Picked value ids of a [multiple] field, in definition order. */
     fun picks(value: String?): List<String> {

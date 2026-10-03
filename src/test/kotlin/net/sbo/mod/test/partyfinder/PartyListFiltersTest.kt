@@ -1,6 +1,7 @@
 package net.sbo.mod.test.partyfinder
 
 import kotlinx.serialization.json.JsonPrimitive
+import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyListFilters
 import net.sbo.mod.partyfinder.PartyTarget
@@ -152,7 +153,15 @@ class PartyListFiltersTest {
         val own = mapOf("kuudra/basic" to 50, "kuudra/infernal" to 2).mapValues { (_, n) ->
             MemberView(uuid = "me", name = "me", stats = mapOf("kuudraCompletions" to JsonPrimitive(n)))
         }
-        val visible = PartyListFilters.apply(listOf(basic, infernal), PartyListFilter(canJoin = true), all, null, null, ownFor = { own[it.key] })
+        val visible = PartyListFilters.apply(listOf(basic, infernal), PartyListFilter(canJoin = true), all, null, null, meFor = { _, t -> own[t.key] })
         assertEquals(listOf("basic"), visible.map { it.id })
+    }
+
+    @Test
+    fun ownStatsFollowTheFieldsStatsDependOn() {
+        val sven = PartyCategories.target("slayer", "sven")!!
+        assertEquals(mapOf("tier" to "4"), OwnStats.statOptions(sven))
+        assertEquals(mapOf("tier" to "2"), OwnStats.statOptions(sven, mapOf("tier" to "2", "ironman" to "only")))
+        assertEquals(emptyMap<String, String>(), OwnStats.statOptions(PartyCategories.target("diana")!!, mapOf("ironman" to "only")))
     }
 }

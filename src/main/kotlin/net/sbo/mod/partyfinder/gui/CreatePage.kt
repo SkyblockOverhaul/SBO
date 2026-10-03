@@ -34,6 +34,7 @@ import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.ReqMatcher
 import net.sbo.mod.partyfinder.api.ItemChoice
+import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.utils.SboKey
@@ -65,6 +66,19 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
     fun change(block: PartyDraft.() -> Unit) {
         draft = draft.edited(block)
     }
+
+    // A slayer tier (or another field stats depend on) other than the default needs own stats for it
+    val statOptions = OwnStats.statOptions(target, draft.options)
+    val defaultOptions = statOptions == OwnStats.statOptions(target)
+    var ownForOptions by useState<MemberView?>(null)
+    val wantedOptions = useRef(statOptions)
+    useEffect(target.key, statOptions) {
+        wantedOptions.current = statOptions
+        if (defaultOptions) return@useEffect
+        ownForOptions = OwnStats.cached(target, statOptions)
+        OwnStats.get(target, statOptions, onError = {}) { me -> if (wantedOptions.current == statOptions) ownForOptions = me }
+    }
+    val own = if (defaultOptions) props.own else ownForOptions
 
     fun submit() {
         val final = draft.edited {}
@@ -109,7 +123,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         h3(className = "pf-section") { +"Requirements" }
         p(className = "pf-hint") { +"Players who don't meet these can't join. Leave a field empty or at \"Any\" for no requirement. Your own value is shown on the right." }
         div(className = "pf-fields") {
-            target.reqs.forEach { def -> reqField(def, draft, props.own, ::change) }
+            target.reqs.forEach { def -> reqField(def, draft, own, ::change) }
         }
 
         val shownOptions = target.options
@@ -284,8 +298,11 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
             searchable = def.choices.size > 8,
             searchPlaceholder = "Search..."
         ) {
-            // Pets that exist in one rarity only take its color
-            def.choices.forEach { option(it.id, it.label, className = it.rarity?.let(StatView::itemRarityClass) ?: it.rarities.singleOrNull()?.let(StatView::rarityColor)) }
+            // Pets take the color of the lowest rarity the party asks for
+            def.choices.forEach { choice ->
+                val petRarity = picks.firstOrNull { it.first == choice.id }?.second?.takeIf { choice.rarities.isNotEmpty() } ?: choice.rarities.firstOrNull()
+                option(choice.id, choice.label, className = choice.rarity?.let(StatView::itemRarityClass) ?: petRarity?.let(StatView::rarityColor))
+            }
         }
         if (picks.size > 1) {
             segmented(value = if (all) "all" else "any", onChange = { mode -> store(picks, mode == "all") }, className = "pf-match") {

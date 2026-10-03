@@ -440,7 +440,7 @@ object PartyFinderManager {
             tell("§6[SBO] §cYou have already sent a request to this player recently.", false)
             return
         }
-        OwnStats.get(target, onError = { error ->
+        OwnStats.get(target, party.options, onError = { error ->
             tell("§6[SBO] §4Could not load your stats: ${ProblemText.error(error)}", false)
         }) { me ->
             val problems = ReqMatcher.checkJoin(party, target, me, role)

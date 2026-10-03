@@ -77,7 +77,7 @@ internal object StatView {
             val text = ProblemText.choicePick(choice?.label ?: ProblemText.title(id), pick, choice)
             // Pets have no base rarity, they take the color of the rarity the party asks for
             val minRarity = (pick as? JsonObject)?.get("minRarity")?.text()
-            val color = choice?.rarity?.let(::itemRarityClass) ?: (minRarity ?: choice?.rarities?.singleOrNull())?.let(::rarityColor)
+            val color = choice?.rarity?.let(::itemRarityClass) ?: (minRarity ?: choice?.rarities?.firstOrNull())?.let(::rarityColor)
             // The tier note in brackets stays uncolored
             val bracket = text.indexOf(" (")
             val pieces = if (bracket > 0) listOf(Piece(text.substring(0, bracket), color), Piece(text.substring(bracket))) else listOf(Piece(text, color))

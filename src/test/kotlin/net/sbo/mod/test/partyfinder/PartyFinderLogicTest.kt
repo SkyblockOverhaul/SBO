@@ -158,7 +158,7 @@ class PartyFinderLogicTest {
         val problem = net.sbo.mod.partyfinder.api.Problem("x", "kuudraArmor", JsonNull, armor)
         assertNotNull(target("kuudra", "basic").req("kuudraArmor"))
         assertEquals(
-            "Kuudra Armor: needs one of Terror Armor (Fiery or better), has none of them",
+            "Armor: needs one of Terror Armor (Fiery or better), has none of them",
             ProblemText.describe(problem, target("kuudra", "basic"))
         )
     }

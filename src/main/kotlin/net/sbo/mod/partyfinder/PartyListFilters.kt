@@ -18,13 +18,13 @@ object PartyListFilters {
         me: MemberView?,
         myId: String?,
         search: String = "",
-        // Own stats per subcategory target, for the list of all subcategories
-        ownFor: (PartyTarget) -> MemberView? = { me }
+        // Own stats for one party: its subcategory in the list of all of them, its tier for slayer
+        meFor: (PartyView, PartyTarget) -> MemberView? = { _, _ -> me }
     ): List<PartyView> {
         val query = search.trim().lowercase()
         val visible = parties.filter { party ->
             val partyTarget = target.forParty(party)
-            party.id == myId || matches(party, filter, partyTarget, ownFor(partyTarget), query)
+            party.id == myId || matches(party, filter, partyTarget, meFor(party, partyTarget), query)
         }
         // Ties always go to the party that waits longest, old saved sorts fall back to that too
         val order = when (filter.sort) {

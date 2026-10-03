@@ -320,7 +320,8 @@ object PartyFinderGui {
             }
             if (panel != null && target != null) {
                 val panelTarget = target.forParty(panel.party)
-                playerPanel(panel, panelTarget, ownFor(panelTarget)) { inspected = null }
+                val panelOwn = OwnStats.cached(panelTarget, panel.party.options) ?: ownFor(panelTarget)
+                playerPanel(panel, panelTarget, panelOwn) { inspected = null }
             }
         }
     }
