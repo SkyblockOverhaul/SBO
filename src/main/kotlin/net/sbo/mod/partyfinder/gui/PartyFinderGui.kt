@@ -24,6 +24,7 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.api.MemberView
+import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.utils.data.DataManager
 
 /** The party finder window: party types on the left, parties, the create form and settings on the right. */
@@ -122,6 +123,12 @@ object PartyFinderGui {
         useEffect { loadOnlineUsers() }
         useInterval(60_000) { loadOnlineUsers() }
 
+        // Parties per party type for the sidebar, hidden when the server can't tell
+        var partyCounts by useState<Map<String, Int>?>(null)
+        fun loadCounts() = PartyFinderApi.counts(onError = { partyCounts = null }) { partyCounts = it }
+        useEffect(queued?.createdAt, inQueue) { loadCounts() }
+        useInterval(60_000) { loadCounts() }
+
         val target = data?.let { loaded ->
             targetOf(selected) ?: loaded.categories.firstOrNull()?.let { PartyCategories.target(it.id) }
         }
@@ -206,6 +213,7 @@ object PartyFinderGui {
                                     val fav = if (data != null) targetOf(key) else null
                                     sideItem(
                                         type = key.substringBefore('/'),
+                                        count = partyCounts?.let { it[key] ?: 0 },
                                         label = when {
                                             fav == null -> key
                                             '/' in key -> fav.label
@@ -222,6 +230,7 @@ object PartyFinderGui {
                             data?.categories?.filterNot { favoritesOnlyOnce && it.id in favorites }?.forEach { category ->
                                 sideItem(
                                     type = category.id,
+                                    count = partyCounts?.let { it[category.id] ?: 0 },
                                     label = category.label,
                                     active = target?.partyType == category.id,
                                     favorite = category.id in favorites,
@@ -318,6 +327,7 @@ object PartyFinderGui {
 
     private fun NodeBuilder.sideItem(
         type: String,
+        count: Int?,
         label: String,
         active: Boolean,
         favorite: Boolean,
@@ -329,6 +339,7 @@ object PartyFinderGui {
         // pf-type-* colors the name with Hypixel colors
         div(className = classNames("pf-side-item", "pf-type-$type", "active" to active), id = id, key = key, onClick = { onSelect() }) {
             span(className = "pf-side-label") { +label }
+            count?.let { span(className = classNames("pf-side-count", "zero" to (it == 0)), title = "Parties listed right now") { +"$it" } }
             starIcon(favorite, onStar)
         }
     }

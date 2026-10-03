@@ -33,6 +33,10 @@ object PartyFinderApi {
             .handle<PartiesData>(onError) { onSuccess(it.parties) }
     }
 
+    fun counts(onError: (PfError) -> Unit, onSuccess: (Map<String, Int>) -> Unit) {
+        SboApi.get("/pf/parties/counts").handle<PartyCounts>(onError) { onSuccess(it.counts) }
+    }
+
     fun createParty(body: PartyBody, onError: (PfError) -> Unit, onSuccess: (PartyView) -> Unit) =
         SboApi.post("/pf/parties", json.encodeToString(body)).handle(onError, onSuccess)
 

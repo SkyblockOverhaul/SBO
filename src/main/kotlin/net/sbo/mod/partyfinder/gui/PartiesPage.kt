@@ -166,11 +166,15 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             option("notFull", "Not full")
         }
         val count = filter.dialogCount()
-        button(
-            className = classNames("pf-small", "pf-filter-button", "active" to (count > 0)),
+        // Looks like the quick filter chips next to it
+        div(
+            className = classNames("guilib-chip", "pf-filter-button", "selected" to (count > 0)),
             title = "More filters and sorting",
             onClick = { filtersOpen = true }
-        ) { +(if (count > 0) "Filters ($count)" else "Filters") }
+        ) {
+            img(src = "${StatView.ICONS}/filter.svg", className = "pf-icon")
+            +(if (count > 0) "Filters ($count)" else "Filters")
+        }
         input(
             type = "text",
             value = search,

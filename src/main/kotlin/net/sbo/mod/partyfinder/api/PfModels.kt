@@ -142,6 +142,10 @@ data class SubcategoryDef(
 @Serializable
 data class PartiesData(val parties: List<PartyView> = emptyList())
 
+// Listed parties per party key ("fishing", "fishing/lava"), unfiltered
+@Serializable
+data class PartyCounts(val counts: Map<String, Int> = emptyMap())
+
 @Serializable
 data class PartyView(
     /** Leader uuid without dashes. */

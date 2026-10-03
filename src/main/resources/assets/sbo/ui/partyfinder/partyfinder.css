@@ -220,6 +220,8 @@ body {
 .pf-side-item.active { background-color: var(--accent-soft); color: var(--text-strong); }
 .pf-side-label { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pf-fav-list { min-height: 4px; }
+.pf-side-count { flex-shrink: 0; color: var(--muted); font-size: 7px; }
+.pf-side-count.zero { color: var(--dim); opacity: 0.6; }
 .pf-support { flex-shrink: 0; margin: 4px; border-top: 1px solid var(--border); border-radius: 0 0 3px 3px; padding-top: 5px; }
 .pf-heart { color: var(--bad); }
 /* Wraps instead of cutting the text in narrow windows */
@@ -267,8 +269,8 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 /* ---- party list ---- */
 .pf-list-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-bottom: 4px; }
 .pf-count { color: var(--muted); white-space: nowrap; }
-.pf-filter-button { padding: 1px 6px; }
-.pf-filter-button.active { background-color: var(--accent-soft); border-color: var(--accent); color: var(--text-strong); }
+.pf-filter-button { cursor: pointer; }
+.pf-filter-button .pf-icon { width: 7px; height: 7px; }
 .pf-search { flex: 1 1 60px; min-width: 50px; max-width: 120px; font-size: 7px; }
 
 .pf-dialog.pf-filter-dialog { width: 300px; max-width: 94vw; }
