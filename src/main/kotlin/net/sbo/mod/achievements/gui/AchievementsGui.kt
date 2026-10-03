@@ -91,7 +91,7 @@ object AchievementsGui {
                 select(value = scaleId(view.uiScale), onChange = { e -> update(view.copy(uiScale = e.value.toFloatOrNull())) }, className = "ach-scale-select") {
                     SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Size: Auto" else "Size: ${scaleId(scale)}") }
                 }
-                button(className = "ach-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+                button(className = "ach-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
 
             div(className = "ach-toolbar") {
