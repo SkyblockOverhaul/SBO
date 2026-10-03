@@ -11,6 +11,7 @@ import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.WantedRoles
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -19,7 +20,9 @@ class PartyListFiltersTest {
         @JvmStatic
         @BeforeAll
         fun loadCategories() {
-            val body = PartyListFiltersTest::class.java.getResource("/partyfinder/categories.json")!!.readText()
+            val resource = PartyListFiltersTest::class.java.getResource("/partyfinder/categories.json")
+            assumeTrue(resource != null, "partyfinder/categories.json not present (fetch it from GET /pf/categories)")
+            val body = resource!!.readText()
             PartyCategories.use(PartyFinderApi.parse<CategoriesData>(body, 200).getOrThrow())
         }
 
