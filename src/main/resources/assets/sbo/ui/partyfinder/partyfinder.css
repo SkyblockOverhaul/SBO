@@ -220,6 +220,10 @@ body {
 .pf-side-item.active { background-color: var(--accent-soft); color: var(--text-strong); }
 .pf-side-label { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pf-fav-list { min-height: 4px; }
+.pf-support { flex-shrink: 0; margin: 4px; border-top: 1px solid var(--border); border-radius: 0 0 3px 3px; padding-top: 5px; }
+.pf-heart { color: var(--bad); }
+/* Wraps instead of cutting the text in narrow windows */
+.pf-support .pf-side-label { white-space: normal; }
 
 .pf-icon { width: 8px; height: 8px; }
 /* Icons are drawn in currentColor, so themes color them here */

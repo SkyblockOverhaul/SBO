@@ -17,6 +17,7 @@ import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tabs
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
@@ -28,6 +29,7 @@ import net.sbo.mod.utils.data.DataManager
 /** The party finder window: party types on the left, parties, the create form and settings on the right. */
 object PartyFinderGui {
     private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/partyfinder/themes.css")
+    private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
 
     /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others are declared in the CSS. */
     internal val FONTS = linkedMapOf(
@@ -213,6 +215,15 @@ object PartyFinderGui {
                                     id = "pf-cat-${category.id}"
                                 )
                             }
+                        }
+                        // Stays below the scrolling list, so it shows on every page
+                        div(
+                            className = "pf-side-item pf-support",
+                            title = "Opens Ko-fi in your browser. Donations help keep SBO running.",
+                            onClick = { SBOKotlin.openInBrowser(KOFI_URL) }
+                        ) {
+                            img(src = "${StatView.ICONS}/heart.svg", className = "pf-icon pf-heart")
+                            span(className = "pf-side-label") { +"Support SBO" }
                         }
                     }
 
