@@ -1,14 +1,12 @@
 package net.sbo.mod.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import gg.essential.universal.UScreen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout.RowHelper;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.network.chat.Component;
 import net.sbo.mod.SBOKotlin;
-import net.sbo.mod.guis.AchievementsGUI;
-import net.sbo.mod.guis.Guis;
+import net.sbo.mod.achievements.gui.AchievementsGui;
 import net.sbo.mod.settings.categories.General;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,12 +35,7 @@ final class PauseScreenMixin {
 
             final Button custom = Button.builder(
                     Component.literal("SBO Achievements"),
-                    b -> SBOKotlin.mc.schedule(() -> {
-                        if (Guis.INSTANCE.getAchievementsGui() == null) {
-                            Guis.INSTANCE.setAchievementsGui(new AchievementsGUI());
-                        }
-                        UScreen.displayScreen(Guis.INSTANCE.getAchievementsGui());
-                    })
+                    b -> SBOKotlin.mc.schedule(AchievementsGui.INSTANCE::open)
             ).width(204).build();
 
             helper.addChild(custom, 2);
