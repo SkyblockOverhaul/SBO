@@ -285,16 +285,17 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
             if (choice.minimumField == null) return@forEach
             div(className = "pf-tier-row", key = id) {
                 span { +"${choice.label}, at least " }
-                select(value = minimum ?: "", onChange = { e ->
+                val lowest = if (choice.tiers) ReqMatcher.KUUDRA_TIERS.first() else choice.rarities.first()
+                select(value = minimum?.takeUnless { it.equals(lowest, ignoreCase = true) } ?: "", onChange = { e ->
                     store(picks.map { if (it.first == id) id to e.value.takeIf { v -> v.isNotEmpty() } else it })
                 }) {
+                    // The lowest tier or rarity asks for nothing extra, so it stands for no minimum
                     if (choice.tiers) {
-                        option("", "any tier")
-                        ReqMatcher.KUUDRA_TIERS.forEach { option(it, ProblemText.title(it)) }
+                        ReqMatcher.KUUDRA_TIERS.forEachIndexed { i, tier -> option(if (i == 0) "" else tier, ProblemText.title(tier)) }
                     } else {
-                        // The lowest rarity is the same as any
-                        option("", "any rarity")
-                        choice.rarities.drop(1).forEach { option(it, ProblemText.title(it), className = StatView.rarityColor(it)) }
+                        choice.rarities.forEachIndexed { i, rarity ->
+                            option(if (i == 0) "" else rarity, ProblemText.title(rarity), className = StatView.rarityColor(rarity))
+                        }
                     }
                 }
             }
