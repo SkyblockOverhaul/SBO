@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -30,7 +31,9 @@ class PartyFinderLogicTest {
         @JvmStatic
         @BeforeAll
         fun loadCategories() {
-            val body = PartyFinderLogicTest::class.java.getResource("/partyfinder/categories.json")!!.readText()
+            val resource = PartyFinderLogicTest::class.java.getResource("/partyfinder/categories.json")
+            assumeTrue(resource != null, "partyfinder/categories.json not present (fetch it from GET /pf/categories)")
+            val body = resource!!.readText()
             PartyCategories.use(PartyFinderApi.parse<CategoriesData>(body, 200).getOrThrow())
         }
 
