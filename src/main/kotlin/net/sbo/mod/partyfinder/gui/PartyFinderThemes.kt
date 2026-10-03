@@ -41,8 +41,9 @@ internal object PartyFinderThemes {
             "colorblind", marks = true
         ),
         Theme("high-contrast", "High Contrast", "Black background, white text and strong borders. Easier to read.", "high-contrast"),
-        Theme("light", "Light", "Bright background with dark text.", "light"),
-        Theme("midnight", "Midnight", "Almost black with softer colors, nice in a dark room.", "midnight")
+        Theme("light", "Light", "Bright background with dark text. (pain)", "light"),
+        Theme("midnight", "Midnight", "Almost black with softer colors, nice in a dark room.", "midnight"),
+        Theme("purple", "Purple", "Dark purple everywhere, also in dialogs, menus and fields, with a violet accent.", "purple")
     )
 
     /** CSS classes for the built-in color sets, one per base. */

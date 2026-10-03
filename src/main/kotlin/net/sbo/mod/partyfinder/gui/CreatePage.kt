@@ -194,9 +194,11 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                     val labels = PartyCategories.stat(stat)?.valueLabels.orEmpty()
                     val max = PartyCategories.stat(stat)?.max ?: Int.MAX_VALUE
                     if (labels.isNotEmpty()) {
-                        select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }, className = number?.let { StatView.numberColor(stat, it.toDouble()) }) {
+                        select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }) {
                             option("0", "Any")
-                            labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex)) }
+                            labels.forEachIndexed { i, label ->
+                                if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex), className = StatView.numberColor(stat, i.toDouble()))
+                            }
                         }
                     } else {
                         numberInput(
@@ -216,9 +218,9 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                 )
                 "rarity" -> {
                     val rarity = (saved as? JsonPrimitive)?.contentOrNull ?: ""
-                    select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }, className = StatView.rarityColor(rarity)) {
+                    select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }) {
                         option("", "Any")
-                        ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it)) }
+                        ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it)) }
                     }
                 }
                 "anyOf" -> anyOfInput(def, saved, ::save)
@@ -265,7 +267,7 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
             searchable = def.choices.size > 8,
             searchPlaceholder = "Search..."
         ) {
-            def.choices.forEach { option(it.id, it.label) }
+            def.choices.forEach { option(it.id, it.label, className = it.rarity?.let(StatView::itemRarityClass)) }
         }
         if (picks.size > 1) {
             segmented(value = if (all) "all" else "any", onChange = { mode -> store(picks, mode == "all") }, className = "pf-match") {

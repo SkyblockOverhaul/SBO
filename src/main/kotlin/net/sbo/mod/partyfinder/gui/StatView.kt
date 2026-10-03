@@ -98,7 +98,7 @@ internal object StatView {
     private fun itemColor(statId: String, id: String): String? = PartyCategories.choice(statId, id)?.rarity?.let(::itemRarityClass)
 
     // Items can be recombobulated, so they get rarity classes the theme can shift one up
-    private fun itemRarityClass(rarity: String): String = "pf-r-" + rarity.lowercase(Locale.US).replace('_', '-')
+    fun itemRarityClass(rarity: String): String = "pf-r-" + rarity.lowercase(Locale.US).replace('_', '-')
 
     /** Minecraft color of a rarity, like item names in game. */
     fun rarityColor(rarity: String?): String? = when (rarity?.uppercase(Locale.US)) {

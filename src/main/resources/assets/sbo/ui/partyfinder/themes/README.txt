@@ -32,7 +32,7 @@ A theme file looks like this:
 name           Name in the theme list (up to 32 characters). Without it the file name is used.
 description    Short text about the theme (optional).
 base           The built-in theme you start from. Everything you don't set in "colors" comes from it.
-               One of: sbo-dark, hypixel, colorblind, high-contrast, light, midnight
+               One of: sbo-dark, hypixel, colorblind, high-contrast, light, midnight, purple
 hypixelColors  true colors values like Hypixel does (item rarities, SkyBlock level, Trophy Fisher, party types).
                Without it, the setting of the base theme is used.
 marks          true gives requirements you don't meet a dashed border (a "x" in front where there is no border).

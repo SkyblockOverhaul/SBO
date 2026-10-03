@@ -158,6 +158,46 @@ body.pf-theme-midnight {
     --scrollbar-track: #00000030;
 }
 
+body.pf-theme-purple {
+    --bg: #17121f;
+    --panel: #201a2c;
+    --panel-2: #2a2239;
+    --card: #1d1729;
+    --card-hover: #241d33;
+    --border: #3a2f4f;
+    --border-hover: #574873;
+    --text: #ece6f5;
+    --text-strong: #ffffff;
+    --text-soft: #d9cfe8;
+    --subtle: #b6a9cc;
+    --muted: #9a8cb3;
+    --dim: #7f7299;
+    --title: #d8b4fe;
+    --accent: #8b5cf6;
+    --accent-hover: #a37bff;
+    --accent-soft: rgba(139, 92, 246, 0.3);
+    --accent-faint: rgba(139, 92, 246, 0.18);
+    --banner-bg: rgba(139, 92, 246, 0.14);
+    --banner-border: rgba(139, 92, 246, 0.5);
+    --banner-text: #e4d4ff;
+    --estimated: #f5a3d3;
+    --input-bg: #150f1d;
+    --input-border: #45385e;
+    --input-border-hover: #64547f;
+    --control: #2e2541;
+    --control-border: #4a3d63;
+    --control-hover: #3a2f52;
+    --control-active: #241c33;
+    --menu: #201a2c;
+    --popup: #120d19;
+    --highlight: #3a2f52;
+    --disabled: #3a2f4f;
+    --disabled-text: #8a7da3;
+    --backdrop: rgba(8, 4, 14, 0.6);
+    --scrollbar-thumb: #d8b4fe80;
+    --scrollbar-track: #00000030;
+}
+
 /* Minecraft text colors and one color per party type (side bar name and heading), used with Hypixel colors */
 body {
     --mc-black: #000000;

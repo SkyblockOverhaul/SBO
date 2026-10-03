@@ -1,8 +1,10 @@
 package net.sbo.mod.test.partyfinder
 
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.api.CategoriesData
@@ -95,6 +97,6 @@ class PartyFinderThemesTest {
         val example = PartyFinderThemes.load(themeFile("example.json", text))!!
         assertTrue(example.example)
         // Every color of the example passes the check
-        assertEquals(12, example.colors.size)
+        assertEquals(Json.parseToJsonElement(text).jsonObject["colors"]!!.jsonObject.size, example.colors.size)
     }
 }

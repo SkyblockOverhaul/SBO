@@ -340,17 +340,18 @@ private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (P
         val labels = stat?.valueLabels.orEmpty()
         when {
             def.type == "flag" -> checkbox(checked = wanted == "true", onChange = { e -> save(if (e.checked) "true" else null) }, label = "Party requires it")
-            def.type == "rarity" -> select(value = wanted ?: "", onChange = { e -> save(e.value.ifEmpty { null }) }, className = StatView.rarityColor(wanted)) {
+            def.type == "rarity" -> select(value = wanted ?: "", onChange = { e -> save(e.value.ifEmpty { null }) }) {
                 option("", "Show all")
-                ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it)) }
+                ReqMatcher.RARITIES.forEach { option(it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it)) }
             }
             labels.isNotEmpty() -> select(
                 value = wanted ?: "",
-                onChange = { e -> save(e.value.ifEmpty { null }) },
-                className = wanted?.toDoubleOrNull()?.let { StatView.numberColor(def.stat, it) }
+                onChange = { e -> save(e.value.ifEmpty { null }) }
             ) {
                 option("", "Show all")
-                labels.forEachIndexed { i, label -> if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex)) }
+                labels.forEachIndexed { i, label ->
+                    if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex), className = StatView.numberColor(def.stat, i.toDouble()))
+                }
             }
             else -> numberInput(
                 value = wanted?.toDoubleOrNull()?.toInt(),
