@@ -2,9 +2,8 @@ package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
 import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
-import gg.essential.universal.UScreen
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.PastEventsGui
+import net.sbo.mod.guis.EventsGui
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
@@ -179,13 +178,11 @@ object Diana : CategoryKt("Diana") {
 
     init {
         button {
-            title = "Open Past Events"
-            text = "Open Past Events"
-            description = "Opens the Past Events menu, allowing you to see your saved trackers for previous Diana events. You can also open it by typing the /sbopastevents command."
+            title = "Open Events"
+            text = "Open Events"
+            description = "Opens the Events menu: the running Diana event, your saved trackers of previous events and the total, with details and comparisons. You can also open it with /sboevents."
             onClick {
-                mc.schedule {
-                    UScreen.displayScreen(PastEventsGui())
-                }
+                mc.schedule { EventsGui.open() }
             }
         }
     }

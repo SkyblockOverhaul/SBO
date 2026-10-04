@@ -162,7 +162,8 @@ body {
     border-left: 2px solid var(--bad-border);
     transition: border-color 120ms, background-color 120ms;
 }
-.ach-card:hover { background-color: var(--card-hover); border-color: var(--border-hover); }
+/* Not the left side: it shows locked/unlocked */
+.ach-card:hover { background-color: var(--card-hover); border-top-color: var(--border-hover); border-right-color: var(--border-hover); border-bottom-color: var(--border-hover); }
 .ach-card.unlocked { border-left-color: var(--ok); }
 .ach-card:not(.unlocked) .ach-name, .ach-card:not(.unlocked) .ach-desc { opacity: 0.75; }
 .ach-card-head { display: flex; align-items: center; gap: 4px; }

@@ -4,6 +4,7 @@ import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
 import net.sbo.guilib.core.dsl.classNames
+import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.core.dsl.details
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.header
@@ -43,6 +44,7 @@ object CloudSyncGui {
     private val App = component("CloudSync") {
         val toast = useToast()
         var page by useState(Page.MAIN)
+        useEscapeBack(page != Page.MAIN) { page = Page.MAIN }
         var uiScale by useState(DataManager.sboData.cloudSyncUiScale?.takeIf { it in SCALES })
         useScreenScale(uiScale)
         val size = WindowSize(uiScale) { scale ->

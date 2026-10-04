@@ -67,6 +67,10 @@ data class SboData(
 
     var cloudSync: MutableMap<String, CloudSyncState> = mutableMapOf(), // account uuid -> state
     var cloudSyncUiScale: Float? = null, // null = Minecraft's GUI scale
+    var eventsUiScale: Float? = null, // null = Minecraft's GUI scale
+    var eventsSort: String = "year",
+    var eventsChartView: String = "value",
+    var eventsHiddenLines: MutableList<String> = mutableListOf(),
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }

@@ -26,7 +26,7 @@ object HelpCommand {
         mapOf("cmd" to "sbobacktrackachievements", "desc" to "Backtrack achievements"),
         mapOf("cmd" to "sboachievements", "desc" to "Opens the achievements GUI"),
         mapOf("cmd" to "sbolockachievements", "desc" to "Locks all Achievements (needs confirmation)"),
-        mapOf("cmd" to "sbopde", "desc" to "Opens the Past Diana Events GUI"),
+        mapOf("cmd" to "sboevents", "desc" to "Opens the Diana Events GUI (also /sbopde)"),
         mapOf("cmd" to "sboactiveuser", "desc" to "Shows the active user of the mod"), // todo: add sboactiveuser command
         mapOf("cmd" to "sbopf", "desc" to "Opens the PartyFinder GUI"),
         mapOf("cmd" to "sbopartycommands", "desc" to "Displays all diana partycommands"), // todo: add sbopartycommands command

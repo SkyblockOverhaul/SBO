@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit
 
 object Guis {
     private var partyFinderGui: PartyFinderGUI? = null
-    private var pastEventsGui: PastEventsGui? = null
 
 //    private var vexelGui: VexelTest? = null
     private var updating = false
@@ -26,7 +25,6 @@ object Guis {
 
     fun resetCachedGuis() {
         partyFinderGui = null
-        pastEventsGui = null
     }
 
     fun openSboPf(calledFromGUI: Boolean = false) {
@@ -86,13 +84,8 @@ object Guis {
             openSoundGui()
         }
 
-        Register.command("sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
-            mc.schedule {
-                if (pastEventsGui == null) {
-                    pastEventsGui = PastEventsGui()
-                }
-                UScreen.displayScreen(pastEventsGui!!)
-            }
+        Register.command("sboevents", "sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
+            mc.schedule { EventsGui.open() }
         }
 
         Register.onTick(20) {
