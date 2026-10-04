@@ -1,6 +1,5 @@
 package net.sbo.mod.guis
 
-import gg.essential.universal.UScreen
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
@@ -47,7 +46,7 @@ object Guis {
             if (partyFinderGui == null) {
                 partyFinderGui = PartyFinderGUI()
             }
-            UScreen.displayScreen(partyFinderGui!!)
+            mc.setScreen(partyFinderGui!!)
             SBOEvent.emit(PartyFinderOpenEvent())
         }
     }

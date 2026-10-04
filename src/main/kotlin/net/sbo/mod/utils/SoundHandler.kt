@@ -2,11 +2,11 @@ package net.sbo.mod.utils
 
 import javazoom.jl.player.JavaSoundAudioDevice
 import com.google.gson.JsonParser
-import gg.essential.universal.UDesktop
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
+import net.minecraft.util.Util
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
@@ -73,7 +73,7 @@ object SoundHandler {
 
     fun openSoundFolder() {
         val directory = File(SOUND_DIR_PATH).apply { mkdirs() }
-        runCatching { UDesktop.open(directory) }.onFailure { logger.error("[$MOD_ID] Failed to open the sound folder", it) }
+        runCatching { Util.getPlatform().openPath(directory.toPath()) }.onFailure { logger.error("[$MOD_ID] Failed to open the sound folder", it) }
     }
 
     /**

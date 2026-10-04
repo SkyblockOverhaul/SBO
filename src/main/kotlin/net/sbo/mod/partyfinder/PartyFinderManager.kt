@@ -1,6 +1,5 @@
 package net.sbo.mod.partyfinder
 
-import gg.essential.universal.utils.toFormattedString
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
 import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
 import net.sbo.mod.settings.categories.PartyFinder
@@ -9,6 +8,7 @@ import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.chat.toFormattedString
 import net.sbo.mod.utils.data.*
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
