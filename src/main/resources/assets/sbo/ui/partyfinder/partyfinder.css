@@ -362,6 +362,12 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 /* ---- forms ---- */
 .pf-form { flex-grow: 1; min-height: 0; padding-right: 4px; }
 .pf-section { margin: 6px 0 1px 0; font-size: 8px; color: var(--text-strong); }
+.pf-link { text-decoration: underline; cursor: pointer; }
+.pf-link:hover { color: var(--text-strong); }
+.pf-rules-hint { margin-top: 4px; }
+.pf-rule { margin-top: 6px; }
+.pf-rule-title { color: var(--text-strong); }
+.pf-rules-outro { margin-top: 8px; }
 .pf-fields { display: flex; flex-direction: column; gap: 2px; }
 .pf-field {
     display: grid;
@@ -387,11 +393,13 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-own.ok { color: var(--ok); }
 .pf-own.bad { color: var(--bad); }
 .pf-note-input { width: 100%; }
+.pf-report-input { width: 100%; margin-top: 6px; }
 .pf-size-row { display: flex; align-items: center; gap: 6px; padding: 2px 4px; }
 .pf-size-row .guilib-number { width: 80px; }
 .pf-form-buttons { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
 
 .pf-dialog { width: 180px; }
+.pf-dialog.pf-report-dialog { width: 240px; }
 .pf-dialog-buttons { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
 
 /* ---- settings ---- */

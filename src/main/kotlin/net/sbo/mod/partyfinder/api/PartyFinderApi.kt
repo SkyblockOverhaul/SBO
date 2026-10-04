@@ -7,6 +7,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonPrimitive
+import net.sbo.mod.partyfinder.ProblemText
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.HttpRequestHandle
 import net.sbo.mod.utils.http.SboApi
 
@@ -16,6 +18,18 @@ import net.sbo.mod.utils.http.SboApi
  * Every answer is `{ success, data }` or `{ success: false, error }`, also on HTTP 4xx/5xx,
  * so the error code survives. Callbacks run on the HTTP thread.
  */
+/** Tells a banned player once per game session why their key is banned. */
+object BanNotice {
+    @Volatile
+    private var shown = false
+
+    fun check(error: PfError) {
+        if (shown || error.code != PfError.INVALID_KEY || !error.message.startsWith("Key is banned")) return
+        shown = true
+        Chat.chat("§6[SBO] §c${ProblemText.error(error)}")
+    }
+}
+
 object PartyFinderApi {
     @PublishedApi
     internal val json = Json {
@@ -52,6 +66,12 @@ object PartyFinderApi {
     fun checkMembers(body: CheckBody, onError: (PfError) -> Unit, onSuccess: (CheckData) -> Unit) =
         SboApi.post("/pf/members/check", json.encodeToString(body)).handle(onError, onSuccess)
 
+    fun rules(onError: (PfError) -> Unit, onSuccess: (RulesData) -> Unit) =
+        SboApi.get("/pf/rules").handle(onError, onSuccess)
+
+    fun reportParty(body: PartyReportBody, onError: (PfError) -> Unit, onSuccess: () -> Unit) =
+        SboApi.post("/pf/parties/report", json.encodeToString(body)).handle<JsonElement>(onError) { onSuccess() }
+
     fun reportStats(body: StatsReportBody, onError: (PfError) -> Unit, onSuccess: () -> Unit) =
         SboApi.post("/pf/stats/report", json.encodeToString(body)).handle<JsonElement>(onError) { onSuccess() }
 
@@ -69,7 +89,11 @@ object PartyFinderApi {
             }
             result.fold(
                 onSuccess = { onSuccess(it) },
-                onFailure = { onError((it as? PfException)?.error ?: PfError(PfError.BAD_RESPONSE, it.message ?: "")) }
+                onFailure = {
+                    val error = (it as? PfException)?.error ?: PfError(PfError.BAD_RESPONSE, it.message ?: "")
+                    BanNotice.check(error)
+                    onError(error)
+                }
             )
         }
         error { e -> onError(PfError(PfError.NETWORK, e.message ?: e.javaClass.simpleName)) }

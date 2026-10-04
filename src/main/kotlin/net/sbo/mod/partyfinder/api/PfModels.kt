@@ -25,6 +25,7 @@ data class PfError(
         const val NO_PROFILE = "NO_PROFILE"
         const val HYPIXEL_UNAVAILABLE = "HYPIXEL_UNAVAILABLE"
         const val RATE_LIMITED = "RATE_LIMITED"
+        const val REPORT_NOT_ALLOWED = "REPORT_NOT_ALLOWED"
         const val INTERNAL_ERROR = "INTERNAL_ERROR"
     }
 }
@@ -226,6 +227,31 @@ data class CheckBody(
 
 @Serializable
 data class StatsReportBody(val bph: BphReport)
+
+@Serializable
+data class RulesData(val intro: String = "", val rules: List<Rule> = emptyList(), val outro: String = "")
+
+@Serializable
+data class Rule(val title: String = "", val text: String = "")
+
+/** [partyId] is the leader uuid, [reason] one of [ReportReason]. */
+@Serializable
+data class PartyReportBody(val partyId: String, val reason: String, val details: String? = null)
+
+/** Reasons the backend accepts for a party report. */
+enum class ReportReason(val id: String, val label: String) {
+    OFFENSIVE_NOTE("offensive_note", "Offensive note"),
+    SELLING("selling", "Selling carries or services"),
+    ADVERTISING("advertising", "Advertising"),
+    FAKE_PARTY("fake_party", "Fake or misleading party"),
+    OTHER("other", "Other");
+
+    companion object {
+        const val MIN_OTHER_DETAILS = 10
+        const val MAX_DETAILS = 200
+        fun of(id: String?) = entries.firstOrNull { it.id == id }
+    }
+}
 
 @Serializable
 data class BphReport(

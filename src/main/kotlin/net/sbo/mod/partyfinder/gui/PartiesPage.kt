@@ -23,6 +23,7 @@ import net.sbo.guilib.core.dsl.scroll
 import net.sbo.guilib.core.dsl.multiSelect
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
+import net.sbo.guilib.core.dsl.textarea
 import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
@@ -36,7 +37,11 @@ import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.ReqMatcher
 import net.sbo.mod.partyfinder.api.MemberView
+import net.sbo.mod.partyfinder.api.PartyFinderApi
+import net.sbo.mod.partyfinder.api.PartyReportBody
 import net.sbo.mod.partyfinder.api.PartyView
+import net.sbo.mod.partyfinder.api.PfError
+import net.sbo.mod.partyfinder.api.ReportReason
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
@@ -60,7 +65,8 @@ internal data class PartiesProps(
     val inspected: String?,
     val onInspect: (InspectedPlayer) -> Unit,
     // Reloads the list after the player joined a party
-    val joinedParties: Int
+    val joinedParties: Int,
+    val onRules: () -> Unit = {}
 )
 
 /** The parties of one party type with filters, details, the right click menu and joining. */
@@ -77,6 +83,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     var expanded by useState<String?>(null)
     var joining by useState<PartyView?>(null)
     var role by useState<String?>(null)
+    var reporting by useState<PartyView?>(null)
     val refresh = useState(0)
     val loadKey = useRef("")
     // Set by the refresh button and F5
@@ -202,14 +209,16 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             type = "text",
             value = search,
             onChange = { search = it.value },
-            placeholder = "Search player or note",
+            placeholder = "Search",
+            title = "Search a player name or a note",
             className = "pf-search"
         )
         span(className = "pf-count") {
             +"${visible.size} ${if (visible.size == 1) "party" else "parties"}"
         }
         if (hidden.isNotEmpty()) {
-            button(className = "pf-small", title = "Show the parties you hid", onClick = { hidden = emptySet() }) {
+            // Looks like the filter chips in the same bar
+            div(className = "guilib-chip", title = "Show the parties you hid", onClick = { hidden = emptySet() }) {
                 +"Show ${hidden.size} hidden"
             }
         }
@@ -249,6 +258,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     onToggle = { expanded = if (expanded == party.id) null else party.id },
                     onJoin = { join(party) },
                     onHide = { hidden = hidden + party.id },
+                    onReport = { reporting = party },
                     onEdit = props.onEdit,
                     inspected = props.inspected,
                     onInspect = props.onInspect,
@@ -292,6 +302,77 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             }) { +"Send join request" }
         }
     }
+
+    reporting?.let { party ->
+        ReportDialog(
+            ReportProps(party, onClose = { reporting = null }, onSent = { hidden = hidden + party.id; reporting = null }, onRules = {
+                reporting = null
+                props.onRules()
+            }),
+            key = "report:${party.id}"
+        )
+    }
+}
+
+internal data class ReportProps(val party: PartyView, val onClose: () -> Unit, val onSent: () -> Unit, val onRules: () -> Unit)
+
+/** Asks for a reason and sends the report to the moderators on the SBO Discord. */
+private val ReportDialog = component<ReportProps>("ReportDialog") { props ->
+    var reason by useState<ReportReason?>(null)
+    var details by useState("")
+    var sending by useState(false)
+    val toast = useToast()
+    val tooShort = reason == ReportReason.OTHER && details.trim().length < ReportReason.MIN_OTHER_DETAILS
+
+    fun send(picked: ReportReason) {
+        sending = true
+        val body = PartyReportBody(props.party.id, picked.id, details.trim().ifEmpty { null })
+        PartyFinderApi.reportParty(body, onError = { e ->
+            sending = false
+            toast.error(reportError(e))
+        }) {
+            toast.success("Thanks, the moderators got your report. The party is now hidden for you.")
+            props.onSent()
+        }
+    }
+
+    modal(open = true, onClose = props.onClose, className = "pf-dialog pf-report-dialog") {
+        h3 { +"Report ${props.party.leader?.name ?: "this"}'s party" }
+        p(className = "pf-hint") {
+            +"Moderators on the SBO Discord see your report together with your name and the party. Please only report parties that really break the "
+            span(className = "pf-link", onClick = { props.onRules() }) { +"rules" }
+            +"."
+        }
+        radioGroup(value = reason?.id, onChange = { reason = ReportReason.of(it) }, vertical = true) {
+            ReportReason.entries.forEach { option(it.id, it.label) }
+        }
+        textarea(
+            value = details,
+            onChange = { e -> details = e.value },
+            placeholder = if (reason == ReportReason.OTHER) "Describe the problem in a few words" else "More details for the moderators",
+            rows = 3,
+            maxLength = ReportReason.MAX_DETAILS,
+            className = "pf-report-input"
+        )
+        if (tooShort) {
+            p(className = "pf-hint") { +"Please write at least ${ReportReason.MIN_OTHER_DETAILS} characters, so the moderators know what happened." }
+        }
+        div(className = "pf-dialog-buttons") {
+            button(onClick = { props.onClose() }) { +"Cancel" }
+            val blocked = reason == null || tooShort || sending
+            // New key per state: GuiLib keeps the disabled text color after the button turns on until the next full repaint
+            button(className = "primary", disabled = blocked, onClick = { reason?.let(::send) }, key = "send:$blocked") {
+                +"Send report"
+            }
+        }
+    }
+}
+
+/** The backend explains report problems itself, e.g. "You already reported this party". */
+private fun reportError(e: PfError): String = when (e.code) {
+    PfError.INVALID_REQUEST, PfError.RATE_LIMITED, PfError.REPORT_NOT_ALLOWED, PfError.PARTY_NOT_FOUND ->
+        "${e.message.trimEnd('.')}."
+    else -> ProblemText.error(e)
 }
 
 /** More filters and the sorting. Changes apply right away. */
@@ -431,6 +512,7 @@ private fun NodeBuilder.partyCard(
     onToggle: () -> Unit,
     onJoin: () -> Unit,
     onHide: () -> Unit,
+    onReport: () -> Unit,
     onEdit: () -> Unit,
     inspected: String?,
     onInspect: (InspectedPlayer) -> Unit,
@@ -454,6 +536,7 @@ private fun NodeBuilder.partyCard(
             item("Join party", disabled = full) { onJoin() }
             separator()
             item("Hide this party") { onHide() }
+            item("Report party…", danger = true) { onReport() }
         }
     }, className = "pf-card-anchor", key = party.id) {
         div(className = classNames("pf-card", "mine" to mine, "full" to full, "expanded" to expanded), onClick = { onToggle() }) {

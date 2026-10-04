@@ -168,7 +168,7 @@ object PartyFinderGui {
 
         fun select(key: String) {
             selected = key
-            if (page == "settings") page = "parties"
+            if (page == "settings" || page == "rules") page = "parties"
         }
 
         val panel = inspected?.takeIf { page == "parties" && target != null }
@@ -180,6 +180,7 @@ object PartyFinderGui {
                     tabs(value = page, onChange = { page = it }, className = "pf-nav") {
                         tab("parties", "Parties")
                         tab("create", if (inQueue) "Edit Party" else "Create Party")
+                        tab("rules", "Rules")
                         tab("settings", "Settings")
                     }
                     div(className = "pf-spacer")
@@ -253,8 +254,9 @@ object PartyFinderGui {
                     }
 
                     // pf-main-list lets low windows scroll the toolbar away with the parties
-                    main(className = classNames("pf-main", "pf-main-list guilib-autohide" to (page != "settings" && page != "create"))) {
+                    main(className = classNames("pf-main", "pf-main-list guilib-autohide" to (page == "parties"))) {
                         when {
+                            page == "rules" -> RulesPage(Unit, key = "rules")
                             page == "settings" -> SettingsPage(
                                 SettingsProps(
                                     target, favorites, ::saveFavorites, { reload++ },
@@ -303,13 +305,14 @@ object PartyFinderGui {
                                 val shown = if (page == "create" && target.all) target.subTargets().first() else target
                                 toolbar(shown, favorites, showAll = page != "create", onSub = { select(it) }, onStar = { toggleFavorite(it) })
                                 if (page == "create") {
-                                    CreatePage(CreateProps(shown, ownFor(shown) ?: own, inQueue), key = "create:${shown.key}")
+                                    CreatePage(CreateProps(shown, ownFor(shown) ?: own, inQueue, onRules = { page = "rules" }), key = "create:${shown.key}")
                                 } else {
                                     PartiesPage(
                                         PartiesProps(
                                             target, own, ::ownFor, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
                                             inspected = inspected?.member?.uuid, onInspect = { inspected = it },
-                                        joinedParties = joinedParties
+                                        joinedParties = joinedParties,
+                                            onRules = { page = "rules" }
                                         ),
                                         key = "list"
                                     )

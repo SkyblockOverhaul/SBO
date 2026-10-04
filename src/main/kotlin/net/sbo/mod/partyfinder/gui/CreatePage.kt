@@ -41,7 +41,7 @@ import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
 
-internal data class CreateProps(val target: PartyTarget, val own: MemberView?, val inQueue: Boolean)
+internal data class CreateProps(val target: PartyTarget, val own: MemberView?, val inQueue: Boolean, val onRules: () -> Unit = {})
 
 private val json = Json { ignoreUnknownKeys = true }
 
@@ -200,6 +200,11 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                     +(if (props.inQueue) "Update party" else "Create party")
                 }
             }
+        }
+        p(className = "pf-hint pf-rules-hint") {
+            +"By listing a party you agree to the "
+            span(className = "pf-link", onClick = { props.onRules() }) { +"rules" }
+            +"."
         }
     }
 }
