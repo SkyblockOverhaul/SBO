@@ -97,6 +97,7 @@ object SBOKotlin : ClientModInitializer {
 
         // Initialize scheduled tab list fetch
         TabList.init()
+        World.init()
 
 		// Check for updates
 		UpdateChecker.check()
