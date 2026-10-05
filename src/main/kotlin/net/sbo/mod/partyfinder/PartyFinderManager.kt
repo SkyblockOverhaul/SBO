@@ -1,6 +1,6 @@
 package net.sbo.mod.partyfinder
 
-import gg.essential.universal.utils.toFormattedString
+import net.sbo.mod.utils.chat.toFormattedString
 import kotlinx.serialization.json.Json
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
 import net.sbo.mod.SBOKotlin.mc
