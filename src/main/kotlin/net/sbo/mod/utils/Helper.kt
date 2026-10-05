@@ -80,7 +80,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received loot for assisting (.*?)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { message, matchResult ->
             onLootShare()
             true
         }
