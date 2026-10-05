@@ -724,7 +724,7 @@ object Helper {
 
     fun dianaMobDiedRecently(seconds: Long = 2): Boolean = getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
 
-    fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
+    internal fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
         if (hours <= 0.0) return 0.0
         val totalBurrows = tracker.items.TOTAL_BURROWS.toDouble()
@@ -732,7 +732,7 @@ object Helper {
         return BigDecimal.valueOf(burrowsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
     }
 
-    fun getMobsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
+    internal fun getMobsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
         if (hours <= 0.0) return 0.0
         val totalMobs = tracker.mobs.TOTAL_MOBS.toDouble()
