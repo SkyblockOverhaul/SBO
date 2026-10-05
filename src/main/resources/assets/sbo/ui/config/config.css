@@ -1,0 +1,244 @@
+/* Colors of the SBO Dark theme, same variables as the party finder (partyfinder.css), so both look alike. */
+body {
+    --bg: #1e1f22;
+    --panel: #2b2d31;
+    --panel-2: #313338;
+    --card: #26282c;
+    --card-hover: #2a2c31;
+    --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
+    --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
+    --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
+    --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
+    --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
+    --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
+    --guilib-border: var(--input-border);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cfg-window {
+    display: flex;
+    flex-direction: column;
+    width: min(96vw, 620px);
+    height: min(94vh, 420px);
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    animation: cfg-fade 150ms ease-out;
+}
+@keyframes cfg-fade { from { opacity: 0; transform: translateY(6px); } }
+
+.cfg-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 4px 3px 6px;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.cfg-title {
+    font-weight: bold;
+    color: var(--title);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex-shrink: 1;
+}
+.cfg-search { display: flex; align-items: center; flex-grow: 1; min-width: 80px; max-width: 260px; margin-left: auto; position: relative; }
+.cfg-search-input { width: 100%; padding-right: 16px; }
+.cfg-search-clear {
+    position: absolute;
+    right: 2px;
+    padding: 0 3px;
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--muted);
+}
+.cfg-search-clear:hover { color: var(--text-strong); background-color: transparent; }
+.cfg-back { padding: 0 5px; font-size: 12px; background-color: transparent; border-color: transparent; color: var(--subtle); }
+.cfg-back:hover { color: var(--text-strong); background-color: var(--tint); }
+.cfg-close { padding: 1px 5px; background-color: transparent; border-color: transparent; }
+.cfg-close:hover { background-color: var(--danger); }
+
+.cfg-main { display: flex; flex-grow: 1; min-height: 0; }
+
+.cfg-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 112px;
+    flex-shrink: 0;
+    background-color: var(--panel);
+    border-right: 1px solid var(--border);
+}
+.cfg-categories { flex-grow: 1; min-height: 0; padding: 4px; }
+.cfg-category {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    margin-bottom: 1px;
+    padding: 3px 6px;
+    text-align: left;
+    color: var(--subtle);
+    background-color: transparent;
+    border-color: transparent;
+    border-radius: 3px;
+    transition: background-color 100ms, color 100ms;
+}
+.cfg-category:hover { color: var(--text-strong); background-color: var(--tint); }
+.cfg-category.active { color: var(--text-strong); background-color: var(--accent-faint); border-color: var(--accent-soft); }
+.cfg-category.no-hits { color: var(--dim); }
+.cfg-category-name { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cfg-count {
+    padding: 0 3px;
+    font-size: 7px;
+    color: var(--accent-text);
+    background-color: var(--accent);
+    border-radius: 6px;
+}
+
+.cfg-body { flex-grow: 1; min-width: 0; min-height: 0; padding: 4px 10px 10px 10px; }
+.cfg-page-title { margin: 4px 0 2px 0; font-size: 12px; color: var(--text-strong); }
+.cfg-page-description { margin-bottom: 4px; color: var(--muted); }
+.cfg-subcategory { margin: 12px 0 2px 0; font-size: 10px; color: var(--text-strong); }
+
+.cfg-section { margin: 10px 0 2px 0; padding: 0 4px 2px 4px; border-bottom: 1px solid var(--border); }
+.cfg-section-title { margin: 0; font-size: 8px; color: var(--title); }
+.cfg-section-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
+
+.cfg-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+}
+.cfg-row:hover { background-color: var(--card); }
+/* The setting a search result jumped to */
+.cfg-row.highlighted { animation: cfg-flash 1800ms ease-out; }
+@keyframes cfg-flash {
+    0%, 40% { background-color: var(--accent-faint); border-color: var(--accent); }
+    100% { background-color: transparent; border-color: transparent; }
+}
+.cfg-row-text { flex-grow: 1; min-width: 0; }
+.cfg-row-name { color: var(--text-strong); }
+.cfg-row-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
+.cfg-row-place { font-size: 7px; color: var(--accent-hover); cursor: pointer; }
+.cfg-row-place:hover { text-decoration: underline; color: var(--banner-text); }
+.cfg-row-control { display: flex; justify-content: flex-end; flex-shrink: 0; max-width: 55%; }
+
+.cfg-select { min-width: 90px; max-width: 160px; }
+.cfg-slider { width: 120px; }
+.cfg-row .guilib-slider-field { display: flex; width: 150px; }
+.cfg-row .cfg-slider { flex-grow: 1; width: auto; min-width: 0; }
+.guilib-slider-value { min-width: 22px; text-align: right; }
+.cfg-number { width: 90px; }
+.cfg-text { width: 160px; }
+.cfg-button { padding: 1px 8px; }
+
+.cfg-strings { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.cfg-strings-line { display: flex; gap: 2px; }
+.cfg-strings-remove { padding: 0 4px; }
+.cfg-strings-add { padding: 0 6px; font-size: 7px; color: var(--subtle); background-color: transparent; border-color: transparent; }
+.cfg-strings-add:hover { color: var(--text-strong); background-color: var(--tint); }
+
+.cfg-results-info { margin: 4px 0; color: var(--muted); font-size: 7px; }
+.cfg-result-group { margin-bottom: 6px; }
+.cfg-result-category { margin: 6px 0 2px 0; padding: 0 4px 2px 4px; font-size: 8px; color: var(--title); border-bottom: 1px solid var(--border); }
+.cfg-empty { margin: 30px 0; text-align: center; color: var(--muted); }
+
+.guilib-select-menu {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 300ms ease 600ms;
+}
+.guilib-select-menu:scrolling, .guilib-select-menu:hover {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    transition: scrollbar-color 120ms;
+}
+
+@media (max-width: 460px) {
+    .cfg-sidebar { width: 84px; }
+    .cfg-row { flex-wrap: wrap; gap: 4px; }
+    .cfg-row-control { max-width: none; }
+}

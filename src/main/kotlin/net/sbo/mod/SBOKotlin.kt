@@ -1,7 +1,5 @@
 package net.sbo.mod
 
-import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
-import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
@@ -23,6 +21,7 @@ import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.Guis
+import net.sbo.mod.guis.HubGui
 import net.sbo.mod.overlays.*
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.partyfinder.PartyCheck
@@ -53,15 +52,13 @@ object SBOKotlin : ClientModInitializer {
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
-	private val configurator = Configurator(MOD_ID)
-
 	// Before the config registers, it drops the options that moved out of it (master volume, auto sync)
 	init {
 		SoundHandler.readLegacyMasterVolume()
 		CloudSync.readLegacyAutoSync()
 	}
 
-	val settings = Settings.register(configurator)
+	val settings = Settings.apply { load(FabricLoader.getInstance().configDir) }
 
 	lateinit var version: String
 	lateinit var mcVersion: String
@@ -111,10 +108,12 @@ object SBOKotlin : ClientModInitializer {
 
 		// load Main Features
 		PartyCommands.init()
-		Register.command("sbo") {
-			mc.schedule {
-				mc.setScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
-			}
+		Register.command("sbo") { args ->
+			val settings = args.firstOrNull()?.lowercase() in setOf("settings", "config")
+			mc.schedule { if (settings) HubGui.openSettings() else HubGui.open() }
+		}
+		Register.command("sbosettings", "sboconfig") {
+			mc.schedule { HubGui.openSettings() }
 		}
 
 		Guis.register()

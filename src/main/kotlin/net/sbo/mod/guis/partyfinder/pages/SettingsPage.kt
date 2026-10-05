@@ -1,8 +1,6 @@
 package net.sbo.mod.guis.partyfinder.pages
 
-import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
-import gg.essential.universal.UScreen.Companion.displayScreen
-import net.sbo.mod.SBOKotlin.MOD_ID
+import net.sbo.mod.guis.HubGui
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.partyfinder.PartyFinderGUI
 
@@ -14,7 +12,7 @@ class SettingsPage(private val parent: PartyFinderGUI) : PartyPage {
 
     private fun openSettings() {
         mc.schedule {
-            displayScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
+            HubGui.openSettings()
         }
     }
 

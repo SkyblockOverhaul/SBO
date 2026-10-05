@@ -363,7 +363,7 @@ object CloudSync {
         )
 
     private fun configFile(): File {
-        val base = FabricLoader.getInstance().configDir.resolve(SBOKotlin.settings.id())
+        val base = FabricLoader.getInstance().configDir.resolve(SBOKotlin.settings.file)
         val json = File("$base.json")
         return if (json.exists()) json else File("$base.jsonc")
     }
@@ -597,13 +597,12 @@ object CloudSync {
         try {
             if (config.exists()) config.copyTo(backup, overwrite = true)
             config.writeText(files.getValue(CloudDiff.CONFIG))
-            SBOKotlin.settings.load { }
-            SBOKotlin.settings.save()
+            SBOKotlin.settings.reload()
         } catch (e: Exception) {
             SBOKotlin.logger.error("Failed to apply the cloud config", e)
             if (backup.exists()) {
                 backup.copyTo(config, overwrite = true)
-                SBOKotlin.settings.load { }
+                SBOKotlin.settings.reload()
             }
             notify("error", "Your settings could not be loaded from the cloud, your old settings were kept. Everything else was loaded.")
         }

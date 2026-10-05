@@ -1,7 +1,7 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
-import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
+import net.sbo.mod.config.Category
+import net.sbo.mod.config.ObservableEntry
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.EventsGui
 import net.sbo.mod.overlays.DianaLoot
@@ -11,7 +11,7 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
 
-object Diana : CategoryKt("Diana") {
+object Diana : Category("Diana") {
     enum class ShareList {
         INQ, MANTICORE, KING, SPHINX
     }

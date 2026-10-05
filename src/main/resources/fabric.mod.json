@@ -32,6 +32,12 @@
         "adapter": "kotlin",
         "value": "${mod_group}.SBOKotlin"
       }
+    ],
+    "modmenu": [
+      {
+        "adapter": "kotlin",
+        "value": "${mod_group}.compat.ModMenuCompat"
+      }
     ]
   },
   "mixins": [
@@ -49,8 +55,6 @@
     "fabric-language-kotlin": ">=${fabric_language_kotlin_version}",
     "elementa": ">=${elementa_version}",
     "hm-api": ">=${hm_api_version}",
-    "resourcefulconfig": ">=${resourcefulconfig_version}",
-    "resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
     "universalcraft": ">=${universalcraft_version}",
     "guilib": ">=${guilib_version}"
   },

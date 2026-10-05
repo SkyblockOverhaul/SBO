@@ -1,10 +1,10 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.config.Category
 import net.sbo.mod.guis.Guis
 import java.awt.Color
 
-object Customization : CategoryKt("Customization") {
+object Customization : Category("Customization") {
     init {
         separator {
             this.title = "Guess Color Customization"

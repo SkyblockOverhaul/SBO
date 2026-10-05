@@ -1,10 +1,10 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.config.Category
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.cloud.gui.CloudSyncGui
 
-object CloudSync : CategoryKt("Cloud Sync") {
+object CloudSync : Category("Cloud Sync") {
     init {
         separator {
             this.title = "Cloud Save"
