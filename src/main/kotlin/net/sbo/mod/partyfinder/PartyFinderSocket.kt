@@ -5,10 +5,12 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
@@ -25,7 +27,8 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Join requests over the SBO socket (`/pf/ws`) instead of `/msg`. Only connected while needed: while
  * the own party is listed, and while waiting for an answer plus two minutes. The backend checks the
- * joiner, so the leader gets requests that already passed.
+ * joiner, so the leader gets requests that already passed. While connected, the pings keep the own
+ * party listed, and the backend removes it when the leader is gone for a minute.
  */
 object PartyFinderSocket {
     private const val PING_MS = 30_000L
@@ -56,6 +59,8 @@ object PartyFinderSocket {
     private var lastPing = 0L
     private var sending: CompletableFuture<*> = CompletableFuture.completedFuture(null)
     private val pending = ConcurrentHashMap<String, Pending>()
+
+    fun isConnected(): Boolean = socket != null
 
     fun init() {
         Register.onTick(20) { tick() }
@@ -180,8 +185,14 @@ object PartyFinderSocket {
 
     private fun handle(text: String) {
         val message = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: return
+        val type = message["type"]?.jsonPrimitive?.contentOrNull
+        if (type == "party_removed") {
+            val error = (message["error"] as? JsonObject)?.let { runCatching { json.decodeFromJsonElement<PfError>(it) }.getOrNull() }
+                ?: PfError(PfError.PARTY_NOT_FOUND, "")
+            return SBOKotlin.mc.execute { PartyFinderManager.onPartyRemoved(error) }
+        }
         val requestId = message["requestId"]?.jsonPrimitive?.contentOrNull ?: return
-        when (message["type"]?.jsonPrimitive?.contentOrNull) {
+        when (type) {
             "join_request" -> {
                 val name = message["name"]?.jsonPrimitive?.contentOrNull ?: return
                 val uuid = message["uuid"]?.jsonPrimitive?.contentOrNull ?: return

@@ -186,12 +186,11 @@ object PartyFinderManager {
         }
 
         Register.onTick(20 * 60 * 4) { // every 4 minutes
-            if (!inQueue) return@onTick
+            // The socket's pings keep the party listed while it is connected
+            if (!inQueue || PartyFinderSocket.isConnected()) return@onTick
             PartyFinderApi.refreshParty(onError = { error ->
                 if (error.code == PfError.PARTY_NOT_FOUND || error.code == PfError.PARTY_TOO_OLD || error.code == PfError.INVALID_KEY) {
-                    inQueue = false
-                    queuedParty = null
-                    Chat.chat("§6[SBO] §4Your party left the queue: ${ProblemText.error(error)}")
+                    onPartyRemoved(error)
                 }
             }) {}
         }
@@ -422,6 +421,14 @@ object PartyFinderManager {
                 Chat.chat("§6[SBO] §eInvited $playerName to the party.")
             }
         }
+    }
+
+    /** The backend took the listed party out of the queue, e.g. after an hour. */
+    fun onPartyRemoved(error: PfError) {
+        if (!inQueue) return
+        inQueue = false
+        queuedParty = null
+        Chat.chat("§6[SBO] §4Your party left the queue: ${ProblemText.error(error)}")
     }
 
     /** A join request over the socket, the backend already checked the player against the party. */
