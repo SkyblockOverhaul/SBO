@@ -182,7 +182,7 @@ object PartyFinderManager {
         }
 
         Register.onTick(20 * 60 * 4) { // every 4 minutes
-            if (!inQueue || !hasSboKey()) return@onTick
+            if (!inQueue) return@onTick
             PartyFinderApi.refreshParty(onError = { error ->
                 if (error.code == PfError.PARTY_NOT_FOUND || error.code == PfError.PARTY_TOO_OLD || error.code == PfError.INVALID_KEY) {
                     inQueue = false
@@ -219,7 +219,6 @@ object PartyFinderManager {
     /** Queues [newDraft]. Size and note are fitted to the category, the definitions are loaded when needed. */
     fun createParty(newDraft: PartyDraft) {
         if (creatingParty) return
-        if (!hasSboKey()) return
         PartyCategories.get { data ->
             val target = data?.let { PartyCategories.target(newDraft.partyType, newDraft.subType) }
             if (target == null) {
@@ -465,10 +464,6 @@ object PartyFinderManager {
         if (inQueue) {
             inQueue = false
             queuedParty = null
-            if (!hasSboKey()) {
-                onComplete?.invoke(false)
-                return
-            }
             PartyFinderApi.removeParty(onError = { error ->
                 onComplete?.invoke(false)
                 tell("§6[SBO] §4Failed to remove party from queue: ${ProblemText.error(error)}", false)

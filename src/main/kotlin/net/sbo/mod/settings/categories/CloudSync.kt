@@ -8,7 +8,7 @@ object CloudSync : CategoryKt("Cloud Sync") {
     init {
         separator {
             this.title = "Cloud Save"
-            this.description = "Supporter feature: keeps your SBO settings, trackers, achievements and other SBO data online, so you can load them on any PC. Needs your SBO key (/sbokey)."
+            this.description = "Supporter feature: keeps your SBO settings, trackers, achievements and other SBO data online, so you can load them on any PC. Your Minecraft account must be linked on the SBO Discord (/link)."
         }
 
         button {

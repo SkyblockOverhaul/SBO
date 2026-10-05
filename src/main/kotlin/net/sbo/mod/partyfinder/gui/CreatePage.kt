@@ -37,7 +37,6 @@ import net.sbo.mod.partyfinder.api.ItemChoice
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.ReqDef
-import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
 
@@ -53,7 +52,6 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
     val latest = useRef(draft)
     latest.current = draft
     val toast = useToast()
-    val hasKey = SboKey.get().startsWith("sbo")
 
     // Keeps the input when switching pages or closing the window
     useEffect {
@@ -105,11 +103,6 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                 } else {
                     +" ${target.label} parties can be listed from one hour before the event starts, that is in ${until(listable)}."
                 }
-            }
-        }
-        if (!hasKey) {
-            div(className = "pf-banner") {
-                +"You need an SBO key to create a party. Get one in the SBO Discord and set it with /sbokey <key>."
             }
         }
 
@@ -196,7 +189,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
             val createHint = "You must be alone or the party leader. Everyone already in your party has to meet the requirements too." +
                 (if (props.inQueue) " Updating replaces the party you have listed right now." else "")
             tooltip(createHint, placement = "top", className = "pf-tip") {
-                button(className = "primary", disabled = !target.createOpen || !hasKey, onClick = { submit() }) {
+                button(className = "primary", disabled = !target.createOpen, onClick = { submit() }) {
                     +(if (props.inQueue) "Update party" else "Create party")
                 }
             }

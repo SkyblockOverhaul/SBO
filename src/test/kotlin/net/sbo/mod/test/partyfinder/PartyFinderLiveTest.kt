@@ -32,11 +32,13 @@ import java.net.http.HttpResponse
 /**
  * Runs against a local backend with real profiles. Skipped unless SBO_TEST_KEY is set:
  * `pnpm dev:api`, then `pnpm pf:devkey` in the backend, then
- * `SBO_TEST_KEY=<key> ./gradlew :26.1.2-fabric:test --tests '*PartyFinderLiveTest'`.
+ * `SBO_TEST_KEY=<key> SBO_TEST_SESSION=<session> ./gradlew :26.1.2-fabric:test --tests '*PartyFinderLiveTest'`.
  */
 class PartyFinderLiveTest {
     private val api = System.getenv("SBO_TEST_API") ?: "http://localhost:3000"
     private val key = System.getenv("SBO_TEST_KEY").orEmpty()
+    // Mojang login session of the key's owner, `pnpm pf:devkey` prints it
+    private val session = System.getenv("SBO_TEST_SESSION").orEmpty()
     private val client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()
 
     private val leader = "33cd429790564c91a7579f56a3739431" // D4rkswift, owns the key
@@ -48,7 +50,7 @@ class PartyFinderLiveTest {
 
     private inline fun <reified T> call(method: String, path: String, body: String? = null, withKey: Boolean = true): Result<T> {
         val request = HttpRequest.newBuilder(URI.create("$api$path"))
-        if (withKey) request.header("x-sbo-key", key)
+        if (withKey) request.header("x-sbo-key", key).header("x-sbo-session", session)
         if (body != null) request.header("Content-Type", "application/json")
         request.method(method, if (body == null) HttpRequest.BodyPublishers.noBody() else HttpRequest.BodyPublishers.ofString(body))
         val response = client.send(request.build(), HttpResponse.BodyHandlers.ofString())

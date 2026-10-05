@@ -51,29 +51,35 @@ object PartyFinderApi {
         SboApi.get("/pf/parties/counts").handle<PartyCounts>(onError) { onSuccess(it.counts) }
     }
 
+    // Everything that acts for the player needs the Mojang login (SboApi.authedPost)
     fun createParty(body: PartyBody, onError: (PfError) -> Unit, onSuccess: (PartyView) -> Unit) =
-        SboApi.post("/pf/parties", json.encodeToString(body)).handle(onError, onSuccess)
+        SboApi.authedPost("/pf/parties", json.encodeToString(body)).handle(onError, onSuccess)
 
     fun updateParty(body: PartyBody, onError: (PfError) -> Unit, onSuccess: (PartyView) -> Unit) =
-        SboApi.post("/pf/parties/update", json.encodeToString(body)).handle(onError, onSuccess)
+        SboApi.authedPost("/pf/parties/update", json.encodeToString(body)).handle(onError, onSuccess)
 
     fun removeParty(onError: (PfError) -> Unit, onSuccess: () -> Unit) =
-        SboApi.post("/pf/parties/remove").handle<JsonElement>(onError) { onSuccess() }
+        SboApi.authedPost("/pf/parties/remove").handle<JsonElement>(onError) { onSuccess() }
 
     fun refreshParty(onError: (PfError) -> Unit, onSuccess: () -> Unit) =
-        SboApi.post("/pf/parties/refresh").handle<JsonElement>(onError) { onSuccess() }
+        SboApi.authedPost("/pf/parties/refresh").handle<JsonElement>(onError) { onSuccess() }
 
-    fun checkMembers(body: CheckBody, onError: (PfError) -> Unit, onSuccess: (CheckData) -> Unit) =
-        SboApi.post("/pf/members/check", json.encodeToString(body)).handle(onError, onSuccess)
+    /** By name it is open like /partyInfo, by uuid or against a party it needs the login. */
+    fun checkMembers(body: CheckBody, onError: (PfError) -> Unit, onSuccess: (CheckData) -> Unit) {
+        val text = json.encodeToString(body)
+        val request = if (body.uuids != null || body.partyId != null) SboApi.authedPost("/pf/members/check", text)
+            else SboApi.post("/pf/members/check", text)
+        request.handle(onError, onSuccess)
+    }
 
     fun rules(onError: (PfError) -> Unit, onSuccess: (RulesData) -> Unit) =
         SboApi.get("/pf/rules").handle(onError, onSuccess)
 
     fun reportParty(body: PartyReportBody, onError: (PfError) -> Unit, onSuccess: () -> Unit) =
-        SboApi.post("/pf/parties/report", json.encodeToString(body)).handle<JsonElement>(onError) { onSuccess() }
+        SboApi.authedPost("/pf/parties/report", json.encodeToString(body)).handle<JsonElement>(onError) { onSuccess() }
 
     fun reportStats(body: StatsReportBody, onError: (PfError) -> Unit, onSuccess: () -> Unit) =
-        SboApi.post("/pf/stats/report", json.encodeToString(body)).handle<JsonElement>(onError) { onSuccess() }
+        SboApi.authedPost("/pf/stats/report", json.encodeToString(body)).handle<JsonElement>(onError) { onSuccess() }
 
     /** Reads a `/pf` answer; [onSuccess] gets `data` (JsonNull for calls without data). */
     @PublishedApi

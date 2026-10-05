@@ -28,6 +28,8 @@ import java.net.http.HttpResponse
 class OldModCompatTest {
     private val api = System.getenv("SBO_TEST_API") ?: "http://localhost:3000"
     private val key = System.getenv("SBO_TEST_KEY").orEmpty()
+    // Only the new /pf calls need it, old mods never send one
+    private val session = System.getenv("SBO_TEST_SESSION").orEmpty()
     private val client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()
 
     private val leader = "33cd429790564c91a7579f56a3739431" // D4rkswift, owns the key
@@ -41,6 +43,7 @@ class OldModCompatTest {
     private fun send(method: String, path: String, body: String? = null): String {
         val request = HttpRequest.newBuilder(URI.create("$api$path")).header("x-sbo-key", key)
             .header("X-SBO-Version", "0.6.0")
+        if (path.startsWith("/pf/")) request.header("x-sbo-session", session)
         if (method == "POST") request.header("Content-Type", "application/json")
         request.method(method, if (method == "POST") HttpRequest.BodyPublishers.ofString(body ?: "{}") else HttpRequest.BodyPublishers.noBody())
         val response = client.send(request.build(), HttpResponse.BodyHandlers.ofString())

@@ -107,19 +107,18 @@ object CloudSyncGui {
             }
         }
 
-        val noSboKey = status?.state == SyncState.NO_SBO_KEY
         val notSupporter = status?.state == SyncState.ERROR && status?.error?.contains("supporter", ignoreCase = true) == true
-        val locked = busy != null || noSboKey || status == null
-        val hasSave = status?.state !in setOf(SyncState.NO_SAVE, SyncState.NO_SBO_KEY, SyncState.ERROR, null)
+        val locked = busy != null || status == null
+        val hasSave = status?.state !in setOf(SyncState.NO_SAVE, SyncState.ERROR, null)
 
         div(className = "cs-window") {
             windowHeader("Cloud Sync", size, onBackups = onBackups)
             scroll(className = "cs-body guilib-autohide") {
                 statusCard(status, busy, refreshWait, refreshing || busy != null) { refresh() }
 
-                // Without key or supporter status nothing below works, only the steps to fix it
-                if (noSboKey || notSupporter) {
-                    setupSteps(noSboKey)
+                // Without supporter status nothing below works, only the steps to fix it
+                if (notSupporter) {
+                    setupSteps()
                     return@scroll
                 }
 
@@ -383,7 +382,6 @@ object CloudSyncGui {
     private fun NodeBuilder.statusCard(status: CloudSync.Status?, busy: String?, refreshWait: Long, refreshing: Boolean, onRefresh: () -> Unit) {
         val (tone, text) = when (status?.state) {
             null -> "idle" to "Checking..."
-            SyncState.NO_SBO_KEY -> "bad" to "Cloud Sync needs your SBO key first."
             SyncState.NO_SAVE -> "warn" to "No cloud save yet. Click Upload."
             SyncState.NOT_USED_HERE -> "warn" to "Not loaded on this PC yet. Click Download."
             SyncState.BOTH_CHANGED -> "bad" to "This PC and the cloud both changed. Click Compare."
@@ -402,31 +400,21 @@ object CloudSyncGui {
                     }
                 }
             }
-            if (status?.state != SyncState.NO_SBO_KEY) {
-                button(
-                    className = "cs-icon cs-refresh",
-                    disabled = refreshing || refreshWait > 0,
-                    title = if (refreshWait > 0) "Check again in ${(refreshWait + 999) / 1000} s" else "Checks your cloud save again, e.g. after you uploaded on another PC",
-                    onClick = { onRefresh() }
-                ) { img("sbo:ui/cloud/refresh.svg", className = "cs-refresh-icon") }
-            }
+            button(
+                className = "cs-icon cs-refresh",
+                disabled = refreshing || refreshWait > 0,
+                title = if (refreshWait > 0) "Check again in ${(refreshWait + 999) / 1000} s" else "Checks your cloud save again, e.g. after you uploaded on another PC",
+                onClick = { onRefresh() }
+            ) { img("sbo:ui/cloud/refresh.svg", className = "cs-refresh-icon") }
         }
     }
 
-    private fun NodeBuilder.setupSteps(noSboKey: Boolean) {
+    private fun NodeBuilder.setupSteps() {
         div(className = "cs-steps") {
-            if (noSboKey) {
-                div(className = "cs-steps-title") { +"How to set it up:" }
-                infoLine("1. On the SBO Discord, type /generatesbokey. The bot sends you your SBO key.")
-                infoLine("2. In Minecraft, type /sbokey followed by your key.")
-                infoLine("3. Open this window again with /sbocloud.")
-                div(className = "cs-hint") { +"Cloud Sync is a supporter feature (Patreon, Ko-fi or Discord booster)." }
-            } else {
-                div(className = "cs-steps-title") { +"Already a supporter? Check these:" }
-                infoLine("1. Your SBO key is set on this Minecraft account: type /sbokey followed by your key.")
-                infoLine("2. The key comes from /generatesbokey on the SBO Discord, typed with the Discord account that has the supporter role or boosts the server.")
-                infoLine("3. Open this window again with /sbocloud. New supporter roles can take a few minutes.")
-            }
+            div(className = "cs-steps-title") { +"Already a supporter? Check these:" }
+            infoLine("1. Your Minecraft account is linked to your Discord account: type /link followed by your Minecraft name on the SBO Discord.")
+            infoLine("2. Use the Discord account that has the supporter role or boosts the server.")
+            infoLine("3. Open this window again with /sbocloud. New supporter roles can take a few minutes.")
         }
     }
 
