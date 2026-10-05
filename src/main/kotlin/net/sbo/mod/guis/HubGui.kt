@@ -1,5 +1,8 @@
 package net.sbo.mod.guis
 
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -29,6 +32,9 @@ import net.sbo.mod.config.ConfigGui
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.overlay.OverlayEditScreen
+import org.lwjgl.glfw.GLFW
+import java.util.Collections
+import java.util.WeakHashMap
 
 object HubGui {
     private val STYLES = listOf("sbo:ui/hub/hub.css")
@@ -43,13 +49,48 @@ object HubGui {
 
     fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open)
 
-    private class Tile(val title: String, val description: String, val command: String?, val icon: Item, val open: () -> Unit)
+    private class Tile(
+        val title: String,
+        val description: String,
+        val command: String?,
+        val icon: Item,
+        val escBackToHub: Boolean = true,
+        val open: () -> Unit,
+    )
+
+    private val escBackToHub: MutableSet<Screen> = Collections.newSetFromMap(WeakHashMap())
+
+    fun register() {
+        // Fabric drops a screen's listeners when it initializes again (e.g. on resize)
+        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
+            if (screen in escBackToHub) listenForEsc(screen)
+        }
+    }
+
+    private fun openFromHub(tile: Tile) {
+        val hub = GuiLib.currentScreen()
+        tile.open()
+        if (!tile.escBackToHub) return
+        // Some tiles open their screen one task later
+        mc.schedule {
+            val screen = GuiLib.currentScreen()
+            if (screen != null && screen !== hub && escBackToHub.add(screen)) listenForEsc(screen)
+        }
+    }
+
+    // Esc that only closes a modal or leaves an input keeps the screen open, so only a closed screen goes back
+    private fun listenForEsc(screen: Screen) {
+        ScreenKeyboardEvents.allowKeyPress(screen).register { _, key ->
+            if (key.key == GLFW.GLFW_KEY_ESCAPE) mc.schedule { if (GuiLib.currentScreen() == null) open() }
+            true
+        }
+    }
 
     private class Link(val title: String, val description: String, val url: String)
 
     private val TILES = listOf(
         Tile("Settings", "Every option, with a search over all of them", "/sbosettings", Items.COMPARATOR) { openSettings() },
-        Tile("Party Finder", "Join a party in seconds or create your own", "/sbopf", Items.PLAYER_HEAD) { Guis.openSboPf(calledFromGUI = true) },
+        Tile("Party Finder", "Join a party in seconds or create your own", "/sbopf", Items.PLAYER_HEAD, escBackToHub = false) { Guis.openSboPf(calledFromGUI = true) },
         Tile("Events", "Your Diana events, trackers and comparisons", "/sboevents", Items.CLOCK) { EventsGui.open() },
         Tile("Achievements", "Everything you unlocked and what is left", "/sboachievements", Items.NETHER_STAR) { AchievementsGui.open() },
         Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { Guis.openSoundGui(calledFromGUI = true) },
@@ -117,7 +158,7 @@ object HubGui {
                                 else -> "hub-tile"
                             },
                             key = tile.title,
-                            onClick = { mc.schedule { tile.open() } },
+                            onClick = { mc.schedule { openFromHub(tile) } },
                         ) {
                             div(className = "hub-tile-icon") {
                                 // Item icons need a world, Mod Menu can open the screens from the title screen

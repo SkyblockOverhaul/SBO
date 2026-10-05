@@ -117,6 +117,7 @@ object SBOKotlin : ClientModInitializer {
 		}
 
 		Guis.register()
+		HubGui.register()
 		HelpCommand.init()
 		CloudSync.init()
 		ClickActionManager.init()
