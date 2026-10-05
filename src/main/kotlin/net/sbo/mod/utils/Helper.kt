@@ -20,6 +20,7 @@ import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.ScoreBoard
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
+import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
@@ -506,7 +507,7 @@ object Helper {
      *
      * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
      */
-    fun getSecondsPassed(timestamp: Long): Long = (System.currentTimeMillis() - timestamp) / 1000
+    fun getSecondsPassed(timestamp: Long): Long = (TimeUtil.currentTimeMillis() - timestamp) / 1000
 
     private fun getSecondsPassedSinceNano(timestamp: Long): Long = (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
 
