@@ -24,12 +24,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Join requests over the SBO socket (`/pf/ws`) instead of `/msg`. Only connected while needed: while
- * the own party is listed, and while waiting for an answer plus two minutes. The backend checks the
- * joiner, so the leader gets requests that already passed. While connected, the pings keep the own
- * party listed, and the backend removes it when the leader is gone for a minute.
- */
+/** Join requests over `/pf/ws` instead of `/msg`, only connected while the own party is listed or an answer is due. */
 object PartyFinderSocket {
     private const val PING_MS = 30_000L
     private const val KEEP_OPEN_MS = 2 * 60_000L
@@ -41,7 +36,6 @@ object PartyFinderSocket {
     // The backend closes with this when the same account connected somewhere else
     private const val REPLACED = 4000
 
-    /** A join request of this player, [onResult] runs on the client thread with the status and the whole answer. */
     private class Pending(val onResult: (String, JsonObject) -> Unit, val sentAt: Long) {
         @Volatile var sent = false
     }
@@ -70,7 +64,6 @@ object PartyFinderSocket {
 
     private fun tick() {
         val now = System.currentTimeMillis()
-        // No "sent" in time: the request goes out by /msg
         pending.entries.removeIf { (_, request) ->
             val late = !request.sent && now - request.sentAt > SENT_WAIT_MS
             if (late) request.onResult("leader_offline", JsonObject(emptyMap()))
@@ -91,7 +84,7 @@ object PartyFinderSocket {
         }
     }
 
-    /** Asks the leader of [partyId] for an invite. Statuses: sent, invited, declined, failed, leader_offline. */
+    /** Statuses: sent, invited, declined, failed, leader_offline. */
     fun requestJoin(partyId: String, role: String?, onResult: (String, JsonObject) -> Unit) {
         keepOpenUntil = System.currentTimeMillis() + KEEP_OPEN_MS
         withSocket { ws ->
@@ -107,7 +100,6 @@ object PartyFinderSocket {
         }
     }
 
-    /** Tells the joiner behind [requestId] what the leader did. */
     fun answer(requestId: String, invited: Boolean) {
         send(buildJsonObject {
             put("type", "answer")
@@ -116,7 +108,7 @@ object PartyFinderSocket {
         })
     }
 
-    /** Runs [then] with the open socket, connects first if needed; null when that failed. */
+    /** Null when connecting failed. */
     private fun withSocket(then: (WebSocket?) -> Unit) {
         socket?.let { return then(it) }
         val start = synchronized(lock) {
@@ -203,7 +195,6 @@ object PartyFinderSocket {
                 val request = pending[requestId] ?: return
                 val status = message["status"]?.jsonPrimitive?.contentOrNull ?: return
                 if (status == "sent") request.sent = true else pending.remove(requestId)
-                // An answer keeps the socket open a bit longer for the next one
                 keepOpenUntil = maxOf(keepOpenUntil, System.currentTimeMillis() + KEEP_OPEN_MS)
                 SBOKotlin.mc.execute { request.onResult(status, message) }
             }

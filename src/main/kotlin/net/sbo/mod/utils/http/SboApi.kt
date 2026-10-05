@@ -50,18 +50,13 @@ object SboApi {
     internal fun get(path: String): HttpRequestHandle =
         Http.sendGetRequest("$API_URL$path", headers())
 
-    /** POST that needs the Mojang login: proves the key belongs to the account that is playing. */
     internal fun authedPost(path: String, body: String = "{}"): HttpRequestHandle =
         authed { headers -> Http.sendPostRequest("$API_URL$path", body, headers) }
 
     internal fun authedGet(path: String): HttpRequestHandle =
         authed { headers -> Http.sendGetRequest("$API_URL$path", headers) }
 
-    /**
-     * Logs in with Mojang when needed and sends with the session. A missing session, someone else's
-     * key or an unknown key gets one new login and one retry. Fails as a normal answer, in the
-     * `/pf` and the cloud format at once, so every caller shows its usual error.
-     */
+    /** One new login and retry on a missing session or wrong key; failures come back as a normal answer in both formats. */
     private fun authed(send: (Map<String, String>) -> HttpRequestHandle): HttpRequestHandle {
         val outer = HttpRequestHandle()
         fun attempt(retried: Boolean) {
@@ -90,7 +85,6 @@ object SboApi {
         return outer
     }
 
-    /** Error code and message of a `/pf` or a cloud answer. */
     private fun errorOf(text: String): Pair<String?, String?> {
         val root = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: return null to null
         val error = root["error"] as? JsonObject

@@ -12,11 +12,7 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.SboApi
 
-/**
- * Mojang login, the same check a Minecraft server does when you join it: SBO hands out a code, the
- * game tells Mojang it joined with that code, SBO asks Mojang. The login token only goes to Mojang.
- * The answer is the player's SBO key and a session that proves the key is used by its own account.
- */
+/** Mojang login like a server join, proves the SBO key belongs to the playing account. The token only goes to Mojang. */
 object MojangAuth {
     const val SESSION_REQUIRED = "SESSION_REQUIRED"
     const val KEY_NOT_YOURS = "KEY_NOT_YOURS"
@@ -41,7 +37,6 @@ object MojangAuth {
     private var lastFailure: Failure? = null
     private var failedAt = 0L
 
-    /** The session of the account that is logged in right now. */
     fun current(): String? = synchronized(lock) { session?.takeIf { sessionAccount == Player.accountUuid() } }
 
     fun hasSession(): Boolean = current() != null
@@ -51,7 +46,7 @@ object MojangAuth {
         sessionAccount = null
     }
 
-    /** Runs [block] with a session, logs in first when there is none. Callbacks run on any thread. */
+    /** Logs in first when needed. Callbacks run on any thread. */
     fun withSession(onFail: (Failure) -> Unit, block: (String) -> Unit) {
         current()?.let { return block(it) }
         var recent: Failure? = null
@@ -125,7 +120,7 @@ object MojangAuth {
             .error { fail(Failure("NETWORK", it.message ?: "server not reachable")) }
     }
 
-    /** `data` of an answer, null after reporting the failure. */
+    /** Null after reporting the failure. */
     private fun dataOf(text: String): JsonObject? {
         val root = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull()
         if (root?.get("success")?.jsonPrimitive?.contentOrNull == "true") {
@@ -139,7 +134,6 @@ object MojangAuth {
         return null
     }
 
-    /** Tells Mojang this account joins with [serverId]. */
     private fun joinMojang(serverId: String): Boolean = try {
         val user = SBOKotlin.mc.user
         SBOKotlin.mc.services().sessionService().joinServer(user.profileId, user.accessToken, serverId)
@@ -155,7 +149,6 @@ object MojangAuth {
         }
     }
 
-    // Toast while the party finder is open, chat otherwise
     private fun tell(text: String) {
         val gui = PartyFinderManager.listener
         if (gui != null) gui(true, text) else Chat.chat("§6[SBO] §a$text")

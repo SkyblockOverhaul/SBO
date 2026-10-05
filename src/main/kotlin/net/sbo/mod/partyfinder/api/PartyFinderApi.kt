@@ -51,7 +51,6 @@ object PartyFinderApi {
         SboApi.get("/pf/parties/counts").handle<PartyCounts>(onError) { onSuccess(it.counts) }
     }
 
-    // Everything that acts for the player needs the Mojang login (SboApi.authedPost)
     fun createParty(body: PartyBody, onError: (PfError) -> Unit, onSuccess: (PartyView) -> Unit) =
         SboApi.authedPost("/pf/parties", json.encodeToString(body)).handle(onError, onSuccess)
 

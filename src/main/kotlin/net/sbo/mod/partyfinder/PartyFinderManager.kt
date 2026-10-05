@@ -377,7 +377,6 @@ object PartyFinderManager {
         }.error { error -> onError?.invoke(error) }
     }
 
-    /** [onInvite] replaces the plain `/p invite` of the Invite button. */
     private fun showJoinRequest(playerName: String, role: String?, onInvite: (() -> Unit)? = null) {
         val roleText = role?.let { id ->
             val label = draft?.let { PartyCategories.target(it.partyType, it.subType) }?.roles?.firstOrNull { it.id == id }?.label ?: id
@@ -423,7 +422,6 @@ object PartyFinderManager {
         }
     }
 
-    /** The backend took the listed party out of the queue, e.g. after an hour. */
     fun onPartyRemoved(error: PfError) {
         if (!inQueue) return
         inQueue = false
@@ -431,7 +429,7 @@ object PartyFinderManager {
         Chat.chat("§6[SBO] §4Your party left the queue: ${ProblemText.error(error)}")
     }
 
-    /** A join request over the socket, the backend already checked the player against the party. */
+    // The backend already checked the player against the party
     fun onSocketJoinRequest(requestId: String, uuid: String, playerName: String, role: String?) {
         if (!inQueue || partyMemberCount >= partySize) return PartyFinderSocket.answer(requestId, invited = false)
         val invite = {
