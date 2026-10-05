@@ -1,15 +1,17 @@
 package net.sbo.mod.utils
 
 import javazoom.jl.player.JavaSoundAudioDevice
+import com.google.gson.JsonParser
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
+import net.minecraft.util.Util
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import java.io.File
 import java.io.FileInputStream
@@ -23,10 +25,10 @@ import javax.sound.sampled.*
 import kotlin.math.log10
 
 object SoundHandler {
-    private val SUPPORTED_EXTENSIONS = setOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
+    val SUPPORTED_EXTENSIONS = setOf(".ogg", ".mp3", ".wav", ".au", ".aif", ".aiff")
     private const val SOUND_DIR_PATH = "config/sbo/sounds"
-    private val availableSounds = mutableSetOf<String>()
-    private val availableSoundsWithExt = mutableSetOf<String>()
+    @Volatile
+    private var availableSoundsWithExt: List<String> = emptyList()
 
     // Thread pool for audio processing - bounded and daemon threads
     private val AUDIO_EXECUTOR: ExecutorService = Executors.newFixedThreadPool(3) { r ->
@@ -41,6 +43,7 @@ object SoundHandler {
      */
     fun init() {
         File(SOUND_DIR_PATH).apply { mkdirs() }
+        migrateMasterVolume()
         // Defer the expensive operations to avoid blocking game startup
         AUDIO_EXECUTOR.execute {
             extractBuiltInSounds()
@@ -49,12 +52,36 @@ object SoundHandler {
     }
 
 
+    private var legacyMasterVolume: Float? = null
+
+    // Must run before the config registers, ResourcefulConfig drops the old option from config.jsonc
+    fun readLegacyMasterVolume() {
+        val config = File(FabricLoader.getInstance().configDir.toFile(), "sbo/config.jsonc")
+        legacyMasterVolume = runCatching {
+            JsonParser.parseString(config.readText()).asJsonObject
+                .getAsJsonObject("Customization")?.get("masterVolume")?.asFloat
+        }.getOrNull()
+    }
+
+    private fun migrateMasterVolume() {
+        val settings = DataManager.soundSettingsData
+        if (settings.masterVolumeMigrated) return
+        legacyMasterVolume?.let { settings.masterVolume = it.coerceIn(0f, 1f) }
+        settings.masterVolumeMigrated = true
+        settings.save()
+    }
+
+    fun openSoundFolder() {
+        val directory = File(SOUND_DIR_PATH).apply { mkdirs() }
+        runCatching { Util.getPlatform().openPath(directory.toPath()) }.onFailure { logger.error("[$MOD_ID] Failed to open the sound folder", it) }
+    }
+
     /**
      * Returns available sounds with their file extensions (e.g., "sound.mp3", "music.ogg")
      */
     fun getAvailableSoundsWithExt(): List<String> {
         scanUserSounds() // Update to avoid the user having to restart minecraft to see his added sound
-        return availableSoundsWithExt.sorted().toList()
+        return availableSoundsWithExt
     }
 
     /**
@@ -66,7 +93,7 @@ object SoundHandler {
         if (sound.isEmpty()) return
 
         // Combine per-sound volume (0-1) with global master volume
-        val volumePercent = (volume * Customization.masterVolume).coerceIn(0f, 1f)
+        val volumePercent = (volume * DataManager.soundSettingsData.masterVolume).coerceIn(0f, 1f)
 
         if (volumePercent == 0f) return
 
@@ -116,24 +143,17 @@ object SoundHandler {
                                 logger.error("[$MOD_ID] Failed to extract built-in sound: $sound", it)
                             }
                         }
-                        availableSounds.add(sound.substringBeforeLast('.').lowercase())
-                        availableSoundsWithExt.add(sound)
                     }
             }
         }
     }
 
-    /** Scans the config directory for user-added sounds */
     fun scanUserSounds() {
-        File(SOUND_DIR_PATH).listFiles()
-            ?.asSequence()
-            ?.filter { it.isFile }
-            ?.filter { file -> SUPPORTED_EXTENSIONS.any { ext -> file.name.endsWith(ext, ignoreCase = true) } }
-            ?.toList()
-            ?.forEach { file ->
-                availableSounds.add(file.name.substringBeforeLast('.').lowercase())
-                availableSoundsWithExt.add(file.name)
-            }
+        availableSoundsWithExt = File(SOUND_DIR_PATH).listFiles()
+            ?.filter { it.isFile && SUPPORTED_EXTENSIONS.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
+            ?.map { it.name }
+            ?.sorted()
+            ?: emptyList()
     }
 
     /** Converts linear volume (0-1) to decibels for audio control */

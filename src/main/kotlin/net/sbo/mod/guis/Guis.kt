@@ -9,30 +9,16 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.events.SBOEvent
-import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object Guis {
-    private var pastEventsGui: PastEventsGui? = null
-    var achievementsGui: AchievementsGUI? = null
-    private var soundGui: SoundGUI? = null
-
-//    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
     private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
 
-    fun resetCachedGuis() {
-        pastEventsGui = null
-        achievementsGui = null
-        soundGui = null
-    }
-
-    fun openSboPf(calledFromGUI: Boolean = false) {
-        // TODO 4f: only in SkyBlock again once testing is done (calledFromGUI shows a toast instead of chat)
+    fun openSboPf() {
         mc.schedule { PartyFinderGui.open() }
     }
 
@@ -52,13 +38,7 @@ object Guis {
             )
             return
         }
-        mc.schedule {
-            if (soundGui == null) {
-                soundGui = SoundGUI()
-            }
-            UScreen.displayScreen(soundGui!!)
-            SBOEvent.emit(SoundsOpenEvent())
-        }
+        mc.schedule { SoundsGui.open() }
     }
 
     fun register() {
@@ -67,25 +47,15 @@ object Guis {
         }
 
         Register.command("sboachievements") {
-            mc.schedule {
-                if (achievementsGui == null) {
-                    achievementsGui = AchievementsGUI()
-                }
-                UScreen.displayScreen(achievementsGui!!)
-            }
+            mc.schedule { AchievementsGui.open() }
         }
 
         Register.command("sbosounds") {
             openSoundGui()
         }
 
-        Register.command("sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
-            mc.schedule {
-                if (pastEventsGui == null) {
-                    pastEventsGui = PastEventsGui()
-                }
-                UScreen.displayScreen(pastEventsGui!!)
-            }
+        Register.command("sboevents", "sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
+            mc.schedule { EventsGui.open() }
         }
 
         Register.onTick(20) {

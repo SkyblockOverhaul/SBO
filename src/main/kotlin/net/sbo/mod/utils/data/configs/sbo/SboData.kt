@@ -1,6 +1,7 @@
 package net.sbo.mod.utils.data.configs.sbo
 
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.configs.achievements.AchievementsView
 
 data class SboData(
     var effects: List<Effect> = emptyList(),
@@ -23,6 +24,8 @@ data class SboData(
     var suppressedMessages: MutableSet<String> = mutableSetOf(),
     var partyBlacklist: List<String> = emptyList(),
     var achievementFilter: String = "Locked",
+    // null until the achievements window saves it, then achievementFilter is no longer used
+    var achievementsView: AchievementsView? = null,
     var lastKingDate: Long = 0,
     var lastMantiDate: Long = 0,
     var lastInqDate: Long = 0,
@@ -63,6 +66,11 @@ data class SboData(
     var lastStatsProfile: String = "",
 
     var cloudSync: MutableMap<String, CloudSyncState> = mutableMapOf(), // account uuid -> state
+    var cloudSyncUiScale: Float? = null, // null = Minecraft's GUI scale
+    var eventsUiScale: Float? = null, // null = Minecraft's GUI scale
+    var eventsSort: String = "year",
+    var eventsChartView: String = "value",
+    var eventsHiddenLines: MutableList<String> = mutableListOf(),
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }
@@ -71,4 +79,5 @@ data class CloudSyncState(
     var version: Int = 0, // 0 = never synced
     var counter: Long = 0,
     var hash: String = "", // last synced state
+    var autoSync: Boolean? = null, // null = not set on this PC yet
 )

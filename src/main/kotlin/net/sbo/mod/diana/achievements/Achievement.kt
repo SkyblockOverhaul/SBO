@@ -17,7 +17,7 @@ class Achievement(
     var description: String,
     val rarity: String,
     val previousId: Int? = null,
-    private val hidden: Boolean = false,
+    val hidden: Boolean = false,
     val repeatable: Boolean = false,
 ) {
     val color = AchievementManager.rarityColorDict[rarity] ?: "§f"

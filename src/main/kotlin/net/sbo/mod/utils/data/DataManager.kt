@@ -326,6 +326,8 @@ object DataManager {
 
     // === BACKUP ===
 
+    fun backupDir(): File = File(File(FabricLoader.getInstance().configDir.toFile(), dataDir), "backup")
+
     // snapshot: file name to json, null backs up the current data
     private fun createBackup(modName: String, snapshot: Map<String, String>? = null) {
         try {

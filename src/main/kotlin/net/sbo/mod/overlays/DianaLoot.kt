@@ -332,7 +332,13 @@ object DianaLoot : DirtyFlushableOverlay() {
     }
 
     fun totalProfit(tracker: DianaTracker): Long {
-        var totalProfit = 0L
+        val totalProfit = profitByItem(tracker).values.sum()
+        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
+    }
+
+    /** Coins worth of every dropped item with a price (field name without "_LS", lootshare drops added in), coins not included. */
+    fun profitByItem(tracker: DianaTracker): Map<String, Long> {
+        val profit = HashMap<String, Long>()
         for (item in tracker.items::class.java.declaredFields) {
             item.isAccessible = true
             var itemName = item.name
@@ -342,10 +348,10 @@ object DianaLoot : DirtyFlushableOverlay() {
             if (itemValue <= 0) continue
             val itemPrice = Helper.getItemPrice(itemName)
             if (itemPrice > 0) {
-                totalProfit += itemPrice * itemValue
+                profit[itemName] = (profit[itemName] ?: 0L) + itemPrice * itemValue
             }
         }
-        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
+        return profit
     }
 
     private fun updateTimerText() {
