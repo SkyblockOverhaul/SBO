@@ -14,10 +14,12 @@ import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.Achievement
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.data.configs.achievements.AchievementsView
 import java.util.Locale
 
@@ -29,6 +31,10 @@ object AchievementsGui {
     /** Opens the window. Must run on the client thread. */
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Achievements")
+    }
+
+    fun register() {
+        Register.command("sboachievements") { mc.schedule { open() } }
     }
 
     private data class Entry(val achievement: Achievement, val unlocked: Boolean, val times: Int, val thisEvent: Boolean)

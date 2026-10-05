@@ -18,6 +18,7 @@ import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.ScoreBoard
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
 import net.sbo.mod.utils.math.SboVec
@@ -61,6 +62,8 @@ object Helper {
     private var prevInv = mutableMapOf<String, Item>()
     private var priceDataAh: Map<String, Long> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
+    private val ACTIVE_USERS_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
+    private var lastActiveUsersCount = 0L
 
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
             .ofVirtual()
@@ -90,6 +93,14 @@ object Helper {
 
         Register.onTick(20 * 60 * 5) {
             updateItemPriceInfo()
+        }
+
+        Register.onTick(20) {
+            val now = System.nanoTime()
+            if (now - lastActiveUsersCount > ACTIVE_USERS_INTERVAL && World.isInSkyblock()) {
+                lastActiveUsersCount = now
+                countActiveUser()
+            }
         }
 
         /*Register.command("sbotestlschimdrop") {
@@ -628,6 +639,19 @@ object Helper {
             return mfMatch.groupValues[1].toIntOrNull() ?: 0
         }
         return 0
+    }
+
+    /** Tells the backend this player is online, it counts everyone from the last 5 minutes. */
+    private fun countActiveUser() {
+        SboApi.countActiveUsers()
+            .result { response ->
+                if (!response.isSuccessful) {
+                    SBOKotlin.logger.error("Failed to count active players: ${response.code} ${response.message}")
+                }
+            }
+            .error { exception ->
+                SBOKotlin.logger.error("Error while counting active players", exception)
+            }
     }
 
     private fun updateItemPriceInfo() {

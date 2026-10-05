@@ -93,16 +93,6 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://repo.essential.gg/repository/maven-public")
-        }
-
-        filter {
-            includeGroup("gg.essential")
-        }
-    }
-
-    exclusiveContent {
-        forRepository {
             maven("https://maven.terraformersmc.com/releases")
             maven("https://maven.operationpotato.com/mirror")
         }
@@ -239,9 +229,7 @@ tasks.named<ProcessResources>("processResources") {
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
 
-    val elementaVersion = libs.versions.elementa.get()
     val hmApiVersion = versionedProperty("hmapi.version")
-    val universalCraftVersion = libs.versions.universalcraft.get()
     val modMenuVersion = versionedProperty("modmenu.version")
 
     val modName = project.property("mod.name")
@@ -265,9 +253,7 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
     inputs.property("java_version_major", javaVersionMajor)
 
-    inputs.property("elementa_version", elementaVersion)
     inputs.property("hm_api_version", hmApiVersion)
-    inputs.property("universalcraft_version", universalCraftVersion)
     inputs.property("guilib_version", project.property("guilib.version"))
     inputs.property("modmenu_version", modMenuVersion)
 
@@ -286,9 +272,7 @@ tasks.named<ProcessResources>("processResources") {
         "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
         "java_version_major" to javaVersionMajor,
 
-        "elementa_version" to elementaVersion,
         "hm_api_version" to hmApiVersion,
-        "universalcraft_version" to universalCraftVersion,
         "guilib_version" to project.property("guilib.version"),
         "modmenu_version" to modMenuVersion,
     ) + inputs.properties
@@ -313,8 +297,6 @@ dependencies {
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    implementation(include(libs.elementa.get())!!)
-
     // GuiLib (see settings.gradle.kts for building it from a local checkout). Not used by any code yet.
     implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
 
@@ -329,11 +311,9 @@ dependencies {
             // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
             implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
 
-            implementation(include(libs.universalcraft262.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
         }
         "26.1.2-fabric" -> {
-            implementation(include(libs.universalcraft261.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")

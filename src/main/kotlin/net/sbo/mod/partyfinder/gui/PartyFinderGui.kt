@@ -16,8 +16,11 @@ import net.sbo.guilib.core.dsl.sortableList
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tabs
 import net.sbo.guilib.core.dsl.useToast
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
@@ -26,6 +29,8 @@ import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.game.World
 
 object PartyFinderGui {
     private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/partyfinder/themes.css")
@@ -42,9 +47,20 @@ object PartyFinderGui {
     /** Selectable window sizes; null follows the Minecraft GUI scale. */
     internal val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
 
-    /** Must run on the client thread. */
+    /** Only opens in Skyblock. Must run on the client thread. */
     fun open() {
+        if (!World.isInSkyblock()) {
+            SBOKotlin.toast(
+                Component.literal("SBO").withStyle(ChatFormatting.GOLD),
+                Component.literal("Join Skyblock before opening Party Finder!").withStyle(ChatFormatting.RED)
+            )
+            return
+        }
         GuiLib.open(App, STYLES, title = "SBO Party Finder")
+    }
+
+    fun register() {
+        Register.command("sbopf") { mc.schedule { open() } }
     }
 
     /** "kuudra/infernal" or "diana" to its target; a category with subcategories alone means all of them. */

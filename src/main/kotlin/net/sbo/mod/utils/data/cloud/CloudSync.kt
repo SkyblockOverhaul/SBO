@@ -8,8 +8,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin
-import net.sbo.mod.cloud.gui.CloudSyncGui
-import net.sbo.mod.guis.Guis
+import net.sbo.mod.guis.CloudSyncGui
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat

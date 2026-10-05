@@ -1,6 +1,5 @@
 package net.sbo.mod.utils.data
 
-import gg.essential.elementa.UIComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive

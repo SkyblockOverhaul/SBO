@@ -1,7 +1,7 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
-import net.sbo.mod.guis.Guis
+import net.sbo.mod.guis.SoundsGui
 import java.awt.Color
 
 object Customization : Category("Customization") {
@@ -197,7 +197,7 @@ object Customization : Category("Customization") {
             text = "Configure"
             description = "Open the sound GUI: sounds, volumes, master volume and the sound folder."
             onClick {
-                Guis.openSoundGui(calledFromGUI = true)
+                SoundsGui.open()
             }
         }
     }

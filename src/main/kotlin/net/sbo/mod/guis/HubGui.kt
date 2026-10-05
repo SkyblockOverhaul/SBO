@@ -26,10 +26,10 @@ import net.sbo.guilib.fabric.GuiLib
 import net.sbo.guilib.fabric.GuiLibScreen
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.cloud.gui.CloudSyncGui
 import net.sbo.mod.config.Category
 import net.sbo.mod.config.ConfigGui
 import net.sbo.mod.general.HelpCommand
+import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 import org.lwjgl.glfw.GLFW
@@ -90,10 +90,10 @@ object HubGui {
 
     private val TILES = listOf(
         Tile("Settings", "Every option, with a search over all of them", "/sbosettings", Items.COMPARATOR) { openSettings() },
-        Tile("Party Finder", "Join a party in seconds or create your own", "/sbopf", Items.PLAYER_HEAD, escBackToHub = false) { Guis.openSboPf(calledFromGUI = true) },
+        Tile("Party Finder", "Join a party in seconds or create your own", "/sbopf", Items.PLAYER_HEAD) { PartyFinderGui.open() },
         Tile("Events", "Your Diana events, trackers and comparisons", "/sboevents", Items.CLOCK) { EventsGui.open() },
         Tile("Achievements", "Everything you unlocked and what is left", "/sboachievements", Items.NETHER_STAR) { AchievementsGui.open() },
-        Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { Guis.openSoundGui(calledFromGUI = true) },
+        Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { SoundsGui.open() },
         Tile("Cloud Sync", "Keep your settings and trackers on every PC", "/sbocloud", Items.ENDER_CHEST) { CloudSyncGui.open() },
         Tile("Move Overlays", "Place and resize the on-screen overlays", "/sboguis", Items.ITEM_FRAME) { mc.setScreen(OverlayEditScreen()) },
     )
@@ -112,8 +112,6 @@ object HubGui {
     private val CREDITS = listOf(
         Link("SkyHanni", "Spade Guess (bloxigus) and Arrow Guess (SidOfThe7Cs)", "https://github.com/hannibal002/SkyHanni"),
         Link("GuiLib", "UI library for these screens (SkyblockOverhaul)", "https://skyblockoverhaul.github.io/maven/guilib/"),
-        Link("Elementa", "UI library (SparkUniverse)", "https://github.com/SparkUniverse/Elementa"),
-        Link("UniversalCraft", "Compatibility layer (SparkUniverse)", "https://github.com/SparkUniverse/UniversalCraft"),
         Link("hm-api", "Hypixel Mod API wrapper (AzureAaron)", "https://github.com/AzureAaron/hm-api"),
         Link("RenderChest", "Glow API (AzureAaron)", "https://github.com/AzureAaron/RenderChest"),
         Link("Fabric API", "Modding API (FabricMC)", "https://github.com/FabricMC/fabric-api"),

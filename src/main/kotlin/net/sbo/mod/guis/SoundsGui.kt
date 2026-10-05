@@ -12,9 +12,11 @@ import net.sbo.guilib.core.dsl.slider
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.SoundHandler
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.sound.SoundSettingsData
+import net.sbo.mod.utils.events.Register
 import kotlin.math.roundToInt
 import kotlin.reflect.KMutableProperty1
 
@@ -26,6 +28,10 @@ object SoundsGui {
     /** Opens the window. Must run on the client thread. */
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Sounds")
+    }
+
+    fun register() {
+        Register.command("sbosounds") { mc.schedule { open() } }
     }
 
     private data class SoundSetting(

@@ -16,12 +16,14 @@ import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.data.configs.diana.DianaTrackerMayorData
+import net.sbo.mod.utils.events.Register
 import java.util.Locale
 import kotlin.math.abs
 
@@ -36,6 +38,10 @@ object EventsGui {
     /** Opens the window. Must run on the client thread. */
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Events")
+    }
+
+    fun register() {
+        Register.command("sboevents", "sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") { mc.schedule { open() } }
     }
 
     /** An event in the list, with the numbers the list sorts and marks by. */
