@@ -242,7 +242,6 @@ data class Rule(val title: String = "", val text: String = "")
 @Serializable
 data class PartyReportBody(val partyId: String, val reason: String, val details: String? = null)
 
-/** Reasons the backend accepts for a party report. */
 enum class ReportReason(val id: String, val label: String) {
     OFFENSIVE_NOTE("offensive_note", "Offensive note"),
     SELLING("selling", "Selling carries or services"),

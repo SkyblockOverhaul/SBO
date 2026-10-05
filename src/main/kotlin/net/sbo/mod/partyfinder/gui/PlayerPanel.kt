@@ -15,7 +15,6 @@ import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyView
 
-/** A party member opened in the side panel. */
 internal data class InspectedPlayer(val member: MemberView, val party: PartyView)
 
 /** Panel right of the window: every stat of the party type for one player, not only what the party asks for. */

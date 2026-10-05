@@ -12,12 +12,6 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.HttpRequestHandle
 import net.sbo.mod.utils.http.SboApi
 
-/**
- * Client for the `/pf` party finder endpoints.
- *
- * Every answer is `{ success, data }` or `{ success: false, error }`, also on HTTP 4xx/5xx,
- * so the error code survives. Callbacks run on the HTTP thread.
- */
 /** Tells a banned player once per game session why their key is banned. */
 object BanNotice {
     @Volatile
@@ -30,6 +24,7 @@ object BanNotice {
     }
 }
 
+/** Errors come as `{ success: false, error }` also on HTTP 4xx/5xx, so the code survives. Callbacks run on the HTTP thread. */
 object PartyFinderApi {
     @PublishedApi
     internal val json = Json {

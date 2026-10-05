@@ -24,7 +24,6 @@ import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.api.StatDef
 import java.util.Locale
 
-/** Stat values, requirement texts and info tooltips shared by the party finder pages. */
 internal object StatView {
     const val ICONS = "sbo:ui/partyfinder"
 
@@ -175,7 +174,6 @@ internal object StatView {
         return ReqMatcher.meets(def.type, own.stats[def.stat] ?: JsonNull, need)
     }
 
-    /** Where a value comes from and how exact it is, in plain words. */
     fun accuracyText(stat: StatDef): String = when (stat.accuracy) {
         "minimum" -> {
             val more = stat.unverifiedUpTo?.let { " The real value can be up to ${ProblemText.number(it)} higher." } ?: ""
@@ -205,7 +203,6 @@ internal fun NodeBuilder.statLabel(statId: String, own: MemberView? = null, clas
     }
 }
 
-/** Tooltip body for one stat. */
 internal fun NodeBuilder.statInfo(statId: String, own: MemberView? = null) {
     val stat = PartyCategories.stat(statId)
     div(className = "pf-tip-title") { b { +(stat?.label ?: statId) } }

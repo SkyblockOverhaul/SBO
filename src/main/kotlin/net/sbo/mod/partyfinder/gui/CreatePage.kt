@@ -44,7 +44,7 @@ internal data class CreateProps(val target: PartyTarget, val own: MemberView?, v
 
 private val json = Json { ignoreUnknownKeys = true }
 
-/** Form for a new party (or a changed one while the own party is listed). Starts with the last input for this party type. */
+/** Starts with the last input for this party type. */
 internal val CreatePage = component<CreateProps>("CreatePage") { props ->
     val target = props.target
     val config = DataManager.partyFinderConfigState

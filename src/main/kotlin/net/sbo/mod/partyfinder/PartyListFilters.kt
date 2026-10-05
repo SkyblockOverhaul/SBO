@@ -7,7 +7,7 @@ import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 
-/** Applies the party list filters and sorting. The own party always stays on top. */
+/** The own party always stays on top. */
 object PartyListFilters {
     private val REQ_TYPES = setOf("min", "rarity", "flag")
     private const val ANY = "any"
@@ -36,16 +36,14 @@ object PartyListFilters {
         return visible.sortedWith(compareByDescending<PartyView> { it.id == myId }.then(order).thenBy { it.createdAt })
     }
 
-    /** Party fields the filter dialog offers. */
     fun filterableOptions(target: PartyTarget): List<PartyOption> = target.options
 
-    /** Fields with many values or several picks, the filter dialog offers several values for them. */
     fun filtersSeveral(option: PartyOption): Boolean = option.multiple || option.values.size > 3
 
     /** Values the filter dialog offers for a field; "any" is left out, "Show all" covers it. */
     fun filterValues(option: PartyOption) = option.values.filter { it.id != ANY }
 
-    /** Whether the party's value of [option] matches the [wanted] filter value (a comma list for several values). */
+    /** [wanted] is a comma list for fields with several values. */
     fun optionMatches(party: PartyView, option: PartyOption, wanted: String): Boolean {
         val value = party.options[option.id] ?: option.default
         // Old saved filters may still hold "any"
@@ -57,10 +55,9 @@ object PartyListFilters {
         return partyPicks.any { it in picked }
     }
 
-    /** Requirements the filter dialog offers, item lists are left out. */
     fun filterableReqs(target: PartyTarget): List<ReqDef> = target.reqs.filter { it.type in REQ_TYPES }
 
-    /** Whether the party asks for at least [wanted]; parties that don't ask for the stat never do. */
+    /** Parties that don't ask for the stat never match. */
     fun asksAtLeast(party: PartyView, def: ReqDef, wanted: String): Boolean {
         val need = if (def.type == "min") wanted.toDoubleOrNull()?.let(::JsonPrimitive) ?: return true else JsonPrimitive(wanted)
         return ReqMatcher.meets(def.type, party.reqs[def.stat], need)

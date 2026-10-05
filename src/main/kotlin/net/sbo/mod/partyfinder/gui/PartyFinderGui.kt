@@ -27,7 +27,6 @@ import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.utils.data.DataManager
 
-/** The party finder window: party types on the left, parties, the create form and settings on the right. */
 object PartyFinderGui {
     private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/partyfinder/themes.css")
     private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
@@ -43,7 +42,7 @@ object PartyFinderGui {
     /** Selectable window sizes; null follows the Minecraft GUI scale. */
     internal val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
 
-    /** Opens the window. Must run on the client thread. */
+    /** Must run on the client thread. */
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Party Finder")
     }

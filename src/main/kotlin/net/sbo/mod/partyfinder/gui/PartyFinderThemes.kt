@@ -46,7 +46,6 @@ internal object PartyFinderThemes {
         Theme("purple", "Purple", "Dark purple everywhere, also in dialogs, menus and fields, with a violet accent.", "purple")
     )
 
-    /** CSS classes for the built-in color sets, one per base. */
     val BASES: List<String> = BUILT_IN.map { it.base }.distinct()
 
     /** Variables a custom theme may set; the README lists them with their meaning. */

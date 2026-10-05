@@ -20,7 +20,6 @@ data class PartyFinderConfigState(
     var theme: String = "sbo-dark",
     // Hypixel colors show items one rarity higher
     var recombobulated: Boolean = false,
-    // Party list filters per party key
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf()
 ) {
     fun save() = DataManager.save(DataManager::partyFinderConfigState)

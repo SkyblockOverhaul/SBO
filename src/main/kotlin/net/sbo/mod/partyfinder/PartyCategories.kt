@@ -59,7 +59,6 @@ object PartyCategories {
         callbacks.forEach { it(result) }
     }
 
-    /** Replaces the definitions, e.g. after loading or in tests. */
     fun use(loaded: CategoriesData) {
         synchronized(this) {
             data = loaded
@@ -114,7 +113,6 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val 
     val opensAt: Long? get() = sub?.opensAt
     val createOpen: Boolean get() = sub?.createOpen ?: open
 
-    /** When parties for a closed event can be listed, same lead time as the backend. */
     val createOpensAt: Long? get() = opensAt?.let { it - EARLY_LISTING_MS }
 
     val reqs: List<ReqDef> = mergeBy({ it.stat }, category.reqs, sub?.reqs.orEmpty())
@@ -131,7 +129,6 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val 
     /** The subcategory target a listed party belongs to; itself unless this is [all]. */
     fun forParty(party: PartyView): PartyTarget = if (all) PartyCategories.target(partyType, party.subType) ?: this else this
 
-    /** Subcategory targets the own stats are needed for. */
     fun subTargets(): List<PartyTarget> =
         if (all) category.subcategories.mapNotNull { PartyCategories.target(partyType, it.id) } else listOf(this)
 

@@ -69,7 +69,6 @@ internal data class PartiesProps(
     val onRules: () -> Unit = {}
 )
 
-/** The parties of one party type with filters, details, the right click menu and joining. */
 internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val target = props.target
     val config = DataManager.partyFinderConfigState
@@ -316,7 +315,6 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
 
 internal data class ReportProps(val party: PartyView, val onClose: () -> Unit, val onSent: () -> Unit, val onRules: () -> Unit)
 
-/** Asks for a reason and sends the report to the moderators on the SBO Discord. */
 private val ReportDialog = component<ReportProps>("ReportDialog") { props ->
     var reason by useState<ReportReason?>(null)
     var details by useState("")
@@ -374,7 +372,7 @@ private fun reportError(e: PfError): String = when (e.code) {
     else -> ProblemText.error(e)
 }
 
-/** More filters and the sorting. Changes apply right away. */
+/** Changes apply right away. */
 private fun NodeBuilder.filterDialog(
     open: Boolean,
     target: PartyTarget,
@@ -457,7 +455,7 @@ private fun NodeBuilder.filterDialog(
     }
 }
 
-/** One requirement in the filter dialog; an empty field shows all parties. */
+/** An empty field shows all parties. */
 private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (PartyListFilter.() -> Unit) -> Unit) {
     val stat = PartyCategories.stat(def.stat)
     fun save(value: String?) = setFilter { if (value == null) reqs.remove(def.stat) else reqs[def.stat] = value }

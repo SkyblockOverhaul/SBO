@@ -24,14 +24,12 @@ object PartyPlayer {
 
     private fun currentProfile(): String? = TabList.findInfo("Profile: ")?.trim()?.takeIf { it.isNotEmpty() }
 
-    /** True when the name the API returned is not the one we are playing on. */
     private fun nameOutdated(info: PartyPlayerStats?): Boolean {
         val returned = info?.name?.takeIf { it.isNotEmpty() } ?: return false
         val current = Player.getName()?.takeIf { it.isNotEmpty() } ?: return false
         return !current.equals(returned, ignoreCase = true)
     }
 
-    /** True when [profile] is not the one the stored stats belong to. */
     private fun profileChanged(profile: String?): Boolean {
         val cached = sboData.lastStatsProfile.takeIf { it.isNotEmpty() } ?: return false
         if (profile == null) return false

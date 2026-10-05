@@ -46,11 +46,10 @@ object PartyFinderManager {
     private var ghostParty = false
     var usedPf = false
 
-    /** The party the player queued last, also used for requeueing. */
+    // Also used for requeueing
     var draft: PartyDraft? = null
         private set
 
-    /** The queued party as the backend answered it. */
     var queuedParty: PartyView? = null
         private set
 
@@ -103,7 +102,6 @@ object PartyFinderManager {
     @Volatile
     var listener: ((success: Boolean, text: String) -> Unit)? = null
 
-    // Toast while the GUI is open, chat otherwise
     private fun tell(text: String, success: Boolean) {
         val gui = listener
         if (gui != null) gui(success, text.replace(Regex("§."), "").removePrefix("[SBO] ")) else Chat.chat(text)
@@ -445,7 +443,7 @@ object PartyFinderManager {
         }
     }
 
-    /** Asks the leader of [party] to invite the player. [role] is needed when the party asks for roles. */
+    /** [role] is needed when the party asks for roles. */
     fun sendJoinRequest(party: PartyView, role: String? = null) {
         val leaderName = party.leader?.name?.takeIf { it.isNotBlank() } ?: return
         val target = PartyCategories.target(party.partyType, party.subType)

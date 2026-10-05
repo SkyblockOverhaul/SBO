@@ -15,7 +15,6 @@ object OwnStats {
 
     private val cache = ConcurrentHashMap<String, Pair<Long, MemberView>>()
 
-    /** The player's uuid without dashes, also in the main menu. */
     fun uuid(): String = Player.getUUIDString().replace("-", "").ifEmpty { Player.accountUuid() }
 
     fun init() {

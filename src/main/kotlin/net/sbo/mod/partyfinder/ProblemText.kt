@@ -14,7 +14,6 @@ import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.utils.MojangAuth
 import java.util.Locale
 
-/** Turns requirement problems and stat values into short English texts for chat and GUI. */
 object ProblemText {
     private const val RELOAD = "/sboreloadstats"
     private val API_NAMES = mapOf("inventory" to "Inventory API", "vault" to "Vault API", "skills" to "Skills API")
@@ -57,7 +56,6 @@ object ProblemText {
         }
     }
 
-    /** What went wrong, in words a player understands. */
     fun error(error: PfError): String = when (error.code) {
         PfError.REQS_NOT_MET -> "Not everyone meets the requirements."
         PfError.PARTY_FULL -> "The party is already full."
