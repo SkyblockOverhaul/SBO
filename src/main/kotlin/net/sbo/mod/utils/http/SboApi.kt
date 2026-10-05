@@ -73,7 +73,7 @@ object SboApi {
                                 attempt(true)
                             }
                             code == MojangAuth.SESSION_REQUIRED -> outer.complete(failure(code, MojangAuth.CHECK_FAILED_TEXT))
-                            wrongKey -> outer.complete(failure(code!!, MojangAuth.KEY_FAILED_TEXT))
+                            wrongKey -> outer.complete(failure(code, MojangAuth.KEY_FAILED_TEXT))
                             else -> outer.complete(response.copy(body = ResponseBody(text.byteInputStream())))
                         }
                     }
