@@ -192,7 +192,6 @@ body {
 
 .cs-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .cs-actions { display: flex; gap: 4px; margin: 2px 0 6px 0; padding: 0 4px; }
-.cs-info .cs-key-row { margin-top: 2px; }
 .cs-primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .cs-primary:hover { background-color: var(--accent-hover); }
 .cs-danger { color: var(--menu-danger); }

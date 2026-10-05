@@ -3,7 +3,6 @@ package net.sbo.mod.utils.data.cloud
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.LocalStore
 import java.security.MessageDigest
-import java.security.SecureRandom
 import java.util.Base64
 import javax.crypto.Mac
 import javax.crypto.SecretKeyFactory
@@ -13,11 +12,6 @@ import javax.crypto.spec.SecretKeySpec
 object CloudSyncKeys {
     const val MIN_SIGN_KEY_LENGTH = 3
     private const val ITERATIONS = 600_000
-
-    // No 0/o, 1/l/i, so a key can be copied by hand
-    private const val ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"
-    private const val GROUPS = 4
-    private const val GROUP_LENGTH = 4
 
     // uuid -> base64 key
     private val store = LocalStore("cloud-auth.json")
@@ -41,13 +35,6 @@ object CloudSyncKeys {
     fun removeKey(uuid: String = Player.accountUuid()) {
         store[uuid] = null
         texts[uuid] = null
-    }
-
-    fun generate(): String {
-        val random = SecureRandom()
-        return (1..GROUPS).joinToString("-") {
-            (1..GROUP_LENGTH).map { ALPHABET[random.nextInt(ALPHABET.length)] }.joinToString("")
-        }
     }
 
     private fun derive(signKey: CharArray, uuid: String): ByteArray {
