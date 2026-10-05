@@ -16,6 +16,7 @@ import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
+import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.utils.data.Backups
@@ -155,7 +156,18 @@ object CloudSyncGui {
                 }
 
                 div(className = "cs-setting cs-key") {
-                    div(className = "cs-setting-title") { +"Sign Key" }
+                    tooltip(content = {
+                        div { +"Signs your cloud save. If it gets changed or damaged, SBO notices and does not load it." }
+                        div(className = "cs-tip-line") { +"Optional: only set one if you really want your cloud save signed. Without a key, Cloud Sync works just the same." }
+                        div(className = "cs-tip-line") { +"Only PCs with the same key can load it." }
+                        div(className = "cs-tip-line") { +"Use the same key on every PC and write it down somewhere." }
+                        div(className = "cs-tip-line") { +"If you forget it, your cloud save cannot be loaded anymore and SBO cannot reset the key. You can only set a new key and upload again, which overwrites your old cloud save with the current data from this PC." }
+                    }) {
+                        span(className = "cs-setting-title") {
+                            +"Sign Key"
+                            img("sbo:ui/partyfinder/info.svg", className = "cs-info-icon")
+                        }
+                    }
                     div(className = "cs-key-row") {
                         input(
                             className = "cs-key-input",
@@ -172,7 +184,6 @@ object CloudSyncGui {
                             onClick = { CloudSync.saveSignKey(signKey) }
                         ) { +"Save" }
                     }
-                    div(className = "cs-hint") { +"Only PCs with the same key can load your cloud save." }
                 }
 
                 details("How it works", className = "cs-info") {
