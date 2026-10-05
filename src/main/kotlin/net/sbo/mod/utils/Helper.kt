@@ -26,6 +26,7 @@ import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -237,26 +238,56 @@ object Helper {
      * If [mobName] is null, it calculates the percentage of [propertyName] from [mobs] to total mobs.
      */
     fun calcPercentOneReflectively(items: DianaItemsData, mobs: DianaMobsData, propertyName: String, mobName: String? = null): String {
-        val result: Double = if (mobName != null) {
-            val itemCount = items::class.memberProperties.firstOrNull { it.name == propertyName }
-                ?.call(items) as? Int ?: 0
-            val mobCount = mobs::class.memberProperties.firstOrNull { it.name == mobName }
-                ?.call(mobs) as? Int ?: 0
-
-            if (mobCount <= 0) 0.0
-            else itemCount.toDouble() / mobCount.toDouble() * 100
-
+        return if (mobName != null) {
+            calcPercentOne(getItemCount(items, propertyName), getMobCount(mobs, mobName))
         } else {
-            val mobCount = mobs::class.memberProperties.firstOrNull { it.name == propertyName }
-                ?.call(mobs) as? Int ?: 0
-            val totalMobsCount = mobs.TOTAL_MOBS
-
-            if (totalMobsCount <= 0) 0.0
-            else mobCount.toDouble() / totalMobsCount.toDouble() * 100
+            calcPercentOne(getMobCount(mobs, propertyName), mobs.TOTAL_MOBS)
         }
-
-        return "%.2f".format(Locale.US, result)
     }
+
+    private fun getItemCount(items: DianaItemsData, propertyName: String): Int =
+        ITEM_COUNT_GETTERS[propertyName]?.invoke(items)
+            ?: (ITEM_PROPERTIES[propertyName]?.call(items) as? Int)
+            ?: 0
+
+    private fun getMobCount(mobs: DianaMobsData, propertyName: String): Int =
+        MOB_COUNT_GETTERS[propertyName]?.invoke(mobs)
+            ?: (MOB_PROPERTIES[propertyName]?.call(mobs) as? Int)
+            ?: 0
+
+    private val ITEM_PROPERTIES = DianaItemsData::class.memberProperties.associateBy { it.name }
+    private val MOB_PROPERTIES = DianaMobsData::class.memberProperties.associateBy { it.name }
+
+    private val ITEM_COUNT_GETTERS: Map<String, (DianaItemsData) -> Int> = mapOf(
+        "GRIFFIN_FEATHER" to { it.GRIFFIN_FEATHER }, "MYTHOS_FRAGMENT" to { it.MYTHOS_FRAGMENT },
+        "CROWN_OF_GREED" to { it.CROWN_OF_GREED }, "WASHED_UP_SOUVENIR" to { it.WASHED_UP_SOUVENIR },
+        "SHIMMERING_WOOL" to { it.SHIMMERING_WOOL }, "SHIMMERING_WOOL_LS" to { it.SHIMMERING_WOOL_LS },
+        "MANTI_CORE" to { it.MANTI_CORE }, "MANTI_CORE_LS" to { it.MANTI_CORE_LS },
+        "CHIMERA" to { it.CHIMERA }, "CHIMERA_LS" to { it.CHIMERA_LS },
+        "BRAIN_FOOD" to { it.BRAIN_FOOD }, "BRAIN_FOOD_LS" to { it.BRAIN_FOOD_LS },
+        "FATEFUL_STINGER" to { it.FATEFUL_STINGER }, "FATEFUL_STINGER_LS" to { it.FATEFUL_STINGER_LS },
+        "BRAIDED_GRIFFIN_FEATHER" to { it.BRAIDED_GRIFFIN_FEATHER }, "DAEDALUS_STICK" to { it.DAEDALUS_STICK },
+        "CRETAN_URN" to { it.CRETAN_URN }, "DWARF_TURTLE_SHELMET" to { it.DWARF_TURTLE_SHELMET },
+        "ANTIQUE_REMEDIES" to { it.ANTIQUE_REMEDIES }, "CROCHET_TIGER_PLUSHIE" to { it.CROCHET_TIGER_PLUSHIE },
+        "ENCHANTED_ANCIENT_CLAW" to { it.ENCHANTED_ANCIENT_CLAW }, "ANCIENT_CLAW" to { it.ANCIENT_CLAW },
+        "MINOS_RELIC" to { it.MINOS_RELIC }, "ENCHANTED_GOLD" to { it.ENCHANTED_GOLD },
+        "HILT_OF_REVELATIONS" to { it.HILT_OF_REVELATIONS }, "KING_MINOS_SHARD" to { it.KING_MINOS_SHARD },
+        "SPHINX_SHARD" to { it.SPHINX_SHARD }, "MINOTAUR_SHARD" to { it.MINOTAUR_SHARD },
+        "CRETAN_BULL_SHARD" to { it.CRETAN_BULL_SHARD }, "HARPY_SHARD" to { it.HARPY_SHARD },
+        "MYTHOLOGICAL_DYE" to { it.MYTHOLOGICAL_DYE }, "MYTH_THE_FISH" to { it.MYTH_THE_FISH }
+    )
+
+    private val MOB_COUNT_GETTERS: Map<String, (DianaMobsData) -> Int> = mapOf(
+        "KING_MINOS" to { it.KING_MINOS }, "MANTICORE" to { it.MANTICORE },
+        "MINOS_INQUISITOR" to { it.MINOS_INQUISITOR }, "SPHINX" to { it.SPHINX },
+        "MINOS_CHAMPION" to { it.MINOS_CHAMPION }, "MINOTAUR" to { it.MINOTAUR },
+        "GAIA_CONSTRUCT" to { it.GAIA_CONSTRUCT }, "HARPY" to { it.HARPY },
+        "CRETAN_BULL" to { it.CRETAN_BULL }, "STRANDED_NYMPH" to { it.STRANDED_NYMPH },
+        "SIAMESE_LYNXES" to { it.SIAMESE_LYNXES }, "MINOS_HUNTER" to { it.MINOS_HUNTER },
+        "TOTAL_MOBS" to { it.TOTAL_MOBS },
+        "MINOS_INQUISITOR_LS" to { it.MINOS_INQUISITOR_LS }, "KING_MINOS_LS" to { it.KING_MINOS_LS },
+        "MANTICORE_LS" to { it.MANTICORE_LS }, "SPHINX_LS" to { it.SPHINX_LS }
+    )
 
     fun calcPercentOne(itemCount: Int, mobCount: Int): String {
         val result = if (mobCount <= 0) {
@@ -265,9 +296,12 @@ object Helper {
             itemCount.toDouble() / mobCount * 100
         }
 
-        return "%.2f".format(Locale.US, result)
+        return PERCENT_FORMAT.format(result)
     }
 
+    private val PERCENT_FORMAT = DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.US)).apply {
+        roundingMode = RoundingMode.HALF_UP
+    }
     private val NUMBER_FORMAT = DecimalFormat("#,###")
     private val BILLION_FORMAT = DecimalFormat("0.00b")
     private val MILLION_FORMAT = DecimalFormat("0.0m")
