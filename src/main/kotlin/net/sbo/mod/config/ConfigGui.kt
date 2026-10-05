@@ -102,7 +102,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                         className = "cfg-search-input",
                         value = query,
                         placeholder = "Search all settings…",
-                        autoFocus = true,
+                        autoFocus = false,
                         onInput = { query = it.value },
                     )
                     if (searching) {
