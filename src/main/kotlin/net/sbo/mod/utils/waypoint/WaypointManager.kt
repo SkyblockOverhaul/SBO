@@ -594,9 +594,11 @@ object WaypointManager {
         val chain = mutableListOf<Waypoint>()
         var currentPos = startPos
 
+        val ignoreYLevel = Diana.ignoreYLevel
+
         while (remaining.isNotEmpty()) {
             val next = remaining.minByOrNull { wp ->
-                if (Diana.ignoreYLevel) {
+                if (ignoreYLevel) {
                     wp.pos.distanceToIgnoringY(currentPos)
                 } else {
                     wp.pos.distanceTo(currentPos)
@@ -815,10 +817,11 @@ object WaypointManager {
     private fun getBestGuess(): Waypoint? = getBestGuessAt(Player.getLastPosition())
 
     private fun getBestGuessAt(pos: SboVec): Waypoint? {
+        val ignoreYLevel = Diana.ignoreYLevel
         return getAllGuessesAndBurrows()
             .asSequence()
             .filter { !it.hidden }
-            .minByOrNull { if (Diana.ignoreYLevel) it.pos.distanceToIgnoringY(pos) else it.pos.distanceTo(pos) }
+            .minByOrNull { if (ignoreYLevel) it.pos.distanceToIgnoringY(pos) else it.pos.distanceTo(pos) }
     }
 
     /**
@@ -842,7 +845,8 @@ object WaypointManager {
             }
         }
 
-        val playerDistance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(playerPos) else pos.distanceTo(playerPos)
+        val ignoreYLevel = Diana.ignoreYLevel
+        val playerDistance = if (ignoreYLevel) pos.distanceToIgnoringY(playerPos) else pos.distanceTo(playerPos)
 
         var closestWarp: String? = null
         var closestWarpPoint: WarpPoint? = null
@@ -853,7 +857,7 @@ object WaypointManager {
         var secondClosestDistance = Double.MAX_VALUE
 
         for ((name, warp) in warps) {
-            val distance = if (Diana.ignoreYLevel) pos.distanceToIgnoringY(warp.pos) else pos.distanceTo(warp.pos)
+            val distance = if (ignoreYLevel) pos.distanceToIgnoringY(warp.pos) else pos.distanceTo(warp.pos)
 
             if (distance < closestDistance) {
                 secondClosestWarp = closestWarp
@@ -888,7 +892,7 @@ object WaypointManager {
             playerDistance > 60
 
         val playerToWarpDistance = closestWarpPoint?.let {
-            if (Diana.ignoreYLevel) {
+            if (ignoreYLevel) {
                 playerPos.distanceToIgnoringY(it.pos)
             } else {
                 playerPos.distanceTo(it.pos)
