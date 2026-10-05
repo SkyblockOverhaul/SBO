@@ -41,7 +41,6 @@ object Backups {
         }
         require(files.isNotEmpty()) { "the backup is empty" }
         DataManager.importAll(withLocalFields(files))
-        Guis.resetCachedGuis()
         OverlayManager.reloadPositions()
     }
 

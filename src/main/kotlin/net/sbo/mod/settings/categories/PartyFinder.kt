@@ -20,7 +20,7 @@ object PartyFinder : CategoryKt("Party Finder") {
             text = "Open Party Finder"
             description = "Opens the Party Finder, alternatively use /sbopf. NOTE: You need to be in Skyblock for it to open!"
             onClick {
-                Guis.openSboPf(true)
+                Guis.openSboPf()
             }
         }
     }

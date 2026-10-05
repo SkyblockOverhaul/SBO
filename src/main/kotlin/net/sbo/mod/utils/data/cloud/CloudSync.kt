@@ -607,7 +607,6 @@ object CloudSync {
             }
             notify("error", "Your settings could not be loaded from the cloud, your old settings were kept. Everything else was loaded.")
         }
-        Guis.resetCachedGuis()
         OverlayManager.reloadPositions()
         return true
     }
