@@ -1,0 +1,459 @@
+/* SBO party finder (GuiLib). px are GUI pixels, default text is 8px. */
+/* Colors of the SBO Dark theme. themes.css overrides them per theme, custom theme files set them on the body. */
+body {
+    --bg: #1e1f22;
+    --panel: #2b2d31;
+    --panel-2: #313338;
+    --card: #26282c;
+    --card-hover: #2a2c31;
+    --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
+    --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
+    --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
+    --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
+    --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
+    --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
+    --guilib-border: var(--input-border);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
+}
+
+/* Fonts picked in the settings, PartyFinderGui puts the class on the body */
+@font-face { font-family: "nunito"; src: url("sbo:fonts/nunito-400.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "nunito"; src: url("sbo:fonts/nunito-700.ttf") format("truetype"); font-weight: 700; }
+@font-face { font-family: "jetbrains-mono"; src: url("sbo:fonts/jetbrains-mono-400.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "jetbrains-mono"; src: url("sbo:fonts/jetbrains-mono-700.ttf") format("truetype"); font-weight: 700; }
+body.pf-font-minecraft { font-family: minecraft; }
+body.pf-font-nunito { font-family: nunito; }
+body.pf-font-jetbrains-mono { font-family: jetbrains-mono; }
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pf-window {
+    display: flex;
+    flex-direction: column;
+    /* min() instead of max-height: children are laid out against the capped height */
+    width: min(94vw, 620px);
+    height: min(92vh, 420px);
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    animation: pf-fade 150ms ease-out;
+}
+@keyframes pf-fade { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---- player panel right of the window ---- */
+.pf-stage { position: relative; display: flex; align-items: stretch; gap: 4px; }
+.pf-stage.with-panel .pf-window { width: min(calc(94vw - 154px), 620px); }
+.pf-panel {
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+    height: min(92vh, 420px);
+    padding: 5px 4px 4px 6px;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    animation: pf-slide 150ms ease-out;
+}
+@keyframes pf-slide { from { opacity: 0; transform: translateX(-6px); } }
+.pf-panel-head { display: flex; align-items: center; gap: 3px; }
+.pf-panel-name { flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-strong); }
+.pf-panel-sub { margin: 1px 0 3px 0; color: var(--muted); font-size: 7px; }
+.pf-panel-stats { flex-grow: 1; min-height: 0; padding-right: 3px; }
+.pf-panel-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    column-gap: 4px;
+    padding: 2px 0;
+    border-bottom: 1px solid var(--card);
+    font-size: 7px;
+}
+.pf-panel-value { color: var(--text-strong); text-align: right; }
+.pf-panel-value.estimated { color: var(--estimated); }
+.pf-panel-value.missing { color: var(--muted); }
+.pf-panel-need { width: 100%; color: var(--muted); font-size: 6px; }
+
+/* ---- header ---- */
+.pf-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 4px 0 10px;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.pf-title { font-weight: bold; color: var(--title); white-space: nowrap; padding-bottom: 3px; }
+.pf-nav .guilib-tab-list { border-bottom-width: 0; }
+.pf-spacer { flex-grow: 1; }
+/* Clips instead of pushing the close button out of a narrow window */
+.pf-online { display: flex; align-items: center; gap: 3px; min-width: 0; overflow: hidden; padding-bottom: 3px; color: var(--muted); font-size: 7px; white-space: nowrap; }
+.pf-online-dot { width: 4px; height: 4px; border-radius: 2px; background-color: var(--ok); }
+.pf-queue {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 2px 1px 6px;
+    margin-bottom: 3px;
+    border-radius: 3px;
+    background-color: var(--ok-soft);
+    border: 1px solid var(--ok-border);
+    white-space: nowrap;
+}
+.pf-queue-text { cursor: pointer; color: var(--ok); }
+.pf-close {
+    padding: 1px 5px;
+    margin-bottom: 3px;
+    background-color: transparent;
+    border-color: transparent;
+}
+.pf-close:hover { background-color: var(--danger); }
+
+/* ---- layout ---- */
+.pf-body { display: flex; flex-grow: 1; min-height: 0; }
+
+.pf-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 110px;
+    flex-shrink: 0;
+    background-color: var(--panel);
+    border-right: 1px solid var(--border);
+}
+.pf-side-scroll { flex-grow: 1; min-height: 0; padding: 4px; }
+.pf-side-title {
+    margin: 4px 4px 2px 4px;
+    font-size: 6px;
+    font-weight: bold;
+    color: var(--muted);
+}
+.pf-side-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 4px 3px 6px;
+    margin-bottom: 1px;
+    border-radius: 3px;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: background-color 120ms;
+}
+.pf-side-item:hover { background-color: var(--panel-2); }
+.pf-side-item.active { background-color: var(--accent-soft); color: var(--text-strong); }
+.pf-side-label { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-fav-list { min-height: 4px; }
+.pf-side-count { flex-shrink: 0; color: var(--muted); font-size: 7px; }
+.pf-side-count.zero { color: var(--dim); opacity: 0.6; }
+.pf-support { flex-shrink: 0; margin: 4px; border-top: 1px solid var(--border); border-radius: 0 0 3px 3px; padding-top: 5px; }
+.pf-heart { color: var(--bad); }
+/* Wraps instead of cutting the text in narrow windows */
+.pf-support .pf-side-label { white-space: normal; }
+
+.pf-icon { width: 8px; height: 8px; }
+/* Icons are drawn in currentColor, so themes color them here */
+.pf-icon-button .pf-icon { color: var(--text-soft); }
+.pf-icon-button:hover .pf-icon { color: var(--text-strong); }
+.pf-star { cursor: pointer; color: var(--dim); opacity: 0.55; transition: opacity 120ms; }
+.pf-star:hover, .pf-star.on { opacity: 1; }
+.pf-star.on { color: var(--star); }
+.pf-info { width: 6px; height: 6px; margin-left: 2px; color: var(--muted); opacity: 0.8; }
+
+.pf-main { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; padding: 6px 8px; }
+
+.pf-toolbar { display: flex; flex-direction: column; gap: 3px; margin-bottom: 4px; }
+.pf-heading { margin: 0; font-size: 10px; }
+.pf-subs-row { display: flex; align-items: flex-start; gap: 4px; }
+.pf-subs { flex-grow: 1; min-width: 0; }
+.pf-subs .guilib-tab-list { flex-wrap: wrap; row-gap: 2px; overflow: visible; }
+.pf-sub-star { display: flex; align-items: center; padding-top: 3px; }
+
+.pf-message { padding: 20px 10px; text-align: center; color: var(--muted); }
+.pf-banner {
+    padding: 3px 6px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    background-color: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    color: var(--banner-text);
+}
+.pf-hint { margin: 1px 0 3px 0; color: var(--muted); font-size: 7px; }
+.pf-muted { color: var(--muted); }
+
+button.primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+button.primary:hover { background-color: var(--accent-hover); }
+button.primary:disabled { background-color: var(--disabled); border-color: var(--disabled); color: var(--disabled-text); }
+.pf-small { padding: 0 4px; font-size: 7px; }
+.pf-small.danger:hover { background-color: var(--danger); border-color: var(--danger); }
+.pf-icon-button { padding: 2px 3px; }
+.pf-icon-button.loading .pf-icon { animation: pf-spin 800ms linear infinite; }
+@keyframes pf-spin { to { transform: rotate(360deg); } }
+
+/* ---- party list ---- */
+.pf-list-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-bottom: 4px; }
+.pf-count { color: var(--muted); white-space: nowrap; }
+.pf-filter-button { cursor: pointer; }
+.pf-filter-button .pf-icon { width: 7px; height: 7px; }
+.pf-search { flex: 1 1 60px; min-width: 50px; max-width: 120px; font-size: 7px; }
+
+.pf-dialog.pf-filter-dialog { width: 300px; max-width: 94vw; }
+.pf-filter-row { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; }
+.pf-filter-row:hover { background-color: var(--card); }
+.pf-filter-section { margin-top: 4px; padding: 3px 4px 0 4px; border-top: 1px solid var(--border); color: var(--text-soft); font-weight: bold; }
+.pf-filter-section .pf-hint { font-weight: normal; }
+.pf-filter-label { width: 110px; flex-shrink: 0; color: var(--text-soft); }
+.pf-filter-input { flex-grow: 1; min-width: 0; }
+.pf-filter-input .guilib-number { width: 80px; }
+.pf-filter-input select { min-width: 110px; }
+.pf-list { flex-grow: 1; min-height: 0; padding-right: 2px; }
+
+.pf-card {
+    padding: 4px 6px;
+    margin-bottom: 3px;
+    border-radius: 4px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 120ms, background-color 120ms;
+}
+.pf-card:hover { border-color: var(--border-hover); background-color: var(--card-hover); }
+.pf-card.mine { border-color: var(--ok-border); }
+.pf-card.full { opacity: 0.65; }
+/* Wraps in narrow windows instead of pushing the join button out */
+.pf-card-head { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 4px; }
+.pf-card-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }
+.pf-card-tags .pf-tag { white-space: normal; }
+.pf-leader { color: var(--text-strong); }
+.pf-head { width: 8px; height: 8px; margin-right: 3px; }
+.pf-tag {
+    padding: 0 3px;
+    border-radius: 2px;
+    background-color: var(--panel-2);
+    color: var(--text-soft);
+    font-size: 7px;
+    white-space: nowrap;
+}
+.pf-tag.mine { background-color: var(--ok-soft); color: var(--ok); }
+.pf-tag.size { background-color: var(--accent-soft); color: var(--title); }
+/* Subcategory of a party in the list of all subcategories */
+.pf-tag.sub { background-color: var(--accent); color: var(--accent-text); }
+.pf-tag.option { color: var(--muted); }
+.pf-age { color: var(--muted); font-size: 7px; white-space: nowrap; }
+.pf-join { padding: 1px 8px; }
+/* Two lines at most; GuiLib has no line-clamp, so the rest (and over-long words) is clipped */
+.pf-note { margin-top: 2px; color: var(--text-soft); white-space: pre-wrap; line-height: 10px; max-height: 20px; overflow: hidden; }
+.pf-reqs { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 3px; }
+.pf-req {
+    display: inline-block;
+    padding: 0 3px;
+    border-radius: 2px;
+    background-color: var(--panel-2);
+    border: 1px solid transparent;
+    font-size: 7px;
+}
+.pf-req-label { color: var(--muted); }
+.pf-req.ok { border-color: var(--ok-border); }
+.pf-req.bad { border-color: var(--bad-border); }
+.pf-roles { margin-top: 2px; color: var(--muted); font-size: 7px; }
+
+.pf-members { margin-top: 4px; padding-top: 3px; border-top: 1px solid var(--border); cursor: default; }
+.pf-member { padding: 2px 3px; border-radius: 3px; cursor: pointer; }
+.pf-member:hover { background-color: var(--panel-2); }
+.pf-member.inspected { background-color: var(--accent-faint); }
+.pf-member-name { color: var(--text-strong); }
+.pf-member-role { color: var(--muted); font-size: 7px; }
+.pf-member-stats { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 1px; }
+.pf-stat { display: inline-block; padding: 0 3px; border-radius: 2px; background-color: var(--panel-2); font-size: 7px; }
+.pf-stat-name { color: var(--muted); }
+.pf-stat.estimated { color: var(--estimated); }
+.pf-stat.missing { color: var(--muted); }
+
+.pf-legend { margin: 4px 2px; color: var(--muted); font-size: 6px; }
+.pf-legend-ok { color: var(--ok); }
+.pf-legend-bad { color: var(--bad); }
+
+/* ---- tooltips ---- */
+.guilib-tooltip.pf-tip { max-width: 220px; }
+.pf-tip-title { margin-bottom: 1px; }
+.pf-tip-text { color: var(--text-soft); }
+.pf-tip-accuracy { margin-top: 2px; color: var(--muted); }
+.pf-tip-accuracy.estimated { color: var(--estimated); }
+.pf-tip-api { margin-top: 2px; color: var(--muted); }
+.pf-tip-own { margin-top: 2px; color: var(--title); }
+.pf-stat-label { white-space: nowrap; }
+
+/* ---- forms ---- */
+.pf-form { flex-grow: 1; min-height: 0; padding-right: 4px; }
+.pf-section { margin: 6px 0 1px 0; font-size: 8px; color: var(--text-strong); }
+.pf-link { text-decoration: underline; cursor: pointer; }
+.pf-link:hover { color: var(--text-strong); }
+.pf-rules-hint { margin-top: 4px; }
+.pf-rule { margin-top: 6px; }
+.pf-rule-title { color: var(--text-strong); }
+.pf-rules-outro { margin-top: 8px; }
+.pf-fields { display: flex; flex-direction: column; gap: 2px; }
+.pf-field {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) minmax(0, 100px);
+    align-items: center;
+    gap: 6px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+.pf-field:hover { background-color: var(--card); }
+.pf-field-label { color: var(--text-soft); }
+/* Grid cells stretch, so the tooltip would also show right of the label */
+.pf-field > .guilib-tooltip-anchor { justify-self: start; }
+.pf-field-input { min-width: 0; }
+.pf-field-input .guilib-number { width: 80px; }
+.pf-field-input select { min-width: 90px; }
+.pf-any-of { display: flex; flex-direction: column; gap: 2px; }
+.pf-any-of select.multiple { width: 100%; }
+/* The column would stretch the toggle to the width of the dropdown */
+.pf-any-of .pf-match { align-self: flex-start; }
+.pf-tier-row { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 7px; }
+.pf-own { color: var(--muted); font-size: 7px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-own.ok { color: var(--ok); }
+.pf-own.bad { color: var(--bad); }
+.pf-note-input { width: 100%; }
+.pf-report-input { width: 100%; margin-top: 6px; }
+.pf-size-row { display: flex; align-items: center; gap: 6px; padding: 2px 4px; }
+.pf-size-row .guilib-number { width: 80px; }
+.pf-form-buttons { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
+
+.pf-dialog { width: 180px; }
+.pf-dialog.pf-report-dialog { width: 240px; }
+.pf-dialog-buttons { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
+
+/* ---- settings ---- */
+.pf-setting { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; }
+.pf-setting:hover { background-color: var(--card); }
+.pf-setting-text { flex-grow: 1; min-width: 0; }
+.pf-setting-title { color: var(--text-strong); }
+.pf-fav-row { display: flex; align-items: center; gap: 4px; padding: 2px 4px; margin-bottom: 1px; border-radius: 3px; background-color: var(--card); cursor: grab; }
+.pf-fav-name { flex-grow: 1; }
+.pf-grip { color: var(--input-border-hover); opacity: 0.8; }
+
+/* ---- scrollbars ---- */
+/* GuiLib widgets that scroll on their own, same idle-hiding scrollbar as .guilib-autohide (rule copied from GuiLib ua.css) */
+textarea, .guilib-select-menu, .guilib-modal, .guilib-tab-list {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 300ms ease 600ms;
+}
+textarea:scrolling, textarea:hover,
+.guilib-select-menu:scrolling, .guilib-select-menu:hover,
+.guilib-modal:scrolling, .guilib-modal:hover,
+.guilib-tab-list:scrolling, .guilib-tab-list:hover {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    transition: scrollbar-color 120ms;
+}
+
+/* ---- GuiLib widgets ----
+   The --guilib-* variables above color them. Selected pills and segments sit on the accent color, so their text uses
+   the text color for accent backgrounds (text-strong would be black on blue in light themes). */
+.guilib-tabs.pills .guilib-tab.active, .guilib-segment.selected { color: var(--accent-text); }
+
+/* ---- small windows ---- */
+@media (max-width: 520px) {
+    .pf-sidebar { width: 80px; }
+    /* Too narrow for both: the panel covers the right part of the window */
+    .pf-stage.with-panel .pf-window { width: 94vw; }
+    .pf-panel { position: absolute; top: 0; right: 0; bottom: 0; height: auto; box-shadow: 0 0 12px var(--shadow); }
+    .pf-field { grid-template-columns: 100px minmax(0, 1fr); }
+    .pf-own { grid-column: 2; text-align: left; }
+}
+.pf-narrow-only { display: none; }
+@media (max-width: 520px) {
+    .pf-wide-only { display: none; }
+    .pf-narrow-only { display: block; }
+}
+@media (max-width: 400px) {
+    .pf-header { gap: 4px; }
+}
+/* Low windows: pills and filter bar scroll away with the parties instead of taking most of the height */
+@media (max-height: 300px) {
+    .pf-main-list { overflow-y: auto; }
+    .pf-main-list > * { flex-shrink: 0; }
+    .pf-main-list .pf-list { flex-grow: 0; overflow: visible; }
+}
+/* No room for the count next to the tabs */
+@media (max-width: 360px) {
+    .pf-online { display: none; }
+}

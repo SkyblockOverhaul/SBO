@@ -26,4 +26,7 @@ object Player {
     }
 
     fun getName(): String? = mc.player?.name?.string
+
+    /** Name of the logged in account, also in the main menu. */
+    fun accountName(): String = mc.user.name
 }

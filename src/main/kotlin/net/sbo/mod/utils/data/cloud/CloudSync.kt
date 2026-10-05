@@ -61,7 +61,7 @@ object CloudSync {
     private val json = Json { ignoreUnknownKeys = true }
     private val gson = Gson()
 
-    enum class SyncState { NO_SBO_KEY, NO_SAVE, NOT_USED_HERE, BOTH_CHANGED, CLOUD_NEWER, PC_CHANGED, SAME, ERROR }
+    enum class SyncState { NO_SAVE, NOT_USED_HERE, BOTH_CHANGED, CLOUD_NEWER, PC_CHANGED, SAME, ERROR }
 
     data class Status(val state: SyncState, val updatedAt: Long = 0, val size: Int = 0, val error: String? = null)
 
@@ -408,7 +408,6 @@ object CloudSync {
 
     // Callback on the client thread; asks the server only if the known info is old or refresh is set
     fun fetchStatus(refresh: Boolean = false, callback: (Status) -> Unit) {
-        if (SboKey.get().isBlank()) return callback(Status(SyncState.NO_SBO_KEY))
         val known = cloudInfo?.takeIf { System.currentTimeMillis() - it.at < STATUS_MAX_AGE_MS && !(refresh && refreshWaitMs() == 0L) }
         if (known != null) return SBOKotlin.mc.schedule { callback(statusOf(known.slot)) }
         lastStatusRequest = System.currentTimeMillis()
@@ -606,7 +605,6 @@ object CloudSync {
             }
             notify("error", "Your settings could not be loaded from the cloud, your old settings were kept. Everything else was loaded.")
         }
-        Guis.resetCachedGuis()
         OverlayManager.reloadPositions()
         return true
     }

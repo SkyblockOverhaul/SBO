@@ -1,30 +1,22 @@
 package net.sbo.mod.guis
 
+import gg.essential.universal.UScreen
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.partyfinder.PartyFinderGUI
+import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.events.SBOEvent
-import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object Guis {
-    private var partyFinderGui: PartyFinderGUI? = null
-
-//    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
     private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
-
-    fun resetCachedGuis() {
-        partyFinderGui = null
-    }
 
     fun openSboPf(calledFromGUI: Boolean = false) {
         if (!World.isInSkyblock()) {
@@ -33,22 +25,16 @@ object Guis {
                 return
             }
             SBOKotlin.toast(
-                    Component.literal("SBO").setStyle(
-                        Style.EMPTY.withColor(ChatFormatting.GOLD)
-                    ),
-                    Component.literal("Join skyblock before opening Party Finder!").setStyle(
-                        Style.EMPTY.withColor(ChatFormatting.RED)
-                    )
+                Component.literal("SBO").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.GOLD)
+                ),
+                Component.literal("Join skyblock before opening Party Finder!").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.RED)
+                )
             )
             return
         }
-        mc.schedule {
-            if (partyFinderGui == null) {
-                partyFinderGui = PartyFinderGUI()
-            }
-            mc.setScreen(partyFinderGui!!)
-            SBOEvent.emit(PartyFinderOpenEvent())
-        }
+        mc.schedule { PartyFinderGui.open() }
     }
 
     fun openSoundGui(calledFromGUI: Boolean = false) {
