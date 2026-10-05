@@ -118,7 +118,7 @@ class PartyListFiltersTest {
         assertEquals(listOf("high"), dianaIds(PartyListFilter(reqs = mutableMapOf("griffin" to "LEGENDARY"))))
         assertEquals(listOf("high", "low", "none"), dianaIds(PartyListFilter()))
         // Item lists are not offered
-        assertEquals(listOf("tracking", "griffin", "dianaKills", "sbLevel", "magicalPower", "bph"), PartyListFilters.filterableReqs(diana).map { it.stat })
+        assertEquals(listOf("sbLevel", "tracking", "griffin", "bloodshotBelt", "dianaKills", "magicalPower", "bph"), PartyListFilters.filterableReqs(diana).map { it.stat })
         assertEquals(false, PartyListFilters.filterableReqs(PartyCategories.target("kuudra", "infernal")!!).any { it.type == "anyOf" })
 
         val bacte = PartyCategories.target("rift", "bacte")!!
