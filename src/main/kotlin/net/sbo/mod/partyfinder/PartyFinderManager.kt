@@ -2,6 +2,9 @@ package net.sbo.mod.partyfinder
 
 import net.sbo.mod.utils.chat.toFormattedString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.api.CheckBody
@@ -17,6 +20,7 @@ import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.events.ClickActionManager
 import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
@@ -374,15 +378,17 @@ object PartyFinderManager {
         }.error { error -> onError?.invoke(error) }
     }
 
-    private fun showJoinRequest(playerName: String, role: String?) {
+    /** [onInvite] replaces the plain `/p invite` of the Invite button. */
+    private fun showJoinRequest(playerName: String, role: String?, onInvite: (() -> Unit)? = null) {
         val roleText = role?.let { id ->
             val label = draft?.let { PartyCategories.target(it.partyType, it.subType) }?.roles?.firstOrNull { it.id == id }?.label ?: id
             " as §b$label"
         } ?: ""
+        val invite = onInvite?.let { "/__sbo_run_clickable_action ${ClickActionManager.registerAction(it)}" } ?: "/p invite $playerName"
         Chat.chat(Chat.getChatBreak())
         Chat.chat(
             Chat.textComponent("§6[SBO] §b$playerName §ewants to join your party$roleText§e.\n"),
-            Chat.textComponent("§7[§aInvite§7]", "/p $playerName", "/p invite $playerName"),
+            Chat.textComponent("§7[§aInvite§7]", "/p $playerName", invite),
             Chat.textComponent(" §7[§eCheck Stats§7]", "/sboc $playerName", "/sbocheck $playerName"),
         )
         Chat.chat(Chat.getChatBreak())
@@ -418,6 +424,22 @@ object PartyFinderManager {
         }
     }
 
+    /** A join request over the socket, the backend already checked the player against the party. */
+    fun onSocketJoinRequest(requestId: String, uuid: String, playerName: String, role: String?) {
+        if (!inQueue || partyMemberCount >= partySize) return PartyFinderSocket.answer(requestId, invited = false)
+        val invite = {
+            role?.let { memberRoles[uuid] = it }
+            Chat.command("p invite $playerName")
+            PartyFinderSocket.answer(requestId, invited = true)
+        }
+        if (PartyFinder.autoInvite) {
+            invite()
+            Chat.chat("§6[SBO] §eInvited $playerName to the party.")
+        } else {
+            showJoinRequest(playerName, role, invite)
+        }
+    }
+
     /** Asks the leader of [party] to invite the player. [role] is needed when the party asks for roles. */
     fun sendJoinRequest(party: PartyView, role: String? = null) {
         val leaderName = party.leader?.name?.takeIf { it.isNotBlank() } ?: return
@@ -443,21 +465,46 @@ object PartyFinderManager {
             tell("§6[SBO] §4Could not load your stats: ${ProblemText.error(error)}", false)
         }) { me ->
             val problems = ReqMatcher.checkJoin(party, target, me, role)
-            if (problems.isNotEmpty()) {
-                val gui = listener
-                if (gui != null) {
-                    gui(false, "You don't meet the requirements: " + problems.joinToString("; ") { ProblemText.describe(it, target) } +
-                        "\n${ProblemText.OWN_RELOAD_HINT}")
-                    return@get
-                }
-                Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party:")
-                problems.forEach { Chat.chat("§7• §c${ProblemText.describe(it, target)}") }
-                return@get
-            }
-            tell("§6[SBO] §eSending join request to $leaderName...", true)
-            Chat.command("msg $leaderName ${JoinRequest.message(role)}")
+            if (problems.isNotEmpty()) return@get showOwnProblems(problems, target)
             playersSentRequest[leaderName] = System.nanoTime()
+            // Over the socket first, by /msg when the leader is not connected or the socket fails
+            PartyFinderSocket.requestJoin(party.id, role) { status, answer ->
+                when (status) {
+                    "sent" -> tell("§6[SBO] §eJoin request sent.", true)
+                    "invited" -> tell("§6[SBO] §aYou were invited.", true)
+                    "declined" -> tell("§6[SBO] §cThe leader declined.", false)
+                    "failed" -> joinFailed(answer, target, leaderName)
+                    else -> {
+                        tell("§6[SBO] §eSending join request to $leaderName...", true)
+                        Chat.command("msg $leaderName ${JoinRequest.message(role)}")
+                    }
+                }
+            }
         }
+    }
+
+    private fun joinFailed(answer: JsonObject, target: PartyTarget, leaderName: String) {
+        val problems = (answer["problems"] as? JsonArray)?.let { runCatching { PartyFinderApi.json.decodeFromJsonElement<List<Problem>>(it) }.getOrNull() }
+        if (!problems.isNullOrEmpty()) {
+            playersSentRequest.remove(leaderName)
+            return showOwnProblems(problems, target)
+        }
+        val error = (answer["error"] as? JsonObject)?.let { runCatching { PartyFinderApi.json.decodeFromJsonElement<PfError>(it) }.getOrNull() }
+            ?: PfError(PfError.BAD_RESPONSE, "")
+        // The backend's wait between requests to the same leader stays
+        if (error.code != PfError.RATE_LIMITED) playersSentRequest.remove(leaderName)
+        tell("§6[SBO] §4Failed to join party: ${ProblemText.error(error)}", false)
+    }
+
+    private fun showOwnProblems(problems: List<Problem>, target: PartyTarget) {
+        val gui = listener
+        if (gui != null) {
+            gui(false, "You don't meet the requirements: " + problems.joinToString("; ") { ProblemText.describe(it, target) } +
+                "\n${ProblemText.OWN_RELOAD_HINT}")
+            return
+        }
+        Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party:")
+        problems.forEach { Chat.chat("§7• §c${ProblemText.describe(it, target)}") }
     }
 
     fun removePartyFromQueue(onComplete: ((Boolean) -> Unit)? = null) {

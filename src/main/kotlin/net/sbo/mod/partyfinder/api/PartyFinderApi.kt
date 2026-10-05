@@ -26,7 +26,7 @@ object BanNotice {
     fun check(error: PfError) {
         if (shown || error.code != PfError.INVALID_KEY || !error.message.startsWith("Key is banned")) return
         shown = true
-        Chat.chat("ง6[SBO] งc${ProblemText.error(error)}")
+        Chat.chat("ยง6[SBO] ยงc${ProblemText.error(error)}")
     }
 }
 
