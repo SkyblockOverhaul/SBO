@@ -56,7 +56,7 @@ object TabList {
     fun findInfo(key: String): String? {
         for (line in cachedTabLines) {
             if (line.startsWith(key)) {
-                return line.substring(key.length).trim()
+                return line.substring(key.length)
             }
         }
 
