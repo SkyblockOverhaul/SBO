@@ -39,15 +39,6 @@ private const val RARE_MOB_VALIDATION_DISTANCE = 30.0
 
 object WaypointManager {
     private val waypoints = ConcurrentHashMap<String, CopyOnWriteArrayList<Waypoint>>()
-    private val rareMobs: Set<String> = setOf(
-        "minos inquisitor",
-        "inquisitor",
-        "inq",
-        "manticore",
-        "king minos",
-        "king",
-        "sphinx"
-    )
 
     fun init() {
         Register.command("sbosendping") { args ->
@@ -74,7 +65,7 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                if (Diana.receiveRareMob && rareMobs.contains(mob)) {
+                if (Diana.receiveRareMob) {
                     val mobType: Diana.ReceiveList = when (mob) {
                         "Minos Inquisitor" -> Diana.ReceiveList.INQ
                         "King Minos" -> Diana.ReceiveList.KING
