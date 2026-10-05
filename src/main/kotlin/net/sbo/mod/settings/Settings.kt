@@ -17,7 +17,6 @@ object Settings : Config("sbo/config") {
         category(Customization)
         category(PartyFinder)
         category(QOL)
-        category(CloudSync)
         category(Debug)
     }
 }
