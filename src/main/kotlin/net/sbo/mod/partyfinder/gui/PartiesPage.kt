@@ -360,8 +360,7 @@ private val ReportDialog = component<ReportProps>("ReportDialog") { props ->
         div(className = "pf-dialog-buttons") {
             button(onClick = { props.onClose() }) { +"Cancel" }
             val blocked = reason == null || tooShort || sending
-            // New key per state: GuiLib keeps the disabled text color after the button turns on until the next full repaint
-            button(className = "primary", disabled = blocked, onClick = { reason?.let(::send) }, key = "send:$blocked") {
+            button(className = "primary", disabled = blocked, onClick = { reason?.let(::send) }) {
                 +"Send report"
             }
         }
