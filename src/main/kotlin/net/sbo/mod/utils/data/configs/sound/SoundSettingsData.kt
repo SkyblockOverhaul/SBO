@@ -3,8 +3,6 @@ package net.sbo.mod.utils.data.configs.sound
 import net.sbo.mod.utils.data.DataManager
 
 data class SoundSettingsData(
-    var rareMobSound: String = "",
-    var rareMobVolume: Float = 1.0f,
     var lowInqHpSound: String = "",
     var lowInqHpVoume: Float = 1.0f,
     var lowSphinxHpSound: String = "",

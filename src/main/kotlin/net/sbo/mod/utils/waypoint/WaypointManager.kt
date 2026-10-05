@@ -71,17 +71,18 @@ object WaypointManager {
             y = findBlock(world, x, y, z)
 
             val trailing = match.groups["trailing"]?.value ?: ""
-            val mob = trailing.replace("|", "").trim().lowercase()
+            val mob = trailing.replace("|", "").trim()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
                 if (Diana.receiveRareMob && rareMobs.contains(mob)) {
                     val mobType: Diana.ReceiveList = when (mob) {
-                        "minos inquisitor", "inquisitor", "inq" -> Diana.ReceiveList.INQ
-                        "king minos", "king" -> Diana.ReceiveList.KING
-                        "manticore" -> Diana.ReceiveList.MANTICORE
-                        "sphinx" -> Diana.ReceiveList.SPHINX
-                        else -> Diana.ReceiveList.OTHER
-                    }
+                        "Minos Inquisitor" -> Diana.ReceiveList.INQ
+                        "King Minos" -> Diana.ReceiveList.KING
+                        "Manticore" -> Diana.ReceiveList.MANTICORE
+                        "Sphinx" -> Diana.ReceiveList.SPHINX
+                        else -> null
+                    } ?: return@onChatMessage
+
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
 
                     val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
@@ -295,13 +296,6 @@ object WaypointManager {
                 DataManager.soundSettingsData.sphinxVolume,
                 "§9Sphinx"
             )
-
-            else -> RareMobData(
-                "§r§6§l<§b§l§kO§6§l> §3§lRARE MOB! §6§l<§b§l§kO§6§l>",
-                DataManager.soundSettingsData.rareMobSound,
-                DataManager.soundSettingsData.rareMobVolume,
-                "§3Rare Mob"
-            )
         }
 
         if (Diana.ReceiveMobs.contains(mobType)) Helper.showTitle(
@@ -508,7 +502,6 @@ object WaypointManager {
                 Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING)) return null
                 Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE)) return null
                 Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX)) return null
-                else -> {}
             }
         }
 

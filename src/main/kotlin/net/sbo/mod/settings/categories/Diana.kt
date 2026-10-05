@@ -17,7 +17,7 @@ object Diana : CategoryKt("Diana") {
     }
 
     enum class ReceiveList {
-        INQ, MANTICORE, KING, SPHINX, OTHER
+        INQ, MANTICORE, KING, SPHINX
     }
 
     enum class NoShurikenList {
@@ -481,12 +481,9 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Create a waypoint when finding a rare mob entity in a loaded chunk automatically. (King, Manti, Sphinx, Inq)")
     }
 
-    var ReceiveMobs by select(ReceiveList.INQ, ReceiveList.MANTICORE, ReceiveList.KING, ReceiveList.SPHINX, ReceiveList.OTHER) {
+    var ReceiveMobs by select(ReceiveList.INQ, ReceiveList.MANTICORE, ReceiveList.KING, ReceiveList.SPHINX) {
         this.name = Literal("Which Mobs to Receive")
-        this.description = Literal(
-        "Select which mobs to receive.\n" +
-            "§bOTHER = Rare mobs from players that don't ping with sbo. (mainly skyhanni)"
-        )
+        this.description = Literal("Select which mobs to receive.")
     }
 
     var HighlightRareMobs by boolean(true) {
