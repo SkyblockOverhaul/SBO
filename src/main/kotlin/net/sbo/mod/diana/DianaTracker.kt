@@ -43,8 +43,6 @@ object DianaTracker {
     private val isMobOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
     private val isItemOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
 
-    private val lootAnnouncerBuffer: MutableList<String> = mutableListOf()
-    private var lootAnnouncerBool: Boolean = false
     private var allowScavTracking: Boolean = true
 
     var lastSpawnedMob: String? = null
@@ -499,7 +497,7 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Manti-core", customMsg.second, true)
                 } else {
-                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayorData.items.MANTI_CORE + dianaTrackerMayorData.items.MANTI_CORE_LS,  lsAmount = dianaTrackerMayorData.items.MANTI_CORE_LS, buffer = true)
+                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayorData.items.MANTI_CORE + dianaTrackerMayorData.items.MANTI_CORE_LS,  lsAmount = dianaTrackerMayorData.items.MANTI_CORE_LS)
                 }
 
             }
@@ -542,7 +540,7 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Fateful Stinger", customMsg.second, true)
                 } else {
-                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayorData.items.FATEFUL_STINGER + dianaTrackerMayorData.items.FATEFUL_STINGER_LS, lsAmount = dianaTrackerMayorData.items.FATEFUL_STINGER_LS, buffer = true)
+                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayorData.items.FATEFUL_STINGER + dianaTrackerMayorData.items.FATEFUL_STINGER_LS, lsAmount = dianaTrackerMayorData.items.FATEFUL_STINGER_LS)
                 }
 
             }
@@ -882,7 +880,7 @@ object DianaTracker {
         }
     }
 
-    private fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1, buffer: Boolean = false) {
+    private fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1) {
         if (!Diana.lootAnnouncerParty) return
         var msg = Helper.toTitleCase(item.replace("_LS", "").replace("_", " "))
         val custom = customMsg != null
@@ -905,24 +903,6 @@ object DianaTracker {
             msg = "[SBO] RARE DROP! $msg$priceStr"
         }
 
-        if (buffer) {
-            lootAnnouncerBuffer.add(msg)
-            if (!lootAnnouncerBool) {
-                lootAnnouncerBool = true
-                sleep(1500) {
-                    sendLootAnnouncement()
-                    lootAnnouncerBool = false
-                }
-            }
-        } else {
-            Chat.pc(msg)
-        }
-    }
-
-    private fun sendLootAnnouncement() {
-        if (lootAnnouncerBuffer.isEmpty()) return
-        val msg = lootAnnouncerBuffer.joinToString(", ")
-        lootAnnouncerBuffer.clear()
         Chat.pc(msg)
     }
 
