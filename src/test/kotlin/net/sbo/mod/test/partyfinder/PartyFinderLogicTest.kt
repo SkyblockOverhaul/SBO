@@ -54,7 +54,7 @@ class PartyFinderLogicTest {
             listOf("diana", "fishing", "mining", "kuudra", "bestiary", "rift", "safari", "slayer", "custom"),
             data.categories.map { it.id }
         )
-        assertEquals(19.0, PartyCategories.stat("tracking")?.unverifiedUpTo)
+        assertEquals(14.0, PartyCategories.stat("tracking")?.unverifiedUpTo)
         assertEquals("Adept", PartyCategories.stat("trophyFisher")?.valueLabels?.get(2))
     }
 
