@@ -43,5 +43,3 @@ replay_*.log
 .kotlin/sessions
 graphify-out/
 /.claude/
-# Party finder definitions for local tests, fetched from the backend (GET /pf/categories)
-src/test/resources/partyfinder/categories.json

@@ -42,11 +42,7 @@ object ChatMessageQueue {
         }
     }
 
-    // Dev party finder simulation catches outgoing commands here, null otherwise
-    internal var outgoingHook: ((String) -> Boolean)? = null
-
     fun queue(message: String) {
-        if (outgoingHook?.invoke(message) == true) return
         val player = mc.player
 
         if (null != player && canSend()) { // if player is null we queue so that no messages are lost

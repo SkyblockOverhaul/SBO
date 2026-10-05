@@ -139,14 +139,8 @@ object MojangAuth {
         SBOKotlin.mc.services().sessionService().joinServer(user.profileId, user.accessToken, serverId)
         true
     } catch (e: Exception) {
-        // Dev clients have no real login; a local backend in test mode does not ask Mojang
-        if (SBOKotlin.API_URL != SBOKotlin.LIVE_API_URL) {
-            SBOKotlin.logger.warn("[SBO] Mojang join failed, going on for the local backend: ${e.message}")
-            true
-        } else {
-            SBOKotlin.logger.warn("[SBO] Mojang join failed: ${e.message}")
-            false
-        }
+        SBOKotlin.logger.warn("[SBO] Mojang join failed: ${e.message}")
+        false
     }
 
     private fun tell(text: String) {

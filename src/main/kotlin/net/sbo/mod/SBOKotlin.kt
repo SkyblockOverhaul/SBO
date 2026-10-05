@@ -30,8 +30,6 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyFinderSocket
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.StatReporter
-import net.sbo.mod.partyfinder.PartyFinderTestCommand
-import net.sbo.mod.partyfinder.PartyFinderSimulation
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
@@ -53,10 +51,7 @@ object SBOKotlin : ClientModInitializer {
 	@JvmField
 	val mc: Minecraft = Minecraft.getInstance()
 
-	internal const val LIVE_API_URL = "https://api.skyblockoverhaul.com"
-
-	// Local backend for development: ./gradlew runClient -PsboApiUrl=http://localhost:3000
-	val API_URL: String = System.getProperty("sbo.apiUrl")?.trim()?.trimEnd('/')?.takeIf { it.isNotEmpty() } ?: LIVE_API_URL
+	const val API_URL: String = "https://api.skyblockoverhaul.com"
 
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
@@ -96,7 +91,6 @@ object SBOKotlin : ClientModInitializer {
 			.orElse("unknown")!!
 
 		logger.info("Initializing SBO, version: $version...")
-		if (API_URL != LIVE_API_URL) logger.warn("[SBO] Using API $API_URL instead of the live backend")
 
 		// Initialize Mayor Data
 		Mayor.init()
@@ -137,8 +131,6 @@ object SBOKotlin : ClientModInitializer {
 		PartyFinderSocket.init()
 		OwnStats.init()
 		StatReporter.init()
-		PartyFinderTestCommand.init()
-		PartyFinderSimulation.init()
 		PartyCheck.init()
 		BurrowDetector.init()
 		DianaTracker.init()

@@ -12,7 +12,6 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.utils.data.CloudUploadRequest
 import net.sbo.mod.utils.data.MembersRequest
-import net.sbo.mod.utils.data.PartyRequest
 import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.SboKey
 import java.net.URLEncoder
@@ -109,16 +108,6 @@ object SboApi {
 
     internal fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
 
-    fun createParty(request: PartyRequest): HttpRequestHandle =
-        post("/createParty", json.encodeToString(request))
-
-    fun updateQueuedParty(request: PartyRequest): HttpRequestHandle =
-        post("/updateQueuedParty", json.encodeToString(request))
-
-    fun unqueueParty(): HttpRequestHandle = post("/unqueueParty")
-
-    fun refreshParty(): HttpRequestHandle = post("/refreshParty")
-
     fun partyInfo(members: List<String>, readCache: Boolean = true): HttpRequestHandle =
         post("/partyInfo", json.encodeToString(MembersRequest(members, readCache)))
 
@@ -132,9 +121,6 @@ object SboApi {
 
     fun playerInfoByUuid(uuid: String): HttpRequestHandle =
         get("/playerInfoByUuid?uuid=${encode(uuid)}")
-
-    fun listParties(partyType: String): HttpRequestHandle =
-        get("/listParties?partyType=${encode(partyType)}")
 
     fun activeUsers(): HttpRequestHandle = get("/activeUsers")
 

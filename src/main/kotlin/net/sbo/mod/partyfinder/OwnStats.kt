@@ -15,11 +15,8 @@ object OwnStats {
 
     private val cache = ConcurrentHashMap<String, Pair<Long, MemberView>>()
 
-    // Dev only: the simulation or -PsboPfDevUuid plays as another player, null otherwise
-    internal var uuidOverride: String? = System.getProperty("sbo.pfDevUuid")?.takeIf { it.isNotBlank() }
-
     /** The player's uuid without dashes, also in the main menu. */
-    fun uuid(): String = uuidOverride ?: Player.getUUIDString().replace("-", "").ifEmpty { Player.accountUuid() }
+    fun uuid(): String = Player.getUUIDString().replace("-", "").ifEmpty { Player.accountUuid() }
 
     fun init() {
         Register.onChatMessage(Regex("^Your profile was changed to: "), noFormatting = true) { _, _ -> clear() }
@@ -60,7 +57,7 @@ object OwnStats {
         }
         val readcache = if (force) false else null
         // Until the Mojang login ran, by name like /partyInfo, so opening the GUI does not log in
-        val body = if (MojangAuth.hasSession() || uuidOverride != null) {
+        val body = if (MojangAuth.hasSession()) {
             CheckBody(target.partyType, target.subType, listOf(uuid), options = sent, readcache = readcache)
         } else {
             CheckBody(target.partyType, target.subType, names = listOf(Player.getName() ?: Player.accountName()), options = sent, readcache = readcache)
