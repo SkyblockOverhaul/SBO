@@ -24,8 +24,10 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.partyfinder.PartyFinderReminder
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
+import net.sbo.mod.partyfinder.api.CategoriesData
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.utils.data.DataManager
@@ -46,6 +48,14 @@ object PartyFinderGui {
 
     /** Selectable window sizes; null follows the Minecraft GUI scale. */
     internal val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
+
+    @Volatile
+    var isOpen = false
+        private set
+
+    @Volatile
+    var onboardingActive = false
+        internal set
 
     /** Only opens in Skyblock. Must run on the client thread. */
     fun open() {
@@ -80,6 +90,7 @@ object PartyFinderGui {
         var failed by useState(false)
         var selected by useState(startKey())
         var page by useState("parties")
+        var settingsSection by useState("general")
         var favorites by useState(config.favorites.toList())
         var own by useState<MemberView?>(null)
         var ownBySub by useState(mapOf<String, MemberView>())
@@ -117,6 +128,19 @@ object PartyFinderGui {
         var onlineUsers by useState<Int?>(null)
         val currentKey = useRef("")
         val toast = useToast()
+        var onboarding by useState(!DataManager.sboData.pfOnboardingSeen)
+        var tourIntro by useState(true)
+        val beforeTour = useRef<String?>(null)
+
+        // Open and close both count as a visit, parties listed while the window is open were seen too
+        useEffect {
+            isOpen = true
+            PartyFinderReminder.markVisited()
+            onCleanup {
+                isOpen = false
+                PartyFinderReminder.markVisited()
+            }
+        }
 
         useEffect {
             PartyCategories.get { loaded ->
@@ -304,6 +328,12 @@ object PartyFinderGui {
                                         favoritesOnlyOnce = on
                                         config.favoritesOnlyOnce = on
                                         config.save()
+                                    },
+                                    section = settingsSection,
+                                    onSection = { settingsSection = it },
+                                    onTour = {
+                                        tourIntro = false
+                                        onboarding = true
                                     }
                                 ),
                                 key = "settings"
@@ -327,7 +357,8 @@ object PartyFinderGui {
                                             target, own, ::ownFor, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
                                             inspected = inspected?.member?.uuid, onInspect = { inspected = it },
                                         joinedParties = joinedParties,
-                                            onRules = { page = "rules" }
+                                            onRules = { page = "rules" },
+                                            tourParty = onboarding
                                         ),
                                         key = "list"
                                     )
@@ -342,7 +373,38 @@ object PartyFinderGui {
                 val panelOwn = OwnStats.cached(panelTarget, panel.party.options) ?: ownFor(panelTarget)
                 playerPanel(panel, panelTarget, panelOwn) { inspected = null }
             }
+            if (onboarding) {
+                Onboarding(
+                    OnboardingProps(
+                        onShow = { shownPage, section ->
+                            if (beforeTour.current == null) {
+                                beforeTour.current = selected
+                                tourType(data, selected)?.let { selected = it }
+                            }
+                            page = shownPage
+                            section?.let { settingsSection = it }
+                        },
+                        onDone = {
+                            onboarding = false
+                            page = "parties"
+                            beforeTour.current?.let { selected = it }
+                            beforeTour.current = null
+                            PartyFinderReminder.markVisited()
+                        },
+                        intro = tourIntro
+                    ),
+                    key = "onboarding"
+                )
+            }
         }
+    }
+
+    // The tiers step needs a party type that has tiers
+    private fun tourType(data: CategoriesData?, selected: String): String? {
+        val categories = data?.categories ?: return null
+        val current = categories.firstOrNull { it.id == selected.substringBefore('/') }
+        if (current != null && current.subcategories.size > 1) return null
+        return categories.firstOrNull { it.subcategories.size > 1 }?.id
     }
 
     private fun NodeBuilder.sideItem(

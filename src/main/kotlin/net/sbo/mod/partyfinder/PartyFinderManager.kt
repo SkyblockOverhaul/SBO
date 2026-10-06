@@ -14,7 +14,8 @@ import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.api.RolesBody
-import net.sbo.mod.settings.categories.PartyFinder
+import net.sbo.mod.settings.Settings
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
@@ -118,7 +119,17 @@ object PartyFinderManager {
 
     private fun myUuid(): String = OwnStats.uuid()
 
+    private fun takeOverLegacySettings() {
+        val old = Settings.legacyPartyFinder ?: return
+        Settings.legacyPartyFinder = null
+        val config = DataManager.partyFinderConfigState
+        old.get("autoInvite")?.takeIf { it.isJsonPrimitive }?.let { config.autoInvite = it.asBoolean }
+        old.get("autoRequeue")?.takeIf { it.isJsonPrimitive }?.let { config.autoRequeue = it.asBoolean }
+        config.save()
+    }
+
     fun init() {
+        takeOverLegacySettings()
         Register.command("sborequeue") {
             val last = draft
             if (inQueue) {
@@ -162,7 +173,7 @@ object PartyFinderManager {
             if ("From" in matchResult.group(1) && partyMemberCount < partySize) {
                 val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
                 val request = JoinRequest.parse(matchResult.group(4) ?: "")
-                if (PartyFinder.autoInvite) {
+                if (DataManager.partyFinderConfigState.autoInvite) {
                     invitePlayerIfMeetsReqs(playerName, request)
                 } else {
                     showJoinRequest(playerName, request.role)
@@ -435,7 +446,7 @@ object PartyFinderManager {
             Chat.command("p invite $playerName")
             PartyFinderSocket.answer(requestId, invited = true)
         }
-        if (PartyFinder.autoInvite) {
+        if (DataManager.partyFinderConfigState.autoInvite) {
             invite()
             Chat.chat("§6[SBO] §eInvited $playerName to the party.")
         } else {
@@ -593,7 +604,7 @@ object PartyFinderManager {
             if (partyMemberCount < partySize && !creatingParty && !requeue && usedPf) {
                 requeue = true
                 sleep(200) {
-                    if (PartyFinder.autoRequeue) {
+                    if (DataManager.partyFinderConfigState.autoRequeue) {
                         Chat.chat("§6[SBO] §eRequeuing party with last used requirements...")
                         createParty(last)
                     } else {

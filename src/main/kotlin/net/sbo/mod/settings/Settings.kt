@@ -1,5 +1,6 @@
 package net.sbo.mod.settings
 
+import com.google.gson.JsonObject
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.config.Config
 import net.sbo.mod.settings.categories.*
@@ -15,8 +16,15 @@ object Settings : Config("sbo/config") {
         category(Medal)
         category(PartyCommands)
         category(Customization)
-        category(PartyFinder)
         category(QOL)
         category(Debug)
+    }
+
+    // The Party Finder category moved into the party finder window, PartyFinderManager takes its old values over once
+    var legacyPartyFinder: JsonObject? = null
+
+    override fun load(json: JsonObject) {
+        super.load(json)
+        legacyPartyFinder = (json.get("Party Finder") ?: json.get("PartyFinder")) as? JsonObject
     }
 }

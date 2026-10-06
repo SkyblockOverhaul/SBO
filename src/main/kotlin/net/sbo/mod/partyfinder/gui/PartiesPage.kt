@@ -66,7 +66,8 @@ internal data class PartiesProps(
     val onInspect: (InspectedPlayer) -> Unit,
     // Reloads the list after the player joined a party
     val joinedParties: Int,
-    val onRules: () -> Unit = {}
+    val onRules: () -> Unit = {},
+    val tourParty: Boolean = false
 )
 
 internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
@@ -170,6 +171,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     }
     val all = parties.orEmpty().filter { it.id !in hidden }
     val visible = PartyListFilters.apply(all, filter, target, me, myId, search, ::meFor)
+    val shown = if (props.tourParty) listOf(tourParty(target, props.ownFor(target.subTargets().first()) ?: me)) + visible else visible
 
     fun copy(text: String, what: String) {
         clipboard.set(text)
@@ -240,14 +242,14 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         when {
             parties == null && error != null -> message("Could not load the parties. $error")
             parties == null -> message("Loading parties...")
-            visible.isEmpty() && all.isEmpty() -> message("There are no ${target.label} parties right now. Create one under \"Create Party\".")
-            visible.isEmpty() -> message("No party matches your filters.") {
+            shown.isEmpty() && all.isEmpty() -> message("There are no ${target.label} parties right now. Create one under \"Create Party\".")
+            shown.isEmpty() -> message("No party matches your filters.") {
                 button(onClick = {
                     search = ""
                     setFilter { canJoin = false; notFull = false; sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); reqs.clear() }
                 }) { +"Clear filters" }
             }
-            else -> visible.forEach { party ->
+            else -> shown.forEach { party ->
                 val partyTarget = target.forParty(party)
                 partyCard(
                     party, partyTarget, meFor(party, partyTarget),
@@ -273,7 +275,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                 )
             }
         }
-        if (visible.isNotEmpty()) {
+        if (shown.isNotEmpty()) {
             div(className = "pf-legend") {
                 +"Requirements: "
                 span(className = "pf-legend-ok") { +"you meet it" }

@@ -71,6 +71,9 @@ data class SboData(
     var eventsSort: String = "year",
     var eventsChartView: String = "value",
     var eventsHiddenLines: MutableList<String> = mutableListOf(),
+    var pfOnboardingSeen: Boolean = false,
+    var pfLastVisit: Long = 0,
+    var pfLastReminder: Long = 0,
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }

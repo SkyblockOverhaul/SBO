@@ -18,8 +18,6 @@ import net.sbo.guilib.core.dsl.useToast
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
-import net.sbo.mod.settings.Settings
-import net.sbo.mod.settings.categories.PartyFinder
 import net.sbo.mod.utils.data.DataManager
 
 internal data class SettingsProps(
@@ -36,15 +34,20 @@ internal data class SettingsProps(
     val recombobulated: Boolean,
     val onRecombobulated: (Boolean) -> Unit,
     val favoritesOnlyOnce: Boolean,
-    val onFavoritesOnlyOnce: (Boolean) -> Unit
+    val onFavoritesOnlyOnce: (Boolean) -> Unit,
+    // In the window's state, so the tour can open a section
+    val section: String,
+    val onSection: (String) -> Unit,
+    val onTour: () -> Unit
 )
 
 /** Party finder settings inside the window, independent of the config menu. */
 internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     val config = DataManager.partyFinderConfigState
-    var section by useState("general")
-    var autoInvite by useState(PartyFinder.autoInvite)
-    var autoRequeue by useState(PartyFinder.autoRequeue)
+    val section = props.section
+    var autoInvite by useState(config.autoInvite)
+    var autoRequeue by useState(config.autoRequeue)
+    var reminderMinutes by useState(config.reminderMinutes)
     var startWithFavorites by useState(config.startWithFavorites)
     var autoRefresh by useState(config.autoRefreshSeconds)
     var reloading by useState(false)
@@ -53,7 +56,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     val toast = useToast()
 
     div(className = "pf-toolbar") {
-        tabs(value = section, onChange = { section = it }, variant = "pills", className = "pf-subs pf-settings-tabs") {
+        tabs(value = section, onChange = { props.onSection(it) }, variant = "pills", className = "pf-subs pf-settings-tabs") {
             tab("general", "General")
             tab("favorites", "Favorites")
             tab("look", "Look")
@@ -149,8 +152,8 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 ) {
                     switch(checked = autoInvite, onChange = { e ->
                         autoInvite = e.checked
-                        PartyFinder.autoInvite = e.checked
-                        Settings.save()
+                        config.autoInvite = e.checked
+                        config.save()
                     })
                 }
                 settingRow(
@@ -159,8 +162,8 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 ) {
                     switch(checked = autoRequeue, onChange = { e ->
                         autoRequeue = e.checked
-                        PartyFinder.autoRequeue = e.checked
-                        Settings.save()
+                        config.autoRequeue = e.checked
+                        config.save()
                     })
                 }
 
@@ -177,6 +180,21 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                         option("0", "Off")
                         option("30", "30 s")
                         option("60", "60 s")
+                    }
+                }
+                settingRow(
+                    "New parties reminder",
+                    "A chat message when new parties were listed in your favorite party types since you last looked."
+                ) {
+                    segmented(value = reminderMinutes.toString(), onChange = { value ->
+                        reminderMinutes = value.toInt()
+                        config.reminderMinutes = reminderMinutes
+                        config.save()
+                    }) {
+                        option("0", "Off")
+                        option("30", "30 min")
+                        option("60", "1 h")
+                        option("120", "2 h")
                     }
                 }
 
@@ -198,6 +216,11 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                         }
                     }
                 }) { +(if (reloading) "Reloading..." else "Reload my stats") }
+
+                h3(className = "pf-section") { +"Help" }
+                settingRow("Tour", "Shows the party finder tour from the first time again.") {
+                    button(onClick = { props.onTour() }) { +"Start tour" }
+                }
             }
         }
     }

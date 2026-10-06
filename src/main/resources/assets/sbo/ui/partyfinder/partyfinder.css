@@ -411,6 +411,42 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-fav-name { flex-grow: 1; }
 .pf-grip { color: var(--input-border-hover); opacity: 0.8; }
 
+/* ---- tour ---- */
+.pf-tour { position: fixed; inset: 0; }
+.pf-tour-dim { position: fixed; background-color: var(--backdrop); transition: left 150ms, top 150ms, width 150ms, height 150ms; }
+.pf-tour-ring {
+    position: fixed;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    box-shadow: 0 0 6px var(--accent-soft);
+    transition: left 150ms, top 150ms, width 150ms, height 150ms;
+}
+.pf-tour-start, .pf-tour-tip {
+    padding: 6px 8px;
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: 0 2px 10px var(--shadow);
+}
+.pf-tour-start {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: min(220px, calc(100vw - 8px));
+    transform: translate(-50%, -50%);
+    /* pf-fade would replace the centering transform */
+    animation: pf-tour-in 150ms ease-out;
+}
+@keyframes pf-tour-in { from { opacity: 0; } }
+.pf-tour-tip { position: fixed; transition: left 150ms, top 150ms; animation: pf-fade 150ms ease-out; }
+.pf-tour-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px; }
+.pf-tour-title { flex-grow: 1; color: var(--title); }
+.pf-tour-step { color: var(--muted); font-size: 7px; white-space: nowrap; }
+.pf-tour-text { margin: 2px 0 0 0; color: var(--text-soft); line-height: 10px; }
+.pf-tour-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 6px; }
+.pf-tour-skip { background-color: transparent; border-color: transparent; color: var(--muted); }
+.pf-tour-skip:hover { color: var(--text-strong); }
+
 /* ---- scrollbars ---- */
 /* GuiLib widgets that scroll on their own, same idle-hiding scrollbar as .guilib-autohide (rule copied from GuiLib ua.css) */
 textarea, .guilib-select-menu, .guilib-modal, .guilib-tab-list {
