@@ -27,6 +27,9 @@ import net.sbo.mod.overlays.*
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.partyfinder.PartyCheck
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.partyfinder.PartyFinderSocket
+import net.sbo.mod.partyfinder.OwnStats
+import net.sbo.mod.partyfinder.StatReporter
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
@@ -54,6 +57,13 @@ object SBOKotlin : ClientModInitializer {
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
 	private val configurator = Configurator(MOD_ID)
+
+	// Before the config registers, it drops the options that moved out of it (master volume, auto sync)
+	init {
+		SoundHandler.readLegacyMasterVolume()
+		CloudSync.readLegacyAutoSync()
+	}
+
 	val settings = Settings.register(configurator)
 
 	lateinit var version: String
@@ -118,6 +128,9 @@ object SBOKotlin : ClientModInitializer {
 		WaypointManager.init()
 		HypixelModApi.init()
 		PartyFinderManager.init()
+		PartyFinderSocket.init()
+		OwnStats.init()
+		StatReporter.init()
 		PartyCheck.init()
 		BurrowDetector.init()
 		DianaTracker.init()

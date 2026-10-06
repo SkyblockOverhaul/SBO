@@ -10,27 +10,35 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 object CloudSyncKeys {
-    const val MIN_PASSWORD_LENGTH = 3
+    const val MIN_SIGN_KEY_LENGTH = 3
     private const val ITERATIONS = 600_000
 
     // uuid -> base64 key
     private val store = LocalStore("cloud-auth.json")
+    // uuid -> sign key as typed, so the window can show it
+    private val texts = LocalStore("cloud-sign-key.json")
 
     fun key(uuid: String = Player.accountUuid()): ByteArray? =
         store[uuid]?.let { runCatching { Base64.getDecoder().decode(it) }.getOrNull() }
 
     fun hasKey(): Boolean = key() != null
 
-    fun setPassword(password: CharArray, uuid: String = Player.accountUuid()) {
-        store[uuid] = Base64.getEncoder().encodeToString(derive(password, uuid))
+    // null if no key is set or it was set before the text was kept
+    fun text(uuid: String = Player.accountUuid()): String? = texts[uuid]
+
+    // Slow (key derivation), call off the render thread
+    fun setSignKey(signKey: String, uuid: String = Player.accountUuid()) {
+        store[uuid] = Base64.getEncoder().encodeToString(derive(signKey.toCharArray(), uuid))
+        texts[uuid] = signKey
     }
 
     fun removeKey(uuid: String = Player.accountUuid()) {
         store[uuid] = null
+        texts[uuid] = null
     }
 
-    private fun derive(password: CharArray, uuid: String): ByteArray {
-        val spec = PBEKeySpec(password, "sbo-cloud-sync:$uuid".toByteArray(), ITERATIONS, 256)
+    private fun derive(signKey: CharArray, uuid: String): ByteArray {
+        val spec = PBEKeySpec(signKey, "sbo-cloud-sync:$uuid".toByteArray(), ITERATIONS, 256)
         try {
             return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).encoded
         } finally {

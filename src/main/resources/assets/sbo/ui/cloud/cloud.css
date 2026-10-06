@@ -1,0 +1,257 @@
+/* Colors of the SBO Dark theme, same variables as sounds.css and the party finder, so all windows look alike. */
+body {
+    --bg: #1e1f22;
+    --panel: #2b2d31;
+    --panel-2: #313338;
+    --card: #26282c;
+    --card-hover: #2a2c31;
+    --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
+    --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
+    --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
+    --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
+    --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
+    --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
+    --guilib-border: var(--input-border);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cs-window {
+    display: flex;
+    flex-direction: column;
+    /* min() instead of max-height: children are laid out against the capped height */
+    width: min(94vw, 300px);
+    max-height: 92vh;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    animation: cs-fade 150ms ease-out;
+}
+.cs-wide { width: min(94vw, 420px); height: min(92vh, 340px); }
+@keyframes cs-fade { from { opacity: 0; transform: translateY(6px); } }
+
+.cs-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 4px 3px 10px;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.cs-title { font-weight: bold; color: var(--title); white-space: nowrap; }
+.cs-spacer { flex-grow: 1; }
+.cs-icon { padding: 1px 5px; background-color: transparent; border-color: transparent; }
+.cs-header .cs-icon:first-child { margin-left: -6px; }
+.cs-close:hover { background-color: var(--danger); }
+.cs-size-label { color: var(--muted); font-size: 7px; }
+.cs-header-button { padding: 0 5px; font-size: 7px; }
+.cs-size { min-width: 46px; padding-top: 0; padding-bottom: 0; }
+
+.cs-body { flex-grow: 1; min-height: 0; padding: 6px 8px 8px 8px; }
+.cs-center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--subtle); }
+.cs-hint { margin: 1px 0 0 0; color: var(--muted); font-size: 7px; }
+.cs-error { color: var(--bad); }
+
+.cs-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+.cs-dot { width: 6px; height: 6px; flex-shrink: 0; border-radius: 3px; background-color: var(--dim); }
+.cs-status.ok .cs-dot { background-color: var(--ok); }
+.cs-status.warn .cs-dot { background-color: var(--toast-warning); }
+.cs-status.bad .cs-dot { background-color: var(--bad); }
+.cs-status-text { flex-grow: 1; min-width: 0; }
+.cs-status-title { color: var(--text-strong); }
+.cs-refresh { align-self: center; color: var(--subtle); }
+.cs-refresh:hover { color: var(--text-strong); }
+.cs-refresh-icon { width: 8px; height: 8px; }
+
+.cs-question {
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background-color: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    border-radius: 4px;
+}
+.cs-question-top { display: flex; align-items: flex-start; gap: 4px; margin-bottom: 4px; }
+.cs-question-text { flex-grow: 1; min-width: 0; color: var(--banner-text); }
+.cs-warning {
+    padding: 3px 6px;
+    margin-bottom: 4px;
+    color: var(--toast-warning);
+    border: 1px solid var(--toast-warning);
+    border-radius: 4px;
+}
+
+.cs-setting { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 3px; }
+.cs-setting:hover { background-color: var(--card); }
+.cs-setting-text { flex-grow: 1; min-width: 0; }
+.cs-setting-title { color: var(--text-strong); }
+.cs-info { margin: 0 4px 2px 4px; }
+.cs-info .guilib-details-summary { padding: 1px 0; color: var(--title); font-size: 7px; }
+.cs-info .guilib-details-content { padding: 0 6px 4px 10px; }
+.cs-info-line { margin-top: 2px; color: var(--subtle); font-size: 7px; }
+.cs-steps {
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background-color: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    border-radius: 4px;
+}
+.cs-steps-title { color: var(--banner-text); margin-bottom: 2px; }
+.cs-steps .cs-info-line { font-size: 8px; color: var(--text-soft); }
+.cs-steps .cs-hint { margin-top: 4px; }
+.cs-key { flex-direction: column; align-items: stretch; gap: 2px; }
+.cs-key-row { display: flex; gap: 4px; }
+.cs-key-input { flex-grow: 1; min-width: 0; }
+.cs-key .guilib-tooltip-anchor { align-self: flex-start; }
+.cs-info-icon { width: 6px; height: 6px; margin-left: 2px; color: var(--subtle); }
+.cs-tip-line { margin-top: 2px; }
+
+.cs-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.cs-actions { display: flex; gap: 4px; margin: 2px 0 6px 0; padding: 0 4px; }
+.cs-primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.cs-primary:hover { background-color: var(--accent-hover); }
+.cs-danger { color: var(--menu-danger); }
+.cs-danger:hover { background-color: var(--danger); color: var(--text-strong); }
+.cs-danger-filled { background-color: var(--danger); border-color: var(--danger); color: var(--text-strong); }
+
+.cs-modal { width: min(90vw, 220px); padding: 8px; background-color: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+.cs-modal-title { font-weight: bold; color: var(--text-strong); margin-bottom: 3px; }
+.cs-modal-text { color: var(--subtle); margin-bottom: 8px; }
+.cs-modal-buttons { justify-content: flex-end; }
+
+.cs-compare-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; padding: 0 2px; }
+.cs-count { color: var(--text-strong); font-weight: bold; }
+.cs-area { margin-bottom: 3px; border: 1px solid var(--border); border-radius: 4px; background-color: var(--card); }
+.cs-area .guilib-details-summary { padding: 3px 6px; }
+/* The summary row puts our parts in its title */
+.cs-area .guilib-details-title { display: flex; flex-grow: 1; align-items: center; gap: 5px; }
+.cs-area-title { color: var(--text-strong); }
+.cs-area-count { padding: 0 4px; border-radius: 3px; background-color: var(--tint-strong); color: var(--subtle); font-size: 7px; }
+.cs-area-cloud { color: var(--title); font-size: 7px; }
+.cs-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 6px;
+    border-top: 1px solid var(--border);
+}
+.cs-field:hover { background-color: var(--card-hover); }
+.cs-area:not(.cs-perfield) .cs-field:not(.cs-whole) { grid-template-columns: minmax(0, 1fr) 90px 90px; }
+.cs-field-label { color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-value { color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-pick .guilib-segment { max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-more { padding: 2px 6px 3px 6px; }
+
+.cs-backups-hint { margin: 0 2px 6px 2px; }
+.cs-empty { padding: 12px 0; }
+.cs-backup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    margin-bottom: 3px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+.cs-backup:hover { background-color: var(--card-hover); }
+.cs-backup-text { flex-grow: 1; min-width: 0; }
+.cs-backup-date { color: var(--text-strong); }
+.cs-columns { color: var(--muted); font-size: 7px; }
+.cs-columns:hover { background-color: transparent; }
+
+.cs-footer {
+    display: flex;
+    gap: 4px;
+    padding: 4px 8px;
+    background-color: var(--panel);
+    border-top: 1px solid var(--border);
+}

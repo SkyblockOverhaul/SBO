@@ -6,15 +6,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
-data class GetAllParties(
-    @SerialName("Success")
-    val success: Boolean = false,
-
-    @SerialName("Parties")
-    val parties: List<Party> = emptyList()
-)
-
-@Serializable
 data class PartyInfo(
     @SerialName("Success")
     val success: Boolean = false,
@@ -33,54 +24,6 @@ data class PlayerInfoResponse(
 
     @SerialName("Error")
     val error: String? = null
-)
-
-@Serializable
-data class PartyAddResponse(
-    @SerialName("Success")
-    val success: Boolean = false,
-
-    @SerialName("Message")
-    val message: String? = null,
-
-    @SerialName("PartyInfo")
-    val partyInfo: List<PartyPlayerStats>? = null,
-
-    @SerialName("PartyReqs")
-    val partyReqs: Reqs? = null,
-
-    @SerialName("PartySize")
-    val partySize: Int? = null,
-
-    @SerialName("Error")
-    val error: String? = null
-)
-
-@Serializable
-data class PartyUpdateResponse(
-    @SerialName("Success")
-    val success: Boolean = false,
-
-    @SerialName("Message")
-    val message: String? = null,
-
-    @SerialName("PartyReqs")
-    val partyReqs: Reqs? = null,
-
-    @SerialName("PartySize")
-    val partySize: Int? = null,
-
-    @SerialName("Error")
-    val error: String? = null
-)
-
-@Serializable
-data class PartyRequest(
-    val uuids: List<String>,
-    val reqs: Reqs,
-    val partyType: String = "Diana",
-    val note: String = "",
-    val partySize: Int = 6
 )
 
 /** Body of `POST /v2/partyInfo` and `POST /v2/partyInfoByUuids` */
@@ -181,20 +124,6 @@ data class QuickStatus(
 )
 
 @Serializable
-data class Party(
-    @SerialName("partyinfo")
-    val partyInfo: List<PartyPlayerStats>,
-    val reqs: Reqs,
-    val leader: String,
-    @SerialName("partymembers")
-    val partyMembersCount: Int,
-    val leaderName: String,
-    val note: String,
-    val partySize: Int
-)
-
-
-@Serializable
 data class PartyPlayerStats(
     val name: String = "",
     val sbLvl: Int = -1,
@@ -214,15 +143,6 @@ data class PartyPlayerStats(
     val griffinItem: JsonPrimitive? = null,
     val killLeaderboard: Int = 999999,
     val mythosKills: Int = 0
-)
-
-@Serializable
-data class Reqs(
-    val lvl: Int = -1,
-    val kills: Int = 0,
-    val eman9: Boolean = false,
-    val looting5: Boolean = false,
-    val mp: Int = 0
 )
 
 @Serializable
@@ -269,12 +189,6 @@ data class CandidateData(
     @SerialName("name") val name: String,
     @SerialName("perks") val perks: List<PerkData>,
     @SerialName("votes") val votes: Int? = null
-)
-
-data class HighlightElement(
-    val page: String,
-    val obj: UIComponent,
-    val type: String
 )
 
 data class Item(

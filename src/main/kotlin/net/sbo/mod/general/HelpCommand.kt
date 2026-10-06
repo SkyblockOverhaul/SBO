@@ -26,7 +26,7 @@ object HelpCommand {
         mapOf("cmd" to "sbobacktrackachievements", "desc" to "Backtrack achievements"),
         mapOf("cmd" to "sboachievements", "desc" to "Opens the achievements GUI"),
         mapOf("cmd" to "sbolockachievements", "desc" to "Locks all Achievements (needs confirmation)"),
-        mapOf("cmd" to "sbopde", "desc" to "Opens the Past Diana Events GUI"),
+        mapOf("cmd" to "sboevents", "desc" to "Opens the Diana Events GUI (also /sbopde)"),
         mapOf("cmd" to "sboactiveuser", "desc" to "Shows the active user of the mod"), // todo: add sboactiveuser command
         mapOf("cmd" to "sbopf", "desc" to "Opens the PartyFinder GUI"),
         mapOf("cmd" to "sbopartycommands", "desc" to "Displays all diana partycommands"), // todo: add sbopartycommands command
@@ -34,8 +34,7 @@ object HelpCommand {
         mapOf("cmd" to "sboresetstatstracker", "desc" to "Resets the stats tracker"),
         mapOf("cmd" to "sboKey", "desc" to "Set your sbokey"),
         mapOf("cmd" to "sboClearKey", "desc" to "Reset your sbokey"),
-        mapOf("cmd" to "sbosyncpassword <password>", "desc" to "Set the cloud sync password on this PC"),
-        mapOf("cmd" to "sboclearsyncpassword", "desc" to "Remove the cloud sync password from this PC"),
+        mapOf("cmd" to "sbocloud", "desc" to "Opens the Cloud Sync window (also to load backups)"),
         mapOf("cmd" to "sbotestmedalclip [drop|all]", "desc" to "Test Medal clip saving"),
         mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui")
     )

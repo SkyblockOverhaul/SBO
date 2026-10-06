@@ -2,6 +2,7 @@ package net.sbo.mod.utils
 
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.data.LocalStore
+import net.sbo.mod.utils.data.cloud.CloudSync
 
 // Saved in <game dir>/.sbo/sbo-auth.json
 object SboKey {
@@ -14,6 +15,7 @@ object SboKey {
 
     fun set(key: String) {
         store[Player.accountUuid()] = key
+        CloudSync.onSboKeySet()
     }
 
     fun clear() {
@@ -22,7 +24,7 @@ object SboKey {
 
     private fun migrateLegacy() {
         if (sboData.sboKey.isBlank()) return
-        if (store[Player.accountUuid()] == null) set(sboData.sboKey)
+        if (store[Player.accountUuid()] == null) store[Player.accountUuid()] = sboData.sboKey
         sboData.sboKey = ""
         sboData.save()
     }
