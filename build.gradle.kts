@@ -34,6 +34,8 @@ loom {
         generateRunConfig.set(true)
         preferGradleTask = true
     }
+
+    uncompressNestedJars = true
 }
 
 bloom {
