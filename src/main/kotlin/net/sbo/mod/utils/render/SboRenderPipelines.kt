@@ -12,6 +12,9 @@ object SboRenderPipelines {
         RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(SBOKotlin.id("pipeline/line_through_walls"))
             .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false, 0.0f, 0.0f))
+            //#if MC > 26.2
+            //$$ .withColorTargetState(com.mojang.renderpearl.api.pipeline.ColorTargetState.DEFAULT)
+            //#endif
             .build()
     )
 }
