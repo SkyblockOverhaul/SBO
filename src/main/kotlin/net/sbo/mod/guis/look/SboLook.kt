@@ -43,12 +43,14 @@ object UiScale {
 fun ComponentScope.useSboScale(own: Float? = null) = useScreenScale(UiScale.resolve(own))
 
 /**
- * Puts the theme on the body, so modals, tooltips and toasts follow it too. [ownId] is a theme picked only for this
- * window, null uses the global one. Needs `sbo:ui/themes/themes.css` in the window's styles.
+ * Puts the theme on the body, so modals, tooltips and toasts follow it too, and applies the background blur setting.
+ * [ownId] is a theme picked only for this window, null uses the global one. Needs `sbo:ui/themes/themes.css` in the
+ * window's styles.
  */
 fun ComponentScope.useSboTheme(ownId: String? = null): SboThemes.Theme {
     val id = ownId ?: Themes.theme
     val theme = useMemo(id) { SboThemes.find(id) }
+    useBackgroundBlur(Themes.backgroundBlur)
     SboThemes.BASES.forEach { base -> useBodyClass("sbo-theme-$base", theme.base == base) }
     val document = useDocument()
     useEffect(theme) {
