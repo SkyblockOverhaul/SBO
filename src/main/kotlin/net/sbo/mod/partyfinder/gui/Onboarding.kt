@@ -42,7 +42,7 @@ internal val ONBOARDING_STEPS = listOf(
     ),
     OnboardingStep(
         "Subcategories",
-        "Pick one tier or floor, or All for every party of this type. The star next to them pins what you picked to Favorites.",
+        "Pick one or All for every party of this type. The star next to them pins what you picked to Favorites.",
         ".pf-subs-row"
     ),
     OnboardingStep(
