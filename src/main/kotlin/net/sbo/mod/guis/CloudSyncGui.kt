@@ -163,8 +163,7 @@ object CloudSyncGui {
                     tooltip(content = {
                         div { +"Signs your cloud save. If it gets changed or damaged, SBO notices and does not load it." }
                         div(className = "cs-tip-line") { +"Optional: only set one if you really want your cloud save signed. Without a key, Cloud Sync works just the same." }
-                        div(className = "cs-tip-line") { +"Only PCs with the same key can load it." }
-                        div(className = "cs-tip-line") { +"Use the same key on every PC and write it down somewhere." }
+                        div(className = "cs-tip-line") { +"Only PCs or instances with the same key can load it." }
                         div(className = "cs-tip-line") { +"If you forget it, your cloud save cannot be loaded anymore and SBO cannot reset the key. You can only set a new key and upload again, which overwrites your old cloud save with the current data from this PC." }
                     }) {
                         span(className = "cs-setting-title") {
@@ -188,6 +187,7 @@ object CloudSyncGui {
                             onClick = { CloudSync.saveSignKey(signKey) }
                         ) { +"Save" }
                     }
+                    div(className = "cs-hint") { +"Use the same key on every PC or instance and remember it." }
                 }
 
                 details("How it works", className = "cs-info") {
