@@ -743,9 +743,9 @@ object Helper {
 
     fun getChance(mf: Int, looting: Int,rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances: Map<String, Double> = when (rarity.lowercase().trim()) {
-            "epic" -> mapOf("stick" to 0.0004, "relic" to 0.0002)
-            "legendary" -> mapOf("chim" to 0.01, "stick" to 0.0006, "relic" to 0.0003, "food" to 0.0025)
-            "mythic" -> mapOf("chim" to 0.0125, "stick" to 0.0008, "relic" to 0.0004, "food" to 0.005, "wool" to 0.002, "core" to 0.002, "stinger" to 0.005)
+            "epic" -> mapOf("stick" to 0.0008, "relic" to 0.0002)
+            "legendary" -> mapOf("chim" to 0.01, "stick" to 0.0012, "relic" to 0.0003, "food" to 0.0025)
+            "mythic" -> mapOf("chim" to 0.0125, "stick" to 0.0016, "relic" to 0.0004, "food" to 0.005, "wool" to 0.002, "core" to 0.002, "stinger" to 0.005)
             else -> mapOf("chim" to 0.0, "stick" to 0.0, "relic" to 0.0, "food" to 0.0, "wool" to 0.0, "core" to 0.0, "stinger" to 0.0)
         }
         val multiplier = 1 + mf / 100.0
