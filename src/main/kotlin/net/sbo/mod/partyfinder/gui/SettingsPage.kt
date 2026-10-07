@@ -51,7 +51,6 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     val section = props.section
     var autoInvite by useState(config.autoInvite)
     var autoRequeue by useState(config.autoRequeue)
-    var reminderMinutes by useState(config.reminderMinutes)
     var startWithFavorites by useState(config.startWithFavorites)
     var autoRefresh by useState(config.autoRefreshSeconds)
     var reloading by useState(false)
@@ -186,21 +185,6 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                         option("0", "Off")
                         option("30", "30 s")
                         option("60", "60 s")
-                    }
-                }
-                settingRow(
-                    "New parties reminder",
-                    "A chat message when new parties were listed in your favorite party types since you last looked."
-                ) {
-                    segmented(value = reminderMinutes.toString(), onChange = { value ->
-                        reminderMinutes = value.toInt()
-                        config.reminderMinutes = reminderMinutes
-                        config.save()
-                    }) {
-                        option("0", "Off")
-                        option("30", "30 min")
-                        option("60", "1 h")
-                        option("120", "2 h")
                     }
                 }
 

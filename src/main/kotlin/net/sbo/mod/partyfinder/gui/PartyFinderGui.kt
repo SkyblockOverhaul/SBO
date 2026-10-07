@@ -28,7 +28,6 @@ import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
-import net.sbo.mod.partyfinder.PartyFinderReminder
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.api.CategoriesData
@@ -49,14 +48,6 @@ object PartyFinderGui {
         "nunito" to "Nunito",
         "jetbrains-mono" to "JetBrains Mono"
     )
-
-    @Volatile
-    var isOpen = false
-        private set
-
-    @Volatile
-    var onboardingActive = false
-        internal set
 
     /** Only opens in Skyblock. Must run on the client thread. */
     fun open() {
@@ -124,16 +115,6 @@ object PartyFinderGui {
         var onboarding by useState(!DataManager.sboData.pfOnboardingSeen)
         var tourIntro by useState(true)
         val beforeTour = useRef<String?>(null)
-
-        // Open and close both count as a visit, parties listed while the window is open were seen too
-        useEffect {
-            isOpen = true
-            PartyFinderReminder.markVisited()
-            onCleanup {
-                isOpen = false
-                PartyFinderReminder.markVisited()
-            }
-        }
 
         useEffect {
             PartyCategories.get { loaded ->
@@ -383,7 +364,6 @@ object PartyFinderGui {
                             page = "parties"
                             beforeTour.current?.let { selected = it }
                             beforeTour.current = null
-                            PartyFinderReminder.markVisited()
                         },
                         intro = tourIntro
                     ),

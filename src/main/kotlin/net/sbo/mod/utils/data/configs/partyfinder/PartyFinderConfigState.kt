@@ -1,6 +1,5 @@
 package net.sbo.mod.utils.data.configs.partyfinder
 
-import net.sbo.mod.partyfinder.PartyFinderReminder
 import net.sbo.mod.utils.data.DataManager
 
 data class PartyFinderConfigState(
@@ -23,9 +22,7 @@ data class PartyFinderConfigState(
     var recombobulated: Boolean = false,
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf(),
     var autoInvite: Boolean = true,
-    var autoRequeue: Boolean = true,
-    // Minutes between "new parties" chat reminders, 0 = off
-    var reminderMinutes: Int = PartyFinderReminder.DEFAULT_MINUTES
+    var autoRequeue: Boolean = true
 ) {
     fun save() = DataManager.save(DataManager::partyFinderConfigState)
 }

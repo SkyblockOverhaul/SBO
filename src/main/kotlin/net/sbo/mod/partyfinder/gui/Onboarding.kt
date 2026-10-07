@@ -180,9 +180,7 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
         // Stored at once, so closing the window during the tour doesn't bring it back
         DataManager.sboData.pfOnboardingSeen = true
         DataManager.sboData.save()
-        PartyFinderGui.onboardingActive = true
         ONBOARDING_STEPS.getOrNull(step)?.let { props.onShow(it.page, it.section) }
-        onCleanup { PartyFinderGui.onboardingActive = false }
     }
 
     fun finish() = props.onDone()
