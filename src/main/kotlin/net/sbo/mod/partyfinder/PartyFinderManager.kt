@@ -6,6 +6,9 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.api.CheckBody
 import net.sbo.mod.partyfinder.api.PartyBody
@@ -39,6 +42,7 @@ object PartyFinderManager {
     // The party list shows two lines of a note
     const val NOTE_MAX_LINES = 2
     private val JOIN_REQUEST_COOLDOWN = TimeUnit.MINUTES.toNanos(1)
+    private val QUIET_QUEUE_HINT_AFTER = TimeUnit.MINUTES.toMillis(10)
 
     var creatingParty = false
     var inQueue = false
@@ -53,6 +57,9 @@ object PartyFinderManager {
 
     var queuedParty: PartyView? = null
         private set
+
+    // When the party was queued and nobody joined since, 0 once someone joined or the hint was shown
+    private var quietSince = 0L
 
     private val partySize: Int get() = draft?.partySize ?: 0
     private var partyMemberCount = 0
@@ -204,6 +211,8 @@ object PartyFinderManager {
             }) {}
         }
 
+        Register.onTick(20 * 310) { checkQuietQueue() }
+
         HypixelModApi.onPartyInfo { isInParty, isLeader, members ->
             this.isInParty = isInParty
             this.isLeader = isLeader
@@ -308,6 +317,7 @@ object PartyFinderManager {
             val timeTaken = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime)
             inQueue = true
             queuedParty = party
+            quietSince = System.currentTimeMillis()
             SBOEvent.emit(PartyFinderRefreshListEvent())
 
             if (ghostParty) {
@@ -567,6 +577,7 @@ object PartyFinderManager {
         }
         partyJoinRegexes.forEach {
             if (it.matches(text)) {
+                quietSince = 0L
                 updateBool = true
                 partyMemberCount += 1
                 match = true
@@ -613,6 +624,19 @@ object PartyFinderManager {
                 }
             }
         }
+    }
+
+    private fun checkQuietQueue() {
+        if (!inQueue || quietSince == 0L || System.currentTimeMillis() - quietSince < QUIET_QUEUE_HINT_AFTER) return
+        quietSince = 0L
+        SBOKotlin.toast(
+            Component.literal("SBO Party Finder").withStyle(ChatFormatting.GOLD),
+            Component.literal("Nobody joined in 10 minutes. Try lowering your requirements.").withStyle(ChatFormatting.YELLOW)
+        )
+        Chat.chat(
+            Chat.textComponent("§6[SBO] §eNobody joined your party in the last 10 minutes. Maybe your requirements are too high, try lowering or adjusting them. "),
+            Chat.textComponent("§a[Open Party Finder]", "Open the Party Finder", "/sbopf")
+        )
     }
 
     /** Same filter as the backend: letters, digits, spaces, line breaks and ,.!?-_+ */
