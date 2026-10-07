@@ -41,7 +41,7 @@ internal val ONBOARDING_STEPS = listOf(
         ".pf-side-scroll .pf-star"
     ),
     OnboardingStep(
-        "Tiers and Floors",
+        "Subcategories",
         "Pick one tier or floor, or All for every party of this type. The star next to them pins what you picked to Favorites.",
         ".pf-subs-row"
     ),
@@ -80,7 +80,7 @@ internal val ONBOARDING_STEPS = listOf(
     OnboardingStep(
         "Join",
         "Asks the leader to invite you. If the leader has Auto Invite on and you meet the requirements, you are invited right away. " +
-            "A grey button means the party is full or you miss a requirement, hover it to see which.",
+            "A grey button means you miss a requirement, hover it to see which.",
         ".pf-join"
     ),
     OnboardingStep(
