@@ -138,7 +138,7 @@ object HubGui {
                     div(className = "hub-hero-text") {
                         div(className = "hub-eyebrow") { +"Hypixel Skyblock · Diana · Party Finder" }
                         h1(className = "hub-title") { +"Skyblock Overhaul" }
-                        div(className = "hub-tagline") { +"Find a Diana party in seconds with the SBO Party Finder, plus burrow guesses, trackers and QOL features." }
+                        div(className = "hub-tagline") { +"Find a party in seconds with the SBO Party Finder or use our Amazing Diana Features." }
                         div(className = "hub-chips") {
                             span(className = "hub-chip hub-chip-version") { +"SBO ${SBOKotlin.version}" }
                             span(className = "hub-chip") { +"Minecraft ${SBOKotlin.mcVersion}" }
