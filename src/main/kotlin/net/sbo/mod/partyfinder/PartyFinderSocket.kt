@@ -13,6 +13,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.MojangAuth
+import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
 import java.net.URI
@@ -137,17 +138,17 @@ object PartyFinderSocket {
     }
 
     private fun connect() {
-        MojangAuth.withSession(onFail = { opened(null) }) { session ->
+        MojangAuth.ensureKey(onFail = { opened(null) }) { key ->
             val uri = URI.create(SBOKotlin.API_URL.replaceFirst("http", "ws") + "/pf/ws")
             client.newWebSocketBuilder()
                 .connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS))
-                .header("x-sbo-key", SboKey.get())
-                .header("x-sbo-session", session)
+                .header("x-sbo-key", key)
+                .header("x-sbo-uuid", Player.accountUuid())
                 .buildAsync(uri, Listener())
                 .whenComplete { ws, error ->
                     if (error != null) {
-                        // A refused login: the next try logs in again
-                        if ((error.cause as? WebSocketHandshakeException)?.response?.statusCode() == 401) MojangAuth.forget()
+                        // A refused key (unknown, replaced or of another account): the next try logs in again
+                        if ((error.cause as? WebSocketHandshakeException)?.response?.statusCode() == 401) SboKey.clear()
                         SBOKotlin.logger.warn("[SBO] Party finder socket could not connect: ${error.cause?.message ?: error.message}")
                     }
                     opened(ws)

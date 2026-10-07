@@ -12,9 +12,11 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.SboApi
 
-/** Mojang login like a server join, proves the SBO key belongs to the playing account. The token only goes to Mojang. */
+/**
+ * Mojang login like a server join, gets the SBO key of the playing account without Discord. Only needed
+ * without a key or after the backend replaced a shared one. The token only goes to Mojang.
+ */
 object MojangAuth {
-    const val SESSION_REQUIRED = "SESSION_REQUIRED"
     const val KEY_NOT_YOURS = "KEY_NOT_YOURS"
     const val MOJANG_BUSY = "MOJANG_BUSY"
     const val CHECK_FAILED_TEXT = "SBO could not check your Minecraft account with Mojang. Please try again in a minute."
@@ -29,26 +31,14 @@ object MojangAuth {
     private val json = Json { ignoreUnknownKeys = true }
     private val lock = Any()
 
-    // Only in memory, never written to a config or file
-    private var session: String? = null
-    private var sessionAccount: String? = null
     private var running = false
     private val waiting = mutableListOf<(String?, Failure?) -> Unit>()
     private var lastFailure: Failure? = null
     private var failedAt = 0L
 
-    fun current(): String? = synchronized(lock) { session?.takeIf { sessionAccount == Player.accountUuid() } }
-
-    fun hasSession(): Boolean = current() != null
-
-    fun forget() = synchronized(lock) {
-        session = null
-        sessionAccount = null
-    }
-
-    /** Logs in first when needed. Callbacks run on any thread. */
-    fun withSession(onFail: (Failure) -> Unit, block: (String) -> Unit) {
-        current()?.let { return block(it) }
+    /** Runs [block] with the key, logs in with Mojang first when there is none. Callbacks run on any thread. */
+    fun ensureKey(onFail: (Failure) -> Unit, block: (String) -> Unit) {
+        SboKey.get().takeIf { it.isNotBlank() }?.let { return block(it) }
         var recent: Failure? = null
         var start = false
         synchronized(lock) {
@@ -63,14 +53,14 @@ object MojangAuth {
         if (start) login()
     }
 
-    private fun done(newSession: String?, failure: Failure?) {
+    private fun done(key: String?, failure: Failure?) {
         val callbacks = synchronized(lock) {
             running = false
             lastFailure = failure
             if (failure != null) failedAt = System.currentTimeMillis()
             waiting.toList().also { waiting.clear() }
         }
-        callbacks.forEach { it(newSession, failure) }
+        callbacks.forEach { it(key, failure) }
     }
 
     private fun fail(failure: Failure) {
@@ -99,22 +89,17 @@ object MojangAuth {
             .result { response ->
                 val data = dataOf(response.body?.string().orEmpty()) ?: return@result
                 val key = data["key"]?.jsonPrimitive?.contentOrNull
-                val newSession = data["session"]?.jsonPrimitive?.contentOrNull
                 val uuid = data["uuid"]?.jsonPrimitive?.contentOrNull
                 // Never take a key for another account, nor keep one after switching accounts
-                if (key == null || newSession == null || uuid != account || Player.accountUuid() != account) {
+                if (key == null || uuid != account || Player.accountUuid() != account) {
                     return@result fail(Failure(MOJANG_BUSY, CHECK_FAILED_TEXT))
                 }
-                synchronized(lock) {
-                    session = newSession
-                    sessionAccount = account
-                }
-                if (SboKey.get() == key) return@result done(newSession, null)
+                if (SboKey.get() == key) return@result done(key, null)
                 // The key is written before anyone waiting sends a request with it
                 SBOKotlin.mc.execute {
                     SboKey.set(key)
                     tell(SET_UP_TEXT)
-                    done(newSession, null)
+                    done(key, null)
                 }
             }
             .error { fail(Failure("NETWORK", it.message ?: "server not reachable")) }

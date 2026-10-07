@@ -66,7 +66,7 @@ object ProblemText {
         PfError.INVALID_KEY -> if (error.message.startsWith("Key is banned")) "Your SBO key is banned${error.message.removePrefix("Key is banned")}."
             else MojangAuth.KEY_FAILED_TEXT
         PfError.KEY_NOT_YOURS -> MojangAuth.KEY_FAILED_TEXT
-        PfError.SESSION_REQUIRED, PfError.MOJANG_BUSY -> MojangAuth.CHECK_FAILED_TEXT
+        PfError.MOJANG_BUSY -> MojangAuth.CHECK_FAILED_TEXT
         PfError.NO_PROFILE -> "No SkyBlock stats found: ${error.message}. Make sure your API settings are on."
         PfError.HYPIXEL_UNAVAILABLE -> "Hypixel does not answer right now. Please try again in a few minutes."
         PfError.RATE_LIMITED -> "Too many requests. Please wait a moment."

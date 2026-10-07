@@ -13,6 +13,7 @@ import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.utils.data.CloudUploadRequest
 import net.sbo.mod.utils.data.MembersRequest
 import net.sbo.mod.utils.MojangAuth
+import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -21,7 +22,7 @@ import java.nio.charset.StandardCharsets
  * Client for the SBO backend.
  *
  * the SBO key travels in the `x-sbo-key` header, the mod version in the `X-SBO-Version` header,
- * the Mojang login session in the `x-sbo-session` header (only for calls that act on the player's data)
+ * the playing account in the `x-sbo-uuid` header (the backend replaces a key sent from another account)
  */
 object SboApi {
     private val json = Json { encodeDefaults = false }
@@ -41,6 +42,7 @@ object SboApi {
     private fun headers(): Map<String, String> = buildMap {
         SboKey.get().takeIf { it.isNotBlank() }?.let { put("x-sbo-key", it) }
         modVersion()?.let { put("X-SBO-Version", it) }
+        put("x-sbo-uuid", Player.accountUuid())
     }
 
     internal fun post(path: String, body: String = "{}"): HttpRequestHandle =
@@ -55,24 +57,24 @@ object SboApi {
     internal fun authedGet(path: String): HttpRequestHandle =
         authed { headers -> Http.sendGetRequest("$API_URL$path", headers) }
 
-    /** One new login and retry on a missing session or wrong key; failures come back as a normal answer in both formats. */
+    /**
+     * Gets a key with a Mojang login when there is none. A key the backend doesn't know (replaced after sharing)
+     * or one of another account is dropped, then one login and retry; failures come back as a normal answer in both formats.
+     */
     private fun authed(send: (Map<String, String>) -> HttpRequestHandle): HttpRequestHandle {
         val outer = HttpRequestHandle()
         fun attempt(retried: Boolean) {
-            if (SboKey.get().isBlank()) MojangAuth.forget()
-            MojangAuth.withSession(onFail = { outer.complete(failure(it.code, it.message)) }) { session ->
-                send(headers() + ("x-sbo-session" to session))
+            MojangAuth.ensureKey(onFail = { outer.complete(failure(it.code, it.message)) }) {
+                send(headers())
                     .result { response ->
                         val text = response.body?.string().orEmpty()
                         val (code, message) = errorOf(text)
                         val wrongKey = code == MojangAuth.KEY_NOT_YOURS || (code == "INVALID_KEY" && message?.startsWith("Key is banned") != true)
                         when {
-                            !retried && (code == MojangAuth.SESSION_REQUIRED || wrongKey) -> {
-                                MojangAuth.forget()
-                                if (code == MojangAuth.KEY_NOT_YOURS) SboKey.clear()
+                            !retried && wrongKey -> {
+                                SboKey.clear()
                                 attempt(true)
                             }
-                            code == MojangAuth.SESSION_REQUIRED -> outer.complete(failure(code, MojangAuth.CHECK_FAILED_TEXT))
                             wrongKey -> outer.complete(failure(code, MojangAuth.KEY_FAILED_TEXT))
                             else -> outer.complete(response.copy(body = ResponseBody(text.byteInputStream())))
                         }
