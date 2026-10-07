@@ -2,6 +2,7 @@ package net.sbo.mod.utils.data
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -297,6 +298,13 @@ object DataManager {
     }
 
     // === CLOUD SYNC ===
+
+    /** Like [exportAll], as JSON trees, so callers can change and print them without parsing text again. */
+    fun exportJson(): Map<String, JsonElement> = DataRegistry.entries.associate { entry ->
+        @Suppress("UNCHECKED_CAST")
+        val typedEntry = entry as ConfigEntry<Any>
+        typedEntry.fileName to gson.toJsonTree(typedEntry.getter())
+    }
 
     fun exportAll(): Map<String, String> = DataRegistry.entries.associate { entry ->
         @Suppress("UNCHECKED_CAST")

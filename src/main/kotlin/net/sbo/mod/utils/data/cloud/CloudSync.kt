@@ -2,6 +2,7 @@ package net.sbo.mod.utils.data.cloud
 
 import com.google.gson.Gson
 import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.serialization.json.Json
 import net.fabricmc.loader.api.FabricLoader
@@ -34,6 +35,7 @@ import java.security.MessageDigest
 import java.util.Base64
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
@@ -50,7 +52,8 @@ object CloudSync {
     private const val PAST_EVENTS_FILE = "pastDianaEvents.json"
     private const val MAX_PAST_EVENTS = 100
 
-    private const val CLOSE_UPLOAD_TIMEOUT_SECONDS = 5L
+    // Longest the game waits on close, for a running and the last upload together
+    private const val CLOSE_WAIT_MS = 4_000L
     // The status endpoint allows few requests, known info is reused this long
     private const val STATUS_MAX_AGE_MS = 5 * 60 * 1000L
     // Refresh button: at most one request in this time
@@ -59,6 +62,9 @@ object CloudSync {
 
     private val json = Json { ignoreUnknownKeys = true }
     private val gson = Gson()
+
+    // Collecting and hashing all data is too slow for the client thread; one thread keeps the steps in order
+    private val worker = Executors.newSingleThreadExecutor { Thread(it, "SBO Cloud Sync").apply { isDaemon = true } }
 
     enum class SyncState { NO_SAVE, NOT_USED_HERE, BOTH_CHANGED, CLOUD_NEWER, PC_CHANGED, SAME, ERROR }
 
@@ -310,11 +316,12 @@ object CloudSync {
                 }
                 val slot = response.slots.find { it.slot == SLOT }
                 remember(slot)
-                SBOKotlin.mc.schedule { autoDecide(slot) }
+                worker.execute { autoDecide(slot) }
             }
             .error { pauseAuto(friendly(it.message)) }
     }
 
+    // Worker thread
     private fun autoDecide(slot: CloudSlotMeta?) {
         val dirty = runCatching { hashOf(collectFiles()) != state().hash }.getOrDefault(true)
         SBOKotlin.logger.info("[CloudSync] join check: cloud=${slot?.version} local=${state().version} dirty=$dirty")
@@ -343,11 +350,12 @@ object CloudSync {
     fun onGameClose(event: GameCloseEvent) {
         SBOKotlin.logger.info("[CloudSync] game close, auto=${autoActive()} paused=$autoPaused")
         if (!autoActive()) return
+        val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(CLOSE_WAIT_MS)
+        fun left() = maxOf(0L, deadline - System.nanoTime())
         // Wait for a running upload
-        uploadInFlight?.await(CLOSE_UPLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        val done = upload(auto = true)
-        val finished = done?.await(CLOSE_UPLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        SBOKotlin.logger.info("[CloudSync] game close upload: ${if (done == null) "nothing to upload" else if (finished == true) "done" else "timed out"}")
+        uploadInFlight?.await(left(), TimeUnit.NANOSECONDS)
+        val finished = upload(auto = true).await(left(), TimeUnit.NANOSECONDS)
+        SBOKotlin.logger.info("[CloudSync] game close upload: ${if (finished) "done" else "timed out"}")
     }
 
     private fun canonical(files: Map<String, String>): String =
@@ -370,26 +378,21 @@ object CloudSync {
     private fun backupFile(config: File): File =
         File(config.parentFile, "${config.nameWithoutExtension}.cloud-backup.${config.extension}")
 
+    // Worker thread. Each data file is serialized once; the config text comes from memory, same as what save() writes
     private fun collectFiles(): Map<String, String> {
-        SBOKotlin.settings.save()
-        // Compact json, the data files are pretty printed on disk
-        val files = DataManager.exportAll().mapValues { (_, raw) -> JsonParser.parseString(raw).toString() }.toMutableMap()
-        files[CloudDiff.CONFIG] = configFile().readText()
-        files[SBO_DATA_FILE]?.let { raw ->
-            val sbo = JsonParser.parseString(raw).asJsonObject
-            LOCAL_ONLY.forEach { sbo.remove(it) }
-            files[SBO_DATA_FILE] = sbo.toString()
-        }
-        files[PAST_EVENTS_FILE]?.let { raw ->
-            val past = JsonParser.parseString(raw).asJsonObject
+        val trees = DataManager.exportJson()
+        (trees[SBO_DATA_FILE] as? JsonObject)?.let { sbo -> LOCAL_ONLY.forEach { sbo.remove(it) } }
+        (trees[PAST_EVENTS_FILE] as? JsonObject)?.let { past ->
             val events = past.getAsJsonArray("events") ?: return@let
             if (events.size() <= MAX_PAST_EVENTS) return@let
             // Newest events are at the end
             val newest = JsonArray()
             events.toList().takeLast(MAX_PAST_EVENTS).forEach(newest::add)
             past.add("events", newest)
-            files[PAST_EVENTS_FILE] = past.toString()
         }
+        // Compact json, the data files are pretty printed on disk
+        val files = trees.mapValues { (_, tree) -> tree.toString() }.toMutableMap()
+        files[CloudDiff.CONFIG] = SBOKotlin.settings.toJsonc()
         return files
     }
 
@@ -408,24 +411,27 @@ object CloudSync {
     // Callback on the client thread; asks the server only if the known info is old or refresh is set
     fun fetchStatus(refresh: Boolean = false, callback: (Status) -> Unit) {
         val known = cloudInfo?.takeIf { System.currentTimeMillis() - it.at < STATUS_MAX_AGE_MS && !(refresh && refreshWaitMs() == 0L) }
-        if (known != null) return SBOKotlin.mc.schedule { callback(statusOf(known.slot)) }
+        if (known != null) return deliverStatus(known.slot, callback)
         lastStatusRequest = System.currentTimeMillis()
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
-                if (response.success) remember(response.slots.find { it.slot == SLOT })
-                SBOKotlin.mc.schedule {
-                    if (!response.success) return@schedule callback(Status(SyncState.ERROR, error = friendly(response.error)))
-                    callback(statusOf(response.slots.find { it.slot == SLOT }))
-                }
+                if (!response.success) return@toJson SBOKotlin.mc.schedule { callback(Status(SyncState.ERROR, error = friendly(response.error))) }
+                val slot = response.slots.find { it.slot == SLOT }
+                remember(slot)
+                deliverStatus(slot, callback)
             }
             .error { SBOKotlin.mc.schedule { callback(Status(SyncState.ERROR, error = friendly(it.message ?: "server not reachable"))) } }
     }
 
-    // Client thread (saves the config)
-    private fun statusOf(slot: CloudSlotMeta?): Status =
-        if (slot == null) Status(SyncState.NO_SAVE) else Status(syncState(slot), slot.updatedAt, slot.size)
+    // Compares on the worker, answers on the client thread
+    private fun deliverStatus(slot: CloudSlotMeta?, callback: (Status) -> Unit) {
+        worker.execute {
+            val status = if (slot == null) Status(SyncState.NO_SAVE) else Status(syncState(slot), slot.updatedAt, slot.size)
+            SBOKotlin.mc.schedule { callback(status) }
+        }
+    }
 
-    // collectFiles saves the config
+    // Worker thread
     private fun syncState(slot: CloudSlotMeta): SyncState {
         val dirty = runCatching { hashOf(collectFiles()) != state().hash }.getOrDefault(true)
         return when {
@@ -441,68 +447,73 @@ object CloudSync {
         upload(force, auto = false)
     }
 
-    private fun upload(force: Boolean = false, auto: Boolean): CountDownLatch? {
-        val files = runCatching { collectFiles() }.getOrElse {
-            SBOKotlin.logger.error("Failed to collect data for the cloud upload", it)
-            notify("error", "Could not read your SBO settings and data: ${it.message}")
-            return null
-        }
-        val hash = hashOf(files)
-        val state = state()
-        if (auto && hash == state.hash) {
-            SBOKotlin.logger.info("[CloudSync] auto upload skipped, nothing changed")
-            return null
-        }
-
-        val counter = maxOf(System.currentTimeMillis(), state.counter + 1)
-        val uuid = Player.accountUuid()
-        val signature = CloudSyncKeys.key(uuid)?.let { CloudSyncKeys.sign(it, signedBytes(uuid, counter, files)) }
-        val envelope = json.encodeToString(CloudEnvelope(counter = counter, files = files, sig = signature))
-
+    // Done when the upload finished, failed or had nothing to send
+    private fun upload(force: Boolean = false, auto: Boolean): CountDownLatch {
         val done = CountDownLatch(1)
         uploadInFlight = done
         if (!auto) {
             busy = "Uploading..."
             changed()
         }
-        SboApi.cloudUpload(SLOT, CloudUploadRequest(envelope, state.version, force))
-            .toJson<CloudUploadResponse>(ignoreUnknownKeys = true) { response ->
-                try {
-                    when {
-                        response.success -> {
-                            state.version = response.version
-                            state.counter = counter
-                            state.hash = hash
-                            DataManager.sboData.save()
-                            remember(CloudSlotMeta(SLOT, response.version, envelope.toByteArray(Charsets.UTF_8).size, System.currentTimeMillis()))
-                            question = null
-                            SBOKotlin.logger.info("[CloudSync] uploaded version ${response.version} (auto=$auto)")
-                            if (!auto) {
-                                autoPaused = false
-                                notify("success", "Uploaded. Your cloud save is up to date.")
-                            }
-                        }
-                        response.conflict -> {
-                            if (auto) autoPaused = true
-                            cloudInfo = null
-                            askWhichToKeep("Your cloud save was changed on another PC. Compare them or pick one.")
-                        }
-                        auto -> pauseAuto("upload failed: ${friendly(response.error)}")
-                        else -> notify("error", "Upload failed: ${friendly(response.error)}")
-                    }
-                } finally {
-                    if (!auto) busy = null
-                    done.countDown()
-                    changed()
-                }
+        val finish = {
+            if (!auto) busy = null
+            done.countDown()
+            changed()
+        }
+        worker.execute {
+            val files = runCatching { collectFiles() }.getOrElse {
+                SBOKotlin.logger.error("Failed to collect data for the cloud upload", it)
+                notify("error", "Could not read your SBO settings and data: ${it.message}")
+                return@execute finish()
             }
-            .error {
-                if (auto) pauseAuto("upload failed: ${friendly(it.message)}")
-                else notify("error", "Upload failed: ${friendly(it.message)}")
-                if (!auto) busy = null
+            val hash = hashOf(files)
+            val state = state()
+            if (auto && hash == state.hash) {
+                SBOKotlin.logger.info("[CloudSync] auto upload skipped, nothing changed")
                 done.countDown()
-                changed()
+                return@execute
             }
+
+            val counter = maxOf(System.currentTimeMillis(), state.counter + 1)
+            val uuid = Player.accountUuid()
+            val signature = CloudSyncKeys.key(uuid)?.let { CloudSyncKeys.sign(it, signedBytes(uuid, counter, files)) }
+            val envelope = json.encodeToString(CloudEnvelope(counter = counter, files = files, sig = signature))
+
+            SboApi.cloudUpload(SLOT, CloudUploadRequest(envelope, state.version, force))
+                .toJson<CloudUploadResponse>(ignoreUnknownKeys = true) { response ->
+                    try {
+                        when {
+                            response.success -> {
+                                state.version = response.version
+                                state.counter = counter
+                                state.hash = hash
+                                DataManager.sboData.save()
+                                remember(CloudSlotMeta(SLOT, response.version, envelope.toByteArray(Charsets.UTF_8).size, System.currentTimeMillis()))
+                                question = null
+                                SBOKotlin.logger.info("[CloudSync] uploaded version ${response.version} (auto=$auto)")
+                                if (!auto) {
+                                    autoPaused = false
+                                    notify("success", "Uploaded. Your cloud save is up to date.")
+                                }
+                            }
+                            response.conflict -> {
+                                if (auto) autoPaused = true
+                                cloudInfo = null
+                                askWhichToKeep("Your cloud save was changed on another PC. Compare them or pick one.")
+                            }
+                            auto -> pauseAuto("upload failed: ${friendly(response.error)}")
+                            else -> notify("error", "Upload failed: ${friendly(response.error)}")
+                        }
+                    } finally {
+                        finish()
+                    }
+                }
+                .error {
+                    if (auto) pauseAuto("upload failed: ${friendly(it.message)}")
+                    else notify("error", "Upload failed: ${friendly(it.message)}")
+                    finish()
+                }
+        }
         return done
     }
 
@@ -615,9 +626,12 @@ object CloudSync {
         }
         state().version = version
         state().counter = maxOf(state().counter, envelope.counter)
-        state().hash = runCatching { hashOf(collectFiles()) }.getOrDefault("")
-        DataManager.sboData.save()
         question = null
+        // Hash of the loaded data, read on the worker like every other hash
+        worker.execute {
+            state().hash = runCatching { hashOf(collectFiles()) }.getOrDefault("")
+            DataManager.sboData.save()
+        }
         if (auto) {
             notify("success", "Auto Sync loaded your newer settings and data from your other PC.")
         } else {
@@ -634,40 +648,42 @@ object CloudSync {
                     return@toJson SBOKotlin.mc.schedule { callback(CompareResult.Failed(friendly(response.error))) }
                 }
                 val check = verified(response.data, allowOlder = true, allowUnsigned = true)
-                SBOKotlin.mc.schedule {
-                    when (check) {
-                        is Check.Problem -> callback(CompareResult.Failed(check.question.text))
-                        is Check.Ok -> {
-                            val pc = runCatching { collectFiles() }.getOrElse {
-                                return@schedule callback(CompareResult.Failed("Could not read your SBO settings and data: ${it.message}"))
-                            }
-                            val cloud = check.envelope.files
-                            callback(CompareResult.Ready(CloudDiff.compare(pc, cloud), pc, cloud, response.version, check.envelope.counter, check.unsigned))
-                        }
-                    }
+                if (check is Check.Problem) return@toJson SBOKotlin.mc.schedule { callback(CompareResult.Failed(check.question.text)) }
+                check as Check.Ok
+                worker.execute {
+                    val cloud = check.envelope.files
+                    val result = runCatching { collectFiles() }.fold(
+                        onSuccess = { pc -> CompareResult.Ready(CloudDiff.compare(pc, cloud), pc, cloud, response.version, check.envelope.counter, check.unsigned) },
+                        onFailure = { CompareResult.Failed("Could not read your SBO settings and data: ${it.message}") }
+                    )
+                    SBOKotlin.mc.schedule { callback(result) }
                 }
             }
             .error { SBOKotlin.mc.schedule { callback(CompareResult.Failed(friendly(it.message ?: "server not reachable"))) } }
     }
 
-    // Applies the picked values on this PC, then uploads the result. Client thread.
+    // Applies the picked values on this PC, then uploads the result. Reads on the worker, applies on the client thread.
     fun merge(compared: CompareResult.Ready, choices: Map<String, CloudSide>) {
-        val pcNow = runCatching { collectFiles() }.getOrElse {
-            notify("error", "Could not read your SBO settings and data: ${it.message}")
-            return
+        worker.execute {
+            val pcNow = runCatching { collectFiles() }.getOrElse {
+                notify("error", "Could not read your SBO settings and data: ${it.message}")
+                return@execute
+            }
+            if (hashOf(pcNow) != hashOf(compared.pc)) {
+                notify("warning", "Your data changed while comparing. Compare again.")
+                return@execute
+            }
+            val merged = CloudDiff.merge(compared.pc, compared.cloud, compared.areas, choices)
+            SBOKotlin.mc.schedule {
+                if (merged != compared.pc && !applyFiles(merged)) return@schedule
+                question = null
+                // This PC now contains the cloud save, the upload builds on it
+                state().version = compared.cloudVersion
+                state().counter = maxOf(state().counter, compared.cloudCounter)
+                DataManager.sboData.save()
+                upload()
+            }
         }
-        if (hashOf(pcNow) != hashOf(compared.pc)) {
-            notify("warning", "Your data changed while comparing. Compare again.")
-            return
-        }
-        val merged = CloudDiff.merge(compared.pc, compared.cloud, compared.areas, choices)
-        if (merged != compared.pc && !applyFiles(merged)) return
-        question = null
-        // This PC now contains the cloud save, the upload builds on it
-        state().version = compared.cloudVersion
-        state().counter = maxOf(state().counter, compared.cloudCounter)
-        DataManager.sboData.save()
-        upload()
     }
 
     fun delete() {
