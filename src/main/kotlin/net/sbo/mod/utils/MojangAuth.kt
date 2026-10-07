@@ -19,9 +19,9 @@ import net.sbo.mod.utils.http.SboApi
 object MojangAuth {
     const val KEY_NOT_YOURS = "KEY_NOT_YOURS"
     const val MOJANG_BUSY = "MOJANG_BUSY"
-    const val CHECK_FAILED_TEXT = "SBO could not check your Minecraft account with Mojang. Please try again in a minute."
-    const val KEY_FAILED_TEXT = "SBO could not set up your key. Please try again in a minute."
-    private const val SET_UP_TEXT = "SBO checked with Mojang that this is your Minecraft account. Your SBO key was set up automatically."
+    // Players never log in themselves, so texts only talk about the key
+    const val KEY_FAILED_TEXT = "SBO could not set up your SBO key right now. Please try again in a minute."
+    private const val SET_UP_TEXT = "Your SBO key was set up automatically."
 
     // Mojang allows 6 joins per 30 s and the player needs them for servers, so no retry loop
     private const val RETRY_AFTER_MS = 60_000L
@@ -73,8 +73,8 @@ object MojangAuth {
         SboApi.post("/auth/mojang/start")
             .result { response ->
                 val data = dataOf(response.body?.string().orEmpty()) ?: return@result
-                val serverId = data["serverId"]?.jsonPrimitive?.contentOrNull ?: return@result fail(Failure(MOJANG_BUSY, CHECK_FAILED_TEXT))
-                if (!joinMojang(serverId)) return@result fail(Failure(MOJANG_BUSY, CHECK_FAILED_TEXT))
+                val serverId = data["serverId"]?.jsonPrimitive?.contentOrNull ?: return@result fail(Failure(MOJANG_BUSY, KEY_FAILED_TEXT))
+                if (!joinMojang(serverId)) return@result fail(Failure(MOJANG_BUSY, KEY_FAILED_TEXT))
                 finish(account, serverId)
             }
             .error { fail(Failure("NETWORK", it.message ?: "server not reachable")) }
@@ -92,7 +92,7 @@ object MojangAuth {
                 val uuid = data["uuid"]?.jsonPrimitive?.contentOrNull
                 // Never take a key for another account, nor keep one after switching accounts
                 if (key == null || uuid != account || Player.accountUuid() != account) {
-                    return@result fail(Failure(MOJANG_BUSY, CHECK_FAILED_TEXT))
+                    return@result fail(Failure(MOJANG_BUSY, KEY_FAILED_TEXT))
                 }
                 if (SboKey.get() == key) return@result done(key, null)
                 // The key is written before anyone waiting sends a request with it
@@ -115,7 +115,7 @@ object MojangAuth {
         val code = error?.get("code")?.jsonPrimitive?.contentOrNull
         val message = error?.get("message")?.jsonPrimitive?.contentOrNull.orEmpty()
         // A ban keeps its own text, everything else is "try again later"
-        fail(if (code == "INVALID_KEY") Failure(code, message) else Failure(MOJANG_BUSY, CHECK_FAILED_TEXT))
+        fail(if (code == "INVALID_KEY") Failure(code, message) else Failure(MOJANG_BUSY, KEY_FAILED_TEXT))
         return null
     }
 
