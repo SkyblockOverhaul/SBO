@@ -170,6 +170,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         }
 
         h3(className = "pf-section") { +"Note" }
+        p(className = "pf-hint") { +"Write here what the fields above don't cover, like the sea creature you hunt or how many runs you plan." }
         // Drafts saved before the two line limit may have more lines
         val note = PartyFinderManager.limitNoteLines(draft.note)
         textarea(
