@@ -1,5 +1,9 @@
 package net.sbo.mod.guis
 
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.UiScale
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
@@ -24,8 +28,7 @@ import net.sbo.mod.utils.data.configs.achievements.AchievementsView
 import java.util.Locale
 
 object AchievementsGui {
-    private val STYLES = listOf("sbo:ui/achievements/achievements.css")
-    private val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
+    private val STYLES = listOf("sbo:ui/achievements/achievements.css", SboLook.STYLE)
     private val RARITIES = listOf("Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Celestial", "Impossible")
 
     /** Opens the window. Must run on the client thread. */
@@ -55,7 +58,8 @@ object AchievementsGui {
         var view by useState(loadView())
         var query by useState("")
         val grouped = view.sort == "grouped"
-        useScreenScale(view.uiScale?.takeIf { it in SCALES })
+        useSboScale(UiScale.own(view.uiScale))
+        useSboTheme()
 
         fun update(next: AchievementsView) {
             view = next
@@ -94,8 +98,8 @@ object AchievementsGui {
                     div(className = "ach-bar") { div(className = "ach-bar-fill", style = "width: ${String.format(Locale.ROOT, "%.2f", percent)}%") }
                 }
                 div(className = "ach-spacer")
-                select(value = scaleId(view.uiScale), onChange = { e -> update(view.copy(uiScale = e.value.toFloatOrNull())) }, className = "ach-scale-select") {
-                    SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Size: Auto" else "Size: ${scaleId(scale)}") }
+                select(value = UiScale.id(UiScale.own(view.uiScale)), onChange = { e -> update(view.copy(uiScale = UiScale.parse(e.value))) }, className = "ach-scale-select") {
+                    UiScale.OWN_CHOICES.forEach { scale -> option(UiScale.id(scale), "Size: ${UiScale.label(scale)}") }
                 }
                 button(className = "ach-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
@@ -164,9 +168,4 @@ object AchievementsGui {
 
     private fun rarityClass(rarity: String) = "ach-r-${rarity.lowercase()}"
 
-    private fun scaleId(scale: Float?): String = when {
-        scale == null -> "auto"
-        scale % 1f == 0f -> scale.toInt().toString()
-        else -> scale.toString()
-    }
 }

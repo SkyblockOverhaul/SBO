@@ -106,7 +106,7 @@ body {
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 8px 30px var(--shadow), 0 0 24px rgba(0, 110, 250, 0.18);
+    box-shadow: 0 8px 30px var(--shadow), 0 0 24px var(--accent-faint);
     animation: hub-open 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 @keyframes hub-open { from { opacity: 0; transform: scale(0.94); } }
@@ -118,9 +118,9 @@ body {
     overflow: hidden;
     border-bottom: 1px solid var(--border);
     background-image:
-        radial-gradient(circle at 45% 0%, rgba(85, 255, 255, 0.18), transparent 55%),
-        radial-gradient(circle at 95% 110%, rgba(0, 110, 250, 0.38), transparent 60%),
-        linear-gradient(135deg, #24272e, #1b1d22);
+        radial-gradient(circle at 45% 0%, var(--glow-soft), transparent 55%),
+        radial-gradient(circle at 95% 110%, var(--accent-soft), transparent 60%),
+        linear-gradient(135deg, var(--panel), var(--bg));
 }
 .hub-hero-sweep {
     position: absolute;
@@ -130,8 +130,8 @@ body {
     height: 400%;
     pointer-events: none;
     background-image: conic-gradient(from 0deg at 50% 50%,
-        transparent 0deg, rgba(85, 255, 255, 0.07) 30deg, transparent 70deg,
-        transparent 180deg, rgba(0, 110, 250, 0.09) 210deg, transparent 250deg);
+        transparent 0deg, var(--tint) 30deg, transparent 70deg,
+        transparent 180deg, var(--accent-faint) 210deg, transparent 250deg);
     animation: hub-sweep 14s linear infinite;
 }
 @keyframes hub-sweep { to { transform: rotate(360deg); } }
@@ -163,9 +163,7 @@ body {
     background-image: radial-gradient(circle at 50% 35%, #1c2026, #0c0d10 75%);
     border: 1px solid rgba(85, 255, 255, 0.4);
     box-shadow: 0 0 12px rgba(85, 255, 255, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.6);
-    animation: hub-pulse 2.8s ease-in-out infinite alternate;
 }
-@keyframes hub-pulse { to { box-shadow: 0 0 20px rgba(85, 255, 255, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.6); } }
 .hub-emblem-image {
     /* Both sides set: the cut-out is 409 x 470 */
     width: 33px;
@@ -194,8 +192,8 @@ body {
     padding: 1px 6px;
     font-size: 7px;
     color: var(--text-soft);
-    background-color: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: var(--tint);
+    border: 1px solid var(--border);
     border-radius: 8px;
 }
 .hub-chip-version { color: var(--accent-text); background-color: var(--accent); border-color: var(--accent-hover); }
@@ -218,22 +216,13 @@ body {
     background-color: var(--card);
     border: 1px solid var(--border);
     border-radius: 6px;
-    transition: background-color 120ms, border-color 120ms, transform 120ms, box-shadow 160ms;
-    animation: hub-rise 320ms ease-out backwards;
 }
-.hub-tile:nth-child(2) { animation-delay: 40ms; }
-.hub-tile:nth-child(3) { animation-delay: 80ms; }
-.hub-tile:nth-child(4) { animation-delay: 120ms; }
-.hub-tile:nth-child(5) { animation-delay: 160ms; }
-.hub-tile:nth-child(6) { animation-delay: 200ms; }
-.hub-tile:nth-child(7) { animation-delay: 240ms; }
-.hub-tile:nth-child(8) { animation-delay: 280ms; }
 @keyframes hub-rise { from { opacity: 0; transform: translateY(8px); } }
 .hub-tile:hover {
     background-color: var(--card-hover);
     border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 110, 250, 0.25);
+    box-shadow: 0 4px 12px var(--accent-faint);
 }
 .hub-tile:active { transform: translateY(0); }
 
@@ -245,7 +234,7 @@ body {
     width: 26px;
     height: 26px;
     border-radius: 13px;
-    background-image: radial-gradient(circle, rgba(85, 255, 255, 0.16), rgba(0, 110, 250, 0.08) 70%);
+    background-image: radial-gradient(circle, var(--glow-soft), var(--accent-faint) 70%);
     border: 1px solid var(--border);
     transition: transform 160ms cubic-bezier(0.3, 1.6, 0.5, 1), border-color 120ms;
 }
@@ -259,11 +248,11 @@ body {
     grid-column: span 2;
     padding: 9px 10px;
     border-color: var(--accent-soft);
-    background-image: linear-gradient(120deg, rgba(0, 110, 250, 0.32), rgba(85, 255, 255, 0.08) 70%);
+    background-image: linear-gradient(120deg, var(--accent-soft), var(--glow-soft) 70%);
 }
 .hub-featured:hover {
     border-color: var(--title);
-    box-shadow: 0 4px 16px rgba(0, 110, 250, 0.35), 0 0 8px var(--glow-soft);
+    box-shadow: 0 4px 16px var(--accent-soft), 0 0 8px var(--glow-soft);
 }
 .hub-featured .hub-tile-title { font-size: 11px; }
 .hub-featured .hub-tile-description { color: var(--banner-text); }
@@ -274,7 +263,7 @@ body {
 /* Party Finder: SBO's main feature next to Diana */
 .hub-highlight {
     border-color: var(--accent-soft);
-    background-image: linear-gradient(160deg, rgba(85, 255, 255, 0.10), transparent 70%);
+    background-image: linear-gradient(160deg, var(--glow-soft), transparent 70%);
 }
 .hub-highlight .hub-tile-title { color: var(--title); }
 
@@ -301,7 +290,7 @@ body {
 
 .hub-support {
     border-color: var(--banner-border);
-    background-image: linear-gradient(135deg, rgba(0, 110, 250, 0.16), rgba(85, 255, 255, 0.05));
+    background-image: linear-gradient(135deg, var(--accent-faint), var(--tint));
 }
 .hub-donate {
     padding: 2px 12px;
@@ -336,7 +325,7 @@ body {
     background-color: var(--bg);
     border: 1px solid var(--accent-soft);
     border-radius: 8px;
-    box-shadow: 0 8px 30px var(--shadow), 0 0 16px rgba(0, 110, 250, 0.25);
+    box-shadow: 0 8px 30px var(--shadow), 0 0 16px var(--accent-faint);
     animation: hub-open 200ms ease-out;
 }
 .hub-commands-header { display: flex; align-items: center; margin-bottom: 4px; padding-right: 2px; }

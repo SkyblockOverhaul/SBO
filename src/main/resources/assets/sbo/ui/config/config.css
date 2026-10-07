@@ -214,6 +214,7 @@ body {
 .cfg-row-control { display: flex; justify-content: flex-end; flex-shrink: 0; max-width: 55%; }
 
 .cfg-select { min-width: 90px; max-width: 160px; }
+.cfg-select .guilib-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .cfg-slider { width: 120px; }
 .cfg-row .guilib-slider-field { display: flex; width: 150px; }
 .cfg-row .cfg-slider { flex-grow: 1; width: auto; min-width: 0; }

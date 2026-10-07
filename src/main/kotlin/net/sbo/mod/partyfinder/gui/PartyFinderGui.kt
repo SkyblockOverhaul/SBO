@@ -21,6 +21,10 @@ import net.minecraft.network.chat.Component
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.UiScale
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
@@ -35,7 +39,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 
 object PartyFinderGui {
-    private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/partyfinder/themes.css")
+    private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", SboLook.STYLE)
     private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
 
     /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others are declared in the CSS. */
@@ -45,9 +49,6 @@ object PartyFinderGui {
         "nunito" to "Nunito",
         "jetbrains-mono" to "JetBrains Mono"
     )
-
-    /** Selectable window sizes; null follows the Minecraft GUI scale. */
-    internal val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
 
     @Volatile
     var isOpen = false
@@ -102,24 +103,16 @@ object PartyFinderGui {
         var font by useState(config.font.takeIf { it in FONTS } ?: "inter")
         // On the body, so modals, tooltips and toasts use the font too
         FONTS.keys.forEach { id -> useBodyClass("pf-font-$id", font == id) }
-        var uiScale by useState(config.uiScale?.takeIf { it in SCALES })
-        useScreenScale(uiScale)
-        var theme by useState(PartyFinderThemes.find(config.theme))
+        var uiScale by useState(UiScale.own(config.uiScale))
+        useSboScale(uiScale)
+        var themeId by useState(config.theme)
+        val theme = useSboTheme(themeId)
         var recombobulated by useState(config.recombobulated)
         var favoritesOnlyOnce by useState(config.favoritesOnlyOnce)
-        // On the body like the font, so modals, tooltips and toasts follow the theme
-        PartyFinderThemes.BASES.forEach { base -> useBodyClass("pf-theme-$base", theme.base == base) }
+        // On the body like the theme, so modals, tooltips and toasts follow it
         useBodyClass("pf-hypixel", theme.hypixelColors)
         useBodyClass("pf-recomb", recombobulated)
         useBodyClass("pf-marks", theme.marks)
-        val document = useDocument()
-        useEffect(theme) {
-            val body = document.body
-            // Kept here, the cleanup would read the next theme from the state
-            val colors = theme.colors
-            colors.forEach { (name, value) -> body.setStyleProperty("--$name", value) }
-            onCleanup { colors.keys.forEach { body.removeStyleProperty("--$it") } }
-        }
         // Ticks so countdowns of closed events stay current
         val clock = useState(System.currentTimeMillis())
         var queued by useState(PartyFinderManager.queuedParty)
@@ -311,10 +304,11 @@ object PartyFinderGui {
                                         config.uiScale = scale
                                         config.save()
                                     },
+                                    themeId = themeId,
                                     theme = theme,
                                     onTheme = { picked ->
-                                        theme = picked
-                                        config.theme = picked.id
+                                        themeId = picked
+                                        config.theme = picked
                                         config.save()
                                     },
                                     recombobulated = recombobulated,

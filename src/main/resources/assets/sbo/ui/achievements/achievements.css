@@ -176,7 +176,7 @@ body {
 .ach-tag.ok { background-color: var(--ok-soft); color: var(--ok); }
 
 /* Hypixel rarity colors, the dark ones a bit lighter so they stay readable on the dark cards */
-.ach-r-common { --rarity: #ffffff; }
+.ach-r-common { --rarity: var(--text-strong); }
 .ach-r-uncommon { --rarity: #55ff55; }
 .ach-r-rare { --rarity: #6b6bff; }
 .ach-r-epic { --rarity: #c040c0; }

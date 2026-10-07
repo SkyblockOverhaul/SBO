@@ -126,6 +126,22 @@ class StringEntry internal constructor(id: String, default: String, name: String
     override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.asString
 }
 
+class Choice(val id: String, val label: String, val description: String = "")
+
+// A string out of options that can change while the game runs (e.g. files in a folder), shown as a dropdown.
+// Ids that aren't an option (anymore) are kept, the code reading the entry picks the fallback.
+class ChoiceEntry internal constructor(
+    id: String,
+    default: String,
+    name: String,
+    description: String,
+    val options: () -> List<Choice>,
+) : ConfigEntry<String>(id, default, name, description) {
+
+    override fun toJson() = JsonPrimitive(value)
+    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.asString
+}
+
 class StringsEntry internal constructor(id: String, default: Array<String>, name: String, description: String) :
     ConfigEntry<Array<String>>(id, default, name, description) {
 

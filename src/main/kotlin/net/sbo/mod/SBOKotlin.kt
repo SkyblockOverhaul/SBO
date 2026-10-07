@@ -36,6 +36,7 @@ import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.utils.*
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
@@ -104,6 +105,7 @@ object SBOKotlin : ClientModInitializer {
 
 		// Load configuration and data
 		DataManager.init()
+		SboLook.init()
 
 		// Load Custom Sound System
 		SoundHandler.init()

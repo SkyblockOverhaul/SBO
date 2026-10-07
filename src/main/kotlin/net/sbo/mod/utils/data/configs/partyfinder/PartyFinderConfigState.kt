@@ -15,10 +15,10 @@ data class PartyFinderConfigState(
     var autoRefreshSeconds: Int = 30,
     // Font id of the party finder window, see PartyFinderGui.FONTS
     var font: String = "inter",
-    // Own GUI scale of the party finder window, null = Minecraft's GUI scale
+    // Own size of the party finder window, null = the global one, see UiScale
     var uiScale: Float? = null,
-    // Theme id, see PartyFinderThemes; custom themes are "custom:<file name>"
-    var theme: String = "sbo-dark",
+    // Own theme id of the party finder, null = the global one; see SboThemes, custom themes are "custom:<file name>"
+    var theme: String? = null,
     // Hypixel colors show items one rarity higher
     var recombobulated: Boolean = false,
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf(),

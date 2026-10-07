@@ -1,5 +1,9 @@
 package net.sbo.mod.guis
 
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.UiScale
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.guilib.core.controls.ToastAction
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
@@ -29,8 +33,7 @@ import kotlin.math.abs
 
 /** All Diana events: the running one, the past ones and the total, each with details. */
 object EventsGui {
-    private val STYLES = listOf("sbo:ui/events/events.css")
-    private val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
+    private val STYLES = listOf("sbo:ui/events/events.css", SboLook.STYLE)
     private val SORTS = linkedMapOf("year" to "Year", "profit" to "Profit", "profitPerHour" to "Profit/h", "chimeras" to "Chimeras")
     private const val TOTAL = "total"
     private const val CURRENT = "current"
@@ -70,8 +73,9 @@ object EventsGui {
         useEscapeBack(shown != null) { shown = null }
         var deleting by useState<DianaTrackerMayorData?>(null)
         var sort by useState(DataManager.sboData.eventsSort.takeIf { it in SORTS } ?: "year")
-        var uiScale by useState(DataManager.sboData.eventsUiScale?.takeIf { it in SCALES })
-        useScreenScale(uiScale)
+        var uiScale by useState(UiScale.own(DataManager.sboData.eventsUiScale))
+        useSboScale(uiScale)
+        useSboTheme()
         // The running event keeps counting while the window is open
         var tick by useState(0)
         useInterval(1000) { tick++ }
@@ -145,12 +149,12 @@ object EventsGui {
                     clipboard.set(summaryText(detail))
                     toast.success("Summary copied.", title = "Events")
                 }) { +"Copy" }
-                select(value = scaleId(uiScale), onChange = { e ->
-                    uiScale = e.value.toFloatOrNull()
+                select(value = UiScale.id(uiScale), onChange = { e ->
+                    uiScale = UiScale.parse(e.value)
                     DataManager.sboData.eventsUiScale = uiScale
                     DataManager.save(DataManager::sboData)
                 }, className = "ev-scale-select") {
-                    SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Size: Auto" else "Size: ${scaleId(scale)}") }
+                    UiScale.OWN_CHOICES.forEach { scale -> option(UiScale.id(scale), "Size: ${UiScale.label(scale)}") }
                 }
                 button(className = "ev-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
@@ -368,9 +372,4 @@ object EventsGui {
         ).joinToString("\n")
     }
 
-    private fun scaleId(scale: Float?): String = when {
-        scale == null -> "auto"
-        scale % 1f == 0f -> scale.toInt().toString()
-        else -> scale.toString()
-    }
 }

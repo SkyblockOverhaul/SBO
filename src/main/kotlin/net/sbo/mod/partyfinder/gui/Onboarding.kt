@@ -138,7 +138,7 @@ internal val ONBOARDING_STEPS = listOf(
     ),
     OnboardingStep(
         "Look",
-        "Themes (also for color blindness and high contrast, or your own theme files), the font and the window size.",
+        "Themes (also for color blindness and high contrast, or your own theme files), the font and the window size. Global uses what you picked in the SBO settings for all windows.",
         ".pf-form", page = "settings", section = "look"
     ),
     OnboardingStep(

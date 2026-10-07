@@ -36,6 +36,9 @@ open class EntriesBuilder {
     fun string(value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringEntry(id, value, b.name, b.description) }
 
+    fun choice(value: String, builder: ChoiceBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::ChoiceBuilder, builder) { id, b -> ChoiceEntry(id, value, b.name, b.description, b.options) }
+
     fun strings(vararg value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description) }
 
@@ -105,6 +108,10 @@ class NumberBuilder<T>(id: String) : TypeBuilder(id) where T : Number, T : Compa
 class ColorBuilder(id: String) : TypeBuilder(id) {
     var allowAlpha: Boolean = false
     var presets: IntArray = intArrayOf()
+}
+
+class ChoiceBuilder(id: String) : TypeBuilder(id) {
+    var options: () -> List<Choice> = { emptyList() }
 }
 
 class ButtonBuilder {

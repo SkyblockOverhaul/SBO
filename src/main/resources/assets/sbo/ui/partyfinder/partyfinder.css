@@ -407,6 +407,9 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-setting:hover { background-color: var(--card); }
 .pf-setting-text { flex-grow: 1; min-width: 0; }
 .pf-setting-title { color: var(--text-strong); }
+/* GuiLib's select has a min-width, so a long label would squeeze it until the arrow sticks out */
+.pf-setting > select { flex-shrink: 0; max-width: 50%; }
+.pf-setting > select .guilib-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .pf-fav-row { display: flex; align-items: center; gap: 4px; padding: 2px 4px; margin-bottom: 1px; border-radius: 3px; background-color: var(--card); cursor: grab; }
 .pf-fav-name { flex-grow: 1; }
 .pf-grip { color: var(--input-border-hover); opacity: 0.8; }

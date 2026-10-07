@@ -18,6 +18,9 @@ import net.sbo.guilib.core.dsl.useToast
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
+import net.sbo.mod.guis.look.SboThemes
+import net.sbo.mod.guis.look.UiScale
+import net.sbo.mod.settings.categories.Themes
 import net.sbo.mod.utils.data.DataManager
 
 internal data class SettingsProps(
@@ -29,8 +32,9 @@ internal data class SettingsProps(
     val onFont: (String) -> Unit,
     val uiScale: Float?,
     val onScale: (Float?) -> Unit,
-    val theme: PartyFinderThemes.Theme,
-    val onTheme: (PartyFinderThemes.Theme) -> Unit,
+    val themeId: String?,
+    val theme: SboThemes.Theme,
+    val onTheme: (String?) -> Unit,
     val recombobulated: Boolean,
     val onRecombobulated: (Boolean) -> Unit,
     val favoritesOnlyOnce: Boolean,
@@ -52,7 +56,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     var autoRefresh by useState(config.autoRefreshSeconds)
     var reloading by useState(false)
     // Read again every time the settings open, so new theme files show up without a restart
-    val themes = useStateLazy { PartyFinderThemes.all() }
+    val themes = useStateLazy { SboThemes.all() }
     val toast = useToast()
 
     div(className = "pf-toolbar") {
@@ -102,11 +106,13 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
             "look" -> {
                 settingRow(
                     "Theme",
-                    "The colors of the party finder. Hover a theme in the list to see what it does."
+                    "The colors of the party finder. Global uses the theme from the SBO settings (Themes), which all SBO windows share. Hover a theme in the list to see what it does."
                 ) {
-                    select(value = props.theme.id, onChange = { e ->
-                        themes.value.firstOrNull { it.id == e.value }?.let(props.onTheme)
+                    select(value = props.themeId ?: GLOBAL_THEME, onChange = { e ->
+                        if (e.value == GLOBAL_THEME) props.onTheme(null)
+                        else themes.value.firstOrNull { it.id == e.value }?.let { props.onTheme(it.id) }
                     }, className = "pf-theme-select") {
+                        option(GLOBAL_THEME, "Global (${SboThemes.find(Themes.theme).label})", title = "The theme from the SBO settings, the same in every SBO window.")
                         themes.value.forEach { theme -> option(theme.id, theme.label, title = theme.description) }
                     }
                 }
@@ -116,8 +122,8 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                     "Put theme files into this folder. The README in it explains every color, example.json is a theme to copy."
                 ) {
                     button(onClick = {
-                        PartyFinderThemes.openFolder()
-                        themes.set(PartyFinderThemes.all())
+                        SboThemes.openFolder()
+                        themes.set(SboThemes.all())
                     }) { +"Open theme folder" }
                 }
                 settingRow(
@@ -136,10 +142,10 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 }
                 settingRow(
                     "Size",
-                    "How big the party finder window is. Auto uses your Minecraft GUI scale."
+                    "How big the party finder window is. Global uses the size from the SBO settings, Auto your Minecraft GUI scale."
                 ) {
-                    select(value = scaleId(props.uiScale), onChange = { e -> props.onScale(e.value.toFloatOrNull()) }, className = "pf-scale-select") {
-                        PartyFinderGui.SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Auto" else scaleId(scale)) }
+                    select(value = UiScale.id(props.uiScale), onChange = { e -> props.onScale(UiScale.parse(e.value)) }, className = "pf-scale-select") {
+                        UiScale.OWN_CHOICES.forEach { scale -> option(UiScale.id(scale), UiScale.label(scale)) }
                     }
                 }
             }
@@ -236,9 +242,4 @@ private fun NodeBuilder.settingRow(title: String, text: String, control: NodeBui
     }
 }
 
-// "auto", "2" or "2.5"
-private fun scaleId(scale: Float?): String = when {
-    scale == null -> "auto"
-    scale % 1f == 0f -> scale.toInt().toString()
-    else -> scale.toString()
-}
+private const val GLOBAL_THEME = "global"

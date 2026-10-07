@@ -16,6 +16,7 @@ object Settings : Config("sbo/config") {
         category(Medal)
         category(PartyCommands)
         category(Customization)
+        category(Themes)
         category(QOL)
         category(Debug)
     }

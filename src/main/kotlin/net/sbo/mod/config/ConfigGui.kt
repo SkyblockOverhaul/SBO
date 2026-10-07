@@ -21,6 +21,9 @@ import net.sbo.guilib.core.dsl.switch
 import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.guilib.fabric.GuiLibScreen
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -29,7 +32,7 @@ import kotlin.math.log10
 import kotlin.math.pow
 
 object ConfigGui {
-    private val STYLES = listOf("sbo:ui/config/config.css")
+    private val STYLES = listOf("sbo:ui/config/config.css", SboLook.STYLE)
 
     fun open(config: Config, title: String, onBack: (() -> Unit)? = null) {
         GuiLib.open(app(config, title, onBack), STYLES, title)
@@ -58,6 +61,8 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     var target by useState<ConfigElement?>(null)
     val revision = useState(0)
     val body = useElementRef()
+    useSboScale()
+    useSboTheme()
 
     val ui = useMemo {
         Ui(
@@ -281,6 +286,15 @@ private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Un
             refresh()
         })
         is StringsEntry -> strings(entry, ui, refresh)
+        is ChoiceEntry -> {
+            val options = entry.options()
+            select(value = entry.value, className = "cfg-select", onChange = { event ->
+                entry.set(event.value)
+                ui.changed()
+            }) {
+                options.forEach { option(it.id, it.label, title = it.description.ifEmpty { null }) }
+            }
+        }
         is EnumEntry<*> -> {
             select(value = entry.value.name, className = "cfg-select", onChange = { event ->
                 entry.setName(event.value)

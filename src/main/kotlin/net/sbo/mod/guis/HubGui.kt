@@ -29,6 +29,9 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.Category
 import net.sbo.mod.config.ConfigGui
 import net.sbo.mod.general.HelpCommand
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.overlay.OverlayEditScreen
@@ -37,7 +40,7 @@ import java.util.Collections
 import java.util.WeakHashMap
 
 object HubGui {
-    private val STYLES = listOf("sbo:ui/hub/hub.css")
+    private val STYLES = listOf("sbo:ui/hub/hub.css", SboLook.STYLE)
 
     fun open() {
         GuiLib.open(App, STYLES, title = "Skyblock Overhaul")
@@ -120,6 +123,8 @@ object HubGui {
     private val App = component("Hub") {
         val settingsCount = useMemo { countEntries(Settings) }
         var showCommands by useState(false)
+        useSboScale()
+        useSboTheme()
         val fit = useFitScale()
 
         div(className = "hub-window", ref = fit.ref, style = fit.style) {
