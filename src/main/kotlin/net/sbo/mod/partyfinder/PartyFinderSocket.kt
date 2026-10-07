@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.partyfinder.api.PfError
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
@@ -35,6 +36,7 @@ object PartyFinderSocket {
     private const val MAX_RETRY_MS = 60_000L
     // The backend closes with this when the same account connected somewhere else
     private const val REPLACED = 4000
+    private const val MAX_MESSAGE_CHARS = 1 shl 20
 
     private class Pending(val onResult: (String, JsonObject) -> Unit, val sentAt: Long) {
         @Volatile var sent = false
@@ -188,6 +190,8 @@ object PartyFinderSocket {
             "join_request" -> {
                 val name = message["name"]?.jsonPrimitive?.contentOrNull ?: return
                 val uuid = message["uuid"]?.jsonPrimitive?.contentOrNull ?: return
+                // The name ends up in /p invite
+                if (!Helper.isPlayerName(name)) return answer(requestId, invited = false)
                 val role = message["role"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.contentOrNull
                 SBOKotlin.mc.execute { PartyFinderManager.onSocketJoinRequest(requestId, uuid, name, role) }
             }
@@ -203,13 +207,21 @@ object PartyFinderSocket {
 
     private class Listener : WebSocket.Listener {
         private val text = StringBuilder()
+        private var tooLong = false
 
         override fun onText(webSocket: WebSocket, data: CharSequence, last: Boolean): CompletionStage<*>? {
-            text.append(data)
-            if (last) {
-                val message = text.toString()
+            // The backend sends at most a few KB, anything this big is dropped
+            if (tooLong || text.length + data.length > MAX_MESSAGE_CHARS) {
+                tooLong = true
                 text.setLength(0)
-                handle(message)
+            } else {
+                text.append(data)
+            }
+            if (last) {
+                if (tooLong) SBOKotlin.logger.warn("[SBO] Party finder socket message too long, dropped")
+                else handle(text.toString())
+                text.setLength(0)
+                tooLong = false
             }
             webSocket.request(1)
             return null

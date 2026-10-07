@@ -46,6 +46,7 @@ import net.sbo.mod.partyfinder.api.ReportReason
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
@@ -656,7 +657,8 @@ private fun NodeBuilder.memberRow(
         item("Show all stats") { onInspect() }
         item("Copy name") { copy(name, "Name") }
         item("Check stats") { checkStats(name) }
-        if (manage) {
+        // The name ends up in /p commands
+        if (manage && Helper.isPlayerName(name)) {
             separator()
             item("Make party leader") { partyCommand("p transfer $name", "Making $name the party leader...") }
             // Promoting a moderator would make them the leader, so promote only known plain members

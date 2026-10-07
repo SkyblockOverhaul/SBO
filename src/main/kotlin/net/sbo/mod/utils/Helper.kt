@@ -231,6 +231,11 @@ object Helper {
         }
     }
 
+    private val PLAYER_NAME = Regex("^[A-Za-z0-9_]{1,16}$")
+
+    /** A valid Minecraft name, so putting it into a command can't add anything else. */
+    fun isPlayerName(name: String): Boolean = PLAYER_NAME.matches(name)
+
     fun getPlayerName(player: String): String {
         var name = player
         val num = name.indexOf(']')

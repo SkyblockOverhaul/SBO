@@ -180,7 +180,7 @@ object PartyFinderManager {
             if ("From" in matchResult.group(1) && partyMemberCount < partySize) {
                 val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
                 val request = JoinRequest.parse(matchResult.group(4) ?: "")
-                if (BlockedPlayers.isBlockedName(playerName)) return@onChatMessageCancelable false
+                if (!Helper.isPlayerName(playerName) || BlockedPlayers.isBlockedName(playerName)) return@onChatMessageCancelable false
                 if (DataManager.partyFinderConfigState.autoInvite) {
                     invitePlayerIfMeetsReqs(playerName, request)
                 } else {
@@ -194,7 +194,7 @@ object PartyFinderManager {
             Pattern.compile("^§9§m(.*?) §ehas invited you to join their party!(.*?)$", Pattern.DOTALL)
         ) { _, matchResult ->
             val playername = Helper.getPlayerName(matchResult.group(1) ?: "")
-            if (playersSentRequest.containsKey(playername)) {
+            if (Helper.isPlayerName(playername) && playersSentRequest.containsKey(playername)) {
                 Chat.chat("§6[SBO] §eJoining party of §b$playername§e...")
                 Chat.command("p accept $playername")
                 playersSentRequest.remove(playername)
@@ -473,7 +473,8 @@ object PartyFinderManager {
 
     /** [role] is needed when the party asks for roles. */
     fun sendJoinRequest(party: PartyView, role: String? = null) {
-        val leaderName = party.leader?.name?.takeIf { it.isNotBlank() } ?: return
+        // The name ends up in /msg
+        val leaderName = party.leader?.name?.takeIf { Helper.isPlayerName(it) } ?: return
         val target = PartyCategories.target(party.partyType, party.subType)
         if (target == null) {
             tell("§6[SBO] §4This party type is unknown. Please reopen the party finder.", false)
