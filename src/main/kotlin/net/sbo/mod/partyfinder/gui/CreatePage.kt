@@ -182,7 +182,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
             className = "pf-note-input"
         )
         p(className = "pf-hint") {
-            +"${note.length}/${PartyFinderManager.NOTE_MAX_LENGTH}. Letters, numbers, spaces and , . ! ? - _ + / only, other characters are removed."
+            +"${note.length}/${PartyFinderManager.NOTE_MAX_LENGTH}. Letters, numbers, spaces and , . ! ? - _ + / : ' ( ) only, other characters are removed."
         }
 
         div(className = "pf-form-buttons") {

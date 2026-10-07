@@ -622,9 +622,11 @@ object PartyFinderManager {
         }
     }
 
-    /** Same filter as the backend: letters, digits, spaces, line breaks and ,.!?-_+/ */
+    /** Same filter as the backend: letters, digits, spaces, line breaks and ,.!?-_+/:'(), no / at a line start */
     fun checkPartyNote(note: String): String {
-        return limitNoteLines(note.replace(Regex("[^\\p{L}\\p{N}\\s,.!?\\-_+/]"), ""))
+        return limitNoteLines(note.replace('\t', ' '))
+            .replace(Regex("[^\\p{L}\\p{N} \\n,.!?\\-_+/:'()]"), "")
+            .replace(Regex("(?m)^/+"), "")
             .take(NOTE_MAX_LENGTH)
             .trim()
     }
