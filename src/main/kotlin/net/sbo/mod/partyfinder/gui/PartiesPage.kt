@@ -28,6 +28,7 @@ import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.core.event.KeyboardEvent
+import net.sbo.mod.partyfinder.BlockedPlayers
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyCheck
@@ -80,6 +81,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     var filtersOpen by useState(false)
     var filterVersion by useState(0)
     var hidden by useState(setOf<String>())
+    // Bumped after blocking someone, their parties drop out of the list
+    var blockedVersion by useState(0)
     var expanded by useState<String?>(null)
     var joining by useState<PartyView?>(null)
     var role by useState<String?>(null)
@@ -169,7 +172,9 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             }
         }
     }
-    val all = parties.orEmpty().filter { it.id !in hidden }
+    val all = parties.orEmpty().filter { party ->
+        party.id !in hidden && (party.id == myId || party.members.none { BlockedPlayers.isBlocked(it.uuid) })
+    }
     val visible = PartyListFilters.apply(all, filter, target, me, myId, search, ::meFor)
     val shown = if (props.tourParty) listOf(tourParty(target, props.ownFor(target.subTargets().first()) ?: me)) + visible else visible
 
@@ -260,6 +265,10 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     onJoin = { join(party) },
                     onHide = { hidden = hidden + party.id },
                     onReport = { reporting = party },
+                    onBlock = { name, uuid ->
+                        BlockedPlayers.block(name, uuid)
+                        blockedVersion++
+                    },
                     onEdit = props.onEdit,
                     inspected = props.inspected,
                     onInspect = props.onInspect,
@@ -293,7 +302,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         h3 { +"Join ${party.leader?.name ?: "party"}" }
         p(className = "pf-hint") { +"This party looks for these roles. Pick the one you want to play." }
         radioGroup(value = role, onChange = { role = it }, vertical = true) {
-            party.roles.wanted.forEach { id -> option(id, target.roles.firstOrNull { it.id == id }?.label ?: id) }
+            val roles = target.forParty(party).roles
+            party.roles.wanted.forEach { id -> option(id, roles.firstOrNull { it.id == id }?.label ?: id) }
         }
         div(className = "pf-dialog-buttons") {
             button(onClick = { joining = null }) { +"Cancel" }
@@ -512,6 +522,7 @@ private fun NodeBuilder.partyCard(
     onJoin: () -> Unit,
     onHide: () -> Unit,
     onReport: () -> Unit,
+    onBlock: (name: String, uuid: String) -> Unit,
     onEdit: () -> Unit,
     inspected: String?,
     onInspect: (InspectedPlayer) -> Unit,
@@ -535,6 +546,7 @@ private fun NodeBuilder.partyCard(
             item("Join party", disabled = full) { onJoin() }
             separator()
             item("Hide this party") { onHide() }
+            item("Block player") { onBlock(leaderName, party.id) }
             item("Report party…", danger = true) { onReport() }
         }
     }, className = "pf-card-anchor", key = party.id) {
@@ -600,7 +612,7 @@ private fun NodeBuilder.partyCard(
                     party.members.forEach { member ->
                         memberRow(
                             member, party, target, statIds, member.uuid == inspected, { onInspect(InspectedPlayer(member, party)) },
-                            manage = mine && member.uuid != party.id, copy, checkStats, partyCommand
+                            manage = mine && member.uuid != party.id, copy, checkStats, partyCommand, onBlock
                         )
                     }
                 }
@@ -635,7 +647,8 @@ private fun NodeBuilder.memberRow(
     manage: Boolean,
     copy: (String, String) -> Unit,
     checkStats: (String) -> Unit,
-    partyCommand: (command: String, text: String) -> Unit
+    partyCommand: (command: String, text: String) -> Unit,
+    onBlock: (name: String, uuid: String) -> Unit
 ) {
     val name = member.name.ifBlank { "Unknown" }
     contextMenu(menu = {
@@ -658,6 +671,13 @@ private fun NodeBuilder.memberRow(
                 }
             }
             item("Kick from party", danger = true) { partyCommand("p kick $name", "Kicking $name from the party...") }
+            item("Kick and block", danger = true) {
+                partyCommand("p kick $name", "Kicking $name from the party...")
+                onBlock(name, member.uuid)
+            }
+        } else if (member.uuid != OwnStats.uuid()) {
+            separator()
+            item("Block player") { onBlock(name, member.uuid) }
         }
     }, className = "pf-member-anchor", key = member.uuid) {
         div(className = classNames("pf-member", "inspected" to inspected), onClick = { onInspect() }) {

@@ -7,6 +7,7 @@ import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.h3
 import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.p
+import net.sbo.guilib.core.dsl.playerHead
 import net.sbo.guilib.core.dsl.scroll
 import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.select
@@ -15,6 +16,7 @@ import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
 import net.sbo.guilib.core.dsl.tabs
 import net.sbo.guilib.core.dsl.useToast
+import net.sbo.mod.partyfinder.BlockedPlayers
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
@@ -54,6 +56,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     var reminderMinutes by useState(config.reminderMinutes)
     var startWithFavorites by useState(config.startWithFavorites)
     var autoRefresh by useState(config.autoRefreshSeconds)
+    var blocked by useState(BlockedPlayers.list())
     var reloading by useState(false)
     // Read again every time the settings open, so new theme files show up without a restart
     val themes = useStateLazy { SboThemes.all() }
@@ -171,6 +174,22 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                         config.autoRequeue = e.checked
                         config.save()
                     })
+                }
+
+                h3(className = "pf-section") { +"Blocked players" }
+                p(className = "pf-hint") { +"Players on this list can't join your parties. Their join requests are declined automatically." }
+                if (blocked.isEmpty()) {
+                    p(className = "pf-hint") { +"No blocked players yet. Right-click a player in the party list to block them, or use /block add <name>." }
+                }
+                blocked.forEach { player ->
+                    div(className = "pf-fav-row", key = player.uuid) {
+                        playerHead(uuidOf(player.uuid), className = "pf-head")
+                        span(className = "pf-fav-name") { +player.name }
+                        button(className = "pf-small", onClick = {
+                            BlockedPlayers.unblock(player.uuid)
+                            blocked = BlockedPlayers.list()
+                        }) { +"Unblock" }
+                    }
                 }
 
                 h3(className = "pf-section") { +"Party list" }

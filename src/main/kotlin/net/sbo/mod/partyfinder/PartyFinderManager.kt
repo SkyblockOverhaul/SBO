@@ -103,7 +103,7 @@ object PartyFinderManager {
     @Volatile
     var listener: ((success: Boolean, text: String) -> Unit)? = null
 
-    private fun tell(text: String, success: Boolean) {
+    internal fun tell(text: String, success: Boolean) {
         val gui = listener
         if (gui != null) gui(success, text.replace(Regex("§."), "").removePrefix("[SBO] ")) else Chat.chat(text)
     }
@@ -173,6 +173,7 @@ object PartyFinderManager {
             if ("From" in matchResult.group(1) && partyMemberCount < partySize) {
                 val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
                 val request = JoinRequest.parse(matchResult.group(4) ?: "")
+                if (BlockedPlayers.isBlockedName(playerName)) return@onChatMessageCancelable false
                 if (DataManager.partyFinderConfigState.autoInvite) {
                     invitePlayerIfMeetsReqs(playerName, request)
                 } else {
@@ -386,7 +387,9 @@ object PartyFinderManager {
         }.error { error -> onError?.invoke(error) }
     }
 
-    private fun showJoinRequest(playerName: String, role: String?, onInvite: (() -> Unit)? = null) {
+    private fun showJoinRequest(
+        playerName: String, role: String?, onInvite: (() -> Unit)? = null, onBlock: () -> Unit = { BlockedPlayers.block(playerName) }
+    ) {
         val roleText = role?.let { id ->
             val label = draft?.let { PartyCategories.target(it.partyType, it.subType) }?.roles?.firstOrNull { it.id == id }?.label ?: id
             " as §b$label"
@@ -397,6 +400,7 @@ object PartyFinderManager {
             Chat.textComponent("§6[SBO] §b$playerName §ewants to join your party$roleText§e.\n"),
             Chat.textComponent("§7[§aInvite§7]", "/p $playerName", invite),
             Chat.textComponent(" §7[§eCheck Stats§7]", "/sboc $playerName", "/sbocheck $playerName"),
+            Chat.textComponent(" §7[§cBlock§7]", "Block player", "/__sbo_run_clickable_action ${ClickActionManager.registerAction(onBlock)}"),
         )
         Chat.chat(Chat.getChatBreak())
     }
@@ -440,7 +444,7 @@ object PartyFinderManager {
 
     // The backend already checked the player against the party
     fun onSocketJoinRequest(requestId: String, uuid: String, playerName: String, role: String?) {
-        if (!inQueue || partyMemberCount >= partySize) return PartyFinderSocket.answer(requestId, invited = false)
+        if (!inQueue || partyMemberCount >= partySize || BlockedPlayers.isBlocked(uuid)) return PartyFinderSocket.answer(requestId, invited = false)
         val invite = {
             role?.let { memberRoles[uuid] = it }
             Chat.command("p invite $playerName")
@@ -450,7 +454,10 @@ object PartyFinderManager {
             invite()
             Chat.chat("§6[SBO] §eInvited $playerName to the party.")
         } else {
-            showJoinRequest(playerName, role, invite)
+            showJoinRequest(playerName, role, invite) {
+                BlockedPlayers.block(playerName, uuid)
+                PartyFinderSocket.answer(requestId, invited = false)
+            }
         }
     }
 

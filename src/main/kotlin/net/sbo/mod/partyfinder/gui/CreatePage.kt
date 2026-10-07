@@ -163,6 +163,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         if (target.roles.isNotEmpty()) {
             h3(className = "pf-section") { +"Wanted roles" }
             p(className = "pf-hint") { +"Optional. If you pick roles, everyone who wants to join has to choose one of them." }
+            ROLE_HINTS[target.key]?.let { hint -> p(className = "pf-hint") { +hint } }
             chips(values = draft.wantedRoles, onChange = { roles -> change { wantedRoles = roles.toMutableList() } }) {
                 target.roles.forEach { option(it.id, it.label) }
             }
@@ -344,3 +345,8 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
         }
     }
 }
+
+// Extra help for roles that need to fit together
+private val ROLE_HINTS = mapOf(
+    "bestiary/dragons" to "2 Eyes needs to deal the most damage to get the best loot. Leechers place no eyes and can push them down, so only pick Leecher if your split has room for it."
+)

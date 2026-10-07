@@ -25,7 +25,12 @@ data class PartyFinderConfigState(
     var autoInvite: Boolean = true,
     var autoRequeue: Boolean = true,
     // Minutes between "new parties" chat reminders, 0 = off
-    var reminderMinutes: Int = PartyFinderReminder.DEFAULT_MINUTES
+    var reminderMinutes: Int = PartyFinderReminder.DEFAULT_MINUTES,
+    // Players who can't ask to join own parties, their parties are hidden; see BlockedPlayers
+    var blockedPlayers: MutableList<BlockedPlayer> = mutableListOf()
 ) {
     fun save() = DataManager.save(DataManager::partyFinderConfigState)
 }
+
+/** [uuid] without dashes, [name] as it was when blocked. */
+data class BlockedPlayer(val uuid: String = "", val name: String = "")

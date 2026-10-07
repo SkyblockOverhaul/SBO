@@ -136,6 +136,8 @@ data class SubcategoryDef(
     val reqs: List<ReqDef> = emptyList(),
     val display: List<String> = emptyList(),
     val options: List<PartyOption> = emptyList(),
+    /** Replaces the roles of the category when set. */
+    val roles: List<RoleDef>? = null,
     val maxSize: Int? = null,
     val event: String? = null,
     val open: Boolean = true,
