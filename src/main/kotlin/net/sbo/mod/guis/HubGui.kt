@@ -109,7 +109,7 @@ object HubGui {
     private val COMMUNITY = listOf(
         Link("Discord", "Support, updates and parties", "https://discord.gg/QvM6b9jsJD"),
         Link("GitHub", "Releases and source code", "https://github.com/SkyblockOverhaul/SBO/releases"),
-        Link("Website", "Track your Magic Find upgrades", "https://skyblockoverhaul.com/"),
+        Link("Website", "Read about us and our Projects", "https://skyblockoverhaul.com/"),
     )
 
     private val CREDITS = listOf(

@@ -48,4 +48,15 @@ object Themes : Category("Themes") {
         this.description = Literal("How big all SBO windows are. Auto uses your Minecraft GUI scale. Windows with their own Size setting keep it unless it is set to Global.")
         this.options = { UiScale.GLOBAL_CHOICES.map { Choice(UiScale.id(it), UiScale.label(it)) } }
     }
+
+    init {
+        separator {
+            this.title = "Background"
+        }
+    }
+
+    var backgroundBlur by boolean(true) {
+        this.name = Literal("Background Blur")
+        this.description = Literal("Blurs the game behind all SBO windows. Turn it off to see the game clearly, the dark overlay stays.")
+    }
 }

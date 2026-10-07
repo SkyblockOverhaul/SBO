@@ -41,8 +41,8 @@ internal val ONBOARDING_STEPS = listOf(
         ".pf-side-scroll .pf-star"
     ),
     OnboardingStep(
-        "Tiers and Floors",
-        "Pick one tier or floor, or All for every party of this type. The star next to them pins what you picked to Favorites.",
+        "Subcategories",
+        "Pick one or All for every party of this type. The star next to them pins what you picked to Favorites.",
         ".pf-subs-row"
     ),
     OnboardingStep(
@@ -80,7 +80,7 @@ internal val ONBOARDING_STEPS = listOf(
     OnboardingStep(
         "Join",
         "Asks the leader to invite you. If the leader has Auto Invite on and you meet the requirements, you are invited right away. " +
-            "A grey button means the party is full or you miss a requirement, hover it to see which.",
+            "A grey button means you miss a requirement, hover it to see which.",
         ".pf-join"
     ),
     OnboardingStep(
@@ -180,9 +180,7 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
         // Stored at once, so closing the window during the tour doesn't bring it back
         DataManager.sboData.pfOnboardingSeen = true
         DataManager.sboData.save()
-        PartyFinderGui.onboardingActive = true
         ONBOARDING_STEPS.getOrNull(step)?.let { props.onShow(it.page, it.section) }
-        onCleanup { PartyFinderGui.onboardingActive = false }
     }
 
     fun finish() = props.onDone()
