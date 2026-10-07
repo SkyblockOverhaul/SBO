@@ -20,6 +20,7 @@ import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
+import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.utils.data.Backups
@@ -157,23 +158,26 @@ object CloudSyncGui {
                 setting("Auto Sync", "Saves and loads for you.") {
                     switch(checked = CloudSync.autoSync, onChange = { CloudSync.autoSync = it.checked })
                 }
-                details("How it works", className = "cs-info") {
-                    infoLine("• On join: loads newer data or uploads your changes")
-                    infoLine("• Every 30 min: uploads, only if something changed")
-                    infoLine("• Leaving a server or closing the game: uploads")
-                    infoLine("• Both sides changed: nothing is overwritten, you pick here")
-                    infoLine("• Auto Sync off: only Upload and Download")
-                    infoLine("• Saved: settings, trackers, achievements, past Diana events, party finder, overlays, sounds")
-                    infoLine("• Not saved: SBO key and sign key")
-                }
 
-                details(if (CloudSyncKeys.hasKey()) "Sign Key (on)" else "Sign Key (optional)", className = "cs-info") {
+                div(className = "cs-setting cs-key") {
+                    tooltip(content = {
+                        div { +"Signs your cloud save. If it gets changed or damaged, SBO notices and does not load it." }
+                        div(className = "cs-tip-line") { +"Optional: only set one if you really want your cloud save signed. Without a key, Cloud Sync works just the same." }
+                        div(className = "cs-tip-line") { +"Only PCs with the same key can load it." }
+                        div(className = "cs-tip-line") { +"Use the same key on every PC and write it down somewhere." }
+                        div(className = "cs-tip-line") { +"If you forget it, your cloud save cannot be loaded anymore and SBO cannot reset the key. You can only set a new key and upload again, which overwrites your old cloud save with the current data from this PC." }
+                    }) {
+                        span(className = "cs-setting-title") {
+                            +"Sign Key"
+                            img("sbo:ui/partyfinder/info.svg", className = "cs-info-icon")
+                        }
+                    }
                     div(className = "cs-key-row") {
                         input(
                             className = "cs-key-input",
                             type = if (showKey) "text" else "password",
                             value = signKey,
-                            placeholder = if (CloudSyncKeys.hasKey()) "Set, type it again to see it" else "No key",
+                            placeholder = if (CloudSyncKeys.hasKey()) "Set, type it again to see it" else "Optional, pick one you can remember",
                             maxLength = 64,
                             onInput = { signKey = it.value }
                         )
@@ -183,14 +187,18 @@ object CloudSyncGui {
                             title = if (signKey.isBlank()) "Removes the sign key from this PC" else "Saves the sign key on this PC",
                             onClick = { CloudSync.saveSignKey(signKey) }
                         ) { +"Save" }
-                        button(title = "Fills in a new random sign key, click Save to use it", onClick = {
-                            signKey = CloudSyncKeys.generate()
-                            showKey = true
-                        }) { +"New" }
                     }
-                    infoLine("Only PCs with this key can load your cloud save. Use the same key on every PC and write it down.")
                 }
 
+                details("How it works", className = "cs-info") {
+                    infoLine("• On join: loads newer data or uploads your changes")
+                    infoLine("• Every 30 min: uploads, only if something changed")
+                    infoLine("• Leaving a server or closing the game: uploads")
+                    infoLine("• Both sides changed: nothing is overwritten, you pick here")
+                    infoLine("• Auto Sync off: only Upload and Download")
+                    infoLine("• Saved: settings, trackers, achievements, past Diana events, party finder, overlays, sounds")
+                    infoLine("• Not saved: SBO key and sign key")
+                }
             }
         }
 

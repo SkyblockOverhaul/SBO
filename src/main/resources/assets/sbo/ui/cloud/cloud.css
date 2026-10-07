@@ -189,10 +189,12 @@ body {
 .cs-key { flex-direction: column; align-items: stretch; gap: 2px; }
 .cs-key-row { display: flex; gap: 4px; }
 .cs-key-input { flex-grow: 1; min-width: 0; }
+.cs-key .guilib-tooltip-anchor { align-self: flex-start; }
+.cs-info-icon { width: 6px; height: 6px; margin-left: 2px; color: var(--subtle); }
+.cs-tip-line { margin-top: 2px; }
 
 .cs-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .cs-actions { display: flex; gap: 4px; margin: 2px 0 6px 0; padding: 0 4px; }
-.cs-info .cs-key-row { margin-top: 2px; }
 .cs-primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .cs-primary:hover { background-color: var(--accent-hover); }
 .cs-danger { color: var(--menu-danger); }
