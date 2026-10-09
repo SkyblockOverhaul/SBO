@@ -6,23 +6,14 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.partyfinder.PartyFinderGUI
+import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.events.SBOEvent
-import net.sbo.mod.utils.events.impl.guis.SoundsOpenEvent
-import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object Guis {
-    private var partyFinderGui: PartyFinderGUI? = null
-    private var pastEventsGui: PastEventsGui? = null
-    var achievementsGui: AchievementsGUI? = null
-    private var soundGui: SoundGUI? = null
-
-//    private var vexelGui: VexelTest? = null
     private var updating = false
     private var lastUpdate = 0L
     private val UPDATE_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
@@ -34,22 +25,16 @@ object Guis {
                 return
             }
             SBOKotlin.toast(
-                    Component.literal("SBO").setStyle(
-                        Style.EMPTY.withColor(ChatFormatting.GOLD)
-                    ),
-                    Component.literal("Join skyblock before opening Party Finder!").setStyle(
-                        Style.EMPTY.withColor(ChatFormatting.RED)
-                    )
+                Component.literal("SBO").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.GOLD)
+                ),
+                Component.literal("Join skyblock before opening Party Finder!").setStyle(
+                    Style.EMPTY.withColor(ChatFormatting.RED)
+                )
             )
             return
         }
-        mc.schedule {
-            if (partyFinderGui == null) {
-                partyFinderGui = PartyFinderGUI()
-            }
-            UScreen.displayScreen(partyFinderGui!!)
-            SBOEvent.emit(PartyFinderOpenEvent())
-        }
+        mc.schedule { PartyFinderGui.open() }
     }
 
     fun openSoundGui(calledFromGUI: Boolean = false) {
@@ -68,13 +53,7 @@ object Guis {
             )
             return
         }
-        mc.schedule {
-            if (soundGui == null) {
-                soundGui = SoundGUI()
-            }
-            UScreen.displayScreen(soundGui!!)
-            SBOEvent.emit(SoundsOpenEvent())
-        }
+        mc.schedule { SoundsGui.open() }
     }
 
     fun register() {
@@ -83,25 +62,15 @@ object Guis {
         }
 
         Register.command("sboachievements") {
-            mc.schedule {
-                if (achievementsGui == null) {
-                    achievementsGui = AchievementsGUI()
-                }
-                UScreen.displayScreen(achievementsGui!!)
-            }
+            mc.schedule { AchievementsGui.open() }
         }
 
         Register.command("sbosounds") {
             openSoundGui()
         }
 
-        Register.command("sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
-            mc.schedule {
-                if (pastEventsGui == null) {
-                    pastEventsGui = PastEventsGui()
-                }
-                UScreen.displayScreen(pastEventsGui!!)
-            }
+        Register.command("sboevents", "sboapastdianaevents", "sbopevents", "sbopastevents", "sbopde") {
+            mc.schedule { EventsGui.open() }
         }
 
         Register.onTick(20) {

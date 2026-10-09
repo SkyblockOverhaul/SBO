@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 final class PlayerInteractMixin {
     @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
     private final void sbo$onInteractItem(@NonNull final CallbackInfoReturnable<InteractionResult> cir) {
-        var player = Minecraft.getInstance().player;
+        final var player = Minecraft.getInstance().player;
         if (player != null) {
             final PlayerInteractEvent event = new PlayerInteractEvent(
                     "useItem", null, player, player.level(), false

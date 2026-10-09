@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.loom) apply false
-    id("dev.deftu.gradle.multiversion-root") version "2.73.0"
+    id("dev.deftu.gradle.multiversion-root") version "2.80.0"
 }
 
 preprocess {

@@ -1,16 +1,14 @@
 package net.sbo.mod.partyfinder
 
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.logger
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.PartyPlayerStats
 import net.sbo.mod.utils.data.PlayerInfoResponse
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.http.SboApi
@@ -26,14 +24,12 @@ object PartyPlayer {
 
     private fun currentProfile(): String? = TabList.findInfo("Profile: ")?.trim()?.takeIf { it.isNotEmpty() }
 
-    /** True when the name the API returned is not the one we are playing on. */
     private fun nameOutdated(info: PartyPlayerStats?): Boolean {
         val returned = info?.name?.takeIf { it.isNotEmpty() } ?: return false
         val current = Player.getName()?.takeIf { it.isNotEmpty() } ?: return false
         return !current.equals(returned, ignoreCase = true)
     }
 
-    /** True when [profile] is not the one the stored stats belong to. */
     private fun profileChanged(profile: String?): Boolean {
         val cached = sboData.lastStatsProfile.takeIf { it.isNotEmpty() } ?: return false
         if (profile == null) return false
@@ -43,7 +39,7 @@ object PartyPlayer {
     private fun rememberProfile(profile: String?) {
         if (profile == null || profile.equals(sboData.lastStatsProfile, ignoreCase = true)) return
         sboData.lastStatsProfile = profile
-        SboDataObject.save("SboData")
+        DataManager.save(DataManager::sboData)
     }
 
     private fun cacheBypassReadyIn(): Long =
@@ -91,7 +87,7 @@ object PartyPlayer {
      * Refetches with readCache=false, for /sboreloadstats.
      * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
      */
-    fun reloadStats(
+    private fun reloadStats(
         onError: ((Exception) -> Unit)? = null,
         callback: (PartyPlayerStats) -> Unit
     ) {

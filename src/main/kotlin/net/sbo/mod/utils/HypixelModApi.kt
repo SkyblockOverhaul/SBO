@@ -18,6 +18,8 @@ object HypixelModApi {
     private var isLeader: Boolean = false
     private var isInParty: Boolean = false
     private var partyMembers: List<String> = emptyList()
+    // Party role per member uuid without dashes: LEADER, MODERATOR or MEMBER
+    private var partyRoles: Map<String, String> = emptyMap()
     private var mode: String = ""
 
     // listeners
@@ -37,12 +39,13 @@ object HypixelModApi {
         isLeader = false
         isInParty = false
         partyMembers = emptyList()
+        partyRoles = emptyMap()
         mode = ""
     }
 
     private fun handlePacket(packet: HypixelS2CPacket) {
         when (packet) {
-            is HelloS2CPacket -> onHelloPacket(packet)
+            is HelloS2CPacket -> onHelloPacket()
             is LocationUpdateS2CPacket -> onLocationUpdatePacket(packet)
             is PartyInfoS2CPacket -> onPartyInfoPacket(packet)
             is ErrorS2CPacket -> onErrorPacket(packet)
@@ -55,13 +58,14 @@ object HypixelModApi {
         mode = packet.mode.orElse("")
     }
 
-    private fun onHelloPacket(packet: HelloS2CPacket) {
+    private fun onHelloPacket() {
         isOnHypixel = true
         sendPartyInfoPacket()
     }
 
     private fun onPartyInfoPacket(packet: PartyInfoS2CPacket) {
         this.isInParty = packet.inParty
+        partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() } ?: emptyMap()
 
         val membersList = packet.members?.map { it.key.toString() }?.toMutableList() ?: mutableListOf()
         if (isInParty) {
@@ -80,6 +84,14 @@ object HypixelModApi {
         partyInfoListeners.forEach { listener ->
             listener(this.isInParty, this.isLeader, this.partyMembers)
         }
+    }
+
+    /** LEADER, MODERATOR or MEMBER from the last party packet, null when unknown. */
+    fun partyRole(uuid: String): String? = partyRoles[uuid.replace("-", "")]
+
+    /** After a promote or demote, until the next party packet confirms it. */
+    fun markRole(uuid: String, role: String) {
+        partyRoles = partyRoles + (uuid.replace("-", "") to role)
     }
 
     fun onPartyInfo(listener: (isInParty: Boolean, isLeader: Boolean, members: List<String>) -> Unit) {

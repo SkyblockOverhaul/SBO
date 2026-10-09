@@ -17,6 +17,6 @@ object RenderUtils2D {
         if (text.isEmpty()) return
 
         val textLines = text.split("\n").map { Component.nullToEmpty(it) }
-        drawContext.tooltip(textRenderer, textLines.map { it.visualOrderText }.map { ClientTooltipComponent.create(it) }, x.toInt(), y.toInt(), DefaultTooltipPositioner.INSTANCE, null)
+        drawContext.tooltip(textRenderer, textLines.asSequence().map { it.visualOrderText }.map { ClientTooltipComponent.create(it) }.toList(), x.toInt(), y.toInt(), DefaultTooltipPositioner.INSTANCE, null)
     }
 }

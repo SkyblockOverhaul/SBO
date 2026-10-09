@@ -1,11 +1,8 @@
 package net.sbo.mod.settings.categories
 
 import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
-import gg.essential.universal.UDesktop
-import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.guis.Guis
 import java.awt.Color
-import java.io.File
 
 object Customization : CategoryKt("Customization") {
     init {
@@ -134,6 +131,11 @@ object Customization : CategoryKt("Customization") {
         }
     }
 
+    var lookAlike by boolean(false) {
+        this.name = Literal("Look Alike")
+        this.description = Literal("Mimics visuals of SkyHanni on the block outline opacity and guess/distance text. This can help if you are migrating between the mods and can't get used to the look of another.")
+    }
+
     var dynamicWaypointOpacity by boolean(true) {
         this.name = Literal("Dynamic Waypoint Opacity")
         this.description = Literal("Uses a dynamic waypoint opacity that changes based on how far or close you are to the waypoints. If you enable this, the Waypoint Opacity setting below will not take effect.")
@@ -191,38 +193,12 @@ object Customization : CategoryKt("Customization") {
         }
 
         button {
-            title = "Open Sound Folder"
-            text = "Open"
-            description = "Custom sounds go in here. (Must be one of those extensions: .ogg, .mp3, .wav, .au, .aif, .aiff)"
-            onClick {
-                val path = "${FabricLoader.getInstance().configDir}/sbo/sounds"
-                val directory = File(path)
-                if (directory.exists()) {
-                    try {
-                        UDesktop.open(directory)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                } else {
-                    println("Directory not found: $path")
-                }
-            }
-        }
-
-        button {
             title = "Sound Settings"
             text = "Configure"
-            description = "Open GUI to configure all sound settings."
+            description = "Open the sound GUI: sounds, volumes, master volume and the sound folder."
             onClick {
                 Guis.openSoundGui(calledFromGUI = true)
             }
         }
-    }
-
-    var masterVolume by float(1.0f) {
-        this.name = Literal("Master Volume")
-        this.description = Literal("Set the volume for all sounds.")
-        this.range = 0.0f..1.0f
-        this.slider = true
     }
 }

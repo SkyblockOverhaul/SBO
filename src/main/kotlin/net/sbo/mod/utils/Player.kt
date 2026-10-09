@@ -5,26 +5,28 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.math.SboVec
 import java.util.*
 
+val ZERO_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
 object Player {
     fun getLastPosition(): SboVec {
         val player = mc.player ?: return SboVec.ZERO
         return SboVec(player.x, player.y, player.z)
     }
 
-    fun getUUIDString(): String {
-        return mc.player?.stringUUID ?: ""
-    }
+    fun getUUIDString(): String = mc.player?.stringUUID ?: ""
 
-    fun getUUID(): UUID {
-        return mc.player?.uuid ?: UUID.fromString("00000000-0000-0000-0000-000000000000")
-    }
+    // Works in the main menu
+    fun accountUuid(): String = mc.user.profileId.toString().replace("-", "").lowercase()
+
+    fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
     fun getPlayerInventory(): List<ItemStack> {
         val inventory = mc.player?.inventory?.toList()
         return inventory ?: emptyList()
     }
 
-    fun getName(): String? {
-        return mc.player?.name?.string
-    }
+    fun getName(): String? = mc.player?.name?.string
+
+    /** Name of the logged in account, also in the main menu. */
+    fun accountName(): String = mc.user.name
 }

@@ -8,11 +8,11 @@ import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * If you are a Skyblocker developer and have an issue with this mixin's existence do not hesitate to make a pull request.
- *
- * Reasoning: Users report Skyblocker persisting lots of orange burrow waypoints even after fully digging them and they often
+ * <p>
+ * Reasoning: Users report Skyblocker persisting lots of orange burrow waypoints even after fully digging them, and they often
  * blame SBO until we convince them that it's Skyblocker that they need to disable. This ensures that Skyblocker won't get in the way
  * if the user choose to use the SBO's Arrow Guess option which is even more powerful than Skyblocker's implementation.
- *
+ * <p>
  * If the SBO's Arrow Guess is false, the original isActive makes Skyblocker behave normally.
  */
 @Pseudo

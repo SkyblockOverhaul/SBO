@@ -6,22 +6,16 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.OverlayValues
-import net.sbo.mod.utils.data.SboDataObject.overlayData
+import net.sbo.mod.utils.data.configs.overlay.OverlayValues
+import net.sbo.mod.utils.data.DataManager.overlayData
 import net.sbo.mod.utils.game.World
 import java.awt.Color
 
-fun isCraftingScreenOpen(): Boolean {
-    return CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
-}
+fun isCraftingScreenOpen(): Boolean = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
 
-val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean {
-    return screen is ChatScreen
-}
+val CHAT_SCREEN_FILTER = fun(screen: Screen?): Boolean = screen is ChatScreen
 
-val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean {
-    return screen is InventoryScreen
-}
+val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean = screen is InventoryScreen
 
 /**
  * Represents an overlay that can display text lines on the screen.
@@ -48,15 +42,20 @@ class Overlay(
     var selected: Boolean = false
 
     fun init() {
-        if (overlayData.overlays.containsKey(name)) {
-            val data = overlayData.overlays[name]!!
+        loadPosition()
+        OverlayManager.overlays.add(this)
+    }
+
+    // Reads the stored position, or stores the current one if missing
+    fun loadPosition() {
+        val data = overlayData.overlays[name]
+        if (data != null) {
             x = data.x
             y = data.y
             scale = data.scale
         } else {
             overlayData.overlays[name] = OverlayValues(x, y, scale)
         }
-        OverlayManager.overlays.add(this)
     }
 
     fun setCondition(condition: () -> Boolean): Overlay {
@@ -149,18 +148,13 @@ class Overlay(
         return maxWidth
     }
 
-    private fun inEditingScreen(): Boolean {
-        return Helper.currentScreen is OverlayEditScreen
-    }
+    private fun inEditingScreen(): Boolean = Helper.currentScreen is OverlayEditScreen
 
-    private fun checkCondition(): Boolean {
-        return condition() && checkExtraCondition()
-    }
+    fun checkCondition(): Boolean = condition() && checkExtraCondition()
 
-    private fun checkExtraCondition(): Boolean {
+    private fun checkExtraCondition(): Boolean =
         // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
-        return extraCondition() || inEditingScreen()
-    }
+        extraCondition() || inEditingScreen()
 
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
         if (!checkCondition()) return false

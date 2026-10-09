@@ -31,6 +31,10 @@ object OverlayManager {
         }
     }
 
+    fun reloadPositions() {
+        overlays.forEach { it.loadPosition() }
+    }
+
     @SboEvent
     fun onMouseClickAfter(event: GuiMouseClickAfter) {
         if (event.screen !is OverlayEditScreen && event.button == 0) {
