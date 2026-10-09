@@ -95,12 +95,12 @@ object DianaTracker {
         }
 
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+            val player = matchResult.group(1).removeFormatting().lowercase()
+            if (!player.contains((Player.getName()?: "").lowercase())) return@onChatMessageCancelable true
             if (QOL.phoenixAnnouncer) {
                 Chat.chat("§6[SBO] §cGG §eFound a §cPhoenix §epet!")
                 Helper.showTitle("§c§lPhoenix Pet!", "", 0, 25, 35)
             }
-            val player = matchResult.group(1).removeFormatting().lowercase()
-            if (!player.contains((Player.getName()?: "").lowercase())) return@onChatMessageCancelable true
             sleep(1000) {
                 if (isInSkyblock() && dianaMobDiedRecently(3)) unlockAchievement(77) // phoenix pet
             }
