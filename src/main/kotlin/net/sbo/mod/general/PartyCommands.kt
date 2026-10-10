@@ -234,9 +234,14 @@ object PartyCommands {
             when (command) {
                 "!w", "!warp" -> if (settings.warpCommand) sendCommand("p warp")
                 "!allinv", "!allinvite" -> if (settings.allinviteCommand) sendCommand("p setting allinvite")
-                "!ptme", "!transfer" -> if (settings.transferCommand) sendCommand("p transfer $playerName")
-                "!demote" -> if (settings.moteCommand) sendCommand("p demote ${secondArg ?: playerName}")
-                "!promote" -> if (settings.moteCommand) sendCommand("p promote ${secondArg ?: playerName}")
+                // Names from party chat end up in /p commands
+                "!ptme", "!transfer" -> if (settings.transferCommand && Helper.isPlayerName(playerName)) sendCommand("p transfer $playerName")
+                "!demote" -> (secondArg ?: playerName).let { name ->
+                    if (settings.moteCommand && Helper.isPlayerName(name)) sendCommand("p demote $name")
+                }
+                "!promote" -> (secondArg ?: playerName).let { name ->
+                    if (settings.moteCommand && Helper.isPlayerName(name)) sendCommand("p promote $name")
+                }
                 "!c", "!carrot" -> if (settings.carrotCommand) sendResponse(carrot.random())
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
                 "!tps" -> if (settings.tpsCommand) sendResponse(ServerStats.getTpsString())

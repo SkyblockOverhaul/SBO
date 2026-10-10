@@ -1,5 +1,9 @@
-package net.sbo.mod.cloud.gui
+package net.sbo.mod.guis
 
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.UiScale
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
@@ -33,9 +37,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 object CloudSyncGui {
-    private val STYLES = listOf("sbo:ui/cloud/cloud.css")
+    private val STYLES = listOf("sbo:ui/cloud/cloud.css", SboLook.STYLE)
     private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
-    private val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
 
     /** Opens the window. Must run on the client thread. */
     fun open() {
@@ -46,8 +49,9 @@ object CloudSyncGui {
         val toast = useToast()
         var page by useState(Page.MAIN)
         useEscapeBack(page != Page.MAIN) { page = Page.MAIN }
-        var uiScale by useState(DataManager.sboData.cloudSyncUiScale?.takeIf { it in SCALES })
-        useScreenScale(uiScale)
+        var uiScale by useState(UiScale.own(DataManager.sboData.cloudSyncUiScale))
+        useSboScale(uiScale)
+        useSboTheme()
         val size = WindowSize(uiScale) { scale ->
             uiScale = scale
             DataManager.sboData.cloudSyncUiScale = scale
@@ -159,8 +163,7 @@ object CloudSyncGui {
                     tooltip(content = {
                         div { +"Signs your cloud save. If it gets changed or damaged, SBO notices and does not load it." }
                         div(className = "cs-tip-line") { +"Optional: only set one if you really want your cloud save signed. Without a key, Cloud Sync works just the same." }
-                        div(className = "cs-tip-line") { +"Only PCs with the same key can load it." }
-                        div(className = "cs-tip-line") { +"Use the same key on every PC and write it down somewhere." }
+                        div(className = "cs-tip-line") { +"Only PCs or instances with the same key can load it." }
                         div(className = "cs-tip-line") { +"If you forget it, your cloud save cannot be loaded anymore and SBO cannot reset the key. You can only set a new key and upload again, which overwrites your old cloud save with the current data from this PC." }
                     }) {
                         span(className = "cs-setting-title") {
@@ -184,6 +187,7 @@ object CloudSyncGui {
                             onClick = { CloudSync.saveSignKey(signKey) }
                         ) { +"Save" }
                     }
+                    div(className = "cs-hint") { +"Use the same key on every PC or instance and remember it." }
                 }
 
                 details("How it works", className = "cs-info") {
@@ -380,8 +384,15 @@ object CloudSyncGui {
             div(className = "cs-spacer")
             if (onBackups != null) button(className = "cs-header-button", title = "Load one of the backups SBO made on this PC", onClick = { onBackups() }) { +"Backups" }
             span(className = "cs-size-label") { +"Size" }
-            select(value = scaleId(size.scale), onChange = { e -> size.onChange(e.value.toFloatOrNull()) }, className = "cs-size") {
-                SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Auto" else scaleId(scale), title = if (scale == null) "Uses your Minecraft GUI scale" else null) }
+            select(value = UiScale.id(size.scale), onChange = { e -> size.onChange(UiScale.parse(e.value)) }, className = "cs-size") {
+                UiScale.OWN_CHOICES.forEach { scale ->
+                    val title = when (scale) {
+                        null -> "Uses the size from the SBO settings"
+                        UiScale.AUTO -> "Uses your Minecraft GUI scale"
+                        else -> null
+                    }
+                    option(UiScale.id(scale), UiScale.label(scale), title = title)
+                }
             }
             button(className = "cs-icon cs-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
         }
@@ -426,11 +437,6 @@ object CloudSyncGui {
         }
     }
 
-    private fun scaleId(scale: Float?): String = when {
-        scale == null -> "auto"
-        scale % 1f == 0f -> scale.toInt().toString()
-        else -> scale.toString()
-    }
 
     private fun NodeBuilder.infoLine(text: String) {
         div(className = "cs-info-line") { +text }

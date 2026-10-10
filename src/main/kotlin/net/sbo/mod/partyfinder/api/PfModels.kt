@@ -28,7 +28,6 @@ data class PfError(
         const val RATE_LIMITED = "RATE_LIMITED"
         const val REPORT_NOT_ALLOWED = "REPORT_NOT_ALLOWED"
         const val INTERNAL_ERROR = "INTERNAL_ERROR"
-        const val SESSION_REQUIRED = MojangAuth.SESSION_REQUIRED
         const val KEY_NOT_YOURS = MojangAuth.KEY_NOT_YOURS
         const val MOJANG_BUSY = MojangAuth.MOJANG_BUSY
     }
@@ -136,6 +135,8 @@ data class SubcategoryDef(
     val reqs: List<ReqDef> = emptyList(),
     val display: List<String> = emptyList(),
     val options: List<PartyOption> = emptyList(),
+    /** Replaces the roles of the category when set. */
+    val roles: List<RoleDef>? = null,
     val maxSize: Int? = null,
     val event: String? = null,
     val open: Boolean = true,

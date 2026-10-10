@@ -1,4 +1,4 @@
-package net.sbo.mod.partyfinder.gui
+package net.sbo.mod.guis.look
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -7,12 +7,12 @@ import net.minecraft.util.Util
 import org.slf4j.LoggerFactory
 import java.io.File
 
-/** Looks of the party finder window: built-in themes plus custom ones from `config/sbo/themes`. */
-internal object PartyFinderThemes {
+/** Looks of all SBO windows: built-in themes plus custom ones from `config/sbo/themes`. */
+object SboThemes {
     const val DEFAULT = "sbo-dark"
     private const val CUSTOM_PREFIX = "custom:"
     private const val EXAMPLE_FILE = "example.json"
-    private const val RESOURCES = "/assets/sbo/ui/partyfinder/themes"
+    private const val RESOURCES = "/assets/sbo/ui/themes"
 
     data class Theme(
         val id: String,
@@ -43,7 +43,18 @@ internal object PartyFinderThemes {
         Theme("high-contrast", "High Contrast", "Black background, white text and strong borders. Easier to read.", "high-contrast"),
         Theme("light", "Light", "Bright background with dark text. (pain)", "light"),
         Theme("midnight", "Midnight", "Almost black with softer colors, nice in a dark room.", "midnight"),
-        Theme("purple", "Purple", "Dark purple everywhere, also in dialogs, menus and fields, with a violet accent.", "purple")
+        Theme("purple", "Purple", "Dark purple everywhere, also in dialogs, menus and fields, with a violet accent.", "purple"),
+        Theme(
+            "mythological", "Mythological",
+            "Warm dark brown with Griffin gold, made for Diana. Comes with Hypixel colors.",
+            "mythological", hypixelColors = true
+        ),
+        Theme("ocean", "Deep Ocean", "Deep navy blue with a calm teal accent.", "ocean"),
+        Theme(
+            "minecraft", "Minecraft",
+            "Looks like the game's own menus: dirt background, stone buttons, black text fields, purple tooltips, square corners and always the Minecraft font with its shadow. Comes with Hypixel colors.",
+            "minecraft", hypixelColors = true
+        )
     )
 
     val BASES: List<String> = BUILT_IN.map { it.base }.distinct()
@@ -63,7 +74,7 @@ internal object PartyFinderThemes {
         "dark-gray", "blue", "green", "aqua", "red", "light-purple", "yellow", "white"
     ).map { "mc-$it" } + listOf(
         "diana", "fishing", "mining", "kuudra", "bestiary", "rift", "safari", "slayer", "custom"
-    ).map { "type-$it" } + listOf("novice", "adept", "expert", "master").map { "trophy-$it" } + listOf("tint", "tint-strong", "star")
+    ).map { "type-$it" } + listOf("novice", "adept", "expert", "master").map { "trophy-$it" } + listOf("tint", "tint-strong", "star", "glow", "glow-soft")
 
     // #rgb, #rgba, #rrggbb or #rrggbbaa, nothing else reaches the style
     private val COLOR_VALUE = Regex("^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
@@ -132,7 +143,7 @@ internal object PartyFinderThemes {
             example = example
         )
     } catch (e: Exception) {
-        logger.warn("[SBO] Party finder theme ${file.name} not loaded: ${e.message}")
+        logger.warn("[SBO] Theme ${file.name} not loaded: ${e.message}")
         null
     }
 
@@ -144,12 +155,12 @@ internal object PartyFinderThemes {
             copyResource("README.txt", File(folder, "README.txt"))
             if (created) copyResource(EXAMPLE_FILE, File(folder, EXAMPLE_FILE))
         } catch (e: Exception) {
-            logger.warn("[SBO] Party finder theme folder not prepared: ${e.message}")
+            logger.warn("[SBO] Theme folder not prepared: ${e.message}")
         }
     }
 
     private fun copyResource(name: String, target: File) {
-        val text = PartyFinderThemes::class.java.getResourceAsStream("$RESOURCES/$name")?.use { it.readBytes() } ?: return
+        val text = SboThemes::class.java.getResourceAsStream("$RESOURCES/$name")?.use { it.readBytes() } ?: return
         if (!target.exists() || !target.readBytes().contentEquals(text)) target.writeBytes(text)
     }
 }

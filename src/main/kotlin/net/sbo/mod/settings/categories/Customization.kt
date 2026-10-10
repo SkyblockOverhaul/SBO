@@ -1,10 +1,10 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
-import net.sbo.mod.guis.Guis
+import net.sbo.mod.config.Category
+import net.sbo.mod.guis.SoundsGui
 import java.awt.Color
 
-object Customization : CategoryKt("Customization") {
+object Customization : Category("Customization") {
     init {
         separator {
             this.title = "Guess Color Customization"
@@ -197,7 +197,7 @@ object Customization : CategoryKt("Customization") {
             text = "Configure"
             description = "Open the sound GUI: sounds, volumes, master volume and the sound folder."
             onClick {
-                Guis.openSoundGui(calledFromGUI = true)
+                SoundsGui.open()
             }
         }
     }

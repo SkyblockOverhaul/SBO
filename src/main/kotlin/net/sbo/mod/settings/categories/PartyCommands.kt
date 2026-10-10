@@ -1,8 +1,8 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.config.Category
 
-object PartyCommands : CategoryKt("Party Commands") {
+object PartyCommands : Category("Party Commands") {
     var warpCommand by boolean(false) {
         this.name = Literal("Warp Party")
         this.description = Literal("Enables !w, !warp command.")

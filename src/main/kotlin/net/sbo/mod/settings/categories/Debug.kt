@@ -1,8 +1,8 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.config.Category
 
-object Debug : CategoryKt("Debug") {
+object Debug : Category("Debug") {
     var alwaysInSkyblock by boolean(false) {
         this.name = Literal("Always on Skyblock")
         this.description = Literal("Always assume you are on hypixel skyblock.")

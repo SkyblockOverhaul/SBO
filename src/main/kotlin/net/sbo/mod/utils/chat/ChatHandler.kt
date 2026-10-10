@@ -12,16 +12,16 @@ import java.util.regex.Pattern
 object ChatHandler {
 
     private val messageHandlers = mutableListOf<ChatRule>()
-    private val spammyPattern = Regex("§[0-9a-fk-or].+[0-9,]+/[0-9,]+❤.*")
+    // Can't cancel; they only see messages no handler canceled, like before when each had its own callback
+    private val listeners = mutableListOf<ChatListener>()
 
     @SboEvent
     fun onAllowMessage(event: ChatMessageAllowEvent) {
-        if (spammyPattern.matches(event.message.string)) {
-            event.isAllowed = true
-            return
-        }
-
         event.isAllowed = processMessage(event.message)
+    }
+
+    fun registerListener(regex: Regex, noFormatting: Boolean, action: (Component, MatchResult) -> Unit) {
+        listeners.add(ChatListener(regex, noFormatting, action))
     }
 
     fun registerHandler(
@@ -58,8 +58,11 @@ object ChatHandler {
         )
     }
 
+    // The component tree is walked once per message, every handler and listener matches on these strings
     private fun processMessage(message: Component): Boolean {
-        val messageString = message.formattedString().replace("§r", "")
+        val formatted = message.formattedString()
+        val messageString = formatted.replace("§r", "")
+        val plain by lazy { messageString.removeFormatting() }
 
         if (Debug.debugOnlyMessages && "❈ Defense" !in messageString) {
             println("Processing chat message: $messageString")
@@ -71,9 +74,7 @@ object ChatHandler {
 
         while (iterator.hasNext()) {
             val rule = iterator.next()
-            val matcher = rule.pattern.matcher(
-                if (rule.noFormatting) messageString.removeFormatting() else messageString
-            )
+            val matcher = rule.pattern.matcher(if (rule.noFormatting) plain else messageString)
 
             if (!matcher.find()) {
                 continue
@@ -94,8 +95,17 @@ object ChatHandler {
             }
         }
 
+        if (allowMessage) {
+            for (listener in listeners) {
+                // Listeners match the text with §r, as they always did
+                listener.regex.find(if (listener.noFormatting) plain else formatted)?.let { listener.action(message, it) }
+            }
+        }
+
         return allowMessage
     }
+
+    private class ChatListener(val regex: Regex, val noFormatting: Boolean, val action: (Component, MatchResult) -> Unit)
 
     private data class ChatRule(
         val pattern: Pattern,

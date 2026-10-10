@@ -16,19 +16,29 @@ import net.sbo.guilib.core.dsl.sortableList
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tabs
 import net.sbo.guilib.core.dsl.useToast
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.UiScale
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
+import net.sbo.mod.partyfinder.api.CategoriesData
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.game.World
 
 object PartyFinderGui {
-    private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/partyfinder/themes.css")
+    private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", SboLook.STYLE)
     private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
 
     /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others are declared in the CSS. */
@@ -39,12 +49,20 @@ object PartyFinderGui {
         "jetbrains-mono" to "JetBrains Mono"
     )
 
-    /** Selectable window sizes; null follows the Minecraft GUI scale. */
-    internal val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
-
-    /** Must run on the client thread. */
+    /** Only opens in Skyblock. Must run on the client thread. */
     fun open() {
+        if (!World.isInSkyblock()) {
+            SBOKotlin.toast(
+                Component.literal("SBO").withStyle(ChatFormatting.GOLD),
+                Component.literal("Join Skyblock before opening Party Finder!").withStyle(ChatFormatting.RED)
+            )
+            return
+        }
         GuiLib.open(App, STYLES, title = "SBO Party Finder")
+    }
+
+    fun register() {
+        Register.command("sbopf") { mc.schedule { open() } }
     }
 
     /** "kuudra/infernal" or "diana" to its target; a category with subcategories alone means all of them. */
@@ -64,6 +82,7 @@ object PartyFinderGui {
         var failed by useState(false)
         var selected by useState(startKey())
         var page by useState("parties")
+        var settingsSection by useState("general")
         var favorites by useState(config.favorites.toList())
         var own by useState<MemberView?>(null)
         var ownBySub by useState(mapOf<String, MemberView>())
@@ -75,24 +94,16 @@ object PartyFinderGui {
         var font by useState(config.font.takeIf { it in FONTS } ?: "inter")
         // On the body, so modals, tooltips and toasts use the font too
         FONTS.keys.forEach { id -> useBodyClass("pf-font-$id", font == id) }
-        var uiScale by useState(config.uiScale?.takeIf { it in SCALES })
-        useScreenScale(uiScale)
-        var theme by useState(PartyFinderThemes.find(config.theme))
+        var uiScale by useState(UiScale.own(config.uiScale))
+        useSboScale(uiScale)
+        var themeId by useState(config.theme)
+        val theme = useSboTheme(themeId)
         var recombobulated by useState(config.recombobulated)
         var favoritesOnlyOnce by useState(config.favoritesOnlyOnce)
-        // On the body like the font, so modals, tooltips and toasts follow the theme
-        PartyFinderThemes.BASES.forEach { base -> useBodyClass("pf-theme-$base", theme.base == base) }
+        // On the body like the theme, so modals, tooltips and toasts follow it
         useBodyClass("pf-hypixel", theme.hypixelColors)
         useBodyClass("pf-recomb", recombobulated)
         useBodyClass("pf-marks", theme.marks)
-        val document = useDocument()
-        useEffect(theme) {
-            val body = document.body
-            // Kept here, the cleanup would read the next theme from the state
-            val colors = theme.colors
-            colors.forEach { (name, value) -> body.setStyleProperty("--$name", value) }
-            onCleanup { colors.keys.forEach { body.removeStyleProperty("--$it") } }
-        }
         // Ticks so countdowns of closed events stay current
         val clock = useState(System.currentTimeMillis())
         var queued by useState(PartyFinderManager.queuedParty)
@@ -101,6 +112,9 @@ object PartyFinderGui {
         var onlineUsers by useState<Int?>(null)
         val currentKey = useRef("")
         val toast = useToast()
+        var onboarding by useState(!DataManager.sboData.pfOnboardingSeen)
+        var tourIntro by useState(true)
+        val beforeTour = useRef<String?>(null)
 
         useEffect {
             PartyCategories.get { loaded ->
@@ -271,10 +285,11 @@ object PartyFinderGui {
                                         config.uiScale = scale
                                         config.save()
                                     },
+                                    themeId = themeId,
                                     theme = theme,
                                     onTheme = { picked ->
-                                        theme = picked
-                                        config.theme = picked.id
+                                        themeId = picked
+                                        config.theme = picked
                                         config.save()
                                     },
                                     recombobulated = recombobulated,
@@ -288,6 +303,12 @@ object PartyFinderGui {
                                         favoritesOnlyOnce = on
                                         config.favoritesOnlyOnce = on
                                         config.save()
+                                    },
+                                    section = settingsSection,
+                                    onSection = { settingsSection = it },
+                                    onTour = {
+                                        tourIntro = false
+                                        onboarding = true
                                     }
                                 ),
                                 key = "settings"
@@ -311,7 +332,8 @@ object PartyFinderGui {
                                             target, own, ::ownFor, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
                                             inspected = inspected?.member?.uuid, onInspect = { inspected = it },
                                         joinedParties = joinedParties,
-                                            onRules = { page = "rules" }
+                                            onRules = { page = "rules" },
+                                            tourParty = onboarding
                                         ),
                                         key = "list"
                                     )
@@ -326,7 +348,37 @@ object PartyFinderGui {
                 val panelOwn = OwnStats.cached(panelTarget, panel.party.options) ?: ownFor(panelTarget)
                 playerPanel(panel, panelTarget, panelOwn) { inspected = null }
             }
+            if (onboarding) {
+                Onboarding(
+                    OnboardingProps(
+                        onShow = { shownPage, section ->
+                            if (beforeTour.current == null) {
+                                beforeTour.current = selected
+                                tourType(data, selected)?.let { selected = it }
+                            }
+                            page = shownPage
+                            section?.let { settingsSection = it }
+                        },
+                        onDone = {
+                            onboarding = false
+                            page = "parties"
+                            beforeTour.current?.let { selected = it }
+                            beforeTour.current = null
+                        },
+                        intro = tourIntro
+                    ),
+                    key = "onboarding"
+                )
+            }
         }
+    }
+
+    // The tiers step needs a party type that has tiers
+    private fun tourType(data: CategoriesData?, selected: String): String? {
+        val categories = data?.categories ?: return null
+        val current = categories.firstOrNull { it.id == selected.substringBefore('/') }
+        if (current != null && current.subcategories.size > 1) return null
+        return categories.firstOrNull { it.subcategories.size > 1 }?.id
     }
 
     private fun NodeBuilder.sideItem(

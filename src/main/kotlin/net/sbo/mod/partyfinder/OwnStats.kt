@@ -5,7 +5,7 @@ import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.MojangAuth
+import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
 import java.util.concurrent.ConcurrentHashMap
 
@@ -55,8 +55,8 @@ object OwnStats {
             return
         }
         val readcache = if (force) false else null
-        // Until the Mojang login ran, by name like /partyInfo, so opening the GUI does not log in
-        val body = if (MojangAuth.hasSession()) {
+        // Without a key by name like /partyInfo, so opening the GUI never needs a Mojang login
+        val body = if (SboKey.get().isNotBlank()) {
             CheckBody(target.partyType, target.subType, listOf(uuid), options = sent, readcache = readcache)
         } else {
             CheckBody(target.partyType, target.subType, names = listOf(Player.getName() ?: Player.accountName()), options = sent, readcache = readcache)
