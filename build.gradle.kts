@@ -7,14 +7,17 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.21"
     alias(libs.plugins.loom)
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     alias(libs.plugins.ksp)
 }
 
-version = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+private val projectVersion = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+
+// Sets the artifact version
+version = projectVersion
 
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
@@ -55,6 +58,8 @@ bloom {
         replacement("GLFW.GLFW_KEY_DOWN", "com.mojang.blaze3d.platform.InputConstants.KEY_DOWN")
         replacement("GLFW.GLFW_KEY_LEFT", "com.mojang.blaze3d.platform.InputConstants.KEY_LEFT")
         replacement("GLFW.GLFW_KEY_RIGHT", "com.mojang.blaze3d.platform.InputConstants.KEY_RIGHT")
+        replacement("GLFW.GLFW_KEY_ESCAPE", "com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE")
+        replacement("InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL, ", "InputConstants.releaseMouse(this.minecraft.getWindow(), ")
         replacement("GLFW.GLFW_KEY_EQUAL", "com.mojang.blaze3d.platform.InputConstants.KEY_EQUALS")
         replacement("GLFW.GLFW_KEY_KP_ADD", "com.mojang.blaze3d.platform.InputConstants.KEY_ADD")
         replacement("GLFW.GLFW_KEY_MINUS", "com.mojang.blaze3d.platform.InputConstants.KEY_MINUS")
