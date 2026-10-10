@@ -10,10 +10,10 @@ generation chain. Mod version 0.6.0 produces JARs under `build/versions/`, inclu
 
 GuiLib is required and bundled on every target. Current `Diana-V2` uses it for the
 Achievements, Events, Sounds, Cloud and Party Finder GUIs. The genuine 26.3 coordinate is
-`net.sbo:guilib-26.3-fabric:0.12.4`; its POM, Gradle module metadata and JAR are
+`net.sbo:guilib-26.3-fabric:0.12.5`; its POM, Gradle module metadata and JAR are
 available from the existing [SkyblockOverhaul Maven repository](https://skyblockoverhaul.github.io/maven).
 The published 26.3 JAR has SHA-256
-`0e5e64933833662d35a2391a1598763d65f9221fb5d65f7d5c72324f2be10074`.
+`a8309665c8f929004f74c7d16e886751467c499b3d60f4c18fcc1b8d2876c90c`.
 
 When a sibling `../SBO-GuiLib` source checkout is present, the existing composite
 build substitutes its matching projects for all three GuiLib artifacts. Use

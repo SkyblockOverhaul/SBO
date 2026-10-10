@@ -336,7 +336,7 @@ dependencies {
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    // GuiLib (see settings.gradle.kts for building it from a local checkout). Not used by any code yet.
+    // GuiLib (see settings.gradle.kts for building it from a local checkout).
     implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
