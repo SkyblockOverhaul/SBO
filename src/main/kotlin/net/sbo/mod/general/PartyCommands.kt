@@ -255,7 +255,6 @@ object PartyCommands {
                     DianaStats.sendPlayerStats(null)
                 }
                 "!version" -> sendResponse("SBO version: ${SBOKotlin.version} | Minecraft version: ${SBOKotlin.mcVersion}")
-                "!mod" -> sendResponse("https://modrinth.com/mod/${UpdateChecker.MODRINTH_ID}")
                 "!help" -> if (settings.dianaPartyCommands) {
                     help()
                     sendResponse("Available diana party commands: ${helpCommands.joinToString(",")}")

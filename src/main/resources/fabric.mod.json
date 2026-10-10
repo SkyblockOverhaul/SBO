@@ -61,7 +61,8 @@
   },
   "breaks": {
     "noammaddons": "<1.2.5",
-    "sodium-extra": "<0.9.2"
+    "sodium-extra": "<0.9.2",
+    "skysoft": "<0.1.18"
   },
   "conflicts": {
     "sbo-kotlin": "*"
