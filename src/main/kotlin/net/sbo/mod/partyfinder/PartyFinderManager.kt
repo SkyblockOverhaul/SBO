@@ -1,31 +1,51 @@
 package net.sbo.mod.partyfinder
 
-import gg.essential.universal.utils.toFormattedString
+import net.sbo.mod.utils.chat.toFormattedString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
-import net.sbo.mod.partyfinder.PartyPlayer.getPartyPlayerStats
-import net.sbo.mod.settings.categories.PartyFinder
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.partyfinder.api.CheckBody
+import net.sbo.mod.partyfinder.api.PartyBody
+import net.sbo.mod.partyfinder.api.PartyFinderApi
+import net.sbo.mod.partyfinder.api.PartyView
+import net.sbo.mod.partyfinder.api.PfError
+import net.sbo.mod.partyfinder.api.Problem
+import net.sbo.mod.partyfinder.api.RolesBody
+import net.sbo.mod.settings.Settings
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.HypixelModApi
+import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.*
-import net.sbo.mod.utils.data.DataManager.sboData
+import net.sbo.mod.utils.events.ClickActionManager
+import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.SBOEvent
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.ChatMessageEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.partyfinder.PartyFinderRefreshListEvent
-import net.sbo.mod.utils.http.Http.getBoolean
 import net.sbo.mod.utils.http.Http.getInt
-import net.sbo.mod.utils.http.Http.getString
 import net.sbo.mod.utils.http.SboApi
-import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object PartyFinderManager {
-    private const val MAX_PARTY_SIZE = 6
+    const val NOTE_MAX_LENGTH = 100
+    // The party list shows two lines of a note
+    const val NOTE_MAX_LINES = 2
+    private val JOIN_REQUEST_COOLDOWN = TimeUnit.MINUTES.toNanos(1)
+    // Hypixel party invites run out after a minute
+    private val INVITE_HOLD_MS = TimeUnit.MINUTES.toMillis(1)
+    private val partyChatRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
+    private val QUIET_QUEUE_HINT_AFTER = TimeUnit.MINUTES.toMillis(10)
 
     var creatingParty = false
     var inQueue = false
@@ -34,16 +54,29 @@ object PartyFinderManager {
     private var ghostParty = false
     var usedPf = false
 
-    private var partySize = 0
+    // Also used for requeueing
+    var draft: PartyDraft? = null
+        private set
+
+    var queuedParty: PartyView? = null
+        private set
+
+    // When the party was queued and nobody joined since, 0 once someone joined or the hint was shown
+    private var quietSince = 0L
+
+    private val partySize: Int get() = draft?.partySize ?: 0
     private var partyMemberCount = 0
     private var partyMember: List<String> = emptyList()
     private var isLeader = false
-    private var partyNote = ""
-    private var partyType = ""
-    private var partyReqs = Reqs()
     var isInParty = false
 
+    // Roles players picked when they asked to join, by uuid without dashes
+    private val memberRoles = mutableMapOf<String, String>()
+    // When a player was invited with a role; the place stays theirs until the invite runs out
+    private val roleInvites = mutableMapOf<String, Long>()
     private val playersSentRequest = mutableMapOf<String, Long>()
+
+    private val draftJson = Json { ignoreUnknownKeys = true }
 
     private val partyDisbandRegexes = listOf(
         Regex("^.+ §r§ehas disbanded the party!$"),
@@ -59,6 +92,13 @@ object PartyFinderManager {
         Regex("^(.+)§r§e has promoted §r(.+) §r§eto Party Leader$")
     )
 
+    private val ownJoinRegex = Regex("^§r§eYou have joined §r(.+)'s? §r§eparty!$")
+
+    /** Goes up when the player joined a party, the open party list reloads then. */
+    @Volatile
+    var joinedParties = 0
+        private set
+
     private val partyJoinRegexes = listOf(
         Regex("^(.+) §r§ejoined the party.$"),
         Regex("^§r§eYou have joined §r(.+)'s? §r§eparty!$")
@@ -71,20 +111,37 @@ object PartyFinderManager {
         Regex("^§r§eKicked (.+) because they were offline.$")
     )
 
-    fun hasSboKey(): Boolean {
-        val sboKey = sboData.sboKey
-        if (sboKey.isBlank() || !sboKey.startsWith("sbo")) {
-            Chat.chat("§cPlease set your SBO key with /sboKey <key>, if you don't have one, get it in our discord.")
-            return false
-        }
-        return true
+    /** Set while the party finder GUI is open: results go there as toasts instead of the chat hidden behind it. */
+    @Volatile
+    var listener: ((success: Boolean, text: String) -> Unit)? = null
+
+    internal fun tell(text: String, success: Boolean) {
+        val gui = listener
+        if (gui != null) gui(success, text.replace(Regex("§."), "").removePrefix("[SBO] ")) else Chat.chat(text)
+    }
+
+    private fun myUuid(): String = OwnStats.uuid()
+
+    private fun takeOverLegacySettings() {
+        val old = Settings.legacyPartyFinder ?: return
+        Settings.legacyPartyFinder = null
+        val config = DataManager.partyFinderConfigState
+        old.get("autoInvite")?.takeIf { it.isJsonPrimitive }?.let { config.autoInvite = it.asBoolean }
+        old.get("autoRequeue")?.takeIf { it.isJsonPrimitive }?.let { config.autoRequeue = it.asBoolean }
+        config.save()
     }
 
     fun init() {
+        takeOverLegacySettings()
         Register.command("sborequeue") {
-            if (!inQueue) {
+            val last = draft
+            if (inQueue) {
+                Chat.chat("§6[SBO] §eYour party is already in the queue.")
+            } else if (last == null) {
+                Chat.chat("§6[SBO] §4There is no party to requeue yet.")
+            } else {
                 Chat.chat("§6[SBO] §eRequeuing party with last used requirements...")
-                createParty(partyReqs, partyNote, partyType, partySize)
+                createParty(last)
             }
         }
 
@@ -103,46 +160,44 @@ object PartyFinderManager {
             } else if (args[0].startsWith("sbo").not()) {
                 Chat.chat("§6[SBO] §cInvalid key format! get one in our Discord")
             } else {
-                sboData.sboKey = args[0]
-                DataManager.save(DataManager::sboData)
+                SboKey.set(args[0])
                 Chat.chat("§6[SBO] §aKey has been set")
             }
         }
 
         Register.command("sboClearKey") {
-            sboData.sboKey = ""
-            DataManager.save(DataManager::sboData)
+            SboKey.clear()
             Chat.chat("§6[SBO] §aKey has been cleared")
         }
 
         Register.onChatMessageCancelable(
             Pattern.compile("§d(.*?) (.*?)§7: (.*?) join party request - id:(.*)", Pattern.DOTALL)
-        ) { message, matchResult ->
-            if ("From" in matchResult.group(1)) {
-                if (partyMemberCount < partySize) {
-                    val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
-
-                    if (PartyFinder.autoInvite) {
-                        invitePlayerIfMeetsReqs(playerName)
-                    } else {
-                        Chat.chat(Chat.getChatBreak())
-                        Chat.chat(
-                            Chat.textComponent("§6[SBO] §b$playerName §ewants to join your party.\n"),
-                            Chat.textComponent("§7[§aInvite§7]", "/p $playerName", "/p invite $playerName"),
-                            Chat.textComponent(" §7[§eCheck Stats§7]", "/sboc $playerName", "/sbocheck $playerName"),
-                        )
-                        Chat.chat(Chat.getChatBreak())
-                    }
+        ) { _, matchResult ->
+            if ("From" in matchResult.group(1) && partyMemberCount < partySize) {
+                val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
+                val request = JoinRequest.parse(matchResult.group(4) ?: "")
+                if (!Helper.isPlayerName(playerName) || BlockedPlayers.isBlockedName(playerName)) return@onChatMessageCancelable false
+                if (DataManager.partyFinderConfigState.autoInvite) {
+                    invitePlayerIfMeetsReqs(playerName, request)
+                } else {
+                    val role = request.role
+                    showJoinRequest(playerName, role, onInvite = role?.let { { inviteByName(playerName, it) } })
                 }
             }
             false
         }
 
+        Register.onChatMessage(partyChatRegex) { _, match ->
+            val parts = match.groupValues[2].trim().split(Regex("\\s+"))
+            if (parts.firstOrNull()?.lowercase() != "!role" || parts.size != 2) return@onChatMessage
+            onRoleCommand(Helper.getPlayerName(match.groupValues[1]), parts[1])
+        }
+
         Register.onChatMessageCancelable(
             Pattern.compile("^§9§m(.*?) §ehas invited you to join their party!(.*?)$", Pattern.DOTALL)
-        ) { message, matchResult ->
+        ) { _, matchResult ->
             val playername = Helper.getPlayerName(matchResult.group(1) ?: "")
-            if (playersSentRequest.containsKey(playername)) {
+            if (Helper.isPlayerName(playername) && playersSentRequest.containsKey(playername)) {
                 Chat.chat("§6[SBO] §eJoining party of §b$playername§e...")
                 Chat.command("p accept $playername")
                 playersSentRequest.remove(playername)
@@ -151,23 +206,18 @@ object PartyFinderManager {
         }
 
         Register.onTick(20 * 60 * 4) { // every 4 minutes
-            if (inQueue) {
-                if (!hasSboKey()) return@onTick
-                SboApi.refreshParty()
-                    .toJsonObject { response ->
-                        if (!response.getBoolean("Success")) {
-                            inQueue = false
-                            Chat.chat("§6[SBO] §4${response.getString("Error") ?: "Unknown error"}")
-                        }
-                    }
-                    .error { error ->
-                        inQueue = false
-                        Chat.chat("§6[SBO] §4Unexpected error while updating party: $error")
-                    }
-            }
+            // The socket's pings keep the party listed while it is connected
+            if (!inQueue || PartyFinderSocket.isConnected()) return@onTick
+            PartyFinderApi.refreshParty(onError = { error ->
+                if (error.code == PfError.PARTY_NOT_FOUND || error.code == PfError.PARTY_TOO_OLD || error.code == PfError.INVALID_KEY) {
+                    onPartyRemoved(error)
+                }
+            }) {}
         }
 
-        HypixelModApi.onPartyInfo{ isInParty, isLeader, members ->
+        Register.onTick(20 * 310) { checkQuietQueue() }
+
+        HypixelModApi.onPartyInfo { isInParty, isLeader, members ->
             this.isInParty = isInParty
             this.isLeader = isLeader
             this.partyMember = members
@@ -178,7 +228,7 @@ object PartyFinderManager {
 
         HypixelModApi.onError { packet ->
             if (packet.type() == PartyInfoS2CPacket.ID) {
-                creatingParty
+                creatingParty = false
                 updateBool = false
             }
         }
@@ -191,215 +241,407 @@ object PartyFinderManager {
         }
     }
 
-    fun createParty(
-        reqs: Reqs,
-        note: String,
-        type: String,
-        size: Int,
-    ) {
-        if (this.creatingParty) return
-        this.partyReqs = reqs
-        this.partyNote = note
-        this.partyType = type
-        this.partySize = if (size <= 0) MAX_PARTY_SIZE else size.coerceAtMost(MAX_PARTY_SIZE)
-        this.usedPf = true
-
-        HypixelModApi.sendPartyInfoPacket(createParty = true)
+    /** Queues [newDraft]. Size and note are fitted to the category, the definitions are loaded when needed. */
+    fun createParty(newDraft: PartyDraft) {
+        if (creatingParty) return
+        PartyCategories.get { data ->
+            val target = data?.let { PartyCategories.target(newDraft.partyType, newDraft.subType) }
+            if (target == null) {
+                tell("§6[SBO] §4Could not load the party types from the SBO server. Please try again later.", false)
+                return@get
+            }
+            if (!target.createOpen) {
+                val text = if (target.opensAt == null) "can only be created while the event is running" else "can be listed from one hour before the event starts"
+                tell("§6[SBO] §4${target.label} parties $text.", false)
+                return@get
+            }
+            draft = newDraft.copy(
+                partyType = target.partyType,
+                subType = target.subType,
+                partySize = target.clampSize(newDraft.partySize),
+                note = checkPartyNote(newDraft.note)
+            )
+            usedPf = true
+            mc.execute { HypixelModApi.sendPartyInfoPacket(createParty = true) }
+        }
     }
 
-    private fun partyRequest() = PartyRequest(
-        uuids = partyMember.map { it.replace("-", "") },
-        reqs = partyReqs,
-        partyType = partyType,
-        note = checkPartyNote(partyNote),
-        partySize = partySize
-    )
+    private fun partyBody(current: PartyDraft): PartyBody {
+        val uuids = partyMember.map { it.replace("-", "") }
+        val own = current.ownRole?.takeIf { role -> PartyCategories.target(current.partyType, current.subType)?.roles?.any { it.id == role } == true }
+        // The leader's place comes first; without places for others their role is only shown
+        val wanted = if (own != null && current.wantedRoles.isNotEmpty()) listOf(own) + current.wantedRoles else current.wantedRoles
+        val members = memberRoles.filterKeys { it in uuids } + listOfNotNull(own?.let { myUuid() to it })
+        return PartyBody(
+            partyType = current.partyType,
+            subType = current.subType,
+            version = PartyCategories.version ?: "",
+            uuids = uuids,
+            partySize = current.partySize,
+            note = current.note,
+            reqs = current.reqs.mapNotNull { (stat, value) ->
+                runCatching { stat to draftJson.parseToJsonElement(value) }.getOrNull()
+            }.toMap(),
+            options = current.options,
+            roles = RolesBody(wanted, members)
+        )
+    }
+
+    /** Creates or updates the party; outdated definitions are reloaded and the call is tried once more. */
+    private fun sendParty(update: Boolean, retried: Boolean = false, onError: (PfError) -> Unit, onSuccess: (PartyView) -> Unit) {
+        val current = draft ?: return
+        val body = partyBody(current)
+        val retry: (PfError) -> Unit = { error ->
+            if (error.code == PfError.DEFINITIONS_OUTDATED && !retried) {
+                PartyCategories.get(force = true) { sendParty(update, true, onError, onSuccess) }
+            } else {
+                onError(error)
+            }
+        }
+        if (update) PartyFinderApi.updateParty(body, retry, onSuccess)
+        else PartyFinderApi.createParty(body, retry, onSuccess)
+    }
 
     private fun queueParty() {
         if (!this.creatingParty) return
         creatingParty = false
         if (partyMember.size > partySize) {
-            Chat.chat("§6[SBO] §4Party is over the limit. ${partyMember.size}/$partySize")
+            tell("§6[SBO] §4Party is over the limit. ${partyMember.size}/$partySize", false)
             return
         }
         if (inQueue) {
-            Chat.chat("§6[SBO] §4Party is already in the queue.")
+            tell("§6[SBO] §4Party is already in the queue.", false)
             return
         }
         if (!isLeader) {
-            Chat.chat("§6[SBO] §4You must be the party leader to queue the party.")
+            tell("§6[SBO] §4You must be the party leader to queue the party.", false)
             return
         }
 
-        try {
-            val currentTime = System.nanoTime()
-            SboApi.createParty(partyRequest())
-                .toJson<PartyAddResponse>(ignoreUnknownKeys = true) { response ->
-                if (response.success) {
-                    val timeTaken = System.nanoTime() - currentTime
-                    inQueue = true
-                    creatingParty = false
-                    response.partyReqs?.let { partyReqs = it }
-                    response.partySize?.let { partySize = it }
-                    SBOEvent.emit(PartyFinderRefreshListEvent())
+        val startTime = System.nanoTime()
+        sendParty(update = false, onError = { error ->
+            reportFailure("create party", error)
+        }) { party ->
+            val timeTaken = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime)
+            inQueue = true
+            queuedParty = party
+            quietSince = System.currentTimeMillis()
+            SBOEvent.emit(PartyFinderRefreshListEvent())
 
-                    if (ghostParty) {
-                        removePartyFromQueue()
-                        ghostParty = false
-                    }
-
-                    if (requeue) {
-                        requeue = false
-                        Chat.clickableChat("§6[SBO] §eClick to dequeue party", "Dequeue Party", "/sbodequeue")
-                    }
-
-                    Chat.chat("§6[SBO] §aParty created successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
-                    Chat.chat("§6[SBO] §ePlease note that for people to be able to join your party, you MUST set direct message privacy to \"Anyone\" in /settings -> Social Settings in the Hypixel Lobby. If you have already done so, you can click to hide this message.", true)
-
-                    if (isInParty) Chat.pc("[SBO] Party now in queue.")
-                } else {
-                    val errorMessage = response.error ?: "Unknown error"
-                    Chat.chat("§6[SBO] §4Failed to create party: ${errorMessage.replace("&", "§")}")
-                    if (errorMessage.contains("requirement")) {
-                        Chat.chat("§6[SBO] §eTip: Tell party members that do not meet requirements to ensure their API is on and to type /sboreloadstats to resync if you think this is in error.", true)
-                    }
-                }
-
-            }.error { error ->
-                Chat.chat("§6[SBO] §4Unexpected error while creating party: ${error.message}")
+            if (ghostParty) {
+                removePartyFromQueue()
+                ghostParty = false
             }
 
-        } catch (_: Exception) {
-            return
+            if (requeue) {
+                requeue = false
+                Chat.clickableChat("§6[SBO] §eClick to dequeue party", "Dequeue Party", "/sbodequeue")
+            }
+
+            tell("§6[SBO] §aParty created successfully! Time taken: ${timeTaken}ms", true)
+            Chat.chat("§6[SBO] §ePlease note that for people to be able to join your party, you MUST set direct message privacy to \"Anyone\" in /settings -> Social Settings in the Hypixel Lobby. If you have already done so, you can click to hide this message.", true)
+
+            if (isInParty) Chat.pc("[SBO] Party now in queue.")
         }
     }
 
     private fun updateParty() {
         if (!this.updateBool) return
         updateBool = false
-        if (inQueue && isInParty && isLeader) {
-            if (partyMember.size !in 2..<partySize) return
-            val currentTime = System.nanoTime()
-            SboApi.updateQueuedParty(partyRequest())
-                .toJson<PartyUpdateResponse>(ignoreUnknownKeys = true) { response ->
-                if (response.success) {
-                    val timeTaken = System.nanoTime() - currentTime
-                    response.partyReqs?.let { partyReqs = it }
-                    response.partySize?.let { partySize = it }
-                    Chat.chat("§6[SBO] §eParty updated successfully! Time taken: ${TimeUnit.NANOSECONDS.toMillis(timeTaken)}ms")
-                } else {
-                    inQueue = false
-                    val errorMessage = response.error ?: "Unknown error"
-                    Chat.chat("§6[SBO] §4Failed to update party: ${errorMessage.replace("&", "§")}")
-                }
-            }.error { error ->
-                inQueue = false
-                Chat.chat("§6[SBO] §4Unexpected error while updating party: ${error.message}")
+        if (!inQueue || !isInParty || !isLeader) return
+        if (partyMember.size !in 2..<partySize) return
+        val startTime = System.nanoTime()
+        sendParty(update = true, onError = { error ->
+            inQueue = false
+            queuedParty = null
+            reportFailure("update party", error)
+        }) { party ->
+            queuedParty = party
+            val timeTaken = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime)
+            tell("§6[SBO] §eParty updated successfully! Time taken: ${timeTaken}ms", true)
+        }
+    }
+
+    private fun currentTarget(): PartyTarget? = draft?.let { PartyCategories.target(it.partyType, it.subType) }
+
+    /** [role] has a free place, counting players in the party and the ones invited within the last minute. */
+    private fun roleOpen(role: String, except: String? = null): Boolean {
+        val wanted = draft?.wantedRoles.orEmpty()
+        if (wanted.isEmpty()) return true
+        val now = System.currentTimeMillis()
+        val inParty = partyMember.map { it.replace("-", "") }.toSet()
+        val holders = memberRoles.count { (uuid, r) ->
+            r == role && uuid != except && (uuid in inParty || now - (roleInvites[uuid] ?: 0L) < INVITE_HOLD_MS)
+        }
+        return holders < wanted.count { it == role }
+    }
+
+    private fun holdRole(uuid: String, role: String?) {
+        if (role == null) return
+        memberRoles[uuid] = role
+        roleInvites[uuid] = System.currentTimeMillis()
+    }
+
+    private fun openRoleLabels(target: PartyTarget): String {
+        val open = draft?.wantedRoles.orEmpty().distinct().filter { roleOpen(it) }
+        return if (open.isEmpty()) "none" else open.joinToString(", ") { target.roleLabel(it) }
+    }
+
+    /** Sets or removes the role of a member of the listed party and sends it to the server. */
+    fun setMemberRole(uuid: String, role: String?) {
+        if (role == null) memberRoles.remove(uuid) else memberRoles[uuid] = role
+        updateBool = true
+        HypixelModApi.sendPartyInfoPacket()
+    }
+
+    /** Sets or removes the leader's own role of the listed party, keeps it for the next party and sends it to the server. */
+    fun setOwnRole(role: String?) {
+        val current = draft ?: return
+        current.ownRole = role
+        val config = DataManager.partyFinderConfigState
+        config.drafts[current.key]?.let { saved ->
+            saved.ownRole = role
+            config.save()
+        }
+        updateBool = true
+        HypixelModApi.sendPartyInfoPacket()
+    }
+
+    // "!role <role>" in party chat; only the mod of the leader of a listed party answers
+    private fun onRoleCommand(playerName: String, wanted: String) {
+        if (!inQueue || !isLeader || !Helper.isPlayerName(playerName)) return
+        val target = currentTarget() ?: return
+        if (target.roles.isEmpty()) return
+        val member = queuedParty?.members?.firstOrNull { it.name.equals(playerName, ignoreCase = true) } ?: return
+        if (member.uuid == myUuid()) return
+        val key = wanted.lowercase().filter { it.isLetterOrDigit() }
+        val role = target.roles.firstOrNull { r -> r.id.filter { it.isLetterOrDigit() } == key || r.label.lowercase().filter { it.isLetterOrDigit() } == key }
+        val wantedRoles = draft?.wantedRoles.orEmpty()
+        when {
+            role == null || (wantedRoles.isNotEmpty() && role.id !in wantedRoles) -> Chat.pc("[SBO] Unknown role. Open roles: ${openRoleLabels(target)}.")
+            memberRoles[member.uuid] == role.id -> return
+            !roleOpen(role.id, except = member.uuid) -> Chat.pc("[SBO] ${role.label} is already taken. Open roles: ${openRoleLabels(target)}.")
+            else -> {
+                setMemberRole(member.uuid, role.id)
+                Chat.pc("[SBO] $playerName now plays ${role.label}.")
             }
         }
     }
 
-    fun getAllParties(
-        partyType: String,
-        onComplete: ((List<Party>) -> Unit)? = null,
-        onError: (() -> Unit)? = null
-    ) {
-        SboApi.listParties(partyType)
-            .toJson<GetAllParties>(ignoreUnknownKeys = true) { response ->
-                if (response.success) {
-                    onComplete?.invoke(response.parties)
-                } else {
-                    Chat.chat("§6[SBO] §4Failed to get parties")
-                    onError?.invoke()
-                }
-            }.error { error ->
-                onError?.invoke()
-                Chat.chat("§6[SBO] §4Unexpected error while getting parties: ${error.message}")
-            }
+    private fun reportFailure(action: String, error: PfError) {
+        val gui = listener
+        if (gui != null) {
+            val target = draft?.let { PartyCategories.target(it.partyType, it.subType) }
+            val details = error.problems.joinToString("") { "\n${it.name}: ${ProblemText.describe(it, target)}" }
+            val tip = if (error.code == PfError.REQS_NOT_MET) "\n${ProblemText.MEMBERS_RELOAD_HINT}" else ""
+            gui(false, "Failed to $action: ${ProblemText.error(error)}$details$tip")
+            return
+        }
+        Chat.chat("§6[SBO] §4Failed to $action: ${ProblemText.error(error)}")
+        printProblems(error.problems)
     }
 
+    private fun printProblems(problems: List<Problem>) {
+        val target = draft?.let { PartyCategories.target(it.partyType, it.subType) }
+        problems.forEach { Chat.chat("§7• §b${it.name}§7: §c${ProblemText.describe(it, target)}") }
+    }
+
+    fun listParties(
+        partyType: String,
+        subType: String = "",
+        onComplete: ((List<PartyView>) -> Unit)? = null,
+        onError: ((PfError) -> Unit)? = null
+    ) {
+        PartyFinderApi.parties(partyType, subType, onError = { error ->
+            // The open GUI shows the error in the list
+            if (listener == null) Chat.chat("§6[SBO] §4Failed to get parties: ${ProblemText.error(error)}")
+            onError?.invoke(error)
+        }) { parties -> onComplete?.invoke(parties) }
+    }
+
+    /** Number of SBO users that sent a request in the last 5 minutes. */
     fun getActiveUsers(
-        onComplete: ((Int) -> Unit)? = null
+        onError: ((Exception) -> Unit)? = null,
+        onComplete: (Int) -> Unit
     ) {
         SboApi.activeUsers().toJsonObject { response ->
-            onComplete?.invoke(response.getInt("activeUsers") ?: 0)
-        }.error { error ->
-            Chat.chat("§6[SBO] §4Unexpected error while getting active users: ${error.message}")
-        }
+            val count = response.getInt("activeUsers")
+            if (count != null) onComplete(count) else onError?.invoke(Exception("No activeUsers in the response"))
+        }.error { error -> onError?.invoke(error) }
+    }
+
+    private const val STAT_VIEWER_SOON =
+        "§6[SBO] §eA new SBO stat viewer is coming soon. It replaces /sbocheck and works for every party type, not just Diana."
+
+    private fun showJoinRequest(
+        playerName: String, role: String?, onInvite: (() -> Unit)? = null, onBlock: () -> Unit = { BlockedPlayers.block(playerName) }
+    ) {
+        val roleText = role?.let { id ->
+            val label = draft?.let { PartyCategories.target(it.partyType, it.subType) }?.roles?.firstOrNull { it.id == id }?.label ?: id
+            " as §b$label"
+        } ?: ""
+        val invite = onInvite?.let { "/__sbo_run_clickable_action ${ClickActionManager.registerAction(it)}" } ?: "/p invite $playerName"
+        Chat.chat(Chat.getChatBreak())
+        Chat.chat(
+            Chat.textComponent("§6[SBO] §b$playerName §ewants to join your party$roleText§e.\n"),
+            Chat.textComponent("§7[§aInvite§7]", "/p $playerName", invite),
+            // /sbocheck is gone, its replacement is not out yet
+            Chat.textComponent(" §7[§eCheck Stats§7]", "Coming soon", "/__sbo_run_clickable_action ${ClickActionManager.registerAction { Chat.chat(STAT_VIEWER_SOON) }}"),
+            Chat.textComponent(" §7[§cBlock§7]", "Block player", "/__sbo_run_clickable_action ${ClickActionManager.registerAction(onBlock)}"),
+        )
+        Chat.chat(Chat.getChatBreak())
     }
 
     // todo: add a way to prevent inviting more player then party has space (maybe every user has 10 seconds to accept else next player gets invited)
-    private fun invitePlayerIfMeetsReqs(playerName: String) {
-        PartyCheck.checkPlayer(playerName, noMessage = true) { stats ->
-            if (checkIfPlayerMeetsReqs(stats, partyReqs)) {
-                if (partyMemberCount < partySize) {
-                    Chat.command("p invite $playerName")
-                    Chat.chat("§6[SBO] §eInvited $playerName to the party.")
+    private fun invitePlayerIfMeetsReqs(playerName: String, request: JoinRequest) {
+        val current = draft ?: return showJoinRequest(playerName, request.role)
+        // The sender's name comes from Hypixel, so it can't be faked like a uuid in the text
+        PartyFinderApi.checkMembers(
+            CheckBody(current.partyType, current.subType, names = listOf(playerName), partyId = myUuid(), role = request.role),
+            onError = { error ->
+                if (error.code == PfError.PARTY_FULL) return@checkMembers
+                Chat.chat("§6[SBO] §eCould not check §b$playerName§e: ${ProblemText.error(error)}")
+                showJoinRequest(playerName, request.role)
+            }
+        ) { data ->
+            val member = data.members.firstOrNull()
+            if (member == null || !member.name.equals(playerName, ignoreCase = true)) {
+                showJoinRequest(playerName, request.role)
+                return@checkMembers
+            }
+            if (data.problems.isNotEmpty()) {
+                Chat.chat("§6[SBO] §b$playerName §ewants to join, but does not meet the requirements:")
+                printProblems(data.problems)
+                return@checkMembers
+            }
+            if (request.role != null && !roleOpen(request.role)) {
+                Chat.chat("§6[SBO] §b$playerName §ewants to join as ${currentTarget()?.roleLabel(request.role) ?: request.role}, but that role is already taken.")
+                return@checkMembers
+            }
+            if (partyMemberCount < partySize) {
+                holdRole(member.uuid, request.role)
+                Chat.command("p invite $playerName")
+                Chat.chat("§6[SBO] §eInvited $playerName to the party.")
+            }
+        }
+    }
+
+    // Invite button of a /msg request: the uuid for the role comes from the server
+    private fun inviteByName(playerName: String, role: String) {
+        Chat.command("p invite $playerName")
+        val current = draft ?: return
+        PartyFinderApi.checkMembers(CheckBody(current.partyType, current.subType, names = listOf(playerName)), onError = {}) { data ->
+            data.members.firstOrNull()?.takeIf { it.name.equals(playerName, ignoreCase = true) && roleOpen(role) }?.let { holdRole(it.uuid, role) }
+        }
+    }
+
+    fun onPartyRemoved(error: PfError) {
+        if (!inQueue) return
+        inQueue = false
+        queuedParty = null
+        Chat.chat("§6[SBO] §4Your party left the queue: ${ProblemText.error(error)}")
+    }
+
+    // The backend already checked the player against the party
+    fun onSocketJoinRequest(requestId: String, uuid: String, playerName: String, role: String?) {
+        if (!inQueue || partyMemberCount >= partySize || BlockedPlayers.isBlocked(uuid)) return PartyFinderSocket.answer(requestId, invited = false)
+        // Another player got this place a moment ago
+        if (role != null && !roleOpen(role)) return PartyFinderSocket.answer(requestId, invited = false)
+        val invite = {
+            holdRole(uuid, role)
+            Chat.command("p invite $playerName")
+            PartyFinderSocket.answer(requestId, invited = true)
+        }
+        if (DataManager.partyFinderConfigState.autoInvite) {
+            invite()
+            Chat.chat("§6[SBO] §eInvited $playerName to the party.")
+        } else {
+            showJoinRequest(playerName, role, invite) {
+                BlockedPlayers.block(playerName, uuid)
+                PartyFinderSocket.answer(requestId, invited = false)
+            }
+        }
+    }
+
+    /** [role] is needed when the party asks for roles. */
+    fun sendJoinRequest(party: PartyView, role: String? = null) {
+        // The name ends up in /msg
+        val leaderName = party.leader?.name?.takeIf { Helper.isPlayerName(it) } ?: return
+        val target = PartyCategories.target(party.partyType, party.subType)
+        if (target == null) {
+            tell("§6[SBO] §4This party type is unknown. Please reopen the party finder.", false)
+            return
+        }
+        if (ReqMatcher.isFull(party)) {
+            tell("§6[SBO] §cThis party is already full.", false)
+            return
+        }
+        if (party.roles.wanted.isNotEmpty() && role == null) {
+            tell("§6[SBO] §cThis party asks for roles. Please pick the role you want to play.", false)
+            return
+        }
+        val lastSent = playersSentRequest[leaderName]
+        if (lastSent != null && System.nanoTime() - lastSent < JOIN_REQUEST_COOLDOWN) {
+            tell("§6[SBO] §cYou have already sent a request to this player recently.", false)
+            return
+        }
+        OwnStats.get(target, party.options, onError = { error ->
+            tell("§6[SBO] §4Could not load your stats: ${ProblemText.error(error)}", false)
+        }) { me ->
+            val problems = ReqMatcher.checkJoin(party, target, me, role)
+            if (problems.isNotEmpty()) return@get showOwnProblems(problems, target)
+            playersSentRequest[leaderName] = System.nanoTime()
+            // Over the socket first, by /msg when the leader is not connected or the socket fails
+            PartyFinderSocket.requestJoin(party.id, role) { status, answer ->
+                when (status) {
+                    "sent" -> tell("§6[SBO] §eJoin request sent.", true)
+                    "invited" -> tell("§6[SBO] §aYou were invited.", true)
+                    "declined" -> tell("§6[SBO] §cThe leader declined.", false)
+                    "failed" -> joinFailed(answer, target, leaderName)
+                    else -> {
+                        tell("§6[SBO] §eSending join request to $leaderName...", true)
+                        Chat.command("msg $leaderName ${JoinRequest.message(role)}")
+                    }
                 }
             }
         }
     }
 
-    private fun checkIfPlayerMeetsReqs(
-        stats: PartyPlayerStats,
-        reqs: Reqs
-    ): Boolean {
-        if (stats.sbLvl < reqs.lvl) {
-            return false
+    private fun joinFailed(answer: JsonObject, target: PartyTarget, leaderName: String) {
+        val problems = (answer["problems"] as? JsonArray)?.let { runCatching { PartyFinderApi.json.decodeFromJsonElement<List<Problem>>(it) }.getOrNull() }
+        if (!problems.isNullOrEmpty()) {
+            playersSentRequest.remove(leaderName)
+            return showOwnProblems(problems, target)
         }
-        if (stats.mythosKills < reqs.kills) {
-            return false
-        }
-        if (reqs.eman9 && !stats.eman9) {
-            return false
-        }
-        if (reqs.looting5 && !stats.looting5daxe) {
-            return false
-        }
-        return stats.magicalPower >= reqs.mp
+        val error = (answer["error"] as? JsonObject)?.let { runCatching { PartyFinderApi.json.decodeFromJsonElement<PfError>(it) }.getOrNull() }
+            ?: PfError(PfError.BAD_RESPONSE, "")
+        // The backend's wait between requests to the same leader stays
+        if (error.code != PfError.RATE_LIMITED) playersSentRequest.remove(leaderName)
+        tell("§6[SBO] §4Failed to join party: ${ProblemText.error(error)}", false)
     }
 
-    fun sendJoinRequest(
-        partyLeader: String,
-        partyReqs: Reqs
-    ) {
-        getPartyPlayerStats { playerStats ->
-            if (checkIfPlayerMeetsReqs(playerStats, partyReqs)) {
-                if (playersSentRequest.containsKey(partyLeader) && System.nanoTime() - playersSentRequest[partyLeader]!! < TimeUnit.MILLISECONDS.toNanos(
-                        60000
-                    )
-                ) { // 1 minute cooldown
-                    Chat.chat("§6[SBO] §cYou have already sent a request to this player recently.")
-                } else {
-                    Chat.chat("§6[SBO] §eSending join request to $partyLeader...")
-                    Chat.command("msg $partyLeader [SBO] join party request - id:${UUID.randomUUID()}")
-                    playersSentRequest[partyLeader] = System.nanoTime()
-                }
-            } else {
-                Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party. Ensure all your APIs are on and run /sboreloadstats to resync if you think this is an error.")
-            }
+    private fun showOwnProblems(problems: List<Problem>, target: PartyTarget) {
+        val gui = listener
+        if (gui != null) {
+            gui(false, "You don't meet the requirements: " + problems.joinToString("; ") { ProblemText.describe(it, target) } +
+                "\n${ProblemText.OWN_RELOAD_HINT}")
+            return
         }
+        Chat.chat("§6[SBO] §cYou don't meet the requirements to join this party:")
+        problems.forEach { Chat.chat("§7• §c${ProblemText.describe(it, target)}") }
     }
 
     fun removePartyFromQueue(onComplete: ((Boolean) -> Unit)? = null) {
         if (inQueue) {
             inQueue = false
-            if (!hasSboKey()) {
+            queuedParty = null
+            PartyFinderApi.removeParty(onError = { error ->
                 onComplete?.invoke(false)
-                return
+                tell("§6[SBO] §4Failed to remove party from queue: ${ProblemText.error(error)}", false)
+            }) {
+                onComplete?.invoke(true)
+                tell("§6[SBO] §eParty removed from queue.", true)
             }
-            SboApi.unqueueParty()
-                .toJsonObject { response ->
-                    onComplete?.invoke(true)
-                    if (response.getBoolean("Success")) {
-                        Chat.chat("§6[SBO] §eParty removed from queue.")
-                    } else {
-                        Chat.chat("§6[SBO] §4${response.getString("Error") ?: "Failed to remove party from queue."}")
-                    }
-                }.error { error ->
-                    onComplete?.invoke(false)
-                    Chat.chat("§6[SBO] §4Unexpected error while removing party from queue: $error")
-                }
         } else if (creatingParty) {
             ghostParty = true
         }
@@ -423,11 +665,20 @@ object PartyFinderManager {
                 partyMemberCount = 1
                 match = true
                 isInParty = false
+                memberRoles.clear()
+                roleInvites.clear()
                 removePartyFromQueue()
             }
         }
+        ownJoinRegex.matchEntire(text)?.let { joined ->
+            // Hypixel already says it in chat, so only a toast while the GUI is open
+            listener?.invoke(true, "You joined ${Helper.getPlayerName(joined.groupValues[1])}'s party.")
+            // The leader's mod updates the listed party first
+            sleep(3000) { joinedParties++ }
+        }
         partyJoinRegexes.forEach {
             if (it.matches(text)) {
+                quietSince = 0L
                 updateBool = true
                 partyMemberCount += 1
                 match = true
@@ -461,12 +712,13 @@ object PartyFinderManager {
         } else {
             if (!isInParty) return
             if (!isLeader) return
+            val last = draft ?: return
             if (partyMemberCount < partySize && !creatingParty && !requeue && usedPf) {
                 requeue = true
                 sleep(200) {
-                    if (PartyFinder.autoRequeue) {
+                    if (DataManager.partyFinderConfigState.autoRequeue) {
                         Chat.chat("§6[SBO] §eRequeuing party with last used requirements...")
-                        createParty(partyReqs, partyNote, partyType, partySize)
+                        createParty(last)
                     } else {
                         Chat.clickableChat("§6[SBO] §eClick to requeue party with last used requirements.", "/sborequeue", "/sborequeue")
                     }
@@ -475,9 +727,47 @@ object PartyFinderManager {
         }
     }
 
-    private fun checkPartyNote(note: String): String {
-        return note.replace(Regex("[^\\p{L}\\p{N} ,.!?\\-_]"), "")
-            .take(30)
+    private fun checkQuietQueue() {
+        if (!inQueue || quietSince == 0L || System.currentTimeMillis() - quietSince < QUIET_QUEUE_HINT_AFTER) return
+        quietSince = 0L
+        SBOKotlin.toast(
+            Component.literal("SBO Party Finder").withStyle(ChatFormatting.GOLD),
+            Component.literal("Nobody joined in 10 minutes. Try lowering your requirements.").withStyle(ChatFormatting.YELLOW)
+        )
+        Chat.chat(
+            Chat.textComponent("§6[SBO] §eNobody joined your party in the last 10 minutes. Maybe your requirements are too high, try lowering or adjusting them. "),
+            Chat.textComponent("§a[Open Party Finder]", "Open the Party Finder", "/sbopf")
+        )
+    }
+
+    /** Same filter as the backend: letters, digits, spaces, line breaks and ,.!?-_+/:'(), no / at a line start */
+    fun checkPartyNote(note: String): String {
+        return limitNoteLines(note.replace('\t', ' '))
+            .replace(Regex("[^\\p{L}\\p{N} \\n,.!?\\-_+/:'()]"), "")
+            .replace(Regex("(?m)^/+"), "")
+            .take(NOTE_MAX_LENGTH)
             .trim()
+    }
+
+    /** Line breaks after the second line become spaces, like pasting into the note field. */
+    fun limitNoteLines(note: String): String {
+        val lines = note.replace("\r\n", "\n").replace('\r', '\n').split('\n', limit = NOTE_MAX_LINES)
+        return (lines.dropLast(1) + lines.last().replace('\n', ' ')).joinToString("\n")
+    }
+}
+
+/**
+ * The text of a join request whisper. `id:` is a random uuid like old mods send, so Hypixel never
+ * sees the same message twice; who asks comes from the whisper's sender name.
+ */
+data class JoinRequest(val role: String?) {
+    companion object {
+        private val ROLE = Regex("\\brole:([a-z_]{1,32})")
+
+        /** [text] is everything after `id:`. */
+        fun parse(text: String): JoinRequest = JoinRequest(ROLE.find(text)?.groupValues?.get(1))
+
+        fun message(role: String?, id: String = java.util.UUID.randomUUID().toString()): String =
+            "[SBO] join party request - id:$id" + (role?.let { " role:$it" } ?: "")
     }
 }

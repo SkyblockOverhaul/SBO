@@ -1,10 +1,10 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.config.Category
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 
-object General : CategoryKt("General") {
+object General : Category("General") {
     enum class HideOwnWaypoints {
         NORMAL, INQ, MANTICORE, KING, SPHINX
     }

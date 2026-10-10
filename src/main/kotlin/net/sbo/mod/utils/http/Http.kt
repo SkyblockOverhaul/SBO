@@ -6,6 +6,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import net.minecraft.SharedConstants
 import net.sbo.mod.SBOKotlin
+import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -31,10 +32,20 @@ object Http {
 
     private val HTTP_3_OR_2: HttpClient.Version = http3WithFallback()
 
+    // Bodies are read into memory, the biggest one (Hypixel bazaar) is about 4 MB
+    private const val MAX_BODY_BYTES = 10 * 1024 * 1024
+
     private val CLIENT: HttpClient = HttpClient.newBuilder()
         .executor(EXECUTOR)
         .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
         .followRedirects(HttpClient.Redirect.NORMAL)
+        .build()
+
+    // The JDK keeps own headers on redirects, so requests with an SBO key or session never follow one
+    private val NO_REDIRECT_CLIENT: HttpClient = HttpClient.newBuilder()
+        .executor(EXECUTOR)
+        .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
+        .followRedirects(HttpClient.Redirect.NEVER)
         .build()
 
     private fun http3WithFallback(): HttpClient.Version {
@@ -89,7 +100,12 @@ object Http {
         EXECUTOR.execute {
             try {
                 val uri = URI.create(urlString)
-                val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
+                val httpVersion = when {
+                    // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
+                    uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
+                    uri.host in HTTP2_ONLY -> HttpClient.Version.HTTP_2
+                    else -> HTTP_3_OR_2
+                }
 
                 val builder = HttpRequest.newBuilder()
                     .version(httpVersion)
@@ -99,14 +115,17 @@ object Http {
 
                 headers.forEach { (name, value) -> builder.header(name, value) }
 
-                val response = CLIENT.send(method(builder).build(), BodyHandlers.ofInputStream())
+                val client = if (headers.keys.any { it.startsWith("x-sbo-", ignoreCase = true) }) NO_REDIRECT_CLIENT else CLIENT
+                val response = client.send(method(builder).build(), BodyHandlers.ofInputStream())
                 val code = response.statusCode()
+                val body = response.body().use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
 
                 handle.complete(
                     HttpResponse(
                         code,
                         statusMessage(code),
-                        ResponseBody(response.body())
+                        ResponseBody(body.inputStream())
                     )
                 )
             } catch (e: Exception) {

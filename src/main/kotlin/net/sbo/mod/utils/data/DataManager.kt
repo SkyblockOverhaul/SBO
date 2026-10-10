@@ -2,6 +2,7 @@ package net.sbo.mod.utils.data
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -296,9 +297,47 @@ object DataManager {
         }
     }
 
+    // === CLOUD SYNC ===
+
+    /** Like [exportAll], as JSON trees, so callers can change and print them without parsing text again. */
+    fun exportJson(): Map<String, JsonElement> = DataRegistry.entries.associate { entry ->
+        @Suppress("UNCHECKED_CAST")
+        val typedEntry = entry as ConfigEntry<Any>
+        typedEntry.fileName to gson.toJsonTree(typedEntry.getter())
+    }
+
+    fun exportAll(): Map<String, String> = DataRegistry.entries.associate { entry ->
+        @Suppress("UNCHECKED_CAST")
+        val typedEntry = entry as ConfigEntry<Any>
+        typedEntry.fileName to gson.toJson(typedEntry.getter())
+    }
+
+    // Main thread only
+    fun importAll(files: Map<String, String>) {
+        val parsed = this::class.java.declaredFields
+            .filter { it.isAnnotationPresent(DataField::class.java) }
+            .mapNotNull { field ->
+                val json = files[field.getAnnotation(DataField::class.java).fileName] ?: return@mapNotNull null
+                val value = gson.fromJson(json, field.type) ?: throw JsonSyntaxException("${field.name} is empty")
+                field to value
+            }
+
+        // Snapshot before the swap, the single thread executor backs it up before the next save
+        val snapshot = exportAll()
+        DATA_SAVER_EXECUTOR.execute { createBackup(dataDir, snapshot) }
+        parsed.forEach { (field, value) ->
+            field.isAccessible = true
+            field.set(this, value)
+        }
+        saveAllDataThreaded(dataDir)
+    }
+
     // === BACKUP ===
 
-    private fun createBackup(modName: String) {
+    fun backupDir(): File = File(File(FabricLoader.getInstance().configDir.toFile(), dataDir), "backup")
+
+    // snapshot: file name to json, null backs up the current data
+    private fun createBackup(modName: String, snapshot: Map<String, String>? = null) {
         try {
             val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
             val backupDir = File(modConfigDir, "backup")
@@ -310,10 +349,14 @@ object DataManager {
             val tempBackupDir = File(backupDir, "SBOBackup_$timestamp")
             tempBackupDir.mkdirs()
 
-            DataRegistry.entries.forEach { entry ->
-                @Suppress("UNCHECKED_CAST")
-                val typedEntry = entry as ConfigEntry<Any>
-                saveToFolder(tempBackupDir, typedEntry.getter(), typedEntry.fileName)
+            if (snapshot != null) {
+                snapshot.forEach { (fileName, json) -> File(tempBackupDir, fileName).writeText(json) }
+            } else {
+                DataRegistry.entries.forEach { entry ->
+                    @Suppress("UNCHECKED_CAST")
+                    val typedEntry = entry as ConfigEntry<Any>
+                    saveToFolder(tempBackupDir, typedEntry.getter(), typedEntry.fileName)
+                }
             }
 
             if (!tempBackupDir.exists() || tempBackupDir.listFiles()?.isEmpty() == true) {
@@ -766,59 +809,5 @@ object DataManager {
         save(::dianaTrackerTotalData)
         save(::dianaTrackerSessionData)
         save(::dianaTrackerMayorData)
-    }
-
-    fun updatePfConfigState(category: String, list: String, key: String, value: Boolean) {
-        val categoryInstance: Any? = when (category) {
-            "filters" -> partyFinderConfigState.filters
-            "checkboxes" -> partyFinderConfigState.checkboxes
-            else -> null
-        }
-
-        if (categoryInstance != null) {
-            val listInstance: Any? = when (list) {
-                "diana" -> if (category == "filters") partyFinderConfigState.filters.diana else partyFinderConfigState.checkboxes.diana
-                "custom" -> if (category == "filters") partyFinderConfigState.filters.custom else partyFinderConfigState.checkboxes.custom
-                else -> null
-            }
-
-            if (listInstance != null) {
-                val property = listInstance::class.members.find { it.name == key }
-                if (property is KMutableProperty1<*, *> && property.getter.call(listInstance) != value) {
-                    property.setter.call(listInstance, value)
-                    save(::partyFinderConfigState)
-                }
-            }
-        }
-    }
-
-    fun updatePfConfigState(category: String, list: String, key: String, value: String) {
-        if (category != "inputs" && category != "textInputTexts") return
-
-        val listInstance: Any? = when (list) {
-            "diana" -> partyFinderConfigState.inputs.diana
-            "custom" -> partyFinderConfigState.inputs.custom
-            else -> null
-        }
-
-        if (listInstance != null) {
-            val property = listInstance::class.members.find { it.name == key }
-            if (property is KMutableProperty1<*, *>) {
-                val currentValue = property.getter.call(listInstance)
-                val convertedValue = when (property.returnType.classifier) {
-                    Int::class -> value.toIntOrNull()
-                    String::class -> value
-                    else -> {
-                        return
-                    }
-                }
-                if (currentValue != convertedValue) {
-                    if (convertedValue != null) {
-                        property.setter.call(listInstance, convertedValue)
-                        save(::partyFinderConfigState)
-                    }
-                }
-            }
-        }
     }
 }

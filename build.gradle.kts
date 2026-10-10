@@ -7,14 +7,17 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.21"
     alias(libs.plugins.loom)
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     alias(libs.plugins.ksp)
 }
 
-version = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+private val projectVersion = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+
+// Sets the artifact version
+version = projectVersion
 
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
@@ -31,6 +34,8 @@ loom {
         generateRunConfig.set(true)
         preferGradleTask = true
     }
+
+    uncompressNestedJars = true
 }
 
 bloom {
@@ -66,7 +71,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
         freeCompilerArgs = args
 
-        moduleName.set("sbo-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
+        moduleName.set("sbo-${projectVersion}-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
     }
 }
 
@@ -83,22 +88,11 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://repo.essential.gg/repository/maven-public")
+            maven("https://skyblockoverhaul.github.io/maven")
         }
 
         filter {
-            includeGroup("gg.essential")
-        }
-    }
-
-    exclusiveContent {
-        forRepository {
-            maven("https://maven.teamresourceful.com/repository/maven-public")
-        }
-
-        filter {
-            includeGroup("com.teamresourceful.resourcefulconfig")
-            includeGroup("com.teamresourceful.resourcefulconfigkt")
+            includeGroup("net.sbo")
         }
     }
 
@@ -240,11 +234,7 @@ tasks.named<ProcessResources>("processResources") {
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
 
-    val elementaVersion = libs.versions.elementa.get()
     val hmApiVersion = versionedProperty("hmapi.version")
-    val resourcefulConfigVersion = versionedProperty("rconfig.version")
-    val resourcefulConfigKtVersion = versionedProperty("rconfigkt.version")
-    val universalCraftVersion = libs.versions.universalcraft.get()
     val modMenuVersion = versionedProperty("modmenu.version")
 
     val modName = project.property("mod.name")
@@ -268,11 +258,8 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
     inputs.property("java_version_major", javaVersionMajor)
 
-    inputs.property("elementa_version", elementaVersion)
     inputs.property("hm_api_version", hmApiVersion)
-    inputs.property("resourcefulconfig_version", resourcefulConfigVersion)
-    inputs.property("resourcefulconfigkt_version", resourcefulConfigKtVersion)
-    inputs.property("universalcraft_version", universalCraftVersion)
+    inputs.property("guilib_version", project.property("guilib.version"))
     inputs.property("modmenu_version", modMenuVersion)
 
     val expandProperties = mapOf(
@@ -290,11 +277,8 @@ tasks.named<ProcessResources>("processResources") {
         "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
         "java_version_major" to javaVersionMajor,
 
-        "elementa_version" to elementaVersion,
         "hm_api_version" to hmApiVersion,
-        "resourcefulconfig_version" to resourcefulConfigVersion,
-        "resourcefulconfigkt_version" to resourcefulConfigKtVersion,
-        "universalcraft_version" to universalCraftVersion,
+        "guilib_version" to project.property("guilib.version"),
         "modmenu_version" to modMenuVersion,
     ) + inputs.properties
 
@@ -318,7 +302,8 @@ dependencies {
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    implementation(include(libs.elementa.get())!!)
+    // GuiLib (see settings.gradle.kts for building it from a local checkout). Not used by any code yet.
+    implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
     implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
@@ -331,15 +316,9 @@ dependencies {
             // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
             implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
 
-            implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.2:${versionedProperty("rconfig.version")}")!!)
-            implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
-            implementation(include(libs.universalcraft262.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
         }
         "26.1.2-fabric" -> {
-            implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
-            implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
-            implementation(include(libs.universalcraft261.get())!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")

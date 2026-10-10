@@ -3,8 +3,6 @@ package net.sbo.mod.utils.data.configs.sound
 import net.sbo.mod.utils.data.DataManager
 
 data class SoundSettingsData(
-    var rareMobSound: String = "",
-    var rareMobVolume: Float = 1.0f,
     var lowInqHpSound: String = "",
     var lowInqHpVoume: Float = 1.0f,
     var lowSphinxHpSound: String = "",
@@ -40,7 +38,11 @@ data class SoundSettingsData(
     var stickSound: String = "",
     var stickVolume: Float = 1.0f,
     var miscDropSound: String = "",
-    var miscDropVolume: Float = 1.0f
+    var miscDropVolume: Float = 1.0f,
+    var masterVolume: Float = 1.0f,
+    // Master volume used to be in the config (Customization), SoundHandler copies it over once
+    var masterVolumeMigrated: Boolean = false,
+    var uiScale: Float? = null
 ) {
     fun save() = DataManager.save(DataManager::soundSettingsData)
 }

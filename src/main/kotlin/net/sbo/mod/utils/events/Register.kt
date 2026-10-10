@@ -3,11 +3,8 @@ package net.sbo.mod.utils.events
 import com.mojang.brigadier.arguments.StringArgumentType
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.network.chat.Component
-import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.ChatHandler
-import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -91,17 +88,7 @@ object Register {
         noFormatting: Boolean = false,
         action: (message: Component, matchResult: MatchResult) -> Unit
     ) {
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, _ ->
-            var text = message.formattedString()
-
-            if (noFormatting) text = text.removeFormatting()
-
-            regex.find(text)?.let { result ->
-                action(message, result)
-            }
-
-            true
-        }
+        ChatHandler.registerListener(regex, noFormatting, action)
     }
 
     /**

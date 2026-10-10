@@ -1,10 +1,10 @@
 package net.sbo.mod.utils.game
 
-import gg.essential.universal.utils.toFormattedString
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
+import net.sbo.mod.utils.chat.toFormattedString
 
 class ItemLookup(private val stack: ItemStack) {
     private val customData: CustomData? by lazy(LazyThreadSafetyMode.NONE) { this.stack[DataComponents.CUSTOM_DATA] }

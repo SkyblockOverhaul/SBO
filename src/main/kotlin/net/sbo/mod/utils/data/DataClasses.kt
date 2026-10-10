@@ -1,27 +1,8 @@
 package net.sbo.mod.utils.data
 
-import gg.essential.elementa.UIComponent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive
-
-@Serializable
-data class GetAllParties(
-    @SerialName("Success")
-    val success: Boolean = false,
-
-    @SerialName("Parties")
-    val parties: List<Party> = emptyList()
-)
-
-@Serializable
-data class PartyInfo(
-    @SerialName("Success")
-    val success: Boolean = false,
-
-    @SerialName("PartyInfo")
-    val partyInfo: List<PartyPlayerStats> = emptyList(),
-)
 
 @Serializable
 data class PlayerInfoResponse(
@@ -36,58 +17,119 @@ data class PlayerInfoResponse(
 )
 
 @Serializable
-data class PartyAddResponse(
+data class CloudUploadRequest(
+    val data: String,
+    val baseVersion: Int,
+    val force: Boolean = false
+)
+
+@Serializable
+data class SboBadge(
+    val uuid: String,
+    val name: String,
+    val rank: String,
+    val color: String,
+    val to: String? = null,
+    val level: Boolean? = null,
+    val plainName: Boolean? = null,
+    val label: String? = null,
+    val value: String? = null,
+)
+
+@Serializable
+data class BadgeListResponse(
     @SerialName("Success")
     val success: Boolean = false,
+    val version: String? = null,
+    val unchanged: Boolean = false,
+    val badges: List<SboBadge> = emptyList(),
+)
 
-    @SerialName("Message")
-    val message: String? = null,
-
-    @SerialName("PartyInfo")
-    val partyInfo: List<PartyPlayerStats>? = null,
-
-    @SerialName("PartyReqs")
-    val partyReqs: Reqs? = null,
-
-    @SerialName("PartySize")
-    val partySize: Int? = null,
-
-    @SerialName("Error")
-    val error: String? = null
+/** Body of `POST /badge` */
+@Serializable
+data class BadgeSettings(
+    val enabled: Boolean,
+    val stat: String,
+    val color: String,
+    val colorName: Boolean = true,
+    val colorLevel: Boolean = false,
 )
 
 @Serializable
-data class PartyUpdateResponse(
+data class BadgeChoice(
+    val id: String,
+    val label: String,
+    val hex: String? = null,
+    val to: String? = null,
+)
+
+@Serializable
+data class OwnBadgeResponse(
     @SerialName("Success")
     val success: Boolean = false,
-
-    @SerialName("Message")
-    val message: String? = null,
-
-    @SerialName("PartyReqs")
-    val partyReqs: Reqs? = null,
-
-    @SerialName("PartySize")
-    val partySize: Int? = null,
-
     @SerialName("Error")
-    val error: String? = null
+    val error: String? = null,
+    @SerialName("Code")
+    val code: String? = null,
+    val rank: String? = null,
+    val settings: BadgeSettings? = null,
+    val preview: SboBadge? = null,
+    val hiddenByServer: Boolean = false,
+    val values: Map<String, String> = emptyMap(),
+    val level: Int? = null,
+    val stats: List<BadgeChoice> = emptyList(),
+    val colors: List<BadgeChoice> = emptyList(),
 )
 
 @Serializable
-data class PartyRequest(
-    val uuids: List<String>,
-    val reqs: Reqs,
-    val partyType: String = "Diana",
-    val note: String = "",
-    val partySize: Int = 6
+data class CloudEnvelope(
+    val v: Int = 1,
+    val counter: Long,
+    val files: Map<String, String>,
+    val sig: String? = null
 )
 
-/** Body of `POST /v2/partyInfo` and `POST /v2/partyInfoByUuids` */
 @Serializable
-data class MembersRequest(
-    val members: List<String>,
-    val readcache: Boolean = true
+data class CloudUploadResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    @SerialName("Error")
+    val error: String? = null,
+    @SerialName("Code")
+    val code: String? = null,
+    @SerialName("Conflict")
+    val conflict: Boolean = false,
+    val version: Int = 0
+)
+
+@Serializable
+data class CloudSlotResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    @SerialName("Error")
+    val error: String? = null,
+    val data: String = "",
+    val version: Int = 0,
+    val updatedAt: Long = 0
+)
+
+@Serializable
+data class CloudSlotMeta(
+    val slot: String,
+    val version: Int,
+    val size: Int,
+    val updatedAt: Long
+)
+
+@Serializable
+data class CloudStatusResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    @SerialName("Error")
+    val error: String? = null,
+    @SerialName("Code")
+    val code: String? = null,
+    val slots: List<CloudSlotMeta> = emptyList()
 )
 
 @Serializable
@@ -127,20 +169,6 @@ data class QuickStatus(
 )
 
 @Serializable
-data class Party(
-    @SerialName("partyinfo")
-    val partyInfo: List<PartyPlayerStats>,
-    val reqs: Reqs,
-    val leader: String,
-    @SerialName("partymembers")
-    val partyMembersCount: Int,
-    val leaderName: String,
-    val note: String,
-    val partySize: Int
-)
-
-
-@Serializable
 data class PartyPlayerStats(
     val name: String = "",
     val sbLvl: Int = -1,
@@ -160,15 +188,6 @@ data class PartyPlayerStats(
     val griffinItem: JsonPrimitive? = null,
     val killLeaderboard: Int = 999999,
     val mythosKills: Int = 0
-)
-
-@Serializable
-data class Reqs(
-    val lvl: Int = -1,
-    val kills: Int = 0,
-    val eman9: Boolean = false,
-    val looting5: Boolean = false,
-    val mp: Int = 0
 )
 
 @Serializable
@@ -215,12 +234,6 @@ data class CandidateData(
     @SerialName("name") val name: String,
     @SerialName("perks") val perks: List<PerkData>,
     @SerialName("votes") val votes: Int? = null
-)
-
-data class HighlightElement(
-    val page: String,
-    val obj: UIComponent,
-    val type: String
 )
 
 data class Item(

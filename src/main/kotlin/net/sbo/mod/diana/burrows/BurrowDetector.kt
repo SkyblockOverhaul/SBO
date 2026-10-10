@@ -148,7 +148,12 @@ object BurrowDetector {
 
         Register.onTick(1) {
             updateInternalStateWaypoints()
+
             pendingUseSpadeTitle?.let {
+                if (!canShowUseSpade()) {
+                    pendingUseSpadeTitle = null
+                    return@let
+                }
                 Helper.showTitle(it, "", 0, 1, 0)
             }
         }
@@ -226,8 +231,10 @@ object BurrowDetector {
         return "Mob" // assume mob if not a known treasure drop
     }
 
+    private fun canShowUseSpade() = Diana.spadeGuess && Helper.hasSpade && World.getWorld() == "Hub"
+
     fun requestSpade(reason: String) {
-        if (!Diana.spadeGuess || !Helper.hasSpade || World.getWorld() != "Hub") return
+        if (!canShowUseSpade()) return
 
         val color = if (reason == "failure") "c" else "e"
 

@@ -79,12 +79,12 @@ object DianaLoot : DirtyFlushableOverlay() {
         LootItemData("MYTH_THE_FISH", "Myth the Fish", RED),
         LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS"),
         LootItemData("MANTI_CORE", "Manti-core", RED, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
-        LootItemData("KING_MINOS_SHARD", "King Minos Shard", RED, isRarerDrop = true, dropMobId = "KING_MINOS"),
+        LootItemData("KING_MINOS_SHARD", "King Minos Shard", RED, isRarerDrop = true),
         LootItemData("FATEFUL_STINGER", "Fateful Stinger", LIGHT_PURPLE, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
         LootItemData("CHIMERA", "Chimera", LIGHT_PURPLE, combined = true, dropMobId = "MINOS_INQUISITOR", dropMobLsId = "MINOS_INQUISITOR_LS"),
         LootItemData("BRAIN_FOOD", "Brain Food", DARK_PURPLE, combined = true, dropMobId = "SPHINX", dropMobLsId = "SPHINX_LS"),
         LootItemData("MINOS_RELIC", "Minos Relic", DARK_PURPLE, isRarerDrop = true, dropMobId = "MINOS_CHAMPION"),
-        LootItemData("SPHINX_SHARD", "Sphinx Shard", DARK_PURPLE, isRarerDrop = true, dropMobId = "SPHINX"),
+        LootItemData("SPHINX_SHARD", "Sphinx Shard", DARK_PURPLE, isRarerDrop = true),
         LootItemData("BRAIDED_GRIFFIN_FEATHER", "Braided Griffin Feather", DARK_PURPLE, isRarerDrop = true),
         LootItemData("DAEDALUS_STICK", "Daedalus Stick", GOLD, isRarerDrop = true, dropMobId = "MINOTAUR"),
         LootItemData("MINOTAUR_SHARD", "Minotaur Shard", GOLD, isRarerDrop = true),
@@ -332,7 +332,13 @@ object DianaLoot : DirtyFlushableOverlay() {
     }
 
     fun totalProfit(tracker: DianaTracker): Long {
-        var totalProfit = 0L
+        val totalProfit = profitByItem(tracker).values.sum()
+        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
+    }
+
+    /** Coins worth of every dropped item with a price (field name without "_LS", lootshare drops added in), coins not included. */
+    fun profitByItem(tracker: DianaTracker): Map<String, Long> {
+        val profit = HashMap<String, Long>()
         for (item in tracker.items::class.java.declaredFields) {
             item.isAccessible = true
             var itemName = item.name
@@ -342,10 +348,10 @@ object DianaLoot : DirtyFlushableOverlay() {
             if (itemValue <= 0) continue
             val itemPrice = Helper.getItemPrice(itemName)
             if (itemPrice > 0) {
-                totalProfit += itemPrice * itemValue
+                profit[itemName] = (profit[itemName] ?: 0L) + itemPrice * itemValue
             }
         }
-        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
+        return profit
     }
 
     private fun updateTimerText() {

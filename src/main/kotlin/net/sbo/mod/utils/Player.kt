@@ -15,6 +15,9 @@ object Player {
 
     fun getUUIDString(): String = mc.player?.stringUUID ?: ""
 
+    // Works in the main menu
+    fun accountUuid(): String = mc.user.profileId.toString().replace("-", "").lowercase()
+
     fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
     fun getPlayerInventory(): List<ItemStack> {
@@ -23,4 +26,7 @@ object Player {
     }
 
     fun getName(): String? = mc.player?.name?.string
+
+    /** Name of the logged in account, also in the main menu. */
+    fun accountName(): String = mc.user.name
 }

@@ -1,6 +1,7 @@
 package net.sbo.mod.utils.data.configs.sbo
 
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.configs.achievements.AchievementsView
 
 data class SboData(
     var effects: List<Effect> = emptyList(),
@@ -23,6 +24,8 @@ data class SboData(
     var suppressedMessages: MutableSet<String> = mutableSetOf(),
     var partyBlacklist: List<String> = emptyList(),
     var achievementFilter: String = "Locked",
+    // null until the achievements window saves it, then achievementFilter is no longer used
+    var achievementsView: AchievementsView? = null,
     var lastKingDate: Long = 0,
     var lastMantiDate: Long = 0,
     var lastInqDate: Long = 0,
@@ -32,7 +35,7 @@ data class SboData(
     var b2bChimLs: Boolean = false,
     var b2bInq: Boolean = false,
     var b2bChimLsInq: Boolean = false,
-    var sboKey: String = "",
+    var sboKey: String = "", // legacy, moved to ~/.sbo
     var b2bStreakCounter: MutableMap<String, Int> = mutableMapOf(),
 
     var mobsSinceKing: Int = 0,
@@ -61,6 +64,25 @@ data class SboData(
     var b2bFoodLs: Boolean = false,
 
     var lastStatsProfile: String = "",
+
+    var cloudSync: MutableMap<String, CloudSyncState> = mutableMapOf(), // account uuid -> state
+    var cloudSyncUiScale: Float? = null, // null = the global size, see UiScale
+    var eventsUiScale: Float? = null, // null = the global size, see UiScale
+    var eventsSort: String = "year",
+    var eventsChartView: String = "value",
+    var eventsHiddenLines: MutableList<String> = mutableListOf(),
+    var pfOnboardingSeen: Boolean = false,
+    var badgesAboveHeads: Boolean = true,
+    var badgesInTab: Boolean = true,
+    var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }
+
+data class CloudSyncState(
+    var version: Int = 0, // 0 = never synced
+    var counter: Long = 0,
+    var hash: String = "", // last synced state
+    var autoSync: Boolean? = null, // null = not set on this PC yet
+    var premium: Boolean? = null, // null = never asked
+)

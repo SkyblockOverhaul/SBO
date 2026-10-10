@@ -1,0 +1,204 @@
+/* Colors of the SBO Dark theme, same variables as the party finder (partyfinder.css), so both look alike. */
+body {
+    --bg: #1e1f22;
+    --panel: #2b2d31;
+    --panel-2: #313338;
+    --card: #26282c;
+    --card-hover: #2a2c31;
+    --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
+    --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
+    --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
+    --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
+    --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
+    --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
+    --guilib-border: var(--input-border);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ach-window {
+    display: flex;
+    flex-direction: column;
+    /* min() instead of max-height: children are laid out against the capped height */
+    width: min(94vw, 560px);
+    height: min(92vh, 420px);
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    animation: ach-fade 150ms ease-out;
+}
+@keyframes ach-fade { from { opacity: 0; transform: translateY(6px); } }
+
+.ach-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 4px 3px 10px;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.ach-title { font-weight: bold; color: var(--title); white-space: nowrap; }
+.ach-progress { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.ach-progress-text { color: var(--ok); white-space: nowrap; font-size: 7px; }
+.ach-bar { width: 70px; height: 3px; border-radius: 2px; background-color: var(--disabled); overflow: hidden; }
+.ach-bar-fill { height: 100%; border-radius: 2px; background-color: var(--ok); transition: width 200ms ease-out; }
+.ach-spacer { flex-grow: 1; }
+.ach-scale-select { font-size: 7px; }
+.ach-close { padding: 1px 5px; background-color: transparent; border-color: transparent; }
+.ach-close:hover { background-color: var(--danger); }
+
+.ach-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; padding: 6px 8px 0 8px; }
+.ach-search { flex: 1 1 80px; min-width: 60px; }
+/* Search, selects and segmented controls all as tall as the search field */
+.ach-toolbar > * { height: 18px; }
+.ach-toolbar .guilib-segmented { align-items: stretch; padding: 1px; }
+.ach-toolbar .guilib-segment { display: flex; align-items: center; padding: 0 6px; }
+.ach-rarities { padding: 4px 8px 0 8px; gap: 2px; }
+.ach-rarities .guilib-chip { font-size: 7px; padding: 0 4px; }
+.ach-rarities .guilib-chip.selected { color: var(--rarity); background-color: var(--tint-strong); border-color: var(--rarity); }
+
+.ach-list { flex-grow: 1; min-height: 0; padding: 4px 8px 8px 8px; margin-top: 2px; }
+.ach-empty { padding: 20px 10px; text-align: center; color: var(--muted); }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px; }
+.ach-group-title {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0 3px 0;
+    padding: 0 2px 2px 2px;
+    border-bottom: 1px solid var(--border);
+    color: var(--rarity);
+    font-weight: bold;
+}
+.ach-group-title:first-child { margin-top: 0; }
+.ach-group-count { color: var(--muted); font-weight: normal; font-size: 7px; }
+
+.ach-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--bad-border);
+    transition: border-color 120ms, background-color 120ms;
+}
+/* Not the left side: it shows locked/unlocked */
+.ach-card:hover { background-color: var(--card-hover); border-top-color: var(--border-hover); border-right-color: var(--border-hover); border-bottom-color: var(--border-hover); }
+.ach-card.unlocked { border-left-color: var(--ok); }
+.ach-card:not(.unlocked) .ach-name, .ach-card:not(.unlocked) .ach-desc { opacity: 0.75; }
+.ach-card-head { display: flex; align-items: center; gap: 4px; }
+.ach-name { flex-grow: 1; min-width: 0; color: var(--rarity); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ach-check { width: 7px; height: 7px; flex-shrink: 0; color: var(--ok); }
+.ach-desc { flex-grow: 1; color: var(--subtle); font-size: 7px; }
+.ach-card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; margin-top: 1px; }
+.ach-rarity { color: var(--rarity); font-size: 6px; font-weight: bold; margin-right: 2px; }
+.ach-tag { padding: 0 3px; border-radius: 2px; background-color: var(--panel-2); color: var(--text-soft); font-size: 6px; white-space: nowrap; }
+.ach-tag.ok { background-color: var(--ok-soft); color: var(--ok); }
+
+/* Hypixel rarity colors, the dark ones a bit lighter so they stay readable on the dark cards */
+.ach-r-common { --rarity: var(--text-strong); }
+.ach-r-uncommon { --rarity: #55ff55; }
+.ach-r-rare { --rarity: #6b6bff; }
+.ach-r-epic { --rarity: #c040c0; }
+.ach-r-legendary { --rarity: #ffaa00; }
+.ach-r-mythic { --rarity: #ff55ff; }
+.ach-r-divine { --rarity: #55ffff; }
+.ach-r-celestial { --rarity: #9b5cff; }
+.ach-r-impossible { --rarity: #e04545; }
+
+/* GuiLib widgets that scroll on their own, same idle-hiding scrollbar as .guilib-autohide (as in partyfinder.css) */
+.guilib-select-menu {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 300ms ease 600ms;
+}
+
+/*noinspection CssInvalidPseudoSelector*/
+.guilib-select-menu:scrolling, .guilib-select-menu:hover {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    transition: scrollbar-color 120ms;
+}
+.guilib-segmented .guilib-segment.selected { color: var(--accent-text); }
+
+@media (max-width: 420px) {
+    .ach-bar { display: none; }
+}

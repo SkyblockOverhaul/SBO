@@ -64,10 +64,22 @@ class HttpRequestHandle {
     // FIX: Changed from 'private' to '@PublishedApi internal' to allow access from the public inline function.
     @PublishedApi
     internal var onResult: ((HttpResponse) -> Unit)? = null
+        set(value) {
+            field = value
+            deliver()
+        }
 
     // FIX: Changed from 'private' to '@PublishedApi internal' for consistency and access by 'fail'.
     @PublishedApi
     internal var onError: ((Exception) -> Unit)? = null
+        set(value) {
+            field = value
+            deliver()
+        }
+
+    // A result that arrived before its callback was attached
+    private var pendingResponse: HttpResponse? = null
+    private var pendingError: Exception? = null
 
     /**
      * The original result handler for raw HTTP responses.
@@ -145,11 +157,28 @@ class HttpRequestHandle {
     }
 
     internal fun complete(response: HttpResponse) {
-        onResult?.invoke(response)
+        synchronized(this) { pendingResponse = response }
+        deliver()
     }
 
     @PublishedApi
     internal fun fail(exception: Exception) {
-        onError?.invoke(exception)
+        synchronized(this) { pendingError = exception }
+        deliver()
+    }
+
+    private fun deliver() {
+        var response: HttpResponse? = null
+        var error: Exception? = null
+        val result: ((HttpResponse) -> Unit)?
+        val failure: ((Exception) -> Unit)?
+        synchronized(this) {
+            result = onResult
+            failure = onError
+            if (result != null) response = pendingResponse.also { pendingResponse = null }
+            if (failure != null) error = pendingError.also { pendingError = null }
+        }
+        response?.let { result?.invoke(it) }
+        error?.let { failure?.invoke(it) }
     }
 }

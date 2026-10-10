@@ -4,27 +4,50 @@ import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.events.annotations.SboEvent
+import net.sbo.mod.utils.events.impl.game.DisconnectEvent
+import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 
 object TabList {
     /**
-     * Holds cached tab lines updated each tick.
+     * Holds cached tab lines, rebuilt only when the tab list changed.
      */
+    @Volatile
     private var cachedTabLines = emptyList<String>()
 
     /**
-     * Registers a task to update the cache each tick.
+     * Set when the tab list changed (player info packets, world change, disconnect).
+     */
+    private var dirty = true
+
+    /**
+     * Registers a task that rebuilds the cache on the next tick after the tab list changed.
      */
     fun init() {
         Register.onTick(1) {
-            // Periodic updates each tick
-            updateCache()
+            if (dirty) updateCache()
         }
     }
+
+    /**
+     * Marks the cache as outdated. Called from ClientPacketListenerMixin after
+     * player info update/remove packets were applied.
+     */
+    fun markDirty() {
+        dirty = true
+    }
+
+    @SboEvent
+    fun onWorldChange(event: WorldChangeEvent) = markDirty()
+
+    @SboEvent
+    fun onDisconnect(event: DisconnectEvent) = markDirty()
 
     /**
      * Updates tab list cache by fetching, filtering and mapping the tab list.
      */
     private fun updateCache() {
+        dirty = false
         val tabEntries = getTabEntries()
         val tabLines = ArrayList<String>(tabEntries.size)
 
@@ -39,13 +62,14 @@ object TabList {
         }
 
         cachedTabLines = tabLines
+        World.updateLocation()
     }
 
     /**
      * Returns a list of all PlayerListEntry objects from the current tab list.
      * Each PlayerListEntry object contains detailed information about a player.
      */
-    private fun getTabEntries(): Collection<PlayerInfo?> = mc.player?.connection?.onlinePlayers ?: emptyList()
+    private fun getTabEntries(): Collection<PlayerInfo?> = mc.connection?.onlinePlayers ?: emptyList()
 
     /**
      * Finds the value associated with a specific key in the tab list entries.
@@ -56,11 +80,10 @@ object TabList {
     fun findInfo(key: String): String? {
         for (line in cachedTabLines) {
             if (line.startsWith(key)) {
-                return line.substring(key.length).trim()
+                return line.substring(key.length)
             }
         }
 
         return null
     }
 }
-

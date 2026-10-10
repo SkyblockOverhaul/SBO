@@ -66,19 +66,13 @@ object SBOEvent {
             emit(EntityUnloadEvent(entity, world))
         }
         /**
-         * Chat Message Event
-         * Fired when a chat message is received.
+         * Chat Message Event, then Chat Message Allow Event
+         * Fired when a chat message is received; the allow event decides if it is shown.
+         * Action bar updates (overlay) come all the time and no feature reads them, so they are skipped.
          */
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
-            emit(ChatMessageEvent(message, signed))
-            true
-        }
-        /**
-         * Chat Message Allow Event
-         * Fired to determine if a chat message should be displayed.
-         * Allows for filtering of spammy messages.
-         */
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
+            if (overlay) return@register true
+            emit(ChatMessageEvent(message))
             val event = ChatMessageAllowEvent(message, true)
             emit(event)
             event.isAllowed

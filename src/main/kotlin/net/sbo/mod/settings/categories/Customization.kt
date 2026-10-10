@@ -1,13 +1,10 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
-import gg.essential.universal.UDesktop
-import net.fabricmc.loader.api.FabricLoader
-import net.sbo.mod.guis.Guis
+import net.sbo.mod.config.Category
+import net.sbo.mod.guis.SoundsGui
 import java.awt.Color
-import java.io.File
 
-object Customization : CategoryKt("Customization") {
+object Customization : Category("Customization") {
     init {
         separator {
             this.title = "Guess Color Customization"
@@ -196,38 +193,12 @@ object Customization : CategoryKt("Customization") {
         }
 
         button {
-            title = "Open Sound Folder"
-            text = "Open"
-            description = "Custom sounds go in here. (Must be one of those extensions: .ogg, .mp3, .wav, .au, .aif, .aiff)"
-            onClick {
-                val path = "${FabricLoader.getInstance().configDir}/sbo/sounds"
-                val directory = File(path)
-                if (directory.exists()) {
-                    try {
-                        UDesktop.open(directory)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                } else {
-                    println("Directory not found: $path")
-                }
-            }
-        }
-
-        button {
             title = "Sound Settings"
             text = "Configure"
-            description = "Open GUI to configure all sound settings."
+            description = "Open the sound GUI: sounds, volumes, master volume and the sound folder."
             onClick {
-                Guis.openSoundGui(calledFromGUI = true)
+                SoundsGui.open()
             }
         }
-    }
-
-    var masterVolume by float(1.0f) {
-        this.name = Literal("Master Volume")
-        this.description = Literal("Set the volume for all sounds.")
-        this.range = 0.0f..1.0f
-        this.slider = true
     }
 }
