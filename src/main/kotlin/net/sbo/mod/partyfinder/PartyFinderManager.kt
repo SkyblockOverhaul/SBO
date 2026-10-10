@@ -268,6 +268,10 @@ object PartyFinderManager {
 
     private fun partyBody(current: PartyDraft): PartyBody {
         val uuids = partyMember.map { it.replace("-", "") }
+        val own = current.ownRole?.takeIf { role -> PartyCategories.target(current.partyType, current.subType)?.roles?.any { it.id == role } == true }
+        // The leader's place comes first; without places for others their role is only shown
+        val wanted = if (own != null && current.wantedRoles.isNotEmpty()) listOf(own) + current.wantedRoles else current.wantedRoles
+        val members = memberRoles.filterKeys { it in uuids } + listOfNotNull(own?.let { myUuid() to it })
         return PartyBody(
             partyType = current.partyType,
             subType = current.subType,
@@ -279,7 +283,7 @@ object PartyFinderManager {
                 runCatching { stat to draftJson.parseToJsonElement(value) }.getOrNull()
             }.toMap(),
             options = current.options,
-            roles = RolesBody(current.wantedRoles, memberRoles.filterKeys { it in uuids })
+            roles = RolesBody(wanted, members)
         )
     }
 
@@ -386,6 +390,19 @@ object PartyFinderManager {
     /** Sets or removes the role of a member of the listed party and sends it to the server. */
     fun setMemberRole(uuid: String, role: String?) {
         if (role == null) memberRoles.remove(uuid) else memberRoles[uuid] = role
+        updateBool = true
+        HypixelModApi.sendPartyInfoPacket()
+    }
+
+    /** Sets or removes the leader's own role of the listed party, keeps it for the next party and sends it to the server. */
+    fun setOwnRole(role: String?) {
+        val current = draft ?: return
+        current.ownRole = role
+        val config = DataManager.partyFinderConfigState
+        config.drafts[current.key]?.let { saved ->
+            saved.ownRole = role
+            config.save()
+        }
         updateBool = true
         HypixelModApi.sendPartyInfoPacket()
     }

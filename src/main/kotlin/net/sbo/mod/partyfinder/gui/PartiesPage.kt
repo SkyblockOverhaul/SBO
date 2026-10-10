@@ -326,23 +326,33 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         val (party, member) = changingRole ?: return@modal
         val partyTarget = target.forParty(party)
         val self = member.uuid == myId
+        // The leader's place moves with their role, only the role limit can block one
+        val leaderSelf = self && member.uuid == party.id
         h3 { +(if (self) "Change your role" else "Change the role of ${member.name}") }
         val open = party.openRoles
         // Without wanted roles the leader can still note what someone plays
-        val choices = party.roles.wanted.distinct().ifEmpty { partyTarget.roles.map { it.id } }
+        val choices = if (leaderSelf) partyTarget.roles.map { it.id } else party.roles.wanted.distinct().ifEmpty { partyTarget.roles.map { it.id } }
+        val limit = partyTarget.roleLimit ?: Int.MAX_VALUE
         radioGroup(value = newRole ?: "", onChange = { newRole = it.ifEmpty { null } }, vertical = true) {
             choices.forEach { id ->
-                val taken = party.roles.wanted.isNotEmpty() && id !in open && id != member.role
+                val taken = if (leaderSelf) {
+                    party.roles.wanted.count { it == id } - (if (id == member.role) 1 else 0) + 1 > limit
+                } else {
+                    party.roles.wanted.isNotEmpty() && id !in open && id != member.role
+                }
                 option(id, partyTarget.roleLabel(id) + if (taken) " (taken)" else "", disabled = taken)
             }
             // A party that asks for roles needs one from everyone who joins
-            if (!self || party.roles.wanted.isEmpty()) option("", "No role")
+            if (!self || leaderSelf || party.roles.wanted.isEmpty()) option("", "No role")
         }
         div(className = "pf-dialog-buttons") {
             button(onClick = { changingRole = null }) { +"Cancel" }
-            button(className = "primary", disabled = newRole == member.role || (self && newRole == null), onClick = {
+            button(className = "primary", disabled = newRole == member.role || (self && !leaderSelf && newRole == null), onClick = {
                 val picked = newRole
-                if (self && picked != null) {
+                if (leaderSelf) {
+                    PartyFinderManager.setOwnRole(picked)
+                    toast.info(if (picked == null) "Removed your role." else "You now play ${partyTarget.roleLabel(picked)}.")
+                } else if (self && picked != null) {
                     Chat.pc("!role $picked")
                     toast.info("Asked the party leader to change your role.")
                 } else {
@@ -716,9 +726,11 @@ private fun NodeBuilder.memberRow(
         header(name)
         item("Show all stats") { onInspect() }
         item("Copy name") { copy(name, "Name") }
-        // The leader sets roles, a member asks for their own with !role
+        // The leader sets roles, also their own; a member asks for their own with !role
+        val me = member.uuid == OwnStats.uuid()
         if (manage && target.roles.isNotEmpty()) item("Change role…") { onChangeRole(member) }
-        else if (member.uuid == OwnStats.uuid() && member.uuid != party.id && party.roles.wanted.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
+        else if (me && member.uuid == party.id && target.roles.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
+        else if (me && member.uuid != party.id && party.roles.wanted.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
         // The name ends up in /p commands
         if (manage && Helper.isPlayerName(name)) {
             separator()

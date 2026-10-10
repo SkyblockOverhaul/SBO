@@ -164,9 +164,31 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
             h3(className = "pf-section") { +"Wanted roles" }
             p(className = "pf-hint") { +"Optional. If you pick roles, everyone who wants to join has to choose one of them." }
             ROLE_HINTS[target.key]?.let { hint -> p(className = "pf-hint") { +hint } }
+            val limit = target.roleLimit ?: Int.MAX_VALUE
+            div(className = "pf-fields") {
+                div(className = "pf-field", key = "ownRole") {
+                    span(className = "pf-field-label") { +"Your role" }
+                    div(className = "pf-field-input") {
+                        select(value = draft.ownRole ?: "", onChange = { e ->
+                            change {
+                                ownRole = e.value.ifEmpty { null }
+                                // The own place counts towards the role limit, so one place for others may have to go
+                                ownRole?.let { if (wantedRoles.count { r -> r == it } + 1 > limit) wantedRoles.remove(it) }
+                            }
+                        }) {
+                            option("", "No role")
+                            target.roles.forEach { option(it.id, it.label) }
+                        }
+                    }
+                }
+            }
+            p(className = "pf-hint") { +"Optional. Your role takes its own place in the party. The roles below are the places for the players you are looking for." }
             if (target.roleLimit == 1) {
                 chips(values = draft.wantedRoles, onChange = { roles -> change { wantedRoles = roles.toMutableList() } }) {
-                    target.roles.forEach { option(it.id, it.label) }
+                    target.roles.forEach {
+                        val mine = it.id == draft.ownRole
+                        option(it.id, it.label, disabled = mine, title = if (mine) "You play this one yourself." else null)
+                    }
                 }
             } else {
                 p(className = "pf-hint") { +"Click a role to add a player for it, right click to remove one." }
@@ -217,6 +239,8 @@ private fun startDraft(target: PartyTarget): PartyDraft {
         partyType = target.partyType
         subType = target.subType
         partySize = target.clampSize(partySize)
+        // Saved drafts may name a role the target no longer has
+        if (target.roles.none { it.id == ownRole }) ownRole = null
     }
 }
 
@@ -354,11 +378,11 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
 
 /**
  * Chips like the ones above, but with a count: click adds a player for the role, right click removes one.
- * At the role limit or with no place left a click puts the role back to 0. A role listed twice is wanted twice; the leader takes no place.
+ * At the role limit or with no place left a click puts the role back to 0. A role listed twice is wanted twice;
+ * these are the places for others, the leader's own role counts only towards the role limit.
  */
 private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, change: (PartyDraft.() -> Unit) -> Unit) {
     val places = draft.partySize - 1
-    val limit = target.roleLimit ?: Int.MAX_VALUE
     fun setCount(roleId: String, count: Int) = change {
         val wanted = wantedRoles.filter { it != roleId } + List(count) { roleId }
         // Definition order, so every list shows the roles the same way
@@ -368,6 +392,7 @@ private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, c
         target.roles.forEach { role ->
             val count = draft.wantedRoles.count { it == role.id }
             val free = places - draft.wantedRoles.size
+            val limit = (target.roleLimit ?: Int.MAX_VALUE) - if (role.id == draft.ownRole) 1 else 0
             div(
                 className = classNames("guilib-chip", "selected" to (count > 0)),
                 key = "role:${role.id}",

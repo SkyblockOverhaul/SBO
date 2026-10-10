@@ -11,7 +11,10 @@ data class PartyDraft(
     var note: String = "",
     var reqs: MutableMap<String, String> = mutableMapOf(),
     var options: MutableMap<String, String> = mutableMapOf(),
-    var wantedRoles: MutableList<String> = mutableListOf()
+    // Places for other players
+    var wantedRoles: MutableList<String> = mutableListOf(),
+    // The leader's role, it gets its own place
+    var ownRole: String? = null
 ) {
     /** Same key as `PartyTarget.key`. */
     val key: String get() = if (subType.isEmpty()) partyType else "$partyType/$subType"
