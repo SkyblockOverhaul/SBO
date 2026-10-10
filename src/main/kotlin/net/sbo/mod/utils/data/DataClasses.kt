@@ -40,6 +40,60 @@ data class CloudUploadRequest(
 )
 
 @Serializable
+data class SboBadge(
+    val uuid: String,
+    val name: String,
+    val rank: String,
+    val color: String,
+    val to: String? = null,
+    val level: Boolean? = null,
+    val label: String? = null,
+    val value: String? = null,
+)
+
+@Serializable
+data class BadgeListResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    val version: String? = null,
+    val unchanged: Boolean = false,
+    val badges: List<SboBadge> = emptyList(),
+)
+
+/** Body of `POST /badge` */
+@Serializable
+data class BadgeSettings(
+    val enabled: Boolean,
+    val stat: String,
+    val color: String,
+    val colorLevel: Boolean = false,
+)
+
+@Serializable
+data class BadgeChoice(
+    val id: String,
+    val label: String,
+    val hex: String? = null,
+    val to: String? = null,
+)
+
+@Serializable
+data class OwnBadgeResponse(
+    @SerialName("Success")
+    val success: Boolean = false,
+    @SerialName("Error")
+    val error: String? = null,
+    @SerialName("Code")
+    val code: String? = null,
+    val rank: String? = null,
+    val settings: BadgeSettings? = null,
+    val preview: SboBadge? = null,
+    val hiddenByServer: Boolean = false,
+    val stats: List<BadgeChoice> = emptyList(),
+    val colors: List<BadgeChoice> = emptyList(),
+)
+
+@Serializable
 data class CloudEnvelope(
     val v: Int = 1,
     val counter: Long,

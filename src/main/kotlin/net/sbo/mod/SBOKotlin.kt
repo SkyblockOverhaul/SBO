@@ -19,6 +19,7 @@ import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
+import net.sbo.mod.general.SboBadges
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.AchievementsGui
 import net.sbo.mod.guis.EventsGui
@@ -55,7 +56,7 @@ object SBOKotlin : ClientModInitializer {
 	@JvmField
 	val mc: Minecraft = Minecraft.getInstance()
 
-	const val API_URL: String = "https://api.skyblockoverhaul.com"
+	val API_URL: String = System.getProperty("sbo.apiUrl")?.trimEnd('/') ?: "https://api.skyblockoverhaul.com"
 
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
@@ -132,6 +133,7 @@ object SBOKotlin : ClientModInitializer {
 		HubGui.register()
 		HelpCommand.init()
 		CloudSync.init()
+		SboBadges.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
 		WaypointManager.init()

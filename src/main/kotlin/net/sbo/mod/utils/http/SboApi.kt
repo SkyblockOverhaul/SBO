@@ -10,6 +10,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
+import net.sbo.mod.utils.data.BadgeSettings
 import net.sbo.mod.utils.data.CloudUploadRequest
 import net.sbo.mod.utils.data.MembersRequest
 import net.sbo.mod.utils.MojangAuth
@@ -127,6 +128,13 @@ object SboApi {
     fun activeUsers(): HttpRequestHandle = get("/activeUsers")
 
     fun ahItems(): HttpRequestHandle = get("/ahItems")
+
+    fun badges(knownVersion: String?): HttpRequestHandle =
+        get("/badges" + (knownVersion?.let { "?v=${encode(it)}" } ?: ""))
+
+    fun ownBadge(): HttpRequestHandle = authedGet("/badge")
+
+    fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge", json.encodeToString(settings))
 
     fun cloudStatus(): HttpRequestHandle = authedGet("/cloudSync")
 
