@@ -72,6 +72,9 @@ data class SboData(
     var eventsChartView: String = "value",
     var eventsHiddenLines: MutableList<String> = mutableListOf(),
     var pfOnboardingSeen: Boolean = false,
+    var badgesAboveHeads: Boolean = true,
+    var badgesInTab: Boolean = true,
+    var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }
@@ -81,4 +84,5 @@ data class CloudSyncState(
     var counter: Long = 0,
     var hash: String = "", // last synced state
     var autoSync: Boolean? = null, // null = not set on this PC yet
+    var premium: Boolean? = null, // null = never asked
 )

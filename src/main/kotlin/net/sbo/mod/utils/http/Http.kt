@@ -100,7 +100,12 @@ object Http {
         EXECUTOR.execute {
             try {
                 val uri = URI.create(urlString)
-                val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
+                val httpVersion = when {
+                    // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
+                    uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
+                    uri.host in HTTP2_ONLY -> HttpClient.Version.HTTP_2
+                    else -> HTTP_3_OR_2
+                }
 
                 val builder = HttpRequest.newBuilder()
                     .version(httpVersion)

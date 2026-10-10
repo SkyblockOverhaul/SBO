@@ -19,6 +19,7 @@ import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
+import net.sbo.mod.general.SboBadges
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.AchievementsGui
 import net.sbo.mod.guis.EventsGui
@@ -131,6 +132,7 @@ object SBOKotlin : ClientModInitializer {
 		HubGui.register()
 		HelpCommand.init()
 		CloudSync.init()
+		SboBadges.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
 		WaypointManager.init()

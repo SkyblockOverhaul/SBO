@@ -213,7 +213,7 @@ object PartyFinderGui {
                             button(className = "pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
                         }
                     }
-                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
                 }
 
                 div(className = "pf-body") {

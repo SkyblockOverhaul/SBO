@@ -427,14 +427,27 @@ object CloudSync {
         lastStatusRequest = System.currentTimeMillis()
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
-                if (!response.success) return@toJson SBOKotlin.mc.schedule {
-                    callback(Status(SyncState.ERROR, error = friendly(response.error), notSupporter = notSupporter(response.code, response.error)))
+                if (!response.success) {
+                    val notSupporter = notSupporter(response.code, response.error)
+                    if (notSupporter) rememberPremium(false)
+                    return@toJson SBOKotlin.mc.schedule {
+                        callback(Status(SyncState.ERROR, error = friendly(response.error), notSupporter = notSupporter))
+                    }
                 }
+                rememberPremium(true)
                 val slot = response.slots.find { it.slot == SLOT }
                 remember(slot)
                 deliverStatus(slot, callback)
             }
             .error { SBOKotlin.mc.schedule { callback(Status(SyncState.ERROR, error = friendly(it.message ?: "server not reachable"))) } }
+    }
+
+    fun premium(): Boolean? = state().premium
+
+    private fun rememberPremium(premium: Boolean) {
+        if (state().premium == premium) return
+        state().premium = premium
+        DataManager.sboData.save()
     }
 
     // Compares on the worker, answers on the client thread

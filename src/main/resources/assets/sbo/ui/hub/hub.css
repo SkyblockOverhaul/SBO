@@ -202,11 +202,13 @@ body {
 
 .hub-tiles {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 6px;
     margin-bottom: 10px;
 }
 .hub-tile {
+    position: relative;
+    grid-column: span 2;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -242,10 +244,27 @@ body {
 .hub-tile-text { min-width: 0; flex-grow: 1; }
 .hub-tile-title { font-weight: bold; color: var(--text-strong); }
 .hub-tile-description { font-size: 7px; color: var(--muted); }
+.hub-half { grid-column: span 3; }
+.hub-premium {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 3px;
+    font-size: 6px;
+    font-weight: bold;
+    color: var(--star);
+    border: 1px solid var(--star);
+    border-radius: 3px;
+}
+.hub-premium-on { color: var(--ok); border-color: var(--ok); }
+.hub-premium-icon { width: 5px; height: 5px; }
 .hub-tile-command { margin-top: 2px; font-size: 7px; color: var(--dim); font-family: minecraft; }
 
 .hub-featured {
-    grid-column: span 2;
+    grid-column: span 4;
     padding: 9px 10px;
     border-color: var(--accent-soft);
     background-image: linear-gradient(120deg, var(--accent-soft), var(--glow-soft) 70%);

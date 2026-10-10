@@ -28,6 +28,8 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.Category
 import net.sbo.mod.config.ConfigGui
+import net.sbo.mod.general.SboBadges
+import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useSboScale
@@ -58,8 +60,11 @@ object HubGui {
         val command: String?,
         val icon: Item,
         val escBackToHub: Boolean = true,
+        val supporter: Supporter? = null,
         val open: () -> Unit,
     )
+
+    private class Supporter(val who: String, val unlocked: () -> Boolean?)
 
     private val escBackToHub: MutableSet<Screen> = Collections.newSetFromMap(WeakHashMap())
 
@@ -97,9 +102,20 @@ object HubGui {
         Tile("Events", "Your Diana events, trackers and comparisons", "/sboevents", Items.CLOCK) { EventsGui.open() },
         Tile("Achievements", "Everything you unlocked and what is left", "/sboachievements", Items.NETHER_STAR) { AchievementsGui.open() },
         Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { SoundsGui.open() },
-        Tile("Cloud Sync", "Keep your settings and trackers on every PC", "/sbocloud", Items.ENDER_CHEST) { CloudSyncGui.open() },
         Tile("Move Overlays", "Place and resize the on-screen overlays", "/sboguis", Items.ITEM_FRAME) { mc.setScreen(OverlayEditScreen()) },
+        Tile(
+            "Cloud Sync", "Keep your settings and trackers on every PC", "/sbocloud", Items.ENDER_CHEST,
+            supporter = Supporter("Patreon and Ko-fi supporters and server boosters") {
+                if (CloudSync.premium() == true || SboBadges.hasAccess() == true) true else CloudSync.premium()
+            },
+        ) { CloudSyncGui.open() },
+        Tile(
+            "SBO Badge", "Your logo, stat and name color", "/sbobadge", Items.NAME_TAG,
+            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and devs") { SboBadges.hasAccess() },
+        ) { BadgeGui.open() },
     )
+
+    private val COMMANDS = Tile("Commands", "Every SBO command and what it does", "/sbohelp", Items.COMMAND_BLOCK) {}
 
     private val SUPPORT = listOf(
         Link("Patreon", "Support our development and keep the server running", "https://www.patreon.com/Skyblock_Overhaul"),
@@ -130,7 +146,7 @@ object HubGui {
         div(className = "hub-window", ref = fit.ref, style = fit.style) {
             div(className = "hub-hero") {
                 div(className = "hub-hero-sweep")
-                button(className = "hub-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+                button(className = "hub-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
                 div(className = "hub-hero-content") {
                     div(className = "hub-emblem") {
                         img("sbo:ui/hub/emblem.png", className = "hub-emblem-image", alt = "SBO")
@@ -150,42 +166,37 @@ object HubGui {
 
             div(className = "hub-body") {
                 div(className = "hub-tiles") {
-                    TILES.forEachIndexed { i, tile ->
-                        val featured = i == 0
-                        val highlighted = tile.title == "Party Finder"
-                        // Screens are switched after the click is handled, not in the middle of it
-                        button(
-                            className = when {
-                                featured -> "hub-tile hub-featured"
-                                highlighted -> "hub-tile hub-highlight"
-                                else -> "hub-tile"
-                            },
-                            key = tile.title,
-                            onClick = { mc.schedule { openFromHub(tile) } },
-                        ) {
+                    fun NodeBuilder.tileButton(tile: Tile, className: String, description: String, onClick: () -> Unit) {
+                        button(className = className, key = tile.title, onClick = { onClick() }) {
                             div(className = "hub-tile-icon") {
                                 // Item icons need a world, Mod Menu can open the screens from the title screen
                                 if (mc.level != null) item(ItemStack(tile.icon), decorations = false)
                             }
                             div(className = "hub-tile-text") {
                                 div(className = "hub-tile-title") { +tile.title }
-                                div(className = "hub-tile-description") {
-                                    +(if (featured) "Search all $settingsCount settings at once" else tile.description)
-                                }
+                                div(className = "hub-tile-description") { +description }
                                 if (tile.command != null) div(className = "hub-tile-command") { +tile.command }
                             }
-                            if (featured) span(className = "hub-featured-arrow") { +"→" }
+                            if (className.contains("hub-featured")) span(className = "hub-featured-arrow") { +"→" }
+                            tile.supporter?.let { supporterChip(it) }
                         }
                     }
-                    button(className = "hub-tile", key = "Commands", onClick = { showCommands = true }) {
-                        div(className = "hub-tile-icon") {
-                            if (mc.level != null) item(ItemStack(Items.COMMAND_BLOCK), decorations = false)
+
+                    val (supporterTiles, tiles) = TILES.partition { it.supporter != null }
+                    tiles.forEachIndexed { i, tile ->
+                        val className = when {
+                            i == 0 -> "hub-tile hub-featured"
+                            tile.title == "Party Finder" -> "hub-tile hub-highlight"
+                            i == tiles.lastIndex -> "hub-tile hub-half"
+                            else -> "hub-tile"
                         }
-                        div(className = "hub-tile-text") {
-                            div(className = "hub-tile-title") { +"Commands" }
-                            div(className = "hub-tile-description") { +"Every SBO command and what it does" }
-                            div(className = "hub-tile-command") { +"/sbohelp" }
-                        }
+                        val description = if (i == 0) "Search all $settingsCount settings at once" else tile.description
+                        // Screens are switched after the click is handled, not in the middle of it
+                        tileButton(tile, className, description) { mc.schedule { openFromHub(tile) } }
+                    }
+                    tileButton(COMMANDS, "hub-tile hub-half", COMMANDS.description) { showCommands = true }
+                    supporterTiles.forEach { tile ->
+                        tileButton(tile, "hub-tile hub-half hub-supporter", tile.description) { mc.schedule { openFromHub(tile) } }
                     }
                 }
 
@@ -230,7 +241,7 @@ object HubGui {
             modal(open = showCommands, onClose = { showCommands = false }, className = "hub-commands") {
                 div(className = "hub-commands-header") {
                     h2(className = "hub-card-title") { +"Commands" }
-                    button(className = "hub-close-small", title = "Close", onClick = { showCommands = false }) { +"✕" }
+                    button(className = "hub-close-small", title = "Close", onClick = { showCommands = false }) { +"x" }
                 }
                 scroll(className = "hub-commands-list guilib-autohide") {
                     HelpCommand.commands.forEach { command ->
@@ -261,6 +272,17 @@ object HubGui {
     }
 
     private fun countEntries(category: Category): Int = category.entries.size + category.subcategories.sumOf(::countEntries)
+
+    private fun NodeBuilder.supporterChip(supporter: Supporter) {
+        val unlocked = supporter.unlocked() == true
+        span(
+            className = if (unlocked) "hub-premium hub-premium-on" else "hub-premium",
+            title = if (unlocked) "You have it, thank you for supporting SBO!" else "Supporter feature: only for ${supporter.who}.",
+        ) {
+            img(if (unlocked) "sbo:ui/achievements/check.svg" else "sbo:ui/partyfinder/lock.svg", className = "hub-premium-icon")
+            +"Supporter"
+        }
+    }
 
     private fun NodeBuilder.linkButton(link: Link, className: String) {
         button(className = className, key = link.title, title = link.description, onClick = { SBOKotlin.openInBrowser(link.url) }) {
