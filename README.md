@@ -40,6 +40,9 @@
 
 ### Prerequisites
 
+Source builds target Minecraft 26.1.2, 26.2 and 26.3. See the [26.3 build notes](PORTING_26_3.md)
+for dependencies, build commands and validation limits.
+
 Before you begin, you need to have a few things installed:
 
 * **Fabric API**: This is a dependency for most Fabric mods. [Download from Modrinth](https://modrinth.com/mod/fabric-api)

@@ -6,7 +6,6 @@ import net.minecraft.client.MouseHandler;
 import net.sbo.guilib.fabric.GuiLib;
 import net.sbo.guilib.fabric.GuiLibScreen;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -62,6 +61,6 @@ final class MouseHandlerMixin {
         this.sbo$grabbedAt = 0L;
         this.xpos = this.sbo$lastX;
         this.ypos = this.sbo$lastY;
-        InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), GLFW.GLFW_CURSOR_NORMAL, this.xpos, this.ypos);
+        InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL, this.xpos, this.ypos);
     }
 }
