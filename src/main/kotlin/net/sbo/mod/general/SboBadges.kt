@@ -193,9 +193,10 @@ object SboBadges {
         val plain = String(CharArray(chars.size) { chars[it].char })
         val name = Regex("(?<![A-Za-z0-9_])${Regex.escape(badge.name)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
             .find(plain) ?: return line
-        var from = name.range.first
-        if (badge.level == true) LEVEL.find(plain.substring(0, from))?.let { from = it.range.first }
-        val until = name.range.last + 1
+        val levelStart = if (badge.level == true) LEVEL.find(plain.substring(0, name.range.first))?.range?.first else null
+        val plainName = badge.plainName == true
+        val from = levelStart ?: if (plainName) return line else name.range.first
+        val until = if (plainName) name.range.first else name.range.last + 1
 
         val start = parseHex(badge.color)
         val end = badge.to?.let(::parseHex)

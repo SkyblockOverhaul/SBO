@@ -171,6 +171,10 @@ object BadgeGui {
             switch(checked = settings.enabled, onChange = { onChange(settings.copy(enabled = it.checked)) })
         }
 
+        setting("Color my name", "Your name above your head and in the tab list takes the color.") {
+            switch(checked = settings.colorName, onChange = { onChange(settings.copy(colorName = it.checked)) })
+        }
+
         setting("Color my level", "Your SkyBlock level in front of your name takes the color too.") {
             switch(checked = settings.colorLevel, onChange = { onChange(settings.copy(colorLevel = it.checked)) })
         }
@@ -184,7 +188,7 @@ object BadgeGui {
         div(className = "bd-setting bd-colors-setting") {
             div(className = "bd-setting-text") {
                 div(className = "bd-setting-title") { +"Color" }
-                div(className = "bd-hint") { +"Also colors your name. Red is for the SBO devs." }
+                div(className = "bd-hint") { +"Red is for the SBO devs." }
             }
             div(className = "bd-colors") {
                 badge.colors.forEach { choice ->
@@ -229,10 +233,20 @@ object BadgeGui {
                 if (text != null) coloredText(text, color)
             }
             div(className = "bd-tag bd-tag-name") {
-                if (settings.colorLevel || level.isEmpty()) coloredText(level + name, color)
-                else {
-                    span(className = "bd-tag-level") { +level }
-                    coloredText(name, color)
+                when {
+                    settings.colorName && (settings.colorLevel || level.isEmpty()) -> coloredText(level + name, color)
+                    settings.colorName -> {
+                        span(className = "bd-tag-level") { +level }
+                        coloredText(name, color)
+                    }
+                    settings.colorLevel && level.isNotEmpty() -> {
+                        coloredText(level, color)
+                        span(className = "bd-tag-plain") { +name }
+                    }
+                    else -> {
+                        span(className = "bd-tag-level") { +level }
+                        span(className = "bd-tag-plain") { +name }
+                    }
                 }
             }
         }

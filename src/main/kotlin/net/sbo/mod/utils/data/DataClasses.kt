@@ -47,6 +47,7 @@ data class SboBadge(
     val color: String,
     val to: String? = null,
     val level: Boolean? = null,
+    val plainName: Boolean? = null,
     val label: String? = null,
     val value: String? = null,
 )
@@ -66,6 +67,7 @@ data class BadgeSettings(
     val enabled: Boolean,
     val stat: String,
     val color: String,
+    val colorName: Boolean = true,
     val colorLevel: Boolean = false,
 )
 

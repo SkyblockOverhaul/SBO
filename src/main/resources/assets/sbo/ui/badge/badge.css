@@ -198,3 +198,4 @@ body {
 .bd-section-title:first-child { margin-top: 0; }
 .bd-intro { margin: 2px 4px 4px 4px; }
 .bd-tag-level { color: #aaaaaa; }
+.bd-tag-plain { color: #ffffff; }
