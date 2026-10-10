@@ -48,6 +48,8 @@ object SboBadges {
 
     @Volatile private var byUuid: Map<UUID, SboBadge> = emptyMap()
     @Volatile private var byName: Map<String, SboBadge> = emptyMap()
+    // Lines without a moving gradient are built once per list
+    @Volatile private var fixedLines: Map<UUID, Component> = emptyMap()
     @Volatile private var version: String? = null
     @Volatile private var fetching = false
 
@@ -92,7 +94,9 @@ object SboBadges {
     }
 
     private fun apply(badges: List<SboBadge>, newVersion: String?) {
-        byUuid = badges.mapNotNull { badge -> uuidOf(badge.uuid)?.let { it to badge } }.toMap()
+        val holders = badges.mapNotNull { badge -> uuidOf(badge.uuid)?.let { it to badge } }.toMap()
+        fixedLines = holders.filterValues { it.to == null }.mapValues { line(it.value) }
+        byUuid = holders
         byName = badges.associateBy { it.name.lowercase() }
         version = newVersion
         synchronized(tabCache) { tabCache.clear() }
@@ -120,6 +124,7 @@ object SboBadges {
 
     fun nameTagLine(uuid: UUID): Component? {
         if (!showAboveHeads) return null
+        fixedLines[uuid]?.let { return it }
         return byUuid[uuid]?.let(::line)
     }
 
