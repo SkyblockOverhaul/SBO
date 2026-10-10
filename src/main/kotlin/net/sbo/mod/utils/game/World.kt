@@ -1,15 +1,16 @@
 package net.sbo.mod.utils.game
 
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.events.Register
 
 object World {
+    @Volatile
     private var location = "None"
 
-    fun init() {
-        Register.onTick(1) {
-            location = TabList.findInfo("Area: ") ?: "None"
-        }
+    /**
+     * Re-reads the area from the TabList. Called by TabList whenever its cache was rebuilt.
+     */
+    internal fun updateLocation() {
+        location = TabList.findInfo("Area: ") ?: "None"
     }
 
     /**
