@@ -100,7 +100,7 @@ object SoundsGui {
             header(className = "snd-header") {
                 span(className = "snd-title") { +"Sounds" }
                 div(className = "snd-spacer")
-                button(className = "snd-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+                button(className = "snd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
 
             scroll(className = "snd-body guilib-autohide") {

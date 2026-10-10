@@ -146,7 +146,7 @@ object HubGui {
         div(className = "hub-window", ref = fit.ref, style = fit.style) {
             div(className = "hub-hero") {
                 div(className = "hub-hero-sweep")
-                button(className = "hub-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+                button(className = "hub-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
                 div(className = "hub-hero-content") {
                     div(className = "hub-emblem") {
                         img("sbo:ui/hub/emblem.png", className = "hub-emblem-image", alt = "SBO")
@@ -241,7 +241,7 @@ object HubGui {
             modal(open = showCommands, onClose = { showCommands = false }, className = "hub-commands") {
                 div(className = "hub-commands-header") {
                     h2(className = "hub-card-title") { +"Commands" }
-                    button(className = "hub-close-small", title = "Close", onClick = { showCommands = false }) { +"✕" }
+                    button(className = "hub-close-small", title = "Close", onClick = { showCommands = false }) { +"x" }
                 }
                 scroll(className = "hub-commands-list guilib-autohide") {
                     HelpCommand.commands.forEach { command ->

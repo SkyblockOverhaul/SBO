@@ -131,7 +131,7 @@ object CloudSyncGui {
                     div(className = "cs-question") {
                         div(className = "cs-question-top") {
                             div(className = "cs-question-text") { +question.text }
-                            button(className = "cs-icon", title = "Hide this question, decide later", onClick = { CloudSync.dismissQuestion() }) { +"✕" }
+                            button(className = "cs-icon", title = "Hide this question, decide later", onClick = { CloudSync.dismissQuestion() }) { +"x" }
                         }
                         div(className = "cs-buttons") {
                             question.actions.forEach { action ->
@@ -394,7 +394,7 @@ object CloudSyncGui {
                     option(UiScale.id(scale), UiScale.label(scale), title = title)
                 }
             }
-            button(className = "cs-icon cs-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+            button(className = "cs-icon cs-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
         }
     }
 

@@ -94,7 +94,7 @@ object BadgeGui {
                 img(LOGO, className = "bd-header-logo")
                 span(className = "bd-title") { +"SBO Badge" }
                 div(className = "bd-spacer")
-                button(className = "bd-icon bd-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+                button(className = "bd-icon bd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
             scroll(className = "bd-body guilib-autohide") {
                 if (SboBadges.VIEWER_TOGGLES) {

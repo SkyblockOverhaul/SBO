@@ -114,7 +114,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                         button(className = "cfg-search-clear", title = "Clear the search", onClick = { query = "" }) { +"✕" }
                     }
                 }
-                button(className = "cfg-close", title = "Close", onClick = { GuiLib.close() }) { +"✕" }
+                button(className = "cfg-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
 
             div(className = "cfg-main") {
