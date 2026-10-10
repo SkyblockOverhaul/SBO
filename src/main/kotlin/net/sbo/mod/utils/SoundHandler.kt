@@ -13,6 +13,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.game.World
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -90,7 +91,7 @@ object SoundHandler {
      * @param volume Volume level (0-1), combined with master volume
      */
     fun playCustomSound(sound: String, volume: Float) {
-        if (sound.isEmpty()) return
+        if (sound.isEmpty() || !World.isInSkyblock()) return
 
         // Combine per-sound volume (0-1) with global master volume
         val volumePercent = (volume * DataManager.soundSettingsData.masterVolume).coerceIn(0f, 1f)

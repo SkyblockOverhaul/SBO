@@ -32,6 +32,12 @@
         "adapter": "kotlin",
         "value": "${mod_group}.SBOKotlin"
       }
+    ],
+    "modmenu": [
+      {
+        "adapter": "kotlin",
+        "value": "${mod_group}.compat.ModMenuCompat"
+      }
     ]
   },
   "mixins": [
@@ -47,11 +53,7 @@
     "java": ">=${java_version_major}",
     "fabric-api": ">=${fabric_api_version}",
     "fabric-language-kotlin": ">=${fabric_language_kotlin_version}",
-    "elementa": ">=${elementa_version}",
     "hm-api": ">=${hm_api_version}",
-    "resourcefulconfig": ">=${resourcefulconfig_version}",
-    "resourcefulconfigkt": ">=${resourcefulconfigkt_version}",
-    "universalcraft": ">=${universalcraft_version}",
     "guilib": ">=${guilib_version}"
   },
   "suggests": {
@@ -59,7 +61,8 @@
   },
   "breaks": {
     "noammaddons": "<1.2.5",
-    "sodium-extra": "<0.9.2"
+    "sodium-extra": "<0.9.2",
+    "skysoft": "<0.1.18"
   },
   "conflicts": {
     "sbo-kotlin": "*"

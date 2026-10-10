@@ -1,7 +1,5 @@
 package net.sbo.mod
 
-import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
-import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
@@ -22,7 +20,10 @@ import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
 import net.sbo.mod.general.Pickuplog
-import net.sbo.mod.guis.Guis
+import net.sbo.mod.guis.AchievementsGui
+import net.sbo.mod.guis.EventsGui
+import net.sbo.mod.guis.SoundsGui
+import net.sbo.mod.guis.HubGui
 import net.sbo.mod.overlays.*
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.partyfinder.PartyCheck
@@ -30,9 +31,11 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyFinderSocket
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.StatReporter
+import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.utils.*
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
@@ -41,6 +44,7 @@ import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
 import net.sbo.mod.utils.waypoint.WaypointManager
@@ -56,15 +60,13 @@ object SBOKotlin : ClientModInitializer {
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
-	private val configurator = Configurator(MOD_ID)
-
 	// Before the config registers, it drops the options that moved out of it (master volume, auto sync)
 	init {
 		SoundHandler.readLegacyMasterVolume()
 		CloudSync.readLegacyAutoSync()
 	}
 
-	val settings = Settings.register(configurator)
+	val settings = Settings.apply { load(FabricLoader.getInstance().configDir) }
 
 	lateinit var version: String
 	lateinit var mcVersion: String
@@ -103,6 +105,7 @@ object SBOKotlin : ClientModInitializer {
 
 		// Load configuration and data
 		DataManager.init()
+		SboLook.init()
 
 		// Load Custom Sound System
 		SoundHandler.init()
@@ -114,13 +117,19 @@ object SBOKotlin : ClientModInitializer {
 
 		// load Main Features
 		PartyCommands.init()
-		Register.command("sbo") {
-			mc.schedule {
-				mc.setScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
-			}
+		Register.command("sbo") { args ->
+			val settings = args.firstOrNull()?.lowercase() in setOf("settings", "config")
+			mc.schedule { if (settings) HubGui.openSettings() else HubGui.open() }
+		}
+		Register.command("sbosettings", "sboconfig") {
+			mc.schedule { HubGui.openSettings() }
 		}
 
-		Guis.register()
+		PartyFinderGui.register()
+		SoundsGui.register()
+		AchievementsGui.register()
+		EventsGui.register()
+		HubGui.register()
 		HelpCommand.init()
 		CloudSync.init()
 		ClickActionManager.init()
@@ -133,6 +142,7 @@ object SBOKotlin : ClientModInitializer {
 		StatReporter.init()
 		PartyCheck.init()
 		BurrowDetector.init()
+		TimeUtil.start()
 		DianaTracker.init()
 		PartyPlayer.init()
 		Pickuplog.init()

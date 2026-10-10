@@ -1,5 +1,9 @@
 package net.sbo.mod.guis
 
+import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.UiScale
+import net.sbo.mod.guis.look.useSboScale
+import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
@@ -12,20 +16,25 @@ import net.sbo.guilib.core.dsl.slider
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.SoundHandler
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.sound.SoundSettingsData
+import net.sbo.mod.utils.events.Register
 import kotlin.math.roundToInt
 import kotlin.reflect.KMutableProperty1
 
 object SoundsGui {
-    private val STYLES = listOf("sbo:ui/sounds/sounds.css")
+    private val STYLES = listOf("sbo:ui/sounds/sounds.css", SboLook.STYLE)
 
-    private val SCALES: List<Float?> = listOf(null, 1f, 1.5f, 2f, 2.5f, 3f, 4f)
 
     /** Opens the window. Must run on the client thread. */
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Sounds")
+    }
+
+    fun register() {
+        Register.command("sbosounds") { mc.schedule { open() } }
     }
 
     private data class SoundSetting(
@@ -36,7 +45,6 @@ object SoundsGui {
 
     private val GROUPS = listOf(
         "Spawns" to listOf(
-            SoundSetting("Rare Mob Spawn", SoundSettingsData::rareMobSound, SoundSettingsData::rareMobVolume),
             SoundSetting("Inquisitor Spawn", SoundSettingsData::inqSound, SoundSettingsData::inqVolume),
             SoundSetting("Sphinx Spawn", SoundSettingsData::sphinxSound, SoundSettingsData::sphinxVolume),
             SoundSetting("King Minos Spawn", SoundSettingsData::kingSound, SoundSettingsData::kingVolume),
@@ -81,8 +89,9 @@ object SoundsGui {
             else toast.success("${changes.joinToString(", ")}, ${after.size} sounds in the folder.", title = "Sounds reloaded")
         }
         var master by useState(percent(settings.masterVolume))
-        var uiScale by useState(settings.uiScale?.takeIf { it in SCALES })
-        useScreenScale(uiScale)
+        var uiScale by useState(UiScale.own(settings.uiScale))
+        useSboScale(uiScale)
+        useSboTheme()
 
         // Changes are saved right away, this catches a slider still being dragged when the window closes
         useEffect { onCleanup { settings.save() } }
@@ -107,12 +116,12 @@ object SoundsGui {
                     )
                 }
                 settingRow("Size", "How big the sound window is. Auto uses your Minecraft GUI scale.") {
-                    select(value = scaleId(uiScale), onChange = { e ->
-                        uiScale = e.value.toFloatOrNull()
+                    select(value = UiScale.id(uiScale), onChange = { e ->
+                        uiScale = UiScale.parse(e.value)
                         settings.uiScale = uiScale
                         settings.save()
                     }, className = "snd-scale-select") {
-                        SCALES.forEach { scale -> option(scaleId(scale), if (scale == null) "Auto" else scaleId(scale)) }
+                        UiScale.OWN_CHOICES.forEach { scale -> option(UiScale.id(scale), UiScale.label(scale)) }
                     }
                 }
                 settingRow(
@@ -185,11 +194,6 @@ object SoundsGui {
         }
     }
 
-    private fun scaleId(scale: Float?): String = when {
-        scale == null -> "auto"
-        scale % 1f == 0f -> scale.toInt().toString()
-        else -> scale.toString()
-    }
 
     private fun percent(volume: Float): Int = (volume * 100).roundToInt().coerceIn(0, 100)
 }

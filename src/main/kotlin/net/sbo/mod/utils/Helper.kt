@@ -18,14 +18,17 @@ import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.ScoreBoard
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.http.SboApi
+import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -61,6 +64,8 @@ object Helper {
     private var prevInv = mutableMapOf<String, Item>()
     private var priceDataAh: Map<String, Long> = emptyMap()
     private var priceDataBazaar: HypixelBazaarResponse? = null
+    private val ACTIVE_USERS_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
+    private var lastActiveUsersCount = 0L
 
     private val SBO_CALLBACK_THREAD: ExecutorService = Executors.newThreadPerTaskExecutor(Thread
             .ofVirtual()
@@ -79,7 +84,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received loot for assisting (.*?)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { message, matchResult ->
             onLootShare()
             true
         }
@@ -90,6 +95,14 @@ object Helper {
 
         Register.onTick(20 * 60 * 5) {
             updateItemPriceInfo()
+        }
+
+        Register.onTick(20) {
+            val now = System.nanoTime()
+            if (now - lastActiveUsersCount > ACTIVE_USERS_INTERVAL && World.isInSkyblock()) {
+                lastActiveUsersCount = now
+                countActiveUser()
+            }
         }
 
         /*Register.command("sbotestlschimdrop") {
@@ -220,6 +233,11 @@ object Helper {
         }
     }
 
+    private val PLAYER_NAME = Regex("^[A-Za-z0-9_]{1,16}$")
+
+    /** A valid Minecraft name, so putting it into a command can't add anything else. */
+    fun isPlayerName(name: String): Boolean = PLAYER_NAME.matches(name)
+
     fun getPlayerName(player: String): String {
         var name = player
         val num = name.indexOf(']')
@@ -237,26 +255,56 @@ object Helper {
      * If [mobName] is null, it calculates the percentage of [propertyName] from [mobs] to total mobs.
      */
     fun calcPercentOneReflectively(items: DianaItemsData, mobs: DianaMobsData, propertyName: String, mobName: String? = null): String {
-        val result: Double = if (mobName != null) {
-            val itemCount = items::class.memberProperties.firstOrNull { it.name == propertyName }
-                ?.call(items) as? Int ?: 0
-            val mobCount = mobs::class.memberProperties.firstOrNull { it.name == mobName }
-                ?.call(mobs) as? Int ?: 0
-
-            if (mobCount <= 0) 0.0
-            else itemCount.toDouble() / mobCount.toDouble() * 100
-
+        return if (mobName != null) {
+            calcPercentOne(getItemCount(items, propertyName), getMobCount(mobs, mobName))
         } else {
-            val mobCount = mobs::class.memberProperties.firstOrNull { it.name == propertyName }
-                ?.call(mobs) as? Int ?: 0
-            val totalMobsCount = mobs.TOTAL_MOBS
-
-            if (totalMobsCount <= 0) 0.0
-            else mobCount.toDouble() / totalMobsCount.toDouble() * 100
+            calcPercentOne(getMobCount(mobs, propertyName), mobs.TOTAL_MOBS)
         }
-
-        return "%.2f".format(Locale.US, result)
     }
+
+    private fun getItemCount(items: DianaItemsData, propertyName: String): Int =
+        ITEM_COUNT_GETTERS[propertyName]?.invoke(items)
+            ?: (ITEM_PROPERTIES[propertyName]?.call(items) as? Int)
+            ?: 0
+
+    private fun getMobCount(mobs: DianaMobsData, propertyName: String): Int =
+        MOB_COUNT_GETTERS[propertyName]?.invoke(mobs)
+            ?: (MOB_PROPERTIES[propertyName]?.call(mobs) as? Int)
+            ?: 0
+
+    private val ITEM_PROPERTIES = DianaItemsData::class.memberProperties.associateBy { it.name }
+    private val MOB_PROPERTIES = DianaMobsData::class.memberProperties.associateBy { it.name }
+
+    private val ITEM_COUNT_GETTERS: Map<String, (DianaItemsData) -> Int> = mapOf(
+        "GRIFFIN_FEATHER" to { it.GRIFFIN_FEATHER }, "MYTHOS_FRAGMENT" to { it.MYTHOS_FRAGMENT },
+        "CROWN_OF_GREED" to { it.CROWN_OF_GREED }, "WASHED_UP_SOUVENIR" to { it.WASHED_UP_SOUVENIR },
+        "SHIMMERING_WOOL" to { it.SHIMMERING_WOOL }, "SHIMMERING_WOOL_LS" to { it.SHIMMERING_WOOL_LS },
+        "MANTI_CORE" to { it.MANTI_CORE }, "MANTI_CORE_LS" to { it.MANTI_CORE_LS },
+        "CHIMERA" to { it.CHIMERA }, "CHIMERA_LS" to { it.CHIMERA_LS },
+        "BRAIN_FOOD" to { it.BRAIN_FOOD }, "BRAIN_FOOD_LS" to { it.BRAIN_FOOD_LS },
+        "FATEFUL_STINGER" to { it.FATEFUL_STINGER }, "FATEFUL_STINGER_LS" to { it.FATEFUL_STINGER_LS },
+        "BRAIDED_GRIFFIN_FEATHER" to { it.BRAIDED_GRIFFIN_FEATHER }, "DAEDALUS_STICK" to { it.DAEDALUS_STICK },
+        "CRETAN_URN" to { it.CRETAN_URN }, "DWARF_TURTLE_SHELMET" to { it.DWARF_TURTLE_SHELMET },
+        "ANTIQUE_REMEDIES" to { it.ANTIQUE_REMEDIES }, "CROCHET_TIGER_PLUSHIE" to { it.CROCHET_TIGER_PLUSHIE },
+        "ENCHANTED_ANCIENT_CLAW" to { it.ENCHANTED_ANCIENT_CLAW }, "ANCIENT_CLAW" to { it.ANCIENT_CLAW },
+        "MINOS_RELIC" to { it.MINOS_RELIC }, "ENCHANTED_GOLD" to { it.ENCHANTED_GOLD },
+        "HILT_OF_REVELATIONS" to { it.HILT_OF_REVELATIONS }, "KING_MINOS_SHARD" to { it.KING_MINOS_SHARD },
+        "SPHINX_SHARD" to { it.SPHINX_SHARD }, "MINOTAUR_SHARD" to { it.MINOTAUR_SHARD },
+        "CRETAN_BULL_SHARD" to { it.CRETAN_BULL_SHARD }, "HARPY_SHARD" to { it.HARPY_SHARD },
+        "MYTHOLOGICAL_DYE" to { it.MYTHOLOGICAL_DYE }, "MYTH_THE_FISH" to { it.MYTH_THE_FISH }
+    )
+
+    private val MOB_COUNT_GETTERS: Map<String, (DianaMobsData) -> Int> = mapOf(
+        "KING_MINOS" to { it.KING_MINOS }, "MANTICORE" to { it.MANTICORE },
+        "MINOS_INQUISITOR" to { it.MINOS_INQUISITOR }, "SPHINX" to { it.SPHINX },
+        "MINOS_CHAMPION" to { it.MINOS_CHAMPION }, "MINOTAUR" to { it.MINOTAUR },
+        "GAIA_CONSTRUCT" to { it.GAIA_CONSTRUCT }, "HARPY" to { it.HARPY },
+        "CRETAN_BULL" to { it.CRETAN_BULL }, "STRANDED_NYMPH" to { it.STRANDED_NYMPH },
+        "SIAMESE_LYNXES" to { it.SIAMESE_LYNXES }, "MINOS_HUNTER" to { it.MINOS_HUNTER },
+        "TOTAL_MOBS" to { it.TOTAL_MOBS },
+        "MINOS_INQUISITOR_LS" to { it.MINOS_INQUISITOR_LS }, "KING_MINOS_LS" to { it.KING_MINOS_LS },
+        "MANTICORE_LS" to { it.MANTICORE_LS }, "SPHINX_LS" to { it.SPHINX_LS }
+    )
 
     fun calcPercentOne(itemCount: Int, mobCount: Int): String {
         val result = if (mobCount <= 0) {
@@ -265,9 +313,12 @@ object Helper {
             itemCount.toDouble() / mobCount * 100
         }
 
-        return "%.2f".format(Locale.US, result)
+        return PERCENT_FORMAT.format(result)
     }
 
+    private val PERCENT_FORMAT = DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.US)).apply {
+        roundingMode = RoundingMode.HALF_UP
+    }
     private val NUMBER_FORMAT = DecimalFormat("#,###")
     private val BILLION_FORMAT = DecimalFormat("0.00b")
     private val MILLION_FORMAT = DecimalFormat("0.0m")
@@ -472,7 +523,7 @@ object Helper {
      *
      * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
      */
-    fun getSecondsPassed(timestamp: Long): Long = (System.currentTimeMillis() - timestamp) / 1000
+    fun getSecondsPassed(timestamp: Long): Long = (TimeUtil.currentTimeMillis() - timestamp) / 1000
 
     private fun getSecondsPassedSinceNano(timestamp: Long): Long = (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
 
@@ -515,7 +566,7 @@ object Helper {
             .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
             .replace("{percentage}", "%.2f".format(info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
-            .replace("{lstext}", if (isLootshare) "(LS)" else "")
+            .replace("{lstext}", if (isLootshare) " (LS)" else "")
             .replace("{price}", getItemPriceFormatted(info.itemId))
             .replace('&', '§')
             .replace("{since}", getSinceDrop(dropName, isLootshare))
@@ -630,6 +681,19 @@ object Helper {
         return 0
     }
 
+    /** Tells the backend this player is online, it counts everyone from the last 5 minutes. */
+    private fun countActiveUser() {
+        SboApi.countActiveUsers()
+            .result { response ->
+                if (!response.isSuccessful) {
+                    SBOKotlin.logger.error("Failed to count active players: ${response.code} ${response.message}")
+                }
+            }
+            .error { exception ->
+                SBOKotlin.logger.error("Error while counting active players", exception)
+            }
+    }
+
     private fun updateItemPriceInfo() {
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse>(true) {
@@ -690,7 +754,7 @@ object Helper {
 
     fun dianaMobDiedRecently(seconds: Long = 2): Boolean = getSecondsPassedSinceNano(lastDianaMobDeath) <= seconds
 
-    fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
+    internal fun getBurrowsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
         if (hours <= 0.0) return 0.0
         val totalBurrows = tracker.items.TOTAL_BURROWS.toDouble()
@@ -698,7 +762,7 @@ object Helper {
         return BigDecimal.valueOf(burrowsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
     }
 
-    fun getMobsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
+    internal fun getMobsPerHr(tracker: DianaTrackerDataClass, timer: SboTimerManager.SBOTimer): Double {
         val hours = timer.getHourTime()
         if (hours <= 0.0) return 0.0
         val totalMobs = tracker.mobs.TOTAL_MOBS.toDouble()
@@ -708,9 +772,9 @@ object Helper {
 
     fun getChance(mf: Int, looting: Int,rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances: Map<String, Double> = when (rarity.lowercase().trim()) {
-            "epic" -> mapOf("stick" to 0.0004, "relic" to 0.0002)
-            "legendary" -> mapOf("chim" to 0.01, "stick" to 0.0006, "relic" to 0.0003, "food" to 0.0025)
-            "mythic" -> mapOf("chim" to 0.0125, "stick" to 0.0008, "relic" to 0.0004, "food" to 0.005, "wool" to 0.002, "core" to 0.002, "stinger" to 0.005)
+            "epic" -> mapOf("stick" to 0.0008, "relic" to 0.0002)
+            "legendary" -> mapOf("chim" to 0.01, "stick" to 0.0012, "relic" to 0.0003, "food" to 0.0025)
+            "mythic" -> mapOf("chim" to 0.0125, "stick" to 0.0016, "relic" to 0.0004, "food" to 0.005, "wool" to 0.002, "core" to 0.002, "stinger" to 0.005)
             else -> mapOf("chim" to 0.0, "stick" to 0.0, "relic" to 0.0, "food" to 0.0, "wool" to 0.0, "core" to 0.0, "stinger" to 0.0)
         }
         val multiplier = 1 + mf / 100.0

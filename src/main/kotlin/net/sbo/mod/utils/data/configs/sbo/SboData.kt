@@ -66,11 +66,12 @@ data class SboData(
     var lastStatsProfile: String = "",
 
     var cloudSync: MutableMap<String, CloudSyncState> = mutableMapOf(), // account uuid -> state
-    var cloudSyncUiScale: Float? = null, // null = Minecraft's GUI scale
-    var eventsUiScale: Float? = null, // null = Minecraft's GUI scale
+    var cloudSyncUiScale: Float? = null, // null = the global size, see UiScale
+    var eventsUiScale: Float? = null, // null = the global size, see UiScale
     var eventsSort: String = "year",
     var eventsChartView: String = "value",
     var eventsHiddenLines: MutableList<String> = mutableListOf(),
+    var pfOnboardingSeen: Boolean = false,
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }

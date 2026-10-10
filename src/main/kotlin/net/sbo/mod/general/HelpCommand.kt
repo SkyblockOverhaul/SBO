@@ -11,8 +11,9 @@ import net.sbo.mod.utils.events.Register
 import kotlin.math.roundToInt
 
 object HelpCommand {
-    private val commands = arrayOf(
-        mapOf("cmd" to "sbo", "desc" to "Open the Settings GUI"),
+    val commands = arrayOf(
+        mapOf("cmd" to "sbo", "desc" to "Open the SBO start screen: settings, party finder, sounds and more"),
+        mapOf("cmd" to "sbosettings", "desc" to "Open the settings (or: /sbo settings, /sboconfig)"),
         mapOf("cmd" to "sbohelp", "desc" to "Shows this message"),
         mapOf("cmd" to "sboguis", "desc" to "Open the GUIs and move them around (or: /sbomoveguis)"),
         mapOf("cmd" to "sboclearburrows", "desc" to "Clear all burrow waypoints (or: /sbocb)"),

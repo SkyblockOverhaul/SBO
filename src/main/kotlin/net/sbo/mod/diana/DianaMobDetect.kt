@@ -324,8 +324,8 @@ object DianaMobDetect {
             RareDianaMob.KING.display -> Diana.ReceiveList.KING
             RareDianaMob.SPHINX.display -> Diana.ReceiveList.SPHINX
             RareDianaMob.MANTI.display -> Diana.ReceiveList.MANTICORE
-            else -> Diana.ReceiveList.OTHER
-        }
+            else -> null
+        } ?: return
 
         WaypointManager.notifyRareMob("", mobType)
 

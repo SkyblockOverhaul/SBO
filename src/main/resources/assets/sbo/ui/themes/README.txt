@@ -1,8 +1,9 @@
-SBO PARTY FINDER THEMES
-=======================
+SBO THEMES
+==========
 
-Every .json file in this folder shows up as a theme in the party finder:
-open the party finder, go to Settings > Look > Theme.
+Every .json file in this folder shows up as a theme for all SBO windows:
+open the SBO settings (/sbosettings) and go to Themes > Theme.
+The party finder can also have its own theme: Party Finder > Settings > Look > Theme.
 The list is read again every time you open the settings, no restart needed.
 
 SBO writes this README again on every start, so changes to it are lost.
@@ -13,7 +14,7 @@ MAKE YOUR OWN THEME
 -------------------
 1. Copy example.json and give the copy a new name, e.g. my-theme.json.
 2. Open it with any text editor and change "name" and the colors.
-3. Open the party finder settings and pick your theme.
+3. Open the SBO settings (or the party finder settings) and pick your theme.
 
 A theme file looks like this:
 
@@ -32,16 +33,17 @@ A theme file looks like this:
 name           Name in the theme list (up to 32 characters). Without it the file name is used.
 description    Short text about the theme (optional).
 base           The built-in theme you start from. Everything you don't set in "colors" comes from it.
-               One of: sbo-dark, hypixel, colorblind, high-contrast, light, midnight, purple
-hypixelColors  true colors values like Hypixel does (item rarities, SkyBlock level, Trophy Fisher, party types).
+               One of: sbo-dark, hypixel, colorblind, high-contrast, light, midnight, purple, mythological, ocean, minecraft
+hypixelColors  Party finder only: true colors values like Hypixel does (item rarities, SkyBlock level, Trophy Fisher, party types).
                Without it, the setting of the base theme is used.
-marks          true gives requirements you don't meet a dashed border (a "x" in front where there is no border).
+marks          Party finder only: true gives requirements you don't meet a dashed border (a "x" in front where there is no border).
                Without it, the base theme decides.
 colors         Only the colors you want to change. Unknown names are ignored.
+               With base "minecraft" you also keep its square corners, stone buttons and Minecraft font.
 
 Colors are written as #rgb, #rgba, #rrggbb or #rrggbbaa, for example "#ff8800" or "#ff880080".
 The last two digits of #rrggbbaa are the transparency: 00 is invisible, 80 is half, ff is solid.
-A file with a mistake is skipped, check the Minecraft log for "Party finder theme".
+A file with a mistake is skipped, check the Minecraft log for "[SBO] Theme".
 
 
 ALL COLORS (default values of SBO Dark)
@@ -108,6 +110,8 @@ Popups
   menu-danger        #f47b7d    Red entries in right click menus
   tint               #ffffff0f  Light shine on tabs and segments under the mouse (use a dark one on light themes)
   tint-strong        #ffffff14  The same for a focused segment
+  glow               #55ffff73  Glow of the title in the SBO hub
+  glow-soft          #55ffff24  Soft glow behind the hub banner and its tiles
 
 Icons
   star               #f0b232    Filled favorite star

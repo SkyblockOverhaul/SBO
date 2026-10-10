@@ -1,77 +1,31 @@
 package net.sbo.mod.settings
 
-import com.teamresourceful.resourcefulconfig.api.types.options.TranslatableValue
-import com.teamresourceful.resourcefulconfigkt.api.ConfigKt
+import com.google.gson.JsonObject
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.config.Config
 import net.sbo.mod.settings.categories.*
 
-object Settings : ConfigKt("sbo/config") {
-    override val name: TranslatableValue
-        get() = Literal("SBO ${SBOKotlin.version} for MC ${SBOKotlin.mcVersion}")
-    override val description = Literal("SBO is the ultimate diana mod for Hypixel Skyblock! FPS friendly, and packed with QOL features!")
+object Settings : Config("sbo/config") {
+    override val name: String
+        get() = "SBO ${SBOKotlin.version} for MC ${SBOKotlin.mcVersion}"
+    override val description = "Diana and the SBO Party Finder for Hypixel Skyblock, plus trackers and QOL features."
 
     init {
-        separator {
-            title = "Welcome to Skyblock Overhaul!"
-            description = "Made by D4rkSwift/RolexDE and contributors."
-        }
-
-        button {
-            title = "Github"
-            description = "Opens the GitHub releases page"
-            text = "Open"
-            onClick {
-                SBOKotlin.openInBrowser("https://github.com/SkyblockOverhaul/SBO/releases")
-            }
-        }
-
-        button {
-            title = "Discord"
-            description = "Get support and updates on Discord"
-            text = "Join"
-            onClick {
-                SBOKotlin.openInBrowser("https://discord.gg/QvM6b9jsJD")
-            }
-        }
-
-        button {
-            title = "Patreon"
-            description = "Support our development and keep the server running ☕"
-            text = "Support"
-            onClick {
-                SBOKotlin.openInBrowser("https://www.patreon.com/Skyblock_Overhaul")
-            }
-        }
-
-        button {
-            title = "Ko-fi"
-            description = "Buy us a coffee on Ko-fi ☕"
-            text = "Support"
-            onClick {
-                SBOKotlin.openInBrowser("https://ko-fi.com/skyblock_overhaul")
-            }
-        }
-
-        button {
-            title = "Website"
-            description = "Explore our website for tracking Magic Find upgrades"
-            text = "Visit"
-            onClick {
-                SBOKotlin.openInBrowser("https://skyblockoverhaul.com/")
-            }
-        }
-
         category(General)
         category(Diana)
         category(Medal)
         category(PartyCommands)
         category(Customization)
-        category(PartyFinder)
+        category(Themes)
         category(QOL)
-        category(CloudSync)
         category(Debug)
-        category(Credits)
     }
 
-    fun save() = SBOKotlin.settings.save()
+    // The Party Finder category moved into the party finder window, PartyFinderManager takes its old values over once
+    var legacyPartyFinder: JsonObject? = null
+
+    override fun load(json: JsonObject) {
+        super.load(json)
+        legacyPartyFinder = (json.get("Party Finder") ?: json.get("PartyFinder")) as? JsonObject
+    }
 }

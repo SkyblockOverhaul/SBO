@@ -1,7 +1,7 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
-import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
+import net.sbo.mod.config.Category
+import net.sbo.mod.config.ObservableEntry
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.EventsGui
 import net.sbo.mod.overlays.DianaLoot
@@ -11,13 +11,13 @@ import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
 
-object Diana : CategoryKt("Diana") {
+object Diana : Category("Diana") {
     enum class ShareList {
         INQ, MANTICORE, KING, SPHINX
     }
 
     enum class ReceiveList {
-        INQ, MANTICORE, KING, SPHINX, OTHER
+        INQ, MANTICORE, KING, SPHINX
     }
 
     enum class NoShurikenList {
@@ -481,12 +481,9 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Create a waypoint when finding a rare mob entity in a loaded chunk automatically. (King, Manti, Sphinx, Inq)")
     }
 
-    var ReceiveMobs by select(ReceiveList.INQ, ReceiveList.MANTICORE, ReceiveList.KING, ReceiveList.SPHINX, ReceiveList.OTHER) {
+    var ReceiveMobs by select(ReceiveList.INQ, ReceiveList.MANTICORE, ReceiveList.KING, ReceiveList.SPHINX) {
         this.name = Literal("Which Mobs to Receive")
-        this.description = Literal(
-        "Select which mobs to receive.\n" +
-            "§bOTHER = Rare mobs from players that don't ping with sbo. (mainly skyhanni)"
-        )
+        this.description = Literal("Select which mobs to receive.")
     }
 
     var HighlightRareMobs by boolean(true) {

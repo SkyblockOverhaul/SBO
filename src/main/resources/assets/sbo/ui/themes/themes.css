@@ -1,9 +1,9 @@
-/* Built-in party finder themes. PartyFinderThemes puts pf-theme-<id> on the body, plus pf-hypixel (Hypixel colors),
-   pf-recomb (items one rarity higher) and pf-marks (dashed border or a mark on requirements you don't meet).
-   SBO Dark is the default in partyfinder.css. */
+/* Built-in themes of all SBO windows. useSboTheme puts sbo-theme-<base> on the body; custom theme files set their
+   colors on the body. SBO Dark is the default in each window's own CSS. The party finder adds pf-hypixel (Hypixel colors),
+   pf-recomb (items one rarity higher) and pf-marks (dashed border or a mark on requirements you don't meet). */
 
 /* Okabe-Ito colors, readable with red-green color blindness */
-body.pf-theme-colorblind {
+body.sbo-theme-colorblind {
     --ok: #56b4e9;
     --ok-soft: rgba(86, 180, 233, 0.18);
     --ok-border: rgba(86, 180, 233, 0.65);
@@ -16,7 +16,9 @@ body.pf-theme-colorblind {
     --menu-danger: #e69f00;
 }
 
-body.pf-theme-high-contrast {
+body.sbo-theme-high-contrast {
+    --glow: rgba(85, 255, 255, 0.6);
+    --glow-soft: rgba(85, 255, 255, 0.2);
     --bg: #000000;
     --panel: #000000;
     --panel-2: #1a1a1a;
@@ -62,7 +64,9 @@ body.pf-theme-high-contrast {
     --scrollbar-track: #ffffff20;
 }
 
-body.pf-theme-light {
+body.sbo-theme-light {
+    --glow: rgba(0, 110, 250, 0.25);
+    --glow-soft: rgba(0, 110, 250, 0.08);
     --tint: rgba(0, 0, 0, 0.05);
     --tint-strong: rgba(0, 0, 0, 0.08);
     --bg: #f2f3f5;
@@ -112,7 +116,9 @@ body.pf-theme-light {
     --menu-danger: #c93030;
 }
 
-body.pf-theme-midnight {
+body.sbo-theme-midnight {
+    --glow: rgba(127, 196, 214, 0.35);
+    --glow-soft: rgba(127, 196, 214, 0.1);
     --bg: #0b0c0e;
     --panel: #121316;
     --panel-2: #1a1b1f;
@@ -158,7 +164,9 @@ body.pf-theme-midnight {
     --scrollbar-track: #00000030;
 }
 
-body.pf-theme-purple {
+body.sbo-theme-purple {
+    --glow: rgba(216, 180, 254, 0.45);
+    --glow-soft: rgba(216, 180, 254, 0.14);
     --bg: #17121f;
     --panel: #201a2c;
     --panel-2: #2a2239;
@@ -196,6 +204,175 @@ body.pf-theme-purple {
     --backdrop: rgba(8, 4, 14, 0.6);
     --scrollbar-thumb: #d8b4fe80;
     --scrollbar-track: #00000030;
+}
+
+body.sbo-theme-mythological {
+    --bg: #1c1813;
+    --panel: #26201a;
+    --panel-2: #2e271f;
+    --card: #221c16;
+    --card-hover: #29221a;
+    --border: #3d3326;
+    --border-hover: #5c4d38;
+    --text: #f3ece2;
+    --text-strong: #ffffff;
+    --text-soft: #e2d8c9;
+    --subtle: #c2b5a2;
+    --muted: #a39582;
+    --dim: #877a68;
+    --title: #ffcc55;
+    --accent: #d99a1e;
+    --accent-hover: #ebb03a;
+    --accent-text: #1a1408;
+    --accent-soft: rgba(217, 154, 30, 0.3);
+    --accent-faint: rgba(217, 154, 30, 0.18);
+    --banner-bg: rgba(217, 154, 30, 0.12);
+    --banner-border: rgba(217, 154, 30, 0.5);
+    --banner-text: #ffe2a8;
+    --estimated: #e6b3ff;
+    --input-bg: #17130f;
+    --input-border: #4a3e2e;
+    --input-border-hover: #6b5a43;
+    --control: #33291f;
+    --control-border: #4f4231;
+    --control-hover: #3e3226;
+    --control-active: #261f17;
+    --menu: #26201a;
+    --popup: #120f0b;
+    --highlight: #3e3226;
+    --disabled: #3d3326;
+    --disabled-text: #8f8170;
+    --backdrop: rgba(10, 7, 3, 0.6);
+    --scrollbar-thumb: #ffcc5580;
+    --scrollbar-track: #00000030;
+    --star: #ffcc55;
+    --glow: rgba(255, 204, 85, 0.45);
+    --glow-soft: rgba(255, 204, 85, 0.14);
+}
+
+body.sbo-theme-ocean {
+    --bg: #0e1a22;
+    --panel: #13232e;
+    --panel-2: #182c39;
+    --card: #112029;
+    --card-hover: #162834;
+    --border: #22394a;
+    --border-hover: #345470;
+    --text: #e3f1f7;
+    --text-strong: #ffffff;
+    --text-soft: #cde3ec;
+    --subtle: #a3c0cd;
+    --muted: #84a3b2;
+    --dim: #6b8a99;
+    --title: #5eead4;
+    --accent: #0b8a9a;
+    --accent-hover: #12a5b7;
+    --accent-soft: rgba(11, 138, 154, 0.35);
+    --accent-faint: rgba(11, 138, 154, 0.2);
+    --banner-bg: rgba(94, 234, 212, 0.08);
+    --banner-border: rgba(94, 234, 212, 0.4);
+    --banner-text: #b8f5ea;
+    --estimated: #c4b5fd;
+    --input-bg: #0b151c;
+    --input-border: #2a4558;
+    --input-border-hover: #3d6178;
+    --control: #1a3140;
+    --control-border: #2e4b5e;
+    --control-hover: #213b4c;
+    --control-active: #132530;
+    --menu: #13232e;
+    --popup: #081016;
+    --highlight: #213b4c;
+    --disabled: #22394a;
+    --disabled-text: #7593a2;
+    --backdrop: rgba(2, 8, 12, 0.6);
+    --scrollbar-thumb: #5eead480;
+    --scrollbar-track: #00000030;
+    --glow: rgba(94, 234, 212, 0.45);
+    --glow-soft: rgba(94, 234, 212, 0.14);
+}
+
+body.sbo-theme-minecraft {
+    --bg: #2a2420;
+    --panel: #3a3029;
+    --panel-2: #4a3d33;
+    --card: #1c1814;
+    --card-hover: #262019;
+    --border: #000000;
+    --border-hover: #ffffff;
+    --text: #e0e0e0;
+    --text-strong: #ffffff;
+    --text-soft: #d0d0d0;
+    --subtle: #aaaaaa;
+    --muted: #a0a0a0;
+    --dim: #808080;
+    --title: #ffff55;
+    --accent: #3c8527;
+    --accent-hover: #4ca232;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(85, 255, 85, 0.22);
+    --accent-faint: rgba(85, 255, 85, 0.12);
+    --banner-bg: rgba(255, 255, 85, 0.08);
+    --banner-border: rgba(255, 255, 85, 0.45);
+    --banner-text: #ffff55;
+    --ok: #55ff55;
+    --ok-soft: rgba(85, 255, 85, 0.15);
+    --ok-border: rgba(85, 255, 85, 0.6);
+    --bad: #ff5555;
+    --bad-border: rgba(255, 85, 85, 0.65);
+    --danger: #aa0000;
+    --estimated: #ff55ff;
+    --input-bg: #000000;
+    --input-border: #a0a0a0;
+    --input-border-hover: #ffffff;
+    --control: #6f6f6f;
+    --control-border: #000000;
+    --control-hover: #7e88bf;
+    --control-active: #555555;
+    --menu: #100010;
+    --popup: #100010;
+    --highlight: #3a2a6e;
+    --disabled: #3a3a3a;
+    --disabled-text: #a0a0a0;
+    --backdrop: rgba(16, 16, 16, 0.75);
+    --shadow: rgba(0, 0, 0, 0.8);
+    --scrollbar-thumb: #c0c0c0;
+    --scrollbar-track: #000000;
+    --toast-success: #55ff55;
+    --toast-warning: #ffaa00;
+    --toast-error: #ff5555;
+    --menu-danger: #ff5555;
+    --tint: rgba(255, 255, 255, 0.08);
+    --tint-strong: rgba(255, 255, 255, 0.14);
+    --star: #ffff55;
+    --glow: rgba(255, 255, 85, 0.4);
+    --glow-soft: rgba(255, 255, 85, 0.1);
+    /* The font beats the party finder's own font setting, the theme is all about it */
+    font-family: minecraft !important;
+    text-shadow: 1px 1px 0 #3f3f3f;
+}
+body.sbo-theme-minecraft * { border-radius: 0 !important; }
+/* Stone buttons: light upper and dark lower edge inside a black outline, white outline under the mouse */
+body.sbo-theme-minecraft button {
+    color: #ffffff;
+    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.33), inset -1px -2px 0 rgba(0, 0, 0, 0.4);
+}
+body.sbo-theme-minecraft button:hover { border-color: #ffffff; }
+body.sbo-theme-minecraft button:disabled { color: #a0a0a0; box-shadow: none; }
+/* Inventory slots: dark upper and light lower edge */
+body.sbo-theme-minecraft input, body.sbo-theme-minecraft textarea, body.sbo-theme-minecraft select {
+    box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.6);
+}
+body.sbo-theme-minecraft input:focus, body.sbo-theme-minecraft textarea:focus, body.sbo-theme-minecraft select:focus { border-color: #ffffff; }
+/* Item tooltips: near black with a purple frame */
+body.sbo-theme-minecraft .guilib-tooltip,
+body.sbo-theme-minecraft .guilib-select-menu,
+body.sbo-theme-minecraft .guilib-menu,
+body.sbo-theme-minecraft .guilib-toast,
+body.sbo-theme-minecraft .guilib-modal {
+    background-color: rgba(16, 0, 16, 0.94);
+    border: 1px solid #100010;
+    box-shadow: inset 0 0 0 1px #5000ff, 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 /* Minecraft text colors and one color per party type (side bar name and heading), used with Hypixel colors */
