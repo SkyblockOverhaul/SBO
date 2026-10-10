@@ -1,35 +1,124 @@
+// SBO example theme. It sets everything a theme can change, so you can see what is possible.
+// Copy this file, give the copy a new name (e.g. my-theme.json) and change what you like.
+// Lines starting with // are notes and are ignored. Delete any line you don't need:
+// everything you leave out comes from the "base" theme. More details are in README.txt.
 {
-  "name": "Example (Forest)",
-  "description": "An example theme. Open the theme folder, copy this file and change the colors to make your own.",
-  "base": "sbo-dark",
+  // Name in the theme list, up to 32 characters
+  "name": "Example (Purple Minecraft)",
+  // Short text shown under the theme list (optional)
+  "description": "An example theme in dark purple with the Minecraft look, Hypixel colors and aqua numbers. It lists every color you can change: copy this file and edit it to make your own.",
+
+  // The built-in theme you start from. "minecraft" also brings square corners, stone buttons and the Minecraft font.
+  // Other choices: sbo-dark, hypixel, colorblind, high-contrast, light, midnight, purple, mythological, ocean
+  "base": "minecraft",
+  // "base": "sbo-dark",
+
+  // Party finder: color values like Hypixel does (item rarities, SkyBlock level, Trophy Fisher, party types)
   "hypixelColors": true,
+  // Party finder: requirements you don't meet get a dashed border, or an "x" in front where there is no border
   "marks": false,
+
+  // Colors as #rgb, #rgba, #rrggbb or #rrggbbaa. The last two digits of #rrggbbaa are the transparency (00 invisible, ff solid).
   "colors": {
-    "bg": "#121a15",
-    "panel": "#18231c",
-    "panel-2": "#203026",
-    "card": "#16201a",
-    "card-hover": "#1c2a21",
-    "border": "#2c4033",
-    "border-hover": "#466350",
-    "title": "#9be7b0",
-    "accent": "#2f9e5b",
-    "accent-hover": "#3cb86c",
-    "accent-soft": "#2f9e5b4d",
-    "accent-faint": "#2f9e5b2e",
-    "banner-bg": "#2f9e5b24",
-    "banner-border": "#2f9e5b80",
-    "banner-text": "#c8f2d4",
-    "input-bg": "#0f1612",
-    "input-border": "#335040",
-    "input-border-hover": "#4c7059",
-    "control": "#223328",
-    "control-border": "#3a5545",
-    "control-hover": "#2b4033",
-    "control-active": "#1a271f",
-    "menu": "#18231c",
-    "popup": "#0c120e",
-    "highlight": "#2b4033",
-    "type-diana": "#ffd166"
+    // Window
+    "bg": "#1a0d22",            // background of the window and the player panel
+    "panel": "#26132f",         // header and side bar
+    "panel-2": "#321a3d",       // hover in the side bar, tags and requirement chips
+    "card": "#140a1a",          // party cards and hover of form rows
+    "card-hover": "#1e0f27",    // party card under the mouse
+    "border": "#000000",        // lines between areas, card borders
+    "border-hover": "#ffffff",  // card border under the mouse
+
+    // Text
+    "text": "#e8dcef",          // normal text
+    "text-strong": "#ffffff",   // names, headings, important text
+    "text-soft": "#d8c8e2",     // labels, notes, side bar entries
+    "subtle": "#b9a3c7",        // inactive tabs, chips and arrows
+    "muted": "#a08aae",         // hints and secondary text
+    "dim": "#7f6a8c",           // placeholders and the faintest text
+    "title": "#55ffff",         // window titles and numbers like the party size, your own value and percentages
+
+    // Accent (buttons, selected entries)
+    "accent": "#aa00aa",        // main color of buttons, tabs and selected things
+    "accent-hover": "#c21fc2",  // buttons under the mouse
+    "accent-text": "#ffffff",   // text on accent colored buttons
+    "accent-soft": "#aa00aa59", // selected side bar entry, active filter button
+    "accent-faint": "#aa00aa2e",// player that is open in the player panel
+    "banner-bg": "#55ffff14",   // info boxes
+    "banner-border": "#55ffff73", // border of info boxes
+    "banner-text": "#55ffff",   // text in info boxes
+
+    // Requirements
+    "ok": "#55ff55",            // you meet it, your own party
+    "ok-soft": "#55ff5526",     // background of your own party tag
+    "ok-border": "#55ff5599",   // border of requirements you meet
+    "bad": "#ff5555",           // you don't meet it
+    "bad-border": "#ff5555a6",  // border of requirements you don't meet
+    "danger": "#aa0000",        // close and remove buttons under the mouse
+    "estimated": "#ff55ff",     // estimated values (marked with ~ or +)
+
+    // Inputs and buttons
+    "input-bg": "#000000",      // text fields, dropdowns, number fields, chips
+    "input-border": "#8a6a9a",  // their border
+    "input-border-hover": "#ffffff", // their border under the mouse
+    "control": "#5e3a72",       // normal buttons
+    "control-border": "#000000",// border of normal buttons
+    "control-hover": "#7a4f94", // normal buttons under the mouse
+    "control-active": "#45284f",// normal buttons while pressed
+    "disabled": "#2e1f36",      // buttons you can't press
+    "disabled-text": "#8a7a94", // text on buttons you can't press
+
+    // Popups
+    "menu": "#100010",          // dropdown lists and dialogs
+    "popup": "#100010",         // tooltips, right click menus, messages bottom right
+    "highlight": "#3a1a5e",     // dropdown entry under the mouse
+    "backdrop": "#0a000fbf",    // darkens the window behind a dialog
+    "shadow": "#000000cc",      // shadow of the player panel in small windows
+    "scrollbar-thumb": "#c08ad0", // scroll bar
+    "scrollbar-track": "#000000", // track behind the scroll bar
+    "toast-success": "#55ff55", // stripe of success messages
+    "toast-warning": "#ffaa00", // stripe of warnings
+    "toast-error": "#ff5555",   // stripe of error messages
+    "menu-danger": "#ff5555",   // red entries in right click menus
+    "tint": "#ffffff14",        // light shine on tabs and segments under the mouse
+    "tint-strong": "#ffffff24", // the same for a focused segment
+    "glow": "#55ffff66",        // glow of the title in the SBO hub
+    "glow-soft": "#55ffff1a",   // soft glow behind the hub banner and its tiles
+    "star": "#ffff55",          // filled favorite star
+
+    // Hypixel colors, only used with "hypixelColors": true. Item rarities and the SkyBlock level use them.
+    "mc-black": "#000000",
+    "mc-dark-blue": "#0000aa",
+    "mc-dark-green": "#00aa00",
+    "mc-dark-aqua": "#00aaaa",
+    "mc-dark-red": "#aa0000",
+    "mc-dark-purple": "#c133c1", // a bit brighter than Hypixel's #aa00aa, so Epic items stay readable on purple
+    "mc-gold": "#ffaa00",
+    "mc-gray": "#aaaaaa",
+    "mc-dark-gray": "#555555",
+    "mc-blue": "#5555ff",
+    "mc-green": "#55ff55",
+    "mc-aqua": "#55ffff",
+    "mc-red": "#ff5555",
+    "mc-light-purple": "#ff55ff",
+    "mc-yellow": "#ffff55",
+    "mc-white": "#ffffff",
+
+    // Trophy Fisher titles, only used with "hypixelColors": true
+    "trophy-novice": "#cd7f32",
+    "trophy-adept": "#c9d1d9",
+    "trophy-expert": "#ffaa00",
+    "trophy-master": "#5ce1e6",
+
+    // Party type names in the side bar and the heading, only used with "hypixelColors": true
+    "type-diana": "#ffaa00",
+    "type-fishing": "#55ffff",
+    "type-mining": "#00aaaa",
+    "type-kuudra": "#ff5555",
+    "type-bestiary": "#c133c1",
+    "type-rift": "#ff55ff",
+    "type-safari": "#55ff55",
+    "type-slayer": "#aa0000",
+    "type-custom": "#aaaaaa"
   }
 }

@@ -6,6 +6,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.util.Util
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.security.MessageDigest
 
 /** Looks of all SBO windows: built-in themes plus custom ones from `config/sbo/themes`. */
 object SboThemes {
@@ -13,6 +14,8 @@ object SboThemes {
     private const val CUSTOM_PREFIX = "custom:"
     private const val EXAMPLE_FILE = "example.json"
     private const val RESOURCES = "/assets/sbo/ui/themes"
+    // SHA-256 of the first example.json (Forest) without "\r"
+    private const val OLD_EXAMPLE_SHA256 = "3bfceb75dd1d977ca3be889b135234a0f36903abc3d065e802b0a823135fd53b"
 
     data class Theme(
         val id: String,
@@ -82,7 +85,7 @@ object SboThemes {
     // Own logger, SBOKotlin.logger would start mod code in tests
     private val logger = LoggerFactory.getLogger("SBO")
 
-    private val json = Json { ignoreUnknownKeys = true; isLenient = true; allowTrailingComma = true }
+    private val json = Json { ignoreUnknownKeys = true; isLenient = true; allowTrailingComma = true; allowComments = true }
 
     val folder: File get() = FabricLoader.getInstance().configDir.resolve("sbo/themes").toFile()
 
@@ -147,16 +150,23 @@ object SboThemes {
         null
     }
 
-    // The README is always rewritten so it lists the current colors, the example only once with the folder
+    // The README is always rewritten so it lists the current colors, the example only with the folder or over the untouched old one
     private fun prepareFolder() {
         try {
             val created = !folder.exists()
             folder.mkdirs()
             copyResource("README.txt", File(folder, "README.txt"))
-            if (created) copyResource(EXAMPLE_FILE, File(folder, EXAMPLE_FILE))
+            val example = File(folder, EXAMPLE_FILE)
+            if (created || isOldExample(example)) copyResource(EXAMPLE_FILE, example)
         } catch (e: Exception) {
             logger.warn("[SBO] Theme folder not prepared: ${e.message}")
         }
+    }
+
+    internal fun isOldExample(file: File): Boolean {
+        if (!file.isFile) return false
+        val digest = MessageDigest.getInstance("SHA-256").digest(file.readText().replace("\r", "").toByteArray())
+        return digest.joinToString("") { "%02x".format(it) } == OLD_EXAMPLE_SHA256
     }
 
     private fun copyResource(name: String, target: File) {

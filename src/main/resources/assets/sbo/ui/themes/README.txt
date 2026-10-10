@@ -7,7 +7,8 @@ The party finder can also have its own theme: Party Finder > Settings > Look > T
 The list is read again every time you open the settings, no restart needed.
 
 SBO writes this README again on every start, so changes to it are lost.
-example.json is only created once, you can change or delete it.
+example.json is only created once, you can change or delete it. It sets everything a theme can change.
+If you never changed the old example (Forest), SBO replaces it with the new one.
 
 
 MAKE YOUR OWN THEME
@@ -40,6 +41,8 @@ marks          Party finder only: true gives requirements you don't meet a dashe
                Without it, the base theme decides.
 colors         Only the colors you want to change. Unknown names are ignored.
                With base "minecraft" you also keep its square corners, stone buttons and Minecraft font.
+
+Text after // up to the end of the line is a note and is ignored, like in example.json.
 
 Colors are written as #rgb, #rgba, #rrggbb or #rrggbbaa, for example "#ff8800" or "#ff880080".
 The last two digits of #rrggbbaa are the transparency: 00 is invisible, 80 is half, ff is solid.
