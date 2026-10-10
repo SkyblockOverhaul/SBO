@@ -8,7 +8,7 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.http.Http
 
 object UpdateChecker {
-    const val MODRINTH_ID = "9lBqVbQF"
+    private const val MODRINTH_ID = "9lBqVbQF"
     private val VERSION_REGEX = Regex("""(\d+\.\d+\.\d+|\d+\.\d+)""")
 
     private var latestVersion: String? = null

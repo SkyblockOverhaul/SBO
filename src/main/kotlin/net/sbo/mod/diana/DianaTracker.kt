@@ -35,6 +35,7 @@ import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.World.isInSkyblock
 import net.sbo.mod.utils.medal.MedalIntegration
+import net.sbo.mod.utils.time.TimeUtil
 import java.util.regex.Pattern
 
 object DianaTracker {
@@ -43,8 +44,6 @@ object DianaTracker {
     private val isMobOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
     private val isItemOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
 
-    private val lootAnnouncerBuffer: MutableList<String> = mutableListOf()
-    private var lootAnnouncerBool: Boolean = false
     private var allowScavTracking: Boolean = true
 
     var lastSpawnedMob: String? = null
@@ -132,28 +131,26 @@ object DianaTracker {
             return
         }
 
-        val isDianaDrop = when (item.itemId) {
-            "HILT_OF_REVELATIONS", "CROWN_OF_GREED" -> true
-            else -> false
-        }
-
-        if (isDianaDrop && dianaMobDiedRecently(4)) {
-            // Happens if user's OS time is not close (within 6 seconds) to the server's time for any reason. We can't use System.nanoTime comparision because server sends it in unix-time (milliseconds since epoch), and using System.currentTimeMillis depends on OS clock via NTP synchronization to be within 6 seconds of Hypixel's NTP synchronized clock.
-
-            if (Debug.debugOnlyMessages) {
-                Chat.chat(
-                    "SBO(debug): creation timestamp unreliable, using Diana death fallback. " +
-                        "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
-                )
-            }
-            trackWithPickuplog(item.itemId)
-            return
-        }
-
         if (Debug.debugOnlyMessages) {
+            val timeStatus = when {
+                TimeUtil.isSynchronized -> {
+                    "NTP synchronized, uncertainty≈${TimeUtil.synchronizationUncertaintyMillis}ms"
+                }
+
+                TimeUtil.synchronizationFailed -> {
+                    "NTP synchronization FAILED"
+                }
+
+                else -> {
+                    "NTP synchronization pending"
+                }
+            }
+
             Chat.chat(
                 "SBO(debug): not tracking item with creation older than 6 seconds. " +
-                    "secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt"
+                    "secondsPassedSinceCreation=$secondsPassedSinceCreation," +
+                    "createdAt=$createdAt," +
+                    "time=$timeStatus"
             )
         }
     }
@@ -503,7 +500,7 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Manti-core", customMsg.second, true)
                 } else {
-                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayorData.items.MANTI_CORE + dianaTrackerMayorData.items.MANTI_CORE_LS, lsAmount = dianaTrackerMayorData.items.MANTI_CORE_LS, buffer = true)
+                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayorData.items.MANTI_CORE + dianaTrackerMayorData.items.MANTI_CORE_LS, lsAmount = dianaTrackerMayorData.items.MANTI_CORE_LS)
                 }
             }
 
@@ -548,7 +545,7 @@ object DianaTracker {
                 if (customMsg.first) {
                     announceLootToParty("Fateful Stinger", customMsg.second, true)
                 } else {
-                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayorData.items.FATEFUL_STINGER + dianaTrackerMayorData.items.FATEFUL_STINGER_LS, lsAmount = dianaTrackerMayorData.items.FATEFUL_STINGER_LS, buffer = true)
+                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayorData.items.FATEFUL_STINGER + dianaTrackerMayorData.items.FATEFUL_STINGER_LS, lsAmount = dianaTrackerMayorData.items.FATEFUL_STINGER_LS)
                 }
             }
 
@@ -916,7 +913,7 @@ object DianaTracker {
         }
     }
 
-    private fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1, buffer: Boolean = false) {
+    private fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1) {
         if (!Diana.lootAnnouncerParty) return
         var msg = Helper.toTitleCase(item.replace("_LS", "").replace("_", " "))
         val custom = customMsg != null
@@ -939,24 +936,6 @@ object DianaTracker {
             msg = "[SBO] RARE DROP! $msg$priceStr"
         }
 
-        if (buffer) {
-            lootAnnouncerBuffer.add(msg)
-            if (!lootAnnouncerBool) {
-                lootAnnouncerBool = true
-                sleep(1500) {
-                    sendLootAnnouncement()
-                    lootAnnouncerBool = false
-                }
-            }
-        } else {
-            Chat.pc(msg)
-        }
-    }
-
-    private fun sendLootAnnouncement() {
-        if (lootAnnouncerBuffer.isEmpty()) return
-        val msg = lootAnnouncerBuffer.joinToString(", ")
-        lootAnnouncerBuffer.clear()
         Chat.pc(msg)
     }
 

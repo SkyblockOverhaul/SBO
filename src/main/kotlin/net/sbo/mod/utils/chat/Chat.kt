@@ -14,7 +14,7 @@ import net.sbo.mod.utils.events.ClickActionManager
 object Chat {
 
     /**
-     * Sends a text to party chat via the /pc command, or
+     * Sends a text to party chat via the /pchat command, or
      * sends it locally if the user opted-in to the "Assume Muted"
      * option for accessibility, so that they can still see the message
      * and/or possibly copy and share the message in another platform such as Discord.
@@ -29,13 +29,13 @@ object Chat {
             // to send, so send locally instead via the chat method. We can have color since it's regular chat.
             chat("§6[SBO] §e$text")
         } else {
-            command("pc $text")
+            command("pchat $text")
         }
     }
 
-    /** Sends a message to public chat via Hypixel's /ac command. */
+    /** Sends a message to public chat via Hypixel's /achat command. */
     fun allChat(text: String) {
-        command("ac $text")
+        command("achat $text")
     }
 
     /**
@@ -53,7 +53,7 @@ object Chat {
 
     private fun sendClientMessage(message: Component) {
         mc.execute {
-            mc.gui.chat.addClientSystemMessage(message)
+            mc.player?.sendSystemMessage(message)
         }
     }
 

@@ -45,7 +45,6 @@ object SoundsGui {
 
     private val GROUPS = listOf(
         "Spawns" to listOf(
-            SoundSetting("Rare Mob Spawn", SoundSettingsData::rareMobSound, SoundSettingsData::rareMobVolume),
             SoundSetting("Inquisitor Spawn", SoundSettingsData::inqSound, SoundSettingsData::inqVolume),
             SoundSetting("Sphinx Spawn", SoundSettingsData::sphinxSound, SoundSettingsData::sphinxVolume),
             SoundSetting("King Minos Spawn", SoundSettingsData::kingSound, SoundSettingsData::kingVolume),

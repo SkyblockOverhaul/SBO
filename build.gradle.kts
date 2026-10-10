@@ -7,14 +7,17 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.21"
     alias(libs.plugins.loom)
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     alias(libs.plugins.ksp)
 }
 
-version = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+private val projectVersion = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+
+// Sets the artifact version
+version = projectVersion
 
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
@@ -31,6 +34,8 @@ loom {
         generateRunConfig.set(true)
         preferGradleTask = true
     }
+
+    uncompressNestedJars = true
 }
 
 bloom {
@@ -66,7 +71,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
         freeCompilerArgs = args
 
-        moduleName.set("sbo-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
+        moduleName.set("sbo-${projectVersion}-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
     }
 }
 

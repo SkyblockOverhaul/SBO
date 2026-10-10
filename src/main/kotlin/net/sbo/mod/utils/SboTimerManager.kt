@@ -10,6 +10,12 @@ import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.TimeUnit
 
+internal fun getInactivityLimitNanos(): Long {
+    return TimeUnit.SECONDS.toNanos(
+        Diana.afkTimeout.toLong().coerceAtLeast(15L)
+    )
+}
+
 object SboTimerManager {
     internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
     val timerMayor = SBOTimer(
@@ -62,12 +68,6 @@ object SboTimerManager {
         private var elapsedNanoTime: Long = 0L
         private var state: TimerState = TimerState.Idle
         private var lastActivityNanoTime: Long = System.nanoTime()
-
-        private fun getInactivityLimitNanos(): Long {
-            return TimeUnit.SECONDS.toNanos(
-                Diana.afkTimeout.toLong().coerceAtLeast(15L)
-            )
-        }
 
         init {
             val storedTimeMs = tracker.items.TIME

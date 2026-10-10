@@ -593,10 +593,10 @@ object AchievementManager {
         addAchievement(106, "King Minos Slayer", "Max the King Minos Bestiary", "Mythic", repeatable = false)
         addAchievement(51, "Time to get on the leaderboard", "Max all Diana Bestiaries", "Mythic", hidden = true, repeatable = false)
 
-        // Daedalus Axe
-        addAchievement(52, "Daedalus Mastery: Chimera V", "Chimera V on Daedalus Axe", "Legendary", repeatable = false)
-        addAchievement(53, "Daedalus Mastery: Looting V", "Looting V on Daedalus Axe", "Legendary", repeatable = false)
-        addAchievement(54, "Daedalus Mastery: Divine Gift III", "Divine Gift III on Daedalus Axe", "Legendary", repeatable = false)
+        // Daedalus Blade
+        addAchievement(52, "Daedalus Mastery: Chimera V", "Chimera V on Daedalus Blade", "Legendary", repeatable = false)
+        addAchievement(53, "Daedalus Mastery: Looting V", "Looting V on Daedalus Blade", "Legendary", repeatable = false)
+        addAchievement(54, "Daedalus Mastery: Divine Gift III", "Divine Gift III on Daedalus Blade", "Legendary", repeatable = false)
         addAchievement(55, "Looking Clean", "Get max Divine Gift, Chimera, Looting", "Mythic", hidden = true, repeatable = false)
         addAchievement(56, "Now you can't complain", "Obtain Enderman Slayer 9", "Epic", hidden = true, repeatable = false)
 

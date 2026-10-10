@@ -43,6 +43,7 @@ import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
 import net.sbo.mod.utils.waypoint.WaypointManager
@@ -139,6 +140,7 @@ object SBOKotlin : ClientModInitializer {
 		OwnStats.init()
 		StatReporter.init()
 		BurrowDetector.init()
+		TimeUtil.start()
 		DianaTracker.init()
 		PartyPlayer.init()
 		Pickuplog.init()
