@@ -56,7 +56,7 @@ object SBOKotlin : ClientModInitializer {
 	@JvmField
 	val mc: Minecraft = Minecraft.getInstance()
 
-	val API_URL: String = System.getProperty("sbo.apiUrl")?.trimEnd('/') ?: "https://api.skyblockoverhaul.com"
+	const val API_URL: String = "https://api.skyblockoverhaul.com"
 
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
