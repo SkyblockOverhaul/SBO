@@ -11,7 +11,6 @@ import kotlinx.serialization.json.putJsonObject
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
 import net.sbo.mod.utils.data.CloudUploadRequest
-import net.sbo.mod.utils.data.MembersRequest
 import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
@@ -110,19 +109,10 @@ object SboApi {
 
     internal fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
 
-    fun partyInfo(members: List<String>, readCache: Boolean = true): HttpRequestHandle =
-        post("/partyInfo", json.encodeToString(MembersRequest(members, readCache)))
-
-    fun partyInfoByUuids(members: List<String>, readCache: Boolean = true): HttpRequestHandle =
-        post("/partyInfoByUuids", json.encodeToString(MembersRequest(members, readCache)))
-
     fun countActiveUsers(): HttpRequestHandle = post("/countActiveUsers")
 
     fun playerInfo(player: String, readCache: Boolean = true): HttpRequestHandle =
         get("/playerInfo?player=${encode(player)}" + if (readCache) "" else "&readcache=false")
-
-    fun playerInfoByUuid(uuid: String): HttpRequestHandle =
-        get("/playerInfoByUuid?uuid=${encode(uuid)}")
 
     fun activeUsers(): HttpRequestHandle = get("/activeUsers")
 

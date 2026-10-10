@@ -31,7 +31,6 @@ import net.sbo.guilib.core.event.KeyboardEvent
 import net.sbo.mod.partyfinder.BlockedPlayers
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
-import net.sbo.mod.partyfinder.PartyCheck
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyListFilters
 import net.sbo.mod.partyfinder.PartyTarget
@@ -40,6 +39,7 @@ import net.sbo.mod.partyfinder.ReqMatcher
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.partyfinder.api.PartyReportBody
+import net.sbo.mod.partyfinder.api.PartyOption
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.ReportReason
@@ -87,6 +87,9 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     var expanded by useState<String?>(null)
     var joining by useState<PartyView?>(null)
     var role by useState<String?>(null)
+    // Member whose role is being changed: by the leader, or a member for themselves
+    var changingRole by useState<Pair<PartyView, MemberView>?>(null)
+    var newRole by useState<String?>(null)
     var reporting by useState<PartyView?>(null)
     val refresh = useState(0)
     val loadKey = useRef("")
@@ -188,7 +191,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         if (party.roles.wanted.isEmpty()) {
             PartyFinderManager.sendJoinRequest(party)
         } else {
-            role = party.roles.wanted.firstOrNull()
+            role = party.openRoles.firstOrNull()
             joining = party
         }
     }
@@ -274,9 +277,9 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     inspected = props.inspected,
                     onInspect = props.onInspect,
                     copy = ::copy,
-                    checkStats = { name ->
-                        PartyCheck.checkPlayer(name)
-                        toast.info("The stats of $name are shown in chat.")
+                    onChangeRole = { member ->
+                        newRole = member.role
+                        changingRole = party to member
                     },
                     partyCommand = { command, text ->
                         Chat.command(command)
@@ -303,8 +306,12 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         h3 { +"Join ${party.leader?.name ?: "party"}" }
         p(className = "pf-hint") { +"This party looks for these roles. Pick the one you want to play." }
         radioGroup(value = role, onChange = { role = it }, vertical = true) {
-            val roles = target.forParty(party).roles
-            party.roles.wanted.forEach { id -> option(id, roles.firstOrNull { it.id == id }?.label ?: id) }
+            val partyTarget = target.forParty(party)
+            val open = party.openRoles
+            party.roles.wanted.distinct().forEach { id ->
+                val taken = id !in open
+                option(id, partyTarget.roleLabel(id) + if (taken) " (taken)" else "", disabled = taken)
+            }
         }
         div(className = "pf-dialog-buttons") {
             button(onClick = { joining = null }) { +"Cancel" }
@@ -312,6 +319,38 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                 PartyFinderManager.sendJoinRequest(party, role)
                 joining = null
             }) { +"Send join request" }
+        }
+    }
+
+    modal(open = changingRole != null, onClose = { changingRole = null }, className = "pf-dialog") {
+        val (party, member) = changingRole ?: return@modal
+        val partyTarget = target.forParty(party)
+        val self = member.uuid == myId
+        h3 { +(if (self) "Change your role" else "Change the role of ${member.name}") }
+        val open = party.openRoles
+        // Without wanted roles the leader can still note what someone plays
+        val choices = party.roles.wanted.distinct().ifEmpty { partyTarget.roles.map { it.id } }
+        radioGroup(value = newRole ?: "", onChange = { newRole = it.ifEmpty { null } }, vertical = true) {
+            choices.forEach { id ->
+                val taken = party.roles.wanted.isNotEmpty() && id !in open && id != member.role
+                option(id, partyTarget.roleLabel(id) + if (taken) " (taken)" else "", disabled = taken)
+            }
+            // A party that asks for roles needs one from everyone who joins
+            if (!self || party.roles.wanted.isEmpty()) option("", "No role")
+        }
+        div(className = "pf-dialog-buttons") {
+            button(onClick = { changingRole = null }) { +"Cancel" }
+            button(className = "primary", disabled = newRole == member.role || (self && newRole == null), onClick = {
+                val picked = newRole
+                if (self && picked != null) {
+                    Chat.pc("!role $picked")
+                    toast.info("Asked the party leader to change your role.")
+                } else {
+                    PartyFinderManager.setMemberRole(member.uuid, picked)
+                    toast.info(if (picked == null) "Removed the role of ${member.name}." else "${member.name} now plays ${partyTarget.roleLabel(picked)}.")
+                }
+                changingRole = null
+            }) { +"Save" }
         }
     }
 
@@ -414,7 +453,7 @@ private fun NodeBuilder.filterDialog(
             PartyListFilters.filterableOptions(target).forEach { partyOption ->
                 if (PartyListFilters.filtersSeveral(partyOption)) {
                     // Old saved filters hold one value, a comma list of one
-                    filterRow(partyOption.label, "Only parties with one of these. Parties set to \"Any\" are always shown.", key = partyOption.id) {
+                    filterRow(partyOption.label, "Only parties with one of these. Parties set to \"Any\" are always shown.", key = partyOption.id, option = partyOption) {
                         multiSelect(
                             values = partyOption.picks(filter.options[partyOption.id]),
                             onChange = { ids -> setFilter { if (ids.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = partyOption.picks(ids.joinToString(",")).joinToString(",") } },
@@ -425,7 +464,7 @@ private fun NodeBuilder.filterDialog(
                     }
                     return@forEach
                 }
-                filterRow(partyOption.label, null, key = partyOption.id) {
+                filterRow(partyOption.label, null, key = partyOption.id, option = partyOption) {
                     val shown = filter.options[partyOption.id]?.takeIf { value -> PartyListFilters.filterValues(partyOption).any { it.id == value } }
                     select(value = shown ?: "", onChange = { e ->
                         setFilter { if (e.value.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = e.value }
@@ -502,10 +541,10 @@ private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (P
     }
 }
 
-private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null, control: NodeBuilder.() -> Unit) {
+private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null, option: PartyOption? = null, control: NodeBuilder.() -> Unit) {
     div(className = "pf-filter-row", key = key ?: label) {
         div(className = "pf-filter-label") {
-            div { +label }
+            if (option != null) div { optionLabel(option) } else div { +label }
             if (hint != null) div(className = "pf-hint") { +hint }
         }
         div(className = "pf-filter-input") { control() }
@@ -528,7 +567,7 @@ private fun NodeBuilder.partyCard(
     inspected: String?,
     onInspect: (InspectedPlayer) -> Unit,
     copy: (String, String) -> Unit,
-    checkStats: (String) -> Unit,
+    onChangeRole: (MemberView) -> Unit,
     partyCommand: (command: String, text: String) -> Unit
 ) {
     val leaderName = party.leader?.name?.takeIf { it.isNotBlank() } ?: "Unknown"
@@ -544,7 +583,7 @@ private fun NodeBuilder.partyCard(
             separator()
             item("Remove from queue", danger = true) { PartyFinderManager.removePartyFromQueue() }
         } else {
-            item("Join party", disabled = full) { onJoin() }
+            item("Join party", disabled = full || party.rolesTaken) { onJoin() }
             separator()
             item("Hide this party") { onHide() }
             item("Block player") { onBlock(leaderName, party.id) }
@@ -562,11 +601,11 @@ private fun NodeBuilder.partyCard(
                 if (party.partySize < target.maxSize) span(className = "pf-tag size") { +sizeLabel(party.partySize) }
                 div(className = "pf-spacer")
                 span(className = "pf-age") { +ago(party.createdAt) }
-                if (!mine) joinButton(full, problems, target, onJoin)
+                if (!mine) joinButton(full, party.rolesTaken, problems, target, onJoin)
             }
-            // Party fields get their own row that wraps, long ones would push the join button out of the window
-            val tags = buildList {
-                target.opensAt?.takeIf { !target.open }?.let { add("Event starts in ${until(it)}") }
+            // Party fields get their own row that wraps, long ones would push the join button out of the window; text to info
+            val tags = buildList<Pair<String, String>> {
+                target.opensAt?.takeIf { !target.open }?.let { add("Event starts in ${until(it)}" to "") }
                 target.options.forEach { option ->
                     val value = party.options[option.id] ?: return@forEach
                     if (value == "any" || value.isEmpty()) return@forEach
@@ -577,10 +616,15 @@ private fun NodeBuilder.partyCard(
                     } else {
                         option.values.firstOrNull { it.id == value }?.label ?: value
                     }
-                    add("${option.label}: $label")
+                    add("${option.label}: $label" to option.info)
                 }
             }
-            if (tags.isNotEmpty()) div(className = "pf-card-tags") { tags.forEach { span(className = "pf-tag option") { +it } } }
+            if (tags.isNotEmpty()) div(className = "pf-card-tags") {
+                tags.forEach { (text, info) ->
+                    if (info.isBlank()) span(className = "pf-tag option") { +text }
+                    else tooltip(info, className = "pf-tip") { span(className = "pf-tag option") { +text } }
+                }
+            }
             if (party.note.isNotBlank()) div(className = "pf-note") { +party.note }
             div(className = "pf-reqs") {
                 var any = false
@@ -601,7 +645,22 @@ private fun NodeBuilder.partyCard(
             if (party.roles.wanted.isNotEmpty()) {
                 div(className = "pf-roles") {
                     +"Looking for: "
-                    +party.roles.wanted.joinToString(", ") { id -> target.roles.firstOrNull { it.id == id }?.label ?: id }
+                    // One slot per wanted place, members fill them in order
+                    val takers = party.members.filter { it.role != null }.toMutableList()
+                    party.roles.wanted.forEachIndexed { i, id ->
+                        val taker = takers.firstOrNull { it.role == id }?.also { takers.remove(it) }
+                        if (taker == null) {
+                            span(className = "pf-role-slot", key = "$id:$i") { +target.roleLabel(id) }
+                        } else {
+                            tooltip("Taken by ${taker.name}", className = "pf-tip", key = "$id:$i") {
+                                span(className = "pf-role-slot taken") {
+                                    img(src = "${StatView.ICONS}/check.svg", className = "pf-role-check")
+                                    +target.roleLabel(id)
+                                }
+                            }
+                        }
+                    }
+                    if (party.rolesTaken) span(className = "pf-muted") { +"All roles are taken" }
                 }
             }
             collapse(open = expanded) {
@@ -613,7 +672,7 @@ private fun NodeBuilder.partyCard(
                     party.members.forEach { member ->
                         memberRow(
                             member, party, target, statIds, member.uuid == inspected, { onInspect(InspectedPlayer(member, party)) },
-                            manage = mine && member.uuid != party.id, copy, checkStats, partyCommand, onBlock
+                            manage = mine && member.uuid != party.id, copy, onChangeRole, partyCommand, onBlock
                         )
                     }
                 }
@@ -622,9 +681,10 @@ private fun NodeBuilder.partyCard(
     }
 }
 
-private fun NodeBuilder.joinButton(full: Boolean, problems: List<Problem>, target: PartyTarget, onJoin: () -> Unit) {
+private fun NodeBuilder.joinButton(full: Boolean, rolesTaken: Boolean, problems: List<Problem>, target: PartyTarget, onJoin: () -> Unit) {
     val reason = when {
         full -> "This party is full."
+        rolesTaken -> "All roles are taken."
         problems.isNotEmpty() -> "You don't meet: " + problems.joinToString("; ") { ProblemText.describe(it, target) }
         else -> null
     }
@@ -647,7 +707,7 @@ private fun NodeBuilder.memberRow(
     // Other members of the own party: transfer and kick
     manage: Boolean,
     copy: (String, String) -> Unit,
-    checkStats: (String) -> Unit,
+    onChangeRole: (MemberView) -> Unit,
     partyCommand: (command: String, text: String) -> Unit,
     onBlock: (name: String, uuid: String) -> Unit
 ) {
@@ -656,7 +716,9 @@ private fun NodeBuilder.memberRow(
         header(name)
         item("Show all stats") { onInspect() }
         item("Copy name") { copy(name, "Name") }
-        item("Check stats") { checkStats(name) }
+        // The leader sets roles, a member asks for their own with !role
+        if (manage && target.roles.isNotEmpty()) item("Change role…") { onChangeRole(member) }
+        else if (member.uuid == OwnStats.uuid() && member.uuid != party.id && party.roles.wanted.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
         // The name ends up in /p commands
         if (manage && Helper.isPlayerName(name)) {
             separator()

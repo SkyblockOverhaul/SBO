@@ -331,7 +331,13 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-req-label { color: var(--muted); }
 .pf-req.ok { border-color: var(--ok-border); }
 .pf-req.bad { border-color: var(--bad-border); }
-.pf-roles { margin-top: 2px; color: var(--muted); font-size: 7px; }
+.pf-roles { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin-top: 2px; color: var(--muted); font-size: 7px; }
+/* One wanted place; a taken one is greyed out with a check */
+.pf-role-slot { display: flex; align-items: center; padding: 0 3px; border-radius: 2px; background-color: var(--panel-2); color: var(--text-soft); }
+.pf-role-slot.taken { color: var(--muted); opacity: 0.7; }
+/* Count on a wanted role chip in Create, e.g. 2× DPS */
+.pf-role-count { font-weight: bold; color: var(--accent); }
+.pf-role-check { width: 6px; height: 6px; margin-right: 1px; color: var(--ok); }
 
 .pf-members { margin-top: 4px; padding-top: 3px; border-top: 1px solid var(--border); cursor: default; }
 .pf-member { padding: 2px 3px; border-radius: 3px; cursor: pointer; }

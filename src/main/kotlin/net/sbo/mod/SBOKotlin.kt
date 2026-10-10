@@ -26,7 +26,6 @@ import net.sbo.mod.guis.SoundsGui
 import net.sbo.mod.guis.HubGui
 import net.sbo.mod.overlays.*
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.partyfinder.PartyCheck
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyFinderSocket
 import net.sbo.mod.partyfinder.OwnStats
@@ -139,7 +138,6 @@ object SBOKotlin : ClientModInitializer {
 		PartyFinderSocket.init()
 		OwnStats.init()
 		StatReporter.init()
-		PartyCheck.init()
 		BurrowDetector.init()
 		DianaTracker.init()
 		PartyPlayer.init()

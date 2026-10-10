@@ -80,8 +80,8 @@ object PartyListFilters {
             val def = reqs.firstOrNull { it.stat == stat } ?: continue
             if (!asksAtLeast(party, def, wanted)) return false
         }
-        // Parties without wanted roles take everyone
-        if (filter.roles.isNotEmpty() && party.roles.wanted.isNotEmpty() && party.roles.wanted.none { it in filter.roles }) return false
+        // Parties without wanted roles take everyone, the others need one of my roles still open
+        if (filter.roles.isNotEmpty() && party.roles.wanted.isNotEmpty() && party.openRoles.none { it in filter.roles }) return false
         if (query.isNotEmpty()) {
             val names = party.members.map { it.name.lowercase() }
             if (query !in party.note.lowercase() && names.none { query in it }) return false

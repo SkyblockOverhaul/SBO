@@ -1,5 +1,6 @@
 package net.sbo.mod.guis
 
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.UiScale
 import net.sbo.mod.guis.look.useSboScale
@@ -37,6 +38,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 object CloudSyncGui {
+    private const val PATREON_URL = "https://www.patreon.com/Skyblock_Overhaul"
+    private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
+
     private val STYLES = listOf("sbo:ui/cloud/cloud.css", SboLook.STYLE)
     private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
@@ -112,7 +116,7 @@ object CloudSyncGui {
             }
         }
 
-        val notSupporter = status?.state == SyncState.ERROR && status?.error?.contains("supporter", ignoreCase = true) == true
+        val notSupporter = status?.notSupporter == true
         val locked = busy != null || status == null
         val hasSave = status?.state !in setOf(SyncState.NO_SAVE, SyncState.ERROR, null)
 
@@ -121,8 +125,9 @@ object CloudSyncGui {
             scroll(className = "cs-body guilib-autohide") {
                 statusCard(status, busy, refreshWait, refreshing || busy != null) { refresh() }
 
-                // Without supporter status nothing below works, only the steps to fix it
+                // Without supporter status nothing below works, only why and the steps to fix it
                 if (notSupporter) {
+                    supporterInfo()
                     setupSteps()
                     return@scroll
                 }
@@ -407,7 +412,8 @@ object CloudSyncGui {
             SyncState.CLOUD_NEWER -> "warn" to "The cloud is newer. Click Download."
             SyncState.PC_CHANGED -> "warn" to "This PC has new changes. Click Upload."
             SyncState.SAME -> "ok" to "Everything is up to date."
-            SyncState.ERROR -> "bad" to (status.error?.replaceFirstChar(Char::uppercaseChar) ?: "Something went wrong.")
+            SyncState.ERROR -> if (status.notSupporter) "warn" to "Only for SBO supporters"
+                else "bad" to (status.error?.replaceFirstChar(Char::uppercaseChar) ?: "Something went wrong.")
         }
         div(className = classNames("cs-status", tone)) {
             div(className = "cs-dot")
@@ -425,6 +431,20 @@ object CloudSyncGui {
                 title = if (refreshWait > 0) "Check again in ${(refreshWait + 999) / 1000} s" else "Checks your cloud save again, e.g. after you uploaded on another PC",
                 onClick = { onRefresh() }
             ) { img("sbo:ui/cloud/refresh.svg", className = "cs-refresh-icon") }
+        }
+    }
+
+    private fun NodeBuilder.supporterInfo() {
+        div(className = "cs-steps") {
+            div(className = "cs-steps-title") { +"Cloud Sync is for supporters" }
+            infoLine("Cloud Sync keeps a copy of your SBO settings and trackers on our server, so you can use them on every PC. " +
+                "Storing and syncing this for every player needs a lot of server power. Donations from our supporters pay for the server " +
+                "and help us make it better, so Cloud Sync is only for supporters.")
+            infoLine("To become a supporter, support SBO on Patreon or Ko-fi, or boost the SBO Discord.")
+            div(className = "cs-buttons cs-support") {
+                button(className = "cs-primary", title = "Opens Patreon in your browser", onClick = { SBOKotlin.openInBrowser(PATREON_URL) }) { +"Patreon" }
+                button(title = "Opens Ko-fi in your browser", onClick = { SBOKotlin.openInBrowser(KOFI_URL) }) { +"Ko-fi" }
+            }
         }
     }
 

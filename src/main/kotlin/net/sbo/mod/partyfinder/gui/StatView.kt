@@ -20,6 +20,7 @@ import net.sbo.mod.partyfinder.PartyTarget
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.partyfinder.ReqMatcher
 import net.sbo.mod.partyfinder.api.MemberView
+import net.sbo.mod.partyfinder.api.PartyOption
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.api.StatDef
 import java.util.Locale
@@ -201,6 +202,22 @@ internal fun NodeBuilder.statLabel(statId: String, own: MemberView? = null, clas
             img(src = "${StatView.ICONS}/info.svg", className = "pf-icon pf-info")
         }
     }
+}
+
+/** Label of a party field; with an info text it gets the info icon and the text on hover, like a stat. */
+internal fun NodeBuilder.optionLabel(option: PartyOption, className: String? = null) {
+    if (option.info.isBlank()) return span(className = className) { +option.label }
+    tooltip(content = { optionInfo(option) }, className = "pf-tip") {
+        span(className = classNames("pf-stat-label", className)) {
+            +option.label
+            img(src = "${StatView.ICONS}/info.svg", className = "pf-icon pf-info")
+        }
+    }
+}
+
+internal fun NodeBuilder.optionInfo(option: PartyOption) {
+    div(className = "pf-tip-title") { b { +option.label } }
+    div(className = "pf-tip-text") { +option.info }
 }
 
 internal fun NodeBuilder.statInfo(statId: String, own: MemberView? = null) {

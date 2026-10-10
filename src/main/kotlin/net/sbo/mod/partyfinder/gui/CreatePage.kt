@@ -125,7 +125,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
             div(className = "pf-fields") {
                 shownOptions.forEach { partyOption ->
                     div(className = "pf-field", key = partyOption.id) {
-                        span(className = "pf-field-label") { +partyOption.label }
+                        optionLabel(partyOption, className = "pf-field-label")
                         div(className = "pf-field-input") {
                             if (partyOption.multiple) {
                                 multiSelect(
@@ -164,8 +164,13 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
             h3(className = "pf-section") { +"Wanted roles" }
             p(className = "pf-hint") { +"Optional. If you pick roles, everyone who wants to join has to choose one of them." }
             ROLE_HINTS[target.key]?.let { hint -> p(className = "pf-hint") { +hint } }
-            chips(values = draft.wantedRoles, onChange = { roles -> change { wantedRoles = roles.toMutableList() } }) {
-                target.roles.forEach { option(it.id, it.label) }
+            if (target.roleLimit == 1) {
+                chips(values = draft.wantedRoles, onChange = { roles -> change { wantedRoles = roles.toMutableList() } }) {
+                    target.roles.forEach { option(it.id, it.label) }
+                }
+            } else {
+                p(className = "pf-hint") { +"Click a role to add a player for it, right click to remove one." }
+                roleCountChips(target, draft, ::change)
             }
         }
 
@@ -342,6 +347,35 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Chips like the ones above, but with a count: click adds a player for the role, right click removes one.
+ * At the role limit or with no place left a click puts the role back to 0. A role listed twice is wanted twice; the leader takes no place.
+ */
+private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, change: (PartyDraft.() -> Unit) -> Unit) {
+    val places = draft.partySize - 1
+    val limit = target.roleLimit ?: Int.MAX_VALUE
+    fun setCount(roleId: String, count: Int) = change {
+        val wanted = wantedRoles.filter { it != roleId } + List(count) { roleId }
+        // Definition order, so every list shows the roles the same way
+        wantedRoles = target.roles.flatMap { r -> wanted.filter { it == r.id } }.toMutableList()
+    }
+    div(className = "guilib-chips") {
+        target.roles.forEach { role ->
+            val count = draft.wantedRoles.count { it == role.id }
+            val free = places - draft.wantedRoles.size
+            div(
+                className = classNames("guilib-chip", "selected" to (count > 0)),
+                key = "role:${role.id}",
+                onClick = { setCount(role.id, if (free > 0 && count < limit) count + 1 else 0) },
+                onContextMenu = { if (count > 0) setCount(role.id, count - 1) }
+            ) {
+                if (count > 0) span(className = "pf-role-count") { +"${count}×" }
+                span { +role.label }
             }
         }
     }

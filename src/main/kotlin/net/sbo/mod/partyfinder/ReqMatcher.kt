@@ -69,12 +69,16 @@ object ReqMatcher {
         return problems
     }
 
-    /** "Can I join?" for [me] on [party]. A [role] is only checked when given, the joiner picks it later. */
+    /**
+     * "Can I join?" for [me] on [party]. A [role] is only checked when given, the joiner picks it later;
+     * without one only a party whose roles are all taken fails.
+     */
     fun checkJoin(party: PartyView, target: PartyTarget, me: MemberView, role: String? = null): List<Problem> {
         val problems = check(me.name, me.stats, party.reqs, target, party.options).toMutableList()
-        val wanted = party.roles.wanted
-        if (role != null && wanted.isNotEmpty() && role !in wanted) {
-            problems += Problem(me.name, "role", JsonPrimitive(role), JsonArray(wanted.map { JsonPrimitive(it) }))
+        if (party.roles.wanted.isEmpty()) return problems
+        val open = party.openRoles.distinct()
+        if (open.isEmpty() || (role != null && role !in open)) {
+            problems += Problem(me.name, "role", role?.let(::JsonPrimitive) ?: JsonNull, JsonArray(open.map { JsonPrimitive(it) }))
         }
         return problems
     }

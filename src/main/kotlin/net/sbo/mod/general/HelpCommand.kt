@@ -17,8 +17,6 @@ object HelpCommand {
         mapOf("cmd" to "sbohelp", "desc" to "Shows this message"),
         mapOf("cmd" to "sboguis", "desc" to "Open the GUIs and move them around (or: /sbomoveguis)"),
         mapOf("cmd" to "sboclearburrows", "desc" to "Clear all burrow waypoints (or: /sbocb)"),
-        mapOf("cmd" to "sbocheck <player>", "desc" to "Check a player (or: /sboc <player>)"),
-        mapOf("cmd" to "sbocheckp", "desc" to "Check your party (alias /sbocp)"),
         mapOf("cmd" to "sboimporttracker <profilename>", "desc" to "Import skyhanni tracker"), //todo: add sboimporttracker command
         mapOf("cmd" to "sboimporttrackerundo", "desc" to "Undo the tracker import"), // todo: add sboimporttrackerundo command
         mapOf("cmd" to "sbodc", "desc" to "Diana dropchances"),

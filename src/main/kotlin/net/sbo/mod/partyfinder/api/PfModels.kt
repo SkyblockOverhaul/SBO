@@ -100,7 +100,9 @@ data class PartyOption(
     // Several values at once, sent as a comma separated list of ids
     val multiple: Boolean = false,
     // Stats read this field (e.g. the slayer tier), own stats are loaded per value
-    val affectsStats: Boolean = false
+    val affectsStats: Boolean = false,
+    // Hover text that says what the field means
+    val info: String = ""
 ) {
     /** Picked value ids of a [multiple] field, in definition order. */
     fun picks(value: String?): List<String> {
@@ -125,6 +127,8 @@ data class CategoryDef(
     val display: List<String> = emptyList(),
     val options: List<PartyOption> = emptyList(),
     val roles: List<RoleDef> = emptyList(),
+    /** Most players per role, e.g. 1 for one player per Safari biome; null means no limit. */
+    val roleLimit: Int? = null,
     val subcategories: List<SubcategoryDef> = emptyList()
 )
 
@@ -137,6 +141,7 @@ data class SubcategoryDef(
     val options: List<PartyOption> = emptyList(),
     /** Replaces the roles of the category when set. */
     val roles: List<RoleDef>? = null,
+    val roleLimit: Int? = null,
     val maxSize: Int? = null,
     val event: String? = null,
     val open: Boolean = true,
@@ -170,8 +175,19 @@ data class PartyView(
     val members: List<MemberView> = emptyList()
 ) {
     val leader: MemberView? get() = members.firstOrNull { it.uuid == id } ?: members.firstOrNull()
+
+    /** Wanted roles nobody plays yet; a role wanted twice and taken once is open once. */
+    val openRoles: List<String> get() {
+        val open = roles.wanted.toMutableList()
+        members.forEach { member -> member.role?.let { open.remove(it) } }
+        return open
+    }
+
+    /** The party asks for roles and every one of them is taken, so nobody can join. */
+    val rolesTaken: Boolean get() = roles.wanted.isNotEmpty() && openRoles.isEmpty()
 }
 
+/** A role listed twice is wanted for two players. */
 @Serializable
 data class WantedRoles(val wanted: List<String> = emptyList())
 

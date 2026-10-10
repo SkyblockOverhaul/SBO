@@ -119,6 +119,9 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val 
     val options: List<PartyOption> = mergeBy({ it.id }, category.options, sub?.options.orEmpty())
     val display: List<String> = (category.display + sub?.display.orEmpty()).distinct()
     val roles: List<RoleDef> get() = sub?.roles ?: category.roles
+    val roleLimit: Int? get() = sub?.roleLimit ?: category.roleLimit
+
+    fun roleLabel(id: String): String = roles.firstOrNull { it.id == id }?.label ?: id
 
     fun req(stat: String): ReqDef? = reqs.firstOrNull { it.stat == stat }
 

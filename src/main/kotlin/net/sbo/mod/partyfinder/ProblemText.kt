@@ -36,8 +36,14 @@ object ProblemText {
         "ironman" -> if (problem.need.text() == "only") "this party is only for Ironman players" else "this party is not for Ironman players"
         "role" -> {
             val labels = (problem.need as? JsonArray).orEmpty().mapNotNull { it.text() }
-                .map { id -> target?.roles?.firstOrNull { it.id == id }?.label ?: id }
-            "pick one of these roles: ${labels.joinToString(", ")}"
+                .map { id -> target?.roleLabel(id) ?: id }
+            // need lists the open roles, a known role missing there is taken
+            val have = problem.have.text()?.takeIf { id -> target?.roles?.any { it.id == id } == true }
+            when {
+                labels.isEmpty() -> "all roles are taken"
+                have != null -> "${target?.roleLabel(have) ?: have} is already taken, open roles: ${labels.joinToString(", ")}"
+                else -> "pick one of these roles: ${labels.joinToString(", ")}"
+            }
         }
         else -> {
             val stat = PartyCategories.stat(problem.stat)

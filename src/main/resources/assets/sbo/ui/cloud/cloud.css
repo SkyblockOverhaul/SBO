@@ -186,6 +186,7 @@ body {
 .cs-steps-title { color: var(--banner-text); margin-bottom: 2px; }
 .cs-steps .cs-info-line { font-size: 8px; color: var(--text-soft); }
 .cs-steps .cs-hint { margin-top: 4px; }
+.cs-support { margin-top: 4px; }
 .cs-key { flex-direction: column; align-items: stretch; gap: 2px; }
 .cs-key-row { display: flex; gap: 4px; }
 .cs-key-input { flex-grow: 1; min-width: 0; }

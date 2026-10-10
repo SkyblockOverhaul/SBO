@@ -68,7 +68,7 @@ object CloudSync {
 
     enum class SyncState { NO_SAVE, NOT_USED_HERE, BOTH_CHANGED, CLOUD_NEWER, PC_CHANGED, SAME, ERROR }
 
-    data class Status(val state: SyncState, val updatedAt: Long = 0, val size: Int = 0, val error: String? = null)
+    data class Status(val state: SyncState, val updatedAt: Long = 0, val size: Int = 0, val error: String? = null, val notSupporter: Boolean = false)
 
     data class Action(val label: String, val hint: String, val danger: Boolean = false, val run: () -> Unit)
 
@@ -162,6 +162,10 @@ object CloudSync {
             SBOKotlin.mc.schedule { CloudSyncGui.open() }
         }
     }
+
+    // Older servers only send the text
+    private fun notSupporter(code: String?, error: String?): Boolean =
+        code == "NOT_SUPPORTER" || error?.contains("supporter feature", ignoreCase = true) == true
 
     // Server messages for players
     private fun friendly(error: String?): String = when {
@@ -296,6 +300,13 @@ object CloudSync {
 
     private fun autoActive(): Boolean = autoSync && !autoPaused && SboKey.get().isNotBlank()
 
+    // Players without supporter status only hear about it in the window
+    private fun pauseQuietly(reason: String) {
+        SBOKotlin.logger.info("[CloudSync] auto sync paused quietly: $reason")
+        autoPaused = true
+        changed()
+    }
+
     private fun pauseAuto(reason: String) {
         SBOKotlin.logger.warn("[CloudSync] auto sync paused: $reason")
         if (autoPaused) return
@@ -311,7 +322,8 @@ object CloudSync {
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
                 if (!response.success) {
-                    pauseAuto(friendly(response.error))
+                    if (notSupporter(response.code, response.error)) pauseQuietly("not a supporter")
+                    else pauseAuto(friendly(response.error))
                     return@toJson
                 }
                 val slot = response.slots.find { it.slot == SLOT }
@@ -415,7 +427,9 @@ object CloudSync {
         lastStatusRequest = System.currentTimeMillis()
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
-                if (!response.success) return@toJson SBOKotlin.mc.schedule { callback(Status(SyncState.ERROR, error = friendly(response.error))) }
+                if (!response.success) return@toJson SBOKotlin.mc.schedule {
+                    callback(Status(SyncState.ERROR, error = friendly(response.error), notSupporter = notSupporter(response.code, response.error)))
+                }
                 val slot = response.slots.find { it.slot == SLOT }
                 remember(slot)
                 deliverStatus(slot, callback)
@@ -501,6 +515,7 @@ object CloudSync {
                                 cloudInfo = null
                                 askWhichToKeep("Your cloud save was changed on another PC. Compare them or pick one.")
                             }
+                            auto && notSupporter(response.code, response.error) -> pauseQuietly("not a supporter")
                             auto -> pauseAuto("upload failed: ${friendly(response.error)}")
                             else -> notify("error", "Upload failed: ${friendly(response.error)}")
                         }

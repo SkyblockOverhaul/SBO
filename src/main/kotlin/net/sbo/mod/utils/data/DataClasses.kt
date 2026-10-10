@@ -5,15 +5,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
-data class PartyInfo(
-    @SerialName("Success")
-    val success: Boolean = false,
-
-    @SerialName("PartyInfo")
-    val partyInfo: List<PartyPlayerStats> = emptyList(),
-)
-
-@Serializable
 data class PlayerInfoResponse(
     @SerialName("Success")
     val success: Boolean = false,
@@ -23,13 +14,6 @@ data class PlayerInfoResponse(
 
     @SerialName("Error")
     val error: String? = null
-)
-
-/** Body of `POST /v2/partyInfo` and `POST /v2/partyInfoByUuids` */
-@Serializable
-data class MembersRequest(
-    val members: List<String>,
-    val readcache: Boolean = true
 )
 
 @Serializable
@@ -53,6 +37,8 @@ data class CloudUploadResponse(
     val success: Boolean = false,
     @SerialName("Error")
     val error: String? = null,
+    @SerialName("Code")
+    val code: String? = null,
     @SerialName("Conflict")
     val conflict: Boolean = false,
     val version: Int = 0
@@ -83,6 +69,8 @@ data class CloudStatusResponse(
     val success: Boolean = false,
     @SerialName("Error")
     val error: String? = null,
+    @SerialName("Code")
+    val code: String? = null,
     val slots: List<CloudSlotMeta> = emptyList()
 )
 
