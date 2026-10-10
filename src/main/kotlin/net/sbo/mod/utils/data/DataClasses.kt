@@ -89,6 +89,8 @@ data class OwnBadgeResponse(
     val settings: BadgeSettings? = null,
     val preview: SboBadge? = null,
     val hiddenByServer: Boolean = false,
+    val values: Map<String, String> = emptyMap(),
+    val level: Int? = null,
     val stats: List<BadgeChoice> = emptyList(),
     val colors: List<BadgeChoice> = emptyList(),
 )

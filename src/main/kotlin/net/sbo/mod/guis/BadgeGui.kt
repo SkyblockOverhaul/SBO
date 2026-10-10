@@ -211,29 +211,36 @@ object BadgeGui {
     }
 
     private fun NodeBuilder.preview(badge: OwnBadgeResponse, settings: BadgeSettings, color: BadgeChoice, stat: BadgeChoice?) {
-        val saved = badge.preview
-        val value = saved?.value?.takeIf { settings.stat == badge.settings?.stat }
+        // No values at all means the profile could not be read, a single missing one that the stat has none
+        val profileRead = badge.values.isNotEmpty()
+        val value = badge.values[settings.stat]
+            ?: badge.preview?.value?.takeIf { settings.stat == badge.settings?.stat }
         val text = when {
             stat == null || settings.stat == "none" -> null
             value != null -> "${stat.label}: $value"
+            profileRead -> null
             else -> "${stat.label}: ..."
         }
+        val name = Player.accountName()
+        val level = badge.level?.let { "[$it] " }.orEmpty()
         div(className = classNames("bd-preview", "bd-hidden" to (!settings.enabled || badge.hiddenByServer))) {
             div(className = "bd-tag") {
                 img(LOGO, className = "bd-tag-logo")
                 if (text != null) coloredText(text, color)
             }
             div(className = "bd-tag bd-tag-name") {
-                if (settings.colorLevel) coloredText("[296] ${Player.accountName()}", color)
+                if (settings.colorLevel || level.isEmpty()) coloredText(level + name, color)
                 else {
-                    span(className = "bd-tag-level") { +"[296] " }
-                    coloredText(Player.accountName(), color)
+                    span(className = "bd-tag-level") { +level }
+                    coloredText(name, color)
                 }
             }
         }
         when {
             badge.hiddenByServer -> div(className = "bd-hint bd-center-text") { +"Hidden by the SBO server, nobody sees your badge right now." }
             !settings.enabled -> div(className = "bd-hint bd-center-text") { +"Hidden, nobody sees your badge." }
+            stat != null && settings.stat != "none" && value == null && profileRead ->
+                div(className = "bd-hint bd-center-text") { +"Your profile has no ${stat.label} yet, only the logo shows." }
             text != null && value == null -> div(className = "bd-hint bd-center-text") { +"The value is read from your profile after saving." }
         }
     }
