@@ -51,6 +51,20 @@ object DianaTracker {
     var lastSpawnedMobTime: Long = 0L
     private var lastBurrowIsMob = false
 
+    private var timedRareMob: String? = null
+    private var timedRareMobStartNanos: Long = 0L
+
+    fun consumeRareMobSpawnTime(mob: String): Long {
+        if (timedRareMob != mob) return -1L
+
+        val startNanos = timedRareMobStartNanos
+        timedRareMob = null
+        timedRareMobStartNanos = 0L
+
+        val elapsedNanos = System.nanoTime() - startNanos
+        return if (elapsedNanos > 0L) elapsedNanos / 1_000_000L else -1L
+    }
+
     fun init() {
         Register.command("sboresetsession") {
             DianaLoot.resetSession()
@@ -220,9 +234,14 @@ object DianaTracker {
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
         lastSpawnedMobTime = System.nanoTime()
+        // Only time the most recently spawned mob; a later spawn supersedes the old timer.
+        timedRareMob = null
+        timedRareMobStartNanos = 0L
         //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -251,6 +270,8 @@ object DianaTracker {
                 sboData.mobsSinceKing = 0
             }
             "Manticore" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -281,6 +302,8 @@ object DianaTracker {
                 sboData.mobsSinceManti = 0
             }
             "Minos Inquisitor" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -309,6 +332,8 @@ object DianaTracker {
                 sboData.mobsSinceInq = 0
             }
             "Sphinx" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 

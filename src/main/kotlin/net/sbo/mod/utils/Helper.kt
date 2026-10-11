@@ -146,6 +146,7 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
+                announceDianaMobKillTime("Minos Inquisitor", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedInq) {
@@ -159,6 +160,7 @@ object Helper {
                 lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
+                announceDianaMobKillTime("King Minos", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedKing) {
@@ -172,6 +174,7 @@ object Helper {
                 lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
+                announceDianaMobKillTime("Sphinx", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
@@ -184,6 +187,7 @@ object Helper {
                 lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
+                announceDianaMobKillTime("Manticore", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedManti) {
@@ -201,6 +205,13 @@ object Helper {
         if (nearby) {
             allowSackTracking = true
             lastDianaMobDeath = System.nanoTime()
+        }
+    }
+
+    private fun announceDianaMobKillTime(mob: String, nearby: Boolean) {
+        val elapsedMillis = DianaTracker.consumeRareMobSpawnTime(mob)
+        if (nearby && Diana.sendKillTimeMessage && elapsedMillis >= 0L) {
+            Chat.chat("§6[SBO] §eTook §6${formatTime(elapsedMillis)} §eto kill the $mob!")
         }
     }
 
