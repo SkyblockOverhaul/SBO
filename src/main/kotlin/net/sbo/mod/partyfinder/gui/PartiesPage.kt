@@ -159,21 +159,33 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val ownVersion = useRef(0)
     var ownLoaded by useState(0)
     val ownLoading = useRef(setOf<String>())
+    // Stats that failed to load are retried after 2 minutes
+    val ownFailed = useRef(mapOf<String, Long>())
     fun meFor(party: PartyView, partyTarget: PartyTarget): MemberView? =
         if (OwnStats.statOptions(partyTarget, party.options) == OwnStats.statOptions(partyTarget)) props.ownFor(partyTarget)
         else OwnStats.cached(partyTarget, party.options)
     useEffect(parties) {
-        parties.orEmpty().forEach { party ->
+        val now = System.currentTimeMillis()
+        fun keyOf(partyTarget: PartyTarget, options: Map<String, String>) = "${partyTarget.key}?$options"
+        val wanted = parties.orEmpty().mapNotNull { party ->
             val partyTarget = target.forParty(party)
             val options = OwnStats.statOptions(partyTarget, party.options)
-            val key = "${partyTarget.key}?$options"
-            if (options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null || key in ownLoading.current) return@forEach
-            ownLoading.current = ownLoading.current + key
-            OwnStats.get(partyTarget, options, onError = { ownLoading.current = ownLoading.current - key }) {
-                ownLoading.current = ownLoading.current - key
-                ownVersion.current++
-                ownLoaded = ownVersion.current
-            }
+            val key = keyOf(partyTarget, options)
+            val failedAt = ownFailed.current[key]
+            val skip = options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null
+                || key in ownLoading.current || (failedAt != null && now - failedAt < 2 * 60_000)
+            if (skip) null else partyTarget to options
+        }.distinctBy { (partyTarget, options) -> keyOf(partyTarget, options) }
+        if (wanted.isEmpty()) return@useEffect
+        ownLoading.current = ownLoading.current + wanted.map { (partyTarget, options) -> keyOf(partyTarget, options) }
+        OwnStats.getMany(wanted, onError = { partyTarget, options, _ ->
+            val key = keyOf(partyTarget, options)
+            ownLoading.current = ownLoading.current - key
+            ownFailed.current = ownFailed.current + (key to System.currentTimeMillis())
+        }) { partyTarget, options, _ ->
+            ownLoading.current = ownLoading.current - keyOf(partyTarget, options)
+            ownVersion.current++
+            ownLoaded = ownVersion.current
         }
     }
     val all = parties.orEmpty().filter { party ->
