@@ -129,8 +129,12 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         if (autoRefresh > 0) setInterval(autoRefresh * 1000L) { load() }
     }
 
+    val lastManual = useRef(0L)
     fun refreshNow() {
-        if (loading) return
+        val now = System.currentTimeMillis()
+        // The server only allows a limited number of list requests, so spamming F5 shouldn't use them all up
+        if (loading || now - lastManual.current < 2_000) return
+        lastManual.current = now
         manual.current = true
         refresh.update { it + 1 }
     }
