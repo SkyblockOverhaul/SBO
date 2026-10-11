@@ -8,7 +8,6 @@ import net.sbo.guilib.core.dsl.colorInput
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.header
 import net.sbo.guilib.core.dsl.img
-import net.sbo.guilib.core.dsl.scroll
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
@@ -17,6 +16,7 @@ import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.general.SboBadges
 import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.utils.Player
@@ -90,14 +90,16 @@ object BadgeGui {
                 }
         }
 
-        div(className = "bd-window") {
+        val fit = useFitScale()
+
+        div(className = "bd-window", ref = fit.ref, style = fit.style) {
             header(className = "bd-header") {
                 img(LOGO, className = "bd-header-logo")
                 span(className = "bd-title") { +"SBO Badge" }
                 div(className = "bd-spacer")
                 button(className = "bd-icon bd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
-            scroll(className = "bd-body guilib-autohide") {
+            div(className = "bd-body") {
                 if (SboBadges.VIEWER_TOGGLES) {
                     ViewSettings()
                     div(className = "bd-section-title") { +"Your Badge" }

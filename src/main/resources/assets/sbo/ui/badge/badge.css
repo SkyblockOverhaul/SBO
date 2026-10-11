@@ -97,8 +97,9 @@ body {
 .bd-window {
     display: flex;
     flex-direction: column;
-    width: min(94vw, 280px);
-    max-height: 92vh;
+    /* Natural size, no scrolling: BadgeGui scales the whole window down when the screen is smaller */
+    width: 280px;
+    flex-shrink: 0;
     background-color: var(--bg);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -121,7 +122,7 @@ body {
 .bd-icon { padding: 1px 5px; background-color: transparent; border-color: transparent; }
 .bd-close:hover { background-color: var(--danger); }
 
-.bd-body { flex-grow: 1; min-height: 0; padding: 6px 8px 8px 8px; }
+.bd-body { padding: 6px 8px 8px 8px; }
 .bd-center { display: flex; justify-content: center; padding: 16px 0; color: var(--subtle); }
 .bd-center-text { text-align: center; }
 .bd-hint { margin: 1px 0 0 0; color: var(--muted); font-size: 7px; }
