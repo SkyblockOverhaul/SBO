@@ -65,15 +65,17 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                if (Diana.receiveRareMob) {
-                    val mobType: Diana.ReceiveList = when (mob) {
-                        "Minos Inquisitor" -> Diana.ReceiveList.INQ
-                        "King Minos" -> Diana.ReceiveList.KING
-                        "Manticore" -> Diana.ReceiveList.MANTICORE
-                        "Sphinx" -> Diana.ReceiveList.SPHINX
-                        else -> null
-                    } ?: return@onChatMessage
+                val mobType: Diana.ReceiveList = when (mob) {
+                    "Minos Inquisitor" -> Diana.ReceiveList.INQ
+                    "King Minos" -> Diana.ReceiveList.KING
+                    "Manticore" -> Diana.ReceiveList.MANTICORE
+                    "Sphinx" -> Diana.ReceiveList.SPHINX
+                    else -> null
+                }
 
+                // If mobType is not null, handle it as a rare mob waypoint.
+                // Otherwise, the else if falls to patcherWaypoints case.
+                if (Diana.receiveRareMob && mobType != null) {
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
 
                     val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
