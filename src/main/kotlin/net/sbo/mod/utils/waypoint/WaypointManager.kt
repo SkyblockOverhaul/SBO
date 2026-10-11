@@ -65,7 +65,7 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                val mobType: Diana.ReceiveList = when (mob) {
+                val mobType: Diana.ReceiveList? = when (mob) {
                     "Minos Inquisitor" -> Diana.ReceiveList.INQ
                     "King Minos" -> Diana.ReceiveList.KING
                     "Manticore" -> Diana.ReceiveList.MANTICORE
