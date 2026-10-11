@@ -199,3 +199,7 @@ body {
 .bd-intro { margin: 2px 4px 4px 4px; }
 .bd-tag-level { color: #aaaaaa; }
 .bd-tag-plain { color: #ffffff; }
+.bd-colors { align-items: center; }
+.bd-arrow { color: var(--muted); }
+.bd-gradient { flex-grow: 1; min-width: 30px; height: 10px; border: 1px solid var(--border); border-radius: 3px; }
+.bd-tag-name { gap: 0; }

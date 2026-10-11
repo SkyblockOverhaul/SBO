@@ -28,6 +28,7 @@ import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.core.event.KeyboardEvent
+import net.sbo.mod.general.SboBadges
 import net.sbo.mod.partyfinder.BlockedPlayers
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
@@ -577,6 +578,15 @@ private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null
     }
 }
 
+// Only moderators and above have a tag, supporters don't
+private fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
+    val rank = SboBadges.teamRank(uuid) ?: return
+    val text = if (name == null) rank.tag!! else "${rank.tag}: $name"
+    tooltip("Works on SBO, ask them anything about the mod.", className = "pf-tip", key = "team-$uuid") {
+        span(className = "pf-tag team", style = "color: ${rank.color}; border-color: ${rank.color}") { +text }
+    }
+}
+
 private fun NodeBuilder.partyCard(
     party: PartyView,
     target: PartyTarget,
@@ -620,6 +630,9 @@ private fun NodeBuilder.partyCard(
             div(className = "pf-card-head") {
                 party.leader?.let { playerHead(uuidOf(it.uuid), className = "pf-head") }
                 b(className = "pf-leader") { +leaderName }
+                party.leader?.let { teamTag(it.uuid) }
+                // Team members further down the party, so players know who to ask about SBO
+                party.members.filter { it.uuid != party.leader?.uuid }.forEach { teamTag(it.uuid, it.name) }
                 // In the list of all subcategories every party says which one it was created in
                 if (showSub) target.sub?.let { span(className = "pf-tag sub", title = "Created as a ${target.label} party") { +it.label } }
                 if (mine) span(className = "pf-tag mine") { +"Your party" }
@@ -776,6 +789,7 @@ private fun NodeBuilder.memberRow(
             span(className = "pf-member-name") {
                 playerHead(uuidOf(member.uuid), className = "pf-head")
                 +name
+                teamTag(member.uuid)
                 if (member.uuid == party.id) span(className = "pf-member-role") { +" leader" }
                 else if (manage && HypixelModApi.partyRole(member.uuid) == "MODERATOR") span(className = "pf-member-role") { +" moderator" }
                 member.role?.let { id ->

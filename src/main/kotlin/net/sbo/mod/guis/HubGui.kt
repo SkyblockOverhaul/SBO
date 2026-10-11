@@ -111,7 +111,7 @@ object HubGui {
         ) { CloudSyncGui.open() },
         Tile(
             "SBO Badge", "Your logo, stat and name color", "/sbobadge", Items.NAME_TAG,
-            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and devs") { SboBadges.hasAccess() },
+            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboBadges.hasAccess() },
         ) { BadgeGui.open() },
     )
 

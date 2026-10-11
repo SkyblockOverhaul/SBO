@@ -12,8 +12,10 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.BadgeGui
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.BadgeListResponse
+import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.SboBadge
+import net.sbo.mod.utils.data.TeamMember
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
@@ -28,8 +30,8 @@ import java.util.WeakHashMap
 object SboBadges {
     const val COMMAND = "sbobadge"
 
-    // Badges can't be turned off for now; true brings back the two switches in /sbobadge
-    const val VIEWER_TOGGLES = false
+    // Switches for other players' badges in /sbobadge; false hides them and always shows badges
+    const val VIEWER_TOGGLES = true
     private val showAboveHeads: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesAboveHeads
     private val showInTab: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInTab
 
@@ -50,6 +52,10 @@ object SboBadges {
     @Volatile private var byName: Map<String, SboBadge> = emptyMap()
     // Lines without a moving gradient are built once per list
     @Volatile private var fixedLines: Map<UUID, Component> = emptyMap()
+    @Volatile private var team: Map<UUID, TeamMember> = emptyMap()
+    @Volatile private var ranks: Map<String, BadgeRank> = emptyMap()
+    // Team tags in front of the name, built once per list
+    @Volatile private var tags: Map<UUID, Component> = emptyMap()
     @Volatile private var version: String? = null
     @Volatile private var fetching = false
 
@@ -84,7 +90,7 @@ object SboBadges {
             .toJson<BadgeListResponse>(ignoreUnknownKeys = true) { response ->
                 fetching = false
                 if (!response.success) return@toJson
-                if (!response.unchanged) apply(response.badges, response.version)
+                if (!response.unchanged) apply(response)
                 refreshOwn()
             }
             .error {
@@ -93,12 +99,17 @@ object SboBadges {
             }
     }
 
-    private fun apply(badges: List<SboBadge>, newVersion: String?) {
+    private fun apply(response: BadgeListResponse) {
+        val badges = response.badges
         val holders = badges.mapNotNull { badge -> uuidOf(badge.uuid)?.let { it to badge } }.toMap()
+        val members = response.team.mapNotNull { member -> uuidOf(member.uuid)?.let { it to member } }.toMap()
+        ranks = response.ranks
+        team = members
+        tags = members.filterValues { it.nameTag }.mapNotNull { (uuid, member) -> tagOf(member.rank)?.let { uuid to it } }.toMap()
         fixedLines = holders.filterValues { it.to == null }.mapValues { line(it.value) }
         byUuid = holders
         byName = badges.associateBy { it.name.lowercase() }
-        version = newVersion
+        version = response.version
         synchronized(tabCache) { tabCache.clear() }
         synchronized(recolorCache) { recolorCache.clear() }
     }
@@ -130,8 +141,30 @@ object SboBadges {
 
     fun colorNameTag(uuid: UUID, nameTag: Component): Component {
         if (!showAboveHeads) return nameTag
-        val badge = byUuid[uuid] ?: return nameTag
-        return recolored(nameTag, badge)
+        val colored = byUuid[uuid]?.let { recolored(nameTag, it) } ?: nameTag
+        val tag = tags[uuid] ?: return colored
+        return Component.empty().append(tag).append(colored)
+    }
+
+    /** Team rank of a player (uuid without dashes), for the party finder. */
+    fun teamRank(uuid: String): BadgeRank? = uuidOf(uuid)?.let { team[it] }?.let { ranks[it.rank] }?.takeIf { it.tag != null }
+
+    /** "[Moderator] " in the rank colors, null for ranks without a tag. */
+    fun tagOf(rank: String): Component? {
+        val info = ranks[rank] ?: return null
+        val text = info.tag ?: return null
+        val gray = Style.EMPTY.withColor(0xAAAAAA)
+        return Component.empty()
+            .append(Component.literal("[").withStyle(gray))
+            .append(colored(text, info.color, info.to, shimmer = false))
+            .append(Component.literal("] ").withStyle(gray))
+    }
+
+    /** Your own name tag shows in third person when you have a badge or a team tag. */
+    fun showOwnNameTag(): Boolean {
+        if (!DataManager.sboData.badgeOwnInF5) return false
+        val uuid = uuidOf(Player.accountUuid()) ?: return false
+        return uuid in byUuid || uuid in tags
     }
 
     fun line(badge: SboBadge): MutableComponent {
@@ -230,14 +263,17 @@ object SboBadges {
 
     fun logo(): MutableComponent = Component.literal(LOGO).withStyle(LOGO_STYLE)
 
-    fun colored(text: String, color: String, to: String?): MutableComponent {
+    fun colored(text: String, color: String, to: String?, shimmer: Boolean = true): MutableComponent {
         val from = parseHex(color)
         val end = to?.let(::parseHex) ?: return Component.literal(text).withStyle { it.withColor(from) }
         val phase = (System.currentTimeMillis() % SHIMMER_MS) / SHIMMER_MS.toFloat()
         val out = Component.empty()
         text.forEachIndexed { i, char ->
-            val pos = (i / text.length.toFloat() + phase) % 1f
-            val t = if (pos < 0.5f) pos * 2f else (1f - pos) * 2f
+            val t = if (!shimmer) i / (text.length - 1).coerceAtLeast(1).toFloat() else {
+                // There and back again, so the moving gradient has no seam
+                val pos = (i / text.length.toFloat() + phase) % 1f
+                if (pos < 0.5f) pos * 2f else (1f - pos) * 2f
+            }
             out.append(Component.literal(char.toString()).withStyle { it.withColor(mix(from, end, t)) })
         }
         return out
