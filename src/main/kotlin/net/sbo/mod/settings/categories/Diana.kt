@@ -313,6 +313,11 @@ object Diana : Category("Diana") {
         this.description = Literal("Sends the chat Message with stat: [SBO] Took 120 Mobs to get a Inquis!")
     }
 
+    var sendKillTimeMessage by boolean(true) {
+        this.name = Literal("Mob Kill Time Message")
+        this.description = Literal("Sends a chat message with how long it took to kill a rare Diana mob you spawned.")
+    }
+
     var bazaarSettingDiana by enum(SettingDiana.SELLOFFER) {
         this.name = Literal("Bazaar Setting")
         this.description = Literal("Bazaar setting to set the price for loot.")
