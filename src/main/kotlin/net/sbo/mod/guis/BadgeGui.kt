@@ -21,6 +21,7 @@ import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.BadgeChoice
+import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.BadgeSettings
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.OwnBadgeResponse
@@ -99,14 +100,20 @@ object BadgeGui {
                 div(className = "bd-spacer")
                 button(className = "bd-icon bd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
-            div(className = "bd-body") {
-                if (SboBadges.VIEWER_TOGGLES) {
-                    ViewSettings()
-                    div(className = "bd-section-title") { +"Your Badge" }
-                }
+            // Wide instead of tall: preview and switches for other badges left, the own badge's settings right
+            div(className = "bd-body bd-columns") {
                 when (val state = load) {
-                    Load.Loading -> div(className = "bd-center") { +"Loading your badge..." }
-                    is Load.Failed -> failed(state)
+                    Load.Loading -> {
+                        div(className = "bd-col-left") {
+                            div(className = "bd-center") { +"Loading your badge..." }
+                            if (SboBadges.VIEWER_TOGGLES) ViewSettings()
+                        }
+                        div(className = "bd-col-right")
+                    }
+                    is Load.Failed -> {
+                        div(className = "bd-col-left") { failed(state) }
+                        div(className = "bd-col-right") { if (SboBadges.VIEWER_TOGGLES) ViewSettings() }
+                    }
                     is Load.Ready -> {
                         val settings = draft ?: state.badge.settings!!
                         editor(state.badge, settings, saving, onChange = { draft = it }, onSave = { save(settings) })
@@ -163,14 +170,41 @@ object BadgeGui {
         val changed = settings != badge.settings
         val rank = badge.rankInfo
 
-        div(className = "bd-rank-row") {
-            span(className = "bd-rank", style = "background: ${background(rank?.color ?: "#FFAA00", rank?.to)}") {
-                +(rank?.label ?: badge.rank.orEmpty())
+        div(className = "bd-col-left") {
+            div(className = "bd-rank-row") {
+                span(className = "bd-rank", style = "background: ${background(rank?.color ?: "#FFAA00", rank?.to)}") {
+                    +(rank?.label ?: badge.rank.orEmpty())
+                }
+                span(className = "bd-hint") { +if (badge.team) "Thank you for working on SBO!" else "Thank you for supporting SBO!" }
             }
-            span(className = "bd-hint") { +if (badge.team) "Thank you for working on SBO!" else "Thank you for supporting SBO!" }
+
+            preview(badge, settings, stat)
+
+            div(className = "bd-actions") {
+                button(
+                    className = "bd-primary",
+                    disabled = saving || !changed,
+                    title = if (changed) "Saves your badge" else "Nothing changed",
+                    onClick = { onSave() },
+                ) { +if (saving) "Saving..." else "Save" }
+                if (changed) button(disabled = saving, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
+            }
+
+            if (SboBadges.VIEWER_TOGGLES) ViewSettings()
         }
 
-        preview(badge, settings, stat)
+        div(className = "bd-col-right") {
+            settings(badge, settings, rank, onChange)
+        }
+    }
+
+    private fun NodeBuilder.settings(
+        badge: OwnBadgeResponse,
+        settings: BadgeSettings,
+        rank: BadgeRank?,
+        onChange: (BadgeSettings) -> Unit,
+    ) {
+        div(className = "bd-section-title") { +"Your Badge" }
 
         setting("Show my badge", "Others with SBO see it above your head and in the tab list.") {
             switch(checked = settings.enabled, onChange = { onChange(settings.copy(enabled = it.checked)) })
@@ -220,16 +254,6 @@ object BadgeGui {
         }
 
         OwnView()
-
-        div(className = "bd-actions") {
-            button(
-                className = "bd-primary",
-                disabled = saving || !changed,
-                title = if (changed) "Saves your badge" else "Nothing changed",
-                onClick = { onSave() },
-            ) { +if (saving) "Saving..." else "Save" }
-            if (changed) button(disabled = saving, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
-        }
     }
 
     // Only on this PC, so it changes right away without saving
