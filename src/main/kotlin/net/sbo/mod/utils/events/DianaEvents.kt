@@ -8,6 +8,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.events.impl.packets.PacketSendEvent
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
@@ -41,10 +42,10 @@ object DianaEvents {
         val action = event.action
         if (action != "useBlock") return
         if (World.getWorld() != "Hub") return
-        val player = SBOKotlin.mc.player
-        val item = player?.mainHandItem
-        if (item?.isEmpty == true) return
-        if (item == null || !item.hoverName.string.contains("Spade")) return
+        val item = event.player.mainHandItem
+        if (item.isEmpty) return
+        val sbId = ItemLookup(item).sbId
+        if (sbId != "DEIFIC_SPADE" && sbId != "ARCHAIC_SPADE" && sbId != "ANCESTRAL_SPADE") return
         if (event.pos ==  null) return
 
         processBlockInteraction(event.pos.toSboVec())
