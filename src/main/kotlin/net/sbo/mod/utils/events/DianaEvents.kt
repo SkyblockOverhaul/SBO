@@ -1,17 +1,18 @@
 package net.sbo.mod.utils.events
 
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
-import net.sbo.mod.utils.events.impl.packets.PacketSendEvent
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
-import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
+import net.minecraft.world.InteractionResult
+import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import java.util.regex.Pattern
 
 object DianaEvents {
@@ -21,19 +22,14 @@ object DianaEvents {
 
     internal fun init() {
         registerBurrowDug()
-    }
-
-    @SboEvent
-    fun onPlayerActionSend(event: PacketSendEvent) {
-        val packet = event.packet
-        if (packet !is ServerboundPlayerActionPacket) return
-        if (World.getWorld() != "Hub") return
-        if (packet.action != ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) return
-
-        val pos = packet.pos.toSboVec()
-
-        ArrowGuessBurrow.recentClickedBlocks.add(pos)
-        processBlockInteraction(pos)
+        AttackBlockCallback.EVENT.register { player, _, _, pos, _ ->
+            if (player === SBOKotlin.mc.player && World.getWorld() == "Hub") {
+                val blockPos = pos.toSboVec()
+                ArrowGuessBurrow.recentClickedBlocks.add(blockPos)
+                processBlockInteraction(blockPos)
+            }
+            InteractionResult.PASS
+        }
     }
 
     @SboEvent
