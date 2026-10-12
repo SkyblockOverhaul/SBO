@@ -211,7 +211,7 @@ object Helper {
     private fun announceDianaMobKillTime(mob: String, nearby: Boolean) {
         val elapsedMillis = DianaTracker.consumeRareMobSpawnTime(mob)
         if (nearby && Diana.sendKillTimeMessage && elapsedMillis >= 0L) {
-            Chat.chat("§6[SBO] §eTook §6${formatTime(elapsedMillis)} §eto kill the $mob!")
+            Chat.chat("§6[SBO] §eTook §6${formatTime(elapsedMillis, decimalSeconds = true)} §eto kill the $mob!")
         }
     }
 
@@ -351,7 +351,7 @@ object Helper {
         }
     }
 
-    fun formatTime(milliseconds: Long): String {
+    fun formatTime(milliseconds: Long, decimalSeconds: Boolean = false): String {
         if (milliseconds <= 0) {
             return "0s"
         }
@@ -376,7 +376,11 @@ object Helper {
             builder.append("${minutes}m ")
         }
         if (builder.isEmpty()) {
-            builder.append("${seconds}s")
+            if (decimalSeconds) {
+                builder.append("${"%.1f".format(Locale.ROOT, milliseconds / 1000.0)}s")
+            } else {
+                builder.append("${seconds}s")
+            }
         }
 
         return builder.toString().trim()
