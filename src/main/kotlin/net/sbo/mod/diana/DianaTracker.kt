@@ -117,7 +117,8 @@ object DianaTracker {
         trackMythTheFish()
     }
 
-    @SboEvent
+    // Reset before DataManager's normal-priority close listener performs its blocking save.
+    @SboEvent(SboEvent.Priority.HIGH)
     fun onGameClose(event: GameCloseEvent) {
         if (Diana.resetSessionOnGameRestart) {
             DianaLoot.resetSession()
