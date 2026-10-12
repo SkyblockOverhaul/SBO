@@ -54,12 +54,6 @@ object Http {
         }
     }
 
-    private val HTTP2_ONLY = setOf(
-        // Unfortunately, the backend does not yet support HTTP/3 it seems and JDK's HTTP/3 implementation seems to not correctly fallback into HTTP/2 with it. Bazaar and Election API of Hypixel successfully make use of it, though, so we should keep it for these.
-        "skyblockoverhaul.com",
-        "api.skyblockoverhaul.com"
-    )
-
     /**
      * Sends an asynchronous HTTP GET request.
      *
@@ -100,7 +94,6 @@ object Http {
             val httpVersion = when {
                 // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
                 uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
-                uri.host in HTTP2_ONLY -> HttpClient.Version.HTTP_2
                 else -> HTTP_3_OR_2
             }
 
