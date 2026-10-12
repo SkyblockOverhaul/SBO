@@ -39,6 +39,7 @@ import net.sbo.mod.utils.time.TimeUtil
 import java.util.regex.Pattern
 
 object DianaTracker {
+    private val lootShareBlocklist = setOf("MYTH_THE_FISH", "BRAIDED_GRIFFIN_FEATHER")
     private val otherDrops = listOf("ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD")
     private val sackDrops = listOf("Enchanted Gold", "Ancient Claw", "Enchanted Ancient Claw")
     private val isMobOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
@@ -825,7 +826,7 @@ object DianaTracker {
         val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
         val price = "§6$priceRaw coins"
 
-        val ls = gotLootShareRecently()
+        val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
         val lsText = if (ls) " (LS)" else ""
 
         var count = ""
@@ -873,8 +874,7 @@ object DianaTracker {
             Helper.showTitle("${colorAndCount.first}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
         }
 
-        val isLootShare = gotLootShareRecently()
-        if (isLootShare) {
+        if (ls) {
             Chat.chat("§6[SBO] §cLootshared a $item!")
             when (itemId) {
                 "DAEDALUS_STICK" -> unlockAchievement(15)
@@ -894,7 +894,7 @@ object DianaTracker {
             trackMagicFind(magicFind, itemId == "CHIMERA")
         }
 
-        if (trackLootshare && isLootShare) {
+        if (trackLootshare && ls) {
             trackItem(itemId + "_LS", amount, enforceCooldown)
         } else {
             trackItem(itemId, amount, enforceCooldown)
@@ -928,7 +928,7 @@ object DianaTracker {
             val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
             val price = Helper.getItemPriceFormatted(itemId)
             val priceStr = if (price != "0") " (+$price coins)" else ""
-            val ls = gotLootShareRecently()
+            val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
 
             if (ls) msg += " (LS)"
             if (amount != -1) {
