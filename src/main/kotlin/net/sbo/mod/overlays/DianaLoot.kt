@@ -338,7 +338,7 @@ object DianaLoot : DirtyFlushableOverlay() {
 
     /** Coins worth of every dropped item with a price (field name without "_LS", lootshare drops added in), coins not included. */
     fun profitByItem(tracker: DianaTracker): Map<String, Long> {
-        val profit = HashMap<String, Long>()
+        val profit = mutableMapOf<String, Long>()
         for (item in tracker.items::class.java.declaredFields) {
             item.isAccessible = true
             var itemName = item.name

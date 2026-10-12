@@ -7,9 +7,14 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent;
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent;
+import net.sbo.mod.utils.events.impl.packets.LoginReceiveEvent;
+import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent;
+import net.sbo.mod.utils.events.impl.packets.SetTimeReceiveEvent;
 import net.sbo.mod.utils.game.TabList;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,5 +47,20 @@ final class ClientPacketListenerMixin {
     @Inject(method = "handlePlayerInfoRemove", at = @At("TAIL"))
     private final void sbo$onPlayerInfoRemove(@NonNull final ClientboundPlayerInfoRemovePacket packet, @NonNull final CallbackInfo ci) {
         TabList.INSTANCE.markDirty();
+    }
+
+    @Inject(method = "handleParticleEvent", at = @At("RETURN"))
+    private final void sbo$onParticleEvent(@NonNull final ClientboundLevelParticlesPacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new ParticleReceiveEvent(packet));
+    }
+
+    @Inject(method = "handleSetTime", at = @At("RETURN"))
+    private final void sbo$onSetTime(@NonNull final ClientboundSetTimePacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new SetTimeReceiveEvent(packet));
+    }
+
+    @Inject(method = "handleLogin", at = @At("RETURN"))
+    private final void sbo$onLogin(@NonNull final ClientboundLoginPacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new LoginReceiveEvent(packet));
     }
 }

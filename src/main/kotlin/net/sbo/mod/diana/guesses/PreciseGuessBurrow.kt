@@ -1,14 +1,13 @@
 package net.sbo.mod.diana.guesses
 
 import net.minecraft.core.particles.ParticleTypes
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
-import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
+import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.math.PolynomialFitter
@@ -32,9 +31,8 @@ object PreciseGuessBurrow {
     }
 
     @SboEvent
-    fun onReceiveParticle(event: PacketReceiveEvent) {
+    fun onReceiveParticle(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (packet !is ClientboundLevelParticlesPacket) return
         if (!Diana.spadeGuess || World.getWorld() != "Hub") return
         if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)

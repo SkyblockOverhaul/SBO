@@ -13,7 +13,7 @@ import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.TickEvent
-import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
+import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.game.ServerStats
@@ -24,8 +24,6 @@ import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
 import java.util.function.BooleanSupplier
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.sign
@@ -52,24 +50,27 @@ object ArrowGuessBurrow {
 
     private var spadeTitleShown = false
 
-    private val locations: MutableSet<SboVec> = Collections.newSetFromMap(ConcurrentHashMap())
+    private val locations = mutableSetOf<SboVec>()
 
     val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
 
-    val allGuesses = CopyOnWriteArrayList<GuessEntry>()
+    val allGuesses = mutableListOf<GuessEntry>()
 
-    private val toRemove = ConcurrentHashMap<Waypoint, BooleanSupplier>()
+    private val toRemove = mutableMapOf<Waypoint, BooleanSupplier>()
 
-    private val invalidCache = HashSet<SboVec>()
+    private val invalidCache = mutableSetOf<SboVec>()
 
     fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
         toRemove[waypoint] = condition
     }
 
     fun flushRemovals() {
-        toRemove.forEach { (waypoint, condition) ->
+        val iterator = toRemove.entries.iterator()
+        while (iterator.hasNext()) {
+            val (waypoint, condition) = iterator.next()
             if (condition.asBoolean) {
                 WaypointManager.removeWaypoint(waypoint)
+                iterator.remove()
             }
         }
     }
@@ -134,11 +135,11 @@ object ArrowGuessBurrow {
     }
 
     @SboEvent
-    fun onReceiveParticle(event: PacketReceiveEvent) {
+    fun onReceiveParticle(event: ParticleReceiveEvent) {
         if (!Diana.arrowGuess) return
         if (World.getWorld() != "Hub") return
 
-        val packet = event.packet as? ClientboundLevelParticlesPacket ?: return
+        val packet = event.packet
         if (!packet.isRelevant()) return
 
         val location = SboVec(packet.x, packet.y, packet.z)

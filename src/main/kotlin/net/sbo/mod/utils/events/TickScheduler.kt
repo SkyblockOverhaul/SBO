@@ -1,10 +1,10 @@
 package net.sbo.mod.utils.events
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.ArrayDeque
 
 object TickScheduler {
-    private val tasks = ConcurrentLinkedQueue<ScheduledTask>()
+    private val tasks = ArrayDeque<ScheduledTask>()
 
     init {
         ClientTickEvents.END_CLIENT_TICK.register {
@@ -13,18 +13,18 @@ object TickScheduler {
             while (remaining > 0) {
                 remaining--
 
-                val task = tasks.poll()
+                val task = tasks.pollFirst()
                     ?: break
 
                 if (!task.tick()) {
-                    tasks.offer(task)
+                    tasks.addLast(task)
                 }
             }
         }
     }
 
     fun schedule(task: ScheduledTask) {
-        tasks.offer(task)
+        tasks.addLast(task)
     }
 
     data class ScheduledTask(

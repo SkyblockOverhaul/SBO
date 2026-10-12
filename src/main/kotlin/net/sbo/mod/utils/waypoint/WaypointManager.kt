@@ -29,8 +29,6 @@ import net.sbo.mod.utils.render.RenderUtils3D
 import net.sbo.mod.utils.render.WaypointRenderer
 import java.awt.Color
 import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
@@ -38,7 +36,7 @@ private const val RARE_MOB_STALE_TICKS = 20
 private const val RARE_MOB_VALIDATION_DISTANCE = 30.0
 
 object WaypointManager {
-    private val waypoints = ConcurrentHashMap<String, CopyOnWriteArrayList<Waypoint>>()
+    private val waypoints = mutableMapOf<String, MutableList<Waypoint>>()
 
     fun init() {
         Register.command("sbosendping") { args ->
@@ -106,21 +104,19 @@ object WaypointManager {
                 updateRareMobWaypoints()
             }
 
-            val knownBurrows = getWaypointsOfType("burrow")
-            val shovelGuesses = getWaypointsOfType("guess")
-            val arrowGuesses = getWaypointsOfType("arrow")
-            val subGuesses = getWaypointsOfType("subGuess")
+            val knownBurrows = waypoints["burrow"] ?: mutableListOf()
+            val shovelGuesses = waypoints["guess"] ?: mutableListOf()
+            val arrowGuesses = waypoints["arrow"] ?: mutableListOf()
+            val subGuesses = waypoints["subGuess"] ?: mutableListOf()
 
             // These do not change location when using the shovel
-            val allStaticBurrowWaypoints = knownBurrows + arrowGuesses
+            val allStaticBurrowWaypoints = knownBurrows.asSequence() + arrowGuesses.asSequence()
 
             // Remove all TTL expired waypoints
             val currentTime = System.nanoTime()
 
             this.forEachWaypoint { waypoint ->
                 if (waypoint.ttl > 0L && currentTime - waypoint.creationNs > TimeUnit.SECONDS.toNanos(waypoint.ttl)) {
-                    removeWaypoint(waypoint)
-
                     val waypointPos = waypoint.pos
 
                     if (waypoint.type == "arrow") {
@@ -128,12 +124,15 @@ object WaypointManager {
                     } else if (waypoint.type == "burrow") {
                         BurrowDetector.removeFromInternalState(waypointPos)
                     }
+                    true
+                } else {
+                    false
                 }
             }
 
             // Remove all waypoints that are not in radius of typical burrow locations x y z
             this.forEachWaypoint { waypoint ->
-                if (World.getWorld() != "Hub" || waypoint.preventInvalidRemoval || waypoint.type == "world") return@forEachWaypoint
+                if (World.getWorld() != "Hub" || waypoint.preventInvalidRemoval || waypoint.type == "world") return@forEachWaypoint false
 
                 val underWorld = waypoint.pos.y < 60
                 val aboveWorld = waypoint.pos.y > 105
@@ -143,8 +142,6 @@ object WaypointManager {
                 val outsideNegativeX = waypoint.pos.x < 0 && -waypoint.pos.x > 283
 
                 if (underWorld || aboveWorld || outsideZ || outsideX || outsideNegativeZ || outsideNegativeX) {
-                    removeWaypoint(waypoint)
-
                     val waypointPos = waypoint.pos
 
                     if (waypoint.type == "arrow") {
@@ -152,25 +149,30 @@ object WaypointManager {
                     } else if (waypoint.type == "burrow") {
                         BurrowDetector.removeFromInternalState(waypointPos)
                     }
+                    true
+                } else {
+                    false
                 }
             }
 
             // Remove shovel guesses pointing to invalid burrow locations
-            shovelGuesses.forEach { shovelGuess ->
-                if (World.getWorld() != "Hub") return@forEach
-
-                if (!ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
-                    removeWaypoint(shovelGuess)
+            val invalidShovelIterator = shovelGuesses.iterator()
+            while (invalidShovelIterator.hasNext()) {
+                val shovelGuess = invalidShovelIterator.next()
+                if (World.getWorld() == "Hub" && !ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
+                    invalidShovelIterator.remove()
                 }
             }
 
             // Remove arrow guesses pointing to invalid burrow locations after being existing for over 15 seconds (During 15 seconds period, we hide them instead to give time for moveToNext to do its job)
-            arrowGuesses.forEach { arrowGuess ->
-                if (World.getWorld() != "Hub") return@forEach
+            val invalidArrowIterator = arrowGuesses.iterator()
+            while (invalidArrowIterator.hasNext()) {
+                val arrowGuess = invalidArrowIterator.next()
+                if (World.getWorld() != "Hub") continue
 
                 if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
                     if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
-                        removeWaypoint(arrowGuess)
+                        invalidArrowIterator.remove()
                         ArrowGuessBurrow.removeOrMoveFromInternalState(arrowGuess.pos)
                     } else {
                         arrowGuess.hidden = true
@@ -181,18 +183,22 @@ object WaypointManager {
             }
 
             // Remove all invalid sub guesses as they can be under many grass blocks and unreachable often
-            subGuesses.forEach { subGuess ->
-                if (World.getWorld() != "Hub") return@forEach
+            val invalidSubGuessIterator = subGuesses.iterator()
+            while (invalidSubGuessIterator.hasNext()) {
+                val subGuess = invalidSubGuessIterator.next()
+                if (World.getWorld() != "Hub") continue
 
                 if (!ArrowGuessBurrow.isBlockValid(subGuess.pos)) {
-                    removeWaypoint(subGuess)
+                    invalidSubGuessIterator.remove()
 
                     ArrowGuessBurrow.removeSubGuessFromInternalState(subGuess.pos)
                 }
             }
 
             // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 32 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
-            shovelGuesses.forEach { shovelGuess ->
+            val redundantShovelIterator = shovelGuesses.iterator()
+            while (redundantShovelIterator.hasNext()) {
+                val shovelGuess = redundantShovelIterator.next()
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
@@ -201,12 +207,14 @@ object WaypointManager {
                     waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 32
                 }?.let { staticBurrow ->
                     staticBurrow.carryOverState(shovelGuess)
-                    removeWaypoint(shovelGuess)
+                    redundantShovelIterator.remove()
                 }
             }
 
             // Remove duplicate shovel guesses that are within 32 blocks of each other
-            shovelGuesses.forEachIndexed { index, shovelGuess ->
+            val duplicates = mutableSetOf<Waypoint>()
+            for (index in shovelGuesses.indices) {
+                val shovelGuess = shovelGuesses[index]
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
@@ -216,19 +224,25 @@ object WaypointManager {
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
 
                     keep.carryOverState(remove)
-                    removeWaypoint(remove)
+                    duplicates.add(remove)
                 }
+            }
+            val duplicateIterator = shovelGuesses.iterator()
+            while (duplicateIterator.hasNext()) {
+                if (duplicateIterator.next() in duplicates) duplicateIterator.remove()
             }
 
             // Remove the arrow guesses representing the same blocks as an already-known treasure/mob/start burrow, and transfer its state to the known burrow instead if the arrow guess was dug more times than the known burrow
-            arrowGuesses.forEach { arrowGuess ->
+            val duplicateArrowIterator = arrowGuesses.iterator()
+            while (duplicateArrowIterator.hasNext()) {
+                val arrowGuess = duplicateArrowIterator.next()
                 val arrowGuessBlock = arrowGuess.pos.roundLocationToBlock()
 
                 knownBurrows.firstOrNull { knownBurrow ->
                     knownBurrow.pos.roundLocationToBlock() == arrowGuessBlock
                 }?.let { knownBurrow ->
                     knownBurrow.carryOverState(arrowGuess)
-                    removeWaypoint(arrowGuess)
+                    duplicateArrowIterator.remove()
 
                     ArrowGuessBurrow.removeFromInternalState(arrowGuess.pos)
                 }
@@ -241,6 +255,7 @@ object WaypointManager {
             this.forEachWaypoint { waypoint ->
                 waypoint.isClosest = waypoint == bestGuessWp
                 waypoint.format(rareWp)
+                false
             }
         }
 
@@ -521,6 +536,7 @@ object WaypointManager {
 
         this.forEachWaypoint { waypoint ->
             waypoint.render(context)
+            false
         }
 
         renderSubGuessLines(context)
@@ -646,7 +662,7 @@ object WaypointManager {
     fun addWaypoint(waypoint: Waypoint, playSound: Boolean = true) {
         val type = waypoint.type
 
-        waypoints.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(waypoint)
+        waypoints.getOrPut(type) { mutableListOf() }.add(waypoint)
 
         if (type == "burrow" && playSound) {
             playCustomSound(DataManager.soundSettingsData.burrowFoundSound, volume = DataManager.soundSettingsData.burrowVolume)
@@ -707,10 +723,13 @@ object WaypointManager {
 
         var removed = 0
 
-        for (waypoint in list) {
+        val iterator = list.iterator()
+        while (iterator.hasNext()) {
+            val waypoint = iterator.next()
             if (removed >= limit) break
 
-            if (waypoint.pos.distanceTo(pos) < distance && list.remove(waypoint)) {
+            if (waypoint.pos.distanceTo(pos) < distance) {
+                iterator.remove()
                 removed++
             }
         }
@@ -779,18 +798,21 @@ object WaypointManager {
     }
 
     /**
-     * Iterates over all waypoints and applies the given action to each.
-     * Safe for concurrent use.
-     * @param action The action to apply to each waypoint.
+     * Iterates over all waypoints and removes each waypoint for which the predicate returns true.
      */
-    private fun forEachWaypoint(action: (Waypoint) -> Unit) {
-        waypoints.values.flatten().forEach(action)
+    private fun forEachWaypoint(removeIf: (Waypoint) -> Boolean) {
+        for (list in waypoints.values) {
+            val iterator = list.iterator()
+            while (iterator.hasNext()) {
+                if (removeIf(iterator.next())) iterator.remove()
+            }
+        }
     }
 
     /**
      * Retrieves all waypoints of a specific type.
      * @param type The type of waypoints to retrieve.
-     * @return A list of waypoints of the specified type.
+     * @return The waypoints of the specified type, or an empty list if none exist.
      */
     fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type] ?: emptyList()
 

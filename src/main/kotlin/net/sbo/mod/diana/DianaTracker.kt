@@ -970,7 +970,7 @@ object DianaTracker {
         dianaTrackerMayorData.year = Mayor.mayorElectedYear
         DataManager.save(DataManager::dianaTrackerMayorData)
         SboTimerManager.timerMayor.reset()
-        SboTimerManager.activeTimers.forEach { it.pause() }
+        SboTimerManager.pauseAllActiveTimers()
         DianaMobs.updateLines()
         DianaLoot.updateLines()
         Chat.chat("§6[SBO] §aDiana mayor tracker has been reset.")
