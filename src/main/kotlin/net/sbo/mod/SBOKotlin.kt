@@ -101,7 +101,7 @@ object SBOKotlin : ClientModInitializer {
         TabList.init()
 
 		// Check for updates
-		UpdateChecker.check()
+		UpdateChecker.init()
 
 		// Load configuration and data
 		DataManager.init()
