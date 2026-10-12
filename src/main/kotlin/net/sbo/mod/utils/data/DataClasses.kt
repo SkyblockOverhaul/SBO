@@ -43,6 +43,28 @@ data class BadgeListResponse(
     val version: String? = null,
     val unchanged: Boolean = false,
     val badges: List<SboBadge> = emptyList(),
+    /** Moderators and above, also with their badge turned off; for the party finder and the name tag. */
+    val team: List<TeamMember> = emptyList(),
+    val ranks: Map<String, BadgeRank> = emptyMap(),
+)
+
+/** How a rank looks, sent by the backend so it can change without a mod update. */
+@Serializable
+data class BadgeRank(
+    val label: String,
+    /** Text of the team tag, null for ranks without one. */
+    val tag: String? = null,
+    val color: String = "#FFFFFF",
+    val to: String? = null,
+)
+
+@Serializable
+data class TeamMember(
+    val uuid: String,
+    val name: String,
+    val rank: String,
+    /** Shows the team tag in front of the name above the head. */
+    val nameTag: Boolean = false,
 )
 
 /** Body of `POST /badge` */
@@ -51,8 +73,11 @@ data class BadgeSettings(
     val enabled: Boolean,
     val stat: String,
     val color: String,
+    /** Second gradient color, only for ranks that may pick a gradient. */
+    val colorTo: String? = null,
     val colorName: Boolean = true,
     val colorLevel: Boolean = false,
+    val teamTag: Boolean = true,
 )
 
 @Serializable
@@ -72,13 +97,17 @@ data class OwnBadgeResponse(
     @SerialName("Code")
     val code: String? = null,
     val rank: String? = null,
+    val rankInfo: BadgeRank? = null,
     val settings: BadgeSettings? = null,
     val preview: SboBadge? = null,
     val hiddenByServer: Boolean = false,
     val values: Map<String, String> = emptyMap(),
     val level: Int? = null,
     val stats: List<BadgeChoice> = emptyList(),
-    val colors: List<BadgeChoice> = emptyList(),
+    /** The rank may pick a gradient instead of one color. */
+    val gradient: Boolean = false,
+    /** The rank has a team tag it can show above the head. */
+    val team: Boolean = false,
 )
 
 @Serializable

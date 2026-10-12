@@ -97,8 +97,9 @@ body {
 .bd-window {
     display: flex;
     flex-direction: column;
-    width: min(94vw, 280px);
-    max-height: 92vh;
+    /* Natural size, no scrolling: BadgeGui scales the whole window down when the screen is smaller */
+    width: 540px;
+    flex-shrink: 0;
     background-color: var(--bg);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -121,7 +122,7 @@ body {
 .bd-icon { padding: 1px 5px; background-color: transparent; border-color: transparent; }
 .bd-close:hover { background-color: var(--danger); }
 
-.bd-body { flex-grow: 1; min-height: 0; padding: 6px 8px 8px 8px; }
+.bd-body { padding: 6px 8px 8px 8px; }
 .bd-center { display: flex; justify-content: center; padding: 16px 0; color: var(--subtle); }
 .bd-center-text { text-align: center; }
 .bd-hint { margin: 1px 0 0 0; color: var(--muted); font-size: 7px; }
@@ -199,3 +200,17 @@ body {
 .bd-intro { margin: 2px 4px 4px 4px; }
 .bd-tag-level { color: #aaaaaa; }
 .bd-tag-plain { color: #ffffff; }
+.bd-colors { align-items: center; }
+.bd-arrow { color: var(--muted); }
+.bd-gradient { flex-grow: 1; min-width: 30px; height: 10px; border: 1px solid var(--border); border-radius: 3px; }
+.bd-tag-name { gap: 0; }
+
+/* Two columns: preview and other badges left, the own badge's settings right */
+.bd-columns { display: flex; align-items: flex-start; gap: 10px; }
+.bd-col-left { width: 210px; flex-shrink: 0; display: flex; flex-direction: column; }
+.bd-col-right { flex-grow: 1; min-width: 0; }
+.bd-col-left .bd-preview { padding: 18px 6px; }
+.bd-col-left .bd-actions { padding: 0; margin: 6px 0 4px 0; }
+.bd-col-left .bd-section-title { margin-top: 8px; }
+.bd-col-right .bd-section-title:first-child { margin-top: 0; }
+.bd-setting > :last-child { flex-shrink: 0; }

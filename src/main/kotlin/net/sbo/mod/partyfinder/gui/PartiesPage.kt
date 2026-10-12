@@ -28,6 +28,7 @@ import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.core.event.KeyboardEvent
+import net.sbo.mod.general.SboBadges
 import net.sbo.mod.partyfinder.BlockedPlayers
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
@@ -129,8 +130,12 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         if (autoRefresh > 0) setInterval(autoRefresh * 1000L) { load() }
     }
 
+    val lastManual = useRef(0L)
     fun refreshNow() {
-        if (loading) return
+        val now = System.currentTimeMillis()
+        // The server only allows a limited number of list requests, so spamming F5 shouldn't use them all up
+        if (loading || now - lastManual.current < 2_000) return
+        lastManual.current = now
         manual.current = true
         refresh.update { it + 1 }
     }
@@ -159,21 +164,33 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val ownVersion = useRef(0)
     var ownLoaded by useState(0)
     val ownLoading = useRef(setOf<String>())
+    // Stats that failed to load are retried after 2 minutes
+    val ownFailed = useRef(mapOf<String, Long>())
     fun meFor(party: PartyView, partyTarget: PartyTarget): MemberView? =
         if (OwnStats.statOptions(partyTarget, party.options) == OwnStats.statOptions(partyTarget)) props.ownFor(partyTarget)
         else OwnStats.cached(partyTarget, party.options)
     useEffect(parties) {
-        parties.orEmpty().forEach { party ->
+        val now = System.currentTimeMillis()
+        fun keyOf(partyTarget: PartyTarget, options: Map<String, String>) = "${partyTarget.key}?$options"
+        val wanted = parties.orEmpty().mapNotNull { party ->
             val partyTarget = target.forParty(party)
             val options = OwnStats.statOptions(partyTarget, party.options)
-            val key = "${partyTarget.key}?$options"
-            if (options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null || key in ownLoading.current) return@forEach
-            ownLoading.current = ownLoading.current + key
-            OwnStats.get(partyTarget, options, onError = { ownLoading.current = ownLoading.current - key }) {
-                ownLoading.current = ownLoading.current - key
-                ownVersion.current++
-                ownLoaded = ownVersion.current
-            }
+            val key = keyOf(partyTarget, options)
+            val failedAt = ownFailed.current[key]
+            val skip = options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null
+                || key in ownLoading.current || (failedAt != null && now - failedAt < 2 * 60_000)
+            if (skip) null else partyTarget to options
+        }.distinctBy { (partyTarget, options) -> keyOf(partyTarget, options) }
+        if (wanted.isEmpty()) return@useEffect
+        ownLoading.current = ownLoading.current + wanted.map { (partyTarget, options) -> keyOf(partyTarget, options) }
+        OwnStats.getMany(wanted, onError = { partyTarget, options, _ ->
+            val key = keyOf(partyTarget, options)
+            ownLoading.current = ownLoading.current - key
+            ownFailed.current = ownFailed.current + (key to System.currentTimeMillis())
+        }) { partyTarget, options, _ ->
+            ownLoading.current = ownLoading.current - keyOf(partyTarget, options)
+            ownVersion.current++
+            ownLoaded = ownVersion.current
         }
     }
     val all = parties.orEmpty().filter { party ->
@@ -561,6 +578,15 @@ private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null
     }
 }
 
+// Only moderators and above have a tag, supporters don't
+private fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
+    val rank = SboBadges.teamRank(uuid) ?: return
+    val text = if (name == null) rank.tag!! else "${rank.tag}: $name"
+    tooltip("Works on SBO, ask them anything about the mod.", className = "pf-tip", key = "team-$uuid") {
+        span(className = "pf-tag team", style = "color: ${rank.color}; border-color: ${rank.color}") { +text }
+    }
+}
+
 private fun NodeBuilder.partyCard(
     party: PartyView,
     target: PartyTarget,
@@ -604,6 +630,9 @@ private fun NodeBuilder.partyCard(
             div(className = "pf-card-head") {
                 party.leader?.let { playerHead(uuidOf(it.uuid), className = "pf-head") }
                 b(className = "pf-leader") { +leaderName }
+                party.leader?.let { teamTag(it.uuid) }
+                // Team members further down the party, so players know who to ask about SBO
+                party.members.filter { it.uuid != party.leader?.uuid }.forEach { teamTag(it.uuid, it.name) }
                 // In the list of all subcategories every party says which one it was created in
                 if (showSub) target.sub?.let { span(className = "pf-tag sub", title = "Created as a ${target.label} party") { +it.label } }
                 if (mine) span(className = "pf-tag mine") { +"Your party" }
@@ -760,6 +789,7 @@ private fun NodeBuilder.memberRow(
             span(className = "pf-member-name") {
                 playerHead(uuidOf(member.uuid), className = "pf-head")
                 +name
+                teamTag(member.uuid)
                 if (member.uuid == party.id) span(className = "pf-member-role") { +" leader" }
                 else if (manage && HypixelModApi.partyRole(member.uuid) == "MODERATOR") span(className = "pf-member-role") { +" moderator" }
                 member.role?.let { id ->

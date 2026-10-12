@@ -4,10 +4,10 @@ import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
 import net.sbo.guilib.core.dsl.classNames
+import net.sbo.guilib.core.dsl.colorInput
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.header
 import net.sbo.guilib.core.dsl.img
-import net.sbo.guilib.core.dsl.scroll
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
@@ -16,10 +16,12 @@ import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.general.SboBadges
 import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.BadgeChoice
+import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.BadgeSettings
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.OwnBadgeResponse
@@ -29,7 +31,7 @@ object BadgeGui {
     private val STYLES = listOf("sbo:ui/badge/badge.css", SboLook.STYLE)
     private const val LOGO = "sbo:textures/font/badge.png"
 
-    private val RANK_LABELS = mapOf("owner" to "Owner", "dev" to "SBO Dev", "maintainer" to "Maintainer", "supporter" to "Supporter")
+    private const val DEFAULT_GRADIENT_END = "#FFD966"
 
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Badge")
@@ -89,21 +91,29 @@ object BadgeGui {
                 }
         }
 
-        div(className = "bd-window") {
+        val fit = useFitScale()
+
+        div(className = "bd-window", ref = fit.ref, style = fit.style) {
             header(className = "bd-header") {
                 img(LOGO, className = "bd-header-logo")
                 span(className = "bd-title") { +"SBO Badge" }
                 div(className = "bd-spacer")
                 button(className = "bd-icon bd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
-            scroll(className = "bd-body guilib-autohide") {
-                if (SboBadges.VIEWER_TOGGLES) {
-                    ViewSettings()
-                    div(className = "bd-section-title") { +"Your Badge" }
-                }
+            // Wide instead of tall: preview and switches for other badges left, the own badge's settings right
+            div(className = "bd-body bd-columns") {
                 when (val state = load) {
-                    Load.Loading -> div(className = "bd-center") { +"Loading your badge..." }
-                    is Load.Failed -> failed(state)
+                    Load.Loading -> {
+                        div(className = "bd-col-left") {
+                            div(className = "bd-center") { +"Loading your badge..." }
+                            if (SboBadges.VIEWER_TOGGLES) ViewSettings()
+                        }
+                        div(className = "bd-col-right")
+                    }
+                    is Load.Failed -> {
+                        div(className = "bd-col-left") { failed(state) }
+                        div(className = "bd-col-right") { if (SboBadges.VIEWER_TOGGLES) ViewSettings() }
+                    }
                     is Load.Ready -> {
                         val settings = draft ?: state.badge.settings!!
                         editor(state.badge, settings, saving, onChange = { draft = it }, onSave = { save(settings) })
@@ -117,7 +127,7 @@ object BadgeGui {
         var aboveHeads by useState(DataManager.sboData.badgesAboveHeads)
         var inTab by useState(DataManager.sboData.badgesInTab)
         div(className = "bd-section-title") { +"Badges of Others" }
-        setting("Above heads", "The SBO logo, the chosen stat and the colored name of supporters, maintainers and devs.") {
+        setting("Above heads", "The SBO logo, the chosen stat and the colored name of supporters, maintainers and moderators.") {
             switch(checked = aboveHeads, onChange = {
                 aboveHeads = it.checked
                 DataManager.sboData.badgesAboveHeads = it.checked
@@ -139,12 +149,12 @@ object BadgeGui {
             return
         }
         div(className = "bd-hint bd-intro") {
-            +"Supporters (Patreon or Ko-fi), maintainers and devs get their own badge: the SBO logo, a stat of their choice and their name in their color."
+            +"Supporters (Patreon or Ko-fi), maintainers and moderators get their own badge: the SBO logo, a stat of their choice and their name in their color."
         }
         div(className = "bd-steps") {
             div(className = "bd-steps-title") { +"Already a supporter? Check these:" }
             line("1. Your Minecraft account is linked to your Discord account: type /link followed by your Minecraft name on the SBO Discord.")
-            line("2. Use the Discord account that has the Patreon or Ko-fi supporter role, or the maintainer or dev role.")
+            line("2. Use the Discord account that has the Patreon or Ko-fi supporter role, or the maintainer or moderator role.")
             line("3. Open this window again with /${SboBadges.COMMAND}. New roles can take a few minutes.")
         }
     }
@@ -156,19 +166,54 @@ object BadgeGui {
         onChange: (BadgeSettings) -> Unit,
         onSave: () -> Unit,
     ) {
-        val color = badge.colors.firstOrNull { it.id == settings.color } ?: badge.colors.first()
         val stat = badge.stats.firstOrNull { it.id == settings.stat }
         val changed = settings != badge.settings
+        val rank = badge.rankInfo
 
-        div(className = "bd-rank-row") {
-            span(className = classNames("bd-rank", "bd-rank-${badge.rank}")) { +(RANK_LABELS[badge.rank] ?: badge.rank.orEmpty()) }
-            span(className = "bd-hint") { +if (badge.rank == "supporter") "Thank you for supporting SBO!" else "Thank you for working on SBO!" }
+        div(className = "bd-col-left") {
+            div(className = "bd-rank-row") {
+                span(className = "bd-rank", style = "background: ${background(rank?.color ?: "#FFAA00", rank?.to)}") {
+                    +(rank?.label ?: badge.rank.orEmpty())
+                }
+                span(className = "bd-hint") { +if (badge.team) "Thank you for working on SBO!" else "Thank you for supporting SBO!" }
+            }
+
+            preview(badge, settings, stat)
+
+            div(className = "bd-actions") {
+                button(
+                    className = "bd-primary",
+                    disabled = saving || !changed,
+                    title = if (changed) "Saves your badge" else "Nothing changed",
+                    onClick = { onSave() },
+                ) { +if (saving) "Saving..." else "Save" }
+                if (changed) button(disabled = saving, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
+            }
+
+            if (SboBadges.VIEWER_TOGGLES) ViewSettings()
         }
 
-        preview(badge, settings, color, stat)
+        div(className = "bd-col-right") {
+            settings(badge, settings, rank, onChange)
+        }
+    }
+
+    private fun NodeBuilder.settings(
+        badge: OwnBadgeResponse,
+        settings: BadgeSettings,
+        rank: BadgeRank?,
+        onChange: (BadgeSettings) -> Unit,
+    ) {
+        div(className = "bd-section-title") { +"Your Badge" }
 
         setting("Show my badge", "Others with SBO see it above your head and in the tab list.") {
             switch(checked = settings.enabled, onChange = { onChange(settings.copy(enabled = it.checked)) })
+        }
+
+        if (badge.team && rank?.tag != null) {
+            setting("Show team tag", "Puts [${rank.tag}] in front of your name above your head, so players know they can ask you about SBO.") {
+                switch(checked = settings.teamTag, onChange = { onChange(settings.copy(teamTag = it.checked)) })
+            }
         }
 
         setting("Color my name", "Your name above your head and in the tab list takes the color.") {
@@ -185,36 +230,45 @@ object BadgeGui {
             }
         }
 
+        if (badge.gradient) {
+            setting("Gradient", "Two colors that flow into each other.") {
+                switch(checked = settings.colorTo != null, onChange = {
+                    onChange(settings.copy(colorTo = if (it.checked) badge.settings?.colorTo ?: DEFAULT_GRADIENT_END else null))
+                })
+            }
+        }
+
         div(className = "bd-setting bd-colors-setting") {
             div(className = "bd-setting-text") {
-                div(className = "bd-setting-title") { +"Color" }
-                div(className = "bd-hint") { +"Red is for the SBO devs." }
+                div(className = "bd-setting-title") { +if (settings.colorTo != null) "Colors" else "Color" }
+                div(className = "bd-hint") { +"For your stat, and your name and level when they are colored." }
             }
             div(className = "bd-colors") {
-                badge.colors.forEach { choice ->
-                    button(
-                        className = classNames("bd-swatch", "bd-selected" to (choice.id == settings.color)),
-                        key = choice.id,
-                        title = choice.label,
-                        style = "background: ${swatchBackground(choice)}",
-                        onClick = { onChange(settings.copy(color = choice.id)) },
-                    )
+                colorInput(value = argb(settings.color), onChange = { onChange(settings.copy(color = hex(it))) }, key = "from")
+                settings.colorTo?.let { to ->
+                    span(className = "bd-arrow") { +"\u2192" }
+                    colorInput(value = argb(to), onChange = { onChange(settings.copy(colorTo = hex(it))) }, key = "to")
+                    div(className = "bd-gradient", style = "background: ${background(settings.color, to)}")
                 }
             }
         }
 
-        div(className = "bd-actions") {
-            button(
-                className = "bd-primary",
-                disabled = saving || !changed,
-                title = if (changed) "Saves your badge" else "Nothing changed",
-                onClick = { onSave() },
-            ) { +if (saving) "Saving..." else "Save" }
-            if (changed) button(disabled = saving, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
+        OwnView()
+    }
+
+    // Only on this PC, so it changes right away without saving
+    private val OwnView = component("BadgeOwnView") {
+        var inF5 by useState(DataManager.sboData.badgeOwnInF5)
+        setting("Show my badge in F5", "See your own name tag, badge and team tag in third person. Only on this PC.") {
+            switch(checked = inF5, onChange = {
+                inF5 = it.checked
+                DataManager.sboData.badgeOwnInF5 = it.checked
+                DataManager.sboData.save()
+            })
         }
     }
 
-    private fun NodeBuilder.preview(badge: OwnBadgeResponse, settings: BadgeSettings, color: BadgeChoice, stat: BadgeChoice?) {
+    private fun NodeBuilder.preview(badge: OwnBadgeResponse, settings: BadgeSettings, stat: BadgeChoice?) {
         // No values at all means the profile could not be read, a single missing one that the stat has none
         val profileRead = badge.values.isNotEmpty()
         val value = badge.values[settings.stat]
@@ -226,21 +280,29 @@ object BadgeGui {
             else -> "${stat.label}: ..."
         }
         val name = Player.accountName()
-        val level = badge.level?.let { "[$it] " }.orEmpty()
+        val level = badge.level?.let { "[$it] " }.orEmpty()
+        val color = settings.color
+        val to = settings.colorTo
+        val tag = badge.rankInfo?.takeIf { badge.team && settings.teamTag }
         div(className = classNames("bd-preview", "bd-hidden" to (!settings.enabled || badge.hiddenByServer))) {
             div(className = "bd-tag") {
                 img(LOGO, className = "bd-tag-logo")
-                if (text != null) coloredText(text, color)
+                if (text != null) coloredText(text, color, to)
             }
             div(className = "bd-tag bd-tag-name") {
+                tag?.tag?.let { tagText ->
+                    span(className = "bd-tag-level") { +"[" }
+                    coloredText(tagText, tag.color, tag.to)
+                    span(className = "bd-tag-level") { +"] " }
+                }
                 when {
-                    settings.colorName && (settings.colorLevel || level.isEmpty()) -> coloredText(level + name, color)
+                    settings.colorName && (settings.colorLevel || level.isEmpty()) -> coloredText(level + name, color, to)
                     settings.colorName -> {
                         span(className = "bd-tag-level") { +level }
-                        coloredText(name, color)
+                        coloredText(name, color, to)
                     }
                     settings.colorLevel && level.isNotEmpty() -> {
-                        coloredText(level, color)
+                        coloredText(level, color, to)
                         span(className = "bd-tag-plain") { +name }
                     }
                     else -> {
@@ -259,14 +321,12 @@ object BadgeGui {
         }
     }
 
-    private fun NodeBuilder.coloredText(text: String, color: BadgeChoice) {
-        val from = color.hex ?: "#FFFFFF"
-        val to = color.to
+    private fun NodeBuilder.coloredText(text: String, color: String, to: String?) {
         if (to == null) {
-            span(className = "bd-tag-text", style = "color: $from") { +text }
+            span(className = "bd-tag-text", style = "color: $color") { +text }
             return
         }
-        val a = SboBadges.parseHex(from)
+        val a = SboBadges.parseHex(color)
         val b = SboBadges.parseHex(to)
         span(className = "bd-tag-text") {
             text.forEachIndexed { i, char ->
@@ -281,10 +341,12 @@ object BadgeGui {
         return (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
     }
 
-    private fun swatchBackground(choice: BadgeChoice): String {
-        val hex = choice.hex ?: "#FFFFFF"
-        return choice.to?.let { "linear-gradient(135deg, $hex, $it)" } ?: hex
-    }
+    private fun hex(color: Int): String = "#%06X".format(color and 0xFFFFFF)
+
+    // The picker works with ARGB, badge colors have no alpha
+    private fun argb(hex: String): Int = SboBadges.parseHex(hex) or 0xFF000000.toInt()
+
+    private fun background(color: String, to: String?): String = to?.let { "linear-gradient(90deg, $color, $it)" } ?: color
 
     private fun NodeBuilder.line(text: String) {
         div(className = "bd-info-line") { +text }

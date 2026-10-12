@@ -1,6 +1,7 @@
 package net.sbo.mod.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AvatarRenderer.class)
 abstract class AvatarRendererMixin {
@@ -35,6 +37,14 @@ abstract class AvatarRendererMixin {
         final UUID uuid = entity.getUUID();
         ((BadgeRenderStateAccessor) state).sbo$setBadgeLine(SboBadges.INSTANCE.nameTagLine(uuid));
         if (state.nameTag != null) state.nameTag = SboBadges.INSTANCE.colorNameTag(uuid, state.nameTag);
+    }
+
+    // Vanilla never shows the camera's own name, in third person the own badge should be visible
+    @Inject(method = "shouldShowName(Lnet/minecraft/world/entity/Avatar;D)Z", at = @At("HEAD"), cancellable = true)
+    private final void sbo$showOwnBadge(@NonNull final Avatar entity, final double distanceSq, @NonNull final CallbackInfoReturnable<Boolean> cir) {
+        final Minecraft mc = Minecraft.getInstance();
+        if (entity != mc.player || mc.options.getCameraType().isFirstPerson() || entity.isInvisible()) return;
+        if (SboBadges.INSTANCE.showOwnNameTag()) cir.setReturnValue(true);
     }
 
     @Inject(

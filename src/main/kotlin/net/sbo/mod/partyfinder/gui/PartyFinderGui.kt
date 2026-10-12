@@ -155,13 +155,11 @@ object PartyFinderGui {
             ownCollected.current = targets.mapNotNull { x -> OwnStats.cached(x)?.let { x.key to it } }.toMap()
             ownBySub = ownCollected.current
             ownError = null
-            targets.forEach { x ->
-                OwnStats.get(x, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { me ->
-                    if (currentKey.current == t.key) {
-                        ownCollected.current = ownCollected.current + (x.key to me)
-                        ownBySub = ownCollected.current
-                        if (x == targets.first()) own = me
-                    }
+            OwnStats.getAll(targets, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { x, me ->
+                if (currentKey.current == t.key) {
+                    ownCollected.current = ownCollected.current + (x.key to me)
+                    ownBySub = ownCollected.current
+                    if (x == targets.first()) own = me
                 }
             }
         }

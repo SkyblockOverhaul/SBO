@@ -6,10 +6,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.sbo.guilib.core.dom.Element
-import net.sbo.guilib.core.dom.Ref
 import net.sbo.guilib.core.dom.component
-import net.sbo.guilib.core.dsl.ComponentScope
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
 import net.sbo.guilib.core.dsl.div
@@ -19,7 +16,6 @@ import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.modal
 import net.sbo.guilib.core.dsl.scroll
-import kotlin.math.abs
 import net.sbo.guilib.core.dsl.section
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.fabric.GuiLib
@@ -32,6 +28,7 @@ import net.sbo.mod.general.SboBadges
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
@@ -112,7 +109,7 @@ object HubGui {
         ) { CloudSyncGui.open() },
         Tile(
             "SBO Badge", "Your logo, stat and name color", "/sbobadge", Items.NAME_TAG,
-            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and devs") { SboBadges.hasAccess() },
+            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboBadges.hasAccess() },
         ) { BadgeGui.open() },
     )
 
@@ -257,22 +254,6 @@ object HubGui {
                 }
             }
         }
-    }
-
-    private class Fit(val ref: Ref<Element?>, val style: String?)
-
-    // Never scrolls: a screen too small for the window scales it down as a whole. Polled, there is no resize event.
-    private fun ComponentScope.useFitScale(): Fit {
-        val ref = useElementRef()
-        val doc = useDocument()
-        var scale by useState(1f)
-        useInterval(100) {
-            val box = ref.current?.box ?: return@useInterval
-            if (box.width <= 0f || box.height <= 0f) return@useInterval
-            val next = minOf(1f, doc.viewportWidth * 0.96f / box.width, doc.viewportHeight * 0.96f / box.height)
-            if (abs(next - scale) > 0.005f) scale = next
-        }
-        return Fit(ref, if (scale < 1f) "transform: scale($scale)" else null)
     }
 
     private fun countEntries(category: Category): Int = category.entries.size + category.subcategories.sumOf(::countEntries)
