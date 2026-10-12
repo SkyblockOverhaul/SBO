@@ -22,9 +22,7 @@ object Http {
     private val USER_AGENT =
         "SBO-Kotlin-Mod/${SBOKotlin.version}+${SharedConstants.getCurrentVersion().name()}"
 
-    private val EXECUTOR: ExecutorService = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors() * 2
-    ) { runnable ->
+    private val EXECUTOR: ExecutorService = Executors.newCachedThreadPool() { runnable ->
         Thread(runnable, "SBO Http Request Thread").apply {
             isDaemon = true
         }
@@ -55,12 +53,6 @@ object Http {
             HttpClient.Version.HTTP_2 // Fallback to baseline of HTTP/2
         }
     }
-
-    private val HTTP2_ONLY = setOf(
-        // Unfortunately, the backend does not yet support HTTP/3 it seems and JDK's HTTP/3 implementation seems to not correctly fallback into HTTP/2 with it. Bazaar and Election API of Hypixel successfully make use of it, though, so we should keep it for these.
-        "skyblockoverhaul.com",
-        "api.skyblockoverhaul.com"
-    )
 
     /**
      * Sends an asynchronous HTTP GET request.
@@ -97,40 +89,51 @@ object Http {
     ): HttpRequestHandle {
         val handle = HttpRequestHandle()
 
-        EXECUTOR.execute {
-            try {
-                val uri = URI.create(urlString)
-                val httpVersion = when {
-                    // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
-                    uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
-                    uri.host in HTTP2_ONLY -> HttpClient.Version.HTTP_2
-                    else -> HTTP_3_OR_2
-                }
-
-                val builder = HttpRequest.newBuilder()
-                    .version(httpVersion)
-                    .uri(uri)
-                    .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
-                    .header("User-Agent", USER_AGENT)
-
-                headers.forEach { (name, value) -> builder.header(name, value) }
-
-                val client = if (headers.keys.any { it.startsWith("x-sbo-", ignoreCase = true) }) NO_REDIRECT_CLIENT else CLIENT
-                val response = client.send(method(builder).build(), BodyHandlers.ofInputStream())
-                val code = response.statusCode()
-                val body = response.body().use { it.readNBytes(MAX_BODY_BYTES + 1) }
-                if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
-
-                handle.complete(
-                    HttpResponse(
-                        code,
-                        statusMessage(code),
-                        ResponseBody(body.inputStream())
-                    )
-                )
-            } catch (e: Exception) {
-                handle.fail(e)
+        try {
+            val uri = URI.create(urlString)
+            val httpVersion = when {
+                // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
+                uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
+                else -> HTTP_3_OR_2
             }
+
+            val builder = HttpRequest.newBuilder()
+                .version(httpVersion)
+                .uri(uri)
+                .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
+                .header("User-Agent", USER_AGENT)
+
+            headers.forEach { (name, value) -> builder.header(name, value) }
+
+            val client = if (headers.keys.any { it.startsWith("x-sbo-", ignoreCase = true) }) NO_REDIRECT_CLIENT else CLIENT
+
+            client.sendAsync(method(builder).build(), BodyHandlers.ofInputStream())
+                .thenAccept { response ->
+                    try {
+                        val code = response.statusCode()
+                        val body = response.body().use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                        if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
+
+                        val status = statusMessage(code)
+                        val responseBody = ResponseBody(body.inputStream())
+
+                        handle.complete(
+                            HttpResponse(
+                                code,
+                                status,
+                                responseBody
+                            )
+                        )
+                    } catch (e: Exception) {
+                        handle.fail(e)
+                    }
+                }
+                .exceptionally { e ->
+                    handle.fail(Exception("HTTP request to $urlString failed", e.cause ?: e))
+                    null
+                }
+        } catch (e: Exception) {
+            handle.fail(e)
         }
 
         return handle

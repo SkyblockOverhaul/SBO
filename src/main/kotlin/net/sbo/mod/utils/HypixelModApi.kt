@@ -120,7 +120,7 @@ object HypixelModApi {
                 HypixelNetworking.sendPartyInfoC2SPacket(2)
             } else {
                 PartyFinderManager.creatingParty = false
-                Chat.chat("§6[SBO] §eYou are not on Hypixel. You can only use this feature on Hypixel.")
+                Chat.chat("§6[SBO] §eYou are not on Hypixel. You can only use this feature on Hypixel. Relog or restart your game if you believe this to be in error.")
             }
         } catch (_: Exception) {
             PartyFinderManager.creatingParty = false
