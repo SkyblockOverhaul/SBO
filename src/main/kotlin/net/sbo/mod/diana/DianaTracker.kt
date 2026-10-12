@@ -39,6 +39,7 @@ import net.sbo.mod.utils.time.TimeUtil
 import java.util.regex.Pattern
 
 object DianaTracker {
+    private val lootShareBlocklist = setOf("MYTH_THE_FISH", "BRAIDED_GRIFFIN_FEATHER")
     private val otherDrops = listOf("ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD")
     private val sackDrops = listOf("Enchanted Gold", "Ancient Claw", "Enchanted Ancient Claw")
     private val isMobOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
@@ -48,9 +49,12 @@ object DianaTracker {
 
     var lastSpawnedMob: String? = null
     var lastSpawnedMobTime: Long = 0L
+
+    private var lastBurrowIsMob = false
+
     private var timedRareMob: String? = null
     private var timedRareMobStartNanos: Long = 0L
-
+  
     fun consumeRareMobSpawnTime(mob: String): Long {
         if (timedRareMob != mob) return -1L
 
@@ -99,6 +103,7 @@ object DianaTracker {
         Register.onChatMessageCancelable(
             Pattern.compile("^§6§lWow! §eYou dug out §6(.*?) coins§e!$")
         ) { _, _ ->
+            lastBurrowIsMob = false
             allowScavTracking = false
             sleep(1000) {
                 allowScavTracking = true
@@ -128,7 +133,8 @@ object DianaTracker {
         trackMythTheFish()
     }
 
-    @SboEvent
+    // Reset before DataManager's normal-priority close listener performs its blocking save.
+    @SboEvent(SboEvent.Priority.HIGH)
     fun onGameClose(event: GameCloseEvent) {
         if (Diana.resetSessionOnGameRestart) {
             DianaLoot.resetSession()
@@ -211,6 +217,7 @@ object DianaTracker {
 
     private fun trackMobsWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+            lastBurrowIsMob = true
             val mob = matchResult.group(3)
             if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable !QOL.dianaMessageHider
 
@@ -384,6 +391,7 @@ object DianaTracker {
 
     private fun trackTreasuresWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { message, matchResult ->
+            lastBurrowIsMob = false
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather" -> trackItem(drop, 1)
                 "Mythos Fragment" -> trackItem(drop, 1)
@@ -434,7 +442,7 @@ object DianaTracker {
         if (magicfind > 0) mfPrefix = " (+$magicfind ✯ Magic Find)"
 
         when {
-            drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
+            drop.contains("Shimmering Wool") -> {
                 MedalIntegration.saveWoolClip()
                 playCustomSound(DataManager.soundSettingsData.woolSound, volume = DataManager.soundSettingsData.woolVolume)
                 onRareDrop("Shimmering Wool", showMessageOrTitle = true,
@@ -481,7 +489,7 @@ object DianaTracker {
                 }
             }
 
-            drop.contains("Manti-core") -> { // todo: add achievements for core
+            drop.contains("Manti-core") -> {
                 playCustomSound(DataManager.soundSettingsData.coreSound, volume = DataManager.soundSettingsData.coreVolume)
                 MedalIntegration.saveMantiCoreClip()
                 onRareDrop("Manti-core", showMessageOrTitle = true,
@@ -528,7 +536,7 @@ object DianaTracker {
                 }
             }
 
-            drop.contains("Fateful Stinger") -> { // todo: add achievements for stinger
+            drop.contains("Fateful Stinger") -> {
                 playCustomSound(DataManager.soundSettingsData.stingerSound, volume = DataManager.soundSettingsData.stingerVolume)
                 MedalIntegration.saveFatefulStingerClip()
                 onRareDrop("Fateful Stinger", showMessageOrTitle = true,
@@ -628,7 +636,7 @@ object DianaTracker {
                 }
             }
 
-            drop.contains("Brain Food") -> { // todo: add achievements for food
+            drop.contains("Brain Food") -> {
                 MedalIntegration.saveBrainFoodClip()
                 playCustomSound(DataManager.soundSettingsData.bfSound, volume = DataManager.soundSettingsData.bfVolume)
                 onRareDrop("Brain Food", showMessageOrTitle = true,
@@ -844,7 +852,7 @@ object DianaTracker {
         val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
         val price = "§6$priceRaw coins"
 
-        val ls = gotLootShareRecently()
+        val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
         val lsText = if (ls) " (LS)" else ""
 
         var count = ""
@@ -892,8 +900,7 @@ object DianaTracker {
             Helper.showTitle("${colorAndCount.first}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
         }
 
-        val isLootShare = gotLootShareRecently()
-        if (isLootShare) {
+        if (ls) {
             Chat.chat("§6[SBO] §cLootshared a $item!")
             when (itemId) {
                 "DAEDALUS_STICK" -> unlockAchievement(15)
@@ -913,7 +920,7 @@ object DianaTracker {
             trackMagicFind(magicFind, itemId == "CHIMERA")
         }
 
-        if (trackLootshare && isLootShare) {
+        if (trackLootshare && ls) {
             trackItem(itemId + "_LS", amount, enforceCooldown)
         } else {
             trackItem(itemId, amount, enforceCooldown)
@@ -947,7 +954,7 @@ object DianaTracker {
             val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
             val price = Helper.getItemPriceFormatted(itemId)
             val priceStr = if (price != "0") " (+$price coins)" else ""
-            val ls = gotLootShareRecently()
+            val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
 
             if (ls) msg += " (LS)"
             if (amount != -1) {
@@ -1052,7 +1059,8 @@ object DianaTracker {
                     magicFind = 0
                 )
                 announceLootToParty("Myth the Fish", "Myth the Fish", amount = dianaTrackerMayorData.items.MYTH_THE_FISH)
-                unlockAchievement(119)
+
+                if (lastSpawnedMob == "Sphinx" && lastBurrowIsMob) unlockAchievement(119)
             }
         }
     }

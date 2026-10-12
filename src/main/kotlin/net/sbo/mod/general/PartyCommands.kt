@@ -19,6 +19,8 @@ import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.ServerStats
 import net.sbo.mod.utils.version.UpdateChecker
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -213,7 +215,18 @@ object PartyCommands {
     }
 
     private fun fmt(label: String, count: Int, denominator: Int): String {
-        val percent = calcPercentOne(count, denominator)
+        var percent = calcPercentOne(count, denominator)
+        if (count > 0 && denominator > 0 && percent.toDoubleOrNull() == 0.0) {
+            val value = count.toDouble() / denominator * 100
+            var decimals = 3
+            do {
+                val format = DecimalFormat("0.${"0".repeat(decimals)}", DecimalFormatSymbols.getInstance(Locale.US)).apply {
+                    roundingMode = java.math.RoundingMode.HALF_UP
+                }
+                percent = format.format(value)
+                decimals++
+            } while (percent.toDoubleOrNull() == 0.0)
+        }
         return "$label: $count ($percent%)"
     }
 

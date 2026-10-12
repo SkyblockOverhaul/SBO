@@ -22,7 +22,7 @@ object StatReporter {
 
     private var lastSent: BphReport? = null
 
-    fun init() {
+    internal fun init() {
         // Once shortly after the start, so short sessions report too
         Register.onTick(STARTUP_DELAY_TICKS) { unregister ->
             unregister()
@@ -31,7 +31,7 @@ object StatReporter {
         Register.onTick(INTERVAL_TICKS) { report() }
     }
 
-    fun report() {
+    internal fun report() {
         if (!SboKey.get().startsWith("sbo") || Mayor.mayorElectedYear == 0) return
         val tracker = DataManager.dianaTrackerMayorData
         // The mayor tracker resets when Diana is elected again, until then it holds the last event
@@ -50,7 +50,7 @@ object StatReporter {
     }
 
     /** Null when there is nothing worth sending: less than an hour, no burrows or an impossible value. */
-    fun bphReport(burrows: Long, hours: Double, current: Boolean): BphReport? {
+    internal fun bphReport(burrows: Long, hours: Double, current: Boolean): BphReport? {
         if (hours < MIN_HOURS || burrows <= 0) return null
         val value = BigDecimal.valueOf(burrows / hours).setScale(2, RoundingMode.HALF_UP).toDouble()
         if (value > MAX_BPH) return null

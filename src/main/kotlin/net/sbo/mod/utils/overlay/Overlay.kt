@@ -148,7 +148,7 @@ class Overlay(
         return maxWidth
     }
 
-    private fun inEditingScreen(): Boolean = Helper.currentScreen is OverlayEditScreen
+    private fun inEditingScreen(): Boolean = mc.screen is OverlayEditScreen
 
     fun checkCondition(): Boolean = condition() && checkExtraCondition()
 

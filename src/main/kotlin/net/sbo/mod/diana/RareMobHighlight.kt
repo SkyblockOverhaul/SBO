@@ -102,7 +102,6 @@ object RareMobHighlight {
             }
         }
 
-        //#if MC < 26.2
         val player = mc.player
 
         val iterator = rareMobs.entries.iterator()
@@ -115,6 +114,7 @@ object RareMobHighlight {
                 continue
             }
 
+            //#if MC < 26.2
             val hasLineOfSight = player != null && player.hasLineOfSight(mob)
             if (Diana.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
                 mob.isSboGlowing = true
@@ -122,7 +122,7 @@ object RareMobHighlight {
             } else {
                 mob.isSboGlowing = false
             }
+            //#endif
         }
-        //#endif
     }
 }

@@ -21,10 +21,30 @@ object ScoreBoard {
     private var lastTitle: String = "Unknown Scoreboard" // dummy
 
     init {
+        // Packet bursts only set dirty flags; rebuild each cache at most once per tick.
         Register.onTick(1) {
-            linesDirty = true
-            titleDirty = true
+            if (linesDirty) {
+                linesDirty = false
+                lastLines = fetchLines()
+            }
+            if (titleDirty) {
+                titleDirty = false
+                lastTitle = fetchTitle()
+            }
         }
+    }
+
+    fun markLinesDirty() {
+        linesDirty = true
+    }
+
+    fun markTitleDirty() {
+        titleDirty = true
+    }
+
+    fun markDirty() {
+        markLinesDirty()
+        markTitleDirty()
     }
 
     /**
@@ -34,11 +54,6 @@ object ScoreBoard {
      * @return A list of formatted strings representing the scoreboard entries.
      */
     fun getLines(): List<String> {
-        if (linesDirty) {
-            lastLines = fetchLines()
-            linesDirty = false
-        }
-
         return lastLines
     }
 
@@ -65,11 +80,6 @@ object ScoreBoard {
     }
 
     fun getTitle(): String {
-        if (titleDirty) {
-            lastTitle = fetchTitle()
-            titleDirty = false
-        }
-
         return lastTitle
     }
 
