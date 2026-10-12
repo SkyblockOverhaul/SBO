@@ -83,13 +83,13 @@ class TimeLimitedSet<T : Any>(
 
             override fun remove() {
                 check(canRemove) { "next() must be called before remove()" }
+                val element = checkNotNull(current)
+                val writeTime = checkNotNull(addedAt[element])
                 iterator.remove()
-                current?.let {
-                    addedAt[it]?.let { writeTime -> removeFromExpirationIndex(it, writeTime) }
-                    removalListener?.invoke(it, RemovalCause.EXPLICIT)
-                }
+                removeFromExpirationIndex(element, writeTime)
                 current = null
                 canRemove = false
+                removalListener?.invoke(element, RemovalCause.EXPLICIT)
             }
         }
     }
@@ -104,8 +104,10 @@ class TimeLimitedSet<T : Any>(
             elementsByWriteTime.pollFirstEntry()
             val expiredElements = expired ?: mutableListOf<T>().also { expired = it }
             for (element in elements) {
-                addedAt.remove(element)
-                expiredElements.add(element)
+                if (addedAt[element] == writeTime) {
+                    addedAt.remove(element)
+                    expiredElements.add(element)
+                }
             }
         }
         expired?.forEach { removalListener?.invoke(it, RemovalCause.EXPIRED) }
