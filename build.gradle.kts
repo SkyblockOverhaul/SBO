@@ -39,6 +39,34 @@ loom {
 }
 
 bloom {
+    if (isMCVersionGreaterOrEqualTo("26.3")) {
+        replacement("com.mojang.blaze3d.pipeline.RenderPipeline", "com.mojang.renderpearl.api.pipeline.RenderPipeline")
+        replacement("com.mojang.blaze3d.pipeline.DepthStencilState", "com.mojang.renderpearl.api.pipeline.DepthStencilState")
+        replacement("com.mojang.blaze3d.platform.CompareOp", "com.mojang.renderpearl.api.pipeline.CompareOp")
+        replacement("Util.getPlatform().openUri(url)", "com.mojang.blaze3d.Blaze3D.openUri(java.net.URI(url))")
+        replacement("Util.getPlatform().openPath(", "com.mojang.blaze3d.Blaze3D.openPath(")
+        replacement("Util.getPlatform().openFile(folder)", "com.mojang.blaze3d.Blaze3D.openPath(folder.toPath())")
+        // The legacy packet constructor copies particle speed to all three axes in 26.3.
+        replacement(".maxSpeed", ".xMaxSpeed()")
+        replacement("InputConstants.Type.KEYSYM", "InputConstants.Type.KEYBOARD")
+        replacement("import org.lwjgl.glfw.GLFW;", "")
+        replacement("import org.lwjgl.glfw.GLFW", "")
+        replacement("InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), GLFW.GLFW_CURSOR_NORMAL,", "InputConstants.releaseMouse(this.minecraft.getWindow(),")
+        replacement("GLFW.GLFW_KEY_UNKNOWN", "com.mojang.blaze3d.platform.InputConstants.UNKNOWN.value")
+        replacement("GLFW.GLFW_KEY_ESCAPE", "com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE")
+        replacement("GLFW.GLFW_KEY_UP", "com.mojang.blaze3d.platform.InputConstants.KEY_UP")
+        replacement("GLFW.GLFW_KEY_DOWN", "com.mojang.blaze3d.platform.InputConstants.KEY_DOWN")
+        replacement("GLFW.GLFW_KEY_LEFT", "com.mojang.blaze3d.platform.InputConstants.KEY_LEFT")
+        replacement("GLFW.GLFW_KEY_RIGHT", "com.mojang.blaze3d.platform.InputConstants.KEY_RIGHT")
+        replacement("GLFW.GLFW_KEY_EQUAL", "com.mojang.blaze3d.platform.InputConstants.KEY_EQUALS")
+        replacement("GLFW.GLFW_KEY_KP_ADD", "com.mojang.blaze3d.platform.InputConstants.KEY_ADD")
+        replacement("GLFW.GLFW_KEY_MINUS", "com.mojang.blaze3d.platform.InputConstants.KEY_MINUS")
+        replacement("GLFW.GLFW_KEY_KP_SUBTRACT", "org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_MINUS")
+        replacement("click.buttonInfo().button", "net.sbo.mod.utils.InputCompatibility.mouseButton(click.buttonInfo().button)")
+        replacement("mulPose(Axis.YP.rotationDegrees(-cameraYaw))", "rotateDegrees(Axis.YP, -cameraYaw)")
+        replacement("mulPose(Axis.XP.rotationDegrees(cameraPitch))", "rotateDegrees(Axis.XP, cameraPitch)")
+        replacement("DefaultTooltipPositioner.INSTANCE, null)", "DefaultTooltipPositioner.INSTANCE, null, false)")
+    }
     if (isMCVersionGreaterOrEqualTo("26.2")) {
         replacement("mc.screen", "mc.gui.screen()")
         replacement("mc.setScreen(", "mc.gui.setScreen(")
@@ -312,6 +340,10 @@ dependencies {
     implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
 
     when (mcProject) {
+        "26.3-fabric" -> {
+            implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.3-fabric")
+        }
         "26.2-fabric" -> {
             // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
             implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
@@ -329,6 +361,7 @@ dependencies {
 
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspKotlin")
         "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
@@ -336,6 +369,7 @@ tasks.findByName("preprocessCode")?.apply {
 
 tasks.findByName("preprocessTestCode")?.apply {
     when (mcProject) {
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspTestKotlin")
         "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspTestKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
