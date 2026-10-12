@@ -48,6 +48,7 @@ object DianaTracker {
 
     var lastSpawnedMob: String? = null
     var lastSpawnedMobTime: Long = 0L
+    private var lastBurrowIsMob = false
 
     fun init() {
         Register.command("sboresetsession") {
@@ -86,6 +87,7 @@ object DianaTracker {
         Register.onChatMessageCancelable(
             Pattern.compile("^§6§lWow! §eYou dug out §6(.*?) coins§e!$")
         ) { _, _ ->
+            lastBurrowIsMob = false
             allowScavTracking = false
             sleep(1000) {
                 allowScavTracking = true
@@ -198,6 +200,7 @@ object DianaTracker {
 
     private fun trackMobsWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+            lastBurrowIsMob = true
             val mob = matchResult.group(3)
             if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable !QOL.dianaMessageHider
 
@@ -360,6 +363,7 @@ object DianaTracker {
 
     private fun trackTreasuresWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { message, matchResult ->
+            lastBurrowIsMob = false
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather" -> trackItem(drop, 1)
                 "Mythos Fragment" -> trackItem(drop, 1)
@@ -410,7 +414,7 @@ object DianaTracker {
         if (magicfind > 0) mfPrefix = " (+$magicfind ✯ Magic Find)"
 
         when {
-            drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
+            drop.contains("Shimmering Wool") -> {
                 MedalIntegration.saveWoolClip()
                 playCustomSound(DataManager.soundSettingsData.woolSound, volume = DataManager.soundSettingsData.woolVolume)
                 onRareDrop("Shimmering Wool", showMessageOrTitle = true,
@@ -457,7 +461,7 @@ object DianaTracker {
                 }
             }
 
-            drop.contains("Manti-core") -> { // todo: add achievements for core
+            drop.contains("Manti-core") -> {
                 playCustomSound(DataManager.soundSettingsData.coreSound, volume = DataManager.soundSettingsData.coreVolume)
                 MedalIntegration.saveMantiCoreClip()
                 onRareDrop("Manti-core", showMessageOrTitle = true,
@@ -504,7 +508,7 @@ object DianaTracker {
                 }
             }
 
-            drop.contains("Fateful Stinger") -> { // todo: add achievements for stinger
+            drop.contains("Fateful Stinger") -> {
                 playCustomSound(DataManager.soundSettingsData.stingerSound, volume = DataManager.soundSettingsData.stingerVolume)
                 MedalIntegration.saveFatefulStingerClip()
                 onRareDrop("Fateful Stinger", showMessageOrTitle = true,
@@ -604,7 +608,7 @@ object DianaTracker {
                 }
             }
 
-            drop.contains("Brain Food") -> { // todo: add achievements for food
+            drop.contains("Brain Food") -> {
                 MedalIntegration.saveBrainFoodClip()
                 playCustomSound(DataManager.soundSettingsData.bfSound, volume = DataManager.soundSettingsData.bfVolume)
                 onRareDrop("Brain Food", showMessageOrTitle = true,
@@ -1028,7 +1032,8 @@ object DianaTracker {
                     magicFind = 0
                 )
                 announceLootToParty("Myth the Fish", "Myth the Fish", amount = dianaTrackerMayorData.items.MYTH_THE_FISH)
-                unlockAchievement(119)
+
+                if (lastSpawnedMob == "Sphinx" && lastBurrowIsMob) unlockAchievement(119)
             }
         }
     }
