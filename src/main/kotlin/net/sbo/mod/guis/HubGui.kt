@@ -36,6 +36,7 @@ import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 import org.lwjgl.glfw.GLFW
 import java.util.Collections
@@ -136,9 +137,12 @@ object HubGui {
         Link("Fabric API", "Modding API (FabricMC)", "https://github.com/FabricMC/fabric-api"),
     )
 
+    private var openCommandsOnNextOpen = false
+
     private val App = component("Hub") {
         val settingsCount = useMemo { countEntries(Settings) }
-        var showCommands by useState(false)
+        var showCommands by useState(openCommandsOnNextOpen)
+        openCommandsOnNextOpen = false
         useSboScale()
         useSboTheme()
         val fit = useFitScale()
@@ -288,5 +292,10 @@ object HubGui {
         button(className = className, key = link.title, title = link.description, onClick = { SBOKotlin.openInBrowser(link.url) }) {
             +link.title
         }
+    }
+
+    fun openCommands() {
+        openCommandsOnNextOpen = true
+        open()
     }
 }

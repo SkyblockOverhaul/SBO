@@ -5,6 +5,9 @@ import net.minecraft.network.chat.ClickEvent.RunCommand
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent.ShowText
 import net.minecraft.network.chat.Style
+import net.sbo.guilib.fabric.GuiLib
+import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.HubGui
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
@@ -14,7 +17,7 @@ object HelpCommand {
     val commands = arrayOf(
         mapOf("cmd" to "sbo", "desc" to "Open the SBO start screen: settings, party finder, sounds and more"),
         mapOf("cmd" to "sbosettings", "desc" to "Open the settings (or: /sbo settings, /sboconfig)"),
-        mapOf("cmd" to "sbohelp", "desc" to "Shows this message"),
+        mapOf("cmd" to "sbohelp", "desc" to "Open this GUI"),
         mapOf("cmd" to "sboguis", "desc" to "Open the GUIs and move them around (or: /sbomoveguis)"),
         mapOf("cmd" to "sboclearburrows", "desc" to "Clear all burrow waypoints (or: /sbocb)"),
         mapOf("cmd" to "sboimporttracker <profilename>", "desc" to "Import skyhanni tracker"), //todo: add sboimporttracker command
@@ -41,34 +44,8 @@ object HelpCommand {
 
     fun init() {
         Register.command("sbohelp") {
-            val headerText = Component.literal("[SBO] ")
-                .withStyle(ChatFormatting.GOLD)
-                .append(Component.literal("Commands:").withStyle(ChatFormatting.YELLOW))
-
-            Chat.chat(headerText)
-
-            commands.forEach { command ->
-                val cmd = command["cmd"]!!
-                val description = command["desc"]!!
-
-                val commandToRun = if (" " in cmd) cmd.substringBefore(" ") else cmd
-
-                val fullLineText = Component.literal("> ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal("/$cmd").withStyle(ChatFormatting.GREEN))
-                    .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(description).withStyle(ChatFormatting.YELLOW))
-
-                val styledText = fullLineText.setStyle(
-                    Style.EMPTY
-                        .withClickEvent(RunCommand("/$commandToRun"))
-                        .withHoverEvent(
-                            ShowText(
-                                Component.literal("Click to run /$commandToRun").withStyle(ChatFormatting.GRAY)
-                            )
-                        )
-                )
-
-                Chat.chat(styledText)
+            mc.execute {
+                HubGui.openCommands()
             }
         }
 
