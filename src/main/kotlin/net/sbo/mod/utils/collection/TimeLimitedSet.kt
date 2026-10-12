@@ -2,6 +2,7 @@ package net.sbo.mod.utils.collection
 
 import com.google.common.cache.RemovalCause
 import java.util.HashMap
+import java.util.TreeMap
 import kotlin.time.Duration
 
 /**
@@ -22,6 +23,7 @@ class TimeLimitedSet<T : Any>(
     private val removalListener: ((T?, RemovalCause) -> Unit)? = null,
 ) : AbstractMutableSet<T>() {
     private val addedAt = HashMap<T, Long>()
+    private val elementsByWriteTime = TreeMap<Long, MutableSet<T>>()
     private val expireAfterWriteNanos = expireAfterWrite.inWholeNanoseconds
 
     override val size: Int
@@ -32,7 +34,13 @@ class TimeLimitedSet<T : Any>(
 
     override fun add(element: T): Boolean {
         expireEntries()
-        val wasPresent = addedAt.put(element, System.nanoTime()) != null
+        val now = System.nanoTime()
+        val previousWriteTime = addedAt.put(element, now)
+        if (previousWriteTime != null) {
+            removeFromExpirationIndex(element, previousWriteTime)
+        }
+        elementsByWriteTime.getOrPut(now) { LinkedHashSet() }.add(element)
+        val wasPresent = previousWriteTime != null
         if (wasPresent) removalListener?.invoke(element, RemovalCause.REPLACED)
         return !wasPresent
     }
@@ -44,19 +52,18 @@ class TimeLimitedSet<T : Any>(
 
     override fun remove(element: T): Boolean {
         expireEntries()
-        if (addedAt.remove(element) == null) return false
+        val writeTime = addedAt.remove(element) ?: return false
+        removeFromExpirationIndex(element, writeTime)
         removalListener?.invoke(element, RemovalCause.EXPLICIT)
         return true
     }
 
     override fun clear() {
         expireEntries()
-        val iterator = addedAt.keys.iterator()
-        while (iterator.hasNext()) {
-            val element = iterator.next()
-            iterator.remove()
-            removalListener?.invoke(element, RemovalCause.EXPLICIT)
-        }
+        val explicitlyRemoved = addedAt.keys.toList()
+        addedAt.clear()
+        elementsByWriteTime.clear()
+        explicitlyRemoved.forEach { removalListener?.invoke(it, RemovalCause.EXPLICIT) }
     }
 
     override fun iterator(): MutableIterator<T> {
@@ -77,7 +84,10 @@ class TimeLimitedSet<T : Any>(
             override fun remove() {
                 check(canRemove) { "next() must be called before remove()" }
                 iterator.remove()
-                current?.let { removalListener?.invoke(it, RemovalCause.EXPLICIT) }
+                current?.let {
+                    addedAt[it]?.let { writeTime -> removeFromExpirationIndex(it, writeTime) }
+                    removalListener?.invoke(it, RemovalCause.EXPLICIT)
+                }
                 current = null
                 canRemove = false
             }
@@ -86,15 +96,24 @@ class TimeLimitedSet<T : Any>(
 
     private fun expireEntries() {
         val now = System.nanoTime()
-        val expired = mutableListOf<T>()
-        val iterator = addedAt.entries.iterator()
-        while (iterator.hasNext()) {
-            val (element, addedAtNanos) = iterator.next()
-            if (now - addedAtNanos >= expireAfterWriteNanos) {
-                iterator.remove()
-                expired.add(element)
+        var expired: MutableList<T>? = null
+        while (elementsByWriteTime.isNotEmpty()) {
+            val (writeTime, elements) = elementsByWriteTime.firstEntry()
+            if (now - writeTime < expireAfterWriteNanos) break
+
+            elementsByWriteTime.pollFirstEntry()
+            val expiredElements = expired ?: mutableListOf<T>().also { expired = it }
+            for (element in elements) {
+                addedAt.remove(element)
+                expiredElements.add(element)
             }
         }
-        expired.forEach { removalListener?.invoke(it, RemovalCause.EXPIRED) }
+        expired?.forEach { removalListener?.invoke(it, RemovalCause.EXPIRED) }
+    }
+
+    private fun removeFromExpirationIndex(element: T, writeTime: Long) {
+        val elementsAtWriteTime = elementsByWriteTime[writeTime] ?: return
+        elementsAtWriteTime.remove(element)
+        if (elementsAtWriteTime.isEmpty()) elementsByWriteTime.remove(writeTime)
     }
 }
