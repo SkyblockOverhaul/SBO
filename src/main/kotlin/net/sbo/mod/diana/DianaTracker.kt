@@ -49,6 +49,7 @@ object DianaTracker {
 
     var lastSpawnedMob: String? = null
     var lastSpawnedMobTime: Long = 0L
+
     private var lastBurrowIsMob = false
 
     private var timedRareMob: String? = null
