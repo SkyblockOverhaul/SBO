@@ -1,11 +1,14 @@
 package net.sbo.mod.general
 
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import net.fabricmc.fabric.api.event.Event
 import net.minecraft.ChatFormatting
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FontDescription
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.TextColor
 import net.minecraft.resources.Identifier
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
@@ -34,6 +37,7 @@ object SboBadges {
     const val VIEWER_TOGGLES = true
     private val showAboveHeads: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesAboveHeads
     private val showInTab: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInTab
+    private val showInChat: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInChat
 
     private const val LIST_REFRESH_MINUTES = 10
 
@@ -47,6 +51,14 @@ object SboBadges {
     // A player's name starts the line or follows the level or rank: "[296] Name ♲", "[MVP+] Name"
     private val NAME = Regex("(?:^|] )([A-Za-z0-9_]{1,16})")
     private val LEVEL = Regex("""\[\d+]\s*$""")
+    // The sender stands before the first ": " of a chat line: "[296] [MVP+] Name: hi", "Party > Name: hi", "From Name: hi"
+    private const val MAX_SENDER_LENGTH = 80
+    // Runs after the default phase: mods like SkyHanni rebuild chat lines from § codes there,
+    // which would drop the hex colors and the logo font
+    private val CHAT_PHASE = Identifier.fromNamespaceAndPath("sbo", "badges")
+    // Mods rebuild Hypixel's § colors as rgb colors, so they are compared by value
+    private val CHAT_COLORS: Set<Int> = ChatFormatting.entries.mapNotNull { TextColor.fromLegacyFormat(it)?.value }.toSet()
+    private val WORD = Regex("[A-Za-z0-9_]{1,16}")
 
     @Volatile private var byUuid: Map<UUID, SboBadge> = emptyMap()
     @Volatile private var byName: Map<String, SboBadge> = emptyMap()
@@ -70,6 +82,11 @@ object SboBadges {
         }
         Register.command(COMMAND) {
             mc.schedule { BadgeGui.open() }
+        }
+        // After ALLOW_GAME, so the chat features still read the line as Hypixel sent it
+        ClientReceiveMessageEvents.MODIFY_GAME.addPhaseOrdering(Event.DEFAULT_PHASE, CHAT_PHASE)
+        ClientReceiveMessageEvents.MODIFY_GAME.register(CHAT_PHASE) { message, overlay ->
+            if (overlay) message else decorateChat(message)
         }
     }
 
@@ -182,6 +199,17 @@ object SboBadges {
         return recolored(line, badge).copy().append(" ").append(logo())
     }
 
+    /** The sender of a chat line in their badge color with the SBO logo behind the name. */
+    fun decorateChat(line: Component): Component {
+        if (!showInChat || byName.isEmpty()) return line
+        val plain = ChatFormatting.stripFormatting(line.string) ?: return line
+        if (LOGO in plain) return line
+        val colon = plain.indexOf(": ")
+        if (colon !in 1..MAX_SENDER_LENGTH) return line
+        val badge = WORD.findAll(plain.substring(0, colon)).firstNotNullOfOrNull { byName[it.value.lowercase()] } ?: return line
+        return recolor(line, badge, afterName = Component.literal(" ").append(logo()))
+    }
+
     private fun holderOf(info: PlayerInfo): SboBadge? {
         byUuid[info.profile.id]?.let { return it }
         val display = info.tabListDisplayName ?: return null
@@ -210,7 +238,7 @@ object SboBadges {
     private class StyledChar(val char: Char, val style: Style)
 
     // Hypixel mixes styles and § codes, so the line is read char by char and built again
-    private fun recolor(line: Component, badge: SboBadge): Component {
+    private fun recolor(line: Component, badge: SboBadge, afterName: Component? = null): Component {
         val chars = ArrayList<StyledChar>()
         line.visit({ style, text ->
             var current = style
@@ -232,9 +260,13 @@ object SboBadges {
         val name = Regex("(?<![A-Za-z0-9_])${Regex.escape(badge.name)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
             .find(plain) ?: return line
         val levelStart = if (badge.level == true) LEVEL.find(plain.substring(0, name.range.first))?.range?.first else null
-        val plainName = badge.plainName == true
-        val from = levelStart ?: if (plainName) return line else name.range.first
-        val until = if (plainName) name.range.first else name.range.last + 1
+        val from = levelStart ?: name.range.first
+        val until = if (badge.plainName == true) name.range.first else name.range.last + 1
+        if (from >= until && afterName == null) return line
+
+        // A name another mod already colored (not one of the 16 § colors Hypixel uses) keeps its color
+        val foreign = name.range.any { i -> chars[i].style.color?.let { it.value !in CHAT_COLORS } == true }
+        if (foreign && afterName == null) return line
 
         val start = parseHex(badge.color)
         val end = badge.to?.let(::parseHex)
@@ -247,7 +279,7 @@ object SboBadges {
         }
         chars.forEachIndexed { i, c ->
             val style = when {
-                i !in from until until -> c.style
+                foreign || i !in from until until -> c.style
                 end == null -> c.style.withColor(start)
                 else -> c.style.withColor(mix(start, end, (i - from) / (until - from - 1).coerceAtLeast(1).toFloat()))
             }
@@ -256,6 +288,11 @@ object SboBadges {
                 runStyle = style
             }
             run.append(c.char)
+            if (afterName != null && i == name.range.last) {
+                flush()
+                runStyle = null
+                out.append(afterName)
+            }
         }
         flush()
         return out

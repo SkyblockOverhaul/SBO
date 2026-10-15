@@ -74,6 +74,7 @@ data class SboData(
     var pfOnboardingSeen: Boolean = false,
     var badgesAboveHeads: Boolean = true,
     var badgesInTab: Boolean = true,
+    var badgesInChat: Boolean = true,
     var badgeOwnInF5: Boolean = true,
     var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
 ) {
