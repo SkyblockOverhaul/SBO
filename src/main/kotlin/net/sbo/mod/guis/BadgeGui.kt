@@ -142,7 +142,7 @@ object BadgeGui {
                 DataManager.sboData.save()
             })
         }
-        setting("In chat", "The SBO logo behind their name and the name in their color, for new messages.") {
+        setting("In chat", "The SBO logo behind their name, the name in their color and team tags, for new messages.") {
             switch(checked = inChat, onChange = {
                 inChat = it.checked
                 DataManager.sboData.badgesInChat = it.checked
@@ -219,7 +219,7 @@ object BadgeGui {
         }
 
         if (badge.team && rank?.tag != null) {
-            setting("Show team tag", "Puts [${rank.tag}] in front of your name above your head, so players know they can ask you about SBO.") {
+            setting("Show team tag", "Puts [${rank.tag}] in front of your name above your head and in chat, so players know they can ask you about SBO.") {
                 switch(checked = settings.teamTag, onChange = { onChange(settings.copy(teamTag = it.checked)) })
             }
         }

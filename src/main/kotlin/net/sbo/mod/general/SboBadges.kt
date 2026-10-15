@@ -68,6 +68,8 @@ object SboBadges {
     @Volatile private var ranks: Map<String, BadgeRank> = emptyMap()
     // Team tags in front of the name, built once per list
     @Volatile private var tags: Map<UUID, Component> = emptyMap()
+    // The same tags by lowercase name, chat lines only carry the name
+    @Volatile private var tagsByName: Map<String, Component> = emptyMap()
     @Volatile private var version: String? = null
     @Volatile private var fetching = false
 
@@ -122,7 +124,9 @@ object SboBadges {
         val members = response.team.mapNotNull { member -> uuidOf(member.uuid)?.let { it to member } }.toMap()
         ranks = response.ranks
         team = members
-        tags = members.filterValues { it.nameTag }.mapNotNull { (uuid, member) -> tagOf(member.rank)?.let { uuid to it } }.toMap()
+        val tagged = members.filterValues { it.nameTag }.mapNotNull { (uuid, member) -> tagOf(member.rank)?.let { Triple(uuid, member.name, it) } }
+        tags = tagged.associate { (uuid, _, tag) -> uuid to tag }
+        tagsByName = tagged.associate { (_, name, tag) -> name.lowercase() to tag }
         fixedLines = holders.filterValues { it.to == null }.mapValues { line(it.value) }
         byUuid = holders
         byName = badges.associateBy { it.name.lowercase() }
@@ -199,15 +203,21 @@ object SboBadges {
         return recolored(line, badge).copy().append(" ").append(logo())
     }
 
-    /** The sender of a chat line in their badge color with the SBO logo behind the name. */
+    /** The sender of a chat line: team tag in front, badge color and the SBO logo behind the name. */
     fun decorateChat(line: Component): Component {
-        if (!showInChat || byName.isEmpty()) return line
+        if (!showInChat || (byName.isEmpty() && tagsByName.isEmpty())) return line
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
         val colon = plain.indexOf(": ")
         if (colon !in 1..MAX_SENDER_LENGTH) return line
-        val badge = WORD.findAll(plain.substring(0, colon)).firstNotNullOfOrNull { byName[it.value.lowercase()] } ?: return line
-        return recolor(line, badge, afterName = Component.literal(" ").append(logo()))
+        val sender = WORD.findAll(plain.substring(0, colon)).map { it.value }
+            .firstOrNull { it.lowercase() in byName || it.lowercase() in tagsByName } ?: return line
+        val badge = byName[sender.lowercase()]
+        return recolor(
+            line, sender, badge,
+            beforeName = tagsByName[sender.lowercase()],
+            afterName = badge?.let { Component.literal(" ").append(logo()) },
+        )
     }
 
     private fun holderOf(info: PlayerInfo): SboBadge? {
@@ -230,7 +240,7 @@ object SboBadges {
     private fun recolored(line: Component, badge: SboBadge): Component {
         val key = line to badge
         synchronized(recolorCache) { recolorCache[key]?.let { return it } }
-        val result = recolor(line, badge)
+        val result = recolor(line, badge.name, badge)
         synchronized(recolorCache) { recolorCache[key] = result }
         return result
     }
@@ -238,7 +248,13 @@ object SboBadges {
     private class StyledChar(val char: Char, val style: Style)
 
     // Hypixel mixes styles and § codes, so the line is read char by char and built again
-    private fun recolor(line: Component, badge: SboBadge, afterName: Component? = null): Component {
+    private fun recolor(
+        line: Component,
+        playerName: String,
+        badge: SboBadge?,
+        beforeName: Component? = null,
+        afterName: Component? = null,
+    ): Component {
         val chars = ArrayList<StyledChar>()
         line.visit({ style, text ->
             var current = style
@@ -257,19 +273,21 @@ object SboBadges {
         }, Style.EMPTY)
 
         val plain = String(CharArray(chars.size) { chars[it].char })
-        val name = Regex("(?<![A-Za-z0-9_])${Regex.escape(badge.name)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
+        val name = Regex("(?<![A-Za-z0-9_])${Regex.escape(playerName)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
             .find(plain) ?: return line
-        val levelStart = if (badge.level == true) LEVEL.find(plain.substring(0, name.range.first))?.range?.first else null
+        val levelStart = if (badge?.level == true) LEVEL.find(plain.substring(0, name.range.first))?.range?.first else null
         val from = levelStart ?: name.range.first
-        val until = if (badge.plainName == true) name.range.first else name.range.last + 1
-        if (from >= until && afterName == null) return line
+        // Without a badge (team tag only) nothing is colored
+        val until = if (badge == null || badge.plainName == true) name.range.first else name.range.last + 1
+        val inserts = beforeName != null || afterName != null
+        if (from >= until && !inserts) return line
 
         // A name another mod already colored (not one of the 16 § colors Hypixel uses) keeps its color
         val foreign = name.range.any { i -> chars[i].style.color?.let { it.value !in CHAT_COLORS } == true }
-        if (foreign && afterName == null) return line
+        if (foreign && !inserts) return line
 
-        val start = parseHex(badge.color)
-        val end = badge.to?.let(::parseHex)
+        val start = badge?.let { parseHex(it.color) } ?: 0
+        val end = badge?.to?.let(::parseHex)
         val out = Component.empty()
         var run = StringBuilder()
         var runStyle: Style? = null
@@ -277,7 +295,13 @@ object SboBadges {
             runStyle?.let { out.append(Component.literal(run.toString()).withStyle(it)) }
             run = StringBuilder()
         }
+        fun insert(part: Component) {
+            flush()
+            runStyle = null
+            out.append(part)
+        }
         chars.forEachIndexed { i, c ->
+            if (beforeName != null && i == name.range.first) insert(beforeName)
             val style = when {
                 foreign || i !in from until until -> c.style
                 end == null -> c.style.withColor(start)
@@ -288,11 +312,7 @@ object SboBadges {
                 runStyle = style
             }
             run.append(c.char)
-            if (afterName != null && i == name.range.last) {
-                flush()
-                runStyle = null
-                out.append(afterName)
-            }
+            if (afterName != null && i == name.range.last) insert(afterName)
         }
         flush()
         return out
