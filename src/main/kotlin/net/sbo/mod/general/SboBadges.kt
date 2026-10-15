@@ -15,6 +15,8 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.BadgeGui
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.BadgeListResponse
+import net.sbo.mod.utils.data.BadgePart
+import net.sbo.mod.utils.data.PartColor
 import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.SboBadge
@@ -126,15 +128,15 @@ object SboBadges {
         val members = response.team.mapNotNull { member -> uuidOf(member.uuid)?.let { it to member } }.toMap()
         ranks = response.ranks
         team = members
-        // The tag takes the member's badge colors, the rank's while their badge is off
+        // The tag takes the member's tag color, the rank's while their badge is off
         val tagged = members.mapNotNull { (uuid, member) ->
-            tagOf(member.rank, holders[uuid]?.color, holders[uuid]?.to)?.let { Triple(uuid, member, it) }
+            tagOf(member.rank, holders[uuid]?.colorOf(BadgePart.TAG))?.let { Triple(uuid, member, it) }
         }
         fun byName(place: String) = tagged.filter { place in it.second.tagPlaces }.associate { (_, member, tag) -> member.name.lowercase() to tag }
         tags = tagged.filter { TeamTagPlace.HEAD in it.second.tagPlaces }.associate { (uuid, _, tag) -> uuid to tag }
         tabTags = byName(TeamTagPlace.TAB)
         chatTags = byName(TeamTagPlace.CHAT)
-        fixedLines = holders.filterValues { it.to == null }.mapValues { line(it.value) }
+        fixedLines = holders.filterValues { it.colorOf(BadgePart.STAT).to == null }.mapValues { line(it.value) }
         byUuid = holders
         byName = badges.associateBy { it.name.lowercase() }
         version = response.version
@@ -163,25 +165,27 @@ object SboBadges {
 
     fun nameTagLine(uuid: UUID): Component? {
         if (!showAboveHeads) return null
-        fixedLines[uuid]?.let { return it }
-        return byUuid[uuid]?.let(::line)
+        val badge = byUuid[uuid]?.takeIf { it.shows(BadgePart.LOGO, TeamTagPlace.HEAD) } ?: return null
+        return fixedLines[uuid] ?: line(badge)
     }
 
     fun colorNameTag(uuid: UUID, nameTag: Component): Component {
         if (!showAboveHeads) return nameTag
-        val colored = byUuid[uuid]?.let { recolored(nameTag, it.name, withTag = false) } ?: nameTag
+        val colored = byUuid[uuid]?.let { recolored(nameTag, it.name, TeamTagPlace.HEAD) } ?: nameTag
         val tag = tags[uuid] ?: return colored
         return Component.empty().append(tag).append(colored)
     }
 
-    /** Badge color of a player (uuid without dashes) for their team tag, null while their badge is off. */
-    fun badgeColor(uuid: String): String? = uuidOf(uuid)?.let { byUuid[it]?.color }
+    /** Tag color of a player (uuid without dashes) for the party finder, null while their badge is off. */
+    fun badgeColor(uuid: String): String? = uuidOf(uuid)?.let { byUuid[it]?.colorOf(BadgePart.TAG)?.color }
 
     /** Team rank of a player (uuid without dashes), for the party finder. */
     fun teamRank(uuid: String): BadgeRank? = uuidOf(uuid)?.let { team[it] }?.let { ranks[it.rank] }?.takeIf { it.tag != null }
 
-    /** "[SBO Moderator] " in the given badge colors or the rank's, null for ranks without a tag. */
-    fun tagOf(rank: String, color: String? = null, to: String? = null): Component? {
+    /** "[SBO Moderator] " in the given color or the rank's, null for ranks without a tag. */
+    fun tagOf(rank: String, partColor: PartColor? = null): Component? {
+        val color = partColor?.color
+        val to = partColor?.to
         val info = ranks[rank] ?: return null
         val text = info.tag ?: return null
         val gray = Style.EMPTY.withColor(0xAAAAAA)
@@ -202,7 +206,8 @@ object SboBadges {
         // The logo is a child, the text after it would take over its font
         val line = Component.empty().append(logo())
         if (badge.label != null && badge.value != null) {
-            line.append(" ").append(colored("${badge.label}: ${badge.value}", badge.color, badge.to))
+            val stat = badge.colorOf(BadgePart.STAT)
+            line.append(" ").append(colored("${badge.label}: ${badge.value}", stat.color, stat.to))
         }
         return line
     }
@@ -210,8 +215,9 @@ object SboBadges {
     fun decorateTab(info: PlayerInfo, line: Component): Component {
         if (!showInTab || (byUuid.isEmpty() && tabTags.isEmpty())) return line
         val player = tabPlayerOf(info) ?: return line
-        val decorated = recolored(line, player, withTag = true)
-        return if (player.lowercase() in byName) decorated.copy().append(" ").append(logo()) else decorated
+        val decorated = recolored(line, player, TeamTagPlace.TAB)
+        val logo = byName[player.lowercase()]?.shows(BadgePart.LOGO, TeamTagPlace.TAB) == true
+        return if (logo) decorated.copy().append(" ").append(logo()) else decorated
     }
 
     /** The sender of a chat line: team tag in front, badge color and the SBO logo behind the name. */
@@ -225,9 +231,9 @@ object SboBadges {
             .firstOrNull { it.lowercase() in byName || it.lowercase() in chatTags } ?: return line
         val badge = byName[sender.lowercase()]
         return recolor(
-            line, sender, badge,
+            line, sender, badge, TeamTagPlace.CHAT,
             beforeName = chatTags[sender.lowercase()],
-            afterName = badge?.let { Component.literal(" ").append(logo()) },
+            afterName = badge?.takeIf { it.shows(BadgePart.LOGO, TeamTagPlace.CHAT) }?.let { Component.literal(" ").append(logo()) },
         )
     }
 
@@ -248,15 +254,16 @@ object SboBadges {
 
     private const val RECOLOR_CACHE_SIZE = 256
     // Badge and tag follow from the name and the list, which clears the cache
-    private val recolorCache = object : LinkedHashMap<Triple<Component, String, Boolean>, Component>(64, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Triple<Component, String, Boolean>, Component>) = size > RECOLOR_CACHE_SIZE
+    private val recolorCache = object : LinkedHashMap<Triple<Component, String, String>, Component>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Triple<Component, String, String>, Component>) = size > RECOLOR_CACHE_SIZE
     }
 
-    private fun recolored(line: Component, player: String, withTag: Boolean): Component {
-        val key = Triple(line, player.lowercase(), withTag)
+    /** Above heads the tag goes in front of the whole name tag, so only the tab list inserts it here. */
+    private fun recolored(line: Component, player: String, place: String): Component {
+        val key = Triple(line, player.lowercase(), place)
         synchronized(recolorCache) { recolorCache[key]?.let { return it } }
-        val tag = if (withTag) tabTags[player.lowercase()] else null
-        val result = recolor(line, player, byName[player.lowercase()], beforeName = tag)
+        val tag = if (place == TeamTagPlace.TAB) tabTags[player.lowercase()] else null
+        val result = recolor(line, player, byName[player.lowercase()], place, beforeName = tag)
         synchronized(recolorCache) { recolorCache[key] = result }
         return result
     }
@@ -268,6 +275,7 @@ object SboBadges {
         line: Component,
         playerName: String,
         badge: SboBadge?,
+        place: String,
         beforeName: Component? = null,
         afterName: Component? = null,
     ): Component {
@@ -291,19 +299,23 @@ object SboBadges {
         val plain = String(CharArray(chars.size) { chars[it].char })
         val name = Regex("(?<![A-Za-z0-9_])${Regex.escape(playerName)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
             .find(plain) ?: return line
-        val levelStart = if (badge?.level == true) LEVEL.find(plain.substring(0, name.range.first))?.range?.first else null
-        val from = levelStart ?: name.range.first
-        // Without a badge (team tag only) nothing is colored
-        val until = if (badge == null || badge.plainName == true) name.range.first else name.range.last + 1
+        // Name and level each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
+        val nameColor = badge?.takeIf { it.shows(BadgePart.NAME, place) }?.colorOf(BadgePart.NAME)
+        val levelColor = badge?.takeIf { it.shows(BadgePart.LEVEL, place) }?.colorOf(BadgePart.LEVEL)
+        val levelRange = levelColor?.let { LEVEL.find(plain.substring(0, name.range.first))?.range?.first }
+            ?.let { it until name.range.first }
         val inserts = beforeName != null || afterName != null
-        if (from >= until && !inserts) return line
+        if (nameColor == null && levelRange == null && !inserts) return line
 
         // A name another mod already colored (not one of the 16 § colors Hypixel uses) keeps its color
         val foreign = name.range.any { i -> chars[i].style.color?.let { it.value !in CHAT_COLORS } == true }
         if (foreign && !inserts) return line
 
-        val start = badge?.let { parseHex(it.color) } ?: 0
-        val end = badge?.to?.let(::parseHex)
+        fun colorAt(color: PartColor, range: IntRange, i: Int): Int {
+            val start = parseHex(color.color)
+            val end = color.to?.let(::parseHex) ?: return start
+            return mix(start, end, (i - range.first) / (range.last - range.first).coerceAtLeast(1).toFloat())
+        }
         val out = Component.empty()
         var run = StringBuilder()
         var runStyle: Style? = null
@@ -319,9 +331,10 @@ object SboBadges {
         chars.forEachIndexed { i, c ->
             if (beforeName != null && i == name.range.first) insert(beforeName)
             val style = when {
-                foreign || i !in from until until -> c.style
-                end == null -> c.style.withColor(start)
-                else -> c.style.withColor(mix(start, end, (i - from) / (until - from - 1).coerceAtLeast(1).toFloat()))
+                foreign -> c.style
+                levelColor != null && levelRange != null && i in levelRange -> c.style.withColor(colorAt(levelColor, levelRange, i))
+                nameColor != null && i in name.range -> c.style.withColor(colorAt(nameColor, name.range, i))
+                else -> c.style
             }
             if (style != runStyle) {
                 flush()
