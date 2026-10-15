@@ -63,9 +63,20 @@ data class TeamMember(
     val uuid: String,
     val name: String,
     val rank: String,
-    /** Shows the team tag in front of the name above the head. */
+    /** Shows the team tag somewhere; `tagIn` says where, backends before it only send this. */
     val nameTag: Boolean = false,
-)
+    val tagIn: List<String>? = null,
+) {
+    val tagPlaces: Set<String> get() = tagIn?.toSet() ?: if (nameTag) TeamTagPlace.ALL else emptySet()
+}
+
+/** Where a team tag shows in front of the name. */
+object TeamTagPlace {
+    const val HEAD = "head"
+    const val TAB = "tab"
+    const val CHAT = "chat"
+    val ALL = setOf(HEAD, TAB, CHAT)
+}
 
 /** Body of `POST /badge` */
 @Serializable
@@ -78,7 +89,14 @@ data class BadgeSettings(
     val colorName: Boolean = true,
     val colorLevel: Boolean = false,
     val teamTag: Boolean = true,
-)
+    /** Places of the team tag (TeamTagPlace); null on backends without it, then `teamTag` means everywhere. */
+    val teamTagIn: List<String>? = null,
+) {
+    val teamTagPlaces: Set<String> get() = teamTagIn?.toSet() ?: if (teamTag) TeamTagPlace.ALL else emptySet()
+
+    fun withTeamTagPlaces(places: Set<String>): BadgeSettings =
+        copy(teamTag = places.isNotEmpty(), teamTagIn = TeamTagPlace.ALL.filter { it in places })
+}
 
 @Serializable
 data class BadgeChoice(

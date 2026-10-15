@@ -214,3 +214,6 @@ body {
 .bd-col-left .bd-section-title { margin-top: 8px; }
 .bd-col-right .bd-section-title:first-child { margin-top: 0; }
 .bd-setting > :last-child { flex-shrink: 0; }
+
+.bd-places { display: flex; gap: 3px; flex-shrink: 0; }
+.bd-place { padding: 2px 5px; white-space: nowrap; }

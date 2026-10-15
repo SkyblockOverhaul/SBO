@@ -25,6 +25,7 @@ import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.BadgeSettings
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.OwnBadgeResponse
+import net.sbo.mod.utils.data.TeamTagPlace
 import net.sbo.mod.utils.http.SboApi
 
 object BadgeGui {
@@ -219,8 +220,19 @@ object BadgeGui {
         }
 
         if (badge.team && rank?.tag != null) {
-            setting("Show team tag", "Puts [${rank.tag}] in front of your name above your head and in chat, so players know they can ask you about SBO.") {
-                switch(checked = settings.teamTag, onChange = { onChange(settings.copy(teamTag = it.checked)) })
+            setting("Show team tag", "Puts [${rank.tag}] in front of your name where you pick it, so players know they can ask you about SBO.") {
+                val places = settings.teamTagPlaces
+                div(className = "bd-places") {
+                    TEAM_TAG_PLACES.forEach { (place, label) ->
+                        val on = place in places
+                        button(
+                            className = classNames("bd-place", "bd-primary" to on),
+                            key = place,
+                            title = if (on) "Hide the tag $label" else "Show the tag $label",
+                            onClick = { onChange(settings.withTeamTagPlaces(if (on) places - place else places + place)) },
+                        ) { +label.replaceFirstChar { it.uppercase() } }
+                    }
+                }
             }
         }
 
@@ -291,7 +303,7 @@ object BadgeGui {
         val level = badge.level?.let { "[$it] " }.orEmpty()
         val color = settings.color
         val to = settings.colorTo
-        val tag = badge.rankInfo?.takeIf { badge.team && settings.teamTag }
+        val tag = badge.rankInfo?.takeIf { badge.team && TeamTagPlace.HEAD in settings.teamTagPlaces }
         div(className = classNames("bd-preview", "bd-hidden" to (!settings.enabled || badge.hiddenByServer))) {
             div(className = "bd-tag") {
                 img(LOGO, className = "bd-tag-logo")
@@ -300,7 +312,8 @@ object BadgeGui {
             div(className = "bd-tag bd-tag-name") {
                 tag?.tag?.let { tagText ->
                     span(className = "bd-tag-level") { +"[" }
-                    coloredText(tagText, tag.color, tag.to)
+                    // Others see the tag in the badge colors, in the rank's while the badge is off
+                    if (settings.enabled) coloredText(tagText, color, to) else coloredText(tagText, tag.color, tag.to)
                     span(className = "bd-tag-level") { +"] " }
                 }
                 when {
@@ -359,6 +372,8 @@ object BadgeGui {
     private fun NodeBuilder.line(text: String) {
         div(className = "bd-info-line") { +text }
     }
+
+    private val TEAM_TAG_PLACES = listOf(TeamTagPlace.HEAD to "above head", TeamTagPlace.TAB to "in tab", TeamTagPlace.CHAT to "in chat")
 
     private fun NodeBuilder.setting(title: String, text: String, control: NodeBuilder.() -> Unit) {
         div(className = "bd-setting") {

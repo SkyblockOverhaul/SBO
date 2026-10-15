@@ -19,6 +19,7 @@ import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.SboBadge
 import net.sbo.mod.utils.data.TeamMember
+import net.sbo.mod.utils.data.TeamTagPlace
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
@@ -66,16 +67,17 @@ object SboBadges {
     @Volatile private var fixedLines: Map<UUID, Component> = emptyMap()
     @Volatile private var team: Map<UUID, TeamMember> = emptyMap()
     @Volatile private var ranks: Map<String, BadgeRank> = emptyMap()
-    // Team tags in front of the name, built once per list
+    // Team tags in front of the name, built once per list: above heads by uuid,
+    // tab list and chat by lowercase name since their lines only carry the name
     @Volatile private var tags: Map<UUID, Component> = emptyMap()
-    // The same tags by lowercase name, chat lines only carry the name
-    @Volatile private var tagsByName: Map<String, Component> = emptyMap()
+    @Volatile private var tabTags: Map<String, Component> = emptyMap()
+    @Volatile private var chatTags: Map<String, Component> = emptyMap()
     @Volatile private var version: String? = null
     @Volatile private var fetching = false
 
     @Volatile private var ownRefreshed = false
 
-    private class TabEntry(val display: Component, val listVersion: String?, val holder: SboBadge?)
+    private class TabEntry(val display: Component, val listVersion: String?, val player: String?)
     private val tabCache = WeakHashMap<PlayerInfo, TabEntry>()
 
     fun init() {
@@ -124,9 +126,14 @@ object SboBadges {
         val members = response.team.mapNotNull { member -> uuidOf(member.uuid)?.let { it to member } }.toMap()
         ranks = response.ranks
         team = members
-        val tagged = members.filterValues { it.nameTag }.mapNotNull { (uuid, member) -> tagOf(member.rank)?.let { Triple(uuid, member.name, it) } }
-        tags = tagged.associate { (uuid, _, tag) -> uuid to tag }
-        tagsByName = tagged.associate { (_, name, tag) -> name.lowercase() to tag }
+        // The tag takes the member's badge colors, the rank's while their badge is off
+        val tagged = members.mapNotNull { (uuid, member) ->
+            tagOf(member.rank, holders[uuid]?.color, holders[uuid]?.to)?.let { Triple(uuid, member, it) }
+        }
+        fun byName(place: String) = tagged.filter { place in it.second.tagPlaces }.associate { (_, member, tag) -> member.name.lowercase() to tag }
+        tags = tagged.filter { TeamTagPlace.HEAD in it.second.tagPlaces }.associate { (uuid, _, tag) -> uuid to tag }
+        tabTags = byName(TeamTagPlace.TAB)
+        chatTags = byName(TeamTagPlace.CHAT)
         fixedLines = holders.filterValues { it.to == null }.mapValues { line(it.value) }
         byUuid = holders
         byName = badges.associateBy { it.name.lowercase() }
@@ -162,22 +169,25 @@ object SboBadges {
 
     fun colorNameTag(uuid: UUID, nameTag: Component): Component {
         if (!showAboveHeads) return nameTag
-        val colored = byUuid[uuid]?.let { recolored(nameTag, it) } ?: nameTag
+        val colored = byUuid[uuid]?.let { recolored(nameTag, it.name, withTag = false) } ?: nameTag
         val tag = tags[uuid] ?: return colored
         return Component.empty().append(tag).append(colored)
     }
 
+    /** Badge color of a player (uuid without dashes) for their team tag, null while their badge is off. */
+    fun badgeColor(uuid: String): String? = uuidOf(uuid)?.let { byUuid[it]?.color }
+
     /** Team rank of a player (uuid without dashes), for the party finder. */
     fun teamRank(uuid: String): BadgeRank? = uuidOf(uuid)?.let { team[it] }?.let { ranks[it.rank] }?.takeIf { it.tag != null }
 
-    /** "[Moderator] " in the rank colors, null for ranks without a tag. */
-    fun tagOf(rank: String): Component? {
+    /** "[SBO Moderator] " in the given badge colors or the rank's, null for ranks without a tag. */
+    fun tagOf(rank: String, color: String? = null, to: String? = null): Component? {
         val info = ranks[rank] ?: return null
         val text = info.tag ?: return null
         val gray = Style.EMPTY.withColor(0xAAAAAA)
         return Component.empty()
             .append(Component.literal("[").withStyle(gray))
-            .append(colored(text, info.color, info.to, shimmer = false))
+            .append(if (color != null) colored(text, color, to, shimmer = false) else colored(text, info.color, info.to, shimmer = false))
             .append(Component.literal("] ").withStyle(gray))
     }
 
@@ -198,49 +208,55 @@ object SboBadges {
     }
 
     fun decorateTab(info: PlayerInfo, line: Component): Component {
-        if (!showInTab || byUuid.isEmpty()) return line
-        val badge = holderOf(info) ?: return line
-        return recolored(line, badge).copy().append(" ").append(logo())
+        if (!showInTab || (byUuid.isEmpty() && tabTags.isEmpty())) return line
+        val player = tabPlayerOf(info) ?: return line
+        val decorated = recolored(line, player, withTag = true)
+        return if (player.lowercase() in byName) decorated.copy().append(" ").append(logo()) else decorated
     }
 
     /** The sender of a chat line: team tag in front, badge color and the SBO logo behind the name. */
     fun decorateChat(line: Component): Component {
-        if (!showInChat || (byName.isEmpty() && tagsByName.isEmpty())) return line
+        if (!showInChat || (byName.isEmpty() && chatTags.isEmpty())) return line
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
         val colon = plain.indexOf(": ")
         if (colon !in 1..MAX_SENDER_LENGTH) return line
         val sender = WORD.findAll(plain.substring(0, colon)).map { it.value }
-            .firstOrNull { it.lowercase() in byName || it.lowercase() in tagsByName } ?: return line
+            .firstOrNull { it.lowercase() in byName || it.lowercase() in chatTags } ?: return line
         val badge = byName[sender.lowercase()]
         return recolor(
             line, sender, badge,
-            beforeName = tagsByName[sender.lowercase()],
+            beforeName = chatTags[sender.lowercase()],
             afterName = badge?.let { Component.literal(" ").append(logo()) },
         )
     }
 
-    private fun holderOf(info: PlayerInfo): SboBadge? {
-        byUuid[info.profile.id]?.let { return it }
+    /** Name of the badge holder or tagged team member a tab entry shows, null for everyone else. */
+    private fun tabPlayerOf(info: PlayerInfo): String? {
+        byUuid[info.profile.id]?.let { return it.name }
+        team[info.profile.id]?.let { if (it.name.lowercase() in tabTags) return it.name }
         val display = info.tabListDisplayName ?: return null
         val listVersion = version
         synchronized(tabCache) {
-            tabCache[info]?.let { if (it.display === display && it.listVersion == listVersion) return it.holder }
+            tabCache[info]?.let { if (it.display === display && it.listVersion == listVersion) return it.player }
         }
-        val holder = NAME.findAll(display.string.trim()).firstNotNullOfOrNull { byName[it.groupValues[1].lowercase()] }
-        synchronized(tabCache) { tabCache[info] = TabEntry(display, listVersion, holder) }
-        return holder
+        val player = NAME.findAll(display.string.trim()).map { it.groupValues[1] }
+            .firstOrNull { it.lowercase() in byName || it.lowercase() in tabTags }
+        synchronized(tabCache) { tabCache[info] = TabEntry(display, listVersion, player) }
+        return player
     }
 
     private const val RECOLOR_CACHE_SIZE = 256
-    private val recolorCache = object : LinkedHashMap<Pair<Component, SboBadge>, Component>(64, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Pair<Component, SboBadge>, Component>) = size > RECOLOR_CACHE_SIZE
+    // Badge and tag follow from the name and the list, which clears the cache
+    private val recolorCache = object : LinkedHashMap<Triple<Component, String, Boolean>, Component>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Triple<Component, String, Boolean>, Component>) = size > RECOLOR_CACHE_SIZE
     }
 
-    private fun recolored(line: Component, badge: SboBadge): Component {
-        val key = line to badge
+    private fun recolored(line: Component, player: String, withTag: Boolean): Component {
+        val key = Triple(line, player.lowercase(), withTag)
         synchronized(recolorCache) { recolorCache[key]?.let { return it } }
-        val result = recolor(line, badge.name, badge)
+        val tag = if (withTag) tabTags[player.lowercase()] else null
+        val result = recolor(line, player, byName[player.lowercase()], beforeName = tag)
         synchronized(recolorCache) { recolorCache[key] = result }
         return result
     }
