@@ -122,9 +122,10 @@ object SboApi {
     fun badges(knownVersion: String?): HttpRequestHandle =
         get("/badges" + (knownVersion?.let { "?v=${encode(it)}" } ?: ""))
 
-    fun ownBadge(): HttpRequestHandle = authedGet("/badge")
+    // format=2: hex colors, gradients and team tags; without it the backend answers like for 0.7.0
+    fun ownBadge(): HttpRequestHandle = authedGet("/badge?format=2")
 
-    fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge", json.encodeToString(settings))
+    fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge?format=2", json.encodeToString(settings))
 
     fun cloudStatus(): HttpRequestHandle = authedGet("/cloudSync")
 
