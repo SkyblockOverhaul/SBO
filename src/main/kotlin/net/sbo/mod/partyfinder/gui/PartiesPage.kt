@@ -582,8 +582,9 @@ private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null
 private fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
     val rank = SboBadges.teamRank(uuid) ?: return
     val text = if (name == null) rank.tag!! else "${rank.tag}: $name"
+    val color = SboBadges.badgeColor(uuid) ?: rank.color
     tooltip("Works on SBO, ask them anything about the mod.", className = "pf-tip", key = "team-$uuid") {
-        span(className = "pf-tag team", style = "color: ${rank.color}; border-color: ${rank.color}") { +text }
+        span(className = "pf-tag team", style = "color: $color; border-color: $color") { +text }
     }
 }
 

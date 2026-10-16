@@ -3,6 +3,7 @@ package net.sbo.mod.guis
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
+import net.sbo.guilib.core.dsl.checkbox
 import net.sbo.guilib.core.dsl.classNames
 import net.sbo.guilib.core.dsl.colorInput
 import net.sbo.guilib.core.dsl.div
@@ -21,10 +22,13 @@ import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.BadgeChoice
+import net.sbo.mod.utils.data.BadgePart
 import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.BadgeSettings
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.OwnBadgeResponse
+import net.sbo.mod.utils.data.PartColor
+import net.sbo.mod.utils.data.TeamTagPlace
 import net.sbo.mod.utils.http.SboApi
 
 object BadgeGui {
@@ -48,6 +52,8 @@ object BadgeGui {
         var load by useState<Load>(Load.Loading)
         var draft by useState<BadgeSettings?>(null)
         var saving by useState(false)
+        // The part whose color the picker changes, picked in the matrix or the preview
+        var picked by useState(BadgePart.NAME)
         useSboScale()
         useSboTheme()
 
@@ -116,7 +122,10 @@ object BadgeGui {
                     }
                     is Load.Ready -> {
                         val settings = draft ?: state.badge.settings!!
-                        editor(state.badge, settings, saving, onChange = { draft = it }, onSave = { save(settings) })
+                        editor(
+                            state.badge, settings, picked, saving,
+                            onPick = { picked = it }, onChange = { draft = it }, onSave = { save(settings) },
+                        )
                     }
                 }
             }
@@ -126,6 +135,7 @@ object BadgeGui {
     private val ViewSettings = component("BadgeView") {
         var aboveHeads by useState(DataManager.sboData.badgesAboveHeads)
         var inTab by useState(DataManager.sboData.badgesInTab)
+        var inChat by useState(DataManager.sboData.badgesInChat)
         div(className = "bd-section-title") { +"Badges of Others" }
         setting("Above heads", "The SBO logo, the chosen stat and the colored name of supporters, maintainers and moderators.") {
             switch(checked = aboveHeads, onChange = {
@@ -138,6 +148,13 @@ object BadgeGui {
             switch(checked = inTab, onChange = {
                 inTab = it.checked
                 DataManager.sboData.badgesInTab = it.checked
+                DataManager.sboData.save()
+            })
+        }
+        setting("In chat", "The SBO logo behind their name, the name in their color and team tags, for new messages.") {
+            switch(checked = inChat, onChange = {
+                inChat = it.checked
+                DataManager.sboData.badgesInChat = it.checked
                 DataManager.sboData.save()
             })
         }
@@ -162,13 +179,17 @@ object BadgeGui {
     private fun NodeBuilder.editor(
         badge: OwnBadgeResponse,
         settings: BadgeSettings,
+        picked: String,
         saving: Boolean,
+        onPick: (String) -> Unit,
         onChange: (BadgeSettings) -> Unit,
         onSave: () -> Unit,
     ) {
         val stat = badge.stats.firstOrNull { it.id == settings.stat }
         val changed = settings != badge.settings
         val rank = badge.rankInfo
+        // The tag only has a row for team ranks, a picked tag falls back to the name
+        val part = if (picked == BadgePart.TAG && !hasTag(badge)) BadgePart.NAME else picked
 
         div(className = "bd-col-left") {
             div(className = "bd-rank-row") {
@@ -178,7 +199,7 @@ object BadgeGui {
                 span(className = "bd-hint") { +if (badge.team) "Thank you for working on SBO!" else "Thank you for supporting SBO!" }
             }
 
-            preview(badge, settings, stat)
+            preview(badge, settings, stat, part, onPick)
 
             div(className = "bd-actions") {
                 button(
@@ -194,62 +215,114 @@ object BadgeGui {
         }
 
         div(className = "bd-col-right") {
-            settings(badge, settings, rank, onChange)
+            settings(badge, settings, part, onPick, onChange)
         }
     }
+
+    private fun hasTag(badge: OwnBadgeResponse): Boolean = badge.team && badge.rankInfo?.tag != null
+
+    /** A row of the matrix: the part that shows per place and the part whose color it uses. */
+    private class PartRow(val show: String, val color: String, val label: String, val allowed: Set<String>)
+
+    private val PLACES = listOf(TeamTagPlace.HEAD to "Head", TeamTagPlace.TAB to "Tab", TeamTagPlace.CHAT to "Chat")
+
+    private val PART_LABELS = mapOf(
+        BadgePart.STAT to "Logo + stat",
+        BadgePart.NAME to "Name",
+        BadgePart.LEVEL to "Level",
+        BadgePart.TAG to "Team tag",
+    )
+
+    private val COLOR_HINTS = mapOf(
+        BadgePart.STAT to "The stat above your head.",
+        BadgePart.NAME to "Your name where it is colored.",
+        BadgePart.LEVEL to "Your SkyBlock level in front of your name where it is colored.",
+        BadgePart.TAG to "Your team tag; others see it in the rank colors while your badge is hidden.",
+    )
 
     private fun NodeBuilder.settings(
         badge: OwnBadgeResponse,
         settings: BadgeSettings,
-        rank: BadgeRank?,
+        picked: String,
+        onPick: (String) -> Unit,
         onChange: (BadgeSettings) -> Unit,
     ) {
         div(className = "bd-section-title") { +"Your Badge" }
+        div(className = "bd-hint") { +"Pick where every part shows. Click a part, here or in the preview, to change its color." }
 
-        setting("Show my badge", "Others with SBO see it above your head and in the tab list.") {
-            switch(checked = settings.enabled, onChange = { onChange(settings.copy(enabled = it.checked)) })
+        val rows = buildList {
+            add(PartRow(BadgePart.LOGO, BadgePart.STAT, PART_LABELS.getValue(BadgePart.STAT), TeamTagPlace.ALL))
+            add(PartRow(BadgePart.NAME, BadgePart.NAME, "Name color", TeamTagPlace.ALL))
+            add(PartRow(BadgePart.LEVEL, BadgePart.LEVEL, "Level color", TeamTagPlace.LEVEL))
+            if (hasTag(badge)) add(PartRow(BadgePart.TAG, BadgePart.TAG, "Team tag", TeamTagPlace.ALL))
         }
-
-        if (badge.team && rank?.tag != null) {
-            setting("Show team tag", "Puts [${rank.tag}] in front of your name above your head, so players know they can ask you about SBO.") {
-                switch(checked = settings.teamTag, onChange = { onChange(settings.copy(teamTag = it.checked)) })
+        div(className = "bd-matrix") {
+            div(className = "bd-mrow bd-mhead") {
+                span(className = "bd-mlabel")
+                PLACES.forEach { (place, label) -> span(className = "bd-mcell", key = place) { +label } }
+            }
+            rows.forEach { row ->
+                val places = if (row.show == BadgePart.TAG) settings.teamTagPlaces else settings.placesOf(row.show)
+                val color = settings.colorOf(row.color)
+                div(
+                    className = classNames("bd-mrow", "bd-mrow-picked" to (picked == row.color)),
+                    key = row.show,
+                    title = "Click to change the ${row.label.lowercase()} color",
+                    onClick = { onPick(row.color) },
+                ) {
+                    div(className = "bd-mlabel") {
+                        span(className = "bd-mswatch", style = "background: ${background(color.color, color.to)}")
+                        span { +row.label }
+                    }
+                    PLACES.forEach { (place, _) ->
+                        div(className = "bd-mcell", key = place) {
+                            if (place in row.allowed) {
+                                checkbox(checked = place in places, onChange = {
+                                    val next = if (it.checked) places + place else places - place
+                                    onChange(if (row.show == BadgePart.TAG) settings.withTeamTagPlaces(next) else settings.withPlaces(row.show, next))
+                                })
+                            } else {
+                                span(className = "bd-muted", title = "Hypixel's rank stands between level and name in chat") { +"-" }
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        setting("Color my name", "Your name above your head and in the tab list takes the color.") {
-            switch(checked = settings.colorName, onChange = { onChange(settings.copy(colorName = it.checked)) })
-        }
-
-        setting("Color my level", "Your SkyBlock level in front of your name takes the color too.") {
-            switch(checked = settings.colorLevel, onChange = { onChange(settings.copy(colorLevel = it.checked)) })
-        }
-
-        setting("Stat", "Read from your SkyBlock profile, like in the party finder.") {
-            select(value = settings.stat, onChange = { onChange(settings.copy(stat = it.value)) }, className = "bd-select") {
-                badge.stats.forEach { option(it.id, it.label) }
+        val color = settings.colorOf(picked)
+        val label = PART_LABELS.getValue(picked)
+        div(className = "bd-setting bd-colors-setting") {
+            div(className = "bd-setting-text") {
+                div(className = "bd-setting-title") { +"$label ${if (color.to != null) "colors" else "color"}" }
+                div(className = "bd-hint") { +COLOR_HINTS.getValue(picked) }
+            }
+            div(className = "bd-colors") {
+                colorInput(value = argb(color.color), onChange = { onChange(settings.withColor(picked, color.copy(color = hex(it)))) }, key = "from-$picked")
+                color.to?.let { to ->
+                    span(className = "bd-arrow") { +"→" }
+                    colorInput(value = argb(to), onChange = { onChange(settings.withColor(picked, color.copy(to = hex(it)))) }, key = "to-$picked")
+                    div(className = "bd-gradient", style = "background: ${background(color.color, to)}")
+                }
+            }
+            div(className = "bd-color-actions") {
+                button(title = "Gives every part this color", onClick = {
+                    onChange(PART_LABELS.keys.fold(settings) { next, part -> next.withColor(part, color) })
+                }) { +"Use for all parts" }
             }
         }
 
         if (badge.gradient) {
-            setting("Gradient", "Two colors that flow into each other.") {
-                switch(checked = settings.colorTo != null, onChange = {
-                    onChange(settings.copy(colorTo = if (it.checked) badge.settings?.colorTo ?: DEFAULT_GRADIENT_END else null))
+            setting("Gradient", "Two colors that flow into each other, for the ${label.lowercase()}.") {
+                switch(checked = color.to != null, onChange = {
+                    onChange(settings.withColor(picked, color.copy(to = if (it.checked) DEFAULT_GRADIENT_END else null)))
                 })
             }
         }
 
-        div(className = "bd-setting bd-colors-setting") {
-            div(className = "bd-setting-text") {
-                div(className = "bd-setting-title") { +if (settings.colorTo != null) "Colors" else "Color" }
-                div(className = "bd-hint") { +"For your stat, and your name and level when they are colored." }
-            }
-            div(className = "bd-colors") {
-                colorInput(value = argb(settings.color), onChange = { onChange(settings.copy(color = hex(it))) }, key = "from")
-                settings.colorTo?.let { to ->
-                    span(className = "bd-arrow") { +"\u2192" }
-                    colorInput(value = argb(to), onChange = { onChange(settings.copy(colorTo = hex(it))) }, key = "to")
-                    div(className = "bd-gradient", style = "background: ${background(settings.color, to)}")
-                }
+        setting("Stat", "Shown above your head next to the logo, read from your SkyBlock profile like in the party finder.") {
+            select(value = settings.stat, onChange = { onChange(settings.copy(stat = it.value)) }, className = "bd-select") {
+                badge.stats.forEach { option(it.id, it.label) }
             }
         }
 
@@ -268,7 +341,13 @@ object BadgeGui {
         }
     }
 
-    private fun NodeBuilder.preview(badge: OwnBadgeResponse, settings: BadgeSettings, stat: BadgeChoice?) {
+    private fun NodeBuilder.preview(
+        badge: OwnBadgeResponse,
+        settings: BadgeSettings,
+        stat: BadgeChoice?,
+        picked: String,
+        onPick: (String) -> Unit,
+    ) {
         // No values at all means the profile could not be read, a single missing one that the stat has none
         val profileRead = badge.values.isNotEmpty()
         val value = badge.values[settings.stat]
@@ -281,43 +360,90 @@ object BadgeGui {
         }
         val name = Player.accountName()
         val level = badge.level?.let { "[$it] " }.orEmpty()
-        val color = settings.color
-        val to = settings.colorTo
-        val tag = badge.rankInfo?.takeIf { badge.team && settings.teamTag }
-        div(className = classNames("bd-preview", "bd-hidden" to (!settings.enabled || badge.hiddenByServer))) {
-            div(className = "bd-tag") {
-                img(LOGO, className = "bd-tag-logo")
-                if (text != null) coloredText(text, color, to)
+        // Others only get the badge while it shows somewhere and the server does not hide it
+        val listed = settings.enabled && !badge.hiddenByServer
+        fun shows(part: String, place: String) = listed && place in settings.placesOf(part)
+        val tagAt = { place: String -> hasTag(badge) && place in settings.teamTagPlaces }
+        val atHead = shows(BadgePart.LOGO, TeamTagPlace.HEAD) || shows(BadgePart.NAME, TeamTagPlace.HEAD) ||
+            shows(BadgePart.LEVEL, TeamTagPlace.HEAD) || tagAt(TeamTagPlace.HEAD)
+        val parts = PreviewParts(badge, settings, picked, onPick, listed)
+
+        div(className = classNames("bd-preview", "bd-hidden" to !atHead)) {
+            if (shows(BadgePart.LOGO, TeamTagPlace.HEAD)) {
+                div(className = "bd-tag") {
+                    img(LOGO, className = "bd-tag-logo")
+                    if (text != null) parts.colored(this, BadgePart.STAT, text)
+                }
             }
             div(className = "bd-tag bd-tag-name") {
-                tag?.tag?.let { tagText ->
-                    span(className = "bd-tag-level") { +"[" }
-                    coloredText(tagText, tag.color, tag.to)
-                    span(className = "bd-tag-level") { +"] " }
+                if (tagAt(TeamTagPlace.HEAD)) parts.tag(this)
+                parts.plainOr(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.HEAD))
+                parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.HEAD))
+            }
+        }
+        div(className = "bd-lines") {
+            div(className = "bd-line") {
+                span(className = "bd-line-label") { +"Tab" }
+                div(className = "bd-line-box bd-line-tab") {
+                    parts.plainOr(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.TAB))
+                    if (tagAt(TeamTagPlace.TAB)) parts.tag(this)
+                    parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.TAB))
+                    if (shows(BadgePart.LOGO, TeamTagPlace.TAB)) img(LOGO, className = "bd-tag-logo bd-line-logo")
                 }
-                when {
-                    settings.colorName && (settings.colorLevel || level.isEmpty()) -> coloredText(level + name, color, to)
-                    settings.colorName -> {
-                        span(className = "bd-tag-level") { +level }
-                        coloredText(name, color, to)
-                    }
-                    settings.colorLevel && level.isNotEmpty() -> {
-                        coloredText(level, color, to)
-                        span(className = "bd-tag-plain") { +name }
-                    }
-                    else -> {
-                        span(className = "bd-tag-level") { +level }
-                        span(className = "bd-tag-plain") { +name }
-                    }
+            }
+            div(className = "bd-line") {
+                span(className = "bd-line-label") { +"Chat" }
+                div(className = "bd-line-box bd-line-chat") {
+                    // Hypixel's rank stands between level and name in chat, so the level keeps its color
+                    span(className = "bd-tag-level") { +level }
+                    if (tagAt(TeamTagPlace.CHAT)) parts.tag(this)
+                    parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.CHAT))
+                    if (shows(BadgePart.LOGO, TeamTagPlace.CHAT)) img(LOGO, className = "bd-tag-logo bd-line-logo")
+                    span(className = "bd-tag-plain") { +": Hello!" }
                 }
             }
         }
         when {
             badge.hiddenByServer -> div(className = "bd-hint bd-center-text") { +"Hidden by the SBO server, nobody sees your badge right now." }
-            !settings.enabled -> div(className = "bd-hint bd-center-text") { +"Hidden, nobody sees your badge." }
+            !settings.enabled -> div(className = "bd-hint bd-center-text") { +"Nothing is ticked, nobody sees your badge." }
             stat != null && settings.stat != "none" && value == null && profileRead ->
                 div(className = "bd-hint bd-center-text") { +"Your profile has no ${stat.label} yet, only the logo shows." }
             text != null && value == null -> div(className = "bd-hint bd-center-text") { +"The value is read from your profile after saving." }
+        }
+    }
+
+    /** Clickable parts of the preview: a click picks the part for the color picker. */
+    private class PreviewParts(
+        val badge: OwnBadgeResponse,
+        val settings: BadgeSettings,
+        val picked: String,
+        val onPick: (String) -> Unit,
+        val listed: Boolean,
+    ) {
+        fun colored(builder: NodeBuilder, part: String, text: String) = with(builder) {
+            val color = settings.colorOf(part)
+            span(
+                className = classNames("bd-pick", "bd-picked" to (picked == part)),
+                title = "Click to change the ${PART_LABELS.getValue(part).lowercase()} color",
+                onClick = { onPick(part) },
+            ) { coloredText(text, color.color, color.to) }
+        }
+
+        /** The part in its color where it is colored, plain otherwise. */
+        fun plainOr(builder: NodeBuilder, part: String, text: String, colored: Boolean) = with(builder) {
+            if (text.isEmpty()) return@with
+            if (colored) colored(this, part, text)
+            else span(className = if (part == BadgePart.LEVEL) "bd-tag-level" else "bd-tag-plain") { +text }
+        }
+
+        /** "[SBO Owner] " in the tag color; others see it in the rank colors while the badge is hidden. */
+        fun tag(builder: NodeBuilder) = with(builder) {
+            val rank = badge.rankInfo ?: return@with
+            val text = rank.tag ?: return@with
+            span(className = "bd-tag-level") { +"[" }
+            if (listed) colored(this, BadgePart.TAG, text)
+            else span(className = "bd-pick", onClick = { onPick(BadgePart.TAG) }) { coloredText(text, rank.color, rank.to) }
+            span(className = "bd-tag-level") { +"] " }
         }
     }
 
