@@ -6,13 +6,21 @@ open class EntriesBuilder {
 
     private val ids = mutableSetOf<String>()
     internal val elements = mutableListOf<ConfigElement>()
+    private var currentSub: Sub? = null
+
+    val subs: List<Sub> get() = elements.filterIsInstance<Sub>().filter { it.toggleable }
 
     internal fun add(element: ConfigElement) {
         if (element is ConfigEntry<*>) {
             require(element.id.isNotEmpty()) { "Entry id cannot be empty" }
             require('.' !in element.id) { "Entry id ${element.id} cannot contain '.'" }
             require(ids.add(element.id)) { "Entry with id ${element.id} already exists" }
+            currentSub?.let {
+                element.sub = it
+                it.entries += element
+            }
         }
+        if (element is Sub) currentSub = element.takeIf { it.toggleable }
         elements += element
     }
 

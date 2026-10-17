@@ -8,6 +8,12 @@ private val FORMATTING = Regex("§.")
 
 internal fun String.stripFormatting() = replace(FORMATTING, "")
 
+private fun ownText(element: ConfigElement): List<String> = when (element) {
+    is Button -> listOfNotNull(element.title, element.description, element.text)
+    is ConfigEntry<*> -> listOf(element.name, element.description, element.id)
+    is Sub -> emptyList()
+}
+
 // Category and sub names count too, so "diana color" finds the colors in the Diana category
 fun search(config: Config, query: String): List<SearchHit> {
     val words = query.lowercase().split(' ').filter { it.isNotBlank() }
@@ -19,15 +25,13 @@ fun search(config: Config, query: String): List<SearchHit> {
         val names = path.drop(1).joinToString(" ") { it.name }
         var sub: Sub? = null
         for (element in category.elements) {
-            val own = when (element) {
-                is Sub -> {
-                    sub = element
-                    continue
-                }
-                is Button -> listOfNotNull(element.title, element.description, element.text)
-                is ConfigEntry<*> -> listOf(element.name, element.description, element.id)
+            if (element is Sub) {
+                sub = element
+                continue
             }
-            val text = (own + names + listOfNotNull(sub?.title)).joinToString(" ").stripFormatting().lowercase()
+            // Settings of a switched off sub stay hidden until it is on again
+            if (sub?.enabled == false) continue
+            val text = (ownText(element) + names + listOfNotNull(sub?.title)).joinToString(" ").stripFormatting().lowercase()
             if (words.all { it in text }) hits += SearchHit(path, sub, element)
         }
         category.children.forEach { visit(path + it) }

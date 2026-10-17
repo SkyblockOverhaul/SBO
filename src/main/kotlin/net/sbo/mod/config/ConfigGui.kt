@@ -195,33 +195,50 @@ private fun NodeBuilder.categoryPage(category: Category, revision: Int, target: 
 }
 
 private fun NodeBuilder.elements(category: Category, revision: Int, target: ConfigElement?, ui: Ui) {
-    var collapsed = false
+    var hidden = false
     category.elements.forEachIndexed { i, element ->
         when (element) {
             is Sub -> {
-                collapsed = false
+                hidden = false
                 if (!element.condition()) return@forEachIndexed
-                SubHeader(SubHeaderProps(element, collapseKey(category, element), ui), key = "${category.id}:sub:$i")
-                collapsed = element.title.isNotEmpty() && collapseKey(category, element) in ui.collapsed
+                val key = collapseKey(category, element)
+                SubHeader(SubHeaderProps(element, element.enabled, key, ui), key = "${category.id}:sub:$i")
+                hidden = element.toggleable && (!element.enabled || key in ui.collapsed)
             }
-            is Button -> if (!collapsed && element.condition()) Row(RowProps(element, revision, element === target), key = "${category.id}:btn:$i")
-            is ConfigEntry<*> -> if (!collapsed) Row(RowProps(element, revision, element === target), key = "${category.id}:${element.id}")
+            is Button -> if (!hidden && element.condition()) Row(RowProps(element, revision, element === target), key = "${category.id}:btn:$i")
+            is ConfigEntry<*> -> if (!hidden) Row(RowProps(element, revision, element === target), key = "${category.id}:${element.id}")
         }
     }
 }
 
-private data class SubHeaderProps(val sub: Sub, val key: String, val ui: Ui)
+// enabled is part of the props so the header redraws when the sub is switched
+private data class SubHeaderProps(val sub: Sub, val enabled: Boolean, val key: String, val ui: Ui)
 
-// A sub without a title only separates, there is nothing to click
-private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, key, ui) ->
-    val collapsible = sub.title.isNotEmpty()
-    val collapsed = collapsible && key in ui.collapsed
-    val classes = listOfNotNull("cfg-sub", "collapsible".takeIf { collapsible }, "collapsed".takeIf { collapsed }).joinToString(" ")
-    div(className = classes, onClick = if (collapsible) { _ -> ui.toggle(key) } else null) {
-        if (collapsible) {
-            h2(className = "cfg-sub-title") {
-                span(className = "cfg-chevron")
-                +sub.title
+// A sub without a title only separates, there is nothing to click or switch
+private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, enabled, key, ui) ->
+    val collapsed = sub.toggleable && key in ui.collapsed
+    val classes = listOfNotNull(
+        "cfg-sub",
+        "collapsible".takeIf { sub.toggleable && enabled },
+        "collapsed".takeIf { collapsed || !enabled },
+        "off".takeIf { !enabled },
+    ).joinToString(" ")
+    div(className = classes) {
+        if (sub.toggleable) {
+            div(className = "cfg-sub-head") {
+                h2(className = "cfg-sub-title", onClick = if (enabled) { _ -> ui.toggle(key) } else null) {
+                    span(className = "cfg-chevron")
+                    +sub.title
+                }
+                // A small pill, a switch here looked like one more setting
+                button(
+                    className = "cfg-sub-toggle",
+                    title = if (enabled) "Turn off everything in ${sub.title}" else "Turn ${sub.title} back on",
+                    onClick = {
+                        sub.setEnabled(!enabled)
+                        ui.changed()
+                    },
+                ) { +(if (enabled) "ON" else "OFF") }
             }
         }
         if (sub.description.isNotEmpty()) description(sub.description, "cfg-sub-description")

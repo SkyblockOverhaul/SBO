@@ -14,7 +14,23 @@ class Sub(
     val title: String,
     val description: String,
     val condition: () -> Boolean,
-) : ConfigElement
+) : ConfigElement {
+    /** Only subs with a title can be switched off, the others just separate. */
+    val toggleable: Boolean get() = title.isNotEmpty()
+
+    /** Off: the on/off settings in it read as off and the settings screen hides them. */
+    var enabled: Boolean = true
+        private set
+
+    internal val entries = mutableListOf<ConfigEntry<*>>()
+
+    fun setEnabled(value: Boolean) {
+        if (enabled == value || !toggleable) return
+        enabled = value
+        // Features that react to an on/off setting see it switch with the sub
+        for (entry in entries) if (entry is BooleanEntry && entry.value) entry.onChange(!value, value)
+    }
+}
 
 class Button(
     val title: String,
@@ -32,21 +48,27 @@ sealed class ConfigEntry<T>(
     val description: String,
 ) : ConfigElement {
 
+    /** The saved value, also while its [sub] is off. Features read [get] / the delegate instead. */
     var value: T = default
         private set
     var onChange: (T, T) -> Unit = { _, _ -> }
 
-    fun get(): T = value
+    internal var sub: Sub? = null
+
+    internal open val effectiveValue: T get() = value
+
+    fun get(): T = effectiveValue
 
     fun set(newValue: T) {
-        val old = value
+        val old = effectiveValue
         value = newValue
-        if (!same(old, newValue)) onChange(old, newValue)
+        val new = effectiveValue
+        if (!same(old, new)) onChange(old, new)
     }
 
     fun reset() = set(default)
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T = value
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): T = effectiveValue
     operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T) = set(newValue)
 
     internal open fun same(a: T, b: T): Boolean = a == b
@@ -62,6 +84,8 @@ sealed class ConfigEntry<T>(
 
 class BooleanEntry internal constructor(id: String, default: Boolean, name: String, description: String) :
     ConfigEntry<Boolean>(id, default, name, description) {
+
+    override val effectiveValue: Boolean get() = value && sub?.enabled != false
 
     override fun toJson() = JsonPrimitive(value)
     override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isBoolean }?.asBoolean
