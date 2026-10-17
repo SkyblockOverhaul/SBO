@@ -153,6 +153,7 @@ repositories {
 
         filter {
             includeModule("maven.modrinth", "iris")
+            includeModule("maven.modrinth", "sodium")
         }
     }
 }
@@ -343,15 +344,18 @@ dependencies {
         "26.3-fabric" -> {
             implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.3-fabric")
+            compileOnly("maven.modrinth:sodium:mc26.3-${versionedProperty("sodium.version")}-fabric")
         }
         "26.2-fabric" -> {
             // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
             implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
 
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
+            compileOnly("maven.modrinth:sodium:mc26.2-${versionedProperty("sodium.version")}-fabric")
         }
         "26.1.2-fabric" -> {
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
+            compileOnly("maven.modrinth:sodium:mc26.1.2-${versionedProperty("sodium.version")}-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }

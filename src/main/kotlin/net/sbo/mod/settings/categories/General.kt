@@ -86,7 +86,12 @@ object General : Category("General") {
     }
 
     var hubChunkCache by boolean(true) {
-        this.name = Literal("Hub Chunk Cache")
-        this.description = Literal("Caches unloaded chunks in Hub for accurate arrow guesses. Disable if using Bobby or other chunk caching mods.")
+        this.name = Literal("Chunk Cache")
+        this.description = Literal("Keeps chunks after the server unloads them and keeps rendering them up to your render distance, so each chunk only loads once per session and arrow guesses see far away. Only in the areas below. If Bobby is installed, SBO turns Bobby off once.")
+    }
+
+    var chunkCacheAreas by strings("Hub") {
+        this.name = Literal("Chunk Cache Areas")
+        this.description = Literal("Areas to cache, as shown after \"Area:\" in the tab list, e.g. Hub or The Park. Each area needs memory for every chunk you saw, until you disconnect.")
     }
 }
