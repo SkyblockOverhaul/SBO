@@ -10,6 +10,7 @@ import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.LightLayer
 import net.minecraft.world.level.chunk.LevelChunk
 import net.minecraft.world.level.chunk.status.ChunkStatus
+import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin.mc
 import java.util.concurrent.TimeUnit
 
@@ -25,6 +26,8 @@ class FakeChunkManager internal constructor(
     /** Lowercase tab list area this manager shows fake chunks for, e.g. "hub". */
     val world: String,
     private val store: MutableMap<Long, ChunkSnapshot>,
+    /** Chunks outside of it are neither stored nor faked, null for no limit. */
+    private val area: AABB?,
 ) {
     val chunkCache: ClientChunkCache = level.chunkSource
 
@@ -42,6 +45,11 @@ class FakeChunkManager internal constructor(
     private val blockLight = FakeLightExt.get(level.lightEngine.getLayerListener(LightLayer.BLOCK))
     private val skyLight =
         if (level.dimensionType().hasSkyLight()) FakeLightExt.get(level.lightEngine.getLayerListener(LightLayer.SKY)) else null
+
+    init {
+        // Left over from a session without the limit.
+        if (area != null) store.keys.removeIf { !inArea(ChunkPos.getX(it), ChunkPos.getZ(it)) }
+    }
 
     fun getChunk(chunkX: Int, chunkZ: Int): LevelChunk? {
         if (!hasFakeChunks) return null
@@ -66,7 +74,7 @@ class FakeChunkManager internal constructor(
         for (x in view.centerX - view.radius..view.centerX + view.radius) {
             for (z in view.centerZ - view.radius..view.centerZ + view.radius) {
                 val key = ChunkPos.pack(x, z)
-                if (fakeChunks.containsKey(key) || !store.containsKey(key)) continue
+                if (fakeChunks.containsKey(key) || !store.containsKey(key) || !inArea(x, z)) continue
                 if (chunkCache.getChunk(x, z, ChunkStatus.FULL, false) != null) continue
                 missing.add(key)
             }
@@ -146,6 +154,7 @@ class FakeChunkManager internal constructor(
 
     /** Copies a real chunk before vanilla unloads it, and fakes it afterwards if it is still in view. */
     fun saveRealChunk(chunkX: Int, chunkZ: Int) {
+        if (!inArea(chunkX, chunkZ)) return
         val chunk = chunkCache.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) ?: return
         if (chunk is FakeChunk) return
         val snapshot = ChunkSnapshot.capture(chunk) ?: return
@@ -195,6 +204,13 @@ class FakeChunkManager internal constructor(
         fakeChunks.clear()
         hasFakeChunks = false
         pendingReplacements.clear()
+    }
+
+    private fun inArea(chunkX: Int, chunkZ: Int): Boolean {
+        val area = area ?: return true
+        val minX = chunkX * 16.0
+        val minZ = chunkZ * 16.0
+        return area.intersects(minX, area.minY, minZ, minX + 16.0, area.maxY, minZ + 16.0)
     }
 
     private fun markLoaded(chunkX: Int, chunkZ: Int, chunk: LevelChunk) {

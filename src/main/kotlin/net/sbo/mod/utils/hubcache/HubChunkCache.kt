@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.level.ChunkPos
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit
  * no Bobby code is used.
  *
  * Differences to Bobby: only the areas from [General.chunkCacheAreas] (tab list "Area:", default Hub),
+ * optionally only the Hub island and only while the client render distance is above the server's,
  * memory only (cleared on disconnect).
  */
 object HubChunkCache {
@@ -48,6 +50,7 @@ object HubChunkCache {
     /** A level that was already checked and gets no fake chunks (not a cached world, or Bobby runs in it). */
     private var skippedLevel: ClientLevel? = null
     private var lastAreas: Set<String> = emptySet()
+    private var lastIslandOnly = General.chunkCacheHubIslandOnly
     private var ticks = 0
 
     fun init() {
@@ -121,14 +124,28 @@ object HubChunkCache {
             }
         }
 
+        if (General.chunkCacheHubIslandOnly != lastIslandOnly) {
+            lastIslandOnly = General.chunkCacheHubIslandOnly
+            if (current != null) {
+                // Restarted next tick with the new limit.
+                current.close(unloadFakes = true)
+                manager = null
+                skippedLevel = null
+                return
+            }
+        }
+
         val level = mc.level ?: return
         if (current != null) {
-            if (current.level === level) {
-                current.tick()
-                if (++ticks % 200 == 0) logStats(current)
-            } else {
+            if (current.level !== level) {
                 current.close(unloadFakes = false)
                 manager = null
+            } else if (!extendsServerView(level)) {
+                current.close(unloadFakes = true)
+                manager = null
+            } else {
+                current.tick()
+                if (++ticks % 200 == 0) logStats(current)
             }
             return
         }
@@ -142,6 +159,7 @@ object HubChunkCache {
             return
         }
         if (!World.isInSkyblock()) return // scoreboard not there yet
+        if (!extendsServerView(level)) return // checked again every tick, the setting and render distance can change
         skippedLevel = level
         if (bobbyLoaded && BobbyCompat.isEnabled()) {
             // Bobby already shows fake chunks in this level, two caches would fight. Ours starts on the
@@ -153,8 +171,20 @@ object HubChunkCache {
         val key = world.lowercase()
         val store = stores.getOrPut(key) { ConcurrentHashMap() }
         skippedLevel = null
-        manager = FakeChunkManager(level, key, store)
+        val area = if (key == "hub" && General.chunkCacheHubIslandOnly) ArrowGuessBurrow.HUB_BOUNDS else null
+        manager = FakeChunkManager(level, key, store, area)
         SBOKotlin.logger.info("[HubChunkCache] Showing fake chunks in $world, ${store.size} chunks stored")
+    }
+
+    /**
+     * Fake chunks only fill the client render distance, so while the server already sends that far they only
+     * help right after a lobby switch. [General.chunkCacheAboveServerOnly] skips them then.
+     */
+    private fun extendsServerView(level: ClientLevel): Boolean {
+        if (!General.chunkCacheAboveServerOnly) return true
+        // Vanilla keeps max(2, server view distance) + 3 chunks around the player.
+        val storageRadius = (level.chunkSource as ChunkStorageExt).sbo_getStorageSquare().radius
+        return mc.options.renderDistance().get() + 3 > storageRadius
     }
 
     private fun logStats(current: FakeChunkManager) {
