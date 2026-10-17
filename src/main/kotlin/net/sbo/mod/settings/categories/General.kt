@@ -78,4 +78,20 @@ object General : Category("General") {
         this.name = Literal("Achievements Button")
         this.description = Literal("Shows the SBO Achievements button in the pause menu.")
     }
+
+    init {
+        separator {
+            this.title = "Chunk Cache"
+        }
+    }
+
+    var hubChunkCache by boolean(true) {
+        this.name = Literal("Chunk Cache")
+        this.description = Literal("Keeps chunks after the server unloads them and keeps rendering them up to your render distance, so each chunk only loads once per session and arrow guesses see far away. Only in the areas below. If Bobby is installed, SBO turns Bobby off once.")
+    }
+
+    var chunkCacheAreas by strings("Hub") {
+        this.name = Literal("Chunk Cache Areas")
+        this.description = Literal("Areas to cache, as shown after \"Area:\" in the tab list, e.g. Hub or The Park. Each area needs memory for every chunk you saw, until you disconnect.")
+    }
 }

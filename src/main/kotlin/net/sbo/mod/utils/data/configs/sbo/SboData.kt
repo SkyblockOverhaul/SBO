@@ -77,6 +77,7 @@ data class SboData(
     var badgesInChat: Boolean = true,
     var badgeOwnInF5: Boolean = true,
     var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
+    var bobbyDisabledBySbo: Boolean = false, // the Hub Chunk Cache turned Bobby off once, never again
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }
