@@ -42,4 +42,9 @@ object PartyCommands : Category("Party Commands") {
         this.name = Literal("Diana Party Commands")
         this.description = Literal("Enable Diana party commands. (!chim, !inq, !relic, !stick, !since, !burrow, !mob) (note: you need to have Diana tracker enabled)")
     }
+
+    var blockUser by boolean(true) {
+        this.name = "Block the user"
+        this.description = "Enables the !block [Player] and !unblock [Player] command."
+    }
 }
