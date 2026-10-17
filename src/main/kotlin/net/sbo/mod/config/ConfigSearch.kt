@@ -29,8 +29,6 @@ fun search(config: Config, query: String): List<SearchHit> {
                 sub = element
                 continue
             }
-            // Settings of a switched off sub stay hidden until it is on again
-            if (sub?.enabled == false) continue
             val text = (ownText(element) + names + listOfNotNull(sub?.title)).joinToString(" ").stripFormatting().lowercase()
             if (words.all { it in text }) hits += SearchHit(path, sub, element)
         }

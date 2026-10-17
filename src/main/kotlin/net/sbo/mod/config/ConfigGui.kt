@@ -223,7 +223,7 @@ private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, enabled, 
         "collapsed".takeIf { collapsed || !enabled },
         "off".takeIf { !enabled },
     ).joinToString(" ")
-    div(className = classes) {
+    div(className = classes, id = rowId(sub)) {
         if (sub.toggleable) {
             div(className = "cfg-sub-head") {
                 h2(className = "cfg-sub-title", onClick = if (enabled) { _ -> ui.toggle(key) } else null) {
@@ -302,8 +302,10 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
             div(className = "cfg-row-name") { +rowName(element) }
             if (hit != null) {
                 val place = listOfNotNull(placeName(hit.path), hit.sub?.title?.takeIf { it.isNotEmpty() }).joinToString(" › ")
-                span(className = "cfg-row-place", title = "Show it in its category", onClick = { ui.show(hit.category, element) }) {
-                    +"$place ↗"
+                // The setting is hidden on the page while its sub is off, so that jumps to the sub instead
+                val offSub = hit.sub?.takeIf { !it.enabled }
+                span(className = "cfg-row-place", title = "Show it in its category", onClick = { ui.show(hit.category, offSub ?: element) }) {
+                    +(if (offSub != null) "$place · off ↗" else "$place ↗")
                 }
             }
             val text = rowDescription(element)
