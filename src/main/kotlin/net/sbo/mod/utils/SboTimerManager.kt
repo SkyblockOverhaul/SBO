@@ -2,24 +2,30 @@ package net.sbo.mod.utils
 
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTracker
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.TimeUnit
 
+internal fun getInactivityLimitNanos(): Long {
+    return TimeUnit.SECONDS.toNanos(
+        Diana.afkTimeout.toLong().coerceAtLeast(15L)
+    )
+}
+
 object SboTimerManager {
     internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
     val timerMayor = SBOTimer(
-        tracker = SboDataObject.dianaTrackerMayor
+        tracker = DataManager.dianaTrackerMayorData
     )
     val timerTotal = SBOTimer(
-        tracker = SboDataObject.dianaTrackerTotal
+        tracker = DataManager.dianaTrackerTotalData
     )
     val timerSession = SBOTimer(
-        tracker = SboDataObject.dianaTrackerSession
+        tracker = DataManager.dianaTrackerSessionData
     )
 
     fun init() {
@@ -62,12 +68,6 @@ object SboTimerManager {
         private var elapsedNanoTime: Long = 0L
         private var state: TimerState = TimerState.Idle
         private var lastActivityNanoTime: Long = System.nanoTime()
-
-        private fun getInactivityLimitNanos(): Long {
-            return TimeUnit.SECONDS.toNanos(
-                Diana.afkTimeout.toLong().coerceAtLeast(15L)
-            )
-        }
 
         init {
             val storedTimeMs = tracker.items.TIME
@@ -117,7 +117,7 @@ object SboTimerManager {
                     TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
 
                 if (this == timerTotal) { // message is sent three times otherwise for each timer
-                    Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.")
+                    Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.", true)
                 }
 
                 pause()
@@ -174,9 +174,7 @@ object SboTimerManager {
             }
         }
 
-        fun getHourTime(): Double {
-            return getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
-        }
+        internal fun getHourTime(): Double = getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
 
         fun updateActivity() {
             start()

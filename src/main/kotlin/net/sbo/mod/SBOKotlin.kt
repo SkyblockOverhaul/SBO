@@ -1,10 +1,7 @@
 package net.sbo.mod
 
-import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen
-import com.teamresourceful.resourcefulconfig.api.loader.Configurator
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.IdentifierException
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
@@ -14,31 +11,45 @@ import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.RareMobHighlight
+import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.sphinx.SphinxSolver
+import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
+import net.sbo.mod.general.SboBadges
 import net.sbo.mod.general.Pickuplog
-import net.sbo.mod.guis.Guis
+import net.sbo.mod.guis.AchievementsGui
+import net.sbo.mod.guis.EventsGui
+import net.sbo.mod.guis.SoundsGui
+import net.sbo.mod.guis.HubGui
 import net.sbo.mod.overlays.*
-import net.sbo.mod.partyfinder.PartyCheck
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.partyfinder.PartyFinderSocket
+import net.sbo.mod.partyfinder.OwnStats
+import net.sbo.mod.partyfinder.StatReporter
+import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.utils.*
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.slf4j.LoggerFactory
+import java.util.regex.Pattern
 
 object SBOKotlin : ClientModInitializer {
 	@JvmField
@@ -49,8 +60,13 @@ object SBOKotlin : ClientModInitializer {
 	internal const val MOD_ID = "sbo"
 	internal val logger = LoggerFactory.getLogger(MOD_ID)
 
-	private val configurator = Configurator(MOD_ID)
-	val settings = Settings.register(configurator)
+	// Before the config registers, it drops the options that moved out of it (master volume, auto sync)
+	init {
+		SoundHandler.readLegacyMasterVolume()
+		CloudSync.readLegacyAutoSync()
+	}
+
+	val settings = Settings.apply { load(FabricLoader.getInstance().configDir) }
 
 	lateinit var version: String
 	lateinit var mcVersion: String
@@ -76,7 +92,7 @@ object SBOKotlin : ClientModInitializer {
 			.map { it.metadata.version.friendlyString }
 			.orElse("unknown")!!
 
-		logger.info("Initializing SBO-Kotlin, version: $version...")
+		logger.info("Initializing SBO, version: $version...")
 
 		// Initialize Mayor Data
 		Mayor.init()
@@ -85,10 +101,11 @@ object SBOKotlin : ClientModInitializer {
         TabList.init()
 
 		// Check for updates
-		UpdateChecker.check()
+		UpdateChecker.init()
 
 		// Load configuration and data
-		SboDataObject.init()
+		DataManager.init()
+		SboLook.init()
 
 		// Load Custom Sound System
 		SoundHandler.init()
@@ -100,21 +117,32 @@ object SBOKotlin : ClientModInitializer {
 
 		// load Main Features
 		PartyCommands.init()
-		Register.command("sbo") {
-			mc.schedule {
-				mc.setScreen(ResourcefulConfigScreen.getFactory(MOD_ID).apply(null))
-			}
+		Register.command("sbo") { args ->
+			val settings = args.firstOrNull()?.lowercase() in setOf("settings", "config")
+			mc.schedule { if (settings) HubGui.openSettings() else HubGui.open() }
+		}
+		Register.command("sbosettings", "sboconfig") {
+			mc.schedule { HubGui.openSettings() }
 		}
 
-		Guis.register()
+		PartyFinderGui.register()
+		SoundsGui.register()
+		AchievementsGui.register()
+		EventsGui.register()
+		HubGui.register()
 		HelpCommand.init()
+		CloudSync.init()
+		SboBadges.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
 		WaypointManager.init()
 		HypixelModApi.init()
 		PartyFinderManager.init()
-		PartyCheck.init()
+		PartyFinderSocket.init()
+		OwnStats.init()
+		StatReporter.init()
 		BurrowDetector.init()
+		TimeUtil.start()
 		DianaTracker.init()
 		PartyPlayer.init()
 		Pickuplog.init()
@@ -134,6 +162,7 @@ object SBOKotlin : ClientModInitializer {
 		RareMobHighlight.init()
 		InventoryUtils.init()
 		Chains.init()
+		MuteBuggedSpadeSounds.init()
 
 		Register.onTick(100) { unregister ->
 			val player = mc.player
@@ -142,6 +171,21 @@ object SBOKotlin : ClientModInitializer {
 				DianaTracker.checkMayorTracker()
 				PartyPlayer.load()
 				unlockAchievement(38)
+				Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
+				    unregister()
+				    false
+				}
+				Chat.command("particlequality extreme")
+				Register.onTick(100) { unregister ->
+				    if (Debug.debugOnlyMessages) {
+				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.", true)
+				    }
+				    val renderDist = mc.options.renderDistance().get()
+				    if (renderDist < 10) {
+				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 10 from the vanilla options menu.", true)
+				    }
+				    unregister()
+				}
 				unregister()
 			}
 		}
@@ -150,6 +194,6 @@ object SBOKotlin : ClientModInitializer {
 		    IrisCompatibility.init()
 		}
 
-		logger.info("SBO-Kotlin initialized successfully!")
+		logger.info("SBO initialized successfully!")
 	}
 }

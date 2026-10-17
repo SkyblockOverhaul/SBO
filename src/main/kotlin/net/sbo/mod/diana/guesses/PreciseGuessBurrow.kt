@@ -10,6 +10,7 @@ import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.math.PolynomialFitter
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
@@ -57,18 +58,21 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onUseSpade(event: PlayerInteractEvent) {
-        if (!Diana.spadeGuess) return
+        if (!Diana.spadeGuess || World.getWorld() != "Hub") return
         val action = event.action
         if (action != "useItem" && action != "useBlock") return
         val player = SBOKotlin.mc.player
         val item = player?.mainHandItem
         if (item?.isEmpty == true) return
-        if (item == null || "Spade" !in item.hoverName.string) return
-        BurrowDetector.pendingUseSpadeTitle = null
+        if (item == null) return
+        val lookup = ItemLookup(item)
+        val sbId = lookup.sbId
+        if (sbId != "DEIFIC_SPADE" && sbId != "ARCHAIC_SPADE" && sbId != "ANCESTRAL_SPADE") return
         if (System.nanoTime() - this.lastLavaParticle < TimeUnit.MILLISECONDS.toNanos(200L)) {
             event.isCanceled = true
             return
         }
+        BurrowDetector.pendingUseSpadeTitle = null
         this.particleLocations.clear()
         lastGuessTime = System.nanoTime()
     }

@@ -1,0 +1,138 @@
+package net.sbo.mod.utils.http
+
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
+import net.sbo.mod.SBOKotlin
+import net.sbo.mod.SBOKotlin.API_URL
+import net.sbo.mod.utils.data.BadgeSettings
+import net.sbo.mod.utils.data.CloudUploadRequest
+import net.sbo.mod.utils.MojangAuth
+import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.SboKey
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
+/**
+ * Client for the SBO backend.
+ *
+ * the SBO key travels in the `x-sbo-key` header, the mod version in the `X-SBO-Version` header,
+ * the playing account in the `x-sbo-uuid` header (the backend replaces a key sent from another account)
+ */
+object SboApi {
+    private val json = Json { encodeDefaults = false }
+    
+    private val VERSION_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9.+_-]{0,31}")
+
+    private var cachedVersion: String? = null
+
+    private fun modVersion(): String? {
+        cachedVersion?.let { return it }
+        val version = runCatching { SBOKotlin.version }.getOrNull()
+            ?.takeIf { VERSION_PATTERN.matches(it) } ?: return null
+        cachedVersion = version
+        return version
+    }
+
+    private fun headers(): Map<String, String> = buildMap {
+        SboKey.get().takeIf { it.isNotBlank() }?.let { put("x-sbo-key", it) }
+        modVersion()?.let { put("X-SBO-Version", it) }
+        put("x-sbo-uuid", Player.accountUuid())
+    }
+
+    internal fun post(path: String, body: String = "{}"): HttpRequestHandle =
+        Http.sendPostRequest("$API_URL$path", body, headers())
+
+    internal fun get(path: String): HttpRequestHandle =
+        Http.sendGetRequest("$API_URL$path", headers())
+
+    internal fun authedPost(path: String, body: String = "{}"): HttpRequestHandle =
+        authed { headers -> Http.sendPostRequest("$API_URL$path", body, headers) }
+
+    internal fun authedGet(path: String): HttpRequestHandle =
+        authed { headers -> Http.sendGetRequest("$API_URL$path", headers) }
+
+    /**
+     * Gets a key with a Mojang login when there is none. A key the backend doesn't know (replaced after sharing)
+     * or one of another account is dropped, then one login and retry; failures come back as a normal answer in both formats.
+     */
+    private fun authed(send: (Map<String, String>) -> HttpRequestHandle): HttpRequestHandle {
+        val outer = HttpRequestHandle()
+        fun attempt(retried: Boolean) {
+            MojangAuth.ensureKey(onFail = { outer.complete(failure(it.code, it.message)) }) {
+                send(headers())
+                    .result { response ->
+                        val text = response.body?.string().orEmpty()
+                        val (code, message) = errorOf(text)
+                        val wrongKey = code == MojangAuth.KEY_NOT_YOURS || (code == "INVALID_KEY" && message?.startsWith("Key is banned") != true)
+                        when {
+                            !retried && wrongKey -> {
+                                SboKey.clear()
+                                attempt(true)
+                            }
+                            wrongKey -> outer.complete(failure(code, MojangAuth.KEY_FAILED_TEXT))
+                            else -> outer.complete(response.copy(body = ResponseBody(text.byteInputStream())))
+                        }
+                    }
+                    .error { outer.fail(it) }
+            }
+        }
+        attempt(false)
+        return outer
+    }
+
+    private fun errorOf(text: String): Pair<String?, String?> {
+        val root = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: return null to null
+        val error = root["error"] as? JsonObject
+        val code = root["Code"]?.jsonPrimitive?.contentOrNull ?: error?.get("code")?.jsonPrimitive?.contentOrNull
+        val message = root["Error"]?.jsonPrimitive?.contentOrNull ?: error?.get("message")?.jsonPrimitive?.contentOrNull
+        return code to message
+    }
+
+    private fun failure(code: String, message: String): HttpResponse {
+        val body = buildJsonObject {
+            put("success", false)
+            putJsonObject("error") {
+                put("code", code)
+                put("message", message)
+            }
+            put("Success", false)
+            put("Error", message)
+            put("Code", code)
+        }
+        return HttpResponse(200, "OK", ResponseBody(body.toString().byteInputStream()))
+    }
+
+    internal fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
+
+    fun countActiveUsers(): HttpRequestHandle = post("/countActiveUsers")
+
+    fun playerInfo(player: String, readCache: Boolean = true): HttpRequestHandle =
+        get("/playerInfo?player=${encode(player)}" + if (readCache) "" else "&readcache=false")
+
+    fun activeUsers(): HttpRequestHandle = get("/activeUsers")
+
+    fun ahItems(): HttpRequestHandle = get("/ahItems")
+
+    fun badges(knownVersion: String?): HttpRequestHandle =
+        get("/badges" + (knownVersion?.let { "?v=${encode(it)}" } ?: ""))
+
+    // format=2: hex colors, gradients and team tags; without it the backend answers like for 0.7.0
+    fun ownBadge(): HttpRequestHandle = authedGet("/badge?format=2")
+
+    fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge?format=2", json.encodeToString(settings))
+
+    fun cloudStatus(): HttpRequestHandle = authedGet("/cloudSync")
+
+    fun cloudDownload(slot: String): HttpRequestHandle = authedGet("/cloudSync/${encode(slot)}")
+
+    fun cloudUpload(slot: String, request: CloudUploadRequest): HttpRequestHandle =
+        authedPost("/cloudSync/${encode(slot)}", json.encodeToString(request))
+
+    fun cloudDelete(slot: String): HttpRequestHandle = authedPost("/cloudSync/${encode(slot)}/delete")
+}

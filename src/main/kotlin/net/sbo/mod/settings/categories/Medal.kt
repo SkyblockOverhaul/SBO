@@ -1,8 +1,8 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.config.Category
 
-object Medal : CategoryKt("Medal") {
+object Medal : Category("Medal") {
     init {
         separator {
             this.title = "Medal Clips"

@@ -9,7 +9,7 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.data.SboDataObject.SBOConfigBundle
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
@@ -23,7 +23,10 @@ import java.util.concurrent.TimeUnit
 object DianaMobs : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Mobs", 10f, 10f,
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
-    ).setCondition { Diana.mobTracker != Diana.Tracker.OFF && Helper.hasSpade && World.getWorld() == "Hub" }
+    )
+        .setCondition { Diana.mobTracker != Diana.Tracker.OFF }
+        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
+
     private val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {
             Diana.mobTracker = Diana.mobTracker.next()
@@ -62,19 +65,19 @@ object DianaMobs : DirtyFlushableOverlay() {
     private fun createLine(name: String, formattedText: String, amount: Int) : OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick {
             if (!isCraftingScreenOpen()) return@onClick
-            if (name in SBOConfigBundle.sboData.hideTrackerLines) {
-                SBOConfigBundle.sboData.hideTrackerLines.remove(name)
+            if (name in DataManager.sboData.hideTrackerLines) {
+                DataManager.sboData.hideTrackerLines.remove(name)
             } else {
-                SBOConfigBundle.sboData.hideTrackerLines.add(name)
+                DataManager.sboData.hideTrackerLines.add(name)
             }
             updateLines()
         }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
-                val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in SBOConfigBundle.sboData.hideTrackerLines)
+                val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
-        if (name in SBOConfigBundle.sboData.hideTrackerLines) {
+        if (name in DataManager.sboData.hideTrackerLines) {
             line.text = "$GRAY$STRIKETHROUGH${formattedText.removeFormatting()}"
         }
         return line
@@ -83,25 +86,25 @@ object DianaMobs : DirtyFlushableOverlay() {
     override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.mobTracker
         val tracker = when (type) {
-            Diana.Tracker.TOTAL -> SBOConfigBundle.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> SBOConfigBundle.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> SBOConfigBundle.dianaTrackerSessionData
+            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
+            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
+            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
             Diana.Tracker.OFF -> {
                 return emptyList()
             }
         }
-        val kingPercent = calcPercentOne(tracker.items, tracker.mobs, "KING_MINOS")
-        val manticorePercent = calcPercentOne(tracker.items, tracker.mobs, "MANTICORE")
-        val inqPercent = calcPercentOne(tracker.items, tracker.mobs, "MINOS_INQUISITOR")
-        val sphinxPercent = calcPercentOne(tracker.items, tracker.mobs, "SPHINX")
-        val champPercent = calcPercentOne(tracker.items, tracker.mobs, "MINOS_CHAMPION")
-        val minotaurPercent = calcPercentOne(tracker.items, tracker.mobs, "MINOTAUR")
-        val gaiaPercent = calcPercentOne(tracker.items, tracker.mobs, "GAIA_CONSTRUCT")
-        val harpyPercent = calcPercentOne(tracker.items, tracker.mobs, "HARPY")
-        val cretanPercent = calcPercentOne(tracker.items, tracker.mobs, "CRETAN_BULL")
-        val nymphPercent = calcPercentOne(tracker.items, tracker.mobs, "STRANDED_NYMPH")
-        val lynxPercent = calcPercentOne(tracker.items, tracker.mobs, "SIAMESE_LYNXES")
-        val hunterPercent = calcPercentOne(tracker.items, tracker.mobs, "MINOS_HUNTER")
+        val kingPercent = calcPercentOne(tracker.mobs.KING_MINOS, tracker.mobs.TOTAL_MOBS)
+        val manticorePercent = calcPercentOne(tracker.mobs.MANTICORE, tracker.mobs.TOTAL_MOBS)
+        val inqPercent = calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)
+        val sphinxPercent = calcPercentOne(tracker.mobs.SPHINX, tracker.mobs.TOTAL_MOBS)
+        val champPercent = calcPercentOne(tracker.mobs.MINOS_CHAMPION, tracker.mobs.TOTAL_MOBS)
+        val minotaurPercent = calcPercentOne(tracker.mobs.MINOTAUR, tracker.mobs.TOTAL_MOBS)
+        val gaiaPercent = calcPercentOne(tracker.mobs.GAIA_CONSTRUCT, tracker.mobs.TOTAL_MOBS)
+        val harpyPercent = calcPercentOne(tracker.mobs.HARPY, tracker.mobs.TOTAL_MOBS)
+        val cretanPercent = calcPercentOne(tracker.mobs.CRETAN_BULL, tracker.mobs.TOTAL_MOBS)
+        val nymphPercent = calcPercentOne(tracker.mobs.STRANDED_NYMPH, tracker.mobs.TOTAL_MOBS)
+        val lynxPercent = calcPercentOne(tracker.mobs.SIAMESE_LYNXES, tracker.mobs.TOTAL_MOBS)
+        val hunterPercent = calcPercentOne(tracker.mobs.MINOS_HUNTER, tracker.mobs.TOTAL_MOBS)
         val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
         val mobsPerHr = if (playTimeHrs > 0) {
             BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
@@ -121,7 +124,7 @@ object DianaMobs : DirtyFlushableOverlay() {
             listOf(
                 createLine(
                     "KING_MINOS",
-                    "$GRAY - ${RED}King Minos: $AQUA${Helper.formatNumber(tracker.mobs.KING_MINOS, withCommas = true)} $GRAY($AQUA${kingPercent}%$GRAY)" +
+                    "$GRAY - ${RED}King Minos: $AQUA${Helper.formatNumber(tracker.mobs.KING_MINOS, withCommas = true)} $GRAY($AQUA$kingPercent%$GRAY)" +
                         if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.KING_MINOS_LS,
                             withCommas = true
                         )}$GRAY]",
@@ -129,7 +132,7 @@ object DianaMobs : DirtyFlushableOverlay() {
                 ),
                 createLine(
                     "MANTICORE",
-                    "$GRAY - ${RED}Manticore: $AQUA${Helper.formatNumber(tracker.mobs.MANTICORE, withCommas = true)} $GRAY($AQUA${manticorePercent}%$GRAY)" +
+                    "$GRAY - ${RED}Manticore: $AQUA${Helper.formatNumber(tracker.mobs.MANTICORE, withCommas = true)} $GRAY($AQUA$manticorePercent%$GRAY)" +
                         if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.MANTICORE_LS,
                             withCommas = true
                         )}$GRAY]",
@@ -139,7 +142,7 @@ object DianaMobs : DirtyFlushableOverlay() {
                     "INQUISITOR",
                     "$GRAY - ${LIGHT_PURPLE}Inquisitor: $AQUA${Helper.formatNumber(tracker.mobs.MINOS_INQUISITOR,
                         withCommas = true
-                    )} $GRAY($AQUA${inqPercent}%$GRAY)" +
+                    )} $GRAY($AQUA$inqPercent%$GRAY)" +
                         if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.MINOS_INQUISITOR_LS,
                             withCommas = true
                         )}$GRAY]",
@@ -147,7 +150,7 @@ object DianaMobs : DirtyFlushableOverlay() {
                 ),
                 createLine(
                     "SPHINX",
-                    "$GRAY - ${LIGHT_PURPLE}Sphinx: $AQUA${Helper.formatNumber(tracker.mobs.SPHINX, withCommas = true)} $GRAY($AQUA${sphinxPercent}%$GRAY)" +
+                    "$GRAY - ${LIGHT_PURPLE}Sphinx: $AQUA${Helper.formatNumber(tracker.mobs.SPHINX, withCommas = true)} $GRAY($AQUA$sphinxPercent%$GRAY)" +
                         if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.SPHINX_LS,
                             withCommas = true
                         )}$GRAY]",
@@ -155,28 +158,28 @@ object DianaMobs : DirtyFlushableOverlay() {
                 ),
                 createLine("CHAMPION", "$GRAY - ${DARK_PURPLE}Champion: $AQUA${Helper.formatNumber(tracker.mobs.MINOS_CHAMPION,
                     withCommas = true
-                )} $GRAY($AQUA${champPercent}%$GRAY)", tracker.mobs.MINOS_CHAMPION),
+                )} $GRAY($AQUA$champPercent%$GRAY)", tracker.mobs.MINOS_CHAMPION),
                 createLine("MINOTAUR", "$GRAY - ${GOLD}Minotaur: $AQUA${Helper.formatNumber(tracker.mobs.MINOTAUR,
                     withCommas = true
-                )} $GRAY($AQUA${minotaurPercent}%$GRAY)", tracker.mobs.MINOTAUR),
+                )} $GRAY($AQUA$minotaurPercent%$GRAY)", tracker.mobs.MINOTAUR),
                 createLine("GAIA_CONSTRUCT", "$GRAY - ${GREEN}Gaia Construct: $AQUA${Helper.formatNumber(tracker.mobs.GAIA_CONSTRUCT,
                     withCommas = true
-                )} $GRAY($AQUA${gaiaPercent}%$GRAY)", tracker.mobs.GAIA_CONSTRUCT),
+                )} $GRAY($AQUA$gaiaPercent%$GRAY)", tracker.mobs.GAIA_CONSTRUCT),
                 createLine("HARPY", "$GRAY - ${GREEN}Harpy: $AQUA${Helper.formatNumber(tracker.mobs.HARPY,
                     withCommas = true
-                )} $GRAY($AQUA${harpyPercent}%$GRAY)", tracker.mobs.HARPY),
+                )} $GRAY($AQUA$harpyPercent%$GRAY)", tracker.mobs.HARPY),
                 createLine("CRETAN_BULL", "$GRAY - ${GREEN}Cretan Bull: $AQUA${Helper.formatNumber(tracker.mobs.CRETAN_BULL,
                     withCommas = true
-                )} $GRAY($AQUA${cretanPercent}%$GRAY)", tracker.mobs.CRETAN_BULL),
+                )} $GRAY($AQUA$cretanPercent%$GRAY)", tracker.mobs.CRETAN_BULL),
                 createLine("STRANDED_NYMPH", "$GRAY - ${GREEN}Stranded Nymph: $AQUA${Helper.formatNumber(tracker.mobs.STRANDED_NYMPH,
                     withCommas = true
-                )} $GRAY($AQUA${nymphPercent}%$GRAY)", tracker.mobs.STRANDED_NYMPH),
+                )} $GRAY($AQUA$nymphPercent%$GRAY)", tracker.mobs.STRANDED_NYMPH),
                 createLine("SIAMESE_LYNXES", "$GRAY - ${GREEN}Siamese Lynxes: $AQUA${Helper.formatNumber(tracker.mobs.SIAMESE_LYNXES,
                     withCommas = true
-                )} $GRAY($AQUA${lynxPercent}%$GRAY)", tracker.mobs.SIAMESE_LYNXES),
+                )} $GRAY($AQUA$lynxPercent%$GRAY)", tracker.mobs.SIAMESE_LYNXES),
                 createLine("MINOS_HUNTER", "$GRAY - ${GREEN}Minos Hunter: $AQUA${Helper.formatNumber(tracker.mobs.MINOS_HUNTER,
                     withCommas = true
-                )} $GRAY($AQUA${hunterPercent}%$GRAY)", tracker.mobs.MINOS_HUNTER),
+                )} $GRAY($AQUA$hunterPercent%$GRAY)", tracker.mobs.MINOS_HUNTER),
                 OverlayTextLine("$GRAY - ${GRAY}Total Mobs: $AQUA${Helper.formatNumber(tracker.mobs.TOTAL_MOBS,
                     withCommas = true
                 )} $GRAY[$AQUA$mobsPerHr$GRAY/${AQUA}hr$GRAY]")

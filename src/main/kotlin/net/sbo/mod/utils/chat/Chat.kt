@@ -8,12 +8,13 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.General
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.ClickActionManager
 
 object Chat {
 
     /**
-     * Sends a text to party chat via the /pc command, or
+     * Sends a text to party chat via the /pchat command, or
      * sends it locally if the user opted-in to the "Assume Muted"
      * option for accessibility, so that they can still see the message
      * and/or possibly copy and share the message in another platform such as Discord.
@@ -26,10 +27,15 @@ object Chat {
             // trying to send message will show up a huge output about the remaining mute time,
             // server rules and all that yapping with no other output about the text we want
             // to send, so send locally instead via the chat method. We can have color since it's regular chat.
-            chat("§6[SBO] §e${text}")
+            chat("§6[SBO] §e$text")
         } else {
-            command("pc $text")
+            command("pchat $text")
         }
+    }
+
+    /** Sends a message to public chat via Hypixel's /achat command. */
+    fun allChat(text: String) {
+        command("achat $text")
     }
 
     /**
@@ -47,24 +53,70 @@ object Chat {
 
     private fun sendClientMessage(message: Component) {
         mc.execute {
-            mc.gui.chat.addMessage(message)
+            mc.player?.sendSystemMessage(message)
         }
     }
 
-    /**
-     * Shows a local chat message only visible to the player.
-     * @param message The message to display in the chat.
-     */
-    fun chat(message: String) {
-        sendClientMessage(Component.nullToEmpty(message))
+    private fun createDontShowAgainAction(messageText: String): Pair<ClickEvent, HoverEvent> {
+        val actionId = ClickActionManager.registerAction {
+            DataManager.sboData.suppressedMessages.add(messageText)
+            DataManager.save(DataManager::sboData)
+            clickableChat(
+                "§6[SBO] §aMessage suppressed. §eClick to undo.",
+                "Click to show this message again",
+            ) {
+                DataManager.sboData.suppressedMessages.remove(messageText)
+                DataManager.save(DataManager::sboData)
+                sendClientMessage(Component.literal("§6[SBO] §aMessage suppression undone."))
+            }
+        }
+        val hoverText = Component.literal("Click the message to not show it again").withStyle(ChatFormatting.YELLOW)
+        return ClickEvent.RunCommand("/__sbo_run_clickable_action $actionId") to HoverEvent.ShowText(hoverText)
     }
 
     /**
      * Shows a local chat message only visible to the player.
      * @param message The message to display in the chat.
+     * @param dontShowAgain If true, adds a click action to suppress this message permanently.
      */
-    fun chat(message: Component) {
-        sendClientMessage(message)
+    fun chat(message: String, dontShowAgain: Boolean = false) {
+        if (DataManager.sboData.suppressedMessages.contains(message)) return
+
+        val styledText: Component = if (dontShowAgain) {
+            val (clickEvent, hoverEvent) = createDontShowAgainAction(message)
+            Component.literal(message).setStyle(
+                Style.EMPTY
+                    .withClickEvent(clickEvent)
+                    .withHoverEvent(hoverEvent)
+            )
+        } else {
+            Component.nullToEmpty(message)
+        }
+
+        sendClientMessage(styledText)
+    }
+
+    /**
+     * Shows a local chat message only visible to the player.
+     * @param message The message to display in the chat.
+     * @param dontShowAgain If true, adds a click action to suppress this message permanently.
+     */
+    fun chat(message: Component, dontShowAgain: Boolean = false) {
+        val messageText = message.string
+        if (DataManager.sboData.suppressedMessages.contains(messageText)) return
+
+        val styledText: Component = if (dontShowAgain) {
+            val (clickEvent, hoverEvent) = createDontShowAgainAction(messageText)
+            message.copy().setStyle(
+                message.style
+                    .withClickEvent(clickEvent)
+                    .withHoverEvent(hoverEvent)
+            )
+        } else {
+            message
+        }
+
+        sendClientMessage(styledText)
     }
 
     /**
@@ -132,17 +184,31 @@ object Chat {
      * Sends a chat message with multiple text components.
      * This is useful for combining multiple Text objects into one message.
      * @param textComponents The list of Text components to combine and send.
+     * @param dontShowAgain If true, adds a click action to suppress this message permanently.
      */
-    fun chat(vararg textComponents: Component) {
+    fun chat(vararg textComponents: Component, dontShowAgain: Boolean = false) {
         if (textComponents.isEmpty()) return
 
         val combinedText = Component.literal("")
-
         textComponents.forEach { component ->
             combinedText.append(component)
         }
 
-        sendClientMessage(combinedText)
+        val messageText = combinedText.string
+        if (DataManager.sboData.suppressedMessages.contains(messageText)) return
+
+        val styledText: Component = if (dontShowAgain) {
+            val (clickEvent, hoverEvent) = createDontShowAgainAction(messageText)
+            combinedText.setStyle(
+                Style.EMPTY
+                    .withClickEvent(clickEvent)
+                    .withHoverEvent(hoverEvent)
+            )
+        } else {
+            combinedText
+        }
+
+        sendClientMessage(styledText)
     }
 
     /**

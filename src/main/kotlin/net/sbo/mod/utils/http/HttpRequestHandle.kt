@@ -2,7 +2,9 @@ package net.sbo.mod.utils.http
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.InputStream
 
 /**
@@ -10,9 +12,7 @@ import java.io.InputStream
  * The .string() method reads the body as text.
  */
 class ResponseBody(private val inputStream: InputStream?) {
-    fun string(): String {
-        return inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
-    }
+    fun string(): String = inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
 }
 
 /**
@@ -30,6 +30,32 @@ data class HttpResponse(
     val isSuccessful: Boolean get() = code in 200..299
 }
 
+@PublishedApi
+internal fun httpErrorOf(response: HttpResponse): Exception {
+    val fallback = "HTTP request failed with code: ${response.code} ${response.message}"
+    val body = try {
+        response.body?.string()
+    } catch (_: Exception) {
+        null
+    }
+    if (body.isNullOrBlank()) return Exception(fallback)
+
+    val detail = try {
+        val json = Json.parseToJsonElement(body).jsonObject
+        val error = json["Error"]?.jsonPrimitive?.contentOrNull
+        val message = json["message"]?.jsonPrimitive?.contentOrNull
+        when {
+            !error.isNullOrBlank() -> error
+            !message.isNullOrBlank() -> message
+            else -> null
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+    return Exception(if (detail == null) fallback else "$detail (HTTP ${response.code})")
+}
+
 /**
  * A handle that is returned to register callbacks for success or failure.
  * Enables the chained .result{...}.error{...} syntax.
@@ -38,10 +64,22 @@ class HttpRequestHandle {
     // FIX: Changed from 'private' to '@PublishedApi internal' to allow access from the public inline function.
     @PublishedApi
     internal var onResult: ((HttpResponse) -> Unit)? = null
+        set(value) {
+            field = value
+            deliver()
+        }
 
     // FIX: Changed from 'private' to '@PublishedApi internal' for consistency and access by 'fail'.
     @PublishedApi
     internal var onError: ((Exception) -> Unit)? = null
+        set(value) {
+            field = value
+            deliver()
+        }
+
+    // A result that arrived before its callback was attached
+    private var pendingResponse: HttpResponse? = null
+    private var pendingError: Exception? = null
 
     /**
      * The original result handler for raw HTTP responses.
@@ -78,7 +116,7 @@ class HttpRequestHandle {
                     }
                 }
             } else {
-                this.fail(Exception("HTTP request failed with code: ${response.code} ${response.message}"))
+                this.fail(httpErrorOf(response))
             }
         }
         return this
@@ -104,7 +142,7 @@ class HttpRequestHandle {
                     }
                 }
             } else {
-                this.fail(Exception("HTTP request failed with code: ${response.code} ${response.message}"))
+                this.fail(httpErrorOf(response))
             }
         }
         return this
@@ -119,11 +157,28 @@ class HttpRequestHandle {
     }
 
     internal fun complete(response: HttpResponse) {
-        onResult?.invoke(response)
+        synchronized(this) { pendingResponse = response }
+        deliver()
     }
 
     @PublishedApi
     internal fun fail(exception: Exception) {
-        onError?.invoke(exception)
+        synchronized(this) { pendingError = exception }
+        deliver()
+    }
+
+    private fun deliver() {
+        var response: HttpResponse? = null
+        var error: Exception? = null
+        val result: ((HttpResponse) -> Unit)?
+        val failure: ((Exception) -> Unit)?
+        synchronized(this) {
+            result = onResult
+            failure = onError
+            if (result != null) response = pendingResponse.also { pendingResponse = null }
+            if (failure != null) error = pendingError.also { pendingError = null }
+        }
+        response?.let { result?.invoke(it) }
+        error?.let { failure?.invoke(it) }
     }
 }

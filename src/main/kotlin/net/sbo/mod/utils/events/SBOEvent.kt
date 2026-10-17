@@ -3,7 +3,7 @@ package net.sbo.mod.utils.events
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
@@ -38,7 +38,7 @@ object SBOEvent {
          * World Change Event
          * Fired after the client world changes (e.g., when joining a new world or server).
          */
-        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register { mc, world ->
+        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { mc, world ->
             emit(WorldChangeEvent(mc, world))
         }
         /**
@@ -66,19 +66,13 @@ object SBOEvent {
             emit(EntityUnloadEvent(entity, world))
         }
         /**
-         * Chat Message Event
-         * Fired when a chat message is received.
+         * Chat Message Event, then Chat Message Allow Event
+         * Fired when a chat message is received; the allow event decides if it is shown.
+         * Action bar updates (overlay) come all the time and no feature reads them, so they are skipped.
          */
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
-            emit(ChatMessageEvent(message, signed))
-            true
-        }
-        /**
-         * Chat Message Allow Event
-         * Fired to determine if a chat message should be displayed.
-         * Allows for filtering of spammy messages.
-         */
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, signed ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
+            if (overlay) return@register true
+            emit(ChatMessageEvent(message))
             val event = ChatMessageAllowEvent(message, true)
             emit(event)
             event.isAllowed
@@ -105,7 +99,7 @@ object SBOEvent {
             /** GUI Post Render Event
              * Fired after a GUI screen is rendered.
              */
-            ScreenEvents.afterRender(screen).register { renderScreen, drawContext, mouseX, mouseY, tickDelta ->
+            ScreenEvents.afterExtract(screen).register { renderScreen, drawContext, mouseX, mouseY, tickDelta ->
                 emit(GuiPostRenderEvent(renderScreen, drawContext, mouseX, mouseY, tickDelta))
             }
 
@@ -161,7 +155,6 @@ object SBOEvent {
     }
 
     /** Convenience inline version for type inference. Returns an unregister function. */
-    inline fun <reified T : Any> on(priority: Int = SboEvent.Priority.NORMAL, noinline callback: (T) -> Unit): () -> Unit {
-        return on(T::class, priority, callback)
-    }
+    inline fun <reified T : Any> on(priority: Int = SboEvent.Priority.NORMAL, noinline callback: (T) -> Unit): () -> Unit =
+        on(T::class, priority, callback)
 }

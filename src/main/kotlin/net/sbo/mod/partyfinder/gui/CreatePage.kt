@@ -1,0 +1,412 @@
+package net.sbo.mod.partyfinder.gui
+
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.put
+import net.sbo.guilib.core.dom.component
+import net.sbo.guilib.core.dsl.NodeBuilder
+import net.sbo.guilib.core.dsl.button
+import net.sbo.guilib.core.dsl.checkbox
+import net.sbo.guilib.core.dsl.chips
+import net.sbo.guilib.core.dsl.classNames
+import net.sbo.guilib.core.dsl.div
+import net.sbo.guilib.core.dsl.h3
+import net.sbo.guilib.core.dsl.img
+import net.sbo.guilib.core.dsl.multiSelect
+import net.sbo.guilib.core.dsl.numberInput
+import net.sbo.guilib.core.dsl.p
+import net.sbo.guilib.core.dsl.scroll
+import net.sbo.guilib.core.dsl.segmented
+import net.sbo.guilib.core.dsl.select
+import net.sbo.guilib.core.dsl.span
+import net.sbo.guilib.core.dsl.textarea
+import net.sbo.guilib.core.dsl.tooltip
+import net.sbo.guilib.core.dsl.useToast
+import net.sbo.mod.partyfinder.PartyCategories
+import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.partyfinder.PartyTarget
+import net.sbo.mod.partyfinder.ProblemText
+import net.sbo.mod.partyfinder.ReqMatcher
+import net.sbo.mod.partyfinder.api.ItemChoice
+import net.sbo.mod.partyfinder.OwnStats
+import net.sbo.mod.partyfinder.api.MemberView
+import net.sbo.mod.partyfinder.api.ReqDef
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
+
+internal data class CreateProps(val target: PartyTarget, val own: MemberView?, val inQueue: Boolean, val onRules: () -> Unit = {})
+
+private val json = Json { ignoreUnknownKeys = true }
+
+/** Starts with the last input for this party type. */
+internal val CreatePage = component<CreateProps>("CreatePage") { props ->
+    val target = props.target
+    val config = DataManager.partyFinderConfigState
+    var draft by useStateLazy { startDraft(target) }
+    val latest = useRef(draft)
+    latest.current = draft
+    val toast = useToast()
+
+    // Keeps the input when switching pages or closing the window
+    useEffect {
+        onCleanup {
+            config.drafts[target.key] = latest.current
+            config.save()
+        }
+    }
+
+    fun change(block: PartyDraft.() -> Unit) {
+        draft = draft.edited(block)
+    }
+
+    // A slayer tier (or another field stats depend on) other than the default needs own stats for it
+    val statOptions = OwnStats.statOptions(target, draft.options)
+    val defaultOptions = statOptions == OwnStats.statOptions(target)
+    var ownForOptions by useState<MemberView?>(null)
+    val wantedOptions = useRef(statOptions)
+    useEffect(target.key, statOptions) {
+        wantedOptions.current = statOptions
+        if (defaultOptions) return@useEffect
+        ownForOptions = OwnStats.cached(target, statOptions)
+        OwnStats.get(target, statOptions, onError = {}) { me -> if (wantedOptions.current == statOptions) ownForOptions = me }
+    }
+    val own = if (defaultOptions) props.own else ownForOptions
+
+    fun submit() {
+        val final = draft.edited {}
+        config.drafts[target.key] = final
+        config.save()
+        if (PartyFinderManager.inQueue) {
+            PartyFinderManager.removePartyFromQueue { removed -> if (removed) PartyFinderManager.createParty(final) }
+        } else {
+            PartyFinderManager.createParty(final)
+        }
+        toast.info("Creating your party, this takes a few seconds...")
+    }
+
+    scroll(className = "pf-form guilib-autohide") {
+        val opensAt = target.opensAt
+        if (!target.open && target.createOpen && opensAt != null) {
+            div(className = "pf-banner") { +"This event starts in ${until(opensAt)}. You can already list your party." }
+        } else if (!target.open) {
+            div(className = "pf-banner") {
+                img(src = "${StatView.ICONS}/lock.svg", className = "pf-icon")
+                val listable = target.createOpensAt
+                if (listable == null) {
+                    +" ${target.label} parties can only be created while the event is running."
+                } else {
+                    +" ${target.label} parties can be listed from one hour before the event starts, that is in ${until(listable)}."
+                }
+            }
+        }
+
+        h3(className = "pf-section") { +"Party size" }
+        div(className = "pf-size-row") {
+            numberInput(value = draft.partySize, onChange = { size -> change { partySize = size } }, min = target.minSize, max = target.maxSize)
+            span(className = "pf-muted") { +(if (draft.partySize == target.maxSize) "full party" else sizeLabel(draft.partySize)) }
+        }
+        p(className = "pf-hint") { +"${target.label} parties can have up to ${target.maxSize} players." }
+
+        h3(className = "pf-section") { +"Requirements" }
+        p(className = "pf-hint") { +"Players who don't meet these can't join. Leave a field empty or at \"Any\" for no requirement. Your own value is shown on the right." }
+        div(className = "pf-fields") {
+            target.reqs.forEach { def -> reqField(def, draft, own, ::change) }
+        }
+
+        val shownOptions = target.options
+        if (shownOptions.isNotEmpty()) {
+            h3(className = "pf-section") { +"Party settings" }
+            div(className = "pf-fields") {
+                shownOptions.forEach { partyOption ->
+                    div(className = "pf-field", key = partyOption.id) {
+                        optionLabel(partyOption, className = "pf-field-label")
+                        div(className = "pf-field-input") {
+                            if (partyOption.multiple) {
+                                multiSelect(
+                                    values = partyOption.picks(draft.options[partyOption.id] ?: partyOption.default),
+                                    onChange = { ids -> change { options[partyOption.id] = partyOption.picks(ids.joinToString(",")).joinToString(",") } },
+                                    placeholder = "Any"
+                                ) {
+                                    partyOption.values.forEach { option(it.id, it.label) }
+                                }
+                            } else if (partyOption.values.size > 3) {
+                                // Too many values side by side, e.g. the hotspot locations
+                                select(value = draft.options[partyOption.id] ?: partyOption.default, onChange = { e -> change { options[partyOption.id] = e.value } }) {
+                                    partyOption.values.forEach { option(it.id, it.label) }
+                                }
+                            } else {
+                                // Narrow windows cut the segments off, the CSS shows the dropdown there instead
+                                val value = draft.options[partyOption.id] ?: partyOption.default
+                                div(className = "pf-wide-only") {
+                                    segmented(value = value, onChange = { picked -> change { options[partyOption.id] = picked } }) {
+                                        partyOption.values.forEach { option(it.id, it.label) }
+                                    }
+                                }
+                                div(className = "pf-narrow-only") {
+                                    select(value = value, onChange = { e -> change { options[partyOption.id] = e.value } }) {
+                                        partyOption.values.forEach { option(it.id, it.label) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (target.roles.isNotEmpty()) {
+            h3(className = "pf-section") { +"Wanted roles" }
+            p(className = "pf-hint") { +"Optional. If you pick roles, everyone who wants to join has to choose one of them." }
+            ROLE_HINTS[target.key]?.let { hint -> p(className = "pf-hint") { +hint } }
+            val limit = target.roleLimit ?: Int.MAX_VALUE
+            div(className = "pf-fields") {
+                div(className = "pf-field", key = "ownRole") {
+                    span(className = "pf-field-label") { +"Your role" }
+                    div(className = "pf-field-input") {
+                        select(value = draft.ownRole ?: "", onChange = { e ->
+                            change {
+                                ownRole = e.value.ifEmpty { null }
+                                // The own place counts towards the role limit, so one place for others may have to go
+                                ownRole?.let { if (wantedRoles.count { r -> r == it } + 1 > limit) wantedRoles.remove(it) }
+                            }
+                        }) {
+                            option("", "No role")
+                            target.roles.forEach { option(it.id, it.label) }
+                        }
+                    }
+                }
+            }
+            p(className = "pf-hint") { +"Optional. Your role takes its own place in the party. The roles below are the places for the players you are looking for." }
+            if (target.roleLimit == 1) {
+                chips(values = draft.wantedRoles, onChange = { roles -> change { wantedRoles = roles.toMutableList() } }) {
+                    target.roles.forEach {
+                        val mine = it.id == draft.ownRole
+                        option(it.id, it.label, disabled = mine, title = if (mine) "You play this one yourself." else null)
+                    }
+                }
+            } else {
+                p(className = "pf-hint") { +"Click a role to add a player for it, right click to remove one." }
+                roleCountChips(target, draft, ::change)
+            }
+        }
+
+        h3(className = "pf-section") { +"Note" }
+        p(className = "pf-hint") { +"Write here what the fields above don't cover, like the sea creature you hunt or how many runs you plan." }
+        // Drafts saved before the two line limit may have more lines
+        val note = PartyFinderManager.limitNoteLines(draft.note)
+        textarea(
+            value = note,
+            onChange = { e -> change { this.note = e.value } },
+            placeholder = "Write a short note for your party",
+            rows = PartyFinderManager.NOTE_MAX_LINES,
+            maxLength = PartyFinderManager.NOTE_MAX_LENGTH,
+            maxLines = PartyFinderManager.NOTE_MAX_LINES,
+            className = "pf-note-input"
+        )
+        p(className = "pf-hint") {
+            +"${note.length}/${PartyFinderManager.NOTE_MAX_LENGTH}. Letters, numbers, spaces and , . ! ? - _ + / : ' ( ) only, other characters are removed."
+        }
+
+        div(className = "pf-form-buttons") {
+            button(onClick = { draft = PartyDraft(target.partyType, target.subType, target.maxSize) }) { +"Reset" }
+            val createHint = "You must be alone or the party leader. Everyone already in your party has to meet the requirements too." +
+                (if (props.inQueue) " Updating replaces the party you have listed right now." else "")
+            tooltip(createHint, placement = "top", className = "pf-tip") {
+                button(className = "primary", disabled = !target.createOpen, onClick = { submit() }) {
+                    +(if (props.inQueue) "Update party" else "Create party")
+                }
+            }
+        }
+        p(className = "pf-hint pf-rules-hint") {
+            +"By listing a party you agree to the "
+            span(className = "pf-link", onClick = { props.onRules() }) { +"rules" }
+            +"."
+        }
+    }
+}
+
+private fun startDraft(target: PartyTarget): PartyDraft {
+    val queued = PartyFinderManager.draft?.takeIf { PartyFinderManager.inQueue && it.key == target.key }
+    val saved = queued ?: DataManager.partyFinderConfigState.drafts[target.key]
+    val draft = saved?.edited {} ?: PartyDraft(target.partyType, target.subType, target.maxSize)
+    return draft.edited {
+        partyType = target.partyType
+        subType = target.subType
+        partySize = target.clampSize(partySize)
+        // Saved drafts may name a role the target no longer has
+        if (target.roles.none { it.id == ownRole }) ownRole = null
+    }
+}
+
+/** A copy with its own maps, so state changes never touch the saved config. */
+private fun PartyDraft.edited(block: PartyDraft.() -> Unit): PartyDraft =
+    copy(reqs = reqs.toMutableMap(), options = options.toMutableMap(), wantedRoles = wantedRoles.toMutableList()).apply(block)
+
+private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView?, change: (PartyDraft.() -> Unit) -> Unit) {
+    val stat = def.stat
+    val saved = draft.reqs[stat]?.let { runCatching { json.parseToJsonElement(it) }.getOrNull() }
+    fun save(value: String?) = change { if (value == null) { reqs.remove(stat) } else { reqs[stat] = value } }
+
+    div(className = classNames("pf-field", "wide" to (def.type == "anyOf")), key = stat) {
+        statLabel(stat, own, className = "pf-field-label")
+        div(className = "pf-field-input") {
+            when (def.type) {
+                "min" -> {
+                    val number = (saved as? JsonPrimitive)?.doubleOrNull?.toInt()
+                    val labels = PartyCategories.stat(stat)?.valueLabels.orEmpty()
+                    val max = PartyCategories.stat(stat)?.max ?: Int.MAX_VALUE
+                    if (labels.isNotEmpty()) {
+                        select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }) {
+                            option("0", "Any")
+                            labels.forEachIndexed { i, label ->
+                                if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex), className = StatView.numberColor(stat, i.toDouble()))
+                            }
+                        }
+                    } else {
+                        numberInput(
+                            value = number?.coerceAtMost(max),
+                            onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) },
+                            allowEmpty = true,
+                            min = 1,
+                            max = max,
+                            className = number?.let { StatView.numberColor(stat, it.toDouble()) }
+                        )
+                    }
+                }
+                "flag" -> checkbox(
+                    checked = saved?.isTrue() == true,
+                    onChange = { e -> save(if (e.checked) "true" else null) },
+                    label = "Required"
+                )
+                "rarity" -> {
+                    // The lowest rarity asks for nothing, e.g. everyone playing Diana has at least a Common Griffin
+                    val lowest = ReqMatcher.RARITIES.first()
+                    val rarity = (saved as? JsonPrimitive)?.contentOrNull?.takeUnless { it.equals(lowest, ignoreCase = true) } ?: ""
+                    select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }) {
+                        ReqMatcher.RARITIES.forEachIndexed { i, it ->
+                            option(if (i == 0) "" else it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it))
+                        }
+                    }
+                }
+                "anyOf" -> anyOfInput(def, saved, ::save)
+            }
+        }
+        if (own != null) {
+            val need = saved
+            val meets = need?.let { StatView.meets(def, it, own) }
+            val text = "You: ${StatView.value(stat, own.stats[stat])}"
+            // Always met or not met colors, never Hypixel colors
+            span(className = classNames("pf-own", "ok" to (meets == true), "bad" to (meets == false)), title = text) {
+                if (meets == false) span(className = "pf-mark") { +"× " }
+                +text
+            }
+        }
+    }
+}
+
+/** Pick several items, players need one or all of them; Kuudra armor gets a lowest tier, pets a lowest rarity. */
+private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (String?) -> Unit) {
+    val all = ReqMatcher.matchesAll(saved)
+    val picks = ReqMatcher.picks(saved).mapNotNull { pick ->
+        when (pick) {
+            is JsonObject -> (pick["id"] as? JsonPrimitive)?.contentOrNull?.let {
+                it to ((pick["minTier"] ?: pick["minRarity"]) as? JsonPrimitive)?.contentOrNull
+            }
+            is JsonPrimitive -> pick.contentOrNull?.let { it to null }
+            else -> null
+        }
+    }
+    fun store(next: List<Pair<String, String?>>, matchAll: Boolean = all) {
+        if (next.isEmpty()) return save(null)
+        val list = buildJsonArray {
+            next.forEach { (id, minimum) ->
+                val field = def.choices.firstOrNull { it.id == id }?.minimumField
+                if (minimum == null || field == null) add(JsonPrimitive(id)) else add(buildJsonObject { put("id", id); put(field, minimum) })
+            }
+        }
+        save((if (matchAll) buildJsonObject { put("match", "all"); put("picks", list) } else list).toString())
+    }
+
+    div(className = "pf-any-of") {
+        multiSelect(
+            values = picks.map { it.first },
+            onChange = { ids -> store(ids.map { id -> id to picks.firstOrNull { it.first == id }?.second }) },
+            placeholder = "Any",
+            searchable = def.choices.size > 8,
+            searchPlaceholder = "Search..."
+        ) {
+            // Pets take the color of the lowest rarity the party asks for
+            def.choices.forEach { choice ->
+                val petRarity = picks.firstOrNull { it.first == choice.id }?.second?.takeIf { choice.rarities.isNotEmpty() } ?: choice.rarities.firstOrNull()
+                option(choice.id, choice.label, className = choice.rarity?.let(StatView::itemRarityClass) ?: petRarity?.let(StatView::rarityColor))
+            }
+        }
+        if (picks.size > 1) {
+            segmented(value = if (all) "all" else "any", onChange = { mode -> store(picks, mode == "all") }, className = "pf-match") {
+                option("any", "Any of these")
+                option("all", "All of these")
+            }
+        }
+        picks.forEach { (id, minimum) ->
+            val choice: ItemChoice = def.choices.firstOrNull { it.id == id } ?: return@forEach
+            if (choice.minimumField == null) return@forEach
+            div(className = "pf-tier-row", key = id) {
+                span { +"${choice.label}, at least " }
+                val lowest = if (choice.tiers) ReqMatcher.KUUDRA_TIERS.first() else choice.rarities.first()
+                select(value = minimum?.takeUnless { it.equals(lowest, ignoreCase = true) } ?: "", onChange = { e ->
+                    store(picks.map { if (it.first == id) id to e.value.takeIf { v -> v.isNotEmpty() } else it })
+                }) {
+                    // The lowest tier or rarity asks for nothing extra, so it stands for no minimum
+                    if (choice.tiers) {
+                        ReqMatcher.KUUDRA_TIERS.forEachIndexed { i, tier -> option(if (i == 0) "" else tier, ProblemText.title(tier)) }
+                    } else {
+                        choice.rarities.forEachIndexed { i, rarity ->
+                            option(if (i == 0) "" else rarity, ProblemText.title(rarity), className = StatView.rarityColor(rarity))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Chips like the ones above, but with a count: click adds a player for the role, right click removes one.
+ * At the role limit or with no place left a click puts the role back to 0. A role listed twice is wanted twice;
+ * these are the places for others, the leader's own role counts only towards the role limit.
+ */
+private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, change: (PartyDraft.() -> Unit) -> Unit) {
+    val places = draft.partySize - 1
+    fun setCount(roleId: String, count: Int) = change {
+        val wanted = wantedRoles.filter { it != roleId } + List(count) { roleId }
+        // Definition order, so every list shows the roles the same way
+        wantedRoles = target.roles.flatMap { r -> wanted.filter { it == r.id } }.toMutableList()
+    }
+    div(className = "guilib-chips") {
+        target.roles.forEach { role ->
+            val count = draft.wantedRoles.count { it == role.id }
+            val free = places - draft.wantedRoles.size
+            val limit = (target.roleLimit ?: Int.MAX_VALUE) - if (role.id == draft.ownRole) 1 else 0
+            div(
+                className = classNames("guilib-chip", "selected" to (count > 0)),
+                key = "role:${role.id}",
+                onClick = { setCount(role.id, if (free > 0 && count < limit) count + 1 else 0) },
+                onContextMenu = { if (count > 0) setCount(role.id, count - 1) }
+            ) {
+                if (count > 0) span(className = "pf-role-count") { +"${count}×" }
+                span { +role.label }
+            }
+        }
+    }
+}
+
+// Extra help for roles that need to fit together
+private val ROLE_HINTS = mapOf(
+    "bestiary/dragons" to "2 Eyes needs to deal the most damage to get the best loot. Leechers place no eyes and can push them down, so only pick Leecher if your split has room for it."
+)

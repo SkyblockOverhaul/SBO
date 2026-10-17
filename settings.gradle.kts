@@ -17,8 +17,9 @@ pluginManagement {
 include("event-processor")
 
 listOf(
-    "1.21.11-fabric",
-    "26.1.2-fabric"
+    "26.1.2-fabric",
+    "26.2-fabric",
+    "26.3-fabric"
 ).forEach { version ->
     include(":$version")
     project(":$version").apply {
@@ -28,3 +29,16 @@ listOf(
 }
 
 rootProject.buildFileName = "root.gradle.kts"
+
+// GuiLib (web-style UI library) lives in its own repository. It normally comes from the SkyblockOverhaul Maven repo;
+// when ../SBO-GuiLib is checked out it is built from source instead (composite build). Disable with -Pguilib.local=false.
+val guiLibDir = file("../SBO-GuiLib")
+if (guiLibDir.isDirectory && providers.gradleProperty("guilib.local").orNull != "false") {
+    includeBuild(guiLibDir) {
+        dependencySubstitution {
+            substitute(module("net.sbo:guilib-26.1.2-fabric")).using(project(":26.1.2-fabric"))
+            substitute(module("net.sbo:guilib-26.2-fabric")).using(project(":26.2-fabric"))
+            substitute(module("net.sbo:guilib-26.3-fabric")).using(project(":26.3-fabric"))
+        }
+    }
+}

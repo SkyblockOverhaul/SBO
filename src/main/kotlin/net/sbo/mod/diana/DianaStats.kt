@@ -5,8 +5,8 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTracker
-import net.sbo.mod.utils.data.SboDataObject
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -39,9 +39,9 @@ object DianaStats {
 
     private fun getPlayerStats(total: Boolean? = false): PlayerStats {
         val tracker: DianaTracker = when (total) {
-            true -> SboDataObject.dianaTrackerTotal
-            false -> SboDataObject.dianaTrackerMayor
-            else -> SboDataObject.dianaTrackerSession
+            true -> DataManager.dianaTrackerTotalData
+            false -> DataManager.dianaTrackerMayorData
+            else -> DataManager.dianaTrackerSessionData
         }
 
         val timer: SboTimerManager.SBOTimer = when (total) {
@@ -70,10 +70,13 @@ object DianaStats {
             totalMobs = Helper.formatNumber(tracker.mobs.TOTAL_MOBS),
             mobsPerHour = "%.2f".format(Locale.US, mobsPerHour),
             inquisitors = tracker.mobs.MINOS_INQUISITOR,
-            inqPercentage = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "MINOS_INQUISITOR")}%",
+            inqPercentage = "${Helper.calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)}%",
             lsInqs = Helper.formatNumber(tracker.mobs.MINOS_INQUISITOR_LS, withCommas = true),
             chimeraDrops = tracker.items.CHIMERA,
-            chimeraDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "CHIMERA", "MINOS_INQUISITOR")}%",
+            chimeraDropRate = "${Helper.calcPercentOne(
+                tracker.items.CHIMERA,
+                tracker.mobs.MINOS_INQUISITOR
+            )}%",
             chimeraLSDrops = tracker.items.CHIMERA_LS,
             chimeraLSDropRate = "${
                 "%.2f".format(
@@ -82,9 +85,15 @@ object DianaStats {
                 )
             }%",
             sticksDropped = tracker.items.DAEDALUS_STICK,
-            stickDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "DAEDALUS_STICK", "MINOTAUR")}%",
+            stickDropRate = "${Helper.calcPercentOne(
+                tracker.items.DAEDALUS_STICK,
+                tracker.mobs.MINOTAUR
+            )}%",
             relicsDropped = tracker.items.MINOS_RELIC,
-            relicDropRate = "${Helper.calcPercentOne(tracker.items, tracker.mobs, "MINOS_RELIC", "MINOS_CHAMPION")}%"
+            relicDropRate = "${Helper.calcPercentOne(
+                tracker.items.MINOS_RELIC,
+                tracker.mobs.MINOS_CHAMPION
+            )}%"
         )
     }
 

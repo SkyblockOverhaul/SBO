@@ -1,25 +1,23 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
-import com.teamresourceful.resourcefulconfigkt.api.ObservableEntry
-import gg.essential.universal.UScreen
+import net.sbo.mod.config.Category
+import net.sbo.mod.config.ObservableEntry
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.PastEventsGui
+import net.sbo.mod.guis.EventsGui
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
-import java.awt.Color
 
-object Diana : CategoryKt("Diana") {
+object Diana : Category("Diana") {
     enum class ShareList {
         INQ, MANTICORE, KING, SPHINX
     }
 
     enum class ReceiveList {
-        INQ, MANTICORE, KING, SPHINX, OTHER
+        INQ, MANTICORE, KING, SPHINX
     }
 
     enum class NoShurikenList {
@@ -103,7 +101,7 @@ object Diana : CategoryKt("Diana") {
     }
 
     var beamDistance by int(8) {
-        this.name = Literal("Beam Distance")
+        this.name = Literal("Beacon Beam Distance")
         this.description = Literal("Hide the beam when this many blocks or more close to it.")
     }
 
@@ -117,9 +115,19 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Shows a title to use spade when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby, which will usually point to a new Start burrow to hold up your concurrent chains.")
     }
 
+    var muteBuggedSpadeSounds by boolean(true) {
+        this.name = Literal("Mute Bugged Spade Sounds")
+        this.description = Literal("Fixes an Hypixel issue where using the Ancestral, Archaic or the Deific spade sometimes would play a bugged Minecraft music that does not end and could be scary for people. This does the exact same thing SkyHanni option under the same name does, which is to cancel the bugged music from playing, until Hypixel fixes the issue server-side.")
+    }
+
     var ongoingChainsDisplay by boolean(false) {
         this.name = Literal("Ongoing Chains Display")
         this.description = Literal("Shows a display on screen with active chains amount. You can get up to 7 chains running at the same time.")
+    }
+
+    var simpleChainsOverlayMode by boolean(true) {
+        this.name = Literal("Simple Chains Overlay Mode")
+        this.description = Literal("Only shows Pending Start and Active waypoint amount, never showing internal state mismatch issues aimed at users that want to troubleshoot/debug mod issues.")
     }
 
     init {
@@ -140,11 +148,11 @@ object Diana : CategoryKt("Diana") {
     }
 
     var dontWarpIfBurrowClose by boolean(true) {
-        this.name = Literal("Don't Warp If a Burrow is nearby")
-        this.description = Literal("If enabled, the warp key will not warp you if you are within 60 blocks of a burrow.")
+        this.name = Literal("Don't Warp If Close")
+        this.description = Literal("If enabled, the warp key will not warp you if you are already within 60 blocks of a warp target (burrow, guess or rare mob waypoint).")
     }
 
-    var warpDiff by int(10) {
+    var warpDiff by int(22) {
         this.range = 0..60
         this.slider = true
         this.name = Literal("Warp Block Difference")
@@ -170,13 +178,11 @@ object Diana : CategoryKt("Diana") {
 
     init {
         button {
-            title = "Open Past Events"
-            text = "Open Past Events"
-            description = "Opens the Past Events menu, allowing you to see your saved trackers for previous Diana events. You can also open it by typing the /sbopastevents command."
+            title = "Open Events"
+            text = "Open Events"
+            description = "Opens the Events menu: the running Diana event, your saved trackers of previous events and the total, with details and comparisons. You can also open it with /sboevents."
             onClick {
-                mc.schedule {
-                    UScreen.displayScreen(PastEventsGui())
-                }
+                mc.schedule { EventsGui.open() }
             }
         }
     }
@@ -201,7 +207,7 @@ object Diana : CategoryKt("Diana") {
 
     var assumeAllLS by boolean(false) {
         this.name = Literal("Assume All LS")
-        this.description = Literal("Assumes you get loot share on all Kings, Inquisitors and Manticores. This works around the LOOT SHARE! message not being always sent by the server, but might inflate your numbers if you don't actually do enough damage to these mobs for lootshare. To reduce false positives a bit (not fully!), you need to be 30 blocks nearby the rare mob when it died.")
+        this.description = Literal("Assumes you get loot share on all Kings, Inquisitors and Manticores. This works around the LOOT SHARE! message not being always sent by the server, but might inflate your numbers if you don't actually do enough damage to these mobs for lootshare. To reduce false positives a bit (not fully!), you need to be 32 blocks nearby the rare mob when it died.")
     }
 
     var lootTracker by ObservableEntry(
@@ -225,6 +231,11 @@ object Diana : CategoryKt("Diana") {
     var npcPriceOverrides by boolean(false) {
         this.name = Literal("NPC Price Overrides")
         this.description = Literal("Always prefers NPC prices for select items; such as the Pet Item drops like Cretan Urn, Dwarf Turtle Shelmet, Antique Remedies, Washed Up Souvenir and Crochet Tiger Plushie, along with Hilt of Revelations, useful if NPC selling them.")
+    }
+
+    var ironmanOverrides by boolean(false) {
+        this.name = Literal("Ironman Overrides")
+        this.description = Literal("Only show NPC prices for all items; other items will be displayed as having no monetary value.")
     }
 
     var excludeCoinsFromProfit by boolean(false) {
@@ -302,6 +313,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Sends the chat Message with stat: [SBO] Took 120 Mobs to get a Inquis!")
     }
 
+    var sendKillTimeMessage by boolean(true) {
+        this.name = Literal("Mob Kill Time Message")
+        this.description = Literal("Sends a chat message with how long it took to kill a rare Diana mob you spawned.")
+    }
+
     var bazaarSettingDiana by enum(SettingDiana.SELLOFFER) {
         this.name = Literal("Bazaar Setting")
         this.description = Literal("Bazaar setting to set the price for loot.")
@@ -328,6 +344,11 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Announces chimera/stick/relic on screen.")
     }
 
+    var announceCrownOfGreed by boolean(true) {
+        this.name = Literal("Crown Of Greed Title")
+        this.description = Literal("Whether you want \"§6Crown Of Greed§r\" to appear on your screen when dropping one")
+    }
+
     var lootAnnouncerParty by boolean(true) {
         this.name = Literal("Loot Party Announcer")
         this.description = Literal("Announces chimera/wool/stinger/food in party chat.")
@@ -335,27 +356,27 @@ object Diana : CategoryKt("Diana") {
 
     var customChimeraMessage by strings("") {
         this.name = Literal("Custom Chimera Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop Amount this event and {percentage} for chimera/inquis ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop Amount this event, {since} for inquis took to drop chim, {price} for chim price, {percentage} for chimera/inquis ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customManticoreMessage by strings("") {
         this.name = Literal("Custom Manti-core Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for core/manti ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop core, {price} for manti price, {percentage} for core/manti ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customFatefulStingerMessage by strings("") {
         this.name = Literal("Custom Fateful Stinger Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for stinger/manti ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for manti took to drop stinger, {price} for stinger price, {percentage} for stinger/manti ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customBrainFoodMessage by strings("") {
         this.name = Literal("Custom Brain Food Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for food/sphinx ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for sphinx took to drop food, {price} for food price, {percentage} for food/sphinx ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     var customShimmeringWoolMessage by strings("") {
         this.name = Literal("Custom Shimmering Wool Message")
-        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event and {percentage} for wool/king ratio.")
+        this.description = Literal("Leave empty to use default. Use: {mf} for MagicFind, {amount} for drop amount this event, {since} for king took to drop wool, {price} for wool price, {percentage} for wool/king ratio, and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party).")
     }
 
     init {
@@ -364,7 +385,7 @@ object Diana : CategoryKt("Diana") {
             text = "Send Test"
             description = "Sends a test message for all rare drop messages."
             onClick {
-                if (Helper.checkCustomDropMessage("Chimera", 400).first) {
+                if (Helper.checkCustomDropMessage("Chimera", 400, false).first) {
                     val drops = mutableListOf<String>()
                     if (customChimeraMessage.isNotEmpty()) drops.add("Chimera")
                     if (customBrainFoodMessage.isNotEmpty()) drops.add("Brain Food")
@@ -374,7 +395,7 @@ object Diana : CategoryKt("Diana") {
 
                     for (drop: String in drops) {
                         Chat.chat(
-                            Helper.checkCustomDropMessage(drop, 400).second
+                            Helper.checkCustomDropMessage(drop, 400, false).second
                         )
                     }
                 }
@@ -384,27 +405,27 @@ object Diana : CategoryKt("Diana") {
 
     init {
         separator {
-            this.title = "Title Timings"
-            this.description = "Customize fade-in, display and fade-out ticks for titles."
+            this.title = "Rare Mob Title Timings"
+            this.description = "Customize fade-in, display and fade-out ticks for Rare Mob titles."
         }
     }
 
-    var rareTitleFadeInTime by int(0) {
-        this.name = Literal("Rare Title Fade In Time")
+    var rareMobTitleFadeInTime by int(0) {
+        this.name = Literal("Rare Mob Title Fade In Time")
         this.description = Literal("Fade-in (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
-    var rareTitleStayTime by int(60) {
-        this.name = Literal("Rare Title Stay Time")
+    var rareMobTitleStayTime by int(60) {
+        this.name = Literal("Rare Mob Title Stay Time")
         this.description = Literal("Display time (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
     }
 
-    var rareTitleFadeOutTime by int(0) {
-        this.name = Literal("Rare Title Fade Out Time")
+    var rareMobTitleFadeOutTime by int(0) {
+        this.name = Literal("Rare Mob Title Fade Out Time")
         this.description = Literal("Fade-out (ticks) for rare mob titles. Enter 0 in all three settings to disable the titles.")
         this.range = 0..100
         this.slider = true
@@ -442,7 +463,12 @@ object Diana : CategoryKt("Diana") {
 
     var shareRareMob by boolean(true) {
         this.name = Literal("Share Rare-Mob")
-        this.description = Literal("Sends the coordinates of rare mobs to your party. (King, Manti, Sphinx, Inq)")
+        this.description = Literal("Sends the coordinates of rare mobs to your party or public chat. (King, Manti, Sphinx, Inq)")
+    }
+
+    var shareRareMobInPublicChat by boolean(false) {
+        this.name = Literal("Share Rare-Mob in Public Chat")
+        this.description = Literal("Send rare mob coordinates to public chat instead of party chat.")
     }
 
     var ShareMobs by select(ShareList.INQ, ShareList.MANTICORE, ShareList.KING, ShareList.SPHINX) {
@@ -460,12 +486,9 @@ object Diana : CategoryKt("Diana") {
         this.description = Literal("Create a waypoint when finding a rare mob entity in a loaded chunk automatically. (King, Manti, Sphinx, Inq)")
     }
 
-    var ReceiveMobs by select(ReceiveList.INQ, ReceiveList.MANTICORE, ReceiveList.KING, ReceiveList.SPHINX, ReceiveList.OTHER) {
+    var ReceiveMobs by select(ReceiveList.INQ, ReceiveList.MANTICORE, ReceiveList.KING, ReceiveList.SPHINX) {
         this.name = Literal("Which Mobs to Receive")
-        this.description = Literal(
-        "Select which mobs to receive.\n" +
-            "§bOTHER = Rare mobs from players that don't ping with sbo. (mainly skyhanni)"
-        )
+        this.description = Literal("Select which mobs to receive.")
     }
 
     var HighlightRareMobs by boolean(true) {
@@ -475,22 +498,22 @@ object Diana : CategoryKt("Diana") {
 
     var announceInqText by strings("") {
         this.name = Literal("Send Text On Inq Spawn")
-        this.description = Literal("Sends a text on Inq spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on Inq spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     var announceMantiText by strings("") {
         this.name = Literal("Send Text On Manti Spawn")
-        this.description = Literal("Sends a text on Manti spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on Manti spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     var announceSphinxText by strings("") {
         this.name = Literal("Send Text On Sphinx Spawn")
-        this.description = Literal("Sends a text on Sphinx spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on Sphinx spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     var announceKingText by strings("") {
         this.name = Literal("Send Text On King Spawn")
-        this.description = Literal("Sends a text on King spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance.")
+        this.description = Literal("Sends a text on King spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
     }
 
     init {
@@ -520,6 +543,11 @@ object Diana : CategoryKt("Diana") {
     var hpAlert by double(0.0) {
         this.name = Literal("HP Alert")
         this.description = Literal("Sends a title alert when a Rare Mob is below the set HP value in Million. (0 to disable)")
+    }
+
+    var soundHpAlert by double(0.0) {
+        this.name = Literal("Sound HP Alert")
+        this.description = Literal("Sends the Low HP sound when the Rare Mob is below the set HP value in Million. (0 to disable)")
     }
 
     var noShurikenOverlay by boolean(true) {

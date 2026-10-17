@@ -8,8 +8,8 @@ import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.Chat.textComponent
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.achievementsData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.achievementsData
 
 class Achievement(
     val id: Int,
@@ -17,17 +17,17 @@ class Achievement(
     var description: String,
     val rarity: String,
     val previousId: Int? = null,
-    private val hidden: Boolean = false,
+    val hidden: Boolean = false,
     val repeatable: Boolean = false,
 ) {
     val color = AchievementManager.rarityColorDict[rarity] ?: "§f"
 
     private fun checkYearReset() {
-        val currentYear = SboDataObject.dianaTrackerMayor.year
+        val currentYear = DataManager.dianaTrackerMayorData.year
         if (achievementsData.lastEventYear != currentYear) {
             achievementsData.currentEventAchievements.clear()
             achievementsData.lastEventYear = currentYear
-            SboDataObject.save("AchievementsData")
+            DataManager.save(DataManager::achievementsData)
         }
     }
 
@@ -65,7 +65,7 @@ class Achievement(
         }
         AchievementManager.achievementsUnlockedTotal += 1
 
-        SboDataObject.save("AchievementsData")
+        DataManager.save(DataManager::achievementsData)
 
         if (!General.disableAchievements) showUnlockEffects()
     }

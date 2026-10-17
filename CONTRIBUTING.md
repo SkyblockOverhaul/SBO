@@ -13,8 +13,8 @@ Thanks for your interest in contributing! This document will help you get starte
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/SkyblockOverhaul/SBO-Kotlin.git
-cd SBO-Kotlin
+git clone https://github.com/SkyblockOverhaul/SBO.git
+cd SBO
 ```
 
 ### 2. Open in IntelliJ IDEA
@@ -37,8 +37,8 @@ Or use the **Run** configuration that Gradle generates in IntelliJ.
 ./gradlew build
 
 # Build for specific version
-./gradlew :1.21.11-fabric:build
 ./gradlew :26.1.2-fabric:build
+./gradlew :26.2-fabric:build
 ```
 
 Built JARs will be in `build/versions/`.
@@ -130,8 +130,7 @@ handlePressAction(myKeyBind) {
 ### 4. Add Overlay
 
 1. Create a new file in `overlays/`
-2. Extend from `UOverlay` (from Elementa)
-3. Register in `OverlayManager.kt`
+2. Create an `Overlay` (`utils/overlay/Overlay.kt`), it registers itself with `OverlayManager`
 
 ### 5. Using the Event System
 
@@ -187,7 +186,7 @@ Make sure you've opened the project in IntelliJ so Gradle can download Minecraft
 ## Resources
 
 - [Fabric Docs](https://fabricmc.net/wiki/documentation:fabric_mod_json)
-- [Elementa Docs](https://github.com/essentialgg/Elementa/tree/master/docs)
+- [GuiLib Docs](https://skyblockoverhaul.github.io/maven/guilib/)
 
 ## License
 

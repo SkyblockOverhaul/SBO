@@ -71,7 +71,7 @@ object RaycastUtils {
 
         val entry = ray.origin.plus(ray.direction.times(tmin))
         val exit = ray.origin.plus(ray.direction.times(tmax))
-        return Pair(entry, exit)
+        return entry to exit
     }
 
     /**
@@ -118,8 +118,6 @@ object RaycastUtils {
     private fun createOrthogonalPlaneToRayAtPoint(
         ray: Ray,
         point: SboVec,
-    ): Plane {
-        return Plane(point, ray.direction)
-    }
+    ): Plane = Plane(point, ray.direction)
 
 }

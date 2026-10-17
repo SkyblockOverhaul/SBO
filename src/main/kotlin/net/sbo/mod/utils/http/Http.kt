@@ -6,6 +6,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import net.minecraft.SharedConstants
 import net.sbo.mod.SBOKotlin
+import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -21,9 +22,7 @@ object Http {
     private val USER_AGENT =
         "SBO-Kotlin-Mod/${SBOKotlin.version}+${SharedConstants.getCurrentVersion().name()}"
 
-    private val EXECUTOR: ExecutorService = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors() * 2
-    ) { runnable ->
+    private val EXECUTOR: ExecutorService = Executors.newCachedThreadPool() { runnable ->
         Thread(runnable, "SBO Http Request Thread").apply {
             isDaemon = true
         }
@@ -31,10 +30,20 @@ object Http {
 
     private val HTTP_3_OR_2: HttpClient.Version = http3WithFallback()
 
+    // Bodies are read into memory, the biggest one (Hypixel bazaar) is about 4 MB
+    private const val MAX_BODY_BYTES = 10 * 1024 * 1024
+
     private val CLIENT: HttpClient = HttpClient.newBuilder()
         .executor(EXECUTOR)
         .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
         .followRedirects(HttpClient.Redirect.NORMAL)
+        .build()
+
+    // The JDK keeps own headers on redirects, so requests with an SBO key or session never follow one
+    private val NO_REDIRECT_CLIENT: HttpClient = HttpClient.newBuilder()
+        .executor(EXECUTOR)
+        .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
+        .followRedirects(HttpClient.Redirect.NEVER)
         .build()
 
     private fun http3WithFallback(): HttpClient.Version {
@@ -45,47 +54,86 @@ object Http {
         }
     }
 
-    private val HTTP2_ONLY = setOf(
-        // Unfortunately, the backend does not yet support HTTP/3 it seems and JDK's HTTP/3 implementation seems to not correctly fallback into HTTP/2 with it. Bazaar and Election API of Hypixel successfully make use of it, though, so we should keep it for these.
-        "skyblockoverhaul.com",
-        "api.skyblockoverhaul.com"
-    )
-
     /**
      * Sends an asynchronous HTTP GET request.
      *
      * @param urlString The URL to send the request to.
+     * @param headers Additional request headers, e.g. the `x-sbo-key` header for authenticated SBO endpoints.
      * @return An [HttpRequestHandle] to which .result() and .error() can be chained.
      */
-    fun sendGetRequest(urlString: String): HttpRequestHandle {
+    fun sendGetRequest(urlString: String, headers: Map<String, String> = emptyMap()): HttpRequestHandle =
+        send(urlString, headers) { it.GET() }
+
+    /**
+     * Sends an asynchronous HTTP POST request with a JSON body.
+     *
+     * The `Content-Type: application/json` header is set automatically.
+     *
+     * @param urlString The URL to send the request to.
+     * @param body The JSON body to send. Defaults to an empty object for endpoints that take no payload.
+     * @param headers Additional request headers, e.g. the `x-sbo-key` header for authenticated SBO endpoints.
+     * @return An [HttpRequestHandle] to which .result() and .error() can be chained.
+     */
+    fun sendPostRequest(
+        urlString: String,
+        body: String = "{}",
+        headers: Map<String, String> = emptyMap()
+    ): HttpRequestHandle = send(urlString, headers + ("Content-Type" to "application/json")) {
+        it.POST(HttpRequest.BodyPublishers.ofString(body, Charsets.UTF_8))
+    }
+
+    private fun send(
+        urlString: String,
+        headers: Map<String, String>,
+        method: (HttpRequest.Builder) -> HttpRequest.Builder
+    ): HttpRequestHandle {
         val handle = HttpRequestHandle()
 
-        EXECUTOR.execute {
-            try {
-                val uri = URI.create(urlString)
-                val httpVersion = if (uri.host in HTTP2_ONLY) HttpClient.Version.HTTP_2 else HTTP_3_OR_2
-
-                val request = HttpRequest.newBuilder()
-                    .version(httpVersion)
-                    .uri(uri)
-                    .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
-                    .header("User-Agent", USER_AGENT)
-                    .GET()
-                    .build()
-
-                val response = CLIENT.send(request, BodyHandlers.ofInputStream())
-                val code = response.statusCode()
-
-                handle.complete(
-                    HttpResponse(
-                        code,
-                        statusMessage(code),
-                        ResponseBody(response.body())
-                    )
-                )
-            } catch (e: Exception) {
-                handle.fail(e)
+        try {
+            val uri = URI.create(urlString)
+            val httpVersion = when {
+                // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
+                uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
+                else -> HTTP_3_OR_2
             }
+
+            val builder = HttpRequest.newBuilder()
+                .version(httpVersion)
+                .uri(uri)
+                .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
+                .header("User-Agent", USER_AGENT)
+
+            headers.forEach { (name, value) -> builder.header(name, value) }
+
+            val client = if (headers.keys.any { it.startsWith("x-sbo-", ignoreCase = true) }) NO_REDIRECT_CLIENT else CLIENT
+
+            client.sendAsync(method(builder).build(), BodyHandlers.ofInputStream())
+                .thenAccept { response ->
+                    try {
+                        val code = response.statusCode()
+                        val body = response.body().use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                        if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
+
+                        val status = statusMessage(code)
+                        val responseBody = ResponseBody(body.inputStream())
+
+                        handle.complete(
+                            HttpResponse(
+                                code,
+                                status,
+                                responseBody
+                            )
+                        )
+                    } catch (e: Exception) {
+                        handle.fail(e)
+                    }
+                }
+                .exceptionally { e ->
+                    handle.fail(Exception("HTTP request to $urlString failed", e.cause ?: e))
+                    null
+                }
+        } catch (e: Exception) {
+            handle.fail(e)
         }
 
         return handle
@@ -99,20 +147,20 @@ object Http {
      */
     private fun statusMessage(code: Int): String {
         return when (code) {
-            400 -> "Bad request"
+            400 -> "Bad Request"
             401 -> "Unauthorized"
             403 -> "Forbidden"
-            404 -> "Not found"
-            408 -> "Request timed out"
+            404 -> "Not Found"
+            408 -> "Request Timed Out"
             409 -> "Conflict"
-            418 -> "Invalid request"
-            422 -> "Invalid data"
-            429 -> "Too many requests"
-            500 -> "Server error"
-            502 -> "Bad gateway"
-            503 -> "Service unavailable"
-            504 -> "Gateway timeout"
-            else -> "HTTP error $code"
+            418 -> "Invalid Request"
+            422 -> "Invalid Data"
+            429 -> "Too Many Requests"
+            500 -> "Server Error"
+            502 -> "Bad Gateway"
+            503 -> "Service Unavailable"
+            504 -> "Gateway Timeout"
+            else -> "HTTP Error $code"
         }
     }
 

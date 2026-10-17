@@ -1,8 +1,8 @@
 package net.sbo.mod.settings.categories
 
-import com.teamresourceful.resourcefulconfigkt.api.CategoryKt
+import net.sbo.mod.config.Category
 
-object PartyCommands : CategoryKt("Party Commands") {
+object PartyCommands : Category("Party Commands") {
     var warpCommand by boolean(false) {
         this.name = Literal("Warp Party")
         this.description = Literal("Enables !w, !warp command.")
@@ -41,5 +41,10 @@ object PartyCommands : CategoryKt("Party Commands") {
     var dianaPartyCommands by boolean(true) {
         this.name = Literal("Diana Party Commands")
         this.description = Literal("Enable Diana party commands. (!chim, !inq, !relic, !stick, !since, !burrow, !mob) (note: you need to have Diana tracker enabled)")
+    }
+
+    var blockUser by boolean(true) {
+        this.name = "Block the user"
+        this.description = "Enables the !block [Player] and !unblock [Player] command."
     }
 }

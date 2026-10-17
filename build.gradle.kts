@@ -1,26 +1,28 @@
 import net.fabricmc.loom.task.RemapJarTask
-import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.lang.module.ModuleDescriptor.Version
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.10"
+    kotlin("plugin.serialization") version "2.4.21"
     alias(libs.plugins.loom)
     id("dev.deftu.gradle.multiversion")
     id("dev.deftu.gradle.tools.bloom")
     alias(libs.plugins.ksp)
 }
 
+private val projectVersion = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
+
+// Sets the artifact version
+version = projectVersion
+
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
 
 private fun versionedProperty(name: String): String = project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
-
-private fun isUnobfuscatedMCVersion(): Boolean = isMCVersionGreaterOrEqualTo("26.1")
 
 private fun isMCVersionGreaterOrEqualTo(version: String): Boolean = Version.parse(mcVersion) >= Version.parse(version)
 
@@ -32,70 +34,54 @@ loom {
         generateRunConfig.set(true)
         preferGradleTask = true
     }
+
+    uncompressNestedJars = true
 }
 
 bloom {
-    if (isMCVersionGreaterOrEqualTo("26.1")) {
-        // GuiGraphics --> GuiGraphicsExtractor
-        replacement("GuiGraphics", "GuiGraphicsExtractor")
-
-        // KeyBinding --> KeyMapping
-        replacement("net.fabricmc.fabric.api.client.keybinding", "net.fabricmc.fabric.api.client.keymapping")
-        replacement("KeyBindingHelper", "KeyMappingHelper")
-        replacement("registerKeyBinding", "registerKeyMapping")
-
-        // ClientCommandManager --> ClientCommands
-        replacement("ClientCommandManager", "ClientCommands")
-
-        // World --> Level
-        replacement("net.fabricmc.fabric.api.client.rendering.v1.world", "net.fabricmc.fabric.api.client.rendering.v1.level")
-        replacement("ClientWorldEvents", "ClientLevelEvents")
-        replacement("WorldRenderEvents", "LevelRenderEvents")
-        replacement("WorldRenderContext", "LevelRenderContext")
-        replacement("AFTER_CLIENT_WORLD_CHANGE", "AFTER_CLIENT_LEVEL_CHANGE")
-
-        // Render --> Extract
-        replacement("ScreenEvents.afterRender", "ScreenEvents.afterExtract")
-        replacement("override fun render(", "override fun extractRenderState(")
-        replacement("super.render(", "super.extractRenderState(")
-        replacement("this.renderMenuBackground", "this.extractMenuBackground")
-        replacement("drawContext.renderTooltip(", "drawContext.tooltip(")
-
-        // Render --> Extract (Hacky way to fix Mixins, too lazy for versioned Mixins)
-        replacement("@Inject(method = \"render\", at = @At(\"HEAD\"))", "@Inject(method = \"extractRenderState\", at = @At(\"HEAD\"))")
-        replacement("Lnet/minecraft/client/gui/Gui;render(", "Lnet/minecraft/client/gui/Gui;extractRenderState(")
-        replacement("@Inject(method = \"render\", at = @At(value = \"INVOKE\", target = ", "@Inject(method = \"extractGui\", at = @At(value = \"INVOKE\", target = ")
-        replacement("private void afterHudRender(@NonNull final DeltaTracker tickCounter, final boolean tick, ", "private void afterHudRender(@NonNull final DeltaTracker tickCounter, final boolean tick, final boolean resourcesLoaded, ")
-
-        // drawString --> text
-        replacement("drawContext.drawString(", "drawContext.text(")
-
-        // renderOutline --> outline
-        replacement("drawContext.renderOutline(", "drawContext.outline(")
-
-        // consumers --> bufferSource
-        replacement("context.consumers", "context.bufferSource")
-        replacement("ctx.consumers", "ctx.bufferSource")
-
-        // matrices --> poseStack
-        replacement("matrices()", "poseStack()")
-
-        // BEFORE_TRANSLUCENT --> BEFORE_TRANSLUCENT_TERRAIN
-        replacement("BEFORE_TRANSLUCENT", "BEFORE_TRANSLUCENT_TERRAIN")
-        replacement("BeforeTranslucent", "BeforeTranslucentTerrain")
-        replacement("override fun beforeTranslucent(", "override fun beforeTranslucentTerrain(")
-
-        // addMessage --> addClientSystemMessage
-        replacement("chat.addMessage(", "chat.addClientSystemMessage(")
-
-        // ChunkPos.asLong --> ChunkPos.pack (26.1+)
-        replacement("ChunkPos.asLong", "ChunkPos.pack")
-
-        // ChunkPos(BlockPos) --> ChunkPos(Int, Int) (26.1+)
-        replacement("ChunkPos(pos)", "ChunkPos(pos.x, pos.z)")
-
-        // ChunkPos.x / ChunkPos.z --> getX() / getZ() (26.1+)
-        replacement("LevelChunk chunk = getChunk(pos.x, pos.z, ChunkStatus.FULL, false);", "LevelChunk chunk = getChunk(pos.x(), pos.z(), ChunkStatus.FULL, false);")
+    if (isMCVersionGreaterOrEqualTo("26.3")) {
+        replacement("com.mojang.blaze3d.pipeline.RenderPipeline", "com.mojang.renderpearl.api.pipeline.RenderPipeline")
+        replacement("com.mojang.blaze3d.pipeline.DepthStencilState", "com.mojang.renderpearl.api.pipeline.DepthStencilState")
+        replacement("com.mojang.blaze3d.platform.CompareOp", "com.mojang.renderpearl.api.pipeline.CompareOp")
+        replacement("Util.getPlatform().openUri(url)", "com.mojang.blaze3d.Blaze3D.openUri(java.net.URI(url))")
+        replacement("Util.getPlatform().openPath(", "com.mojang.blaze3d.Blaze3D.openPath(")
+        replacement("Util.getPlatform().openFile(folder)", "com.mojang.blaze3d.Blaze3D.openPath(folder.toPath())")
+        // The legacy packet constructor copies particle speed to all three axes in 26.3.
+        replacement(".maxSpeed", ".xMaxSpeed()")
+        replacement("InputConstants.Type.KEYSYM", "InputConstants.Type.KEYBOARD")
+        replacement("import org.lwjgl.glfw.GLFW;", "")
+        replacement("import org.lwjgl.glfw.GLFW", "")
+        replacement("InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), GLFW.GLFW_CURSOR_NORMAL,", "InputConstants.releaseMouse(this.minecraft.getWindow(),")
+        replacement("GLFW.GLFW_KEY_UNKNOWN", "com.mojang.blaze3d.platform.InputConstants.UNKNOWN.value")
+        replacement("GLFW.GLFW_KEY_ESCAPE", "com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE")
+        replacement("GLFW.GLFW_KEY_UP", "com.mojang.blaze3d.platform.InputConstants.KEY_UP")
+        replacement("GLFW.GLFW_KEY_DOWN", "com.mojang.blaze3d.platform.InputConstants.KEY_DOWN")
+        replacement("GLFW.GLFW_KEY_LEFT", "com.mojang.blaze3d.platform.InputConstants.KEY_LEFT")
+        replacement("GLFW.GLFW_KEY_RIGHT", "com.mojang.blaze3d.platform.InputConstants.KEY_RIGHT")
+        replacement("GLFW.GLFW_KEY_EQUAL", "com.mojang.blaze3d.platform.InputConstants.KEY_EQUALS")
+        replacement("GLFW.GLFW_KEY_KP_ADD", "com.mojang.blaze3d.platform.InputConstants.KEY_ADD")
+        replacement("GLFW.GLFW_KEY_MINUS", "com.mojang.blaze3d.platform.InputConstants.KEY_MINUS")
+        replacement("GLFW.GLFW_KEY_KP_SUBTRACT", "org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_MINUS")
+        replacement("click.buttonInfo().button", "net.sbo.mod.utils.InputCompatibility.mouseButton(click.buttonInfo().button)")
+        replacement("mulPose(Axis.YP.rotationDegrees(-cameraYaw))", "rotateDegrees(Axis.YP, -cameraYaw)")
+        replacement("mulPose(Axis.XP.rotationDegrees(cameraPitch))", "rotateDegrees(Axis.XP, cameraPitch)")
+        replacement("DefaultTooltipPositioner.INSTANCE, null)", "DefaultTooltipPositioner.INSTANCE, null, false)")
+    }
+    if (isMCVersionGreaterOrEqualTo("26.2")) {
+        replacement("mc.screen", "mc.gui.screen()")
+        replacement("mc.setScreen(", "mc.gui.setScreen(")
+        replacement("mc.toastManager", "mc.gui.toastManager()")
+        replacement("mc.gui.setTimes", "mc.gui.hud.setTimes")
+        replacement("mc.gui.setTitle", "mc.gui.hud.setTitle")
+        replacement("mc.gui.setSubtitle", "mc.gui.hud.setSubtitle")
+        replacement("mc.gui.titleTime", "mc.gui.hud.titleTime")
+        replacement("mc.gui.title", "mc.gui.hud.title")
+        replacement("mc.gui.subtitle", "mc.gui.hud.subtitle")
+        replacement("SystemToast.multiline(mc, ", "SystemToast(")
+        replacement("mc.gui.chat.addClientSystemMessage", "mc.gui.hud.chat.addClientSystemMessage")
+        replacement("formatting?.char", "formatting?.code")
+        replacement("mc.options.hideGui", "mc.gui.hud.isHidden()")
+        replacement("gameRenderer().mainCamera", "gameRenderer().mainCamera()")
     }
 }
 
@@ -113,14 +99,8 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
         freeCompilerArgs = args
 
-        moduleName.set("sbo-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
+        moduleName.set("sbo-${projectVersion}-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
     }
-}
-
-kotlin {
-    // This improves build performance as it supports incremental compilation among other things with the BTA API
-    @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
-    compilerVersion = "2.3.0"
 }
 
 repositories {
@@ -136,22 +116,11 @@ repositories {
 
     exclusiveContent {
         forRepository {
-            maven("https://repo.essential.gg/repository/maven-public")
+            maven("https://skyblockoverhaul.github.io/maven")
         }
 
         filter {
-            includeGroup("gg.essential")
-        }
-    }
-
-    exclusiveContent {
-        forRepository {
-            maven("https://maven.teamresourceful.com/repository/maven-public")
-        }
-
-        filter {
-            includeGroup("com.teamresourceful.resourcefulconfig")
-            includeGroup("com.teamresourceful.resourcefulconfigkt")
+            includeGroup("net.sbo")
         }
     }
 
@@ -173,6 +142,7 @@ repositories {
 
         filter {
             includeModule("net.azureaaron", "hm-api")
+            includeModule("net.azureaaron", "render-chest")
         }
     }
 
@@ -198,13 +168,7 @@ afterEvaluate {
         jar {
             destinationDirectory.set(newBuildDestinationDirectory)
             archiveBaseName.set(jarName)
-        }
-
-        if (!isUnobfuscatedMCVersion()) {
-            named<RemapJarTask>("remapJar") {
-                destinationDirectory.set(newBuildDestinationDirectory)
-                archiveBaseName.set(jarName)
-            }
+            archiveVersion.set("")
         }
     }
 }
@@ -217,10 +181,72 @@ tasks.withType<KotlinJvmCompile> {
     compilerOptions.jvmTarget.set(JvmTarget.fromTarget(versionedProperty("java.version")))
 }
 
-tasks.matching { it.name.contains("Test") || it.name.contains("test") }.configureEach {
-    // One of the tasks create problems since preprocessTestCode reads output of kspTestKotlin without depending on it,
-    // We don't have any tests anyway; so this OK to disable to work around the error.
-    enabled = false
+val runDirectory = rootProject.file("run")
+runDirectory.mkdirs()
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging {
+        showStackTraces = true
+        //showStandardStreams = true // enable if troubleshooting failures
+        exceptionFormat = TestExceptionFormat.FULL
+    }
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+    workingDir(file(runDirectory))
+    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+    jvmArgs(
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED",
+        "-XX:+EnableDynamicAgentLoading",
+        // Tests start NPE-ing without this on Java 25
+        "-Dnet.bytebuddy.experimental=true",
+    )
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_26)) {
+        jvmArgs(
+            // Resolves warning: "Final field mappings in class org.spongepowered.asm.mixin.refmap.ReferenceMapper has been mutated reflectively by class org.spongepowered.include.com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1 in unnamed module"
+            // Ideally Mixin would make the field not final or use a different GSON serilization path, but here we are
+            "--enable-final-field-mutation=ALL-UNNAMED",
+        )
+    }
+}
+
+val mixinTestRuntime = configurations.create("mixinTestRuntime") {
+    isCanBeConsumed = false
+    extendsFrom(configurations.testRuntimeClasspath.get())
+}
+
+val mixinTest = tasks.register<Test>("mixinTest") {
+    description = "Audits mixin application under Fabric Loader."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().output + sourceSets.main.get().output + mixinTestRuntime
+    filter {
+        includeTestsMatching("net.sbo.mod.test.MixinTest")
+    }
+}
+
+tasks.test {
+    dependsOn(mixinTest)
+    exclude("net/sbo/mod/test/MixinTest.class")
+}
+
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes(
+            "Sealed" to "true",
+            "Automatic-Module-Name" to "sbo",
+            "Specification-Title" to "SBO",
+            "Specification-Version" to project.version.toString(),
+            "Specification-Vendor" to "SBO",
+            "Implementation-Title" to "SBO",
+            "Implementation-Version" to project.version.toString(),
+            "Implementation-Vendor" to "SBO"
+        )
+    }
+
+    from(rootProject.file("LICENSE")) {
+        rename { "LICENSE_sbo" }
+    }
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -236,11 +262,8 @@ tasks.named<ProcessResources>("processResources") {
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
 
-    val elementaVersion = project.property("elementa.version")
     val hmApiVersion = versionedProperty("hmapi.version")
-    val resourcefulConfigVersion = versionedProperty("rconfig.version")
-    val resourcefulConfigKtVersion = versionedProperty("rconfigkt.version")
-    val universalCraftVersion = project.property("universalcraft.version")
+    val modMenuVersion = versionedProperty("modmenu.version")
 
     val modName = project.property("mod.name")
     val modDescription = project.property("mod.description")
@@ -248,8 +271,7 @@ tasks.named<ProcessResources>("processResources") {
     val modVersion = project.property("mod.version")
     val modGroup = project.property("mod.group")
 
-    // 26.1 onwards switched back to proper SemVer so we use ~ to accept compatible patch updates; for older versions do an exact requirement as even patch level version updates (e.g 1.21.10 to 1.21.11) are incompatible with each other.
-    val mcVersionConstraint = if (isMCVersionGreaterOrEqualTo("26.1")) "~$mcVersion" else "=$mcVersion"
+    val mcVersionConstraint = project.findProperty("mc$mcVersion.constraint")?.toString() ?: "~$mcVersion"
 
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
@@ -264,11 +286,9 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
     inputs.property("java_version_major", javaVersionMajor)
 
-    inputs.property("elementa_version", elementaVersion)
     inputs.property("hm_api_version", hmApiVersion)
-    inputs.property("resourcefulconfig_version", resourcefulConfigVersion)
-    inputs.property("resourcefulconfigkt_version", resourcefulConfigKtVersion)
-    inputs.property("universalcraft_version", universalCraftVersion)
+    inputs.property("guilib_version", project.property("guilib.version"))
+    inputs.property("modmenu_version", modMenuVersion)
 
     val expandProperties = mapOf(
         "expanded_files" to expandedFiles,
@@ -285,11 +305,9 @@ tasks.named<ProcessResources>("processResources") {
         "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
         "java_version_major" to javaVersionMajor,
 
-        "elementa_version" to elementaVersion,
         "hm_api_version" to hmApiVersion,
-        "resourcefulconfig_version" to resourcefulConfigVersion,
-        "resourcefulconfigkt_version" to resourcefulConfigKtVersion,
-        "universalcraft_version" to universalCraftVersion
+        "guilib_version" to project.property("guilib.version"),
+        "modmenu_version" to modMenuVersion,
     ) + inputs.properties
 
     filesMatching(expandedFiles) {
@@ -300,52 +318,40 @@ tasks.named<ProcessResources>("processResources") {
 dependencies {
     minecraft("com.mojang:minecraft:${mcVersion}")
 
-    val mappingsConfig = configurations.findByName("mappings")
+    implementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
 
-    if (null != mappingsConfig) {
-        dependencies.add(
-            mappingsConfig.name,
-            loom.officialMojangMappings()
-        )
-    }
+    mixinTestRuntime("net.fabricmc:fabric-loader-junit:${property("fabricloader.version")}")
+    testImplementation(libs.junit)
+    testRuntimeOnly(libs.junit.launcher)
 
-    val modImplementationConfig = configurations.findByName("modImplementation")
-
-    fun DependencyHandler.maybeModImplementation(dependencyNotation: Any) {
-        if (null != modImplementationConfig) {
-            add(modImplementationConfig.name, dependencyNotation)
-        } else {
-            implementation(dependencyNotation)
-        }
-    }
-
-    maybeModImplementation("net.fabricmc:fabric-loader:${property("fabricloader.version")}")
-    maybeModImplementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabricapi.version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    implementation(include("gg.essential:elementa:${property("elementa.version")}")!!)
+    // GuiLib (see settings.gradle.kts for building it from a local checkout)
+    implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
 
-    maybeModImplementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
-    maybeModImplementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
+    implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
+    implementation("com.terraformersmc:modmenu:${versionedProperty("modmenu.version")}")
 
     implementation(include("com.github.trilarion:java-vorbis-support:${property("vorbis.version")}")!!)
     implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
 
     when (mcProject) {
-        "26.1.2-fabric" -> {
-            implementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1:${versionedProperty("rconfig.version")}")!!)
-            implementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-26.1-rc-1:${versionedProperty("rconfigkt.version")}")!!)
-            implementation(include("gg.essential:universalcraft-26.1-fabric:${property("universalcraft.version")}")!!)
-            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
+        "26.3-fabric" -> {
+            implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.3-fabric")
         }
-        "1.21.11-fabric" -> {
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.21.11:${versionedProperty("rconfig.version")}")!!)
-            maybeModImplementation(include("com.teamresourceful.resourcefulconfigkt:resourcefulconfigkt-fabric-1.21.11:${versionedProperty("rconfigkt.version")}")!!)
-            maybeModImplementation(include("gg.essential:universalcraft-1.21.11-fabric:${property("universalcraft.version")}")!!)
-            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+1.21.11-fabric")
+        "26.2-fabric" -> {
+            // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
+            implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
+
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
+        }
+        "26.1.2-fabric" -> {
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
@@ -355,7 +361,17 @@ dependencies {
 
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
-        "26.1.2-fabric" -> dependsOn(":1.21.11-fabric:kspKotlin")
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspKotlin")
+        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
 }
+
+tasks.findByName("preprocessTestCode")?.apply {
+    when (mcProject) {
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspTestKotlin")
+        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspTestKotlin")
+        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
+    }
+}
+

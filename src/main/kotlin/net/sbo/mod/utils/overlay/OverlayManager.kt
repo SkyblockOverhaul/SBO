@@ -1,6 +1,6 @@
 package net.sbo.mod.utils.overlay
 
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
@@ -31,6 +31,10 @@ object OverlayManager {
         }
     }
 
+    fun reloadPositions() {
+        overlays.forEach { it.loadPosition() }
+    }
+
     @SboEvent
     fun onMouseClickAfter(event: GuiMouseClickAfter) {
         if (event.screen !is OverlayEditScreen && event.button == 0) {
@@ -50,8 +54,8 @@ object OverlayManager {
         render(event.context, mc.screen)
     }
 
-    fun render(drawContext: GuiGraphics, renderScreen: Screen? = null) {
-        if (!World.isInSkyblock()) return
+    fun render(drawContext: GuiGraphicsExtractor, renderScreen: Screen? = null) {
+        if (!World.isInSkyblock() && renderScreen !is OverlayEditScreen) return
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor
@@ -61,8 +65,8 @@ object OverlayManager {
         }
     }
 
-    private fun postRender(drawContext: GuiGraphics, renderScreen: Screen) {
-        if (!World.isInSkyblock()) return
+    private fun postRender(drawContext: GuiGraphicsExtractor, renderScreen: Screen) {
+        if (!World.isInSkyblock() && renderScreen !is OverlayEditScreen) return
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor

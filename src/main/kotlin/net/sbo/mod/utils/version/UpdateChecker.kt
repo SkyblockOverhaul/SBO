@@ -5,9 +5,12 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
 
 object UpdateChecker {
+    private const val RECHECK_INTERVAL_HOURS = 8
+    private const val RECHECK_INTERVAL_TICKS = 20 * 60 * 60 * RECHECK_INTERVAL_HOURS
     private const val MODRINTH_ID = "9lBqVbQF"
     private val VERSION_REGEX = Regex("""(\d+\.\d+\.\d+|\d+\.\d+)""")
 
@@ -15,15 +18,18 @@ object UpdateChecker {
     private var latestId: String? = null
     var isUpdateAvailable = false
 
-    private fun String.extractCoreVersion(): String {
-        return VERSION_REGEX.find(this)?.value ?: this
+    private fun String.extractCoreVersion(): String = VERSION_REGEX.find(this)?.value ?: this
+
+    fun init() {
+        check()
+        Register.onTick(RECHECK_INTERVAL_TICKS) { check() }
     }
 
     fun check() {
         val mcVersion = SBOKotlin.mcVersion
         val url = "https://api.modrinth.com/v2/project/$MODRINTH_ID/version?game_versions=%5B%22$mcVersion%22%5D"
 
-        SBOKotlin.logger.info("[SBO] Update check started (MC: $mcVersion)")
+        SBOKotlin.logger.info("Update check started (MC: $mcVersion)")
 
         Http.sendGetRequest(url).toJson<List<ModrinthVersion>>(ignoreUnknownKeys = true) { versions ->
             val latestEntry = versions.firstOrNull() ?: return@toJson
@@ -36,17 +42,17 @@ object UpdateChecker {
                 latestVersion = rawLatest
                 latestId = latestEntry.id
                 isUpdateAvailable = true
-                SBOKotlin.logger.info("[SBO] Update found for $mcVersion: $rawLatest")
+                SBOKotlin.logger.info("Update found for $mcVersion: $rawLatest")
             }
         }.error {
-            SBOKotlin.logger.error("[SBO] Update check failed: ${it.message}")
+            SBOKotlin.logger.error("Update check failed: ${it.message}")
         }
     }
 
     internal fun printUpdateMessage() {
         val breakLine = Chat.getChatBreak(" ", "§a§m")
 
-        val versionUrl = "https://modrinth.com/mod/skyblock-overhaul/version/${latestId}"
+        val versionUrl = "https://modrinth.com/mod/skyblock-overhaul/version/$latestId"
 
         SBOKotlin.toast(
                 Component.literal("SBO").setStyle(
@@ -59,7 +65,7 @@ object UpdateChecker {
 
         Chat.chat(breakLine)
         Chat.clickableChat(
-            "§6[SBO] §eUpdate available: §a${latestVersion} §b[Click]",
+            "§6[SBO] §eUpdate available: §a$latestVersion §b[Click]",
             "§eOpen Version on Modrinth"
         ) { SBOKotlin.openInBrowser(versionUrl) }
         Chat.chat(breakLine)

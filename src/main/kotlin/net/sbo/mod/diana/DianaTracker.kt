@@ -20,35 +20,51 @@ import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DianaTracker
 import net.sbo.mod.utils.data.Item
-import net.sbo.mod.utils.data.SboDataObject
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerMayor
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerSession
-import net.sbo.mod.utils.data.SboDataObject.dianaTrackerTotal
-import net.sbo.mod.utils.data.SboDataObject.pastDianaEventsData
-import net.sbo.mod.utils.data.SboDataObject.saveTrackerData
-import net.sbo.mod.utils.data.SboDataObject.sboData
+import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
+import net.sbo.mod.utils.data.DataManager.dianaTrackerSessionData
+import net.sbo.mod.utils.data.DataManager.dianaTrackerTotalData
+import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
+import net.sbo.mod.utils.data.DataManager.saveTrackerData
+import net.sbo.mod.utils.data.DataManager.sboData
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.World.isInSkyblock
 import net.sbo.mod.utils.medal.MedalIntegration
+import net.sbo.mod.utils.time.TimeUtil
 import java.util.regex.Pattern
 
 object DianaTracker {
+    private val lootShareBlocklist = setOf("MYTH_THE_FISH", "BRAIDED_GRIFFIN_FEATHER")
     private val otherDrops = listOf("ENCHANTED_ANCIENT_CLAW", "ANCIENT_CLAW", "ENCHANTED_GOLD")
     private val sackDrops = listOf("Enchanted Gold", "Ancient Claw", "Enchanted Ancient Claw")
     private val isMobOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
     private val isItemOnCooldown: MutableMap<String, Boolean> = mutableMapOf()
 
-    private val lootAnnouncerBuffer: MutableList<String> = mutableListOf()
-    private var lootAnnouncerBool: Boolean = false
     private var allowScavTracking: Boolean = true
 
     var lastSpawnedMob: String? = null
     var lastSpawnedMobTime: Long = 0L
+
+    private var lastBurrowIsMob = false
+
+    private var timedRareMob: String? = null
+    private var timedRareMobStartNanos: Long = 0L
+  
+    fun consumeRareMobSpawnTime(mob: String): Long {
+        if (timedRareMob != mob) return -1L
+
+        val startNanos = timedRareMobStartNanos
+        timedRareMob = null
+        timedRareMobStartNanos = 0L
+
+        val elapsedNanos = System.nanoTime() - startNanos
+        return if (elapsedNanos > 0L) elapsedNanos / 1_000_000L else -1L
+    }
 
     fun init() {
         Register.command("sboresetsession") {
@@ -66,7 +82,7 @@ object DianaTracker {
             sboData.minotaursSinceStick = 0
             sboData.champsSinceRelic = 0
             sboData.inqsSinceLsChim = 0
-            SboDataObject.save("SboData")
+            DataManager.save(DataManager::sboData)
             SboTimerManager.timerSession.reset()
             DianaStats.updateLines()
         }
@@ -87,6 +103,7 @@ object DianaTracker {
         Register.onChatMessageCancelable(
             Pattern.compile("^§6§lWow! §eYou dug out §6(.*?) coins§e!$")
         ) { _, _ ->
+            lastBurrowIsMob = false
             allowScavTracking = false
             sleep(1000) {
                 allowScavTracking = true
@@ -95,12 +112,12 @@ object DianaTracker {
         }
 
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+            val player = matchResult.group(1).removeFormatting().lowercase()
+            if (!player.contains((Player.getName()?: "").lowercase())) return@onChatMessageCancelable true
             if (QOL.phoenixAnnouncer) {
                 Chat.chat("§6[SBO] §cGG §eFound a §cPhoenix §epet!")
                 Helper.showTitle("§c§lPhoenix Pet!", "", 0, 25, 35)
             }
-            val player = matchResult.group(1).removeFormatting().lowercase()
-            if (!player.contains((Player.getName()?: "").lowercase())) return@onChatMessageCancelable true
             sleep(1000) {
                 if (isInSkyblock() && dianaMobDiedRecently(3)) unlockAchievement(77) // phoenix pet
             }
@@ -116,7 +133,8 @@ object DianaTracker {
         trackMythTheFish()
     }
 
-    @SboEvent
+    // Reset before DataManager's normal-priority close listener performs its blocking save.
+    @SboEvent(SboEvent.Priority.HIGH)
     fun onGameClose(event: GameCloseEvent) {
         if (Diana.resetSessionOnGameRestart) {
             DianaLoot.resetSession()
@@ -127,12 +145,33 @@ object DianaTracker {
         val createdAt = item.creation
         val secondsPassedSinceCreation = Helper.getSecondsPassed(createdAt)
 
-        if (secondsPassedSinceCreation > 6) {
-            if (Debug.debugMessages) Chat.chat("debug: not tracking item with creation older than 6 seconds. secondsPassedSinceCreation=$secondsPassedSinceCreation,createdAt=$createdAt")
+        if (secondsPassedSinceCreation <= 6) {
+            trackWithPickuplog(item.itemId)
             return
         }
 
-        trackWithPickuplog(item.itemId)
+        if (Debug.debugOnlyMessages) {
+            val timeStatus = when {
+                TimeUtil.isSynchronized -> {
+                    "NTP synchronized, uncertainty≈${TimeUtil.synchronizationUncertaintyMillis}ms"
+                }
+
+                TimeUtil.synchronizationFailed -> {
+                    "NTP synchronization FAILED"
+                }
+
+                else -> {
+                    "NTP synchronization pending"
+                }
+            }
+
+            Chat.chat(
+                "SBO(debug): not tracking item with creation older than 6 seconds. " +
+                    "secondsPassedSinceCreation=$secondsPassedSinceCreation," +
+                    "createdAt=$createdAt," +
+                    "time=$timeStatus"
+            )
+        }
     }
 
     private fun trackWithPickuplog(itemId: String) {
@@ -161,7 +200,7 @@ object DianaTracker {
 
     fun trackWithSacksMessage(itemName: String, amount: Int) {
         if (!allowSackTracking) return
-        if (!dianaMobDiedRecently(4)) return
+        if (!dianaMobDiedRecently(30)) return
         val item = itemName.replace("Ingot", "").trim()
         if (sackDrops.contains(item)) {
             trackItem(item, amount)
@@ -178,6 +217,7 @@ object DianaTracker {
 
     private fun trackMobsWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+            lastBurrowIsMob = true
             val mob = matchResult.group(3)
             if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable !QOL.dianaMessageHider
 
@@ -189,28 +229,33 @@ object DianaTracker {
 
     fun trackMobOnSpawnAndSave(mob: String, fromCocoon: Boolean = false) {
         onMobSpawn(mob, fromCocoon)
-        SboDataObject.save("SboData")
+        DataManager.save(DataManager::sboData)
     }
 
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
         lastSpawnedMobTime = System.nanoTime()
+        // Only time the most recently spawned mob; a later spawn supersedes the old timer.
+        timedRareMob = null
+        timedRareMobStartNanos = 0L
         //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
                 sboData.kingSinceWool += 1
                 if (Diana.sendSinceMessage) {
-                    val timeSinceKing = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastKingDate)
+                    val timeSinceKing = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastKingDate)
                     if (sboData.lastKingDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceKing} §eMobs and §c$timeSinceKing §eto get a King!")
                     } else {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceKing} §eMobs to get a King!")
                     }
                 }
-                sboData.lastKingDate = dianaTrackerTotal.items.TIME
+                sboData.lastKingDate = dianaTrackerTotalData.items.TIME
 
                 if (sboData.b2bKing && sboData.mobsSinceKing == 1) {
                     Chat.chat("§6[SBO] §cb2b2b King Minos!")
@@ -226,6 +271,8 @@ object DianaTracker {
                 sboData.mobsSinceKing = 0
             }
             "Manticore" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -233,14 +280,14 @@ object DianaTracker {
                 sboData.mantiSinceStinger += 1
 
                 if (Diana.sendSinceMessage) {
-                    val timeSinceManti = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastMantiDate)
+                    val timeSinceManti = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastMantiDate)
                     if (sboData.lastMantiDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceManti} §eMobs and §c$timeSinceManti §eto get a Manticore!")
                     } else {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceManti} §eMobs to get a Manticore!")
                     }
                 }
-                sboData.lastMantiDate = dianaTrackerTotal.items.TIME
+                sboData.lastMantiDate = dianaTrackerTotalData.items.TIME
 
                 if (sboData.b2bManti && sboData.mobsSinceManti == 1) {
                     Chat.chat("§6[SBO] §cb2b2b Manticore!")
@@ -256,20 +303,22 @@ object DianaTracker {
                 sboData.mobsSinceManti = 0
             }
             "Minos Inquisitor" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
                 sboData.inqsSinceChim += 1
 
                 if (Diana.sendSinceMessage) {
-                    val timeSinceInq = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastInqDate)
+                    val timeSinceInq = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastInqDate)
                     if (sboData.lastInqDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs and §c$timeSinceInq §eto get an Inquis!")
                     } else {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs to get an Inquis!")
                     }
                 }
-                sboData.lastInqDate = dianaTrackerTotal.items.TIME
+                sboData.lastInqDate = dianaTrackerTotalData.items.TIME
 
                 if (sboData.b2bInq && sboData.mobsSinceInq == 1) {
                     Chat.chat("§6[SBO] §cb2b2b Inquisitor!")
@@ -284,20 +333,22 @@ object DianaTracker {
                 sboData.mobsSinceInq = 0
             }
             "Sphinx" -> {
+                timedRareMob = mob
+                timedRareMobStartNanos = System.nanoTime()
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
                 sboData.sphinxSinceFood += 1
 
                 if (Diana.sendSinceMessage) {
-                    val timeSinceSphinx = Helper.formatTime(dianaTrackerTotal.items.TIME - sboData.lastSphinxDate)
+                    val timeSinceSphinx = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastSphinxDate)
                     if (sboData.lastSphinxDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceSphinx} §eMobs and §c$timeSinceSphinx §eto get a Sphinx!")
                     } else {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceSphinx} §eMobs to get a Sphinx!")
                     }
                 }
-                sboData.lastSphinxDate = dianaTrackerTotal.items.TIME
+                sboData.lastSphinxDate = dianaTrackerTotalData.items.TIME
 
                 if (sboData.b2bSphinx && sboData.mobsSinceSphinx == 1) {
                     Chat.chat("§6[SBO] §cb2b2b Sphinx!")
@@ -326,7 +377,7 @@ object DianaTracker {
             "Stranded Nymph" -> trackMob(mob, 1)
             "Siamese Lynxes" -> trackMob(mob, 1)
             "Minos Hunter" -> trackMob(mob, 1)
-            else -> Chat.chat("§6[SBO] §cUnknown diana mob spawned: ${mob}. Please report this.")
+            else -> Chat.chat("§6[SBO] §cUnknown diana mob spawned: $mob. Please report this.")
         }
     }
 
@@ -340,6 +391,7 @@ object DianaTracker {
 
     private fun trackTreasuresWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { message, matchResult ->
+            lastBurrowIsMob = false
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather" -> trackItem(drop, 1)
                 "Mythos Fragment" -> trackItem(drop, 1)
@@ -356,7 +408,7 @@ object DianaTracker {
             trackLootshare = false,
             magicFind = 0
         )
-        announceLootToParty("Braided Griffin Feather", "Braided Griffin Feather", amount = dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER)
+        announceLootToParty("Braided Griffin Feather", "Braided Griffin Feather", amount = dianaTrackerMayorData.items.BRAIDED_GRIFFIN_FEATHER)
     }
 
     private fun trackRngDropsWithChat() {
@@ -390,13 +442,16 @@ object DianaTracker {
         if (magicfind > 0) mfPrefix = " (+$magicfind ✯ Magic Find)"
 
         when {
-            drop.contains("Shimmering Wool") -> { // todo: add achievements for wool
+            drop.contains("Shimmering Wool") -> {
                 MedalIntegration.saveWoolClip()
-                playCustomSound(SboDataObject.soundSettingsData.woolSound, volume = SboDataObject.soundSettingsData.woolVolume)
+                playCustomSound(DataManager.soundSettingsData.woolSound, volume = DataManager.soundSettingsData.woolVolume)
                 onRareDrop("Shimmering Wool", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
+
+                val customMsg = Helper.checkCustomDropMessage("wool", magicfind, isLootShare)
+
                 if (!isLootShare) {
                     // normal wool
                     if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.kingSinceWool} §eKing Minos to get Shimmering Wool!")
@@ -427,21 +482,23 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("wool", magicfind)
                 if (customMsg.first) {
                     announceLootToParty("Shimmering Wool", customMsg.second, true)
                 } else {
-                    announceLootToParty("Shimmering Wool", "Shimmering Wool$mfPrefix", amount = dianaTrackerMayor.items.SHIMMERING_WOOL + dianaTrackerMayor.items.SHIMMERING_WOOL_LS, lsAmount = dianaTrackerMayor.items.SHIMMERING_WOOL_LS)
+                    announceLootToParty("Shimmering Wool", "Shimmering Wool$mfPrefix", amount = dianaTrackerMayorData.items.SHIMMERING_WOOL + dianaTrackerMayorData.items.SHIMMERING_WOOL_LS, lsAmount = dianaTrackerMayorData.items.SHIMMERING_WOOL_LS)
                 }
-
             }
-            drop.contains("Manti-core") -> { // todo: add achievements for core
-                playCustomSound(SboDataObject.soundSettingsData.coreSound, volume = SboDataObject.soundSettingsData.coreVolume)
+
+            drop.contains("Manti-core") -> {
+                playCustomSound(DataManager.soundSettingsData.coreSound, volume = DataManager.soundSettingsData.coreVolume)
                 MedalIntegration.saveMantiCoreClip()
                 onRareDrop("Manti-core", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
+
+                val customMsg = Helper.checkCustomDropMessage("core", magicfind, isLootShare)
+
                 if (!isLootShare) {
                     // normal core
                     if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceCore} §eManticores to get Manti-core!")
@@ -472,21 +529,23 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("core", magicfind)
                 if (customMsg.first) {
                     announceLootToParty("Manti-core", customMsg.second, true)
                 } else {
-                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayor.items.MANTI_CORE + dianaTrackerMayor.items.MANTI_CORE_LS,  lsAmount = dianaTrackerMayor.items.MANTI_CORE_LS, buffer = true)
+                    announceLootToParty("Manti-core", "Manti-core$mfPrefix", amount = dianaTrackerMayorData.items.MANTI_CORE + dianaTrackerMayorData.items.MANTI_CORE_LS, lsAmount = dianaTrackerMayorData.items.MANTI_CORE_LS)
                 }
-
             }
-            drop.contains("Fateful Stinger") -> { // todo: add achievements for stinger
-                playCustomSound(SboDataObject.soundSettingsData.stingerSound, volume = SboDataObject.soundSettingsData.stingerVolume)
+
+            drop.contains("Fateful Stinger") -> {
+                playCustomSound(DataManager.soundSettingsData.stingerSound, volume = DataManager.soundSettingsData.stingerVolume)
                 MedalIntegration.saveFatefulStingerClip()
                 onRareDrop("Fateful Stinger", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
+
+                val customMsg = Helper.checkCustomDropMessage("Stinger", magicfind, isLootShare)
+
                 if (!isLootShare) {
                     // normal stinger
                     if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceStinger} §eManticores to get Fateful Stinger!")
@@ -515,24 +574,25 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("Stinger", magicfind)
                 if (customMsg.first) {
                     announceLootToParty("Fateful Stinger", customMsg.second, true)
                 } else {
-                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayor.items.FATEFUL_STINGER + dianaTrackerMayor.items.FATEFUL_STINGER_LS, lsAmount = dianaTrackerMayor.items.FATEFUL_STINGER_LS, buffer = true)
+                    announceLootToParty("Fateful Stinger", "Fateful Stinger$mfPrefix", amount = dianaTrackerMayorData.items.FATEFUL_STINGER + dianaTrackerMayorData.items.FATEFUL_STINGER_LS, lsAmount = dianaTrackerMayorData.items.FATEFUL_STINGER_LS)
                 }
-
             }
+
             drop.contains("Enchanted Book") -> {
                 if (!drop.contains("Chimera")) return
 
                 MedalIntegration.saveChimeraClip()
-                playCustomSound(SboDataObject.soundSettingsData.chimSound, volume = SboDataObject.soundSettingsData.chimVolume)
+                playCustomSound(DataManager.soundSettingsData.chimSound, volume = DataManager.soundSettingsData.chimVolume)
                 onRareDrop("Chimera", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind,
                     enforceCooldown = false // lootsharing from own inquisitor is possible, which allows to drop 2 chimeras from a single inquisitor of yours, so we need to not early return if isItemOnCooldown
                 )
+
+                val customChimMsg = Helper.checkCustomDropMessage("Chimera", magicfind, isLootShare)
 
                 if (!isLootShare) {
                     // normal chimera
@@ -569,20 +629,23 @@ object DianaTracker {
                     }
                 }
 
-                val customChimMsg = Helper.checkCustomDropMessage("Chimera", magicfind)
                 if (customChimMsg.first) {
                     announceLootToParty("Chimera", customChimMsg.second, true)
                 } else {
-                    announceLootToParty("Chimera", "Chimera$mfPrefix", amount = dianaTrackerMayor.items.CHIMERA + dianaTrackerMayor.items.CHIMERA_LS, lsAmount = dianaTrackerMayor.items.CHIMERA_LS)
+                    announceLootToParty("Chimera", "Chimera$mfPrefix", amount = dianaTrackerMayorData.items.CHIMERA + dianaTrackerMayorData.items.CHIMERA_LS, lsAmount = dianaTrackerMayorData.items.CHIMERA_LS)
                 }
             }
-            drop.contains("Brain Food") -> { // todo: add achievements for food
+
+            drop.contains("Brain Food") -> {
                 MedalIntegration.saveBrainFoodClip()
-                playCustomSound(SboDataObject.soundSettingsData.bfSound, volume = SboDataObject.soundSettingsData.bfVolume)
+                playCustomSound(DataManager.soundSettingsData.bfSound, volume = DataManager.soundSettingsData.bfVolume)
                 onRareDrop("Brain Food", showMessageOrTitle = true,
                     trackLootshare = true,
                     magicFind = magicfind
                 )
+
+                val customMsg = Helper.checkCustomDropMessage("Brain Food", magicfind, isLootShare)
+
                 if (!isLootShare) {
                     // normal brain food
                     if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.sphinxSinceFood} §eSphinx to get Brain Food!")
@@ -615,20 +678,22 @@ object DianaTracker {
                     }
                 }
 
-                val customMsg = Helper.checkCustomDropMessage("Brain Food", magicfind)
                 if (customMsg.first) {
                     announceLootToParty("Brain Food", customMsg.second, true)
                 } else {
-                    announceLootToParty("Brain Food", "Brain Food$mfPrefix", amount = dianaTrackerMayor.items.BRAIN_FOOD + dianaTrackerMayor.items.BRAIN_FOOD_LS, lsAmount = dianaTrackerMayor.items.BRAIN_FOOD_LS)
+                    announceLootToParty("Brain Food", "Brain Food$mfPrefix", amount = dianaTrackerMayorData.items.BRAIN_FOOD + dianaTrackerMayorData.items.BRAIN_FOOD_LS, lsAmount = dianaTrackerMayorData.items.BRAIN_FOOD_LS)
                 }
             }
+
             drop.contains("Daedalus Stick") -> {
-                playCustomSound(SboDataObject.soundSettingsData.stickSound, volume = SboDataObject.soundSettingsData.stickVolume)
+                playCustomSound(DataManager.soundSettingsData.stickSound, volume = DataManager.soundSettingsData.stickVolume)
                 MedalIntegration.saveDaedalusStickClip()
                 onRareDrop("Daedalus Stick", showMessageOrTitle = true,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
+
+                val customMsg = Helper.checkCustomDropMessage("Daedalus Stick", magicfind, false)
 
                 if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.minotaursSinceStick} §eMinotaurs to get a Daedalus Stick!")
 
@@ -642,15 +707,23 @@ object DianaTracker {
                     unlockAchievement(3) // b2b stick
                 }
                 sboData.minotaursSinceStick = 0
-                announceLootToParty("Daedalus Stick", "Daedalus Stick$mfPrefix", amount = dianaTrackerMayor.items.DAEDALUS_STICK)
+
+                if (customMsg.first) {
+                    announceLootToParty("Daedalus Stick", customMsg.second, true)
+                } else {
+                    announceLootToParty("Daedalus Stick", "Daedalus Stick$mfPrefix", amount = dianaTrackerMayorData.items.DAEDALUS_STICK)
+                }
             }
+
             drop.contains("Minos Relic") -> {
                 MedalIntegration.saveMinosRelicClip()
-                playCustomSound(SboDataObject.soundSettingsData.relicSound, volume = SboDataObject.soundSettingsData.relicVolume)
+                playCustomSound(DataManager.soundSettingsData.relicSound, volume = DataManager.soundSettingsData.relicVolume)
                 onRareDrop("Minos Relic", showMessageOrTitle = true,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
+
+                val customMsg = Helper.checkCustomDropMessage("Minos Relic", magicfind, isLootShare)
 
                 if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.champsSinceRelic} §eChampions to get a Minos Relic!")
 
@@ -658,37 +731,48 @@ object DianaTracker {
                     Chat.chat("§6[SBO] §cb2b Minos Relic!")
                     unlockAchievement(5) // b2b relic
                 }
+
                 if (isLootShare) {
                     Chat.chat("§6[SBO] §cLootshared a Minos Relic!")
                     unlockAchievement(17) // relic ls
                 }
+
                 sboData.champsSinceRelic = 0
-                announceLootToParty("Minos Relic", "Minos Relic$mfPrefix", amount = dianaTrackerMayor.items.MINOS_RELIC)
+
+                if (customMsg.first) {
+                    announceLootToParty("Minos Relic", customMsg.second, true)
+                } else {
+                    announceLootToParty("Minos Relic", "Minos Relic$mfPrefix", amount = dianaTrackerMayorData.items.MINOS_RELIC)
+                }
             }
+
             drop.contains("Washed-up Souvenir") -> {
                 MedalIntegration.saveWashedUpSouvenirClip()
                 onRareDrop("Washed-up Souvenir", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
+
             drop.contains("Dwarf Turtle Shelmet") -> {
                 MedalIntegration.saveDwarfTurtleShelmetClip()
                 onRareDrop("Dwarf Turtle Shelmet", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
+
             drop.contains("Crochet Tiger Plushie") -> {
                 MedalIntegration.saveCrochetTigerPlushieClip()
                 onRareDrop("Crochet Tiger Plushie", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
+
             drop.contains("Antique Remedies") -> {
                 MedalIntegration.saveAntiqueRemediesClip()
                 onRareDrop("Antique Remedies",
@@ -696,16 +780,18 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
+
             drop.contains("Cretan Urn") -> {
                 MedalIntegration.saveCretanUrnClip()
                 onRareDrop("Cretan Urn", showMessageOrTitle = false,
                     trackLootshare = false,
                     magicFind = magicfind
                 )
-                playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+                playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
             }
+
             drop.contains("Hilt of Revelations") -> {
                 onRareDrop("Hilt of Revelations", showMessageOrTitle = false,
                     trackLootshare = false,
@@ -714,7 +800,7 @@ object DianaTracker {
                 // sound played by onRareDrop for hilt
             }
         }
-        SboDataObject.save("SboData")
+        DataManager.save(DataManager::sboData)
     }
 
     private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true, enforceCooldown: Boolean = true) {
@@ -729,12 +815,12 @@ object DianaTracker {
 
         if (isCoG || itemId == "HILT_OF_REVELATIONS") {
             // onRareDrop for these drops are called from both the pickup log tracker and rare drop message, so we need to handle the sound and announceLootToParty here instead of rare drop message handler to make both pickuplog and rare drop message trigger the sound/party announce while preventing duplicates (due to isItemOnCooldown check above)
-            playCustomSound(SboDataObject.soundSettingsData.miscDropSound, volume = SboDataObject.soundSettingsData.miscDropVolume)
+            playCustomSound(DataManager.soundSettingsData.miscDropSound, volume = DataManager.soundSettingsData.miscDropVolume)
 
             if (isCoG) {
                 MedalIntegration.saveCrownOfGreedClip()
                 // CoG is no longer a treasure and instead dropped by Minos King; worth announcing
-                announceLootToParty("Crown of Greed", "Crown of Greed$mfPrefix", amount = dianaTrackerMayor.items.CROWN_OF_GREED + 1) // we didn't call trackItem yet, so add + 1
+                announceLootToParty("Crown of Greed", "Crown of Greed$mfPrefix", amount = dianaTrackerMayorData.items.CROWN_OF_GREED + 1) // we didn't call trackItem yet, so add + 1
             } else {
                 MedalIntegration.saveHiltOfRevelationsClip()
             }
@@ -742,38 +828,40 @@ object DianaTracker {
 
         val colorAndCount = when (itemId) {
             // Avoid reflective access by declaring each case separately even if they share the same color and itemId is the same as property name on the tracker
-            "MANTI_CORE" -> Triple("§c", dianaTrackerMayor.items.MANTI_CORE, dianaTrackerMayor.items.MANTI_CORE_LS)
-            "SHIMMERING_WOOL" -> Triple("§c", dianaTrackerMayor.items.SHIMMERING_WOOL, dianaTrackerMayor.items.SHIMMERING_WOOL_LS)
-            "MYTHOLOGICAL_DYE" -> Triple("§c", dianaTrackerMayor.items.MYTHOLOGICAL_DYE, -1)
-            "MYTH_THE_FISH" -> Triple("§c", dianaTrackerMayor.items.MYTH_THE_FISH, -1)
+            "MANTI_CORE" -> Triple("§c", dianaTrackerMayorData.items.MANTI_CORE, dianaTrackerMayorData.items.MANTI_CORE_LS)
+            "SHIMMERING_WOOL" -> Triple("§c", dianaTrackerMayorData.items.SHIMMERING_WOOL, dianaTrackerMayorData.items.SHIMMERING_WOOL_LS)
+            "MYTHOLOGICAL_DYE" -> Triple("§c", dianaTrackerMayorData.items.MYTHOLOGICAL_DYE, -1)
+            "MYTH_THE_FISH" -> Triple("§c", dianaTrackerMayorData.items.MYTH_THE_FISH, -1)
 
-            "CHIMERA" -> Triple("§d", dianaTrackerMayor.items.CHIMERA, dianaTrackerMayor.items.CHIMERA_LS)
-            "FATEFUL_STINGER" -> Triple("§d", dianaTrackerMayor.items.FATEFUL_STINGER, dianaTrackerMayor.items.FATEFUL_STINGER_LS)
+            "CHIMERA" -> Triple("§d", dianaTrackerMayorData.items.CHIMERA, dianaTrackerMayorData.items.CHIMERA_LS)
+            "FATEFUL_STINGER" -> Triple("§d", dianaTrackerMayorData.items.FATEFUL_STINGER, dianaTrackerMayorData.items.FATEFUL_STINGER_LS)
 
-            "BRAIN_FOOD" -> Triple("§5", dianaTrackerMayor.items.BRAIN_FOOD, dianaTrackerMayor.items.BRAIN_FOOD_LS)
-            "MINOS_RELIC" -> Triple("§5", dianaTrackerMayor.items.MINOS_RELIC, -1)
-            "BRAIDED_GRIFFIN_FEATHER" -> Triple("§5", dianaTrackerMayor.items.BRAIDED_GRIFFIN_FEATHER, -1)
+            "BRAIN_FOOD" -> Triple("§5", dianaTrackerMayorData.items.BRAIN_FOOD, dianaTrackerMayorData.items.BRAIN_FOOD_LS)
+            "MINOS_RELIC" -> Triple("§5", dianaTrackerMayorData.items.MINOS_RELIC, -1)
+            "BRAIDED_GRIFFIN_FEATHER" -> Triple("§5", dianaTrackerMayorData.items.BRAIDED_GRIFFIN_FEATHER, -1)
 
-            "DAEDALUS_STICK" -> Triple("§6", dianaTrackerMayor.items.DAEDALUS_STICK, -1)
-            "MYTHOS_FRAGMENT" -> Triple("§6", dianaTrackerMayor.items.MYTHOS_FRAGMENT, -1)
-            "CROWN_OF_GREED" -> Triple("§6", dianaTrackerMayor.items.CROWN_OF_GREED, -1) // TODO: Add Seperate LS tracker for LS Crown and clarify if LS or not in the message + party announce
-            "HILT_OF_REVELATIONS" -> Triple("§9", dianaTrackerMayor.items.HILT_OF_REVELATIONS, -1)
+            "DAEDALUS_STICK" -> Triple("§6", dianaTrackerMayorData.items.DAEDALUS_STICK, -1)
+            "MYTHOS_FRAGMENT" -> Triple("§6", dianaTrackerMayorData.items.MYTHOS_FRAGMENT, -1)
+            "CROWN_OF_GREED" -> Triple("§6", dianaTrackerMayorData.items.CROWN_OF_GREED, -1) // TODO: Add Seperate LS tracker for LS Crown and clarify if LS or not in the message + party announce
+            "HILT_OF_REVELATIONS" -> Triple("§9", dianaTrackerMayorData.items.HILT_OF_REVELATIONS, -1)
 
             else -> Triple("§f", -1, -1) // shouldn't happen
         }
 
-        val price = "§6${Helper.getItemPriceFormatted(itemId, amount)} coins"
+        val hidePrice = Helper.getItemPrice(itemId, amount) == 0L
+        val priceRaw = Helper.getItemPriceFormatted(itemId, amount)
+        val price = "§6$priceRaw coins"
 
-        val ls = gotLootShareRecently()
+        val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
         val lsText = if (ls) " (LS)" else ""
 
         var count = ""
 
-        val rawCount = colorAndCount.second
-        val realCount = if (rawCount != -1) rawCount + if (!ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
-
         val rawLsCount = colorAndCount.third
         val realLsCount = if (rawLsCount != -1) rawLsCount + if (ls) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
+
+        val rawCount = colorAndCount.second
+        val realCount = if (rawCount != -1) rawCount + if (!ls || rawLsCount == -1) 1 else 0 else -1 // we didn't call trackItem yet, avoids being #0
 
         if (realCount != -1) {
             count = if (realLsCount != -1 && ls) {
@@ -785,20 +873,38 @@ object DianaTracker {
             }
         }
 
+        val totalCount = if (realLsCount != -1) {
+            realCount + realLsCount
+        } else {
+            realCount
+        }
+
         if (Diana.lootAnnouncerChat && showMessageOrTitle) {
-            Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count§6 (+$price)")
+            val customMsg = when (itemId) {
+                "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind, ls, totalCount)
+                "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind, ls, totalCount)
+                "FATEFUL_STINGER" -> Helper.checkCustomDropMessage("stinger", magicFind, ls, totalCount)
+                "CHIMERA" -> Helper.checkCustomDropMessage("Chimera", magicFind, ls, totalCount)
+                "BRAIN_FOOD" -> Helper.checkCustomDropMessage("Brain Food", magicFind, ls, totalCount)
+                else -> false to ""
+            }
+
+            if (customMsg.first) {
+                Chat.chat(customMsg.second)
+            } else {
+                Chat.chat("§6[SBO] §lRARE DROP! §r${colorAndCount.first}$item§b$mfPrefix§d$lsText§e$count${if (hidePrice) "" else "§6 (+$price)"}")
+            }
         }
 
-        if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare) {
-            Helper.showTitle("${colorAndCount.first}§l$item$lsText!", price, 0, 25, 35)
+        if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare && (!isCoG || Diana.announceCrownOfGreed)) {
+            Helper.showTitle("${colorAndCount.first}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
         }
 
-        val isLootShare = gotLootShareRecently()
-        if (isLootShare) {
+        if (ls) {
             Chat.chat("§6[SBO] §cLootshared a $item!")
             when (itemId) {
                 "DAEDALUS_STICK" -> unlockAchievement(15)
-                "CHIMERA" -> unlockAchievement(16)
+                "CHIMERA" -> unlockAchievement(13)
             }
         } else {
             when (itemId) {
@@ -814,7 +920,7 @@ object DianaTracker {
             trackMagicFind(magicFind, itemId == "CHIMERA")
         }
 
-        if (trackLootshare && isLootShare) {
+        if (trackLootshare && ls) {
             trackItem(itemId + "_LS", amount, enforceCooldown)
         } else {
             trackItem(itemId, amount, enforceCooldown)
@@ -838,7 +944,7 @@ object DianaTracker {
         }
     }
 
-    private fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1, buffer: Boolean = false) {
+    private fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1) {
         if (!Diana.lootAnnouncerParty) return
         var msg = Helper.toTitleCase(item.replace("_LS", "").replace("_", " "))
         val custom = customMsg != null
@@ -848,7 +954,7 @@ object DianaTracker {
             val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
             val price = Helper.getItemPriceFormatted(itemId)
             val priceStr = if (price != "0") " (+$price coins)" else ""
-            val ls = gotLootShareRecently()
+            val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
 
             if (ls) msg += " (LS)"
             if (amount != -1) {
@@ -861,40 +967,22 @@ object DianaTracker {
             msg = "[SBO] RARE DROP! $msg$priceStr"
         }
 
-        if (buffer) {
-            lootAnnouncerBuffer.add(msg)
-            if (!lootAnnouncerBool) {
-                lootAnnouncerBool = true
-                sleep(1500) {
-                    sendLootAnnouncement()
-                    lootAnnouncerBool = false
-                }
-            }
-        } else {
-            Chat.pc(msg)
-        }
-    }
-
-    private fun sendLootAnnouncement() {
-        if (lootAnnouncerBuffer.isEmpty()) return
-        val msg = lootAnnouncerBuffer.joinToString(", ")
-        lootAnnouncerBuffer.clear()
         Chat.pc(msg)
     }
 
     fun checkMayorTracker() {
-        if (dianaTrackerMayor.year == 0) {
-            dianaTrackerMayor.year = Mayor.mayorElectedYear
-            dianaTrackerMayor.save()
+        if (dianaTrackerMayorData.year == 0) {
+            dianaTrackerMayorData.year = Mayor.mayorElectedYear
+            DataManager.save(DataManager::dianaTrackerMayorData)
             return
         }
 
-        if (dianaTrackerMayor.year >= Mayor.mayorElectedYear) return
+        if (dianaTrackerMayorData.year >= Mayor.mayorElectedYear) return
         var allZero = true
-        for (item in dianaTrackerMayor.mobs::class.java.declaredFields) {
+        for (item in dianaTrackerMayorData.mobs::class.java.declaredFields) {
             item.isAccessible = true
-            if (item.get(dianaTrackerMayor.mobs) is Int) {
-                if (item.getInt(dianaTrackerMayor.mobs) > 0) {
+            if (item.get(dianaTrackerMayorData.mobs) is Int) {
+                if (item.getInt(dianaTrackerMayorData.mobs) > 0) {
                     allZero = false
                     break
                 }
@@ -905,13 +993,13 @@ object DianaTracker {
 
     private fun resetMayorTracker(check: Boolean = false) {
         if (!check) {
-            if (dianaTrackerMayor.year == 0) dianaTrackerMayor.year = Mayor.mayorElectedYear
-            pastDianaEventsData.events += dianaTrackerMayor.snapshot()
-            SboDataObject.save("PastDianaEventsData")
+            if (dianaTrackerMayorData.year == 0) dianaTrackerMayorData.year = Mayor.mayorElectedYear
+            pastDianaEventsData.events += dianaTrackerMayorData.snapshot()
+            DataManager.save(DataManager::pastDianaEventsData)
         }
-        dianaTrackerMayor.reset()
-        dianaTrackerMayor.year = Mayor.mayorElectedYear
-        dianaTrackerMayor.save()
+        dianaTrackerMayorData.reset()
+        dianaTrackerMayorData.year = Mayor.mayorElectedYear
+        DataManager.save(DataManager::dianaTrackerMayorData)
         SboTimerManager.timerMayor.reset()
         SboTimerManager.activeTimers.forEach { it.pause() }
         DianaMobs.updateLines()
@@ -920,54 +1008,42 @@ object DianaTracker {
     }
 
     private fun trackShardsWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("^(.*?) You charmed a (.*?) and captured (.*?) Shards §7from it.$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(2).removeFormatting()
-            val amount = matchResult.group(3).removeFormatting().toIntOrNull() ?: 0
+        Register.onChatMessageCancelable(
+            Pattern.compile(
+                "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §[0-9a-f](.*?) Shards?§7!$",
+                Pattern.DOTALL
+            )
+        ) { message, matchResult ->
+            val shard = matchResult.group(3).removeFormatting()
+            val amount = matchResult.group(2).toIntOrNull() ?: 0
+
             when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
                 "Sphinx" -> trackItem("SPHINX_SHARD", amount)
                 "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
                 "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
                 "Harpy" -> trackItem("HARPY_SHARD", amount)
+                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
+                // "Minos Hunter" intentionally skipped until its tracker entry exists.
             }
             true
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("^(.*?) You charmed a (.*?) and captured its §9Shard§7.$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(
+            Pattern.compile(
+                "^§e§lLOOT SHARE §fYou received §b(\\d+) §[0-9a-f](.*?) §fShards for assisting §b(.*?)§f!$",
+                Pattern.DOTALL
+            )
+        ) { message, matchResult ->
             val shard = matchResult.group(2).removeFormatting()
-            val amount = 1
-            when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
-                "Sphinx" -> trackItem("SPHINX_SHARD", amount)
-                "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
-                "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
-                "Harpy" -> trackItem("HARPY_SHARD", amount)
-            }
-            true
-        }
+            val amount = matchResult.group(1).toIntOrNull() ?: 0
 
-        Register.onChatMessageCancelable(Pattern.compile("^§aYou caught (.*?) (.*?) §aShards(.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(2).removeFormatting()
-            val amount = matchResult.group(1).removeFormatting().replace("x", "").trim().toIntOrNull() ?: 0
             when (shard) {
                 "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
                 "Sphinx" -> trackItem("SPHINX_SHARD", amount)
                 "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
                 "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
                 "Harpy" -> trackItem("HARPY_SHARD", amount)
-            }
-            true
-        }
-
-        Register.onChatMessageCancelable(Pattern.compile("^§aYou caught a (.*?) §aShard!$", Pattern.DOTALL)) { message, matchResult ->
-            val shard = matchResult.group(1).removeFormatting()
-            val amount = 1
-            when (shard) {
-                "King Minos" -> trackItem("KING_MINOS_SHARD", amount)
-                "Sphinx" -> trackItem("SPHINX_SHARD", amount)
-                "Minotaur" -> trackItem("MINOTAUR_SHARD", amount)
-                "Cretan Bull" -> trackItem("CRETAN_BULL_SHARD", amount)
-                "Harpy" -> trackItem("HARPY_SHARD", amount)
+                // "Minos Hunter" intentionally skipped until its tracker entry exists.
             }
             true
         }
@@ -982,8 +1058,9 @@ object DianaTracker {
                     trackLootshare = false,
                     magicFind = 0
                 )
-                announceLootToParty("Myth the Fish", "Myth the Fish", amount = dianaTrackerMayor.items.MYTH_THE_FISH)
-                unlockAchievement(119)
+                announceLootToParty("Myth the Fish", "Myth the Fish", amount = dianaTrackerMayorData.items.MYTH_THE_FISH)
+
+                if (lastSpawnedMob == "Sphinx" && lastBurrowIsMob) unlockAchievement(119)
             }
         }
     }
@@ -1002,7 +1079,7 @@ object DianaTracker {
         if (sboData.mobsSinceManti >= 2) sboData.b2bManti = false
         sboData.mobsSinceSphinx += amount
         if (sboData.mobsSinceSphinx >= 2) sboData.b2bSphinx = false
-        SboDataObject.save("SboData")
+        DataManager.save(DataManager::sboData)
 
         sleep(500) {
             isMobOnCooldown[item] = false
@@ -1023,16 +1100,16 @@ object DianaTracker {
         }
         if (itemName == "SPHINX_LS") sboData.sphinxSinceLsFood += 1
 
-        trackOne(dianaTrackerMayor, itemName, amount)
-        trackOne(dianaTrackerSession, itemName, amount)
-        trackOne(dianaTrackerTotal, itemName, amount)
+        trackOne(dianaTrackerMayorData, itemName, amount)
+        trackOne(dianaTrackerSessionData, itemName, amount)
+        trackOne(dianaTrackerTotalData, itemName, amount)
         saveTrackerData()
         DianaStats.updateLines()
         MagicFind.updateLines()
         DianaMobs.updateLines()
         DianaLoot.updateLines()
         SboTimerManager.updateAllActivity()
-        AchievementManager.trackAchievementsItem(dianaTrackerMayor)
+        AchievementManager.trackAchievementsItem(dianaTrackerMayorData)
         AchievementManager.trackSince()
 
         sleep(500) {
