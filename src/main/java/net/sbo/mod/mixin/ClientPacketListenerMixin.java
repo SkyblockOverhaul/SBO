@@ -12,10 +12,14 @@ import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
 import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent;
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent;
+import net.sbo.mod.utils.events.impl.packets.LoginReceiveEvent;
+import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent;
+import net.sbo.mod.utils.events.impl.packets.SetTimeReceiveEvent;
 import net.sbo.mod.utils.game.TabList;
 import net.sbo.mod.utils.game.ScoreBoard;
 import org.jspecify.annotations.NonNull;
@@ -75,5 +79,20 @@ final class ClientPacketListenerMixin {
     @Inject(method = "handleSetDisplayObjective", at = @At("TAIL"))
     private final void sbo$onSetDisplayObjective(@NonNull final ClientboundSetDisplayObjectivePacket packet, @NonNull final CallbackInfo ci) {
         ScoreBoard.INSTANCE.markDirty();
+    }
+
+    @Inject(method = "handleParticleEvent", at = @At("RETURN"))
+    private final void sbo$onParticleEvent(@NonNull final ClientboundLevelParticlesPacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new ParticleReceiveEvent(packet));
+    }
+
+    @Inject(method = "handleSetTime", at = @At("RETURN"))
+    private final void sbo$onSetTime(@NonNull final ClientboundSetTimePacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new SetTimeReceiveEvent(packet));
+    }
+
+    @Inject(method = "handleLogin", at = @At("RETURN"))
+    private final void sbo$onLogin(@NonNull final ClientboundLoginPacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new LoginReceiveEvent(packet));
     }
 }
