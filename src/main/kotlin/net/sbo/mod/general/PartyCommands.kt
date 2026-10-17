@@ -241,7 +241,7 @@ object PartyCommands {
             val playerName = getPlayerName(unformattedPlayerName)
             val user = Player.getName() ?: return@onChatMessage
 
-            val commandsWithArgs = setOf("!since", "!demote", "!promote", "!ptme", "!transfer", "!stats", "!totalstats", "!sessionstats", "!sessionstat")
+            val commandsWithArgs = setOf("!since", "!demote", "!promote", "!ptme", "!transfer", "!stats", "!totalstats", "!sessionstats", "!sessionstat", "!block", "!unblock")
             if (messageParts.size > 1 && command !in commandsWithArgs) return@onChatMessage
 
             when (command) {
@@ -273,6 +273,8 @@ object PartyCommands {
                     sendResponse("Available diana party commands: ${helpCommands.joinToString(",")}")
                 }
                 "!since" -> handleSinceCommand(secondArg)
+                "!block" -> if (settings.blockUser && secondArg != null) Chat.command("block add $secondArg")
+                "!unblock" -> if (settings.blockUser && secondArg != null) Chat.command("block remove $secondArg")
                 else -> commandMap[command]?.let { cmd ->
                     if (cmd.isEnabled()) sendResponse(cmd.execute())
                 }

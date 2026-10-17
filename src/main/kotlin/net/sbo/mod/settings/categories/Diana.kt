@@ -50,7 +50,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Diana Burrows"
             this.description = "You should keep all of these On for the optimal experience. Without the Arrow Guess, your rates will be much worse, and without the Close Burrow Detection your burrows will not turn into Mob/Treasure/Start burrows when getting close and holding a spade, and it will also make your experience and rates worse."
         }
@@ -75,7 +75,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Diana Burrows Preferences"
         }
     }
@@ -131,7 +131,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Diana Warp"
             this.description = "You must configure the warp keys from vanilla Minecraft settings, under (ESC) -> Options -> Controls -> Key Binds... scroll till you find SBO - Keybinds and configure it from there."
         }
@@ -171,7 +171,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Diana Tracker"
         }
     }
@@ -324,7 +324,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Diana Announcer"
         }
     }
@@ -404,7 +404,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Rare Mob Title Timings"
             this.description = "Customize fade-in, display and fade-out ticks for Rare Mob titles."
         }
@@ -432,7 +432,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Diana Waypoints"
             this.description =  "§bDisable View Bobbing in controls if lines are buggy."
         }
@@ -456,7 +456,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Rare Mobs"
         }
     }
@@ -561,7 +561,7 @@ object Diana : Category("Diana") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Other"
         }
     }

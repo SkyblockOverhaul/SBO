@@ -6,7 +6,7 @@ import java.awt.Color
 
 object Customization : Category("Customization") {
     init {
-        separator {
+        sub {
             this.title = "Guess Color Customization"
         }
     }
@@ -41,7 +41,7 @@ object Customization : Category("Customization") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Burrow Color Customization"
         }
     }
@@ -68,7 +68,7 @@ object Customization : Category("Customization") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Waypoint Color Customization"
         }
     }
@@ -88,7 +88,7 @@ object Customization : Category("Customization") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Glow Color Customization"
         }
     }
@@ -126,7 +126,7 @@ object Customization : Category("Customization") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Waypoint Customization"
         }
     }
@@ -177,7 +177,7 @@ object Customization : Category("Customization") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Warp Title Customization"
         }
     }
@@ -188,7 +188,7 @@ object Customization : Category("Customization") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Sounds"
         }
 

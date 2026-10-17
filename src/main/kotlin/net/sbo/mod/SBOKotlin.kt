@@ -15,6 +15,7 @@ import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.utils.hubcache.HubChunkCache
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
@@ -142,6 +143,7 @@ object SBOKotlin : ClientModInitializer {
 		OwnStats.init()
 		StatReporter.init()
 		BurrowDetector.init()
+		HubChunkCache.init()
 		TimeUtil.start()
 		DianaTracker.init()
 		PartyPlayer.init()

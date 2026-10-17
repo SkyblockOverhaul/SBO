@@ -1,5 +1,6 @@
 package net.sbo.mod.config
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -26,10 +27,15 @@ open class Category(val id: String) : EntriesBuilder() {
     }
 
     val entries: List<ConfigEntry<*>> get() = elements.filterIsInstance<ConfigEntry<*>>()
-    val subcategories: Collection<Category> get() = categories.values
+    val children: Collection<Category> get() = categories.values
 
     // Missing, unknown or invalid values leave the entry as it is
     open fun load(json: JsonObject) {
+        // Before the entries, so their change listeners already see the right sub state
+        (json.get(DISABLED_SUBS_KEY) as? JsonArray)?.let { array ->
+            val disabled = array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }.toSet()
+            subs.forEach { it.setEnabled(it.title !in disabled) }
+        }
         for (entry in entries) {
             val data = json.get(entry.id) ?: continue
             if (!entry.load(data)) logger.warn("Invalid value for config entry {}: {}", entry.id, data)
@@ -40,12 +46,16 @@ open class Category(val id: String) : EntriesBuilder() {
     }
 
     fun resetAll() {
+        subs.forEach { it.setEnabled(true) }
         entries.forEach { it.reset() }
         categories.values.forEach { it.resetAll() }
     }
 
     internal fun write(out: StringBuilder, indentation: Int, extra: List<Pair<String, Pair<String, JsonElement>>> = emptyList()) {
-        val members = extra.map { (key, value) -> Triple(key, listOf(value.first), value.second.toString()) } +
+        val disabledSubs = if (subs.isEmpty()) emptyList() else listOf(
+            DISABLED_SUBS_KEY to (DISABLED_SUBS_COMMENT to JsonArray().apply { subs.filterNot { it.enabled }.forEach { add(it.title) } })
+        )
+        val members = (extra + disabledSubs).map { (key, value) -> Triple(key, listOf(value.first), value.second.toString()) } +
             entries.map { Triple(it.id, it.comments(), it.toJson().toString(indentation + 1)) } +
             categories.map { (id, category) -> Triple(id, emptyList(), StringBuilder().also { category.write(it, indentation + 1) }.toString()) }
         writeObject(out, indentation, members)
@@ -53,6 +63,9 @@ open class Category(val id: String) : EntriesBuilder() {
 
     companion object {
         internal val logger = LoggerFactory.getLogger("sbo-config")
+
+        private const val DISABLED_SUBS_KEY = "sbo:disabledSubs"
+        private const val DISABLED_SUBS_COMMENT = "Subs switched off in the settings, their on/off settings count as off."
     }
 }
 
