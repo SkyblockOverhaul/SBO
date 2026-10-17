@@ -6,13 +6,21 @@ open class EntriesBuilder {
 
     private val ids = mutableSetOf<String>()
     internal val elements = mutableListOf<ConfigElement>()
+    private var currentSub: Sub? = null
+
+    val subs: List<Sub> get() = elements.filterIsInstance<Sub>().filter { it.toggleable }
 
     internal fun add(element: ConfigElement) {
         if (element is ConfigEntry<*>) {
             require(element.id.isNotEmpty()) { "Entry id cannot be empty" }
             require('.' !in element.id) { "Entry id ${element.id} cannot contain '.'" }
             require(ids.add(element.id)) { "Entry with id ${element.id} already exists" }
+            currentSub?.let {
+                element.sub = it
+                it.entries += element
+            }
         }
+        if (element is Sub) currentSub = element.takeIf { it.toggleable }
         elements += element
     }
 
@@ -53,9 +61,9 @@ open class EntriesBuilder {
         add(Button(button.title, button.description, button.text, button.condition, button.callback))
     }
 
-    fun separator(builder: SeparatorBuilder.() -> Unit) {
-        val separator = SeparatorBuilder().apply(builder)
-        add(Separator(separator.title, separator.description, separator.condition))
+    fun sub(builder: SubBuilder.() -> Unit) {
+        val sub = SubBuilder().apply(builder)
+        add(Sub(sub.title, sub.description, sub.condition))
     }
 
     fun <T> observable(entry: ConfigDelegateProvider<T>, onChange: (T, T) -> Unit) = ObservableEntry(entry, onChange)
@@ -126,7 +134,7 @@ class ButtonBuilder {
     }
 }
 
-class SeparatorBuilder {
+class SubBuilder {
     var title: String = ""
     var description: String = ""
     var condition: () -> Boolean = { true }

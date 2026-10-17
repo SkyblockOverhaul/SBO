@@ -4,7 +4,7 @@ import net.sbo.mod.config.Category
 
 object Medal : Category("Medal") {
     init {
-        separator {
+        sub {
             this.title = "Medal Clips"
             this.description = "Saves Medal clips on Diana drops. Requires Medal to be running locally."
         }

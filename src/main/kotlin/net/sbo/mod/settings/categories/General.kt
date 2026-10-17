@@ -10,7 +10,7 @@ object General : Category("General") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Overlays"
         }
     }
@@ -37,7 +37,7 @@ object General : Category("General") {
             }
         }
 
-        separator {
+        sub {
             this.title = "Waypoints"
         }
     }
@@ -53,7 +53,7 @@ object General : Category("General") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Accessibility"
         }
     }
@@ -64,7 +64,7 @@ object General : Category("General") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Achievements"
         }
     }
@@ -80,7 +80,7 @@ object General : Category("General") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Chunk Cache"
         }
     }
