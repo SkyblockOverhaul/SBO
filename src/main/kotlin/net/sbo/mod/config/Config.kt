@@ -26,7 +26,7 @@ open class Category(val id: String) : EntriesBuilder() {
     }
 
     val entries: List<ConfigEntry<*>> get() = elements.filterIsInstance<ConfigEntry<*>>()
-    val subcategories: Collection<Category> get() = categories.values
+    val children: Collection<Category> get() = categories.values
 
     // Missing, unknown or invalid values leave the entry as it is
     open fun load(json: JsonObject) {

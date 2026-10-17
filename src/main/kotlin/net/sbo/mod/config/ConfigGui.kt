@@ -22,6 +22,7 @@ import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.guilib.fabric.GuiLibScreen
 import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import java.math.BigDecimal
@@ -48,6 +49,8 @@ object ConfigGui {
 private class Ui(
     val changed: () -> Unit,
     val show: (Category, ConfigElement) -> Unit,
+    val collapsed: Set<String>,
+    val toggle: (String) -> Unit,
 )
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
@@ -56,15 +59,22 @@ private data class AppProps(val config: Config, val onBack: (() -> Unit)?)
 
 private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     val hasGeneral = config.elements.isNotEmpty()
-    var page by useState<Category>(if (hasGeneral) config else config.subcategories.firstOrNull() ?: config)
+    var page by useState<Category>(if (hasGeneral) config else config.children.firstOrNull() ?: config)
     var query by useState("")
     var target by useState<ConfigElement?>(null)
+    var collapsed by useState<Set<String>>(DataManager.sboData.collapsedSettings.toSet())
     val revision = useState(0)
     val body = useElementRef()
     useSboScale()
     useSboTheme()
 
-    val ui = useMemo {
+    fun setCollapsed(keys: Set<String>) {
+        collapsed = keys
+        DataManager.sboData.collapsedSettings = keys.toMutableSet()
+        DataManager.sboData.save()
+    }
+
+    val ui = useMemo(collapsed) {
         Ui(
             changed = {
                 revision.update { it + 1 }
@@ -74,7 +84,11 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                 page = category
                 query = ""
                 target = element
+                // Jumping from the search into a collapsed sub opens it
+                collapseKeyOf(category, element)?.let { setCollapsed(collapsed - it) }
             },
+            collapsed = collapsed,
+            toggle = { key -> setCollapsed(if (key in collapsed) collapsed - key else collapsed + key) },
         )
     }
     val hits = useMemo(query, revision.value) { search(config, query) }
@@ -126,7 +140,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                                 query = ""
                             }
                         }
-                        config.subcategories.forEach { category ->
+                        config.children.forEach { category ->
                             val count = hits.count { it.path.getOrNull(1) === category }
                             categoryLink(category, category.name, page === category && !searching, count, searching) {
                                 page = category
@@ -141,9 +155,9 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                         searching -> results(query, hits, revision.value)
                         page === config -> {
                             h1(className = "cfg-page-title") { +"General" }
-                            elements(config, revision.value, target)
+                            elements(config, revision.value, target, ui)
                         }
-                        else -> categoryPage(page, revision.value, target)
+                        else -> categoryPage(page, revision.value, target, ui)
                     }
                 }
             }
@@ -170,29 +184,62 @@ private fun NodeBuilder.categoryLink(
     }
 }
 
-private fun NodeBuilder.categoryPage(category: Category, revision: Int, target: ConfigElement?) {
+private fun NodeBuilder.categoryPage(category: Category, revision: Int, target: ConfigElement?, ui: Ui) {
     h1(className = "cfg-page-title") { +category.name }
     if (category.description.isNotEmpty()) description(category.description, "cfg-page-description")
-    elements(category, revision, target)
-    category.subcategories.forEach { sub ->
-        h2(className = "cfg-subcategory", key = "sub:${sub.id}") { +sub.name }
-        elements(sub, revision, target)
+    elements(category, revision, target, ui)
+    category.children.forEach { child ->
+        h2(className = "cfg-child-category", key = "child:${child.id}") { +child.name }
+        elements(child, revision, target, ui)
     }
 }
 
-private fun NodeBuilder.elements(category: Category, revision: Int, target: ConfigElement?) {
+private fun NodeBuilder.elements(category: Category, revision: Int, target: ConfigElement?, ui: Ui) {
+    var collapsed = false
     category.elements.forEachIndexed { i, element ->
         when (element) {
-            is Separator -> if (element.condition()) {
-                div(className = "cfg-section", key = "${category.id}:sep:$i") {
-                    if (element.title.isNotEmpty()) h2(className = "cfg-section-title") { +element.title }
-                    if (element.description.isNotEmpty()) description(element.description, "cfg-section-description")
-                }
+            is Sub -> {
+                collapsed = false
+                if (!element.condition()) return@forEachIndexed
+                SubHeader(SubHeaderProps(element, collapseKey(category, element), ui), key = "${category.id}:sub:$i")
+                collapsed = element.title.isNotEmpty() && collapseKey(category, element) in ui.collapsed
             }
-            is Button -> if (element.condition()) Row(RowProps(element, revision, element === target), key = "${category.id}:btn:$i")
-            is ConfigEntry<*> -> Row(RowProps(element, revision, element === target), key = "${category.id}:${element.id}")
+            is Button -> if (!collapsed && element.condition()) Row(RowProps(element, revision, element === target), key = "${category.id}:btn:$i")
+            is ConfigEntry<*> -> if (!collapsed) Row(RowProps(element, revision, element === target), key = "${category.id}:${element.id}")
         }
     }
+}
+
+private data class SubHeaderProps(val sub: Sub, val key: String, val ui: Ui)
+
+// A sub without a title only separates, there is nothing to click
+private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, key, ui) ->
+    val collapsible = sub.title.isNotEmpty()
+    val collapsed = collapsible && key in ui.collapsed
+    val classes = listOfNotNull("cfg-sub", "collapsible".takeIf { collapsible }, "collapsed".takeIf { collapsed }).joinToString(" ")
+    div(className = classes, onClick = if (collapsible) { _ -> ui.toggle(key) } else null) {
+        if (collapsible) {
+            h2(className = "cfg-sub-title") {
+                span(className = "cfg-chevron")
+                +sub.title
+            }
+        }
+        if (sub.description.isNotEmpty()) description(sub.description, "cfg-sub-description")
+    }
+}
+
+// By title, so it stays collapsed when settings are added or moved
+private fun collapseKey(category: Category, sub: Sub) = "${category.id}/${sub.title.stripFormatting()}"
+
+private fun collapseKeyOf(category: Category, element: ConfigElement): String? {
+    for (owner in listOf(category) + category.children) {
+        var current: Sub? = null
+        for (e in owner.elements) {
+            if (e is Sub) current = e.takeIf { it.title.isNotEmpty() && it.condition() }
+            if (e === element) return current?.let { collapseKey(owner, it) }
+        }
+    }
+    return null
 }
 
 private fun NodeBuilder.results(query: String, hits: List<SearchHit>, revision: Int) {
@@ -237,7 +284,7 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
         div(className = "cfg-row-text") {
             div(className = "cfg-row-name") { +rowName(element) }
             if (hit != null) {
-                val place = listOfNotNull(placeName(hit.path), hit.section?.title?.takeIf { it.isNotEmpty() }).joinToString(" › ")
+                val place = listOfNotNull(placeName(hit.path), hit.sub?.title?.takeIf { it.isNotEmpty() }).joinToString(" › ")
                 span(className = "cfg-row-place", title = "Show it in its category", onClick = { ui.show(hit.category, element) }) {
                     +"$place ↗"
                 }
@@ -252,7 +299,7 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
                     ui.changed()
                 }) { +(element.text ?: "Open") }
                 is ConfigEntry<*> -> control(element, ui, refresh)
-                is Separator -> {}
+                is Sub -> {}
             }
         }
     }
@@ -261,13 +308,13 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
 private fun rowName(element: ConfigElement) = when (element) {
     is Button -> element.title
     is ConfigEntry<*> -> element.name
-    is Separator -> element.title
+    is Sub -> element.title
 }
 
 private fun rowDescription(element: ConfigElement) = when (element) {
     is Button -> element.description
     is ConfigEntry<*> -> element.description
-    is Separator -> element.description
+    is Sub -> element.description
 }
 
 private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Unit) {

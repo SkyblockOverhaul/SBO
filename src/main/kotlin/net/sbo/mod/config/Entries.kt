@@ -53,9 +53,9 @@ open class EntriesBuilder {
         add(Button(button.title, button.description, button.text, button.condition, button.callback))
     }
 
-    fun separator(builder: SeparatorBuilder.() -> Unit) {
-        val separator = SeparatorBuilder().apply(builder)
-        add(Separator(separator.title, separator.description, separator.condition))
+    fun sub(builder: SubBuilder.() -> Unit) {
+        val sub = SubBuilder().apply(builder)
+        add(Sub(sub.title, sub.description, sub.condition))
     }
 
     fun <T> observable(entry: ConfigDelegateProvider<T>, onChange: (T, T) -> Unit) = ObservableEntry(entry, onChange)
@@ -126,7 +126,7 @@ class ButtonBuilder {
     }
 }
 
-class SeparatorBuilder {
+class SubBuilder {
     var title: String = ""
     var description: String = ""
     var condition: () -> Boolean = { true }

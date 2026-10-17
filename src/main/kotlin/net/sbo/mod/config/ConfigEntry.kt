@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
 
 sealed interface ConfigElement
 
-class Separator(
+class Sub(
     val title: String,
     val description: String,
     val condition: () -> Boolean,
