@@ -141,21 +141,21 @@ object BadgeGui {
         var inTab by useState(DataManager.sboData.badgesInTab)
         var inChat by useState(DataManager.sboData.badgesInChat)
         div(className = "bd-section-title") { +"Badges of Others" }
-        setting("Above heads", "The SBO logo, the chosen stat and the colored name of supporters, maintainers and moderators.") {
+        setting("Above heads", "The SBO logo, the chosen stat and the colored name of supporters. The SBO team always shows.") {
             switch(checked = aboveHeads, onChange = {
                 aboveHeads = it.checked
                 DataManager.sboData.badgesAboveHeads = it.checked
                 DataManager.sboData.save()
             })
         }
-        setting("In the tab list", "The SBO logo behind their name and the name in their color.") {
+        setting("In the tab list", "The SBO logo behind their name and the name in their color. The SBO team always shows.") {
             switch(checked = inTab, onChange = {
                 inTab = it.checked
                 DataManager.sboData.badgesInTab = it.checked
                 DataManager.sboData.save()
             })
         }
-        setting("In chat", "The SBO logo behind their name, the name in their color and team tags, for new messages.") {
+        setting("In chat", "The SBO logo behind their name and the name in their color, for new messages. The SBO team always shows.") {
             switch(checked = inChat, onChange = {
                 inChat = it.checked
                 DataManager.sboData.badgesInChat = it.checked

@@ -37,7 +37,8 @@ import java.util.function.Supplier
 object SboBadges {
     const val COMMAND = "sbobadge"
 
-    // Switches for other players' badges in /sbobadge; false hides them and always shows badges
+    // Switches for other players' badges in /sbobadge; false hides them and always shows badges.
+    // They only hide supporters and contributors, the team (moderators and above) always shows
     const val VIEWER_TOGGLES = true
     private val showAboveHeads: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesAboveHeads
     private val showInTab: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInTab
@@ -72,6 +73,7 @@ object SboBadges {
     // Lines without a moving gradient are built once per list
     @Volatile private var fixedLines: Map<UUID, Component> = emptyMap()
     @Volatile private var team: Map<UUID, TeamMember> = emptyMap()
+    @Volatile private var teamNames: Set<String> = emptySet()
     @Volatile private var ranks: Map<String, BadgeRank> = emptyMap()
     // Team tags in front of the name, built once per list: above heads by uuid,
     // tab list and chat by lowercase name since their lines only carry the name
@@ -132,6 +134,7 @@ object SboBadges {
         val members = response.team.mapNotNull { member -> uuidOf(member.uuid)?.let { it to member } }.toMap()
         ranks = response.ranks
         team = members
+        teamNames = members.values.mapTo(HashSet()) { it.name.lowercase() }
         // The tag takes the member's tag color, the rank's while their badge is off
         val tagged = members.mapNotNull { (uuid, member) ->
             tagOf(member.rank, holders[uuid]?.colorOf(BadgePart.TAG))?.let { Triple(uuid, member, it) }
@@ -167,14 +170,18 @@ object SboBadges {
 
     fun own(): SboBadge? = uuidOf(Player.accountUuid())?.let { byUuid[it] }
 
+    /** The viewer's switch for a place hides supporters and contributors, never the team. */
+    private fun shown(enabled: Boolean, uuid: UUID) = enabled || uuid in team
+    private fun shown(enabled: Boolean, player: String) = enabled || player.lowercase() in teamNames
+
     fun nameTagLine(uuid: UUID): Component? {
-        if (!showAboveHeads) return null
+        if (!shown(showAboveHeads, uuid)) return null
         val badge = byUuid[uuid]?.takeIf { it.shows(BadgePart.LOGO, TeamTagPlace.HEAD) } ?: return null
         return fixedLines[uuid] ?: line(badge)
     }
 
     fun colorNameTag(uuid: UUID, nameTag: Component): Component {
-        if (!showAboveHeads) return nameTag
+        if (!shown(showAboveHeads, uuid)) return nameTag
         val colored = byUuid[uuid]?.let { recolored(nameTag, it.name, TeamTagPlace.HEAD) } ?: nameTag
         val tag = tags[uuid] ?: return colored
         return Component.empty().append(tag).append(colored)
@@ -217,8 +224,8 @@ object SboBadges {
     }
 
     fun decorateTab(info: PlayerInfo, line: Component): Component {
-        if (skyHanniReading || !showInTab || (byUuid.isEmpty() && tabTags.isEmpty())) return line
-        val player = tabPlayerOf(info) ?: return line
+        if (skyHanniReading || (!showInTab && team.isEmpty()) || (byUuid.isEmpty() && tabTags.isEmpty())) return line
+        val player = tabPlayerOf(info)?.takeIf { shown(showInTab, it) } ?: return line
         return decorateTab(line, player)
     }
 
@@ -237,9 +244,9 @@ object SboBadges {
 
     /** A line SkyHanni's compact tab list draws, decorated like ours; null when it has no badge holder or tagged member. */
     fun decorateSkyHanniTab(line: Component?): Component? {
-        if (line == null || !showInTab || (byName.isEmpty() && tabTags.isEmpty())) return null
+        if (line == null || (!showInTab && team.isEmpty()) || (byName.isEmpty() && tabTags.isEmpty())) return null
         val plain = ChatFormatting.stripFormatting(line.string) ?: return null
-        val player = tabPlayerIn(plain) ?: return null
+        val player = tabPlayerIn(plain)?.takeIf { shown(showInTab, it) } ?: return null
         return decorateTab(line, player).takeIf { it !== line }
     }
 
@@ -254,13 +261,13 @@ object SboBadges {
 
     /** The sender of a chat line: team tag in front, badge color and the SBO logo behind the name. */
     fun decorateChat(line: Component): Component {
-        if (!showInChat || (byName.isEmpty() && chatTags.isEmpty())) return line
+        if ((!showInChat && team.isEmpty()) || (byName.isEmpty() && chatTags.isEmpty())) return line
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
         val colon = plain.indexOf(": ")
         if (colon !in 1..MAX_SENDER_LENGTH) return line
         val sender = WORD.findAll(plain.substring(0, colon)).map { it.value }
-            .firstOrNull { it.lowercase() in byName || it.lowercase() in chatTags } ?: return line
+            .firstOrNull { (it.lowercase() in byName || it.lowercase() in chatTags) && shown(showInChat, it) } ?: return line
         val badge = byName[sender.lowercase()]
         return recolor(
             line, sender, badge, TeamTagPlace.CHAT,
