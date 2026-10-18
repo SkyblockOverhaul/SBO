@@ -22,8 +22,9 @@ fun renderHubIslandOnlyEnabled(): Boolean {
 fun inArea(chunkX: Int, chunkZ: Int, area: AABB): Boolean {
     val minX = chunkX * 16.0
     val minZ = chunkZ * 16.0
-    return area.minX < minX + 16.0 && area.maxX >= minX &&
-            area.minZ < minZ + 16.0 && area.maxZ >= minZ
+
+    return area.minX - 16.0 < minX + 16.0 && area.maxX + 16.0 >= minX &&
+            area.minZ - 16.0 < minZ + 16.0 && area.maxZ + 16.0 >= minZ
 }
 
 /**
