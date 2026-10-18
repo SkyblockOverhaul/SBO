@@ -44,7 +44,8 @@ object ArrowGuessBurrow {
     private const val EPSILON = 1e-6
     private val HUB_BOUNDS_MIN = SboVec(-283.0, 60.0, -208.0)
     private val HUB_BOUNDS_MAX = SboVec(175.0, 105.0, 205.0)
-    private val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
+    /** The Hub island, guesses outside of it are never valid. */
+    val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
 
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
 

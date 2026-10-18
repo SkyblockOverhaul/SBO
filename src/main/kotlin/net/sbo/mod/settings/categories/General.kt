@@ -94,4 +94,14 @@ object General : Category("General") {
         this.name = Literal("Chunk Cache Areas")
         this.description = Literal("Areas to cache, as shown after \"Area:\" in the tab list, e.g. Hub or The Park. Each area needs memory for every chunk you saw, until you disconnect.")
     }
+
+    var chunkCacheHubIslandOnly by boolean(true) {
+        this.name = Literal("Hub Island Only")
+        this.description = Literal("In the Hub, only caches chunks of the Hub island itself, not the islands you can see from it (The Park, Spider's Den, The Barn...). Less memory and better performance, but those islands stop rendering beyond the server's view distance.")
+    }
+
+    var chunkCacheAboveServerOnly by boolean(false) {
+        this.name = Literal("Only Above Server Render Distance")
+        this.description = Literal("Only runs the Chunk Cache while your render distance is higher than the server's (Hypixel: 10). Below that it only helps right after switching lobbies, so this saves a bit of performance.")
+    }
 }
