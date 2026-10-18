@@ -38,7 +38,7 @@ object BadgeGui {
     private const val DEFAULT_GRADIENT_END = "#FFD966"
     // Gray of the team tag brackets, like in game
     private const val TAG_BRACKETS = "#AAAAAA"
-    // Shown in the chat preview when the rank is colored there, the own rank is not known
+    // Shown in the preview where the rank is colored, the own rank is not known
     private const val SAMPLE_RANK = "MVP+"
 
     fun open() {
@@ -110,17 +110,13 @@ object BadgeGui {
                 div(className = "bd-spacer")
                 button(className = "bd-icon bd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
-            // Wide instead of tall: preview and switches for other badges left, the own badge's settings right
-            div(className = "bd-body bd-columns") {
+            div(className = "bd-body") {
                 when (val state = load) {
                     Load.Loading -> {
-                        div(className = "bd-col-left") {
-                            div(className = "bd-center") { +"Loading your badge..." }
-                            if (SboBadges.VIEWER_TOGGLES) ViewSettings()
-                        }
-                        div(className = "bd-col-right")
+                        div(className = "bd-center") { +"Loading your badge..." }
+                        if (SboBadges.VIEWER_TOGGLES) ViewSettings()
                     }
-                    is Load.Failed -> {
+                    is Load.Failed -> div(className = "bd-columns") {
                         div(className = "bd-col-left") { failed(state) }
                         div(className = "bd-col-right") { if (SboBadges.VIEWER_TOGGLES) ViewSettings() }
                     }
@@ -137,17 +133,9 @@ object BadgeGui {
     }
 
     private val ViewSettings = component("BadgeView") {
-        var aboveHeads by useState(DataManager.sboData.badgesAboveHeads)
         var inTab by useState(DataManager.sboData.badgesInTab)
         var inChat by useState(DataManager.sboData.badgesInChat)
         div(className = "bd-section-title") { +"Badges of Others" }
-        setting("Above heads", "The SBO logo, the chosen stat and the colored name of supporters. The SBO team always shows.") {
-            switch(checked = aboveHeads, onChange = {
-                aboveHeads = it.checked
-                DataManager.sboData.badgesAboveHeads = it.checked
-                DataManager.sboData.save()
-            })
-        }
         setting("In the tab list", "The SBO logo behind their name and the name in their color. The SBO team always shows.") {
             switch(checked = inTab, onChange = {
                 inTab = it.checked
@@ -195,31 +183,31 @@ object BadgeGui {
         // The tag only has a row for team ranks, a picked tag falls back to the name
         val part = if (picked == BadgePart.TAG && !hasTag(badge)) BadgePart.NAME else picked
 
-        div(className = "bd-col-left") {
-            div(className = "bd-rank-row") {
-                span(className = "bd-rank", style = "background: ${background(rank?.color ?: "#FFAA00", rank?.to)}") {
-                    +(rank?.label ?: badge.rank.orEmpty())
-                }
-                span(className = "bd-hint") { +if (badge.team) "Thank you for working on SBO!" else "Thank you for supporting SBO!" }
+        div(className = "bd-rank-row") {
+            span(className = "bd-rank", style = "background: ${background(rank?.color ?: "#FFAA00", rank?.to)}") {
+                +(rank?.label ?: badge.rank.orEmpty())
             }
-
-            preview(badge, settings, stat, part, onPick)
-
-            div(className = "bd-actions") {
-                button(
-                    className = "bd-primary",
-                    disabled = saving || !changed,
-                    title = if (changed) "Saves your badge" else "Nothing changed",
-                    onClick = { onSave() },
-                ) { +if (saving) "Saving..." else "Save" }
-                if (changed) button(disabled = saving, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
-            }
-
-            if (SboBadges.VIEWER_TOGGLES) ViewSettings()
+            span(className = "bd-hint") { +if (badge.team) "Thank you for working on SBO!" else "Thank you for supporting SBO!" }
+            div(className = "bd-spacer")
+            if (changed) button(disabled = saving, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
+            button(
+                className = "bd-primary",
+                disabled = saving || !changed,
+                title = if (changed) "Saves your badge" else "Nothing changed",
+                onClick = { onSave() },
+            ) { +if (saving) "Saving..." else "Save" }
         }
 
-        div(className = "bd-col-right") {
-            settings(badge, settings, part, onPick, onChange)
+        // The preview is one row over the whole width, the settings below it in two columns
+        preview(badge, settings, stat, part, onPick)
+
+        div(className = "bd-columns") {
+            div(className = "bd-col-left") {
+                partSettings(badge, settings, part, onPick, onChange)
+            }
+            div(className = "bd-col-right") {
+                otherSettings(badge, settings, onChange)
+            }
         }
     }
 
@@ -243,10 +231,10 @@ object BadgeGui {
         BadgePart.NAME to "Your name where it is colored.",
         BadgePart.LEVEL to "Your SkyBlock level in front of your name where it is colored.",
         BadgePart.TAG to "Your team tag; others see it in the rank colors while your badge is hidden.",
-        BadgePart.RANK to "Your Hypixel rank in front of your name, like [MVP+], in chat and where the tab list shows it.",
+        BadgePart.RANK to "Your Hypixel rank in front of your name, like [MVP+], where Hypixel shows it.",
     )
 
-    private fun NodeBuilder.settings(
+    private fun NodeBuilder.partSettings(
         badge: OwnBadgeResponse,
         settings: BadgeSettings,
         picked: String,
@@ -260,7 +248,7 @@ object BadgeGui {
             add(PartRow(BadgePart.LOGO, BadgePart.STAT, PART_LABELS.getValue(BadgePart.STAT), TeamTagPlace.ALL))
             add(PartRow(BadgePart.NAME, BadgePart.NAME, "Name color", TeamTagPlace.ALL))
             add(PartRow(BadgePart.LEVEL, BadgePart.LEVEL, "Level color", TeamTagPlace.ALL))
-            add(PartRow(BadgePart.RANK, BadgePart.RANK, "Rank color", TeamTagPlace.RANK, "Hypixel shows no rank above heads"))
+            add(PartRow(BadgePart.RANK, BadgePart.RANK, "Rank color", TeamTagPlace.ALL))
             if (hasTag(badge)) add(PartRow(BadgePart.TAG, BadgePart.TAG, "Team tag", TeamTagPlace.ALL))
         }
         div(className = "bd-matrix") {
@@ -343,7 +331,10 @@ object BadgeGui {
                 })
             }
         }
+    }
 
+    private fun NodeBuilder.otherSettings(badge: OwnBadgeResponse, settings: BadgeSettings, onChange: (BadgeSettings) -> Unit) {
+        div(className = "bd-section-title") { +"Stat" }
         setting("Stat", "Shown above your head next to the logo, read from your SkyBlock profile.") {
             select(
                 value = settings.stat,
@@ -357,6 +348,7 @@ object BadgeGui {
         }
 
         OwnView()
+        if (SboBadges.VIEWER_TOGGLES) ViewSettings()
     }
 
     // Only on this PC, so it changes right away without saving
@@ -395,41 +387,45 @@ object BadgeGui {
         fun shows(part: String, place: String) = listed && place in settings.placesOf(part)
         val tagAt = { place: String -> hasTag(badge) && place in settings.teamTagPlaces }
         val atHead = shows(BadgePart.LOGO, TeamTagPlace.HEAD) || shows(BadgePart.NAME, TeamTagPlace.HEAD) ||
-            shows(BadgePart.LEVEL, TeamTagPlace.HEAD) || tagAt(TeamTagPlace.HEAD)
+            shows(BadgePart.LEVEL, TeamTagPlace.HEAD) || shows(BadgePart.RANK, TeamTagPlace.HEAD) || tagAt(TeamTagPlace.HEAD)
         val parts = PreviewParts(badge, settings, picked, onPick, listed)
 
-        div(className = classNames("bd-preview", "bd-hidden" to !atHead)) {
-            if (shows(BadgePart.LOGO, TeamTagPlace.HEAD)) {
-                div(className = "bd-tag") {
-                    img(LOGO, className = "bd-tag-logo")
-                    if (text != null) parts.colored(this, BadgePart.STAT, text)
+        div(className = "bd-preview-row") {
+            div(className = classNames("bd-preview", "bd-hidden" to !atHead)) {
+                if (shows(BadgePart.LOGO, TeamTagPlace.HEAD)) {
+                    div(className = "bd-tag") {
+                        img(LOGO, className = "bd-tag-logo")
+                        if (text != null) parts.colored(this, BadgePart.STAT, text)
+                    }
+                }
+                div(className = "bd-tag bd-tag-name") {
+                    if (tagAt(TeamTagPlace.HEAD)) parts.tag(this)
+                    parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.HEAD))
+                    if (shows(BadgePart.RANK, TeamTagPlace.HEAD)) parts.bracketed(this, BadgePart.RANK, SAMPLE_RANK, true)
+                    parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.HEAD))
                 }
             }
-            div(className = "bd-tag bd-tag-name") {
-                if (tagAt(TeamTagPlace.HEAD)) parts.tag(this)
-                parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.HEAD))
-                parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.HEAD))
-            }
-        }
-        div(className = "bd-lines") {
-            div(className = "bd-line") {
-                span(className = "bd-line-label") { +"Tab" }
-                div(className = "bd-line-box bd-line-tab") {
-                    parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.TAB))
-                    if (tagAt(TeamTagPlace.TAB)) parts.tag(this)
-                    parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.TAB))
-                    if (shows(BadgePart.LOGO, TeamTagPlace.TAB)) img(LOGO, className = "bd-tag-logo bd-line-logo")
+            div(className = "bd-lines") {
+                div(className = "bd-line") {
+                    span(className = "bd-line-label") { +"Tab" }
+                    div(className = "bd-line-box bd-line-tab") {
+                        parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.TAB))
+                        if (shows(BadgePart.RANK, TeamTagPlace.TAB)) parts.bracketed(this, BadgePart.RANK, SAMPLE_RANK, true)
+                        if (tagAt(TeamTagPlace.TAB)) parts.tag(this)
+                        parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.TAB))
+                        if (shows(BadgePart.LOGO, TeamTagPlace.TAB)) img(LOGO, className = "bd-tag-logo bd-line-logo")
+                    }
                 }
-            }
-            div(className = "bd-line") {
-                span(className = "bd-line-label") { +"Chat" }
-                div(className = "bd-line-box bd-line-chat") {
-                    parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.CHAT))
-                    if (shows(BadgePart.RANK, TeamTagPlace.CHAT)) parts.bracketed(this, BadgePart.RANK, SAMPLE_RANK, true)
-                    if (tagAt(TeamTagPlace.CHAT)) parts.tag(this)
-                    parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.CHAT))
-                    if (shows(BadgePart.LOGO, TeamTagPlace.CHAT)) img(LOGO, className = "bd-tag-logo bd-line-logo")
-                    span(className = "bd-tag-plain") { +": Hello!" }
+                div(className = "bd-line") {
+                    span(className = "bd-line-label") { +"Chat" }
+                    div(className = "bd-line-box bd-line-chat") {
+                        parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.CHAT))
+                        if (shows(BadgePart.RANK, TeamTagPlace.CHAT)) parts.bracketed(this, BadgePart.RANK, SAMPLE_RANK, true)
+                        if (tagAt(TeamTagPlace.CHAT)) parts.tag(this)
+                        parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.CHAT))
+                        if (shows(BadgePart.LOGO, TeamTagPlace.CHAT)) img(LOGO, className = "bd-tag-logo bd-line-logo")
+                        span(className = "bd-tag-plain") { +": Hello!" }
+                    }
                 }
             }
         }
