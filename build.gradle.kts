@@ -259,6 +259,8 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("expanded_files", expandedFiles)
 
     val fabricLoaderVersion = project.property("fabricloader.version")
+    val fabricLoaderConstraint = project.property("fabricloader.constraint")
+
     val fabricApiVersion = versionedProperty("fabricapi.version")
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
@@ -274,6 +276,9 @@ tasks.named<ProcessResources>("processResources") {
 
     val mcVersionConstraint = project.findProperty("mc$mcVersion.constraint")?.toString() ?: "~$mcVersion"
 
+    // TODO: remove when dropping 26.1 support
+    val sodiumExtraConstraint = project.findProperty("mc$mcVersion.sodium.extra.breaks.constraint")?.toString() ?: project.property("sodium.extra.breaks.constraint")!!.toString()
+
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
     inputs.property("mod_id", modId)
@@ -283,6 +288,7 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("mc_version_constraint", mcVersionConstraint)
 
     inputs.property("fabric_loader_version", fabricLoaderVersion)
+    inputs.property("fabric_loader_constraint", fabricLoaderConstraint)
     inputs.property("fabric_api_version", fabricApiVersion)
     inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
     inputs.property("java_version_major", javaVersionMajor)
@@ -290,6 +296,8 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("hm_api_version", hmApiVersion)
     inputs.property("guilib_version", project.property("guilib.version"))
     inputs.property("modmenu_version", modMenuVersion)
+
+    inputs.property("sodium_extra_breaks_constraint", sodiumExtraConstraint)
 
     val expandProperties = mapOf(
         "expanded_files" to expandedFiles,
@@ -302,6 +310,7 @@ tasks.named<ProcessResources>("processResources") {
         "mc_version" to mcVersion,
 
         "fabric_loader_version" to fabricLoaderVersion,
+        "fabric_loader_constraint" to fabricLoaderConstraint,
         "fabric_api_version" to fabricApiVersion,
         "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
         "java_version_major" to javaVersionMajor,
@@ -309,6 +318,8 @@ tasks.named<ProcessResources>("processResources") {
         "hm_api_version" to hmApiVersion,
         "guilib_version" to project.property("guilib.version"),
         "modmenu_version" to modMenuVersion,
+
+        "sodium_extra_breaks_constraint" to sodiumExtraConstraint
     ) + inputs.properties
 
     filesMatching(expandedFiles) {
