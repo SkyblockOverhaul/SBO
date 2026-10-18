@@ -34,6 +34,7 @@ import java.lang.Thread.sleep
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
+import java.util.regex.Matcher
 
 object AchievementManager {
     val rarityColorDict = mapOf(
@@ -374,24 +375,21 @@ object AchievementManager {
     }
 
     // The weird symbol is due to the Hypixel Skyblock Resourcepack
-    private val COA_MF_PATTERN: Pattern = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!
+    private val COA_MF_PATTERN_MATCHER: Matcher = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!.matcher("")
 
     private fun trackCOA() {
-        val helmet = mc.player?.inventory?.getItem(39) ?: ItemStack.EMPTY
+        val helmet = mc.player?.inventory?.getItem(39) ?: return
         val lookup = ItemLookup(helmet)
         if ("Crown of Avarice" !in lookup.displayName) return
 
         unlockAchievement(121)
 
-        val loreLines = lookup.loreList
-            .map { it.removeFormatting() }
+        val loreLines = lookup.cleanLoreList
 
-        val mfStr = loreLines.getValueFromLine(COA_MF_PATTERN)
-
+        val mfStr = extractCOAMagicFind(loreLines)
         val mf = if (mfStr.isNotEmpty()) mfStr.toDouble() else -1
 
         if (mf == -1) {
-            // Notify user to not be a silent failure point. Full lines are only logged to logs and not chat as it's long.
             Chat.chat("§6[SBO] §cFailed to determine how much Magic Find your CoA gives for the 1B CoA achievement. Logs will have more information.", true)
 
             logger.warn("Failed to determine how much Magic Find users CoA gives for the 1B CoA achievement - CoA lore lines:")
@@ -408,13 +406,14 @@ object AchievementManager {
         }
     }
 
-    private fun List<String>.getValueFromLine(regex: Pattern): String {
-        for (line in this) {
-            val matcher = regex.matcher(line)
+    private fun extractCOAMagicFind(loreLines: List<String>): String {
+        for (line in loreLines) {
+            val matcher = COA_MF_PATTERN_MATCHER.reset(line)
             if (matcher.find()) {
                 return matcher.group(1)
             }
         }
+
         return ""
     }
 

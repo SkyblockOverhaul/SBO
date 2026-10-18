@@ -73,7 +73,7 @@ object DianaTracker {
         }
 
         Register.command("sboresetmayortracker") {
-            resetMayorTracker()
+            resetMayorTracker(true)
         }
 
         Register.command("sboresetstatstracker") {
@@ -176,12 +176,12 @@ object DianaTracker {
 
     private fun trackWithPickuplog(itemId: String) {
         when (itemId) {
-            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt Of Revelations", showMessageOrTitle = Diana.hiltDropMessage,
+            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt of Revelations", showMessageOrTitle = Diana.hiltDropMessage,
                 trackLootshare = false,
                 magicFind = 0,
                 actuallyRare = false // makes it show the chat message but not the title
             )
-            "CROWN_OF_GREED" -> onRareDrop("Crown Of Greed", showMessageOrTitle = true,
+            "CROWN_OF_GREED" -> onRareDrop("Crown of Greed", showMessageOrTitle = true,
                 trackLootshare = false,
                 magicFind = 0
             )
@@ -313,9 +313,9 @@ object DianaTracker {
                 if (Diana.sendSinceMessage) {
                     val timeSinceInq = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastInqDate)
                     if (sboData.lastInqDate != 0L) {
-                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs and §c$timeSinceInq §eto get an Inquis!")
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs and §c$timeSinceInq §eto get a Minos Inquisitor!")
                     } else {
-                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs to get an Inquis!")
+                        Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs to get a Minos Inquisitor!")
                     }
                 }
                 sboData.lastInqDate = dianaTrackerTotalData.items.TIME
@@ -804,9 +804,9 @@ object DianaTracker {
     }
 
     private fun onRareDrop(item: String, showMessageOrTitle: Boolean, trackLootshare: Boolean, magicFind: Int, amount: Int = 1, actuallyRare: Boolean = true, enforceCooldown: Boolean = true) {
-        if (isItemOnCooldown.getOrDefault(item, false) && enforceCooldown) return
-
         val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
+
+        if (isItemOnCooldown.getOrDefault(itemId, false) && enforceCooldown) return
 
         var mfPrefix = ""
         if (magicFind > 0) mfPrefix = " (+$magicFind ✯ Magic Find)"
@@ -971,40 +971,72 @@ object DianaTracker {
     }
 
     fun checkMayorTracker() {
+        // Fix up event year if it was left as default year somehow.
         if (dianaTrackerMayorData.year == 0) {
             dianaTrackerMayorData.year = Mayor.mayorElectedYear
             DataManager.save(DataManager::dianaTrackerMayorData)
+        }
+
+        // Only reset if Skyblock Year is higher than the current event's year.
+        if (dianaTrackerMayorData.year >= Mayor.mayorElectedYear) {
             return
         }
 
-        if (dianaTrackerMayorData.year >= Mayor.mayorElectedYear) return
+        // Proceed with the reset.
+        resetMayorTracker()
+    }
+
+    private fun resetMayorTracker(notifyEvenIfAllZero: Boolean = false) {
+        // Fix up event year if it was left as default year somehow. This is already done by checkMayorTracker, but resetMayorTracker can also be called from /sboresetmayortracker so do this check here as well.
+        if (dianaTrackerMayorData.year == 0) {
+            dianaTrackerMayorData.year = Mayor.mayorElectedYear
+            DataManager.save(DataManager::dianaTrackerMayorData)
+        }
+
         var allZero = true
+
+        // Reflective detection for whether if any mob or item counters are non-zero.
         for (item in dianaTrackerMayorData.mobs::class.java.declaredFields) {
             item.isAccessible = true
             if (item.get(dianaTrackerMayorData.mobs) is Int) {
-                if (item.getInt(dianaTrackerMayorData.mobs) > 0) {
+                if (item.getInt(dianaTrackerMayorData.mobs) != 0) {
                     allZero = false
                     break
                 }
             }
         }
-        resetMayorTracker(allZero)
-    }
 
-    private fun resetMayorTracker(check: Boolean = false) {
-        if (!check) {
-            if (dianaTrackerMayorData.year == 0) dianaTrackerMayorData.year = Mayor.mayorElectedYear
+        for (item in dianaTrackerMayorData.items::class.java.declaredFields) {
+            item.isAccessible = true
+            if (item.get(dianaTrackerMayorData.items) is Int) {
+                if (item.getInt(dianaTrackerMayorData.items) != 0) {
+                    allZero = false
+                    break
+                }
+            }
+        }
+
+        if (!allZero) {
+            // If any of the mob or item counters are non-zero, save this event to past event data.
             pastDianaEventsData.events += dianaTrackerMayorData.snapshot()
             DataManager.save(DataManager::pastDianaEventsData)
         }
+
+        // Proceed with the reset
         dianaTrackerMayorData.reset()
         dianaTrackerMayorData.year = Mayor.mayorElectedYear
         DataManager.save(DataManager::dianaTrackerMayorData)
+
         SboTimerManager.timerMayor.reset()
         SboTimerManager.pauseAllActiveTimers()
+
         DianaMobs.updateLines()
         DianaLoot.updateLines()
-        Chat.chat("§6[SBO] §aDiana mayor tracker has been reset.")
+
+        // Notify the user only if the event-tracker had some non-zero data, or if notifyEvenIfAllZero was passed as true (called from /sboresetmayortracker).
+        if (!allZero || notifyEvenIfAllZero) {
+            Chat.chat("§6[SBO] §aDiana mayor tracker has been reset.")
+        }
     }
 
     private fun trackShardsWithChat() {
@@ -1087,8 +1119,10 @@ object DianaTracker {
     }
 
     fun trackItem(item: String, amount: Int, enforceCooldown: Boolean = true) {
-        if (isItemOnCooldown.getOrDefault(item, false) && enforceCooldown) return
-        isItemOnCooldown[item] = true
+        val itemId = item.uppercase().replace(" ", "_").replace("-", "_")
+
+        if (isItemOnCooldown.getOrDefault(itemId, false) && enforceCooldown) return
+        isItemOnCooldown[itemId] = true
 
         checkMayorTracker()
         val itemName = Helper.toUpperSnakeCase(item)
@@ -1113,7 +1147,7 @@ object DianaTracker {
         AchievementManager.trackSince()
 
         sleep(500) {
-            isItemOnCooldown[item] = false
+            isItemOnCooldown[itemId] = false
         }
     }
 
