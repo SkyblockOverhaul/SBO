@@ -54,16 +54,37 @@ object DianaTracker {
 
     private var timedRareMob: String? = null
     private var timedRareMobStartNanos: Long = 0L
+    private var nextCocoonedRareMobStartNanos: Long = 0L
 
     fun consumeRareMobSpawnTime(mob: String): Long {
         if (timedRareMob != mob) return -1L
 
         val startNanos = timedRareMobStartNanos
-        timedRareMob = null
-        timedRareMobStartNanos = 0L
+        if (nextCocoonedRareMobStartNanos != 0L) {
+            // The caught message can arrive before the original entity's death event.
+            // Keep its timer first, then time the mob released from the cocoon.
+            timedRareMobStartNanos = nextCocoonedRareMobStartNanos
+            nextCocoonedRareMobStartNanos = 0L
+        } else {
+            timedRareMob = null
+            timedRareMobStartNanos = 0L
+        }
 
         val elapsedNanos = System.nanoTime() - startNanos
         return if (elapsedNanos > 0L) elapsedNanos / 1_000_000L else -1L
+    }
+
+    private fun registerRareMobSpawnTime(mob: String, fromCocoon: Boolean) {
+        if (fromCocoon && timedRareMob == mob && timedRareMobStartNanos != 0L) {
+            if (nextCocoonedRareMobStartNanos == 0L) {
+                nextCocoonedRareMobStartNanos = System.nanoTime()
+            }
+            return
+        }
+
+        timedRareMob = mob
+        timedRareMobStartNanos = System.nanoTime()
+        nextCocoonedRareMobStartNanos = 0L
     }
 
     fun init() {
@@ -235,14 +256,20 @@ object DianaTracker {
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
         lastSpawnedMobTime = System.nanoTime()
-        // Only time the most recently spawned mob; a later spawn supersedes the old timer.
-        timedRareMob = null
-        timedRareMobStartNanos = 0L
+        // A caught message can precede the original entity's death event. Preserve that
+        // timer and queue the released mob's timer behind it so both deaths are timed.
+        if (fromCocoon && timedRareMob == mob && timedRareMobStartNanos != 0L) {
+            nextCocoonedRareMobStartNanos = System.nanoTime()
+        } else {
+            // Only time the most recently spawned mob; a later spawn supersedes the old timer.
+            timedRareMob = null
+            timedRareMobStartNanos = 0L
+            nextCocoonedRareMobStartNanos = 0L
+        }
         //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
-                timedRareMob = mob
-                timedRareMobStartNanos = System.nanoTime()
+                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -271,8 +298,7 @@ object DianaTracker {
                 sboData.mobsSinceKing = 0
             }
             "Manticore" -> {
-                timedRareMob = mob
-                timedRareMobStartNanos = System.nanoTime()
+                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -303,8 +329,7 @@ object DianaTracker {
                 sboData.mobsSinceManti = 0
             }
             "Minos Inquisitor" -> {
-                timedRareMob = mob
-                timedRareMobStartNanos = System.nanoTime()
+                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -333,8 +358,7 @@ object DianaTracker {
                 sboData.mobsSinceInq = 0
             }
             "Sphinx" -> {
-                timedRareMob = mob
-                timedRareMobStartNanos = System.nanoTime()
+                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
