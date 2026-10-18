@@ -790,16 +790,38 @@ object Helper {
         return BigDecimal.valueOf(mobsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
     }
 
+    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove BASE_CHANCES_PERCENT and rename BASE_CHANCES_PERCENT_NEW to BASE_CHANCES_PERCENT.
     private val BASE_CHANCES_PERCENT = mapOf(
+        "epic" to mapOf("stick" to 0.08, "relic" to 0.02),
+        "legendary" to mapOf("chim" to 1.0, "stick" to 0.12, "relic" to 0.03, "food" to 0.25),
+        "mythic" to mapOf("chim" to 1.25, "stick" to 0.16, "relic" to 0.04, "food" to 0.5, "wool" to 0.2, "core" to 0.2, "stinger" to 0.5)
+    )
+
+    private val BASE_CHANCES_PERCENT_NEW = mapOf(
         "epic" to mapOf("stick" to 0.05, "relic" to 0.05),
         "legendary" to mapOf("chim" to 2.0, "stick" to 0.1, "relic" to 0.1, "food" to 0.5),
         "mythic" to mapOf("chim" to 2.5, "stick" to 0.15, "relic" to 0.15, "food" to 1.0, "wool" to 1.0, "core" to 1.0, "stinger" to 1.5)
     )
 
-    fun getChance(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
+    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove getChance() and rename getChanceNew() to getChance().
+    fun getChance(mf: Int, looting: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances = BASE_CHANCES_PERCENT[rarity.lowercase().trim()]
             ?: emptyMap()
 
+        val mfMultiplier = 1.0 + mf / 100.0
+        val factor = if (lootshare) mfMultiplier / 5.0 else mfMultiplier * (1.0 + looting * 0.15)
+        return baseChances.mapValues { (_, chance) -> chance / 100.0 * factor }
+    }
+
+    // TODO: When the Alpha Network update is pushed to main by Hypixel, this becomes getChance().
+    fun getChanceNew(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
+        val baseChances = BASE_CHANCES_PERCENT_NEW[rarity.lowercase().trim()]
+            ?: emptyMap()
+
+        return calculateDropChances(baseChances, mf, lootshare)
+    }
+
+    private fun calculateDropChances(baseChances: Map<String, Double>, mf: Int, lootshare: Boolean): Map<String, Double> {
         val multiplier = 1.0 + mf / 100.0
         val factor = if (lootshare) multiplier / 5.0 else multiplier
 
@@ -813,6 +835,8 @@ object Helper {
     }
 
     fun formatMagicFind(mf: Int): String = "§7[MF:$mf]"
+
+    fun formatMagicFindAndLooting(mf: Int, looting: Int): String = " §7[MF:$mf] [L:$looting]"
 
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0
