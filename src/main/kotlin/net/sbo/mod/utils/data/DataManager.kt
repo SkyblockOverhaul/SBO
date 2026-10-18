@@ -109,7 +109,7 @@ object DataManager {
         loadAllData(dataDir)
         saveAllDataThreaded(dataDir)
         savePeriodically(5)
-        Register.onTick(20) { saveDirtyData() }
+        Register.onTick(60) { saveDirtyData() }
     }
 
     @SboEvent
