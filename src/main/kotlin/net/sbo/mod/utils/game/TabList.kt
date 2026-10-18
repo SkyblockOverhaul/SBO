@@ -57,8 +57,9 @@ object TabList {
             val displayName = entry.tabListDisplayName
             val profile = entry.profile
 
-            val text = displayName ?: profile.name?.let { Component.literal(it) } ?: continue
-            tabLines.add(text.string.trim())
+            val line = displayName?.string ?: profile.name ?: continue
+
+            tabLines.add(line.trim())
         }
 
         cachedTabLines = tabLines
