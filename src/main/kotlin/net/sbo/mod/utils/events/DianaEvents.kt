@@ -23,7 +23,7 @@ object DianaEvents {
     internal fun init() {
         registerBurrowDug()
         AttackBlockCallback.EVENT.register { player, _, _, pos, _ ->
-            if (player === SBOKotlin.mc.player && World.getWorld() == "Hub") {
+            if (player === SBOKotlin.mc.player && World.isInHub()) {
                 val blockPos = pos.toSboVec()
                 ArrowGuessBurrow.recentClickedBlocks.add(blockPos)
                 processBlockInteraction(blockPos)
@@ -36,7 +36,7 @@ object DianaEvents {
     fun onPlayerInteract(event: PlayerInteractEvent) {
         val action = event.action
         if (action != "useBlock") return
-        if (World.getWorld() != "Hub") return
+        if (!World.isInHub()) return
         val item = event.player.mainHandItem
         if (item.isEmpty) return
         val sbId = ItemLookup(item).sbId
@@ -53,7 +53,7 @@ object DianaEvents {
             lastWaypointClicked = waypoint.pos
         }
 
-        val posString = "${pos.x} ${pos.y} ${pos.z}"
+        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
         if (BurrowDetector.burrows.containsKey(posString)) {
             lastBurrowClicked = pos
         }

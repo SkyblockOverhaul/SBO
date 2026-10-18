@@ -33,7 +33,7 @@ object PreciseGuessBurrow {
     @SboEvent
     fun onReceiveParticle(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (!Diana.spadeGuess || World.getWorld() != "Hub") return
+        if (!Diana.spadeGuess || !World.isInHub()) return
         if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)
         val now = System.nanoTime()
@@ -56,7 +56,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onUseSpade(event: PlayerInteractEvent) {
-        if (!Diana.spadeGuess || World.getWorld() != "Hub") return
+        if (!Diana.spadeGuess || !World.isInHub()) return
         val action = event.action
         if (action != "useItem" && action != "useBlock") return
         val player = SBOKotlin.mc.player
