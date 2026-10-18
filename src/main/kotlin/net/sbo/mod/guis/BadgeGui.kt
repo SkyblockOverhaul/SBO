@@ -320,8 +320,14 @@ object BadgeGui {
             }
         }
 
-        setting("Stat", "Shown above your head next to the logo, read from your SkyBlock profile like in the party finder.") {
-            select(value = settings.stat, onChange = { onChange(settings.copy(stat = it.value)) }, className = "bd-select") {
+        setting("Stat", "Shown above your head next to the logo, read from your SkyBlock profile.") {
+            select(
+                value = settings.stat,
+                onChange = { onChange(settings.copy(stat = it.value)) },
+                className = "bd-select",
+                searchable = true,
+                searchPlaceholder = "Search..."
+            ) {
                 badge.stats.forEach { option(it.id, it.label) }
             }
         }
@@ -332,7 +338,7 @@ object BadgeGui {
     // Only on this PC, so it changes right away without saving
     private val OwnView = component("BadgeOwnView") {
         var inF5 by useState(DataManager.sboData.badgeOwnInF5)
-        setting("Show my badge in F5", "See your own name tag, badge and team tag in third person. Only on this PC.") {
+        setting("Show my badge in F5", "See your own name tag, badge and team tag in third person.") {
             switch(checked = inF5, onChange = {
                 inF5 = it.checked
                 DataManager.sboData.badgeOwnInF5 = it.checked
