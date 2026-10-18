@@ -49,28 +49,45 @@ data class SboBadge(
     fun colorOf(part: String): PartColor = colors?.get(part) ?: PartColor(color, to)
 }
 
-/** Parts of a badge: logo (with the stat above the head), name, level and team tag show per place; stat, name, level and tag have a color. */
+/**
+ * Parts of a badge: logo (with the stat above the head), name, level, Hypixel's rank and team tag show per place;
+ * stat, name, level, tag and rank have a color.
+ */
 object BadgePart {
     const val LOGO = "logo"
     const val STAT = "stat"
     const val NAME = "name"
     const val LEVEL = "level"
     const val TAG = "tag"
+    /** Hypixel's rank in front of the name, e.g. [MVP+]. */
+    const val RANK = "rank"
+    /** Parts whose brackets can take their own color. */
+    val BRACKETS = setOf(LEVEL, TAG, RANK)
 }
 
 @Serializable
-data class PartColor(val color: String, val to: String? = null)
+data class PartColor(
+    val color: String,
+    val to: String? = null,
+    /** Colors of the opening [ and the closing ]; null keeps the old look: the part's color, gray for the team tag. */
+    val open: String? = null,
+    val close: String? = null,
+    /** Color of the rank's plus, e.g. the + of [MVP+]; null gives it the part's color. */
+    val plus: String? = null,
+)
 
 @Serializable
 data class BadgePlaces(
     val logo: List<String> = emptyList(),
     val name: List<String> = emptyList(),
     val level: List<String> = emptyList(),
+    val rank: List<String> = emptyList(),
 ) {
     operator fun get(part: String): List<String> = when (part) {
         BadgePart.LOGO -> logo
         BadgePart.NAME -> name
         BadgePart.LEVEL -> level
+        BadgePart.RANK -> rank
         else -> emptyList()
     }
 
@@ -78,6 +95,7 @@ data class BadgePlaces(
         BadgePart.LOGO -> copy(logo = places)
         BadgePart.NAME -> copy(name = places)
         BadgePart.LEVEL -> copy(level = places)
+        BadgePart.RANK -> copy(rank = places)
         else -> this
     }
 }
@@ -88,12 +106,14 @@ data class BadgeColors(
     val name: PartColor? = null,
     val level: PartColor? = null,
     val tag: PartColor? = null,
+    val rank: PartColor? = null,
 ) {
     operator fun get(part: String): PartColor? = when (part) {
         BadgePart.STAT -> stat
         BadgePart.NAME -> name
         BadgePart.LEVEL -> level
         BadgePart.TAG -> tag
+        BadgePart.RANK -> rank
         else -> null
     }
 
@@ -102,6 +122,7 @@ data class BadgeColors(
         BadgePart.NAME -> copy(name = color)
         BadgePart.LEVEL -> copy(level = color)
         BadgePart.TAG -> copy(tag = color)
+        BadgePart.RANK -> copy(rank = color)
         else -> this
     }
 }
@@ -146,8 +167,10 @@ object TeamTagPlace {
     const val TAB = "tab"
     const val CHAT = "chat"
     val ALL = setOf(HEAD, TAB, CHAT)
-    /** The level only takes the color right before the name; in chat Hypixel's rank stands between. */
+    /** Where the level is colored on badges saved before the places per part: not in chat. */
     val LEVEL = setOf(HEAD, TAB)
+    /** Hypixel shows the rank in chat and for some ranks in the tab list, never above heads. */
+    val RANK = setOf(TAB, CHAT)
 }
 
 /** Body of `POST /badge` */
@@ -191,10 +214,11 @@ data class BadgeSettings(
         TeamTagPlace.ALL.filter { it in placesOf(BadgePart.LOGO) },
         TeamTagPlace.ALL.filter { it in placesOf(BadgePart.NAME) },
         TeamTagPlace.ALL.filter { it in placesOf(BadgePart.LEVEL) },
+        TeamTagPlace.ALL.filter { it in placesOf(BadgePart.RANK) },
     )
 
     private fun styledColors() = BadgeColors(
-        colorOf(BadgePart.STAT), colorOf(BadgePart.NAME), colorOf(BadgePart.LEVEL), colorOf(BadgePart.TAG),
+        colorOf(BadgePart.STAT), colorOf(BadgePart.NAME), colorOf(BadgePart.LEVEL), colorOf(BadgePart.TAG), colorOf(BadgePart.RANK),
     )
 
     // The single fields follow the parts, for mods that only read those
@@ -203,7 +227,7 @@ data class BadgeSettings(
         return copy(
             places = places,
             colors = colors,
-            enabled = places.logo.isNotEmpty() || places.name.isNotEmpty() || places.level.isNotEmpty(),
+            enabled = places.logo.isNotEmpty() || places.name.isNotEmpty() || places.level.isNotEmpty() || places.rank.isNotEmpty(),
             colorName = places.name.isNotEmpty(),
             colorLevel = places.level.isNotEmpty(),
             color = name.color,

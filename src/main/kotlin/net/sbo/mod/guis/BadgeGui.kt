@@ -36,6 +36,10 @@ object BadgeGui {
     private const val LOGO = "sbo:textures/font/badge.png"
 
     private const val DEFAULT_GRADIENT_END = "#FFD966"
+    // Gray of the team tag brackets, like in game
+    private const val TAG_BRACKETS = "#AAAAAA"
+    // Shown in the chat preview when the rank is colored there, the own rank is not known
+    private const val SAMPLE_RANK = "MVP+"
 
     fun open() {
         GuiLib.open(App, STYLES, title = "SBO Badge")
@@ -221,8 +225,8 @@ object BadgeGui {
 
     private fun hasTag(badge: OwnBadgeResponse): Boolean = badge.team && badge.rankInfo?.tag != null
 
-    /** A row of the matrix: the part that shows per place and the part whose color it uses. */
-    private class PartRow(val show: String, val color: String, val label: String, val allowed: Set<String>)
+    /** A row of the matrix: the part that shows per place and the part whose color it uses; `blocked` explains the places it cannot show. */
+    private class PartRow(val show: String, val color: String, val label: String, val allowed: Set<String>, val blocked: String? = null)
 
     private val PLACES = listOf(TeamTagPlace.HEAD to "Head", TeamTagPlace.TAB to "Tab", TeamTagPlace.CHAT to "Chat")
 
@@ -231,6 +235,7 @@ object BadgeGui {
         BadgePart.NAME to "Name",
         BadgePart.LEVEL to "Level",
         BadgePart.TAG to "Team tag",
+        BadgePart.RANK to "Rank",
     )
 
     private val COLOR_HINTS = mapOf(
@@ -238,6 +243,7 @@ object BadgeGui {
         BadgePart.NAME to "Your name where it is colored.",
         BadgePart.LEVEL to "Your SkyBlock level in front of your name where it is colored.",
         BadgePart.TAG to "Your team tag; others see it in the rank colors while your badge is hidden.",
+        BadgePart.RANK to "Your Hypixel rank in front of your name, like [MVP+], in chat and where the tab list shows it.",
     )
 
     private fun NodeBuilder.settings(
@@ -253,7 +259,8 @@ object BadgeGui {
         val rows = buildList {
             add(PartRow(BadgePart.LOGO, BadgePart.STAT, PART_LABELS.getValue(BadgePart.STAT), TeamTagPlace.ALL))
             add(PartRow(BadgePart.NAME, BadgePart.NAME, "Name color", TeamTagPlace.ALL))
-            add(PartRow(BadgePart.LEVEL, BadgePart.LEVEL, "Level color", TeamTagPlace.LEVEL))
+            add(PartRow(BadgePart.LEVEL, BadgePart.LEVEL, "Level color", TeamTagPlace.ALL))
+            add(PartRow(BadgePart.RANK, BadgePart.RANK, "Rank color", TeamTagPlace.RANK, "Hypixel shows no rank above heads"))
             if (hasTag(badge)) add(PartRow(BadgePart.TAG, BadgePart.TAG, "Team tag", TeamTagPlace.ALL))
         }
         div(className = "bd-matrix") {
@@ -282,7 +289,7 @@ object BadgeGui {
                                     onChange(if (row.show == BadgePart.TAG) settings.withTeamTagPlaces(next) else settings.withPlaces(row.show, next))
                                 })
                             } else {
-                                span(className = "bd-muted", title = "Hypixel's rank stands between level and name in chat") { +"-" }
+                                span(className = "bd-muted", title = row.blocked) { +"-" }
                             }
                         }
                     }
@@ -307,8 +314,25 @@ object BadgeGui {
             }
             div(className = "bd-color-actions") {
                 button(title = "Gives every part this color", onClick = {
-                    onChange(PART_LABELS.keys.fold(settings) { next, part -> next.withColor(part, color) })
+                    // Brackets and plus stay as they are
+                    onChange(PART_LABELS.keys.fold(settings) { next, part -> next.withColor(part, next.colorOf(part).copy(color = color.color, to = color.to)) })
                 }) { +"Use for all parts" }
+            }
+        }
+
+        if (picked in BadgePart.BRACKETS) {
+            setting("Brackets", "The opening [ and the closing ] around the ${label.lowercase()}.") {
+                div(className = "bd-colors") {
+                    span(className = "bd-arrow") { +"[" }
+                    colorInput(value = argb(bracketOf(picked, color, close = false)), onChange = { onChange(settings.withColor(picked, color.copy(open = hex(it)))) }, key = "open-$picked")
+                    span(className = "bd-arrow") { +"]" }
+                    colorInput(value = argb(bracketOf(picked, color, close = true)), onChange = { onChange(settings.withColor(picked, color.copy(close = hex(it)))) }, key = "close-$picked")
+                }
+            }
+        }
+        if (picked == BadgePart.RANK) {
+            setting("Plus", "The + of ranks like VIP+, MVP+ and MVP++.") {
+                colorInput(value = argb(color.plus ?: color.to ?: color.color), onChange = { onChange(settings.withColor(picked, color.copy(plus = hex(it)))) }, key = "plus")
             }
         }
 
@@ -359,7 +383,7 @@ object BadgeGui {
             else -> "${stat.label}: ..."
         }
         val name = Player.accountName()
-        val level = badge.level?.let { "[$it] " }.orEmpty()
+        val level = badge.level?.toString().orEmpty()
         // Others only get the badge while it shows somewhere and the server does not hide it
         val listed = settings.enabled && !badge.hiddenByServer
         fun shows(part: String, place: String) = listed && place in settings.placesOf(part)
@@ -377,7 +401,7 @@ object BadgeGui {
             }
             div(className = "bd-tag bd-tag-name") {
                 if (tagAt(TeamTagPlace.HEAD)) parts.tag(this)
-                parts.plainOr(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.HEAD))
+                parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.HEAD))
                 parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.HEAD))
             }
         }
@@ -385,7 +409,7 @@ object BadgeGui {
             div(className = "bd-line") {
                 span(className = "bd-line-label") { +"Tab" }
                 div(className = "bd-line-box bd-line-tab") {
-                    parts.plainOr(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.TAB))
+                    parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.TAB))
                     if (tagAt(TeamTagPlace.TAB)) parts.tag(this)
                     parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.TAB))
                     if (shows(BadgePart.LOGO, TeamTagPlace.TAB)) img(LOGO, className = "bd-tag-logo bd-line-logo")
@@ -394,8 +418,8 @@ object BadgeGui {
             div(className = "bd-line") {
                 span(className = "bd-line-label") { +"Chat" }
                 div(className = "bd-line-box bd-line-chat") {
-                    // Hypixel's rank stands between level and name in chat, so the level keeps its color
-                    span(className = "bd-tag-level") { +level }
+                    parts.bracketed(this, BadgePart.LEVEL, level, shows(BadgePart.LEVEL, TeamTagPlace.CHAT))
+                    if (shows(BadgePart.RANK, TeamTagPlace.CHAT)) parts.bracketed(this, BadgePart.RANK, SAMPLE_RANK, true)
                     if (tagAt(TeamTagPlace.CHAT)) parts.tag(this)
                     parts.plainOr(this, BadgePart.NAME, name, shows(BadgePart.NAME, TeamTagPlace.CHAT))
                     if (shows(BadgePart.LOGO, TeamTagPlace.CHAT)) img(LOGO, className = "bd-tag-logo bd-line-logo")
@@ -429,6 +453,28 @@ object BadgeGui {
             ) { coloredText(text, color.color, color.to) }
         }
 
+        /** "[465] " or "[MVP+] ": in the part's colors with its own brackets and plus where it is colored, gray otherwise. */
+        fun bracketed(builder: NodeBuilder, part: String, text: String, colored: Boolean) = with(builder) {
+            if (text.isEmpty()) return@with
+            if (!colored) {
+                span(className = "bd-tag-level") { +"[$text] " }
+                return@with
+            }
+            val color = settings.colorOf(part)
+            val plusAt = text.indexOf('+').takeIf { part == BadgePart.RANK && it >= 0 } ?: text.length
+            span(
+                className = classNames("bd-pick", "bd-picked" to (picked == part)),
+                title = "Click to change the ${PART_LABELS.getValue(part).lowercase()} color",
+                onClick = { onPick(part) },
+            ) {
+                span(className = "bd-tag-text", style = "color: ${bracketOf(part, color, close = false)}") { +"[" }
+                coloredText(text.substring(0, plusAt), color.color, color.to)
+                if (plusAt < text.length) span(className = "bd-tag-text", style = "color: ${color.plus ?: color.to ?: color.color}") { +text.substring(plusAt) }
+                span(className = "bd-tag-text", style = "color: ${bracketOf(part, color, close = true)}") { +"]" }
+            }
+            span(className = "bd-tag-plain") { +" " }
+        }
+
         /** The part in its color where it is colored, plain otherwise. */
         fun plainOr(builder: NodeBuilder, part: String, text: String, colored: Boolean) = with(builder) {
             if (text.isEmpty()) return@with
@@ -440,10 +486,14 @@ object BadgeGui {
         fun tag(builder: NodeBuilder) = with(builder) {
             val rank = badge.rankInfo ?: return@with
             val text = rank.tag ?: return@with
-            span(className = "bd-tag-level") { +"[" }
+            // Others see the rank colors and gray brackets while the badge is hidden
+            val tagColor = settings.colorOf(BadgePart.TAG)
+            val open = if (listed) bracketOf(BadgePart.TAG, tagColor, close = false) else TAG_BRACKETS
+            val close = if (listed) bracketOf(BadgePart.TAG, tagColor, close = true) else TAG_BRACKETS
+            span(className = "bd-tag-text", style = "color: $open") { +"[" }
             if (listed) colored(this, BadgePart.TAG, text)
             else span(className = "bd-pick", onClick = { onPick(BadgePart.TAG) }) { coloredText(text, rank.color, rank.to) }
-            span(className = "bd-tag-level") { +"] " }
+            span(className = "bd-tag-text", style = "color: $close") { +"] " }
         }
     }
 
@@ -466,6 +516,10 @@ object BadgeGui {
         fun channel(shift: Int) = (((a shr shift) and 0xFF) * (1 - t) + ((b shr shift) and 0xFF) * t).toInt()
         return (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
     }
+
+    /** A bracket as it looks in game: its own color, else gray for the team tag and the part's color (gradient start or end) otherwise. */
+    private fun bracketOf(part: String, color: PartColor, close: Boolean): String = (if (close) color.close else color.open)
+        ?: if (part == BadgePart.TAG) TAG_BRACKETS else if (close) color.to ?: color.color else color.color
 
     private fun hex(color: Int): String = "#%06X".format(color and 0xFFFFFF)
 
