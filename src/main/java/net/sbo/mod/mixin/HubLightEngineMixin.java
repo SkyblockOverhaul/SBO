@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Answers light queries for fake chunks, the vanilla engine has no data for them.
  */
 @Mixin(LightEngine.class)
-abstract class HubLightEngineMixin implements FakeLightExt {
+final class HubLightEngineMixin implements FakeLightExt {
     @Unique
     private final Long2ObjectMap<DataLayer> sbo$fakeLight = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<>());
 
@@ -28,28 +28,28 @@ abstract class HubLightEngineMixin implements FakeLightExt {
     private volatile boolean sbo$hasFakeLight;
 
     @Override
-    public void sbo_addFakeLight(final long sectionPos, @NonNull final DataLayer data) {
+    public final void sbo_addFakeLight(final long sectionPos, @NonNull final DataLayer data) {
         this.sbo$fakeLight.put(sectionPos, data);
         this.sbo$hasFakeLight = true;
     }
 
     @Override
-    public void sbo_removeFakeLight(final long sectionPos) {
+    public final void sbo_removeFakeLight(final long sectionPos) {
         this.sbo$fakeLight.remove(sectionPos);
         this.sbo$hasFakeLight = !this.sbo$fakeLight.isEmpty();
     }
 
     @Inject(method = "getDataLayerData(Lnet/minecraft/core/SectionPos;)Lnet/minecraft/world/level/chunk/DataLayer;", at = @At("HEAD"), cancellable = true)
-    private void sbo$getFakeLayer(@NonNull final SectionPos pos, @NonNull final CallbackInfoReturnable<DataLayer> cir) {
+    private final void sbo$getFakeLayer(@NonNull final SectionPos pos, @NonNull final CallbackInfoReturnable<DataLayer> cir) {
         if (!this.sbo$hasFakeLight) return;
-        final DataLayer data = this.sbo$fakeLight.get(pos.asLong());
+        final var data = this.sbo$fakeLight.get(pos.asLong());
         if (data != null) cir.setReturnValue(data);
     }
 
     @Inject(method = "getLightValue(Lnet/minecraft/core/BlockPos;)I", at = @At("HEAD"), cancellable = true)
-    private void sbo$getFakeLight(@NonNull final BlockPos pos, @NonNull final CallbackInfoReturnable<Integer> cir) {
+    private final void sbo$getFakeLight(@NonNull final BlockPos pos, @NonNull final CallbackInfoReturnable<Integer> cir) {
         if (!this.sbo$hasFakeLight) return;
-        final DataLayer data = this.sbo$fakeLight.get(SectionPos.asLong(
+        final var data = this.sbo$fakeLight.get(SectionPos.asLong(
             SectionPos.blockToSectionCoord(pos.getX()),
             SectionPos.blockToSectionCoord(pos.getY()),
             SectionPos.blockToSectionCoord(pos.getZ())

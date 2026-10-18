@@ -182,9 +182,7 @@ object HubChunkCache {
      */
     private fun extendsServerView(level: ClientLevel): Boolean {
         if (!General.chunkCacheAboveServerOnly) return true
-        // Vanilla keeps max(2, server view distance) + 3 chunks around the player.
-        val storageRadius = (level.chunkSource as ChunkStorageExt).sbo_getStorageSquare().radius
-        return mc.options.renderDistance().get() + 3 > storageRadius
+        return mc.options.renderDistance().get() > 8
     }
 
     private fun logStats(current: FakeChunkManager) {

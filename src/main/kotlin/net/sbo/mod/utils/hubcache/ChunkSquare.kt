@@ -1,5 +1,8 @@
 package net.sbo.mod.utils.hubcache
 
+import java.lang.FunctionalInterface
+
+@FunctionalInterface
 fun interface ChunkConsumer {
     fun accept(chunkX: Int, chunkZ: Int)
 }
