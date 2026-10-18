@@ -169,8 +169,6 @@ object TeamTagPlace {
     val ALL = setOf(HEAD, TAB, CHAT)
     /** Where the level is colored on badges saved before the places per part: not in chat. */
     val LEVEL = setOf(HEAD, TAB)
-    /** Hypixel shows the rank in chat and for some ranks in the tab list, never above heads. */
-    val RANK = setOf(TAB, CHAT)
 }
 
 /** Body of `POST /badge` */

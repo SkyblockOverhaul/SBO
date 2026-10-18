@@ -37,10 +37,9 @@ import java.util.function.Supplier
 object SboBadges {
     const val COMMAND = "sbobadge"
 
-    // Switches for other players' badges in /sbobadge; false hides them and always shows badges.
-    // They only hide supporters and contributors, the team (moderators and above) always shows
+    // Switches for other players' badges in the tab list and chat in /sbobadge; false hides them and always shows badges.
+    // They only hide supporters and contributors, the team (moderators and above) always shows; above heads always shows
     const val VIEWER_TOGGLES = true
-    private val showAboveHeads: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesAboveHeads
     private val showInTab: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInTab
     private val showInChat: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInChat
 
@@ -171,17 +170,14 @@ object SboBadges {
     fun own(): SboBadge? = uuidOf(Player.accountUuid())?.let { byUuid[it] }
 
     /** The viewer's switch for a place hides supporters and contributors, never the team. */
-    private fun shown(enabled: Boolean, uuid: UUID) = enabled || uuid in team
     private fun shown(enabled: Boolean, player: String) = enabled || player.lowercase() in teamNames
 
     fun nameTagLine(uuid: UUID): Component? {
-        if (!shown(showAboveHeads, uuid)) return null
         val badge = byUuid[uuid]?.takeIf { it.shows(BadgePart.LOGO, TeamTagPlace.HEAD) } ?: return null
         return fixedLines[uuid] ?: line(badge)
     }
 
     fun colorNameTag(uuid: UUID, nameTag: Component): Component {
-        if (!shown(showAboveHeads, uuid)) return nameTag
         val colored = byUuid[uuid]?.let { recolored(nameTag, it.name, TeamTagPlace.HEAD) } ?: nameTag
         val tag = tags[uuid] ?: return colored
         return Component.empty().append(tag).append(colored)

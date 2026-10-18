@@ -72,7 +72,6 @@ data class SboData(
     var eventsChartView: String = "value",
     var eventsHiddenLines: MutableList<String> = mutableListOf(),
     var pfOnboardingSeen: Boolean = false,
-    var badgesAboveHeads: Boolean = true,
     var badgesInTab: Boolean = true,
     var badgesInChat: Boolean = true,
     var badgeOwnInF5: Boolean = true,
