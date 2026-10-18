@@ -54,7 +54,7 @@ object DianaTracker {
 
     private var timedRareMob: String? = null
     private var timedRareMobStartNanos: Long = 0L
-  
+
     fun consumeRareMobSpawnTime(mob: String): Long {
         if (timedRareMob != mob) return -1L
 
@@ -1001,7 +1001,7 @@ object DianaTracker {
         dianaTrackerMayorData.year = Mayor.mayorElectedYear
         DataManager.save(DataManager::dianaTrackerMayorData)
         SboTimerManager.timerMayor.reset()
-        SboTimerManager.activeTimers.forEach { it.pause() }
+        SboTimerManager.pauseAllActiveTimers()
         DianaMobs.updateLines()
         DianaLoot.updateLines()
         Chat.chat("§6[SBO] §aDiana mayor tracker has been reset.")

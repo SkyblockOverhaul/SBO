@@ -11,24 +11,23 @@ import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
-import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
+import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.function.BooleanSupplier
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 object BurrowDetector {
-    internal val burrows = ConcurrentHashMap<String, Burrow>()
+    internal val burrows = mutableMapOf<String, Burrow>()
     private val internalStateWaypoints = mutableMapOf<String, Waypoint>()
     private var lastDugOutBurrowPos: SboVec = SboVec.ZERO
 
     private val RECENTLY_REMOVED_DURATION_NS = TimeUnit.SECONDS.toNanos(1)
-    private val recentlyRemoved = ConcurrentHashMap<String, Long>()
+    private val recentlyRemoved = mutableMapOf<String, Long>()
 
     private val CHAIN_DURATION_NS = TimeUnit.MINUTES.toNanos(30L)
 
@@ -264,9 +263,8 @@ object BurrowDetector {
     }
 
     @SboEvent
-    fun onParticleReceive(event: PacketReceiveEvent) {
+    fun onParticleReceive(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (packet !is ClientboundLevelParticlesPacket) return
         if (!Diana.closeBurrowDetection) return
         if (World.getWorld() != "Hub") return
 

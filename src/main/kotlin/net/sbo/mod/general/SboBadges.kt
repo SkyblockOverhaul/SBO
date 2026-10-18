@@ -32,6 +32,7 @@ import net.sbo.mod.utils.http.SboApi
 import java.util.Optional
 import java.util.UUID
 import java.util.WeakHashMap
+import java.util.function.Supplier
 
 object SboBadges {
     const val COMMAND = "sbobadge"
@@ -54,6 +55,9 @@ object SboBadges {
     // A player's name starts the line or follows the level or rank: "[296] Name ♲", "[MVP+] Name"
     private val NAME = Regex("(?:^|] )([A-Za-z0-9_]{1,16})")
     private val LEVEL = Regex("""\[\d+]\s*$""")
+    // Hypixel's rank right before the name: "[MVP++] Name", "[YOUTUBE] Name"
+    private val RANK = Regex("""\[[A-Z]+\+*]\s*$""")
+    private const val TAG_BRACKETS = 0xAAAAAA
     // The sender stands before the first ": " of a chat line: "[296] [MVP+] Name: hi", "Party > Name: hi", "From Name: hi"
     private const val MAX_SENDER_LENGTH = 80
     // Runs after the default phase: mods like SkyHanni rebuild chat lines from § codes there,
@@ -188,11 +192,11 @@ object SboBadges {
         val to = partColor?.to
         val info = ranks[rank] ?: return null
         val text = info.tag ?: return null
-        val gray = Style.EMPTY.withColor(0xAAAAAA)
+        fun bracket(hex: String?) = Style.EMPTY.withColor(hex?.let(::parseHex) ?: TAG_BRACKETS)
         return Component.empty()
-            .append(Component.literal("[").withStyle(gray))
+            .append(Component.literal("[").withStyle(bracket(partColor?.open)))
             .append(if (color != null) colored(text, color, to, shimmer = false) else colored(text, info.color, info.to, shimmer = false))
-            .append(Component.literal("] ").withStyle(gray))
+            .append(Component.literal("] ").withStyle(bracket(partColor?.close)))
     }
 
     /** Your own name tag shows in third person when you have a badge or a team tag. */
@@ -213,8 +217,36 @@ object SboBadges {
     }
 
     fun decorateTab(info: PlayerInfo, line: Component): Component {
-        if (!showInTab || (byUuid.isEmpty() && tabTags.isEmpty())) return line
+        if (skyHanniReading || !showInTab || (byUuid.isEmpty() && tabTags.isEmpty())) return line
         val player = tabPlayerOf(info) ?: return line
+        return decorateTab(line, player)
+    }
+
+    // SkyHanni's compact tab list reads the lines while this is set
+    private var skyHanniReading = false
+
+    /** SkyHanni rebuilds tab lines from § codes and would lose hex colors and the logo font, so it reads them undecorated. */
+    fun <T> undecoratedTab(read: Supplier<T>): T {
+        skyHanniReading = true
+        try {
+            return read.get()
+        } finally {
+            skyHanniReading = false
+        }
+    }
+
+    /** A line SkyHanni's compact tab list draws, decorated like ours; null when it has no badge holder or tagged member. */
+    fun decorateSkyHanniTab(line: Component?): Component? {
+        if (line == null || !showInTab || (byName.isEmpty() && tabTags.isEmpty())) return null
+        val plain = ChatFormatting.stripFormatting(line.string) ?: return null
+        val player = tabPlayerIn(plain) ?: return null
+        return decorateTab(line, player).takeIf { it !== line }
+    }
+
+    private fun tabPlayerIn(text: String): String? =
+        NAME.findAll(text.trim()).map { it.groupValues[1] }.firstOrNull { it.lowercase() in byName || it.lowercase() in tabTags }
+
+    private fun decorateTab(line: Component, player: String): Component {
         val decorated = recolored(line, player, TeamTagPlace.TAB)
         val logo = byName[player.lowercase()]?.shows(BadgePart.LOGO, TeamTagPlace.TAB) == true
         return if (logo) decorated.copy().append(" ").append(logo()) else decorated
@@ -246,8 +278,7 @@ object SboBadges {
         synchronized(tabCache) {
             tabCache[info]?.let { if (it.display === display && it.listVersion == listVersion) return it.player }
         }
-        val player = NAME.findAll(display.string.trim()).map { it.groupValues[1] }
-            .firstOrNull { it.lowercase() in byName || it.lowercase() in tabTags }
+        val player = tabPlayerIn(display.string)
         synchronized(tabCache) { tabCache[info] = TabEntry(display, listVersion, player) }
         return player
     }
@@ -299,13 +330,17 @@ object SboBadges {
         val plain = String(CharArray(chars.size) { chars[it].char })
         val name = Regex("(?<![A-Za-z0-9_])${Regex.escape(playerName)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
             .find(plain) ?: return line
-        // Name and level each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
+        // Name, level and rank each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
         val nameColor = badge?.takeIf { it.shows(BadgePart.NAME, place) }?.colorOf(BadgePart.NAME)
         val levelColor = badge?.takeIf { it.shows(BadgePart.LEVEL, place) }?.colorOf(BadgePart.LEVEL)
-        val levelRange = levelColor?.let { LEVEL.find(plain.substring(0, name.range.first))?.range?.first }
-            ?.let { it until name.range.first }
+        val rankColor = badge?.takeIf { it.shows(BadgePart.RANK, place) }?.colorOf(BadgePart.RANK)
+        // In chat and for some ranks in the tab list Hypixel's rank stands between level and name
+        val rankStart = RANK.find(plain.substring(0, name.range.first))?.range?.first
+        val levelEnd = rankStart ?: name.range.first
+        val levelRange = levelColor?.let { LEVEL.find(plain.substring(0, levelEnd))?.range?.first }?.let { it until levelEnd }
+        val rankRange = rankColor?.let { rankStart }?.let { it until name.range.first }
         val inserts = beforeName != null || afterName != null
-        if (nameColor == null && levelRange == null && !inserts) return line
+        if (nameColor == null && levelRange == null && rankRange == null && !inserts) return line
 
         // A name another mod already colored (not one of the 16 § colors Hypixel uses) keeps its color
         val foreign = name.range.any { i -> chars[i].style.color?.let { it.value !in CHAT_COLORS } == true }
@@ -315,6 +350,13 @@ object SboBadges {
             val start = parseHex(color.color)
             val end = color.to?.let(::parseHex) ?: return start
             return mix(start, end, (i - range.first) / (range.last - range.first).coerceAtLeast(1).toFloat())
+        }
+        // Level and rank: brackets and the rank's plus can have their own color
+        fun partColorAt(color: PartColor, range: IntRange, i: Int, char: Char): Int = when {
+            char == '[' && color.open != null -> parseHex(color.open)
+            char == ']' && color.close != null -> parseHex(color.close)
+            char == '+' && color.plus != null -> parseHex(color.plus)
+            else -> colorAt(color, range, i)
         }
         val out = Component.empty()
         var run = StringBuilder()
@@ -332,7 +374,8 @@ object SboBadges {
             if (beforeName != null && i == name.range.first) insert(beforeName)
             val style = when {
                 foreign -> c.style
-                levelColor != null && levelRange != null && i in levelRange -> c.style.withColor(colorAt(levelColor, levelRange, i))
+                levelColor != null && levelRange != null && i in levelRange -> c.style.withColor(partColorAt(levelColor, levelRange, i, c.char))
+                rankColor != null && rankRange != null && i in rankRange -> c.style.withColor(partColorAt(rankColor, rankRange, i, c.char))
                 nameColor != null && i in name.range -> c.style.withColor(colorAt(nameColor, name.range, i))
                 else -> c.style
             }
