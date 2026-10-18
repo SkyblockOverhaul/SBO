@@ -193,7 +193,7 @@ object SboBadges {
     /** Team rank of a player (uuid without dashes), for the party finder. */
     fun teamRank(uuid: String): BadgeRank? = uuidOf(uuid)?.let { team[it] }?.let { ranks[it.rank] }?.takeIf { it.tag != null }
 
-    /** "[SBO Moderator] " in the given color or the rank's, null for ranks without a tag. */
+    /** "[SBO Dev] " in the given color or the rank's, null for ranks without a tag. */
     fun tagOf(rank: String, partColor: PartColor? = null): Component? {
         val color = partColor?.color
         val to = partColor?.to
