@@ -118,6 +118,11 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public final void postApply(@NonNull final String targetClassName, @NonNull final ClassNode targetClass, @NonNull final String mixinClassName, @NonNull final IMixinInfo mixinInfo) {
-        MixinHealth.check(targetClassName, targetClass, mixinClassName);
+        // Runs while game classes load, where an exception would crash the game; the check is only a diagnosis
+        try {
+            MixinHealth.check(targetClassName, targetClass, mixinClassName);
+        } catch (final Throwable t) {
+            System.err.println("[SBO] Could not check mixin " + mixinClassName + ": " + t);
+        }
     }
 }
