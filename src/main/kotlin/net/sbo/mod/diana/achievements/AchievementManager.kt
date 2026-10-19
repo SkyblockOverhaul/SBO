@@ -341,10 +341,10 @@ object AchievementManager {
         // Every mob gets checked, even after one that isn't maxed yet
         val maxed = killsById.map { (kills, id) ->
             val isMaxed = when (id) {
-                45, 104 -> kills >= 500
-                50, 49, 102, 103, 101, 48 -> kills >= 3000
-                47, 46 -> kills >= 1000
-                105, 106 -> kills >= 100
+                105, 106 -> kills >= 50 // manti & kings
+                45, 46, 47, 104 -> kills >= 500 // inq, minotaur, champ, sphinx
+                50, 103 -> kills >= 750 // gaia, harpy
+                48, 49, 101, 102,-> kills >= 1000 // hunter, lynx, nymph, bull
                 else -> false
             }
             if (isMaxed) unlockAchievement(id)
