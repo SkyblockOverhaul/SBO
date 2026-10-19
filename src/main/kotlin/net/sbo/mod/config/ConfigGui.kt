@@ -49,6 +49,8 @@ object ConfigGui {
 private class Ui(
     val changed: () -> Unit,
     val show: (Category, ConfigElement) -> Unit,
+    /** Shows [ConfigElement] wherever it is, used by the requirement links. */
+    val jump: (ConfigElement) -> Unit,
     val collapsed: Set<String>,
     val toggle: (String) -> Unit,
 )
@@ -74,18 +76,27 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
         DataManager.sboData.save()
     }
 
+    fun show(category: Category, element: ConfigElement) {
+        page = category
+        query = ""
+        target = element
+        // Jumping from the search into a collapsed sub opens it
+        collapseKeyOf(category, element)?.let { setCollapsed(collapsed - it) }
+    }
+
     val ui = useMemo(collapsed) {
         Ui(
             changed = {
                 revision.update { it + 1 }
                 config.save()
             },
-            show = { category, element ->
-                page = category
-                query = ""
-                target = element
-                // Jumping from the search into a collapsed sub opens it
-                collapseKeyOf(category, element)?.let { setCollapsed(collapsed - it) }
+            show = ::show,
+            jump = { element ->
+                categoryOf(config, element)?.let { category ->
+                    // A setting in a switched off sub is hidden, so that goes to the sub instead
+                    val offSub = (element as? ConfigEntry<*>)?.sub?.takeIf { !it.enabled }
+                    show(category, offSub ?: element)
+                }
             },
             collapsed = collapsed,
             toggle = { key -> setCollapsed(if (key in collapsed) collapsed - key else collapsed + key) },
@@ -296,7 +307,9 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
     val refresh = useForceUpdate()
     val ui = useContext(UiContext) ?: return@component
 
-    val classes = listOfNotNull("cfg-row", "highlighted".takeIf { highlighted }).joinToString(" ")
+    // Locked while a setting from depends(...) is off
+    val locked = element is ConfigEntry<*> && !element.requirementsMet
+    val classes = listOfNotNull("cfg-row", "highlighted".takeIf { highlighted }, "locked".takeIf { locked }).joinToString(" ")
     div(className = classes, id = rowId(element)) {
         div(className = "cfg-row-text") {
             div(className = "cfg-row-name") { +rowName(element) }
@@ -310,6 +323,8 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
             }
             val text = rowDescription(element)
             if (text.isNotEmpty()) description(text, "cfg-row-description")
+            // Only while it can't be used, otherwise it's just noise
+            if (locked) needs(element, ui)
         }
         div(className = "cfg-row-control") {
             when (element) {
@@ -317,12 +332,38 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
                     element.onClick()
                     ui.changed()
                 }) { +(element.text ?: "Open") }
-                is ConfigEntry<*> -> control(element, ui, refresh)
+                is ConfigEntry<*> -> control(element, ui, refresh, locked)
                 is Sub -> {}
             }
         }
     }
 }
+
+// Every required setting links to itself, green when it is as needed and red when not
+private fun NodeBuilder.needs(entry: ConfigEntry<*>, ui: Ui) {
+    div(className = "cfg-row-needs") {
+        +"Needs: "
+        entry.requirements.forEachIndexed { i, requirement ->
+            if (i > 0) +", "
+            val conditions = requirement.conditions.mapNotNull { condition -> condition.entry?.let { condition to it } }
+            if (requirement.any && conditions.size > 1) +"one of "
+            conditions.forEachIndexed { j, (condition, required) ->
+                if (j > 0) +(if (requirement.any) " or " else ", ")
+                val state = when {
+                    condition.met -> "ok"
+                    // In a met "one of" the others don't need to change
+                    requirement.met -> "idle"
+                    else -> "missing"
+                }
+                val label = listOf(required.name, condition.state).filter { it.isNotEmpty() }.joinToString(" ")
+                span(className = "cfg-needs-link $state", title = "Show ${required.name}", onClick = { ui.jump(required) }) { +label }
+            }
+        }
+    }
+}
+
+private fun categoryOf(category: Category, element: ConfigElement): Category? =
+    if (element in category.elements) category else category.children.firstNotNullOfOrNull { categoryOf(it, element) }
 
 private fun rowName(element: ConfigElement) = when (element) {
     is Button -> element.title
@@ -336,9 +377,9 @@ private fun rowDescription(element: ConfigElement) = when (element) {
     is Sub -> element.description
 }
 
-private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Unit) {
+private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Unit, locked: Boolean) {
     when (entry) {
-        is BooleanEntry -> switch(checked = entry.value, onChange = {
+        is BooleanEntry -> switch(checked = entry.value, disabled = locked, onChange = {
             entry.set(it.checked)
             ui.changed()
         })

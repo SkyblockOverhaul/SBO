@@ -45,6 +45,12 @@ open class Category(val id: String) : EntriesBuilder() {
         }
     }
 
+    // Every category object exists by now, so requirements on other categories resolve too
+    internal fun linkRequirements() {
+        entries.forEach { it.linkRequirements() }
+        categories.values.forEach { it.linkRequirements() }
+    }
+
     fun resetAll() {
         subs.forEach { it.setEnabled(true) }
         entries.forEach { it.reset() }
@@ -80,6 +86,7 @@ open class Config(val file: String) : Category(file) {
 
     fun load(configDir: Path) {
         this.configDir = configDir
+        linkRequirements()
         if (Files.exists(path)) {
             val current = read(path)
             val json = current ?: read(backup)

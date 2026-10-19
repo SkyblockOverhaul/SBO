@@ -1,6 +1,7 @@
 package net.sbo.mod.config
 
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
 
 open class EntriesBuilder {
 
@@ -87,7 +88,9 @@ class EntryProvider<T, B : TypeBuilder> @PublishedApi internal constructor(
 
     override operator fun provideDelegate(entries: EntriesBuilder, prop: KProperty<*>): ConfigEntry<T> {
         val id = id ?: prop.name
-        val entry = create(id, builderFactory(id).apply(builder))
+        val built = builderFactory(id).apply(builder)
+        val entry = create(id, built)
+        entry.requirements = built.requirements
         entries.add(entry)
         return entry
     }
@@ -106,6 +109,34 @@ class ObservableEntry<T>(
 open class TypeBuilder(val id: String) {
     var name: String = id
     var description: String = ""
+    internal var requirements: List<Requirement> = emptyList()
+
+    // Until a requirement is met an on/off setting reads as off, and the settings screen locks the row and links the requirement
+
+    /** Only usable while all of [settings] are on: `depends(::lootshareDisplay, ::lootshareMessage)`. */
+    fun depends(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map(::on), any = false)
+
+    /** Only usable while all of [settings] are off: `dependsOff(::dynamicWaypointOpacity)`. */
+    fun dependsOff(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map { state(it, "off") { on -> !on } }, any = false)
+
+    /** Only usable while at least one of [settings] is on: `dependsAny(::guessAndBurrowLine, ::inqLine)`. */
+    fun dependsAny(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map(::on), any = true)
+
+    /** For settings that aren't on/off: `depends(state(::lootTracker, "on") { it != Tracker.OFF })`. */
+    fun depends(vararg conditions: Condition) = addRequirement(conditions.toList(), any = false)
+
+    /** At least one of [conditions] has to be met, they can mix [state] and [on]. */
+    fun dependsAny(vararg conditions: Condition) = addRequirement(conditions.toList(), any = true)
+
+    /** [setting] has to pass [check], [state] is shown after its name in the settings screen. */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> state(setting: KProperty0<T>, state: String, check: (T) -> Boolean) = Condition(setting, state) { check(it as T) }
+
+    fun on(setting: KProperty0<Boolean>) = state(setting, "") { it }
+
+    private fun addRequirement(conditions: List<Condition>, any: Boolean) {
+        requirements = requirements + Requirement(conditions, any)
+    }
 }
 
 class NumberBuilder<T>(id: String) : TypeBuilder(id) where T : Number, T : Comparable<T> {

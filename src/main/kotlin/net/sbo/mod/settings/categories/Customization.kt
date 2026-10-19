@@ -36,6 +36,7 @@ object Customization : Category("Customization") {
     var OptimalOrderLineColor by color(
         Color(1.0f, 1.0f, 1.0f).rgb) {
         this.name = Literal("Optimal Order Line Color")
+        depends(Diana::drawOptimalOrderLines)
         this.description = Literal("Pick a color for optimal order line color. (line drawn between guesses in the optimal order to them, only used if \"Draw Optimal Order Lines\" enabled in Diana category)")
         this.allowAlpha = false
     }
@@ -97,6 +98,7 @@ object Customization : Category("Customization") {
         Color(1.0f, 0.55f, 0.0f).rgb
     ) {
         this.name = Literal("King Minos Glow Color")
+        depends(Diana::HighlightRareMobs)
         this.description = Literal("Glow color for King Minos.")
         this.allowAlpha = true
     }
@@ -105,6 +107,7 @@ object Customization : Category("Customization") {
         Color(1.0f, 0.35f, 0.75f).rgb
     ) {
         this.name = Literal("Minos Inquisitor Glow Color")
+        depends(Diana::HighlightRareMobs)
         this.description = Literal("Glow color for Minos Inquisitor.")
         this.allowAlpha = true
     }
@@ -113,6 +116,7 @@ object Customization : Category("Customization") {
         Color(0.0f, 0.45f, 0.0f).rgb
     ) {
         this.name = Literal("Manticore Glow Color")
+        depends(Diana::HighlightRareMobs)
         this.description = Literal("Glow color for Manticore.")
         this.allowAlpha = true
     }
@@ -121,6 +125,7 @@ object Customization : Category("Customization") {
         Color(0.35f, 0.8f, 1.0f).rgb
     ) {
         this.name = Literal("Sphinx Glow Color")
+        depends(Diana::HighlightRareMobs)
         this.description = Literal("Glow color for Sphinx.")
         this.allowAlpha = true
     }
@@ -144,6 +149,7 @@ object Customization : Category("Customization") {
     var waypointOpacity by int(50) {
         this.range = 0..100
         this.name = Literal("Waypoint Opacity")
+        dependsOff(::dynamicWaypointOpacity)
         this.description = Literal("The opacity of the rendered waypoints. 50 will make it 50% transparent, 100% fully opaque, 0% fully invisible, etc. (default 50)")
     }
 
@@ -168,6 +174,7 @@ object Customization : Category("Customization") {
     var showDistanceCutoff by int(50) {
         this.range = 0..150
         this.name = Literal("Show Distance & Times Dug Cutoff")
+        depends(::showTimesDug)
         this.description = Literal("The distance cutoff at which the distance text disappears, and the times dug text appears. For example if set to 50 will not display the distance text if 50m or closer, and will only display the times dug when 50m or closer. (0 to always show distance and times dug, if times dug is enabled)")
     }
 
