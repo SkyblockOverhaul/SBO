@@ -506,6 +506,22 @@ object Diana : Category("Diana") {
         this.description = Literal("Highlights rare mobs (King, Manti, Sphinx, Inq) with a glowing effect.")
     }
 
+    var lootshareDisplay by boolean(true) {
+        this.name = Literal("Lootshare Display")
+        this.description = Literal("In a party, shows Lootshared above rare mobs you did not spawn. Grey and struck through until you hit 1% of its max HP, then aqua.")
+    }
+
+    var lootshareMessage by boolean(true) {
+        this.name = Literal("Lootshare Message")
+        this.description = Literal("Sends a party chat message once you dealt enough damage to lootshare a rare mob.")
+    }
+
+    var lootsharePartyOverlay by boolean(false) {
+        this.name = Literal("Lootshare Party Overlay")
+        this.description = Literal("While a rare mob is around, lists your party in red until they sent the SBO lootshare message, then aqua. /sboguis to move it.")
+        depends(::lootshareDisplay, ::lootshareMessage)
+    }
+
     var announceInqText by strings("") {
         this.name = Literal("Send Text On Inq Spawn")
         this.description = Literal("Sends a text on Inq spawn 5 seconds after spawn, use {since} for mobs since mob, {chance} for mob chance. Leave empty to disable.")
@@ -578,8 +594,8 @@ object Diana : Category("Diana") {
     }
 
     var mythosMobHp by boolean(true) {
-        this.name = Literal("Mythos Mob HP")
-        this.description = Literal("Displays HP of mythological mobs near you, /sboguis to move it.")
+        this.name = Literal("Mythos Mob Infos")
+        this.description = Literal("Displays HP and your lootshare status of mythological mobs near you, /sboguis to move it.")
     }
 
     var sphinxSolver by boolean(true) {

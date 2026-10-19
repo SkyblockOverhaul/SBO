@@ -10,6 +10,8 @@ import net.minecraft.util.Util
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.LootshareDisplay
+import net.sbo.mod.diana.LootshareParty
 import net.sbo.mod.diana.RareMobHighlight
 import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
@@ -162,6 +164,8 @@ object SBOKotlin : ClientModInitializer {
 		MessageHider.init()
 		SphinxSolver.init()
 		RareMobHighlight.init()
+		LootshareDisplay.init()
+		LootshareParty.init()
 		InventoryUtils.init()
 		Chains.init()
 		MuteBuggedSpadeSounds.init()

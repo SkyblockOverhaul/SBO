@@ -22,4 +22,9 @@ object Debug : Category("Debug") {
         this.name = Literal("Enable Repeatable Achievements")
         this.description = Literal("Allows you to unlock repeatable achievements for each new event.")
     }
+
+    var lootshareDisplayTest by boolean(false) {
+        this.name = Literal("Lootshare Display Test")
+        this.description = Literal("Shows the lootshare display without a party and on rare mobs you spawned yourself, for testing.")
+    }
 }

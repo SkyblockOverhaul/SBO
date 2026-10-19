@@ -194,7 +194,10 @@ object DianaMobDetect {
                 }
 
                 val name = armorStand.customName?.formattedString() ?: armorStand.name.formattedString()
-                checkDianaMob(armorStand, name, id)?.let { overlayLines.add(it) }
+                checkDianaMob(armorStand, name, id)?.let { line ->
+                    overlayLines.add(line)
+                    LootshareDisplay.overlayStatus(armorStand)?.let { overlayLines.add(OverlayTextLine(it, centered = true)) }
+                }
 
                 val result = checkStarlessMob(armorStand, name, id, player, closestStarlessMob, closestDistanceSq)
                 closestStarlessMob = result.first
@@ -327,6 +330,7 @@ object DianaMobDetect {
             else -> null
         } ?: return
 
+        RareDianaMob.entries.firstOrNull { it.display == mob }?.let(LootshareDisplay::onOwnRareSpawn)
         WaypointManager.notifyRareMob("", mobType)
 
         if (Diana.shareRareMob) {
