@@ -2,6 +2,7 @@ package net.sbo.mod.utils.waypoint
 
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
+import net.minecraft.client.player.RemotePlayer
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.decoration.ArmorStand
@@ -9,6 +10,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Customization
@@ -33,7 +35,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 private const val RARE_MOB_STALE_TICKS = 20
-private const val RARE_MOB_VALIDATION_DISTANCE = 30.0
+private const val RARE_MOB_VALIDATION_DISTANCE = 25.0
 
 object WaypointManager {
     private val waypoints = mutableMapOf<String, MutableList<Waypoint>>()
@@ -79,7 +81,7 @@ object WaypointManager {
                     val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
 
                     val existing = getWaypointsOfType("rareMob")
-                    if (existing.any { it.pos.distanceTo(pos) <= 10 }) {
+                    if (existing.any { it.rareMobType == mobType && it.rareMobSentBy == player && it.pos.distanceTo(pos) <= 10 }) {
                         return@onChatMessage
                     }
 
@@ -102,7 +104,7 @@ object WaypointManager {
         }
 
         Register.onTick(1) { _ ->
-            if (Diana.receiveRareMob && World.getWorld() == "Hub") {
+            if (Diana.receiveRareMob && World.isInHub()) {
                 updateRareMobWaypoints()
             }
 
@@ -144,7 +146,7 @@ object WaypointManager {
 
             this.forEachWaypoint { waypoint ->
                 if (
-                    World.getWorld() != "Hub" ||
+                    !World.isInHub() ||
                     waypoint.preventInvalidRemoval ||
                     waypoint.type == "world"
                 ) {
@@ -180,7 +182,7 @@ object WaypointManager {
             val invalidShovelIterator = shovelGuesses.iterator()
             while (invalidShovelIterator.hasNext()) {
                 val shovelGuess = invalidShovelIterator.next()
-                if (World.getWorld() == "Hub" && !ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
+                if (World.isInHub() && !ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
                     invalidShovelIterator.remove()
                 }
             }
@@ -192,7 +194,7 @@ object WaypointManager {
             while (invalidArrowIterator.hasNext()) {
                 val arrowGuess = invalidArrowIterator.next()
 
-                if (World.getWorld() != "Hub") continue
+                if (!World.isInHub()) continue
 
                 if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
                     if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
@@ -216,7 +218,7 @@ object WaypointManager {
             while (invalidSubGuessIterator.hasNext()) {
                 val subGuess = invalidSubGuessIterator.next()
 
-                if (World.getWorld() != "Hub") continue
+                if (!World.isInHub()) continue
 
                 if (!ArrowGuessBurrow.isBlockValid(subGuess.pos)) {
                     invalidSubGuessIterator.remove()
@@ -227,7 +229,7 @@ object WaypointManager {
             // Perform internal-state cleanup after the iterator finishes.
             invalidSubGuessPositions.forEach(ArrowGuessBurrow::removeSubGuessFromInternalState)
 
-            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 32 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
+            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 30 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
             val redundantShovelIterator = shovelGuesses.iterator()
             while (redundantShovelIterator.hasNext()) {
                 val shovelGuess = redundantShovelIterator.next()
@@ -236,21 +238,21 @@ object WaypointManager {
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
                     val waypointBlock = staticBurrow.pos.roundLocationToBlock()
 
-                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 32
+                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 30
                 }?.let { staticBurrow ->
                     staticBurrow.carryOverState(shovelGuess)
                     redundantShovelIterator.remove()
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 32 blocks of each other
+            // Remove duplicate shovel guesses that are within 30 blocks of each other
             val duplicates = mutableSetOf<Waypoint>()
             for (index in shovelGuesses.indices) {
                 val shovelGuess = shovelGuesses[index]
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 32
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 30
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess
@@ -351,6 +353,10 @@ object WaypointManager {
         if (!player.contains(Player.getName() ?: "")) playCustomSound(mobData.sound, mobData.volume)
 
         return mobData.mobName
+    }
+
+    fun floorToGround(pos: SboVec): SboVec {
+        return floorToGround(mc.level!!, pos)
     }
 
     private fun floorToGround(level: ClientLevel, pos: SboVec): SboVec {
@@ -459,46 +465,48 @@ object WaypointManager {
         val existing = getWaypointsOfType("rareMob").toMutableList()
         val rareMobPositions = mutableListOf<SboVec>()
 
-        level.entitiesForRendering().forEach { entity ->
-            val stand = entity as? ArmorStand ?: return@forEach
+        val now = System.nanoTime()
 
-            val name = stand.customName?.string ?: return@forEach
-            if (name.contains("0/")) return@forEach
+        for ((stand, mobType) in DianaMobDetect.getTrackedRareMobs()) {
+            if (stand.level() != level) continue
 
-            val (mobType, mobName) = when {
-                name.contains("King Minos") -> Diana.ReceiveList.KING to "King Minos"
-                name.contains("Minos Inquisitor") -> Diana.ReceiveList.INQ to "Minos Inquisitor"
-                name.contains("Manticore") -> Diana.ReceiveList.MANTICORE to "Manticore"
-                name.contains("Sphinx") -> Diana.ReceiveList.SPHINX to "Sphinx"
-                else -> return@forEach
-            }
+            val name = stand.customName?.string ?: continue
+            if (name.contains("0/")) continue
 
-            if (mobType !in Diana.ReceiveMobs) return@forEach
-            if (stand.isDeadOrDying()) return@forEach
+            if (stand.isDeadOrDying()) continue
 
             val standPos = SboVec(stand.x, stand.y, stand.z)
             rareMobPositions += standPos
 
-            if (!shouldAddWaypoints) return@forEach
+            if (!shouldAddWaypoints) continue
 
-            if (existing.none { it.pos.distanceTo(standPos) <= 60 }) {
-                // Best-effort to not be considered a cheat
-                if (!player.hasLineOfSight(entity)) return@forEach
-
-                val pos = floorToGround(level, standPos)
-
-                val isOwnSpawn =
-                    DianaTracker.lastSpawnedMob == mobName &&
-                    System.nanoTime() - DianaTracker.lastSpawnedMobTime <= TimeUnit.SECONDS.toNanos(5)
-
-                addRareMobWaypoint(
-                    player = "",
-                    pos = pos,
-                    mobType = mobType,
-                    mobDisplayName = notifyRareMob("", mobType),
-                    isOwnSpawn
-                )?.let(existing::add)
+            val receiveType = when (mobType) {
+                DianaMobDetect.RareDianaMob.INQ -> Diana.ReceiveList.INQ
+                DianaMobDetect.RareDianaMob.KING -> Diana.ReceiveList.KING
+                DianaMobDetect.RareDianaMob.SPHINX -> Diana.ReceiveList.SPHINX
+                DianaMobDetect.RareDianaMob.MANTI -> Diana.ReceiveList.MANTICORE
             }
+
+            if (existing.any { it.rareMobType == receiveType && it.pos.distanceTo(standPos) <= 60 }) continue
+
+            // Best-effort to not be considered a cheat.
+            if (!player.hasLineOfSight(stand)) continue
+
+            val pos = floorToGround(level, standPos)
+
+            val mobName = mobType.display
+
+            val isOwnSpawn =
+                DianaTracker.lastSpawnedMob == mobName &&
+                now - DianaTracker.lastSpawnedMobTime <= TimeUnit.SECONDS.toNanos(5)
+
+            addRareMobWaypoint(
+                player = "",
+                pos = pos,
+                mobType = receiveType,
+                mobDisplayName = notifyRareMob("", receiveType),
+                isOwnSpawn = isOwnSpawn
+            )?.let(existing::add)
         }
 
         removeStaleRareMobWaypoints(existing, rareMobPositions)
@@ -509,13 +517,17 @@ object WaypointManager {
         val playerPos = SboVec(player.x, player.y, player.z)
 
         existing.forEach { waypoint ->
+            if (waypoint.preventStaleRareMobRemoval) {
+                return@forEach
+            }
+
             if (playerPos.distanceTo(waypoint.pos) > RARE_MOB_VALIDATION_DISTANCE) {
                 waypoint.rareMobMissingTicks = 0
                 return@forEach
             }
 
             val mobPresent = rareMobPositions.any {
-                it.distanceTo(waypoint.pos) <= RARE_MOB_VALIDATION_DISTANCE
+                it.distanceTo(waypoint.pos) <= 30
             }
 
             if (mobPresent) {
@@ -531,7 +543,7 @@ object WaypointManager {
         }
     }
 
-    private fun addRareMobWaypoint(
+    fun addRareMobWaypoint(
         player: String,
         pos: SboVec,
         mobType: Diana.ReceiveList,
@@ -548,7 +560,7 @@ object WaypointManager {
         }
 
         val owner = if (player.isNotEmpty()) " §7($player§7)" else ""
-        val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, type = "rareMob", ttl = 45)
+        val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, type = "rareMob", ttl = 45, rareMobType = mobType, rareMobSentBy = player)
 
         addWaypoint(waypoint)
         return waypoint
@@ -563,10 +575,9 @@ object WaypointManager {
      * @param context The world render context.
      */
     fun renderAllWaypoints(context: LevelRenderContext) {
-        if (World.getWorld() != "Hub" || !Helper.hasSpade) {
-            (getWaypointsOfType("world") + getWaypointsOfType("debug")).forEach { waypoint ->
-                waypoint.render(context)
-            }
+        if (!World.isInHub() || !Helper.hasSpade) {
+            getWaypointsOfType("world").forEach { waypoint -> waypoint.render(context) }
+            getWaypointsOfType("debug").forEach { waypoint -> waypoint.render(context) }
             return
         }
 
@@ -854,7 +865,18 @@ object WaypointManager {
 
     private fun getWarpPoint(name: String): WarpPoint? = hubWarps[name] ?: additionalHubWarps[name]
 
-    fun getAllGuessesAndBurrows(): List<Waypoint> = getWaypointsOfType("burrow") + getWaypointsOfType("arrow") + getWaypointsOfType("guess")
+    fun getAllGuessesAndBurrows(): List<Waypoint> {
+        if (waypoints.isEmpty()) return emptyList()
+
+        val known = getWaypointsOfType("burrow")
+        val arrow = getWaypointsOfType("arrow")
+        val spade = getWaypointsOfType("guess")
+
+        // Avoids calling CollectionsKt#plus which calls ArrayList#addAll which calls EmptyList#toArray if all of the lists are already empty, small performance optimization.
+        if (known.isEmpty() && arrow.isEmpty() && spade.isEmpty()) return emptyList()
+
+        return known + arrow + spade
+    }
 
     private fun getBestGuess(): Waypoint? = getBestGuessAt(Player.getLastPosition())
 
@@ -1018,7 +1040,7 @@ object WaypointManager {
     private var tryWarp: Boolean = false
 
     private fun executeWarpCommand(warp: String) {
-        if (World.getWorld() != "Hub" || !Helper.hasSpade) return
+        if (!World.isInHub() || !Helper.hasSpade) return
         if (warp.isNotEmpty() && !tryWarp) {
             tryWarp = true
             Chat.command("warp $warp")

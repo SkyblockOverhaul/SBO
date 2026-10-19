@@ -86,13 +86,22 @@ object PartyFinderManager {
         Regex("^§r§eYou have been kicked from the party by .+$"),
     )
 
+    private val partyDisbandMatchers =
+        partyDisbandRegexes.map { CachedPattern(it.toPattern()) }
+
     private val leaderChangeRegexes = listOf(
         Regex("^§r§eYou have joined §r(.+)'s* §r§eparty!$"),
         Regex("^§r§eThe party was transferred to §r(.+) §r§eby §r.+$"),
         Regex("^(.+)§r§e has promoted §r(.+) §r§eto Party Leader$")
     )
 
+    private val leaderChangeMatchers =
+        leaderChangeRegexes.map { CachedPattern(it.toPattern()) }
+
     private val ownJoinRegex = Regex("^§r§eYou have joined §r(.+)'s? §r§eparty!$")
+
+    private val ownJoinMatcher =
+        CachedPattern(ownJoinRegex.toPattern())
 
     /** Goes up when the player joined a party, the open party list reloads then. */
     @Volatile
@@ -104,6 +113,9 @@ object PartyFinderManager {
         Regex("^§r§eYou have joined §r(.+)'s? §r§eparty!$")
     )
 
+    private val partyJoinMatchers =
+        partyJoinRegexes.map { CachedPattern(it.toPattern()) }
+
     private val partyLeaveRegexes = listOf(
         Regex("^(.+) §r§ehas been removed from the party.$"),
         Regex("^(.+) §r§ehas left the party.$"),
@@ -111,9 +123,24 @@ object PartyFinderManager {
         Regex("^§r§eKicked (.+) because they were offline.$")
     )
 
+    private val partyLeaveMatchers =
+        partyLeaveRegexes.map { CachedPattern(it.toPattern()) }
+
     /** Set while the party finder GUI is open: results go there as toasts instead of the chat hidden behind it. */
     @Volatile
     var listener: ((success: Boolean, text: String) -> Unit)? = null
+
+    private class CachedPattern(pattern: Pattern) {
+        private val matcher = pattern.matcher("")
+
+        fun matches(input: String): Boolean =
+            matcher.reset(input).matches()
+
+        fun matchGroup(input: String, group: Int): String? {
+            matcher.reset(input)
+            return if (matcher.matches()) matcher.group(group) else null
+        }
+    }
 
     internal fun tell(text: String, success: Boolean) {
         val gui = listener
@@ -651,48 +678,48 @@ object PartyFinderManager {
     fun trackMemberRegister(event: ChatMessageEvent) {
         val text = event.message.toFormattedString()
         var match = false
-        leaderChangeRegexes.forEach {
-            if (it.matches(text)) {
-                match = true
-                isInParty = true
-                isLeader = false
-                removePartyFromQueue()
-            }
+
+        if (leaderChangeMatchers.firstOrNull { it.matches(text) } != null) {
+            match = true
+            isInParty = true
+            isLeader = false
+            removePartyFromQueue()
         }
-        partyDisbandRegexes.forEach {
-            if (it.matches(text)) {
-                creatingParty = false
-                partyMemberCount = 1
-                match = true
-                isInParty = false
-                memberRoles.clear()
-                roleInvites.clear()
-                removePartyFromQueue()
-            }
+
+        if (partyDisbandMatchers.firstOrNull { it.matches(text) } != null) {
+            creatingParty = false
+            partyMemberCount = 1
+            match = true
+            isInParty = false
+            memberRoles.clear()
+            roleInvites.clear()
+            removePartyFromQueue()
         }
-        ownJoinRegex.matchEntire(text)?.let { joined ->
-            // Hypixel already says it in chat, so only a toast while the GUI is open
-            listener?.invoke(true, "You joined ${Helper.getPlayerName(joined.groupValues[1])}'s party.")
+
+        ownJoinMatcher.matchGroup(text, 1)?.let { playerName ->
             // The leader's mod updates the listed party first
+            listener?.invoke(
+                true,
+                "You joined ${Helper.getPlayerName(playerName)}'s party."
+            )
             sleep(3000) { joinedParties++ }
         }
-        partyJoinRegexes.forEach {
-            if (it.matches(text)) {
-                quietSince = 0L
-                updateBool = true
-                partyMemberCount += 1
-                match = true
-                isInParty = true
-            }
+
+        if (partyJoinMatchers.firstOrNull { it.matches(text) } != null) {
+            quietSince = 0L
+            updateBool = true
+            partyMemberCount += 1
+            match = true
+            isInParty = true
         }
-        partyLeaveRegexes.forEach {
-            if (it.matches(text)) {
-                updateBool = true
-                partyMemberCount -= 1
-                match = true
-                isInParty = partyMemberCount > 1
-            }
+
+        if (partyLeaveMatchers.firstOrNull { it.matches(text) } != null) {
+            updateBool = true
+            partyMemberCount -= 1
+            match = true
+            isInParty = partyMemberCount > 1
         }
+
         if (match) trackMemberCount()
     }
 

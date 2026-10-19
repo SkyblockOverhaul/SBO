@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 // Higher priority than Sodium, so this runs after Sodium's unload hook.
 @Mixin(value = ClientLevel.class, priority = 1100)
-abstract class HubClientLevelMixin {
+final class HubClientLevelMixin {
     // Vanilla calls unload() late for chunks that left its view area, by then a fake chunk may already
     // show there. Sodium un-renders it here, so tell Sodium about the fake chunk again.
     @Inject(method = "unload", at = @At("HEAD"))
-    private void sbo$keepFakeChunkInSodium(@NonNull final LevelChunk chunk, @NonNull final CallbackInfo ci) {
+    private final void sbo$keepFakeChunkInSodium(@NonNull final LevelChunk chunk, @NonNull final CallbackInfo ci) {
         if (!HubChunkCache.sodiumLoaded) return;
-        final FakeChunkManager manager = HubChunkCache.managerFor(((ClientLevel) (Object) this).getChunkSource());
+        final var manager = HubChunkCache.managerFor(((ClientLevel) (Object) this).getChunkSource());
         if (manager == null) return;
-        final ChunkPos pos = chunk.getPos();
+        final var pos = chunk.getPos();
         manager.refreshSodium(pos.x(), pos.z());
     }
 }

@@ -48,7 +48,9 @@ class Waypoint(
     val z: Double,
     val type: String,
     val ttl: Long = 1800,
-    var line: Boolean = false
+    var line: Boolean = false,
+    val rareMobType: Diana.ReceiveList? = null,
+    val rareMobSentBy: String? = null
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)
     var hidden: Boolean = false
@@ -78,6 +80,7 @@ class Waypoint(
     private var dynamicOpacity = 1.0f
     var preventInvalidRemoval = false
     var rareMobMissingTicks: Int = 0
+    var preventStaleRareMobRemoval = false
 
     private var visualOrderText = Component.nullToEmpty(text).visualOrderText
 
@@ -158,7 +161,7 @@ class Waypoint(
             } ?: "${this.text}$waypointDistanceText$timesDugText"
 
             val title = Diana.showTitleWhenWarpAvailable
-            if (title && closest != null && World.getWorld() == "Hub" && Helper.hasSpade) {
+            if (title && closest != null && World.isInHub() && Helper.hasSpade) {
                 val warpName = closest.replaceFirstChar(Char::titlecase)
 
                 val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName${if (Customization.lookAlike) " §b[${distanceRaw.roundToInt()}m]" else distanceText}"

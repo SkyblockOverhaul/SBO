@@ -20,8 +20,8 @@ object Pickuplog {
     private var oldPurse: Long = 0L
     private var newPurse: Long = 0L
 
-    private var oldInventory = mutableMapOf<String, Item>()
-    private var newInventory = mutableMapOf<String, Item>()
+    private var oldInventory = mapOf<String, Item>()
+    private var newInventory = mapOf<String, Item>()
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
@@ -61,7 +61,7 @@ object Pickuplog {
 
     @SboEvent
     fun onInventorySlotUpdate(event: InventorySlotUpdateEvent) {
-        if (mc.player == null || !World.isInSkyblock() || World.getWorld() == "None") return
+        if (mc.player == null || !World.isInSkyblock() || World.isNone()) return
         newInventory = Helper.readPlayerInv()
         newPurse = Helper.getPurse()
         if (oldInventory.isEmpty()) {

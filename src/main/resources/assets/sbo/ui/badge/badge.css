@@ -242,3 +242,17 @@ body {
 .bd-pick:hover { outline: 1px solid rgba(255, 255, 255, 0.4); }
 .bd-picked { outline: 1px dashed #ffffff; outline-offset: 1px; }
 .bd-color-actions { display: flex; justify-content: flex-end; }
+
+/* Fixed heights, so ticking parts, picking parts or switching tabs never changes the window's size */
+.bd-preview-row { height: 58px; }
+.bd-preview-row .bd-preview { padding: 0 6px; }
+.bd-status { height: 9px; margin: 2px 0 3px 0; text-align: center; white-space: nowrap; overflow: hidden; }
+.bd-tabs { margin-bottom: 3px; }
+.bd-panel { height: 142px; }
+.bd-parts { margin: 0 4px 3px 4px; }
+.bd-note { margin: 4px 4px 0 4px; }
+.bd-mhead .bd-mlabel { color: var(--muted); }
+/* Part picker with the flow line switch on its right */
+.bd-picker-row { display: flex; align-items: center; gap: 4px; margin: 0 4px 3px 4px; }
+.bd-picker-row .bd-parts { margin: 0; }
+.bd-picker-row .bd-hint { margin: 0; }

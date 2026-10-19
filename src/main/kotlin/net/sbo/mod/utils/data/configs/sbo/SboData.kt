@@ -75,6 +75,7 @@ data class SboData(
     var badgesInTab: Boolean = true,
     var badgesInChat: Boolean = true,
     var badgeOwnInF5: Boolean = true,
+    var badgeAnimationsOfOthers: Boolean = true, // false shows other players' moving badge colors standing still
     var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
     var bobbyDisabledBySbo: Boolean = false, // the Hub Chunk Cache turned Bobby off once, never again
     var collapsedSettings: MutableSet<String> = mutableSetOf(), // collapsed subs in the settings, "Diana/Waypoints"

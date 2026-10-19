@@ -115,7 +115,7 @@ object BurrowDetector {
         }
 
         Register.onChatMessage(Regex("""^§c ☠ §7You .+$""")) { message, matchResult ->
-            if ("Hub" != World.getWorld()) return@onChatMessage
+            if (!World.isInHub()) return@onChatMessage
             refreshBurrows(deathOriginating = true, expectedTimesDug = 1)
         }
 
@@ -230,7 +230,7 @@ object BurrowDetector {
         return "Mob" // assume mob if not a known treasure drop
     }
 
-    private fun canShowUseSpade() = Diana.spadeGuess && Helper.hasSpade && World.getWorld() == "Hub"
+    private fun canShowUseSpade() = Diana.spadeGuess && Helper.hasSpade && World.isInHub()
 
     fun requestSpade(reason: String) {
         if (!canShowUseSpade()) return
@@ -266,7 +266,7 @@ object BurrowDetector {
     fun onParticleReceive(event: ParticleReceiveEvent) {
         val packet = event.packet
         if (!Diana.closeBurrowDetection) return
-        if (World.getWorld() != "Hub") return
+        if (!World.isInHub()) return
 
         if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()

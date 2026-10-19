@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Options.class)
-abstract class HubOptionsMixin {
+final class HubOptionsMixin {
     @Shadow @Final private OptionInstance<Integer> renderDistance;
 
     // Vanilla caps the render distance at the server's view distance, fake chunks go up to the client's.
     @Inject(method = "getEffectiveRenderDistance", at = @At("HEAD"), cancellable = true)
-    private void sbo$useClientRenderDistance(@NonNull final CallbackInfoReturnable<Integer> cir) {
+    private final void sbo$useClientRenderDistance(@NonNull final CallbackInfoReturnable<Integer> cir) {
         if (HubChunkCache.isActive()) cir.setReturnValue(this.renderDistance.get());
     }
 }

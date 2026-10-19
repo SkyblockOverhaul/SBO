@@ -12,7 +12,20 @@ import net.minecraft.world.level.chunk.LevelChunk
 import net.minecraft.world.level.chunk.status.ChunkStatus
 import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.settings.categories.General
 import java.util.concurrent.TimeUnit
+
+fun renderHubIslandOnlyEnabled(): Boolean {
+    return General.chunkCacheRenderHubIslandOnly
+}
+
+fun inArea(chunkX: Int, chunkZ: Int, area: AABB): Boolean {
+    val minX = chunkX * 16.0
+    val minZ = chunkZ * 16.0
+
+    return area.minX - 16.0 < minX + 16.0 && area.maxX + 16.0 >= minX &&
+            area.minZ - 16.0 < minZ + 16.0 && area.maxZ + 16.0 >= minZ
+}
 
 /**
  * Shows fake chunks in one level (one Hub server). Chunks the server unloads are copied into the
@@ -206,11 +219,10 @@ class FakeChunkManager internal constructor(
         pendingReplacements.clear()
     }
 
-    private fun inArea(chunkX: Int, chunkZ: Int): Boolean {
-        val area = area ?: return true
-        val minX = chunkX * 16.0
-        val minZ = chunkZ * 16.0
-        return area.intersects(minX, area.minY, minZ, minX + 16.0, area.maxY, minZ + 16.0)
+    fun inArea(chunkX: Int, chunkZ: Int): Boolean {
+        if (area == null) return true
+
+        return inArea(chunkX, chunkZ, area)
     }
 
     private fun markLoaded(chunkX: Int, chunkZ: Int, chunk: LevelChunk) {

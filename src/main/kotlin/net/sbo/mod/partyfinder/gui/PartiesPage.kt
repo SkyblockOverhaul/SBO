@@ -561,11 +561,12 @@ private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (P
                 }
             }
             else -> numberInput(
-                value = wanted?.toDoubleOrNull()?.toInt(),
-                onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) },
+                value = wanted?.toDoubleOrNull(),
+                onChange = { v -> save(v?.takeIf { it > 0 }?.let(StatView::reqNumber)) },
                 allowEmpty = true,
-                min = 1,
-                max = stat?.max ?: Int.MAX_VALUE,
+                min = 1.0,
+                max = (stat?.max ?: Int.MAX_VALUE).toDouble(),
+                decimals = 1,
                 className = wanted?.toDoubleOrNull()?.let { StatView.numberColor(def.stat, it) }
             )
         }

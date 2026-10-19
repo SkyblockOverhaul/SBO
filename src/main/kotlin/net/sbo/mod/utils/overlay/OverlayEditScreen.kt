@@ -18,7 +18,7 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         super.extractRenderState(context, mouseX, mouseY, delta)
         this.extractMenuBackground(context)
-        OverlayManager.render(context)
+        OverlayManager.render(context, this)
     }
 
     override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
