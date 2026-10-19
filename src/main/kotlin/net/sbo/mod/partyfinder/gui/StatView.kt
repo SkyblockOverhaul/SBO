@@ -126,6 +126,9 @@ internal object StatView {
         else -> null
     }
 
+    /** A typed requirement number as saved text: whole numbers without ".0", e.g. "50" or "48.5". */
+    fun reqNumber(value: Double): String = if (value % 1.0 == 0.0) value.toLong().toString() else value.toString()
+
     /** Colors for numbers the game colors too: SkyBlock level prefix, Trophy Fisher title, Diana kills like /sboc. */
     fun numberColor(statId: String, number: Double): String? {
         val n = number.toInt()
