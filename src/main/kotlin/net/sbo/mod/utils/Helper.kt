@@ -14,6 +14,7 @@ import net.sbo.mod.utils.data.*
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
+import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
@@ -63,6 +64,7 @@ object Helper {
 
     private var prevInv = mutableMapOf<String, Item>()
     private var priceDataAh: Map<String, Long> = emptyMap()
+    private var lastAhFetch = 0L
     private var priceDataBazaar: HypixelBazaarResponse? = null
     private val ACTIVE_USERS_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
     private var lastActiveUsersCount = 0L
@@ -94,7 +96,12 @@ object Helper {
         }
 
         Register.onTick(20 * 60 * 5) {
-            updateItemPriceInfo()
+            updateBazaarPrices()
+        }
+
+        // The server rebuilds its AH prices only about every two hours
+        Register.onTick(20 * 60 * 30) {
+            updateAhPrices()
         }
 
         Register.onTick(20) {
@@ -133,6 +140,12 @@ object Helper {
                 updateItemPriceInfo()
             }
         }
+    }
+
+    // AH prices load once at startup and then every 30 minutes, so a failed first load is retried on the next join
+    @SboEvent
+    fun onWorldChange(event: WorldChangeEvent) {
+        if (priceDataAh.isEmpty() && System.currentTimeMillis() - lastAhFetch > 60_000) updateAhPrices()
     }
 
     @SboEvent
@@ -710,6 +723,11 @@ object Helper {
     }
 
     private fun updateItemPriceInfo() {
+        updateBazaarPrices()
+        updateAhPrices()
+    }
+
+    private fun updateBazaarPrices() {
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse>(true) {
                 priceDataBazaar = it
@@ -717,6 +735,10 @@ object Helper {
             }.error { error ->
                 SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
             }
+    }
+
+    private fun updateAhPrices() {
+        lastAhFetch = System.currentTimeMillis()
         SboApi.ahItems()
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
