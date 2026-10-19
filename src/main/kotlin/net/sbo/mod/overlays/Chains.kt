@@ -17,7 +17,7 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 object Chains : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Chains", 10f, 10f)
         .setCondition { Diana.ongoingChainsDisplay }
-        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
+        .setExtraCondition { Helper.hasSpade && World.isInHub() }
 
     private var failureTimes = 0
 

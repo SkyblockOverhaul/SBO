@@ -39,6 +39,34 @@ loom {
 }
 
 bloom {
+    if (isMCVersionGreaterOrEqualTo("26.3")) {
+        replacement("com.mojang.blaze3d.pipeline.RenderPipeline", "com.mojang.renderpearl.api.pipeline.RenderPipeline")
+        replacement("com.mojang.blaze3d.pipeline.DepthStencilState", "com.mojang.renderpearl.api.pipeline.DepthStencilState")
+        replacement("com.mojang.blaze3d.platform.CompareOp", "com.mojang.renderpearl.api.pipeline.CompareOp")
+        replacement("Util.getPlatform().openUri(url)", "com.mojang.blaze3d.Blaze3D.openUri(java.net.URI(url))")
+        replacement("Util.getPlatform().openPath(", "com.mojang.blaze3d.Blaze3D.openPath(")
+        replacement("Util.getPlatform().openFile(folder)", "com.mojang.blaze3d.Blaze3D.openPath(folder.toPath())")
+        // The legacy packet constructor copies particle speed to all three axes in 26.3.
+        replacement(".maxSpeed", ".xMaxSpeed()")
+        replacement("InputConstants.Type.KEYSYM", "InputConstants.Type.KEYBOARD")
+        replacement("import org.lwjgl.glfw.GLFW;", "")
+        replacement("import org.lwjgl.glfw.GLFW", "")
+        replacement("InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), GLFW.GLFW_CURSOR_NORMAL,", "InputConstants.releaseMouse(this.minecraft.getWindow(),")
+        replacement("GLFW.GLFW_KEY_UNKNOWN", "com.mojang.blaze3d.platform.InputConstants.UNKNOWN.value")
+        replacement("GLFW.GLFW_KEY_ESCAPE", "com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE")
+        replacement("GLFW.GLFW_KEY_UP", "com.mojang.blaze3d.platform.InputConstants.KEY_UP")
+        replacement("GLFW.GLFW_KEY_DOWN", "com.mojang.blaze3d.platform.InputConstants.KEY_DOWN")
+        replacement("GLFW.GLFW_KEY_LEFT", "com.mojang.blaze3d.platform.InputConstants.KEY_LEFT")
+        replacement("GLFW.GLFW_KEY_RIGHT", "com.mojang.blaze3d.platform.InputConstants.KEY_RIGHT")
+        replacement("GLFW.GLFW_KEY_EQUAL", "com.mojang.blaze3d.platform.InputConstants.KEY_EQUALS")
+        replacement("GLFW.GLFW_KEY_KP_ADD", "com.mojang.blaze3d.platform.InputConstants.KEY_ADD")
+        replacement("GLFW.GLFW_KEY_MINUS", "com.mojang.blaze3d.platform.InputConstants.KEY_MINUS")
+        replacement("GLFW.GLFW_KEY_KP_SUBTRACT", "org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_MINUS")
+        replacement("click.buttonInfo().button", "net.sbo.mod.utils.InputCompatibility.mouseButton(click.buttonInfo().button)")
+        replacement("mulPose(Axis.YP.rotationDegrees(-cameraYaw))", "rotateDegrees(Axis.YP, -cameraYaw)")
+        replacement("mulPose(Axis.XP.rotationDegrees(cameraPitch))", "rotateDegrees(Axis.XP, cameraPitch)")
+        replacement("DefaultTooltipPositioner.INSTANCE, null)", "DefaultTooltipPositioner.INSTANCE, null, false)")
+    }
     if (isMCVersionGreaterOrEqualTo("26.2")) {
         replacement("mc.screen", "mc.gui.screen()")
         replacement("mc.setScreen(", "mc.gui.setScreen(")
@@ -125,6 +153,7 @@ repositories {
 
         filter {
             includeModule("maven.modrinth", "iris")
+            includeModule("maven.modrinth", "sodium")
         }
     }
 }
@@ -230,6 +259,8 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("expanded_files", expandedFiles)
 
     val fabricLoaderVersion = project.property("fabricloader.version")
+    val fabricLoaderConstraint = project.property("fabricloader.constraint")
+
     val fabricApiVersion = versionedProperty("fabricapi.version")
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
@@ -245,6 +276,9 @@ tasks.named<ProcessResources>("processResources") {
 
     val mcVersionConstraint = project.findProperty("mc$mcVersion.constraint")?.toString() ?: "~$mcVersion"
 
+    // TODO: remove when dropping 26.1 support
+    val sodiumExtraConstraint = project.findProperty("mc$mcVersion.sodium.extra.breaks.constraint")?.toString() ?: project.property("sodium.extra.breaks.constraint")!!.toString()
+
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
     inputs.property("mod_id", modId)
@@ -254,6 +288,7 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("mc_version_constraint", mcVersionConstraint)
 
     inputs.property("fabric_loader_version", fabricLoaderVersion)
+    inputs.property("fabric_loader_constraint", fabricLoaderConstraint)
     inputs.property("fabric_api_version", fabricApiVersion)
     inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
     inputs.property("java_version_major", javaVersionMajor)
@@ -261,6 +296,8 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("hm_api_version", hmApiVersion)
     inputs.property("guilib_version", project.property("guilib.version"))
     inputs.property("modmenu_version", modMenuVersion)
+
+    inputs.property("sodium_extra_breaks_constraint", sodiumExtraConstraint)
 
     val expandProperties = mapOf(
         "expanded_files" to expandedFiles,
@@ -273,6 +310,7 @@ tasks.named<ProcessResources>("processResources") {
         "mc_version" to mcVersion,
 
         "fabric_loader_version" to fabricLoaderVersion,
+        "fabric_loader_constraint" to fabricLoaderConstraint,
         "fabric_api_version" to fabricApiVersion,
         "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
         "java_version_major" to javaVersionMajor,
@@ -280,6 +318,8 @@ tasks.named<ProcessResources>("processResources") {
         "hm_api_version" to hmApiVersion,
         "guilib_version" to project.property("guilib.version"),
         "modmenu_version" to modMenuVersion,
+
+        "sodium_extra_breaks_constraint" to sodiumExtraConstraint
     ) + inputs.properties
 
     filesMatching(expandedFiles) {
@@ -302,7 +342,7 @@ dependencies {
     ksp(project(":event-processor"))
     ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
-    // GuiLib (see settings.gradle.kts for building it from a local checkout). Not used by any code yet.
+    // GuiLib (see settings.gradle.kts for building it from a local checkout)
     implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)
 
     implementation(include("net.azureaaron:hm-api:${versionedProperty("hmapi.version")}")!!)
@@ -312,14 +352,21 @@ dependencies {
     implementation(include("com.googlecode.soundlibs:jlayer:${property("jlayer.version")}")!!)
 
     when (mcProject) {
+        "26.3-fabric" -> {
+            implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
+            compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.3-fabric")
+            compileOnly("maven.modrinth:sodium:mc26.3-${versionedProperty("sodium.version")}-fabric")
+        }
         "26.2-fabric" -> {
             // TODO Move out of conditional block when dropping 26.1.2 support, add it to fabric.mod.json dependencies and remove the legacy glow of ours (remove EntityMixin, EntityAccessor and clean up RareMobHighlight)
             implementation(include("net.azureaaron:render-chest:${versionedProperty("renderchest.version")}")!!)
 
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.2-fabric")
+            compileOnly("maven.modrinth:sodium:mc26.2-${versionedProperty("sodium.version")}-fabric")
         }
         "26.1.2-fabric" -> {
             compileOnly("maven.modrinth:iris:${versionedProperty("iris.version")}+26.1-fabric")
+            compileOnly("maven.modrinth:sodium:mc26.1.2-${versionedProperty("sodium.version")}-fabric")
         }
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
@@ -329,6 +376,7 @@ dependencies {
 
 tasks.findByName("preprocessCode")?.apply {
     when (mcProject) {
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspKotlin")
         "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }
@@ -336,6 +384,7 @@ tasks.findByName("preprocessCode")?.apply {
 
 tasks.findByName("preprocessTestCode")?.apply {
     when (mcProject) {
+        "26.3-fabric" -> dependsOn(":26.2-fabric:kspTestKotlin")
         "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspTestKotlin")
         else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
     }

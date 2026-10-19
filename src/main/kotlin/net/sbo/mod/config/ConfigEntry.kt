@@ -7,14 +7,77 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
+import kotlin.reflect.jvm.isAccessible
 
 sealed interface ConfigElement
 
-class Separator(
+class Sub(
     val title: String,
     val description: String,
     val condition: () -> Boolean,
-) : ConfigElement
+) : ConfigElement {
+    /** Only subs with a title can be switched off, the others just separate. */
+    val toggleable: Boolean get() = title.isNotEmpty()
+
+    /** Off: the on/off settings in it read as off and the settings screen hides them. */
+    var enabled: Boolean = true
+        private set
+
+    internal val entries = mutableListOf<ConfigEntry<*>>()
+
+    fun setEnabled(value: Boolean) {
+        if (enabled == value || !toggleable) return
+        // Features that react to an on/off setting see it switch with the sub, and so do settings depending on it
+        notifyChanges(entries, includeRoots = true) { enabled = value }
+    }
+}
+
+/**
+ * Runs [change], then calls onChange on every on/off setting depending on [roots] (also further down the chain)
+ * whose value flipped because of it, and with [includeRoots] on the on/off [roots] themselves too.
+ */
+internal fun notifyChanges(roots: Collection<ConfigEntry<*>>, includeRoots: Boolean, change: () -> Unit) {
+    val watched = LinkedHashSet<BooleanEntry>()
+    fun collect(entry: ConfigEntry<*>) {
+        for (dependent in entry.dependents) if (watched.add(dependent)) collect(dependent)
+    }
+    for (root in roots) {
+        if (includeRoots && root is BooleanEntry) watched += root
+        collect(root)
+    }
+    // A root's own onChange is the caller's job
+    if (!includeRoots) watched.removeAll(roots.toSet())
+
+    val before = watched.associateWith { it.get() }
+    change()
+    for ((entry, old) in before) {
+        val new = entry.get()
+        if (old != new) entry.onChange(old, new)
+    }
+}
+
+/** One setting that has to be in a certain state for another one to be usable. */
+class Condition internal constructor(
+    private val property: KProperty0<*>,
+    /** Shown after the setting's name, e.g. "off", empty for plain "on". */
+    val state: String,
+    private val check: (Any?) -> Boolean,
+) {
+    private var resolved: ConfigEntry<*>? = null
+
+    /** Looked up on first use since it can be declared further down, null while its category is still initializing. */
+    val entry: ConfigEntry<*>?
+        get() = resolved ?: (property.apply { isAccessible = true }.getDelegate() as? ConfigEntry<*>)?.also { resolved = it }
+
+    // Counts as met until the setting is found, so a read during init doesn't lock anything
+    val met: Boolean get() = entry?.let { check(it.get()) } ?: true
+}
+
+/** A group of [conditions] that all, or with [any] at least one, have to be met. */
+class Requirement internal constructor(val conditions: List<Condition>, val any: Boolean) {
+    val met: Boolean get() = if (any) conditions.any { it.met } else conditions.all { it.met }
+}
 
 class Button(
     val title: String,
@@ -32,21 +95,44 @@ sealed class ConfigEntry<T>(
     val description: String,
 ) : ConfigElement {
 
+    /** The saved value, also while its [sub] is off. Features read [get] / the delegate instead. */
     var value: T = default
         private set
     var onChange: (T, T) -> Unit = { _, _ -> }
 
-    fun get(): T = value
+    internal var sub: Sub? = null
+
+    /** From `depends(...)`, `dependsOff(...)` and `dependsAny(...)` in the entry's builder. */
+    var requirements: List<Requirement> = emptyList()
+        internal set
+
+    /** On/off settings with a requirement on this one, linked when the config loads. */
+    internal val dependents = LinkedHashSet<BooleanEntry>()
+
+    internal fun linkRequirements() {
+        if (this !is BooleanEntry) return
+        for (requirement in requirements) for (condition in requirement.conditions) condition.entry?.dependents?.add(this)
+    }
+
+    /** False while a requirement isn't met, the settings screen then locks this one. */
+    val requirementsMet: Boolean get() = requirements.all { it.met }
+
+    internal open val effectiveValue: T get() = value
+
+    fun get(): T = effectiveValue
 
     fun set(newValue: T) {
-        val old = value
-        value = newValue
-        if (!same(old, newValue)) onChange(old, newValue)
+        notifyChanges(listOf(this), includeRoots = false) {
+            val old = effectiveValue
+            value = newValue
+            val new = effectiveValue
+            if (!same(old, new)) onChange(old, new)
+        }
     }
 
     fun reset() = set(default)
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T = value
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): T = effectiveValue
     operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T) = set(newValue)
 
     internal open fun same(a: T, b: T): Boolean = a == b
@@ -62,6 +148,9 @@ sealed class ConfigEntry<T>(
 
 class BooleanEntry internal constructor(id: String, default: Boolean, name: String, description: String) :
     ConfigEntry<Boolean>(id, default, name, description) {
+
+    // A requirement switching does not call onChange here, only the sub does that
+    override val effectiveValue: Boolean get() = value && sub?.enabled != false && requirementsMet
 
     override fun toJson() = JsonPrimitive(value)
     override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isBoolean }?.asBoolean

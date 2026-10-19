@@ -1,18 +1,27 @@
 package net.sbo.mod.config
 
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
 
 open class EntriesBuilder {
 
     private val ids = mutableSetOf<String>()
     internal val elements = mutableListOf<ConfigElement>()
+    private var currentSub: Sub? = null
+
+    val subs: List<Sub> get() = elements.filterIsInstance<Sub>().filter { it.toggleable }
 
     internal fun add(element: ConfigElement) {
         if (element is ConfigEntry<*>) {
             require(element.id.isNotEmpty()) { "Entry id cannot be empty" }
             require('.' !in element.id) { "Entry id ${element.id} cannot contain '.'" }
             require(ids.add(element.id)) { "Entry with id ${element.id} already exists" }
+            currentSub?.let {
+                element.sub = it
+                it.entries += element
+            }
         }
+        if (element is Sub) currentSub = element.takeIf { it.toggleable }
         elements += element
     }
 
@@ -53,9 +62,9 @@ open class EntriesBuilder {
         add(Button(button.title, button.description, button.text, button.condition, button.callback))
     }
 
-    fun separator(builder: SeparatorBuilder.() -> Unit) {
-        val separator = SeparatorBuilder().apply(builder)
-        add(Separator(separator.title, separator.description, separator.condition))
+    fun sub(builder: SubBuilder.() -> Unit) {
+        val sub = SubBuilder().apply(builder)
+        add(Sub(sub.title, sub.description, sub.condition))
     }
 
     fun <T> observable(entry: ConfigDelegateProvider<T>, onChange: (T, T) -> Unit) = ObservableEntry(entry, onChange)
@@ -79,7 +88,9 @@ class EntryProvider<T, B : TypeBuilder> @PublishedApi internal constructor(
 
     override operator fun provideDelegate(entries: EntriesBuilder, prop: KProperty<*>): ConfigEntry<T> {
         val id = id ?: prop.name
-        val entry = create(id, builderFactory(id).apply(builder))
+        val built = builderFactory(id).apply(builder)
+        val entry = create(id, built)
+        entry.requirements = built.requirements
         entries.add(entry)
         return entry
     }
@@ -98,6 +109,34 @@ class ObservableEntry<T>(
 open class TypeBuilder(val id: String) {
     var name: String = id
     var description: String = ""
+    internal var requirements: List<Requirement> = emptyList()
+
+    // Until a requirement is met an on/off setting reads as off, and the settings screen locks the row and links the requirement
+
+    /** Only usable while all of [settings] are on: `depends(::lootshareDisplay, ::lootshareMessage)`. */
+    fun depends(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map(::on), any = false)
+
+    /** Only usable while all of [settings] are off: `dependsOff(::dynamicWaypointOpacity)`. */
+    fun dependsOff(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map { state(it, "off") { on -> !on } }, any = false)
+
+    /** Only usable while at least one of [settings] is on: `dependsAny(::guessAndBurrowLine, ::inqLine)`. */
+    fun dependsAny(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map(::on), any = true)
+
+    /** For settings that aren't on/off: `depends(state(::lootTracker, "on") { it != Tracker.OFF })`. */
+    fun depends(vararg conditions: Condition) = addRequirement(conditions.toList(), any = false)
+
+    /** At least one of [conditions] has to be met, they can mix [state] and [on]. */
+    fun dependsAny(vararg conditions: Condition) = addRequirement(conditions.toList(), any = true)
+
+    /** [setting] has to pass [check], [state] is shown after its name in the settings screen. */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> state(setting: KProperty0<T>, state: String, check: (T) -> Boolean) = Condition(setting, state) { check(it as T) }
+
+    fun on(setting: KProperty0<Boolean>) = state(setting, "") { it }
+
+    private fun addRequirement(conditions: List<Condition>, any: Boolean) {
+        requirements = requirements + Requirement(conditions, any)
+    }
 }
 
 class NumberBuilder<T>(id: String) : TypeBuilder(id) where T : Number, T : Comparable<T> {
@@ -126,7 +165,7 @@ class ButtonBuilder {
     }
 }
 
-class SeparatorBuilder {
+class SubBuilder {
     var title: String = ""
     var description: String = ""
     var condition: () -> Boolean = { true }

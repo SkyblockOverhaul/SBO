@@ -6,3 +6,5 @@ accessible	field	net/minecraft/ChatFormatting code C
 accessible  field   net/minecraft/client/gui/Hud titleTime I
 accessible  field   net/minecraft/client/gui/Hud title Lnet/minecraft/network/chat/Component;
 accessible  field   net/minecraft/client/gui/Hud subtitle Lnet/minecraft/network/chat/Component;
+accessible  field   net/minecraft/world/item/component/CustomData tag Lnet/minecraft/nbt/CompoundTag;
+accessible  field   net/minecraft/world/entity/LivingEntity dead Z

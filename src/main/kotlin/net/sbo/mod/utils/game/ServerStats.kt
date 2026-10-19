@@ -1,9 +1,8 @@
  package net.sbo.mod.utils.game
  
- import net.minecraft.network.protocol.game.ClientboundLoginPacket
- import net.minecraft.network.protocol.game.ClientboundSetTimePacket
  import net.sbo.mod.utils.events.annotations.SboEvent
- import net.sbo.mod.utils.events.impl.packets.PacketReceiveEvent
+ import net.sbo.mod.utils.events.impl.packets.LoginReceiveEvent
+ import net.sbo.mod.utils.events.impl.packets.SetTimeReceiveEvent
  import java.util.concurrent.TimeUnit
  import kotlin.math.max
  
@@ -43,25 +42,22 @@
      }
 
      @SboEvent
-     fun onPacketReceive(event: PacketReceiveEvent) {
-         when (event.packet) {
-             is ClientboundSetTimePacket -> {
-                 val currentTime = System.nanoTime()
-                 lastPacket = currentTime
-                 if (prevTime != 0L) {
-                     val deltaTime = currentTime - prevTime
-                     averageTps = (TimeUnit.MILLISECONDS.toNanos(20000L).toFloat() / max(1, deltaTime)).coerceIn(0f, 20f)
-                     addTpsSample(averageTps)
-                 }
-                 prevTime = currentTime
-             }
- 
-             is ClientboundLoginPacket -> {
-                 averageTps = 20f
-                 prevTime = 0L
-                 tpsIndex = 0
-                 tpsCount = 0
-             }
+     fun onSetTimeReceive(event: SetTimeReceiveEvent) {
+         val currentTime = System.nanoTime()
+         lastPacket = currentTime
+         if (prevTime != 0L) {
+             val deltaTime = currentTime - prevTime
+             averageTps = (TimeUnit.MILLISECONDS.toNanos(20000L).toFloat() / max(1, deltaTime)).coerceIn(0f, 20f)
+             addTpsSample(averageTps)
          }
+         prevTime = currentTime
+     }
+
+     @SboEvent
+     fun onLoginReceive(event: LoginReceiveEvent) {
+         averageTps = 20f
+         prevTime = 0L
+         tpsIndex = 0
+         tpsCount = 0
      }
  }

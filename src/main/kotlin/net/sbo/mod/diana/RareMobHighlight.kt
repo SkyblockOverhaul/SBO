@@ -13,7 +13,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import java.awt.Color
-import java.util.concurrent.ConcurrentHashMap
+import java.util.HashMap
 import java.util.concurrent.TimeUnit
 //#if MC > 26.1
 //$$ import net.minecraft.util.ARGB
@@ -34,8 +34,8 @@ import java.util.concurrent.TimeUnit
 object RareMobHighlight {
     private val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
 
-    private val rareMobs = ConcurrentHashMap<LivingEntity, RareDianaMob>()
-    private val pendingMobs = ConcurrentHashMap<LivingEntity, Long>()
+    private val rareMobs = mutableMapOf<LivingEntity, RareDianaMob>()
+    private val pendingMobs = mutableMapOf<LivingEntity, Long>()
 
     fun init() {
         Register.onTick(4) {
@@ -102,7 +102,6 @@ object RareMobHighlight {
             }
         }
 
-        //#if MC < 26.2
         val player = mc.player
 
         val iterator = rareMobs.entries.iterator()
@@ -115,6 +114,7 @@ object RareMobHighlight {
                 continue
             }
 
+            //#if MC < 26.2
             val hasLineOfSight = player != null && player.hasLineOfSight(mob)
             if (Diana.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
                 mob.isSboGlowing = true
@@ -122,7 +122,7 @@ object RareMobHighlight {
             } else {
                 mob.isSboGlowing = false
             }
+            //#endif
         }
-        //#endif
     }
 }

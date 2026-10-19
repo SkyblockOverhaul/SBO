@@ -14,6 +14,7 @@ import net.sbo.mod.utils.data.*
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
+import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
@@ -54,7 +55,6 @@ object Helper {
     private var lastKingDeath: Long = 0L
     private var lastSphinxDeath: Long = 0L
     private var lastMantiDeath: Long = 0L
-    var currentScreen: Screen? = null
 
     private var hasTrackedInq: Boolean = false
     private var hasTrackedKing: Boolean = false
@@ -63,6 +63,7 @@ object Helper {
 
     private var prevInv = mutableMapOf<String, Item>()
     private var priceDataAh: Map<String, Long> = emptyMap()
+    private var lastAhFetch = 0L
     private var priceDataBazaar: HypixelBazaarResponse? = null
     private val ACTIVE_USERS_INTERVAL = TimeUnit.MINUTES.toNanos(4L)
     private var lastActiveUsersCount = 0L
@@ -94,7 +95,11 @@ object Helper {
         }
 
         Register.onTick(20 * 60 * 5) {
-            updateItemPriceInfo()
+            updateBazaarPrices()
+        }
+
+        Register.onTick(20 * 60 * 30) {
+            updateAhPrices()
         }
 
         Register.onTick(20) {
@@ -135,6 +140,12 @@ object Helper {
         }
     }
 
+    // AH prices load once at startup and then every 30 minutes, so a failed first load is retried on the next join
+    @SboEvent
+    fun onWorldChange(event: WorldChangeEvent) {
+        if (priceDataAh.isEmpty() && System.currentTimeMillis() - lastAhFetch > 60_000) updateAhPrices()
+    }
+
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
         handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!), event.entity.blockPosition().toSboVec())
@@ -146,6 +157,7 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
+                announceDianaMobKillTime("Minos Inquisitor", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedInq) {
@@ -159,6 +171,7 @@ object Helper {
                 lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
+                announceDianaMobKillTime("King Minos", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedKing) {
@@ -172,6 +185,7 @@ object Helper {
                 lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
+                announceDianaMobKillTime("Sphinx", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
@@ -184,6 +198,7 @@ object Helper {
                 lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
+                announceDianaMobKillTime("Manticore", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedManti) {
@@ -204,17 +219,16 @@ object Helper {
         }
     }
 
-    @SboEvent
-    fun onGuiClose(event: GuiCloseEvent) {
-        sleep(200) {
-            currentScreen = null
+    private fun announceDianaMobKillTime(mob: String, nearby: Boolean) {
+        val elapsedMillis = DianaTracker.consumeRareMobSpawnTime(mob)
+        if (nearby && Diana.sendKillTimeMessage && elapsedMillis >= 0L) {
+            Chat.chat("§6[SBO] §eTook §6${formatTime(elapsedMillis, decimalSeconds = true)} §eto kill the $mob!")
         }
     }
 
     @SboEvent
     fun onGuiOpen(event: GuiOpenEvent) {
         sleep(200) {
-            currentScreen = event.screen
             if (event.screen.title.string == "Sack of Sacks") allowSackTracking = false
         }
     }
@@ -234,6 +248,7 @@ object Helper {
     }
 
     private val PLAYER_NAME = Regex("^[A-Za-z0-9_]{1,16}$")
+    private val NON_ALPHANUMERIC = Regex("[^a-zA-Z0-9_]")
 
     /** A valid Minecraft name, so putting it into a command can't add anything else. */
     fun isPlayerName(name: String): Boolean = PLAYER_NAME.matches(name)
@@ -244,8 +259,8 @@ object Helper {
         if (num != -1) {
             name = name.substring(num + 2)
         }
-        name = name.replace(Regex("§[0-9a-fk-or]"), "")
-        name = name.replace(Regex("[^a-zA-Z0-9_]"), "")
+        name = name.removeFormatting()
+        name = name.replace(NON_ALPHANUMERIC, "")
         return name.trim()
     }
 
@@ -340,7 +355,7 @@ object Helper {
         }
     }
 
-    fun formatTime(milliseconds: Long): String {
+    fun formatTime(milliseconds: Long, decimalSeconds: Boolean = false): String {
         if (milliseconds <= 0) {
             return "0s"
         }
@@ -365,17 +380,41 @@ object Helper {
             builder.append("${minutes}m ")
         }
         if (builder.isEmpty()) {
-            builder.append("${seconds}s")
+            if (decimalSeconds) {
+                builder.append("${"%.1f".format(Locale.ROOT, milliseconds / 1000.0)}s")
+            } else {
+                builder.append("${seconds}s")
+            }
         }
 
         return builder.toString().trim()
     }
 
-    private val COLOR_REGEX: Regex = Regex("§.")
+    /**
+     * Adapted from SkyHanni code, uses performant StringBuilder and native String operations rather than using a Regex to remove all formatting characters and the characters coming directly after formatting characters.
+     */
+    fun String.removeFormatting(): String {
+        val length = length
+        if (length == 0) return ""
 
-    fun String.removeFormatting(): String = this.replace(COLOR_REGEX, "")
+        var nextFormattingSequence = indexOf('§')
+        if (nextFormattingSequence == -1) return this
 
-    fun Component.removeFormatting(): String = this.string.replace(COLOR_REGEX, "")
+        val cleanedString = StringBuilder(length - 1)
+        var readIndex = 0
+
+        while (nextFormattingSequence != -1) {
+            cleanedString.append(this, readIndex, nextFormattingSequence)
+
+            readIndex = minOf(nextFormattingSequence + 2, length)
+            nextFormattingSequence = indexOf('§', readIndex)
+        }
+
+        cleanedString.append(this, readIndex, length)
+        return cleanedString.toString()
+    }
+
+    fun Component.removeFormatting(): String = this.string.removeFormatting()
 
     fun matchLvlToColor(lvl: Int): String {
         return when {
@@ -456,13 +495,13 @@ object Helper {
         return handler.carried
     }
 
-    fun readPlayerInv(): MutableMap<String, Item> {
-        val inventory = Player.getPlayerInventory()
+    fun readPlayerInv(): Map<String, Item> {
+        val inventory = Player.getPlayerInventory()?.getNonEquipmentItems() ?: return emptyMap<String, Item>()
         val invItems = mutableMapOf<String, Item>()
 
         if (getCursorItemStack()?.count != 0) return prevInv
 
-        for (slot in 0..<inventory.size - 5) {
+        for ((slot, stack) in inventory.withIndex()) {
             if (slot == 8) continue // Skip SB Star
             val stack: ItemStack = inventory[slot]
 
@@ -473,7 +512,7 @@ object Helper {
                 val sbId = lookup.sbId
                 var isChimera = false
                 if (sbId == "ENCHANTED_BOOK") {
-                    val lore = lookup.loreList
+                    val lore = lookup.cleanLoreList
                     for (line in lore) {
                         if (line.contains("Chimera")) {
                             isChimera = true
@@ -502,10 +541,10 @@ object Helper {
                     id = "CHIMERA"
                 }
 
-                if (invItems.containsKey(id)) {
-                    invItems[id]?.count += item.count
-                } else {
-                    invItems[id] = item
+                val existing = invItems.putIfAbsent(id, item)
+
+                if (existing != null) {
+                    existing.count += item.count
                 }
             }
         }
@@ -528,15 +567,8 @@ object Helper {
     private fun getSecondsPassedSinceNano(timestamp: Long): Long = (System.nanoTime() - timestamp) / TimeUnit.SECONDS.toNanos(1L)
 
     private fun playerHasItem(sbId: String): Boolean {
-        val inv = Player.getPlayerInventory()
-        for (i in inv.indices) {
-            val stack = inv[i]
-            val lookup = ItemLookup(stack)
-            if (!stack.isEmpty && lookup.sbId == sbId) {
-                return true
-            }
-        }
-        return false
+        val inventory = Player.getPlayerInventory() ?: return false
+        return inventory.getNonEquipmentItems().any { stack -> !stack.isEmpty && ItemLookup(stack).sbId == sbId }
     }
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
@@ -695,6 +727,11 @@ object Helper {
     }
 
     private fun updateItemPriceInfo() {
+        updateBazaarPrices()
+        updateAhPrices()
+    }
+
+    private fun updateBazaarPrices() {
         Http.sendGetRequest("https://api.hypixel.net/skyblock/bazaar?product")
             .toJson<HypixelBazaarResponse>(true) {
                 priceDataBazaar = it
@@ -702,6 +739,10 @@ object Helper {
             }.error { error ->
                 SBOKotlin.logger.error("Unexpected error while fetching Bazaar item prices", error)
             }
+    }
+
+    private fun updateAhPrices() {
+        lastAhFetch = System.currentTimeMillis()
         SboApi.ahItems()
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
                 priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
@@ -770,20 +811,42 @@ object Helper {
         return BigDecimal.valueOf(mobsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
     }
 
-    fun getChance(mf: Int, looting: Int,rarity: String, lootshare: Boolean = false): Map<String, Double> {
-        val baseChances: Map<String, Double> = when (rarity.lowercase().trim()) {
-            "epic" -> mapOf("stick" to 0.0008, "relic" to 0.0002)
-            "legendary" -> mapOf("chim" to 0.01, "stick" to 0.0012, "relic" to 0.0003, "food" to 0.0025)
-            "mythic" -> mapOf("chim" to 0.0125, "stick" to 0.0016, "relic" to 0.0004, "food" to 0.005, "wool" to 0.002, "core" to 0.002, "stinger" to 0.005)
-            else -> mapOf("chim" to 0.0, "stick" to 0.0, "relic" to 0.0, "food" to 0.0, "wool" to 0.0, "core" to 0.0, "stinger" to 0.0)
-        }
-        val multiplier = 1 + mf / 100.0
-        if (lootshare) {
-            val factor = multiplier / 5
-            return baseChances.mapValues { it.value * factor }
-        }
-        val lootingMultiplier = 1 + looting * 0.15
-        return baseChances.mapValues { it.value * multiplier * lootingMultiplier }
+    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove BASE_CHANCES_PERCENT and rename BASE_CHANCES_PERCENT_NEW to BASE_CHANCES_PERCENT.
+    private val BASE_CHANCES_PERCENT = mapOf(
+        "epic" to mapOf("stick" to 0.08, "relic" to 0.02),
+        "legendary" to mapOf("chim" to 1.0, "stick" to 0.12, "relic" to 0.03, "food" to 0.25),
+        "mythic" to mapOf("chim" to 1.25, "stick" to 0.16, "relic" to 0.04, "food" to 0.5, "wool" to 0.2, "core" to 0.2, "stinger" to 0.5)
+    )
+
+    private val BASE_CHANCES_PERCENT_NEW = mapOf(
+        "epic" to mapOf("stick" to 0.05, "relic" to 0.05),
+        "legendary" to mapOf("chim" to 2.0, "stick" to 0.1, "relic" to 0.1, "food" to 0.5),
+        "mythic" to mapOf("chim" to 2.5, "stick" to 0.15, "relic" to 0.15, "food" to 1.0, "wool" to 1.0, "core" to 1.0, "stinger" to 1.5)
+    )
+
+    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove getChance() and rename getChanceNew() to getChance().
+    fun getChance(mf: Int, looting: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
+        val baseChances = BASE_CHANCES_PERCENT[rarity.lowercase().trim()]
+            ?: emptyMap()
+
+        val mfMultiplier = 1.0 + mf / 100.0
+        val factor = if (lootshare) mfMultiplier / 5.0 else mfMultiplier * (1.0 + looting * 0.15)
+        return baseChances.mapValues { (_, chance) -> chance / 100.0 * factor }
+    }
+
+    // TODO: When the Alpha Network update is pushed to main by Hypixel, this becomes getChance().
+    fun getChanceNew(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
+        val baseChances = BASE_CHANCES_PERCENT_NEW[rarity.lowercase().trim()]
+            ?: emptyMap()
+
+        return calculateDropChances(baseChances, mf, lootshare)
+    }
+
+    private fun calculateDropChances(baseChances: Map<String, Double>, mf: Int, lootshare: Boolean): Map<String, Double> {
+        val multiplier = 1.0 + mf / 100.0
+        val factor = if (lootshare) multiplier / 5.0 else multiplier
+
+        return baseChances.mapValues { (_, chance) -> chance / 100.0 * factor }
     }
 
     fun formatChances(chance: Double, label: String): String {
@@ -792,7 +855,9 @@ object Helper {
         return "§eChance: §b$percent%$fraction $label"
     }
 
-    fun getMagicFindAndLooting(mf: Int, looting: Int): String = " §7[MF:$mf] [L:$looting]"
+    fun formatMagicFind(mf: Int): String = "§7[MF:$mf]"
+
+    fun formatMagicFindAndLooting(mf: Int, looting: Int): String = " §7[MF:$mf] [L:$looting]"
 
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0

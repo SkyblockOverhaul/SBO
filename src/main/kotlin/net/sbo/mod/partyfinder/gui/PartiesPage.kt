@@ -70,7 +70,9 @@ internal data class PartiesProps(
     // Reloads the list after the player joined a party
     val joinedParties: Int,
     val onRules: () -> Unit = {},
-    val tourParty: Boolean = false
+    val tourParty: Boolean = false,
+    // Runs on every load of the list, so the party counts in the sidebar stay as fresh as the list
+    val onLoad: () -> Unit = {}
 )
 
 internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
@@ -109,6 +111,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         loadKey.current = key
         fun load() {
             loading = true
+            props.onLoad()
             PartyFinderManager.listParties(target.partyType, target.subType, onComplete = { list ->
                 if (loadKey.current == key) {
                     parties = list
@@ -263,6 +266,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             +"Your own stats could not be loaded, so SBO can not tell which parties you can join. ${props.ownError}"
         }
     }
+    target.info?.let { div(className = "pf-hint") { +it } }
 
     scroll(className = "pf-list guilib-autohide") {
         when {
@@ -557,11 +561,12 @@ private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (P
                 }
             }
             else -> numberInput(
-                value = wanted?.toDoubleOrNull()?.toInt(),
-                onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) },
+                value = wanted?.toDoubleOrNull(),
+                onChange = { v -> save(v?.takeIf { it > 0 }?.let(StatView::reqNumber)) },
                 allowEmpty = true,
-                min = 1,
-                max = stat?.max ?: Int.MAX_VALUE,
+                min = 1.0,
+                max = (stat?.max ?: Int.MAX_VALUE).toDouble(),
+                decimals = 1,
                 className = wanted?.toDoubleOrNull()?.let { StatView.numberColor(def.stat, it) }
             )
         }
@@ -582,8 +587,18 @@ private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null
 private fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
     val rank = SboBadges.teamRank(uuid) ?: return
     val text = if (name == null) rank.tag!! else "${rank.tag}: $name"
+    val color = SboBadges.badgeColor(uuid) ?: rank.color
     tooltip("Works on SBO, ask them anything about the mod.", className = "pf-tip", key = "team-$uuid") {
-        span(className = "pf-tag team", style = "color: ${rank.color}; border-color: ${rank.color}") { +text }
+        span(className = "pf-tag team", style = "color: $color; border-color: $color") { +text }
+    }
+}
+
+private const val SUPPORTER_LOGO = "sbo:textures/font/badge.png"
+
+private fun NodeBuilder.supporterLogo(uuid: String) {
+    if (!SboBadges.isSupporter(uuid)) return
+    tooltip("This player supports SBO on Patreon or Ko-fi.", className = "pf-tip", key = "supporter-$uuid") {
+        img(src = SUPPORTER_LOGO, className = "pf-supporter")
     }
 }
 
@@ -630,7 +645,10 @@ private fun NodeBuilder.partyCard(
             div(className = "pf-card-head") {
                 party.leader?.let { playerHead(uuidOf(it.uuid), className = "pf-head") }
                 b(className = "pf-leader") { +leaderName }
-                party.leader?.let { teamTag(it.uuid) }
+                party.leader?.let {
+                    teamTag(it.uuid)
+                    supporterLogo(it.uuid)
+                }
                 // Team members further down the party, so players know who to ask about SBO
                 party.members.filter { it.uuid != party.leader?.uuid }.forEach { teamTag(it.uuid, it.name) }
                 // In the list of all subcategories every party says which one it was created in
@@ -790,6 +808,7 @@ private fun NodeBuilder.memberRow(
                 playerHead(uuidOf(member.uuid), className = "pf-head")
                 +name
                 teamTag(member.uuid)
+                supporterLogo(member.uuid)
                 if (member.uuid == party.id) span(className = "pf-member-role") { +" leader" }
                 else if (manage && HypixelModApi.partyRole(member.uuid) == "MODERATOR") span(className = "pf-member-role") { +" moderator" }
                 member.role?.let { id ->

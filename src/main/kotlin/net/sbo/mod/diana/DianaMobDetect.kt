@@ -49,6 +49,8 @@ object DianaMobDetect {
 
     private val kingHitsRegex = """(?:§[0-9a-fk-or])*.*?(\d+)\s+Hits.*""".toRegex()
 
+    private var wasInHub = false
+
     internal enum class RareDianaMob(val display: String, val glowColor: Int) {
         INQ("Minos Inquisitor", Customization.MinosInquisitorGlowColor),
         KING("King Minos", Customization.KingMinosGlowColor),
@@ -56,12 +58,19 @@ object DianaMobDetect {
         MANTI("Manticore", Customization.ManticoreGlowColor);
 
         companion object {
-            fun fromName(name: String): RareDianaMob? = entries.firstOrNull { name.contains(it.display, ignoreCase = true) }
+            fun fromName(name: String): RareDianaMob? {
+                // Avoids Iterator object allocation, small optimization.
+                for (i in 0 until entries.size) {
+                    val mob = entries[i]
+                    if (name.contains(mob.display)) return mob
+                }
+                return null
+            }
         }
     }
 
     private fun findKingHits(name: String): MatchResult? {
-        if (World.getWorld() != "Hub") return null
+        if (!World.isInHub()) return null
         if (!name.contains("Hits")) return null
         return kingHitsRegex.find(name)
     }
@@ -81,7 +90,7 @@ object DianaMobDetect {
             }
         }
 
-    private fun parseStarFromName(name: String): Boolean = name.contains("✯")
+    private fun parseStarFromName(name: String): Boolean = name.contains("") || name.contains("✯") // mf rework update changes the shuriken icon to depend on resourcepack. still check for legacy since that's only on alpha and to keep compatibility with RitualPractice
 
     private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
 
@@ -154,6 +163,22 @@ object DianaMobDetect {
         }
 
         Register.onTick(1) {
+            if (!World.isInHub()) {
+                if (wasInHub) {
+                    wasInHub = false
+                    unconfirmed.clear()
+                    tracked.clear()
+                    defeated.clear()
+                    warned.clear()
+                    mobHpOverlay.clearLines()
+                    noShurikenOverlay.clearLines()
+                }
+
+                return@onTick
+            }
+
+            wasInHub = true
+
             val world = mc.level ?: return@onTick
             val player = mc.player ?: return@onTick
             val overlayLines = mutableListOf<OverlayTextLine>()
@@ -166,12 +191,12 @@ object DianaMobDetect {
                 val (entity, spawnTime) = data
 
                 val entityWorld = entity.level()
-                if (!entity.isAlive || entityWorld != world) {
+                if (entityWorld != world || entity.dead || !entity.isAlive) {
                     unconfirmedIterator.remove()
                     continue
                 }
 
-                val name = entity.customName?.formattedString() ?: entity.name.formattedString()
+                val name = entity.customName?.formattedString() ?: continue
                 if (hasMythoMobTypeChar(name) || isKingHitPhase(name)) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
@@ -187,14 +212,17 @@ object DianaMobDetect {
                 val (id, armorStand) = trackedIterator.next()
 
                 val entityWorld = armorStand.level()
-                if (!armorStand.isAlive || entityWorld != world) {
+                if (entityWorld != world || armorStand.dead || !armorStand.isAlive) {
                     trackedIterator.remove()
                     defeated.remove(id)
                     continue
                 }
 
-                val name = armorStand.customName?.formattedString() ?: armorStand.name.formattedString()
-                checkDianaMob(armorStand, name, id)?.let { overlayLines.add(it) }
+                val name = armorStand.customName?.formattedString() ?: continue
+                checkDianaMob(armorStand, name, id)?.let { line ->
+                    overlayLines.add(line)
+                    LootshareDisplay.overlayStatus(armorStand)?.let { overlayLines.add(OverlayTextLine(it, centered = true)) }
+                }
 
                 val result = checkStarlessMob(armorStand, name, id, player, closestStarlessMob, closestDistanceSq)
                 closestStarlessMob = result.first
@@ -231,7 +259,7 @@ object DianaMobDetect {
     private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR") || name.contains("§2✿")
 
     private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
-        if (name.isEmpty() || name == "Armor Stand") return null
+        if (name.isEmpty()) return null
 
         parseKingHits(name)?.let {
             return OverlayTextLine("§6King Minos §7- §5$it Hits", centered = true)
@@ -327,7 +355,17 @@ object DianaMobDetect {
             else -> null
         } ?: return
 
-        WaypointManager.notifyRareMob("", mobType)
+        val mobDisplayName = WaypointManager.notifyRareMob("", mobType)
+        val playerPos = SboPlayer.getLastPosition()
+
+        val waypoint = WaypointManager.addRareMobWaypoint("", WaypointManager.floorToGround(playerPos), mobType, mobDisplayName, true)
+
+        if (mobType == Diana.ReceiveList.SPHINX && waypoint != null) {
+            // After spawning, the stale removal can remove Sphinx waypoint for a self spawn, because it's pending question answer. It would then proceed to re-add it from world-scan, which triggered double rare mob title and custom sound. This fixes it by adding the rare mob here earlier and persisting the rare mob waypoint thru the question phase, which makes the world-scan's existing.any check return early, and stale mob removal to not remove this waypoint, preventing duplicate title and sounds.
+            waypoint.preventStaleRareMobRemoval = true
+        }
+
+        RareDianaMob.entries.firstOrNull { it.display == mob }?.let(LootshareDisplay::onOwnRareSpawn)
 
         if (Diana.shareRareMob) {
             val mobType = when (mob) {
@@ -339,7 +377,6 @@ object DianaMobDetect {
             } ?: return
 
             if (mobType !in Diana.ShareMobs) return
-            val playerPos = SboPlayer.getLastPosition()
             val message = "x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob"
             if (Diana.shareRareMobInPublicChat) Chat.allChat(message) else Chat.pc(message)
         }
@@ -381,6 +418,26 @@ object DianaMobDetect {
                 }
             }
         }
+    }
 
+    /**
+     * Returns confirmed, active rare Diana mob nametag armor stands.
+     */
+    internal fun getTrackedRareMobs(): List<Pair<ArmorStand, RareDianaMob>> {
+        return tracked.values.mapNotNull { stand ->
+            val name = stand.customName?.formattedString() ?: return@mapNotNull null
+            val mobType = RareDianaMob.fromName(name) ?: return@mapNotNull null
+
+            val receiveType = when (mobType) {
+                RareDianaMob.INQ -> Diana.ReceiveList.INQ
+                RareDianaMob.KING -> Diana.ReceiveList.KING
+                RareDianaMob.SPHINX -> Diana.ReceiveList.SPHINX
+                RareDianaMob.MANTI -> Diana.ReceiveList.MANTICORE
+            }
+
+            if (receiveType !in Diana.ReceiveMobs) return@mapNotNull null
+
+            stand to mobType
+        }
     }
 }

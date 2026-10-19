@@ -7,10 +7,21 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
+import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
+import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent;
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent;
+import net.sbo.mod.utils.events.impl.packets.LoginReceiveEvent;
+import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent;
+import net.sbo.mod.utils.events.impl.packets.SetTimeReceiveEvent;
 import net.sbo.mod.utils.game.TabList;
+import net.sbo.mod.utils.game.ScoreBoard;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -42,5 +53,46 @@ final class ClientPacketListenerMixin {
     @Inject(method = "handlePlayerInfoRemove", at = @At("TAIL"))
     private final void sbo$onPlayerInfoRemove(@NonNull final ClientboundPlayerInfoRemovePacket packet, @NonNull final CallbackInfo ci) {
         TabList.INSTANCE.markDirty();
+    }
+
+    // Scoreboard caches are invalidated after the packet has been applied.
+    @Inject(method = "handleSetPlayerTeamPacket", at = @At("TAIL"))
+    private final void sbo$onSetPlayerTeam(@NonNull final ClientboundSetPlayerTeamPacket packet, @NonNull final CallbackInfo ci) {
+        ScoreBoard.INSTANCE.markLinesDirty();
+    }
+
+    @Inject(method = "handleSetScore", at = @At("TAIL"))
+    private final void sbo$onSetScore(@NonNull final ClientboundSetScorePacket packet, @NonNull final CallbackInfo ci) {
+        ScoreBoard.INSTANCE.markLinesDirty();
+    }
+
+    @Inject(method = "handleResetScore", at = @At("TAIL"))
+    private final void sbo$onResetScore(@NonNull final ClientboundResetScorePacket packet, @NonNull final CallbackInfo ci) {
+        ScoreBoard.INSTANCE.markLinesDirty();
+    }
+
+    @Inject(method = "handleAddObjective", at = @At("TAIL"))
+    private final void sbo$onAddObjective(@NonNull final ClientboundSetObjectivePacket packet, @NonNull final CallbackInfo ci) {
+        ScoreBoard.INSTANCE.markDirty();
+    }
+
+    @Inject(method = "handleSetDisplayObjective", at = @At("TAIL"))
+    private final void sbo$onSetDisplayObjective(@NonNull final ClientboundSetDisplayObjectivePacket packet, @NonNull final CallbackInfo ci) {
+        ScoreBoard.INSTANCE.markDirty();
+    }
+
+    @Inject(method = "handleParticleEvent", at = @At("RETURN"))
+    private final void sbo$onParticleEvent(@NonNull final ClientboundLevelParticlesPacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new ParticleReceiveEvent(packet));
+    }
+
+    @Inject(method = "handleSetTime", at = @At("RETURN"))
+    private final void sbo$onSetTime(@NonNull final ClientboundSetTimePacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new SetTimeReceiveEvent(packet));
+    }
+
+    @Inject(method = "handleLogin", at = @At("RETURN"))
+    private final void sbo$onLogin(@NonNull final ClientboundLoginPacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new LoginReceiveEvent(packet));
     }
 }

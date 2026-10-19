@@ -10,15 +10,19 @@ import net.minecraft.util.Util
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.LootshareDisplay
+import net.sbo.mod.diana.LootshareParty
 import net.sbo.mod.diana.RareMobHighlight
 import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.utils.hubcache.HubChunkCache
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
+import net.sbo.mod.general.ModConflicts
 import net.sbo.mod.general.SboBadges
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.AchievementsGui
@@ -101,7 +105,7 @@ object SBOKotlin : ClientModInitializer {
         TabList.init()
 
 		// Check for updates
-		UpdateChecker.check()
+		UpdateChecker.init()
 
 		// Load configuration and data
 		DataManager.init()
@@ -133,6 +137,7 @@ object SBOKotlin : ClientModInitializer {
 		HelpCommand.init()
 		CloudSync.init()
 		SboBadges.init()
+		ModConflicts.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
 		WaypointManager.init()
@@ -142,6 +147,7 @@ object SBOKotlin : ClientModInitializer {
 		OwnStats.init()
 		StatReporter.init()
 		BurrowDetector.init()
+		HubChunkCache.init()
 		TimeUtil.start()
 		DianaTracker.init()
 		PartyPlayer.init()
@@ -160,6 +166,8 @@ object SBOKotlin : ClientModInitializer {
 		MessageHider.init()
 		SphinxSolver.init()
 		RareMobHighlight.init()
+		LootshareDisplay.init()
+		LootshareParty.init()
 		InventoryUtils.init()
 		Chains.init()
 		MuteBuggedSpadeSounds.init()
@@ -171,18 +179,20 @@ object SBOKotlin : ClientModInitializer {
 				DianaTracker.checkMayorTracker()
 				PartyPlayer.load()
 				unlockAchievement(38)
-				Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
-				    unregister()
-				    false
+				if (!Debug.disableAutoTweaks) {
+				    Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
+				        unregister()
+				        false
+				    }
+				    Chat.command("particlequality extreme")
 				}
-				Chat.command("particlequality extreme")
 				Register.onTick(100) { unregister ->
 				    if (Debug.debugOnlyMessages) {
 				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.", true)
 				    }
 				    val renderDist = mc.options.renderDistance().get()
-				    if (renderDist < 10) {
-				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 10 from the vanilla options menu.", true)
+				    if (renderDist < 8) {
+				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 8 from the vanilla options menu.", true)
 				    }
 				    unregister()
 				}

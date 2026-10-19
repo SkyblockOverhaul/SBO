@@ -10,7 +10,7 @@ object General : Category("General") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Overlays"
         }
     }
@@ -37,7 +37,7 @@ object General : Category("General") {
             }
         }
 
-        separator {
+        sub {
             this.title = "Waypoints"
         }
     }
@@ -53,7 +53,7 @@ object General : Category("General") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Accessibility"
         }
     }
@@ -64,7 +64,7 @@ object General : Category("General") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Achievements"
         }
     }
@@ -77,5 +77,40 @@ object General : Category("General") {
     var achievementsButton by boolean(true) {
         this.name = Literal("Achievements Button")
         this.description = Literal("Shows the SBO Achievements button in the pause menu.")
+    }
+
+    init {
+        sub {
+            this.title = "Chunk Cache"
+        }
+    }
+
+    var hubChunkCache by boolean(true) {
+        this.name = Literal("Chunk Cache")
+        this.description = Literal("Keeps chunks after the server unloads them and keeps rendering them up to your render distance, so each chunk only loads once per session and arrow guesses see far away. Only in the areas below. If Bobby is installed, SBO turns Bobby off once.")
+    }
+
+    var chunkCacheAreas by strings("Hub") {
+        this.name = Literal("Chunk Cache Areas")
+        depends(::hubChunkCache)
+        this.description = Literal("Areas to cache, as shown after \"Area:\" in the tab list, e.g. Hub or The Park. Each area needs memory for every chunk you saw, until you disconnect.")
+    }
+
+    var chunkCacheHubIslandOnly by boolean(true) {
+        this.name = Literal("Cache Hub Island Only")
+        depends(::hubChunkCache)
+        this.description = Literal("In the Hub, only caches chunks of the Hub island itself, not the islands you can see from it (The Park, Spider's Den, The Barn...). Less memory and better performance, but those islands stop rendering beyond the server's view distance. When in server's view distance, they still render.")
+    }
+
+    var chunkCacheRenderHubIslandOnly by boolean(false) {
+        this.name = Literal("Render Hub Island Only")
+        depends(::chunkCacheHubIslandOnly)
+        this.description = Literal("In the Hub, only renders chunks of the Hub island itself or overlapping chunks with parts connected to Hub. Will make large parts of other islands such as The Park, Spider's Den, The Barn etc., not render, improving performance. This is an addition on top of Cache Hub Island Only (needs it enabled), making it not render these chunks at all, even if the server sent them and you are in server view distance.")
+    }
+
+    var chunkCacheAboveServerOnly by boolean(false) {
+        this.name = Literal("Only Above Server Render Distance")
+        depends(::hubChunkCache)
+        this.description = Literal("Only runs the Chunk Cache while your render distance is higher than the server's (Hypixel: 8). Below that it only helps right after switching lobbies, so this saves a bit of performance.")
     }
 }

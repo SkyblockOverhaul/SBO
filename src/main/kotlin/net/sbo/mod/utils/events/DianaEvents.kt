@@ -1,17 +1,18 @@
 package net.sbo.mod.utils.events
 
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
-import net.sbo.mod.utils.events.impl.packets.PacketSendEvent
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
-import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
+import net.minecraft.world.InteractionResult
+import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import java.util.regex.Pattern
 
 object DianaEvents {
@@ -21,30 +22,25 @@ object DianaEvents {
 
     internal fun init() {
         registerBurrowDug()
-    }
-
-    @SboEvent
-    fun onPlayerActionSend(event: PacketSendEvent) {
-        val packet = event.packet
-        if (packet !is ServerboundPlayerActionPacket) return
-        if (World.getWorld() != "Hub") return
-        if (packet.action != ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) return
-
-        val pos = packet.pos.toSboVec()
-
-        ArrowGuessBurrow.recentClickedBlocks.add(pos)
-        processBlockInteraction(pos)
+        AttackBlockCallback.EVENT.register { player, _, _, pos, _ ->
+            if (player === SBOKotlin.mc.player && World.isInHub()) {
+                val blockPos = pos.toSboVec()
+                ArrowGuessBurrow.recentClickedBlocks.add(blockPos)
+                processBlockInteraction(blockPos)
+            }
+            InteractionResult.PASS
+        }
     }
 
     @SboEvent
     fun onPlayerInteract(event: PlayerInteractEvent) {
         val action = event.action
         if (action != "useBlock") return
-        if (World.getWorld() != "Hub") return
-        val player = SBOKotlin.mc.player
-        val item = player?.mainHandItem
-        if (item?.isEmpty == true) return
-        if (item == null || !item.hoverName.string.contains("Spade")) return
+        if (!World.isInHub()) return
+        val item = event.player.mainHandItem
+        if (item.isEmpty) return
+        val sbId = ItemLookup(item).sbId
+        if (sbId != "DEIFIC_SPADE" && sbId != "ARCHAIC_SPADE" && sbId != "ANCESTRAL_SPADE") return
         if (event.pos ==  null) return
 
         processBlockInteraction(event.pos.toSboVec())
@@ -57,7 +53,7 @@ object DianaEvents {
             lastWaypointClicked = waypoint.pos
         }
 
-        val posString = "${pos.x} ${pos.y} ${pos.z}"
+        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
         if (BurrowDetector.burrows.containsKey(posString)) {
             lastBurrowClicked = pos
         }

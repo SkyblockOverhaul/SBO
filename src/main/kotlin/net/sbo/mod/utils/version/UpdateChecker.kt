@@ -5,9 +5,12 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
 
 object UpdateChecker {
+    private const val RECHECK_INTERVAL_HOURS = 8
+    private const val RECHECK_INTERVAL_TICKS = 20 * 60 * 60 * RECHECK_INTERVAL_HOURS
     private const val MODRINTH_ID = "9lBqVbQF"
     private val VERSION_REGEX = Regex("""(\d+\.\d+\.\d+|\d+\.\d+)""")
 
@@ -16,6 +19,11 @@ object UpdateChecker {
     var isUpdateAvailable = false
 
     private fun String.extractCoreVersion(): String = VERSION_REGEX.find(this)?.value ?: this
+
+    fun init() {
+        check()
+        Register.onTick(RECHECK_INTERVAL_TICKS) { check() }
+    }
 
     fun check() {
         val mcVersion = SBOKotlin.mcVersion

@@ -14,7 +14,7 @@ object DianaStats : DirtyFlushableOverlay() {
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
     )
         .setCondition { Diana.statsTracker }
-        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
+        .setExtraCondition { Helper.hasSpade && World.isInHub() }
 
     fun init() {
         overlay.init()

@@ -256,7 +256,7 @@ object HubGui {
         }
     }
 
-    private fun countEntries(category: Category): Int = category.entries.size + category.subcategories.sumOf(::countEntries)
+    private fun countEntries(category: Category): Int = category.entries.size + category.children.sumOf(::countEntries)
 
     private fun NodeBuilder.supporterChip(supporter: Supporter) {
         val unlocked = supporter.unlocked() == true

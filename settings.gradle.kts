@@ -18,7 +18,8 @@ include("event-processor")
 
 listOf(
     "26.1.2-fabric",
-    "26.2-fabric"
+    "26.2-fabric",
+    "26.3-fabric"
 ).forEach { version ->
     include(":$version")
     project(":$version").apply {
@@ -37,6 +38,7 @@ if (guiLibDir.isDirectory && providers.gradleProperty("guilib.local").orNull != 
         dependencySubstitution {
             substitute(module("net.sbo:guilib-26.1.2-fabric")).using(project(":26.1.2-fabric"))
             substitute(module("net.sbo:guilib-26.2-fabric")).using(project(":26.2-fabric"))
+            substitute(module("net.sbo:guilib-26.3-fabric")).using(project(":26.3-fabric"))
         }
     }
 }

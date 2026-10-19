@@ -4,6 +4,8 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.network.chat.Component
+import net.minecraft.client.Minecraft
+import net.minecraft.commands.SharedSuggestionProvider
 import net.sbo.mod.utils.chat.ChatHandler
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -14,7 +16,8 @@ import java.util.regex.Pattern
 object Register {
     /**
      * Registers a command with the specified name and aliases.
-     * The action is executed when the command is invoked, with the provided arguments.
+     * Player names are suggested by default when no other suggestions
+     * are available from the command.
      *
      * @param name The name of the command.
      * @param aliases Optional aliases for the command.
@@ -35,8 +38,22 @@ object Register {
                     }
                     .then(
                         ClientCommands.argument("args", StringArgumentType.greedyString())
+                            .suggests { _, builder ->
+                                val world = Minecraft.getInstance().level
+
+                                if (world != null) {
+                                    SharedSuggestionProvider.suggest(
+                                        world.players().map { it.gameProfile.name },
+                                        builder
+                                    )
+                                } else {
+                                    builder.buildFuture()
+                                }
+                            }
                             .executes {
-                                val argsString = StringArgumentType.getString(it, "args")
+                                val argsString =
+                                    StringArgumentType.getString(it, "args")
+
                                 val args = argsString.split(' ')
                                     .filter { s -> s.isNotEmpty() }
                                     .toTypedArray()

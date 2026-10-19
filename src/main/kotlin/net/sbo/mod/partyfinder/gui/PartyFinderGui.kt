@@ -136,11 +136,10 @@ object PartyFinderGui {
         useEffect { loadOnlineUsers() }
         useInterval(60_000) { loadOnlineUsers() }
 
-        // Parties per party type for the sidebar, hidden when the server can't tell
+        // Parties per party type for the sidebar, hidden when the server can't tell. They reload together with the party list.
         var partyCounts by useState<Map<String, Int>?>(null)
         fun loadCounts() = PartyFinderApi.counts(onError = { partyCounts = null }) { partyCounts = it }
         useEffect(queued?.createdAt, inQueue) { loadCounts() }
-        useInterval(60_000) { loadCounts() }
 
         val target = data?.let { loaded ->
             targetOf(selected) ?: loaded.categories.firstOrNull()?.let { PartyCategories.target(it.id) }
@@ -331,7 +330,8 @@ object PartyFinderGui {
                                             inspected = inspected?.member?.uuid, onInspect = { inspected = it },
                                         joinedParties = joinedParties,
                                             onRules = { page = "rules" },
-                                            tourParty = onboarding
+                                            tourParty = onboarding,
+                                            onLoad = { loadCounts() }
                                         ),
                                         key = "list"
                                     )

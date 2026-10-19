@@ -114,6 +114,7 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val 
     val createOpen: Boolean get() = sub?.createOpen ?: open
 
     val createOpensAt: Long? get() = opensAt?.let { it - EARLY_LISTING_MS }
+    val info: String? get() = if (all) null else sub?.info
 
     val reqs: List<ReqDef> = mergeBy({ it.stat }, category.reqs, sub?.reqs.orEmpty())
     val options: List<PartyOption> = mergeBy({ it.id }, category.options, sub?.options.orEmpty())
