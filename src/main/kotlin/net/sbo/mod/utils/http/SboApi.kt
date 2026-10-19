@@ -127,6 +127,9 @@ object SboApi {
 
     fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge?format=2", json.encodeToString(settings))
 
+    /** A mod conflict report the player chose to send, it goes to the SBO Discord. */
+    fun modConflicts(report: String): HttpRequestHandle = post("/modConflicts", report)
+
     fun cloudStatus(): HttpRequestHandle = authedGet("/cloudSync")
 
     fun cloudDownload(slot: String): HttpRequestHandle = authedGet("/cloudSync/${encode(slot)}")
