@@ -18,7 +18,7 @@ import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaTrackerMayorData
-import net.sbo.mod.utils.data.PartyPlayerStats
+import net.sbo.mod.utils.data.AchievementStats
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.DataManager.achievementsData
 import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
@@ -81,11 +81,11 @@ object AchievementManager {
         // Register.onChatMessage()
     }
 
-    private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true) {
+    private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true, chatOnly: Boolean = false) {
         if (achievements.containsKey(id)) {
             throw RuntimeException("Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}")
         }
-        val achievement = Achievement(id, name, description, rarity, previousId, hidden, repeatable)
+        val achievement = Achievement(id, name, description, rarity, previousId, hidden, repeatable, chatOnly)
         achievements[id] = achievement
         achievement.loadState()
     }
@@ -319,24 +319,37 @@ object AchievementManager {
             val sphinxKills = Helper.getKillsFromLore(slots[22].item)
             val nymphKills = Helper.getKillsFromLore(slots[23].item)
 
-            val allMaxed = listOf(
+            trackBestiaryKills(listOf(
                 gaiaKills to 50, inqKills to 45, minoKills to 46,
                 champKills to 47, hunterKills to 48, catKills to 49,
                 nymphKills to 101, bullKills to 102, harpyKills to 103,
                 sphinxKills to 104, mantiKills to 105, kingKills to 106
-            ).all { (kills, id) ->
-                val isMaxed = when (id) {
-                    45, 104 -> kills >= 500
-                    50, 49, 102, 103, 101, 48 -> kills >= 3000
-                    47, 46 -> kills >= 1000
-                    105, 106 -> kills >= 100
-                    else -> false
-                }
-                if (isMaxed) unlockAchievement(id)
-                isMaxed
-            }
-            if (allMaxed) unlockAchievement(51)
+            ))
         }
+    }
+
+    // Hypixel's mob ids in /achievements/stats, with the achievement for maxing that bestiary
+    private val bestiaryAchievements = listOf(
+        "gaia_construct" to 50, "minos_inquisitor" to 45, "minotaur" to 46,
+        "minos_champion" to 47, "minos_hunter" to 48, "siamese_lynx" to 49,
+        "stranded_nymph" to 101, "cretan_bull" to 102, "harpy" to 103,
+        "sphinx" to 104, "manticore" to 105, "king_minos" to 106
+    )
+
+    private fun trackBestiaryKills(killsById: List<Pair<Int, Int>>) {
+        // Every mob gets checked, even after one that isn't maxed yet
+        val maxed = killsById.map { (kills, id) ->
+            val isMaxed = when (id) {
+                45, 104 -> kills >= 500
+                50, 49, 102, 103, 101, 48 -> kills >= 3000
+                47, 46 -> kills >= 1000
+                105, 106 -> kills >= 100
+                else -> false
+            }
+            if (isMaxed) unlockAchievement(id)
+            isMaxed
+        }
+        if (maxed.all { it }) unlockAchievement(51)
     }
 
     @SboEvent
@@ -418,7 +431,7 @@ object AchievementManager {
         return ""
     }
 
-    fun trackWithCheckPlayer(playerInfo: PartyPlayerStats) {
+    fun trackWithCheckPlayer(playerInfo: AchievementStats) {
         if (playerInfo.eman9) unlockAchievement(56)
 
         when {
@@ -434,6 +447,11 @@ object AchievementManager {
             playerInfo.killLeaderboard <= 50 -> unlockAchievement(63)
             playerInfo.killLeaderboard <= 100 -> unlockAchievement(62)
         }
+
+        val bestiary = playerInfo.mythosBestiary
+        trackBestiaryKills(bestiaryAchievements.map { (mob, id) -> (bestiary[mob] ?: 0) to id })
+
+        if (playerInfo.dianaCarnivalMaxed) unlockAchievement(120)
     }
 
     @SboEvent
@@ -568,7 +586,7 @@ object AchievementManager {
         addAchievement(37, "No more Diana", "100 Inquisitors since Chimera", "Divine", 36)
 
         // Download SBO
-        addAchievement(38, "Real Diana non", "Download SBO", "Divine", repeatable = false)
+        addAchievement(38, "Real Diana non", "Download SBO", "Divine", repeatable = false, chatOnly = true)
 
         // Magic Find
         addAchievement(39, "Fortune seeker", "Get a Diana drop with 300 Magic Find", "Uncommon")

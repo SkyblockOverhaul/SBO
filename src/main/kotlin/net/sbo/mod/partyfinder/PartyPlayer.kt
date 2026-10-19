@@ -5,8 +5,8 @@ import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.PartyPlayerStats
-import net.sbo.mod.utils.data.PlayerInfoResponse
+import net.sbo.mod.utils.data.AchievementStats
+import net.sbo.mod.utils.data.AchievementStatsResponse
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
@@ -15,8 +15,7 @@ import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
 object PartyPlayer {
-    var stats: PartyPlayerStats = PartyPlayerStats()
-    private var lastUpdate: Long = 0
+    var stats: AchievementStats = AchievementStats()
     private var lastCacheBypass: Long = 0
     private var refreshing: Boolean = false
 
@@ -24,7 +23,7 @@ object PartyPlayer {
 
     private fun currentProfile(): String? = TabList.findInfo("Profile: ")?.trim()?.takeIf { it.isNotEmpty() }
 
-    private fun nameOutdated(info: PartyPlayerStats?): Boolean {
+    private fun nameOutdated(info: AchievementStats?): Boolean {
         val returned = info?.name?.takeIf { it.isNotEmpty() } ?: return false
         val current = Player.getName()?.takeIf { it.isNotEmpty() } ?: return false
         return !current.equals(returned, ignoreCase = true)
@@ -89,7 +88,7 @@ object PartyPlayer {
      */
     private fun reloadStats(
         onError: ((Exception) -> Unit)? = null,
-        callback: (PartyPlayerStats) -> Unit
+        callback: (AchievementStats) -> Unit
     ) {
         if (refreshing) {
             callback(stats)
@@ -98,34 +97,11 @@ object PartyPlayer {
         fetch(readCache = false, profile = currentProfile(), onError = onError, callback = callback)
     }
 
-    /**
-     * Reads through the API cache, unless the profile or the name changed.
-     * @param forceRefresh Skips the 10 minute freshness check.
-     * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
-     */
-    fun getPartyPlayerStats(
-        forceRefresh: Boolean = false,
-        onError: ((Exception) -> Unit)? = null,
-        callback: (PartyPlayerStats) -> Unit
-    ) {
-        if (!forceRefresh && System.nanoTime() - lastUpdate <= TimeUnit.MILLISECONDS.toNanos(10 * 60 * 1000)) { // 10 minutes
-            callback(stats)
-            return
-        }
-        if (refreshing) {
-            callback(stats)
-            return
-        }
-
-        val profile = currentProfile()
-        fetch(!(profileChanged(profile) && cacheBypassReadyIn() == 0L), profile, onError, callback)
-    }
-
     private fun fetch(
         readCache: Boolean,
         profile: String?,
         onError: ((Exception) -> Unit)? = null,
-        callback: (PartyPlayerStats) -> Unit
+        callback: (AchievementStats) -> Unit
     ) {
         val fail = { error: Exception ->
             refreshing = false
@@ -141,16 +117,15 @@ object PartyPlayer {
 
         if (!readCache) lastCacheBypass = System.nanoTime()
         refreshing = true
-        SboApi.playerInfo(name, readCache = readCache)
-            .toJson<PlayerInfoResponse>(ignoreUnknownKeys = true) { response ->
+        SboApi.achievementStats(name, readCache = readCache)
+            .toJson<AchievementStatsResponse>(ignoreUnknownKeys = true) { response ->
                 refreshing = false
                 if (response.success) {
-                    if (readCache && nameOutdated(response.playerInfo) && cacheBypassReadyIn() == 0L) {
+                    if (readCache && nameOutdated(response.stats) && cacheBypassReadyIn() == 0L) {
                         fetch(readCache = false, profile = profile, onError = onError, callback = callback)
                         return@toJson
                     }
-                    lastUpdate = System.nanoTime()
-                    stats = response.playerInfo ?: PartyPlayerStats()
+                    stats = response.stats ?: AchievementStats()
                     rememberProfile(profile)
                     if (stats.sbLvl == -1) {
                         Chat.chat("§6[SBO] §cYour stats are not available, please try again later.")

@@ -2,15 +2,14 @@ package net.sbo.mod.utils.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
-data class PlayerInfoResponse(
+data class AchievementStatsResponse(
     @SerialName("Success")
     val success: Boolean = false,
 
-    @SerialName("PlayerInfo")
-    val playerInfo: PartyPlayerStats? = null,
+    @SerialName("Stats")
+    val stats: AchievementStats? = null,
 
     @SerialName("Error")
     val error: String? = null
@@ -352,25 +351,15 @@ data class QuickStatus(
 )
 
 @Serializable
-data class PartyPlayerStats(
+data class AchievementStats(
     val name: String = "",
     val sbLvl: Int = -1,
     val eman9: Boolean = false,
-    val looting5daxe: Boolean = false,
-    val emanLvl: Int = 0,
-    val warnings: List<String> = emptyList(),
-    val uuid: String = "",
-    val clover: Boolean = false,
-    val daxeLootingLvl: Int = 0,
-    val daxeChimLvl: Int = 0,
-    val invApi: Boolean = false,
-    val magicalPower: Int = 0,
-    val enrichments: Int = 0,
-    val missingEnrichments: Int = 0,
-    val griffinRarity: String = "",
-    val griffinItem: JsonPrimitive? = null,
+    val mythosKills: Int = 0,
     val killLeaderboard: Int = 999999,
-    val mythosKills: Int = 0
+    // Bestiary kills per Diana mob, keyed by Hypixel's mob id
+    val mythosBestiary: Map<String, Int> = emptyMap(),
+    val dianaCarnivalMaxed: Boolean = false
 )
 
 @Serializable

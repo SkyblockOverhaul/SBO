@@ -70,7 +70,9 @@ internal data class PartiesProps(
     // Reloads the list after the player joined a party
     val joinedParties: Int,
     val onRules: () -> Unit = {},
-    val tourParty: Boolean = false
+    val tourParty: Boolean = false,
+    // Runs on every load of the list, so the party counts in the sidebar stay as fresh as the list
+    val onLoad: () -> Unit = {}
 )
 
 internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
@@ -109,6 +111,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         loadKey.current = key
         fun load() {
             loading = true
+            props.onLoad()
             PartyFinderManager.listParties(target.partyType, target.subType, onComplete = { list ->
                 if (loadKey.current == key) {
                     parties = list
