@@ -105,6 +105,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                 }
             }
         }
+        target.info?.let { div(className = "pf-hint") { +it } }
 
         h3(className = "pf-section") { +"Party size" }
         div(className = "pf-size-row") {

@@ -266,6 +266,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             +"Your own stats could not be loaded, so SBO can not tell which parties you can join. ${props.ownError}"
         }
     }
+    target.info?.let { div(className = "pf-hint") { +it } }
 
     scroll(className = "pf-list guilib-autohide") {
         when {

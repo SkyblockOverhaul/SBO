@@ -99,7 +99,6 @@ object Helper {
             updateBazaarPrices()
         }
 
-        // The server rebuilds its AH prices only about every two hours
         Register.onTick(20 * 60 * 30) {
             updateAhPrices()
         }

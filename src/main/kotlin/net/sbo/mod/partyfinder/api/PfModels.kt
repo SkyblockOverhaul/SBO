@@ -147,7 +147,9 @@ data class SubcategoryDef(
     val open: Boolean = true,
     val opensAt: Long? = null,
     /** Parties can be created, also shortly before the event starts; null from older backends */
-    val createOpen: Boolean? = null
+    val createOpen: Boolean? = null,
+    // How this kind of party works, shown above the list and the create form
+    val info: String? = null
 )
 
 // Party list and member stats
