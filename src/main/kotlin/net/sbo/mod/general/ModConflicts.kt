@@ -58,6 +58,7 @@ object ModConflicts {
     private val compactJson = Json { encodeDefaults = false }
 
     private var report: Report? = null
+    private var checked = false
     private var sent = false
 
     fun init() {
@@ -66,7 +67,9 @@ object ModConflicts {
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
-        if (report != null) return
+        // Once per session, also when it fails, so a broken mod file doesn't log on every world change
+        if (checked) return
+        checked = true
         val built = runCatching(::build).onFailure { SBOKotlin.logger.warn("[ModConflicts] could not check for mod conflicts", it) }.getOrNull() ?: return
         report = built
         save(built)
@@ -94,8 +97,8 @@ object ModConflicts {
         // With a broken hook only the mods in its classes, the others have nothing to do with it
         val brokenTargets = failed.map { it.target }.toSet()
         val relevant = if (failed.isEmpty()) suspects else suspects.filter { it.target in brokenTargets }
+        // The player is set at send time, the first world loads before it exists
         return Report(
-            player = Player.getName(),
             sboVersion = versionOf("sbo"),
             mcVersion = versionOf("minecraft"),
             failed = failed,
@@ -153,7 +156,7 @@ object ModConflicts {
         val report = report ?: return
         if (sent) return
         sent = true
-        SboApi.modConflicts(compactJson.encodeToString(report))
+        SboApi.modConflicts(compactJson.encodeToString(report.copy(player = Player.getName())))
             .toJsonObject {
                 if (it.getBoolean("Success")) Chat.chat("§6[SBO] §aReport sent, thanks!")
                 else {
