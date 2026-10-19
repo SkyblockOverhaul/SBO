@@ -245,6 +245,9 @@ object SboBadges {
     /** Team rank of a player (uuid without dashes), for the party finder. */
     fun teamRank(uuid: String): BadgeRank? = uuidOf(uuid)?.let { team[it] }?.let { ranks[it.rank] }?.takeIf { it.tag != null }
 
+    /** Whether a player (uuid without dashes) supports SBO and has their badge on, for the party finder. */
+    fun isSupporter(uuid: String): Boolean = uuidOf(uuid)?.let { byUuid[it] }?.rank == "supporter"
+
     /** "[SBO Dev] " in the given color or the rank's, null for ranks without a tag. */
     fun tagOf(rank: String, partColor: PartColor? = null): Component? {
         val info = ranks[rank] ?: return null

@@ -593,6 +593,15 @@ private fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
     }
 }
 
+private const val SUPPORTER_LOGO = "sbo:textures/font/badge.png"
+
+private fun NodeBuilder.supporterLogo(uuid: String) {
+    if (!SboBadges.isSupporter(uuid)) return
+    tooltip("This player supports SBO on Patreon or Ko-fi.", className = "pf-tip", key = "supporter-$uuid") {
+        img(src = SUPPORTER_LOGO, className = "pf-supporter")
+    }
+}
+
 private fun NodeBuilder.partyCard(
     party: PartyView,
     target: PartyTarget,
@@ -636,7 +645,10 @@ private fun NodeBuilder.partyCard(
             div(className = "pf-card-head") {
                 party.leader?.let { playerHead(uuidOf(it.uuid), className = "pf-head") }
                 b(className = "pf-leader") { +leaderName }
-                party.leader?.let { teamTag(it.uuid) }
+                party.leader?.let {
+                    teamTag(it.uuid)
+                    supporterLogo(it.uuid)
+                }
                 // Team members further down the party, so players know who to ask about SBO
                 party.members.filter { it.uuid != party.leader?.uuid }.forEach { teamTag(it.uuid, it.name) }
                 // In the list of all subcategories every party says which one it was created in
@@ -796,6 +808,7 @@ private fun NodeBuilder.memberRow(
                 playerHead(uuidOf(member.uuid), className = "pf-head")
                 +name
                 teamTag(member.uuid)
+                supporterLogo(member.uuid)
                 if (member.uuid == party.id) span(className = "pf-member-role") { +" leader" }
                 else if (manage && HypixelModApi.partyRole(member.uuid) == "MODERATOR") span(className = "pf-member-role") { +" moderator" }
                 member.role?.let { id ->
