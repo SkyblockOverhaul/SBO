@@ -22,7 +22,8 @@ object HelpCommand {
         mapOf("cmd" to "sboclearburrows", "desc" to "Clear all burrow waypoints (or: /sbocb)"),
         mapOf("cmd" to "sboimporttracker <profilename>", "desc" to "Import skyhanni tracker"), //todo: add sboimporttracker command
         mapOf("cmd" to "sboimporttrackerundo", "desc" to "Undo the tracker import"), // todo: add sboimporttrackerundo command
-        mapOf("cmd" to "sbodc", "desc" to "Diana dropchances"),
+        mapOf("cmd" to "sbodc", "desc" to "Diana dropchances (main server)"),
+        mapOf("cmd" to "sbodcnew", "desc" to "Diana dropchances (Alpha Network)"),
         mapOf("cmd" to "sbosc", "desc" to "Diana spawnchances"),
         mapOf("cmd" to "sbopartyblacklist", "desc" to "Party commands blacklisting"), // todo: add sbopartyblacklist command
         mapOf("cmd" to "sbobacktrackachievements", "desc" to "Backtrack achievements"),
@@ -51,20 +52,21 @@ object HelpCommand {
         }
 
         dropChances()
+        newDropChances()
         spawnChances()
     }
 
     private fun spawnChances() {
         Register.command("sbosc", "sbospawnchances") { args ->
             if (args.isEmpty()) {
-                Chat.chat("§6[SBO] §ePlease provide a tracking value. /sbodc <tracking>")
+                Chat.chat("§6[SBO] §ePlease provide a tracking value. /sbosc <tracking>")
                 return@command
             }
 
             val tracking = args[0].toIntOrNull()
 
             if (tracking == null) {
-                Chat.chat("§6[SBO] §ePlease provide valid numbers. /sbodc 75")
+                Chat.chat("§6[SBO] §ePlease provide valid numbers. /sbosc 75")
                 return@command
             }
 
@@ -88,40 +90,84 @@ object HelpCommand {
 
     private fun dropChances() {
         Register.command("sbodc", "sbodropchances") { args ->
+            // TODO: When the Alpha Network update is pushed to main by Hypixel, remove looting and rename newDropChances() to dropChances().
             if (args.size < 3) {
-                Chat.chat("§6[SBO] §ePlease provide mf/looting values aswell as pet rarity. /sbodc <mf> <looting> <griffinrairty>")
+                Chat.chat("§6[SBO] §ePlease provide MF, looting, and pet rarity. /sbodc <mf> <looting> <griffinrarity>")
                 return@command
             }
 
             val mf = args[0].toIntOrNull()
             val looting = args[1].toIntOrNull()
-            val rarity = args[2]
-            if (mf == null || looting == null || rarity.isEmpty() && rarity.lowercase() !in listOf(
-                    "epic",
-                    "legendary",
-                    "mythic"
-                )
-            ) {
-                Chat.chat("§6[SBO] §ePlease provide valid numbers. /sbodc 500 5 <griffinrarity(epic/legendary/mythic)>")
+            val rarity = args[2].lowercase().trim()
+            if (mf == null || looting == null || rarity !in listOf("epic", "legendary", "mythic")) {
+                Chat.chat("§6[SBO] §ePlease provide valid values. /sbodc 500 5 <griffinrarity(epic/legendary/mythic)>")
                 return@command
             }
 
-            val items = when (rarity.lowercase()) {
+            val items = when (rarity) {
                 "epic" -> listOf("Stick" to "stick", "Relic" to "relic")
                 "legendary" -> listOf("Chimera" to "chim", "Stick" to "stick", "Relic" to "relic", "Food" to "food")
-                "mythic" -> listOf("Chimera" to "chim", "Stick" to "stick", "Relic" to "relic", "Food" to "food", "Wool" to "wool", "Core" to "core")
+                else -> listOf("Chimera" to "chim", "Stick" to "stick", "Relic" to "relic", "Food" to "food", "Wool" to "wool", "Core" to "core", "Stinger" to "stinger")
+            }
+
+            val normalChances = Helper.getChance(mf, looting, rarity)
+            val lsChances = Helper.getChance(mf, looting, rarity, lootshare = true)
+            listOf(false, true).forEach { isLs ->
+                val chances = if (isLs) lsChances else normalChances
+                val label = if (isLs) "§7[MF:$mf]" else Helper.formatMagicFindAndLooting(mf, looting)
+                items.forEach { (name, key) ->
+                    val lsPrefix = if (isLs) "§7[§bLS§7] " else ""
+                    Chat.chat("§6[SBO] $lsPrefix§e$name ${Helper.formatChances(chances[key] ?: 0.0, label)}")
+                }
+            }
+        }
+    }
+
+    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove dropChances() and rename newDropChances() to dropChances().
+    private fun newDropChances() {
+        Register.command("sbodcnew", "sbodropchancesnew") { args ->
+            if (args.size < 2) {
+                Chat.chat("§6[SBO] §ePlease provide MF and pet rarity. /sbodcnew <mf> <griffinrarity>")
+                return@command
+            }
+
+            val mf = args[0].toIntOrNull()
+            val rarity = args[1].lowercase().trim()
+
+            if (mf == null) {
+                Chat.chat("§6[SBO] §ePlease provide a valid Magic Find value. /sbodcnew 500 <griffinrarity(epic/legendary/mythic)>")
+                return@command
+            }
+
+            val items = when (rarity) {
+                "epic" -> listOf("Stick" to "stick", "Relic" to "relic")
+                "legendary" -> listOf(
+                    "Chimera" to "chim",
+                    "Stick" to "stick",
+                    "Relic" to "relic",
+                    "Food" to "food"
+                )
+                "mythic" -> listOf(
+                    "Chimera" to "chim",
+                    "Stick" to "stick",
+                    "Relic" to "relic",
+                    "Food" to "food",
+                    "Wool" to "wool",
+                    "Core" to "core",
+                    "Stinger" to "stinger"
+                )
                 else -> {
                     Chat.chat("§6[SBO] §ePlease provide a valid griffin rarity: epic, legendary, mythic.")
                     return@command
                 }
             }
 
-            val normalChances = Helper.getChance(mf, looting, rarity)
-            val lsChances = Helper.getChance(mf, looting, rarity, lootshare = true)
+            val normalChances = Helper.getChanceNew(mf, rarity)
+            val lsChances = Helper.getChanceNew(mf, rarity, lootshare = true)
 
             listOf(false, true).forEach { isLs ->
                 val chances = if (isLs) lsChances else normalChances
-                val labelFunc: (String) -> String = if (isLs) { _ -> "§7[MF:$mf]" } else { _ -> Helper.getMagicFindAndLooting(mf, looting) }
+                val labelFunc: (String) -> String = { _ -> Helper.formatMagicFind(mf) }
 
                 items.forEach { (name, key) ->
                     val chance = chances[key] ?: 0.0

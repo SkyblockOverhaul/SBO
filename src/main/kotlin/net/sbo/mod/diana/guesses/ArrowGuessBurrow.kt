@@ -39,6 +39,7 @@ import kotlin.time.Duration.Companion.seconds
 object ArrowGuessBurrow {
     private const val SHAFT_LENGTH = 20
     private const val PARTICLE_DETECTION_TOLERANCE = 0.12
+    private val PARTICLE_DETECTION_TOLERANCE_SQ = PARTICLE_DETECTION_TOLERANCE * PARTICLE_DETECTION_TOLERANCE
     private const val COUNT_NEAR_TIP = 4
     private const val COUNT_NEAR_BASE = 2
     private const val EPSILON = 1e-6
@@ -138,7 +139,7 @@ object ArrowGuessBurrow {
     @SboEvent
     fun onReceiveParticle(event: ParticleReceiveEvent) {
         if (!Diana.arrowGuess) return
-        if (World.getWorld() != "Hub") return
+        if (!World.isInHub()) return
 
         val packet = event.packet
         if (!packet.isRelevant()) return
@@ -154,7 +155,7 @@ object ArrowGuessBurrow {
     @SboEvent
     fun onTick(event: TickEvent) {
         if (!Diana.arrowGuess) return
-        if (World.getWorld() != "Hub") return
+        if (!World.isInHub()) return
         if (allGuesses.isEmpty()) return
         checkMoveGuess()
     }
@@ -212,7 +213,7 @@ object ArrowGuessBurrow {
                 line.add(start)
                 visited.add(start)
 
-                if (extendLine(line, visited, locations, SHAFT_LENGTH, PARTICLE_DETECTION_TOLERANCE)) {
+                if (extendLine(line, visited, locations)) {
                     val immutable = line.toList()
                     add(LineCandidate(immutable, scoreLine(immutable), immutable.size))
                 }
@@ -250,31 +251,30 @@ object ArrowGuessBurrow {
         line: MutableList<SboVec>,
         visited: MutableSet<SboVec>,
         locations: Set<SboVec>,
-        numPoints: Int,
-        maxDist: Double
     ): Boolean {
-        while (line.size < numPoints) {
+        while (line.size < SHAFT_LENGTH) {
             var nextLoc: SboVec? = null
-            var minDist = Double.MAX_VALUE
+            var minDistSq = Double.MAX_VALUE
+
+            val first = line.first()
+            val second = if (line.size > 1) line[1] else first
+            val last = line.last()
 
             for (location in locations) {
                 if (location in visited) continue
 
-                val dist = line.last().distanceTo(location)
-                if (dist > maxDist) continue
+                val distSq = last.distanceSq(location)
+                if (distSq > PARTICLE_DETECTION_TOLERANCE_SQ) continue
 
-                val second = if (line.size > 1) line[1] else line[0]
-                if (!isCollinear(line.first(), second, location)) continue
+                if (!isCollinear(first, second, location)) continue
 
-                if (dist < minDist) {
-                    minDist = dist
+                if (distSq < minDistSq) {
+                    minDistSq = distSq
                     nextLoc = location
                 }
             }
 
-            if (nextLoc == null) {
-                return false
-            }
+            if (nextLoc == null) return false
 
             line.add(nextLoc)
             visited.add(nextLoc)
@@ -401,11 +401,23 @@ object ArrowGuessBurrow {
         return null
     }
 
+
     private fun isCollinear(a: SboVec, b: SboVec, c: SboVec): Boolean {
-        val ab = b.minus(a)
-        val ac = c.minus(a)
-        val cross = ab.crossProduct(ac)
-        return cross.lengthSquared() < EPSILON
+        val abX = b.x - a.x
+        val abY = b.y - a.y
+        val abZ = b.z - a.z
+
+        val acX = c.x - a.x
+        val acY = c.y - a.y
+        val acZ = c.z - a.z
+
+        val crossX = abY * acZ - abZ * acY
+        val crossY = abZ * acX - abX * acZ
+        val crossZ = abX * acY - abY * acX
+
+        return crossX * crossX +
+               crossY * crossY +
+               crossZ * crossZ < EPSILON
     }
 
     internal fun isBlockValid(pos: SboVec): Boolean {

@@ -62,7 +62,7 @@ object ChatHandler {
     private fun processMessage(message: Component): Boolean {
         val formatted = message.formattedString()
         val messageString = formatted.replace("§r", "")
-        val plain by lazy { messageString.removeFormatting() }
+        var plain: String? = null
 
         if (Debug.debugOnlyMessages && "❈ Defense" !in messageString) {
             println("Processing chat message: $messageString")
@@ -74,7 +74,13 @@ object ChatHandler {
 
         while (iterator.hasNext()) {
             val rule = iterator.next()
-            val matcher = rule.pattern.matcher(if (rule.noFormatting) plain else messageString)
+            val matcher = rule.matcher.reset(
+                if (rule.noFormatting) {
+                    plain ?: messageString.removeFormatting().also { plain = it }
+                } else {
+                    messageString
+                }
+            )
 
             if (!matcher.find()) {
                 continue
@@ -98,16 +104,26 @@ object ChatHandler {
         if (allowMessage) {
             for (listener in listeners) {
                 // Listeners match the text with §r, as they always did
-                listener.regex.find(if (listener.noFormatting) plain else formatted)?.let { listener.action(message, it) }
+                listener.regex.find(
+                    if (listener.noFormatting) {
+                        plain ?: messageString.removeFormatting().also { plain = it }
+                    } else {
+                        formatted
+                    }
+                )?.let { listener.action(message, it) }
             }
         }
 
         return allowMessage
     }
 
-    private class ChatListener(val regex: Regex, val noFormatting: Boolean, val action: (Component, MatchResult) -> Unit)
+    private class ChatListener(
+        val regex: Regex,
+        val noFormatting: Boolean,
+        val action: (Component, MatchResult) -> Unit
+    )
 
-    private data class ChatRule(
+    private class ChatRule(
         val pattern: Pattern,
         val noFormatting: Boolean,
         val action: (
@@ -115,5 +131,7 @@ object ChatHandler {
             matcher: Matcher,
             unregister: () -> Unit
         ) -> Boolean
-    )
+    ) {
+        val matcher: Matcher = pattern.matcher("")
+    }
 }

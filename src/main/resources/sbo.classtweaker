@@ -5,3 +5,5 @@ accessible	field	net/minecraft/client/renderer/RenderPipelines LINES_SNIPPET Lco
 accessible  field   net/minecraft/client/gui/Gui titleTime I
 accessible  field   net/minecraft/client/gui/Gui title Lnet/minecraft/network/chat/Component;
 accessible  field   net/minecraft/client/gui/Gui subtitle Lnet/minecraft/network/chat/Component;
+accessible  field   net/minecraft/world/item/component/CustomData tag Lnet/minecraft/nbt/CompoundTag;
+accessible  field   net/minecraft/world/entity/LivingEntity dead Z

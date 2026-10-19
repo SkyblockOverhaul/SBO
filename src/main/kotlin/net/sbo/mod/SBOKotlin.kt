@@ -179,18 +179,20 @@ object SBOKotlin : ClientModInitializer {
 				DianaTracker.checkMayorTracker()
 				PartyPlayer.load()
 				unlockAchievement(38)
-				Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
-				    unregister()
-				    false
+				if (!Debug.disableAutoTweaks) {
+				    Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
+				        unregister()
+				        false
+				    }
+				    Chat.command("particlequality extreme")
 				}
-				Chat.command("particlequality extreme")
 				Register.onTick(100) { unregister ->
 				    if (Debug.debugOnlyMessages) {
 				        Chat.chat("§6[SBO] §cDebug messages are enabled! §eThis option is only intended to be used when instructed by a SBO developer to troubleshoot issues. Please disable the \"Debug Messages\" option from the Debug category within the /sbo settings menu unless you are troubleshooting issues. Having this option enabled WILL result in repeating, unwanted debug messages in chat during gameplay.", true)
 				    }
 				    val renderDist = mc.options.renderDistance().get()
-				    if (renderDist < 10) {
-				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 10 from the vanilla options menu.", true)
+				    if (renderDist < 8) {
+				        Chat.chat("§6[SBO] §cLow render distance detected ($renderDist)! §eThis will negatively affect the Diana solvers. Please set your Render Distance to at least 8 from the vanilla options menu.", true)
 				    }
 				    unregister()
 				}

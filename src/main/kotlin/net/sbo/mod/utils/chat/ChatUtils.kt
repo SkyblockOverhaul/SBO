@@ -26,15 +26,21 @@ object ChatUtils {
 
     fun Component.formattedString(): String {
         val builder = StringBuilder()
+        var cachedStyle: Style? = null
 
         this.visit(
             { style, content ->
-                builder.append(style.getFormatCodes())
+                if (style != cachedStyle) {
+                    cachedStyle = style
+                    builder.append(style.getFormatCodes())
+                }
+
                 builder.append(content)
                 Optional.empty<Any>()
             },
             Style.EMPTY
         )
+
         return builder.toString()
     }
 

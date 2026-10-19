@@ -16,7 +16,7 @@ object MuteBuggedSpadeSounds {
      */
     @SboEvent
     fun onPlaySound(event: PlaySoundEvent) {
-        if (!Diana.muteBuggedSpadeSounds || World.getWorld() != "Hub" || !Helper.hasSpade) return
+        if (!Diana.muteBuggedSpadeSounds || !World.isInHub() || !Helper.hasSpade) return
 
         val sound = event.sound
         val isRealMusic = sound.pitch == 1f && sound.volume == 1f && sound.x == 0.0 && sound.y == 0.0 && sound.z == 0.0
