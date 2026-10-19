@@ -62,6 +62,8 @@ object BadgePart {
     const val RANK = "rank"
     /** Parts whose brackets can take their own color. */
     val BRACKETS = setOf(LEVEL, TAG, RANK)
+    /** Parts of the name line that can flow on from the part in front of them; the stat is a line of its own. */
+    val CHAINS = setOf(LEVEL, RANK, TAG, NAME)
 }
 
 @Serializable
@@ -73,7 +75,49 @@ data class PartColor(
     val close: String? = null,
     /** Color of the rank's plus, e.g. the + of [MVP+]; null gives it the part's color. */
     val plus: String? = null,
-)
+    /** A BadgeEffect; null keeps the old look, see [effectOf]. */
+    val effect: String? = null,
+    /** Level, rank, tag and name: flows on from the part right in front, so their effects run on as one (Name Line). */
+    val chain: Boolean? = null,
+    /** A BadgeMotion of the chars; null stands still. */
+    val motion: String? = null,
+) {
+    /** Badges from before effects: a gradient stat waves, everything else stands still. */
+    fun effectOf(part: String): String = effect
+        ?: if (part == BadgePart.STAT && to != null) BadgeEffect.WAVE else BadgeEffect.STATIC
+}
+
+/** How a part's colors move. */
+object BadgeEffect {
+    const val STATIC = "static"
+    /** The gradient flows along the text, needs a second color. */
+    const val WAVE = "wave"
+    /** The whole text fades between both colors, or towards white with one color. */
+    const val PULSE = "pulse"
+    /** A rainbow running along the text, the colors are not used. */
+    const val CHROMA = "chroma"
+    /** A white gleam sweeps over the text now and then. */
+    const val SHINE = "shine"
+    /** Jumps between the two colors, or to a light version of one color. */
+    const val FLASH = "flash"
+    /** Single chars twinkle white. */
+    const val SPARKLE = "sparkle"
+    val ALL = listOf(STATIC, WAVE, PULSE, CHROMA, SHINE, FLASH, SPARKLE)
+}
+
+/** How a part's chars move, on top of its colors. Chars only move down, Minecraft fonts cannot rise above the line. */
+object BadgeMotion {
+    const val NONE = "none"
+    /** The chars ride a wave along the text. */
+    const val WAVY = "wavy"
+    /** One char after the other hops. */
+    const val BOUNCE = "bounce"
+    /** The chars jitter. */
+    const val SHAKE = "shake"
+    /** Single chars flicker as scrambled ones, like §k. */
+    const val GLITCH = "glitch"
+    val ALL = listOf(NONE, WAVY, BOUNCE, SHAKE, GLITCH)
+}
 
 @Serializable
 data class BadgePlaces(
