@@ -1,7 +1,5 @@
 package net.sbo.mod.general
 
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
-import net.fabricmc.fabric.api.event.Event
 import net.minecraft.ChatFormatting
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
@@ -60,9 +58,6 @@ object SboBadges {
     private const val TAG_BRACKETS = 0xAAAAAA
     // The sender stands before the first ": " of a chat line: "[296] [MVP+] Name: hi", "Party > Name: hi", "From Name: hi"
     private const val MAX_SENDER_LENGTH = 80
-    // Runs after the default phase: mods like SkyHanni rebuild chat lines from § codes there,
-    // which would drop the hex colors and the logo font
-    private val CHAT_PHASE = Identifier.fromNamespaceAndPath("sbo", "badges")
     // Mods rebuild Hypixel's § colors as rgb colors, so they are compared by value
     private val CHAT_COLORS: Set<Int> = ChatFormatting.entries.mapNotNull { TextColor.fromLegacyFormat(it)?.value }.toSet()
     private val WORD = Regex("[A-Za-z0-9_]{1,16}")
@@ -93,11 +88,6 @@ object SboBadges {
         }
         Register.command(COMMAND) {
             mc.schedule { BadgeGui.open() }
-        }
-        // After ALLOW_GAME, so the chat features still read the line as Hypixel sent it
-        ClientReceiveMessageEvents.MODIFY_GAME.addPhaseOrdering(Event.DEFAULT_PHASE, CHAT_PHASE)
-        ClientReceiveMessageEvents.MODIFY_GAME.register(CHAT_PHASE) { message, overlay ->
-            if (overlay) message else decorateChat(message)
         }
     }
 
@@ -172,12 +162,16 @@ object SboBadges {
     /** The viewer's switch for a place hides supporters and contributors, never the team. */
     private fun shown(enabled: Boolean, player: String) = enabled || player.lowercase() in teamNames
 
-    fun nameTagLine(uuid: UUID): Component? {
+    fun nameTagLine(uuid: UUID): Component? = safe(null) { nameTagLineOf(uuid) }
+
+    private fun nameTagLineOf(uuid: UUID): Component? {
         val badge = byUuid[uuid]?.takeIf { it.shows(BadgePart.LOGO, TeamTagPlace.HEAD) } ?: return null
         return fixedLines[uuid] ?: line(badge)
     }
 
-    fun colorNameTag(uuid: UUID, nameTag: Component): Component {
+    fun colorNameTag(uuid: UUID, nameTag: Component): Component = safe(nameTag) { colorNameTagOf(uuid, nameTag) }
+
+    private fun colorNameTagOf(uuid: UUID, nameTag: Component): Component {
         val colored = byUuid[uuid]?.let { recolored(nameTag, it.name, TeamTagPlace.HEAD) } ?: nameTag
         val tag = tags[uuid] ?: return colored
         return Component.empty().append(tag).append(colored)
@@ -219,7 +213,9 @@ object SboBadges {
         return line
     }
 
-    fun decorateTab(info: PlayerInfo, line: Component): Component {
+    fun decorateTab(info: PlayerInfo, line: Component): Component = safe(line) { decorateTabOf(info, line) }
+
+    private fun decorateTabOf(info: PlayerInfo, line: Component): Component {
         if (skyHanniReading || (!showInTab && team.isEmpty()) || (byUuid.isEmpty() && tabTags.isEmpty())) return line
         val player = tabPlayerOf(info)?.takeIf { shown(showInTab, it) } ?: return line
         return decorateTab(line, player)
@@ -239,7 +235,9 @@ object SboBadges {
     }
 
     /** A line SkyHanni's compact tab list draws, decorated like ours; null when it has no badge holder or tagged member. */
-    fun decorateSkyHanniTab(line: Component?): Component? {
+    fun decorateSkyHanniTab(line: Component?): Component? = safe(null) { decorateSkyHanniTabOf(line) }
+
+    private fun decorateSkyHanniTabOf(line: Component?): Component? {
         if (line == null || (!showInTab && team.isEmpty()) || (byName.isEmpty() && tabTags.isEmpty())) return null
         val plain = ChatFormatting.stripFormatting(line.string) ?: return null
         val player = tabPlayerIn(plain)?.takeIf { shown(showInTab, it) } ?: return null
@@ -256,7 +254,9 @@ object SboBadges {
     }
 
     /** The sender of a chat line: team tag in front, badge color and the SBO logo behind the name. */
-    fun decorateChat(line: Component): Component {
+    fun decorateChat(line: Component): Component = safe(line) { decorateChatOf(line) }
+
+    private fun decorateChatOf(line: Component): Component {
         if ((!showInChat && team.isEmpty()) || (byName.isEmpty() && chatTags.isEmpty())) return line
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
@@ -391,6 +391,19 @@ object SboBadges {
         }
         flush()
         return out
+    }
+
+    @Volatile private var loggedError = false
+
+    // These run inside the game's and other mods' rendering and chat, a bug here must never cost the line or the frame
+    private inline fun <T> safe(fallback: T, block: () -> T): T = try {
+        block()
+    } catch (e: Exception) {
+        if (!loggedError) {
+            loggedError = true
+            SBOKotlin.logger.error("[SboBadges] decorating failed, showing the line without badge", e)
+        }
+        fallback
     }
 
     fun logo(): MutableComponent = Component.literal(LOGO).withStyle(LOGO_STYLE)
