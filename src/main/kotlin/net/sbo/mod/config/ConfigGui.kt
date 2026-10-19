@@ -22,6 +22,7 @@ import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.guilib.fabric.GuiLibScreen
 import net.sbo.mod.guis.look.SboLook
+import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import java.math.BigDecimal
@@ -48,6 +49,10 @@ object ConfigGui {
 private class Ui(
     val changed: () -> Unit,
     val show: (Category, ConfigElement) -> Unit,
+    /** Shows [ConfigElement] wherever it is, used by the requirement links. */
+    val jump: (ConfigElement) -> Unit,
+    val collapsed: Set<String>,
+    val toggle: (String) -> Unit,
 )
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
@@ -56,25 +61,45 @@ private data class AppProps(val config: Config, val onBack: (() -> Unit)?)
 
 private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     val hasGeneral = config.elements.isNotEmpty()
-    var page by useState<Category>(if (hasGeneral) config else config.subcategories.firstOrNull() ?: config)
+    var page by useState<Category>(if (hasGeneral) config else config.children.firstOrNull() ?: config)
     var query by useState("")
     var target by useState<ConfigElement?>(null)
+    var collapsed by useState<Set<String>>(DataManager.sboData.collapsedSettings.toSet())
     val revision = useState(0)
     val body = useElementRef()
     useSboScale()
     useSboTheme()
 
-    val ui = useMemo {
+    fun setCollapsed(keys: Set<String>) {
+        collapsed = keys
+        DataManager.sboData.collapsedSettings = keys.toMutableSet()
+        DataManager.sboData.save()
+    }
+
+    fun show(category: Category, element: ConfigElement) {
+        page = category
+        query = ""
+        target = element
+        // Jumping from the search into a collapsed sub opens it
+        collapseKeyOf(category, element)?.let { setCollapsed(collapsed - it) }
+    }
+
+    val ui = useMemo(collapsed) {
         Ui(
             changed = {
                 revision.update { it + 1 }
                 config.save()
             },
-            show = { category, element ->
-                page = category
-                query = ""
-                target = element
+            show = ::show,
+            jump = { element ->
+                categoryOf(config, element)?.let { category ->
+                    // A setting in a switched off sub is hidden, so that goes to the sub instead
+                    val offSub = (element as? ConfigEntry<*>)?.sub?.takeIf { !it.enabled }
+                    show(category, offSub ?: element)
+                }
             },
+            collapsed = collapsed,
+            toggle = { key -> setCollapsed(if (key in collapsed) collapsed - key else collapsed + key) },
         )
     }
     val hits = useMemo(query, revision.value) { search(config, query) }
@@ -126,7 +151,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                                 query = ""
                             }
                         }
-                        config.subcategories.forEach { category ->
+                        config.children.forEach { category ->
                             val count = hits.count { it.path.getOrNull(1) === category }
                             categoryLink(category, category.name, page === category && !searching, count, searching) {
                                 page = category
@@ -141,9 +166,9 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                         searching -> results(query, hits, revision.value)
                         page === config -> {
                             h1(className = "cfg-page-title") { +"General" }
-                            elements(config, revision.value, target)
+                            elements(config, revision.value, target, ui)
                         }
-                        else -> categoryPage(page, revision.value, target)
+                        else -> categoryPage(page, revision.value, target, ui)
                     }
                 }
             }
@@ -170,29 +195,79 @@ private fun NodeBuilder.categoryLink(
     }
 }
 
-private fun NodeBuilder.categoryPage(category: Category, revision: Int, target: ConfigElement?) {
+private fun NodeBuilder.categoryPage(category: Category, revision: Int, target: ConfigElement?, ui: Ui) {
     h1(className = "cfg-page-title") { +category.name }
     if (category.description.isNotEmpty()) description(category.description, "cfg-page-description")
-    elements(category, revision, target)
-    category.subcategories.forEach { sub ->
-        h2(className = "cfg-subcategory", key = "sub:${sub.id}") { +sub.name }
-        elements(sub, revision, target)
+    elements(category, revision, target, ui)
+    category.children.forEach { child ->
+        h2(className = "cfg-child-category", key = "child:${child.id}") { +child.name }
+        elements(child, revision, target, ui)
     }
 }
 
-private fun NodeBuilder.elements(category: Category, revision: Int, target: ConfigElement?) {
+private fun NodeBuilder.elements(category: Category, revision: Int, target: ConfigElement?, ui: Ui) {
+    var hidden = false
     category.elements.forEachIndexed { i, element ->
         when (element) {
-            is Separator -> if (element.condition()) {
-                div(className = "cfg-section", key = "${category.id}:sep:$i") {
-                    if (element.title.isNotEmpty()) h2(className = "cfg-section-title") { +element.title }
-                    if (element.description.isNotEmpty()) description(element.description, "cfg-section-description")
-                }
+            is Sub -> {
+                hidden = false
+                if (!element.condition()) return@forEachIndexed
+                val key = collapseKey(category, element)
+                SubHeader(SubHeaderProps(element, element.enabled, key, ui), key = "${category.id}:sub:$i")
+                hidden = element.toggleable && (!element.enabled || key in ui.collapsed)
             }
-            is Button -> if (element.condition()) Row(RowProps(element, revision, element === target), key = "${category.id}:btn:$i")
-            is ConfigEntry<*> -> Row(RowProps(element, revision, element === target), key = "${category.id}:${element.id}")
+            is Button -> if (!hidden && element.condition()) Row(RowProps(element, revision, element === target), key = "${category.id}:btn:$i")
+            is ConfigEntry<*> -> if (!hidden) Row(RowProps(element, revision, element === target), key = "${category.id}:${element.id}")
         }
     }
+}
+
+// enabled is part of the props so the header redraws when the sub is switched
+private data class SubHeaderProps(val sub: Sub, val enabled: Boolean, val key: String, val ui: Ui)
+
+// A sub without a title only separates, there is nothing to click or switch
+private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, enabled, key, ui) ->
+    val collapsed = sub.toggleable && key in ui.collapsed
+    val classes = listOfNotNull(
+        "cfg-sub",
+        "collapsible".takeIf { sub.toggleable && enabled },
+        "collapsed".takeIf { collapsed || !enabled },
+        "off".takeIf { !enabled },
+    ).joinToString(" ")
+    div(className = classes, id = rowId(sub)) {
+        if (sub.toggleable) {
+            div(className = "cfg-sub-head") {
+                h2(className = "cfg-sub-title", onClick = if (enabled) { _ -> ui.toggle(key) } else null) {
+                    span(className = "cfg-chevron")
+                    +sub.title
+                }
+                // A small pill, a switch here looked like one more setting
+                button(
+                    className = "cfg-sub-toggle",
+                    title = if (enabled) "Turn off everything in ${sub.title}" else "Turn ${sub.title} back on",
+                    onClick = {
+                        sub.setEnabled(!enabled)
+                        ui.changed()
+                    },
+                ) { +(if (enabled) "ON" else "OFF") }
+            }
+        }
+        if (sub.description.isNotEmpty()) description(sub.description, "cfg-sub-description")
+    }
+}
+
+// By title, so it stays collapsed when settings are added or moved
+private fun collapseKey(category: Category, sub: Sub) = "${category.id}/${sub.title.stripFormatting()}"
+
+private fun collapseKeyOf(category: Category, element: ConfigElement): String? {
+    for (owner in listOf(category) + category.children) {
+        var current: Sub? = null
+        for (e in owner.elements) {
+            if (e is Sub) current = e.takeIf { it.title.isNotEmpty() && it.condition() }
+            if (e === element) return current?.let { collapseKey(owner, it) }
+        }
+    }
+    return null
 }
 
 private fun NodeBuilder.results(query: String, hits: List<SearchHit>, revision: Int) {
@@ -232,18 +307,24 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
     val refresh = useForceUpdate()
     val ui = useContext(UiContext) ?: return@component
 
-    val classes = listOfNotNull("cfg-row", "highlighted".takeIf { highlighted }).joinToString(" ")
+    // Locked while a setting from depends(...) is off
+    val locked = element is ConfigEntry<*> && !element.requirementsMet
+    val classes = listOfNotNull("cfg-row", "highlighted".takeIf { highlighted }, "locked".takeIf { locked }).joinToString(" ")
     div(className = classes, id = rowId(element)) {
         div(className = "cfg-row-text") {
             div(className = "cfg-row-name") { +rowName(element) }
             if (hit != null) {
-                val place = listOfNotNull(placeName(hit.path), hit.section?.title?.takeIf { it.isNotEmpty() }).joinToString(" › ")
-                span(className = "cfg-row-place", title = "Show it in its category", onClick = { ui.show(hit.category, element) }) {
-                    +"$place ↗"
+                val place = listOfNotNull(placeName(hit.path), hit.sub?.title?.takeIf { it.isNotEmpty() }).joinToString(" › ")
+                // The setting is hidden on the page while its sub is off, so that jumps to the sub instead
+                val offSub = hit.sub?.takeIf { !it.enabled }
+                span(className = "cfg-row-place", title = "Show it in its category", onClick = { ui.show(hit.category, offSub ?: element) }) {
+                    +(if (offSub != null) "$place · off ↗" else "$place ↗")
                 }
             }
             val text = rowDescription(element)
             if (text.isNotEmpty()) description(text, "cfg-row-description")
+            // Only while it can't be used, otherwise it's just noise
+            if (locked) needs(element, ui)
         }
         div(className = "cfg-row-control") {
             when (element) {
@@ -251,28 +332,54 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
                     element.onClick()
                     ui.changed()
                 }) { +(element.text ?: "Open") }
-                is ConfigEntry<*> -> control(element, ui, refresh)
-                is Separator -> {}
+                is ConfigEntry<*> -> control(element, ui, refresh, locked)
+                is Sub -> {}
             }
         }
     }
 }
 
+// Every required setting links to itself, green when it is as needed and red when not
+private fun NodeBuilder.needs(entry: ConfigEntry<*>, ui: Ui) {
+    div(className = "cfg-row-needs") {
+        +"Needs: "
+        entry.requirements.forEachIndexed { i, requirement ->
+            if (i > 0) +", "
+            val conditions = requirement.conditions.mapNotNull { condition -> condition.entry?.let { condition to it } }
+            if (requirement.any && conditions.size > 1) +"one of "
+            conditions.forEachIndexed { j, (condition, required) ->
+                if (j > 0) +(if (requirement.any) " or " else ", ")
+                val state = when {
+                    condition.met -> "ok"
+                    // In a met "one of" the others don't need to change
+                    requirement.met -> "idle"
+                    else -> "missing"
+                }
+                val label = listOf(required.name, condition.state).filter { it.isNotEmpty() }.joinToString(" ")
+                span(className = "cfg-needs-link $state", title = "Show ${required.name}", onClick = { ui.jump(required) }) { +label }
+            }
+        }
+    }
+}
+
+private fun categoryOf(category: Category, element: ConfigElement): Category? =
+    if (element in category.elements) category else category.children.firstNotNullOfOrNull { categoryOf(it, element) }
+
 private fun rowName(element: ConfigElement) = when (element) {
     is Button -> element.title
     is ConfigEntry<*> -> element.name
-    is Separator -> element.title
+    is Sub -> element.title
 }
 
 private fun rowDescription(element: ConfigElement) = when (element) {
     is Button -> element.description
     is ConfigEntry<*> -> element.description
-    is Separator -> element.description
+    is Sub -> element.description
 }
 
-private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Unit) {
+private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Unit, locked: Boolean) {
     when (entry) {
-        is BooleanEntry -> switch(checked = entry.value, onChange = {
+        is BooleanEntry -> switch(checked = entry.value, disabled = locked, onChange = {
             entry.set(it.checked)
             ui.changed()
         })

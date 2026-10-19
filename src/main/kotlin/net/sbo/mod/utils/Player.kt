@@ -1,6 +1,7 @@
 package net.sbo.mod.utils
 
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.entity.player.Inventory
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.math.SboVec
 import java.util.*
@@ -20,9 +21,8 @@ object Player {
 
     fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
-    fun getPlayerInventory(): List<ItemStack> {
-        val inventory = mc.player?.inventory?.toList()
-        return inventory ?: emptyList()
+    fun getPlayerInventory(): Inventory? {
+        return mc.player?.inventory
     }
 
     fun getName(): String? = mc.player?.name?.string

@@ -61,7 +61,14 @@ object Chat {
         val actionId = ClickActionManager.registerAction {
             DataManager.sboData.suppressedMessages.add(messageText)
             DataManager.save(DataManager::sboData)
-            sendClientMessage(Component.literal("§6[SBO] §aMessage suppressed. You won't see this again."))
+            clickableChat(
+                "§6[SBO] §aMessage suppressed. §eClick to undo.",
+                "Click to show this message again",
+            ) {
+                DataManager.sboData.suppressedMessages.remove(messageText)
+                DataManager.save(DataManager::sboData)
+                sendClientMessage(Component.literal("§6[SBO] §aMessage suppression undone."))
+            }
         }
         val hoverText = Component.literal("Click the message to not show it again").withStyle(ChatFormatting.YELLOW)
         return ClickEvent.RunCommand("/__sbo_run_clickable_action $actionId") to HoverEvent.ShowText(hoverText)

@@ -22,7 +22,10 @@ import net.sbo.mod.utils.events.impl.guis.GuiPostRenderEvent
 import kotlin.reflect.KClass
 
 object SBOEvent {
-    private val listeners = java.util.concurrent.ConcurrentHashMap<KClass<*>, MutableList<Listener>>()
+    private val listeners = object : ClassValue<MutableList<Listener>>() {
+        override fun computeValue(type: Class<*>): MutableList<Listener> =
+            mutableListOf()
+    }
 
     private data class Listener(
         val callback: (Any) -> Unit,
@@ -137,7 +140,7 @@ object SBOEvent {
 
     /** Register a listener for a specific event type. Returns an unregister function. */
     fun <T : Any> on(eventType: KClass<T>, priority: Int = SboEvent.Priority.NORMAL, callback: (T) -> Unit): () -> Unit {
-        val callbacks = listeners.getOrPut(eventType) { mutableListOf() }
+        val callbacks = listeners.get(eventType.java)
         @Suppress("UNCHECKED_CAST")
         val listener = Listener(callback as (Any) -> Unit, priority)
         callbacks.add(listener)
@@ -149,8 +152,10 @@ object SBOEvent {
 
     /** Emit an event to all registered listeners. */
     fun emit(event: Any) {
-        listeners[event::class]?.forEach { listener ->
-            listener.callback(event)
+        // Avoids Iterator allocation and forEach lambda wrapping, small performance optimization.
+        val callbacks = listeners.get(event.javaClass)
+        for (i in 0 until callbacks.size) {
+            callbacks[i].callback(event)
         }
     }
 

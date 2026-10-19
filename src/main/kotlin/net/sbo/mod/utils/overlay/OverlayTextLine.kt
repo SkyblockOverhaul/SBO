@@ -41,7 +41,9 @@ class OverlayTextLine(
 
     private var height: Int = 0
     private var renderDebugBox: Boolean = false
+
     private var condition: () -> Boolean = { true }
+    private var cachedCondition = true
 
     private fun getOrderedText(): FormattedCharSequence { // we return FormattedCharSequence instead of FormattedCharSequence? so this can't be a property getter
         val currentText = text
@@ -65,7 +67,11 @@ class OverlayTextLine(
         return this
     }
 
-    fun checkCondition(): Boolean = condition()
+    fun checkCondition(): Boolean = cachedCondition
+
+    fun updateCondition() {
+        cachedCondition = condition()
+    }
 
     /**
      * Executes the mouse enter action when the mouse enters the text line.

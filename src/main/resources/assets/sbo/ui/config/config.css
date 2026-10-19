@@ -185,11 +185,44 @@ body {
 .cfg-body { flex-grow: 1; min-width: 0; min-height: 0; padding: 4px 10px 10px 10px; }
 .cfg-page-title { margin: 4px 0 2px 0; font-size: 12px; color: var(--text-strong); }
 .cfg-page-description { margin-bottom: 4px; color: var(--muted); }
-.cfg-subcategory { margin: 12px 0 2px 0; font-size: 10px; color: var(--text-strong); }
+.cfg-child-category { margin: 12px 0 2px 0; font-size: 10px; color: var(--text-strong); }
 
-.cfg-section { margin: 10px 0 2px 0; padding: 0 4px 2px 4px; border-bottom: 1px solid var(--border); }
-.cfg-section-title { margin: 0; font-size: 8px; color: var(--title); }
-.cfg-section-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
+.cfg-sub { margin: 10px 0 2px 0; padding: 0 4px 2px 4px; border-bottom: 1px solid var(--border); }
+.cfg-sub-title { margin: 0; font-size: 8px; color: var(--title); }
+.cfg-sub-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
+.cfg-sub-head { display: flex; align-items: center; gap: 6px; }
+.cfg-sub-head .cfg-sub-title { flex: 1; display: flex; align-items: center; }
+.cfg-sub.collapsible .cfg-sub-title { cursor: pointer; }
+.cfg-sub.collapsible .cfg-sub-title:hover { color: var(--text-strong); }
+.cfg-sub.off .cfg-sub-title, .cfg-sub.off .cfg-sub-description { color: var(--muted); }
+
+/* Faint while on, only there when you look for it; always visible while off so it can be found again */
+.cfg-sub-toggle {
+    padding: 0 3px;
+    min-height: 0;
+    font-size: 6px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    opacity: 0.35;
+    transition: opacity 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.cfg-sub-head:hover .cfg-sub-toggle { opacity: 1; }
+.cfg-sub-toggle:hover { color: var(--text-strong); border-color: var(--muted); }
+.cfg-sub.off .cfg-sub-toggle { opacity: 1; color: var(--title); border-color: var(--title); }
+/* Drawn as a rotated corner, the font's arrow glyphs are too pixelated */
+.cfg-chevron {
+    width: 3px;
+    height: 3px;
+    margin: 0 5px 2px 1px;
+    border-right: 1px solid var(--muted);
+    border-bottom: 1px solid var(--muted);
+    transform: rotate(45deg);
+    transition: transform 120ms ease-out;
+}
+.cfg-sub.collapsed .cfg-chevron { transform: rotate(-45deg); margin-bottom: 0; }
+.cfg-sub.collapsible .cfg-sub-title:hover .cfg-chevron { border-color: var(--text-strong); }
 
 .cfg-row {
     display: flex;
@@ -210,6 +243,14 @@ body {
 .cfg-row-name { color: var(--text-strong); }
 .cfg-row-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
 .cfg-row-place { font-size: 7px; color: var(--accent-hover); cursor: pointer; }
+.cfg-row-needs { margin-top: 1px; font-size: 7px; color: var(--muted); }
+.cfg-needs-link { cursor: pointer; }
+.cfg-needs-link:hover { text-decoration: underline; }
+.cfg-needs-link.ok { color: var(--ok); }
+.cfg-needs-link.missing { color: var(--bad); }
+.cfg-needs-link.idle { color: var(--dim); }
+.cfg-row.locked .cfg-row-name, .cfg-row.locked .cfg-row-description { color: var(--muted); }
+.cfg-row.locked .cfg-row-control { opacity: 0.5; }
 .cfg-row-place:hover { text-decoration: underline; color: var(--banner-text); }
 .cfg-row-control { display: flex; justify-content: flex-end; flex-shrink: 0; max-width: 55%; }
 

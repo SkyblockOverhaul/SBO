@@ -136,11 +136,10 @@ object PartyFinderGui {
         useEffect { loadOnlineUsers() }
         useInterval(60_000) { loadOnlineUsers() }
 
-        // Parties per party type for the sidebar, hidden when the server can't tell
+        // Parties per party type for the sidebar, hidden when the server can't tell. They reload together with the party list.
         var partyCounts by useState<Map<String, Int>?>(null)
         fun loadCounts() = PartyFinderApi.counts(onError = { partyCounts = null }) { partyCounts = it }
         useEffect(queued?.createdAt, inQueue) { loadCounts() }
-        useInterval(60_000) { loadCounts() }
 
         val target = data?.let { loaded ->
             targetOf(selected) ?: loaded.categories.firstOrNull()?.let { PartyCategories.target(it.id) }
@@ -155,13 +154,11 @@ object PartyFinderGui {
             ownCollected.current = targets.mapNotNull { x -> OwnStats.cached(x)?.let { x.key to it } }.toMap()
             ownBySub = ownCollected.current
             ownError = null
-            targets.forEach { x ->
-                OwnStats.get(x, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { me ->
-                    if (currentKey.current == t.key) {
-                        ownCollected.current = ownCollected.current + (x.key to me)
-                        ownBySub = ownCollected.current
-                        if (x == targets.first()) own = me
-                    }
+            OwnStats.getAll(targets, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { x, me ->
+                if (currentKey.current == t.key) {
+                    ownCollected.current = ownCollected.current + (x.key to me)
+                    ownBySub = ownCollected.current
+                    if (x == targets.first()) own = me
                 }
             }
         }
@@ -333,7 +330,8 @@ object PartyFinderGui {
                                             inspected = inspected?.member?.uuid, onInspect = { inspected = it },
                                         joinedParties = joinedParties,
                                             onRules = { page = "rules" },
-                                            tourParty = onboarding
+                                            tourParty = onboarding,
+                                            onLoad = { loadCounts() }
                                         ),
                                         key = "list"
                                     )

@@ -14,6 +14,10 @@ object OverlayManager {
     val overlays = mutableListOf<Overlay>()
 
     fun init() {
+        Register.onTick(1) {
+            overlays.forEach { it.updateConditions() }
+        }
+
 //        example:
 //        val testOverlay = Overlay("test1",50.0f, 10.0f, 2.0f, "both")
 //        val textline = OverlayTextLine("Enjoy using SBO-Kotlin!")
@@ -54,24 +58,32 @@ object OverlayManager {
         render(event.context, mc.screen)
     }
 
-    fun render(drawContext: GuiGraphicsExtractor, renderScreen: Screen? = null) {
-        if (!World.isInSkyblock() && renderScreen !is OverlayEditScreen) return
+    fun render(drawContext: GuiGraphicsExtractor, renderScreen: Screen?) {
+        val inEditScreen = renderScreen is OverlayEditScreen
+
+        if (!World.isInSkyblock() && !inEditScreen) return
+        if (mc.options.hideGui || mc.options.keyPlayerList.isDown) return
+        if (!inEditScreen && renderScreen != null) return
+
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor
+
         for (overlay in overlays) {
-            if (renderScreen == null && !mc.options.keyPlayerList.isDown && !mc.options.hideGui)
-                overlay.render(drawContext, mouseX, mouseY)
+            overlay.render(drawContext, mouseX, mouseY)
         }
     }
 
     private fun postRender(drawContext: GuiGraphicsExtractor, renderScreen: Screen) {
         if (!World.isInSkyblock() && renderScreen !is OverlayEditScreen) return
+        if (mc.options.hideGui) return
+
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor
+
         for (overlay in overlays) {
-            if (overlay.allowedScreens.any { it(renderScreen) } && !mc.options.hideGui)
+            if (overlay.allowedScreens.any { it(renderScreen) })
                 overlay.render(drawContext, mouseX, mouseY)
         }
     }

@@ -97,8 +97,9 @@ body {
 .bd-window {
     display: flex;
     flex-direction: column;
-    width: min(94vw, 280px);
-    max-height: 92vh;
+    /* Natural size, no scrolling: BadgeGui scales the whole window down when the screen is smaller */
+    width: 540px;
+    flex-shrink: 0;
     background-color: var(--bg);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -121,13 +122,14 @@ body {
 .bd-icon { padding: 1px 5px; background-color: transparent; border-color: transparent; }
 .bd-close:hover { background-color: var(--danger); }
 
-.bd-body { flex-grow: 1; min-height: 0; padding: 6px 8px 8px 8px; }
+.bd-body { padding: 6px 8px 8px 8px; }
 .bd-center { display: flex; justify-content: center; padding: 16px 0; color: var(--subtle); }
 .bd-center-text { text-align: center; }
 .bd-hint { margin: 1px 0 0 0; color: var(--muted); font-size: 7px; }
 .bd-error { margin-bottom: 4px; color: var(--bad); }
 
 .bd-rank-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.bd-rank-row .bd-hint { margin: 0; }
 .bd-rank {
     padding: 1px 5px;
     border-radius: 3px;
@@ -199,3 +201,58 @@ body {
 .bd-intro { margin: 2px 4px 4px 4px; }
 .bd-tag-level { color: #aaaaaa; }
 .bd-tag-plain { color: #ffffff; }
+.bd-colors { align-items: center; }
+.bd-arrow { color: var(--muted); }
+.bd-gradient { flex-grow: 1; min-width: 30px; height: 10px; border: 1px solid var(--border); border-radius: 3px; }
+.bd-tag-name { gap: 0; }
+
+/* One preview row over the whole width: above the head left, tab list and chat right */
+.bd-preview-row { display: flex; align-items: stretch; gap: 8px; margin-bottom: 2px; }
+.bd-preview-row .bd-preview { flex-grow: 1; min-width: 0; justify-content: center; margin-bottom: 0; padding: 12px 6px; }
+
+/* Settings below in two columns: the parts left, stat and view switches right */
+.bd-columns { display: flex; align-items: flex-start; gap: 10px; margin-top: 6px; }
+.bd-col-left { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+.bd-col-right { width: 210px; flex-shrink: 0; }
+.bd-columns .bd-section-title:first-child { margin-top: 0; }
+.bd-col-right .bd-section-title { margin-top: 8px; }
+.bd-setting > :last-child { flex-shrink: 0; }
+
+/* Tab list and chat lines next to the preview */
+.bd-lines { width: 230px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+.bd-line { display: flex; align-items: center; gap: 4px; }
+.bd-line-label { width: 22px; flex-shrink: 0; color: var(--muted); font-size: 7px; }
+.bd-line-box { display: flex; align-items: center; flex-grow: 1; min-width: 0; padding: 1px 3px; overflow: hidden; white-space: nowrap; color: #ffffff; }
+.bd-line-tab { background-color: rgba(0, 0, 0, 0.55); }
+.bd-line-chat { background-color: rgba(0, 0, 0, 0.35); }
+.bd-line-logo { margin-left: 2px; }
+
+/* Matrix: a row per part, a column per place */
+.bd-matrix { display: flex; flex-direction: column; gap: 1px; margin: 2px 0 4px 0; }
+.bd-mrow { display: flex; align-items: center; padding: 2px 4px; border-radius: 3px; }
+.bd-mrow:hover { background-color: var(--card); }
+.bd-mrow-picked { background-color: var(--card); outline: 1px solid var(--border); }
+.bd-mhead { color: var(--muted); font-size: 7px; }
+.bd-mhead:hover { background-color: transparent; }
+.bd-mlabel { flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 4px; color: var(--text-strong); }
+.bd-mcell { width: 34px; flex-shrink: 0; display: flex; justify-content: center; }
+/* Flat: a 1px border and rounded corners snap apart from the fill while the window is scaled to fit */
+.bd-mswatch { width: 9px; height: 9px; flex-shrink: 0; }
+.bd-muted { color: var(--muted); }
+.bd-pick:hover { outline: 1px solid rgba(255, 255, 255, 0.4); }
+.bd-picked { outline: 1px dashed #ffffff; outline-offset: 1px; }
+.bd-color-actions { display: flex; justify-content: flex-end; }
+
+/* Fixed heights, so ticking parts, picking parts or switching tabs never changes the window's size */
+.bd-preview-row { height: 58px; }
+.bd-preview-row .bd-preview { padding: 0 6px; }
+.bd-status { height: 9px; margin: 2px 0 3px 0; text-align: center; white-space: nowrap; overflow: hidden; }
+.bd-tabs { margin-bottom: 3px; }
+.bd-panel { height: 142px; }
+.bd-parts { margin: 0 4px 3px 4px; }
+.bd-note { margin: 4px 4px 0 4px; }
+.bd-mhead .bd-mlabel { color: var(--muted); }
+/* Part picker with the flow line switch on its right */
+.bd-picker-row { display: flex; align-items: center; gap: 4px; margin: 0 4px 3px 4px; }
+.bd-picker-row .bd-parts { margin: 0; }
+.bd-picker-row .bd-hint { margin: 0; }

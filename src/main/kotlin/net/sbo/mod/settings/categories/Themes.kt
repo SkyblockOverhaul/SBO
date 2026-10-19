@@ -19,7 +19,7 @@ object Themes : Category("Themes") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Theme"
         }
     }
@@ -38,7 +38,7 @@ object Themes : Category("Themes") {
             onClick { SboThemes.openFolder() }
         }
 
-        separator {
+        sub {
             this.title = "Window Size"
         }
     }
@@ -50,7 +50,7 @@ object Themes : Category("Themes") {
     }
 
     init {
-        separator {
+        sub {
             this.title = "Background"
         }
     }

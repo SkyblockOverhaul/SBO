@@ -105,6 +105,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                 }
             }
         }
+        target.info?.let { div(className = "pf-hint") { +it } }
 
         h3(className = "pf-section") { +"Party size" }
         div(className = "pf-size-row") {
@@ -258,11 +259,11 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
         div(className = "pf-field-input") {
             when (def.type) {
                 "min" -> {
-                    val number = (saved as? JsonPrimitive)?.doubleOrNull?.toInt()
+                    val number = (saved as? JsonPrimitive)?.doubleOrNull
                     val labels = PartyCategories.stat(stat)?.valueLabels.orEmpty()
                     val max = PartyCategories.stat(stat)?.max ?: Int.MAX_VALUE
                     if (labels.isNotEmpty()) {
-                        select(value = (number ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }) {
+                        select(value = (number?.toInt() ?: 0).toString(), onChange = { e -> save(e.value.takeIf { it != "0" }) }) {
                             option("0", "Any")
                             labels.forEachIndexed { i, label ->
                                 if (i > 0) option(i.toString(), ProblemText.orBetter(label, i == labels.lastIndex), className = StatView.numberColor(stat, i.toDouble()))
@@ -270,12 +271,13 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                         }
                     } else {
                         numberInput(
-                            value = number?.coerceAtMost(max),
-                            onChange = { v -> save(v?.takeIf { it > 0 }?.toString()) },
+                            value = number?.coerceAtMost(max.toDouble()),
+                            onChange = { v -> save(v?.takeIf { it > 0 }?.let(StatView::reqNumber)) },
                             allowEmpty = true,
-                            min = 1,
-                            max = max,
-                            className = number?.let { StatView.numberColor(stat, it.toDouble()) }
+                            min = 1.0,
+                            max = max.toDouble(),
+                            decimals = 1,
+                            className = number?.let { StatView.numberColor(stat, it) }
                         )
                     }
                 }

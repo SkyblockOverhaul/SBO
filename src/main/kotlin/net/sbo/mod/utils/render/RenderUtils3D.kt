@@ -216,54 +216,103 @@ object RenderUtils3D {
             val xOffset = -textWidth / 2f
             val yOffset = 0f
 
-            val layerType = Font.DisplayMode.SEE_THROUGH
-            val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
-
-            val backgroundColor = 0
-
-            val packedLightCoords = mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, mc.deltaTracker.getGameTimeDeltaPartialTick(true))
-
-            // Workaround for https://mojira.dev/MC-298659
-            // Adapted from https://github.com/hannibal002/SkyHanni/pull/6458
-
-            // 26.3 and above: Use submitText triggered from COLLECT_SUBMITS and submitted at COLLECT_SUBMITS since bug is fixed.
-            // 26.2: Use submitCustom triggered from COLLECT_SUBMITS and submitted at SubmitRenderPhases.AFTER_TERRAIN with TextFeatureRenderer.Submit.
-            // 26.1.2: Add to a list triggered from COLLECT_SUBMITS which submits at AFTER_TRANSLUCENT_TERRAIN later with the legacy Font#drawInBatch method.
-
-            //#if MC > 26.2
-            //$$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
-            //#elseif MC > 26.1
-            //$$ context.submitNodeCollector().submitCustom(
-            //$$    SubmitRenderPhases.AFTER_TERRAIN,
-            //$$    TextFeatureRenderer.Submit(
-            //$$        Matrix4f(last().pose()),
-            //$$        xOffset,
-            //$$        yOffset,
-            //$$        visualOrderText,
-            //$$        shadow,
-            //$$        layerType,
-            //$$        packedLightCoords,
-            //$$        color,
-            //$$        backgroundColor,
-            //$$        outlineColor,
-            //$$    ),
-            //$$ )
-            //#else
-            legacyDrawString.add(
-                DrawInBatchParameters(
-                    text,
-                    xOffset,
-                    yOffset,
-                    color,
-                    shadow,
-                    layerType,
-                    backgroundColor,
-                    packedLightCoords,
-                    Matrix4f(last().pose())
-                )
-            )
-            //#endif    
+            submitText(context, xOffset, yOffset, text, visualOrderText, color, shadow)
         }
+    }
+
+    /**
+     * Draws a camera-facing label like a vanilla name tag, rendering through walls.
+     * It keeps the vanilla name tag size up close and grows with distance so it stays readable.
+     * @param context The world render context.
+     * @param pos The exact world position of the label's bottom edge, usually an interpolated entity position.
+     * @param text The text to draw, colors and styles come from the component.
+     * @param linesUp How many text lines above [pos] the label is drawn, so it can stack on top of an existing name tag.
+     */
+    fun drawLabel(context: LevelRenderContext, pos: Vec3, text: Component, linesUp: Int = 0) {
+        context.pushPop {
+            val camera = context.getCamera()
+            val cameraPos = camera.position()
+            val growth = (cameraPos.distanceTo(pos) / LABEL_VANILLA_SIZE_DISTANCE).coerceIn(1.0, LABEL_MAX_GROWTH)
+            val labelScale = (VANILLA_NAME_TAG_SCALE * growth).toFloat()
+
+            // Variable names must match the 26.3 replacements in build.gradle.kts
+            val cameraYaw = camera.yRot()
+            val cameraPitch = camera.xRot()
+
+            translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z)
+            mulPose(Axis.YP.rotationDegrees(-cameraYaw))
+            mulPose(Axis.XP.rotationDegrees(cameraPitch))
+            scale(-labelScale, -labelScale, labelScale)
+
+            val visualOrderText = text.visualOrderText
+            val yOffset = -(mc.font.lineHeight * (linesUp + 1) + linesUp).toFloat()
+            submitText(context, -mc.font.width(visualOrderText) / 2f, yOffset, text, visualOrderText, -1, true)
+        }
+    }
+
+    private const val VANILLA_NAME_TAG_SCALE = 0.025
+    private const val LABEL_VANILLA_SIZE_DISTANCE = 16.0
+    private const val LABEL_MAX_GROWTH = 5.0
+
+    /**
+     * Submits already transformed text with the current pose of [context]'s pose stack, rendering through walls.
+     */
+    private fun submitText(
+        context: LevelRenderContext,
+        xOffset: Float,
+        yOffset: Float,
+        text: Component,
+        visualOrderText: FormattedCharSequence,
+        color: Int,
+        shadow: Boolean
+    ) {
+        val layerType = Font.DisplayMode.SEE_THROUGH
+        val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
+
+        val backgroundColor = 0
+
+        val packedLightCoords = mc.entityRenderDispatcher.getPackedLightCoords(mc.player!!, mc.deltaTracker.getGameTimeDeltaPartialTick(true))
+
+        // Workaround for https://mojira.dev/MC-298659
+        // Adapted from https://github.com/hannibal002/SkyHanni/pull/6458
+
+        // 26.3 and above: Use submitText triggered from COLLECT_SUBMITS and submitted at COLLECT_SUBMITS since bug is fixed.
+        // 26.2: Use submitCustom triggered from COLLECT_SUBMITS and submitted at SubmitRenderPhases.AFTER_TERRAIN with TextFeatureRenderer.Submit.
+        // 26.1.2: Add to a list triggered from COLLECT_SUBMITS which submits at AFTER_TRANSLUCENT_TERRAIN later with the legacy Font#drawInBatch method.
+
+        //#if MC > 26.2
+        //$$ context.submitNodeCollector().submitText(context.poseStack(), xOffset, yOffset, visualOrderText, shadow, layerType, packedLightCoords, color, backgroundColor, outlineColor)
+        //#elseif MC > 26.1
+        //$$ context.submitNodeCollector().submitCustom(
+        //$$    SubmitRenderPhases.AFTER_TERRAIN,
+        //$$    TextFeatureRenderer.Submit(
+        //$$        Matrix4f(context.poseStack().last().pose()),
+        //$$        xOffset,
+        //$$        yOffset,
+        //$$        visualOrderText,
+        //$$        shadow,
+        //$$        layerType,
+        //$$        packedLightCoords,
+        //$$        color,
+        //$$        backgroundColor,
+        //$$        outlineColor,
+        //$$    ),
+        //$$ )
+        //#else
+        legacyDrawString.add(
+            DrawInBatchParameters(
+                text,
+                xOffset,
+                yOffset,
+                color,
+                shadow,
+                layerType,
+                backgroundColor,
+                packedLightCoords,
+                Matrix4f(context.poseStack().last().pose())
+            )
+        )
+        //#endif
     }
 
     fun flushLegacyDrawString(context: LevelRenderContext) {

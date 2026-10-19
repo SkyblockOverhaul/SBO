@@ -12,7 +12,7 @@ import net.sbo.mod.utils.overlay.OverlayTextLine
 object MagicFind : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana MagicFind", 10f, 10f)
         .setCondition { Diana.magicFindTracker }
-        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
+        .setExtraCondition { Helper.hasSpade && World.isInHub() }
 
     fun init() {
         overlay.init()

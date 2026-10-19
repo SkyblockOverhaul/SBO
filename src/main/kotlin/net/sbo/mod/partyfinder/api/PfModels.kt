@@ -147,7 +147,9 @@ data class SubcategoryDef(
     val open: Boolean = true,
     val opensAt: Long? = null,
     /** Parties can be created, also shortly before the event starts; null from older backends */
-    val createOpen: Boolean? = null
+    val createOpen: Boolean? = null,
+    // How this kind of party works, shown above the list and the create form
+    val info: String? = null
 )
 
 // Party list and member stats
@@ -209,7 +211,11 @@ data class ReportedStat(val scope: String = "")
 @Serializable
 data class CheckData(
     val members: List<MemberView> = emptyList(),
-    val problems: List<Problem> = emptyList()
+    val problems: List<Problem> = emptyList(),
+    /** Only filled when the request had subTypes, keyed by subcategory id. */
+    val bySubType: Map<String, List<MemberView>> = emptyMap(),
+    /** Only filled when the request had scopes, in the same order. An unknown subcategory gives null. */
+    val byScope: List<List<MemberView>?> = emptyList()
 )
 
 // Request bodies
@@ -243,8 +249,15 @@ data class CheckBody(
     val role: String? = null,
     val options: Map<String, String>? = null,
     val readcache: Boolean? = null,
-    val names: List<String>? = null
+    val names: List<String>? = null,
+    /** Loads the stats for several subcategories at once, subType is ignored then. */
+    val subTypes: List<String>? = null,
+    /** Same as subTypes, but every entry can have its own options. */
+    val scopes: List<CheckScope>? = null
 )
+
+@Serializable
+data class CheckScope(val subType: String, val options: Map<String, String>? = null)
 
 @Serializable
 data class StatsReportBody(val bph: BphReport)

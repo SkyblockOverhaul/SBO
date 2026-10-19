@@ -17,6 +17,7 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
+import net.sbo.mod.utils.data.configs.diana.DianaItemsData
 import java.util.concurrent.TimeUnit
 
 object DianaLoot : DirtyFlushableOverlay() {
@@ -26,7 +27,7 @@ object DianaLoot : DirtyFlushableOverlay() {
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
     )
         .setCondition { Diana.lootTracker != Diana.Tracker.OFF }
-        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
+        .setExtraCondition { Helper.hasSpade && World.isInHub() }
 
     private val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "${YELLOW}Change View",
@@ -336,21 +337,35 @@ object DianaLoot : DirtyFlushableOverlay() {
         return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
     }
 
+    private val excludedProfitFields = setOf(
+        "TIME",
+        "TOTAL_BURROWS",
+        "COINS",
+        "SCAVENGER_COINS",
+        "FISH_COINS"
+    )
+
+    private val profitFields = DianaItemsData::class.java.declaredFields
+        .filterNot { it.name in excludedProfitFields }
+        .map { field ->
+            field.isAccessible = true
+            field to field.name.replace("_LS", "")
+        }
+
     /** Coins worth of every dropped item with a price (field name without "_LS", lootshare drops added in), coins not included. */
     fun profitByItem(tracker: DianaTracker): Map<String, Long> {
         val profit = HashMap<String, Long>()
-        for (item in tracker.items::class.java.declaredFields) {
-            item.isAccessible = true
-            var itemName = item.name
-            if (itemName == "TIME" || itemName == "TOTAL_BURROWS" || itemName == "COINS" || itemName == "SCAVENGER_COINS" || itemName == "FISH_COINS") continue
-            itemName = itemName.replace("_LS", "")
-            val itemValue = item.get(tracker.items) as Int
+
+        for ((field, itemName) in profitFields) {
+            val itemValue = field.getInt(tracker.items)
             if (itemValue <= 0) continue
+
             val itemPrice = Helper.getItemPrice(itemName)
-            if (itemPrice > 0) {
-                profit[itemName] = (profit[itemName] ?: 0L) + itemPrice * itemValue
-            }
+            if (itemPrice <= 0) continue
+
+            profit[itemName] = (profit[itemName] ?: 0L) + itemPrice * itemValue
         }
+
         return profit
     }
 

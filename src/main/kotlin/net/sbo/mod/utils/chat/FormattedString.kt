@@ -21,7 +21,13 @@ fun Component.toFormattedString(): String {
         if (style != lastStyle) {
             lastStyle = style
             builder.append("§r")
-            style.color?.let(LEGACY_CODES::get)?.let { builder.append(it) }
+
+            val color = style.color
+            if (color != null) {
+                val format = LEGACY_CODES[color]
+                if (format != null) builder.append(format)
+            }
+
             when {
                 style.isBold -> builder.append("§l")
                 style.isItalic -> builder.append("§o")

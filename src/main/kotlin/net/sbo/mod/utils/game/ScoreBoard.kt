@@ -5,14 +5,13 @@ import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.Helper.removeFormatting
 import java.lang.String.CASE_INSENSITIVE_ORDER
 
 object ScoreBoard {
     private val COMPARATOR: Comparator<PlayerScoreEntry> = Comparator.comparing { obj: PlayerScoreEntry -> obj.value() }
         .reversed()
         .thenComparing({ obj: PlayerScoreEntry -> obj.owner() }, CASE_INSENSITIVE_ORDER)
-
-    private val FORMATTING_REGEX: Regex = "§[^a-f0-9]".toRegex()
 
     private var linesDirty = true
     private var titleDirty = true
@@ -21,10 +20,30 @@ object ScoreBoard {
     private var lastTitle: String = "Unknown Scoreboard" // dummy
 
     init {
+        // Packet bursts only set dirty flags; rebuild each cache at most once per tick.
         Register.onTick(1) {
-            linesDirty = true
-            titleDirty = true
+            if (linesDirty) {
+                linesDirty = false
+                lastLines = fetchLines()
+            }
+            if (titleDirty) {
+                titleDirty = false
+                lastTitle = fetchTitle()
+            }
         }
+    }
+
+    fun markLinesDirty() {
+        linesDirty = true
+    }
+
+    fun markTitleDirty() {
+        titleDirty = true
+    }
+
+    fun markDirty() {
+        markLinesDirty()
+        markTitleDirty()
     }
 
     /**
@@ -34,11 +53,6 @@ object ScoreBoard {
      * @return A list of formatted strings representing the scoreboard entries.
      */
     fun getLines(): List<String> {
-        if (linesDirty) {
-            lastLines = fetchLines()
-            linesDirty = false
-        }
-
         return lastLines
     }
 
@@ -55,21 +69,13 @@ object ScoreBoard {
                 PlayerTeam.formatNameForTeam(
                     scoreboard.getPlayersTeam(entry.owner()),
                     entry.ownerName()
-                ).string
-            }
-            .map { decoratedText ->
-                decoratedText.replace(FORMATTING_REGEX, "")
+                ).string.removeFormatting()
             }
             .toList()
             .asReversed()
     }
 
     fun getTitle(): String {
-        if (titleDirty) {
-            lastTitle = fetchTitle()
-            titleDirty = false
-        }
-
         return lastTitle
     }
 

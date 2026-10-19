@@ -25,7 +25,7 @@ object DianaMobs : DirtyFlushableOverlay() {
         allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
     )
         .setCondition { Diana.mobTracker != Diana.Tracker.OFF }
-        .setExtraCondition { Helper.hasSpade && World.getWorld() == "Hub" }
+        .setExtraCondition { Helper.hasSpade && World.isInHub() }
 
     private val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {

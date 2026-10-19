@@ -112,8 +112,8 @@ object SboApi {
 
     fun countActiveUsers(): HttpRequestHandle = post("/countActiveUsers")
 
-    fun playerInfo(player: String, readCache: Boolean = true): HttpRequestHandle =
-        get("/playerInfo?player=${encode(player)}" + if (readCache) "" else "&readcache=false")
+    fun achievementStats(player: String, readCache: Boolean = true): HttpRequestHandle =
+        get("/achievements/stats?player=${encode(player)}" + if (readCache) "" else "&readcache=false")
 
     fun activeUsers(): HttpRequestHandle = get("/activeUsers")
 
@@ -122,9 +122,13 @@ object SboApi {
     fun badges(knownVersion: String?): HttpRequestHandle =
         get("/badges" + (knownVersion?.let { "?v=${encode(it)}" } ?: ""))
 
-    fun ownBadge(): HttpRequestHandle = authedGet("/badge")
+    // format=2: hex colors, gradients and team tags; without it the backend answers like for 0.7.0
+    fun ownBadge(): HttpRequestHandle = authedGet("/badge?format=2")
 
-    fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge", json.encodeToString(settings))
+    fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge?format=2", json.encodeToString(settings))
+
+    /** A mod conflict report the player chose to send, it goes to the SBO Discord. */
+    fun modConflicts(report: String): HttpRequestHandle = post("/modConflicts", report)
 
     fun cloudStatus(): HttpRequestHandle = authedGet("/cloudSync")
 

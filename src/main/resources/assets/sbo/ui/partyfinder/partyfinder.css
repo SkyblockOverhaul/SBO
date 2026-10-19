@@ -315,6 +315,9 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 /* Subcategory of a party in the list of all subcategories */
 .pf-tag.sub { background-color: var(--accent); color: var(--accent-text); }
 .pf-tag.option { color: var(--muted); }
+/* SBO team member (moderator and above): outlined in the rank color, color and border set inline */
+.pf-tag.team { background-color: transparent; border: 1px solid; font-weight: bold; margin-left: 2px; }
+.pf-supporter { width: 7px; height: 7px; margin-left: 2px; }
 .pf-age { color: var(--muted); font-size: 7px; white-space: nowrap; }
 .pf-join { padding: 1px 8px; }
 /* Two lines at most; GuiLib has no line-clamp, so the rest (and over-long words) is clipped */

@@ -7,7 +7,6 @@ import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
-import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.TimeUnit
 
 internal fun getInactivityLimitNanos(): Long {
@@ -17,7 +16,7 @@ internal fun getInactivityLimitNanos(): Long {
 }
 
 object SboTimerManager {
-    internal val activeTimers = CopyOnWriteArraySet<SBOTimer>()
+    internal val activeTimers = mutableSetOf<SBOTimer>()
     val timerMayor = SBOTimer(
         tracker = DataManager.dianaTrackerMayorData
     )
@@ -30,7 +29,10 @@ object SboTimerManager {
 
     fun init() {
         Register.onTick(1) {
-            activeTimers.forEach { it.tick() }
+            val iterator = activeTimers.iterator()
+            while (iterator.hasNext()) {
+                if (!iterator.next().tick()) iterator.remove()
+            }
         }
     }
 
@@ -44,7 +46,15 @@ object SboTimerManager {
 
     @SboEvent
     fun onDisconnect(event: DisconnectEvent) {
-        activeTimers.forEach { it.pause() }
+        pauseAllActiveTimers()
+    }
+
+    fun pauseAllActiveTimers() {
+        val iterator = activeTimers.iterator()
+        while (iterator.hasNext()) {
+            iterator.next().pauseWithoutRemoving()
+            iterator.remove()
+        }
     }
 
     fun updateAllActivity() {
@@ -98,8 +108,8 @@ object SboTimerManager {
             startInactivityCheck()
         }
 
-        fun tick() {
-            if (state != TimerState.Running) return
+        fun tick(): Boolean {
+            if (state != TimerState.Running) return false
 
             val now = System.nanoTime()
             val inactivityLimit = getInactivityLimitNanos()
@@ -120,8 +130,10 @@ object SboTimerManager {
                     Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.", true)
                 }
 
-                pause()
+                pauseWithoutRemoving()
+                return false
             }
+            return true
         }
 
         private fun updateElapsedTime(now: Long = System.nanoTime()) {
@@ -134,13 +146,18 @@ object SboTimerManager {
         }
 
         fun pause() {
+            pauseWithoutRemoving()
+            removeTimer(this)
+        }
+
+        internal fun pauseWithoutRemoving() {
             if (state != TimerState.Running) return
 
             updateElapsedTime()
 
             state = TimerState.Paused
 
-            stopInactivityCheck()
+            // The manager removes this timer after the current iterator step.
         }
 
         private fun continueTimer() {
@@ -174,7 +191,7 @@ object SboTimerManager {
             }
         }
 
-        fun getHourTime(): Double = getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
+        internal fun getHourTime(): Double = getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
 
         fun updateActivity() {
             start()

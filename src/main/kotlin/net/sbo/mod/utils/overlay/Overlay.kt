@@ -33,11 +33,15 @@ class Overlay(
     var y: Float,
     var scale: Float = 1.0f,
     val allowedScreens: List<(screen: Screen?) -> Boolean> = listOf(CHAT_SCREEN_FILTER),
-    var exampleView: List<OverlayTextLine> = listOf()
+    val exampleView: List<OverlayTextLine> = emptyList()
 ) {
     private var lines = mutableListOf<OverlayTextLine>()
+
     private var condition: () -> Boolean = { true }
+    private var cachedCondition = true
+
     private var extraCondition: () -> Boolean = { true }
+    private var cachedExtraCondition = true
 
     var selected: Boolean = false
 
@@ -68,6 +72,15 @@ class Overlay(
         return this
     }
 
+    fun updateConditions() {
+        cachedCondition = condition()
+
+        // When on the editing screen, show overlays even if extra condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well. The main condition() checks for Config toggle (we don't show these on overlay edit screen), while extraCondition() checks for these dynamic toggles like being in The Hub.
+        cachedExtraCondition = extraCondition() || inEditingScreen()
+
+        lines.forEach { it.updateCondition() }
+    }
+
     fun addLine(line: OverlayTextLine) {
         lines.add(line)
     }
@@ -89,7 +102,7 @@ class Overlay(
     }
 
     private fun getLines(): List<OverlayTextLine> {
-        if (lines.isEmpty() && exampleView.isNotEmpty() && inEditingScreen()) {
+        if (inEditingScreen() && lines.isEmpty() && exampleView.isNotEmpty()) {
             return exampleView
         }
         return lines
@@ -148,13 +161,9 @@ class Overlay(
         return maxWidth
     }
 
-    private fun inEditingScreen(): Boolean = Helper.currentScreen is OverlayEditScreen
+    private fun inEditingScreen(): Boolean = mc.screen is OverlayEditScreen
 
-    fun checkCondition(): Boolean = condition() && checkExtraCondition()
-
-    private fun checkExtraCondition(): Boolean =
-        // When on the editing screen, show overlays even if condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well.
-        extraCondition() || inEditingScreen()
+    fun checkCondition(): Boolean = cachedCondition && cachedExtraCondition
 
     fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
         if (!checkCondition()) return false
@@ -183,19 +192,32 @@ class Overlay(
         var currentY = y / scale
         var currentX = x / scale
 
-        // We don't need thread safety as we are in method-local context
-        // Making these vars lazy ensures they are only computed when needed (e.g., not computed if both of the if conditions below are false)
-        // and only computed once when both of the if conditions are true.
-        val totalWidth by lazy(LazyThreadSafetyMode.NONE) { getTotalWidth() }
-        val totalHeight by lazy(LazyThreadSafetyMode.NONE) { getTotalHeight() }
+        var totalWidth = -1
+        var totalHeight = -1
 
         if (selected) {
-            drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
+            val width = getTotalWidth().also { totalWidth = it }
+            val height = getTotalHeight().also { totalHeight = it }
+
+            drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), width, height)
             drawContext.text(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
-        if (inEditingScreen() && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
-            drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
+        if (inEditingScreen()) {
+            val width = if (totalWidth == -1) {
+                getTotalWidth().also { totalWidth = it }
+            } else {
+                totalWidth
+            }
+            val height = if (totalHeight == -1) {
+                getTotalHeight().also { totalHeight = it }
+            } else {
+                totalHeight
+            }
+
+            if (isOverOverlay(mouseX, mouseY, width, height)) {
+                drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + width).toInt(), (currentY + height).toInt(), Color(0, 0, 0, 100).rgb)
+            }
         }
 
         val lines = getLines()
@@ -205,7 +227,13 @@ class Overlay(
             if (!line.checkCondition()) continue
 
             val lineX = if (line.centered) {
-                currentX.toInt() + (totalWidth - line.width) / 2
+                val width = if (totalWidth == -1) {
+                    getTotalWidth().also { totalWidth = it }
+                } else {
+                    totalWidth
+                }
+
+                currentX.toInt() + (width - line.width) / 2
             } else {
                 currentX.toInt()
             }
@@ -222,12 +250,14 @@ class Overlay(
             }
         }
 
-        val shouldRender by lazy(LazyThreadSafetyMode.NONE) { allowedScreens.any { it(mc.screen) } }
+        if (lineStates.isNotEmpty()) {
+            val shouldRender = allowedScreens.any { it(mc.screen) }
 
-        for (state in lineStates) {
             if (shouldRender) {
-                // renders the hover text after all main text, so that hover text renders on top of them instead of below
-                state.line.updateMouseInteraction(mouseX, mouseY, state.x * scale, state.y * scale, textRenderer, scale, drawContext)
+                for (state in lineStates) {
+                    // Renders hover text after all main text, so it appears on top.
+                    state.line.updateMouseInteraction(mouseX, mouseY, state.x * scale, state.y * scale, textRenderer, scale, drawContext)
+                }
             }
         }
 
