@@ -219,7 +219,10 @@ object DianaMobDetect {
                 }
 
                 val name = armorStand.customName?.formattedString() ?: continue
-                checkDianaMob(armorStand, name, id)?.let { overlayLines.add(it) }
+                checkDianaMob(armorStand, name, id)?.let { line ->
+                    overlayLines.add(line)
+                    LootshareDisplay.overlayStatus(armorStand)?.let { overlayLines.add(OverlayTextLine(it, centered = true)) }
+                }
 
                 val result = checkStarlessMob(armorStand, name, id, player, closestStarlessMob, closestDistanceSq)
                 closestStarlessMob = result.first
@@ -361,6 +364,8 @@ object DianaMobDetect {
             // After spawning, the stale removal can remove Sphinx waypoint for a self spawn, because it's pending question answer. It would then proceed to re-add it from world-scan, which triggered double rare mob title and custom sound. This fixes it by adding the rare mob here earlier and persisting the rare mob waypoint thru the question phase, which makes the world-scan's existing.any check return early, and stale mob removal to not remove this waypoint, preventing duplicate title and sounds.
             waypoint.preventStaleRareMobRemoval = true
         }
+
+        RareDianaMob.entries.firstOrNull { it.display == mob }?.let(LootshareDisplay::onOwnRareSpawn)
 
         if (Diana.shareRareMob) {
             val mobType = when (mob) {

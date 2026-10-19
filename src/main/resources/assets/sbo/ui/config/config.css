@@ -243,6 +243,14 @@ body {
 .cfg-row-name { color: var(--text-strong); }
 .cfg-row-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
 .cfg-row-place { font-size: 7px; color: var(--accent-hover); cursor: pointer; }
+.cfg-row-needs { margin-top: 1px; font-size: 7px; color: var(--muted); }
+.cfg-needs-link { cursor: pointer; }
+.cfg-needs-link:hover { text-decoration: underline; }
+.cfg-needs-link.ok { color: var(--ok); }
+.cfg-needs-link.missing { color: var(--bad); }
+.cfg-needs-link.idle { color: var(--dim); }
+.cfg-row.locked .cfg-row-name, .cfg-row.locked .cfg-row-description { color: var(--muted); }
+.cfg-row.locked .cfg-row-control { opacity: 0.5; }
 .cfg-row-place:hover { text-decoration: underline; color: var(--banner-text); }
 .cfg-row-control { display: flex; justify-content: flex-end; flex-shrink: 0; max-width: 55%; }
 

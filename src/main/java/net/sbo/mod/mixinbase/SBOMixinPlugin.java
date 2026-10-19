@@ -1,6 +1,8 @@
 package net.sbo.mod.mixinbase;
 
+import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
+import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import org.jspecify.annotations.NonNull;
 
@@ -112,5 +114,15 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
     @Override
     public final @NonNull List<@NonNull String> getMixins() {
         return SBOMixinPlugin.mixins;
+    }
+
+    @Override
+    public final void postApply(@NonNull final String targetClassName, @NonNull final ClassNode targetClass, @NonNull final String mixinClassName, @NonNull final IMixinInfo mixinInfo) {
+        // Runs while game classes load, where an exception would crash the game; the check is only a diagnosis
+        try {
+            MixinHealth.check(targetClassName, targetClass, mixinClassName);
+        } catch (final Throwable t) {
+            System.err.println("[SBO] Could not check mixin " + mixinClassName + ": " + t);
+        }
     }
 }

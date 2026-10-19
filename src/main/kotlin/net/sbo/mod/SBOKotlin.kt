@@ -10,6 +10,8 @@ import net.minecraft.util.Util
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.LootshareDisplay
+import net.sbo.mod.diana.LootshareParty
 import net.sbo.mod.diana.RareMobHighlight
 import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
@@ -20,6 +22,7 @@ import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
+import net.sbo.mod.general.ModConflicts
 import net.sbo.mod.general.SboBadges
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.AchievementsGui
@@ -134,6 +137,7 @@ object SBOKotlin : ClientModInitializer {
 		HelpCommand.init()
 		CloudSync.init()
 		SboBadges.init()
+		ModConflicts.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
 		WaypointManager.init()
@@ -162,6 +166,8 @@ object SBOKotlin : ClientModInitializer {
 		MessageHider.init()
 		SphinxSolver.init()
 		RareMobHighlight.init()
+		LootshareDisplay.init()
+		LootshareParty.init()
 		InventoryUtils.init()
 		Chains.init()
 		MuteBuggedSpadeSounds.init()
