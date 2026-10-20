@@ -40,7 +40,8 @@ jobs:
   # Needs the MODRINTH_TOKEN repository secret (a Modrinth PAT with "Create versions").
   modrinth-beta:
     needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && contains(github.ref_name, '-beta')
+    # Forks have no MODRINTH_TOKEN, there the job would only fail
+    if: github.repository == 'SkyblockOverhaul/SBO' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && contains(github.ref_name, '-beta')
     permissions:
       contents: read
     runs-on: ubuntu-26.04
