@@ -954,6 +954,7 @@ object DianaTracker {
 
     private fun trackBurrowsWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+            if (matchResult.group(2).removeFormatting().contains("(1/")) lastBurrow = BURROW_TYPE.START // The first one is always Start
             trackItem("TOTAL_BURROWS", 1)
             if (Diana.fourEyedFish) {
                 if (lastBurrow != BURROW_TYPE.START) {
@@ -1202,7 +1203,7 @@ object DianaTracker {
             "HILT_OF_REVELATIONS" -> tracker.items.HILT_OF_REVELATIONS += amount
             "MYTH_THE_FISH" -> tracker.items.MYTH_THE_FISH += amount
 
-            "COINS" -> {tracker.items.COINS += amount; CrownOfAvarice.addCoins(amount, tracker, "coins")}
+            "COINS" -> {tracker.items.COINS += amount; CrownOfAvarice.addCoins(amount, tracker)}
             "GRIFFIN_FEATHER" -> tracker.items.GRIFFIN_FEATHER += amount
             "CROWN_OF_GREED" -> tracker.items.CROWN_OF_GREED += amount
             "WASHED_UP_SOUVENIR" -> tracker.items.WASHED_UP_SOUVENIR += amount
@@ -1217,7 +1218,7 @@ object DianaTracker {
             "MINOS_RELIC" -> tracker.items.MINOS_RELIC += amount
             "ENCHANTED_GOLD" -> tracker.items.ENCHANTED_GOLD += amount
             "SCAVENGER_COINS" -> tracker.items.SCAVENGER_COINS += amount
-            "FISH_COINS" -> {tracker.items.FISH_COINS += amount; CrownOfAvarice.addCoins(amount, tracker, "fish")}
+            "FISH_COINS" -> {tracker.items.FISH_COINS += amount; CrownOfAvarice.addCoins(amount, tracker)}
             "TOTAL_BURROWS" -> tracker.items.TOTAL_BURROWS += amount
             // MOBS
             "KING_MINOS" -> tracker.mobs.KING_MINOS += amount

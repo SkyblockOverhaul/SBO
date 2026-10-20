@@ -78,13 +78,14 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     }
 
     /** Don't count when COA is maxed or it's not diana, etc... */
-    fun addCoins(amount: Int, tracker: DianaTracker = DataManager.dianaTrackerMayorData, source: String) {
+    fun addCoins(amount: Int, tracker: DianaTracker = DataManager.dianaTrackerMayorData) {
         if (!helmet.isCoA()) return
 
         val multiplier = if (getCurrentCoins(helmet) != 1_000_000_000.0) 5 else if (getCurrentCoins(helmet) == -1.0) 1 else 2 // 2x if max COA, 5x if clean COA, 1x if no COA
+        val addedAmount = amount * if (source == "coins") 1 else if (source == "fish") multiplier else 1 // Only apply multiplier for fish coins
 
-        tracker.items.CROWN_OF_AVARICE += amount * multiplier
-        Chat.chat("§6[COA] §aAdded §6${formatNumber(amount)} §acoins to your Crown of Avarice! (x$multiplier) from $source")
+        tracker.items.CROWN_OF_AVARICE += addedAmount
+        Chat.chat("§6[COA] §aAdded §6${formatNumber(addedAmount)} §acoins to your Crown of Avarice! (x$multiplier)")
         updateLines()
     }
 
