@@ -51,7 +51,7 @@ object DianaTracker {
     var lastSpawnedMob: String? = null
     var lastSpawnedMobTime: Long = 0L
 
-    private var lastBurrowIsMob = false
+    private var lastBurrow: BURROW_TYPE = BURROW_TYPE.START
 
     private var timedRareMob: String? = null
     private var timedRareMobStartNanos: Long = 0L
@@ -125,7 +125,7 @@ object DianaTracker {
         Register.onChatMessageCancelable(
             Pattern.compile("^§6§lWow! §eYou dug out §6(.*?) coins§e!$")
         ) { _, _ ->
-            lastBurrowIsMob = false
+            lastBurrow = BURROW_TYPE.TREASURE
             allowScavTracking = false
             sleep(1000) {
                 allowScavTracking = true
@@ -239,7 +239,7 @@ object DianaTracker {
 
     private fun trackMobsWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            lastBurrowIsMob = true
+            lastBurrow = BURROW_TYPE.MOB
             val mob = matchResult.group(3)
             if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable !QOL.dianaMessageHider
 
@@ -416,7 +416,7 @@ object DianaTracker {
 
     private fun trackTreasuresWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { message, matchResult ->
-            lastBurrowIsMob = false
+            lastBurrow = BURROW_TYPE.TREASURE
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather" -> trackItem(drop, 1)
                 "Mythos Fragment" -> trackItem(drop, 1)
@@ -954,10 +954,9 @@ object DianaTracker {
 
     private fun trackBurrowsWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$", Pattern.DOTALL)) { message, matchResult ->
-            val burrow = matchResult.group(2).removeFormatting()
             trackItem("TOTAL_BURROWS", 1)
             if (Diana.fourEyedFish) {
-                if (burrow.contains("(2/4)") || burrow.contains("(3/4)")) {
+                if (lastBurrow != BURROW_TYPE.START) {
                     trackItem("FISH_COINS", 4000)
                     trackItem("COINS", 4000)
                 } else {
@@ -1117,7 +1116,7 @@ object DianaTracker {
                 )
                 announceLootToParty("Myth the Fish", "Myth the Fish", amount = dianaTrackerMayorData.items.MYTH_THE_FISH)
 
-                if (lastSpawnedMob == "Sphinx" && lastBurrowIsMob) unlockAchievement(119)
+                if (lastSpawnedMob == "Sphinx" && lastBurrow == BURROW_TYPE.MOB) unlockAchievement(119)
             }
         }
     }
@@ -1241,5 +1240,7 @@ object DianaTracker {
         }
     }
 
-
+    enum class BURROW_TYPE {
+        START, MOB, TREASURE
+    }
 }
