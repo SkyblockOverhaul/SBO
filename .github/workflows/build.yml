@@ -22,9 +22,85 @@ jobs:
           build-scan-terms-of-use-url: 'https://gradle.com/terms-of-service'
           build-scan-terms-of-use-agree: 'yes'
       - name: build
-        run: ./gradlew build --scan
+        run: |
+          # A beta tag (v0.7.2-beta.1) builds as that version, so the jars and the mod itself carry it
+          if [[ "$GITHUB_REF" == refs/tags/v*-beta* ]]; then
+            ./gradlew build --scan "-Pmod.version=${GITHUB_REF_NAME#v}"
+          else
+            ./gradlew build --scan
+          fi
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: Artifacts
           path: build/versions/
+
+  # Pushing a tag like v0.7.2-beta.1 uploads the build to Modrinth as a beta version.
+  # Needs the MODRINTH_TOKEN repository secret (a Modrinth PAT with "Create versions").
+  modrinth-beta:
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && contains(github.ref_name, '-beta')
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    env:
+      PROJECT_ID: 9lBqVbQF
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: download build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: Artifacts
+          path: jars
+      - name: upload to modrinth
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+
+          # Everything since the previous tag, beta or release
+          previous=$(git describe --tags --abbrev=0 "$GITHUB_SHA^" 2>/dev/null || true)
+          changelog=$(git log --no-merges --format='- %s' ${previous:+"$previous..$GITHUB_SHA"} | head -n 50)
+
+          for jar in jars/*.jar; do
+            mc=$(sed -E 's/.*\+(.*)-fabric\.jar/\1/' <<< "$(basename "$jar")")
+            # Same split as the releases: the 26.1.2 jar runs on all of 26.1.x
+            if [[ "$mc" == 26.1.* ]]; then
+              label="26.1.X"
+              game_versions='["26.1","26.1.1","26.1.2"]'
+            else
+              label="$mc"
+              game_versions="[\"$mc\"]"
+            fi
+
+            data=$(jq -n \
+              --arg project "$PROJECT_ID" \
+              --arg name "Skyblock Overhaul (SBO) $version" \
+              --arg number "$version-$label" \
+              --arg changelog "$changelog" \
+              --argjson game_versions "$game_versions" \
+              '{
+                project_id: $project,
+                name: $name,
+                version_number: $number,
+                changelog: $changelog,
+                version_type: "beta",
+                game_versions: $game_versions,
+                loaders: ["fabric"],
+                featured: false,
+                dependencies: [
+                  {project_id: "P7dR8mSH", dependency_type: "required"},
+                  {project_id: "Ha28R6CL", dependency_type: "required"}
+                ],
+                file_parts: ["file"]
+              }')
+
+            echo "Uploading $(basename "$jar") as $version-$label"
+            curl -fsS -X POST https://api.modrinth.com/v2/version \
+              -H "Authorization: $MODRINTH_TOKEN" \
+              -H "User-Agent: SkyblockOverhaul/SBO (github actions)" \
+              --form-string "data=$data" \
+              -F "file=@$jar" > /dev/null
+          done
