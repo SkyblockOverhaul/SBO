@@ -256,3 +256,11 @@ body {
 .bd-picker-row { display: flex; align-items: center; gap: 4px; margin: 0 4px 3px 4px; }
 .bd-picker-row .bd-parts { margin: 0; }
 .bd-picker-row .bd-hint { margin: 0; }
+
+/* Asks before leaving unsaved changes */
+.bd-modal { width: min(90vw, 240px); padding: 8px; background-color: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+.bd-modal-title { font-weight: bold; color: var(--text-strong); margin-bottom: 3px; }
+.bd-modal-text { color: var(--subtle); margin-bottom: 8px; }
+.bd-modal-buttons { display: flex; gap: 4px; justify-content: flex-end; }
+.bd-danger { background-color: var(--danger); border-color: var(--danger); color: #ffffff; }
+.bd-danger:hover { background-color: var(--menu-danger); }

@@ -9,12 +9,14 @@ import net.sbo.guilib.core.dsl.colorInput
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.header
 import net.sbo.guilib.core.dsl.img
+import net.sbo.guilib.core.dsl.modal
 import net.sbo.guilib.core.dsl.scroll
 import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
 import net.sbo.guilib.core.dsl.tabs
+import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin.mc
@@ -70,6 +72,8 @@ object BadgeGui {
         // The part the Colors and Effects tabs change, picked there, in the matrix or in the preview
         var picked by useState(BadgePart.NAME)
         var tab by useState(TAB_PLACES)
+        // The dialog asking before leaving unsaved changes
+        var leaving by useState(false)
         useSboScale()
         useSboTheme()
 
@@ -90,7 +94,7 @@ object BadgeGui {
                 .error { mc.execute { load = Load.Failed("Could not reach the SBO server: ${it.message}", false) } }
         }
 
-        fun save(settings: BadgeSettings) {
+        fun save(settings: BadgeSettings, close: Boolean = false) {
             saving = true
             SboApi.saveBadge(settings)
                 .toJson<OwnBadgeResponse>(ignoreUnknownKeys = true) { response ->
@@ -99,6 +103,7 @@ object BadgeGui {
                         if (response.success) {
                             loaded(response)
                             SboBadges.fetch()
+                            if (close) GuiLib.close()
                             toast.success("Others see your new badge within a few minutes.", title = "Badge saved")
                         } else {
                             toast.error(response.error ?: "Could not save your badge.", title = "SBO Badge", durationMs = 6000)
@@ -113,6 +118,12 @@ object BadgeGui {
                 }
         }
 
+        val ready = load as? Load.Ready
+        val unsaved = ready != null && draft != null && draft != ready.badge.settings
+        fun close() = if (unsaved) leaving = true else GuiLib.close()
+        // Escape asks first too; while the dialog is open its own Escape closes it
+        useEscapeBack(unsaved && !saving) { leaving = true }
+
         val fit = useFitScale()
 
         div(className = "bd-window", ref = fit.ref, style = fit.style) {
@@ -120,7 +131,7 @@ object BadgeGui {
                 img(LOGO, className = "bd-header-logo")
                 span(className = "bd-title") { +"SBO Badge" }
                 div(className = "bd-spacer")
-                button(className = "bd-icon bd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
+                button(className = "bd-icon bd-close", title = "Close", onClick = { close() }) { +"x" }
             }
             div(className = "bd-body") {
                 when (val state = load) {
@@ -140,6 +151,22 @@ object BadgeGui {
                         )
                     }
                 }
+            }
+        }
+
+        modal(open = leaving, onClose = { leaving = false }, className = "bd-modal") {
+            div(className = "bd-modal-title") { +"Leave without saving?" }
+            div(className = "bd-modal-text") { +"Your changes to the badge are not saved yet." }
+            div(className = "bd-modal-buttons") {
+                button(onClick = { leaving = false }) { +"Keep editing" }
+                button(className = "bd-danger", onClick = {
+                    leaving = false
+                    GuiLib.close()
+                }) { +"Discard" }
+                button(className = "bd-primary", disabled = saving, onClick = {
+                    leaving = false
+                    draft?.let { save(it, close = true) }
+                }) { +"Save" }
             }
         }
     }

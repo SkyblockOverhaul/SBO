@@ -85,7 +85,8 @@ object SboBadges {
 
     // A player's name starts the line or follows the level or rank: "[296] Name ♲", "[MVP+] Name"
     private val NAME = Regex("(?:^|] )([A-Za-z0-9_]{1,16})")
-    private val LEVEL = Regex("""\[\d+]\s*$""")
+    // In chat the emblem stands between level and rank: "[466] ♙ [MVP+] Name"
+    private val LEVEL = Regex("""(\[\d+])(?:\s*[^\[\]\sA-Za-z0-9_]+)?\s*$""")
     // Hypixel's rank right before the name: "[MVP++] Name", "[YOUTUBE] Name"
     private val RANK = Regex("""\[[A-Z]+\+*]\s*$""")
     private const val TAG_BRACKETS = 0xAAAAAA
@@ -428,7 +429,8 @@ object SboBadges {
         // Hypixel's rank stands between level and name
         val rankStart = RANK.find(readPlain.substring(0, foundName.range.first))?.range?.first
         val levelEnd = rankStart ?: foundName.range.first
-        val levelRange = levelColor?.let { LEVEL.find(readPlain.substring(0, levelEnd))?.range?.first }?.let { moved(it until levelEnd) }
+        // Only the brackets and digits, an emblem behind them keeps its own color
+        val levelRange = levelColor?.let { LEVEL.find(readPlain.substring(0, levelEnd))?.groups?.get(1)?.range }?.let { moved(it) }
         val rankRange = rankColor?.let { rankStart }?.let { moved(it until foundName.range.first) }
         // Without the space behind it, so the gap check below sees it
         val tagRange = tagText?.let { insertAt until insertAt + tagChars.length - 1 }

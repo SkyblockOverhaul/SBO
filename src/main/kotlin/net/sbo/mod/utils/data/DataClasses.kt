@@ -1,5 +1,7 @@
 package net.sbo.mod.utils.data
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -119,12 +121,14 @@ object BadgeMotion {
     val ALL = listOf(NONE, WAVY, BOUNCE, SHAKE, GLITCH)
 }
 
+// Always sent: a part left out keeps its saved places, so an empty list must reach the backend
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class BadgePlaces(
-    val logo: List<String> = emptyList(),
-    val name: List<String> = emptyList(),
-    val level: List<String> = emptyList(),
-    val rank: List<String> = emptyList(),
+    @EncodeDefault val logo: List<String> = emptyList(),
+    @EncodeDefault val name: List<String> = emptyList(),
+    @EncodeDefault val level: List<String> = emptyList(),
+    @EncodeDefault val rank: List<String> = emptyList(),
 ) {
     operator fun get(part: String): List<String> = when (part) {
         BadgePart.LOGO -> logo
