@@ -76,6 +76,8 @@ data class SboData(
     var badgesInChat: Boolean = true,
     var badgeOwnInF5: Boolean = true,
     var badgeAnimationsOfOthers: Boolean = true, // false shows other players' moving badge colors standing still
+    var badgeMotionOfOthers: Boolean = true, // false keeps the chars of other players' badges from moving above heads
+    var badgeAnimationsInTab: Boolean = true, // false shows every badge in the tab list standing still, your own too
     var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
     var collapsedSettings: MutableSet<String> = mutableSetOf(), // collapsed subs in the settings, "Diana/Waypoints"
 ) {

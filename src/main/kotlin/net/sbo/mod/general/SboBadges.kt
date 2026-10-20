@@ -12,6 +12,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.BadgeGui
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.data.BadgeColors
 import net.sbo.mod.utils.data.BadgeEffect
 import net.sbo.mod.utils.data.BadgeListResponse
 import net.sbo.mod.utils.data.BadgeMotion
@@ -156,7 +157,7 @@ object SboBadges {
     }
 
     private fun apply(response: BadgeListResponse) {
-        val badges = response.badges
+        val badges = response.badges.map { badge -> if (uuidOf(badge.uuid)?.let(::movesChars) != false) badge else badge.still() }
         val holders = badges.mapNotNull { badge -> uuidOf(badge.uuid)?.let { it to badge } }.toMap()
         val members = response.team.mapNotNull { member -> uuidOf(member.uuid)?.let { it to member } }.toMap()
         ranks = response.ranks
@@ -176,7 +177,8 @@ object SboBadges {
         }.mapTo(HashSet()) { it.value.name.lowercase() } +
             tagsAt.filterValues { tag -> tag.animated && tag.color?.let { movesAt(it, BadgePart.TAG, place) } == true }.keys
         movingAtHead = movingAt(TeamTagPlace.HEAD, byName(TeamTagPlace.HEAD))
-        movingInTab = movingAt(TeamTagPlace.TAB, tabTags)
+        // Off, every tab line stands still, your own too
+        movingInTab = if (DataManager.sboData.badgeAnimationsInTab) movingAt(TeamTagPlace.TAB, tabTags) else emptySet()
         fixedLines = holders.filter { (uuid, badge) -> !moves(badge.colorOf(BadgePart.STAT), BadgePart.STAT) || !animates(uuid) }
             .mapValues { line(it.value, animate = false) }
         byUuid = holders
@@ -194,6 +196,16 @@ object SboBadges {
 
     /** Your own badge always moves, other players' only while the viewer allows it. */
     private fun animates(uuid: UUID): Boolean = DataManager.sboData.badgeAnimationsOfOthers || uuid == uuidOf(Player.accountUuid())
+
+    /** Your own badge's chars always move, other players' only while the viewer allows it; their colors still move. */
+    private fun movesChars(uuid: UUID): Boolean = DataManager.sboData.badgeMotionOfOthers || uuid == uuidOf(Player.accountUuid())
+
+    /** The badge with its chars standing still. */
+    private fun SboBadge.still(): SboBadge {
+        val parts = colors ?: return this
+        fun PartColor?.still() = this?.copy(motion = null)
+        return copy(colors = BadgeColors(parts.stat.still(), parts.name.still(), parts.level.still(), parts.tag.still(), parts.rank.still()))
+    }
 
     /** A team tag: the rank gives its text, the member's badge its colors (the rank's while their badge is off). */
     private class TagLook(val rank: String, val color: PartColor?, val animated: Boolean)

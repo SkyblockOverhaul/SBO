@@ -175,6 +175,8 @@ object BadgeGui {
         var inTab by useState(DataManager.sboData.badgesInTab)
         var inChat by useState(DataManager.sboData.badgesInChat)
         var animations by useState(DataManager.sboData.badgeAnimationsOfOthers)
+        var motion by useState(DataManager.sboData.badgeMotionOfOthers)
+        var tabAnimations by useState(DataManager.sboData.badgeAnimationsInTab)
         div(className = "bd-section-title") { +"Badges of Others" }
         setting("In the tab list", "The SBO logo behind their name and the name in their color. The SBO team always shows.") {
             switch(checked = inTab, onChange = {
@@ -194,6 +196,22 @@ object BadgeGui {
             switch(checked = animations, onChange = {
                 animations = it.checked
                 DataManager.sboData.badgeAnimationsOfOthers = it.checked
+                DataManager.sboData.save()
+                SboBadges.relook()
+            })
+        }
+        setting("Motion", "Moving letters (wavy, bounce, shake, glitch) of other players' badges above their heads. Off keeps the letters still, your own badge always moves.") {
+            switch(checked = motion, onChange = {
+                motion = it.checked
+                DataManager.sboData.badgeMotionOfOthers = it.checked
+                DataManager.sboData.save()
+                SboBadges.relook()
+            })
+        }
+        setting("Animations in the tab list", "Moving colors of every badge in the tab list, your own too. Off shows them standing still.") {
+            switch(checked = tabAnimations, onChange = {
+                tabAnimations = it.checked
+                DataManager.sboData.badgeAnimationsInTab = it.checked
                 DataManager.sboData.save()
                 SboBadges.relook()
             })
