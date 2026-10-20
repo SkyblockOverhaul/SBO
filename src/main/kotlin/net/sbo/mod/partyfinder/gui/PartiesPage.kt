@@ -285,6 +285,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     party, partyTarget, meFor(party, partyTarget),
                     showSub = target.all,
                     mine = party.id == myId,
+                    joined = party.members.any { it.uuid == myId },
                     expanded = party.id == expanded,
                     onToggle = { expanded = if (expanded == party.id) null else party.id },
                     onJoin = { join(party) },
@@ -608,6 +609,7 @@ private fun NodeBuilder.partyCard(
     me: MemberView?,
     showSub: Boolean,
     mine: Boolean,
+    joined: Boolean,
     expanded: Boolean,
     onToggle: () -> Unit,
     onJoin: () -> Unit,
@@ -634,7 +636,7 @@ private fun NodeBuilder.partyCard(
             separator()
             item("Remove from queue", danger = true) { PartyFinderManager.removePartyFromQueue() }
         } else {
-            item("Join party", disabled = full || party.rolesTaken) { onJoin() }
+            item("Join party", disabled = joined || full || party.rolesTaken) { onJoin() }
             separator()
             item("Hide this party") { onHide() }
             item("Block player") { onBlock(leaderName, party.id) }
@@ -654,11 +656,12 @@ private fun NodeBuilder.partyCard(
                 // In the list of all subcategories every party says which one it was created in
                 if (showSub) target.sub?.let { span(className = "pf-tag sub", title = "Created as a ${target.label} party") { +it.label } }
                 if (mine) span(className = "pf-tag mine") { +"Your party" }
+                else if (joined) span(className = "pf-tag mine") { +"Joined" }
                 span(className = "pf-tag", title = "Players in the party / party size") { +"${party.memberCount}/${party.partySize}" }
                 if (party.partySize < target.maxSize) span(className = "pf-tag size") { +sizeLabel(party.partySize) }
                 div(className = "pf-spacer")
                 span(className = "pf-age") { +ago(party.createdAt) }
-                if (!mine) joinButton(full, party.rolesTaken, problems, target, onJoin)
+                if (!mine && !joined) joinButton(full, party.rolesTaken, problems, target, onJoin)
             }
             // Party fields get their own row that wraps, long ones would push the join button out of the window; text to info
             val tags = buildList<Pair<String, String>> {
