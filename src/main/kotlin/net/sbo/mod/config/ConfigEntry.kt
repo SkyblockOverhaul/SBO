@@ -76,7 +76,16 @@ class Condition internal constructor(
 
 /** A group of [conditions] that all, or with [any] at least one, have to be met. */
 class Requirement internal constructor(val conditions: List<Condition>, val any: Boolean) {
-    val met: Boolean get() = if (any) conditions.any { it.met } else conditions.all { it.met }
+    val met: Boolean
+        get() {
+            var index = 0
+            while (index < conditions.size) {
+                val conditionMet = conditions[index].met
+                if (conditionMet == any) return any
+                index++
+            }
+            return !any
+        }
 }
 
 class Button(
