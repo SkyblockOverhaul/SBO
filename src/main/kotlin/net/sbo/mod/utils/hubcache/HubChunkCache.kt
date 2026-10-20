@@ -3,20 +3,17 @@ package net.sbo.mod.utils.hubcache
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.multiplayer.ClientChunkCache
 import net.minecraft.client.multiplayer.ClientLevel
-import net.minecraft.network.chat.Component
 import net.minecraft.world.level.ChunkPos
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.game.World
-import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -162,9 +159,9 @@ object HubChunkCache {
         if (!extendsServerView(level)) return // checked again every tick, the setting and render distance can change
         skippedLevel = level
         if (bobbyLoaded && BobbyCompat.isEnabled()) {
-            // Bobby already shows fake chunks in this level, two caches would fight. Ours starts on the
-            // next level, once Bobby is off.
-            BobbyCompat.disableOnce()
+            // Bobby already shows fake chunks in this level, two caches would fight. Bobby wins. Turning Bobby
+            // off keeps its manager for this level, so ours only starts on the next one.
+            BobbyCompat.notifyOnce()
             return
         }
 
@@ -197,8 +194,10 @@ object HubChunkCache {
     private fun cachedAreas(): Set<String> =
         General.chunkCacheAreas.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
 
-    /** Bobby is not a dependency, so it is only reached through its config file and reflection. */
+    /** Bobby is not a dependency, so it is only reached through reflection. SBO never changes its config. */
     private object BobbyCompat {
+        private var notified = false
+
         fun isEnabled(): Boolean = try {
             val bobby = Class.forName("de.johni0702.minecraft.bobby.Bobby")
             val instance = bobby.getMethod("getInstance").invoke(null)
@@ -208,32 +207,11 @@ object HubChunkCache {
             true // play safe, never run both
         }
 
-        /**
-         * Turns Bobby off in its config, but only the first time: if the player turns it back on, SBO leaves it
-         * alone and just does not cache. Bobby watches its config file and picks the change up by itself.
-         */
-        fun disableOnce() {
-            if (DataManager.sboData.bobbyDisabledBySbo) return
-
-            val config = FabricLoader.getInstance().configDir.resolve("bobby.conf")
-            try {
-                val text = if (Files.exists(config)) Files.readString(config) else ""
-                val enabledLine = Regex("""(?m)^([ \t]*)enabled[ \t]*[=:][ \t]*true\b""")
-                val updated = if (enabledLine.containsMatchIn(text)) {
-                    enabledLine.replace(text) { "${it.groupValues[1]}enabled=false" }
-                } else {
-                    "enabled=false\n$text"
-                }
-                Files.writeString(config, updated)
-                DataManager.sboData.bobbyDisabledBySbo = true
-            } catch (e: Exception) {
-                SBOKotlin.logger.error("[HubChunkCache] Could not disable Bobby", e)
-                Chat.chat("§6[SBO] §cCould not disable Bobby, please turn it off yourself so the SBO Chunk Cache can work.")
-                return
-            }
-
-            Chat.chat("§6[SBO] §eBobby was disabled, the SBO Chunk Cache replaces it. It starts on your next lobby. §7You can turn Bobby back on in its settings, SBO will not touch it again.")
-            SBOKotlin.toast(Component.literal("SBO disabled Bobby"), Component.literal("The SBO Chunk Cache replaces it, from your next lobby on."))
+        /** Tells the player once per game start that the SBO Chunk Cache is paused while Bobby runs. */
+        fun notifyOnce() {
+            if (notified) return
+            notified = true
+            Chat.chat("§6[SBO] §eBobby is active, so the SBO Chunk Cache is paused. §7Turn Bobby off if you want to use the SBO Chunk Cache instead, it starts from your next lobby.")
         }
     }
 }
