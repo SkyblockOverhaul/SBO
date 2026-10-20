@@ -413,7 +413,10 @@ object AchievementManager {
         }
 
         when (mf) {
-            25.0 -> unlockAchievement(124)
+            25.0 -> {
+                unlockAchievement(124)
+                Chat.chat("§6[SBO] §Your CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /setprimarycoa on the new one to continue tracking your CoA stats.")
+            }
             22.5 -> unlockAchievement(123)
             20.0 -> unlockAchievement(122)
         }

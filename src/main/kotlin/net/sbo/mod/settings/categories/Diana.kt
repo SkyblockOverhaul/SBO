@@ -4,6 +4,7 @@ import net.sbo.mod.config.Category
 import net.sbo.mod.config.ObservableEntry
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.EventsGui
+import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
@@ -227,6 +228,22 @@ object Diana : Category("Diana") {
         if (old != new) {
             if (new != Tracker.OFF) {
                 DianaLoot.updateLines()
+            }
+        }
+    }
+
+    var coaTracker by ObservableEntry(
+        enum(Tracker.EVENT) {
+            this.name = Literal("CoA Tracker")
+            this.description = Literal(
+                "Shows a tracker for the Crown of Avarice. \n" +
+                    "/sboguis to move the overlay.\n"
+            )
+        }
+    ) { old, new ->
+        if (old != new) {
+            if (new != Tracker.OFF) {
+                CrownOfAvarice.updateLines()
             }
         }
     }

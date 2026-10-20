@@ -1203,7 +1203,7 @@ object DianaTracker {
             "HILT_OF_REVELATIONS" -> tracker.items.HILT_OF_REVELATIONS += amount
             "MYTH_THE_FISH" -> tracker.items.MYTH_THE_FISH += amount
 
-            "COINS" -> {tracker.items.COINS += amount; CrownOfAvarice.addCoins(amount, tracker)}
+            "COINS" -> tracker.items.COINS += amount
             "GRIFFIN_FEATHER" -> tracker.items.GRIFFIN_FEATHER += amount
             "CROWN_OF_GREED" -> tracker.items.CROWN_OF_GREED += amount
             "WASHED_UP_SOUVENIR" -> tracker.items.WASHED_UP_SOUVENIR += amount
@@ -1218,7 +1218,7 @@ object DianaTracker {
             "MINOS_RELIC" -> tracker.items.MINOS_RELIC += amount
             "ENCHANTED_GOLD" -> tracker.items.ENCHANTED_GOLD += amount
             "SCAVENGER_COINS" -> tracker.items.SCAVENGER_COINS += amount
-            "FISH_COINS" -> {tracker.items.FISH_COINS += amount; CrownOfAvarice.addCoins(amount, tracker)}
+            "FISH_COINS" -> tracker.items.FISH_COINS += amount
             "TOTAL_BURROWS" -> tracker.items.TOTAL_BURROWS += amount
             // MOBS
             "KING_MINOS" -> tracker.mobs.KING_MINOS += amount

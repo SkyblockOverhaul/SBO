@@ -342,7 +342,9 @@ object DianaLoot : DirtyFlushableOverlay() {
         "TOTAL_BURROWS",
         "COINS",
         "SCAVENGER_COINS",
-        "FISH_COINS"
+        "FISH_COINS",
+        "COA_COINS",
+        "CURRENT_COA_START_COINS"
     )
 
     private val profitFields = DianaItemsData::class.java.declaredFields
