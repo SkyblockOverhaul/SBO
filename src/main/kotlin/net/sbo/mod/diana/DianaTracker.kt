@@ -3,6 +3,7 @@ package net.sbo.mod.diana
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.trackMagicFind
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
+import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
@@ -1202,7 +1203,7 @@ object DianaTracker {
             "HILT_OF_REVELATIONS" -> tracker.items.HILT_OF_REVELATIONS += amount
             "MYTH_THE_FISH" -> tracker.items.MYTH_THE_FISH += amount
 
-            "COINS" -> tracker.items.COINS += amount
+            "COINS" -> {tracker.items.COINS += amount; CrownOfAvarice.addCoins(amount, tracker, "coins")}
             "GRIFFIN_FEATHER" -> tracker.items.GRIFFIN_FEATHER += amount
             "CROWN_OF_GREED" -> tracker.items.CROWN_OF_GREED += amount
             "WASHED_UP_SOUVENIR" -> tracker.items.WASHED_UP_SOUVENIR += amount
@@ -1217,7 +1218,7 @@ object DianaTracker {
             "MINOS_RELIC" -> tracker.items.MINOS_RELIC += amount
             "ENCHANTED_GOLD" -> tracker.items.ENCHANTED_GOLD += amount
             "SCAVENGER_COINS" -> tracker.items.SCAVENGER_COINS += amount
-            "FISH_COINS" -> tracker.items.FISH_COINS += amount
+            "FISH_COINS" -> {tracker.items.FISH_COINS += amount; CrownOfAvarice.addCoins(amount, tracker, "fish")}
             "TOTAL_BURROWS" -> tracker.items.TOTAL_BURROWS += amount
             // MOBS
             "KING_MINOS" -> tracker.mobs.KING_MINOS += amount
@@ -1239,4 +1240,6 @@ object DianaTracker {
             "TOTAL_MOBS" -> tracker.mobs.TOTAL_MOBS += amount
         }
     }
+
+
 }

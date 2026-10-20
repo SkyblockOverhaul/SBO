@@ -9,20 +9,26 @@ import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.Helper.formatNumber
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.World
 
 object CrownOfAvarice : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Crown Of Avarice", 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
-        .setCondition { true }
-        .setExtraCondition { true }
+        .setCondition { true } // TODO: Setting to enable/disable in config, but for now always enabled
+        .setExtraCondition { World.isInHub() }
+
+    private var helmet: ItemStack? = null
 
     fun init() {
         overlay.init()
         updateLines()
 
         Register.onTick(20) {
+            helmet = mc.player?.inventory?.getItem(39)
             updateLines()
         }
     }
@@ -44,7 +50,7 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
         val cleanCOAPrice = 500_000_000
 
         val profitPerCOA = maxCOAPrice - cleanCOAPrice
-        val profitPerHour = profitPerCOA / (1_000_000_000 / getCoinsPerHour())
+        val profitPerHour = if (getCoinsPerHour() == 0.0) 0.0 else profitPerCOA / (1_000_000_000 / getCoinsPerHour())
         return profitPerHour
     }
 
@@ -54,9 +60,9 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     }
 
     /** Current COA's coins */
-    private fun getCurrentCoins(): Double {
-        val helmet = getCoaItem()
-        if (!isCoA(helmet)) return -1.0
+    private fun getCurrentCoins(item: ItemStack? = null): Double {
+        val helmet = item ?: helmet
+        if (!helmet.isCoA()) return -1.0
 
         val coa = ItemLookup(helmet!!)
         val coins = coa.cleanLoreList
@@ -67,23 +73,24 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
         return coins
     }
 
-    /** Amount of coins earned per hour on the COA */
     private fun getCoinsPerHour(): Double {
-        return getTotalCoins().toDouble() / DataManager.dianaTrackerMayorData.items.TIME
+        return if (DataManager.dianaTrackerMayorData.items.TIME == 0L) 0.0 else getTotalCoins().toDouble() / DataManager.dianaTrackerMayorData.items.TIME
     }
 
     /** Don't count when COA is maxed or it's not diana, etc... */
-    private fun isCoinSourceValid(): Boolean {
-        return true
+    fun addCoins(amount: Int, tracker: DianaTracker = DataManager.dianaTrackerMayorData, source: String) {
+        if (!helmet.isCoA()) return
+
+        val multiplier = if (getCurrentCoins(helmet) != 1_000_000_000.0) 5 else if (getCurrentCoins(helmet) == -1.0) 1 else 2 // 2x if max COA, 5x if clean COA, 1x if no COA
+
+        tracker.items.CROWN_OF_AVARICE += amount * multiplier
+        Chat.chat("§6[COA] §aAdded §6${formatNumber(amount)} §acoins to your Crown of Avarice! (x$multiplier) from $source")
+        updateLines()
     }
 
-    private fun isCoA(helmet: ItemStack?): Boolean {
-        if (helmet == null) return false
+    private fun ItemStack?.isCoA(): Boolean {
+        if (this == null) return false
 
-        return "Crown of Avarice" in ItemLookup(helmet).displayName
-    }
-
-    private fun getCoaItem(): ItemStack? {
-        return mc.player?.inventory?.getItem(39) // Helmet slot
+        return "Crown of Avarice" in ItemLookup(this).displayName
     }
 }
