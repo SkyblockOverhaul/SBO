@@ -24,7 +24,7 @@ jobs:
       - name: build
         run: |
           # A beta tag (v0.7.2-beta.1) builds as that version, so the jars and the mod itself carry it
-          if [[ "$GITHUB_REF" == refs/tags/v*-beta* ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/*-beta* ]]; then
             ./gradlew build --scan "-Pmod.version=${GITHUB_REF_NAME#v}"
           else
             ./gradlew build --scan
@@ -35,11 +35,12 @@ jobs:
           name: Artifacts
           path: build/versions/
 
-  # Pushing a tag like v0.7.2-beta.1 uploads the build to Modrinth as a beta version.
+  # Pushing a tag like 0.7.2-beta.1 uploads the build to Modrinth as a beta version. The changelog is the
+  # tag message (git tag -a), or the commit titles since the previous tag for a tag without one.
   # Needs the MODRINTH_TOKEN repository secret (a Modrinth PAT with "Create versions").
   modrinth-beta:
     needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && contains(github.ref_name, '-beta')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && contains(github.ref_name, '-beta')
     permissions:
       contents: read
     runs-on: ubuntu-26.04
@@ -60,9 +61,15 @@ jobs:
         run: |
           version="${GITHUB_REF_NAME#v}"
 
-          # Everything since the previous tag, beta or release
-          previous=$(git describe --tags --abbrev=0 "$GITHUB_SHA^" 2>/dev/null || true)
-          changelog=$(git log --no-merges --format='- %s' ${previous:+"$previous..$GITHUB_SHA"} | head -n 50)
+          # checkout can leave the tag lightweight, this brings back the annotated one with its message
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          if [ "$(git cat-file -t "$GITHUB_REF_NAME")" = "tag" ]; then
+            changelog=$(git tag -l --format='%(contents)' "$GITHUB_REF_NAME")
+          else
+            # Everything since the previous tag, beta or release
+            previous=$(git describe --tags --abbrev=0 "$GITHUB_SHA^" 2>/dev/null || true)
+            changelog=$(git log --no-merges --format='- %s' ${previous:+"$previous..$GITHUB_SHA"} | head -n 50)
+          fi
 
           for jar in jars/*.jar; do
             mc=$(sed -E 's/.*\+(.*)-fabric\.jar/\1/' <<< "$(basename "$jar")")
