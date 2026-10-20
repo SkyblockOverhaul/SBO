@@ -171,6 +171,7 @@ object SBOKotlin : ClientModInitializer {
 		InventoryUtils.init()
 		Chains.init()
 		MuteBuggedSpadeSounds.init()
+		CrownOfAvarice.init()
 
 		Register.onTick(100) { unregister ->
 			val player = mc.player

@@ -41,4 +41,5 @@ data class DianaItemsData(
     @SerializedName("HARPY_SHARD") var HARPY_SHARD: Int = 0,
     @SerializedName("MYTHOLOGICAL_DYE") var MYTHOLOGICAL_DYE: Int = 0,
     @SerializedName("MYTH_THE_FISH") var MYTH_THE_FISH: Int = 0,
+    @SerializedName("Crown Of Avarice Coins") var CROWN_OF_AVARICE: Int = 0,
 )
