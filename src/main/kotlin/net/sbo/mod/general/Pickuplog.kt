@@ -9,12 +9,16 @@ import net.sbo.mod.utils.data.Item
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.InventorySlotUpdateEvent
+import net.sbo.mod.utils.events.impl.game.TickEvent
+import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object Pickuplog {
+    private val OVERLAY_LINE_LIFETIME_NANOS = TimeUnit.SECONDS.toNanos(6)
+
     data class OverlayLineData(var amount: Int, val name: String, var modified: Long)
 
     private var oldPurse: Long = 0L
@@ -72,6 +76,22 @@ object Pickuplog {
         compareInventory()
         oldInventory = newInventory
         oldPurse = newPurse
+        updateOverlay()
+    }
+
+    @SboEvent
+    fun onWorldChange(event: WorldChangeEvent) {
+        itemsShowAdded.clear()
+        itemsShowRemoved.clear()
+        oldInventory = emptyMap()
+        newInventory = emptyMap()
+        oldPurse = 0L
+        newPurse = 0L
+        overlay.setLines(emptyList())
+    }
+
+    @SboEvent
+    fun onTick(event: TickEvent) {
         updateOverlay()
     }
 
@@ -153,7 +173,7 @@ object Pickuplog {
         val newAddedList = mutableListOf<MutableMap<String, OverlayLineData>>()
         itemsShowAdded.forEach { map ->
             val (_, data) = map.entries.first()
-            if (currentTime - data.modified <= TimeUnit.MILLISECONDS.toNanos(6000)) {
+            if (currentTime - data.modified <= OVERLAY_LINE_LIFETIME_NANOS) {
                 newAddedList.add(map)
                 lines.add(OverlayTextLine("§a+ ${data.amount}x §r${data.name}"))
             }
@@ -164,7 +184,7 @@ object Pickuplog {
         val newRemovedList = mutableListOf<MutableMap<String, OverlayLineData>>()
         itemsShowRemoved.forEach { map ->
             val (_, data) = map.entries.first()
-            if (currentTime - data.modified <= TimeUnit.MILLISECONDS.toNanos(6000)) {
+            if (currentTime - data.modified <= OVERLAY_LINE_LIFETIME_NANOS) {
                 newRemovedList.add(map)
                 lines.add(OverlayTextLine("§c- ${-data.amount}x §r${data.name}"))
             }
