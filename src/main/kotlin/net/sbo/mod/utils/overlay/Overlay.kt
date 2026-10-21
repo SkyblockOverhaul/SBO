@@ -82,11 +82,13 @@ class Overlay(
     }
 
     fun addLine(line: OverlayTextLine) {
+        line.updateCondition()
         lines.add(line)
     }
 
     fun setLines(newLines: List<OverlayTextLine>) {
         lines = newLines.toMutableList()
+        lines.forEach { it.updateCondition() }
     }
 
     fun removeLine(line: OverlayTextLine) {
