@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting.*
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
@@ -22,6 +23,9 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
         .setCondition { Diana.coaTracker != Diana.Tracker.OFF }
         .setExtraCondition { World.isInHub() }
 
+    private var maxCOAPrice: Long = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED", 1)
+    private var cleanCOAPrice: Long = Helper.getItemPrice("CROWN_OF_AVARICE", 1)
+
     private var helmet: ItemStack? = null
     private var primaryCoaUuid: String? = null
     private var cachedCoaCoins: Long = -1L // Coins of the PRIMARY CoA only. -1 means that primary CoA isn't equipped
@@ -36,6 +40,10 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     fun init() {
         overlay.init()
         updateLines()
+
+        Register.onTick(20 * 60 * 30) { // Refresh every 30mins
+            updateCoaPrice()
+        }
 
         Register.onTick(50) { // Update every 2.5s
             helmet = mc.player?.inventory?.getItem(39)
@@ -145,9 +153,6 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
 
     /** Profit/h from leveling COAs (price diff between 1b COA & clean COA) */
     private fun getProfitPerHour(): Double {
-        val maxCOAPrice = 2_000_000_000 // TODO: Use API endpoint once ready, don't forget to cache the value if needed
-        val cleanCOAPrice = 500_000_000
-
         val profitPerCOA = maxCOAPrice - cleanCOAPrice
         val profitPerHour = if (getCoinsPerHour() == 0.0) 0.0 else profitPerCOA / (1_000_000_000 / getCoinsPerHour())
         return profitPerHour
@@ -180,5 +185,10 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
         if (this == null) return false
 
         return "Crown of Avarice" in ItemLookup(this).displayName
+    }
+
+    private fun updateCoaPrice() {
+        cleanCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE", 1)
+        maxCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED", 1)
     }
 }
