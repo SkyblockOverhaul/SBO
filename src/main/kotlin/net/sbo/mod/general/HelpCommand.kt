@@ -41,7 +41,8 @@ object HelpCommand {
         mapOf("cmd" to "sbobadge", "desc" to "Edit your SBO badge (supporters, maintainers and moderators)"),
         mapOf("cmd" to "sboconflicts", "desc" to "Shows mods that break SBO features and sends a report"),
         mapOf("cmd" to "sbotestmedalclip [drop|all]", "desc" to "Test Medal clip saving"),
-        mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui")
+        mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui"),
+        mapOf("cmd" to "setprimarycoa", "desc" to "Set your primary Crown of Avarice to the eqquipped helmet")
     )
 
     fun init() {

@@ -288,13 +288,14 @@ object DianaLoot : DirtyFlushableOverlay() {
         val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
         val bphText = if (burrowsPerHr.isNaN()) "" else " $GRAY[$AQUA$burrowsPerHr$GRAY/${AQUA}hr$GRAY]"
 
-        val profitPerHr = if (playTimeHrs > 0) Helper.formatNumber(totalProfitValue / playTimeHrs) else 0.0
+        val coaProfitPerHr = CrownOfAvarice.getProfitPerHour()
+        val profitPerHr = Helper.formatNumber((if (playTimeHrs > 0) totalProfitValue / playTimeHrs else 0.0) + coaProfitPerHr)
         val profitPerBurrow = if (totalBurrows > 0) Helper.formatNumber(totalProfitValue / totalBurrows) else 0.0
 
         val stats = mutableListOf(
             OverlayTextLine("${GRAY}Total Burrows: $AQUA${Helper.formatNumber(totalBurrows, withCommas = true)}$bphText"),
             createCoinLine(tracker),
-            createProfitLine(totalProfitValue, profitPerHr, profitPerBurrow)
+            createProfitLine(totalProfitValue, profitPerHr, profitPerBurrow, coaProfitPerHr)
         )
 
         stats.add(timerLine)
@@ -318,7 +319,7 @@ object DianaLoot : DirtyFlushableOverlay() {
             }
     }
 
-    private fun createProfitLine(totalProfitValue: Long, profitPerHr: Any, profitPerBurrow: Any): OverlayTextLine {
+    private fun createProfitLine(totalProfitValue: Long, profitPerHr: Any, profitPerBurrow: Any, coaProfitPerHr: Number): OverlayTextLine {
         val pphText = if (profitPerHr == "NaN" || profitPerHr == "0.0") "" else "$GRAY[$AQUA$profitPerHr$GRAY/${AQUA}hr$GRAY]"
         return OverlayTextLine("${YELLOW}Total Profit: $AQUA${Helper.formatNumber(totalProfitValue)} $pphText")
             .onHover { drawContext, textRenderer ->
@@ -327,7 +328,8 @@ object DianaLoot : DirtyFlushableOverlay() {
                 val mouseY = mc.mouseHandler.ypos() / scaleFactor
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$GOLD$profitPerHr coins/hr\n" +
-                            "$GOLD$profitPerBurrow coins/burrow",
+                            "$GOLD$profitPerBurrow coins/burrow\n" +
+                            "$GOLD${Helper.formatNumber(coaProfitPerHr)} coa coins/hr",
                     mouseX, mouseY, textRenderer)
             }
     }
@@ -342,7 +344,9 @@ object DianaLoot : DirtyFlushableOverlay() {
         "TOTAL_BURROWS",
         "COINS",
         "SCAVENGER_COINS",
-        "FISH_COINS"
+        "FISH_COINS",
+        "COA_COINS",
+        "CURRENT_COA_START_COINS"
     )
 
     private val profitFields = DianaItemsData::class.java.declaredFields
