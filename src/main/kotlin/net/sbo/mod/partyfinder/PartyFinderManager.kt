@@ -41,7 +41,7 @@ object PartyFinderManager {
     const val NOTE_MAX_LENGTH = 100
     // The party list shows two lines of a note
     const val NOTE_MAX_LINES = 2
-    private val JOIN_REQUEST_COOLDOWN = TimeUnit.MINUTES.toNanos(1)
+    private val JOIN_REQUEST_COOLDOWN = TimeUnit.SECONDS.toNanos(30)
     // Hypixel party invites run out after a minute
     private val INVITE_HOLD_MS = TimeUnit.MINUTES.toMillis(1)
     private val partyChatRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
