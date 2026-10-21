@@ -416,7 +416,7 @@ object DianaTracker {
 
     private fun trackTreasuresWithChat() {
         Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { message, matchResult ->
-            lastBurrow = BURROW_TYPE.TREASURE
+            if (!(lastBurrow == BURROW_TYPE.MOB && lastSpawnedMob == "Sphinx")) lastBurrow = BURROW_TYPE.TREASURE
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather" -> trackItem(drop, 1)
                 "Mythos Fragment" -> trackItem(drop, 1)
