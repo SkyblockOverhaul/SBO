@@ -71,7 +71,7 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
             }
 
             // Set the first detected CoA as the primary one if we don't have a saved one yet
-            if (primaryCoaUuid == null && worn != null) {
+            if (primaryCoaUuid == null && worn != null && tracker != null) {
                 primaryCoaUuid = worn.uuid
                 DataManager.sboData.currentCoaUuid = worn.uuid
 
@@ -83,8 +83,8 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
                     DataManager.dianaTrackerSessionData
                 ).forEach { it.items.CURRENT_COA_START_COINS = startCoins }
 
-                Chat.chat("§6[SBO] §aYour worn CoA was automatically set as your primary CoA. It's used to track your coins and profit/h.")
-                Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/setprimarycoa §7to switch.")
+                Chat.chat("§6[SBO] §aYour worn CoA was automatically set as your primary CoA. It's used to track your coins and profit/h.", true)
+                Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/setprimarycoa §7to switch.", true)
             }
 
             // Only trust the coins if the CoA on our head is the primary one.
