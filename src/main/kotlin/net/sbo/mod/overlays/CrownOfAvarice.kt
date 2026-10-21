@@ -71,7 +71,7 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
             }
 
             // Set the first detected CoA as the primary one if we don't have a saved one yet
-            if (primaryCoaUuid == null && worn != null) {
+            if (primaryCoaUuid == null && worn != null && tracker != null) {
                 primaryCoaUuid = worn.uuid
                 DataManager.sboData.currentCoaUuid = worn.uuid
 
@@ -83,8 +83,8 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
                     DataManager.dianaTrackerSessionData
                 ).forEach { it.items.CURRENT_COA_START_COINS = startCoins }
 
-                Chat.chat("§6[SBO] §aYour worn CoA was automatically set as your primary CoA. It's used to track your coins and profit/h.")
-                Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/setprimarycoa §7to switch.")
+                Chat.chat("§6[SBO] §aYour worn CoA was automatically set as your primary CoA. It's used to track your coins and profit/h.", true)
+                Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/setprimarycoa §7to switch.", true)
             }
 
             // Only trust the coins if the CoA on our head is the primary one.
@@ -158,11 +158,12 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     }
 
     override fun generateLines(): List<OverlayTextLine> {
-        var lines = mutableListOf(
+        val lines = mutableListOf(
             OverlayTextLine("$YELLOW${BOLD}Crown Of Avarice ${GRAY}(${YELLOW}${Helper.toTitleCase(Diana.coaTracker.name)}${GRAY})"),
             OverlayTextLine("$GRAY - ${GREEN}CoA's Coins: " + if (cachedCoaCoins != -1L) "${AQUA}${formatNumber(cachedCoaCoins)}" else "${RED}Primary COA Not Equipped"),
             OverlayTextLine("$GRAY - ${GREEN}Earned Coins: $AQUA${formatNumber(getTotalCoins())} $GRAY[$AQUA${formatNumber(getCoinsPerHour())}/hr$GRAY]"),
             OverlayTextLine("$GRAY - ${GREEN}Profit: $AQUA${formatNumber(getProfit())} $GRAY[$AQUA${formatNumber(getProfitPerHour())}/hr$GRAY]"),
+            OverlayTextLine("$GRAY - ${GREEN}Maxed In: $AQUA${formatNumber(maxedIn())}h")
         )
 
         if (isCraftingScreenOpen()) {
@@ -189,6 +190,10 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     /** Total coins made from leveling COAs with this tracker */
     private fun getTotalCoins(): Long {
         return tracker?.items?.COA_COINS ?: 0L
+    }
+
+    private fun maxedIn(): Double {
+        return (1_000_000_000L - (tracker?.items?.CURRENT_COA_START_COINS ?: 0L)) / getCoinsPerHour()
     }
 
     /** Current COA's coins, or -1 if the item isn't a CoA */
