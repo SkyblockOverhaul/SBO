@@ -72,7 +72,7 @@ object DianaMobDetect {
     private fun findKingHits(name: String): MatchResult? {
         if (!World.isInHub()) return null
         if (!name.contains("Hits")) return null
-        if (!name.contains("Jerry")) return null
+        if (name.contains("Jerry")) return null
         return kingHitsRegex.find(name)
     }
 
