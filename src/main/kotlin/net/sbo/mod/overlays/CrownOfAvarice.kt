@@ -15,16 +15,20 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.events.annotations.SboEvent
+import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
+import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 
 object CrownOfAvarice : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Crown Of Avarice", 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
         .setCondition { Diana.coaTracker != Diana.Tracker.OFF }
         .setExtraCondition { World.isInHub() }
 
-    private var maxCOAPrice: Long = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED", 1)
-    private var cleanCOAPrice: Long = Helper.getItemPrice("CROWN_OF_AVARICE", 1)
+    private var maxCOAPrice: Long = 0L
+    private var cleanCOAPrice: Long = 0L
 
     private var helmet: ItemStack? = null
     private var primaryCoaUuid: String? = null
@@ -37,9 +41,21 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
             else -> null
         }
 
+    private val changeview = OverlayUtils.createClickableTextLine(
+        text = "${YELLOW}Change View",
+        hoverText = "$YELLOW${UNDERLINE}Change View",
+        defaultText = "${YELLOW}Change View",
+        onClick = {
+            Diana.coaTracker = Diana.coaTracker.next()
+            updateLines()
+        },
+        lineBreak = true
+    )
+
     fun init() {
         overlay.init()
         updateLines()
+        updateCoaPrice()
 
         Register.onTick(20 * 60 * 30) { // Refresh every 30mins
             updateCoaPrice()
@@ -142,23 +158,36 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     }
 
     override fun generateLines(): List<OverlayTextLine> {
-        return listOf(
-            OverlayTextLine("$YELLOW${BOLD}Crown Of Avarice"),
+        var lines = mutableListOf(
+            OverlayTextLine("$YELLOW${BOLD}Crown Of Avarice ${GRAY}(${YELLOW}${Helper.toTitleCase(Diana.coaTracker.name)}${GRAY})"),
             OverlayTextLine("$GRAY - ${GREEN}Current Coins: " + if (cachedCoaCoins != -1L) "${AQUA}${formatNumber(cachedCoaCoins)}" else "${RED}Primary COA Not Equipped"),
             OverlayTextLine("$GRAY - ${GREEN}Coins/h: $AQUA${formatNumber(getCoinsPerHour())}"),
             OverlayTextLine("$GRAY - ${GREEN}Total Coins: $AQUA${formatNumber(getTotalCoins())}"),
             OverlayTextLine("$GRAY - ${GREEN}Profit/h: $AQUA${formatNumber(getProfitPerHour())}"),
         )
+
+        if (isCraftingScreenOpen()) {
+            lines.addFirst(changeview)
+        }
+
+        return lines
     }
 
-    /** Profit/h from leveling COAs (price diff between 1b COA & clean COA) */
-    private fun getProfitPerHour(): Double {
+    /** Profit/h = total CoA profit / hours played */
+    fun getProfitPerHour(): Double {
+        val hours = (tracker?.items?.TIME ?: 0L) / 3_600_000.0
+        return if (hours > 0.0) getProfit() / hours else 0.0
+    }
+
+    /** Total profit from leveling COAs with this tracker */
+    fun getProfit(): Double {
+        if (cleanCOAPrice <= 0L || maxCOAPrice <= 0L) updateCoaPrice()
+
         val profitPerCOA = maxCOAPrice - cleanCOAPrice
-        val profitPerHour = if (getCoinsPerHour() == 0.0) 0.0 else profitPerCOA / (1_000_000_000 / getCoinsPerHour())
-        return profitPerHour
+        return profitPerCOA * getTotalCoins() / 1_000_000_000.0
     }
 
-    /** Total coins made from leveling COAs this event */
+    /** Total coins made from leveling COAs with this tracker */
     private fun getTotalCoins(): Long {
         return tracker?.items?.COA_COINS ?: 0L
     }
@@ -190,5 +219,19 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     private fun updateCoaPrice() {
         cleanCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE", 1)
         maxCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED", 1)
+    }
+
+    @SboEvent
+    fun onGuiClose(event: GuiCloseEvent) {
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
+            overlay.removeLine(changeview)
+        }
+    }
+
+    @SboEvent
+    fun onGuiOpen(event: GuiOpenEvent) {
+        if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
+            updateLines()
+        }
     }
 }
