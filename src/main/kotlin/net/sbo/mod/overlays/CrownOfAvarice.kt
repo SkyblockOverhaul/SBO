@@ -161,10 +161,8 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
         var lines = mutableListOf(
             OverlayTextLine("$YELLOW${BOLD}Crown Of Avarice ${GRAY}(${YELLOW}${Helper.toTitleCase(Diana.coaTracker.name)}${GRAY})"),
             OverlayTextLine("$GRAY - ${GREEN}CoA's Coins: " + if (cachedCoaCoins != -1L) "${AQUA}${formatNumber(cachedCoaCoins)}" else "${RED}Primary COA Not Equipped"),
-            OverlayTextLine("$GRAY - ${GREEN}Earned Coins: $AQUA${formatNumber(getTotalCoins())}"),
-            OverlayTextLine("$GRAY - ${GREEN}Coins/h: $AQUA${formatNumber(getCoinsPerHour())}"),
-            OverlayTextLine("$GRAY - ${GREEN}Profit: $AQUA${formatNumber(getProfit())}"),
-            OverlayTextLine("$GRAY - ${GREEN}Profit/h: $AQUA${formatNumber(getProfitPerHour())}"),
+            OverlayTextLine("$GRAY - ${GREEN}Earned Coins: $AQUA${formatNumber(getTotalCoins())} $GRAY[$AQUA${formatNumber(getCoinsPerHour())}/hr$GRAY]"),
+            OverlayTextLine("$GRAY - ${GREEN}Profit: $AQUA${formatNumber(getProfit())} $GRAY[$AQUA${formatNumber(getProfitPerHour())}/hr$GRAY]"),
         )
 
         if (isCraftingScreenOpen()) {
