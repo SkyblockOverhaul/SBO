@@ -160,9 +160,10 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     override fun generateLines(): List<OverlayTextLine> {
         var lines = mutableListOf(
             OverlayTextLine("$YELLOW${BOLD}Crown Of Avarice ${GRAY}(${YELLOW}${Helper.toTitleCase(Diana.coaTracker.name)}${GRAY})"),
-            OverlayTextLine("$GRAY - ${GREEN}Current Coins: " + if (cachedCoaCoins != -1L) "${AQUA}${formatNumber(cachedCoaCoins)}" else "${RED}Primary COA Not Equipped"),
+            OverlayTextLine("$GRAY - ${GREEN}CoA's Coins: " + if (cachedCoaCoins != -1L) "${AQUA}${formatNumber(cachedCoaCoins)}" else "${RED}Primary COA Not Equipped"),
+            OverlayTextLine("$GRAY - ${GREEN}Earned Coins: $AQUA${formatNumber(getTotalCoins())}"),
             OverlayTextLine("$GRAY - ${GREEN}Coins/h: $AQUA${formatNumber(getCoinsPerHour())}"),
-            OverlayTextLine("$GRAY - ${GREEN}Total Coins: $AQUA${formatNumber(getTotalCoins())}"),
+            OverlayTextLine("$GRAY - ${GREEN}Profit: $AQUA${formatNumber(getProfit())}"),
             OverlayTextLine("$GRAY - ${GREEN}Profit/h: $AQUA${formatNumber(getProfitPerHour())}"),
         )
 
