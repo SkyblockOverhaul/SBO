@@ -54,7 +54,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: Artifacts
           path: jars

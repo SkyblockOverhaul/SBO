@@ -80,6 +80,7 @@ data class SboData(
     var badgeAnimationsInTab: Boolean = true, // false shows every badge in the tab list standing still, your own too
     var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
     var collapsedSettings: MutableSet<String> = mutableSetOf(), // collapsed subs in the settings, "Diana/Waypoints"
+    var currentCoaUuid: String = "",
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }

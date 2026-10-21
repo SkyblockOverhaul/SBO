@@ -12,6 +12,8 @@ import net.minecraft.world.item.component.CustomData
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
+import net.sbo.mod.overlays.CrownOfAvarice
+import net.sbo.mod.overlays.CrownOfAvarice.isCoA
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -413,10 +415,17 @@ object AchievementManager {
         }
 
         when (mf) {
-            25.0 -> unlockAchievement(124)
+            25.0 -> {
+                unlockAchievement(124)
+                if (CrownOfAvarice.helmet.isCoA() && CrownOfAvarice.helmet != null &&
+                    ItemLookup(CrownOfAvarice.helmet!!).uuid == CrownOfAvarice.primaryCoaUuid) Chat.chat("§6[SBO] §aYour CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /setprimarycoa on the new one to continue tracking your CoA stats.")
+            }
             22.5 -> unlockAchievement(123)
             20.0 -> unlockAchievement(122)
         }
+
+        val coaCoins = DataManager.dianaTrackerTotalData.items.COA_COINS
+        if (coaCoins >= 3_000_000_000L) unlockAchievement(132)
     }
 
     private fun extractCOAMagicFind(loreLines: List<String>): String {
@@ -493,7 +502,7 @@ object AchievementManager {
     }
 
     private fun addAllAchievements() {
-        // Last added achievement id: 131
+        // Last added achievement id: 132
 
         // inquisitor
         addAchievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic")
@@ -661,9 +670,10 @@ object AchievementManager {
 
         addAchievement(77, "From the ashes", "Drop a Phoenix pet from a Diana mob", "Impossible", hidden = true)
 
-        addAchievement(121, "Capitalism on top!", "Get COA", "Rare", repeatable = false)
+        addAchievement(121, "Capitalism on top!", "Get a COA", "Rare", repeatable = false)
         addAchievement(122, "Inflation speedrun any%", "Get a 10m coins COA", "Epic", 121, repeatable = false)
         addAchievement(123, "Already? Damn that was fast!", "Get a 100m coins COA", "Legendary", 122, repeatable = false)
         addAchievement(124, "All of that just for 2.5 mf...", "Get a 1b coins COA", "Mythic", 123, repeatable = false)
+        addAchievement(132, "Three billion reasons to touch grass", "Earn 3b coins on COAs", "Celestial", repeatable = false)
     }
 }

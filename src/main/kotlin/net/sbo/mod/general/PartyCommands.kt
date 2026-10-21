@@ -2,6 +2,7 @@ package net.sbo.mod.general
 
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.DianaStats
+import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.PartyCommands
@@ -203,7 +204,7 @@ object PartyCommands {
         PartyCommand(listOf("!profits", "!profit"), { settings.dianaPartyCommands }) {
             val playtime = dianaTrackerMayorData.items.TIME
             val playTimeHrs = playtime.toDouble() / TimeUnit.HOURS.toMillis(1)
-            val profit = DianaLoot.totalProfit(dianaTrackerMayorData)
+            val profit = DianaLoot.totalProfit(dianaTrackerMayorData) + CrownOfAvarice.getProfit()
             val offerType = if (Diana.ironmanOverrides) "NPC Sell" else Diana.bazaarSettingDiana.toString()
             val profitHour = profit / playTimeHrs
             "Profit: ${formatNumber(profit)} (${Helper.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"
