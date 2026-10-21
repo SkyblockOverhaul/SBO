@@ -12,6 +12,8 @@ import net.minecraft.world.item.component.CustomData
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
+import net.sbo.mod.overlays.CrownOfAvarice
+import net.sbo.mod.overlays.CrownOfAvarice.isCoA
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -415,7 +417,8 @@ object AchievementManager {
         when (mf) {
             25.0 -> {
                 unlockAchievement(124)
-                Chat.chat("§6[SBO] §Your CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /setprimarycoa on the new one to continue tracking your CoA stats.")
+                if (CrownOfAvarice.helmet.isCoA() && CrownOfAvarice.helmet != null &&
+                    ItemLookup(CrownOfAvarice.helmet!!).uuid == CrownOfAvarice.primaryCoaUuid) Chat.chat("§6[SBO] §aYour CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /setprimarycoa on the new one to continue tracking your CoA stats.")
             }
             22.5 -> unlockAchievement(123)
             20.0 -> unlockAchievement(122)

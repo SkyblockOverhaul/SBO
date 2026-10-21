@@ -30,8 +30,8 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     private var maxCOAPrice: Long = 0L
     private var cleanCOAPrice: Long = 0L
 
-    private var helmet: ItemStack? = null
-    private var primaryCoaUuid: String? = null
+    var helmet: ItemStack? = null
+    var primaryCoaUuid: String? = null
     private var cachedCoaCoins: Long = -1L // Coins of the PRIMARY CoA only. -1 means that primary CoA isn't equipped
     private var tracker: DianaTracker? = null
         get() = when (Diana.coaTracker) {
@@ -209,7 +209,7 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
         return getTotalCoins() / (ms / 3_600_000.0)
     }
 
-    private fun ItemStack?.isCoA(): Boolean {
+    fun ItemStack?.isCoA(): Boolean {
         if (this == null) return false
 
         return "Crown of Avarice" in ItemLookup(this).displayName
