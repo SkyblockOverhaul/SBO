@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.badges;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.gui.components.ChatComponent;

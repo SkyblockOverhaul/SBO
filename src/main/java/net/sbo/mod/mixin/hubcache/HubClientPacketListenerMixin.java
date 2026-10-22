@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.hubcache;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;

@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.compat;
 
 import net.sbo.mod.settings.categories.Diana;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +18,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 @Pseudo
 @Mixin(targets = "moe.nea.firmament.features.diana.AncestralSpadeSolver", remap = false)
 final class AncestralSpadeSolverMixin {
+    @SuppressWarnings("UnresolvedMixinReference")
     @ModifyReturnValue(method = "isEnabled", at = @At("RETURN"))
     private final boolean sbo$disableAncestralSpadeSolverIfSBOEnabled(final boolean isEnabled) {
         return isEnabled && !Diana.INSTANCE.getSpadeGuess();

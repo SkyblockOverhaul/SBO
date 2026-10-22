@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit
  * no Bobby code is used.
  *
  * Differences to Bobby: only the areas from [General.chunkCacheAreas] (tab list "Area:", default Hub),
+ * unless [General.chunkCacheWorkEverywhere] is enabled,
  * optionally only the Hub island and only while the client render distance is above the server's,
  * memory only (cleared on disconnect).
  */
@@ -47,6 +48,7 @@ object HubChunkCache {
     /** A level that was already checked and gets no fake chunks (not a cached world, or Bobby runs in it). */
     private var skippedLevel: ClientLevel? = null
     private var lastAreas: Set<String> = emptySet()
+    private var lastWorkEverywhere = General.chunkCacheWorkEverywhere
     private var lastIslandOnly = General.chunkCacheHubIslandOnly
     private var ticks = 0
 
@@ -110,11 +112,13 @@ object HubChunkCache {
         }
 
         val areas = cachedAreas()
-        if (areas != lastAreas) {
+        val workEverywhere = General.chunkCacheWorkEverywhere
+        if (areas != lastAreas || workEverywhere != lastWorkEverywhere) {
             lastAreas = areas
+            lastWorkEverywhere = workEverywhere
             skippedLevel = null // an added area may be the one the player is in
-            stores.keys.retainAll(areas)
-            if (current != null && current.world !in areas) {
+            if (!workEverywhere) stores.keys.retainAll(areas)
+            if (current != null && !isAreaCached(current.world, areas, workEverywhere)) {
                 current.close(unloadFakes = true)
                 manager = null
                 return
@@ -151,7 +155,7 @@ object HubChunkCache {
         if (System.nanoTime() - levelChangedAt < CONFIRM_DELAY_NANOS) return
         val world = World.getWorld()
         if (world == "None") return // tab list not there yet
-        if (world.lowercase() !in areas) {
+        if (!isAreaCached(world.lowercase(), areas, workEverywhere)) {
             skippedLevel = level
             return
         }
@@ -193,6 +197,9 @@ object HubChunkCache {
 
     private fun cachedAreas(): Set<String> =
         General.chunkCacheAreas.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
+
+    private fun isAreaCached(area: String, areas: Set<String>, workEverywhere: Boolean): Boolean =
+        workEverywhere || area in areas
 
     /** Bobby is not a dependency, so it is only reached through reflection. SBO never changes its config. */
     private object BobbyCompat {

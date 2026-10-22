@@ -41,7 +41,7 @@ object PartyFinderManager {
     const val NOTE_MAX_LENGTH = 100
     // The party list shows two lines of a note
     const val NOTE_MAX_LINES = 2
-    private val JOIN_REQUEST_COOLDOWN = TimeUnit.MINUTES.toNanos(1)
+    private val JOIN_REQUEST_COOLDOWN = TimeUnit.SECONDS.toNanos(30)
     // Hypixel party invites run out after a minute
     private val INVITE_HOLD_MS = TimeUnit.MINUTES.toMillis(1)
     private val partyChatRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
@@ -67,7 +67,8 @@ object PartyFinderManager {
     private val partySize: Int get() = draft?.partySize ?: 0
     private var partyMemberCount = 0
     private var partyMember: List<String> = emptyList()
-    private var isLeader = false
+    var isLeader = false
+        private set
     var isInParty = false
 
     // Roles players picked when they asked to join, by uuid without dashes
@@ -717,7 +718,9 @@ object PartyFinderManager {
             updateBool = true
             partyMemberCount -= 1
             match = true
-            isInParty = partyMemberCount > 1
+            // The count is a guess after joining someone else's party, ask the server instead of leaving the party here.
+            // A party that really ends sends one of the disband messages.
+            if (partyMemberCount <= 1 && !inQueue) sleep(200) { HypixelModApi.sendPartyInfoPacket() }
         }
 
         if (match) trackMemberCount()

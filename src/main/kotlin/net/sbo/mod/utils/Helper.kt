@@ -45,7 +45,7 @@ import net.sbo.mod.utils.data.configs.npcSellValueMap
 import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
 object Helper {
-    private val MF_REGEX = Regex("""§b\(\+§b(\d+)""")
+    private val MF_REGEX = Regex("""§b\(\+(?:§b)?(\d+)""")
 
     private var lastLootShare: Long = 0L
     var allowSackTracking: Boolean = true

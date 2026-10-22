@@ -27,14 +27,18 @@ object ChatUtils {
     fun Component.formattedString(): String {
         val builder = StringBuilder()
         var cachedStyle: Style? = null
+        var cachedCodes = ""
 
+        // The codes are only built again when the style changes, but written for every part. Chat regexes rely on the
+        // repeated codes Hypixel sends, like the magic find in "§b(+§b566 ✯ Magic Find)".
         this.visit(
             { style, content ->
                 if (style != cachedStyle) {
                     cachedStyle = style
-                    builder.append(style.getFormatCodes())
+                    cachedCodes = style.getFormatCodes()
                 }
 
+                builder.append(cachedCodes)
                 builder.append(content)
                 Optional.empty<Any>()
             },

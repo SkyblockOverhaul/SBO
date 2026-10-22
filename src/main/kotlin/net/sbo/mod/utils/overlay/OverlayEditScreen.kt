@@ -6,11 +6,10 @@ import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.data.DataManager.overlayData
 import org.lwjgl.glfw.GLFW
 
 class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
-    private var selectedOverlay: Overlay? = null
+    private var selectedOverlay: HudElement? = null
     private var isDragging = false
     private var lastMouseX = 0.0
     private var lastMouseY = 0.0
@@ -45,11 +44,11 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     }
 
     override fun mouseDragged(click: MouseButtonEvent, deltaX: Double, deltaY: Double): Boolean {
-        if (isDragging && selectedOverlay != null) {
-            selectedOverlay?.x = (selectedOverlay?.x ?: 0f) + deltaX.toFloat()
-            overlayData.overlays[selectedOverlay!!.name]?.x = selectedOverlay?.x ?: 0f
-            selectedOverlay?.y = (selectedOverlay?.y ?: 0f) + deltaY.toFloat()
-            overlayData.overlays[selectedOverlay!!.name]?.y = selectedOverlay?.y ?: 0f
+        val overlay = selectedOverlay
+        if (isDragging && overlay != null) {
+            overlay.x += deltaX.toFloat()
+            overlay.y += deltaY.toFloat()
+            overlay.clampPosition()
             return true
         }
         return super.mouseDragged(click, deltaX, deltaY)
@@ -67,7 +66,7 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         selectedOverlay?.let {
             it.scale = (it.scale + verticalAmount * 0.1f).coerceIn(0.5, 5.0).toFloat()
-            overlayData.overlays[it.name]?.scale = it.scale
+            it.clampPosition()
             return@mouseScrolled true
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
@@ -84,32 +83,16 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
             }
 
             when (keyCode) {
-                GLFW.GLFW_KEY_UP -> {
-                    it.y -= 1f
-                    overlayData.overlays[it.name]?.y = it.y
-                }
-                GLFW.GLFW_KEY_DOWN -> {
-                    it.y += 1f
-                    overlayData.overlays[it.name]?.y = it.y
-                }
-                GLFW.GLFW_KEY_LEFT -> {
-                    it.x -= 1f
-                    overlayData.overlays[it.name]?.x = it.x
-                }
-                GLFW.GLFW_KEY_RIGHT -> {
-                    it.x += 1f
-                    overlayData.overlays[it.name]?.x = it.x
-                }
-                GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> {
-                    it.scale = (it.scale + step).coerceIn(0.5f, 5.0f)
-                    overlayData.overlays[it.name]?.scale = it.scale
-                }
-                GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> {
-                    it.scale = (it.scale - step).coerceIn(0.5f, 5.0f)
-                    overlayData.overlays[it.name]?.scale = it.scale
-                }
+                GLFW.GLFW_KEY_UP -> it.y -= 1f
+                GLFW.GLFW_KEY_DOWN -> it.y += 1f
+                GLFW.GLFW_KEY_LEFT -> it.x -= 1f
+                GLFW.GLFW_KEY_RIGHT -> it.x += 1f
+                GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> it.scale = (it.scale + step).coerceIn(0.5f, 5.0f)
+                GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> it.scale = (it.scale - step).coerceIn(0.5f, 5.0f)
                 else -> return@keyPressed super.keyPressed(keyInput)
             }
+            // Keeps it on the screen and saves the position and scale
+            it.clampPosition()
             return@keyPressed true
         }
         return super.keyPressed(keyInput)

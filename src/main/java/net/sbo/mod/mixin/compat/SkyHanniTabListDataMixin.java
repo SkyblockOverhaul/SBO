@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.compat;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;

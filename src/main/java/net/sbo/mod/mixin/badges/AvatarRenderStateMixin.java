@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.badges;
 
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.network.chat.Component;

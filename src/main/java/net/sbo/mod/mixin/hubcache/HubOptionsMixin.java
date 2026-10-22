@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.hubcache;
 
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;

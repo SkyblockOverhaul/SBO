@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
  * enough damage for loot share (1% of the mob's max HP), aqua after that. Mobs you spawned yourself are skipped.
  *
  * Damage is counted from the damage splash armor stands that appear right after you hit the mob, like Skysoft does.
+ * Only melee hits count, each one is matched to the first splash after it.
  *
  * The label follows the real mob entity at its interpolated render position instead of the name armor stand,
  * so it does not lag behind when the mob moves. Only its height comes from the name stand, smoothed over time.
@@ -59,7 +60,8 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         var nameStand: ArmorStand? = null
         var maxHealth: Double? = null
         var damage = 0.0
-        var lastAttackNanos = 0L
+        // Your melee hits that no damage splash was matched to yet, oldest first
+        val hits = ArrayDeque<Long>()
         var announced = false
         var removedNanos = 0L
         var labelHeight = mob.bbHeight + DEFAULT_NAME_TAG_HEIGHT
@@ -67,12 +69,17 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
         // Debug test mode also labels your own mobs
         val isLabeled: Boolean
-            get() = !own || Debug.lootshareDisplayTest
+            get() = type.isEnabled && (!own || Debug.lootshareDisplayTest)
 
         val isLootshared: Boolean
             get() = maxHealth?.let { damage >= it * LOOTSHARE_DAMAGE_FRACTION } == true
 
-        fun attackedWithin(nanos: Long) = lastAttackNanos != 0L && nanos - lastAttackNanos in 0..ATTACK_WINDOW_NS
+        fun hitBefore(nanos: Long): Long? = hits.firstOrNull { nanos - it in 0..ATTACK_WINDOW_NS }
+
+        // Kept until a splash that loaded inside the window had its time to get its name
+        fun dropOldHits(now: Long) {
+            while (hits.isNotEmpty() && now - hits.first() > ATTACK_WINDOW_NS + NAME_CHECK_TIMEOUT_NS) hits.removeFirst()
+        }
     }
 
     private val targets = mutableMapOf<Int, Target>()
@@ -99,7 +106,10 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
             targets.values.forEach { it.updateNameStand() }
 
             checkPendingSplashes(now)
-            targets.values.forEach { it.announceLootshare() }
+            targets.values.forEach {
+                it.dropOldHits(now)
+                it.announceLootshare()
+            }
         }
 
         LevelRenderEvents.COLLECT_SUBMITS.register(this)
@@ -124,11 +134,20 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         removedTargets.add(target)
     }
 
+    /** Mobs you turned off sharing or receiving for are left out of the labels, messages and the party overlay. */
+    private val RareDianaMob.isEnabled: Boolean
+        get() = when (this) {
+            RareDianaMob.INQ -> Diana.ShareList.INQ in Diana.ShareMobs && Diana.ReceiveList.INQ in Diana.ReceiveMobs
+            RareDianaMob.KING -> Diana.ShareList.KING in Diana.ShareMobs && Diana.ReceiveList.KING in Diana.ReceiveMobs
+            RareDianaMob.SPHINX -> Diana.ShareList.SPHINX in Diana.ShareMobs && Diana.ReceiveList.SPHINX in Diana.ReceiveMobs
+            RareDianaMob.MANTI -> Diana.ShareList.MANTICORE in Diana.ShareMobs && Diana.ReceiveList.MANTICORE in Diana.ReceiveMobs
+        }
+
     /** Rare mobs around you right now, including your own, for the party overlay. */
-    internal val rareMobsAround: List<RareDianaMob> get() = targets.values.map { it.type }
+    internal val rareMobsAround: List<RareDianaMob> get() = targets.values.map { it.type }.filter { it.isEnabled }
 
     /** Whether you spawned one of the rare mobs around you, the debug test mode treats them as someone else's. */
-    val ownMobAround: Boolean get() = targets.values.any { it.own && !Debug.lootshareDisplayTest }
+    val ownMobAround: Boolean get() = targets.values.any { it.own && it.type.isEnabled && !Debug.lootshareDisplayTest }
 
     val lootsharedAny: Boolean get() = targets.values.any { it.isLabeled && it.isLootshared }
 
@@ -148,7 +167,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         val entity = event.entity
         if (entity is ArmorStand) {
             // Damage splashes get their name a moment after spawning, so check them over the next ticks
-            if (targets.values.any { it.lastAttackNanos != 0L }) pendingSplashes[entity] = System.nanoTime()
+            if (targets.values.any { it.hits.isNotEmpty() }) pendingSplashes[entity] = System.nanoTime()
             return
         }
         if (entity !is LivingEntity) return
@@ -169,7 +188,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         // Resolve a mob that was hit before its first tick here, so an instant hit still counts
         if (event.entity in pendingMobs) checkPendingMobs(System.nanoTime())
         val target = targets[event.entity.id] ?: targets.values.firstOrNull { it.nameStand == event.entity } ?: return
-        target.lastAttackNanos = System.nanoTime()
+        target.hits.addLast(System.nanoTime())
     }
 
     private fun checkPendingMobs(now: Long) {
@@ -203,13 +222,14 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         removedTargets.remove(old)
         own = own || old.own
         damage = old.damage
-        lastAttackNanos = old.lastAttackNanos
+        hits.addAll(old.hits)
         maxHealth = old.maxHealth
         announced = old.announced
     }
 
     private fun Target.announceLootshare() {
-        if (announced || !isLabeled || !isLootshared) return
+        // Wait until labels are shown, so a lootshare while the party state is still unknown is sent once it is known
+        if (announced || !isLabeled || !isLootshared || !isShown()) return
         announced = true
         if (!Diana.lootshareMessage) return
         // The debug test mode only tells you, it does not message the party
@@ -255,11 +275,13 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
             iterator.remove()
             val damage = parseNumber(match.groupValues[1]) ?: continue
 
-            // Only count splashes right after your own hit, next to the mob you hit
+            // Only count one splash per melee hit of yours, next to the mob you hit, so party members' splashes in
+            // the same moment are not added to your damage. Extra splashes like ferocity procs are left out too.
             val target = targets.values
-                .filter { it.isLabeled && it.attackedWithin(loadNanos) && stand.distanceToSqr(it.mob) <= SPLASH_MAX_DISTANCE_SQ }
+                .filter { it.isLabeled && it.hitBefore(loadNanos) != null && stand.distanceToSqr(it.mob) <= SPLASH_MAX_DISTANCE_SQ }
                 .minByOrNull { stand.distanceToSqr(it.mob) }
                 ?: continue
+            target.hitBefore(loadNanos)?.let(target.hits::remove)
             target.damage += damage
         }
     }

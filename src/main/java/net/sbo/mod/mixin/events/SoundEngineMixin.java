@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.events;
 
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.resources.sounds.SoundInstance;

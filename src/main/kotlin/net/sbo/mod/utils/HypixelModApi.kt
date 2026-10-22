@@ -1,5 +1,6 @@
 package net.sbo.mod.utils
 
+import net.azureaaron.hmapi.data.server.Environment
 import net.azureaaron.hmapi.events.HypixelPacketEvents
 import net.azureaaron.hmapi.network.HypixelNetworking
 import net.azureaaron.hmapi.network.packet.s2c.ErrorS2CPacket
@@ -8,12 +9,16 @@ import net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket
 import net.azureaaron.hmapi.network.packet.v1.s2c.LocationUpdateS2CPacket
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.utils.data.AlphaData
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 
 object HypixelModApi {
     var isOnHypixel: Boolean = false
+    /** On the Alpha Network (or another non-production Hypixel server), where profiles are copies. */
+    var isAlpha: Boolean = false
+        private set
     private var isOnSkyblock: Boolean = false
     private var isLeader: Boolean = false
     private var isInParty: Boolean = false
@@ -35,6 +40,10 @@ object HypixelModApi {
     @SboEvent
     fun onDisconnect(event: DisconnectEvent) {
         isOnHypixel = false
+        if (isAlpha) {
+            isAlpha = false
+            AlphaData.check()
+        }
         isOnSkyblock = false
         isLeader = false
         isInParty = false
@@ -45,7 +54,7 @@ object HypixelModApi {
 
     private fun handlePacket(packet: HypixelS2CPacket) {
         when (packet) {
-            is HelloS2CPacket -> onHelloPacket()
+            is HelloS2CPacket -> onHelloPacket(packet)
             is LocationUpdateS2CPacket -> onLocationUpdatePacket(packet)
             is PartyInfoS2CPacket -> onPartyInfoPacket(packet)
             is ErrorS2CPacket -> onErrorPacket(packet)
@@ -58,8 +67,13 @@ object HypixelModApi {
         mode = packet.mode.orElse("")
     }
 
-    private fun onHelloPacket() {
+    private fun onHelloPacket(packet: HelloS2CPacket) {
         isOnHypixel = true
+        val alpha = packet.environment() != Environment.PRODUCTION
+        if (alpha != isAlpha) {
+            isAlpha = alpha
+            AlphaData.check()
+        }
         sendPartyInfoPacket()
     }
 

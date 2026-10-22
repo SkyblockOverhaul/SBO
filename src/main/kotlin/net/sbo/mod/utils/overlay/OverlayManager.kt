@@ -9,9 +9,10 @@ import net.sbo.mod.utils.events.impl.guis.GuiMouseClickAfter
 import net.sbo.mod.utils.events.impl.guis.GuiPostRenderEvent
 import net.sbo.mod.utils.events.impl.render.RenderEvent
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.data.DataManager
 
 object OverlayManager {
-    val overlays = mutableListOf<Overlay>()
+    val overlays = mutableListOf<HudElement>()
 
     fun init() {
         Register.onTick(1) {
@@ -32,6 +33,11 @@ object OverlayManager {
             mc.schedule {
                 mc.setScreen(OverlayEditScreen())
             }
+        }
+
+        Register.command("sboresethudpositions") {
+            overlays.forEach { it.resetPosition() }
+            DataManager.overlayData.save()
         }
     }
 
