@@ -25,7 +25,7 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 object CrownOfAvarice : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana Crown Of Avarice", 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
         .setCondition { Diana.coaTracker != Diana.Tracker.OFF }
-        .setExtraCondition { World.isInHub() }
+        .setExtraCondition { World.isInHub() && Helper.hasSpade }
 
     private var maxCOAPrice: Long = 0L
     private var cleanCOAPrice: Long = 0L
@@ -217,7 +217,7 @@ object CrownOfAvarice : DirtyFlushableOverlay() {
     fun ItemStack?.isCoA(): Boolean {
         if (this == null) return false
 
-        return "Crown of Avarice" in ItemLookup(this).displayName
+        return "CROWN_OF_AVARICE" in ItemLookup(this).sbId ||"CROWN_OF_AVARICE_CELEBRATION" in ItemLookup(this).sbId
     }
 
     private fun updateCoaPrice() {
