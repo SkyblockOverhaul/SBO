@@ -96,16 +96,22 @@ object General : Category("General") {
         this.description = Literal("Areas to cache, as shown after \"Area:\" in the tab list, e.g. Hub or The Park. Each area needs memory for every chunk you saw, until you disconnect.")
     }
 
+    var chunkCacheWorkEverywhere by boolean(false) {
+        this.name = Literal("Chunk Cache Work Everywhere")
+        depends(::hubChunkCache)
+        this.description = Literal("Caches chunks in every SkyBlock area without listing each area above. Chunk Cache Areas is ineffective while this is enabled, since the cache works everywhere.")
+    }
+
     var chunkCacheHubIslandOnly by boolean(true) {
         this.name = Literal("Cache Hub Island Only")
         depends(::hubChunkCache)
-        this.description = Literal("In the Hub, only caches chunks of the Hub island itself, not the islands you can see from it (The Park, Spider's Den, The Barn...). Less memory and better performance, but those islands stop rendering beyond the server's view distance. When in server's view distance, they still render.")
+        this.description = Literal("Only limits caching while in the Hub: caches chunks of the Hub island itself, not the islands visible from it (The Park, Spider's Den, The Barn...). Other areas are unaffected and cache all chunks. Less memory and better performance in the Hub, but other islands stop rendering beyond the server's view distance. Within server view distance, they still render.")
     }
 
     var chunkCacheRenderHubIslandOnly by boolean(false) {
         this.name = Literal("Render Hub Island Only")
         depends(::chunkCacheHubIslandOnly)
-        this.description = Literal("In the Hub, only renders chunks of the Hub island itself or overlapping chunks with parts connected to Hub. Will make large parts of other islands such as The Park, Spider's Den, The Barn etc., not render, improving performance. This is an addition on top of Cache Hub Island Only (needs it enabled), making it not render these chunks at all, even if the server sent them and you are in server view distance.")
+        this.description = Literal("Only affects rendering while in the Hub: only renders chunks of the Hub island itself or overlapping chunks with parts connected to Hub. Other areas are unaffected. Will make large parts of other islands such as The Park, Spider's Den, The Barn etc. not render, improving performance. This is an addition on top of Cache Hub Island Only (needs it enabled), making it not render these chunks at all, even if the server sent them and you are in server view distance.")
     }
 
     var chunkCacheAboveServerOnly by boolean(false) {
