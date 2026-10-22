@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.compat;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.sbo.mod.settings.categories.Diana;
@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Pseudo
 @Mixin(targets = "de.hysky.skyblocker.skyblock.waypoint.MythologicalRitual", remap = false)
 final class MythologicalRitualMixin {
+    @SuppressWarnings("UnresolvedMixinReference")
     @ModifyReturnValue(method = "isActive", at = @At("RETURN"))
     private static final boolean sbo$disableSkyblockerMythologicalRitualHelperIfSBOEnabled(final boolean isActive) {
         return isActive && !Diana.INSTANCE.getArrowGuess();

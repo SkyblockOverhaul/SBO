@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.events;
 
 import java.util.EnumSet;
 import net.minecraft.client.multiplayer.ClientPacketListener;

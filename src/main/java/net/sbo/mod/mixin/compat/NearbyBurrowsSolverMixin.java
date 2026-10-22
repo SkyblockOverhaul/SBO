@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin;
+package net.sbo.mod.mixin.compat;
 
 import net.minecraft.core.BlockPos;
 import net.sbo.mod.settings.categories.Diana;
@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(targets = "moe.nea.firmament.features.diana.NearbyBurrowsSolver", remap = false)
 final class NearbyBurrowsSolverMixin {
     // no isEnabled() in this class, accesses config field directly, kind of hacky way to ci.cancel them but whatever
+    @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "onParticles", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnParticlesIfSBOEnabled(@NonNull @Coerce final Object event, @NonNull final CallbackInfo ci) {
         if (Diana.INSTANCE.getCloseBurrowDetection()) {
@@ -30,6 +31,7 @@ final class NearbyBurrowsSolverMixin {
         }
     }
 
+    @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "onRender", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnRenderIfSBOEnabled(@NonNull @Coerce final Object event, @NonNull final CallbackInfo ci) {
         if (Diana.INSTANCE.getCloseBurrowDetection()) {
@@ -37,6 +39,7 @@ final class NearbyBurrowsSolverMixin {
         }
     }
 
+    @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "onBlockClick", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnBlockClickIfSBOEnabled(@NonNull final BlockPos blockPos, @NonNull final CallbackInfo ci) {
         if (Diana.INSTANCE.getCloseBurrowDetection()) {

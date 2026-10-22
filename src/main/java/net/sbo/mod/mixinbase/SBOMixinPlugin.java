@@ -61,7 +61,8 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
         final var norm = (className.endsWith(".class") ? className.substring(0, className.length() - ".class".length()) : className)
             .replace("\\", "/");
         if (norm.startsWith(SBOMixinPlugin.MIXIN_BASE_DIR) && !norm.endsWith("/")) {
-            mixins.add(norm.substring(SBOMixinPlugin.MIXIN_BASE_DIR.length()));
+            // Mixins in sub folders are named relative to the mixin package with dots, like "badges.ChatComponentMixin"
+            mixins.add(norm.substring(SBOMixinPlugin.MIXIN_BASE_DIR.length()).replace('/', '.'));
         }
     }
 
