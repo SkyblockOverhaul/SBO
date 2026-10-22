@@ -37,6 +37,10 @@ object Diana : Category("Diana") {
         }
     }
 
+    enum class CoaFont {
+        MINECRAFT, INTER
+    }
+
     enum class Tracker {
         OFF, TOTAL, EVENT, SESSION;
 
@@ -245,6 +249,39 @@ object Diana : Category("Diana") {
             if (new != Tracker.OFF) {
                 CrownOfAvarice.updateLines()
             }
+        }
+    }
+
+    var coaTrackerLegacy by ObservableEntry(boolean(false) {
+            this.name = Literal("CoA Tracker Legacy Look")
+            dependsAny(state(::coaTracker, "on") { it != Tracker.OFF })
+            this.description = Literal("Shows the CoA tracker as Minecraft text lines like the other overlays instead of the new box. Slightly better performance: plain text is the cheapest overlay to draw every frame.")
+        }
+    ) { old, new ->
+        if (old != new) {
+            CrownOfAvarice.onLookChanged()
+        }
+    }
+
+    var coaTrackerFont by ObservableEntry(enum(CoaFont.MINECRAFT) {
+            this.name = Literal("CoA Tracker Font")
+            depends(state(::coaTracker, "on") { it != Tracker.OFF }, state(::coaTrackerLegacy, "off") { !it })
+            this.description = Literal("Font of the new CoA tracker look. Minecraft has better performance (about 30% less work per frame than Inter), Inter looks smoother.")
+        }
+    ) { old, new ->
+        if (old != new) {
+            CrownOfAvarice.updateLines()
+        }
+    }
+
+    var coaTrackerBackground by ObservableEntry(boolean(true) {
+            this.name = Literal("Show CoA Tracker Background")
+            depends(state(::coaTracker, "on") { it != Tracker.OFF }, state(::coaTrackerLegacy, "off") { !it })
+            this.description = Literal("On: a dark box behind the new CoA tracker look. Off: only the text, with a shadow so it stays readable, and slightly better performance since the box isn't drawn.")
+        }
+    ) { old, new ->
+        if (old != new) {
+            CrownOfAvarice.updateLines()
         }
     }
 

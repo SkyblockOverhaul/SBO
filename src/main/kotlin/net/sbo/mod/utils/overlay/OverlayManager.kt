@@ -12,7 +12,7 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.data.DataManager
 
 object OverlayManager {
-    val overlays = mutableListOf<Overlay>()
+    val overlays = mutableListOf<HudElement>()
 
     fun init() {
         Register.onTick(1) {

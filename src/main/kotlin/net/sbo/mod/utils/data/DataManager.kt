@@ -73,6 +73,22 @@ object DataManager {
     private val dirtyConfigs = ConcurrentHashMap.newKeySet<String>()
     private val dirtySaveQueued = AtomicBoolean(false)
 
+    // Gameplay data that gets its own copy on the Alpha Network (see AlphaData), in the "alpha" sub folder.
+    // Overlay positions, party finder and sound settings stay shared.
+    private val ALPHA_FILES = setOf(
+        "SboData.json", "sbo_achievements.json", "pastDianaEvents.json",
+        "dianaTrackerTotal.json", "dianaTrackerSession.json", "dianaTrackerMayor.json"
+    )
+    private const val ALPHA_DIR = "alpha"
+
+    /** True while the alpha copies are loaded; cloud sync, backups and their loading are off then. */
+    @Volatile
+    var alphaActive = false
+        private set
+
+    // Where [fileName] is saved right now, relative to the data folder
+    private fun pathOf(fileName: String): String = if (alphaActive && fileName in ALPHA_FILES) "$ALPHA_DIR/$fileName" else fileName
+
     init {
         registerDataFields()
     }
@@ -148,8 +164,8 @@ object DataManager {
 
     fun <T> write(modName: String, data: T, fileName: String) {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
-        modConfigDir.mkdirs()
         val dataFile = File(modConfigDir, fileName)
+        dataFile.parentFile.mkdirs()
         writeJsonAtomically(dataFile, data as Any)
     }
 
@@ -181,8 +197,8 @@ object DataManager {
      */
     @Suppress("UNCHECKED_CAST", "USELESS_CAST")
     private fun loadDataForFile(modName: String, fileName: String, fieldType: Class<*>, defaultSupplier: () -> Any): Any {
-        return when (fileName) {
-            "sbo_achievements.json" -> loadAchievementsData(modName)
+        return when (fileName.substringAfterLast('/')) {
+            "sbo_achievements.json" -> loadAchievementsData(modName, fileName)
             "dianaTrackerTotal.json", "dianaTrackerSession.json", "dianaTrackerMayor.json" -> {
                 loadDianaTrackerData(modName, fileName, fieldType as Class<DianaTracker>, defaultSupplier as () -> DianaTracker)
             }
@@ -243,7 +259,7 @@ object DataManager {
         DataRegistry.entries.forEach { entry ->
             @Suppress("UNCHECKED_CAST")
             val typedEntry = entry as ConfigEntry<Any>
-            write(dataDir, typedEntry.getter(), typedEntry.fileName)
+            write(dataDir, typedEntry.getter(), pathOf(typedEntry.fileName))
         }
     }
 
@@ -260,7 +276,8 @@ object DataManager {
             SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
             SBOKotlin.logger.info("All data saved successfully.")
-            createBackup(modName)
+            // Backups hold the main data only
+            if (!alphaActive) createBackup(modName)
         }.get()
     }
 
@@ -275,7 +292,7 @@ object DataManager {
                         if (!dirtyConfigs.remove(configName)) continue
                         val entry = DataRegistry.get(configName) ?: continue
                         @Suppress("UNCHECKED_CAST")
-                        write(dataDir, (entry as ConfigEntry<Any>).getter(), entry.fileName)
+                        write(dataDir, (entry as ConfigEntry<Any>).getter(), pathOf(entry.fileName))
                     }
                 } finally {
                     dirtySaveQueued.set(false)
@@ -295,6 +312,40 @@ object DataManager {
         Register.onTick(20 * 60 * interval) { _ ->
             saveAllDataThreaded(dataDir)
         }
+    }
+
+    // === ALPHA DATA ===
+
+    /**
+     * Switches the gameplay data between the main files and their alpha copies. The first switch to alpha copies the
+     * main data, like the Alpha Network copies the profile. Client thread only: it waits for the save thread, which
+     * first writes the old data to the old files and then reads the other ones, so no save mixes the two.
+     */
+    fun switchAlphaData(alpha: Boolean) {
+        if (alpha == alphaActive) return
+        val fields = this::class.java.declaredFields.filter {
+            it.isAnnotationPresent(DataField::class.java) && it.getAnnotation(DataField::class.java).fileName in ALPHA_FILES
+        }
+        fields.forEach { it.isAccessible = true }
+        dirtyConfigs.removeAll(fields.map { it.name.replaceFirstChar { c -> c.uppercase() } }.toSet())
+
+        val loaded = DATA_SAVER_EXECUTOR.submit<List<Any>> {
+            fields.forEach { write(dataDir, it.get(this), pathOf(it.getAnnotation(DataField::class.java).fileName)) }
+            alphaActive = alpha
+            fields.map { field ->
+                val fileName = field.getAnnotation(DataField::class.java).fileName
+                val path = pathOf(fileName)
+                // Seed the alpha copy from the main data the first time
+                if (alpha && !File(File(FabricLoader.getInstance().configDir.toFile(), dataDir), path).exists()) {
+                    write(dataDir, field.get(this), path)
+                }
+                @Suppress("UNCHECKED_CAST")
+                loadDataForFile(dataDir, path, field.type as Class<Any>) { field.type.getDeclaredConstructor().newInstance() }
+            }
+        }.get()
+
+        fields.zip(loaded).forEach { (field, data) -> field.set(this, data) }
+        SBOKotlin.logger.info("[sbo] Switched to the ${if (alpha) "alpha" else "main"} data")
     }
 
     // === CLOUD SYNC ===
@@ -499,9 +550,9 @@ object DataManager {
 
     // === ACHIEVEMENTS SPECIAL ===
 
-    private fun loadAchievementsData(modName: String): AchievementsData {
+    private fun loadAchievementsData(modName: String, fileName: String = "sbo_achievements.json"): AchievementsData {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
-        val dataFile = File(modConfigDir, "sbo_achievements.json")
+        val dataFile = File(modConfigDir, fileName)
         val defaultData = AchievementsData()
 
         if (!dataFile.exists()) {
@@ -547,7 +598,7 @@ object DataManager {
             }
 
             if (rawData.containsKey("totalAchievements")) {
-                load(modName, "sbo_achievements.json", AchievementsData::class.java) { AchievementsData() }
+                load(modName, fileName, AchievementsData::class.java) { AchievementsData() }
             } else if (needsMigration) {
                 SBOKotlin.logger.info("[$modName] Legacy achievement format detected. Migrating...")
 
@@ -560,7 +611,7 @@ object DataManager {
                 SBOKotlin.logger.info("[$modName] Successfully migrated ${foundUnlockedIds.size} achievements.")
                 newAchievementsData
             } else {
-                load(modName, "sbo_achievements.json", AchievementsData::class.java) { AchievementsData() }
+                load(modName, fileName, AchievementsData::class.java) { AchievementsData() }
             }
         } catch (e: Exception) {
             SBOKotlin.logger.error("[$modName] Error reading sbo_achievements.json, resetting to default data.", e)

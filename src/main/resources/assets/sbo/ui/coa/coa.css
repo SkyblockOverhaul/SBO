@@ -1,0 +1,109 @@
+/*
+ * Crown of Avarice tracker (overlays/CrownOfAvarice.kt), a GuiLib HUD overlay drawn every frame.
+ * Kept cheap to draw: Minecraft's font by default (drawn like vanilla text, about 30% cheaper than Inter), only the
+ * outer box is rounded and everything inside is a plain fill (rounded corners, gradients and overflow clipping each add
+ * work per frame). 8px is the Minecraft font's own size, other sizes scale it and blur it.
+ * .inter and .no-bg come from the "CoA Tracker Font" and "Show CoA Tracker Background" settings.
+ */
+
+.coa {
+    --coa-gold: #ffb52e;
+    --coa-green: #5ee08a;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 140px;
+    padding: 5px 6px 6px;
+    background-color: rgba(14, 14, 16, 0.78);
+    border-radius: 4px;
+    border-top: 1px solid var(--coa-gold);
+    font-family: minecraft;
+    font-size: 8px;
+    color: #9a9ca3;
+}
+
+.coa-head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+
+.coa-icon { width: 14px; height: 14px; }
+
+.coa-title {
+    flex: 1;
+    color: var(--coa-gold);
+}
+
+.coa-mode {
+    padding: 1px 3px;
+    background-color: rgba(255, 255, 255, 0.07);
+    color: #b5b7bd;
+}
+
+/* In the inventory a click on it changes the view */
+.coa-mode.clickable {
+    border: 1px solid var(--coa-gold);
+    color: #e8e9ec;
+}
+
+.coa-progress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+
+.coa-bar {
+    flex: 1;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.coa-fill {
+    height: 100%;
+    background-color: var(--coa-gold);
+}
+
+.coa-bar.maxed .coa-fill { background-color: var(--coa-green); }
+
+.coa-percent { color: #e8e9ec; }
+
+.coa-row {
+    display: flex;
+    gap: 3px;
+}
+
+.coa-label { flex: 1; }
+
+.coa-value { color: #e8e9ec; }
+
+.coa-value.profit { color: var(--coa-green); }
+
+.coa-extra { color: #6b6d74; }
+
+.coa-warn {
+    margin-top: 2px;
+    color: #ff6b6b;
+}
+
+.coa-hint {
+    margin-top: 2px;
+    color: #6b6d74;
+}
+
+/* Inter: smaller sizes and weights look right with it, unlike the Minecraft font */
+.coa.inter { font-family: inter; font-size: 7px; }
+.coa.inter .coa-title { font-size: 8px; font-weight: 600; }
+.coa.inter .coa-mode, .coa.inter .coa-hint { font-size: 6px; }
+.coa.inter .coa-value, .coa.inter .coa-percent { font-weight: 500; }
+
+/* No background: only the text, with a shadow so it stays readable on bright ground */
+.coa.no-bg {
+    background-color: transparent;
+    border-top: none;
+    text-shadow: 1px 1px 0 #000000;
+}
+.coa.no-bg .coa-mode { background-color: transparent; }
+.coa.no-bg .coa-bar { background-color: rgba(0, 0, 0, 0.45); }

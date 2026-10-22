@@ -470,6 +470,8 @@ object CloudSync {
         }
     }
 
+    private const val ALPHA_PAUSED = "Cloud sync is paused while the separate Alpha Network data is in use."
+
     fun upload(force: Boolean = false) {
         upload(force, auto = false)
     }
@@ -477,6 +479,12 @@ object CloudSync {
     // Done when the upload finished, failed or had nothing to send
     private fun upload(force: Boolean = false, auto: Boolean): CountDownLatch {
         val done = CountDownLatch(1)
+        // The separate alpha data must never reach the cloud save
+        if (DataManager.alphaActive) {
+            if (!auto) notify("error", ALPHA_PAUSED)
+            done.countDown()
+            return done
+        }
         uploadInFlight = done
         if (!auto) {
             busy = "Uploading..."
@@ -550,6 +558,11 @@ object CloudSync {
     }
 
     private fun download(allowOlder: Boolean = false, allowUnsigned: Boolean = false, auto: Boolean) {
+        // Loading it now would replace the alpha copies, not the main data
+        if (DataManager.alphaActive) {
+            if (!auto) notify("error", ALPHA_PAUSED)
+            return
+        }
         if (!auto) {
             busy = "Loading your cloud save..."
             changed()

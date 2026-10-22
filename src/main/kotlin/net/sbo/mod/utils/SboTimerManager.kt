@@ -17,15 +17,10 @@ internal fun getInactivityLimitNanos(): Long {
 
 object SboTimerManager {
     internal val activeTimers = mutableSetOf<SBOTimer>()
-    val timerMayor = SBOTimer(
-        tracker = DataManager.dianaTrackerMayorData
-    )
-    val timerTotal = SBOTimer(
-        tracker = DataManager.dianaTrackerTotalData
-    )
-    val timerSession = SBOTimer(
-        tracker = DataManager.dianaTrackerSessionData
-    )
+    // The trackers are read on every use, DataManager can swap them (alpha data)
+    val timerMayor = SBOTimer { DataManager.dianaTrackerMayorData }
+    val timerTotal = SBOTimer { DataManager.dianaTrackerTotalData }
+    val timerSession = SBOTimer { DataManager.dianaTrackerSessionData }
 
     fun init() {
         Register.onTick(1) {
@@ -57,6 +52,16 @@ object SboTimerManager {
         }
     }
 
+    /** Before DataManager swaps the trackers: the playtime so far goes into the old ones. */
+    fun beforeTrackerSwap() {
+        pauseAllActiveTimers()
+    }
+
+    /** After DataManager swapped the trackers: the timers continue from the new ones. */
+    fun afterTrackerSwap() {
+        SBOTimer.timerList.forEach { it.reload() }
+    }
+
     fun updateAllActivity() {
         SBOTimer.timerList.forEach { it.updateActivity() }
     }
@@ -68,8 +73,10 @@ object SboTimerManager {
     }
 
     class SBOTimer(
-        private val tracker: DianaTracker
+        private val trackerOf: () -> DianaTracker
     ) {
+        private val tracker: DianaTracker get() = trackerOf()
+
         companion object {
             val timerList = mutableListOf<SBOTimer>()
         }
@@ -90,6 +97,13 @@ object SboTimerManager {
         }
 
         fun isRunning(): Boolean = state == TimerState.Running
+
+        // Starts over from the stored time of the (new) tracker
+        internal fun reload() {
+            state = TimerState.Idle
+            startNanoTime = 0L
+            elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(tracker.items.TIME.coerceAtLeast(0L))
+        }
 
         private fun start() {
             if (state == TimerState.Running || elapsedNanoTime > 0L) return

@@ -1,6 +1,8 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
+import net.sbo.mod.config.ObservableEntry
+import net.sbo.mod.utils.data.AlphaData
 
 object Debug : Category("Debug") {
     var alwaysInSkyblock by boolean(false) {
@@ -26,6 +28,14 @@ object Debug : Category("Debug") {
     var repeatableAchie by boolean(true) {
         this.name = Literal("Enable Repeatable Achievements")
         this.description = Literal("Allows you to unlock repeatable achievements for each new event. Default enabled.")
+    }
+
+    var separateAlphaData by ObservableEntry(boolean(true) {
+            this.name = Literal("Separate Alpha Data")
+            this.description = Literal("On the Alpha Network, trackers, stats, achievements and past events use their own copy (made from your main data the first time), so testing there never changes your real data. Cloud sync and backups pause while it is in use. Default enabled.")
+        }
+    ) { old, new ->
+        if (old != new) AlphaData.check()
     }
 
     var lootshareDisplayTest by boolean(false) {

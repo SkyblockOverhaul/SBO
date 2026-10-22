@@ -33,6 +33,8 @@ object Backups {
 
     // Client thread. The current data is backed up first (DataManager.importAll)
     fun load(backup: Backup) {
+        // Backups hold the main data, loading one now would overwrite the alpha copies instead
+        require(!DataManager.alphaActive) { "backups can't be loaded while the separate Alpha Network data is in use" }
         val files = ZipFile(backup.file).use { zip ->
             zip.entries().asSequence()
                 .filter { !it.isDirectory && it.name.endsWith(".json") }
