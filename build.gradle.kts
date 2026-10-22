@@ -22,7 +22,11 @@ version = projectVersion
 private val mcProject: String = project.name
 private val mcVersion: String = mcProject.replace("-fabric", "")
 
-private fun versionedProperty(name: String): String = project.property("${name}.${mcVersion}")?.toString() ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
+private fun versionedProperty(name: String, fallbackName: String? = null): String =
+    project.findProperty("${name}.${mcVersion}")?.toString()
+        ?: project.findProperty(name)?.toString()
+        ?: fallbackName?.let { versionedProperty(it) }
+        ?: throw AssertionError("build.gradle.kts needs updating for $mcProject")
 
 private fun isMCVersionGreaterOrEqualTo(version: String): Boolean = Version.parse(mcVersion) >= Version.parse(version)
 
@@ -262,6 +266,7 @@ tasks.named<ProcessResources>("processResources") {
     val fabricLoaderConstraint = project.property("fabricloader.constraint")
 
     val fabricApiVersion = versionedProperty("fabricapi.version")
+    val fabricApiConstraint = versionedProperty("fabricapi.version.constraint", "fabricapi.version")
     val fabricLanguageKotlinVersion = project.property("fabriclanguagekotlin.version")
     val javaVersionMajor = Integer.parseInt(versionedProperty("java.version"))
 
@@ -277,7 +282,7 @@ tasks.named<ProcessResources>("processResources") {
     val mcVersionConstraint = project.findProperty("mc$mcVersion.constraint")?.toString() ?: "~$mcVersion"
 
     // TODO: remove when dropping 26.1 support
-    val sodiumExtraConstraint = project.findProperty("mc$mcVersion.sodium.extra.breaks.constraint")?.toString() ?: project.property("sodium.extra.breaks.constraint")!!.toString()
+    val sodiumExtraConstraint = versionedProperty("sodium.extra.breaks.constraint")
 
     inputs.property("mod_name", modName)
     inputs.property("mod_description", modDescription)
@@ -290,6 +295,7 @@ tasks.named<ProcessResources>("processResources") {
     inputs.property("fabric_loader_version", fabricLoaderVersion)
     inputs.property("fabric_loader_constraint", fabricLoaderConstraint)
     inputs.property("fabric_api_version", fabricApiVersion)
+    inputs.property("fabric_api_constraint", fabricApiConstraint)
     inputs.property("fabric_language_kotlin_version", fabricLanguageKotlinVersion)
     inputs.property("java_version_major", javaVersionMajor)
 
@@ -312,6 +318,7 @@ tasks.named<ProcessResources>("processResources") {
         "fabric_loader_version" to fabricLoaderVersion,
         "fabric_loader_constraint" to fabricLoaderConstraint,
         "fabric_api_version" to fabricApiVersion,
+        "fabric_api_constraint" to fabricApiConstraint,
         "fabric_language_kotlin_version" to fabricLanguageKotlinVersion,
         "java_version_major" to javaVersionMajor,
 

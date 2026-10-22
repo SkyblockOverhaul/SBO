@@ -49,6 +49,14 @@ object WaypointManager {
                 Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()}")
         }
 
+        Register.command("sbosendcoords") { args ->
+            val playerPos = Player.getLastPosition()
+            if (args.isNotEmpty()) {
+                Chat.allChat("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | ${args.joinToString(" ")}")
+            } else
+                Chat.allChat("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()}")
+        }
+
         Register.onChatMessage(
             Regex("^(?<channel>.*> )?(?<playerName>.+?)[§&][f7]: (?:[§&]r)?x: (?<x>[^ ,]+),? y: (?<y>[^ ,]+),? z: (?<z>[^ ,]+)(?<trailing>.*)$")
         ) { _, match ->

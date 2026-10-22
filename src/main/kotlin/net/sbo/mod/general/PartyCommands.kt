@@ -4,6 +4,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.DianaStats
 import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot
+import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.PartyCommands
 import net.sbo.mod.utils.Helper
@@ -259,6 +260,9 @@ object PartyCommands {
                 "!c", "!carrot" -> if (settings.carrotCommand) sendResponse(carrot.random())
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
                 "!tps" -> if (settings.tpsCommand) sendResponse(ServerStats.getTpsString())
+                "!q" -> if (PartyFinderManager.isLeader) {
+                    sendResponse(if (PartyFinderManager.inQueue) "Party is in queue." else "Party is not in queue.")
+                }
                 "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     DianaStats.sendPlayerStats()
                 }

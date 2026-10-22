@@ -35,6 +35,8 @@ class Overlay(
     val allowedScreens: List<(screen: Screen?) -> Boolean> = listOf(CHAT_SCREEN_FILTER),
     val exampleView: List<OverlayTextLine> = emptyList()
 ) {
+    private val defaultX = x
+    private val defaultY = y
     private var lines = mutableListOf<OverlayTextLine>()
 
     private var condition: () -> Boolean = { true }
@@ -59,6 +61,18 @@ class Overlay(
             scale = data.scale
         } else {
             overlayData.overlays[name] = OverlayValues(x, y, scale)
+        }
+    }
+
+    fun resetPosition() {
+        x = defaultX
+        y = defaultY
+        val values = overlayData.overlays[name]
+        if (values != null) {
+            values.x = defaultX
+            values.y = defaultY
+        } else {
+            overlayData.overlays[name] = OverlayValues(defaultX, defaultY, scale)
         }
     }
 
