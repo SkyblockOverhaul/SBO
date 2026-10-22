@@ -717,7 +717,9 @@ object PartyFinderManager {
             updateBool = true
             partyMemberCount -= 1
             match = true
-            isInParty = partyMemberCount > 1
+            // The count is a guess after joining someone else's party, ask the server instead of leaving the party here.
+            // A party that really ends sends one of the disband messages.
+            if (partyMemberCount <= 1 && !inQueue) sleep(200) { HypixelModApi.sendPartyInfoPacket() }
         }
 
         if (match) trackMemberCount()

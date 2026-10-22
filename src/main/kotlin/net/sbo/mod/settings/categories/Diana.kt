@@ -525,7 +525,7 @@ object Diana : Category("Diana") {
 
     var lootshareDisplay by boolean(true) {
         this.name = Literal("Lootshare Display")
-        this.description = Literal("In a party, shows Lootshared above rare mobs you did not spawn. Grey and struck through until you hit 1% of its max HP, then aqua.")
+        this.description = Literal("In a party, shows Lootshared above rare mobs you did not spawn. Grey and struck through until you hit 1% of its max HP, then aqua. Mobs you don't share or receive are skipped.")
     }
 
     var lootshareMessage by boolean(true) {
