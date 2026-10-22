@@ -67,7 +67,8 @@ object PartyFinderManager {
     private val partySize: Int get() = draft?.partySize ?: 0
     private var partyMemberCount = 0
     private var partyMember: List<String> = emptyList()
-    private var isLeader = false
+    var isLeader = false
+        private set
     var isInParty = false
 
     // Roles players picked when they asked to join, by uuid without dashes
