@@ -68,6 +68,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         // Your melee hits that no damage splash was matched to yet, oldest first
         val hits = ArrayDeque<Long>()
         var announced = false
+        var lootshareConsumed = false
         var removedNanos = 0L
         var labelHeight = mob.bbHeight + DEFAULT_NAME_TAG_HEIGHT
         var hasLabelHeight = false
@@ -155,6 +156,16 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     val ownMobAround: Boolean get() = targets.values.any { it.own && it.type.isEnabled && !Debug.lootshareDisplayTest }
 
     val lootsharedAny: Boolean get() = targets.values.any { it.isLabeled && it.isLootshared }
+
+    /** Consume the confirmed lootshare for the matching mob when its death event arrives. */
+    internal fun consumeConfirmedLootshare(name: String): Boolean {
+        val type = RareDianaMob.fromName(name) ?: return false
+        val target = (targets.values.asSequence() + removedTargets.asSequence())
+            .firstOrNull { it.type == type && it.isLootshared && !it.lootshareConsumed }
+            ?: return false
+        target.lootshareConsumed = true
+        return true
+    }
 
     /** Whether labels and overlay status are shown right now. */
     private fun isShown() = Diana.lootshareDisplay && (PartyFinderManager.isInParty || Debug.lootshareDisplayTest)

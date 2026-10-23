@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.RareMobKillTime
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Diana
@@ -149,6 +150,7 @@ object Helper {
 
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
+        if (LootshareDisplay.consumeConfirmedLootshare(event.name)) onLootShare()
         handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!), event.entity.blockPosition().toSboVec())
     }
 
