@@ -32,6 +32,7 @@ object HelpCommand {
         mapOf("cmd" to "sboevents", "desc" to "Opens the Diana Events GUI (also /sbopde)"),
         mapOf("cmd" to "sboactiveuser", "desc" to "Shows the active user of the mod"), // todo: add sboactiveuser command
         mapOf("cmd" to "sbopf", "desc" to "Opens the PartyFinder GUI"),
+        mapOf("cmd" to "sbopv [name]", "desc" to "Shows the stats of a player, or of your party with /sbopv party"),
         mapOf("cmd" to "sbopartycommands", "desc" to "Displays all diana partycommands"), // todo: add sbopartycommands command
         mapOf("cmd" to "sboresetavgmftracker", "desc" to "Resets the avg mf tracker"), // todo: add sboresetavgmftracker command
         mapOf("cmd" to "sboresetstatstracker", "desc" to "Resets the stats tracker"),

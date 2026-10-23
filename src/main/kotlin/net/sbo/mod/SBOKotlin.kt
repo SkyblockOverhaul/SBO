@@ -36,6 +36,7 @@ import net.sbo.mod.partyfinder.PartyFinderSocket
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.StatReporter
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
+import net.sbo.mod.profileviewer.ProfileViewerGui
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
@@ -130,6 +131,7 @@ object SBOKotlin : ClientModInitializer {
 		}
 
 		PartyFinderGui.register()
+		ProfileViewerGui.register()
 		SoundsGui.register()
 		AchievementsGui.register()
 		EventsGui.register()

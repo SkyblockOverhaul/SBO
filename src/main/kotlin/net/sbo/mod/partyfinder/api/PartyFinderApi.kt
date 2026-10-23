@@ -58,11 +58,25 @@ object PartyFinderApi {
     fun refreshParty(onError: (PfError) -> Unit, onSuccess: () -> Unit) =
         SboApi.authedPost("/pf/parties/refresh").handle<JsonElement>(onError) { onSuccess() }
 
-    /** By name it is open like /partyInfo, by uuid or against a party it needs the login. */
+    /** By name it is open like /partyInfo, by uuid or against a party it needs a valid SBO key. */
     fun checkMembers(body: CheckBody, onError: (PfError) -> Unit, onSuccess: (CheckData) -> Unit) {
         val text = json.encodeToString(body)
         val request = if (body.uuids != null || body.partyId != null) SboApi.authedPost("/pf/members/check", text)
             else SboApi.post("/pf/members/check", text)
+        request.handle(onError, onSuccess)
+    }
+
+    /** By name it is open, by uuid it needs a valid SBO key. */
+    fun ownStats(body: OwnStatsBody, onError: (PfError) -> Unit, onSuccess: (PlayerStats) -> Unit) {
+        val text = json.encodeToString(body)
+        val request = if (body.uuid != null) SboApi.authedPost("/pf/player/stats", text) else SboApi.post("/pf/player/stats", text)
+        request.handle(onError, onSuccess)
+    }
+
+    /** By name it is open, by uuid it needs a valid SBO key. */
+    fun viewerStats(body: ViewerStatsBody, onError: (PfError) -> Unit, onSuccess: (ViewerStatsData) -> Unit) {
+        val text = json.encodeToString(body)
+        val request = if (body.uuids != null) SboApi.authedPost("/pv/players/stats", text) else SboApi.post("/pv/players/stats", text)
         request.handle(onError, onSuccess)
     }
 

@@ -1,0 +1,144 @@
+/* SBO profile viewer (GuiLib). Builds on partyfinder.css, so colors, sidebar and header come from there. */
+
+/* Same font, padding and border, so text box and button are equally high */
+.pv-searchbox { display: flex; align-items: stretch; margin-bottom: 3px; }
+.pv-search { width: 80px; min-width: 50px; padding: 2px 4px; font-size: 7px; border-radius: 3px 0 0 3px; }
+.pv-search-button {
+    padding: 2px 6px;
+    font-size: 7px;
+    border-color: var(--guilib-border);
+    border-left-width: 0;
+    border-radius: 0 3px 3px 0;
+}
+.pv-search-button:hover { border-color: var(--guilib-border-hover); }
+
+/* ---- player row under the header ---- */
+.pv-profile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    background-color: var(--panel-2);
+    border-bottom: 1px solid var(--border);
+}
+.pv-head { width: 20px; height: 20px; flex-shrink: 0; }
+.pv-head-empty { background-color: var(--control); border-radius: 2px; }
+.pv-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pv-name-row { display: flex; align-items: center; gap: 4px; }
+.pv-name { color: var(--text-strong); font-size: 10px; }
+.pv-general { display: flex; flex-wrap: wrap; gap: 3px; }
+.pv-chip {
+    display: flex;
+    gap: 3px;
+    padding: 0 4px;
+    border-radius: 2px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    font-size: 7px;
+    white-space: nowrap;
+}
+.pv-chip-label { color: var(--muted); }
+.pv-chip-value { color: var(--text-strong); }
+.pv-age { display: flex; align-items: center; gap: 3px; color: var(--muted); font-size: 7px; white-space: nowrap; }
+.pv-wait { color: var(--dim); }
+
+/* ---- stats ---- */
+.pv-toolbar { flex-direction: row; align-items: center; gap: 8px; }
+.pv-tabs { margin-left: auto; }
+.pv-compare {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    background-color: var(--ok-soft);
+    border: 1px solid var(--ok-border);
+    color: var(--text-soft);
+    font-size: 7px;
+}
+.pv-compare .pf-icon { color: var(--ok); width: 7px; height: 7px; }
+.pv-scroll { flex-grow: 1; min-height: 0; padding-right: 3px; }
+.pv-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    column-gap: 6px;
+    padding: 3px 2px;
+    border-bottom: 1px solid var(--card);
+}
+.pv-row.compact { padding: 1px 0; font-size: 7px; border-bottom-width: 0; }
+.pv-ok { width: 7px; height: 7px; color: var(--ok); }
+.pv-bad { color: var(--bad); font-weight: bold; }
+.pv-section { margin: 8px 0 3px 2px; color: var(--muted); font-size: 7px; font-weight: bold; }
+
+.pv-sub-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; }
+.pv-sub-chip {
+    padding: 0 4px;
+    border-radius: 2px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    font-size: 7px;
+    color: var(--text-strong);
+    white-space: nowrap;
+}
+
+.pv-sub-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.pv-sub-card {
+    flex: 1 1 130px;
+    padding: 3px 5px;
+    border-radius: 3px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+}
+.pv-sub-title { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; color: var(--text-strong); }
+
+/* ---- upgrades ---- */
+.pv-upgrade-head { display: flex; flex-direction: column; gap: 3px; margin-bottom: 2px; color: var(--text-strong); }
+.pv-upgrade-title { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pv-upgrade-filter { font-size: 7px; }
+.pv-bar { flex-grow: 1; height: 4px; min-width: 40px; border-radius: 2px; background-color: var(--card); overflow: hidden; }
+.pv-bar.big { height: 6px; border-radius: 3px; }
+.pv-bar-fill { height: 100%; background-color: var(--accent); }
+.pv-upgrade {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 2px;
+    border-bottom: 1px solid var(--card);
+}
+.pv-upgrade.done { opacity: 0.6; }
+.pv-upgrade.done .pv-bar-fill { background-color: var(--ok); }
+.pv-upgrade-label { width: 95px; flex-shrink: 0; }
+.pv-upgrade-level { width: 45px; flex-shrink: 0; color: var(--muted); font-size: 7px; }
+.pv-upgrade-gain { width: 60px; flex-shrink: 0; text-align: right; color: var(--text-soft); font-size: 7px; }
+
+/* ---- party ---- */
+.pv-party-age { font-size: 7px; }
+.pv-table { display: flex; flex-direction: column; }
+.pv-table-row { display: flex; align-items: center; border-bottom: 1px solid var(--card); }
+.pv-table-head { background-color: var(--bg); }
+.pv-table-label { width: 100px; flex-shrink: 0; padding: 2px; }
+.pv-table-cell {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 2px 3px;
+    font-size: 7px;
+    color: var(--text-strong);
+    overflow: hidden;
+    border-left: 2px solid transparent;
+}
+.pv-table-cell.ok { border-left-color: var(--ok-border); }
+.pv-table-cell.bad { border-left-color: var(--bad-border); background-color: rgba(238, 92, 92, 0.06); }
+.pv-table-player { display: flex; align-items: center; cursor: pointer; border-radius: 3px; }
+.pv-table-player:hover { background-color: var(--card-hover); }
+.pv-table-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+
+/* ---- party check ---- */
+.pv-check-item { margin-bottom: 4px; }
+.pv-check-item .pf-icon { color: var(--ok); }
+.pv-check-heading { color: var(--ok); }
+.pv-need { color: var(--muted); font-size: 6px; }
+.pv-table-summary { font-weight: bold; }
+.pv-table-group { margin-top: 4px; padding: 2px; color: var(--text-strong); font-weight: bold; border-bottom: 1px solid var(--border); }
