@@ -278,7 +278,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
                 val stand = world.getEntity(id) as? ArmorStand ?: continue
                 if (stand.distanceToSqr(mob) > NAME_STAND_MAX_DISTANCE_SQ) continue
                 val name = stand.customName
-                if (null = name) continue
+                if (name == null) continue
                 if (name.string.contains(type.display)) return stand
             }
         }
