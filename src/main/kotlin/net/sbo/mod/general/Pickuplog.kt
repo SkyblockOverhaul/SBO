@@ -23,6 +23,7 @@ object Pickuplog {
 
     private var oldPurse: Long = 0L
     private var newPurse: Long = 0L
+    private var inventoryDirty = false
 
     private var oldInventory = mapOf<String, Item>()
     private var newInventory = mapOf<String, Item>()
@@ -40,6 +41,12 @@ object Pickuplog {
     fun init() {
         overlay.init()
         overlay.setCondition { QOL.pickuplogOverlay }
+
+        Register.onTick(1) {
+            if (!inventoryDirty) return@onTick
+            inventoryDirty = false
+            updateInventorySnapshot()
+        }
 
         Register.onChatMessageCancelable(Pattern.compile("(.*?) item(.*?) (.*?)", Pattern.DOTALL)) { message, matchResult ->
             var cancel = true
@@ -65,6 +72,10 @@ object Pickuplog {
 
     @SboEvent
     fun onInventorySlotUpdate(event: InventorySlotUpdateEvent) {
+        inventoryDirty = true
+    }
+
+    private fun updateInventorySnapshot() {
         if (mc.player == null || !World.isInSkyblock() || World.isNone()) return
         newInventory = Helper.readPlayerInv()
         newPurse = Helper.getPurse()
@@ -87,6 +98,7 @@ object Pickuplog {
         newInventory = emptyMap()
         oldPurse = 0L
         newPurse = 0L
+        inventoryDirty = false
         overlay.setLines(emptyList())
     }
 
