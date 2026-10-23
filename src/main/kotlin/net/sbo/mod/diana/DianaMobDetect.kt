@@ -313,7 +313,7 @@ object DianaMobDetect {
 
     private fun announceCocoon(mobName: String) {
         if (Diana.announceCocoon) {
-            Chat.pc("Cocooned a $mobName!")
+            Chat.pc("[SBO] Cocooned a $mobName!")
         }
 
         if (Diana.cocoonTitle) {
@@ -378,6 +378,8 @@ object DianaMobDetect {
             } ?: return
 
             if (mobType !in Diana.ShareMobs) return
+
+            // TODO Once majority of people are on 0.7.2 or above, change it to send with [SBO] prefix in front.
             val message = "x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob"
             if (Diana.shareRareMobInPublicChat) Chat.allChat(message) else Chat.pc(message)
         }

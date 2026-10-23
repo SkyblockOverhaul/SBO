@@ -41,6 +41,7 @@ object WaypointManager {
     private val waypoints = mutableMapOf<String, MutableList<Waypoint>>()
 
     fun init() {
+        // TODO Once majority of people are on 0.7.2 or above, change these commands both to send with [SBO] prefix in front.
         Register.command("sbosendping") { args ->
             val playerPos = Player.getLastPosition()
             if (args.isNotEmpty()) {
@@ -58,7 +59,7 @@ object WaypointManager {
         }
 
         Register.onChatMessage(
-            Regex("^(?<channel>.*> )?(?<playerName>.+?)[§&][f7]: (?:[§&]r)?x: (?<x>[^ ,]+),? y: (?<y>[^ ,]+),? z: (?<z>[^ ,]+)(?<trailing>.*)$")
+            Regex("^(?<channel>.*> )?(?<playerName>.+?)[§&][f7]: (?:[§&]r)?(?:\\[SBO\\] )?x: (?<x>[^ ,]+),? y: (?<y>[^ ,]+),? z: (?<z>[^ ,]+)(?<trailing>.*)$")
         ) { _, match ->
             val channel = match.groups["channel"]?.value ?: "Unknown"
             val player = match.groups["playerName"]?.value ?: "Unknown"
