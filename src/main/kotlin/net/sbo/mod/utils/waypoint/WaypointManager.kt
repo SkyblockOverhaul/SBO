@@ -39,6 +39,15 @@ private const val RARE_MOB_VALIDATION_DISTANCE = 25.0
 
 object WaypointManager {
     private val waypoints = mutableMapOf<String, MutableList<Waypoint>>()
+    private data class PreparedLine(
+        val start: Vec3,
+        val end: Vec3,
+        val rgb: FloatArray,
+        val width: Float,
+        val opacity: Float
+    )
+    private var preparedSubGuessLines: List<PreparedLine> = emptyList()
+    private var preparedGuessChainLines: List<PreparedLine> = emptyList()
 
     fun init() {
         // TODO Once majority of people are on 0.7.2 or above, change these commands both to send with [SBO] prefix in front.
@@ -304,6 +313,8 @@ object WaypointManager {
                 waypoint.format(rareWp)
                 false
             }
+
+            prepareGuessLines()
         }
 
         LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)
@@ -620,42 +631,50 @@ object WaypointManager {
     }
 
     private fun renderSubGuessLines(context: LevelRenderContext) {
-        if (!Diana.showArrowSubGuesses) return
+        preparedSubGuessLines.forEach { line ->
+            RenderUtils3D.drawLine(context, line.start, line.end, line.rgb, line.width, line.opacity)
+        }
+    }
 
-        val color = Color(Customization.SubGuessColor)
+    private fun prepareGuessLines() {
+        val playerPos = Player.getLastPosition()
+        val dynamicOpacity = Customization.dynamicWaypointOpacity
+        val waypointOpacity = Customization.waypointOpacity / 100f
+        val lineWidth = Diana.dianaLineWidth.toFloat()
 
-        val rgb = floatArrayOf(
-            color.red / 255f,
-            color.green / 255f,
-            color.blue / 255f
-        )
-
-        ArrowGuessBurrow.allGuesses.forEach { guess ->
-            guess.getVisibleChain()
-                .zipWithNext { a, b ->
-                    val opacity =
-                        (
-                            if (Customization.dynamicWaypointOpacity) {
-                                val distance = Player.getLastPosition().distanceTo(
-                                    b.center()
-                                )
-
-                                calculateDynamicOpacity(distance)
-                            } else {
-                                Customization.waypointOpacity / 100f
-                            }
-                        )
-                            .coerceIn(0.4f, 1f) // In-world path lines need a higher minimum opacity for readability.
-
-                    RenderUtils3D.drawLine(
-                        context,
+        preparedSubGuessLines = if (!Diana.showArrowSubGuesses) emptyList() else {
+            val color = Color(Customization.SubGuessColor)
+            val rgb = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f)
+            ArrowGuessBurrow.allGuesses.flatMap { guess ->
+                guess.getVisibleChain().zipWithNext { a, b ->
+                    val opacity = (if (dynamicOpacity) calculateDynamicOpacity(playerPos.distanceTo(b.center())) else waypointOpacity)
+                        .coerceIn(0.4f, 1f)
+                    PreparedLine(
                         a.center().toVec3d().add(0.0, 0.5, 0.0),
                         b.center().toVec3d().add(0.0, 0.5, 0.0),
-                        rgb,
-                        Diana.dianaLineWidth.toFloat(),
-                        opacity
+                        rgb, lineWidth, opacity
                     )
                 }
+            }
+        }
+
+        preparedGuessChainLines = if (!Diana.drawOptimalOrderLines) emptyList() else {
+            val chain = buildGreedyGuessChain(playerPos)
+            val color = Color(Customization.OptimalOrderLineColor)
+            val rgb = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f)
+            val width = (lineWidth / 1.6f).coerceIn(1.0f, 20.0f)
+            chain.zipWithNext().mapIndexedNotNull { index, (a, b) ->
+                val bDistance = playerPos.distanceTo(b.pos)
+                // Always show the first line; show the next two only when their destination is nearby.
+                if (index > 0 && (index > 2 || bDistance > 50)) return@mapIndexedNotNull null
+                val opacity = (if (dynamicOpacity) calculateDynamicOpacity(bDistance) else waypointOpacity)
+                    .coerceIn(0.3f, 0.5f)
+                PreparedLine(
+                    a.pos.toVec3d().add(0.5, 1.0, 0.5),
+                    b.pos.toVec3d().add(0.5, 1.0, 0.5),
+                    rgb, width, opacity
+                )
+            }
         }
     }
 
@@ -690,44 +709,8 @@ object WaypointManager {
     }
 
     private fun renderGuessChainLines(context: LevelRenderContext) {
-        if (!Diana.drawOptimalOrderLines) return
-
-        val chain = buildGreedyGuessChain(Player.getLastPosition())
-        if (chain.size < 2) return
-
-        val color = Color(Customization.OptimalOrderLineColor)
-        val rgb = floatArrayOf(
-            color.red / 255f,
-            color.green / 255f,
-            color.blue / 255f
-        )
-
-        chain.zipWithNext().forEachIndexed { index, (a, b) ->
-            val bDistance = Player.getLastPosition().distanceTo(b.pos)
-
-            // Always show the first line.
-            // Only show the 2nd and 3rd lines if the destination is nearby.
-            if (index > 0 && (index > 2 || bDistance > 50)) {
-                return@forEachIndexed
-            }
-
-            val opacity =
-                (
-                    if (Customization.dynamicWaypointOpacity) {
-                        calculateDynamicOpacity(bDistance)
-                    } else {
-                        Customization.waypointOpacity / 100f
-                    }
-                ).coerceIn(0.3f, 0.5f)
-
-            RenderUtils3D.drawLine(
-                context,
-                a.pos.toVec3d().add(0.5, 1.0, 0.5),
-                b.pos.toVec3d().add(0.5, 1.0, 0.5),
-                rgb,
-                (Diana.dianaLineWidth.toFloat() / 1.6f).coerceIn(1.0f, 20.0f),
-                opacity
-            )
+        preparedGuessChainLines.forEach { line ->
+            RenderUtils3D.drawLine(context, line.start, line.end, line.rgb, line.width, line.opacity)
         }
     }
 
