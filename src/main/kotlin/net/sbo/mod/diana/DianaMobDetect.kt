@@ -69,6 +69,15 @@ object DianaMobDetect {
         }
     }
 
+    internal val rareMobNames: Set<String> = RareDianaMob.entries.mapTo(mutableSetOf()) { it.display }
+    private val prefixes = setOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
+
+    private fun fallbackRemovePrefix(mobName: String): String {
+        return prefixes.firstOrNull { mobName.startsWith("$it ") }
+            ?.let { mobName.removePrefix("$it ") }
+            ?: mobName
+    }
+
     private fun findKingHits(name: String): MatchResult? {
         if (!World.isInHub()) return null
         if (!name.contains("Hits")) return null
@@ -94,14 +103,6 @@ object DianaMobDetect {
     private fun parseStarFromName(name: String): Boolean = name.contains("") || name.contains("✯") // mf rework update changes the shuriken icon to depend on resourcepack. still check for legacy since that's only on alpha and to keep compatibility with RitualPractice
 
     private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
-
-    private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
-
-    private fun fallbackRemovePrefix(mobName: String): String {
-        return prefixes.firstOrNull { mobName.startsWith("$it ") }
-            ?.let { mobName.removePrefix("$it ") }
-            ?: mobName
-    }
 
     fun init() {
         mobHpOverlay.init()
@@ -148,9 +149,10 @@ object DianaMobDetect {
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
             // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
-            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ")} != null) {
+            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ") } != null) {
                 // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
                 if (DianaTracker.lastSpawnedMob == displayName) {
+                    if (rare != null) RareMobKillTime.onCocoonCaught(displayName)
                     // Count as a new spawned mob, exactly as if it was received as spawned by a regular burrow, so that achievements and mob tracking work.
                     // This will give an error in chat if we pass a string that matches no mob name in the tracker handler code.
                     DianaTracker.trackMobOnSpawnAndSave(displayName, fromCocoon = true)
@@ -420,4 +422,13 @@ object DianaMobDetect {
             stand to mobType
         }
     }
+
+    internal fun getTrackedRareMobEntities(): List<Pair<ArmorStand, String>> =
+        tracked.values.mapNotNull { stand ->
+            val name = stand.customName?.formattedString() ?: return@mapNotNull null
+            val mob = RareDianaMob.fromName(name) ?: return@mapNotNull null
+            stand to mob.display
+        }
+
+    internal fun getKnownDianaMobEntityIds(): Set<Int> = tracked.keys + unconfirmed.keys
 }

@@ -579,6 +579,26 @@ object WaypointManager {
         removeWithinDistanceFrom(pos, "rareMob", 32, 1)
     }
 
+    fun removeRareMobWaypointBySpawner(player: String, mobName: String) {
+        val cleanPlayer = player.removeFormatting().trim()
+        val mobType = when (mobName) {
+            DianaMobDetect.RareDianaMob.INQ.display -> Diana.ReceiveList.INQ
+            DianaMobDetect.RareDianaMob.KING.display -> Diana.ReceiveList.KING
+            DianaMobDetect.RareDianaMob.MANTI.display -> Diana.ReceiveList.MANTICORE
+            DianaMobDetect.RareDianaMob.SPHINX.display -> Diana.ReceiveList.SPHINX
+            else -> return
+        }
+
+        val waypoint = getWaypointsOfType("rareMob")
+            .asSequence()
+            .filter { it.rareMobSentBy?.removeFormatting()?.trim() == cleanPlayer && it.rareMobType == mobType }
+            .maxByOrNull { it.creationNs }
+            ?: return
+
+        removeWaypoint(waypoint)
+        Chat.chat("§6[SBO] §eRemoved the $mobName waypoint by $cleanPlayer since the mob died.")
+    }
+
     /**
      * Renders all waypoints in the management system.
      * @param context The world render context.
