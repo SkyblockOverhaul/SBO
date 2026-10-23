@@ -4,6 +4,7 @@ import net.sbo.mod.config.Category
 import net.sbo.mod.config.ObservableEntry
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.EventsGui
+import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.LootshareParty
 import net.sbo.mod.overlays.Chains
 import net.sbo.mod.overlays.CrownOfAvarice
@@ -584,6 +585,12 @@ object Diana : Category("Diana") {
     var lootshareMessage by boolean(true) {
         this.name = Literal("Lootshare Message")
         this.description = Literal("Sends a party chat message once you dealt enough damage to lootshare a rare mob.")
+    }
+
+    var lootshareText by strings(LootshareDisplay.DEFAULT_TEXT) {
+        this.name = Literal("Lootshare Message Text")
+        this.description = Literal("The lootshare party message, \"${LootshareDisplay.DEFAULT_TEXT}\" when empty. Use {mob} for the mob's name. Colors can be used with & and a color code (stripped when sending to party). ${LootshareDisplay.MARKER} is added at the end, so SBO users in your party see you lootshared.")
+        depends(::lootshareMessage)
     }
 
     var lootsharePartyOverlay by boolean(false) {

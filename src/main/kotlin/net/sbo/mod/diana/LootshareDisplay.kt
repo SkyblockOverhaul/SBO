@@ -13,6 +13,7 @@ import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
@@ -34,6 +35,10 @@ import java.util.concurrent.TimeUnit
  * so it does not lag behind when the mob moves. Only its height comes from the name stand, smoothed over time.
  */
 object LootshareDisplay : LevelRenderEvents.CollectSubmits {
+    const val DEFAULT_TEXT = "Lootshare Secured"
+    /** Ends every lootshare message, whatever text it has, so [LootshareParty] knows who lootshared. */
+    const val MARKER = "[SBO-LS]"
+
     private const val LOOTSHARE_DAMAGE_FRACTION = 0.01
     private const val NAME_STAND_MAX_ID_OFFSET = 5
     private const val NAME_STAND_MAX_DISTANCE_SQ = 6.0 * 6.0
@@ -232,9 +237,10 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         if (announced || !isLabeled || !isLootshared || !isShown()) return
         announced = true
         if (!Diana.lootshareMessage) return
+        val text = Helper.joinLines(Diana.lootshareText).ifEmpty { DEFAULT_TEXT }.replace("{mob}", type.display).replace('&', '§')
         // The debug test mode only tells you, it does not message the party
-        if (Debug.lootshareDisplayTest) Chat.chat("§6[SBO] §bLootshared ${type.display}!")
-        else if (PartyFinderManager.isInParty) Chat.pc("[SBO] Lootshared ${type.display}!")
+        if (Debug.lootshareDisplayTest) Chat.chat("§6[SBO] §b$text §7$MARKER")
+        else if (PartyFinderManager.isInParty) Chat.pc("${text.removeFormatting()} $MARKER")
     }
 
     private fun Target.updateNameStand() {

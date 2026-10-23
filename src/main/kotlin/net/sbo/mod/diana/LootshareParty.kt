@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * While a rare mob is around, lists the party with who lootshared it: red until they sent the
- * "[SBO] Lootshared ..." party message from [LootshareDisplay], aqua after. Whoever shared the
+ * lootshare party message from [LootshareDisplay] (ends in its marker), aqua after. Whoever shared the
  * mob's coords in party chat is shown as the spawner, they always get the loot.
  */
 object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Diana.TrackerOverlay.LOOTSHARE, { Diana.lootsharePartyOverlay },
@@ -40,7 +40,8 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Dian
     private val LINGER_NS = TimeUnit.SECONDS.toNanos(10L)
 
     private val partyChatRegex = Regex("^§9[^§]+ §[0-9a-fk-or]> (.*?)§[0-9a-fk-or]*: ?(.*)$")
-    private val lootsharedRegex = Regex("""^\[SBO] Lootshared .+!$""")
+    // Older SBO versions send "[SBO] Lootshared <mob>!", newer ones any text ending in the marker
+    private val lootsharedRegex = Regex("""^\[SBO] Lootshared .+!$|.*${Regex.escape(LootshareDisplay.MARKER)}$""")
     // The rare mob share from DianaMobDetect.onRareSpawn: "x: 1, y: 2, z: 3 | King Minos"
     private val spawnShareRegex = Regex("""x: -?\d+, y: -?\d+, z: -?\d+ \| (.+)$""")
 
