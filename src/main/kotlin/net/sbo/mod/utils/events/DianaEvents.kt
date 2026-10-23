@@ -53,8 +53,7 @@ object DianaEvents {
             lastWaypointClicked = waypoint.pos
         }
 
-        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
-        if (BurrowDetector.burrows.containsKey(posString)) {
+        if (BurrowDetector.hasKnownBurrowAt(pos)) {
             lastBurrowClicked = pos
         }
         lastBlockClicked = pos
