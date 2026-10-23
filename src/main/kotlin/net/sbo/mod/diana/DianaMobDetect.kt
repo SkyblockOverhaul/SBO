@@ -358,7 +358,7 @@ object DianaMobDetect {
             else -> null
         } ?: return
 
-        val mobDisplayName = WaypointManager.notifyRareMob("", mobType)
+        val mobDisplayName = WaypointManager.notifyRareMob("", mobType, true, true)
         val playerPos = SboPlayer.getLastPosition()
 
         val waypoint = WaypointManager.addRareMobWaypoint("", WaypointManager.floorToGround(playerPos), mobType, mobDisplayName, true)

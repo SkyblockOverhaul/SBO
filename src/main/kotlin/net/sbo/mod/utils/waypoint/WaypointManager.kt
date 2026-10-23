@@ -6,6 +6,7 @@ import net.minecraft.client.player.RemotePlayer
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.decoration.ArmorStand
+import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.sbo.mod.SBOKotlin.mc
@@ -19,6 +20,7 @@ import net.sbo.mod.settings.categories.General.HideOwnWaypoints
 import net.sbo.mod.settings.categories.General.hideOwnWaypoints
 import net.sbo.mod.settings.categories.General.patcherWaypoints
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
@@ -104,7 +106,7 @@ object WaypointManager {
                     }
 
                     val isOwnSpawn = player.contains(selfName)
-                    val mobDisplayName = notifyRareMob(player, mobType)
+                    val mobDisplayName = notifyRareMob(player, mobType, isOwnSpawn)
 
                     addRareMobWaypoint(
                         player,
@@ -331,7 +333,7 @@ object WaypointManager {
         val mobName: String
     )
 
-    fun notifyRareMob(player: String, mobType: Diana.ReceiveList): String {
+    fun notifyRareMob(player: String, mobType: Diana.ReceiveList, isOwnSpawn: Boolean, fromSelfSpawnMessage: Boolean = false): String {
         val mobData = when (mobType) {
             Diana.ReceiveList.INQ -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
@@ -370,7 +372,9 @@ object WaypointManager {
             Diana.rareMobTitleFadeOutTime
         )
 
-        if (!player.contains(Player.getName() ?: "")) playCustomSound(mobData.sound, mobData.volume)
+        if (!isOwnSpawn || fromSelfSpawnMessage) {
+            playCustomSound(mobData.sound, mobData.volume)
+        }
 
         return mobData.mobName
     }
@@ -524,7 +528,7 @@ object WaypointManager {
                 player = "",
                 pos = pos,
                 mobType = receiveType,
-                mobDisplayName = notifyRareMob("", receiveType),
+                mobDisplayName = notifyRareMob("", receiveType, isOwnSpawn),
                 isOwnSpawn = isOwnSpawn
             )?.let(existing::add)
         }
