@@ -5,5 +5,6 @@
   "key.sbo-kotlin.rare_mob_warp": "Rare Mob Warp Key",
   "key.sbo-kotlin.general_warp": "General Warp Key",
   "key.sbo-kotlin.send_coords": "Send Coordinates",
-  "key.sbo-kotlin.sphinx_solver": "Sphinx Solver (!!UAYOR!!)"
+  "key.sbo-kotlin.sphinx_solver": "Sphinx Solver (!!UAYOR!!)",
+  "key.sbo-kotlin.clear_rare_mob_world_waypoints": "Clear Rare Mob and World Waypoints"
 }
