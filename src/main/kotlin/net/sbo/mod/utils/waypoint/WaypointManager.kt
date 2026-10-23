@@ -768,6 +768,11 @@ object WaypointManager {
         waypoints[type]?.clear()
     }
 
+    fun removeRareMobAndWorldWaypoints() {
+        removeAllOfType("rareMob")
+        removeAllOfType("world")
+    }
+
     /**
      * Removes limit number of waypoints of a specific type that are within a certain distance from the given position.
      * @param type The type of waypoints to remove.
