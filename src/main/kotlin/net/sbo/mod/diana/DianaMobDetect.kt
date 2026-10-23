@@ -383,42 +383,19 @@ object DianaMobDetect {
         }
 
         when (mob) {
-            RareDianaMob.INQ.display -> {
-                Diana.announceInqText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceInqText[0], "inq")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
-
-            RareDianaMob.SPHINX.display -> {
-                Diana.announceSphinxText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
-
-            RareDianaMob.MANTI.display -> {
-                Diana.announceMantiText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
-
-            RareDianaMob.KING.display -> {
-                Diana.announceKingText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceKingText[0], "king")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
+            RareDianaMob.INQ.display -> announceSpawn(Diana.announceInqText, "inq")
+            RareDianaMob.SPHINX.display -> announceSpawn(Diana.announceSphinxText, "sphinx")
+            RareDianaMob.MANTI.display -> announceSpawn(Diana.announceMantiText, "manti")
+            RareDianaMob.KING.display -> announceSpawn(Diana.announceKingText, "king")
         }
+    }
+
+    // All lines go out as one message, empty means off
+    private fun announceSpawn(lines: Array<String>, mob: String) {
+        val text = Helper.joinLines(lines)
+        if (text.isEmpty()) return
+        val message = Helper.getSpawnMessage(text, mob)
+        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
     }
 
     /**

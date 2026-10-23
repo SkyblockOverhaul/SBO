@@ -619,8 +619,11 @@ object Helper {
             get() = if (mobCount > 0) dropCount.toDouble() / mobCount * 100 else 0.0
     }
 
-    private fun getCustomMessage(message: Array<out String>): String =
-        message.firstOrNull { it.isNotBlank() }?.trim() ?: ""
+    /** A message setting's lines as one chat message: the lines joined with spaces, blank lines skipped. */
+    fun joinLines(lines: Array<out String>): String =
+        lines.map { it.trim() }.filter { it.isNotEmpty() }.joinToString(" ")
+
+    private fun getCustomMessage(message: Array<out String>): String = joinLines(message)
 
     private fun getSinceDrop(dropName: String, isLootshare: Boolean): String {
         val data = DataManager.sboData

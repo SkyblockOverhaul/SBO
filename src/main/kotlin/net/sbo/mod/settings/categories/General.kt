@@ -93,7 +93,7 @@ object General : Category("General") {
     var chunkCacheAreas by strings("Hub") {
         this.name = Literal("Chunk Cache Areas")
         depends(::hubChunkCache)
-        this.description = Literal("Areas to cache, as shown after \"Area:\" in the tab list, e.g. Hub or The Park. Each area needs memory for every chunk you saw, until you disconnect.")
+        this.description = Literal("Areas to cache, one per line (or separated by commas). Write the name exactly as it shows after \"Area:\" in the tab list, e.g. Hub, The Park or Dwarven Mines; upper/lower case doesn't matter. Each area needs memory for every chunk you saw, until you disconnect.")
     }
 
     var chunkCacheWorkEverywhere by boolean(false) {

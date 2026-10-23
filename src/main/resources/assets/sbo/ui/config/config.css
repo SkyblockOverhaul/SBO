@@ -95,6 +95,7 @@ body {
 }
 
 .cfg-window {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: min(96vw, 620px);
@@ -264,11 +265,28 @@ body {
 .cfg-text { width: 160px; }
 .cfg-button { padding: 1px 8px; }
 
-.cfg-strings { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.cfg-strings-line { display: flex; gap: 2px; }
-.cfg-strings-remove { padding: 0 4px; }
-.cfg-strings-add { padding: 0 6px; font-size: 7px; color: var(--subtle); background-color: transparent; border-color: transparent; }
-.cfg-strings-add:hover { color: var(--text-strong); background-color: var(--tint); }
+.cfg-strings { display: flex; align-items: flex-start; gap: 2px; }
+.cfg-textarea { width: 160px; }
+.cfg-strings-expand { padding: 0 4px; color: var(--subtle); background-color: transparent; border-color: transparent; }
+.cfg-strings-expand:hover { color: var(--text-strong); background-color: var(--tint); }
+
+/* The big editor of a multi-line setting, over the whole window */
+.cfg-editor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    background-color: var(--bg);
+}
+.cfg-editor-header { display: flex; align-items: center; gap: 8px; }
+.cfg-editor-title { flex-grow: 1; min-width: 0; font-weight: bold; color: var(--title); }
+.cfg-editor-done { padding: 1px 8px; }
+.cfg-editor-text { flex-grow: 1; min-height: 0; }
 
 .cfg-results-info { margin: 4px 0; color: var(--muted); font-size: 7px; }
 .cfg-result-group { margin-bottom: 6px; }

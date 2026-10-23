@@ -18,6 +18,7 @@ import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.slider
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
+import net.sbo.guilib.core.dsl.textarea
 import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.guilib.fabric.GuiLibScreen
@@ -53,6 +54,8 @@ private class Ui(
     val jump: (ConfigElement) -> Unit,
     val collapsed: Set<String>,
     val toggle: (String) -> Unit,
+    /** Opens [StringsEntry] in the big editor. */
+    val edit: (StringsEntry) -> Unit,
 )
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
@@ -64,6 +67,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     var page by useState<Category>(if (hasGeneral) config else config.children.firstOrNull() ?: config)
     var query by useState("")
     var target by useState<ConfigElement?>(null)
+    var editing by useState<StringsEntry?>(null)
     var collapsed by useState<Set<String>>(DataManager.sboData.collapsedSettings.toSet())
     val revision = useState(0)
     val body = useElementRef()
@@ -100,6 +104,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
             },
             collapsed = collapsed,
             toggle = { key -> setCollapsed(if (key in collapsed) collapsed - key else collapsed + key) },
+            edit = { editing = it },
         )
     }
     val hits = useMemo(query, revision.value) { search(config, query) }
@@ -171,6 +176,13 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                         else -> categoryPage(page, revision.value, target, ui)
                     }
                 }
+            }
+
+            editing?.let { entry ->
+                StringsEditor(EditorProps(entry) {
+                    editing = null
+                    ui.changed()
+                })
             }
         }
     }
@@ -470,25 +482,32 @@ private fun format(value: Double, step: Double): String {
     return BigDecimal.valueOf(value).setScale(decimals, RoundingMode.HALF_UP).toPlainString()
 }
 
+// One line of the field is one entry of the setting
 private fun NodeBuilder.strings(entry: StringsEntry, ui: Ui, refresh: () -> Unit) {
     div(className = "cfg-strings") {
-        entry.value.forEachIndexed { i, line ->
-            div(className = "cfg-strings-line", key = i) {
-                input(className = "cfg-text", value = line, onInput = {
-                    entry.set(entry.value.copyOf().also { lines -> lines[i] = it.value })
-                    refresh()
-                })
-                if (entry.value.size > 1) {
-                    button(className = "cfg-strings-remove", title = "Remove this line", onClick = {
-                        entry.set(entry.value.filterIndexed { j, _ -> j != i }.toTypedArray())
-                        ui.changed()
-                    }) { +"✕" }
-                }
-            }
+        textarea(className = "cfg-textarea", value = entry.value.joinToString("\n"), rows = 2, onInput = {
+            entry.set(it.value.split("\n").toTypedArray())
+            refresh()
+        })
+        button(className = "cfg-strings-expand", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) { +"⤢" }
+    }
+}
+
+private data class EditorProps(val entry: StringsEntry, val close: () -> Unit)
+
+// Covers the whole window, Escape or Done goes back
+private val StringsEditor = component<EditorProps>("ConfigStringsEditor") { (entry, close) ->
+    val refresh = useForceUpdate()
+    useEscapeBack { close() }
+    div(className = "cfg-editor") {
+        div(className = "cfg-editor-header") {
+            span(className = "cfg-editor-title") { +entry.name }
+            button(className = "cfg-editor-done", onClick = { close() }) { +"Done" }
         }
-        button(className = "cfg-strings-add", onClick = {
-            entry.set(entry.value + "")
-            ui.changed()
-        }) { +"+ Add line" }
+        if (entry.description.isNotEmpty()) description(entry.description, "cfg-row-description")
+        textarea(className = "cfg-editor-text", value = entry.value.joinToString("\n"), rows = 12, autoFocus = true, onInput = {
+            entry.set(it.value.split("\n").toTypedArray())
+            refresh()
+        })
     }
 }
