@@ -46,16 +46,7 @@ object PartyPlayer {
 
     fun init() {
         Register.command("sboreloadstats") {
-            val waitSeconds = cacheBypassReadyIn()
-            if (waitSeconds > 0) {
-                Chat.chat("§6[SBO] §cPlease wait ${waitSeconds}s before reloading stats again.")
-                return@command
-            }
-            reloadStats(
-                onError = { error ->
-                    Chat.chat("§6[SBO] §cFailed to reload stats: ${error.message}")
-                }
-            ) { stats ->
+            reloadStats(onError = { message -> Chat.chat("§6[SBO] §c$message") }) { stats ->
                 Chat.chat("§6[SBO] §aPlayer stats reloaded: ${stats.name} (SB Level: ${stats.sbLvl})")
             }
         }
@@ -83,18 +74,30 @@ object PartyPlayer {
     }
 
     /**
-     * Refetches with readCache=false, for /sboreloadstats.
-     * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
+     * Loads your stats fresh from Hypixel, used by /sboreloadstats and the party finder button.
+     * This refreshes the cached stats in the backend and in the client.
+     * @param onError Gets a message for the player when it is too soon or the request fails.
      */
-    private fun reloadStats(
-        onError: ((Exception) -> Unit)? = null,
-        callback: (AchievementStats) -> Unit
-    ) {
-        if (refreshing) {
-            callback(stats)
+    fun reloadStats(onError: (String) -> Unit, onDone: (AchievementStats) -> Unit) {
+        val waitSeconds = cacheBypassReadyIn()
+        if (waitSeconds > 0) {
+            onError("Please wait ${waitSeconds}s before reloading your stats again.")
             return
         }
-        fetch(readCache = false, profile = currentProfile(), onError = onError, callback = callback)
+        val done = { stats: AchievementStats ->
+            OwnStats.clear()
+            onDone(stats)
+        }
+        if (refreshing) {
+            done(stats)
+            return
+        }
+        fetch(
+            readCache = false,
+            profile = currentProfile(),
+            onError = { error -> onError("Could not reload your stats: ${error.message}") },
+            callback = done
+        )
     }
 
     private fun fetch(
