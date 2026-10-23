@@ -669,6 +669,7 @@ object PartyFinderManager {
             }) {
                 onComplete?.invoke(true)
                 tell("§6[SBO] §eParty removed from queue.", true)
+                if (isInParty) Chat.pc("[SBO] Party removed from queue.")
             }
         } else if (creatingParty) {
             ghostParty = true
