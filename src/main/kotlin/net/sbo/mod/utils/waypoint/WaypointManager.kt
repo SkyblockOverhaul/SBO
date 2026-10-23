@@ -68,7 +68,9 @@ object WaypointManager {
             val x = match.groups["x"]?.value?.toIntOrNull() ?: 0
             var y = match.groups["y"]?.value?.toIntOrNull() ?: 0
             val z = match.groups["z"]?.value?.toIntOrNull() ?: 0
-            y = findBlock(world, x, y, z)
+
+            val sentPos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
+            val pos = floorToGround(world, sentPos)
 
             val trailing = match.groups["trailing"]?.value ?: ""
             val mob = trailing.replace("|", "").trim()
@@ -86,8 +88,6 @@ object WaypointManager {
                 // Otherwise, the else if falls to patcherWaypoints case.
                 if (Diana.receiveRareMob && mobType != null) {
                     if (mobType !in Diana.ReceiveMobs) return@onChatMessage
-
-                    val pos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
 
                     val existing = getWaypointsOfType("rareMob")
                     if (existing.any { it.rareMobType == mobType && it.rareMobSentBy == player && it.pos.distanceTo(pos) <= 10 }) {
@@ -107,7 +107,7 @@ object WaypointManager {
                 } else if (patcherWaypoints) {
                     if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(selfName)) return@onChatMessage
 
-                    addWaypoint(Waypoint(player, x.toDouble(), y.toDouble(), z.toDouble(), type = "world", ttl = 30))
+                    addWaypoint(Waypoint(player, pos.x, pos.y, pos.z, type = "world", ttl = 30))
                 }
             }
         }
@@ -1064,19 +1064,5 @@ object WaypointManager {
                 }
             }
         }
-    }
-
-    private fun findBlock(world: ClientLevel, x: Int, y: Int, z: Int): Int {
-        var currentY = y
-        while (currentY > world.minY) {
-            val pos = BlockPos(x, currentY, z)
-            val blockState = world.getBlockState(pos)
-            if (!blockState.isAir) {
-                return currentY
-            }
-            currentY--
-        }
-        // fallback if no block found
-        return y
     }
 }
