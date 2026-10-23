@@ -741,8 +741,12 @@ object WaypointManager {
         waypoints.getOrPut(type) { mutableListOf() }.add(waypoint)
 
         if (type == "burrow" && playSound) {
-            playCustomSound(DataManager.soundSettingsData.burrowFoundSound, volume = DataManager.soundSettingsData.burrowVolume)
+            playBurrowFoundSound()
         }
+    }
+
+    fun playBurrowFoundSound() {
+        playCustomSound(DataManager.soundSettingsData.burrowFoundSound, volume = DataManager.soundSettingsData.burrowVolume)
     }
 
     /**
