@@ -15,6 +15,27 @@ object RareMobKillTime {
     private val pendingCocoons = mutableListOf<PendingCocoon>()
 
     private data class MobTimer(val startNs: Long, val hatchMs: Long? = null, val cocoon: Boolean = false)
+    internal data class KillTimeMessage(
+        val prefix: String?,
+        val player: String,
+        val elapsed: String,
+        val mob: String
+    )
+
+    internal val killTimeMessageRegex: Regex by lazy {
+        val rareNamePattern = DianaMobDetect.rareMobNames.joinToString("|") { Regex.escape(it) }
+        Regex("^(?<prefix>.*> )?(?<player>.+?): \\[SBO\\] Took (?<elapsed>.+?) to kill the (?<mob>$rareNamePattern)!.*$")
+    }
+
+    internal fun parseKillTimeMessage(message: String): KillTimeMessage? {
+        val match = killTimeMessageRegex.matchEntire(message) ?: return null
+        return KillTimeMessage(
+            prefix = match.groups["prefix"]?.value,
+            player = match.groups["player"]?.value ?: return null,
+            elapsed = match.groups["elapsed"]?.value ?: return null,
+            mob = match.groups["mob"]?.value ?: return null
+        )
+    }
     private data class PendingCocoon(
         val mob: String,
         val caughtNs: Long,
@@ -26,8 +47,7 @@ object RareMobKillTime {
             trackCocoonHatches()
         }
 
-        val rareNamePattern = DianaMobDetect.rareMobNames.joinToString("|") { Regex.escape(it) }
-        Register.onChatMessage(Regex("^(?<prefix>.*> )?(?<player>.+?): [SBO] Took (?<elapsed>.+?) to kill the (?<mob>$rareNamePattern)!.*$"), noFormatting = true) { _, match ->
+        Register.onChatMessage(killTimeMessageRegex, noFormatting = true) { _, match ->
             val mob = match.groups["mob"]?.value ?: return@onChatMessage
             val player = match.groups["player"]?.value?.removeFormatting()?.trim() ?: return@onChatMessage
             WaypointManager.removeRareMobWaypointBySpawner(player, mob)
