@@ -292,14 +292,15 @@ object CrownOfAvarice {
     private fun currentView(): View {
         val coins = shownCoins()
         val progress = if (coins >= 0L) (coins.toDouble() / MAX_COINS).coerceIn(0.0, 1.0) else 0.0
+        val percent = "%.1f".format(Locale.ROOT, progress * 100)
         return View(
             icon = icon,
             mode = Helper.toTitleCase(Diana.coaTracker.name),
             inter = Diana.trackerFont == Diana.TrackerFont.INTER,
             background = Diana.hasBackground(Diana.TrackerOverlay.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
-            fillWidth = "%.1f".format(Locale.ROOT, progress * 100),
-            percent = if (coins >= 0L) "${"%.1f".format(Locale.ROOT, progress * 100)}%" else "-",
+            fillWidth = percent,
+            percent = if (coins >= 0L) "$percent%" else "-",
             maxed = coins >= MAX_COINS,
             coins = if (coins >= 0L) formatNumber(coins) else "-",
             earned = formatNumber(getTotalCoins()),
