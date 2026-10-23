@@ -1,0 +1,135 @@
+/*
+ * Diana loot, mobs, stats, chains and lootshare overlays (overlays/DianaOverlay.kt), GuiLib HUD overlays drawn
+ * every frame.
+ * Same look as the CoA tracker (ui/coa/coa.css) and kept cheap to draw the same way: Minecraft's font by default, only
+ * the outer box is rounded and everything inside is a plain fill. 8px is the Minecraft font's own size.
+ * .inter and .no-bg come from the "Tracker Font" and "Tracker Background" settings, .loot/.mobs/... set the accent.
+ */
+
+.tracker {
+    --accent: #ffb52e;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 130px;
+    padding: 5px 6px 6px;
+    background-color: rgba(14, 14, 16, 0.78);
+    border-radius: 4px;
+    border-top: 1px solid var(--accent);
+    font-family: minecraft;
+    font-size: 8px;
+    color: #9a9ca3;
+}
+
+.tracker.mobs { --accent: #ff6b6b; }
+.tracker.stats { --accent: #c77dff; }
+.tracker.chains { --accent: #5ec8ff; }
+.tracker.lootshare { --accent: #55ffff; }
+
+.tracker-head {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 2px;
+}
+
+.tracker-title {
+    flex: 1;
+    color: var(--accent);
+}
+
+.tracker-badge {
+    padding: 1px 3px;
+    background-color: rgba(255, 255, 255, 0.07);
+    color: #b5b7bd;
+}
+
+/* In the inventory a click on it changes it */
+.tracker-badge.clickable {
+    border: 1px solid var(--accent);
+    color: #e8e9ec;
+}
+
+.tracker-badge.danger {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+}
+
+.tracker-badge.mob { color: #ff55ff; }
+
+.tracker-row {
+    display: flex;
+    gap: 3px;
+}
+
+.tracker-name {
+    flex: 1;
+    margin-right: 4px;
+}
+
+.tracker-value { color: #e8e9ec; }
+
+.tracker-value.coins { color: #ffaa00; }
+.tracker-value.profit { color: #5ee08a; }
+
+.tracker-extra { color: #6b6d74; }
+
+.tracker-price {
+    min-width: 30px;
+    text-align: right;
+    color: #ffaa00;
+}
+
+/* Hidden lines, only shown in the inventory so a click can show them again */
+.tracker-row.hidden .tracker-name,
+.tracker-row.hidden .tracker-value,
+.tracker-row.hidden .tracker-extra,
+.tracker-row.hidden .tracker-price {
+    color: #55575d;
+    text-decoration: line-through;
+}
+
+.tracker-sep {
+    height: 1px;
+    margin: 2px 0;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Long issue texts of the chains overlay wrap instead of widening it */
+.tracker-warn {
+    max-width: 150px;
+    margin-top: 2px;
+    color: #ffaa00;
+}
+
+.tracker-hint {
+    margin-top: 2px;
+    color: #6b6d74;
+}
+
+/* Minecraft's color codes */
+.mc-red { color: #ff5555; }
+.mc-light_purple { color: #ff55ff; }
+.mc-dark_purple { color: #aa00aa; }
+.mc-gold { color: #ffaa00; }
+.mc-dark_green { color: #00aa00; }
+.mc-green { color: #55ff55; }
+.mc-blue { color: #5555ff; }
+.mc-yellow { color: #ffff55; }
+.mc-dark_red { color: #aa0000; }
+.mc-aqua { color: #55ffff; }
+
+/* Inter: smaller sizes and weights look right with it, unlike the Minecraft font */
+.tracker.inter { font-family: inter; font-size: 7px; }
+.tracker.inter .tracker-title { font-size: 8px; font-weight: 600; }
+.tracker.inter .tracker-badge, .tracker.inter .tracker-hint { font-size: 6px; }
+.tracker.inter .tracker-value, .tracker.inter .tracker-price { font-weight: 500; }
+
+/* No background: only the text, with a shadow so it stays readable on bright ground */
+.tracker.no-bg {
+    background-color: transparent;
+    border-top: none;
+    text-shadow: 1px 1px 0 #000000;
+}
+.tracker.no-bg .tracker-badge { background-color: transparent; }
+.tracker.no-bg .tracker-sep { background-color: rgba(0, 0, 0, 0.45); }

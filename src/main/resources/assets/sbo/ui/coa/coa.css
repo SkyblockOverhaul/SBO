@@ -3,7 +3,7 @@
  * Kept cheap to draw: Minecraft's font by default (drawn like vanilla text, about 30% cheaper than Inter), only the
  * outer box is rounded and everything inside is a plain fill (rounded corners, gradients and overflow clipping each add
  * work per frame). 8px is the Minecraft font's own size, other sizes scale it and blur it.
- * .inter and .no-bg come from the "CoA Tracker Font" and "Show CoA Tracker Background" settings.
+ * .inter and .no-bg come from the "Tracker Font" and "Tracker Background" settings.
  */
 
 .coa {

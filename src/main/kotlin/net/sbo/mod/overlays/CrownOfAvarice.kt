@@ -40,12 +40,12 @@ object CrownOfAvarice {
         allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER),
         stylesheets = listOf("sbo:ui/coa/coa.css")
     )
-        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && !Diana.coaTrackerLegacy }
+        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && !Diana.isLegacy(Diana.TrackerOverlay.COA) }
         .setExtraCondition { World.isInHub() }
 
     // The legacy look: Minecraft text lines like the other overlays, slightly better performance
     private val legacyOverlay = Overlay(OVERLAY_NAME, 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
-        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && Diana.coaTrackerLegacy }
+        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && Diana.isLegacy(Diana.TrackerOverlay.COA) }
         .setExtraCondition { World.isInHub() }
 
     private val changeView = OverlayUtils.createClickableTextLine(
@@ -259,7 +259,7 @@ object CrownOfAvarice {
         // Re-rendering means a full GuiLib layout pass, so only when something shown changed
         if (view == shownView) return
         shownView = view
-        if (Diana.coaTrackerLegacy) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
+        if (Diana.isLegacy(Diana.TrackerOverlay.COA)) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
     }
 
     /** Called when the look setting changes: the other overlay takes over on the next tick, at the same saved position. */
@@ -295,8 +295,8 @@ object CrownOfAvarice {
         return View(
             icon = icon,
             mode = Helper.toTitleCase(Diana.coaTracker.name),
-            inter = Diana.coaTrackerFont == Diana.CoaFont.INTER,
-            background = Diana.coaTrackerBackground,
+            inter = Diana.trackerFont == Diana.TrackerFont.INTER,
+            background = Diana.hasBackground(Diana.TrackerOverlay.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
             fillWidth = "%.1f".format(Locale.ROOT, progress * 100),
             percent = if (coins >= 0L) "${"%.1f".format(Locale.ROOT, progress * 100)}%" else "-",
