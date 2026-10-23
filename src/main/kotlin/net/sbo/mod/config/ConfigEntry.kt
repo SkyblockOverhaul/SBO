@@ -51,6 +51,7 @@ internal fun notifyChanges(roots: Collection<ConfigEntry<*>>, includeRoots: Bool
 
     val before = watched.associateWith { it.get() }
     change()
+    for (entry in watched) entry.invalidate()
     for ((entry, old) in before) {
         val new = entry.get()
         if (old != new) entry.onChange(old, new)
@@ -120,13 +121,30 @@ sealed class ConfigEntry<T>(
 
     internal fun linkRequirements() {
         if (this !is BooleanEntry) return
-        for (requirement in requirements) for (condition in requirement.conditions) condition.entry?.dependents?.add(this)
+        var all = true
+        for (requirement in requirements) for (condition in requirement.conditions) {
+            val target = condition.entry
+            if (target == null) all = false else target.dependents.add(this)
+        }
+        linked = all
+        invalidate()
     }
 
     /** False while a requirement isn't met, the settings screen then locks this one. */
-    val requirementsMet: Boolean get() = requirements.all { it.met }
+    val requirementsMet: Boolean
+        get() {
+            var index = 0
+            while (index < requirements.size) {
+                if (!requirements[index].met) return false
+                index++
+            }
+            return true
+        }
 
     internal open val effectiveValue: T get() = value
+
+    /** Drops a kept [effectiveValue], called whenever something it follows from may have changed. */
+    internal open fun invalidate() {}
 
     fun get(): T = effectiveValue
 
@@ -134,6 +152,7 @@ sealed class ConfigEntry<T>(
         notifyChanges(listOf(this), includeRoots = false) {
             val old = effectiveValue
             value = newValue
+            invalidate()
             val new = effectiveValue
             if (!same(old, new)) onChange(old, new)
         }
@@ -158,11 +177,36 @@ sealed class ConfigEntry<T>(
 class BooleanEntry internal constructor(id: String, default: Boolean, name: String, description: String) :
     ConfigEntry<Boolean>(id, default, name, description) {
 
+    // Some features read their setting for every frame or chunk, and a requirement chain makes that a walk over
+    // several settings, so the result is kept until its own set, its sub switching or a setting it depends on
+    // changing (all of these go through notifyChanges)
+    @Volatile private var cache = UNKNOWN
+
+    /** Every setting its requirements point at knows about this one, so a change there drops [cache]. */
+    internal var linked = false
+
     // A requirement switching does not call onChange here, only the sub does that
-    override val effectiveValue: Boolean get() = value && sub?.enabled != false && requirementsMet
+    override val effectiveValue: Boolean
+        get() {
+            val cached = cache
+            if (cached != UNKNOWN) return cached == ON
+            val result = value && sub?.enabled != false && requirementsMet
+            if (linked) cache = if (result) ON else OFF
+            return result
+        }
+
+    override fun invalidate() {
+        cache = UNKNOWN
+    }
 
     override fun toJson() = JsonPrimitive(value)
     override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isBoolean }?.asBoolean
+
+    private companion object {
+        const val UNKNOWN = 0
+        const val OFF = 1
+        const val ON = 2
+    }
 }
 
 class NumberEntry<T> internal constructor(
