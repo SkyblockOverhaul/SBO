@@ -286,7 +286,8 @@ object CrownOfAvarice {
         val maxedIn: String,
         val notEquipped: Boolean,
         val alpha: Boolean,
-        val inventory: Boolean
+        val inventory: Boolean,
+        val lookNotice: Boolean
     )
 
     private fun currentView(): View {
@@ -310,7 +311,8 @@ object CrownOfAvarice {
             maxedIn = maxedInText(coins),
             notEquipped = cachedCoaCoins == -1L,
             alpha = alphaBlocked,
-            inventory = isCraftingScreenOpen()
+            inventory = isCraftingScreenOpen(),
+            lookNotice = DianaOverlay.showLookNotice()
         )
     }
 
@@ -353,6 +355,7 @@ object CrownOfAvarice {
             if (view.alpha) div(className = "coa-warn") { +"Not tracked on Alpha (Separate Alpha Data off)" }
             else if (view.notEquipped) div(className = "coa-warn") { +"Primary CoA not equipped" }
             if (view.inventory) div(className = "coa-hint") { +"Click the view to change it" }
+            if (view.lookNotice) lookNotice("coa")
         }
     }
 

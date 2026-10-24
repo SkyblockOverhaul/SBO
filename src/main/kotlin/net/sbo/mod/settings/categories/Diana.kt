@@ -293,7 +293,7 @@ object Diana : Category("Diana") {
     fun hasBackground(tracker: TrackerOverlay): Boolean = tracker in trackerBackground
 
     // The trackers pick the changed look up on their next tick, the settings can also change while the config loads
-    private fun onTrackerLookChanged() {
+    fun onTrackerLookChanged() {
         DianaLoot.onLookChanged()
         DianaMobs.onLookChanged()
         DianaStats.onLookChanged()

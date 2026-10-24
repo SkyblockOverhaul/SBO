@@ -93,10 +93,27 @@
     color: #6b6d74;
 }
 
+.coa-notice {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 4px;
+    padding: 3px 4px;
+    background-color: rgba(255, 196, 46, 0.18);
+    border: 1px solid #ffc42e;
+    border-radius: 2px;
+    color: #e8e9ec;
+}
+
+.coa-notice-title { color: #ffd75e; }
+.coa-notice-line { display: flex; gap: 3px; }
+.coa-notice-cmd { color: #55ffff; }
+
 /* Inter: smaller sizes and weights look right with it, unlike the Minecraft font */
 .coa.inter { font-family: inter; font-size: 7px; }
 .coa.inter .coa-title { font-size: 8px; font-weight: 600; }
 .coa.inter .coa-mode, .coa.inter .coa-hint { font-size: 6px; }
+.coa.inter .coa-notice-title { font-weight: 600; }
 .coa.inter .coa-value, .coa.inter .coa-percent { font-weight: 500; }
 
 /* No background: only the text, with a shadow so it stays readable on bright ground */

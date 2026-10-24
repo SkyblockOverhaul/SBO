@@ -107,6 +107,22 @@
     color: #6b6d74;
 }
 
+.tracker-notice {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 4px;
+    padding: 3px 4px;
+    background-color: rgba(255, 196, 46, 0.18);
+    border: 1px solid #ffc42e;
+    border-radius: 2px;
+    color: #e8e9ec;
+}
+
+.tracker-notice-title { color: #ffd75e; }
+.tracker-notice-line { display: flex; gap: 3px; }
+.tracker-notice-cmd { color: #55ffff; }
+
 /* Minecraft's color codes */
 .mc-red { color: #ff5555; }
 .mc-light_purple { color: #ff55ff; }
@@ -123,6 +139,7 @@
 .tracker.inter { font-family: inter; font-size: 7px; }
 .tracker.inter .tracker-title { font-size: 8px; font-weight: 600; }
 .tracker.inter .tracker-badge, .tracker.inter .tracker-hint { font-size: 6px; }
+.tracker.inter .tracker-notice-title { font-weight: 600; }
 .tracker.inter .tracker-value, .tracker.inter .tracker-price { font-weight: 500; }
 
 /* No background: only the text, with a shadow so it stays readable on bright ground */

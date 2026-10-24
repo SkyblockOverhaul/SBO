@@ -117,7 +117,10 @@ abstract class DianaOverlay<V : Any>(
             if (Diana.trackerFont == Diana.TrackerFont.INTER) append(" inter")
             if (!Diana.hasBackground(look)) append(" no-bg")
         }
-        div(className = classes, children = children)
+        div(className = classes) {
+            children()
+            if (showLookNotice()) lookNotice("tracker")
+        }
     }
 
     protected fun NodeBuilder.head(title: String, badges: NodeBuilder.() -> Unit = {}) {
@@ -160,7 +163,24 @@ abstract class DianaOverlay<V : Any>(
         // Minecraft's color codes as classes, e.g. "mc-light_purple"
         fun colorClass(color: ChatFormatting) = "mc-${color.name.lowercase()}"
 
+        /** True until the player answered the new look notice, see [lookNotice]. */
+        fun showLookNotice(): Boolean = !DataManager.sboData.trackerLookAnswered
+
         /** The id of a row element, null for other elements. */
         fun rowId(id: String): String? = id.removePrefix("line:").takeIf { it.length != id.length }
+    }
+}
+
+fun NodeBuilder.lookNotice(prefix: String) {
+    div(className = "$prefix-notice") {
+        div(className = "$prefix-notice-title") { +"New tracker look!" }
+        div(className = "$prefix-notice-line") {
+            span(className = "$prefix-notice-cmd") { +"/sbolegacylook yes" }
+            span { +"old look back" }
+        }
+        div(className = "$prefix-notice-line") {
+            span(className = "$prefix-notice-cmd") { +"/sbolegacylook no" }
+            span { +"keep this one" }
+        }
     }
 }

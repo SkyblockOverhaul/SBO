@@ -35,6 +35,7 @@ object HelpCommand {
         mapOf("cmd" to "sbopartycommands", "desc" to "Displays all diana partycommands"), // todo: add sbopartycommands command
         mapOf("cmd" to "sboresetavgmftracker", "desc" to "Resets the avg mf tracker"), // todo: add sboresetavgmftracker command
         mapOf("cmd" to "sboresetstatstracker", "desc" to "Resets the stats tracker"),
+        mapOf("cmd" to "sbolegacylook <yes|no>", "desc" to "Switch all trackers to the legacy look (yes) or keep the new one (no)"),
         mapOf("cmd" to "sboKey", "desc" to "Set your sbokey"),
         mapOf("cmd" to "sboClearKey", "desc" to "Reset your sbokey"),
         mapOf("cmd" to "sbocloud", "desc" to "Opens the Cloud Sync window (also to load backups)"),
