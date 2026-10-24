@@ -2,12 +2,14 @@ package net.sbo.mod.utils
 
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.data.configs.diana.DianaItemsData
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KMutableProperty1
 
 internal fun getInactivityLimitNanos(): Long {
     return TimeUnit.SECONDS.toNanos(
@@ -21,6 +23,10 @@ object SboTimerManager {
     val timerMayor = SBOTimer { DataManager.dianaTrackerMayorData }
     val timerTotal = SBOTimer { DataManager.dianaTrackerTotalData }
     val timerSession = SBOTimer { DataManager.dianaTrackerSessionData }
+    // The CoA tracker's own playtime, so its rates start over when only the CoA tracker is reset
+    val timerCoaMayor = SBOTimer({ DataManager.dianaTrackerMayorData }, DianaItemsData::coaTime)
+    val timerCoaTotal = SBOTimer({ DataManager.dianaTrackerTotalData }, DianaItemsData::coaTime)
+    val timerCoaSession = SBOTimer({ DataManager.dianaTrackerSessionData }, DianaItemsData::coaTime)
 
     fun init() {
         Register.onTick(1) {
@@ -73,9 +79,15 @@ object SboTimerManager {
     }
 
     class SBOTimer(
-        private val trackerOf: () -> DianaTracker
+        private val trackerOf: () -> DianaTracker,
+        // The playtime field this timer counts
+        private val time: KMutableProperty1<DianaItemsData, Long> = DianaItemsData::TIME
     ) {
         private val tracker: DianaTracker get() = trackerOf()
+
+        private var storedTimeMs: Long
+            get() = time.get(tracker.items)
+            set(value) = time.set(tracker.items, value)
 
         companion object {
             val timerList = mutableListOf<SBOTimer>()
@@ -87,8 +99,6 @@ object SboTimerManager {
         private var lastActivityNanoTime: Long = System.nanoTime()
 
         init {
-            val storedTimeMs = tracker.items.TIME
-
             if (storedTimeMs > 0L) {
                 elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(storedTimeMs)
             }
@@ -102,13 +112,11 @@ object SboTimerManager {
         internal fun reload() {
             state = TimerState.Idle
             startNanoTime = 0L
-            elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(tracker.items.TIME.coerceAtLeast(0L))
+            elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(storedTimeMs.coerceAtLeast(0L))
         }
 
         private fun start() {
             if (state == TimerState.Running || elapsedNanoTime > 0L) return
-
-            val storedTimeMs = tracker.items.TIME
 
             if (storedTimeMs > 0L) {
                 elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(storedTimeMs)
@@ -137,8 +145,7 @@ object SboTimerManager {
                     elapsedNanoTime = 0L
                 }
 
-                tracker.items.TIME =
-                    TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
+                storedTimeMs = TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
 
                 if (this == timerTotal) { // message is sent three times otherwise for each timer
                     Chat.chat("§6[SBO] §ePausing playtime timer due to inactivity threshold of ${TimeUnit.NANOSECONDS.toSeconds(inactivityLimit)} seconds being reached.", true)
@@ -156,7 +163,7 @@ object SboTimerManager {
             elapsedNanoTime += now - startNanoTime
             startNanoTime = now
 
-            tracker.items.TIME = TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
+            storedTimeMs = TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
         }
 
         fun pause() {
@@ -192,7 +199,7 @@ object SboTimerManager {
             startNanoTime = 0L
             lastActivityNanoTime = System.nanoTime()
 
-            tracker.items.TIME = 0L
+            storedTimeMs = 0L
 
             stopInactivityCheck()
         }

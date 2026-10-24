@@ -1028,6 +1028,7 @@ object DianaTracker {
         DataManager.save(DataManager::dianaTrackerMayorData)
 
         SboTimerManager.timerMayor.reset()
+        SboTimerManager.timerCoaMayor.reset()
         SboTimerManager.pauseAllActiveTimers()
 
         DianaMobs.updateLines()

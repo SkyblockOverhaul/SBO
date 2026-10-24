@@ -43,7 +43,9 @@ object HelpCommand {
         mapOf("cmd" to "sboconflicts", "desc" to "Shows mods that break SBO features and sends a report"),
         mapOf("cmd" to "sbotestmedalclip [drop|all]", "desc" to "Test Medal clip saving"),
         mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui"),
-        mapOf("cmd" to "setprimarycoa", "desc" to "Set your primary Crown of Avarice to the eqquipped helmet")
+        mapOf("cmd" to "sbosetprimarycoa", "desc" to "Set your primary Crown of Avarice to the equipped helmet"),
+        mapOf("cmd" to "sboresetcoasession", "desc" to "Resets only the CoA session tracker"),
+        mapOf("cmd" to "sboresetcoaevent", "desc" to "Resets only the CoA event tracker")
     )
 
     fun init() {

@@ -15,6 +15,7 @@ import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.Helper.formatNumber
 import net.sbo.mod.utils.HypixelModApi
+import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
@@ -118,7 +119,7 @@ object CrownOfAvarice {
                 lastAlphaBlocked = blocked
                 onHelmetChanged(stack)
             }
-            val time = tracker?.items?.TIME ?: 0L
+            val time = tracker?.items?.coaTime ?: 0L
             if (time < lastRateTime || time - lastRateTime >= RATE_REFRESH_MS) {
                 lastRateTime = time
                 updateLines()
@@ -126,7 +127,20 @@ object CrownOfAvarice {
             if (dirty) refresh()
         }
 
-        Register.command("setprimarycoa") {
+        // Only the CoA part of the tracker, the loot, mobs and Diana playtime stay
+        Register.command("sboresetcoasession") {
+            resetCoa(DataManager.dianaTrackerSessionData, SboTimerManager.timerCoaSession)
+            DataManager.save(DataManager::dianaTrackerSessionData)
+            Chat.chat("§6[SBO] §aCoA session tracker has been reset.")
+        }
+
+        Register.command("sboresetcoaevent") {
+            resetCoa(DataManager.dianaTrackerMayorData, SboTimerManager.timerCoaMayor)
+            DataManager.save(DataManager::dianaTrackerMayorData)
+            Chat.chat("§6[SBO] §aCoA event tracker has been reset.")
+        }
+
+        Register.command("sbosetprimarycoa") {
             helmet = mc.player?.inventory?.getItem(39)
             if (helmet == null) {
                 Chat.chat("§6[SBO] §cFailed to detect your helmet")
@@ -203,7 +217,7 @@ object CrownOfAvarice {
             ).forEach { it.items.CURRENT_COA_START_COINS = startCoins }
 
             Chat.chat("§6[SBO] §aYour worn CoA was automatically set as your primary CoA. It's used to track your coins and profit/h.", true)
-            Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/setprimarycoa §7to switch.", true)
+            Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/sbosetprimarycoa §7to switch.", true)
         }
 
         // Only trust the coins if the CoA on our head is the primary one.
@@ -239,6 +253,13 @@ object CrownOfAvarice {
             }
         }
 
+        updateLines()
+    }
+
+    // The coins consumed baseline stays, coins gained from here on still count
+    private fun resetCoa(data: DianaTracker, timer: SboTimerManager.SBOTimer) {
+        timer.reset()
+        data.items.COA_COINS = 0L
         updateLines()
     }
 
@@ -382,7 +403,7 @@ object CrownOfAvarice {
 
     /** Profit/h = total CoA profit / hours played */
     fun getProfitPerHour(): Double {
-        val hours = (tracker?.items?.TIME ?: 0L) / 3_600_000.0
+        val hours = (tracker?.items?.coaTime ?: 0L) / 3_600_000.0
         return if (hours > 0.0) getProfit() / hours else 0.0
     }
 
@@ -416,7 +437,7 @@ object CrownOfAvarice {
     }
 
     private fun getCoinsPerHour(): Double {
-        val ms = tracker?.items?.TIME ?: 0L
+        val ms = tracker?.items?.coaTime ?: 0L
         if (ms <= 0L) return 0.0
 
         return getTotalCoins() / (ms / 3_600_000.0)

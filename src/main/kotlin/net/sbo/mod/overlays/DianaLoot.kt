@@ -64,6 +64,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
 
     fun resetSession() {
         SboTimerManager.timerSession.reset()
+        SboTimerManager.timerCoaSession.reset()
         DataManager.dianaTrackerSessionData.reset()
         DataManager.save(DataManager::dianaTrackerSessionData)
         updateLines()
@@ -485,7 +486,8 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         "SCAVENGER_COINS",
         "FISH_COINS",
         "COA_COINS",
-        "CURRENT_COA_START_COINS"
+        "CURRENT_COA_START_COINS",
+        "COA_TIME"
     )
 
     private val profitFields = DianaItemsData::class.java.declaredFields
