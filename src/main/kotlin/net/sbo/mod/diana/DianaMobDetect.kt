@@ -69,6 +69,15 @@ object DianaMobDetect {
         }
     }
 
+    internal val rareMobNames: Set<String> = RareDianaMob.entries.mapTo(mutableSetOf()) { it.display }
+    private val prefixes = setOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
+
+    private fun fallbackRemovePrefix(mobName: String): String {
+        return prefixes.firstOrNull { mobName.startsWith("$it ") }
+            ?.let { mobName.removePrefix("$it ") }
+            ?: mobName
+    }
+
     private fun findKingHits(name: String): MatchResult? {
         if (!World.isInHub()) return null
         if (!name.contains("Hits")) return null
@@ -94,14 +103,6 @@ object DianaMobDetect {
     private fun parseStarFromName(name: String): Boolean = name.contains("") || name.contains("✯") // mf rework update changes the shuriken icon to depend on resourcepack. still check for legacy since that's only on alpha and to keep compatibility with RitualPractice
 
     private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (Diana.hpAlert > 0.0 || Diana.soundHpAlert > 0.0)
-
-    private val prefixes = listOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
-
-    private fun fallbackRemovePrefix(mobName: String): String {
-        return prefixes.firstOrNull { mobName.startsWith("$it ") }
-            ?.let { mobName.removePrefix("$it ") }
-            ?: mobName
-    }
 
     fun init() {
         mobHpOverlay.init()
@@ -148,9 +149,10 @@ object DianaMobDetect {
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
             // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
-            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ")} != null) {
+            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ") } != null) {
                 // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
                 if (DianaTracker.lastSpawnedMob == displayName) {
+                    if (rare != null) RareMobKillTime.onCocoonCaught(displayName)
                     // Count as a new spawned mob, exactly as if it was received as spawned by a regular burrow, so that achievements and mob tracking work.
                     // This will give an error in chat if we pass a string that matches no mob name in the tracker handler code.
                     DianaTracker.trackMobOnSpawnAndSave(displayName, fromCocoon = true)
@@ -313,7 +315,7 @@ object DianaMobDetect {
 
     private fun announceCocoon(mobName: String) {
         if (Diana.announceCocoon) {
-            Chat.pc("Cocooned a $mobName!")
+            Chat.pc("[SBO] Cocooned a $mobName!")
         }
 
         if (Diana.cocoonTitle) {
@@ -356,7 +358,7 @@ object DianaMobDetect {
             else -> null
         } ?: return
 
-        val mobDisplayName = WaypointManager.notifyRareMob("", mobType)
+        val mobDisplayName = WaypointManager.notifyRareMob("", mobType, true, true)
         val playerPos = SboPlayer.getLastPosition()
 
         val waypoint = WaypointManager.addRareMobWaypoint("", WaypointManager.floorToGround(playerPos), mobType, mobDisplayName, true)
@@ -378,47 +380,26 @@ object DianaMobDetect {
             } ?: return
 
             if (mobType !in Diana.ShareMobs) return
+
+            // TODO Once majority of people are on 0.7.2 or above, change it to send with [SBO] prefix in front.
             val message = "x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob"
             if (Diana.shareRareMobInPublicChat) Chat.allChat(message) else Chat.pc(message)
         }
 
         when (mob) {
-            RareDianaMob.INQ.display -> {
-                Diana.announceInqText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceInqText[0], "inq")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
-
-            RareDianaMob.SPHINX.display -> {
-                Diana.announceSphinxText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceSphinxText[0], "sphinx")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
-
-            RareDianaMob.MANTI.display -> {
-                Diana.announceMantiText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceMantiText[0], "manti")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
-
-            RareDianaMob.KING.display -> {
-                Diana.announceKingText.firstOrNull()?.let { killText ->
-                    if (killText.isNotBlank()) {
-                        val message = Helper.getSpawnMessage(Diana.announceKingText[0], "king")
-                        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
-                    }
-                }
-            }
+            RareDianaMob.INQ.display -> announceSpawn(Diana.announceInqText, "inq")
+            RareDianaMob.SPHINX.display -> announceSpawn(Diana.announceSphinxText, "sphinx")
+            RareDianaMob.MANTI.display -> announceSpawn(Diana.announceMantiText, "manti")
+            RareDianaMob.KING.display -> announceSpawn(Diana.announceKingText, "king")
         }
+    }
+
+    // All lines go out as one message, empty means off
+    private fun announceSpawn(lines: Array<String>, mob: String) {
+        val text = Helper.joinLines(lines)
+        if (text.isEmpty()) return
+        val message = Helper.getSpawnMessage(text, mob)
+        sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
     }
 
     /**
@@ -441,4 +422,13 @@ object DianaMobDetect {
             stand to mobType
         }
     }
+
+    internal fun getTrackedRareMobEntities(): List<Pair<ArmorStand, String>> =
+        tracked.values.mapNotNull { stand ->
+            val name = stand.customName?.formattedString() ?: return@mapNotNull null
+            val mob = RareDianaMob.fromName(name) ?: return@mapNotNull null
+            stand to mob.display
+        }
+
+    internal fun getKnownDianaMobEntityIds(): Set<Int> = tracked.keys + unconfirmed.keys
 }

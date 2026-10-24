@@ -2,18 +2,20 @@ package net.sbo.mod.utils.overlay
 
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
+import net.sbo.guilib.core.dom.Element
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.fabric.GuiLibHud
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.render.RenderUtils2D
 import java.awt.Color
 import kotlin.math.ceil
 
 /**
  * An overlay built with GuiLib (tags + CSS) instead of text lines, moved and scaled in /sboguis like the others.
  * Call [setContent] whenever the shown data changes; drawing reuses the last content every frame, so it stays cheap.
- * It gets no mouse input of its own, [onClick] runs for a click on it (or on one element of it) in one of the
- * [allowedScreens].
+ * It gets no mouse input of its own. In the [allowedScreens], [onClick] runs for a click on it (or on one element of it),
+ * [onElementClick] and [tooltip] for the element with an id under the mouse.
  */
 class GuiLibOverlay(
     name: String,
@@ -30,11 +32,23 @@ class GuiLibOverlay(
 
     private var clickAction: (() -> Unit)? = null
     private var clickTarget: String? = null
+    private var elementClick: ((id: String) -> Unit)? = null
+    private var tooltip: ((id: String) -> String?)? = null
 
     /** Runs [action] for a click on the element matching [selector] (CSS), or anywhere on the overlay without one. */
     fun onClick(selector: String? = null, action: () -> Unit) {
         clickTarget = selector
         clickAction = action
+    }
+
+    /** Runs [action] with the id of the clicked element (the innermost one with an id), not for clicks outside one. */
+    fun onElementClick(action: (id: String) -> Unit) {
+        elementClick = action
+    }
+
+    /** Shows the text [text] gives for the hovered element (the innermost one with an id) as a tooltip, none for null. */
+    fun tooltip(text: (id: String) -> String?) {
+        tooltip = text
     }
 
     fun setCondition(condition: () -> Boolean): GuiLibOverlay {
@@ -58,10 +72,11 @@ class GuiLibOverlay(
     override fun contentHeight(): Int = ceil(hud?.height ?: 0f).toInt()
 
     override fun overlayClicked(mouseX: Double, mouseY: Double) {
-        val action = clickAction ?: return
         if (!World.isInSkyblock()) return
         if (!allowedScreens.any { it(mc.screen) }) return
         if (!isOverOverlay(mouseX, mouseY)) return
+        elementClick?.let { click -> idAt(mouseX, mouseY)?.let(click) }
+        val action = clickAction ?: return
         val target = clickTarget ?: return action()
         val rect = hud?.bounds(target) ?: return
         val x = renderX + rect.x * scale
@@ -81,7 +96,10 @@ class GuiLibOverlay(
         updateRenderPosition(contentWidth(), contentHeight())
         hud.draw(drawContext, renderX, renderY, scale)
 
-        if (!inEditingScreen()) return
+        if (!inEditingScreen()) {
+            drawTooltip(drawContext, mouseX, mouseY)
+            return
+        }
         val width = (contentWidth() * scale).toInt()
         val height = (contentHeight() * scale).toInt()
         val left = renderX.toInt()
@@ -91,5 +109,24 @@ class GuiLibOverlay(
             drawContext.outline(left, top, width, height, Color(255, 0, 0, 170).rgb)
             drawContext.text(mc.font, "X: $left Y: $top Scale: ${String.format("%.1f", scale)}", left, top - mc.font.lineHeight - 1, Color(255, 255, 255, 200).rgb, true)
         }
+    }
+
+    private fun drawTooltip(drawContext: GuiGraphicsExtractor, mouseX: Double, mouseY: Double) {
+        val tooltip = tooltip ?: return
+        if (!allowedScreens.any { it(mc.screen) } || !isOverOverlay(mouseX, mouseY)) return
+        val text = idAt(mouseX, mouseY)?.let(tooltip) ?: return
+        RenderUtils2D.drawHoveringString(drawContext, text, mouseX, mouseY, mc.font)
+    }
+
+    // The id of the innermost element with one at that GUI position, from the last drawn frame
+    private fun idAt(mouseX: Double, mouseY: Double): String? {
+        val hud = hud ?: return null
+        // The content is drawn from the top left of the document, at the overlay's scale
+        var element: Element? = hud.root.painter.hitTest(((mouseX - renderX) / scale).toFloat(), ((mouseY - renderY) / scale).toFloat())
+        while (element != null) {
+            element.id?.let { return it }
+            element = element.parent
+        }
+        return null
     }
 }

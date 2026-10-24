@@ -146,7 +146,7 @@ class Waypoint(
     }
 
     private fun setWarpText() {
-        val showTimesDug = Customization.showTimesDug && this.type == "burrow" && this.text != "Start"
+        val showTimesDug = Customization.showTimesDug && this.type == "burrow" && this.text != "Start" && this.text != "Guess"
         val timesDug = this.timesDug
         val dist = Customization.showDistanceCutoff == 0 || this.distanceToPlayer() < Customization.showDistanceCutoff
         val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
@@ -193,6 +193,9 @@ class Waypoint(
                 return Color(Customization.OtherGuessColor)
             }
             "burrow" -> {
+                if (this.text == "Guess") {
+                    return if (isClosest) Color(Customization.ClosestGuessColor) else Color(Customization.OtherGuessColor)
+                }
                 return when (this.text) {
                     "Start" -> Color(Customization.StartColor)
                     "Mob" -> Color(Customization.MobColor)

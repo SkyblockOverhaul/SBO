@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
@@ -17,6 +18,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.sbo.mod.utils.events.SBOEvent;
 import net.sbo.mod.utils.events.impl.game.SentCommandEvent;
 import net.sbo.mod.utils.events.impl.game.SentMessageEvent;
+import net.sbo.mod.utils.events.impl.game.InventorySlotUpdateEvent;
 import net.sbo.mod.utils.events.impl.packets.LoginReceiveEvent;
 import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent;
 import net.sbo.mod.utils.events.impl.packets.SetTimeReceiveEvent;
@@ -38,6 +40,11 @@ final class ClientPacketListenerMixin {
     @Inject(method = "sendCommand", at = @At("HEAD"))
     private final void sbo$onSendCommand(@NonNull final String command, @NonNull final CallbackInfo ci) {
         SBOEvent.INSTANCE.emit(new SentCommandEvent(command));
+    }
+
+    @Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
+    private final void sbo$onSlotUpdate(@NonNull final ClientboundContainerSetSlotPacket packet, @NonNull final CallbackInfo ci) {
+        SBOEvent.INSTANCE.emit(new InventorySlotUpdateEvent(packet));
     }
 
     // TAIL runs on the main thread after the tab list was actually modified

@@ -195,8 +195,9 @@ object HubChunkCache {
         )
     }
 
+    // One area per line, commas also split since no area name has one
     private fun cachedAreas(): Set<String> =
-        General.chunkCacheAreas.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
+        General.chunkCacheAreas.flatMap { it.split(',') }.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
 
     private fun isAreaCached(area: String, areas: Set<String>, workEverywhere: Boolean): Boolean =
         workEverywhere || area in areas

@@ -4,29 +4,26 @@ package net.sbo.mod.overlays
 * I will do it in the future, but for now it works and I don't want to break it.
 * If you want to refactor it, feel free to do so, but please keep the functionality intact.
 */
+import net.minecraft.ChatFormatting
 import net.minecraft.ChatFormatting.*
+import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.data.DataManager
+import net.sbo.mod.utils.data.configs.diana.DianaMobsData
+import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
 
-object DianaMobs : DirtyFlushableOverlay() {
-    override val overlay = Overlay("Diana Mobs", 10f, 10f,
-        allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
-    )
-        .setCondition { Diana.mobTracker != Diana.Tracker.OFF }
-        .setExtraCondition { Helper.hasSpade && World.isInHub() }
-
+object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverlay.MOBS, { Diana.mobTracker != Diana.Tracker.OFF }) {
     private val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {
             Diana.mobTracker = Diana.mobTracker.next()
@@ -40,7 +37,7 @@ object DianaMobs : DirtyFlushableOverlay() {
         }
 
     fun init() {
-        overlay.init()
+        initOverlays()
         updateLines()
 
         Register.onTick(20) {
@@ -52,6 +49,7 @@ object DianaMobs : DirtyFlushableOverlay() {
     fun onGuiClose(event: GuiCloseEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
             overlay.removeLine(changeView)
+            updateLines()
         }
     }
 
@@ -63,15 +61,7 @@ object DianaMobs : DirtyFlushableOverlay() {
     }
 
     private fun createLine(name: String, formattedText: String, amount: Int) : OverlayTextLine {
-        val line = OverlayTextLine(formattedText).onClick {
-            if (!isCraftingScreenOpen()) return@onClick
-            if (name in DataManager.sboData.hideTrackerLines) {
-                DataManager.sboData.hideTrackerLines.remove(name)
-            } else {
-                DataManager.sboData.hideTrackerLines.add(name)
-            }
-            updateLines()
-        }
+        val line = OverlayTextLine(formattedText).onClick { toggleHidden(name) }
             .setCondition {
                 val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
                 val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in DataManager.sboData.hideTrackerLines)
@@ -83,16 +73,100 @@ object DianaMobs : DirtyFlushableOverlay() {
         return line
     }
 
+    private fun tracker(type: Diana.Tracker): DianaTracker? = when (type) {
+        Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
+        Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
+        Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
+        Diana.Tracker.OFF -> null
+    }
+
+    private fun mobsPerHour(tracker: DianaTracker): Double {
+        val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
+        return if (playTimeHrs > 0) {
+            BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
+        } else 0.0
+    }
+
+    // The mobs of the new look: hide key, name, color, kills and lootshare kills (null for mobs without lootshare)
+    private class Mob(
+        val key: String,
+        val name: String,
+        val color: ChatFormatting,
+        val kills: (DianaMobsData) -> Int,
+        val lsKills: ((DianaMobsData) -> Int)? = null
+    )
+
+    private val MOBS = listOf(
+        Mob("KING_MINOS", "King Minos", RED, { it.KING_MINOS }, { it.KING_MINOS_LS }),
+        Mob("MANTICORE", "Manticore", RED, { it.MANTICORE }, { it.MANTICORE_LS }),
+        Mob("INQUISITOR", "Inquisitor", LIGHT_PURPLE, { it.MINOS_INQUISITOR }, { it.MINOS_INQUISITOR_LS }),
+        Mob("SPHINX", "Sphinx", LIGHT_PURPLE, { it.SPHINX }, { it.SPHINX_LS }),
+        Mob("CHAMPION", "Champion", DARK_PURPLE, { it.MINOS_CHAMPION }),
+        Mob("MINOTAUR", "Minotaur", GOLD, { it.MINOTAUR }),
+        Mob("GAIA_CONSTRUCT", "Gaia Construct", GREEN, { it.GAIA_CONSTRUCT }),
+        Mob("HARPY", "Harpy", GREEN, { it.HARPY }),
+        Mob("CRETAN_BULL", "Cretan Bull", GREEN, { it.CRETAN_BULL }),
+        Mob("STRANDED_NYMPH", "Stranded Nymph", GREEN, { it.STRANDED_NYMPH }),
+        Mob("SIAMESE_LYNXES", "Siamese Lynxes", GREEN, { it.SIAMESE_LYNXES }),
+        Mob("MINOS_HUNTER", "Minos Hunter", GREEN, { it.MINOS_HUNTER })
+    )
+
+    data class View(val mode: String, val rows: List<Row>, val total: String, val perHour: String, val inventory: Boolean)
+
+    override fun view(): View {
+        val type = Diana.mobTracker
+        val inventory = isCraftingScreenOpen()
+        val tracker = tracker(type) ?: return View("", emptyList(), "", "", inventory)
+        val mobs = tracker.mobs
+        val hidden = DataManager.sboData.hideTrackerLines
+        val rows = MOBS.mapNotNull { mob ->
+            val kills = mob.kills(mobs)
+            val lsKills = mob.lsKills?.invoke(mobs)
+            if (kills + (lsKills ?: 0) <= 0 && Diana.hideUnobtainedItems) return@mapNotNull null
+            // Hidden lines only show (crossed out) in the inventory, to unhide them
+            val isHidden = mob.key in hidden
+            if (isHidden && !inventory) return@mapNotNull null
+            val ls = if (lsKills != null && !Diana.hideLsStats) "  LS ${Helper.formatNumber(lsKills, withCommas = true)}" else ""
+            Row(
+                id = mob.key,
+                name = mob.name,
+                color = mob.color,
+                value = Helper.formatNumber(kills, withCommas = true),
+                extra = "${calcPercentOne(kills, mobs.TOTAL_MOBS)}%$ls",
+                hidden = isHidden
+            )
+        }
+        return View(
+            mode = Helper.toTitleCase("$type"),
+            rows = rows,
+            total = Helper.formatNumber(mobs.TOTAL_MOBS, withCommas = true),
+            perHour = "${mobsPerHour(tracker)}/h",
+            inventory = inventory
+        )
+    }
+
+    override fun NodeBuilder.content(view: View) {
+        tracker("mobs") {
+            head("Diana Mobs") { badge(view.mode, "mode", view.inventory) }
+            view.rows.forEach { row(it) }
+            separator()
+            row(Row(null, "Total Mobs", null, view.total, view.perHour))
+            if (view.inventory) hint("Click a mob to hide it, the view to change it")
+        }
+    }
+
+    override fun elementClicked(id: String) {
+        if (id == "mode") {
+            Diana.mobTracker = Diana.mobTracker.next()
+            updateLines()
+            return
+        }
+        rowId(id)?.let(::toggleHidden)
+    }
+
     override fun generateLines(): List<OverlayTextLine> {
         val type = Diana.mobTracker
-        val tracker = when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
-            Diana.Tracker.OFF -> {
-                return emptyList()
-            }
-        }
+        val tracker = tracker(type) ?: return emptyList()
         val kingPercent = calcPercentOne(tracker.mobs.KING_MINOS, tracker.mobs.TOTAL_MOBS)
         val manticorePercent = calcPercentOne(tracker.mobs.MANTICORE, tracker.mobs.TOTAL_MOBS)
         val inqPercent = calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)
@@ -105,10 +179,7 @@ object DianaMobs : DirtyFlushableOverlay() {
         val nymphPercent = calcPercentOne(tracker.mobs.STRANDED_NYMPH, tracker.mobs.TOTAL_MOBS)
         val lynxPercent = calcPercentOne(tracker.mobs.SIAMESE_LYNXES, tracker.mobs.TOTAL_MOBS)
         val hunterPercent = calcPercentOne(tracker.mobs.MINOS_HUNTER, tracker.mobs.TOTAL_MOBS)
-        val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
-        val mobsPerHr = if (playTimeHrs > 0) {
-            BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
-        } else 0.0
+        val mobsPerHr = mobsPerHour(tracker)
 
         val lines = mutableListOf<OverlayTextLine>()
 

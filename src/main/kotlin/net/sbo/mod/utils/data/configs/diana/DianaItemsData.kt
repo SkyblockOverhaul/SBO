@@ -43,4 +43,10 @@ data class DianaItemsData(
     @SerializedName("MYTH_THE_FISH") var MYTH_THE_FISH: Int = 0,
     @SerializedName("CoA Coins") var COA_COINS: Long = 0,
     @SerializedName("COA Start Coins") var CURRENT_COA_START_COINS: Long = -1,
-)
+    @SerializedName("CoA Time") var COA_TIME: Long = -1,
+) {
+    /** The CoA tracker's playtime, the Diana playtime for data from before it had its own (COA_TIME -1). */
+    var coaTime: Long
+        get() = if (COA_TIME < 0) TIME else COA_TIME
+        set(value) { COA_TIME = value }
+}

@@ -15,6 +15,7 @@ import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.Helper.formatNumber
 import net.sbo.mod.utils.HypixelModApi
+import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
@@ -40,12 +41,12 @@ object CrownOfAvarice {
         allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER),
         stylesheets = listOf("sbo:ui/coa/coa.css")
     )
-        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && !Diana.coaTrackerLegacy }
+        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && !Diana.isLegacy(Diana.TrackerOverlay.COA) }
         .setExtraCondition { World.isInHub() }
 
     // The legacy look: Minecraft text lines like the other overlays, slightly better performance
     private val legacyOverlay = Overlay(OVERLAY_NAME, 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
-        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && Diana.coaTrackerLegacy }
+        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && Diana.isLegacy(Diana.TrackerOverlay.COA) }
         .setExtraCondition { World.isInHub() && Helper.hasSpade }
 
     private val changeView = OverlayUtils.createClickableTextLine(
@@ -118,7 +119,7 @@ object CrownOfAvarice {
                 lastAlphaBlocked = blocked
                 onHelmetChanged(stack)
             }
-            val time = tracker?.items?.TIME ?: 0L
+            val time = tracker?.items?.coaTime ?: 0L
             if (time < lastRateTime || time - lastRateTime >= RATE_REFRESH_MS) {
                 lastRateTime = time
                 updateLines()
@@ -126,7 +127,20 @@ object CrownOfAvarice {
             if (dirty) refresh()
         }
 
-        Register.command("setprimarycoa") {
+        // Only the CoA part of the tracker, the loot, mobs and Diana playtime stay
+        Register.command("sboresetcoasession") {
+            resetCoa(DataManager.dianaTrackerSessionData, SboTimerManager.timerCoaSession)
+            DataManager.save(DataManager::dianaTrackerSessionData)
+            Chat.chat("§6[SBO] §aCoA session tracker has been reset.")
+        }
+
+        Register.command("sboresetcoaevent") {
+            resetCoa(DataManager.dianaTrackerMayorData, SboTimerManager.timerCoaMayor)
+            DataManager.save(DataManager::dianaTrackerMayorData)
+            Chat.chat("§6[SBO] §aCoA event tracker has been reset.")
+        }
+
+        Register.command("sbosetprimarycoa") {
             helmet = mc.player?.inventory?.getItem(39)
             if (helmet == null) {
                 Chat.chat("§6[SBO] §cFailed to detect your helmet")
@@ -203,7 +217,7 @@ object CrownOfAvarice {
             ).forEach { it.items.CURRENT_COA_START_COINS = startCoins }
 
             Chat.chat("§6[SBO] §aYour worn CoA was automatically set as your primary CoA. It's used to track your coins and profit/h.", true)
-            Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/setprimarycoa §7to switch.", true)
+            Chat.chat("§6[SBO] §7Wearing a different CoA? Use §e/sbosetprimarycoa §7to switch.", true)
         }
 
         // Only trust the coins if the CoA on our head is the primary one.
@@ -242,6 +256,13 @@ object CrownOfAvarice {
         updateLines()
     }
 
+    // The coins consumed baseline stays, coins gained from here on still count
+    private fun resetCoa(data: DianaTracker, timer: SboTimerManager.SBOTimer) {
+        timer.reset()
+        data.items.COA_COINS = 0L
+        updateLines()
+    }
+
     /** Shows the current numbers, called whenever they change. */
     fun updateLines() {
         dirty = true
@@ -259,7 +280,7 @@ object CrownOfAvarice {
         // Re-rendering means a full GuiLib layout pass, so only when something shown changed
         if (view == shownView) return
         shownView = view
-        if (Diana.coaTrackerLegacy) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
+        if (Diana.isLegacy(Diana.TrackerOverlay.COA)) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
     }
 
     /** Called when the look setting changes: the other overlay takes over on the next tick, at the same saved position. */
@@ -286,20 +307,22 @@ object CrownOfAvarice {
         val maxedIn: String,
         val notEquipped: Boolean,
         val alpha: Boolean,
-        val inventory: Boolean
+        val inventory: Boolean,
+        val lookNotice: Boolean
     )
 
     private fun currentView(): View {
         val coins = shownCoins()
         val progress = if (coins >= 0L) (coins.toDouble() / MAX_COINS).coerceIn(0.0, 1.0) else 0.0
+        val percent = "%.1f".format(Locale.ROOT, progress * 100)
         return View(
             icon = icon,
             mode = Helper.toTitleCase(Diana.coaTracker.name),
-            inter = Diana.coaTrackerFont == Diana.CoaFont.INTER,
-            background = Diana.coaTrackerBackground,
+            inter = Diana.trackerFont == Diana.TrackerFont.INTER,
+            background = Diana.hasBackground(Diana.TrackerOverlay.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
-            fillWidth = "%.1f".format(Locale.ROOT, progress * 100),
-            percent = if (coins >= 0L) "${"%.1f".format(Locale.ROOT, progress * 100)}%" else "-",
+            fillWidth = percent,
+            percent = if (coins >= 0L) "$percent%" else "-",
             maxed = coins >= MAX_COINS,
             coins = if (coins >= 0L) formatNumber(coins) else "-",
             earned = formatNumber(getTotalCoins()),
@@ -309,7 +332,8 @@ object CrownOfAvarice {
             maxedIn = maxedInText(coins),
             notEquipped = cachedCoaCoins == -1L,
             alpha = alphaBlocked,
-            inventory = isCraftingScreenOpen()
+            inventory = isCraftingScreenOpen(),
+            lookNotice = DianaOverlay.showLookNotice()
         )
     }
 
@@ -352,6 +376,7 @@ object CrownOfAvarice {
             if (view.alpha) div(className = "coa-warn") { +"Not tracked on Alpha (Separate Alpha Data off)" }
             else if (view.notEquipped) div(className = "coa-warn") { +"Primary CoA not equipped" }
             if (view.inventory) div(className = "coa-hint") { +"Click the view to change it" }
+            if (view.lookNotice) lookNotice("coa")
         }
     }
 
@@ -378,7 +403,7 @@ object CrownOfAvarice {
 
     /** Profit/h = total CoA profit / hours played */
     fun getProfitPerHour(): Double {
-        val hours = (tracker?.items?.TIME ?: 0L) / 3_600_000.0
+        val hours = (tracker?.items?.coaTime ?: 0L) / 3_600_000.0
         return if (hours > 0.0) getProfit() / hours else 0.0
     }
 
@@ -412,7 +437,7 @@ object CrownOfAvarice {
     }
 
     private fun getCoinsPerHour(): Double {
-        val ms = tracker?.items?.TIME ?: 0L
+        val ms = tracker?.items?.coaTime ?: 0L
         if (ms <= 0L) return 0.0
 
         return getTotalCoins() / (ms / 3_600_000.0)

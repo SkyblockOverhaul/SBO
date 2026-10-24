@@ -8,6 +8,7 @@ import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.overlays.MagicFind
+import net.sbo.mod.settings.Settings
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.settings.categories.QOL
@@ -53,45 +54,32 @@ object DianaTracker {
 
     private var lastBurrow: BURROW_TYPE = BURROW_TYPE.START
 
-    private var timedRareMob: String? = null
-    private var timedRareMobStartNanos: Long = 0L
-    private var nextCocoonedRareMobStartNanos: Long = 0L
-
-    fun consumeRareMobSpawnTime(mob: String): Long {
-        if (timedRareMob != mob) return -1L
-
-        val startNanos = timedRareMobStartNanos
-        if (nextCocoonedRareMobStartNanos != 0L) {
-            // The caught message can arrive before the original entity's death event.
-            // Keep its timer first, then time the mob released from the cocoon.
-            timedRareMobStartNanos = nextCocoonedRareMobStartNanos
-            nextCocoonedRareMobStartNanos = 0L
-        } else {
-            timedRareMob = null
-            timedRareMobStartNanos = 0L
-        }
-
-        val elapsedNanos = System.nanoTime() - startNanos
-        return if (elapsedNanos > 0L) elapsedNanos / 1_000_000L else -1L
-    }
-
-    private fun registerRareMobSpawnTime(mob: String, fromCocoon: Boolean) {
-        if (fromCocoon && timedRareMob == mob && timedRareMobStartNanos != 0L) {
-            if (nextCocoonedRareMobStartNanos == 0L) {
-                nextCocoonedRareMobStartNanos = System.nanoTime()
-            }
-            return
-        }
-
-        timedRareMob = mob
-        timedRareMobStartNanos = System.nanoTime()
-        nextCocoonedRareMobStartNanos = 0L
-    }
-
     fun init() {
         Register.command("sboresetsession") {
             DianaLoot.resetSession()
             Chat.chat("§6[SBO] §aDiana session tracker has been reset.")
+        }
+
+        Register.command("sbolegacylook") { args ->
+            val legacy = when (args.firstOrNull()?.lowercase()) {
+                "yes" -> true
+                "no" -> false
+                else -> {
+                    Chat.chat("§6[SBO] §7Use §e/sbolegacylook yes §7for the old tracker look or §e/sbolegacylook no §7to keep the new one.")
+                    return@command
+                }
+            }
+            sboData.trackerLookAnswered = true
+            DataManager.save(DataManager::sboData)
+            if (legacy) {
+                Diana.legacyTrackers = Diana.TrackerOverlay.entries.toTypedArray()
+                Settings.save()
+                Chat.chat("§6[SBO] §aAll trackers use the legacy look now. §7Change it per tracker in Diana > Tracker Legacy Look.")
+            } else {
+                Chat.chat("§6[SBO] §aKeeping the new tracker look. §7You can still switch in Diana > Tracker Legacy Look.")
+            }
+            // The notice goes away on the next refresh of the trackers
+            Diana.onTrackerLookChanged()
         }
 
         Register.command("sboresetmayortracker") {
@@ -257,20 +245,10 @@ object DianaTracker {
     private fun onMobSpawn(mob: String, fromCocoon: Boolean = false) {
         lastSpawnedMob = mob
         lastSpawnedMobTime = System.nanoTime()
-        // A caught message can precede the original entity's death event. Preserve that
-        // timer and queue the released mob's timer behind it so both deaths are timed.
-        if (fromCocoon && timedRareMob == mob && timedRareMobStartNanos != 0L) {
-            nextCocoonedRareMobStartNanos = System.nanoTime()
-        } else {
-            // Only time the most recently spawned mob; a later spawn supersedes the old timer.
-            timedRareMob = null
-            timedRareMobStartNanos = 0L
-            nextCocoonedRareMobStartNanos = 0L
-        }
+        RareMobKillTime.onMobSpawn(mob, fromCocoon)
         //if (fromCocoon) Chat.chat("§6[SBO] §eRegistered cocooned mob: $mob")
         when (mob) {
             "King Minos" -> {
-                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -299,7 +277,6 @@ object DianaTracker {
                 sboData.mobsSinceKing = 0
             }
             "Manticore" -> {
-                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -330,7 +307,6 @@ object DianaTracker {
                 sboData.mobsSinceManti = 0
             }
             "Minos Inquisitor" -> {
-                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -359,7 +335,6 @@ object DianaTracker {
                 sboData.mobsSinceInq = 0
             }
             "Sphinx" -> {
-                registerRareMobSpawnTime(mob, fromCocoon)
                 DianaMobDetect.onRareSpawn(mob)
                 trackMob(mob, 1)
 
@@ -1053,6 +1028,7 @@ object DianaTracker {
         DataManager.save(DataManager::dianaTrackerMayorData)
 
         SboTimerManager.timerMayor.reset()
+        SboTimerManager.timerCoaMayor.reset()
         SboTimerManager.pauseAllActiveTimers()
 
         DianaMobs.updateLines()

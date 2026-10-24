@@ -421,7 +421,7 @@ object AchievementManager {
                 unlockAchievement(124)
                 if (CrownOfAvarice.helmet.isCoA() && CrownOfAvarice.helmet != null &&
                     lookup.uuid == CrownOfAvarice.primaryCoaUuid && Diana.coaTracker != Tracker.OFF)
-                    Chat.chat("§6[SBO] §aYour CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /setprimarycoa on the new one to continue tracking your CoA stats.", true)
+                    Chat.chat("§6[SBO] §aYour CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /sbosetprimarycoa on the new one to continue tracking your CoA stats.", true)
             }
 
             22.5 -> unlockAchievement(123)

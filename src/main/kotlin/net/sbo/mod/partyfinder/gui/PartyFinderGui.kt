@@ -269,7 +269,7 @@ object PartyFinderGui {
                             page == "rules" -> RulesPage(Unit, key = "rules")
                             page == "settings" -> SettingsPage(
                                 SettingsProps(
-                                    target, favorites, ::saveFavorites, { reload++ },
+                                    favorites, ::saveFavorites, { reload++ },
                                     font = font,
                                     onFont = { id ->
                                         font = id

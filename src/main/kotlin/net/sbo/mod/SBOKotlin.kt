@@ -13,6 +13,7 @@ import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.LootshareParty
 import net.sbo.mod.diana.RareMobHighlight
+import net.sbo.mod.diana.RareMobKillTime
 import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
@@ -161,6 +162,7 @@ object SBOKotlin : ClientModInitializer {
 		MagicFind.init()
 		DianaMobs.init()
 		DianaMobDetect.init()
+		RareMobKillTime.init()
 		DianaLoot.init()
 		AchievementManager.init()
 		MessageHider.init()
