@@ -42,12 +42,12 @@ object CrownOfAvarice {
         stylesheets = listOf("sbo:ui/coa/coa.css")
     )
         .setCondition { Diana.coaTracker != Diana.Tracker.OFF && !Diana.isLegacy(Diana.TrackerOverlay.COA) }
-        .setExtraCondition { World.isInHub() }
+        .setExtraCondition { World.isInHub() && Helper.hasSpade && primaryCoaUuid.isNullOrEmpty() }
 
     // The legacy look: Minecraft text lines like the other overlays, slightly better performance
     private val legacyOverlay = Overlay(OVERLAY_NAME, 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
         .setCondition { Diana.coaTracker != Diana.Tracker.OFF && Diana.isLegacy(Diana.TrackerOverlay.COA) }
-        .setExtraCondition { World.isInHub() && Helper.hasSpade }
+        .setExtraCondition { World.isInHub() && Helper.hasSpade && primaryCoaUuid.isNullOrEmpty() }
 
     private val changeView = OverlayUtils.createClickableTextLine(
         text = "§eChange View",
