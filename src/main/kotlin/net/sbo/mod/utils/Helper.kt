@@ -7,6 +7,8 @@ import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.LootshareDisplay
+import net.sbo.mod.diana.RareMobKillTime
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.chat.Chat
@@ -148,6 +150,7 @@ object Helper {
 
     @SboEvent
     fun onDianaMobDeath(event: DianaMobDeathEvent) {
+        if (LootshareDisplay.consumeConfirmedLootshare(event.name)) onLootShare()
         handleDianaMobDeath(event.name, event.entity.distanceTo(mc.player!!), event.entity.blockPosition().toSboVec())
     }
 
@@ -157,7 +160,7 @@ object Helper {
         val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
-                announceDianaMobKillTime("Minos Inquisitor", nearby)
+                RareMobKillTime.onMobDeath("Minos Inquisitor", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedInq) {
@@ -171,7 +174,7 @@ object Helper {
                 lastInqDeath = System.nanoTime()
             }
             name.contains("King Minos") -> {
-                announceDianaMobKillTime("King Minos", nearby)
+                RareMobKillTime.onMobDeath("King Minos", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedKing) {
@@ -185,7 +188,7 @@ object Helper {
                 lastKingDeath = System.nanoTime()
             }
             name.contains("Sphinx") -> {
-                announceDianaMobKillTime("Sphinx", nearby)
+                RareMobKillTime.onMobDeath("Sphinx", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
@@ -198,7 +201,7 @@ object Helper {
                 lastSphinxDeath = System.nanoTime()
             }
             name.contains("Manticore") -> {
-                announceDianaMobKillTime("Manticore", nearby)
+                RareMobKillTime.onMobDeath("Manticore", nearby)
                 removeNearbyRareMobWaypointAt(pos)
                 if (lsOverride) onLootShare() // makes the gotLootShareRecently condition below always pass
                 if (gotLootShareRecently() && !hasTrackedManti) {
@@ -216,13 +219,6 @@ object Helper {
         if (nearby) {
             allowSackTracking = true
             lastDianaMobDeath = System.nanoTime()
-        }
-    }
-
-    private fun announceDianaMobKillTime(mob: String, nearby: Boolean) {
-        val elapsedMillis = DianaTracker.consumeRareMobSpawnTime(mob)
-        if (nearby && Diana.sendKillTimeMessage && elapsedMillis >= 0L) {
-            Chat.chat("§6[SBO] §eTook §6${formatTime(elapsedMillis, decimalSeconds = true)} §eto kill the $mob!")
         }
     }
 

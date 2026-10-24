@@ -26,6 +26,7 @@ import java.util.*
 import java.util.function.BooleanSupplier
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.math.sign
 import kotlin.time.Duration.Companion.seconds
 
@@ -205,7 +206,67 @@ object ArrowGuessBurrow {
         val support: Int
     )
 
+    private data class LocationCell(val x: Int, val y: Int, val z: Int)
+
+    private data class IndexedLocation(val point: SboVec, val order: Int)
+
+    /** Spatial broad phase for the small-radius neighbor lookups made while extending candidate lines. */
+    private class LocationIndex(locations: Set<SboVec>) {
+        private val cellSize = PARTICLE_DETECTION_TOLERANCE * 2.0
+        private val cells = HashMap<LocationCell, MutableList<IndexedLocation>>()
+
+        init {
+            locations.forEachIndexed { order, point ->
+                cells.getOrPut(cellFor(point)) { ArrayList() }.add(IndexedLocation(point, order))
+            }
+        }
+
+        fun closestUnvisitedWithinTolerance(
+            origin: SboVec,
+            first: SboVec,
+            second: SboVec,
+            visited: Set<SboVec>
+        ): SboVec? {
+            val center = cellFor(origin)
+            var closest: IndexedLocation? = null
+            var minDistSq = Double.MAX_VALUE
+
+            for (x in center.x - 1..center.x + 1) {
+                for (y in center.y - 1..center.y + 1) {
+                    for (z in center.z - 1..center.z + 1) {
+                        val bucket = cells[LocationCell(x, y, z)] ?: continue
+                        for (candidate in bucket) {
+                            val point = candidate.point
+                            if (point in visited) continue
+
+                            val distSq = origin.distanceSq(point)
+                            if (distSq > PARTICLE_DETECTION_TOLERANCE_SQ) continue
+                            if (!isCollinear(first, second, point)) continue
+
+                            val currentClosest = closest
+                            if (distSq < minDistSq ||
+                                (distSq == minDistSq && currentClosest != null && candidate.order < currentClosest.order)
+                            ) {
+                                minDistSq = distSq
+                                closest = candidate
+                            }
+                        }
+                    }
+                }
+            }
+
+            return closest?.point
+        }
+
+        private fun cellFor(point: SboVec) = LocationCell(
+            floor(point.x / cellSize).toInt(),
+            floor(point.y / cellSize).toInt(),
+            floor(point.z / cellSize).toInt()
+        )
+    }
+
     private fun findline(): List<SboVec> {
+        val locationIndex = LocationIndex(locations)
         val candidates = buildList {
             for (start in locations) {
                 val line = mutableListOf<SboVec>()
@@ -213,7 +274,7 @@ object ArrowGuessBurrow {
                 line.add(start)
                 visited.add(start)
 
-                if (extendLine(line, visited, locations)) {
+                if (extendLine(line, visited, locationIndex)) {
                     val immutable = line.toList()
                     add(LineCandidate(immutable, scoreLine(immutable), immutable.size))
                 }
@@ -250,30 +311,13 @@ object ArrowGuessBurrow {
     private fun extendLine(
         line: MutableList<SboVec>,
         visited: MutableSet<SboVec>,
-        locations: Set<SboVec>,
+        locationIndex: LocationIndex,
     ): Boolean {
         while (line.size < SHAFT_LENGTH) {
-            var nextLoc: SboVec? = null
-            var minDistSq = Double.MAX_VALUE
-
             val first = line.first()
             val second = if (line.size > 1) line[1] else first
             val last = line.last()
-
-            for (location in locations) {
-                if (location in visited) continue
-
-                val distSq = last.distanceSq(location)
-                if (distSq > PARTICLE_DETECTION_TOLERANCE_SQ) continue
-
-                if (!isCollinear(first, second, location)) continue
-
-                if (distSq < minDistSq) {
-                    minDistSq = distSq
-                    nextLoc = location
-                }
-            }
-
+            val nextLoc = locationIndex.closestUnvisitedWithinTolerance(last, first, second, visited)
             if (nextLoc == null) return false
 
             line.add(nextLoc)

@@ -61,12 +61,20 @@ object SboKeyBinds {
         SBO_CATEGORY
     )
 
+    private val clearRareMobWorldWaypointsKey: KeyMapping = KeyMapping(
+        "key.sbo-kotlin.clear_rare_mob_world_waypoints",
+        InputConstants.Type.KEYSYM,
+        GLFW.GLFW_KEY_UNKNOWN,
+        SBO_CATEGORY
+    )
+
     fun register() {
         KeyMappingHelper.registerKeyMapping(guessWarpKey)
         KeyMappingHelper.registerKeyMapping(rareMobWarpKey)
         KeyMappingHelper.registerKeyMapping(generalWarpKey)
         KeyMappingHelper.registerKeyMapping(sendCoordsKey)
         KeyMappingHelper.registerKeyMapping(sphinxSolverKey)
+        KeyMappingHelper.registerKeyMapping(clearRareMobWorldWaypointsKey)
     }
 
     private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {
@@ -118,6 +126,10 @@ object SboKeyBinds {
 
             handlePressAction(sphinxSolverKey) {
                 SphinxSolver.solve()
+            }
+
+            handlePressAction(clearRareMobWorldWaypointsKey) {
+                WaypointManager.removeRareMobAndWorldWaypoints()
             }
         })
     }

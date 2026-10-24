@@ -68,6 +68,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         // Your melee hits that no damage splash was matched to yet, oldest first
         val hits = ArrayDeque<Long>()
         var announced = false
+        var lootshareConsumed = false
         var removedNanos = 0L
         var labelHeight = mob.bbHeight + DEFAULT_NAME_TAG_HEIGHT
         var hasLabelHeight = false
@@ -156,6 +157,16 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     val lootsharedAny: Boolean get() = targets.values.any { it.isLabeled && it.isLootshared }
 
+    /** Consume the confirmed lootshare for the matching mob when its death event arrives. */
+    internal fun consumeConfirmedLootshare(name: String): Boolean {
+        val type = RareDianaMob.fromName(name) ?: return false
+        val target = (targets.values.asSequence() + removedTargets.asSequence())
+            .firstOrNull { it.type == type && it.isLootshared && !it.lootshareConsumed }
+            ?: return false
+        target.lootshareConsumed = true
+        return true
+    }
+
     /** Whether labels and overlay status are shown right now. */
     private fun isShown() = Diana.lootshareDisplay && (PartyFinderManager.isInParty || Debug.lootshareDisplayTest)
 
@@ -200,7 +211,8 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         val iterator = pendingMobs.entries.iterator()
         while (iterator.hasNext()) {
             val (mob, loadNanos) = iterator.next()
-            val type = RareDianaMob.fromName(mob.name.string)
+            val name = mob.customName
+            val type = if (name != null) RareDianaMob.fromName(name.string) else null
             if (type != null) {
                 targets[mob.id] = Target(mob, type, consumeOwnSpawn(type, mob, now)).also { it.takeOverRemoved(now) }
                 iterator.remove()
@@ -245,7 +257,10 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     private fun Target.updateNameStand() {
         val stand = nameStand?.takeIf { it.isAlive } ?: findNameStand()?.also { nameStand = it } ?: return
-        val match = healthRegex.find(stand.name.string.removeFormatting()) ?: return
+        val name = stand.customName
+        if (name == null) return
+
+        val match = healthRegex.find(name.string.removeFormatting()) ?: return
         parseNumber(match.groupValues[2])?.let { maxHealth = it }
 
         // Smooth the height so the trailing stand can't make the label jitter, the position itself comes from the mob
@@ -262,7 +277,9 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
             for (id in intArrayOf(mob.id + offset, mob.id - offset)) {
                 val stand = world.getEntity(id) as? ArmorStand ?: continue
                 if (stand.distanceToSqr(mob) > NAME_STAND_MAX_DISTANCE_SQ) continue
-                if (stand.name.string.contains(type.display, ignoreCase = true)) return stand
+                val name = stand.customName
+                if (name == null) continue
+                if (name.string.contains(type.display)) return stand
             }
         }
         return null
