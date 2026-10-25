@@ -20,9 +20,9 @@ internal fun getInactivityLimitNanos(): Long {
 object SboTimerManager {
     internal val activeTimers = mutableSetOf<SBOTimer>()
     // The trackers are read on every use, DataManager can swap them (alpha data)
-    val timerMayor = SBOTimer { DataManager.dianaTrackerMayorData }
-    val timerTotal = SBOTimer { DataManager.dianaTrackerTotalData }
-    val timerSession = SBOTimer { DataManager.dianaTrackerSessionData }
+    val timerMayor = SBOTimer({ DataManager.dianaTrackerMayorData })
+    val timerTotal = SBOTimer({ DataManager.dianaTrackerTotalData })
+    val timerSession = SBOTimer({ DataManager.dianaTrackerSessionData })
     // The CoA tracker's own playtime, so its rates start over when only the CoA tracker is reset
     val timerCoaMayor = SBOTimer({ DataManager.dianaTrackerMayorData }, DianaItemsData::coaTime)
     val timerCoaTotal = SBOTimer({ DataManager.dianaTrackerTotalData }, DianaItemsData::coaTime)

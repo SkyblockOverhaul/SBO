@@ -97,17 +97,32 @@ object Http {
                 else -> HTTP_3_OR_2
             }
 
-            val builder = HttpRequest.newBuilder()
-                .version(httpVersion)
-                .uri(uri)
-                .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
-                .header("User-Agent", USER_AGENT)
-
-            headers.forEach { (name, value) -> builder.header(name, value) }
-
             val client = if (headers.keys.any { it.startsWith("x-sbo-", ignoreCase = true) }) NO_REDIRECT_CLIENT else CLIENT
 
-            client.sendAsync(method(builder).build(), BodyHandlers.ofInputStream())
+            fun request(version: HttpClient.Version): HttpRequest {
+                val builder = HttpRequest.newBuilder()
+                    .version(version)
+                    .uri(uri)
+                    .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
+                    .header("User-Agent", USER_AGENT)
+
+                headers.forEach { (name, value) -> builder.header(name, value) }
+                return method(builder).build()
+            }
+
+            val initialRequest = request(httpVersion)
+            val initialSend = client.sendAsync(initialRequest, BodyHandlers.ofInputStream())
+            val send = if (httpVersion.name == "HTTP_3") {
+                // In case of a connection failure with HTTP/3, attempt the same request a single time using HTTP/2.
+                initialSend.exceptionallyCompose {
+                    // This fallback is deliberately only one level deep: an HTTP/2 failure is returned as-is.
+                    client.sendAsync(request(HttpClient.Version.HTTP_2), BodyHandlers.ofInputStream())
+                }
+            } else {
+                initialSend
+            }
+
+            send
                 .thenAccept { response ->
                     try {
                         val code = response.statusCode()
