@@ -11,6 +11,7 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOneReflectively
 import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.data.DataManager
@@ -24,6 +25,7 @@ import net.sbo.mod.utils.data.configs.diana.DianaItemsData
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverlay.LOOT, { Diana.lootTracker != Diana.Tracker.OFF }) {
     private var isSellTypeHovered = false
@@ -148,6 +150,19 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             }
 
             return@register InteractionResult.PASS
+        }
+
+        // Cancel the shuriken addition if on cooldown
+        Register.onChatMessage(Regex("§cYou need to wait before you can use this again.")) { _, _ ->
+            val isDiana = World.isInHub() && Helper.hasSpade
+            if (mc.player?.mainHandItem?.isShuriken() ?: false && isDiana) {
+                listOf(
+                    DataManager.dianaTrackerTotalData,
+                    DataManager.dianaTrackerMayorData,
+                    DataManager.dianaTrackerSessionData
+                ).forEach { it.items.FAKE_SHURIKEN -= 1 }
+                updateLines()
+            }
         }
 
         // No need to use a UseBlockCallback bc you can't use the shuriken while looking at a block
