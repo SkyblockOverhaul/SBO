@@ -26,7 +26,6 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.isCraftingScreenOpen
-import java.util.Locale
 
 object CrownOfAvarice {
     private const val MAX_COINS = 1_000_000_000L
@@ -188,7 +187,10 @@ object CrownOfAvarice {
         helmet = stack
         val worn = if (helmet.isCoA()) ItemLookup(helmet!!) else null
         // A new copy only when the item changed, the overlay re-renders when the icon is a different stack
-        if (worn != null && icon.let { it == null || !ItemStack.isSameItemSameComponents(it, helmet!!) }) icon = helmet!!.copy()
+        // The icon is only relevant for the new GuiLib overlay, avoid comparing all components of the ItemStack every call if legacy text-based overlay is used instead.
+        if (overlay.checkCondition() && worn != null && icon.let { it == null || !isSameItemSameComponents(it, helmet!!) }) {
+            icon = helmet!!.copy()
+        }
 
         // The Alpha Network has copies of your items with the same UUID but other coins: counting them into the main
         // data would break the baselines of the real CoA, so it is only tracked there with the separate alpha data
@@ -256,6 +258,14 @@ object CrownOfAvarice {
         updateLines()
     }
 
+    private fun isSameItemSameComponents(previous: ItemStack, current: ItemStack): Boolean {
+        // A few early returns based on reference equality, faster path without having to compare each entry in the ItemStack#components map if they are equal.
+        if (previous === current) return true
+        if (previous.components === current.components) return true
+
+        return ItemStack.isSameItemSameComponents(previous, current)
+    }
+
     // The coins consumed baseline stays, coins gained from here on still count
     private fun resetCoa(data: DianaTracker, timer: SboTimerManager.SBOTimer) {
         timer.reset()
@@ -313,8 +323,14 @@ object CrownOfAvarice {
 
     private fun currentView(): View {
         val coins = shownCoins()
-        val progress = if (coins >= 0L) (coins.toDouble() / MAX_COINS).coerceIn(0.0, 1.0) else 0.0
-        val percent = "%.1f".format(Locale.ROOT, progress * 100)
+        val percentTenths = if (coins >= 0L) {
+            val cappedCoins = coins.coerceAtMost(MAX_COINS)
+            ((cappedCoins * 1_000L + MAX_COINS / 2) / MAX_COINS)
+                .let { if (coins < MAX_COINS) it.coerceAtMost(999L) else it }
+        } else {
+            0L
+        }
+        val percent = "${percentTenths / 10}.${percentTenths % 10}"
         return View(
             icon = icon,
             mode = Helper.toTitleCase(Diana.coaTracker.name),
