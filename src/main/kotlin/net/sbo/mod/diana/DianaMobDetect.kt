@@ -1,5 +1,7 @@
 package net.sbo.mod.diana
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
@@ -39,10 +41,12 @@ object DianaMobDetect {
 
     private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
 
-    private val unconfirmed = mutableMapOf<Int, Pair<ArmorStand, Long>>()
-    private val tracked = mutableMapOf<Int, ArmorStand>()
-    private val defeated = mutableSetOf<Int>()
-    private val warned = mutableSetOf<Int>()
+    private data class UnconfirmedMob(val entity: ArmorStand, val spawnTimeNs: Long)
+
+    private val unconfirmed = Int2ObjectOpenHashMap<UnconfirmedMob>()
+    private val tracked = Int2ObjectOpenHashMap<ArmorStand>()
+    private val defeated = IntOpenHashSet()
+    private val warned = IntOpenHashSet()
 
     private val mobHpOverlay: Overlay = Overlay(name = "mythosMobHp", x = 10f, y = 10f, exampleView = OverlayExamples.mythosMobHpExample).setCondition { Diana.mythosMobHp }
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { Diana.noShurikenOverlay }
@@ -186,12 +190,15 @@ object DianaMobDetect {
             val player = mc.player ?: return@onTick
             val overlayLines = mutableListOf<OverlayTextLine>()
 
-            val unconfirmedIterator = unconfirmed.iterator()
+            val unconfirmedIterator = unconfirmed.int2ObjectEntrySet().fastIterator()
             val now = System.nanoTime()
 
             while (unconfirmedIterator.hasNext()) {
-                val (id, data) = unconfirmedIterator.next()
-                val (entity, spawnTime) = data
+                val entry = unconfirmedIterator.next()
+                val id = entry.intKey
+                val data = entry.value
+                val entity = data.entity
+                val spawnTime = data.spawnTimeNs
 
                 val entityWorld = entity.level()
                 if (entityWorld != world || entity.dead || !entity.isAlive) {
@@ -209,10 +216,12 @@ object DianaMobDetect {
 
             var closestStarlessMob: ArmorStand? = null
             var closestDistanceSq = Double.MAX_VALUE
-            val trackedIterator = tracked.iterator()
+            val trackedIterator = tracked.int2ObjectEntrySet().fastIterator()
 
             while (trackedIterator.hasNext()) {
-                val (id, armorStand) = trackedIterator.next()
+                val entry = trackedIterator.next()
+                val id = entry.intKey
+                val armorStand = entry.value
 
                 val entityWorld = armorStand.level()
                 if (entityWorld != world || armorStand.dead || !armorStand.isAlive) {
@@ -247,7 +256,7 @@ object DianaMobDetect {
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
         if (event.entity is ArmorStand) {
-            unconfirmed[event.entity.id] = event.entity to System.nanoTime()
+            unconfirmed[event.entity.id] = UnconfirmedMob(event.entity, System.nanoTime())
         }
     }
 
@@ -430,5 +439,9 @@ object DianaMobDetect {
             stand to mob.display
         }
 
-    internal fun getKnownDianaMobEntityIds(): Set<Int> = tracked.keys + unconfirmed.keys
+    internal fun getKnownDianaMobEntityIds(): IntOpenHashSet =
+        IntOpenHashSet(tracked.size + unconfirmed.size).apply {
+            addAll(tracked.keys)
+            addAll(unconfirmed.keys)
+        }
 }
