@@ -199,11 +199,11 @@ object PartyFinderManager {
         }
 
         Register.onChatMessageCancelable(
-            Pattern.compile("§d(.*?) (.*?)§7: (.*?) join party request - id:(.*)", Pattern.DOTALL)
+            Pattern.compile("^§dFrom (.*?)§7: .*? join party request - id:(.*)$")
         ) { _, matchResult ->
-            if ("From" in matchResult.group(1) && partyMemberCount < partySize) {
-                val playerName = Helper.getPlayerName(matchResult.group(2) ?: "no name")
-                val request = JoinRequest.parse(matchResult.group(4) ?: "")
+            if (partyMemberCount < partySize) {
+                val playerName = Helper.getPlayerName(matchResult.group(1) ?: "no name")
+                val request = JoinRequest.parse(matchResult.group(2) ?: "")
                 if (!Helper.isPlayerName(playerName) || BlockedPlayers.isBlockedName(playerName)) return@onChatMessageCancelable false
                 if (DataManager.partyFinderConfigState.autoInvite) {
                     invitePlayerIfMeetsReqs(playerName, request)
