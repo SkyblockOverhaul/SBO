@@ -9,6 +9,7 @@ import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
+import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
@@ -102,6 +103,16 @@ object CrownOfAvarice {
             Diana.coaTracker = Diana.coaTracker.next()
             updateLines()
         }
+
+        overlay.tooltip { id ->
+            return@tooltip when (id) {
+                "profit" -> "${GOLD}Profit is calculated by taking the difference between the price of a clean CoA and a maxed CoA\n" +
+                        "${GOLD}multiplied by the number of coins earned and divided by 1b (the amount of coins needed to max a CoA)."
+
+                else -> null
+            }
+        }
+
         updateLines()
         updateCoaPrice()
 
@@ -382,16 +393,6 @@ object CrownOfAvarice {
         return lines
     }
 
-    /*
-    override fun tooltip(id: String): String? {
-        return when (id) {
-            "profit" -> "${GOLD}Profit is calculated by taking the difference between the price of a clean CoA and a maxed CoA\n" +
-                            "${GOLD}multiplied by the number of coins earned and divided by 1b (the amount of coins needed to max a CoA)."
-            else -> null
-        }
-    }
-    */
-
     private fun NodeBuilder.content(view: View) {
         val classes = buildString {
             append("coa")
@@ -412,7 +413,7 @@ object CrownOfAvarice {
             }
             row("Coins", view.coins, "/ 1B")
             row("Earned", view.earned, view.earnedPerHour)
-            row("Profit", view.profit, view.profitPerHour, "profit")
+            row("Profit", view.profit, view.profitPerHour, "profit", id = "profit")
             row("Maxed in", view.maxedIn)
             if (view.alpha) div(className = "coa-warn") { +"Not tracked on Alpha (Separate Alpha Data off)" }
             else if (view.notEquipped) div(className = "coa-warn") { +"Primary CoA not equipped" }
@@ -421,8 +422,8 @@ object CrownOfAvarice {
         }
     }
 
-    private fun NodeBuilder.row(label: String, value: String, extra: String? = null, valueClass: String? = null) {
-        div(className = "coa-row") {
+    private fun NodeBuilder.row(label: String, value: String, extra: String? = null, valueClass: String? = null, id: String? = null) {
+        div(className = "coa-row", id = id) {
             span(className = "coa-label") { +label }
             span(className = if (valueClass != null) "coa-value $valueClass" else "coa-value") { +value }
             if (extra != null) span(className = "coa-extra") { +extra }
