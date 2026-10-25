@@ -211,7 +211,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         val iterator = pendingMobs.entries.iterator()
         while (iterator.hasNext()) {
             val (mob, loadNanos) = iterator.next()
-            val name = mob.customName
+            val name = if (mob is Player) mob.name else mob.customName
             val type = if (name != null) RareDianaMob.fromName(name.string) else null
             if (type != null) {
                 targets[mob.id] = Target(mob, type, consumeOwnSpawn(type, mob, now)).also { it.takeOverRemoved(now) }
