@@ -1070,9 +1070,7 @@ object WaypointManager {
             tryWarp = true
             Chat.command("warp $warp")
             sleep(500) {
-                mc.execute {
-                    tryWarp = false
-                }
+                tryWarp = false
             }
         }
     }
