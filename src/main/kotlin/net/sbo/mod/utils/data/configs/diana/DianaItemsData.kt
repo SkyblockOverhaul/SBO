@@ -44,6 +44,7 @@ data class DianaItemsData(
     @SerializedName("CoA Coins") var COA_COINS: Long = 0,
     @SerializedName("COA Start Coins") var CURRENT_COA_START_COINS: Long = -1,
     @SerializedName("CoA Time") var COA_TIME: Long = -1,
+    @SerializedName("Shuriken") var FAKE_SHURIKEN: Int = 0,
 ) {
     /** The CoA tracker's playtime, the Diana playtime for data from before it had its own (COA_TIME -1). */
     var coaTime: Long

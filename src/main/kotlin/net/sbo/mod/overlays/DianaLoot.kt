@@ -1,6 +1,9 @@
 package net.sbo.mod.overlays
 
+import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.ChatFormatting.*
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
@@ -18,6 +21,8 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
+import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
 
 object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverlay.LOOT, { Diana.lootTracker != Diana.Tracker.OFF }) {
@@ -98,13 +103,15 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         LootItemData("HILT_OF_REVELATIONS", "Hilt of Revelations", BLUE),
         LootItemData("ANCIENT_CLAW", "Ancient Claw", BLUE),
         LootItemData("ENCHANTED_ANCIENT_CLAW", "Enchanted Ancient Claw", BLUE),
-        LootItemData("ENCHANTED_GOLD", "Enchanted Gold", BLUE)
+        LootItemData("ENCHANTED_GOLD", "Enchanted Gold", BLUE),
+        LootItemData("FAKE_SHURIKEN", "Shuriken", RED, negativeValue = true),
     )
 
     fun init() {
         initOverlays()
         updateTimerText()
         updateLines()
+        shurikenTracker()
 
         Register.onTick(1) { updateTimerText() }
         Register.onTick(20) {
@@ -127,12 +134,36 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         }
     }
 
+    private fun shurikenTracker() {
+        // On item use
+        UseItemCallback.EVENT.register { player, _, hand ->
+            val isDiana = World.isInHub() && Helper.hasSpade
+            if (player.getItemInHand(hand).isShuriken() && isDiana) {
+                listOf(
+                    DataManager.dianaTrackerTotalData,
+                    DataManager.dianaTrackerMayorData,
+                    DataManager.dianaTrackerSessionData
+                ).forEach { it.items.FAKE_SHURIKEN += 1 }
+                updateLines()
+            }
+
+            return@register InteractionResult.PASS
+        }
+
+        // No need to use a UseBlockCallback bc you can't use the shuriken while looking at a block
+    }
+
+    private fun ItemStack.isShuriken(): Boolean {
+        val id = ItemLookup(this).sbId
+        return id == "FAKE_SHURIKEN"
+    }
+
     private fun createLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
         val itemName = data.id
         val amount = tracker.getAmountOf(itemName)
         val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         val formattedName = "$color${data.name}: $AQUA${Helper.formatNumber(amount, withCommas = true)}"
-        val price = Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
+        val price = (if (data.negativeValue) "$RED-" else "") + Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemName, dropId)
         }
@@ -246,7 +277,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color,
             value = Helper.formatNumber(amount, withCommas = true),
             extra = listOfNotNull(percent, lsText).joinToString("  ").ifEmpty { null },
-            price = if (hidePrice) "-" else Helper.getItemPriceFormatted(data.id, amount + lsAmount),
+            price = if (hidePrice) "-" else (if (data.negativeValue) "$RED-" else "") + (Helper.getItemPriceFormatted(data.id, amount + lsAmount)),
             hidden = hidden
         )
     }
@@ -505,8 +536,8 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             val itemValue = field.getInt(tracker.items)
             if (itemValue <= 0) continue
 
-            val itemPrice = Helper.getItemPrice(itemName)
-            if (itemPrice <= 0) continue
+            val itemPrice = Helper.getItemPrice(itemName) * (if (field.name == "FAKE_SHURIKEN") -1 else 1)
+            if (itemPrice <= 0 && field.name != "FAKE_SHURIKEN") continue
 
             profit[itemName] = (profit[itemName] ?: 0L) + itemPrice * itemValue
         }

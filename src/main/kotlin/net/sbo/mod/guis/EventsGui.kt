@@ -283,6 +283,7 @@ object EventsGui {
             add(count("§7Claws", i.ANCIENT_CLAW, false))
             add(count("§7Ench. Claws", i.ENCHANTED_ANCIENT_CLAW))
             add(count("§7Ench. Gold", i.ENCHANTED_GOLD, false))
+            add(count("§cShurikens", i.FAKE_SHURIKEN))
             add(count("§eBurrows", i.TOTAL_BURROWS, false))
             add(Stat("§ePlaytime", Helper.formatTime(i.TIME), i.TIME.toDouble()))
             if (total) add(Stat("§eEvents", DataManager.pastDianaEventsData.events.size.toString(), 0.0))

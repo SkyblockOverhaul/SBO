@@ -12,7 +12,8 @@ object OverlayUtils {
         val combined: Boolean = false,
         val dropMobId: String? = null,
         val dropMobLsId: String? = null,
-        val isRarerDrop: Boolean = false
+        val isRarerDrop: Boolean = false,
+        val negativeValue: Boolean = false
     )
 
     internal fun createClickableTextLine(
