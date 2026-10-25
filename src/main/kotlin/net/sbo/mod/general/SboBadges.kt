@@ -395,6 +395,7 @@ object SboBadges {
         animate: Boolean = false,
     ): Component {
         val read = ArrayList<StyledChar>()
+        val readPlainBuilder = StringBuilder()
         line.visit({ style, text ->
             var current = style
             var i = 0
@@ -406,12 +407,13 @@ object SboBadges {
                     continue
                 }
                 read += StyledChar(text[i], current)
+                readPlainBuilder.append(text[i])
                 i++
             }
             Optional.empty<Unit>()
         }, Style.EMPTY)
 
-        val readPlain = String(CharArray(read.size) { read[it].char })
+        val readPlain = readPlainBuilder.toString()
         val foundName = Regex("(?<![A-Za-z0-9_])${Regex.escape(playerName)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
             .find(readPlain) ?: return line
         // Name, level and rank each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
@@ -429,12 +431,7 @@ object SboBadges {
         // "[SBO Dev] " goes in as chars, everything behind it moves along
         val insertAt = if (place == TeamTagPlace.HEAD) 0 else foundName.range.first
         val tagChars = tagText?.let { "[$it] " }.orEmpty()
-        val chars = ArrayList<StyledChar>(read.size + tagChars.length)
-        chars.addAll(read.subList(0, insertAt))
-        tagChars.forEach { chars += StyledChar(it, Style.EMPTY) }
-        chars.addAll(read.subList(insertAt, read.size))
         fun moved(range: IntRange) = if (range.first >= insertAt) range.first + tagChars.length..range.last + tagChars.length else range
-        val plain = String(CharArray(chars.size) { chars[it].char })
         val name = moved(foundName.range)
 
         // Found in the line as it came, so a tag never reads as a rank. In chat and for some ranks in the tab list
@@ -457,7 +454,12 @@ object SboBadges {
         ).sortedBy { it.range.first }
         if (segments.isEmpty() && afterName == null) return line
         // Only spaces may stand between chained parts
-        val paints = paints(segments) { before, next -> (before.range.last + 1 until next.range.first).all { plain[it] == ' ' } }
+        val paints = paints(segments) { before, next ->
+            (before.range.last + 1 until next.range.first).all { i ->
+                if (i in insertAt until insertAt + tagChars.length) tagChars[i - insertAt] == ' '
+                else read[if (i < insertAt) i else i - tagChars.length].char == ' '
+            }
+        }
         // Brackets and the rank's plus can have their own color; the tag's brackets are gray without one,
         // unless the tag flows in a line with the parts next to it
         fun colorOf(k: Int, i: Int, char: Char): Int {
@@ -479,16 +481,23 @@ object SboBadges {
             runStyle?.let { out.append(Component.literal(run.toString()).withStyle(it)) }
             run = StringBuilder()
         }
-        chars.forEachIndexed { i, c ->
-            val k = segments.indexOfFirst { i in it.range }
-            val colored = if (k < 0) c.style else c.style.withColor(colorOf(k, i, c.char))
+        var segmentIndex = 0
+        val outputLength = read.size + tagChars.length
+        for (i in 0 until outputLength) {
+            val inTag = i in insertAt until insertAt + tagChars.length
+            val sourceIndex = if (inTag) -1 else if (i < insertAt) i else i - tagChars.length
+            val char = if (inTag) tagChars[i - insertAt] else read[sourceIndex].char
+            val baseStyle = if (inTag) Style.EMPTY else read[sourceIndex].style
+            while (segmentIndex < segments.size && i > segments[segmentIndex].range.last) segmentIndex++
+            val k = segmentIndex.takeIf { it < segments.size && i in segments[it].range } ?: -1
+            val colored = if (k < 0) baseStyle else baseStyle.withColor(colorOf(k, i, char))
             // Chars only move above heads
-            val style = if (k < 0 || place != TeamTagPlace.HEAD) colored else paints[k].moved(colored, i, c.char, animate, now)
+            val style = if (k < 0 || place != TeamTagPlace.HEAD) colored else paints[k].moved(colored, i, char, animate, now)
             if (style != runStyle) {
                 flush()
                 runStyle = style
             }
-            run.append(c.char)
+            run.append(char)
             if (afterName != null && i == name.last) {
                 flush()
                 runStyle = null

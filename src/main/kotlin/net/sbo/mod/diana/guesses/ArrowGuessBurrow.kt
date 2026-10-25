@@ -206,7 +206,28 @@ object ArrowGuessBurrow {
         val support: Int
     )
 
-    private data class LocationCell(val x: Int, val y: Int, val z: Int)
+    private data class LocationCell(val x: Int, val y: Int, val z: Int) : Comparable<LocationCell> {
+        private var cachedHashCode = -1
+
+        override fun hashCode(): Int {
+            var result = cachedHashCode
+            if (result == -1) {
+                result = x
+                result = 31 * result + y
+                result = 31 * result + z
+                cachedHashCode = result
+            }
+            return result
+        }
+
+        override fun compareTo(other: LocationCell): Int {
+            val xComparison = x.compareTo(other.x)
+            if (xComparison != 0) return xComparison
+
+            val yComparison = y.compareTo(other.y)
+            return if (yComparison != 0) yComparison else z.compareTo(other.z)
+        }
+    }
 
     private data class IndexedLocation(val point: SboVec, val order: Int)
 

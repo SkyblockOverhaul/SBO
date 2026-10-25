@@ -132,7 +132,7 @@ object BurrowDetector {
             if (Diana.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
         }
 
-        Register.onChatMessage(Regex(""".*§eYou (?:just )?dug out(?!.*\(\d+/\d+\)$).*""")) { message, matchResult ->
+        Register.onChatMessage(Regex("""§eYou (?:just )?dug out(?!.*\(\d+/\d+\)$)""")) { message, matchResult ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 

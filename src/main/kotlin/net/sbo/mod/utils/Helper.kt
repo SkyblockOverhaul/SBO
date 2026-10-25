@@ -230,8 +230,8 @@ object Helper {
     }
 
     /**
-     * Sleeps for the specified number of milliseconds and then executes the callback.
-     * This is done in a separate thread to avoid blocking the main thread.
+     * Sleeps for the specified number of milliseconds and then executes the callback on the client thread (for thread-safety).
+     * The sleep itself is done in a separate thread to avoid blocking the client thread while the callback still runs on the client thread.
      *
      * @param milliseconds The number of milliseconds to sleep.
      * @param callback The function to execute after sleeping.
@@ -239,7 +239,9 @@ object Helper {
     fun sleep(milliseconds: Long, callback: () -> Unit) {
         SBO_CALLBACK_THREAD.execute {
             Thread.sleep(milliseconds)
-            callback()
+            mc.execute {
+                callback()
+            }
         }
     }
 

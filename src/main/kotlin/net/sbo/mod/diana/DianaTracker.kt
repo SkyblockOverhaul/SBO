@@ -112,12 +112,14 @@ object DianaTracker {
 
         Register.onChatMessageCancelable(
             Pattern.compile("^§6§lWow! §eYou dug out §6(.*?) coins§e!$")
-        ) { _, _ ->
+        ) { _, matchResult ->
             lastBurrow = BURROW_TYPE.TREASURE
             allowScavTracking = false
             sleep(1000) {
                 allowScavTracking = true
             }
+            val coins = matchResult.group(1).replace(",", "").toIntOrNull() ?: 0
+            if (coins > 0) trackItem("COINS", coins)
             true
         }
 
@@ -136,7 +138,6 @@ object DianaTracker {
 
         trackBurrowsWithChat()
         trackMobsWithChat()
-        trackCoinsWithChat()
         trackTreasuresWithChat()
         trackRngDropsWithChat()
         trackShardsWithChat()
@@ -378,14 +379,6 @@ object DianaTracker {
             "Siamese Lynxes" -> trackMob(mob, 1)
             "Minos Hunter" -> trackMob(mob, 1)
             else -> Chat.chat("§6[SBO] §cUnknown diana mob spawned: $mob. Please report this.")
-        }
-    }
-
-    private fun trackCoinsWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("^§6§lWow! §eYou dug out §6(.*?) coins§e!$", Pattern.DOTALL)) { message, matchResult ->
-            val coins = matchResult.group(1).replace(",", "").toIntOrNull() ?: 0
-            if (coins > 0) trackItem("COINS", coins)
-            true
         }
     }
 

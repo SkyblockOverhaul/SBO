@@ -81,6 +81,7 @@ object AchievementManager {
         addAllAchievements()
         
         kingSoul()
+        Register.onTick(20) { trackCOA() }
 
         // Die to a Minos King
         // Register.onChatMessage()
@@ -257,7 +258,6 @@ object AchievementManager {
         if (mobsData.MANTICORE >= 1) unlockAchievement(112)
 
         if (totalProfit(dianaTrackerMayorData) >= 1_000_000_000L) unlockAchievement(84)
-        trackCOA()
     }
 
     fun trackSince() {

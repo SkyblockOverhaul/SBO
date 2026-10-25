@@ -45,8 +45,10 @@ object SphinxSolver {
         ) { message, matchResult ->
             if (!Diana.sphinxSolver) return@onChatMessageCancelable true
             val questionText = matchResult.group(1).trim()
+            var clean: String? = null
             for (sphinxQuestion in SphinxQuestions.QUESTIONS) {
-                if (sphinxQuestion.question.equals(questionText.removeFormatting(), ignoreCase = true)) {
+                if (clean == null) clean = questionText.removeFormatting()
+                if (sphinxQuestion.question.equals(clean, ignoreCase = true)) {
                     Helper.sleep(100) {
                         Chat.chat("§6[SBO] §bClick anywhere on the screen to answer while the chat is open.", true)
                     }

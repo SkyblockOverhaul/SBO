@@ -1,5 +1,6 @@
 package net.sbo.mod.diana
 
+import it.unimi.dsi.fastutil.ints.IntSet
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -39,7 +40,7 @@ object RareMobKillTime {
     private data class PendingCocoon(
         val mob: String,
         val caughtNs: Long,
-        val knownEntityIds: Set<Int>
+        val knownEntityIds: IntSet
     )
 
     fun init() {
@@ -78,7 +79,7 @@ object RareMobKillTime {
         while (iterator.hasNext()) {
             val pending = iterator.next()
             val hatched = tracked.firstOrNull { (stand, mob) ->
-                mob == pending.mob && stand.id !in pending.knownEntityIds
+                mob == pending.mob && !pending.knownEntityIds.contains(stand.id)
             }
             if (hatched != null) {
                 val hatchMs = ((now - pending.caughtNs).coerceAtLeast(0L) / 1_000_000L)

@@ -48,9 +48,11 @@ object Pickuplog {
             updateInventorySnapshot()
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("(.*?) item(.*?) (.*?)", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(
+            Pattern.compile("^.*Sacks.*\\s+(?:§.)?\\+\\d+ items\\..*\\(Last \\d+s\\.\\)(?:§.)*$")
+        ) { message, matchResult ->
             var cancel = true
-            if (World.isInSkyblock() && "Sacks" in matchResult.group(1)) {
+            if (World.isInSkyblock()) {
                 message.siblings.forEach { part ->
                     if (" item" in part.string) {
                         val hover = part.style.hoverEvent

@@ -364,15 +364,19 @@ object WaypointManager {
             )
         }
 
-        if (Diana.ReceiveMobs.contains(mobType)) Helper.showTitle(
-            mobData.title,
-            player.ifEmpty { null },
-            Diana.rareMobTitleFadeInTime,
-            Diana.rareMobTitleStayTime,
-            Diana.rareMobTitleFadeOutTime
-        )
-
         if (!isOwnSpawn || fromSelfSpawnMessage) {
+            // The self-spawn message always shows the title and plays the custom sound to let user know they spawned a rare mob.
+            // For other's mobs, the title and sound does not play unless the mob was selected in "Select Whichs Mobs to Receive".
+            if (!fromSelfSpawnMessage && mobType !in Diana.ReceiveMobs) return mobData.mobName
+    
+            Helper.showTitle(
+                mobData.title,
+                player.ifEmpty { null },
+                Diana.rareMobTitleFadeInTime,
+                Diana.rareMobTitleStayTime,
+                Diana.rareMobTitleFadeOutTime
+            )
+
             playCustomSound(mobData.sound, mobData.volume)
         }
 
@@ -511,6 +515,7 @@ object WaypointManager {
                 DianaMobDetect.RareDianaMob.MANTI -> Diana.ReceiveList.MANTICORE
             }
 
+            if (receiveType !in Diana.ReceiveMobs) continue
             if (existing.any { it.rareMobType == receiveType && it.pos.distanceTo(standPos) <= 60 }) continue
 
             // Best-effort to not be considered a cheat.
@@ -582,6 +587,9 @@ object WaypointManager {
                 Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX)) return null
             }
         }
+
+        // Self-spawn still adds the waypoint, even if not in receive list, because hide own waypoints setting controls that, not receive.
+        if (!isOwnSpawn && mobType !in Diana.ReceiveMobs) return null
 
         val owner = if (player.isNotEmpty()) " §7($player§7)" else ""
         val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, type = "rareMob", ttl = 45, rareMobType = mobType, rareMobSentBy = player)
@@ -1070,9 +1078,7 @@ object WaypointManager {
             tryWarp = true
             Chat.command("warp $warp")
             sleep(500) {
-                mc.execute {
-                    tryWarp = false
-                }
+                tryWarp = false
             }
         }
     }
