@@ -27,6 +27,7 @@ import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
+import net.sbo.mod.utils.events.impl.game.StartAttackingEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
@@ -159,6 +160,19 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     fun shurikenUse(event: PlayerInteractEvent) {
         val isDiana = World.isInHub() && Helper.hasSpade
         if (event.player.mainHandItem.isShuriken() && isDiana) {
+            listOf(
+                DataManager.dianaTrackerTotalData,
+                DataManager.dianaTrackerMayorData,
+                DataManager.dianaTrackerSessionData
+            ).forEach { it.items.FAKE_SHURIKEN += 1 }
+            updateLines()
+        }
+    }
+
+    @SboEvent
+    fun shurikenAttack(event: StartAttackingEvent) {
+        val isDiana = World.isInHub() && Helper.hasSpade
+        if (event.getMainHandItem().isShuriken() && isDiana && event.isAirOrEntity()) {
             listOf(
                 DataManager.dianaTrackerTotalData,
                 DataManager.dianaTrackerMayorData,
