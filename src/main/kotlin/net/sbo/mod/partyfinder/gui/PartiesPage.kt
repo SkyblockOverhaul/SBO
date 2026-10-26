@@ -585,7 +585,7 @@ private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null
 }
 
 // Only moderators and above have a tag, supporters don't
-private fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
+internal fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
     val rank = SboBadges.teamRank(uuid) ?: return
     val text = if (name == null) rank.tag!! else "${rank.tag}: $name"
     val color = SboBadges.badgeColor(uuid) ?: rank.color
@@ -596,7 +596,7 @@ private fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
 
 private const val SUPPORTER_LOGO = "sbo:textures/font/badge.png"
 
-private fun NodeBuilder.supporterLogo(uuid: String) {
+internal fun NodeBuilder.supporterLogo(uuid: String) {
     if (!SboBadges.isSupporter(uuid)) return
     tooltip("This player supports SBO on Patreon or Ko-fi.", className = "pf-tip", key = "supporter-$uuid") {
         img(src = SUPPORTER_LOGO, className = "pf-supporter")

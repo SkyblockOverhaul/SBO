@@ -1,0 +1,365 @@
+{
+  "griffin": {
+    "item": "minecraft:player_head",
+    "texture": "ewogICJ0aW1lc3RhbXAiIDogMTU5OTgxMDM3NTkzMywKICAicHJvZmlsZUlkIiA6ICI5YzQ5YjU0YjFjZjU0NjZjYjRhNzA4M2JmZGQ4MDIxNSIsCiAgInByb2ZpbGVOYW1lIiA6ICI5U0kiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGMyN2UzY2I1MmE2NDk2OGU2MGM4NjFlZjFhYjg0ZTBhMGNiNWYwN2JlMTAzYWM3OGRhNjc3NjE3MzFmMDBjOCIKICAgIH0KICB9Cn0="
+  },
+  "bloodshotBelt": {
+    "item": "minecraft:leather"
+  },
+  "looting5Blade": {
+    "item": "minecraft:golden_sword",
+    "model": "hypixel_skyblock:item/community_center/mayor/diana/daedalus_blade"
+  },
+  "dianaKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "bph": {
+    "item": "minecraft:golden_shovel",
+    "model": "hypixel_skyblock:item/community_center/mayor/diana/ancestral_spade"
+  },
+  "dianaRank": {
+    "item": "minecraft:gold_ingot"
+  },
+  "enrichments": {
+    "item": "minecraft:player_head",
+    "texture": "ewogICJ0aW1lc3RhbXAiIDogMTcyMDA0MDEzMzI0OCwKICAicHJvZmlsZUlkIiA6ICJiYWI0NjQ1NzRmMjY0MGRhYmFlNmUzZTBjM2I4MzFjZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJtb3N0d2FsbCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9hZDNiNGEzMGFlZGM4MDQwODE1Nzc4Zjc3OGE3Mzk1OTA5YzRjY2NlNmZkNTVjNmUzZTQ3YWI1ZGE1MzE5NTJiIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0="
+  },
+  "seaCreatureKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "frozenBlaze": {
+    "item": "minecraft:player_head",
+    "texture": "ewogICJ0aW1lc3RhbXAiIDogMTY2MTA4NTAzNTkyNywKICAicHJvZmlsZUlkIiA6ICJjMTNkYzkxZjg1YjA0ZWM4OGU2NDk5YzdjZDc4Zjk3MSIsCiAgInByb2ZpbGVOYW1lIiA6ICJjYXNzdGhlY3J5cHRpZCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS83MDMxMGI1NWVlZDk1OGZlZThmZmFhZjcxODQ2NzE2N2RlYjFhN2M5MDQ2ZDY3YjI1ODg3YjU5NjkyNTYzNmJiIgogICAgfQogIH0KfQ=="
+  },
+  "trophyFisher": {
+    "item": "minecraft:gold_nugget"
+  },
+  "trophyFishCaught": {
+    "item": "minecraft:tropical_fish"
+  },
+  "sharkKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "hotmLevel": {
+    "item": "minecraft:emerald"
+  },
+  "mineshaftsEntered": {
+    "item": "minecraft:minecart"
+  },
+  "vanguardCorpses": {
+    "item": "minecraft:skeleton_skull"
+  },
+  "vanguardSeeker": {
+    "item": "minecraft:compass"
+  },
+  "kuudraCompletions": {
+    "item": "minecraft:magma_cream"
+  },
+  "kuudraCompletionsAll": {
+    "item": "minecraft:magma_cream"
+  },
+  "kuudraHighestWave": {
+    "item": "minecraft:fire_charge"
+  },
+  "kuudraWave100": {
+    "item": "minecraft:fire_charge",
+    "glint": true
+  },
+  "infernalKuudraRuns": {
+    "item": "minecraft:blaze_powder"
+  },
+  "chimeraLevel": {
+    "item": "minecraft:enchanted_book"
+  },
+  "catacombsLevel": {
+    "item": "minecraft:wither_skeleton_skull"
+  },
+  "dungeonSecrets": {
+    "item": "minecraft:chest"
+  },
+  "masterSevenRuns": {
+    "item": "minecraft:dragon_head"
+  },
+  "healerLevel": {
+    "item": "minecraft:splash_potion"
+  },
+  "mageLevel": {
+    "item": "minecraft:blaze_rod"
+  },
+  "berserkLevel": {
+    "item": "minecraft:iron_axe"
+  },
+  "archerLevel": {
+    "item": "minecraft:bow"
+  },
+  "tankLevel": {
+    "item": "minecraft:leather_chestplate"
+  },
+  "bestiaryMilestone": {
+    "item": "minecraft:book"
+  },
+  "crimsonSerendipity": {
+    "item": "minecraft:nether_wart"
+  },
+  "witherPiper": {
+    "item": "minecraft:wither_rose"
+  },
+  "bacteKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "timecharms": {
+    "item": "minecraft:clock"
+  },
+  "livingTimecharm": {
+    "item": "minecraft:clock",
+    "glint": true
+  },
+  "enigmaSouls": {
+    "item": "minecraft:echo_shard"
+  },
+  "snakesCollected": {
+    "item": "minecraft:lime_dye"
+  },
+  "frozenWaterPungi": {
+    "item": "minecraft:spider_eye"
+  },
+  "critterMaster": {
+    "item": "minecraft:paper",
+    "model": "hypixel_skyblock:item/island_relevant/safari/masterful_critter_capsule"
+  },
+  "maxShop": {
+    "item": "minecraft:emerald"
+  },
+  "maxBestiary": {
+    "item": "minecraft:book"
+  },
+  "sparklingCritterdex": {
+    "item": "minecraft:glowstone_dust"
+  },
+  "safariTickets": {
+    "item": "minecraft:name_tag"
+  },
+  "critterdex": {
+    "item": "minecraft:writable_book"
+  },
+  "sparklingCritters": {
+    "item": "minecraft:glowstone_dust"
+  },
+  "biomeCaptures": {
+    "item": "minecraft:grass_block"
+  },
+  "slayerLevel": {
+    "item": "minecraft:experience_bottle"
+  },
+  "slayerHighestTier": {
+    "item": "minecraft:diamond_sword"
+  },
+  "slayerTierKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "slayerXp": {
+    "item": "minecraft:experience_bottle"
+  },
+  "slayer:revenant": {
+    "item": "minecraft:rotten_flesh"
+  },
+  "slayer:tarantula": {
+    "item": "minecraft:cobweb"
+  },
+  "slayer:sven": {
+    "item": "minecraft:bone"
+  },
+  "slayer:voidgloom": {
+    "item": "minecraft:ender_pearl"
+  },
+  "slayer:inferno": {
+    "item": "minecraft:blaze_powder"
+  },
+  "slayer:riftstalker": {
+    "item": "minecraft:redstone"
+  },
+  "skill:Farming": {
+    "item": "minecraft:golden_hoe"
+  },
+  "skill:Mining": {
+    "item": "minecraft:stone_pickaxe"
+  },
+  "skill:Combat": {
+    "item": "minecraft:stone_sword"
+  },
+  "skill:Foraging": {
+    "item": "minecraft:jungle_sapling"
+  },
+  "skill:Fishing": {
+    "item": "minecraft:fishing_rod"
+  },
+  "skill:Enchanting": {
+    "item": "minecraft:enchanting_table"
+  },
+  "skill:Alchemy": {
+    "item": "minecraft:brewing_stand"
+  },
+  "skill:Taming": {
+    "item": "minecraft:pig_spawn_egg"
+  },
+  "skill:Carpentry": {
+    "item": "minecraft:crafting_table"
+  },
+  "skill:Hunting": {
+    "item": "minecraft:lead"
+  },
+  "skill:Runecrafting": {
+    "item": "minecraft:magma_cream"
+  },
+  "skill:Social": {
+    "item": "minecraft:emerald"
+  },
+  "sbLevel": {
+    "item": "minecraft:nether_star"
+  },
+  "magicalPower": {
+    "item": "minecraft:amethyst_shard"
+  },
+  "skillAverage": {
+    "item": "minecraft:diamond_sword"
+  },
+  "networth": {
+    "item": "minecraft:gold_block"
+  },
+  "purse": {
+    "item": "minecraft:gold_nugget"
+  },
+  "bank": {
+    "item": "minecraft:gold_ingot"
+  },
+  "ironman": {
+    "item": "minecraft:iron_ingot"
+  },
+  "powder:mithril": {
+    "item": "minecraft:prismarine_crystals"
+  },
+  "powder:gemstone": {
+    "item": "minecraft:pink_dye"
+  },
+  "powder:glacite": {
+    "item": "minecraft:packed_ice"
+  },
+  "farmingLevel": {
+    "item": "minecraft:golden_hoe"
+  },
+  "miningLevel": {
+    "item": "minecraft:stone_pickaxe"
+  },
+  "combatLevel": {
+    "item": "minecraft:stone_sword"
+  },
+  "foragingLevel": {
+    "item": "minecraft:jungle_sapling"
+  },
+  "fishingLevel": {
+    "item": "minecraft:fishing_rod"
+  },
+  "enchantingLevel": {
+    "item": "minecraft:enchanting_table"
+  },
+  "alchemyLevel": {
+    "item": "minecraft:brewing_stand"
+  },
+  "tamingLevel": {
+    "item": "minecraft:pig_spawn_egg"
+  },
+  "carpentryLevel": {
+    "item": "minecraft:crafting_table"
+  },
+  "huntingLevel": {
+    "item": "minecraft:lead"
+  },
+  "revenantXp": {
+    "item": "minecraft:rotten_flesh"
+  },
+  "tarantulaXp": {
+    "item": "minecraft:cobweb"
+  },
+  "svenXp": {
+    "item": "minecraft:bone"
+  },
+  "voidgloomXp": {
+    "item": "minecraft:ender_pearl"
+  },
+  "infernoXp": {
+    "item": "minecraft:blaze_powder"
+  },
+  "riftstalkerXp": {
+    "item": "minecraft:redstone"
+  },
+  "jawbusKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "thunderKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "ragnarokKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "wikiTikiKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "grimReaperKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "phantomFisherKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "reindrakeKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "yetiKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "scathaKills": {
+    "item": "minecraft:iron_sword"
+  },
+  "fishingXp": {
+    "item": "minecraft:fishing_rod"
+  },
+  "miningXp": {
+    "item": "minecraft:stone_pickaxe"
+  },
+  "huntingXp": {
+    "item": "minecraft:lead"
+  },
+  "mithrilPowder": {
+    "item": "minecraft:prismarine_crystals"
+  },
+  "gemstonePowder": {
+    "item": "minecraft:pink_dye"
+  },
+  "glacitePowder": {
+    "item": "minecraft:packed_ice"
+  },
+  "items:inventory": {
+    "item": "minecraft:player_head"
+  },
+  "items:wardrobe": {
+    "item": "minecraft:leather_chestplate"
+  },
+  "items:equipment": {
+    "item": "minecraft:yellow_wool",
+    "model": "hypixel_skyblock:item/community_center/mayor/diana/golden_fleece"
+  },
+  "items:loadouts": {
+    "item": "minecraft:barrel"
+  },
+  "items:storage": {
+    "item": "minecraft:chest"
+  },
+  "items:pets": {
+    "item": "minecraft:bone"
+  },
+  "items:accessories": {
+    "item": "minecraft:bundle"
+  },
+  "items:enderChestPage": {
+    "item": "minecraft:ender_chest"
+  }
+}

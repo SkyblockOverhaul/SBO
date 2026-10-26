@@ -32,7 +32,7 @@ object OwnStats {
         onError: (PfError) -> Unit,
         callback: (MemberView) -> Unit
     ) {
-        PlayerStatsCache.own(force, onError) { stats ->
+        PlayerStatsCache.own(force, onError = onError) { stats ->
             stats.member(target.partyType, target.subType, statOptions(target, options))?.let(callback) ?: onError(noStats())
         }
     }

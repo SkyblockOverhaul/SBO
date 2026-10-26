@@ -180,12 +180,17 @@ body {
 }
 .pf-queue-text { cursor: pointer; color: var(--ok); }
 .pf-close {
-    padding: 1px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 5px;
     margin-bottom: 3px;
     background-color: transparent;
     border-color: transparent;
 }
+.pf-close-icon { width: 6px; height: 6px; color: var(--text-soft); }
 .pf-close:hover { background-color: var(--danger); }
+.pf-close:hover .pf-close-icon { color: var(--text-strong); }
 
 /* ---- layout ---- */
 .pf-body { display: flex; flex-grow: 1; min-height: 0; }
@@ -367,6 +372,10 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-tip-api { margin-top: 2px; color: var(--muted); }
 .pf-tip-own { margin-top: 2px; color: var(--title); }
 .pf-stat-label { white-space: nowrap; }
+/* Hypixel stat icons are 7 x 7 pixel art */
+.pf-stat-icon { width: 7px; height: 7px; margin-right: 2px; color: var(--text-soft); }
+/* Items as stat icons */
+.pf-stat-item { width: 8px; height: 8px; margin-right: 2px; flex-shrink: 0; }
 
 /* ---- forms ---- */
 .pf-form { flex-grow: 1; min-height: 0; padding-right: 4px; }

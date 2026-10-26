@@ -4,12 +4,15 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import net.sbo.mod.partyfinder.OwnStats
+import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.partyfinder.PlayerStatsCache
-import net.sbo.mod.partyfinder.api.PartyView
+import net.sbo.mod.partyfinder.api.GeneralStats
+import net.sbo.mod.partyfinder.api.Networth
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.PlayerStats
 import net.sbo.mod.partyfinder.api.TrackingData
 import net.sbo.mod.utils.Player
+import java.util.WeakHashMap
 
 internal data class ViewedProfile(
     val uuid: String,
@@ -20,8 +23,12 @@ internal data class ViewedProfile(
     val profile: String? = null,
     val dataAt: Long? = null,
     val refreshAt: Long = 0,
-    val networth: Double? = null,
-    val skillAverage: Double? = null
+    val networth: Networth? = null,
+    val skillAverage: Double? = null,
+    val general: GeneralStats? = null,
+    // category > subcategory > option > option value > stat: stats that change with an option, e.g. the Kuudra tier
+    val byOption: Map<String, Map<String, Map<String, Map<String, Map<String, JsonElement>>>>> = emptyMap(),
+    val items: PlayerItems? = null
 ) {
     constructor(player: PlayerStats, loadedAt: Long) : this(
         uuid = player.uuid,
@@ -31,31 +38,60 @@ internal data class ViewedProfile(
         profile = player.profileName.ifBlank { null },
         dataAt = player.dataAt.takeIf { it > 0 },
         refreshAt = loadedAt + player.refreshIn * 1000L,
-        skillAverage = player.skillAverage
+        networth = player.networth,
+        skillAverage = player.general?.skillAverage ?: player.skillAverage,
+        general = player.general,
+        byOption = player.byOption,
+        items = ProfileViewerApi.items(player.items)
     )
 
-    // For stats like the SkyBlock level that are the same everywhere
-    fun general(statId: String): JsonElement? = stats.values.asSequence().flatMap { it.values }.firstNotNullOfOrNull { it[statId] }
+    fun anyStat(statId: String): JsonElement? = stats.values.asSequence().flatMap { it.values }.firstNotNullOfOrNull { it[statId] }
 
-    val ironman: Boolean get() = (general("ironman") as? JsonPrimitive)?.booleanOrNull == true
+    val ironman: Boolean get() = (anyStat("ironman") as? JsonPrimitive)?.booleanOrNull == true
 }
 
-internal data class CompareParty(val partyType: String, val subType: String, val reqs: Map<String, JsonElement>) {
-    constructor(party: PartyView) : this(party.partyType, party.subType, party.reqs)
+internal data class PerValue(val subType: String, val statId: String, val optionId: String)
+
+internal object ViewerLayout {
+    val HIDDEN_CATEGORIES = setOf("bestiary")
+    val HIDDEN_STATS = setOf("frozenBlaze", "frozenWaterPungi", "safariTickets", "slayerLevel", "kuudraCompletions", "kuudraWave100")
+
+    val TOP: Map<String, List<String>> = mapOf(
+        "fishing" to listOf("trophyFisher", "trophyFishCaught", "bloodshotBelt")
+    )
+
+    val PER_VALUE: Map<String, List<PerValue>> = mapOf(
+        "kuudra" to listOf(PerValue("waves", "kuudraHighestWave", "tier"))
+    )
+
+    val NO_SUBCATEGORIES = setOf("kuudra")
 }
 
 internal object ProfileViewerApi {
     const val MAX_OTHERS = 5
 
+    private val unpacked = WeakHashMap<String, PlayerItems>()
+
+    fun items(packed: String?): PlayerItems? {
+        packed ?: return null
+        synchronized(unpacked) { unpacked[packed]?.let { return it } }
+        val items = PlayerItems.unpack(packed) ?: return null
+        synchronized(unpacked) { return unpacked.getOrPut(packed) { items } }
+    }
+
     private fun viewed(stats: PlayerStats) = ViewedProfile(stats, PlayerStatsCache.loadedAt(stats.uuid) ?: System.currentTimeMillis())
 
     fun cached(nameOrUuid: String): ViewedProfile? = PlayerStatsCache.cached(nameOrUuid)?.let(::viewed)
 
-    // Your own stats go through the same request as in the party finder
-    fun player(name: String, refresh: Boolean, onError: (PfError) -> Unit, onDone: (ViewedProfile) -> Unit) {
+    /**
+     * Always requests the stats from the backend, since it may have newer ones than the mod loaded earlier.
+     * With fromCache, stats from the last 10 minutes are used instead.
+     */
+    fun player(name: String, refresh: Boolean, fromCache: Boolean = false, onError: (PfError) -> Unit, onDone: (ViewedProfile) -> Unit) {
         val own = name.equals(Player.getName() ?: Player.accountName(), ignoreCase = true) && OwnStats.uuid().isNotEmpty()
-        if (own) PlayerStatsCache.own(refresh, onError) { onDone(viewed(it)) }
-        else PlayerStatsCache.player(name, refresh, onError) { onDone(viewed(it)) }
+        if (own && refresh) PartyPlayer.reloadStats(onError) { onDone(viewed(it)) }
+        else if (own) PlayerStatsCache.own(fromCache = fromCache, onError = onError) { onDone(viewed(it)) }
+        else PlayerStatsCache.player(name, refresh, fromCache, items = true, onError = onError) { onDone(viewed(it)) }
     }
 
     fun party(uuids: List<String>, onError: (PfError) -> Unit, onDone: (List<ViewedProfile>) -> Unit) =

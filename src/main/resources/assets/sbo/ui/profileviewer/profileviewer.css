@@ -16,48 +16,129 @@
 .pv-profile {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 5px 8px;
+    gap: 5px;
+    padding: 4px 8px;
     background-color: var(--panel-2);
     border-bottom: 1px solid var(--border);
 }
-.pv-head { width: 20px; height: 20px; flex-shrink: 0; }
-.pv-head-empty { background-color: var(--control); border-radius: 2px; }
-.pv-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.pv-name-row { display: flex; align-items: center; gap: 4px; }
+.pv-head { width: 14px; height: 14px; flex-shrink: 0; }
 .pv-name { color: var(--text-strong); font-size: 10px; }
-.pv-general { display: flex; flex-wrap: wrap; gap: 3px; }
-.pv-chip {
+.pv-age { display: flex; align-items: center; gap: 3px; color: var(--muted); font-size: 7px; white-space: nowrap; }
+.pv-wait { color: var(--dim); }
+
+/* ---- general part: the bigger half, stats left, items right ---- */
+.pv-top {
     display: flex;
-    gap: 3px;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--border);
+}
+/* As high as its content, Slayer at the bottom stays visible */
+.pv-general-box { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; padding-bottom: 2px; }
+
+.pv-tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 3px; }
+.pv-tile {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+}
+.pv-tile-label { display: flex; align-items: center; color: var(--muted); font-size: 6px; white-space: nowrap; }
+.pv-tile-value { color: var(--text-strong); white-space: nowrap; }
+/* Tiles and party lines with their tooltip around them keep their full width */
+.pv-tiles > .guilib-tooltip-anchor, .pv-party-card > .guilib-tooltip-anchor { display: block; }
+.pv-networth-part { display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
+.pv-networth-sum { margin-top: 2px; }
+.pv-levels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 2px 3px; }
+.pv-level {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+    min-width: 0;
     padding: 0 4px;
     border-radius: 2px;
     background-color: var(--card);
-    border: 1px solid var(--border);
     font-size: 7px;
+}
+.pv-level-value { color: var(--text-strong); }
+.pv-level-label { display: flex; align-items: center; min-width: 0; overflow: hidden; white-space: nowrap; color: var(--muted); }
+
+.pv-items-box { display: flex; flex-direction: column; flex-shrink: 0; }
+.pv-item-tabs { display: flex; align-items: center; justify-content: space-between; gap: 2px; margin-bottom: 3px; }
+/* Item icons as tabs, the name shows on hover. The pages next to them look the same. */
+.pv-item-switch, .pv-pager {
+    display: flex;
+    gap: 1px;
+    padding: 1px;
+    border-radius: 3px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+}
+.pv-item-tab { display: flex; align-items: center; justify-content: center; width: 20px; height: 18px; border-radius: 2px; cursor: pointer; }
+.pv-item-tab:hover { background-color: var(--card-hover); }
+.pv-item-tab.active { background-color: var(--accent); }
+.pv-item-tab-icon { width: 16px; height: 16px; }
+.pv-pager { flex-shrink: 0; }
+/* As high as the item tabs, narrower so a few page numbers fit */
+.pv-pager-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 18px;
+    border-radius: 2px;
+    font-size: 7px;
+    color: var(--text-soft);
+    cursor: pointer;
     white-space: nowrap;
 }
-.pv-chip-label { color: var(--muted); }
-.pv-chip-value { color: var(--text-strong); }
-.pv-age { display: flex; align-items: center; gap: 3px; color: var(--muted); font-size: 7px; white-space: nowrap; }
-.pv-wait { color: var(--dim); }
+.pv-pager-cell:hover { background-color: var(--card-hover); color: var(--text-strong); }
+.pv-pager-cell.active { background-color: var(--accent); color: var(--text-strong); cursor: default; }
+.pv-pager-cell.disabled, .pv-pager-cell.disabled:hover { background-color: transparent; color: var(--text-soft); opacity: 0.4; cursor: default; }
+.pv-pager-gap, .pv-pager-gap:hover { background-color: transparent; color: var(--muted); cursor: default; }
+.pv-pager-close .pf-icon { width: 8px; height: 8px; color: var(--text-soft); }
+.pv-pager-close:hover .pf-icon { color: var(--text-strong); }
+.pv-item-row { display: flex; gap: 5px; }
+.pv-item-side { display: flex; flex-direction: column; width: 216px; }
+
+/* Like Hypixel: equipment left, armor right, the pet under them */
+.pv-worn { display: grid; grid-template-columns: 24px 24px; grid-auto-rows: 24px; align-content: start; }
+.pv-slots { display: grid; grid-template-columns: 24px 24px 24px 24px 24px 24px 24px 24px 24px; grid-auto-rows: 24px; }
+.pv-hotbar { margin-top: 3px; }
+.pv-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--card);
+    border: 1px solid var(--bg);
+}
+.pv-slot:hover { background-color: var(--card-hover); }
+.pv-slot.equipped { border-color: var(--accent); }
+.pv-slot.locked, .pv-slot.locked:hover { background-color: var(--panel); }
+.pv-slot.pv-openable { cursor: pointer; }
+.pv-slot.pv-openable:hover { border-color: var(--border-hover); }
+.pv-item { width: 20px; height: 20px; }
+.pv-storage-label { margin: 1px 0 1px 1px; color: var(--muted); font-size: 6px; }
+.pv-slots > .guilib-tooltip-anchor { display: block; }
+/* The storage preview on hover has smaller slots, as big as in game, so a whole page fits the tooltip */
+.guilib-tooltip.pv-preview { max-width: none; }
+.pv-preview .pv-slots { grid-template-columns: 18px 18px 18px 18px 18px 18px 18px 18px 18px; grid-auto-rows: 18px; }
+.pv-preview .pv-slot { width: 18px; height: 18px; }
+.pv-preview .pv-item { width: 16px; height: 16px; }
+/* Fixed columns, so the slots line up in every row */
+.pv-loadout { display: grid; grid-template-columns: 12px 24px 24px 24px 24px 3px 24px 24px 24px 24px; grid-auto-rows: 24px; }
+.pv-loadout-number { display: flex; align-items: center; justify-content: center; font-size: 7px; color: var(--muted); }
+.pv-loadout-number:hover { color: var(--text-strong); }
 
 /* ---- stats ---- */
 .pv-toolbar { flex-direction: row; align-items: center; gap: 8px; }
 .pv-tabs { margin-left: auto; }
-.pv-compare {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 6px;
-    margin-bottom: 4px;
-    border-radius: 3px;
-    background-color: var(--ok-soft);
-    border: 1px solid var(--ok-border);
-    color: var(--text-soft);
-    font-size: 7px;
-}
-.pv-compare .pf-icon { color: var(--ok); width: 7px; height: 7px; }
 .pv-scroll { flex-grow: 1; min-height: 0; padding-right: 3px; }
 .pv-row {
     display: flex;
@@ -68,31 +149,14 @@
     padding: 3px 2px;
     border-bottom: 1px solid var(--card);
 }
-.pv-row.compact { padding: 1px 0; font-size: 7px; border-bottom-width: 0; }
 .pv-ok { width: 7px; height: 7px; color: var(--ok); }
 .pv-bad { color: var(--bad); font-weight: bold; }
 .pv-section { margin: 8px 0 3px 2px; color: var(--muted); font-size: 7px; font-weight: bold; }
-
-.pv-sub-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; }
-.pv-sub-chip {
-    padding: 0 4px;
-    border-radius: 2px;
-    background-color: var(--card);
-    border: 1px solid var(--border);
-    font-size: 7px;
-    color: var(--text-strong);
-    white-space: nowrap;
-}
-
-.pv-sub-grid { display: flex; flex-wrap: wrap; gap: 4px; }
-.pv-sub-card {
-    flex: 1 1 130px;
-    padding: 3px 5px;
-    border-radius: 3px;
-    background-color: var(--card);
-    border: 1px solid var(--border);
-}
-.pv-sub-title { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; color: var(--text-strong); }
+/* Separates the stats of each subcategory, like lava and water fishing */
+.pv-divider { display: flex; align-items: center; gap: 4px; margin: 8px 0 1px 2px; }
+.pv-divider-label { color: var(--text-strong); font-size: 7px; font-weight: bold; white-space: nowrap; }
+.pv-divider-line { flex-grow: 1; height: 1px; background-color: var(--border); }
+.pv-subrow { padding-left: 12px; font-size: 7px; }
 
 /* ---- upgrades ---- */
 .pv-upgrade-head { display: flex; flex-direction: column; gap: 3px; margin-bottom: 2px; color: var(--text-strong); }
@@ -114,31 +178,56 @@
 .pv-upgrade-level { width: 45px; flex-shrink: 0; color: var(--muted); font-size: 7px; }
 .pv-upgrade-gain { width: 60px; flex-shrink: 0; text-align: right; color: var(--text-soft); font-size: 7px; }
 
-/* ---- party ---- */
-.pv-party-age { font-size: 7px; }
-.pv-table { display: flex; flex-direction: column; }
-.pv-table-row { display: flex; align-items: center; border-bottom: 1px solid var(--card); }
-.pv-table-head { background-color: var(--bg); }
-.pv-table-label { width: 100px; flex-shrink: 0; padding: 2px; }
-.pv-table-cell {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 2px 3px;
-    font-size: 7px;
-    color: var(--text-strong);
-    overflow: hidden;
-    border-left: 2px solid transparent;
+/* ---- favorites: one row per player, sorted by dragging ---- */
+.pv-fav-list { min-height: 4px; }
+.pv-fav-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 5px;
+    margin-bottom: 2px;
+    border-radius: 4px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
 }
-.pv-table-cell.ok { border-left-color: var(--ok-border); }
-.pv-table-cell.bad { border-left-color: var(--bad-border); background-color: rgba(238, 92, 92, 0.06); }
-.pv-table-player { display: flex; align-items: center; cursor: pointer; border-radius: 3px; }
-.pv-table-player:hover { background-color: var(--card-hover); }
-.pv-table-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+.pv-fav-row:hover { background-color: var(--card-hover); border-color: var(--border-hover); }
+.pv-fav-name { flex-grow: 1; color: var(--text-strong); }
 
-/* ---- party check ---- */
-.pv-check-item { margin-bottom: 4px; }
-.pv-check-item .pf-icon { color: var(--ok); }
-.pv-check-heading { color: var(--ok); }
-.pv-need { color: var(--muted); font-size: 6px; }
-.pv-table-summary { font-weight: bold; }
-.pv-table-group { margin-top: 4px; padding: 2px; color: var(--text-strong); font-weight: bold; border-bottom: 1px solid var(--border); }
+/* ---- party: one card per player, three in a row ---- */
+.pv-party-main { min-height: 0; }
+.pv-party-note { font-size: 7px; }
+.pv-party-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
+.pv-party-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 5px 6px;
+    border-radius: 4px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+}
+.pv-party-card:hover { background-color: var(--card-hover); border-color: var(--border-hover); }
+.pv-party-who { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+.pv-party-head { width: 16px; height: 16px; flex-shrink: 0; }
+.pv-party-names { display: flex; flex-direction: column; min-width: 0; }
+.pv-party-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-strong); }
+.pv-party-tags { display: flex; gap: 2px; }
+.pv-party-line { display: flex; justify-content: space-between; gap: 4px; font-size: 7px; white-space: nowrap; }
+.pv-party-value { color: var(--text-strong); }
+
+/* ---- page below the header ---- */
+.pv-page { display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
+/* Low windows: the page scrolls as a whole, the categories keep a usable height */
+@media (max-height: 360px) {
+    .pv-page { overflow-y: auto; }
+    .pv-page > * { flex-shrink: 0; }
+    .pv-page > .pf-body { height: 160px; flex-grow: 0; }
+}
+/* Narrow windows: items under the general stats */
+@media (max-width: 520px) {
+    .pv-top { flex-direction: column; }
+    .pv-party-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .pv-levels { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+}

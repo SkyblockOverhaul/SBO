@@ -11,6 +11,7 @@ import kotlinx.serialization.json.doubleOrNull
 import net.sbo.mod.partyfinder.api.ItemChoice
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.Problem
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.MojangAuth
 import java.util.Locale
 
@@ -72,7 +73,8 @@ object ProblemText {
         PfError.INVALID_KEY -> if (error.message.startsWith("Key is banned")) "Your SBO key is banned${error.message.removePrefix("Key is banned")}."
             else MojangAuth.KEY_FAILED_TEXT
         PfError.KEY_NOT_YOURS, PfError.MOJANG_BUSY -> MojangAuth.KEY_FAILED_TEXT
-        PfError.NO_PROFILE -> "No SkyBlock stats found: ${error.message}. Make sure your API settings are on."
+        PfError.NO_PROFILE -> if (error.message.startsWith("Player ")) "${error.message}. Check the spelling of the name."
+            else "This player has no SkyBlock profile."
         PfError.HYPIXEL_UNAVAILABLE -> "Hypixel does not answer right now. Please try again in a few minutes."
         PfError.RATE_LIMITED -> "Too many requests. Please wait a moment."
         PfError.NETWORK -> "Could not reach the SBO server. Check your internet connection."
@@ -80,6 +82,8 @@ object ProblemText {
     }
 
     /** A stat value as text: numbers, labels like "Adept", rarities, item lists and per tier numbers. */
+    private val COMPACT_STATS = listOf("Xp", "Powder")
+
     fun value(statId: String, value: JsonElement?): String {
         if (value == null || value is JsonNull) return "no data"
         val stat = PartyCategories.stat(statId)
@@ -90,6 +94,7 @@ object ProblemText {
                 when {
                     number != null && stat?.valueLabels?.isNotEmpty() == true ->
                         stat.valueLabels.getOrNull(number.toInt()) ?: number(number)
+                    number != null && (number >= 1_000_000 || COMPACT_STATS.any(statId::endsWith)) -> Helper.formatNumber(number)
                     number != null -> number(number)
                     stat?.kind == "rarity" -> rarity(value)
                     else -> value.contentOrNull ?: "no data"

@@ -210,7 +210,9 @@ object PartyFinderGui {
                             button(className = "pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
                         }
                     }
-                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
+                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) {
+                        img(src = "${StatView.ICONS}/close.svg", className = "pf-close-icon")
+                    }
                 }
 
                 div(className = "pf-body") {
