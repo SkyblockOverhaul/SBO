@@ -1,8 +1,13 @@
 package net.sbo.mod.overlays
 
+import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.ChatFormatting.*
+import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
@@ -11,7 +16,6 @@ import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOneReflectively
 import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.data.DataManager
@@ -22,10 +26,10 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
+import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 
 object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverlay.LOOT, { Diana.lootTracker != Diana.Tracker.OFF }) {
     private var isSellTypeHovered = false
@@ -137,21 +141,6 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     }
 
     private fun shurikenTracker() {
-        // On item use
-        UseItemCallback.EVENT.register { player, _, hand ->
-            val isDiana = World.isInHub() && Helper.hasSpade
-            if (player.getItemInHand(hand).isShuriken() && isDiana) {
-                listOf(
-                    DataManager.dianaTrackerTotalData,
-                    DataManager.dianaTrackerMayorData,
-                    DataManager.dianaTrackerSessionData
-                ).forEach { it.items.FAKE_SHURIKEN += 1 }
-                updateLines()
-            }
-
-            return@register InteractionResult.PASS
-        }
-
         // Cancel the shuriken addition if on cooldown
         Register.onChatMessage(Regex("§cYou need to wait before you can use this again.")) { _, _ ->
             val isDiana = World.isInHub() && Helper.hasSpade
@@ -164,8 +153,19 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
                 updateLines()
             }
         }
+    }
 
-        // No need to use a UseBlockCallback bc you can't use the shuriken while looking at a block
+    @SboEvent
+    fun shurikenUse(event: PlayerInteractEvent) {
+        val isDiana = World.isInHub() && Helper.hasSpade
+        if (event.player.mainHandItem.isShuriken() && isDiana) {
+            listOf(
+                DataManager.dianaTrackerTotalData,
+                DataManager.dianaTrackerMayorData,
+                DataManager.dianaTrackerSessionData
+            ).forEach { it.items.FAKE_SHURIKEN += 1 }
+            updateLines()
+        }
     }
 
     private fun ItemStack.isShuriken(): Boolean {
