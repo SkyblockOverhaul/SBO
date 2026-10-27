@@ -68,7 +68,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     }
 
     // Own key per section, so every section starts at the top
-    scroll(className = "pf-form guilib-autohide", key = "settings:$section") {
+    scroll(className = "pf-form pf-settings-form guilib-autohide", key = "settings:$section") {
         when (section) {
             "favorites" -> {
                 settingRow(
@@ -97,7 +97,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                             span(className = "pf-fav-name") {
                                 +(PartyFinderGui.targetOf(key)?.let { if ('/' in key) it.label else it.category.label } ?: key)
                             }
-                            button(className = "pf-small", onClick = { props.onFavorites(props.favorites - key) }) { +"Remove" }
+                            button(className = "sbo-button pf-small", onClick = { props.onFavorites(props.favorites - key) }) { +"Remove" }
                         }
                     }
                 }
@@ -121,7 +121,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                     "Your own themes",
                     "Put theme files into this folder. The README in it explains every color, example.json is a theme to copy."
                 ) {
-                    button(onClick = {
+                    button(className = "sbo-button", onClick = {
                         SboThemes.openFolder()
                         themes.set(SboThemes.all())
                     }) { +"Open theme folder" }
@@ -182,7 +182,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                     div(className = "pf-fav-row", key = player.uuid) {
                         playerHead(uuidOf(player.uuid), className = "pf-head")
                         span(className = "pf-fav-name") { +player.name }
-                        button(className = "pf-small", onClick = {
+                        button(className = "sbo-button pf-small", onClick = {
                             BlockedPlayers.unblock(player.uuid)
                             blocked = BlockedPlayers.list()
                         }) { +"Unblock" }
@@ -209,7 +209,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 p(className = "pf-hint") {
                     +"Reload your stats after you got new gear or leveled up. ${ProblemText.OWN_RELOAD_HINT}"
                 }
-                button(disabled = reloading, onClick = {
+                button(className = "sbo-button", disabled = reloading, onClick = {
                     reloading = true
                     PartyPlayer.reloadStats(onError = { error ->
                         reloading = false
@@ -223,7 +223,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
 
                 h3(className = "pf-section") { +"Help" }
                 settingRow("Tour", "Shows the party finder tour from the first time again.") {
-                    button(onClick = { props.onTour() }) { +"Start tour" }
+                    button(className = "sbo-button", onClick = { props.onTour() }) { +"Start tour" }
                 }
             }
         }

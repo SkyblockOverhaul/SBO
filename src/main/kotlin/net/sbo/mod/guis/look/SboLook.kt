@@ -64,6 +64,9 @@ fun ComponentScope.useSboTheme(ownId: String? = null): SboThemes.Theme {
 }
 
 object SboLook {
+    /** Launcher-derived defaults for the other windows, loaded before their own styles and theme overrides. */
+    const val BASE_STYLE = "sbo:ui/common.css"
+
     const val STYLE = "sbo:ui/themes/themes.css"
 
     /** Before the global theme existed only the party finder had one; it becomes the global theme once. */

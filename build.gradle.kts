@@ -191,6 +191,8 @@ runDirectory.mkdirs()
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // Offline presentation checks must never initialize a desktop UI.
+    systemProperty("java.awt.headless", "true")
     testLogging {
         showStackTraces = true
         //showStandardStreams = true // enable if troubleshooting failures

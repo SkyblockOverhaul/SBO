@@ -39,7 +39,7 @@ import net.sbo.mod.utils.data.TeamTagPlace
 import net.sbo.mod.utils.http.SboApi
 
 object BadgeGui {
-    private val STYLES = listOf("sbo:ui/badge/badge.css", SboLook.STYLE)
+    private val STYLES = listOf(SboLook.BASE_STYLE, "sbo:ui/badge/badge.css", SboLook.STYLE)
     private const val LOGO = "sbo:textures/font/badge.png"
 
     private const val DEFAULT_GRADIENT_END = "#FFD966"
@@ -131,7 +131,7 @@ object BadgeGui {
                 img(LOGO, className = "bd-header-logo")
                 span(className = "bd-title") { +"SBO Badge" }
                 div(className = "bd-spacer")
-                button(className = "bd-icon bd-close", title = "Close", onClick = { close() }) { +"x" }
+                button(className = "sbo-close", title = "Close", onClick = { close() }) { +"×" }
             }
             div(className = "bd-body") {
                 when (val state = load) {
@@ -141,7 +141,7 @@ object BadgeGui {
                     }
                     is Load.Failed -> div(className = "bd-columns") {
                         div(className = "bd-col-left") { failed(state) }
-                        div(className = "bd-col-right") { if (SboBadges.VIEWER_TOGGLES) ViewSettings() }
+                        if (SboBadges.VIEWER_TOGGLES) div(className = "bd-col-right") { ViewSettings() }
                     }
                     is Load.Ready -> {
                         val settings = draft ?: state.badge.settings!!
@@ -158,12 +158,12 @@ object BadgeGui {
             div(className = "bd-modal-title") { +"Leave without saving?" }
             div(className = "bd-modal-text") { +"Your changes to the badge are not saved yet." }
             div(className = "bd-modal-buttons") {
-                button(onClick = { leaving = false }) { +"Keep editing" }
-                button(className = "bd-danger", onClick = {
+                button(className = "sbo-button", onClick = { leaving = false }) { +"Keep editing" }
+                button(className = "sbo-button bd-danger", onClick = {
                     leaving = false
                     GuiLib.close()
                 }) { +"Discard" }
-                button(className = "bd-primary", disabled = saving, onClick = {
+                button(className = "sbo-button bd-primary", disabled = saving, onClick = {
                     leaving = false
                     draft?.let { save(it, close = true) }
                 }) { +"Save" }
@@ -258,9 +258,9 @@ object BadgeGui {
             span(className = "bd-hint") { +if (badge.team) "Thank you for working on SBO!" else "Thank you for supporting SBO!" }
             div(className = "bd-spacer")
             // Always there, so the row does not jump while editing
-            button(disabled = saving || !changed, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
+            button(className = "sbo-button", disabled = saving || !changed, title = "Back to your saved badge", onClick = { onChange(badge.settings!!) }) { +"Undo" }
             button(
-                className = "bd-primary",
+                className = "sbo-button bd-primary",
                 disabled = saving || !changed,
                 title = if (changed) "Saves your badge" else "Nothing changed",
                 onClick = { onSave() },
@@ -504,7 +504,7 @@ object BadgeGui {
             }
         }
         setting("All parts", "Gives every part these colors and this effect; brackets and plus stay.") {
-            button(onClick = {
+            button(className = "sbo-button", onClick = {
                 onChange(PART_LABELS.keys.fold(settings) { next, part -> next.withColor(part, next.colorOf(part).copy(color = color.color, to = color.to, effect = effect)) })
             }) { +"Use for all" }
         }

@@ -1,0 +1,182 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cs-window {
+    display: flex;
+    flex-direction: column;
+    width: min(94vw, 300px);
+    max-height: 92vh;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--sbo-window-radius);
+    overflow: hidden;
+}
+.cs-wide { width: min(94vw, 420px); height: min(92vh, 340px); }
+
+.cs-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sbo-space-sm);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    padding: var(--sbo-space-md) var(--sbo-space-lg) var(--sbo-space-xs);
+}
+.cs-title { font-size: 10px; font-weight: bold; color: var(--text-strong); white-space: nowrap; }
+.cs-spacer { flex-grow: 1; }
+.cs-icon { padding: 1px 5px; background-color: transparent; border-color: transparent; }
+.cs-header .cs-icon:first-child { margin-left: -6px; }
+.cs-size-label { color: var(--muted); font-size: 7px; }
+.cs-header-button { padding: 0 5px; font-size: 7px; }
+.cs-size { min-width: 46px; padding-top: 0; padding-bottom: 0; }
+
+.cs-window:not(.cs-wide) .cs-body { max-height: calc(92vh - 42px); }
+.cs-body { flex-grow: 1; min-height: 0; padding: var(--sbo-space-sm) var(--sbo-space-lg) var(--sbo-space-lg); }
+.cs-center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--subtle); }
+.cs-hint { margin: 1px 0 0 0; color: var(--muted); font-size: 7px; }
+.cs-error { color: var(--bad); }
+
+.cs-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background-color: var(--card);
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+}
+.cs-dot { width: 6px; height: 6px; flex-shrink: 0; border-radius: var(--sbo-control-radius); background-color: var(--dim); }
+.cs-status.ok .cs-dot { background-color: var(--ok); }
+.cs-status.warn .cs-dot { background-color: var(--star); }
+.cs-status.bad .cs-dot { background-color: var(--bad); }
+.cs-status-text { flex-grow: 1; min-width: 0; }
+.cs-status-title { color: var(--text-strong); }
+.cs-refresh { align-self: center; color: var(--subtle); }
+.cs-refresh:hover { color: var(--text-strong); }
+.cs-refresh-icon { width: 8px; height: 8px; }
+
+.cs-question {
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background-color: var(--panel);
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+}
+.cs-question-top { display: flex; align-items: flex-start; gap: 4px; margin-bottom: 4px; }
+.cs-question-text { flex-grow: 1; min-width: 0; color: var(--text-strong); }
+.cs-warning {
+    padding: 3px 6px;
+    margin-bottom: 4px;
+    color: var(--toast-warning);
+    border-left: 2px solid var(--toast-warning);
+    border-radius: var(--sbo-control-radius);
+}
+
+.cs-setting { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: var(--sbo-control-radius); }
+.cs-setting:hover { background-color: var(--card); }
+.cs-setting-text { flex-grow: 1; min-width: 0; }
+.cs-setting-title { color: var(--text-strong); }
+.cs-info { margin: var(--sbo-space-xs); border: 0; background-color: transparent; }
+.cs-info .guilib-details-summary { padding: 1px 0; color: var(--text-soft); font-size: 7px; }
+.cs-info .guilib-details-content { padding: 0 6px 4px 10px; }
+.cs-info-line { margin-top: 2px; color: var(--subtle); font-size: 7px; }
+.cs-steps {
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background-color: var(--panel);
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+}
+.cs-steps-title { color: var(--text-strong); margin-bottom: 2px; }
+.cs-steps .cs-info-line { font-size: 8px; color: var(--text-soft); }
+.cs-steps .cs-hint { margin-top: 4px; }
+.cs-support { margin-top: 4px; }
+.cs-key { flex-direction: column; align-items: stretch; gap: 2px; }
+.cs-key-row { display: flex; gap: 4px; }
+.cs-key-input { flex-grow: 1; min-width: 0; }
+.cs-key .guilib-tooltip-anchor { align-self: flex-start; }
+.cs-info-icon { width: 6px; height: 6px; margin-left: 2px; color: var(--subtle); }
+.cs-tip-line { margin-top: 2px; }
+
+.cs-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.cs-actions { display: flex; flex-wrap: wrap; gap: var(--sbo-space-xs); margin: 2px 0 6px 0; padding: 0 4px; }
+.cs-primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.cs-primary:hover { background-color: var(--accent-hover); }
+.cs-danger { color: var(--menu-danger); }
+.cs-danger:hover { background-color: var(--danger); color: var(--text-strong); }
+.cs-danger-filled { background-color: var(--danger); border-color: var(--danger); color: var(--text-strong); }
+
+.cs-modal { width: min(90vw, 240px); max-height: 90vh; overflow-y: auto; padding: var(--sbo-space-lg); background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--sbo-window-radius); }
+.cs-modal-title { font-weight: bold; color: var(--text-strong); margin-bottom: 3px; }
+.cs-modal-text { color: var(--subtle); margin-bottom: 8px; }
+.cs-modal-buttons { justify-content: flex-end; }
+
+.cs-compare-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; padding: 0 2px; }
+.cs-count { color: var(--text-strong); font-weight: bold; }
+.cs-area { margin-bottom: var(--sbo-space-xs); border: 0; border-radius: var(--sbo-control-radius); background-color: var(--card); }
+.cs-area .guilib-details-summary { padding: 3px 6px; }
+/* The summary row puts our parts in its title */
+.cs-area .guilib-details-title { display: flex; flex-grow: 1; align-items: center; gap: 5px; }
+.cs-area-title { color: var(--text-strong); }
+.cs-area-count { padding: 0 4px; border-radius: var(--sbo-control-radius); background-color: var(--tint-strong); color: var(--subtle); font-size: 7px; }
+.cs-area-cloud { color: var(--text-soft); font-size: 7px; }
+.cs-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    align-items: center;
+    gap: 6px;
+    padding: 2px 6px;
+    border-top: 1px solid var(--border);
+}
+.cs-field:hover { background-color: var(--card-hover); }
+.cs-area:not(.cs-perfield) .cs-field:not(.cs-whole) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); }
+.cs-field-label { color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-value { color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-pick .guilib-segment { flex: 1 1 0; min-width: 0; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-more { padding: 2px 6px 3px 6px; }
+
+.cs-backups-hint { margin: 0 2px 6px 2px; }
+.cs-empty { padding: 12px 0; }
+.cs-backup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    margin-bottom: 3px;
+    background-color: var(--card);
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+}
+.cs-backup:hover { background-color: var(--card-hover); }
+.cs-backup-text { flex-grow: 1; min-width: 0; }
+.cs-backup-date { color: var(--text-strong); }
+.cs-columns { color: var(--muted); font-size: 7px; }
+.cs-columns:hover { background-color: transparent; }
+
+.cs-footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    gap: var(--sbo-space-xs);
+    padding: var(--sbo-space-sm) var(--sbo-space-lg);
+}
+
+.cs-header > button, .cs-header > .guilib-select { flex-shrink: 0; }
+.cs-key-row button, .cs-actions button, .cs-buttons button, .cs-footer button, .cs-backup button { padding: 3px var(--sbo-space-sm); border-radius: var(--sbo-control-radius); }
+.cs-key-row button { flex-shrink: 0; }
+.cs-pick { min-width: 0; }
+.cs-area .guilib-details-content { padding: 0 0 var(--sbo-space-xs); }
+.cs-support button { background-color: var(--panel-2); border: 0; color: var(--text); }
+.cs-support button:hover { background-color: var(--control-hover); }
+@media (max-width: 300px) {
+    .cs-header { gap: var(--sbo-space-xs); }
+    .cs-size-label { font-size: 7px; }
+    .cs-field { grid-template-columns: minmax(0, 1fr); }
+    .cs-pick .guilib-segment { max-width: none; }
+}
+
+.cs-danger-filled:hover { background-color: var(--bad); }

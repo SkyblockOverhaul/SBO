@@ -1,0 +1,85 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.snd-window {
+    display: flex;
+    flex-direction: column;
+    /* min() instead of max-height: children are laid out against the capped height */
+    width: min(94vw, 440px);
+    height: min(92vh, 400px);
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--sbo-window-radius);
+    overflow: hidden;
+}
+
+.snd-header {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--sbo-space-md);
+    padding: var(--sbo-space-sm) var(--sbo-space-md);
+}
+.snd-title { font-size: 10px; font-weight: bold; color: var(--text-strong); white-space: nowrap; }
+.snd-spacer { flex-grow: 1; }
+.snd-close { flex-shrink: 0; }
+
+.snd-body { flex-grow: 1; min-height: 0; padding: 2px 8px 8px 8px; }
+.snd-section {
+    margin: 8px 0 2px 0;
+    padding: 0 4px 2px 4px;
+    font-size: 8px;
+    color: var(--text-strong);
+    border-bottom: 1px solid var(--border);
+}
+.snd-hint { margin: 1px 0 0 0; color: var(--muted); font-size: 7px; }
+
+.snd-setting { display: flex; align-items: center; gap: var(--sbo-space-md); padding: var(--sbo-space-xs); border-radius: var(--sbo-control-radius); }
+.snd-setting:hover { background-color: var(--card); }
+.snd-setting-text { flex-grow: 1; min-width: 0; }
+.snd-setting-title { color: var(--text-strong); }
+.snd-buttons { display: flex; flex-shrink: 0; gap: var(--sbo-space-xs); }
+.snd-scale-select { flex-shrink: 0; min-width: 60px; }
+.snd-setting > .guilib-slider-field { flex-shrink: 0; }
+
+.snd-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px 120px auto;
+    align-items: center;
+    gap: var(--sbo-space-sm);
+    padding: var(--sbo-space-xs);
+    border-radius: var(--sbo-control-radius);
+}
+.snd-row:hover { background-color: var(--card); }
+.snd-label { color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.snd-sound { width: 100%; min-width: 0; }
+.snd-sound .guilib-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.snd-volume { width: 90px; }
+/* With showValue the slider sits in a field next to its label: the slider takes what the label leaves */
+.snd-row .guilib-slider-field { display: flex; width: 100%; }
+.snd-row .snd-volume { flex-grow: 1; width: auto; min-width: 0; }
+/* Wide enough for "100%", so the slider doesn't change its length with the value */
+.guilib-slider-value { min-width: 22px; text-align: right; }
+.snd-test { padding: 3px 6px; }
+
+/* GuiLib widgets that scroll on their own, same idle-hiding scrollbar as .guilib-autohide (as in partyfinder.css) */
+.guilib-select-menu {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 300ms ease 600ms;
+}
+
+/*noinspection CssInvalidPseudoSelector*/
+.guilib-select-menu:scrolling, .guilib-select-menu:hover {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    transition: scrollbar-color 120ms;
+}
+
+@media (max-width: 420px) {
+    .snd-row { grid-template-columns: minmax(0, 1fr) minmax(80px, 1fr) auto; gap: var(--sbo-space-xs); }
+    .snd-label { grid-column: 1 / -1; white-space: normal; }
+    .snd-setting { flex-wrap: wrap; gap: var(--sbo-space-xs); }
+    .snd-setting-text { flex-basis: 100%; }
+}

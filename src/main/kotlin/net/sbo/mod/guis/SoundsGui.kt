@@ -25,7 +25,7 @@ import kotlin.math.roundToInt
 import kotlin.reflect.KMutableProperty1
 
 object SoundsGui {
-    private val STYLES = listOf("sbo:ui/sounds/sounds.css", SboLook.STYLE)
+    private val STYLES = listOf(SboLook.BASE_STYLE, "sbo:ui/sounds/sounds.css", SboLook.STYLE)
 
 
     /** Opens the window. Must run on the client thread. */
@@ -100,7 +100,7 @@ object SoundsGui {
             header(className = "snd-header") {
                 span(className = "snd-title") { +"Sounds" }
                 div(className = "snd-spacer")
-                button(className = "snd-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
+                button(className = "snd-close sbo-close", title = "Close", onClick = { GuiLib.close() }) { +"×" }
             }
 
             scroll(className = "snd-body guilib-autohide") {
@@ -129,8 +129,8 @@ object SoundsGui {
                     "Put your own sounds in here (${SoundHandler.SUPPORTED_EXTENSIONS.joinToString(", ")}), then reload the list."
                 ) {
                     div(className = "snd-buttons") {
-                        button(onClick = { SoundHandler.openSoundFolder() }) { +"Open Folder" }
-                        button(title = "Looks for new files in the sound folder", onClick = { reload() }) { +"Reload" }
+                        button(className = "sbo-button", onClick = { SoundHandler.openSoundFolder() }) { +"Open Folder" }
+                        button(className = "sbo-button", title = "Looks for new files in the sound folder", onClick = { reload() }) { +"Reload" }
                     }
                 }
 
@@ -176,7 +176,7 @@ object SoundsGui {
                 className = "snd-volume"
             )
             button(
-                className = "snd-test",
+                className = "snd-test sbo-button",
                 disabled = sound.isEmpty(),
                 title = if (sound.isEmpty()) "Pick a sound first" else "Plays the sound at this volume",
                 onClick = { SoundHandler.playCustomSound(sound, volume / 100f) }

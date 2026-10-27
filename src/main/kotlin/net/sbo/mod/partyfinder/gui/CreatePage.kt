@@ -90,7 +90,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         toast.info("Creating your party, this takes a few seconds...")
     }
 
-    scroll(className = "pf-form guilib-autohide") {
+    scroll(className = "pf-form pf-create-form guilib-autohide") {
         val opensAt = target.opensAt
         if (!target.open && target.createOpen && opensAt != null) {
             div(className = "pf-banner") { +"This event starts in ${until(opensAt)}. You can already list your party." }
@@ -215,11 +215,11 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         }
 
         div(className = "pf-form-buttons") {
-            button(onClick = { draft = PartyDraft(target.partyType, target.subType, target.maxSize) }) { +"Reset" }
+            button(className = "sbo-button", onClick = { draft = PartyDraft(target.partyType, target.subType, target.maxSize) }) { +"Reset" }
             val createHint = "You must be alone or the party leader. Everyone already in your party has to meet the requirements too." +
                 (if (props.inQueue) " Updating replaces the party you have listed right now." else "")
             tooltip(createHint, placement = "top", className = "pf-tip") {
-                button(className = "primary", disabled = !target.createOpen, onClick = { submit() }) {
+                button(className = "sbo-button primary", disabled = !target.createOpen, onClick = { submit() }) {
                     +(if (props.inQueue) "Update party" else "Create party")
                 }
             }

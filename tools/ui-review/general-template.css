@@ -1,0 +1,54 @@
+/* General-only feedback prototype. Not loaded by production or other review screens. */
+.cfg-template .cfg-search-input {
+    background-color: var(--panel);
+    border-color: transparent;
+}
+.cfg-template .cfg-search-input:hover, .cfg-template .cfg-search-input:focus { border-color: transparent; }
+.cfg-template .cfg-search-input:focus-visible {
+    outline: 1px solid var(--subtle);
+    outline-offset: -1px;
+}
+.cfg-template .cfg-sidebar {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+}
+.cfg-template .cfg-category { border-radius: 0; }
+.cfg-template .cfg-category.active {
+    background-color: transparent;
+    border-left: 2px solid var(--muted);
+    padding-left: 4px;
+}
+.cfg-template .cfg-sub { margin: 10px 0 0; padding: 0 5px; border-bottom: 0; }
+.cfg-template .cfg-page-title + .cfg-sub { margin-top: 12px; }
+.cfg-template .cfg-sub-head .cfg-sub-title { height: 18px; }
+.cfg-template .cfg-sub-head { border-bottom: 1px solid var(--border); }
+.cfg-template .cfg-row { border: 0; border-radius: 0; padding: 5px; align-items: center; }
+.cfg-template .cfg-row-name { padding-top: 0; }
+.cfg-template .cfg-sub + .cfg-row { padding-top: 4px; }
+.cfg-template .cfg-row:hover { background-color: transparent; }
+.cfg-template .cfg-sub-title:focus-visible {
+    outline: 1px solid var(--muted);
+    outline-offset: 1px;
+}
+.cfg-template .cfg-section-switch {
+    flex-shrink: 0;
+    width: 24px;
+    height: 18px;
+    justify-content: flex-end;
+}
+.cfg-template .cfg-section-switch .guilib-switch-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+.cfg-template .cfg-section-switch:focus-visible { outline: 1px solid var(--text-strong); outline-offset: 2px; }
+.cfg-template .cfg-select { background-color: var(--panel); border-color: transparent; }
+.cfg-template .cfg-select:hover, .cfg-template .cfg-select:focus, .cfg-template .cfg-select[open] { border-color: transparent; }
+.cfg-template .cfg-select:focus-visible { outline: 1px solid var(--subtle); outline-offset: -1px; }
+@media (max-width: 460px) {
+    .cfg-template .cfg-row { grid-template-columns: minmax(0, 1fr) 76px; gap: 8px; }
+}

@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component
 import net.sbo.mod.utils.data.DataManager
 import org.lwjgl.glfw.GLFW
 
-class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
+class OverlayEditScreen : Screen(Component.literal("Move Overlays")) {
     private var selectedOverlay: HudElement? = null
     private var isDragging = false
     private var lastMouseX = 0.0
@@ -16,7 +16,7 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
 
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         super.extractRenderState(context, mouseX, mouseY, delta)
-        this.extractMenuBackground(context)
+        context.fill(0, 0, width, height, OverlayEditorStyle.BACKGROUND)
         OverlayManager.render(context, this)
     }
 

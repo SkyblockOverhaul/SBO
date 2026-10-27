@@ -28,7 +28,7 @@ import net.sbo.mod.utils.data.configs.achievements.AchievementsView
 import java.util.Locale
 
 object AchievementsGui {
-    private val STYLES = listOf("sbo:ui/achievements/achievements.css", SboLook.STYLE)
+    private val STYLES = listOf(SboLook.BASE_STYLE, "sbo:ui/achievements/achievements.css", SboLook.STYLE)
     private val RARITIES = listOf("Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Celestial", "Impossible")
 
     /** Opens the window. Must run on the client thread. */
@@ -92,16 +92,17 @@ object AchievementsGui {
 
         div(className = "ach-window") {
             header(className = "ach-header") {
-                span(className = "ach-title") { +"Achievements" }
-                div(className = "ach-progress", title = if (view.type == "repeatable") "Repeatable achievements you have unlocked" else "Achievements you have unlocked") {
-                    span(className = "ach-progress-text") { +"$unlocked/${ofType.size} · ${String.format(Locale.ROOT, "%.1f", percent)}%" }
-                    div(className = "ach-bar") { div(className = "ach-bar-fill", style = "width: ${String.format(Locale.ROOT, "%.2f", percent)}%") }
+                div(className = "ach-heading") {
+                    span(className = "ach-title") { +"Achievements" }
+                    div(className = "ach-progress", title = if (view.type == "repeatable") "Repeatable achievements you have unlocked" else "Achievements you have unlocked") {
+                        span(className = "ach-progress-text") { +"$unlocked/${ofType.size} · ${String.format(Locale.ROOT, "%.1f", percent)}%" }
+                        div(className = "ach-bar") { div(className = "ach-bar-fill", style = "width: ${String.format(Locale.ROOT, "%.2f", percent)}%") }
+                    }
                 }
-                div(className = "ach-spacer")
                 select(value = UiScale.id(UiScale.own(view.uiScale)), onChange = { e -> update(view.copy(uiScale = UiScale.parse(e.value))) }, className = "ach-scale-select") {
                     UiScale.OWN_CHOICES.forEach { scale -> option(UiScale.id(scale), "Size: ${UiScale.label(scale)}") }
                 }
-                button(className = "ach-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
+                button(className = "ach-close sbo-close", title = "Close", onClick = { GuiLib.close() }) { +"×" }
             }
 
             div(className = "ach-toolbar") {

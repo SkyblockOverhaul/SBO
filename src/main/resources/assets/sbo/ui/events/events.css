@@ -1,93 +1,3 @@
-/* Colors of the SBO Dark theme, same variables as the party finder (partyfinder.css), so both look alike. */
-body {
-    --bg: #1e1f22;
-    --panel: #2b2d31;
-    --panel-2: #313338;
-    --card: #26282c;
-    --card-hover: #2a2c31;
-    --border: #3f4147;
-    --border-hover: #5a5d66;
-    --text: #f2f3f5;
-    --text-strong: #ffffff;
-    --text-soft: #dbdee1;
-    --subtle: #b5bac1;
-    --muted: #949ba4;
-    --dim: #80848e;
-    --title: #55ffff;
-    --accent: #006efa;
-    --accent-hover: #2a88ff;
-    --accent-text: #ffffff;
-    --accent-soft: rgba(0, 110, 250, 0.3);
-    --accent-faint: rgba(0, 110, 250, 0.18);
-    --banner-bg: rgba(0, 110, 250, 0.14);
-    --banner-border: rgba(0, 110, 250, 0.5);
-    --banner-text: #bcd9ff;
-    --ok: #57c96b;
-    --ok-soft: rgba(87, 201, 107, 0.18);
-    --ok-border: rgba(87, 201, 107, 0.55);
-    --bad: #ee5c5c;
-    --bad-border: rgba(238, 92, 92, 0.6);
-    --danger: #da373c;
-    --estimated: #c9a7f0;
-    --input-bg: #1e1f22;
-    --input-border: #4e5058;
-    --input-border-hover: #6d6f78;
-    --control: #3c3f45;
-    --control-border: #55595f;
-    --control-hover: #4a4e55;
-    --control-active: #2f3236;
-    --menu: #2b2d31;
-    --popup: #111214;
-    --highlight: #3f4248;
-    --disabled: #4e5058;
-    --disabled-text: #949ba4;
-    --backdrop: rgba(0, 0, 0, 0.55);
-    --shadow: rgba(0, 0, 0, 0.6);
-    --scrollbar-thumb: #ffffff80;
-    --scrollbar-track: #00000020;
-    --toast-success: #3ba55d;
-    --toast-warning: #faa61a;
-    --toast-error: #ed4245;
-    --menu-danger: #f47b7d;
-    --tint: rgba(255, 255, 255, 0.06);
-    --tint-strong: rgba(255, 255, 255, 0.08);
-    --star: #f0b232;
-    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
-    --guilib-text: var(--text);
-    --guilib-text-strong: var(--text-strong);
-    --guilib-text-secondary: var(--text-soft);
-    --guilib-text-muted: var(--subtle);
-    --guilib-text-subtle: var(--dim);
-    --guilib-accent: var(--accent);
-    --guilib-accent-soft: var(--accent-soft);
-    --guilib-on-accent: var(--accent-text);
-    --guilib-surface: var(--menu);
-    --guilib-surface-2: var(--input-bg);
-    --guilib-surface-3: var(--popup);
-    --guilib-highlight: var(--highlight);
-    --guilib-tint: var(--tint);
-    --guilib-tint-strong: var(--tint-strong);
-    --guilib-backdrop: var(--backdrop);
-    --guilib-border: var(--input-border);
-    --guilib-border-hover: var(--input-border-hover);
-    --guilib-border-strong: var(--dim);
-    --guilib-border-subtle: var(--border);
-    --guilib-focus: var(--text-strong);
-    --guilib-button: var(--control);
-    --guilib-button-hover: var(--control-hover);
-    --guilib-button-active: var(--control-active);
-    --guilib-button-border: var(--control-border);
-    --guilib-track: var(--disabled);
-    --guilib-track-border: var(--input-border-hover);
-    --guilib-success: var(--toast-success);
-    --guilib-warning: var(--toast-warning);
-    --guilib-danger: var(--toast-error);
-    --guilib-danger-text: var(--menu-danger);
-    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
-    --guilib-scrollbar-track: var(--scrollbar-track);
-    color: var(--text);
-}
-
 body {
     display: flex;
     align-items: center;
@@ -102,39 +12,39 @@ body {
     height: min(92vh, 400px);
     background-color: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--sbo-window-radius);
     overflow: hidden;
-    animation: ev-fade 150ms ease-out;
 }
-@keyframes ev-fade { from { opacity: 0; transform: translateY(6px); } }
 
 .ev-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 3px 4px 3px 10px;
-    background-color: var(--panel);
-    border-bottom: 1px solid var(--border);
+    gap: var(--sbo-space-sm);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    padding: var(--sbo-space-md) var(--sbo-space-lg) var(--sbo-space-xs);
 }
-.ev-title { font-weight: bold; color: var(--title); white-space: nowrap; }
+.ev-title { font-size: 10px; font-weight: bold; color: var(--text-strong); }
+.ev-heading { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sbo-space-sm); min-width: 0; }
+.ev-header-actions { display: flex; align-items: center; gap: var(--sbo-space-sm); flex-shrink: 0; margin-left: auto; }
 .ev-count { color: var(--muted); font-size: 7px; white-space: nowrap; }
 .ev-spacer { flex-grow: 1; }
 .ev-back { padding: 1px 6px; }
 .ev-nav { padding: 1px 5px; }
 .ev-copy { padding: 1px 6px; }
 
-.ev-toolbar { display: flex; align-items: center; gap: 6px; padding: 6px 8px 0 8px; }
+.ev-toolbar { display: flex; flex-wrap: wrap; flex-shrink: 0; align-items: center; gap: var(--sbo-space-sm); padding: var(--sbo-space-sm) var(--sbo-space-lg) 0; }
 .ev-toolbar-label { color: var(--muted); font-size: 7px; }
 .ev-toolbar .guilib-segmented { height: 16px; align-items: stretch; padding: 1px; }
 .ev-toolbar .guilib-segment { display: flex; align-items: center; padding: 0 6px; }
 .guilib-segmented .guilib-segment.selected { color: var(--accent-text); }
 
 /* ---- chart (EventsChart.kt): bars are divs with a height in % of the plot ---- */
-.ev-chart { margin-bottom: 4px; padding: 4px 6px 3px 6px; border-radius: 4px; background-color: var(--card); border: 1px solid var(--border); }
+.ev-chart { margin-bottom: var(--sbo-space-md); padding: var(--sbo-space-sm); border-radius: var(--sbo-control-radius); background-color: var(--card); border: 0; }
 .ev-chart-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-.ev-chart-title { flex-grow: 1; min-width: 0; color: var(--text-strong); font-size: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ev-chart-views { height: 13px; align-items: stretch; padding: 1px; }
-.ev-chart-views .guilib-segment { display: flex; align-items: center; padding: 0 5px; font-size: 6px; }
+.ev-chart-title { flex-grow: 1; min-width: 0; color: var(--text-strong); font-size: 8px; white-space: normal; }
+.ev-chart-views { min-height: 18px; align-items: stretch; padding: 1px; margin-bottom: var(--sbo-space-sm); }
+.ev-chart-views .guilib-segment { display: flex; align-items: center; justify-content: center; padding: 1px var(--sbo-space-sm); font-size: 7px; }
 .ev-chart-empty { padding: 16px 0; text-align: center; color: var(--dim); font-size: 7px; }
 .ev-chart-plot { position: relative; display: flex; align-items: flex-end; gap: 3px; height: 56px; border-bottom: 1px solid var(--border); }
 .ev-chart-col { position: relative; display: flex; flex-direction: column; justify-content: flex-end; flex: 1 1 0; max-width: 28px; height: 100%; cursor: pointer; }
@@ -167,54 +77,51 @@ body {
 .ev-chart-luck-bar.down { background-color: var(--bad); border-radius: 0 0 2px 2px; }
 .ev-chart-luck-bar.current { opacity: 0.55; }
 .ev-scale-select { font-size: 7px; }
-.ev-close { padding: 1px 5px; background-color: transparent; border-color: transparent; }
-.ev-close:hover { background-color: var(--danger); }
 
-.ev-body { flex-grow: 1; min-height: 0; padding: 6px 8px 8px 8px; }
+.ev-body { flex-grow: 1; min-height: 0; padding: var(--sbo-space-sm) var(--sbo-space-lg) var(--sbo-space-lg); }
 .ev-empty { padding: 20px 10px; text-align: center; color: var(--muted); }
 
 .ev-card {
-    margin-bottom: 4px;
-    padding: 5px 7px;
-    border-radius: 4px;
+    margin-bottom: var(--sbo-space-xs);
+    padding: var(--sbo-space-sm);
+    border-radius: var(--sbo-control-radius);
     background-color: var(--card);
-    border: 1px solid var(--border);
-    transition: border-color 120ms, background-color 120ms;
+    border: 0;
 }
-/* Not the left side: total and current cards color it */
-.ev-card:hover { background-color: var(--card-hover); border-top-color: var(--border-hover); border-right-color: var(--border-hover); border-bottom-color: var(--border-hover); }
+
 .ev-total { border-left: 2px solid var(--accent); }
 .ev-current { border-left: 2px solid var(--ok); }
 .ev-badge { padding: 0 3px; border-radius: 2px; background-color: var(--accent-soft); color: var(--text-strong); font-size: 6px; white-space: nowrap; }
 .ev-badge.live { background-color: var(--ok-soft); color: var(--ok); }
-.ev-card-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.ev-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; }
 .ev-year { color: var(--text-strong); font-weight: bold; }
 .ev-card-head .ev-spacer { flex-grow: 1; }
-.ev-buttons { display: flex; gap: 4px; }
+.ev-buttons { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sbo-space-xs); }
 .ev-buttons button, .ev-card-head button { padding: 1px 8px; }
 .ev-danger:hover { background-color: var(--danger); border-color: var(--danger); }
 .ev-danger-filled { background-color: var(--danger); border-color: var(--danger); color: var(--text-strong); }
 
 .ev-summary { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
-.ev-stat { padding: 2px 4px; border-radius: 3px; background-color: var(--tint); }
+.ev-stat { min-width: 0; padding: 2px 0; }
 .ev-stat-label { font-size: 6px; }
 .ev-stat-value { color: var(--text-strong); white-space: nowrap; }
 
 .ev-details { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: start; }
-.ev-table { padding: 4px 6px; border-radius: 4px; background-color: var(--card); border: 1px solid var(--border); }
+.ev-table { padding: var(--sbo-space-xs) var(--sbo-space-sm); min-width: 0; }
 .ev-table-title { margin-bottom: 3px; padding-bottom: 2px; border-bottom: 1px solid var(--border); color: var(--text-strong); font-weight: bold; }
 .ev-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 34px 6px; gap: 4px; padding: 1px 2px; border-radius: 2px; }
+.ev-row:nth-child(odd) { background-color: var(--tint); }
 .ev-row:hover { background-color: var(--tint-strong); }
 .ev-row.zero { opacity: 0.55; }
 .ev-row-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ev-row-value { color: var(--text-strong); text-align: right; white-space: nowrap; }
-.ev-row-percent { color: var(--title); font-size: 7px; text-align: right; white-space: nowrap; }
+.ev-row-percent { color: var(--subtle); font-size: 7px; text-align: right; white-space: nowrap; }
 .ev-trend { font-size: 6px; text-align: center; }
 .ev-trend.up { color: var(--ok); }
 .ev-trend.down { color: var(--bad); }
 .ev-hint { margin-bottom: 4px; color: var(--muted); font-size: 7px; }
 
-.ev-modal { width: min(90vw, 220px); padding: 8px; background-color: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+.ev-modal { width: min(90vw, 240px); max-height: 90vh; overflow-y: auto; padding: var(--sbo-space-lg); background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--sbo-window-radius); }
 .ev-modal-title { font-weight: bold; color: var(--text-strong); margin-bottom: 3px; }
 .ev-modal-text { color: var(--subtle); margin-bottom: 8px; }
 .ev-modal-buttons { justify-content: flex-end; }
@@ -238,20 +145,20 @@ body {
     .ev-details { grid-template-columns: 1fr; }
 }
 
-/* ---- line chart (ProfitLines in EventsChart.kt): segments are rotated divs, dots and lines glow ---- */
+/* ---- line chart (ProfitLines in EventsChart.kt): segments are rotated divs ---- */
 .ev-sc-total { color: #c77dff; }
 .ev-sc-0 { color: #ff55ff; }
 .ev-sc-1 { color: #ffaa00; }
 .ev-sc-2 { color: #55ff55; }
 .ev-sc-3 { color: #ffff55; }
-.ev-lines-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.ev-lines-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; }
 .ev-lines-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; flex-grow: 1; }
 .ev-lines-key {
     display: flex;
     align-items: center;
     gap: 3px;
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--sbo-control-radius);
     background-color: var(--tint);
     border: 1px solid var(--border);
     font-size: 6px;
@@ -260,13 +167,13 @@ body {
 }
 .ev-lines-key:hover { border-color: var(--border-hover); }
 .ev-lines-key.off { opacity: 0.4; }
-.ev-lines-dot-key { width: 5px; height: 5px; border-radius: 3px; background-color: currentColor; box-shadow: 0 0 3px currentColor; }
+.ev-lines-dot-key { width: 5px; height: 5px; border-radius: var(--sbo-control-radius); background-color: currentColor;  }
 .ev-lines-axis-title { display: block; margin: 0 0 2px 28px; color: var(--muted); font-size: 6px; }
 .ev-lines-area { display: flex; align-items: flex-start; }
 /* The plot height is set once here, the axis and the plot both use it */
 .ev-lines { --plot-height: 80px; }
 /* Big view: the rest of the dialog after header, legend and labels (the dialog stays inside the screen) */
-.ev-lines.big { --plot-height: clamp(60px, calc(92vh - 120px), 240px); }
+.ev-lines.big { --plot-height: clamp(60px, calc(92vh - 155px), 240px); }
 .ev-lines-yaxis { position: relative; flex-shrink: 0; width: 28px; height: var(--plot-height); }
 .ev-lines-scroll { flex-grow: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; }
 /* Room for the scrollbar below the year labels when zoomed in */
@@ -288,27 +195,56 @@ body {
     position: absolute;
     width: 5px;
     height: 5px;
-    border-radius: 3px;
+    border-radius: var(--sbo-control-radius);
     background-color: currentColor;
-    box-shadow: 0 0 5px currentColor;
     pointer-events: auto;
     cursor: pointer;
-    transition: transform 120ms;
 }
-.ev-lines-dot:hover { transform: scale(1.6); }
+.ev-lines-dot:hover { outline: 1px solid var(--text-strong); outline-offset: 1px; }
 /* Running event: hollow dot */
 .ev-lines-dot.current { background-color: var(--card); border: 1px solid currentColor; }
 .ev-lines-years { display: flex; margin-top: 1px; }
 .ev-lines-years .ev-chart-label { flex: 1 1 0; max-width: none; }
 
 /* ---- expand: the chart big in a dialog ---- */
-.ev-chart-expand { padding: 0 5px; height: 13px; font-size: 6px; }
-.ev-chart-modal { width: min(94vw, 640px); max-height: 96vh; padding: 0; background-color: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
-.ev-chart.big { margin: 0; border: none; padding: 8px 10px 6px 10px; }
+.ev-chart-expand { flex-shrink: 0; padding: 2px var(--sbo-space-sm); min-height: 18px; font-size: 7px; }
+.ev-chart-modal { width: min(94vw, 640px); max-height: 96vh; overflow-y: auto; padding: 0; background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--sbo-window-radius); }
+.ev-chart.big { margin: 0; border: none; background-color: transparent; padding: var(--sbo-space-md) var(--sbo-space-lg); }
 .ev-chart.big .ev-chart-title { font-size: 8px; }
-.ev-chart.big .ev-chart-plot { height: clamp(56px, calc(92vh - 110px), 200px); }
+.ev-chart.big .ev-chart-plot { height: clamp(56px, calc(92vh - 135px), 200px); }
 /* Only the bar views: the line chart spreads its labels under the dots */
 .ev-chart.big .ev-chart-col, .ev-chart.big .ev-chart-labels .ev-chart-label { max-width: 48px; }
 .ev-zoom { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-.ev-zoom-button { padding: 0 5px; height: 13px; font-size: 7px; }
+.ev-zoom-button { padding: 2px var(--sbo-space-sm); min-height: 18px; font-size: 7px; }
 .ev-zoom-value { min-width: 26px; text-align: center; color: var(--muted); font-size: 6px; }
+
+.ev-header button:not(.sbo-close), .ev-buttons button, .ev-card-head button { padding: 3px var(--sbo-space-sm); border-radius: var(--sbo-control-radius); }
+.ev-danger { color: var(--menu-danger); }
+.ev-danger:hover { color: var(--text-strong); }
+.ev-lines-key.off { text-decoration: line-through; }
+@media (max-width: 400px) {
+    .ev-heading { flex-basis: 100%; }
+    .ev-chart-views { display: flex; }
+    .ev-chart-views .guilib-segment { flex: 1 1 0; padding-left: var(--sbo-space-xs); padding-right: var(--sbo-space-xs); }
+}
+@media (max-width: 260px) {
+    .ev-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.ev-danger-filled:hover { background-color: var(--bad); }
+
+/* Approved filled controls; preserve chart axes, event/status boundaries and
+   the red destructive confirmation. */
+.ev-header .ev-scale-select { background-color: var(--panel); border-color: transparent; }
+.ev-header .ev-scale-select:hover, .ev-header .ev-scale-select:focus, .ev-header .ev-scale-select[open] { border-color: transparent; }
+.ev-header .ev-scale-select:focus-visible { outline: 1px solid var(--subtle); outline-offset: -1px; }
+.ev-toolbar .guilib-segmented, .ev-chart .ev-chart-views { background-color: var(--panel); border-color: transparent; }
+.ev-lines-key { border-color: transparent; background-color: var(--panel); }
+.ev-lines-key:hover { border-color: transparent; background-color: var(--panel-2); }
+.ev-chart-expand, .ev-zoom-button { display: flex; align-items: center; justify-content: center; height: 18px; }
+.ev-table { padding-left: 0; padding-right: 0; }
+.ev-row { align-items: center; }
+.ev-row-label { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+    .ev-details { grid-template-columns: minmax(0, 1fr); }
+}

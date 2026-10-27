@@ -33,7 +33,7 @@ import kotlin.math.abs
 
 /** All Diana events: the running one, the past ones and the total, each with details. */
 object EventsGui {
-    private val STYLES = listOf("sbo:ui/events/events.css", SboLook.STYLE)
+    private val STYLES = listOf(SboLook.BASE_STYLE, "sbo:ui/events/events.css", SboLook.STYLE)
     private val SORTS = linkedMapOf("year" to "Year", "profit" to "Profit", "profitPerHour" to "Profit/h", "chimeras" to "Chimeras")
     private const val TOTAL = "total"
     private const val CURRENT = "current"
@@ -130,33 +130,37 @@ object EventsGui {
 
         div(className = "ev-window") {
             header(className = "ev-header") {
-                if (detail != null) button(className = "ev-back", title = "Back to the events", onClick = { shown = null }) { +"‹ Back" }
-                span(className = "ev-title") {
-                    +when {
-                        detail == null -> "Events"
-                        detail.key == TOTAL -> "Total Overview"
-                        detail.current -> "Current Event · Year ${detail.year}"
-                        else -> "Year ${detail.year}"
+                div(className = "ev-heading") {
+                    if (detail != null) button(className = "sbo-button ev-back", title = "Back to the events", onClick = { shown = null }) { +"‹ Back" }
+                    span(className = "ev-title") {
+                        +when {
+                            detail == null -> "Events"
+                            detail.key == TOTAL -> "Total Overview"
+                            detail.current -> "Current Event · Year ${detail.year}"
+                            else -> "Year ${detail.year}"
+                        }
+                    }
+                    if (detail == null) span(className = "ev-count") { +"${past.size} past ${if (past.size == 1) "event" else "events"}" }
+                    if (index >= 0) {
+                        button(className = "sbo-button ev-nav", title = "Previous in the list", disabled = index == 0, onClick = { shown = order[index - 1].key }) { +"‹" }
+                        button(className = "sbo-button ev-nav", title = "Next in the list", disabled = index == order.lastIndex, onClick = { shown = order[index + 1].key }) { +"›" }
                     }
                 }
-                if (detail == null) span(className = "ev-count") { +"${past.size} past ${if (past.size == 1) "event" else "events"}" }
-                if (index >= 0) {
-                    button(className = "ev-nav", title = "Previous in the list", disabled = index == 0, onClick = { shown = order[index - 1].key }) { +"‹" }
-                    button(className = "ev-nav", title = "Next in the list", disabled = index == order.lastIndex, onClick = { shown = order[index + 1].key }) { +"›" }
-                }
                 div(className = "ev-spacer")
-                if (detail != null) button(className = "ev-copy", title = "Copies a short summary, e.g. to post it on Discord", onClick = {
-                    clipboard.set(summaryText(detail))
-                    toast.success("Summary copied.", title = "Events")
-                }) { +"Copy" }
-                select(value = UiScale.id(uiScale), onChange = { e ->
-                    uiScale = UiScale.parse(e.value)
-                    DataManager.sboData.eventsUiScale = uiScale
-                    DataManager.save(DataManager::sboData)
-                }, className = "ev-scale-select") {
-                    UiScale.OWN_CHOICES.forEach { scale -> option(UiScale.id(scale), "Size: ${UiScale.label(scale)}") }
+                div(className = "ev-header-actions") {
+                    if (detail != null) button(className = "sbo-button ev-copy", title = "Copies a short summary, e.g. to post it on Discord", onClick = {
+                        clipboard.set(summaryText(detail))
+                        toast.success("Summary copied.", title = "Events")
+                    }) { +"Copy" }
+                    select(value = UiScale.id(uiScale), onChange = { e ->
+                        uiScale = UiScale.parse(e.value)
+                        DataManager.sboData.eventsUiScale = uiScale
+                        DataManager.save(DataManager::sboData)
+                    }, className = "ev-scale-select") {
+                        UiScale.OWN_CHOICES.forEach { scale -> option(UiScale.id(scale), "Size: ${UiScale.label(scale)}") }
+                    }
+                    button(className = "sbo-close", title = "Close", onClick = { GuiLib.close() }) { +"×" }
                 }
-                button(className = "ev-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
             }
 
             if (detail == null) {
@@ -188,7 +192,7 @@ object EventsGui {
                     div(className = "ev-card-head") {
                         span(className = "ev-year") { +"All events" }
                         div(className = "ev-spacer")
-                        button(className = "primary", onClick = { shown = TOTAL }) { +"Total Overview" }
+                        button(className = "sbo-button primary", onClick = { shown = TOTAL }) { +"Total Overview" }
                     }
                     summary(Entry(TOTAL, 0, DataManager.dianaTrackerTotalData, current = false))
                 }
@@ -201,8 +205,8 @@ object EventsGui {
                             badges(e).forEach { span(className = "ev-badge") { +it } }
                             div(className = "ev-spacer")
                             div(className = "ev-buttons") {
-                                button(onClick = { shown = e.key }) { +"Details" }
-                                if (!e.current) button(className = "ev-danger", onClick = { deleting = e.data as DianaTrackerMayorData }) { +"Delete" }
+                                button(className = "sbo-button", onClick = { shown = e.key }) { +"Details" }
+                                if (!e.current) button(className = "sbo-button ev-danger", onClick = { deleting = e.data as DianaTrackerMayorData }) { +"Delete" }
                             }
                         }
                         summary(e)
@@ -215,8 +219,8 @@ object EventsGui {
             div(className = "ev-modal-title") { +"Delete the event of year ${deleting?.year}?" }
             div(className = "ev-modal-text") { +"You can undo it for a few seconds, the total stays." }
             div(className = "ev-buttons ev-modal-buttons") {
-                button(onClick = { deleting = null }) { +"Cancel" }
-                button(className = "ev-danger-filled", onClick = {
+                button(className = "sbo-button", onClick = { deleting = null }) { +"Cancel" }
+                button(className = "sbo-button ev-danger-filled", onClick = {
                     deleting?.let(::delete)
                     deleting = null
                 }) { +"Delete" }

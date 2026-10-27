@@ -1,0 +1,142 @@
+/* Shared foundations copied from the approved /sbo launcher. The launcher intentionally
+   keeps its own stylesheet; changes here apply only to the other SBO windows. */
+body {
+    --bg: #1e1f22;
+    --panel: #2b2d31;
+    --panel-2: #313338;
+    --card: #26282c;
+    --card-hover: #2a2c31;
+    --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
+    --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
+    --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
+    --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
+    --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
+    --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
+    --guilib-border: var(--input-border);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
+}
+
+body {
+    --sbo-window-radius: 6px;
+    --sbo-control-radius: 3px;
+    --sbo-close-hover: #ef8274;
+    --sbo-space-xs: 4px;
+    --sbo-space-sm: 6px;
+    --sbo-space-md: 8px;
+    --sbo-space-lg: 12px;
+    --sbo-space-xl: 14px;
+}
+
+/* Opt-in classes avoid overriding GuiLib's tabs, switches and other specialized controls. */
+.sbo-button {
+    padding: 3px 6px;
+    color: var(--text);
+    background-color: var(--panel-2);
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+}
+.sbo-button:hover { background-color: var(--control-hover); }
+.sbo-button:active { background-color: var(--control-active); }
+.sbo-button:focus-visible { outline: 1px solid var(--text-strong); outline-offset: 1px; }
+.sbo-button:disabled { background-color: var(--disabled); color: var(--disabled-text); }
+
+.sbo-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--subtle);
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+}
+.sbo-close:hover, .sbo-close:active {
+    color: var(--sbo-close-hover);
+    background-color: transparent;
+}
+.sbo-close:focus-visible { outline: 1px solid var(--subtle); outline-offset: 1px; }
+
+/* The Minecraft theme gives regular buttons a stone bevel; close remains a quiet icon. */
+body.sbo-theme-minecraft .sbo-close { color: var(--subtle); box-shadow: none; text-shadow: none; }
+body.sbo-theme-minecraft .sbo-close:hover, body.sbo-theme-minecraft .sbo-close:active {
+    color: var(--sbo-close-hover);
+    background-color: transparent;
+}

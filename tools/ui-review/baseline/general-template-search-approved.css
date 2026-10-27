@@ -1,0 +1,46 @@
+/* General-only feedback prototype. Not loaded by production or other review screens. */
+.cfg-template .cfg-search-input {
+    background-color: var(--panel);
+    border-color: transparent;
+}
+.cfg-template .cfg-search-input:hover, .cfg-template .cfg-search-input:focus { border-color: transparent; }
+.cfg-template .cfg-search-input:focus-visible {
+    outline: 1px solid var(--subtle);
+    outline-offset: -1px;
+}
+.cfg-template .cfg-sidebar {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+}
+.cfg-template .cfg-category { border-radius: 0; }
+.cfg-template .cfg-category.active {
+    background-color: transparent;
+    border-left: 2px solid var(--muted);
+    padding-left: 4px;
+}
+.cfg-template .cfg-sub { margin-top: 10px; border-bottom: 0; }
+.cfg-template .cfg-row { border: 0; border-radius: 0; padding: 5px; }
+.cfg-template .cfg-row:hover { background-color: transparent; }
+.cfg-template .cfg-sub-title:focus-visible {
+    outline: 1px solid var(--muted);
+    outline-offset: 1px;
+}
+.cfg-template .cfg-section-switch {
+    flex-shrink: 0;
+    width: 28px;
+    height: 20px;
+    justify-content: flex-end;
+}
+.cfg-template .cfg-section-switch .guilib-switch-track { width: 24px; height: 13px; border-radius: 7px; }
+.cfg-template .cfg-section-switch .guilib-switch-thumb { width: 9px; height: 9px; }
+.cfg-template .cfg-section-switch.checked .guilib-switch-thumb { transform: translateX(11px); }
+.cfg-template .cfg-section-switch .guilib-switch-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+.cfg-template .cfg-section-switch:focus-visible { outline: 1px solid var(--text-strong); outline-offset: 2px; }

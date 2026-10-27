@@ -236,8 +236,8 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
                         +"A short tour shows how to find and join parties, how to list your own, and what the rules and settings are. It takes about two minutes."
                     }
                     div(className = "pf-tour-buttons") {
-                        button(onClick = { finish() }) { +"Skip, I know it already" }
-                        button(className = "primary", onClick = { go(0) }) { +"Start tour" }
+                        button(className = "sbo-button", onClick = { finish() }) { +"Skip, I know it already" }
+                        button(className = "sbo-button primary", onClick = { go(0) }) { +"Start tour" }
                     }
                 }
                 return@div
@@ -252,11 +252,11 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
                 }
                 p(className = "pf-tour-text") { +current.text }
                 div(className = "pf-tour-buttons") {
-                    button(className = "pf-small pf-tour-skip", onClick = { finish() }) { +"Skip" }
+                    button(className = "sbo-button pf-small pf-tour-skip", onClick = { finish() }) { +"Skip" }
                     div(className = "pf-spacer")
-                    button(className = "pf-small", disabled = step == 0, onClick = { go(step - 1) }) { +"Back" }
+                    button(className = "sbo-button pf-small", disabled = step == 0, onClick = { go(step - 1) }) { +"Back" }
                     val last = step == ONBOARDING_STEPS.lastIndex
-                    button(className = "pf-small primary", onClick = { go(step + 1) }) {
+                    button(className = "sbo-button pf-small primary", onClick = { go(step + 1) }) {
                         +(if (last) "Finish" else "Next")
                     }
                 }
@@ -288,13 +288,13 @@ internal fun tourParty(target: PartyTarget, own: MemberView?): PartyView {
 
 private const val TOUR_LEADER = "00000000000000000000000000000001"
 
-private fun highlight(r: Rect, vw: Float, vh: Float): Rect {
+internal fun highlight(r: Rect, vw: Float, vh: Float): Rect {
     val x = (r.x - PADDING).coerceAtLeast(0f)
     val y = (r.y - PADDING).coerceAtLeast(0f)
     return Rect(x, y, (r.right + PADDING).coerceAtMost(vw) - x, (r.bottom + PADDING).coerceAtMost(vh) - y)
 }
 
-private fun tipPosition(hole: Rect?, width: Float, height: Float, vw: Float, vh: Float): String {
+internal fun tipPosition(hole: Rect?, width: Float, height: Float, vw: Float, vh: Float): String {
     fun clampX(x: Float) = x.coerceIn(MARGIN, (vw - width - MARGIN).coerceAtLeast(MARGIN))
     fun clampY(y: Float) = y.coerceIn(MARGIN, (vh - height - MARGIN).coerceAtLeast(MARGIN))
     val (left, top) = when {

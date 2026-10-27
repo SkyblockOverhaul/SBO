@@ -41,7 +41,7 @@ object CloudSyncGui {
     private const val PATREON_URL = "https://www.patreon.com/Skyblock_Overhaul"
     private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
 
-    private val STYLES = listOf("sbo:ui/cloud/cloud.css", SboLook.STYLE)
+    private val STYLES = listOf(SboLook.BASE_STYLE, "sbo:ui/cloud/cloud.css", SboLook.STYLE)
     private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
     /** Opens the window. Must run on the client thread. */
@@ -136,28 +136,28 @@ object CloudSyncGui {
                     div(className = "cs-question") {
                         div(className = "cs-question-top") {
                             div(className = "cs-question-text") { +question.text }
-                            button(className = "cs-icon", title = "Hide this question, decide later", onClick = { CloudSync.dismissQuestion() }) { +"x" }
+                            button(className = "sbo-close", title = "Hide this question, decide later", onClick = { CloudSync.dismissQuestion() }) { +"×" }
                         }
                         div(className = "cs-buttons") {
                             question.actions.forEach { action ->
                                 button(
-                                    className = classNames("cs-danger" to action.danger),
+                                    className = classNames("sbo-button", "cs-danger" to action.danger),
                                     title = action.hint,
                                     disabled = busy != null,
                                     onClick = { action.run() }
                                 ) { +action.label }
                             }
-                            if (hasSave) button(title = "Shows what is different before you decide", disabled = busy != null, onClick = { onCompare() }) { +"Compare" }
+                            if (hasSave) button(className = "sbo-button", title = "Shows what is different before you decide", disabled = busy != null, onClick = { onCompare() }) { +"Compare" }
                         }
                     }
                 }
 
                 div(className = "cs-actions") {
-                    button(className = "cs-primary", disabled = locked, title = "Saves this PC's data in the cloud", onClick = { CloudSync.upload() }) { +"Upload" }
-                    button(disabled = locked || !hasSave, title = "Loads your cloud save on this PC. A backup is made first.", onClick = { CloudSync.download() }) { +"Download" }
-                    button(disabled = locked || !hasSave, title = "Shows what is different", onClick = { onCompare() }) { +"Compare" }
+                    button(className = "sbo-button cs-primary", disabled = locked, title = "Saves this PC's data in the cloud", onClick = { CloudSync.upload() }) { +"Upload" }
+                    button(className = "sbo-button", disabled = locked || !hasSave, title = "Loads your cloud save on this PC. A backup is made first.", onClick = { CloudSync.download() }) { +"Download" }
+                    button(className = "sbo-button", disabled = locked || !hasSave, title = "Shows what is different", onClick = { onCompare() }) { +"Compare" }
                     div(className = "cs-spacer")
-                    button(className = "cs-danger", disabled = locked || !hasSave, title = "Deletes your cloud save", onClick = { confirmDelete = true }) { +"Delete" }
+                    button(className = "sbo-button cs-danger", disabled = locked || !hasSave, title = "Deletes your cloud save", onClick = { confirmDelete = true }) { +"Delete" }
                 }
 
                 setting("Auto Sync", "Saves and loads for you.") {
@@ -185,9 +185,9 @@ object CloudSyncGui {
                             maxLength = 64,
                             onInput = { signKey = it.value }
                         )
-                        button(title = if (showKey) "Hides the sign key" else "Shows the sign key", onClick = { showKey = !showKey }) { +if (showKey) "Hide" else "Show" }
+                        button(className = "sbo-button", title = if (showKey) "Hides the sign key" else "Shows the sign key", onClick = { showKey = !showKey }) { +if (showKey) "Hide" else "Show" }
                         button(
-                            disabled = busy != null,
+                            className = "sbo-button", disabled = busy != null,
                             title = if (signKey.isBlank()) "Removes the sign key from this PC" else "Saves the sign key on this PC",
                             onClick = { CloudSync.saveSignKey(signKey) }
                         ) { +"Save" }
@@ -211,8 +211,8 @@ object CloudSyncGui {
             div(className = "cs-modal-title") { +"Delete your cloud save?" }
             div(className = "cs-modal-text") { +"Your data on this PC stays." }
             div(className = "cs-buttons cs-modal-buttons") {
-                button(onClick = { confirmDelete = false }) { +"Cancel" }
-                button(className = "cs-danger-filled", onClick = {
+                button(className = "sbo-button", onClick = { confirmDelete = false }) { +"Cancel" }
+                button(className = "sbo-button cs-danger-filled", onClick = {
                     confirmDelete = false
                     CloudSync.delete()
                 }) { +"Delete" }
@@ -257,11 +257,11 @@ object CloudSyncGui {
                     }
                     if (r.areas.isNotEmpty()) {
                         div(className = "cs-footer") {
-                            button(title = "Keep everything from this PC", onClick = { choices = emptyMap() }) { +"All from PC" }
-                            button(title = "Take everything from the cloud save", onClick = { choices = allIds(r.areas).associateWith { CloudSide.CLOUD } }) { +"All from Cloud" }
+                            button(className = "sbo-button", title = "Keep everything from this PC", onClick = { choices = emptyMap() }) { +"All from PC" }
+                            button(className = "sbo-button", title = "Take everything from the cloud save", onClick = { choices = allIds(r.areas).associateWith { CloudSide.CLOUD } }) { +"All from Cloud" }
                             div(className = "cs-spacer")
                             button(
-                                className = "cs-primary",
+                                className = "sbo-button cs-primary",
                                 disabled = CloudSync.busy != null,
                                 title = "Uses your picks on this PC and uploads them as your cloud save. A backup is made first.",
                                 onClick = {
@@ -299,7 +299,7 @@ object CloudSyncGui {
                             div(className = "cs-backup-date") { +DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt)) }
                             div(className = "cs-hint") { +"${ago(backup.createdAt)} · ${(backup.size + 1023) / 1024} KB" }
                         }
-                        button(title = "Puts your SBO data back to this backup", onClick = { confirm = backup }) { +"Load" }
+                        button(className = "sbo-button", title = "Puts your SBO data back to this backup", onClick = { confirm = backup }) { +"Load" }
                     }
                 }
             }
@@ -312,8 +312,8 @@ object CloudSyncGui {
                 +"Your SBO data goes back to ${DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt))}. Your current data is backed up first."
             }
             div(className = "cs-buttons cs-modal-buttons") {
-                button(onClick = { confirm = null }) { +"Cancel" }
-                button(className = "cs-primary", onClick = {
+                button(className = "sbo-button", onClick = { confirm = null }) { +"Cancel" }
+                button(className = "sbo-button cs-primary", onClick = {
                     confirm = null
                     runCatching { Backups.load(backup) }
                         .onSuccess { toast.success("Backup from ${DATE_FORMAT.format(Instant.ofEpochMilli(backup.createdAt))} loaded.", title = "Backups") }
@@ -369,12 +369,12 @@ object CloudSyncGui {
                     span(className = "cs-field-label", title = field.label) { +field.label }
                     if (area.perField) {
                         segmented(value = side(field.id).name, onChange = { pick(field.id, CloudSide.valueOf(it)) }, className = "cs-pick") {
-                            option(CloudSide.PC.name, field.pc ?: "(not set)", title = "This PC")
-                            option(CloudSide.CLOUD.name, field.cloud ?: "(not set)", title = "Cloud")
+                            option(CloudSide.PC.name, field.pc ?: "(not set)", title = "This PC: ${field.pc ?: "(not set)"}")
+                            option(CloudSide.CLOUD.name, field.cloud ?: "(not set)", title = "Cloud: ${field.cloud ?: "(not set)"}")
                         }
                     } else {
-                        span(className = "cs-value", title = "This PC") { +(field.pc ?: "(not set)") }
-                        span(className = "cs-value", title = "Cloud") { +(field.cloud ?: "(not set)") }
+                        span(className = "cs-value", title = "This PC: ${field.pc ?: "(not set)"}") { +(field.pc ?: "(not set)") }
+                        span(className = "cs-value", title = "Cloud: ${field.cloud ?: "(not set)"}") { +(field.cloud ?: "(not set)") }
                     }
                 }
             }
@@ -384,10 +384,10 @@ object CloudSyncGui {
 
     private fun NodeBuilder.windowHeader(title: String, size: WindowSize, onBack: (() -> Unit)? = null, onBackups: (() -> Unit)? = null) {
         header(className = "cs-header") {
-            if (onBack != null) button(className = "cs-icon", title = "Back", onClick = { onBack() }) { +"←" }
+            if (onBack != null) button(className = "sbo-button cs-icon", title = "Back", onClick = { onBack() }) { +"←" }
             span(className = "cs-title") { +title }
             div(className = "cs-spacer")
-            if (onBackups != null) button(className = "cs-header-button", title = "Load one of the backups SBO made on this PC", onClick = { onBackups() }) { +"Backups" }
+            if (onBackups != null) button(className = "sbo-button cs-header-button", title = "Load one of the backups SBO made on this PC", onClick = { onBackups() }) { +"Backups" }
             span(className = "cs-size-label") { +"Size" }
             select(value = UiScale.id(size.scale), onChange = { e -> size.onChange(UiScale.parse(e.value)) }, className = "cs-size") {
                 UiScale.OWN_CHOICES.forEach { scale ->
@@ -399,7 +399,7 @@ object CloudSyncGui {
                     option(UiScale.id(scale), UiScale.label(scale), title = title)
                 }
             }
-            button(className = "cs-icon cs-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
+            button(className = "sbo-close", title = "Close", onClick = { GuiLib.close() }) { +"×" }
         }
     }
 
@@ -426,7 +426,7 @@ object CloudSyncGui {
                 }
             }
             button(
-                className = "cs-icon cs-refresh",
+                className = "sbo-button cs-icon cs-refresh",
                 disabled = refreshing || refreshWait > 0,
                 title = if (refreshWait > 0) "Check again in ${(refreshWait + 999) / 1000} s" else "Checks your cloud save again, e.g. after you uploaded on another PC",
                 onClick = { onRefresh() }
@@ -442,8 +442,8 @@ object CloudSyncGui {
                 "and help us make it better, so Cloud Sync is only for supporters.")
             infoLine("To become a supporter, support SBO on Patreon or Ko-fi, or boost the SBO Discord.")
             div(className = "cs-buttons cs-support") {
-                button(className = "cs-primary", title = "Opens Patreon in your browser", onClick = { SBOKotlin.openInBrowser(PATREON_URL) }) { +"Patreon" }
-                button(title = "Opens Ko-fi in your browser", onClick = { SBOKotlin.openInBrowser(KOFI_URL) }) { +"Ko-fi" }
+                button(className = "sbo-button cs-primary", title = "Opens Patreon in your browser", onClick = { SBOKotlin.openInBrowser(PATREON_URL) }) { +"Patreon" }
+                button(className = "sbo-button", title = "Opens Ko-fi in your browser", onClick = { SBOKotlin.openInBrowser(KOFI_URL) }) { +"Ko-fi" }
             }
         }
     }

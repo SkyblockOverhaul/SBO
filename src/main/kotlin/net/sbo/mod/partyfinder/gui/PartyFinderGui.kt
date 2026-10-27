@@ -38,7 +38,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 
 object PartyFinderGui {
-    private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", SboLook.STYLE)
+    private val STYLES = listOf(SboLook.BASE_STYLE, "sbo:ui/partyfinder/partyfinder.css", SboLook.STYLE)
     private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
 
     /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others are declared in the CSS. */
@@ -207,10 +207,10 @@ object PartyFinderGui {
                             span(className = "pf-queue-text", onClick = { select("${mine.partyType}/${mine.subType}") }) {
                                 +"$label ${mine.memberCount}/${mine.partySize}"
                             }
-                            button(className = "pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
+                            button(className = "sbo-button pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
                         }
                     }
-                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) {
+                    button(className = "pf-close sbo-close", title = "Close", onClick = { GuiLib.close() }) {
                         img(src = "${StatView.ICONS}/close.svg", className = "pf-close-icon")
                     }
                 }
@@ -313,7 +313,7 @@ object PartyFinderGui {
                                 key = "settings"
                             )
                             target == null && failed -> message("Could not load the party types from the SBO server.") {
-                                button(onClick = {
+                                button(className = "sbo-button", onClick = {
                                     failed = false
                                     PartyCategories.get(force = true) { loaded -> if (loaded == null) failed = true else data = loaded }
                                 }) { +"Try again" }

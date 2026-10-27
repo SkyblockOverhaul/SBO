@@ -7,7 +7,6 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.game.World
-import java.awt.Color
 
 fun isCraftingScreenOpen(): Boolean = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
 
@@ -144,26 +143,21 @@ class Overlay(
 
         val textRenderer = mc.font
 
-        drawContext.pose().pushMatrix()
-        drawContext.pose().scale(scale, scale)
-
         val totalWidth = contentWidth()
         val totalHeight = contentHeight()
         updateRenderPosition(totalWidth, totalHeight)
 
+        if (inEditingScreen()) {
+            OverlayEditorStyle.draw(
+                drawContext, renderX.toInt(), renderY.toInt(), (totalWidth * scale).toInt(),
+                (totalHeight * scale).toInt(), scale, isOverOverlay(mouseX, mouseY), selected,
+            )
+        }
+
+        drawContext.pose().pushMatrix()
+        drawContext.pose().scale(scale, scale)
         var currentY = renderY / scale
         var currentX = renderX / scale
-
-        if (selected) {
-            drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
-            drawContext.text(textRenderer, "X: ${renderX.toInt()} Y: ${renderY.toInt()} Scale: ${String.format("%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
-        }
-
-        if (inEditingScreen()) {
-            if (isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
-                drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
-            }
-        }
 
         val lines = getLines()
         val lineStates = mutableListOf<LineRenderState>()
@@ -201,9 +195,5 @@ class Overlay(
         }
 
         drawContext.pose().popMatrix()
-    }
-
-    private fun drawDebugBox(drawContext: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
-        drawContext.outline(x, y, width, height, Color(255, 0, 0, 170).rgb)
     }
 }

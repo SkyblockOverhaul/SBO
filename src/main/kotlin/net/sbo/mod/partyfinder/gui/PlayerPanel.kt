@@ -26,7 +26,7 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
         div(className = "pf-panel-head") {
             playerHead(uuidOf(member.uuid), className = "pf-head")
             b(className = "pf-panel-name") { +name }
-            button(className = "pf-close", title = "Close", onClick = { onClose() }) { +"✕" }
+            button(className = "pf-close sbo-close", title = "Close", onClick = { onClose() }) { +"×" }
         }
         div(className = "pf-panel-sub") {
             +(if (member.uuid == party.id) "Leader, ${target.label}" else target.label)

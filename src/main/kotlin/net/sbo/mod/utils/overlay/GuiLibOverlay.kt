@@ -8,7 +8,6 @@ import net.sbo.guilib.fabric.GuiLibHud
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.render.RenderUtils2D
-import java.awt.Color
 import kotlin.math.ceil
 
 /**
@@ -104,11 +103,7 @@ class GuiLibOverlay(
         val height = (contentHeight() * scale).toInt()
         val left = renderX.toInt()
         val top = renderY.toInt()
-        if (isOverOverlay(mouseX, mouseY)) drawContext.fill(left, top, left + width, top + height, Color(0, 0, 0, 100).rgb)
-        if (selected) {
-            drawContext.outline(left, top, width, height, Color(255, 0, 0, 170).rgb)
-            drawContext.text(mc.font, "X: $left Y: $top Scale: ${String.format("%.1f", scale)}", left, top - mc.font.lineHeight - 1, Color(255, 255, 255, 200).rgb, true)
-        }
+        OverlayEditorStyle.draw(drawContext, left, top, width, height, scale, isOverOverlay(mouseX, mouseY), selected)
     }
 
     private fun drawTooltip(drawContext: GuiGraphicsExtractor, mouseX: Double, mouseY: Double) {

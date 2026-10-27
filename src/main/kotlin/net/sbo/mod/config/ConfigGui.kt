@@ -34,7 +34,7 @@ import kotlin.math.log10
 import kotlin.math.pow
 
 object ConfigGui {
-    private val STYLES = listOf("sbo:ui/config/config.css", SboLook.STYLE)
+    private val STYLES = listOf(SboLook.BASE_STYLE, "sbo:ui/config/config.css", SboLook.STYLE)
 
     fun open(config: Config, title: String, onBack: (() -> Unit)? = null) {
         GuiLib.open(app(config, title, onBack), STYLES, title)
@@ -56,6 +56,7 @@ private class Ui(
     val toggle: (String) -> Unit,
     /** Opens [StringsEntry] in the big editor. */
     val edit: (StringsEntry) -> Unit,
+    val lightDescriptions: Boolean,
 )
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
@@ -72,7 +73,8 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     val revision = useState(0)
     val body = useElementRef()
     useSboScale()
-    useSboTheme()
+    val theme = useSboTheme()
+    useSettingsPickerFocus()
 
     fun setCollapsed(keys: Set<String>) {
         collapsed = keys
@@ -88,7 +90,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
         collapseKeyOf(category, element)?.let { setCollapsed(collapsed - it) }
     }
 
-    val ui = useMemo(collapsed) {
+    val ui = useMemo(collapsed, theme.base) {
         Ui(
             changed = {
                 revision.update { it + 1 }
@@ -105,6 +107,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
             collapsed = collapsed,
             toggle = { key -> setCollapsed(if (key in collapsed) collapsed - key else collapsed + key) },
             edit = { editing = it },
+            lightDescriptions = theme.base == "light",
         )
     }
     val hits = useMemo(query, revision.value) { search(config, query) }
@@ -144,7 +147,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                         button(className = "cfg-search-clear", title = "Clear the search", onClick = { query = "" }) { +"✕" }
                     }
                 }
-                button(className = "cfg-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
+                button(className = "cfg-close sbo-close", title = "Close", onClick = { GuiLib.close() }) { +"×" }
             }
 
             div(className = "cfg-main") {
@@ -209,7 +212,7 @@ private fun NodeBuilder.categoryLink(
 
 private fun NodeBuilder.categoryPage(category: Category, revision: Int, target: ConfigElement?, ui: Ui) {
     h1(className = "cfg-page-title") { +category.name }
-    if (category.description.isNotEmpty()) description(category.description, "cfg-page-description")
+    if (category.description.isNotEmpty()) settingsDescription(category.description, "cfg-page-description", ui.lightDescriptions)
     elements(category, revision, target, ui)
     category.children.forEach { child ->
         h2(className = "cfg-child-category", key = "child:${child.id}") { +child.name }
@@ -248,23 +251,12 @@ private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, enabled, 
     ).joinToString(" ")
     div(className = classes, id = rowId(sub)) {
         if (sub.toggleable) {
-            div(className = "cfg-sub-head") {
-                h2(className = "cfg-sub-title", onClick = if (enabled) { _ -> ui.toggle(key) } else null) {
-                    span(className = "cfg-chevron")
-                    +sub.title
-                }
-                // A small pill, a switch here looked like one more setting
-                button(
-                    className = "cfg-sub-toggle",
-                    title = if (enabled) "Turn off everything in ${sub.title}" else "Turn ${sub.title} back on",
-                    onClick = {
-                        sub.setEnabled(!enabled)
-                        ui.changed()
-                    },
-                ) { +(if (enabled) "ON" else "OFF") }
-            }
+            settingsSectionHeader(sub.title, enabled, onCollapse = { ui.toggle(key) }, onEnabled = {
+                sub.setEnabled(it)
+                ui.changed()
+            })
         }
-        if (sub.description.isNotEmpty()) description(sub.description, "cfg-sub-description")
+        if (sub.description.isNotEmpty()) settingsDescription(sub.description, "cfg-sub-description", ui.lightDescriptions)
     }
 }
 
@@ -300,12 +292,6 @@ private fun NodeBuilder.results(query: String, hits: List<SearchHit>, revision: 
 
 private fun placeName(path: List<Category>) = if (path.size == 1) "General" else path.drop(1).joinToString(" › ") { it.name }
 
-private fun NodeBuilder.description(text: String, className: String) {
-    div(className = className) {
-        text.lines().forEach { line -> div(className = "cfg-line") { +line.ifEmpty { " " } } }
-    }
-}
-
 private fun rowId(element: ConfigElement) = "cfg-row-${System.identityHashCode(element)}"
 
 private data class RowProps(
@@ -334,13 +320,13 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
                 }
             }
             val text = rowDescription(element)
-            if (text.isNotEmpty()) description(text, "cfg-row-description")
+            if (text.isNotEmpty()) settingsDescription(text, "cfg-row-description", ui.lightDescriptions)
             // Only while it can't be used, otherwise it's just noise
             if (locked) needs(element, ui)
         }
         div(className = "cfg-row-control") {
             when (element) {
-                is Button -> button(className = "cfg-button", onClick = {
+                is Button -> button(className = "cfg-button sbo-button", onClick = {
                     element.onClick()
                     ui.changed()
                 }) { +(element.text ?: "Open") }
@@ -489,7 +475,7 @@ private fun NodeBuilder.strings(entry: StringsEntry, ui: Ui, refresh: () -> Unit
             entry.set(it.value.split("\n").toTypedArray())
             refresh()
         })
-        button(className = "cfg-strings-expand", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) { +"⤢" }
+        button(className = "cfg-strings-expand sbo-button", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) { +"⤢" }
     }
 }
 
@@ -498,13 +484,14 @@ private data class EditorProps(val entry: StringsEntry, val close: () -> Unit)
 // Covers the whole window, Escape or Done goes back
 private val StringsEditor = component<EditorProps>("ConfigStringsEditor") { (entry, close) ->
     val refresh = useForceUpdate()
+    val light = useContext(UiContext)?.lightDescriptions == true
     useEscapeBack { close() }
     div(className = "cfg-editor") {
         div(className = "cfg-editor-header") {
             span(className = "cfg-editor-title") { +entry.name }
-            button(className = "cfg-editor-done", onClick = { close() }) { +"Done" }
+            button(className = "cfg-editor-done sbo-button", onClick = { close() }) { +"Done" }
         }
-        if (entry.description.isNotEmpty()) description(entry.description, "cfg-row-description")
+        if (entry.description.isNotEmpty()) settingsDescription(entry.description, "cfg-row-description", light)
         textarea(className = "cfg-editor-text", value = entry.value.joinToString("\n"), rows = 12, autoFocus = true, onInput = {
             entry.set(it.value.split("\n").toTypedArray())
             refresh()

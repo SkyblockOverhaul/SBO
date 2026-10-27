@@ -27,7 +27,7 @@ internal val RulesPage = component<Unit>("RulesPage") {
     val loaded = rules
     when {
         loaded == null && error != null -> message("Could not load the rules. $error") {
-            button(onClick = { attempt++ }) { +"Try again" }
+            button(className = "sbo-button", onClick = { attempt++ }) { +"Try again" }
         }
         loaded == null -> message("Loading the rules...")
         else -> scroll(className = "pf-form pf-rules guilib-autohide") {

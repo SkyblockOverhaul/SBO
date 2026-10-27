@@ -254,7 +254,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         }
         div(className = "pf-spacer")
         button(
-            className = classNames("pf-icon-button", "loading" to loading),
+            className = classNames("sbo-button pf-icon-button", "loading" to loading),
             title = "Refresh the list (F5)",
             onClick = { refreshNow() }
         ) {
@@ -274,7 +274,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             parties == null -> message("Loading parties...")
             shown.isEmpty() && all.isEmpty() -> message("There are no ${target.label} parties right now. Create one under \"Create Party\".")
             shown.isEmpty() -> message("No party matches your filters.") {
-                button(onClick = {
+                button(className = "sbo-button", onClick = {
                     search = ""
                     setFilter { canJoin = false; notFull = false; sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); reqs.clear() }
                 }) { +"Clear filters" }
@@ -336,8 +336,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             }
         }
         div(className = "pf-dialog-buttons") {
-            button(onClick = { joining = null }) { +"Cancel" }
-            button(className = "primary", disabled = role == null, onClick = {
+            button(className = "sbo-button", onClick = { joining = null }) { +"Cancel" }
+            button(className = "sbo-button primary", disabled = role == null, onClick = {
                 PartyFinderManager.sendJoinRequest(party, role)
                 joining = null
             }) { +"Send join request" }
@@ -368,8 +368,8 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             if (!self || leaderSelf || party.roles.wanted.isEmpty()) option("", "No role")
         }
         div(className = "pf-dialog-buttons") {
-            button(onClick = { changingRole = null }) { +"Cancel" }
-            button(className = "primary", disabled = newRole == member.role || (self && !leaderSelf && newRole == null), onClick = {
+            button(className = "sbo-button", onClick = { changingRole = null }) { +"Cancel" }
+            button(className = "sbo-button primary", disabled = newRole == member.role || (self && !leaderSelf && newRole == null), onClick = {
                 val picked = newRole
                 if (leaderSelf) {
                     PartyFinderManager.setOwnRole(picked)
@@ -440,9 +440,9 @@ private val ReportDialog = component<ReportProps>("ReportDialog") { props ->
             p(className = "pf-hint") { +"Please write at least ${ReportReason.MIN_OTHER_DETAILS} characters, so the moderators know what happened." }
         }
         div(className = "pf-dialog-buttons") {
-            button(onClick = { props.onClose() }) { +"Cancel" }
+            button(className = "sbo-button", onClick = { props.onClose() }) { +"Cancel" }
             val blocked = reason == null || tooShort || sending
-            button(className = "primary", disabled = blocked, onClick = { reason?.let(::send) }) {
+            button(className = "sbo-button primary", disabled = blocked, onClick = { reason?.let(::send) }) {
                 +"Send report"
             }
         }
@@ -531,10 +531,10 @@ private fun NodeBuilder.filterDialog(
             }
         }
         div(className = "pf-dialog-buttons") {
-            button(onClick = {
+            button(className = "sbo-button", onClick = {
                 setFilter { sizes.clear(); minFreeSlots = 0; options.clear(); roles.clear(); reqs.clear(); sort = PartyListFilter.SORT_DEFAULT }
             }) { +"Reset filters" }
-            button(className = "primary", onClick = { onClose() }) { +"Done" }
+            button(className = "sbo-button primary", onClick = { onClose() }) { +"Done" }
         }
     }
 }
@@ -749,7 +749,7 @@ private fun NodeBuilder.joinButton(full: Boolean, rolesTaken: Boolean, problems:
         else -> null
     }
     val button: NodeBuilder.() -> Unit = {
-        button(className = "pf-join primary", disabled = reason != null, onClick = { e ->
+        button(className = "sbo-button pf-join primary", disabled = reason != null, onClick = { e ->
             e.stopPropagation()
             onJoin()
         }) { +"Join" }

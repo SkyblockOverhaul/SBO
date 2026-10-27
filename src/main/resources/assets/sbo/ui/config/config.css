@@ -1,93 +1,3 @@
-/* Colors of the SBO Dark theme, same variables as the party finder (partyfinder.css), so both look alike. */
-body {
-    --bg: #1e1f22;
-    --panel: #2b2d31;
-    --panel-2: #313338;
-    --card: #26282c;
-    --card-hover: #2a2c31;
-    --border: #3f4147;
-    --border-hover: #5a5d66;
-    --text: #f2f3f5;
-    --text-strong: #ffffff;
-    --text-soft: #dbdee1;
-    --subtle: #b5bac1;
-    --muted: #949ba4;
-    --dim: #80848e;
-    --title: #55ffff;
-    --accent: #006efa;
-    --accent-hover: #2a88ff;
-    --accent-text: #ffffff;
-    --accent-soft: rgba(0, 110, 250, 0.3);
-    --accent-faint: rgba(0, 110, 250, 0.18);
-    --banner-bg: rgba(0, 110, 250, 0.14);
-    --banner-border: rgba(0, 110, 250, 0.5);
-    --banner-text: #bcd9ff;
-    --ok: #57c96b;
-    --ok-soft: rgba(87, 201, 107, 0.18);
-    --ok-border: rgba(87, 201, 107, 0.55);
-    --bad: #ee5c5c;
-    --bad-border: rgba(238, 92, 92, 0.6);
-    --danger: #da373c;
-    --estimated: #c9a7f0;
-    --input-bg: #1e1f22;
-    --input-border: #4e5058;
-    --input-border-hover: #6d6f78;
-    --control: #3c3f45;
-    --control-border: #55595f;
-    --control-hover: #4a4e55;
-    --control-active: #2f3236;
-    --menu: #2b2d31;
-    --popup: #111214;
-    --highlight: #3f4248;
-    --disabled: #4e5058;
-    --disabled-text: #949ba4;
-    --backdrop: rgba(0, 0, 0, 0.55);
-    --shadow: rgba(0, 0, 0, 0.6);
-    --scrollbar-thumb: #ffffff80;
-    --scrollbar-track: #00000020;
-    --toast-success: #3ba55d;
-    --toast-warning: #faa61a;
-    --toast-error: #ed4245;
-    --menu-danger: #f47b7d;
-    --tint: rgba(255, 255, 255, 0.06);
-    --tint-strong: rgba(255, 255, 255, 0.08);
-    --star: #f0b232;
-    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
-    --guilib-text: var(--text);
-    --guilib-text-strong: var(--text-strong);
-    --guilib-text-secondary: var(--text-soft);
-    --guilib-text-muted: var(--subtle);
-    --guilib-text-subtle: var(--dim);
-    --guilib-accent: var(--accent);
-    --guilib-accent-soft: var(--accent-soft);
-    --guilib-on-accent: var(--accent-text);
-    --guilib-surface: var(--menu);
-    --guilib-surface-2: var(--input-bg);
-    --guilib-surface-3: var(--popup);
-    --guilib-highlight: var(--highlight);
-    --guilib-tint: var(--tint);
-    --guilib-tint-strong: var(--tint-strong);
-    --guilib-backdrop: var(--backdrop);
-    --guilib-border: var(--input-border);
-    --guilib-border-hover: var(--input-border-hover);
-    --guilib-border-strong: var(--dim);
-    --guilib-border-subtle: var(--border);
-    --guilib-focus: var(--text-strong);
-    --guilib-button: var(--control);
-    --guilib-button-hover: var(--control-hover);
-    --guilib-button-active: var(--control-active);
-    --guilib-button-border: var(--control-border);
-    --guilib-track: var(--disabled);
-    --guilib-track-border: var(--input-border-hover);
-    --guilib-success: var(--toast-success);
-    --guilib-warning: var(--toast-warning);
-    --guilib-danger: var(--toast-error);
-    --guilib-danger-text: var(--menu-danger);
-    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
-    --guilib-scrollbar-track: var(--scrollbar-track);
-    color: var(--text);
-}
-
 body {
     display: flex;
     align-items: center;
@@ -102,23 +12,21 @@ body {
     height: min(94vh, 420px);
     background-color: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--sbo-window-radius);
     overflow: hidden;
-    animation: cfg-fade 150ms ease-out;
 }
-@keyframes cfg-fade { from { opacity: 0; transform: translateY(6px); } }
 
 .cfg-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 3px 4px 3px 6px;
-    background-color: var(--panel);
-    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: var(--sbo-space-md);
+    padding: var(--sbo-space-sm) var(--sbo-space-md);
 }
 .cfg-title {
+    font-size: 10px;
     font-weight: bold;
-    color: var(--title);
+    color: var(--text-strong);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -126,7 +34,7 @@ body {
     flex-shrink: 1;
 }
 .cfg-search { display: flex; align-items: center; flex-grow: 1; min-width: 80px; max-width: 260px; margin-left: auto; position: relative; }
-.cfg-search-input { width: 100%; padding-right: 16px; }
+.cfg-search-input { width: 100%; padding-right: 22px; }
 .cfg-search-clear {
     position: absolute;
     top: 0;
@@ -135,16 +43,20 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 3px;
+    width: 18px;
+    padding: 0;
     background-color: transparent;
-    border-color: transparent;
+    border: 0;
     color: var(--muted);
 }
 .cfg-search-clear:hover { color: var(--text-strong); background-color: transparent; }
-.cfg-back { padding: 0 5px; font-size: 12px; background-color: transparent; border-color: transparent; color: var(--subtle); }
+.cfg-back { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 18px; height: 18px; padding: 0; font-size: 12px; background-color: transparent; border: 0; color: var(--subtle); }
 .cfg-back:hover { color: var(--text-strong); background-color: var(--tint); }
-.cfg-close { padding: 1px 5px; background-color: transparent; border-color: transparent; }
-.cfg-close:hover { background-color: var(--danger); }
+.cfg-close { flex-shrink: 0; }
+.cfg-back:focus-visible, .cfg-search-clear:focus-visible, .cfg-category:focus-visible,
+.cfg-sub-toggle:focus-visible, .cfg-strings-add:focus-visible, .cfg-strings-remove:focus-visible {
+    outline: 1px solid var(--text-strong); outline-offset: -2px;
+}
 
 .cfg-main { display: flex; flex-grow: 1; min-height: 0; }
 
@@ -168,11 +80,11 @@ body {
     color: var(--subtle);
     background-color: transparent;
     border-color: transparent;
-    border-radius: 3px;
+    border-radius: var(--sbo-control-radius);
     transition: background-color 100ms, color 100ms;
 }
 .cfg-category:hover { color: var(--text-strong); background-color: var(--tint); }
-.cfg-category.active { color: var(--text-strong); background-color: var(--accent-faint); border-color: var(--accent-soft); }
+.cfg-category.active { color: var(--text-strong); background-color: var(--control); font-weight: bold; }
 .cfg-category.no-hits { color: var(--dim); }
 .cfg-category-name { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cfg-count {
@@ -180,38 +92,37 @@ body {
     font-size: 7px;
     color: var(--accent-text);
     background-color: var(--accent);
-    border-radius: 6px;
+    border-radius: var(--sbo-control-radius);
 }
 
-.cfg-body { flex-grow: 1; min-width: 0; min-height: 0; padding: 4px 10px 10px 10px; }
-.cfg-page-title { margin: 4px 0 2px 0; font-size: 12px; color: var(--text-strong); }
-.cfg-page-description { margin-bottom: 4px; color: var(--muted); }
+.cfg-body { flex-grow: 1; min-width: 0; min-height: 0; padding: var(--sbo-space-xs) var(--sbo-space-md) var(--sbo-space-md); }
+.cfg-page-title { margin: 4px 0 2px 0; padding-left: 5px; font-size: 12px; color: var(--text-strong); }
+.cfg-page-description { margin-bottom: 4px; padding: 0 5px; color: var(--muted); }
 .cfg-child-category { margin: 12px 0 2px 0; font-size: 10px; color: var(--text-strong); }
 
-.cfg-sub { margin: 10px 0 2px 0; padding: 0 4px 2px 4px; border-bottom: 1px solid var(--border); }
-.cfg-sub-title { margin: 0; font-size: 8px; color: var(--title); }
+.cfg-sub { margin: 8px 0 2px; padding: 0 5px 2px; border-bottom: 1px solid var(--border); }
+.cfg-sub-title { margin: 0; font-size: 8px; color: var(--text-strong); }
 .cfg-sub-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
 .cfg-sub-head { display: flex; align-items: center; gap: 6px; }
-.cfg-sub-head .cfg-sub-title { flex: 1; display: flex; align-items: center; }
+.cfg-sub-head .cfg-sub-title { flex: 1; min-width: 0; min-height: 18px; display: flex; align-items: center; }
 .cfg-sub.collapsible .cfg-sub-title { cursor: pointer; }
 .cfg-sub.collapsible .cfg-sub-title:hover { color: var(--text-strong); }
 .cfg-sub.off .cfg-sub-title, .cfg-sub.off .cfg-sub-description { color: var(--muted); }
 
-/* Faint while on, only there when you look for it; always visible while off so it can be found again */
+/* Keep the group switch readable without competing with the setting controls. */
 .cfg-sub-toggle {
-    padding: 0 3px;
-    min-height: 0;
-    font-size: 6px;
-    color: var(--muted);
+    flex-shrink: 0;
+    padding: 1px 5px;
+    min-height: 18px;
+    font-size: 7px;
+    color: var(--subtle);
     background: transparent;
     border: 1px solid var(--border);
-    border-radius: 3px;
-    opacity: 0.35;
-    transition: opacity 120ms ease, color 120ms ease, border-color 120ms ease;
+    border-radius: var(--sbo-control-radius);
+    transition: color 120ms ease, border-color 120ms ease;
 }
-.cfg-sub-head:hover .cfg-sub-toggle { opacity: 1; }
 .cfg-sub-toggle:hover { color: var(--text-strong); border-color: var(--muted); }
-.cfg-sub.off .cfg-sub-toggle { opacity: 1; color: var(--title); border-color: var(--title); }
+.cfg-sub.off .cfg-sub-toggle { color: var(--text-strong); background-color: var(--control); border-color: var(--border-hover); }
 /* Drawn as a rotated corner, the font's arrow glyphs are too pixelated */
 .cfg-chevron {
     width: 3px;
@@ -226,11 +137,12 @@ body {
 .cfg-sub.collapsible .cfg-sub-title:hover .cfg-chevron { border-color: var(--text-strong); }
 
 .cfg-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 4px;
-    border-radius: 3px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 160px;
+    align-items: start;
+    gap: var(--sbo-space-md);
+    padding: var(--sbo-space-xs);
+    border-radius: var(--sbo-control-radius);
     border: 1px solid transparent;
 }
 .cfg-row:hover { background-color: var(--card); }
@@ -241,8 +153,22 @@ body {
     100% { background-color: transparent; border-color: transparent; }
 }
 .cfg-row-text { flex-grow: 1; min-width: 0; }
-.cfg-row-name { color: var(--text-strong); }
-.cfg-row-description { margin-top: 1px; color: var(--muted); font-size: 7px; }
+.cfg-row-name { padding-top: 4px; color: var(--text-strong); }
+.cfg-row-description { margin-top: 2px; color: var(--muted); font-size: 7px; line-height: 1.4; }
+/* Source descriptions use Minecraft color codes. Their bright variants need
+   darker equivalents on Light surfaces; retain the original color meanings. */
+.sbo-theme-light .cfg-format-0, .sbo-theme-light .cfg-format-f { color: var(--text-strong); }
+.sbo-theme-light .cfg-format-1 { color: #0000aa; }
+.sbo-theme-light .cfg-format-2, .sbo-theme-light .cfg-format-a { color: #176b32; }
+.sbo-theme-light .cfg-format-3 { color: #00666b; }
+.sbo-theme-light .cfg-format-4 { color: #aa0000; }
+.sbo-theme-light .cfg-format-5, .sbo-theme-light .cfg-format-d { color: #8a008a; }
+.sbo-theme-light .cfg-format-6, .sbo-theme-light .cfg-format-e { color: #795700; }
+.sbo-theme-light .cfg-format-7 { color: var(--muted); }
+.sbo-theme-light .cfg-format-8 { color: #555555; }
+.sbo-theme-light .cfg-format-9 { color: #234fc4; }
+.sbo-theme-light .cfg-format-b { color: var(--banner-text); }
+.sbo-theme-light .cfg-format-c { color: var(--bad); }
 .cfg-row-place { font-size: 7px; color: var(--accent-hover); cursor: pointer; }
 .cfg-row-needs { margin-top: 1px; font-size: 7px; color: var(--muted); }
 .cfg-needs-link { cursor: pointer; }
@@ -253,21 +179,25 @@ body {
 .cfg-row.locked .cfg-row-name, .cfg-row.locked .cfg-row-description { color: var(--muted); }
 .cfg-row.locked .cfg-row-control { opacity: 0.5; }
 .cfg-row-place:hover { text-decoration: underline; color: var(--banner-text); }
-.cfg-row-control { display: flex; justify-content: flex-end; flex-shrink: 0; max-width: 55%; }
+.cfg-row-control { display: flex; align-items: center; justify-content: flex-end; width: 100%; min-width: 0; min-height: 18px; }
+/* A minimum-height parent doesn't center GuiLib's intrinsic 11px switch. Keep
+   the track compact inside an 18px target, aligned with the label's first line. */
+.cfg-row-control .guilib-switch { height: 18px; }
 
-.cfg-select { min-width: 90px; max-width: 160px; }
+.cfg-select { width: 160px; min-width: 0; max-width: 100%; }
 .cfg-select .guilib-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .cfg-slider { width: 120px; }
 .cfg-row .guilib-slider-field { display: flex; width: 150px; }
 .cfg-row .cfg-slider { flex-grow: 1; width: auto; min-width: 0; }
 .guilib-slider-value { min-width: 22px; text-align: right; }
-.cfg-number { width: 90px; }
-.cfg-text { width: 160px; }
-.cfg-button { padding: 1px 8px; }
+.cfg-number { width: 90px; max-width: 100%; }
+.cfg-text { width: 160px; min-width: 0; max-width: 100%; }
+.cfg-button { padding: 3px 6px; max-width: 100%; white-space: normal; }
+.guilib-color-picker { border-radius: var(--sbo-control-radius); }
 
-.cfg-strings { display: flex; align-items: flex-start; gap: 2px; }
-.cfg-textarea { width: 160px; }
-.cfg-strings-expand { padding: 0 4px; color: var(--subtle); background-color: transparent; border-color: transparent; }
+.cfg-strings { display: flex; align-items: center; min-width: 0; width: 160px; max-width: 100%; gap: 4px; }
+.cfg-textarea { flex-grow: 1; width: 160px; min-width: 0; max-width: 100%; }
+.cfg-strings-expand { flex-shrink: 0; width: 18px; height: 18px; padding: 0; color: var(--subtle); background-color: transparent; border-color: transparent; }
 .cfg-strings-expand:hover { color: var(--text-strong); background-color: var(--tint); }
 
 /* The big editor of a multi-line setting, over the whole window */
@@ -284,13 +214,13 @@ body {
     background-color: var(--bg);
 }
 .cfg-editor-header { display: flex; align-items: center; gap: 8px; }
-.cfg-editor-title { flex-grow: 1; min-width: 0; font-weight: bold; color: var(--title); }
+.cfg-editor-title { flex-grow: 1; min-width: 0; font-weight: bold; color: var(--text-strong); }
 .cfg-editor-done { padding: 1px 8px; }
 .cfg-editor-text { flex-grow: 1; min-height: 0; }
 
-.cfg-results-info { margin: 4px 0; color: var(--muted); font-size: 7px; }
+.cfg-results-info { margin: 4px 0; padding-left: 5px; color: var(--muted); font-size: 7px; }
 .cfg-result-group { margin-bottom: 6px; }
-.cfg-result-category { margin: 6px 0 2px 0; padding: 0 4px 2px 4px; font-size: 8px; color: var(--title); border-bottom: 1px solid var(--border); }
+.cfg-result-category { margin: 6px 0 2px 0; padding: 0 5px 4px; font-size: 8px; color: var(--text-strong); border-bottom: 1px solid var(--border); }
 .cfg-empty { margin: 30px 0; text-align: center; color: var(--muted); }
 
 .guilib-select-menu {
@@ -305,7 +235,76 @@ body {
 }
 
 @media (max-width: 460px) {
-    .cfg-sidebar { width: 84px; }
-    .cfg-row { flex-wrap: wrap; gap: 4px; }
-    .cfg-row-control { max-width: none; }
+    .cfg-header { flex-wrap: wrap; gap: 4px 8px; }
+    .cfg-back { order: 0; }
+    .cfg-title { order: 1; flex: 1; }
+    .cfg-close { order: 2; }
+    .cfg-search { order: 3; flex-basis: 100%; min-width: 0; max-width: none; margin-left: 0; }
+    .cfg-sidebar { width: 88px; }
+    .cfg-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    .cfg-row-control { justify-self: end; width: min(100%, 160px); }
+    .cfg-category-name { white-space: normal; overflow-wrap: anywhere; text-overflow: clip; }
 }
+
+/* User-approved General v5 baseline, adapted to Settings forms. */
+.cfg-search-input {
+    background-color: var(--panel);
+    border-color: transparent;
+}
+.cfg-search-input:hover, .cfg-search-input:focus { border-color: transparent; }
+.cfg-search-input:focus-visible {
+    outline: 1px solid var(--subtle);
+    outline-offset: -1px;
+}
+.cfg-sidebar {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+}
+.cfg-category { border-radius: 0; }
+.cfg-category.active {
+    background-color: transparent;
+    border-left: 2px solid var(--muted);
+    padding-left: 4px;
+}
+.cfg-sub { margin: 10px 0 0; padding: 0 5px; border-bottom: 0; }
+.cfg-page-title + .cfg-sub { margin-top: 12px; }
+.cfg-sub-head .cfg-sub-title { height: 18px; }
+.cfg-sub-head { border-bottom: 1px solid var(--border); }
+.cfg-row { border: 0; border-radius: 0; padding: 5px; align-items: center; }
+.cfg-row-name { padding-top: 0; }
+.cfg-sub + .cfg-row { padding-top: 4px; }
+.cfg-row:hover { background-color: transparent; }
+.cfg-sub-title:focus-visible {
+    outline: 1px solid var(--muted);
+    outline-offset: 1px;
+}
+.cfg-section-switch {
+    flex-shrink: 0;
+    width: 24px;
+    height: 18px;
+    justify-content: flex-end;
+}
+.cfg-section-switch .guilib-switch-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+.cfg-section-switch:focus-visible { outline: 1px solid var(--text-strong); outline-offset: 2px; }
+.cfg-select { background-color: var(--panel); border-color: transparent; }
+.cfg-select:hover, .cfg-select:focus, .cfg-select[open] { border-color: transparent; }
+.cfg-select:focus-visible { outline: 1px solid var(--subtle); outline-offset: -1px; }
+@media (max-width: 460px) {
+    .cfg-row { grid-template-columns: minmax(0, 1fr) 76px; gap: 8px; }
+}
+
+.cfg-row .guilib-slider-field { max-width: 100%; }
+
+/* Preserve upstream's multi-line editor with the approved filled-input treatment. */
+.cfg-textarea, .cfg-editor-text { background-color: var(--panel); border-color: transparent; }
+.cfg-textarea:hover, .cfg-textarea:focus, .cfg-editor-text:hover, .cfg-editor-text:focus { border-color: transparent; }
+.cfg-textarea:focus-visible, .cfg-editor-text:focus-visible { outline: 1px solid var(--subtle); outline-offset: -1px; }
+.cfg-editor-done { min-height: 18px; }

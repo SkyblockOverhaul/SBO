@@ -1,0 +1,179 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bd-window {
+    display: flex;
+    flex-direction: column;
+    /* Natural size, no scrolling: BadgeGui scales the whole window down when the screen is smaller */
+    width: 540px;
+    flex-shrink: 0;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--sbo-window-radius);
+    overflow: hidden;
+}
+
+.bd-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sbo-space-sm);
+    flex-shrink: 0;
+    padding: var(--sbo-space-md) var(--sbo-space-lg) var(--sbo-space-xs);
+}
+.bd-header-logo { width: 9px; height: 9px; }
+.bd-title { font-size: 10px; font-weight: bold; color: var(--text-strong); white-space: nowrap; }
+.bd-spacer { flex-grow: 1; }
+
+.bd-body { padding: var(--sbo-space-sm) var(--sbo-space-lg) var(--sbo-space-lg); }
+.bd-center { display: flex; justify-content: center; padding: 16px 0; color: var(--subtle); }
+.bd-center-text { text-align: center; }
+.bd-hint { margin: 1px 0 0 0; color: var(--muted); font-size: 7px; }
+.bd-error { margin-bottom: 4px; color: var(--bad); }
+
+.bd-rank-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.bd-rank-row .bd-hint { margin: 0; }
+.bd-rank {
+    padding: 1px 5px;
+    border-radius: var(--sbo-control-radius);
+    font-size: 7px;
+    font-weight: bold;
+    color: #1e1f22;
+    background-color: #ffaa00;
+}
+.bd-rank-maintainer { background-color: #55ff55; }
+.bd-rank-dev { background-color: #ff5555; }
+.bd-rank-owner { background: linear-gradient(90deg, #0ab4c7, #ffd966); }
+
+.bd-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    margin-bottom: 2px;
+    background-color: var(--panel);
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+    transition: opacity 150ms;
+}
+.bd-hidden { opacity: 0.35; }
+.bd-tag {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 3px;
+    background-color: rgba(0, 0, 0, 0.25);
+}
+.bd-tag-logo { width: 8px; height: 8px; }
+.bd-tag-name { color: #ffffff; }
+
+.bd-setting { display: flex; align-items: center; gap: var(--sbo-space-md); padding: var(--sbo-space-xs); border-radius: var(--sbo-control-radius); }
+.bd-setting:hover { background-color: var(--card); }
+.bd-setting-text { flex-grow: 1; min-width: 0; }
+.bd-setting-title { color: var(--text-strong); }
+.bd-select { min-width: 100px; }
+
+.bd-colors-setting { flex-direction: column; align-items: stretch; gap: 3px; }
+.bd-colors { display: flex; flex-wrap: wrap; gap: 3px; }
+.bd-swatch {
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--sbo-control-radius);
+}
+.bd-swatch:hover { border-color: var(--text-soft); }
+.bd-selected { outline: 1px solid var(--text-strong); outline-offset: 1px; }
+
+.bd-actions { display: flex; gap: 4px; margin-top: 6px; padding: 0 4px; }
+.bd-primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.bd-primary:hover { background-color: var(--accent-hover); }
+
+.bd-steps {
+    padding: 5px 6px;
+    background-color: var(--panel);
+    border: 0;
+    border-radius: var(--sbo-control-radius);
+}
+.bd-steps-title { color: var(--text-strong); margin-bottom: 2px; }
+.bd-info-line { margin-top: 2px; color: var(--text-soft); }
+
+.bd-section-title { margin: 4px 4px 1px 4px; color: var(--muted); font-weight: bold; font-size: 7px; }
+.bd-section-title:first-child { margin-top: 0; }
+.bd-intro { margin: 2px 4px 4px 4px; }
+.bd-tag-level { color: #aaaaaa; }
+.bd-tag-plain { color: #ffffff; }
+.bd-colors { align-items: center; }
+.bd-arrow { color: var(--muted); }
+.bd-gradient { flex-grow: 1; min-width: 30px; height: 10px; border: 1px solid var(--border); border-radius: var(--sbo-control-radius); }
+.bd-tag-name { gap: 0; }
+
+/* One preview row over the whole width: above the head left, tab list and chat right */
+.bd-preview-row { display: flex; align-items: stretch; gap: 8px; margin-bottom: 2px; }
+.bd-preview-row .bd-preview { flex-grow: 1; min-width: 0; justify-content: center; margin-bottom: 0; padding: 12px 6px; }
+
+/* Settings below in two columns: the parts left, stat and view switches right */
+.bd-columns { display: flex; align-items: flex-start; gap: 10px; margin-top: 6px; }
+.bd-col-left { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+.bd-col-right { width: 210px; flex-shrink: 0; }
+.bd-columns .bd-section-title:first-child { margin-top: 0; }
+.bd-col-right .bd-section-title { margin-top: 8px; }
+.bd-setting > :last-child { flex-shrink: 0; }
+
+/* Tab list and chat lines next to the preview */
+.bd-lines { width: 230px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+.bd-line { display: flex; align-items: center; gap: 4px; }
+.bd-line-label { width: 22px; flex-shrink: 0; color: var(--muted); font-size: 7px; }
+.bd-line-box { display: flex; align-items: center; flex-grow: 1; min-width: 0; padding: 1px 3px; min-height: 20px; overflow-x: auto; overflow-y: hidden; white-space: nowrap; color: #ffffff; }
+.bd-line-tab { background-color: rgba(0, 0, 0, 0.55); }
+.bd-line-chat { background-color: rgba(0, 0, 0, 0.35); }
+.bd-line-logo { margin-left: 2px; }
+
+/* Matrix: a row per part, a column per place */
+.bd-matrix { display: flex; flex-direction: column; gap: 1px; margin: 2px 0 4px 0; }
+.bd-mrow { display: flex; align-items: center; padding: 2px 4px; border-radius: var(--sbo-control-radius); }
+.bd-mrow:hover { background-color: var(--card); }
+.bd-mrow-picked { background-color: var(--card); outline: 1px solid var(--border); }
+.bd-mhead { color: var(--muted); font-size: 7px; }
+.bd-mhead:hover { background-color: transparent; }
+.bd-mlabel { flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 4px; color: var(--text-strong); }
+.bd-mcell { width: 34px; flex-shrink: 0; display: flex; justify-content: center; }
+/* Flat: a 1px border and rounded corners snap apart from the fill while the window is scaled to fit */
+.bd-mswatch { width: 9px; height: 9px; flex-shrink: 0; }
+.bd-muted { color: var(--muted); }
+.bd-pick:hover { outline: 1px solid rgba(255, 255, 255, 0.4); }
+.bd-picked { outline: 1px dashed #ffffff; outline-offset: 1px; }
+.bd-color-actions { display: flex; justify-content: flex-end; }
+
+/* Fixed heights, so ticking parts, picking parts or switching tabs never changes the window's size */
+.bd-preview-row { height: 58px; }
+.bd-preview-row .bd-preview { padding: 0 6px; }
+.bd-status { height: 20px; margin: var(--sbo-space-xs) 0; text-align: center; white-space: normal; }
+.bd-tabs { margin-bottom: 3px; }
+.bd-panel { height: 142px; }
+.bd-parts { margin: 0 4px 3px 4px; }
+.bd-note { margin: 4px 4px 0 4px; }
+.bd-mhead .bd-mlabel { color: var(--muted); }
+/* Part picker with the flow line switch on its right */
+.bd-picker-row { display: flex; align-items: center; gap: 4px; margin: 0 4px 3px 4px; }
+.bd-picker-row .bd-parts { margin: 0; }
+.bd-picker-row .bd-hint { margin: 0; }
+
+/* Asks before leaving unsaved changes */
+.bd-modal { width: min(90vw, 260px); max-height: 90vh; overflow-y: auto; padding: var(--sbo-space-lg); background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--sbo-window-radius); }
+.bd-modal-title { font-weight: bold; color: var(--text-strong); margin-bottom: 3px; }
+.bd-modal-text { color: var(--subtle); margin-bottom: 8px; }
+.bd-modal-buttons { display: flex; flex-wrap: wrap; gap: var(--sbo-space-xs); justify-content: flex-end; }
+.bd-danger { background-color: var(--danger); border-color: var(--danger); color: #ffffff; }
+.bd-danger:hover { background-color: var(--menu-danger); }
+
+/* The editor keeps its natural width and scales as one unit; tab targets stay aligned. */
+.bd-tabs .guilib-tab-list { gap: var(--sbo-space-xs); }
+.bd-tabs .guilib-tab { display: flex; align-items: center; justify-content: center; min-width: 46px; min-height: 20px; padding: var(--sbo-space-xs) var(--sbo-space-md); }
+.bd-tabs .guilib-tab:hover { background-color: var(--panel); }
+.bd-tabs .guilib-tab.active { color: var(--text-strong); }
+.bd-parts .guilib-segment { display: flex; align-items: center; justify-content: center; min-height: 18px; }
+.bd-rank-row button, .bd-setting button, .bd-modal-buttons button { padding: 3px var(--sbo-space-sm); border-radius: var(--sbo-control-radius); }

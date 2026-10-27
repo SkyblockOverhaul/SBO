@@ -59,18 +59,18 @@ internal val EventsChart = component<ChartProps>("EventsChart") { (points, metri
                     else -> "${metricLabel(metric)} per event"
                 }
             }
-            segmented(value = view, onChange = {
-                view = it
-                DataManager.sboData.eventsChartView = it
-                DataManager.save(DataManager::sboData)
-            }, className = "ev-chart-views") {
-                VIEWS.forEach { (id, label) -> option(id, label) }
-            }
             if (big) {
-                button(className = "ev-chart-expand", title = "Close the big view", onClick = { expanded = false }) { +"x" }
+                button(className = "sbo-close", title = "Close the big view", onClick = { expanded = false }) { +"×" }
             } else {
-                button(className = "ev-chart-expand", title = "Show the chart big", onClick = { expanded = true }) { +"Expand" }
+                button(className = "sbo-button ev-chart-expand", title = "Show the chart big", onClick = { expanded = true }) { +"Expand" }
             }
+        }
+        segmented(value = view, onChange = {
+            view = it
+            DataManager.sboData.eventsChartView = it
+            DataManager.save(DataManager::sboData)
+        }, className = "ev-chart-views") {
+            VIEWS.forEach { (id, label) -> option(id, label) }
         }
         if (points.isEmpty()) {
             div(className = "ev-chart-empty") { +"No events yet." }
@@ -265,10 +265,10 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
         div(className = "ev-lines-bar") {
             if (big) {
                 div(className = "ev-zoom") {
-                    button(className = "ev-zoom-button", title = "Zoom out", disabled = zoom <= 1f, onClick = { zoomTo(zoom / 1.25f, null) }) { +"−" }
+                    button(className = "sbo-button ev-zoom-button", title = "Zoom out", disabled = zoom <= 1f, onClick = { zoomTo(zoom / 1.25f, null) }) { +"−" }
                     span(className = "ev-zoom-value", title = "Mouse wheel zooms, Shift + wheel scrolls") { +"${(zoom * 100).toInt()}%" }
-                    button(className = "ev-zoom-button", title = "Zoom in", disabled = zoom >= MAX_ZOOM, onClick = { zoomTo(zoom * 1.25f, null) }) { +"+" }
-                    button(className = "ev-zoom-button", title = "Reset the zoom", disabled = zoom == 1f, onClick = { zoomTo(1f, null) }) { +"Reset" }
+                    button(className = "sbo-button ev-zoom-button", title = "Zoom in", disabled = zoom >= MAX_ZOOM, onClick = { zoomTo(zoom * 1.25f, null) }) { +"+" }
+                    button(className = "sbo-button ev-zoom-button", title = "Reset the zoom", disabled = zoom == 1f, onClick = { zoomTo(1f, null) }) { +"Reset" }
                 }
             }
             div(className = "ev-lines-legend") {
@@ -350,7 +350,7 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
 private fun px(v: Float) = String.format(Locale.ROOT, "%.2fpx", v)
 
 /** 0 and about 4 round steps up to at least [max] (1, 2, 2.5 or 5 times a power of ten). */
-private fun niceTicks(max: Long): List<Long> {
+internal fun niceTicks(max: Long): List<Long> {
     if (max <= 0L) return listOf(0L, 1L)
     val raw = max / 4.0
     val power = 10.0.pow(floor(log10(raw)))
