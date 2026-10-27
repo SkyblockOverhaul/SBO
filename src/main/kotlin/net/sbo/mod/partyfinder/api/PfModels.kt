@@ -125,6 +125,8 @@ data class CategoryDef(
     val maxSize: Int = 6,
     val reqs: List<ReqDef> = emptyList(),
     val display: List<String> = emptyList(),
+    // Stats only the profile viewer shows
+    val viewer: List<String> = emptyList(),
     val options: List<PartyOption> = emptyList(),
     val roles: List<RoleDef> = emptyList(),
     /** Most players per role, e.g. 1 for one player per Safari biome; null means no limit. */
@@ -138,6 +140,7 @@ data class SubcategoryDef(
     val label: String = id,
     val reqs: List<ReqDef> = emptyList(),
     val display: List<String> = emptyList(),
+    val viewer: List<String> = emptyList(),
     val options: List<PartyOption> = emptyList(),
     /** Replaces the roles of the category when set. */
     val roles: List<RoleDef>? = null,
@@ -263,11 +266,17 @@ data class CheckScope(val subType: String, val options: Map<String, String>? = n
 
 /** Send either uuid or name. A uuid only works with a valid SBO key. */
 @Serializable
-data class OwnStatsBody(val uuid: String? = null, val name: String? = null, val refresh: Boolean? = null)
+data class OwnStatsBody(val uuid: String? = null, val name: String? = null, val refresh: Boolean? = null, val items: Boolean? = null)
 
 /** Send either uuids or names, at most 5 players. */
 @Serializable
-data class ViewerStatsBody(val uuids: List<String>? = null, val names: List<String>? = null, val refresh: Boolean? = null)
+data class ViewerStatsBody(
+    val uuids: List<String>? = null,
+    val names: List<String>? = null,
+    val refresh: Boolean? = null,
+    // Only works when requesting data for one player
+    val items: Boolean? = null
+)
 
 @Serializable
 data class ViewerStatsData(val players: List<PlayerStats> = emptyList(), val failed: List<StatsFailure> = emptyList())
@@ -284,9 +293,13 @@ data class PlayerStats(
     // seconds
     val refreshIn: Int = 0,
     val skillAverage: Double? = null,
+    val general: GeneralStats? = null,
+    val networth: Networth? = null,
+    // base64 gzipped JSON like Hypixel API
+    val items: String? = null,
     // category, subcategory ("" without), stat id; with the default party options
     val stats: Map<String, Map<String, Map<String, JsonElement>>> = emptyMap(),
-    // category, subcategory, field, value: the stats that change when a party picks another value, e.g. a slayer tier
+    // category > subcategory > option > option value > stat: stats that change with an option, e.g. the slayer tier
     val byOption: Map<String, Map<String, Map<String, Map<String, Map<String, JsonElement>>>>> = emptyMap(),
     val reported: Map<String, ReportedStat> = emptyMap(),
     val tracking: TrackingData? = null,
@@ -300,6 +313,30 @@ data class PlayerStats(
         return MemberView(uuid, name, stats = picked, reported = reported)
     }
 }
+
+/** Calculated with SkyHelper Networth. */
+@Serializable
+data class Networth(val total: Double = 0.0, val unsoulbound: Double = 0.0, val parts: Map<String, Double> = emptyMap())
+
+@Serializable
+data class LevelAndXp(val level: Int = 0, val xp: Double = 0.0)
+
+/** What the profile viewer shows. Coins are null when the API is off. */
+@Serializable
+data class GeneralStats(
+    val sbLevel: Int = 0,
+    val magicalPower: Int? = null,
+    val skillAverage: Double? = null,
+    // by skill in lowercase, null while the skills API is off
+    val skills: Map<String, LevelAndXp>? = null,
+    val catacombsLevel: Int = 0,
+    val slayers: Map<String, LevelAndXp> = emptyMap(),
+    val purse: Double? = null,
+    val bank: Double? = null,
+    val personalBank: Double? = null,
+    val bestiaryMilestone: Int = 0,
+    val hotmLevel: Int = 0
+)
 
 @Serializable
 data class TrackingData(

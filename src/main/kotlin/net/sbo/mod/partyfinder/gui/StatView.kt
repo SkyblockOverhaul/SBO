@@ -197,11 +197,20 @@ internal fun NodeBuilder.pieces(pieces: List<Piece>) {
 }
 
 /** Label of a stat with an info icon; hovering shows what the stat means and where it comes from. */
-internal fun NodeBuilder.statLabel(statId: String, own: MemberView? = null, className: String? = null) {
+internal fun NodeBuilder.statLabel(statId: String, own: MemberView? = null, className: String? = null, icons: Boolean = false) {
     val stat = PartyCategories.stat(statId)
     tooltip(content = { statInfo(statId, own) }, className = "pf-tip") {
         span(className = classNames("pf-stat-label", className)) {
-            +(stat?.label ?: statId)
+            val hypixel = if (icons) HypixelStats.ofStat(statId) else null
+            val label = stat?.label ?: statId
+            // Hypixel colors
+            if (hypixel != null) {
+                statIcon(hypixel)
+                span(className = "pf-c-${hypixel.color}") { +label }
+            } else {
+                if (icons) statItem(statId)
+                +label
+            }
             img(src = "${StatView.ICONS}/info.svg", className = "pf-icon pf-info")
         }
     }

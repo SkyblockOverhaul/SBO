@@ -132,6 +132,8 @@ object HubGui {
         Link("hm-api", "Hypixel Mod API wrapper (AzureAaron)", "https://github.com/AzureAaron/hm-api"),
         Link("RenderChest", "Glow API (AzureAaron)", "https://github.com/AzureAaron/RenderChest"),
         Link("Fabric API", "Modding API (FabricMC)", "https://github.com/FabricMC/fabric-api"),
+        Link("Stat Icons", "From the Hypixel SkyBlock Resource Pack by Hypixel Inc., via the Hypixel SkyBlock Wiki", "https://github.com/skyblock-wiki/wiki-assets"),
+        Link("NEU Repo", "Pet heads, pet lore and level tables (NotEnoughUpdates, MIT)", "https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO"),
     )
 
     private var openCommandsOnNextOpen = false

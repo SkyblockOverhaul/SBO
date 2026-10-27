@@ -211,12 +211,12 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 }
                 button(disabled = reloading, onClick = {
                     reloading = true
-                    PartyPlayer.reloadStats(onError = { message ->
+                    PartyPlayer.reloadStats(onError = { error ->
                         reloading = false
-                        toast.error(message)
-                    }) {
+                        toast.error("Could not reload your stats: ${ProblemText.error(error)}")
+                    }) { stats ->
                         reloading = false
-                        toast.success("Your stats are up to date.")
+                        PartyPlayer.reloadWait(stats)?.let { toast.info(it) } ?: toast.success("Your stats are up to date.")
                         props.onStatsReloaded()
                     }
                 }) { +(if (reloading) "Reloading..." else "Reload my stats") }
