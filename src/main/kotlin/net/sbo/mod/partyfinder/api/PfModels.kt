@@ -259,6 +259,67 @@ data class CheckBody(
 @Serializable
 data class CheckScope(val subType: String, val options: Map<String, String>? = null)
 
+// POST /pf/player/stats and /pv/players/stats: every category of a player in one answer
+
+/** Send either uuid or name. A uuid only works with a valid SBO key. */
+@Serializable
+data class OwnStatsBody(val uuid: String? = null, val name: String? = null, val refresh: Boolean? = null)
+
+/** Send either uuids or names, at most 5 players. */
+@Serializable
+data class ViewerStatsBody(val uuids: List<String>? = null, val names: List<String>? = null, val refresh: Boolean? = null)
+
+@Serializable
+data class ViewerStatsData(val players: List<PlayerStats> = emptyList(), val failed: List<StatsFailure> = emptyList())
+
+@Serializable
+data class StatsFailure(val uuid: String = "", val error: PfError = PfError())
+
+@Serializable
+data class PlayerStats(
+    val uuid: String,
+    val name: String = "",
+    val profileName: String = "",
+    val dataAt: Long = 0,
+    // seconds
+    val refreshIn: Int = 0,
+    val skillAverage: Double? = null,
+    // category, subcategory ("" without), stat id; with the default party options
+    val stats: Map<String, Map<String, Map<String, JsonElement>>> = emptyMap(),
+    // category, subcategory, field, value: the stats that change when a party picks another value, e.g. a slayer tier
+    val byOption: Map<String, Map<String, Map<String, Map<String, Map<String, JsonElement>>>>> = emptyMap(),
+    val reported: Map<String, ReportedStat> = emptyMap(),
+    val tracking: TrackingData? = null,
+    val stale: Boolean = false
+) {
+    /** The stats of one party target with its fields, like the member check returns them. */
+    fun member(partyType: String, subType: String, options: Map<String, String> = emptyMap()): MemberView? {
+        val base = stats[partyType]?.get(subType) ?: return null
+        val changes = byOption[partyType]?.get(subType).orEmpty()
+        val picked = options.entries.fold(base) { acc, (field, value) -> acc + changes[field]?.get(value).orEmpty() }
+        return MemberView(uuid, name, stats = picked, reported = reported)
+    }
+}
+
+@Serializable
+data class TrackingData(
+    val tracking: Double = 0.0,
+    val max: Double = 0.0,
+    val sources: List<TrackingSource> = emptyList(),
+    val unverifiedUpTo: Double? = null
+)
+
+@Serializable
+data class TrackingSource(
+    val id: String,
+    val label: String = id,
+    val info: String = "",
+    val value: Double = 0.0,
+    val max: Double = 0.0,
+    val level: Int? = null,
+    val maxLevel: Int? = null
+)
+
 @Serializable
 data class StatsReportBody(val bph: BphReport)
 

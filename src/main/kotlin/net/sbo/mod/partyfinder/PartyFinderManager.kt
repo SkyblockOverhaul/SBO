@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.profileviewer.ProfileViewerGui
 import net.sbo.mod.partyfinder.api.CheckBody
 import net.sbo.mod.partyfinder.api.PartyBody
 import net.sbo.mod.partyfinder.api.PartyFinderApi
@@ -498,9 +499,6 @@ object PartyFinderManager {
         }.error { error -> onError?.invoke(error) }
     }
 
-    private const val STAT_VIEWER_SOON =
-        "§6[SBO] §eA new SBO stat viewer is coming soon. It replaces /sbocheck and works for every party type, not just Diana."
-
     private fun showJoinRequest(
         playerName: String, role: String?, onInvite: (() -> Unit)? = null, onBlock: () -> Unit = { BlockedPlayers.block(playerName) }
     ) {
@@ -513,8 +511,7 @@ object PartyFinderManager {
         Chat.chat(
             Chat.textComponent("§6[SBO] §b$playerName §ewants to join your party$roleText§e.\n"),
             Chat.textComponent("§7[§aInvite§7]", "/p $playerName", invite),
-            // /sbocheck is gone, its replacement is not out yet
-            Chat.textComponent(" §7[§eCheck Stats§7]", "Coming soon", "/__sbo_run_clickable_action ${ClickActionManager.registerAction { Chat.chat(STAT_VIEWER_SOON) }}"),
+            Chat.textComponent(" §7[§eCheck Stats§7]", "Show $playerName's stats", "/__sbo_run_clickable_action ${ClickActionManager.registerAction { mc.schedule { ProfileViewerGui.open(playerName) } }}"),
             Chat.textComponent(" §7[§cBlock§7]", "Block player", "/__sbo_run_clickable_action ${ClickActionManager.registerAction(onBlock)}"),
         )
         Chat.chat(Chat.getChatBreak())
