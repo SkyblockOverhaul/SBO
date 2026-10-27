@@ -66,7 +66,7 @@ object Themes : Category("Themes") {
         }
     }
 
-    var itemsLoading by choice(ITEMS_LOADING_BLOCKS) {
+    var itemsLoading by choice(ITEMS_LOADING_SIMPLE) {
         this.name = Literal("Item Loading Animation")
         this.description = Literal("What the profile viewer shows while it loads the items of a player.")
         this.options = {
