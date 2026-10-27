@@ -104,6 +104,22 @@
 .pv-pager-close:hover .pf-icon { color: var(--text-strong); }
 .pv-item-row { display: flex; gap: 5px; }
 .pv-item-side { display: flex; flex-direction: column; width: 216px; }
+/* Where the worn items and the slots go while the items are built, just as big */
+.pv-items-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 269px; height: 120px; }
+.pv-items-loading .pv-spinner { width: 12px; height: 12px; animation: pf-spin 800ms linear infinite; }
+.pv-items-bar { flex-grow: 0; width: 120px; }
+.pv-loading-line { width: 190px; font-family: jetbrains-mono; font-size: 7px; color: var(--text-soft); white-space: nowrap; }
+.pv-loading-prompt { color: var(--accent); }
+.pv-loading-cursor { animation: pv-blink 900ms linear infinite; }
+@keyframes pv-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.pv-loading-check { width: 7px; height: 7px; color: var(--ok); animation: pv-check-in 200ms ease-out; }
+/* In the simple loader as big as the spinner */
+.pv-items-loading > .pv-loading-check { width: 12px; height: 12px; }
+@keyframes pv-check-in { from { transform: scale(0.3); opacity: 0; } }
+/* Blocks like memory, the fill is a layer of its own so it can grow smoothly */
+.pv-cells { display: grid; grid-template-columns: repeat(16, 10px); grid-auto-rows: 10px; gap: 2px; }
+.pv-cell { position: relative; border-radius: 1px; background-color: var(--card); border: 1px solid var(--border); }
+.pv-cell-fill { position: absolute; inset: 0; border-radius: 1px; background-color: var(--accent); transition: transform 350ms ease-out; }
 
 /* Like Hypixel: equipment left, armor right, the pet under them */
 .pv-worn { display: grid; grid-template-columns: 24px 24px; grid-auto-rows: 24px; align-content: start; }

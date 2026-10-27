@@ -12,7 +12,6 @@ import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.PlayerStats
 import net.sbo.mod.partyfinder.api.TrackingData
 import net.sbo.mod.utils.Player
-import java.util.WeakHashMap
 
 internal data class ViewedProfile(
     val uuid: String,
@@ -42,7 +41,7 @@ internal data class ViewedProfile(
         skillAverage = player.general?.skillAverage ?: player.skillAverage,
         general = player.general,
         byOption = player.byOption,
-        items = ProfileViewerApi.items(player.items)
+        items = ProfileViewerApi.items(player.uuid, player.items)
     )
 
     fun anyStat(statId: String): JsonElement? = stats.values.asSequence().flatMap { it.values }.firstNotNullOfOrNull { it[statId] }
@@ -70,13 +69,25 @@ internal object ViewerLayout {
 internal object ProfileViewerApi {
     const val MAX_OTHERS = 5
 
-    private val unpacked = WeakHashMap<String, PlayerItems>()
+    private const val ITEMS_KEPT = 6
 
-    fun items(packed: String?): PlayerItems? {
+    private class UnpackedItems(val packed: String, val items: PlayerItems)
+
+    // The last players by uuid, with their built stacks so going back to one shows the items right away. Only a few,
+    // the stacks of a full storage take memory.
+    private val unpacked = LinkedHashMap<String, UnpackedItems>(16, 0.75f, true)
+
+    fun items(uuid: String, packed: String?): PlayerItems? {
         packed ?: return null
-        synchronized(unpacked) { unpacked[packed]?.let { return it } }
+        // The backend sends the same text as long as the items did not change
+        synchronized(unpacked) { unpacked[uuid]?.takeIf { it.packed == packed }?.let { return it.items } }
         val items = PlayerItems.unpack(packed) ?: return null
-        synchronized(unpacked) { return unpacked.getOrPut(packed) { items } }
+        synchronized(unpacked) {
+            unpacked[uuid]?.takeIf { it.packed == packed }?.let { return it.items }
+            unpacked[uuid] = UnpackedItems(packed, items)
+            while (unpacked.size > ITEMS_KEPT) unpacked.remove(unpacked.keys.first())
+        }
+        return items
     }
 
     private fun viewed(stats: PlayerStats) = ViewedProfile(stats, PlayerStatsCache.loadedAt(stats.uuid) ?: System.currentTimeMillis())

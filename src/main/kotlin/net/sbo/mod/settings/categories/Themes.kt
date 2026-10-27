@@ -59,4 +59,26 @@ object Themes : Category("Themes") {
         this.name = Literal("Background Blur")
         this.description = Literal("Blurs the game behind all SBO windows. Turn it off to see the game clearly, the dark overlay stays.")
     }
+
+    init {
+        sub {
+            this.title = "Loading"
+        }
+    }
+
+    var itemsLoading by choice(ITEMS_LOADING_BLOCKS) {
+        this.name = Literal("Item Loading Animation")
+        this.description = Literal("What the profile viewer shows while it loads the items of a player.")
+        this.options = {
+            listOf(
+                Choice(ITEMS_LOADING_BLOCKS, "Blocks", "Blocks that fill up like memory, with the progress in percent."),
+                Choice(ITEMS_LOADING_SIMPLE, "Simple", "A spinning icon and a progress bar."),
+                Choice(ITEMS_LOADING_OFF, "Off", "No animation, the slots stay empty and the items show up while they load.")
+            )
+        }
+    }
+
+    const val ITEMS_LOADING_BLOCKS = "blocks"
+    const val ITEMS_LOADING_SIMPLE = "simple"
+    const val ITEMS_LOADING_OFF = "off"
 }

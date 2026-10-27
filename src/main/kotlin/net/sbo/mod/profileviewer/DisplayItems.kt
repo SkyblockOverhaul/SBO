@@ -34,6 +34,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.api.PartyFinderApi
 import java.util.Base64
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.GZIPInputStream
 
 /** An item as Hypixel stores it: the old 1.8 item id with name, lore and the Skyblock data. */
@@ -56,6 +57,12 @@ class DisplayItem(
     @Volatile
     @Transient
     var built: BuiltItem? = null
+        internal set
+
+    // Could not be built, its slot stays empty instead of the items loading forever
+    @Volatile
+    @Transient
+    var failed = false
         internal set
 }
 
@@ -138,8 +145,10 @@ data class PlayerItems(
  */
 object DisplayItemStacks {
     private const val LEGACY_VERSION = 99
+    private const val PROGRESS_MS = 50L
     private val MISSING_MODEL = Identifier.fromNamespaceAndPath("sbo", "no_such_model")
     private val worker = Executors.newSingleThreadExecutor { Thread(it, "SBO item builder").apply { isDaemon = true } }
+    private val calls = AtomicInteger()
 
     // Vanilla lines Hypixel hides on its items
     private val HIDDEN: TooltipDisplay by lazy {
@@ -150,17 +159,34 @@ object DisplayItemStacks {
         TooltipDisplay(false, hidden)
     }
 
-    /** Builds the stacks off the render thread, the first data fixer run takes a moment. Needs a world. */
-    fun prepare(items: List<DisplayItem>, onDone: () -> Unit) {
-        val missing = items.filter { it.built == null }
-        if (missing.isEmpty()) return onDone()
-        worker.execute {
-            missing.forEach { item ->
-                item.built = runCatching { build(item) }
-                    .onFailure { SBOKotlin.logger.warn("[SBO] Could not build item ${item.name}: ${it.message}") }
-                    .getOrNull()
+    /**
+     * Builds the stacks off the render thread, the first data fixer run takes a moment. Needs a world. The groups are
+     * built in order and a new call drops what earlier calls still had waiting, so the player shown right now never
+     * waits behind the storage of players opened before. onBuilt runs every now and then while building, for the
+     * progress, and when a group is done.
+     */
+    fun prepare(vararg groups: List<DisplayItem>, onBuilt: () -> Unit) {
+        val call = calls.incrementAndGet()
+        groups.forEach { group ->
+            val missing = group.filter { it.built == null }
+            if (missing.isEmpty()) return@forEach onBuilt()
+            worker.execute {
+                var shownAt = System.currentTimeMillis()
+                for (item in missing) {
+                    if (calls.get() != call) return@execute
+                    if (item.built != null) continue
+                    item.built = runCatching { build(item) }
+                        .onFailure { SBOKotlin.logger.warn("[SBO] Could not build item ${item.name}: ${it.message}") }
+                        .getOrNull()
+                    item.failed = item.built == null
+                    val now = System.currentTimeMillis()
+                    if (now - shownAt >= PROGRESS_MS) {
+                        shownAt = now
+                        mc.execute(onBuilt)
+                    }
+                }
+                mc.execute(onBuilt)
             }
-            mc.execute(onDone)
         }
     }
 

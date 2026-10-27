@@ -53,6 +53,7 @@ import net.sbo.mod.partyfinder.gui.statLabel
 import net.sbo.mod.partyfinder.gui.supporterLogo
 import net.sbo.mod.partyfinder.gui.teamTag
 import net.sbo.mod.partyfinder.gui.uuidOf
+import net.sbo.mod.settings.categories.Themes
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.Player
@@ -61,6 +62,7 @@ import net.sbo.mod.utils.data.configs.partyfinder.FavoritePlayer
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import java.util.Locale
+import kotlin.random.Random
 
 object ProfileViewerGui {
     private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/profileviewer/profileviewer.css", SboLook.STYLE)
@@ -81,6 +83,12 @@ object ProfileViewerGui {
     // As many cells as fit next to the item tabs, arrows and the close button included
     private const val PAGER_CELLS = 8
     private const val PREVIEW_DELAY_MS = 100L
+    private val STORED_TABS = setOf("storage", "pets", "accessories")
+    private const val LOADING_CELLS = 16 * 4
+    // The last block grows for 350 ms, then the check shows 100 ms before the items
+    private const val LOADING_DONE_MS = 450L
+    // When each block fills, with a fixed seed so the scattered order is the same every time
+    private val LOADING_ORDER = (0 until LOADING_CELLS).shuffled(Random(7))
     private val ITEM_TABS = listOf(
         "inventory" to "Inventory", "wardrobe" to "Wardrobe", "equipment" to "Equipment", "loadouts" to "Loadouts",
         "storage" to "Storage", "pets" to "Pets", "accessories" to "Accessory Bag"
@@ -215,8 +223,23 @@ object ProfileViewerGui {
         val shown = profile?.takeIf { it.name.equals(name, ignoreCase = true) }
         useEffect(shown?.items) {
             val items = shown?.items ?: return@useEffect
-            DisplayItemStacks.prepare(items.all()) { stacksBuilt++ }
-            DisplayItemStacks.prepare(items.stored()) { stacksBuilt++ }
+            DisplayItemStacks.prepare(items.all(), items.stored()) { stacksBuilt++ }
+        }
+        // After loading a check shows for a moment so the items do not pop in, items built already show right away
+        val loadKey = shown?.items?.let { it to (itemsShown in STORED_TABS) }
+        val needed = loadKey?.let { (items, stored) -> if (stored) items.all() + items.stored() else items.all() }.orEmpty()
+        val built = needed.count { it.built != null || it.failed }
+        var loadingFor by useState<Any?>(null)
+        var loadedFor by useState<Any?>(null)
+        useEffect(loadKey, built == needed.size) {
+            if (loadKey == null) return@useEffect
+            if (built < needed.size) loadingFor = loadKey
+            else if (loadingFor == loadKey) setTimeout(LOADING_DONE_MS) { loadedFor = loadKey }
+        }
+        val itemsLoad = when {
+            loadKey == null || Themes.itemsLoading == Themes.ITEMS_LOADING_OFF -> null
+            built < needed.size || (loadingFor == loadKey && loadedFor != loadKey) -> ItemsLoad(built, needed.size)
+            else -> null
         }
         useEffect(name) {
             setPage = 0
@@ -331,7 +354,7 @@ object ProfileViewerGui {
                 if (shown != null) {
                     div(className = "pv-top") {
                         generalBox(shown, data)
-                        itemsBox(shown.items, itemsShown, setPage, storageOpen, onShow = {
+                        itemsBox(shown.items, itemsShown, setPage, storageOpen, itemsLoad, onShow = {
                             itemsShown = it
                             setPage = 0
                             storageOpen = null
@@ -527,11 +550,17 @@ object ProfileViewerGui {
         }
     }
 
+    private class ItemsLoad(val built: Int, val total: Int) {
+        val done: Boolean get() = built >= total
+        val percent: Int get() = if (total == 0) 100 else built * 100 / total
+    }
+
     private fun NodeBuilder.itemsBox(
         items: PlayerItems?,
         shown: String,
         setPage: Int,
         open: String?,
+        load: ItemsLoad?,
         onShow: (String) -> Unit,
         onOpen: (String?) -> Unit,
         onPage: (Int) -> Unit
@@ -565,6 +594,7 @@ object ProfileViewerGui {
                 }
             }
             if (mc.level == null) return@div p(className = "pf-hint") { +"Items show up once you are in a world." }
+            if (load != null) return@div if (Themes.itemsLoading == Themes.ITEMS_LOADING_SIMPLE) simpleItemsLoading(load) else itemsLoading(load)
             div(className = "pv-item-row") {
                 div(className = "pv-worn") {
                     listOf(0, 1, 2, 3).forEach { row ->
@@ -585,6 +615,41 @@ object ProfileViewerGui {
                     }
                 }
             }
+        }
+    }
+
+    /** In place of the slots while the items are built. Blocks fill up one by one in a scattered order like memory. */
+    private fun NodeBuilder.itemsLoading(load: ItemsLoad) {
+        val filled = load.built.toFloat() * LOADING_CELLS / load.total
+        div(className = "pv-items-loading") {
+            div(className = "pv-loading-line") {
+                if (load.done) {
+                    img(src = "${StatView.ICONS}/check.svg", className = "pf-icon pv-loading-check")
+                    +" items loaded"
+                } else {
+                    span(className = "pv-loading-prompt") { +">" }
+                    +" building items"
+                    span(className = "pv-loading-cursor") { +"_" }
+                }
+            }
+            div(className = "pv-cells") {
+                LOADING_ORDER.forEachIndexed { cell, rank ->
+                    val level = (filled - rank).coerceIn(0f, 1f)
+                    div(className = "pv-cell", key = cell) {
+                        div(className = "pv-cell-fill", style = "transform: scale(${String.format(Locale.ROOT, "%.3f", level)})")
+                    }
+                }
+            }
+            div(className = "pv-loading-line pf-muted") { +"${load.built} / ${load.total}  ${load.percent}%" }
+        }
+    }
+
+    private fun NodeBuilder.simpleItemsLoading(load: ItemsLoad) {
+        div(className = "pv-items-loading") {
+            if (load.done) img(src = "${StatView.ICONS}/check.svg", className = "pf-icon pv-loading-check", key = "check")
+            else img(src = "${StatView.ICONS}/refresh.svg", className = "pf-icon pv-spinner", key = "spinner")
+            span(className = "pf-muted") { +(if (load.done) "Items loaded" else "Loading items ${load.percent}%") }
+            bar(load.built.toDouble(), load.total.toDouble(), "pv-bar big pv-items-bar")
         }
     }
 

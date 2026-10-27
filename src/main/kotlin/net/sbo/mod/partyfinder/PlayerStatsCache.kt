@@ -127,6 +127,8 @@ object PlayerStatsCache {
 
     private fun store(stats: PlayerStats, withItems: Boolean) {
         val entry = Entry(stats, System.currentTimeMillis(), withItems)
+        // Expired entries are never read again, they would only keep the items of every player seen
+        players.values.removeIf { entry.at - it.at >= MAX_AGE_MS }
         listOf(key(stats.uuid), key(stats.name)).forEach {
             players[it] = entry
             failures.remove(it)
