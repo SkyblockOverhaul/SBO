@@ -44,6 +44,7 @@ import kotlin.reflect.full.memberProperties
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
 import net.sbo.mod.utils.data.configs.diana.DianaMobsData
 import net.sbo.mod.utils.data.configs.npcSellValueMap
+import kotlin.math.abs
 import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
 object Helper {
@@ -345,9 +346,9 @@ object Helper {
             NUMBER_FORMAT.format(num)
         } else {
             when {
-                num >= 1_000_000_000 -> BILLION_FORMAT.format(num / 1_000_000_000)
-                num >= 1_000_000 -> MILLION_FORMAT.format(num / 1_000_000)
-                num >= 1_000 -> THOUSAND_FORMAT.format(num / 1_000)
+                abs(num) >= 1_000_000_000 -> BILLION_FORMAT.format(num / 1_000_000_000)
+                abs(num) >= 1_000_000 -> MILLION_FORMAT.format(num / 1_000_000)
+                abs(num) >= 1_000 -> THOUSAND_FORMAT.format(num / 1_000)
                 else -> INTEGER_FORMAT.format(num)
             }
         }

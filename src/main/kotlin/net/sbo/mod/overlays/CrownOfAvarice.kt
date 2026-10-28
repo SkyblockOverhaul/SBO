@@ -1,10 +1,12 @@
 package net.sbo.mod.overlays
 
+import net.minecraft.ChatFormatting.GOLD
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
+import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
@@ -26,10 +28,15 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.isCraftingScreenOpen
+import net.sbo.mod.utils.render.RenderUtils2D
 
 object CrownOfAvarice {
     private const val MAX_COINS = 1_000_000_000L
     private const val RATE_REFRESH_MS = 5_000L
+
+    private val PROFIT_TOOLTIP =
+        "${GOLD}Profit is calculated by taking the difference between the price of a clean CoA and a maxed CoA\n" +
+            "${GOLD}multiplied by the number of coins earned and divided by 1b (the amount of coins needed to max a CoA)."
 
     // Both looks share one name, so they share the saved position; only the chosen one is shown
     private const val OVERLAY_NAME = "Diana Crown Of Avarice"
@@ -97,6 +104,9 @@ object CrownOfAvarice {
             Diana.coaTracker = Diana.coaTracker.next()
             updateLines()
         }
+
+        overlay.tooltip { id -> if (id == "profit") PROFIT_TOOLTIP else null }
+
         updateLines()
         updateCoaPrice()
 
@@ -354,11 +364,18 @@ object CrownOfAvarice {
     }
 
     private fun legacyLines(view: View): List<OverlayTextLine> {
+        val profitLine = OverlayTextLine("§7 - §aProfit: §b${view.profit} §7[§b${view.profitPerHour}§7]").onHover { drawContext, textRenderer ->
+            val scaleFactor = mc.window.guiScale
+            val mouseX = mc.mouseHandler.xpos() / scaleFactor
+            val mouseY = mc.mouseHandler.ypos() / scaleFactor
+            RenderUtils2D.drawHoveringString(drawContext, PROFIT_TOOLTIP, mouseX, mouseY, textRenderer)
+        }
+
         val lines = mutableListOf(
             OverlayTextLine("§e§lCrown Of Avarice §7(§e${view.mode}§7)"),
             OverlayTextLine("§7 - §aCoins: §b${view.coins} §7/ 1B §8(${view.percent})"),
             OverlayTextLine("§7 - §aEarned: §b${view.earned} §7[§b${view.earnedPerHour}§7]"),
-            OverlayTextLine("§7 - §aProfit: §b${view.profit} §7[§b${view.profitPerHour}§7]"),
+            profitLine,
             OverlayTextLine("§7 - §aMaxed In: §b${view.maxedIn}")
         )
         if (view.alpha) lines += OverlayTextLine("§7 - §cNot tracked on Alpha (Separate Alpha Data off)")
@@ -387,7 +404,7 @@ object CrownOfAvarice {
             }
             row("Coins", view.coins, "/ 1B")
             row("Earned", view.earned, view.earnedPerHour)
-            row("Profit", view.profit, view.profitPerHour, "profit")
+            row("Profit", view.profit, view.profitPerHour, "profit", id = "profit")
             row("Maxed in", view.maxedIn)
             if (view.alpha) div(className = "coa-warn") { +"Not tracked on Alpha (Separate Alpha Data off)" }
             else if (view.notEquipped) div(className = "coa-warn") { +"Primary CoA not equipped" }
@@ -396,8 +413,8 @@ object CrownOfAvarice {
         }
     }
 
-    private fun NodeBuilder.row(label: String, value: String, extra: String? = null, valueClass: String? = null) {
-        div(className = "coa-row") {
+    private fun NodeBuilder.row(label: String, value: String, extra: String? = null, valueClass: String? = null, id: String? = null) {
+        div(className = "coa-row", id = id) {
             span(className = "coa-label") { +label }
             span(className = if (valueClass != null) "coa-value $valueClass" else "coa-value") { +value }
             if (extra != null) span(className = "coa-extra") { +extra }

@@ -1,8 +1,10 @@
 package net.sbo.mod.overlays
 
 import net.minecraft.ChatFormatting.*
+import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.DianaTracker as DianaItemTracker
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
@@ -18,6 +20,11 @@ import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
+import net.sbo.mod.utils.events.impl.game.ItemDropEvent
+import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
+import net.sbo.mod.utils.events.impl.game.StartAttackingEvent
+import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
 
 object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverlay.LOOT, { Diana.lootTracker != Diana.Tracker.OFF }) {
@@ -98,13 +105,15 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         LootItemData("HILT_OF_REVELATIONS", "Hilt of Revelations", BLUE),
         LootItemData("ANCIENT_CLAW", "Ancient Claw", BLUE),
         LootItemData("ENCHANTED_ANCIENT_CLAW", "Enchanted Ancient Claw", BLUE),
-        LootItemData("ENCHANTED_GOLD", "Enchanted Gold", BLUE)
+        LootItemData("ENCHANTED_GOLD", "Enchanted Gold", BLUE),
+        LootItemData("FAKE_SHURIKEN", "Shuriken", RED, negativeValue = true),
     )
 
     fun init() {
         initOverlays()
         updateTimerText()
         updateLines()
+        shurikenTracker()
 
         Register.onTick(1) { updateTimerText() }
         Register.onTick(20) {
@@ -127,12 +136,71 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         }
     }
 
+    // A shuriken counts once it leaves the inventory shortly after a click with one in hand; drops and
+    // moving stacks in a screen only resync the count
+    private const val SHURIKEN_USE_WINDOW_MS = 1500L
+    private var shurikenClickAt = 0L
+    private var shurikenDropAt = 0L
+    // -1 while no click is being watched
+    private var shurikenCount = -1
+
+    private fun shurikenTracker() {
+        Register.onTick(1) {
+            if (shurikenCount < 0) return@onTick
+            val now = System.currentTimeMillis()
+            if (now - shurikenClickAt > SHURIKEN_USE_WINDOW_MS || !isDiana()) {
+                shurikenCount = -1
+                return@onTick
+            }
+            val count = countShurikens()
+            val used = shurikenCount - count
+            val moved = mc.screen != null || now - shurikenDropAt <= SHURIKEN_USE_WINDOW_MS
+            if (used > 0 && !moved) DianaItemTracker.trackItem("FAKE_SHURIKEN", used, enforceCooldown = false)
+            shurikenCount = count
+        }
+    }
+
+    @SboEvent
+    fun shurikenUse(event: PlayerInteractEvent) {
+        // useItemOn falls through to useItem when the block does nothing, so only watch useItem
+        if (event.action != "useItem") return
+        if (event.player.mainHandItem.isShuriken() && isDiana()) onShurikenClick()
+    }
+
+    @SboEvent
+    fun shurikenAttack(event: StartAttackingEvent) {
+        if (event.getMainHandItem().isShuriken() && isDiana()) onShurikenClick()
+    }
+
+    @SboEvent
+    fun shurikenDrop(event: ItemDropEvent) {
+        shurikenDropAt = System.currentTimeMillis()
+    }
+
+    private fun onShurikenClick() {
+        // Counted before the server takes the shuriken away
+        if (shurikenCount < 0) shurikenCount = countShurikens()
+        shurikenClickAt = System.currentTimeMillis()
+    }
+
+    private fun countShurikens(): Int {
+        val player = mc.player ?: return 0
+        return player.inventory.nonEquipmentItems.sumOf { if (it.isShuriken()) it.count else 0 }
+    }
+
+    private fun isDiana() = World.isInHub() && Helper.hasSpade && DataManager.dianaTrackerMayorData.items.TOTAL_BURROWS > 0
+
+    private fun ItemStack.isShuriken(): Boolean = !isEmpty && ItemLookup(this).sbId == "FAKE_SHURIKEN"
+
+    /** Red minus in front of the price of used up items like shurikens. */
+    private fun lossPrefix(data: LootItemData, amount: Int) = if (data.negativeValue && amount > 0) "$RED-" else ""
+
     private fun createLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
         val itemName = data.id
         val amount = tracker.getAmountOf(itemName)
         val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         val formattedName = "$color${data.name}: $AQUA${Helper.formatNumber(amount, withCommas = true)}"
-        val price = Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
+        val price = lossPrefix(data, amount) + Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemName, dropId)
         }
@@ -246,7 +314,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color,
             value = Helper.formatNumber(amount, withCommas = true),
             extra = listOfNotNull(percent, lsText).joinToString("  ").ifEmpty { null },
-            price = if (hidePrice) "-" else Helper.getItemPriceFormatted(data.id, amount + lsAmount),
+            price = if (hidePrice) "-" else lossPrefix(data, amount + lsAmount) + Helper.getItemPriceFormatted(data.id, amount + lsAmount),
             hidden = hidden
         )
     }
@@ -490,6 +558,9 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         "COA_TIME"
     )
 
+    /** Used up items (shurikens), their worth counts against the profit. */
+    private val lossFields = LOOT_ITEMS.filter { it.negativeValue }.map { it.id }.toSet()
+
     private val profitFields = DianaItemsData::class.java.declaredFields
         .filterNot { it.name in excludedProfitFields }
         .map { field ->
@@ -508,7 +579,8 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             val itemPrice = Helper.getItemPrice(itemName)
             if (itemPrice <= 0) continue
 
-            profit[itemName] = (profit[itemName] ?: 0L) + itemPrice * itemValue
+            val sign = if (field.name in lossFields) -1 else 1
+            profit[itemName] = (profit[itemName] ?: 0L) + sign * itemPrice * itemValue
         }
 
         return profit
