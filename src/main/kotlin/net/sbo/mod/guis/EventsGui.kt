@@ -53,7 +53,9 @@ object EventsGui {
         val parts: List<Long> = DianaLoot.profitByItem(data).let { byItem ->
             val chimeras = byItem["CHIMERA"] ?: 0L
             val sticksRelics = (byItem["DAEDALUS_STICK"] ?: 0L) + (byItem["MINOS_RELIC"] ?: 0L)
-            listOf(chimeras, sticksRelics, byItem.values.sum() - chimeras - sticksRelics, if (Diana.excludeCoinsFromProfit) 0L else data.items.COINS)
+            // Shurikens come off the other drops, a bar part can't be negative
+            val otherDrops = (byItem.values.sum() - chimeras - sticksRelics).coerceAtLeast(0L)
+            listOf(chimeras, sticksRelics, otherDrops, if (Diana.excludeCoinsFromProfit) 0L else data.items.COINS)
         }
         val profit = parts.sum()
         val profitPerHour = perHour(profit.toDouble(), data.items.TIME)

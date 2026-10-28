@@ -1186,6 +1186,7 @@ object DianaTracker {
             "ANCIENT_CLAW" -> tracker.items.ANCIENT_CLAW += amount
             "MINOS_RELIC" -> tracker.items.MINOS_RELIC += amount
             "ENCHANTED_GOLD" -> tracker.items.ENCHANTED_GOLD += amount
+            "FAKE_SHURIKEN" -> tracker.items.FAKE_SHURIKEN += amount
             "SCAVENGER_COINS" -> tracker.items.SCAVENGER_COINS += amount
             "FISH_COINS" -> tracker.items.FISH_COINS += amount
             "TOTAL_BURROWS" -> tracker.items.TOTAL_BURROWS += amount

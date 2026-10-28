@@ -1,9 +1,6 @@
 package net.sbo.mod.overlays
 
-import net.minecraft.ChatFormatting.AQUA
-import net.minecraft.ChatFormatting.BOLD
 import net.minecraft.ChatFormatting.GOLD
-import net.minecraft.ChatFormatting.YELLOW
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
@@ -36,6 +33,10 @@ import net.sbo.mod.utils.render.RenderUtils2D
 object CrownOfAvarice {
     private const val MAX_COINS = 1_000_000_000L
     private const val RATE_REFRESH_MS = 5_000L
+
+    private val PROFIT_TOOLTIP =
+        "${GOLD}Profit is calculated by taking the difference between the price of a clean CoA and a maxed CoA\n" +
+            "${GOLD}multiplied by the number of coins earned and divided by 1b (the amount of coins needed to max a CoA)."
 
     // Both looks share one name, so they share the saved position; only the chosen one is shown
     private const val OVERLAY_NAME = "Diana Crown Of Avarice"
@@ -104,14 +105,7 @@ object CrownOfAvarice {
             updateLines()
         }
 
-        overlay.tooltip { id ->
-            return@tooltip when (id) {
-                "profit" -> "${GOLD}Profit is calculated by taking the difference between the price of a clean CoA and a maxed CoA\n" +
-                        "${GOLD}multiplied by the number of coins earned and divided by 1b (the amount of coins needed to max a CoA)."
-
-                else -> null
-            }
-        }
+        overlay.tooltip { id -> if (id == "profit") PROFIT_TOOLTIP else null }
 
         updateLines()
         updateCoaPrice()
@@ -371,14 +365,11 @@ object CrownOfAvarice {
 
     private fun legacyLines(view: View): List<OverlayTextLine> {
         val profitLine = OverlayTextLine("§7 - §aProfit: §b${view.profit} §7[§b${view.profitPerHour}§7]").onHover { drawContext, textRenderer ->
-                val scaleFactor = mc.window.guiScale
-                val mouseX = mc.mouseHandler.xpos() / scaleFactor
-                val mouseY = mc.mouseHandler.ypos() / scaleFactor
-                RenderUtils2D.drawHoveringString(drawContext,
-                    "${GOLD}Profit is calculated by taking the difference between the price of a clean CoA and a maxed CoA\n" +
-                            "${GOLD}multiplied by the number of coins earned and divided by 1b (the amount of coins needed to max a CoA).",
-                    mouseX, mouseY, textRenderer)
-            }
+            val scaleFactor = mc.window.guiScale
+            val mouseX = mc.mouseHandler.xpos() / scaleFactor
+            val mouseY = mc.mouseHandler.ypos() / scaleFactor
+            RenderUtils2D.drawHoveringString(drawContext, PROFIT_TOOLTIP, mouseX, mouseY, textRenderer)
+        }
 
         val lines = mutableListOf(
             OverlayTextLine("§e§lCrown Of Avarice §7(§e${view.mode}§7)"),

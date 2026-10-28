@@ -10,10 +10,6 @@ class StartAttackingEvent (
     val target: HitResult,
     val world: Level
 ) {
-    fun isAirOrEntity(): Boolean {
-        return target.type == HitResult.Type.MISS || target.type == HitResult.Type.ENTITY
-    }
-
     fun getMainHandItem(): ItemStack {
         return player.mainHandItem
     }
