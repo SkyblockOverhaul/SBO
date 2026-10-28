@@ -188,7 +188,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         return (player.inventory.nonEquipmentItems + player.offhandItem).sumOf { if (it.isShuriken()) it.count else 0 }
     }
 
-    private fun isDiana() = World.isInHub() && Helper.hasSpade
+    private fun isDiana() = World.isInHub() && Helper.hasSpade && DataManager.dianaTrackerMayorData.items.TOTAL_BURROWS > 0
 
     private fun ItemStack.isShuriken(): Boolean = !isEmpty && ItemLookup(this).sbId == "FAKE_SHURIKEN"
 
