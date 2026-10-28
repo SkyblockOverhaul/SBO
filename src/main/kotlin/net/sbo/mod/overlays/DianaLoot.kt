@@ -185,7 +185,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
 
     private fun countShurikens(): Int {
         val player = mc.player ?: return 0
-        return (player.inventory.nonEquipmentItems + player.offhandItem).sumOf { if (it.isShuriken()) it.count else 0 }
+        return player.inventory.nonEquipmentItems.sumOf { if (it.isShuriken()) it.count else 0 }
     }
 
     private fun isDiana() = World.isInHub() && Helper.hasSpade && DataManager.dianaTrackerMayorData.items.TOTAL_BURROWS > 0
