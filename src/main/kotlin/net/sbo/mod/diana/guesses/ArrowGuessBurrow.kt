@@ -493,7 +493,7 @@ object ArrowGuessBurrow {
         return isBlockTrulyValid(pos)
     }
 
-    // The same check without caching: the spade guess tries many blocks per particle and would fill the cache
+    /** [isBlockValid] without adding to the invalid block cache, the spade guess checks many blocks per particle. */
     internal fun isBlockValidNoCache(pos: SboVec): Boolean {
         if (!HUB_BOUNDS.isInside(pos)) return false
         if (pos in invalidCache) return false

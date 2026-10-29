@@ -4,6 +4,7 @@ import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlaySoundEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
@@ -19,20 +20,27 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.*
 
 /**
- * The spade's lava trail is a cubic Bezier curve:
- *  - P0 = 1 block out from your eyes along your look (the first particle),
- *  - P1 = P0 + 4 * look + 3 up,
- *  - P2 = P3 + 3 up,
- *  - P3 = the burrow's top centre,
- * with particle i at t = i / n, where n = 0.52518 * |P3 - P0| + 0.179.
+ * Guesses the burrow the spade points at from its dripping lava trail.
  *
- * So from the second particle on, the burrow is the only unknown. Each block near the solved end that a burrow can be on
- * is tried ([canHold]: grass with air above, and on [BurrowSpots] if a list is given), and the one whose curve fits the
- * particles best wins. Measured in game: exact block from 5 particles on,
- * exact or the block beside it from 2 (0.2 s after the click). With only 2 particles the curve can fit 2 or 3 places;
- * the first harp note (higher the farther the burrow) rules some out, then the farthest is taken.
+ * The trail is a cubic Bezier curve:
+ * - P0 is the first particle, 1 block out from the eyes along the look
+ * - P1 is P0 + 4 * look + 3 blocks up
+ * - P2 is P3 + 3 blocks up
+ * - P3 is the top center of the burrow
  *
- * Full trails (10+ particles) keep the cubic-fit guess, which ends on the burrow exactly.
+ * Particle i is at t = i / n, where n = 0.52518 * |P3 - P0| + 0.179.
+ *
+ * From the second particle on the burrow is the only unknown. Every block near the solved end that a burrow can be on
+ * is tried (see [canHold]), and the one whose curve fits the particles best is used. Measured in game this gives the
+ * exact block from 5 particles on, and the exact block or the one next to it from 2 particles (0.2 seconds after using
+ * the spade). With 2 particles the curve can fit 2 or 3 places, the first harp note (higher the farther the burrow)
+ * rules some of them out and the farthest one is used.
+ *
+ * A trail that stops after [SHORT_TRAIL] particles ends that close to the burrow (within about 5 blocks), so the guess is
+ * solved again with that step count when its curve fits better.
+ *
+ * Full trails (10+ particles) only use the cubic fit when the curve found no block. The curve guess is kept otherwise,
+ * the cubic fit can end on a burrow next to the one the spade points at.
  */
 object PreciseGuessBurrow {
     private var particleLocations = mutableListOf<SboVec>()
@@ -44,22 +52,28 @@ object PreciseGuessBurrow {
     private var throwEye: SboVec? = null
     private var firstNote: Float? = null
 
-    // This throw's waypoint: moved as the guess improves, not added again
+    /** The guess of the current spade use, moved as more particles come in. */
     private var throwGuess: SboVec? = null
+    private var shortTrailChecked = false
 
     private val SPADE_WINDOW = TimeUnit.MILLISECONDS.toNanos(3000L)
-    // Particles come every 0.1 s: one much later belongs to another throw (a click the game didn't report)
+    /** Particles come every 0.1 seconds, a particle much later is from another spade use the game did not report. */
     private val POINT_GAP = TimeUnit.MILLISECONDS.toNanos(300L)
-    // A second click this soon, before the first's trail started: the server draws the first one
+    /** A second spade use this soon, before the first trail started, still shows the first trail. */
     private val DOUBLE_CLICK = TimeUnit.MILLISECONDS.toNanos(300L)
 
     private const val FULL_TRAIL = 10
+    private const val SHORT_TRAIL = 3
     private const val N_PER_BLOCK = 0.52518
     private const val N_BASE = 0.179
     private const val N_SPREAD = 0.12
     private const val POINT_ERROR = 0.002
     private const val PICK_SIDE = 3
     private const val PICK_UP = 2
+
+    fun init() {
+        Register.onTick(1) { checkShortTrail() }
+    }
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
@@ -87,7 +101,11 @@ object PreciseGuessBurrow {
         lastPointTime = now
         if (this.particleLocations.size < 2) return
 
-        val guess = (if (particleLocations.size >= FULL_TRAIL) fullTrailGuess() else earlyGuess()) ?: return
+        val guess = when {
+            particleLocations.size < FULL_TRAIL -> earlyGuess()
+            throwGuess == null -> fullTrailGuess()
+            else -> null
+        } ?: return
         moveGuess(guess)
     }
 
@@ -127,9 +145,13 @@ object PreciseGuessBurrow {
         throwEye = player.eyePosition.toSboVec()
         firstNote = null
         throwGuess = null
+        shortTrailChecked = false
     }
 
-    // One waypoint per throw: moved when a later particle changes the block
+    /**
+     * Moves the spade guess waypoint of the current spade use to a new block.
+     * @param pos The block the burrow is guessed on.
+     */
     private fun moveGuess(pos: SboVec) {
         if (pos == throwGuess) return
         throwGuess?.let { WaypointManager.removeWaypointAt(it, "guess") }
@@ -137,32 +159,78 @@ object PreciseGuessBurrow {
         WaypointManager.addSpadeGuess(pos)
     }
 
-    // A block a burrow can be on: grass with air above (or not loaded yet), and on the burrow list if there is one
+    /** Whether a burrow can be on the block: grass with air above (or not loaded yet), and on [BurrowSpots] if it has a list. */
     private fun canHold(block: SboVec) = BurrowSpots.isPossible(block) && ArrowGuessBurrow.isBlockValidNoCache(block)
 
-    // ---- 2 to 9 particles: the curve ----
-
-    private fun earlyGuess(): SboVec? {
+    /** The first two control points of the curve, P0 and P1, or null without a look. */
+    private fun curveStart(): Pair<SboVec, SboVec>? {
         val p0 = particleLocations[0]
-        // The server's look, from the first particle (1 block out from your eyes): aimed at a block, it uses the
-        // previous tick's turn, which a quick flick after a warp makes far off from the client's
+        // Use the look the server used, from the first particle. When the spade is used on a block, the server uses the
+        // rotation from the tick before, which is far off from the client's after turning quickly
         val eye = throwEye
-        val look = if (eye != null && kotlin.math.abs(p0.distanceTo(eye) - 1.0) < 0.05) (p0 - eye).normalize()
+        val look = if (eye != null && abs(p0.distanceTo(eye) - 1.0) < 0.05) (p0 - eye).normalize()
             else throwLook ?: return null
-        val p1 = p0 + look * 4.0 + SboVec(0.0, 3.0, 0.0)
-        // Each place the curve can end, best first; the first with a block a burrow can be on near it
+        return p0 to p0 + look * 4.0 + SboVec(0.0, 3.0, 0.0)
+    }
+
+    /** The guess for 2 to 9 particles, from the curve. */
+    private fun earlyGuess(): SboVec? {
+        val (p0, p1) = curveStart() ?: return null
+        // Try each place the curve can end, best first, until one has a block a burrow can be on near it
         for (end in curveEnds(p0, p1)) {
             pickBlock(p0, p1, end)?.let { return it }
         }
         return null
     }
 
-    // For each step count n the end is linear in the points: solve it, and score how well the points and n agree
+    /** Solves the guess again once the trail stopped after [SHORT_TRAIL] particles. */
+    private fun checkShortTrail() {
+        if (shortTrailChecked || particleLocations.size != SHORT_TRAIL) return
+        if (System.nanoTime() - lastPointTime <= POINT_GAP) return
+        shortTrailChecked = true
+        shortTrailGuess()?.let { moveGuess(it) }
+    }
+
+    /** The guess for a trail that ended early: the step count is below its particle count, if that curve fits better. */
+    private fun shortTrailGuess(): SboVec? {
+        val (p0, p1) = curveStart() ?: return null
+        val count = particleLocations.size.toDouble()
+        val short = curveFits(p0, p1, count - 1, count).minByOrNull { it.first } ?: return null
+        val long = curveFits(p0, p1, 5.0, 200.0).minByOrNull { it.first }
+        if (long != null && long.first < short.first) return null
+        return pickBlock(p0, p1, short.second)
+    }
+
+    /**
+     * The places the curve can end, best first. For a given step count n the end is linear in the particles, so it is
+     * solved for every n and scored by how well the particles and n fit.
+     */
     private fun curveEnds(p0: SboVec, p1: SboVec): List<SboVec> {
         val points = particleLocations
+        val fits = curveFits(p0, p1, 5.0, 200.0)
+        val best = listOfNotNull(fits.minByOrNull { it.first }?.second)
+        if (points.size >= 3) return best
+
+        // With 2 particles, every good fit (a local best) that the first note allows, farthest first
+        val good = (1 until fits.size - 1).filter {
+            fits[it].first <= fits[it - 1].first && fits[it].first <= fits[it + 1].first && fits[it].first < 25
+        }.map { fits[it].second }
+        if (good.isEmpty()) return best
+        val note = firstNote
+        val allowed = if (note == null) good else good.filter { noteAllows(note, it.distanceTo(p0)) }.ifEmpty { good }
+        return allowed.sortedByDescending { it.distanceTo(p0) }
+    }
+
+    /**
+     * The curve end for every step count from [minN] to [maxN] with its score, lower is better.
+     * @param p0 The first control point.
+     * @param p1 The second control point.
+     */
+    private fun curveFits(p0: SboVec, p1: SboVec, minN: Double, maxN: Double): List<Pair<Double, SboVec>> {
+        val points = particleLocations
         val fits = ArrayList<Pair<Double, SboVec>>()
-        var n = 5.0
-        while (n < 200) {
+        var n = minN
+        while (n <= maxN) {
             var nx = 0.0
             var ny = 0.0
             var nz = 0.0
@@ -184,20 +252,10 @@ object PreciseGuessBurrow {
             fits.add(residual(p0, p1, p3, n) / (POINT_ERROR * POINT_ERROR) + off * off to p3)
             n += 0.01
         }
-        val best = listOfNotNull(fits.minByOrNull { it.first }?.second)
-        if (points.size >= 3) return best
-
-        // 2 particles: every good fit (a local best) the first note allows, farthest first
-        val good = (1 until fits.size - 1).filter {
-            fits[it].first <= fits[it - 1].first && fits[it].first <= fits[it + 1].first && fits[it].first < 25
-        }.map { fits[it].second }
-        if (good.isEmpty()) return best
-        val note = firstNote
-        val allowed = if (note == null) good else good.filter { noteAllows(note, it.distanceTo(p0)) }.ifEmpty { good }
-        return allowed.sortedByDescending { it.distanceTo(p0) }
+        return fits
     }
 
-    // The first harp note is about 30.87 + 0.0214 * distance (in 63rds of pitch), rounded: 20 blocks' slack each side
+    /** The first harp note is about 30.87 + 0.0214 * distance (in 63rds of pitch) rounded, checked with 20 blocks of slack. */
     private fun noteAllows(pitch: Float, distance: Double): Boolean {
         val q = (pitch * 63.0).roundToInt()
         val lo = (q - 0.5 - 30.87) / 0.0214 - 20
@@ -205,8 +263,9 @@ object PreciseGuessBurrow {
         return distance in lo..hi
     }
 
+    /** The squared distance of the particles from the curve ending at [p3] with step count [n]. */
     private fun residual(p0: SboVec, p1: SboVec, p3: SboVec, n: Double): Double {
-        // Plain doubles: this runs tens of thousands of times per particle
+        // Plain doubles since this runs tens of thousands of times per particle
         var res = 0.0
         for (i in 1 until particleLocations.size) {
             val t = i / n
@@ -224,7 +283,7 @@ object PreciseGuessBurrow {
         return res
     }
 
-    // How badly a curve ending at [p3] fits the particles, the step count free near what its distance says
+    /** How badly the curve ending at [p3] fits the particles, with the step count free around what its distance gives. */
     private fun fitScore(p0: SboVec, p1: SboVec, p3: SboVec): Double {
         val n0 = N_PER_BLOCK * p3.distanceTo(p0) + N_BASE
         var best = Double.MAX_VALUE
@@ -237,7 +296,7 @@ object PreciseGuessBurrow {
         return best
     }
 
-    // Of the blocks near [end] a burrow can be on, the one whose curve fits best (its block position), or null
+    /** Of the blocks near [end] a burrow can be on, the one whose curve fits the particles best. */
     private fun pickBlock(p0: SboVec, p1: SboVec, end: SboVec): SboVec? {
         val cx = floor(end.x)
         val cy = (end.y - 1).roundToInt().toDouble()
@@ -256,8 +315,7 @@ object PreciseGuessBurrow {
         return best
     }
 
-    // ---- 10+ particles: the cubic fit, onto its block (or the nearest one beside it a burrow can be on) ----
-
+    /** The guess for 10+ particles: the cubic fit's block, or the closest block next to it a burrow can be on. */
     private fun fullTrailGuess(): SboVec? {
         val end = guessBurrowLocation() ?: return null
         val block = end.down(0.5).roundLocationToBlock()
