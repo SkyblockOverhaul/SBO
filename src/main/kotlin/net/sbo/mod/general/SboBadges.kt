@@ -298,23 +298,29 @@ object SboBadges {
     fun decorateTab(info: PlayerInfo, line: Component): Component = safe(line) { decorateTabOf(info, line) }
 
     private fun decorateTabOf(info: PlayerInfo, line: Component): Component {
-        if (skyHanniReading || (!showInTab && team.isEmpty()) || (byUuid.isEmpty() && tabTags.isEmpty())) return line
+        if (compactReading || (!showInTab && team.isEmpty()) || (byUuid.isEmpty() && tabTags.isEmpty())) return line
         val player = tabPlayerOf(info)?.takeIf { shown(showInTab, it) } ?: return line
         return decorateTab(line, player)
     }
 
-    // SkyHanni's compact tab list reads the lines while this is set
-    private var skyHanniReading = false
+    // SkyHanni's or SkyblockAddons' compact tab list reads the lines while this is set
+    private var compactReading = false
 
-    /** SkyHanni rebuilds tab lines from § codes and would lose hex colors and the logo font, so it reads them undecorated. */
+    /**
+     * SkyHanni and SkyblockAddons rebuild tab lines from § codes and would lose hex colors and the logo font,
+     * so they read them undecorated.
+     */
     fun <T> undecoratedTab(read: Supplier<T>): T {
-        skyHanniReading = true
+        compactReading = true
         try {
             return read.get()
         } finally {
-            skyHanniReading = false
+            compactReading = false
         }
     }
+
+    /** A § coded line SkyblockAddons' compact tab list draws, decorated like ours; null when it has no badge holder or tagged member. */
+    fun decorateSbaTab(line: String): Component? = if (line.isEmpty()) null else decorateSkyHanniTab(Component.literal(line))
 
     /** A line SkyHanni's compact tab list draws, decorated like ours; null when it has no badge holder or tagged member. */
     fun decorateSkyHanniTab(line: Component?): Component? = safe(null) { decorateSkyHanniTabOf(line) }
