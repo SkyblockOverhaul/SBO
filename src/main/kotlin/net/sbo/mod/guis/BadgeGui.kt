@@ -174,6 +174,7 @@ object BadgeGui {
     private val ViewSettings = component("BadgeView") {
         var inTab by useState(DataManager.sboData.badgesInTab)
         var inChat by useState(DataManager.sboData.badgesInChat)
+        var namesInChat by useState(DataManager.sboData.badgeNamesInChat)
         var animations by useState(DataManager.sboData.badgeAnimationsOfOthers)
         var motion by useState(DataManager.sboData.badgeMotionOfOthers)
         var tabAnimations by useState(DataManager.sboData.badgeAnimationsInTab)
@@ -191,6 +192,21 @@ object BadgeGui {
                 DataManager.sboData.badgesInChat = it.checked
                 DataManager.sboData.save()
             })
+        }
+        setting("Names in messages", "Names written inside a chat message, not only the sender's, with team tag and color, for new messages. \"Only mine\" does this just for your own name.") {
+            select(
+                value = namesInChat,
+                onChange = {
+                    namesInChat = it.value
+                    DataManager.sboData.badgeNamesInChat = it.value
+                    DataManager.sboData.save()
+                },
+                className = "bd-select",
+            ) {
+                option(SboBadges.NAMES_OFF, "Off")
+                option(SboBadges.NAMES_OWN, "Only mine")
+                option(SboBadges.NAMES_ALL, "Everyone")
+            }
         }
         setting("Animations", "Moving colors (wave, pulse, chroma) of other players' badges. Off shows them standing still, your own badge always moves.") {
             switch(checked = animations, onChange = {

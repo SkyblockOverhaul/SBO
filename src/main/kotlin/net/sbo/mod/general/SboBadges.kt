@@ -46,6 +46,11 @@ object SboBadges {
     private val showInTab: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInTab
     private val showInChat: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInChat
 
+    // Names anywhere in a chat message (not only the sender's) in their badge look: nobody's, only your own, or everyone's
+    const val NAMES_OFF = "off"
+    const val NAMES_OWN = "own"
+    const val NAMES_ALL = "all"
+
     private const val LIST_REFRESH_MINUTES = 10
 
     private const val LOGO = ""
@@ -96,6 +101,8 @@ object SboBadges {
     // Mods rebuild Hypixel's § colors as rgb colors, so they are compared by value
     private val CHAT_COLORS: Set<Int> = ChatFormatting.entries.mapNotNull { TextColor.fromLegacyFormat(it)?.value }.toSet()
     private val WORD = Regex("[A-Za-z0-9_]{1,16}")
+    // A whole word, so the end of a longer word never reads as a name
+    private val MENTION = Regex("[A-Za-z0-9_]+")
 
     @Volatile private var byUuid: Map<UUID, SboBadge> = emptyMap()
     @Volatile private var byName: Map<String, SboBadge> = emptyMap()
@@ -328,22 +335,49 @@ object SboBadges {
         return if (logo) decorated.copy().append(" ").append(logo()) else decorated
     }
 
-    /** The sender of a chat line: team tag in front, badge color and the SBO logo behind the name. */
+    /**
+     * The sender of a chat line: team tag in front, badge color and the SBO logo behind the name.
+     * With [NAMES_OWN] or [NAMES_ALL] names inside the message get tag and color too.
+     */
     fun decorateChat(line: Component): Component = safe(line) { decorateChatOf(line) }
 
     private fun decorateChatOf(line: Component): Component {
-        if ((!showInChat && team.isEmpty()) || (byName.isEmpty() && chatTags.isEmpty())) return line
+        val mentions = DataManager.sboData.badgeNamesInChat
+        if ((mentions != NAMES_OWN && !showInChat && team.isEmpty()) || (byName.isEmpty() && chatTags.isEmpty())) return line
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
-        val colon = plain.indexOf(": ")
-        if (colon !in 1..MAX_SENDER_LENGTH) return line
-        val sender = WORD.findAll(plain.substring(0, colon)).map { it.value }
-            .firstOrNull { (it.lowercase() in byName || it.lowercase() in chatTags) && shown(showInChat, it) } ?: return line
-        val badge = byName[sender.lowercase()]
+        val colon = plain.indexOf(": ").takeIf { it in 1..MAX_SENDER_LENGTH }
+        val sender = colon?.let { end -> WORD.findAll(plain.substring(0, end)).map { it.value }.firstOrNull(::shownInChat) }
+        val wanted: ((String) -> Boolean)? = when (mentions) {
+            NAMES_ALL -> ::shownInChat
+            NAMES_OWN -> ownName()?.let { own -> { name: String -> name.equals(own, ignoreCase = true) } }
+            else -> null
+        }
+        var out = line
+        // Right to left, so a tag put in never moves the names still to come; the sender stands before all of them
+        if (wanted != null) {
+            MENTION.findAll(plain, colon?.plus(2) ?: 0).filter { wanted(it.value) }.toList().asReversed()
+                .forEach { out = decorateChatName(out, it.value, from = it.range.first, nameOnly = true) }
+        }
+        if (sender != null) out = decorateChatName(out, sender)
+        return out
+    }
+
+    private fun shownInChat(name: String): Boolean =
+        name.length <= 16 && (name.lowercase() in byName || name.lowercase() in chatTags) && shown(showInChat, name)
+
+    /** Your own name while you have a badge or a team tag in chat. */
+    private fun ownName(): String? = own()?.name ?: uuidOf(Player.accountUuid())?.let { team[it] }?.name?.takeIf { it.lowercase() in chatTags }
+
+    private fun decorateChatName(line: Component, name: String, from: Int = 0, nameOnly: Boolean = false): Component {
+        val badge = byName[name.lowercase()]
         return recolor(
-            line, sender, badge, TeamTagPlace.CHAT,
-            tag = chatTags[sender.lowercase()],
-            afterName = badge?.takeIf { it.shows(BadgePart.LOGO, TeamTagPlace.CHAT) }?.let { Component.literal(" ").append(logo()) },
+            line, name, badge, TeamTagPlace.CHAT,
+            tag = chatTags[name.lowercase()],
+            // The logo only behind the sender
+            afterName = badge?.takeIf { !nameOnly && it.shows(BadgePart.LOGO, TeamTagPlace.CHAT) }?.let { Component.literal(" ").append(logo()) },
+            from = from,
+            nameOnly = nameOnly,
         )
     }
 
@@ -393,6 +427,9 @@ object SboBadges {
         tag: TagLook? = null,
         afterName: Component? = null,
         animate: Boolean = false,
+        // The name is looked for from this char on; nameOnly leaves level and rank in front of it alone (names inside a message)
+        from: Int = 0,
+        nameOnly: Boolean = false,
     ): Component {
         val read = ArrayList<StyledChar>()
         val readPlainBuilder = StringBuilder()
@@ -415,11 +452,11 @@ object SboBadges {
 
         val readPlain = readPlainBuilder.toString()
         val foundName = Regex("(?<![A-Za-z0-9_])${Regex.escape(playerName)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
-            .find(readPlain) ?: return line
+            .find(readPlain, from.coerceIn(0, readPlain.length)) ?: return line
         // Name, level and rank each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
         val nameColor = badge?.takeIf { it.shows(BadgePart.NAME, place) }?.colorOf(BadgePart.NAME)
-        val levelColor = badge?.takeIf { it.shows(BadgePart.LEVEL, place) }?.colorOf(BadgePart.LEVEL)
-        val rankColor = badge?.takeIf { it.shows(BadgePart.RANK, place) }?.colorOf(BadgePart.RANK)
+        val levelColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.LEVEL, place) }?.colorOf(BadgePart.LEVEL)
+        val rankColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.RANK, place) }?.colorOf(BadgePart.RANK)
         val tagInfo = tag?.let { ranks[it.rank] }
         val tagText = tagInfo?.tag
         if (nameColor == null && levelColor == null && rankColor == null && tagText == null && afterName == null) return line
