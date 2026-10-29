@@ -51,6 +51,24 @@ object Diana : Category("Diana") {
         override fun toString() = label
     }
 
+    // Order of the loot tracker lines, custom is set with the arrows in the inventory
+    enum class LootSort(private val label: String) {
+        DEFAULT("Default"), PRICE_DESC("Price ↓"), PRICE_ASC("Price ↑"), AMOUNT_DESC("Amount ↓"), AMOUNT_ASC("Amount ↑"), CUSTOM("Custom");
+
+        operator fun next(): LootSort = entries[(ordinal + 1) % entries.size]
+
+        override fun toString() = label
+    }
+
+    // Order of the mob and stats tracker lines, custom is set with the arrows in the inventory
+    enum class LineSort(private val label: String) {
+        DEFAULT("Default"), HIGHEST("Highest ↓"), LOWEST("Lowest ↑"), CUSTOM("Custom");
+
+        operator fun next(): LineSort = entries[(ordinal + 1) % entries.size]
+
+        override fun toString() = label
+    }
+
     enum class Tracker {
         OFF, TOTAL, EVENT, SESSION;
 
@@ -348,6 +366,40 @@ object Diana : Category("Diana") {
         }
     }
 
+    var lootSort by ObservableEntry(
+        enum(LootSort.DEFAULT) {
+            this.name = Literal("Loot Sort")
+            depends(state(::lootTracker, "on") { it != Tracker.OFF })
+            this.description = Literal(
+                "Order of the loot tracker lines: the default order, by price or by amount (highest or lowest first), or your own order.\n" +
+                    "It can also be changed by clicking the sort badge of the tracker in the inventory. With Custom, the arrows next to each line move it up or down there (new look only)."
+            )
+        }
+    ) { old, new ->
+        if (old != new) {
+            if (lootTracker != Tracker.OFF) {
+                DianaLoot.updateLines()
+            }
+        }
+    }
+
+    var mobSort by ObservableEntry(
+        enum(LineSort.DEFAULT) {
+            this.name = Literal("Mob Sort")
+            depends(state(::mobTracker, "on") { it != Tracker.OFF })
+            this.description = Literal(
+                "Order of the mob tracker lines: the default order, by kills (most or fewest first), or your own order.\n" +
+                    "It can also be changed by clicking the sort badge of the tracker in the inventory. With Custom, the arrows next to each line move it up or down there (new look only)."
+            )
+        }
+    ) { old, new ->
+        if (old != new) {
+            if (mobTracker != Tracker.OFF) {
+                DianaMobs.updateLines()
+            }
+        }
+    }
+
     var afkTimeout by int(60) {
         this.name = Literal("AFK Timeout")
         this.description = Literal("Pause the trackers if it is not modified for this amount of seconds. Minimum 15, maximum 900 seconds is allowed.")
@@ -357,6 +409,21 @@ object Diana : Category("Diana") {
     var statsTracker by boolean(false) {
         this.name = Literal("Diana Stats Tracker")
         this.description = Literal("Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, /sboguis to move the overlay.")
+    }
+
+    var statsSort by ObservableEntry(
+        enum(LineSort.DEFAULT) {
+            this.name = Literal("Stats Sort")
+            depends(on(::statsTracker))
+            this.description = Literal(
+                "Order of the Diana stats lines: the default order, by count (highest or lowest first), or your own order.\n" +
+                    "It can also be changed by clicking the sort badge of the tracker in the inventory. With Custom, the arrows next to each line move it up or down there (new look only)."
+            )
+        }
+    ) { old, new ->
+        if (old != new) {
+            DianaStats.updateLines()
+        }
     }
 
     var hideLsStats by ObservableEntry(boolean(false) {

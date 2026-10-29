@@ -40,6 +40,7 @@ object Pickuplog {
 
     fun init() {
         overlay.init()
+        overlay.setLabel("Pickup Log", "PL")
         overlay.setCondition { QOL.pickuplogOverlay }
 
         Register.onTick(1) {

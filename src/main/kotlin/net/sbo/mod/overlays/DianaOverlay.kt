@@ -98,6 +98,59 @@ abstract class DianaOverlay<V : Any>(
         updateLines()
     }
 
+    /** The line [keys] in the "Custom" sort of tracker [orderName]: the saved ones first, the ones it doesn't have yet in their default order after. */
+    protected fun customOrder(orderName: String, keys: List<String>): List<String> {
+        val saved = DataManager.sboData.trackerOrder[orderName].orEmpty().filter { it in keys }.distinct()
+        return saved + keys.filter { it !in saved }
+    }
+
+    /** [lines] in [sort], ties keep the default order. */
+    protected fun <T> sortLines(lines: List<T>, sort: Diana.LineSort, orderName: String, key: (T) -> String, amount: (T) -> Int): List<T> =
+        when (sort) {
+            Diana.LineSort.DEFAULT -> lines
+            Diana.LineSort.HIGHEST -> lines.sortedByDescending(amount)
+            Diana.LineSort.LOWEST -> lines.sortedBy(amount)
+            Diana.LineSort.CUSTOM -> customOrder(orderName, lines.map(key)).let { order -> lines.sortedBy { order.indexOf(key(it)) } }
+        }
+
+    /**
+     * A click on a move arrow of [rows] moves that line of tracker [orderName] past the next [shown] line above or
+     * below it (only the shown ones, so every click visibly moves it). False for other elements.
+     */
+    protected fun moveClicked(id: String, orderName: String, keys: List<String>, shown: () -> List<String>): Boolean {
+        val up = id.startsWith("up:")
+        if (!up && !id.startsWith("down:")) return false
+        val key = id.substringAfter(':')
+        val lines = shown()
+        val index = lines.indexOf(key)
+        val neighbour = lines.getOrNull(if (up) index - 1 else index + 1)
+        if (index < 0 || neighbour == null) return true
+        val order = customOrder(orderName, keys).toMutableList()
+        order.remove(key)
+        order.add(order.indexOf(neighbour) + if (up) 0 else 1, key)
+        DataManager.sboData.trackerOrder[orderName] = order
+        updateLines()
+        return true
+    }
+
+    /** The rows, with ▲ ▼ to move them in the custom order when [reorder]; rows with the same [key] move together. */
+    protected fun NodeBuilder.rows(rows: List<Row>, reorder: Boolean, key: (Row) -> String? = { it.id }) {
+        val keys = rows.mapNotNull(key).distinct()
+        rows.forEach { row ->
+            val line = key(row)
+            if (!reorder || line == null) row(row)
+            else row(row) {
+                moveArrow("▲", "up:$line", line != keys.first())
+                moveArrow("▼", "down:$line", line != keys.last())
+            }
+        }
+    }
+
+    // Without [enabled] it keeps its place but can't be clicked
+    private fun NodeBuilder.moveArrow(arrow: String, id: String, enabled: Boolean) {
+        span(className = if (enabled) "tracker-move" else "tracker-move off", id = if (enabled) id else null) { +arrow }
+    }
+
     /** One line of the new look; [id] makes it clickable and hoverable as "line:<id>". */
     data class Row(
         val id: String?,
@@ -140,12 +193,14 @@ abstract class DianaOverlay<V : Any>(
         span(className = classes, id = if (clickable) id else null) { +text }
     }
 
-    protected fun NodeBuilder.row(row: Row) {
+    /** One line, [controls] are added at its end. */
+    protected fun NodeBuilder.row(row: Row, controls: NodeBuilder.() -> Unit = {}) {
         div(className = if (row.hidden) "tracker-row hidden" else "tracker-row", id = row.id?.let { "line:$it" }) {
             span(className = row.color?.let { "tracker-name ${colorClass(it)}" } ?: "tracker-name") { +row.name }
             span(className = row.valueClass?.let { "tracker-value $it" } ?: "tracker-value") { +row.value }
             if (row.extra != null) span(className = "tracker-extra") { +row.extra }
             if (row.price != null) span(className = "tracker-price") { +row.price }
+            controls()
         }
     }
 

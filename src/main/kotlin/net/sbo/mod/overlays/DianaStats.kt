@@ -19,6 +19,18 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Diana.TrackerOv
         updateLines()
     }
 
+    private val changeSort: OverlayTextLine = OverlayTextLine("")
+        .onClick {
+            Diana.statsSort = Diana.statsSort.next()
+            updateLines()
+        }
+        .onMouseEnter {
+            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Diana.statsSort}"
+        }
+        .onMouseLeave {
+            changeSort.text = "${YELLOW}Sort: ${Diana.statsSort}"
+        }
+
     // The new look shows hidden lines and the hint only in the inventory
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
@@ -58,12 +70,19 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Diana.TrackerOv
         Stat("STATS_MINOTAURS_SINCE_STICK", "Minotaurs since Stick", GOLD, { sboData.minotaursSinceStick })
     )
 
-    data class View(val rows: List<Row>, val inventory: Boolean)
+    private const val ORDER = "stats"
+    private val STAT_KEYS = STATS.map { it.key }
+
+    /** The stats in the order picked in "Stats Sort". */
+    private fun sortedStats(): List<Stat> = sortLines(STATS, Diana.statsSort, ORDER, { it.key }) { it.count() }
+
+    // [reorder]: arrows on the lines, with the Custom sort in the inventory
+    data class View(val sort: String, val rows: List<Row>, val inventory: Boolean, val reorder: Boolean)
 
     override fun view(): View {
         val inventory = isCraftingScreenOpen()
         val hidden = DataManager.sboData.hideTrackerLines
-        val rows = STATS.mapNotNull { stat ->
+        val rows = sortedStats().mapNotNull { stat ->
             // Hidden lines only show (crossed out) in the inventory, to unhide them
             val isHidden = stat.key in hidden
             if (isHidden && !inventory) return@mapNotNull null
@@ -76,25 +95,40 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Diana.TrackerOv
                 hidden = isHidden
             )
         }
-        return View(rows, inventory)
+        return View(Diana.statsSort.toString(), rows, inventory, inventory && Diana.statsSort == Diana.LineSort.CUSTOM)
     }
 
     override fun NodeBuilder.content(view: View) {
         tracker("stats") {
-            head("Diana Stats")
-            view.rows.forEach { row(it) }
-            if (view.inventory) hint("Click a stat to hide it")
+            head("Diana Stats") {
+                if (view.inventory) badge(view.sort, "sort", clickable = true)
+            }
+            rows(view.rows, view.reorder)
+            if (view.reorder) hint("Click a stat to hide it, the arrows to move it")
+            else if (view.inventory) hint("Click a stat to hide it, the badge to change the order")
         }
     }
 
     override fun elementClicked(id: String) {
+        if (moveClicked(id, ORDER, STAT_KEYS) { view().rows.mapNotNull { it.id } }) return
+        if (id == "sort") {
+            Diana.statsSort = Diana.statsSort.next()
+            updateLines()
+            return
+        }
         rowId(id)?.let(::toggleHidden)
     }
 
     override fun generateLines(): List<OverlayTextLine> {
         val hideLs = Diana.hideLsStats
-        return listOf(
-            OverlayTextLine("$YELLOW${BOLD}Diana Stats"),
+        val lines = mutableListOf<OverlayTextLine>()
+        if (isCraftingScreenOpen()) {
+            changeSort.text = "${YELLOW}Sort: ${Diana.statsSort}"
+            lines.add(changeSort)
+        }
+        lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Stats"))
+        // In the order of STATS
+        val statLines = listOf(
             createStatLine("STATS_MOBS_SINCE_KING", "$GRAY - ${RED}Mobs since King: $AQUA${sboData.mobsSinceKing}"),
             createStatLine("STATS_KINGS_SINCE_WOOL", if (hideLs) "$GRAY - ${RED}Kings since Wool: $AQUA${sboData.kingSinceWool}" else "$GRAY - ${RED}Kings since Wool: $AQUA${sboData.kingSinceWool}$GRAY, ${RED}since §7[§bLS§7]: $AQUA${sboData.kingSinceLsWool}"),
             createStatLine("STATS_MOBS_SINCE_MANTI", "$GRAY - ${RED}Mobs since Manti: $AQUA${sboData.mobsSinceManti}"),
@@ -111,5 +145,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Diana.TrackerOv
                 withCommas = true
             )}"),
         )
+        lines.addAll(sortedStats().map { statLines[STATS.indexOf(it)] })
+        return lines
     }
 }

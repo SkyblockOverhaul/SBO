@@ -60,6 +60,18 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         }
     )
 
+    private val changeSort: OverlayTextLine = OverlayTextLine("")
+        .onClick {
+            Diana.lootSort = Diana.lootSort.next()
+            updateLines()
+        }
+        .onMouseEnter {
+            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Diana.lootSort}"
+        }
+        .onMouseLeave {
+            changeSort.text = "${YELLOW}Sort: ${Diana.lootSort}"
+        }
+
     private val resetSession = OverlayUtils.createClickableTextLine(
         text = "${RED}Reset Session",
         hoverText = "$RED${UNDERLINE}Reset Session",
@@ -124,7 +136,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
-            overlay.removeLines(listOf(changeView, delimiter, changeSellType, resetSession))
+            overlay.removeLines(listOf(changeView, delimiter, changeSellType, changeSort, resetSession))
             updateLines()
         }
     }
@@ -269,30 +281,65 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         return line
     }
 
+    /** One loot line: the item, its lootshare line ([ls]) or both in one ([combined]). */
+    private data class LootLine(val data: LootItemData, val ls: Boolean = false, val combined: Boolean = false) {
+        val id get() = if (ls) "${data.id}_LS" else data.id
+    }
+
+    /** The loot lines in the order picked in "Loot Sort", ties keep the default order. */
+    private fun lootLines(tracker: DianaTracker): List<LootLine> {
+        val lines = LOOT_ITEMS.flatMap { data ->
+            when {
+                !data.combined -> listOf(LootLine(data))
+                Diana.combineLootLines -> listOf(LootLine(data, combined = true))
+                else -> listOf(LootLine(data), LootLine(data, ls = true))
+            }
+        }
+        return when (Diana.lootSort) {
+            Diana.LootSort.DEFAULT -> lines
+            Diana.LootSort.PRICE_DESC -> lines.sortedByDescending { worth(it, tracker) }
+            Diana.LootSort.PRICE_ASC -> lines.sortedBy { worth(it, tracker) }
+            Diana.LootSort.AMOUNT_DESC -> lines.sortedByDescending { amount(it, tracker) }
+            Diana.LootSort.AMOUNT_ASC -> lines.sortedBy { amount(it, tracker) }
+            // The lootshare line stays below its item
+            Diana.LootSort.CUSTOM -> customOrder(ORDER, ITEM_IDS).let { order -> lines.sortedBy { order.indexOf(it.data.id) } }
+        }
+    }
+
+    private fun amount(line: LootLine, tracker: DianaTracker): Int =
+        tracker.getAmountOf(line.id) + if (line.combined) tracker.getAmountOf("${line.data.id}_LS") else 0
+
+    // Used up items count as a loss, like in the profit
+    private fun worth(line: LootLine, tracker: DianaTracker): Long =
+        Helper.getItemPrice(line.data.id, amount(line, tracker)).let { if (line.data.negativeValue) -it else it }
+
+    // The custom order is by item, its lootshare line moves with it
+    private const val ORDER = "loot"
+    private val ITEM_IDS = LOOT_ITEMS.map { it.id }
+
+    private fun itemOf(row: Row): String? = row.id?.removeSuffix("_LS")
+
     data class View(
         val mode: String,
         val sellType: String,
+        val sort: String,
         val session: Boolean,
         val rows: List<Row>,
         val stats: List<Row>,
-        val inventory: Boolean
+        val inventory: Boolean,
+        // Arrows on the lines, with the Custom sort in the inventory
+        val reorder: Boolean
     )
 
     override fun view(): View {
         val type = Diana.lootTracker
         val inventory = isCraftingScreenOpen()
         val sellType = Helper.toTitleCase(Diana.bazaarSettingDiana.toString())
-        val tracker = getDianaTracker(type) ?: return View("", sellType, false, emptyList(), emptyList(), inventory)
-        val rows = mutableListOf<Row>()
-        for (data in LOOT_ITEMS) {
-            if (data.combined && Diana.combineLootLines) {
-                lootRow(data, tracker, inventory, combined = true)?.let(rows::add)
-            } else {
-                lootRow(data, tracker, inventory)?.let(rows::add)
-                if (data.combined) lootRow(data, tracker, inventory, ls = true)?.let(rows::add)
-            }
-        }
-        return View(Helper.toTitleCase("$type"), sellType, type == Diana.Tracker.SESSION, rows, statRows(tracker, type), inventory)
+        val sort = Diana.lootSort.toString()
+        val reorder = inventory && Diana.lootSort == Diana.LootSort.CUSTOM
+        val tracker = getDianaTracker(type) ?: return View("", sellType, sort, false, emptyList(), emptyList(), inventory, reorder)
+        val rows = lootLines(tracker).mapNotNull { lootRow(it.data, tracker, inventory, it.ls, it.combined) }
+        return View(Helper.toTitleCase("$type"), sellType, sort, type == Diana.Tracker.SESSION, rows, statRows(tracker, type), inventory, reorder)
     }
 
     // One loot line of the new look, null while it is hidden; [ls] for the lootshare line, [combined] for both in one
@@ -339,18 +386,21 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             head("Diana Loot") {
                 if (view.inventory) {
                     badge(view.sellType, "sell", clickable = true)
+                    badge(view.sort, "sort", clickable = true)
                     if (view.session) badge("Reset", "reset", clickable = true, extraClass = "danger")
                 }
                 badge(view.mode, "mode", view.inventory)
             }
-            view.rows.forEach { row(it) }
+            rows(view.rows, view.reorder, ::itemOf)
             separator()
             view.stats.forEach { row(it) }
-            if (view.inventory) hint("Click an item to hide it, the badges to change them")
+            if (view.reorder) hint("Click an item to hide it, the arrows to move it")
+            else if (view.inventory) hint("Click an item to hide it, the badges to change them")
         }
     }
 
     override fun elementClicked(id: String) {
+        if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.mapNotNull(::itemOf).distinct() }) return
         when (id) {
             "mode" -> {
                 Diana.lootTracker = Diana.lootTracker.next()
@@ -358,6 +408,10 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             }
             "sell" -> {
                 Diana.bazaarSettingDiana = Diana.bazaarSettingDiana.next()
+                updateLines()
+            }
+            "sort" -> {
+                Diana.lootSort = Diana.lootSort.next()
                 updateLines()
             }
             "reset" -> resetSession()
@@ -453,32 +507,27 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             "$YELLOW${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
         }
         changeSellType.text = sellTypeText
+        changeSort.text = "${YELLOW}Sort: ${Diana.lootSort}"
 
         if (screenOpen) {
-            lines.addAll(listOf(changeView, delimiter, changeSellType))
+            lines.addAll(listOf(changeView, delimiter, changeSellType, changeSort))
             if (Diana.lootTracker == Diana.Tracker.SESSION) lines.add(resetSession)
         }
     }
 
     private fun generateLootLines(tracker: DianaTracker): List<OverlayTextLine> {
-        val lines = mutableListOf<OverlayTextLine>()
-        for (data in LOOT_ITEMS) {
-            if (Diana.combineLootLines && data.combined) {
-                lines.add(createCombinedLootLine(data, tracker))
-            } else if (data.combined) {
-                lines.add(createLootLine(data, tracker))
-                val lsData = data.copy(
-                    id = "${data.id}_LS",
-                    name = "${data.name} $GRAY[${AQUA}LS$GRAY]",
+        return lootLines(tracker).map { line ->
+            when {
+                line.combined -> createCombinedLootLine(line.data, tracker)
+                line.ls -> createLootLine(line.data.copy(
+                    id = line.id,
+                    name = "${line.data.name} $GRAY[${AQUA}LS$GRAY]",
                     combined = false,
                     isRarerDrop = true
-                )
-                lines.add(createLootLine(lsData, tracker))
-            } else {
-                lines.add(createLootLine(data, tracker))
+                ), tracker)
+                else -> createLootLine(line.data, tracker)
             }
         }
-        return lines
     }
 
     private fun generateStatisticsLines(tracker: DianaTracker, type: Diana.Tracker): List<OverlayTextLine> {

@@ -21,6 +21,8 @@ data class SboData(
     var highestStingerMagicFind: Int = 0,
     var highestRelicMagicFind: Int = 0,
     var hideTrackerLines: MutableList<String> = mutableListOf(),
+    var collapsedOverlays: MutableSet<String> = mutableSetOf(), // overlay names collapsed with their eye, only in the inventory
+    var trackerOrder: MutableMap<String, MutableList<String>> = mutableMapOf(), // "loot"/"mobs"/"stats" -> line keys for the "Custom" sort, missing lines go last
     var suppressedMessages: MutableSet<String> = mutableSetOf(),
     var partyBlacklist: List<String> = emptyList(),
     var achievementFilter: String = "Locked",

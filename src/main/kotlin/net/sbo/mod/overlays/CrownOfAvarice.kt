@@ -99,6 +99,8 @@ object CrownOfAvarice {
     fun init() {
         overlay.init()
         legacyOverlay.init()
+        overlay.setLabel("Crown of Avarice", "CoA")
+        legacyOverlay.setLabel("Crown of Avarice", "CoA")
         // The view badge in the top right changes the view
         overlay.onClick(".coa-mode") {
             Diana.coaTracker = Diana.coaTracker.next()

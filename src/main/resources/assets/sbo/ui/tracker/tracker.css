@@ -80,6 +80,14 @@
     color: #ffaa00;
 }
 
+/* Moves a line up or down with the "Custom" sort, in the inventory */
+.tracker-move {
+    padding: 0 1px;
+    color: var(--accent);
+}
+
+.tracker-move.off { color: #3a3c42; }
+
 /* Hidden lines, only shown in the inventory so a click can show them again */
 .tracker-row.hidden .tracker-name,
 .tracker-row.hidden .tracker-value,
