@@ -9,8 +9,9 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaOverlay
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.settings.categories.RareMobs
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.HypixelModApi
@@ -28,7 +29,7 @@ import java.util.concurrent.TimeUnit
  * lootshare party message from [LootshareDisplay] (ends in its marker), aqua after. Whoever shared the
  * mob's coords in party chat is shown as the spawner, they always get the loot.
  */
-object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Diana.TrackerOverlay.LOOTSHARE, { Diana.lootsharePartyOverlay },
+object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", "lootshare", { RareMobs.lootsharePartyOverlay },
     y = 60f,
     allowedScreens = listOf(CHAT_SCREEN_FILTER),
     extraCondition = { true },
@@ -89,7 +90,7 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Dian
             spawners.clear()
         }
 
-        if (lastMobNanos == 0L || !Diana.lootsharePartyOverlay || !(PartyFinderManager.isInParty || Debug.lootshareDisplayTest)) {
+        if (lastMobNanos == 0L || !RareMobs.lootsharePartyOverlay || !(PartyFinderManager.isInParty || Debug.lootshareDisplayTest)) {
             shownMobs = null
             members = emptyList()
         } else {

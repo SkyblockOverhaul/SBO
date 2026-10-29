@@ -4,9 +4,11 @@ import net.minecraft.ChatFormatting.*
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.config.after
+import net.sbo.mod.config.label
 import net.sbo.mod.diana.DianaTracker as DianaItemTracker
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOneReflectively
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -27,7 +29,7 @@ import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
 
-object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverlay.LOOT, { Diana.lootTracker != Diana.Tracker.OFF }) {
+object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers.lootTracker != "off" }) {
     private var isSellTypeHovered = false
     private val timerLine: OverlayTextLine = OverlayTextLine("")
 
@@ -36,7 +38,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         hoverText = "$YELLOW${UNDERLINE}Change View",
         defaultText = "${YELLOW}Change View",
         onClick = {
-            Diana.lootTracker = Diana.lootTracker.next()
+            Trackers.lootTracker = Trackers.TRACKER_MODES.after(Trackers.lootTracker, "off")
             updateLines()
         },
         lineBreak = false
@@ -47,7 +49,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     private val changeSellType: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "",
         onClick = {
-            Diana.bazaarSettingDiana = Diana.bazaarSettingDiana.next()
+            Trackers.bazaarSettingDiana = Trackers.BAZAAR_PRICES.after(Trackers.bazaarSettingDiana)
             updateLines()
         },
         onMouseEnter = {
@@ -62,14 +64,14 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
 
     private val changeSort: OverlayTextLine = OverlayTextLine("")
         .onClick {
-            Diana.lootSort = Diana.lootSort.next()
+            Trackers.lootSort = Trackers.LOOT_SORTS.after(Trackers.lootSort)
             updateLines()
         }
         .onMouseEnter {
-            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Diana.lootSort}"
+            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Trackers.LOOT_SORTS.label(Trackers.lootSort)}"
         }
         .onMouseLeave {
-            changeSort.text = "${YELLOW}Sort: ${Diana.lootSort}"
+            changeSort.text = "${YELLOW}Sort: ${Trackers.LOOT_SORTS.label(Trackers.lootSort)}"
         }
 
     private val resetSession = OverlayUtils.createClickableTextLine(
@@ -210,18 +212,18 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     private fun createLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
         val itemName = data.id
         val amount = tracker.getAmountOf(itemName)
-        val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         val formattedName = "$color${data.name}: $AQUA${Helper.formatNumber(amount, withCommas = true)}"
         val price = lossPrefix(data, amount) + Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemName, dropId)
         }
         val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
-        val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(itemName.replace("_LS", ""), amount) == 0L
+        val hidePrice = Trackers.npcOnlyPrices && Helper.getItemPrice(itemName.replace("_LS", ""), amount) == 0L
         val formattedText = "${if (hidePrice) "$DARK_GRAY  -  " else "$GOLD$price"} $GRAY| $formattedName$percentText"
         val line = OverlayTextLine(formattedText).onClick { toggleHidden(itemName) }
             .setCondition {
-                val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
+                val meetsZeroValueCondition = amount > 0 || !Trackers.hideUnobtainedItems
                 val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemName in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
@@ -237,7 +239,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         val amountBase = tracker.getAmountOf(itemNameBase)
         val amountLs = tracker.getAmountOf(itemNameLs)
         val totalAmount = amountBase + amountLs
-        val hidePrices = Diana.ironmanOverrides && Helper.getItemPrice(itemNameBase, totalAmount) == 0L
+        val hidePrices = Trackers.npcOnlyPrices && Helper.getItemPrice(itemNameBase, totalAmount) == 0L
         val priceLs = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(itemNameLs.replace("_LS", ""), amountLs)}"
         val priceCombined = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(itemNameBase, totalAmount)}"
         val percent = data.dropMobId?.let { dropId ->
@@ -248,7 +250,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameLs, dropLsId)
         }
         val percentLsText = percentLs?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
-        val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         val baseText = "$priceCombined $GRAY| $color${data.name}: $AQUA${Helper.formatNumber(amountBase,
             withCommas = true
         )}$percentText"
@@ -259,7 +261,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
 
         val line = OverlayTextLine(combinedText).onClick { toggleHidden(itemNameBase) }
             .setCondition {
-                val meetsZeroValueCondition = totalAmount > 0 || !Diana.hideUnobtainedItems
+                val meetsZeroValueCondition = totalAmount > 0 || !Trackers.hideUnobtainedItems
                 val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemNameBase in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
@@ -291,18 +293,18 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         val lines = LOOT_ITEMS.flatMap { data ->
             when {
                 !data.combined -> listOf(LootLine(data))
-                Diana.combineLootLines -> listOf(LootLine(data, combined = true))
+                Trackers.combineLootLines -> listOf(LootLine(data, combined = true))
                 else -> listOf(LootLine(data), LootLine(data, ls = true))
             }
         }
-        return when (Diana.lootSort) {
-            Diana.LootSort.DEFAULT -> lines
-            Diana.LootSort.PRICE_DESC -> lines.sortedByDescending { worth(it, tracker) }
-            Diana.LootSort.PRICE_ASC -> lines.sortedBy { worth(it, tracker) }
-            Diana.LootSort.AMOUNT_DESC -> lines.sortedByDescending { amount(it, tracker) }
-            Diana.LootSort.AMOUNT_ASC -> lines.sortedBy { amount(it, tracker) }
+        return when (Trackers.lootSort) {
+            "price_desc" -> lines.sortedByDescending { worth(it, tracker) }
+            "price_asc" -> lines.sortedBy { worth(it, tracker) }
+            "amount_desc" -> lines.sortedByDescending { amount(it, tracker) }
+            "amount_asc" -> lines.sortedBy { amount(it, tracker) }
             // The lootshare line stays below its item
-            Diana.LootSort.CUSTOM -> customOrder(ORDER, ITEM_IDS).let { order -> lines.sortedBy { order.indexOf(it.data.id) } }
+            "custom" -> customOrder(ORDER, ITEM_IDS).let { order -> lines.sortedBy { order.indexOf(it.data.id) } }
+            else -> lines
         }
     }
 
@@ -332,14 +334,14 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     )
 
     override fun view(): View {
-        val type = Diana.lootTracker
+        val type = Trackers.lootTracker
         val inventory = isCraftingScreenOpen()
-        val sellType = Helper.toTitleCase(Diana.bazaarSettingDiana.toString())
-        val sort = Diana.lootSort.toString()
-        val reorder = inventory && Diana.lootSort == Diana.LootSort.CUSTOM
+        val sellType = Helper.toTitleCase(Trackers.bazaarSettingDiana)
+        val sort = Trackers.LOOT_SORTS.label(Trackers.lootSort)
+        val reorder = inventory && Trackers.lootSort == "custom"
         val tracker = getDianaTracker(type) ?: return View("", sellType, sort, false, emptyList(), emptyList(), inventory, reorder)
         val rows = lootLines(tracker).mapNotNull { lootRow(it.data, tracker, inventory, it.ls, it.combined) }
-        return View(Helper.toTitleCase("$type"), sellType, sort, type == Diana.Tracker.SESSION, rows, statRows(tracker, type), inventory, reorder)
+        return View(Helper.toTitleCase("$type"), sellType, sort, type == "session", rows, statRows(tracker, type), inventory, reorder)
     }
 
     // One loot line of the new look, null while it is hidden; [ls] for the lootshare line, [combined] for both in one
@@ -347,18 +349,18 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         val id = if (ls) "${data.id}_LS" else data.id
         val amount = tracker.getAmountOf(id)
         val lsAmount = if (combined) tracker.getAmountOf("${data.id}_LS") else 0
-        if (amount + lsAmount <= 0 && Diana.hideUnobtainedItems) return null
+        if (amount + lsAmount <= 0 && Trackers.hideUnobtainedItems) return null
         // Hidden lines only show (crossed out) in the inventory, to unhide them
         val hidden = id in DataManager.sboData.hideTrackerLines
         if (hidden && !inventory) return null
         val dropMob = if (ls) data.dropMobLsId else data.dropMobId
         val percent = dropMob?.let { "${calcPercentOneReflectively(tracker.items, tracker.mobs, id, it)}%" }
         val lsText = if (combined) "LS ${Helper.formatNumber(lsAmount, withCommas = true)}" else null
-        val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(data.id, amount + lsAmount) == 0L
+        val hidePrice = Trackers.npcOnlyPrices && Helper.getItemPrice(data.id, amount + lsAmount) == 0L
         return Row(
             id = id,
             name = if (ls) "${data.name} LS" else data.name,
-            color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color,
+            color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color,
             value = Helper.formatNumber(amount, withCommas = true),
             extra = listOfNotNull(percent, lsText).joinToString("  ").ifEmpty { null },
             price = if (hidePrice) "-" else lossPrefix(data, amount + lsAmount) + Helper.getItemPriceFormatted(data.id, amount + lsAmount),
@@ -366,18 +368,18 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         )
     }
 
-    private fun statRows(tracker: DianaTracker, type: Diana.Tracker): List<Row> {
+    private fun statRows(tracker: DianaTracker, type: String): List<Row> {
         val timer = timer(type)
         val totalProfit = totalProfit(tracker)
         val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
         val profitPerHr = profitPerHour(tracker, totalProfit)
         val rows = mutableListOf(
             Row(null, "Burrows", null, Helper.formatNumber(tracker.items.TOTAL_BURROWS, withCommas = true), if (burrowsPerHr.isNaN()) null else "$burrowsPerHr/h"),
-            Row("coins", "Coins", null, Helper.formatNumber(tracker.items.COINS), if (Diana.excludeCoinsFromProfit) "Excluded" else null, valueClass = "coins"),
+            Row("coins", "Coins", null, Helper.formatNumber(tracker.items.COINS), if (Trackers.excludeCoinsFromProfit) "Excluded" else null, valueClass = "coins"),
             Row("profit", "Profit", null, Helper.formatNumber(totalProfit), if (profitPerHr > 0.0) "${Helper.formatNumber(profitPerHr)}/h" else null, valueClass = "profit"),
             Row(null, "Playtime", null, Helper.formatTime(tracker.items.TIME), if (timer.isRunning()) null else "Paused")
         )
-        if (type == Diana.Tracker.TOTAL) rows += Row(null, "Events", null, DataManager.pastDianaEventsData.events.size.toString())
+        if (type == "total") rows += Row(null, "Events", null, DataManager.pastDianaEventsData.events.size.toString())
         return rows
     }
 
@@ -403,15 +405,15 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.mapNotNull(::itemOf).distinct() }) return
         when (id) {
             "mode" -> {
-                Diana.lootTracker = Diana.lootTracker.next()
+                Trackers.lootTracker = Trackers.TRACKER_MODES.after(Trackers.lootTracker, "off")
                 updateLines()
             }
             "sell" -> {
-                Diana.bazaarSettingDiana = Diana.bazaarSettingDiana.next()
+                Trackers.bazaarSettingDiana = Trackers.BAZAAR_PRICES.after(Trackers.bazaarSettingDiana)
                 updateLines()
             }
             "sort" -> {
-                Diana.lootSort = Diana.lootSort.next()
+                Trackers.lootSort = Trackers.LOOT_SORTS.after(Trackers.lootSort)
                 updateLines()
             }
             "reset" -> resetSession()
@@ -421,7 +423,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     }
 
     override fun tooltip(id: String): String? {
-        val tracker = getDianaTracker(Diana.lootTracker) ?: return null
+        val tracker = getDianaTracker(Trackers.lootTracker) ?: return null
         return when (val row = rowId(id)) {
             "coins" -> coinBreakdown(tracker)
             "profit" -> {
@@ -430,13 +432,13 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
             }
             null -> null
             // The lootshare count of a combined line
-            else -> LOOT_ITEMS.find { it.id == row && it.combined && Diana.combineLootLines }?.let { lsDetails(it, tracker) }
+            else -> LOOT_ITEMS.find { it.id == row && it.combined && Trackers.combineLootLines }?.let { lsDetails(it, tracker) }
         }
     }
 
-    private fun timer(type: Diana.Tracker) = when (type) {
-        Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
-        Diana.Tracker.SESSION -> SboTimerManager.timerSession
+    private fun timer(type: String) = when (type) {
+        "total" -> SboTimerManager.timerTotal
+        "session" -> SboTimerManager.timerSession
         else -> SboTimerManager.timerMayor
     }
 
@@ -465,16 +467,16 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     private fun lsDetails(data: LootItemData, tracker: DianaTracker): String {
         val itemNameLs = "${data.id}_LS"
         val amountLs = tracker.getAmountOf(itemNameLs)
-        val hidePrices = Diana.ironmanOverrides && Helper.getItemPrice(data.id, tracker.getAmountOf(data.id) + amountLs) == 0L
+        val hidePrices = Trackers.npcOnlyPrices && Helper.getItemPrice(data.id, tracker.getAmountOf(data.id) + amountLs) == 0L
         val priceLs = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(data.id, amountLs)}"
         val percentLs = data.dropMobLsId?.let { " $GRAY($AQUA${calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameLs, it)}%$GRAY)" } ?: ""
-        val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         return "$YELLOW${Helper.toTitleCase(data.id.replace("_", " ").lowercase())} LS Details:\n" +
             "$priceLs $GRAY| $color${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${Helper.formatNumber(amountLs, withCommas = true)}$percentLs"
     }
 
     override fun generateLines(): List<OverlayTextLine> {
-        val type = Diana.lootTracker
+        val type = Trackers.lootTracker
         val tracker = getDianaTracker(type) ?: run {
             return@generateLines emptyList()
         }
@@ -490,28 +492,28 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         return lines
     }
 
-    private fun getDianaTracker(type: Diana.Tracker): DianaTracker? {
+    private fun getDianaTracker(type: String): DianaTracker? {
         return when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
-            Diana.Tracker.OFF -> null
+            "total" -> DataManager.dianaTrackerTotalData
+            "event" -> DataManager.dianaTrackerMayorData
+            "session" -> DataManager.dianaTrackerSessionData
+            else -> null
         }
     }
 
     private fun updateControlLines(lines: MutableList<OverlayTextLine>, isCraftingOpen: Boolean) {
         val screenOpen = isCraftingOpen || isCraftingScreenOpen()
         val sellTypeText = if (isSellTypeHovered) {
-            "$YELLOW$UNDERLINE${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
+            "$YELLOW$UNDERLINE${Helper.toTitleCase(Trackers.bazaarSettingDiana)}"
         } else {
-            "$YELLOW${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
+            "$YELLOW${Helper.toTitleCase(Trackers.bazaarSettingDiana)}"
         }
         changeSellType.text = sellTypeText
-        changeSort.text = "${YELLOW}Sort: ${Diana.lootSort}"
+        changeSort.text = "${YELLOW}Sort: ${Trackers.LOOT_SORTS.label(Trackers.lootSort)}"
 
         if (screenOpen) {
             lines.addAll(listOf(changeView, delimiter, changeSellType, changeSort))
-            if (Diana.lootTracker == Diana.Tracker.SESSION) lines.add(resetSession)
+            if (Trackers.lootTracker == "session") lines.add(resetSession)
         }
     }
 
@@ -530,11 +532,11 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         }
     }
 
-    private fun generateStatisticsLines(tracker: DianaTracker, type: Diana.Tracker): List<OverlayTextLine> {
+    private fun generateStatisticsLines(tracker: DianaTracker, type: String): List<OverlayTextLine> {
         val timer = when (type) {
-            Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
-            Diana.Tracker.EVENT -> SboTimerManager.timerMayor
-            Diana.Tracker.SESSION -> SboTimerManager.timerSession
+            "total" -> SboTimerManager.timerTotal
+            "event" -> SboTimerManager.timerMayor
+            "session" -> SboTimerManager.timerSession
             else -> SboTimerManager.timerMayor
         }
         val totalBurrows = tracker.items.TOTAL_BURROWS
@@ -556,13 +558,13 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
         )
 
         stats.add(timerLine)
-        if (type == Diana.Tracker.TOTAL) stats.add(OverlayTextLine("${YELLOW}Total Events: $AQUA$totalEvents"))
+        if (type == "total") stats.add(OverlayTextLine("${YELLOW}Total Events: $AQUA$totalEvents"))
 
         return stats
     }
 
     private fun createCoinLine(tracker: DianaTracker): OverlayTextLine {
-        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}" + if (Diana.excludeCoinsFromProfit) " $GRAY[${RED}EXCLUDED$GRAY]" else "")
+        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}" + if (Trackers.excludeCoinsFromProfit) " $GRAY[${RED}EXCLUDED$GRAY]" else "")
             .onHover { drawContext, textRenderer ->
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor
@@ -593,7 +595,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
 
     fun totalProfit(tracker: DianaTracker): Long {
         val totalProfit = profitByItem(tracker).values.sum()
-        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
+        return if (Trackers.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
     }
 
     private val excludedProfitFields = setOf(
@@ -636,22 +638,22 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Diana.TrackerOverl
     }
 
     private fun updateTimerText() {
-        val type = Diana.lootTracker
+        val type = Trackers.lootTracker
         val tracker = when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
-            Diana.Tracker.OFF -> {
+            "total" -> DataManager.dianaTrackerTotalData
+            "event" -> DataManager.dianaTrackerMayorData
+            "session" -> DataManager.dianaTrackerSessionData
+            else -> {
                 timerLine.text = ""
                 return
             }
         }
 
         val timer = when (type) {
-            Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
-            Diana.Tracker.EVENT -> SboTimerManager.timerMayor
-            Diana.Tracker.SESSION -> SboTimerManager.timerSession
-            Diana.Tracker.OFF -> {
+            "total" -> SboTimerManager.timerTotal
+            "event" -> SboTimerManager.timerMayor
+            "session" -> SboTimerManager.timerSession
+            else -> {
                 timerLine.text = ""
                 return
             }

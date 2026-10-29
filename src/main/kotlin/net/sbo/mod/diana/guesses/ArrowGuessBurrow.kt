@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -139,7 +139,7 @@ object ArrowGuessBurrow {
 
     @SboEvent
     fun onReceiveParticle(event: ParticleReceiveEvent) {
-        if (!Diana.arrowGuess) return
+        if (!Burrows.arrowGuess) return
         if (!World.isInHub()) return
 
         val packet = event.packet
@@ -155,7 +155,7 @@ object ArrowGuessBurrow {
 
     @SboEvent
     fun onTick(event: TickEvent) {
-        if (!Diana.arrowGuess) return
+        if (!Burrows.arrowGuess) return
         if (!World.isInHub()) return
         if (allGuesses.isEmpty()) return
         checkMoveGuess()
@@ -163,7 +163,7 @@ object ArrowGuessBurrow {
 
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
-        if (!Diana.arrowGuess) return
+        if (!Burrows.arrowGuess) return
 
         val currentChain = event.currentBurrow
         val maxChain = event.maxBurrow
@@ -411,14 +411,14 @@ object ArrowGuessBurrow {
 
             WaypointManager.addArrowGuess(entry.getCurrent())
 
-            if (Diana.showArrowSubGuesses) {
+            if (Burrows.showArrowSubGuesses) {
                 entry.getRemaining().forEach {
                     WaypointManager.addArrowSubGuess(it)
                 }
             }
         }
 
-        if (Diana.showTitleWhenFailure) {
+        if (Burrows.showTitleWhenFailure) {
             spadeTitleShown = if (!hasOne) {
                 if (!spadeTitleShown) BurrowDetector.requestSpade("failure")
                 true

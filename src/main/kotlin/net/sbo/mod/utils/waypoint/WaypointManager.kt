@@ -14,11 +14,12 @@ import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
-import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.settings.categories.General.HideOwnWaypoints
-import net.sbo.mod.settings.categories.General.hideOwnWaypoints
-import net.sbo.mod.settings.categories.General.patcherWaypoints
+import net.sbo.mod.settings.categories.Burrows
+import net.sbo.mod.settings.categories.RareMobs
+import net.sbo.mod.settings.categories.Warps
+import net.sbo.mod.settings.categories.Waypoints
+import net.sbo.mod.settings.categories.Waypoints.hideOwnWaypoints
+import net.sbo.mod.settings.categories.Waypoints.patcherWaypoints
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.sleep
@@ -87,18 +88,18 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                val mobType: Diana.ReceiveList? = when (mob) {
-                    "Minos Inquisitor" -> Diana.ReceiveList.INQ
-                    "King Minos" -> Diana.ReceiveList.KING
-                    "Manticore" -> Diana.ReceiveList.MANTICORE
-                    "Sphinx" -> Diana.ReceiveList.SPHINX
+                val mobType: String? = when (mob) {
+                    "Minos Inquisitor" -> RareMobs.INQ
+                    "King Minos" -> RareMobs.KING
+                    "Manticore" -> RareMobs.MANTICORE
+                    "Sphinx" -> RareMobs.SPHINX
                     else -> null
                 }
 
                 // If mobType is not null, handle it as a rare mob waypoint.
                 // Otherwise, the else if falls to patcherWaypoints case.
-                if (Diana.receiveRareMob && mobType != null) {
-                    if (mobType !in Diana.ReceiveMobs) return@onChatMessage
+                if (RareMobs.receiveRareMob && mobType != null) {
+                    if (mobType !in RareMobs.ReceiveMobs) return@onChatMessage
 
                     val existing = getWaypointsOfType("rareMob")
                     if (existing.any { it.rareMobType == mobType && it.rareMobSentBy == player && it.pos.distanceTo(pos) <= 10 }) {
@@ -116,7 +117,7 @@ object WaypointManager {
                         isOwnSpawn
                     )
                 } else if (patcherWaypoints) {
-                    if (hideOwnWaypoints.contains(HideOwnWaypoints.NORMAL) && player.contains(selfName)) return@onChatMessage
+                    if (hideOwnWaypoints.contains("normal") && player.contains(selfName)) return@onChatMessage
 
                     addWaypoint(Waypoint(player, pos.x, pos.y, pos.z, type = "world", ttl = 30))
                 }
@@ -124,7 +125,7 @@ object WaypointManager {
         }
 
         Register.onTick(1) { _ ->
-            if (Diana.receiveRareMob && World.isInHub()) {
+            if (RareMobs.receiveRareMob && World.isInHub()) {
                 updateRareMobWaypoints()
             }
 
@@ -333,48 +334,49 @@ object WaypointManager {
         val mobName: String
     )
 
-    fun notifyRareMob(player: String, mobType: Diana.ReceiveList, isOwnSpawn: Boolean, fromSelfSpawnMessage: Boolean = false): String {
+    fun notifyRareMob(player: String, mobType: String, isOwnSpawn: Boolean, fromSelfSpawnMessage: Boolean = false): String {
         val mobData = when (mobType) {
-            Diana.ReceiveList.INQ -> RareMobData(
+            RareMobs.INQ -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.inqSound,
                 DataManager.soundSettingsData.inqVolume,
                 "§dInquisitor"
             )
 
-            Diana.ReceiveList.KING -> RareMobData(
+            RareMobs.KING -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.kingSound,
                 DataManager.soundSettingsData.kingVolume,
                 "§6King Minos"
             )
 
-            Diana.ReceiveList.MANTICORE -> RareMobData(
+            RareMobs.MANTICORE -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.mantiSound,
                 DataManager.soundSettingsData.mantiVolume,
                 "§2Manticore"
             )
 
-            Diana.ReceiveList.SPHINX -> RareMobData(
+            RareMobs.SPHINX -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.sphinxSound,
                 DataManager.soundSettingsData.sphinxVolume,
                 "§9Sphinx"
             )
+            else -> return mobType
         }
 
         if (!isOwnSpawn || fromSelfSpawnMessage) {
             // The self-spawn message always shows the title and plays the custom sound to let user know they spawned a rare mob.
             // For other's mobs, the title and sound does not play unless the mob was selected in "Select Whichs Mobs to Receive".
-            if (!fromSelfSpawnMessage && mobType !in Diana.ReceiveMobs) return mobData.mobName
+            if (!fromSelfSpawnMessage && mobType !in RareMobs.ReceiveMobs) return mobData.mobName
     
             Helper.showTitle(
                 mobData.title,
                 player.ifEmpty { null },
-                Diana.rareMobTitleFadeInTime,
-                Diana.rareMobTitleStayTime,
-                Diana.rareMobTitleFadeOutTime
+                RareMobs.rareMobTitleFadeInTime,
+                RareMobs.rareMobTitleStayTime,
+                RareMobs.rareMobTitleFadeOutTime
             )
 
             playCustomSound(mobData.sound, mobData.volume)
@@ -488,7 +490,7 @@ object WaypointManager {
         val level = mc.level ?: return
         val player = mc.player ?: return
 
-        val shouldAddWaypoints = Diana.scanWorldForRareMob
+        val shouldAddWaypoints = RareMobs.scanWorldForRareMob
 
         val existing = getWaypointsOfType("rareMob").toMutableList()
         val rareMobPositions = mutableListOf<SboVec>()
@@ -509,13 +511,13 @@ object WaypointManager {
             if (!shouldAddWaypoints) continue
 
             val receiveType = when (mobType) {
-                DianaMobDetect.RareDianaMob.INQ -> Diana.ReceiveList.INQ
-                DianaMobDetect.RareDianaMob.KING -> Diana.ReceiveList.KING
-                DianaMobDetect.RareDianaMob.SPHINX -> Diana.ReceiveList.SPHINX
-                DianaMobDetect.RareDianaMob.MANTI -> Diana.ReceiveList.MANTICORE
+                DianaMobDetect.RareDianaMob.INQ -> RareMobs.INQ
+                DianaMobDetect.RareDianaMob.KING -> RareMobs.KING
+                DianaMobDetect.RareDianaMob.SPHINX -> RareMobs.SPHINX
+                DianaMobDetect.RareDianaMob.MANTI -> RareMobs.MANTICORE
             }
 
-            if (receiveType !in Diana.ReceiveMobs) continue
+            if (receiveType !in RareMobs.ReceiveMobs) continue
             if (existing.any { it.rareMobType == receiveType && it.pos.distanceTo(standPos) <= 60 }) continue
 
             // Best-effort to not be considered a cheat.
@@ -575,21 +577,14 @@ object WaypointManager {
     fun addRareMobWaypoint(
         player: String,
         pos: SboVec,
-        mobType: Diana.ReceiveList,
+        mobType: String,
         mobDisplayName: String,
         isOwnSpawn: Boolean
     ): Waypoint? {
-        if (isOwnSpawn) {
-            when (mobType) {
-                Diana.ReceiveList.INQ -> if (hideOwnWaypoints.contains(HideOwnWaypoints.INQ)) return null
-                Diana.ReceiveList.KING -> if (hideOwnWaypoints.contains(HideOwnWaypoints.KING)) return null
-                Diana.ReceiveList.MANTICORE -> if (hideOwnWaypoints.contains(HideOwnWaypoints.MANTICORE)) return null
-                Diana.ReceiveList.SPHINX -> if (hideOwnWaypoints.contains(HideOwnWaypoints.SPHINX)) return null
-            }
-        }
+        if (isOwnSpawn && mobType in hideOwnWaypoints) return null
 
         // Self-spawn still adds the waypoint, even if not in receive list, because hide own waypoints setting controls that, not receive.
-        if (!isOwnSpawn && mobType !in Diana.ReceiveMobs) return null
+        if (!isOwnSpawn && mobType !in RareMobs.ReceiveMobs) return null
 
         val owner = if (player.isNotEmpty()) " §7($player§7)" else ""
         val waypoint = Waypoint("$mobDisplayName$owner", pos.x, pos.y, pos.z, type = "rareMob", ttl = 45, rareMobType = mobType, rareMobSentBy = player)
@@ -605,10 +600,10 @@ object WaypointManager {
     fun removeRareMobWaypointBySpawner(player: String, mobName: String) {
         val cleanPlayer = player.removeFormatting().trim()
         val mobType = when (mobName) {
-            DianaMobDetect.RareDianaMob.INQ.display -> Diana.ReceiveList.INQ
-            DianaMobDetect.RareDianaMob.KING.display -> Diana.ReceiveList.KING
-            DianaMobDetect.RareDianaMob.MANTI.display -> Diana.ReceiveList.MANTICORE
-            DianaMobDetect.RareDianaMob.SPHINX.display -> Diana.ReceiveList.SPHINX
+            DianaMobDetect.RareDianaMob.INQ.display -> RareMobs.INQ
+            DianaMobDetect.RareDianaMob.KING.display -> RareMobs.KING
+            DianaMobDetect.RareDianaMob.MANTI.display -> RareMobs.MANTICORE
+            DianaMobDetect.RareDianaMob.SPHINX.display -> RareMobs.SPHINX
             else -> return
         }
 
@@ -650,12 +645,12 @@ object WaypointManager {
 
     private fun prepareGuessLines() {
         val playerPos = Player.getLastPosition()
-        val dynamicOpacity = Customization.dynamicWaypointOpacity
-        val waypointOpacity = Customization.waypointOpacity / 100f
-        val lineWidth = Diana.dianaLineWidth.toFloat()
+        val dynamicOpacity = Waypoints.dynamicWaypointOpacity
+        val waypointOpacity = Waypoints.waypointOpacity / 100f
+        val lineWidth = Waypoints.dianaLineWidth.toFloat()
 
-        preparedSubGuessLines = if (!Diana.showArrowSubGuesses) emptyList() else {
-            val color = Color(Customization.SubGuessColor)
+        preparedSubGuessLines = if (!Burrows.showArrowSubGuesses) emptyList() else {
+            val color = Color(Waypoints.SubGuessColor)
             val rgb = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f)
             ArrowGuessBurrow.allGuesses.flatMap { guess ->
                 guess.getVisibleChain().zipWithNext { a, b ->
@@ -670,9 +665,9 @@ object WaypointManager {
             }
         }
 
-        preparedGuessChainLines = if (!Diana.drawOptimalOrderLines) emptyList() else {
+        preparedGuessChainLines = if (!Waypoints.drawOptimalOrderLines) emptyList() else {
             val chain = buildGreedyGuessChain(playerPos)
-            val color = Color(Customization.OptimalOrderLineColor)
+            val color = Color(Waypoints.OptimalOrderLineColor)
             val rgb = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f)
             val width = (lineWidth / 1.6f).coerceIn(1.0f, 20.0f)
             chain.zipWithNext().mapIndexedNotNull { index, (a, b) ->
@@ -701,7 +696,7 @@ object WaypointManager {
         val chain = mutableListOf<Waypoint>()
         var currentPos = startPos
 
-        val ignoreYLevel = Diana.ignoreYLevel
+        val ignoreYLevel = Warps.ignoreYLevel
 
         while (remaining.isNotEmpty()) {
             val next = remaining.minByOrNull { wp ->
@@ -853,7 +848,7 @@ object WaypointManager {
 
         addWaypoint(
             Waypoint(
-                text = if (Diana.showTextOnSubGuess) "Possible" else "",
+                text = if (Burrows.showTextOnSubGuess) "Possible" else "",
                 x = pos.x,
                 y = pos.y,
                 z = pos.z,
@@ -914,7 +909,7 @@ object WaypointManager {
     private fun getBestGuess(): Waypoint? = getBestGuessAt(Player.getLastPosition())
 
     private fun getBestGuessAt(pos: SboVec): Waypoint? {
-        val ignoreYLevel = Diana.ignoreYLevel
+        val ignoreYLevel = Warps.ignoreYLevel
         return getAllGuessesAndBurrows()
             .asSequence()
             .filter { !it.hidden }
@@ -934,15 +929,14 @@ object WaypointManager {
         }
 
         val warps = hubWarps.filter { it.value.unlocked }.toMutableMap()
-        for (warp in Diana.allowedWarps) {
-            val warpName = warp.lowercaseName
+        for (warpName in Warps.allowedWarps) {
             val additionalWarp = additionalHubWarps[warpName]
             if (additionalWarp != null && additionalWarp.unlocked) {
                 warps[warpName] = additionalWarp
             }
         }
 
-        val ignoreYLevel = Diana.ignoreYLevel
+        val ignoreYLevel = Warps.ignoreYLevel
         val playerDistance = if (ignoreYLevel) pos.distanceToIgnoringY(playerPos) else pos.distanceTo(playerPos)
 
         var closestWarp: String? = null
@@ -973,7 +967,7 @@ object WaypointManager {
 
         val preferredAgainst = secondClosestWarpPoint?.preferWarpAgainstCompetitive
 
-        if (Diana.badWarpDistance > 0 && preferredAgainst != null && preferredAgainst == closestWarpPoint?.warpType && secondClosestDistance - closestDistance < Diana.badWarpDistance) {
+        if (Warps.badWarpDistance > 0 && preferredAgainst != null && preferredAgainst == closestWarpPoint?.warpType && secondClosestDistance - closestDistance < Warps.badWarpDistance) {
             closestWarp = secondClosestWarp
             closestWarpPoint = secondClosestWarpPoint
             closestDistance = secondClosestDistance
@@ -982,10 +976,10 @@ object WaypointManager {
         val extra = closestWarpPoint?.extraBlocks ?: 0
 
         val warpIsWorthIt =
-            playerDistance > closestDistance + Diana.warpDiff + extra
+            playerDistance > closestDistance + Warps.warpDiff + extra
 
         val targetIsFarEnough =
-            !Diana.dontWarpIfBurrowClose ||
+            !Warps.dontWarpIfBurrowClose ||
             playerDistance > 60
 
         val playerToWarpDistance = closestWarpPoint?.let {
@@ -997,7 +991,7 @@ object WaypointManager {
         } ?: Double.MAX_VALUE
 
         val warpIsFarEnough =
-            !Diana.dontWarpIfBurrowClose ||
+            !Warps.dontWarpIfBurrowClose ||
             playerToWarpDistance > 60
 
         return if (warpIsWorthIt && targetIsFarEnough && warpIsFarEnough)

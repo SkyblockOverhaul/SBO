@@ -270,6 +270,17 @@ class StringEntry internal constructor(id: String, default: String, name: String
 
 class Choice(val id: String, val label: String, val description: String = "")
 
+/** The label of [id], the id itself when it isn't one of the options. */
+fun List<Choice>.label(id: String): String = firstOrNull { it.id == id }?.label ?: id
+
+/** The option after [id], from the last one back to the first; [skip] are left out (e.g. "off" while cycling a tracker). */
+fun List<Choice>.after(id: String, vararg skip: String): String {
+    val cycle = filter { it.id !in skip }
+    if (cycle.isEmpty()) return id
+    val index = cycle.indexOfFirst { it.id == id }
+    return cycle[(index + 1) % cycle.size].id
+}
+
 // A string out of options that can change while the game runs (e.g. files in a folder), shown as a dropdown.
 // Ids that aren't an option (anymore) are kept, the code reading the entry picks the fallback.
 class ChoiceEntry internal constructor(
@@ -296,52 +307,19 @@ class StringsEntry internal constructor(id: String, default: Array<String>, name
     }
 }
 
-class EnumEntry<E : Enum<E>> @PublishedApi internal constructor(
+// Several ids out of options, shown as a multi select. Ids that aren't an option (anymore) are kept like in ChoiceEntry.
+class ChoicesEntry internal constructor(
     id: String,
-    default: E,
+    default: Set<String>,
     name: String,
     description: String,
-    val constants: List<E>,
-) : ConfigEntry<E>(id, default, name, description) {
+    val options: () -> List<Choice>,
+) : ConfigEntry<Set<String>>(id, default, name, description) {
 
-    override fun toJson() = JsonPrimitive(value.name)
-    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.let { p -> constants.find { it.name == p.asString } }
+    override fun toJson() = JsonArray().apply { value.forEach(::add) }
 
-    fun setName(name: String) {
-        constants.find { it.name == name }?.let(::set)
-    }
-    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.name })
-}
-
-class SelectEntry<E : Enum<E>> @PublishedApi internal constructor(
-    id: String,
-    default: Array<E>,
-    name: String,
-    description: String,
-    private val enumClass: Class<E>,
-) : ConfigEntry<Array<E>>(id, default, name, description) {
-
-    val constants: List<E> = enumClass.enumConstants.toList()
-
-    override fun same(a: Array<E>, b: Array<E>) = a.contentEquals(b)
-    override fun toJson() = JsonArray().apply { value.forEach { add(it.name) } }
-
-    // Unknown names (e.g. a removed warp) are dropped instead of rejecting the whole list.
-    override fun parse(json: JsonElement): Array<E>? {
+    override fun parse(json: JsonElement): Set<String>? {
         val array = json as? JsonArray ?: return null
-        val names = array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }
-        return arrayOf(names.mapNotNull { name -> constants.find { it.name == name } })
+        return array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }.toCollection(LinkedHashSet())
     }
-
-    fun setNames(names: Collection<String>) = set(arrayOf(constants.filter { it.name in names }))
-
-    // A real E[], code reading the entry casts it to its enum's array type
-    private fun arrayOf(constants: List<E>): Array<E> {
-        @Suppress("UNCHECKED_CAST")
-        val result = java.lang.reflect.Array.newInstance(enumClass, constants.size) as Array<E>
-        constants.forEachIndexed { i, constant -> result[i] = constant }
-        return result
-    }
-
-    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.name })
 }

@@ -3,7 +3,7 @@ package net.sbo.mod.diana.guesses
 import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
@@ -25,7 +25,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
-        if (!Diana.spadeGuess) return
+        if (!Burrows.spadeGuess) return
         this.particleLocations.clear()
         finalLocation = null
     }
@@ -33,7 +33,7 @@ object PreciseGuessBurrow {
     @SboEvent
     fun onReceiveParticle(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (!Diana.spadeGuess || !World.isInHub()) return
+        if (!Burrows.spadeGuess || !World.isInHub()) return
         if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)
         val now = System.nanoTime()
@@ -56,7 +56,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onUseSpade(event: PlayerInteractEvent) {
-        if (!Diana.spadeGuess || !World.isInHub()) return
+        if (!Burrows.spadeGuess || !World.isInHub()) return
         val action = event.action
         if (action != "useItem" && action != "useBlock") return
         val player = SBOKotlin.mc.player

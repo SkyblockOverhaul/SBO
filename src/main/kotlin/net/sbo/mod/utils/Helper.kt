@@ -10,7 +10,8 @@ import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.RareMobKillTime
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Drops
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.*
 import net.sbo.mod.utils.events.Register
@@ -82,7 +83,7 @@ object Helper {
     }
 
     private fun notifyUserOfLs(mob: String) {
-        if (Diana.assumeAllLS) {
+        if (Trackers.assumeAllLS) {
             Chat.chat("§6[SBO] §eRegistered Lootshare $mob!", true)
         }
     }
@@ -158,7 +159,7 @@ object Helper {
     private fun handleDianaMobDeath(name: String, dist: Float, pos: SboVec) {
         val nearby = dist <= 30
         val last = DianaTracker.lastSpawnedMob
-        val lsOverride = Diana.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
+        val lsOverride = Trackers.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
                 RareMobKillTime.onMobDeath("Minos Inquisitor", nearby)
@@ -643,27 +644,27 @@ object Helper {
 
         return when (dropName.lowercase()) {
             "chimera" -> {
-                val message = getCustomMessage(Diana.customChimeraMessage)
+                val message = getCustomMessage(Drops.customChimeraMessage)
                 DropInfo(message, message.isNotEmpty(), items.CHIMERA + items.CHIMERA_LS, "CHIMERA", mobs.MINOS_INQUISITOR, items.CHIMERA)
             }
 
             "core" -> {
-                val message = getCustomMessage(Diana.customManticoreMessage)
+                val message = getCustomMessage(Drops.customManticoreMessage)
                 DropInfo(message, message.isNotEmpty(), items.MANTI_CORE + items.MANTI_CORE_LS, "MANTI_CORE", mobs.MANTICORE, items.MANTI_CORE)
             }
 
             "stinger" -> {
-                val message = getCustomMessage(Diana.customFatefulStingerMessage)
+                val message = getCustomMessage(Drops.customFatefulStingerMessage)
                 DropInfo(message, message.isNotEmpty(), items.FATEFUL_STINGER + items.FATEFUL_STINGER_LS, "FATEFUL_STINGER", mobs.MANTICORE, items.FATEFUL_STINGER)
             }
 
             "brain food" -> {
-                val message = getCustomMessage(Diana.customBrainFoodMessage)
+                val message = getCustomMessage(Drops.customBrainFoodMessage)
                 DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, "BRAIN_FOOD", mobs.SPHINX, items.BRAIN_FOOD)
             }
 
             "wool" -> {
-                val message = getCustomMessage(Diana.customShimmeringWoolMessage)
+                val message = getCustomMessage(Drops.customShimmeringWoolMessage)
                 DropInfo(message, message.isNotEmpty(), items.SHIMMERING_WOOL + items.SHIMMERING_WOOL_LS, "SHIMMERING_WOOL", mobs.KING_MINOS, items.SHIMMERING_WOOL)
             }
 
@@ -767,7 +768,7 @@ object Helper {
         }
 
         val bzProduct = priceDataBazaar?.products?.get(id)
-        val bazaarPrice = if (Diana.bazaarSettingDiana == Diana.SettingDiana.INSTASELL) {
+        val bazaarPrice = if (Trackers.bazaarSettingDiana == "instasell") {
             bzProduct?.quick_status?.sellPrice ?: 0.0
         } else {
             bzProduct?.quick_status?.buyPrice ?: 0.0
@@ -777,7 +778,7 @@ object Helper {
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
         val preferNpc =
-            Diana.ironmanOverrides || Diana.npcPriceOverrides && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
+            Trackers.npcOnlyPrices || Trackers.priceSource == "npc_items" && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
         val bestMarketPrice = kotlin.math.max(bazaarPrice, ahPrice)
         val bestUnitPrice = if (npcPrice > bestMarketPrice || preferNpc) npcPrice else bestMarketPrice
 

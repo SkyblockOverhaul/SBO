@@ -1,7 +1,7 @@
 package net.sbo.mod.mixin.compat;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.sbo.mod.settings.categories.Diana;
+import net.sbo.mod.settings.categories.Burrows;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,6 +21,6 @@ final class MythologicalRitualMixin {
     @SuppressWarnings("UnresolvedMixinReference")
     @ModifyReturnValue(method = "isActive", at = @At("RETURN"))
     private static final boolean sbo$disableSkyblockerMythologicalRitualHelperIfSBOEnabled(final boolean isActive) {
-        return isActive && !Diana.INSTANCE.getArrowGuess();
+        return isActive && !Burrows.INSTANCE.getArrowGuess();
     }
 }

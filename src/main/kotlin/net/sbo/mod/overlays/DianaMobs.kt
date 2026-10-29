@@ -7,7 +7,9 @@ package net.sbo.mod.overlays
 import net.minecraft.ChatFormatting
 import net.minecraft.ChatFormatting.*
 import net.sbo.guilib.core.dsl.NodeBuilder
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.config.after
+import net.sbo.mod.config.label
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -23,10 +25,10 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
 
-object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverlay.MOBS, { Diana.mobTracker != Diana.Tracker.OFF }) {
+object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", "mobs", { Trackers.mobTracker != "off" }) {
     private val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
         .onClick {
-            Diana.mobTracker = Diana.mobTracker.next()
+            Trackers.mobTracker = Trackers.TRACKER_MODES.after(Trackers.mobTracker, "off")
             updateLines()
         }
         .onMouseEnter {
@@ -38,14 +40,14 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
 
     private val changeSort: OverlayTextLine = OverlayTextLine("")
         .onClick {
-            Diana.mobSort = Diana.mobSort.next()
+            Trackers.mobSort = Trackers.LINE_SORTS.after(Trackers.mobSort)
             updateLines()
         }
         .onMouseEnter {
-            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Diana.mobSort}"
+            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Trackers.LINE_SORTS.label(Trackers.mobSort)}"
         }
         .onMouseLeave {
-            changeSort.text = "${YELLOW}Sort: ${Diana.mobSort}"
+            changeSort.text = "${YELLOW}Sort: ${Trackers.LINE_SORTS.label(Trackers.mobSort)}"
         }
 
     fun init() {
@@ -75,7 +77,7 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
     private fun createLine(name: String, formattedText: String, amount: Int) : OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick { toggleHidden(name) }
             .setCondition {
-                val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
+                val meetsZeroValueCondition = amount > 0 || !Trackers.hideUnobtainedItems
                 val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
@@ -85,11 +87,11 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
         return line
     }
 
-    private fun tracker(type: Diana.Tracker): DianaTracker? = when (type) {
-        Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
-        Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
-        Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
-        Diana.Tracker.OFF -> null
+    private fun tracker(type: String): DianaTracker? = when (type) {
+        "total" -> DataManager.dianaTrackerTotalData
+        "event" -> DataManager.dianaTrackerMayorData
+        "session" -> DataManager.dianaTrackerSessionData
+        else -> null
     }
 
     private fun mobsPerHour(tracker: DianaTracker): Double {
@@ -128,7 +130,7 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
 
     /** The mobs in the order picked in "Mob Sort". */
     private fun sortedMobs(mobs: DianaMobsData): List<Mob> =
-        sortLines(MOBS, Diana.mobSort, ORDER, { it.key }) { it.kills(mobs) + (it.lsKills?.invoke(mobs) ?: 0) }
+        sortLines(MOBS, Trackers.mobSort, ORDER, { it.key }) { it.kills(mobs) + (it.lsKills?.invoke(mobs) ?: 0) }
 
     data class View(
         val mode: String,
@@ -142,21 +144,21 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
     )
 
     override fun view(): View {
-        val type = Diana.mobTracker
+        val type = Trackers.mobTracker
         val inventory = isCraftingScreenOpen()
-        val sort = Diana.mobSort.toString()
-        val reorder = inventory && Diana.mobSort == Diana.LineSort.CUSTOM
+        val sort = Trackers.LINE_SORTS.label(Trackers.mobSort)
+        val reorder = inventory && Trackers.mobSort == "custom"
         val tracker = tracker(type) ?: return View("", sort, emptyList(), "", "", inventory, reorder)
         val mobs = tracker.mobs
         val hidden = DataManager.sboData.hideTrackerLines
         val rows = sortedMobs(mobs).mapNotNull { mob ->
             val kills = mob.kills(mobs)
             val lsKills = mob.lsKills?.invoke(mobs)
-            if (kills + (lsKills ?: 0) <= 0 && Diana.hideUnobtainedItems) return@mapNotNull null
+            if (kills + (lsKills ?: 0) <= 0 && Trackers.hideUnobtainedItems) return@mapNotNull null
             // Hidden lines only show (crossed out) in the inventory, to unhide them
             val isHidden = mob.key in hidden
             if (isHidden && !inventory) return@mapNotNull null
-            val ls = if (lsKills != null && !Diana.hideLsStats) "  LS ${Helper.formatNumber(lsKills, withCommas = true)}" else ""
+            val ls = if (lsKills != null && !Trackers.hideLsStats) "  LS ${Helper.formatNumber(lsKills, withCommas = true)}" else ""
             Row(
                 id = mob.key,
                 name = mob.name,
@@ -195,11 +197,11 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
         if (moveClicked(id, ORDER, MOB_KEYS) { view().rows.mapNotNull { it.id } }) return
         when (id) {
             "mode" -> {
-                Diana.mobTracker = Diana.mobTracker.next()
+                Trackers.mobTracker = Trackers.TRACKER_MODES.after(Trackers.mobTracker, "off")
                 updateLines()
             }
             "sort" -> {
-                Diana.mobSort = Diana.mobSort.next()
+                Trackers.mobSort = Trackers.LINE_SORTS.after(Trackers.mobSort)
                 updateLines()
             }
             else -> rowId(id)?.let(::toggleHidden)
@@ -207,7 +209,7 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
     }
 
     override fun generateLines(): List<OverlayTextLine> {
-        val type = Diana.mobTracker
+        val type = Trackers.mobTracker
         val tracker = tracker(type) ?: return emptyList()
         val kingPercent = calcPercentOne(tracker.mobs.KING_MINOS, tracker.mobs.TOTAL_MOBS)
         val manticorePercent = calcPercentOne(tracker.mobs.MANTICORE, tracker.mobs.TOTAL_MOBS)
@@ -226,14 +228,14 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Diana.TrackerOverl
         val lines = mutableListOf<OverlayTextLine>()
 
         if (isCraftingScreenOpen()) {
-            changeSort.text = "${YELLOW}Sort: ${Diana.mobSort}"
+            changeSort.text = "${YELLOW}Sort: ${Trackers.LINE_SORTS.label(Trackers.mobSort)}"
             lines.add(changeView)
             lines.add(changeSort)
         }
 
         lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Mobs $GRAY($YELLOW${Helper.toTitleCase("$type")}$GRAY)"))
 
-        val hideLs = Diana.hideLsStats
+        val hideLs = Trackers.hideLsStats
 
         // In the order of MOBS
         val mobLines = listOf(

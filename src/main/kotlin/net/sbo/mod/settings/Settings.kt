@@ -9,15 +9,18 @@ object Settings : Config("sbo/config") {
     override val name: String
         get() = "SBO ${SBOKotlin.version} for MC ${SBOKotlin.mcVersion}"
     override val description = "Diana and the SBO Party Finder for Hypixel Skyblock, plus trackers and QOL features."
+    override val version: Int get() = SettingsMigration.VERSION
 
     init {
+        category(Burrows)
+        category(Waypoints)
+        category(Warps)
+        category(RareMobs)
+        category(Trackers)
+        category(Drops)
         category(General)
-        category(Diana)
-        category(Medal)
         category(PartyCommands)
-        category(Customization)
         category(Themes)
-        category(QOL)
         category(Debug)
     }
 
@@ -25,6 +28,7 @@ object Settings : Config("sbo/config") {
     var legacyPartyFinder: JsonObject? = null
 
     override fun load(json: JsonObject) {
+        SettingsMigration.migrate(json)
         super.load(json)
         legacyPartyFinder = (json.get("Party Finder") ?: json.get("PartyFinder")) as? JsonObject
     }

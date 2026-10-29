@@ -11,8 +11,8 @@ import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.Chat
@@ -98,7 +98,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     fun init() {
         Register.onTick(1) {
-            if (!Diana.lootshareDisplay) {
+            if (!RareMobs.lootshareDisplay) {
                 clear()
                 return@onTick
             }
@@ -143,10 +143,10 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     /** Mobs you turned off sharing or receiving for are left out of the labels, messages and the party overlay. */
     private val RareDianaMob.isEnabled: Boolean
         get() = when (this) {
-            RareDianaMob.INQ -> Diana.ShareList.INQ in Diana.ShareMobs && Diana.ReceiveList.INQ in Diana.ReceiveMobs
-            RareDianaMob.KING -> Diana.ShareList.KING in Diana.ShareMobs && Diana.ReceiveList.KING in Diana.ReceiveMobs
-            RareDianaMob.SPHINX -> Diana.ShareList.SPHINX in Diana.ShareMobs && Diana.ReceiveList.SPHINX in Diana.ReceiveMobs
-            RareDianaMob.MANTI -> Diana.ShareList.MANTICORE in Diana.ShareMobs && Diana.ReceiveList.MANTICORE in Diana.ReceiveMobs
+            RareDianaMob.INQ -> RareMobs.INQ in RareMobs.ShareMobs && RareMobs.INQ in RareMobs.ReceiveMobs
+            RareDianaMob.KING -> RareMobs.KING in RareMobs.ShareMobs && RareMobs.KING in RareMobs.ReceiveMobs
+            RareDianaMob.SPHINX -> RareMobs.SPHINX in RareMobs.ShareMobs && RareMobs.SPHINX in RareMobs.ReceiveMobs
+            RareDianaMob.MANTI -> RareMobs.MANTICORE in RareMobs.ShareMobs && RareMobs.MANTICORE in RareMobs.ReceiveMobs
         }
 
     /** Rare mobs around you right now, including your own, for the party overlay. */
@@ -168,7 +168,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     }
 
     /** Whether labels and overlay status are shown right now. */
-    private fun isShown() = Diana.lootshareDisplay && (PartyFinderManager.isInParty || Debug.lootshareDisplayTest)
+    private fun isShown() = RareMobs.lootshareDisplay && (PartyFinderManager.isInParty || Debug.lootshareDisplayTest)
 
     /** Lootshare status line shown under the mythos mob overlay line of [nameStand], null when that mob has no label. */
     fun overlayStatus(nameStand: ArmorStand): String? {
@@ -179,7 +179,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
-        if (!Diana.lootshareDisplay) return
+        if (!RareMobs.lootshareDisplay) return
         val entity = event.entity
         if (entity is ArmorStand) {
             // Damage splashes get their name a moment after spawning, so check them over the next ticks
@@ -248,8 +248,8 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         // Wait until labels are shown, so a lootshare while the party state is still unknown is sent once it is known
         if (announced || !isLabeled || !isLootshared || !isShown()) return
         announced = true
-        if (!Diana.lootshareMessage) return
-        val text = Helper.joinLines(Diana.lootshareText).ifEmpty { DEFAULT_TEXT }.replace("{mob}", type.display).replace('&', '§')
+        if (!RareMobs.lootshareMessage) return
+        val text = Helper.joinLines(RareMobs.lootshareText).ifEmpty { DEFAULT_TEXT }.replace("{mob}", type.display).replace('&', '§')
         // The debug test mode only tells you, it does not message the party
         if (Debug.lootshareDisplayTest) Chat.chat("§6[SBO] §b$text §7$MARKER")
         else if (PartyFinderManager.isInParty) Chat.pc("${text.removeFormatting()} $MARKER")

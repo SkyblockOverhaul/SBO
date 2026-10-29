@@ -3,8 +3,8 @@ package net.sbo.mod.diana.achievements
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.General
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.Chat.textComponent

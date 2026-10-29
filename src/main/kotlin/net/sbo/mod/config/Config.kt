@@ -70,7 +70,7 @@ open class Category(val id: String) : EntriesBuilder() {
     companion object {
         internal val logger = LoggerFactory.getLogger("sbo-config")
 
-        private const val DISABLED_SUBS_KEY = "sbo:disabledSubs"
+        internal const val DISABLED_SUBS_KEY = "sbo:disabledSubs"
         private const val DISABLED_SUBS_COMMENT = "Subs switched off in the settings, their on/off settings count as off."
     }
 }

@@ -51,11 +51,8 @@ open class EntriesBuilder {
     fun strings(vararg value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description) }
 
-    inline fun <reified E : Enum<E>> enum(value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> EnumEntry(id, value, b.name, b.description, enumValues<E>().toList()) }
-
-    inline fun <reified E : Enum<E>> select(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> SelectEntry(id, arrayOf(*value), b.name, b.description, E::class.java) }
+    fun choices(vararg value: String, builder: ChoiceBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::ChoiceBuilder, builder) { id, b -> ChoicesEntry(id, value.toCollection(LinkedHashSet()), b.name, b.description, b.options) }
 
     fun button(builder: ButtonBuilder.() -> Unit) {
         val button = ButtonBuilder().apply(builder)
@@ -79,7 +76,7 @@ interface ConfigDelegateProvider<T> {
     operator fun provideDelegate(entries: EntriesBuilder, prop: KProperty<*>): ConfigEntry<T>
 }
 
-class EntryProvider<T, B : TypeBuilder> @PublishedApi internal constructor(
+class EntryProvider<T, B : TypeBuilder> internal constructor(
     private val id: String?,
     private val builderFactory: (String) -> B,
     private val builder: B.() -> Unit,
@@ -122,7 +119,7 @@ open class TypeBuilder(val id: String) {
     /** Only usable while at least one of [settings] is on: `dependsAny(::guessAndBurrowLine, ::inqLine)`. */
     fun dependsAny(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map(::on), any = true)
 
-    /** For settings that aren't on/off: `depends(state(::lootTracker, "on") { it != Tracker.OFF })`. */
+    /** For settings that aren't on/off: `depends(state(::lootTracker, "on") { it != "off" })`. */
     fun depends(vararg conditions: Condition) = addRequirement(conditions.toList(), any = false)
 
     /** At least one of [conditions] has to be met, they can mix [state] and [on]. */
@@ -150,7 +147,13 @@ class ColorBuilder(id: String) : TypeBuilder(id) {
 }
 
 class ChoiceBuilder(id: String) : TypeBuilder(id) {
+    /** Read every time the settings screen shows the entry, so the options can change while the game runs. */
     var options: () -> List<Choice> = { emptyList() }
+
+    /** Options that never change. */
+    fun options(choices: List<Choice>) {
+        options = { choices }
+    }
 }
 
 class ButtonBuilder {

@@ -9,9 +9,10 @@ import net.sbo.mod.overlays.DianaMobs
 import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.overlays.MagicFind
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.settings.categories.Drops
+import net.sbo.mod.settings.categories.General
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.settings.categories.QOL
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.allowSackTracking
 import net.sbo.mod.utils.Helper.dianaMobDiedRecently
@@ -72,14 +73,14 @@ object DianaTracker {
             sboData.trackerLookAnswered = true
             DataManager.save(DataManager::sboData)
             if (legacy) {
-                Diana.legacyTrackers = Diana.TrackerOverlay.entries.toTypedArray()
+                Trackers.legacyTrackers = Trackers.LOOKS.map { it.id }.toSet()
                 Settings.save()
-                Chat.chat("§6[SBO] §aAll trackers use the legacy look now. §7Change it per tracker in Diana > Tracker Legacy Look.")
+                Chat.chat("§6[SBO] §aAll trackers use the legacy look now. §7Change it per tracker in Trackers > Tracker Legacy Look.")
             } else {
-                Chat.chat("§6[SBO] §aKeeping the new tracker look. §7You can still switch in Diana > Tracker Legacy Look.")
+                Chat.chat("§6[SBO] §aKeeping the new tracker look. §7You can still switch in Trackers > Tracker Legacy Look.")
             }
             // The notice goes away on the next refresh of the trackers
-            Diana.onTrackerLookChanged()
+            Trackers.onTrackerLookChanged()
         }
 
         Register.command("sboresetmayortracker") {
@@ -126,7 +127,7 @@ object DianaTracker {
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase()
             if (!player.contains((Player.getName()?: "").lowercase())) return@onChatMessageCancelable true
-            if (QOL.phoenixAnnouncer) {
+            if (General.phoenixAnnouncer) {
                 Chat.chat("§6[SBO] §cGG §eFound a §cPhoenix §epet!")
                 Helper.showTitle("§c§lPhoenix Pet!", "", 0, 25, 35)
             }
@@ -147,7 +148,7 @@ object DianaTracker {
     // Reset before DataManager's normal-priority close listener performs its blocking save.
     @SboEvent(SboEvent.Priority.HIGH)
     fun onGameClose(event: GameCloseEvent) {
-        if (Diana.resetSessionOnGameRestart) {
+        if (Trackers.resetSessionOnGameRestart) {
             DianaLoot.resetSession()
         }
     }
@@ -187,7 +188,7 @@ object DianaTracker {
 
     private fun trackWithPickuplog(itemId: String) {
         when (itemId) {
-            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt of Revelations", showMessageOrTitle = Diana.hiltDropMessage,
+            "HILT_OF_REVELATIONS" -> onRareDrop("Hilt of Revelations", showMessageOrTitle = Drops.hiltDropMessage,
                 trackLootshare = false,
                 magicFind = 0,
                 actuallyRare = false // makes it show the chat message but not the title
@@ -230,11 +231,11 @@ object DianaTracker {
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
             lastBurrow = BURROW_TYPE.MOB
             val mob = matchResult.group(3)
-            if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable !QOL.dianaMessageHider
+            if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable "diana" !in General.hideMessages
 
             trackMobOnSpawnAndSave(mob)
 
-            !QOL.dianaMessageHider
+            "diana" !in General.hideMessages
         }
     }
 
@@ -254,7 +255,7 @@ object DianaTracker {
                 trackMob(mob, 1)
 
                 sboData.kingSinceWool += 1
-                if (Diana.sendSinceMessage) {
+                if (Drops.sendSinceMessage) {
                     val timeSinceKing = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastKingDate)
                     if (sboData.lastKingDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceKing} §eMobs and §c$timeSinceKing §eto get a King!")
@@ -284,7 +285,7 @@ object DianaTracker {
                 sboData.mantiSinceCore += 1
                 sboData.mantiSinceStinger += 1
 
-                if (Diana.sendSinceMessage) {
+                if (Drops.sendSinceMessage) {
                     val timeSinceManti = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastMantiDate)
                     if (sboData.lastMantiDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceManti} §eMobs and §c$timeSinceManti §eto get a Manticore!")
@@ -313,7 +314,7 @@ object DianaTracker {
 
                 sboData.inqsSinceChim += 1
 
-                if (Diana.sendSinceMessage) {
+                if (Drops.sendSinceMessage) {
                     val timeSinceInq = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastInqDate)
                     if (sboData.lastInqDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceInq} §eMobs and §c$timeSinceInq §eto get a Minos Inquisitor!")
@@ -341,7 +342,7 @@ object DianaTracker {
 
                 sboData.sphinxSinceFood += 1
 
-                if (Diana.sendSinceMessage) {
+                if (Drops.sendSinceMessage) {
                     val timeSinceSphinx = Helper.formatTime(dianaTrackerTotalData.items.TIME - sboData.lastSphinxDate)
                     if (sboData.lastSphinxDate != 0L) {
                         Chat.chat("§6[SBO] §eTook §c${sboData.mobsSinceSphinx} §eMobs and §c$timeSinceSphinx §eto get a Sphinx!")
@@ -447,7 +448,7 @@ object DianaTracker {
 
                 if (!isLootShare) {
                     // normal wool
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.kingSinceWool} §eKing Minos to get Shimmering Wool!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.kingSinceWool} §eKing Minos to get Shimmering Wool!")
 
                     if (sboData.b2bWool && sboData.kingSinceWool == 1) {
                         Chat.chat("§6[SBO] §cb2b2b Shimmering Wool!")
@@ -460,7 +461,7 @@ object DianaTracker {
                     sboData.kingSinceWool = 0
                 } else {
                     // lootshare wool
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.kingSinceLsWool} §eKing Minos to lootshare Shimmering Wool!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.kingSinceLsWool} §eKing Minos to lootshare Shimmering Wool!")
 
                     sleep(200) {
                         if (sboData.b2bWoolLs && sboData.kingSinceLsWool == 1) {
@@ -494,7 +495,7 @@ object DianaTracker {
 
                 if (!isLootShare) {
                     // normal core
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceCore} §eManticores to get Manti-core!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceCore} §eManticores to get Manti-core!")
 
                     if (sboData.b2bCore && sboData.mantiSinceCore == 1) {
                         Chat.chat("§6[SBO] §cb2b2b Manti-core!")
@@ -507,7 +508,7 @@ object DianaTracker {
                     sboData.mantiSinceCore = 0
                 } else {
                     // lootshare core
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceLsCore} §eManticores to lootshare Manti-core!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceLsCore} §eManticores to lootshare Manti-core!")
 
                     sleep(200) {
                         if (sboData.b2bCoreLs && sboData.mantiSinceLsCore == 1) {
@@ -541,7 +542,7 @@ object DianaTracker {
 
                 if (!isLootShare) {
                     // normal stinger
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceStinger} §eManticores to get Fateful Stinger!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceStinger} §eManticores to get Fateful Stinger!")
 
                     if (sboData.b2bStinger && sboData.mantiSinceStinger == 1) {
                         Chat.chat("§6[SBO] §cb2b2b Fateful Stinger!")
@@ -553,7 +554,7 @@ object DianaTracker {
                     sboData.mantiSinceStinger = 0
                 } else {
                     // lootshare stinger
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceLsStinger} §eManticores to lootshare Fateful Stinger!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.mantiSinceLsStinger} §eManticores to lootshare Fateful Stinger!")
 
                     sleep(200) {
                         if (sboData.b2bStingerLs && sboData.mantiSinceLsStinger == 1) {
@@ -589,7 +590,7 @@ object DianaTracker {
 
                 if (!isLootShare) {
                     // normal chimera
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.inqsSinceChim} §eInquisitors to get a Chimera!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.inqsSinceChim} §eInquisitors to get a Chimera!")
 
                     if (sboData.b2bChim && sboData.inqsSinceChim == 1) {
                         Chat.chat("§6[SBO] §cb2b2b Chimera!")
@@ -606,7 +607,7 @@ object DianaTracker {
                     sboData.inqsSinceChim = 0
                 } else {
                     // lootshare chim
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.inqsSinceLsChim} §eInquisitors to lootshare a Chimera!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.inqsSinceLsChim} §eInquisitors to lootshare a Chimera!")
 
                     sleep(200) {
                         if (sboData.b2bChimLs && sboData.inqsSinceLsChim == 1) {
@@ -641,7 +642,7 @@ object DianaTracker {
 
                 if (!isLootShare) {
                     // normal brain food
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.sphinxSinceFood} §eSphinx to get Brain Food!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.sphinxSinceFood} §eSphinx to get Brain Food!")
 
                     if (sboData.b2bFood && sboData.sphinxSinceFood == 1) {
                         Chat.chat("§6[SBO] §cb2b2b Brain Food!")
@@ -655,7 +656,7 @@ object DianaTracker {
                     sboData.sphinxSinceFood = 0
                 } else {
                     // lootshare brain food
-                    if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.sphinxSinceLsFood} §eSphinx to lootshare Brain Food!")
+                    if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.sphinxSinceLsFood} §eSphinx to lootshare Brain Food!")
 
                     sleep(200) {
                         if (sboData.b2bFoodLs && sboData.sphinxSinceLsFood == 1) {
@@ -688,7 +689,7 @@ object DianaTracker {
 
                 val customMsg = Helper.checkCustomDropMessage("Daedalus Stick", magicfind, false)
 
-                if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.minotaursSinceStick} §eMinotaurs to get a Daedalus Stick!")
+                if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.minotaursSinceStick} §eMinotaurs to get a Daedalus Stick!")
 
                 if (sboData.b2bStick && sboData.minotaursSinceStick == 1) {
                     Chat.chat("§6[SBO] §cb2b2b Daedalus Stick!")
@@ -718,7 +719,7 @@ object DianaTracker {
 
                 val customMsg = Helper.checkCustomDropMessage("Minos Relic", magicfind, isLootShare)
 
-                if (Diana.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.champsSinceRelic} §eChampions to get a Minos Relic!")
+                if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.champsSinceRelic} §eChampions to get a Minos Relic!")
 
                 if (sboData.champsSinceRelic == 1) {
                     Chat.chat("§6[SBO] §cb2b Minos Relic!")
@@ -872,7 +873,7 @@ object DianaTracker {
             realCount
         }
 
-        if (Diana.lootAnnouncerChat && showMessageOrTitle) {
+        if (Drops.lootAnnouncerChat && showMessageOrTitle) {
             val customMsg = when (itemId) {
                 "SHIMMERING_WOOL" -> Helper.checkCustomDropMessage("wool", magicFind, ls, totalCount)
                 "MANTI_CORE" -> Helper.checkCustomDropMessage("core", magicFind, ls, totalCount)
@@ -889,7 +890,7 @@ object DianaTracker {
             }
         }
 
-        if (Diana.lootAnnouncerScreen && showMessageOrTitle && actuallyRare && (!isCoG || Diana.announceCrownOfGreed)) {
+        if (Drops.lootAnnouncerScreen && showMessageOrTitle && actuallyRare && (!isCoG || Drops.announceCrownOfGreed)) {
             Helper.showTitle("${colorAndCount.first}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
         }
 
@@ -924,7 +925,7 @@ object DianaTracker {
         Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$", Pattern.DOTALL)) { message, matchResult ->
             if (matchResult.group(2).removeFormatting().contains("(1/")) lastBurrow = BURROW_TYPE.START // The first one is always Start
             trackItem("TOTAL_BURROWS", 1)
-            if (Diana.fourEyedFish) {
+            if (Trackers.fourEyedFish) {
                 if (lastBurrow != BURROW_TYPE.START) {
                     trackItem("FISH_COINS", 4000)
                     trackItem("COINS", 4000)
@@ -933,12 +934,12 @@ object DianaTracker {
                     trackItem("COINS", 2000)
                 }
             }
-            !QOL.dianaMessageHider
+            "diana" !in General.hideMessages
         }
     }
 
     private fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1) {
-        if (!Diana.lootAnnouncerParty) return
+        if (!Drops.lootAnnouncerParty) return
         var msg = Helper.toTitleCase(item.replace("_LS", "").replace("_", " "))
         val custom = customMsg != null
         if (custom) msg = customMsg.removeFormatting()

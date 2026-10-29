@@ -1,7 +1,7 @@
 package net.sbo.mod.utils.medal
 
 import net.sbo.mod.SBOKotlin
-import net.sbo.mod.settings.categories.Medal
+import net.sbo.mod.settings.categories.Drops
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
 import net.sbo.mod.utils.game.Mayor.mayorElectedYear
@@ -35,7 +35,7 @@ object MedalIntegration {
             eventId = "1",
             dropName = "Chimera Drop",
             dropNumber = dianaTrackerMayorData.items.CHIMERA + dianaTrackerMayorData.items.CHIMERA_LS + 1,
-            enabled = Medal.medalChimeraEnabled
+            enabled = "chimera" in Drops.medalClips
         )
 
     private val woolEvent: MedalEvent
@@ -43,7 +43,7 @@ object MedalIntegration {
             eventId = "2",
             dropName = "Shimmering Wool Drop",
             dropNumber = dianaTrackerMayorData.items.SHIMMERING_WOOL + dianaTrackerMayorData.items.SHIMMERING_WOOL_LS + 1,
-            enabled = Medal.medalWoolEnabled
+            enabled = "shimmering_wool" in Drops.medalClips
         )
 
     private val brainFoodEvent: MedalEvent
@@ -51,7 +51,7 @@ object MedalIntegration {
             eventId = "3",
             dropName = "Brainfood Drop",
             dropNumber = dianaTrackerMayorData.items.BRAIN_FOOD + dianaTrackerMayorData.items.BRAIN_FOOD_LS + 1,
-            enabled = Medal.medalBrainFoodEnabled
+            enabled = "brain_food" in Drops.medalClips
         )
 
     private val minosRelicEvent: MedalEvent
@@ -59,7 +59,7 @@ object MedalIntegration {
             eventId = "4",
             dropName = "Minos Relic Drop",
             dropNumber = dianaTrackerMayorData.items.MINOS_RELIC + 1,
-            enabled = Medal.medalMinosRelicEnabled
+            enabled = "minos_relic" in Drops.medalClips
         )
 
     private val mantiCoreEvent: MedalEvent
@@ -67,7 +67,7 @@ object MedalIntegration {
             eventId = "5",
             dropName = "Manti-core Drop",
             dropNumber = dianaTrackerMayorData.items.MANTI_CORE + dianaTrackerMayorData.items.MANTI_CORE_LS + 1,
-            enabled = Medal.medalMantiCoreEnabled
+            enabled = "manti_core" in Drops.medalClips
         )
 
     private val fatefulStingerEvent: MedalEvent
@@ -75,7 +75,7 @@ object MedalIntegration {
             eventId = "6",
             dropName = "Fateful Stinger Drop",
             dropNumber = dianaTrackerMayorData.items.FATEFUL_STINGER + dianaTrackerMayorData.items.FATEFUL_STINGER_LS + 1,
-            enabled = Medal.medalFatefulStingerEnabled
+            enabled = "fateful_stinger" in Drops.medalClips
         )
 
     private val daedalusStickEvent: MedalEvent
@@ -83,7 +83,7 @@ object MedalIntegration {
             eventId = "7",
             dropName = "Daedalus Stick Drop",
             dropNumber = dianaTrackerMayorData.items.DAEDALUS_STICK + 1,
-            enabled = Medal.medalDaedalusStickEnabled
+            enabled = "daedalus_stick" in Drops.medalClips
         )
 
     private val braidedFeatherEvent: MedalEvent
@@ -91,7 +91,7 @@ object MedalIntegration {
             eventId = "8",
             dropName = "Braided Griffin Feather Drop",
             dropNumber = dianaTrackerMayorData.items.BRAIDED_GRIFFIN_FEATHER + 1,
-            enabled = Medal.medalBraidedGriffinFeatherEnabled
+            enabled = "braided_griffin_feather" in Drops.medalClips
         )
 
     private val mythologicalDyeEvent: MedalEvent
@@ -99,7 +99,7 @@ object MedalIntegration {
             eventId = "9",
             dropName = "Mythological Dye Drop",
             dropNumber = dianaTrackerMayorData.items.MYTHOLOGICAL_DYE + 1,
-            enabled = Medal.medalMythologicalDyeEnabled
+            enabled = "mythological_dye" in Drops.medalClips
         )
 
     private val mythTheFishEvent: MedalEvent
@@ -107,7 +107,7 @@ object MedalIntegration {
             eventId = "10",
             dropName = "Myth the Fish Drop",
             dropNumber = dianaTrackerMayorData.items.MYTH_THE_FISH + 1,
-            enabled = Medal.medalMythTheFishEnabled
+            enabled = "myth_the_fish" in Drops.medalClips
         )
 
     private val crownOfGreedEvent: MedalEvent
@@ -115,7 +115,7 @@ object MedalIntegration {
             eventId = "11",
             dropName = "Crown of Greed Drop",
             dropNumber = dianaTrackerMayorData.items.CROWN_OF_GREED + 1,
-            enabled = Medal.medalCrownOfGreedEnabled
+            enabled = "crown_of_greed" in Drops.medalClips
         )
 
     private val hiltOfRevelationsEvent: MedalEvent
@@ -123,7 +123,7 @@ object MedalIntegration {
             eventId = "12",
             dropName = "Hilt of Revelations Drop",
             dropNumber = dianaTrackerMayorData.items.HILT_OF_REVELATIONS + 1,
-            enabled = Medal.medalHiltOfRevelationsEnabled
+            enabled = "hilt_of_revelations" in Drops.medalClips
         )
 
     private val washedUpSouvenirEvent: MedalEvent
@@ -131,7 +131,7 @@ object MedalIntegration {
             eventId = "13",
             dropName = "Washed-up Souvenir Drop",
             dropNumber = dianaTrackerMayorData.items.WASHED_UP_SOUVENIR + 1,
-            enabled = Medal.medalWashedUpSouvenirEnabled
+            enabled = "washed_up_souvenir" in Drops.medalClips
         )
 
     private val dwarfTurtleShelmetEvent: MedalEvent
@@ -139,7 +139,7 @@ object MedalIntegration {
             eventId = "14",
             dropName = "Dwarf Turtle Shelmet Drop",
             dropNumber = dianaTrackerMayorData.items.DWARF_TURTLE_SHELMET + 1,
-            enabled = Medal.medalDwarfTurtleShelmetEnabled
+            enabled = "dwarf_turtle_shelmet" in Drops.medalClips
         )
 
     private val crochetTigerPlushieEvent: MedalEvent
@@ -147,7 +147,7 @@ object MedalIntegration {
             eventId = "15",
             dropName = "Crochet Tiger Plushie Drop",
             dropNumber = dianaTrackerMayorData.items.CROCHET_TIGER_PLUSHIE + 1,
-            enabled = Medal.medalCrochetTigerPlushieEnabled
+            enabled = "crochet_tiger_plushie" in Drops.medalClips
         )
 
     private val antiqueRemediesEvent: MedalEvent
@@ -155,7 +155,7 @@ object MedalIntegration {
             eventId = "16",
             dropName = "Antique Remedies Drop",
             dropNumber = dianaTrackerMayorData.items.ANTIQUE_REMEDIES + 1,
-            enabled = Medal.medalAntiqueRemediesEnabled
+            enabled = "antique_remedies" in Drops.medalClips
         )
 
     private val cretanUrnEvent: MedalEvent
@@ -163,7 +163,7 @@ object MedalIntegration {
             eventId = "17",
             dropName = "Cretan Urn Drop",
             dropNumber = dianaTrackerMayorData.items.CRETAN_URN + 1,
-            enabled = Medal.medalCretanUrnEnabled
+            enabled = "cretan_urn" in Drops.medalClips
         )
 
     private val allEvents: List<MedalEvent>
@@ -232,8 +232,8 @@ object MedalIntegration {
             eventName = clipTitle(dropName, dropNumber),
             displayName = displayTitle(dropName, dropNumber),
             enabled = enabled,
-            durationSeconds = Medal.medalClipDurationSeconds,
-            captureDelayMs = Medal.medalCaptureDelayMs
+            durationSeconds = Drops.medalClipDurationSeconds,
+            captureDelayMs = Drops.medalCaptureDelayMs
         )
     }
 
@@ -242,7 +242,7 @@ object MedalIntegration {
     private fun displayTitle(dropName: String, dropNumber: Int): String = "$dropName #$dropNumber"
 
     fun testClip(clip: String?) {
-        if (!Medal.medalEnabled) {
+        if (!Drops.medalEnabled) {
             Chat.chat("§6[SBO] §cMedal Clips are disabled. Enable them before testing.")
             return
         }
@@ -277,7 +277,7 @@ object MedalIntegration {
     }
 
     private fun triggerEvent(event: MedalEvent, showSuccess: Boolean = false) {
-        if (!Medal.medalEnabled) return
+        if (!Drops.medalEnabled) return
         if (!event.enabled) return
 
 

@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.span
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.game.World
@@ -26,7 +26,7 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
  */
 abstract class DianaOverlay<V : Any>(
     name: String,
-    private val look: Diana.TrackerOverlay,
+    private val look: String,
     shown: () -> Boolean,
     x: Float = 10f,
     y: Float = 10f,
@@ -35,11 +35,11 @@ abstract class DianaOverlay<V : Any>(
     exampleLines: List<OverlayTextLine> = emptyList()
 ) : DirtyFlushableOverlay() {
     final override val overlay = Overlay(name, x, y, allowedScreens = allowedScreens, exampleView = exampleLines)
-        .setCondition { shown() && Diana.isLegacy(look) }
+        .setCondition { shown() && Trackers.isLegacy(look) }
         .setExtraCondition(extraCondition)
 
     private val modern = GuiLibOverlay(name, x, y, allowedScreens = allowedScreens, stylesheets = listOf("sbo:ui/tracker/tracker.css"))
-        .setCondition { shown() && !Diana.isLegacy(look) }
+        .setCondition { shown() && !Trackers.isLegacy(look) }
         .setExtraCondition(extraCondition)
 
     private var shownView: V? = null
@@ -68,7 +68,7 @@ abstract class DianaOverlay<V : Any>(
             modern.loadPosition()
             shownView = null
         }
-        if (Diana.isLegacy(look)) {
+        if (Trackers.isLegacy(look)) {
             overlay.setLines(generateLines())
             return
         }
@@ -105,12 +105,12 @@ abstract class DianaOverlay<V : Any>(
     }
 
     /** [lines] in [sort], ties keep the default order. */
-    protected fun <T> sortLines(lines: List<T>, sort: Diana.LineSort, orderName: String, key: (T) -> String, amount: (T) -> Int): List<T> =
+    protected fun <T> sortLines(lines: List<T>, sort: String, orderName: String, key: (T) -> String, amount: (T) -> Int): List<T> =
         when (sort) {
-            Diana.LineSort.DEFAULT -> lines
-            Diana.LineSort.HIGHEST -> lines.sortedByDescending(amount)
-            Diana.LineSort.LOWEST -> lines.sortedBy(amount)
-            Diana.LineSort.CUSTOM -> customOrder(orderName, lines.map(key)).let { order -> lines.sortedBy { order.indexOf(key(it)) } }
+            "highest" -> lines.sortedByDescending(amount)
+            "lowest" -> lines.sortedBy(amount)
+            "custom" -> customOrder(orderName, lines.map(key)).let { order -> lines.sortedBy { order.indexOf(key(it)) } }
+            else -> lines
         }
 
     /**
@@ -167,8 +167,8 @@ abstract class DianaOverlay<V : Any>(
     protected fun NodeBuilder.tracker(accent: String, children: NodeBuilder.() -> Unit) {
         val classes = buildString {
             append("tracker ").append(accent)
-            if (Diana.trackerFont == Diana.TrackerFont.INTER) append(" inter")
-            if (!Diana.hasBackground(look)) append(" no-bg")
+            if (Trackers.trackerFont == "inter") append(" inter")
+            if (!Trackers.hasBackground(look)) append(" no-bg")
         }
         div(className = classes) {
             children()
