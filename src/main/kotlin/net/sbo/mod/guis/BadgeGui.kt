@@ -175,6 +175,7 @@ object BadgeGui {
         var inTab by useState(DataManager.sboData.badgesInTab)
         var inChat by useState(DataManager.sboData.badgesInChat)
         var namesInChat by useState(DataManager.sboData.badgeNamesInChat)
+        var namesTag by useState(DataManager.sboData.badgeNamesTag)
         var animations by useState(DataManager.sboData.badgeAnimationsOfOthers)
         var motion by useState(DataManager.sboData.badgeMotionOfOthers)
         var tabAnimations by useState(DataManager.sboData.badgeAnimationsInTab)
@@ -206,6 +207,15 @@ object BadgeGui {
                 option(SboBadges.NAMES_OFF, "Off")
                 option(SboBadges.NAMES_OWN, "Only mine")
                 option(SboBadges.NAMES_ALL, "Everyone")
+            }
+        }
+        if (namesInChat != SboBadges.NAMES_OFF) {
+            setting("Team tag in messages", "The team tag in front of names inside a chat message. Off only colors the name.") {
+                switch(checked = namesTag, onChange = {
+                    namesTag = it.checked
+                    DataManager.sboData.badgeNamesTag = it.checked
+                    DataManager.sboData.save()
+                })
             }
         }
         setting("Animations", "Moving colors (wave, pulse, chroma) of other players' badges. Off shows them standing still, your own badge always moves.") {

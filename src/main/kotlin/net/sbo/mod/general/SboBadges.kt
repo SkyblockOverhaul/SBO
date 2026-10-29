@@ -373,7 +373,7 @@ object SboBadges {
         val badge = byName[name.lowercase()]
         return recolor(
             line, name, badge, TeamTagPlace.CHAT,
-            tag = chatTags[name.lowercase()],
+            tag = chatTags[name.lowercase()]?.takeIf { !nameOnly || DataManager.sboData.badgeNamesTag },
             // The logo only behind the sender
             afterName = badge?.takeIf { !nameOnly && it.shows(BadgePart.LOGO, TeamTagPlace.CHAT) }?.let { Component.literal(" ").append(logo()) },
             from = from,
