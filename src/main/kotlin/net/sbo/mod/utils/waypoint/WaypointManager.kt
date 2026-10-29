@@ -133,9 +133,6 @@ object WaypointManager {
             val arrowGuesses = waypoints["arrow"] ?: mutableListOf()
             val subGuesses = waypoints["subGuess"] ?: mutableListOf()
 
-            // These do not change location when using the shovel
-            val allStaticBurrowWaypoints = knownBurrows.asSequence() + arrowGuesses.asSequence()
-
             // Remove all TTL expired waypoints
             val expiredArrowPositions = mutableSetOf<SboVec>()
             val expiredBurrowPositions = mutableSetOf<SboVec>()
@@ -248,43 +245,6 @@ object WaypointManager {
 
             // Perform internal-state cleanup after the iterator finishes.
             invalidSubGuessPositions.forEach(ArrowGuessBurrow::removeSubGuessFromInternalState)
-
-            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 30 blocks near it (contrary to the name, precise guess is less precise than arrow guess)
-            val redundantShovelIterator = shovelGuesses.iterator()
-            while (redundantShovelIterator.hasNext()) {
-                val shovelGuess = redundantShovelIterator.next()
-                val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
-
-                allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
-                    val waypointBlock = staticBurrow.pos.roundLocationToBlock()
-
-                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 30
-                }?.let { staticBurrow ->
-                    staticBurrow.carryOverState(shovelGuess)
-                    redundantShovelIterator.remove()
-                }
-            }
-
-            // Remove duplicate shovel guesses that are within 30 blocks of each other
-            val duplicates = mutableSetOf<Waypoint>()
-            for (index in shovelGuesses.indices) {
-                val shovelGuess = shovelGuesses[index]
-                val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
-
-                shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 30
-                }?.let { otherGuess ->
-                    val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
-                    val remove = if (keep === shovelGuess) otherGuess else shovelGuess
-
-                    keep.carryOverState(remove)
-                    duplicates.add(remove)
-                }
-            }
-            val duplicateIterator = shovelGuesses.iterator()
-            while (duplicateIterator.hasNext()) {
-                if (duplicateIterator.next() in duplicates) duplicateIterator.remove()
-            }
 
             // Remove the arrow guesses representing the same blocks as an already-known treasure/mob/start burrow, and transfer its state to the known burrow instead if the arrow guess was dug more times than the known burrow
             val duplicateArrowPositions = mutableSetOf<SboVec>()
