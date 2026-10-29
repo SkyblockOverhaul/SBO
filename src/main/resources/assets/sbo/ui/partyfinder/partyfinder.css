@@ -434,14 +434,15 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 
 /* ---- tour ---- */
 .pf-tour { position: fixed; inset: 0; }
-.pf-tour-dim { position: fixed; background-color: var(--backdrop); transition: left 150ms, top 150ms, width 150ms, height 150ms; }
 .pf-tour-ring {
     position: fixed;
     border: 1px solid var(--accent);
     border-radius: 3px;
-    box-shadow: 0 0 6px var(--accent-soft);
+    /* The dim is a shadow far past the screen edges, so it follows the rounded corners of the ring */
+    box-shadow: 0 0 6px var(--accent-soft), 0 0 0 4000px var(--backdrop);
     transition: left 150ms, top 150ms, width 150ms, height 150ms;
 }
+.pf-tour-closed { border-color: var(--backdrop); border-radius: 0; box-shadow: 0 0 0 4000px var(--backdrop); }
 .pf-tour-start, .pf-tour-tip {
     padding: 6px 8px;
     background-color: var(--panel);
