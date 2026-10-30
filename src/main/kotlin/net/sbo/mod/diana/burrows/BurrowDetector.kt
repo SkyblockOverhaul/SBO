@@ -17,6 +17,7 @@ import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
+import java.util.regex.Pattern
 import java.util.concurrent.TimeUnit
 import java.util.function.BooleanSupplier
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
@@ -123,7 +124,8 @@ object BurrowDetector {
             refreshBurrows(deathOriginating = true, expectedTimesDug = 1)
         }
 
-        Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
+        // A handler, not a listener: listeners never see messages the Diana message hider hides, like this one
+        Register.onChatMessageCancelable(Pattern.compile("""^§eYou finished the Griffin burrow chain!.*$""")) { message, _ ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // The chain finished message does not trigger it.
             chainFinish()
@@ -134,6 +136,7 @@ object BurrowDetector {
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
             if (Diana.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
+            true
         }
 
         Register.onChatMessage(Regex("""§eYou (?:just )?dug out(?!.*\(\d+/\d+\)$)""")) { message, matchResult ->
