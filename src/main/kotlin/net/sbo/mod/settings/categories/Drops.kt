@@ -1,32 +1,32 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
-import net.sbo.mod.config.Choice
+import net.sbo.mod.config.Option
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 
 object Drops : Category("Drops") {
     override val description = "What happens when you drop something: chat and screen announcements, the drop messages and Medal clips."
 
-    val MEDAL_DROPS = listOf(
-        Choice("chimera", "Chimera"),
-        Choice("shimmering_wool", "Shimmering Wool"),
-        Choice("brain_food", "Brain Food"),
-        Choice("minos_relic", "Minos Relic"),
-        Choice("manti_core", "Manti-core"),
-        Choice("fateful_stinger", "Fateful Stinger"),
-        Choice("daedalus_stick", "Daedalus Stick"),
-        Choice("braided_griffin_feather", "Braided Griffin Feather"),
-        Choice("mythological_dye", "Mythological Dye"),
-        Choice("myth_the_fish", "Myth the Fish"),
-        Choice("crown_of_greed", "Crown of Greed"),
-        Choice("hilt_of_revelations", "Hilt of Revelations"),
-        Choice("washed_up_souvenir", "Washed-up Souvenir"),
-        Choice("dwarf_turtle_shelmet", "Dwarf Turtle Shelmet"),
-        Choice("crochet_tiger_plushie", "Crochet Tiger Plushie"),
-        Choice("antique_remedies", "Antique Remedies"),
-        Choice("cretan_urn", "Cretan Urn"),
-    )
+    enum class MedalDrop(override val label: String) : Option {
+        CHIMERA("Chimera"),
+        SHIMMERING_WOOL("Shimmering Wool"),
+        BRAIN_FOOD("Brain Food"),
+        MINOS_RELIC("Minos Relic"),
+        MANTI_CORE("Manti-core"),
+        FATEFUL_STINGER("Fateful Stinger"),
+        DAEDALUS_STICK("Daedalus Stick"),
+        BRAIDED_GRIFFIN_FEATHER("Braided Griffin Feather"),
+        MYTHOLOGICAL_DYE("Mythological Dye"),
+        MYTH_THE_FISH("Myth the Fish"),
+        CROWN_OF_GREED("Crown of Greed"),
+        HILT_OF_REVELATIONS("Hilt of Revelations"),
+        WASHED_UP_SOUVENIR("Washed-up Souvenir"),
+        DWARF_TURTLE_SHELMET("Dwarf Turtle Shelmet"),
+        CROCHET_TIGER_PLUSHIE("Crochet Tiger Plushie"),
+        ANTIQUE_REMEDIES("Antique Remedies"),
+        CRETAN_URN("Cretan Urn"),
+    }
 
     init {
         sub {
@@ -133,9 +133,8 @@ object Drops : Category("Drops") {
     }
 
     // Was one Clip ... switch per drop
-    var medalClips by choices(*MEDAL_DROPS.map { it.id }.toTypedArray()) {
+    var medalClips by options(*MedalDrop.entries.toTypedArray()) {
         this.name = Literal("Clip Drops")
-        options(MEDAL_DROPS)
         depends(::medalEnabled)
         this.description = Literal("The drops that save a Medal clip.")
     }

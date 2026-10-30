@@ -1,13 +1,20 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
-import net.sbo.mod.config.Choice
+import net.sbo.mod.config.Option
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.SoundsGui
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 
 object General : Category("General") {
     override val description = "Everything that isn't only for Diana: overlays, chat, achievements, sounds and the chunk cache."
+
+    enum class HiddenMessage(override val label: String, override val description: String) : Option {
+        DIANA("Diana spam", "The treasure arrow hint, ability cooldown, Warping... and blocks in the way messages."),
+        AUTOPET("Autopet", "All autopet messages."),
+        IMPLOSION("Implosion", "All implosion messages."),
+        SACKS("Sacks", "All sack messages."),
+    }
 
     init {
         sub {
@@ -48,15 +55,9 @@ object General : Category("General") {
     }
 
     // Was one Hide ... Messages switch each
-    var hideMessages by choices {
+    var hideMessages by options<HiddenMessage> {
         this.name = Literal("Hide Messages")
         this.description = Literal("Chat messages to hide, hover an option for which ones.")
-        options(listOf(
-            Choice("diana", "Diana spam", "The treasure arrow hint, ability cooldown, Warping... and blocks in the way messages."),
-            Choice("autopet", "Autopet", "All autopet messages."),
-            Choice("implosion", "Implosion", "All implosion messages."),
-            Choice("sacks", "Sacks", "All sack messages."),
-        ))
     }
 
     var assumeMuted by boolean(false) {

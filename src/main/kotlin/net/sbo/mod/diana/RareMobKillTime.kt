@@ -109,10 +109,10 @@ object RareMobKillTime {
             ?: if (timer.cocoon) " (cocoon hatch time unavailable)" else ""
         Chat.chat("§6[SBO] §eTook §6$elapsed §eto kill the $mob!$hatch")
         val shareType = when (mob) {
-            DianaMobDetect.RareDianaMob.INQ.display -> RareMobs.INQ
-            DianaMobDetect.RareDianaMob.MANTI.display -> RareMobs.MANTICORE
-            DianaMobDetect.RareDianaMob.KING.display -> RareMobs.KING
-            DianaMobDetect.RareDianaMob.SPHINX.display -> RareMobs.SPHINX
+            RareMob.INQ.display -> RareMob.INQ
+            RareMob.MANTICORE.display -> RareMob.MANTICORE
+            RareMob.KING.display -> RareMob.KING
+            RareMob.SPHINX.display -> RareMob.SPHINX
             else -> null
         }
         if (shareType != null && shareType in RareMobs.ShareMobs) {

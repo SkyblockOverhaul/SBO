@@ -1,7 +1,7 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
-import net.sbo.mod.config.Choice
+import net.sbo.mod.utils.waypoint.AdditionalHubWarps
 
 object Warps : Category("Warps") {
     override val description = "The guess and rare mob warp keys. Set the keys in (ESC) -> Options -> Controls -> Key Binds..., under SBO - Keybinds."
@@ -12,17 +12,8 @@ object Warps : Category("Warps") {
         }
     }
 
-    var allowedWarps by choices("wizard", "da", "castle") {
+    var allowedWarps by options(AdditionalHubWarps.WIZARD, AdditionalHubWarps.DA, AdditionalHubWarps.CASTLE) {
         this.name = Literal("Add Warps")
-        options(listOf(
-            Choice("castle", "Castle"),
-            Choice("wizard", "Wizard"),
-            Choice("crypt", "Crypt"),
-            Choice("stonks", "Stonks"),
-            Choice("da", "Dark Auction"),
-            Choice("taylor", "Taylor"),
-            Choice("museum", "Museum"),
-        ))
         this.description = Literal("Select the warps you want to be able to warp to with the guess and inquisitor warp keys.")
     }
 

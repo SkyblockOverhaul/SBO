@@ -26,7 +26,7 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
  */
 abstract class DianaOverlay<V : Any>(
     name: String,
-    private val look: String,
+    private val look: Trackers.TrackerLook,
     shown: () -> Boolean,
     x: Float = 10f,
     y: Float = 10f,
@@ -105,12 +105,12 @@ abstract class DianaOverlay<V : Any>(
     }
 
     /** [lines] in [sort], ties keep the default order. */
-    protected fun <T> sortLines(lines: List<T>, sort: String, orderName: String, key: (T) -> String, amount: (T) -> Int): List<T> =
+    protected fun <T> sortLines(lines: List<T>, sort: Trackers.LineSort, orderName: String, key: (T) -> String, amount: (T) -> Int): List<T> =
         when (sort) {
-            "highest" -> lines.sortedByDescending(amount)
-            "lowest" -> lines.sortedBy(amount)
-            "custom" -> customOrder(orderName, lines.map(key)).let { order -> lines.sortedBy { order.indexOf(key(it)) } }
-            else -> lines
+            Trackers.LineSort.DEFAULT -> lines
+            Trackers.LineSort.HIGHEST -> lines.sortedByDescending(amount)
+            Trackers.LineSort.LOWEST -> lines.sortedBy(amount)
+            Trackers.LineSort.CUSTOM -> customOrder(orderName, lines.map(key)).let { order -> lines.sortedBy { order.indexOf(key(it)) } }
         }
 
     /**
@@ -167,7 +167,7 @@ abstract class DianaOverlay<V : Any>(
     protected fun NodeBuilder.tracker(accent: String, children: NodeBuilder.() -> Unit) {
         val classes = buildString {
             append("tracker ").append(accent)
-            if (Trackers.trackerFont == "inter") append(" inter")
+            if (Trackers.trackerFont == Trackers.TrackerFont.INTER) append(" inter")
             if (!Trackers.hasBackground(look)) append(" no-bg")
         }
         div(className = classes) {

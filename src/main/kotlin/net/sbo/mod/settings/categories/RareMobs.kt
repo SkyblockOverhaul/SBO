@@ -1,8 +1,8 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
-import net.sbo.mod.config.Choice
 import net.sbo.mod.diana.LootshareDisplay
+import net.sbo.mod.diana.RareMob
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import java.awt.Color
@@ -10,18 +10,6 @@ import java.awt.Color
 object RareMobs : Category("Rare Mobs") {
     override val description = "Inquisitor, Manticore, King Minos and Sphinx: sharing, highlights, lootshare, alerts and spawn messages."
 
-    const val INQ = "inq"
-    const val MANTICORE = "manticore"
-    const val KING = "king"
-    const val SPHINX = "sphinx"
-
-    // For Mobs to Share, Mobs to Receive and Mobs to Check
-    val MOBS = listOf(
-        Choice(INQ, "Inquisitor"),
-        Choice(MANTICORE, "Manticore"),
-        Choice(KING, "King Minos"),
-        Choice(SPHINX, "Sphinx"),
-    )
 
     init {
         sub {
@@ -40,9 +28,8 @@ object RareMobs : Category("Rare Mobs") {
         this.description = Literal("Send rare mob coordinates to public chat instead of party chat.")
     }
 
-    var ShareMobs by choices(INQ, MANTICORE, KING, SPHINX) {
+    var ShareMobs by options(RareMob.INQ, RareMob.MANTICORE, RareMob.KING, RareMob.SPHINX) {
         this.name = Literal("Mobs to Share")
-        options(MOBS)
         depends(::shareRareMob)
         this.description = Literal("Select which mobs to share.")
     }
@@ -52,9 +39,8 @@ object RareMobs : Category("Rare Mobs") {
         this.description = Literal("Create a waypoint when someone in your party shares a rare mob. (King, Manti, Sphinx, Inq)")
     }
 
-    var ReceiveMobs by choices(INQ, MANTICORE, KING, SPHINX) {
+    var ReceiveMobs by options(RareMob.INQ, RareMob.MANTICORE, RareMob.KING, RareMob.SPHINX) {
         this.name = Literal("Mobs to Receive")
-        options(MOBS)
         depends(::receiveRareMob)
         this.description = Literal("Select which mobs to receive.")
     }
@@ -160,9 +146,8 @@ object RareMobs : Category("Rare Mobs") {
         this.description = Literal("Shows an overlay when the RareMob has no shuriken applied, /sboguis to move it.")
     }
 
-    var NoShurikenMobs by choices(INQ, MANTICORE, KING, SPHINX) {
+    var NoShurikenMobs by options(RareMob.INQ, RareMob.MANTICORE, RareMob.KING, RareMob.SPHINX) {
         this.name = Literal("Mobs to Check")
-        options(MOBS)
         depends(::noShurikenOverlay)
         this.description = Literal("Select which mobs to check for shuriken.")
     }

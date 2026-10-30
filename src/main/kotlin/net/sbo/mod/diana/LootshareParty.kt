@@ -6,7 +6,6 @@ import net.minecraft.ChatFormatting.LIGHT_PURPLE
 import net.minecraft.ChatFormatting.RED
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.DianaOverlay
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.RareMobs
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeUnit
  * lootshare party message from [LootshareDisplay] (ends in its marker), aqua after. Whoever shared the
  * mob's coords in party chat is shown as the spawner, they always get the loot.
  */
-object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", "lootshare", { RareMobs.lootsharePartyOverlay },
+object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Trackers.TrackerLook.LOOTSHARE, { RareMobs.lootsharePartyOverlay },
     y = 60f,
     allowedScreens = listOf(CHAT_SCREEN_FILTER),
     extraCondition = { true },
@@ -57,7 +56,7 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", "loo
     private enum class Status { SPAWNED, SHARED, MISSING }
 
     // What update() last found, empty while the overlay is hidden
-    private var shownMobs: List<RareDianaMob>? = null
+    private var shownMobs: List<RareMob>? = null
     private var members: List<Pair<String, Status>> = emptyList()
 
     fun init() {
@@ -71,7 +70,7 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", "loo
             val now = System.nanoTime()
             when {
                 lootsharedRegex.matches(text) -> lootshared[sender] = now
-                RareDianaMob.fromName(spawnShareRegex.find(text)?.groupValues?.get(1) ?: "") != null -> spawners[sender] = now
+                RareMob.fromName(spawnShareRegex.find(text)?.groupValues?.get(1) ?: "") != null -> spawners[sender] = now
             }
         }
 

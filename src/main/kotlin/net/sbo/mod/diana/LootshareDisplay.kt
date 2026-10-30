@@ -9,7 +9,6 @@ import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Debug
@@ -61,7 +60,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     private val notLootshared: Component = Component.literal("Lootshared").withStyle { it.withColor(0xAAAAAA).withStrikethrough(true) }
     private val lootshared: Component = Component.literal("Lootshared").withStyle { it.withColor(0x55FFFF) }
 
-    private class Target(val mob: LivingEntity, val type: RareDianaMob, var own: Boolean) {
+    private class Target(val mob: LivingEntity, val type: RareMob, var own: Boolean) {
         var nameStand: ArmorStand? = null
         var maxHealth: Double? = null
         var damage = 0.0
@@ -93,7 +92,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     private val pendingSplashes = mutableMapOf<ArmorStand, Long>()
     // Targets whose entity just went away, in case the server replaces the mob with a new entity right after spawning
     private val removedTargets = mutableListOf<Target>()
-    private var ownSpawn: RareDianaMob? = null
+    private var ownSpawn: RareMob? = null
     private var ownSpawnNanos = 0L
 
     fun init() {
@@ -122,7 +121,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     }
 
     /** Called when you spawn a rare mob, so the next one of that type showing up near you is not labeled. */
-    internal fun onOwnRareSpawn(type: RareDianaMob) {
+    internal fun onOwnRareSpawn(type: RareMob) {
         ownSpawn = type
         ownSpawnNanos = System.nanoTime()
     }
@@ -141,16 +140,11 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     }
 
     /** Mobs you turned off sharing or receiving for are left out of the labels, messages and the party overlay. */
-    private val RareDianaMob.isEnabled: Boolean
-        get() = when (this) {
-            RareDianaMob.INQ -> RareMobs.INQ in RareMobs.ShareMobs && RareMobs.INQ in RareMobs.ReceiveMobs
-            RareDianaMob.KING -> RareMobs.KING in RareMobs.ShareMobs && RareMobs.KING in RareMobs.ReceiveMobs
-            RareDianaMob.SPHINX -> RareMobs.SPHINX in RareMobs.ShareMobs && RareMobs.SPHINX in RareMobs.ReceiveMobs
-            RareDianaMob.MANTI -> RareMobs.MANTICORE in RareMobs.ShareMobs && RareMobs.MANTICORE in RareMobs.ReceiveMobs
-        }
+    private val RareMob.isEnabled: Boolean
+        get() = this in RareMobs.ShareMobs && this in RareMobs.ReceiveMobs
 
     /** Rare mobs around you right now, including your own, for the party overlay. */
-    internal val rareMobsAround: List<RareDianaMob> get() = targets.values.map { it.type }.filter { it.isEnabled }
+    internal val rareMobsAround: List<RareMob> get() = targets.values.map { it.type }.filter { it.isEnabled }
 
     /** Whether you spawned one of the rare mobs around you, the debug test mode treats them as someone else's. */
     val ownMobAround: Boolean get() = targets.values.any { it.own && it.type.isEnabled && !Debug.lootshareDisplayTest }
@@ -159,7 +153,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     /** Consume the confirmed lootshare for the matching mob when its death event arrives. */
     internal fun consumeConfirmedLootshare(name: String): Boolean {
-        val type = RareDianaMob.fromName(name) ?: return false
+        val type = RareMob.fromName(name) ?: return false
         val target = (targets.values.asSequence() + removedTargets.asSequence())
             .firstOrNull { it.type == type && it.isLootshared && !it.lootshareConsumed }
             ?: return false
@@ -212,7 +206,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         while (iterator.hasNext()) {
             val (mob, loadNanos) = iterator.next()
             val name = if (mob is Player) mob.name else mob.customName
-            val type = if (name != null) RareDianaMob.fromName(name.string) else null
+            val type = if (name != null) RareMob.fromName(name.string) else null
             if (type != null) {
                 targets[mob.id] = Target(mob, type, consumeOwnSpawn(type, mob, now)).also { it.takeOverRemoved(now) }
                 iterator.remove()
@@ -222,7 +216,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         }
     }
 
-    private fun consumeOwnSpawn(type: RareDianaMob, mob: LivingEntity, now: Long): Boolean {
+    private fun consumeOwnSpawn(type: RareMob, mob: LivingEntity, now: Long): Boolean {
         val player = mc.player ?: return false
         if (ownSpawn != type || now - ownSpawnNanos > OWN_SPAWN_WINDOW_NS) return false
         if (player.distanceToSqr(mob) > OWN_SPAWN_MAX_DISTANCE_SQ) return false

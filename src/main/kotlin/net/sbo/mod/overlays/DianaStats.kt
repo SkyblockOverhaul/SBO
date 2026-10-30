@@ -3,8 +3,7 @@ package net.sbo.mod.overlays
 import net.minecraft.ChatFormatting
 import net.minecraft.ChatFormatting.*
 import net.sbo.guilib.core.dsl.NodeBuilder
-import net.sbo.mod.config.after
-import net.sbo.mod.config.label
+import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -15,7 +14,7 @@ import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.overlay.*
 
-object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", "stats", { Trackers.statsTracker }) {
+object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.TrackerLook.STATS, { Trackers.statsTracker }) {
     fun init() {
         initOverlays()
         updateLines()
@@ -23,14 +22,14 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", "stats", { Trac
 
     private val changeSort: OverlayTextLine = OverlayTextLine("")
         .onClick {
-            Trackers.statsSort = Trackers.LINE_SORTS.after(Trackers.statsSort)
+            Trackers.statsSort = Trackers.statsSort.nextOption()
             updateLines()
         }
         .onMouseEnter {
-            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Trackers.LINE_SORTS.label(Trackers.statsSort)}"
+            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Trackers.statsSort.label}"
         }
         .onMouseLeave {
-            changeSort.text = "${YELLOW}Sort: ${Trackers.LINE_SORTS.label(Trackers.statsSort)}"
+            changeSort.text = "${YELLOW}Sort: ${Trackers.statsSort.label}"
         }
 
     // The new look shows hidden lines and the hint only in the inventory
@@ -97,7 +96,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", "stats", { Trac
                 hidden = isHidden
             )
         }
-        return View(Trackers.LINE_SORTS.label(Trackers.statsSort), rows, inventory, inventory && Trackers.statsSort == "custom")
+        return View(Trackers.statsSort.label, rows, inventory, inventory && Trackers.statsSort == Trackers.LineSort.CUSTOM)
     }
 
     override fun NodeBuilder.content(view: View) {
@@ -114,7 +113,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", "stats", { Trac
     override fun elementClicked(id: String) {
         if (moveClicked(id, ORDER, STAT_KEYS) { view().rows.mapNotNull { it.id } }) return
         if (id == "sort") {
-            Trackers.statsSort = Trackers.LINE_SORTS.after(Trackers.statsSort)
+            Trackers.statsSort = Trackers.statsSort.nextOption()
             updateLines()
             return
         }
@@ -125,7 +124,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", "stats", { Trac
         val hideLs = Trackers.hideLsStats
         val lines = mutableListOf<OverlayTextLine>()
         if (isCraftingScreenOpen()) {
-            changeSort.text = "${YELLOW}Sort: ${Trackers.LINE_SORTS.label(Trackers.statsSort)}"
+            changeSort.text = "${YELLOW}Sort: ${Trackers.statsSort.label}"
             lines.add(changeSort)
         }
         lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Stats"))

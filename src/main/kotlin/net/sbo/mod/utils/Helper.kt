@@ -768,7 +768,7 @@ object Helper {
         }
 
         val bzProduct = priceDataBazaar?.products?.get(id)
-        val bazaarPrice = if (Trackers.bazaarSettingDiana == "instasell") {
+        val bazaarPrice = if (Trackers.bazaarSettingDiana == Trackers.BazaarPrice.INSTASELL) {
             bzProduct?.quick_status?.sellPrice ?: 0.0
         } else {
             bzProduct?.quick_status?.buyPrice ?: 0.0
@@ -778,7 +778,7 @@ object Helper {
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
         val preferNpc =
-            Trackers.npcOnlyPrices || Trackers.priceSource == "npc_items" && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
+            Trackers.npcOnlyPrices || Trackers.priceSource == Trackers.PriceSource.NPC_ITEMS && (sbId == "CRETAN_URN" || sbId == "DWARF_TURTLE_SHELMET" || sbId == "ANTIQUE_REMEDIES" || sbId == "WASHED_UP_SOUVENIR" || sbId == "CROCHET_TIGER_PLUSHIE" || sbId == "HILT_OF_REVELATIONS")
         val bestMarketPrice = kotlin.math.max(bazaarPrice, ahPrice)
         val bestUnitPrice = if (npcPrice > bestMarketPrice || preferNpc) npcPrice else bestMarketPrice
 

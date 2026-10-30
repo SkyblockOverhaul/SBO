@@ -1,7 +1,7 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
-import net.sbo.mod.config.Choice
+import net.sbo.mod.diana.RareMob
 import java.awt.Color
 
 object Waypoints : Category("Waypoints") {
@@ -196,9 +196,13 @@ object Waypoints : Category("Waypoints") {
         this.allowAlpha = false
     }
 
-    var hideOwnWaypoints by choices {
-        this.name = Literal("Hide Own Waypoints")
-        options(listOf(Choice("normal", "Coordinates", "Waypoints from coordinates you sent in chat.")) + RareMobs.MOBS)
-        this.description = Literal("Hides waypoints you created.")
+    var hideOwnCoordinateWaypoints by boolean(false) {
+        this.name = Literal("Hide Own Coordinate Waypoints")
+        this.description = Literal("Hides the waypoints from coordinates you sent in chat yourself.")
+    }
+
+    var hideOwnWaypoints by options<RareMob> {
+        this.name = Literal("Hide Own Rare Mob Waypoints")
+        this.description = Literal("Hides the waypoints of these rare mobs when you spawned them.")
     }
 }

@@ -41,6 +41,13 @@ internal object SettingsMigration {
             values[id] = values[id]?.let(::lowercase) ?: continue
         }
 
+        // Your own coordinate waypoints were the "normal" option of Hide Own Waypoints, now they have their own switch
+        (values["hideOwnWaypoints"] as? JsonArray)?.let { hidden ->
+            val normal = JsonPrimitive("normal")
+            if (normal in hidden) values["hideOwnCoordinateWaypoints"] = JsonPrimitive(true)
+            values["hideOwnWaypoints"] = JsonArray().apply { hidden.filter { it != normal }.forEach(::add) }
+        }
+
         if (HIDDEN_MESSAGES.keys.any { it in values }) {
             values["hideMessages"] = ids(HIDDEN_MESSAGES.filterKeys { on(it, false) }.values)
         }

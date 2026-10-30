@@ -8,7 +8,7 @@ import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.config.after
+import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
@@ -48,19 +48,19 @@ object CrownOfAvarice {
         allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER),
         stylesheets = listOf("sbo:ui/coa/coa.css")
     )
-        .setCondition { Trackers.coaTracker != "off" && !Trackers.isLegacy("coa") }
+        .setCondition { Trackers.coaTracker != Trackers.TrackerMode.OFF && !Trackers.isLegacy(Trackers.TrackerLook.COA) }
         .setExtraCondition { World.isInHub() && Helper.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
 
     // The legacy look: Minecraft text lines like the other overlays, slightly better performance
     private val legacyOverlay = Overlay(OVERLAY_NAME, 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
-        .setCondition { Trackers.coaTracker != "off" && Trackers.isLegacy("coa") }
+        .setCondition { Trackers.coaTracker != Trackers.TrackerMode.OFF && Trackers.isLegacy(Trackers.TrackerLook.COA) }
         .setExtraCondition { World.isInHub() && Helper.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
 
     private val changeView = OverlayUtils.createClickableTextLine(
         text = "§eChange View",
         hoverText = "§e§nChange View",
         onClick = {
-            Trackers.coaTracker = Trackers.TRACKER_MODES.after(Trackers.coaTracker, "off")
+            Trackers.coaTracker = Trackers.coaTracker.nextOption()
             updateLines()
         }
     )
@@ -75,9 +75,9 @@ object CrownOfAvarice {
     private var cachedCoaCoins: Long = -1L // Coins of the PRIMARY CoA only. -1 means that primary CoA isn't equipped
     private var tracker: DianaTracker? = null
         get() = when (Trackers.coaTracker) {
-            "total" -> DataManager.dianaTrackerTotalData
-            "event" -> DataManager.dianaTrackerMayorData
-            "session" -> DataManager.dianaTrackerSessionData
+            Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
+            Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
+            Trackers.TrackerMode.SESSION -> DataManager.dianaTrackerSessionData
             else -> null
         }
 
@@ -104,7 +104,7 @@ object CrownOfAvarice {
         legacyOverlay.setLabel("Crown of Avarice", "CoA")
         // The view badge in the top right changes the view
         overlay.onClick(".coa-mode") {
-            Trackers.coaTracker = Trackers.TRACKER_MODES.after(Trackers.coaTracker, "off")
+            Trackers.coaTracker = Trackers.coaTracker.nextOption()
             updateLines()
         }
 
@@ -303,7 +303,7 @@ object CrownOfAvarice {
         // Re-rendering means a full GuiLib layout pass, so only when something shown changed
         if (view == shownView) return
         shownView = view
-        if (Trackers.isLegacy("coa")) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
+        if (Trackers.isLegacy(Trackers.TrackerLook.COA)) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
     }
 
     /** Called when the look setting changes: the other overlay takes over on the next tick, at the same saved position. */
@@ -346,9 +346,9 @@ object CrownOfAvarice {
         val percent = "${percentTenths / 10}.${percentTenths % 10}"
         return View(
             icon = icon,
-            mode = Helper.toTitleCase(Trackers.coaTracker),
-            inter = Trackers.trackerFont == "inter",
-            background = Trackers.hasBackground("coa"),
+            mode = Helper.toTitleCase(Trackers.coaTracker.name),
+            inter = Trackers.trackerFont == Trackers.TrackerFont.INTER,
+            background = Trackers.hasBackground(Trackers.TrackerLook.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
             fillWidth = percent,
             percent = if (coins >= 0L) "$percent%" else "-",

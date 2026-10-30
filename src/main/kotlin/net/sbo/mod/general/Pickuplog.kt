@@ -65,7 +65,7 @@ object Pickuplog {
                                 DianaTracker.trackWithSacksMessage(item, amount.toInt())
                             }
                         }
-                        cancel = "sacks" !in General.hideMessages
+                        cancel = General.HiddenMessage.SACKS !in General.hideMessages
                     }
                 }
             }

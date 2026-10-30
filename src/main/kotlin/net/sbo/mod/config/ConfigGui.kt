@@ -444,13 +444,20 @@ private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Un
                 options.forEach { option(it.id, it.label, title = it.description.ifEmpty { null }) }
             }
         }
-        is ChoicesEntry -> {
-            val options = entry.options()
-            multiSelect(values = entry.value.toList(), className = "cfg-select", placeholder = "None", onChange = { ids ->
-                entry.set(ids.toCollection(LinkedHashSet()))
+        is OptionEntry<*> -> {
+            select(value = entry.value.name, className = "cfg-select", onChange = { event ->
+                entry.setName(event.value)
                 ui.changed()
             }) {
-                options.forEach { option(it.id, it.label, title = it.description.ifEmpty { null }) }
+                entry.constants.forEach { option(it.name, it.optionLabel, title = it.optionDescription.ifEmpty { null }) }
+            }
+        }
+        is OptionsEntry<*> -> {
+            multiSelect(values = entry.value.map { it.name }, className = "cfg-select", placeholder = "None", onChange = { names ->
+                entry.setNames(names)
+                ui.changed()
+            }) {
+                entry.constants.forEach { option(it.name, it.optionLabel, title = it.optionDescription.ifEmpty { null }) }
             }
         }
     }

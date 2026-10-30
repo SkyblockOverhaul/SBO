@@ -54,25 +54,7 @@ object DianaMobDetect {
 
     private var wasInHub = false
 
-    internal enum class RareDianaMob(val display: String, val glowColor: Int) {
-        INQ("Minos Inquisitor", RareMobs.MinosInquisitorGlowColor),
-        KING("King Minos", RareMobs.KingMinosGlowColor),
-        SPHINX("Sphinx", RareMobs.SphinxGlowColor),
-        MANTI("Manticore", RareMobs.ManticoreGlowColor);
-
-        companion object {
-            fun fromName(name: String): RareDianaMob? {
-                // Avoids Iterator object allocation, small optimization.
-                for (i in 0 until entries.size) {
-                    val mob = entries[i]
-                    if (name.contains(mob.display)) return mob
-                }
-                return null
-            }
-        }
-    }
-
-    internal val rareMobNames: Set<String> = RareDianaMob.entries.mapTo(mutableSetOf()) { it.display }
+    internal val rareMobNames: Set<String> = RareMob.entries.mapTo(mutableSetOf()) { it.display }
     private val prefixes = setOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
     private fun fallbackRemovePrefix(mobName: String): String {
@@ -105,7 +87,7 @@ object DianaMobDetect {
 
     private fun parseStarFromName(name: String): Boolean = name.contains("") || name.contains("✯") // mf rework update changes the shuriken icon to depend on resourcepack. still check for legacy since that's only on alpha and to keep compatibility with RitualPractice
 
-    private fun shouldAlertForMob(name: String) = RareDianaMob.fromName(name) != null && (RareMobs.hpAlert > 0.0 || RareMobs.soundHpAlert > 0.0)
+    private fun shouldAlertForMob(name: String) = RareMob.fromName(name) != null && (RareMobs.hpAlert > 0.0 || RareMobs.soundHpAlert > 0.0)
 
     fun init() {
         mobHpOverlay.init()
@@ -147,7 +129,7 @@ object DianaMobDetect {
             val name = matchResult.groups["name"]?.value ?: return@onChatMessage
             val cleanName = name.removeFormatting()
 
-            val rare = RareDianaMob.fromName(cleanName)
+            val rare = RareMob.fromName(cleanName)
             val displayName =
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
@@ -298,14 +280,9 @@ object DianaMobDetect {
         currentDistanceSq: Double
     ): Pair<ArmorStand?, Double> {
         if (id in defeated) return currentClosest to currentDistanceSq
-        val mobType = RareDianaMob.fromName(name) ?: return currentClosest to currentDistanceSq
+        val mobType = RareMob.fromName(name) ?: return currentClosest to currentDistanceSq
 
-        val shouldCheck = when (mobType) {
-            RareDianaMob.INQ -> RareMobs.INQ in RareMobs.NoShurikenMobs
-            RareDianaMob.MANTI -> RareMobs.MANTICORE in RareMobs.NoShurikenMobs
-            RareDianaMob.KING -> RareMobs.KING in RareMobs.NoShurikenMobs
-            RareDianaMob.SPHINX -> RareMobs.SPHINX in RareMobs.NoShurikenMobs
-        }
+        val shouldCheck = mobType in RareMobs.NoShurikenMobs
 
         if (!shouldCheck) return currentClosest to currentDistanceSq
         if (parseStarFromName(name)) return currentClosest to currentDistanceSq
@@ -340,11 +317,11 @@ object DianaMobDetect {
         val soundHpThreshold = if (RareMobs.soundHpAlert > 0.0) RareMobs.soundHpAlert * 1_000_000 else 0.0
 
         if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
-            when (RareDianaMob.fromName(name)) {
-                RareDianaMob.INQ -> playCustomSound(DataManager.soundSettingsData.lowInqHpSound, DataManager.soundSettingsData.lowInqHpVoume)
-                RareDianaMob.KING ->  playCustomSound(DataManager.soundSettingsData.lowKingHpSound, DataManager.soundSettingsData.lowKingHpVoume)
-                RareDianaMob.SPHINX -> playCustomSound(DataManager.soundSettingsData.lowSphinxHpSound, DataManager.soundSettingsData.lowSphinxHpVoume)
-                RareDianaMob.MANTI -> playCustomSound(DataManager.soundSettingsData.lowMantiHpSound, DataManager.soundSettingsData.lowMantiHpVoume)
+            when (RareMob.fromName(name)) {
+                RareMob.INQ -> playCustomSound(DataManager.soundSettingsData.lowInqHpSound, DataManager.soundSettingsData.lowInqHpVoume)
+                RareMob.KING ->  playCustomSound(DataManager.soundSettingsData.lowKingHpSound, DataManager.soundSettingsData.lowKingHpVoume)
+                RareMob.SPHINX -> playCustomSound(DataManager.soundSettingsData.lowSphinxHpSound, DataManager.soundSettingsData.lowSphinxHpVoume)
+                RareMob.MANTICORE -> playCustomSound(DataManager.soundSettingsData.lowMantiHpSound, DataManager.soundSettingsData.lowMantiHpVoume)
                 else -> {}
             }
 
@@ -358,11 +335,11 @@ object DianaMobDetect {
     }
 
     fun onRareSpawn(mob: String) {
-        val mobType: String = when (mob) {
-            RareDianaMob.INQ.display -> RareMobs.INQ
-            RareDianaMob.KING.display -> RareMobs.KING
-            RareDianaMob.SPHINX.display -> RareMobs.SPHINX
-            RareDianaMob.MANTI.display -> RareMobs.MANTICORE
+        val mobType: RareMob = when (mob) {
+            RareMob.INQ.display -> RareMob.INQ
+            RareMob.KING.display -> RareMob.KING
+            RareMob.SPHINX.display -> RareMob.SPHINX
+            RareMob.MANTICORE.display -> RareMob.MANTICORE
             else -> null
         } ?: return
 
@@ -371,19 +348,19 @@ object DianaMobDetect {
 
         val waypoint = WaypointManager.addRareMobWaypoint("", WaypointManager.floorToGround(playerPos), mobType, mobDisplayName, true)
 
-        if (mobType == RareMobs.SPHINX && waypoint != null) {
+        if (mobType == RareMob.SPHINX && waypoint != null) {
             // After spawning, the stale removal can remove Sphinx waypoint for a self spawn, because it's pending question answer. It would then proceed to re-add it from world-scan, which triggered double rare mob title and custom sound. This fixes it by adding the rare mob here earlier and persisting the rare mob waypoint thru the question phase, which makes the world-scan's existing.any check return early, and stale mob removal to not remove this waypoint, preventing duplicate title and sounds.
             waypoint.preventStaleRareMobRemoval = true
         }
 
-        RareDianaMob.entries.firstOrNull { it.display == mob }?.let(LootshareDisplay::onOwnRareSpawn)
+        RareMob.entries.firstOrNull { it.display == mob }?.let(LootshareDisplay::onOwnRareSpawn)
 
         if (RareMobs.shareRareMob) {
             val mobType = when (mob) {
-                RareDianaMob.INQ.display -> RareMobs.INQ
-                RareDianaMob.KING.display -> RareMobs.KING
-                RareDianaMob.SPHINX.display -> RareMobs.SPHINX
-                RareDianaMob.MANTI.display -> RareMobs.MANTICORE
+                RareMob.INQ.display -> RareMob.INQ
+                RareMob.KING.display -> RareMob.KING
+                RareMob.SPHINX.display -> RareMob.SPHINX
+                RareMob.MANTICORE.display -> RareMob.MANTICORE
                 else -> null
             } ?: return
 
@@ -395,10 +372,10 @@ object DianaMobDetect {
         }
 
         when (mob) {
-            RareDianaMob.INQ.display -> announceSpawn(RareMobs.announceInqText, "inq")
-            RareDianaMob.SPHINX.display -> announceSpawn(RareMobs.announceSphinxText, "sphinx")
-            RareDianaMob.MANTI.display -> announceSpawn(RareMobs.announceMantiText, "manti")
-            RareDianaMob.KING.display -> announceSpawn(RareMobs.announceKingText, "king")
+            RareMob.INQ.display -> announceSpawn(RareMobs.announceInqText, "inq")
+            RareMob.SPHINX.display -> announceSpawn(RareMobs.announceSphinxText, "sphinx")
+            RareMob.MANTICORE.display -> announceSpawn(RareMobs.announceMantiText, "manti")
+            RareMob.KING.display -> announceSpawn(RareMobs.announceKingText, "king")
         }
     }
 
@@ -413,17 +390,12 @@ object DianaMobDetect {
     /**
      * Returns confirmed, active rare Diana mob nametag armor stands.
      */
-    internal fun getTrackedRareMobs(): List<Pair<ArmorStand, RareDianaMob>> {
+    internal fun getTrackedRareMobs(): List<Pair<ArmorStand, RareMob>> {
         return tracked.values.mapNotNull { stand ->
             val name = stand.customName?.formattedString() ?: return@mapNotNull null
-            val mobType = RareDianaMob.fromName(name) ?: return@mapNotNull null
+            val mobType = RareMob.fromName(name) ?: return@mapNotNull null
 
-            val receiveType = when (mobType) {
-                RareDianaMob.INQ -> RareMobs.INQ
-                RareDianaMob.KING -> RareMobs.KING
-                RareDianaMob.SPHINX -> RareMobs.SPHINX
-                RareDianaMob.MANTI -> RareMobs.MANTICORE
-            }
+            val receiveType = mobType
 
             if (receiveType !in RareMobs.ReceiveMobs) return@mapNotNull null
 
@@ -434,7 +406,7 @@ object DianaMobDetect {
     internal fun getTrackedRareMobEntities(): List<Pair<ArmorStand, String>> =
         tracked.values.mapNotNull { stand ->
             val name = stand.customName?.formattedString() ?: return@mapNotNull null
-            val mob = RareDianaMob.fromName(name) ?: return@mapNotNull null
+            val mob = RareMob.fromName(name) ?: return@mapNotNull null
             stand to mob.display
         }
 

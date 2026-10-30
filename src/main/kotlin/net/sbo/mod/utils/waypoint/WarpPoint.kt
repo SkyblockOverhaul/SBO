@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.waypoint
 
+import net.sbo.mod.config.Option
 import net.sbo.mod.utils.math.SboVec
 
 /**
@@ -31,14 +32,14 @@ val additionalHubWarps: Map<String, WarpPoint> = mapOf(
     "museum" to WarpPoint(SboVec(29.50, 72.00, 1.50), true, "museumWarp", AdditionalHubWarps.MUSEUM)
 )
 
-enum class AdditionalHubWarps {
-    CASTLE,
-    WIZARD,
-    CRYPT,
-    STONKS,
-    DA,
-    TAYLOR,
-    MUSEUM;
+enum class AdditionalHubWarps(override val label: String) : Option {
+    CASTLE("Castle"),
+    WIZARD("Wizard"),
+    CRYPT("Crypt"),
+    STONKS("Stonks"),
+    DA("Dark Auction"),
+    TAYLOR("Taylor"),
+    MUSEUM("Museum");
 
     val lowercaseName: String = name.lowercase()
 }

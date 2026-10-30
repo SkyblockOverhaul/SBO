@@ -4,8 +4,7 @@ import net.minecraft.ChatFormatting.*
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.config.after
-import net.sbo.mod.config.label
+import net.sbo.mod.config.nextOption
 import net.sbo.mod.diana.DianaTracker as DianaItemTracker
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
 import net.sbo.mod.settings.categories.Trackers
@@ -29,7 +28,7 @@ import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
 
-object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers.lootTracker != "off" }) {
+object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLook.LOOT, { Trackers.lootTracker != Trackers.TrackerMode.OFF }) {
     private var isSellTypeHovered = false
     private val timerLine: OverlayTextLine = OverlayTextLine("")
 
@@ -38,7 +37,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
         hoverText = "$YELLOW${UNDERLINE}Change View",
         defaultText = "${YELLOW}Change View",
         onClick = {
-            Trackers.lootTracker = Trackers.TRACKER_MODES.after(Trackers.lootTracker, "off")
+            Trackers.lootTracker = Trackers.lootTracker.nextOption()
             updateLines()
         },
         lineBreak = false
@@ -49,7 +48,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
     private val changeSellType: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "",
         onClick = {
-            Trackers.bazaarSettingDiana = Trackers.BAZAAR_PRICES.after(Trackers.bazaarSettingDiana)
+            Trackers.bazaarSettingDiana = Trackers.bazaarSettingDiana.nextOption()
             updateLines()
         },
         onMouseEnter = {
@@ -64,14 +63,14 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
 
     private val changeSort: OverlayTextLine = OverlayTextLine("")
         .onClick {
-            Trackers.lootSort = Trackers.LOOT_SORTS.after(Trackers.lootSort)
+            Trackers.lootSort = Trackers.lootSort.nextOption()
             updateLines()
         }
         .onMouseEnter {
-            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Trackers.LOOT_SORTS.label(Trackers.lootSort)}"
+            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Trackers.lootSort.label}"
         }
         .onMouseLeave {
-            changeSort.text = "${YELLOW}Sort: ${Trackers.LOOT_SORTS.label(Trackers.lootSort)}"
+            changeSort.text = "${YELLOW}Sort: ${Trackers.lootSort.label}"
         }
 
     private val resetSession = OverlayUtils.createClickableTextLine(
@@ -298,13 +297,13 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
             }
         }
         return when (Trackers.lootSort) {
-            "price_desc" -> lines.sortedByDescending { worth(it, tracker) }
-            "price_asc" -> lines.sortedBy { worth(it, tracker) }
-            "amount_desc" -> lines.sortedByDescending { amount(it, tracker) }
-            "amount_asc" -> lines.sortedBy { amount(it, tracker) }
+            Trackers.LootSort.DEFAULT -> lines
+            Trackers.LootSort.PRICE_DESC -> lines.sortedByDescending { worth(it, tracker) }
+            Trackers.LootSort.PRICE_ASC -> lines.sortedBy { worth(it, tracker) }
+            Trackers.LootSort.AMOUNT_DESC -> lines.sortedByDescending { amount(it, tracker) }
+            Trackers.LootSort.AMOUNT_ASC -> lines.sortedBy { amount(it, tracker) }
             // The lootshare line stays below its item
-            "custom" -> customOrder(ORDER, ITEM_IDS).let { order -> lines.sortedBy { order.indexOf(it.data.id) } }
-            else -> lines
+            Trackers.LootSort.CUSTOM -> customOrder(ORDER, ITEM_IDS).let { order -> lines.sortedBy { order.indexOf(it.data.id) } }
         }
     }
 
@@ -336,12 +335,12 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
     override fun view(): View {
         val type = Trackers.lootTracker
         val inventory = isCraftingScreenOpen()
-        val sellType = Helper.toTitleCase(Trackers.bazaarSettingDiana)
-        val sort = Trackers.LOOT_SORTS.label(Trackers.lootSort)
-        val reorder = inventory && Trackers.lootSort == "custom"
+        val sellType = Helper.toTitleCase(Trackers.bazaarSettingDiana.name)
+        val sort = Trackers.lootSort.label
+        val reorder = inventory && Trackers.lootSort == Trackers.LootSort.CUSTOM
         val tracker = getDianaTracker(type) ?: return View("", sellType, sort, false, emptyList(), emptyList(), inventory, reorder)
         val rows = lootLines(tracker).mapNotNull { lootRow(it.data, tracker, inventory, it.ls, it.combined) }
-        return View(Helper.toTitleCase("$type"), sellType, sort, type == "session", rows, statRows(tracker, type), inventory, reorder)
+        return View(Helper.toTitleCase("$type"), sellType, sort, type == Trackers.TrackerMode.SESSION, rows, statRows(tracker, type), inventory, reorder)
     }
 
     // One loot line of the new look, null while it is hidden; [ls] for the lootshare line, [combined] for both in one
@@ -368,7 +367,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
         )
     }
 
-    private fun statRows(tracker: DianaTracker, type: String): List<Row> {
+    private fun statRows(tracker: DianaTracker, type: Trackers.TrackerMode): List<Row> {
         val timer = timer(type)
         val totalProfit = totalProfit(tracker)
         val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
@@ -379,7 +378,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
             Row("profit", "Profit", null, Helper.formatNumber(totalProfit), if (profitPerHr > 0.0) "${Helper.formatNumber(profitPerHr)}/h" else null, valueClass = "profit"),
             Row(null, "Playtime", null, Helper.formatTime(tracker.items.TIME), if (timer.isRunning()) null else "Paused")
         )
-        if (type == "total") rows += Row(null, "Events", null, DataManager.pastDianaEventsData.events.size.toString())
+        if (type == Trackers.TrackerMode.TOTAL) rows += Row(null, "Events", null, DataManager.pastDianaEventsData.events.size.toString())
         return rows
     }
 
@@ -405,15 +404,15 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
         if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.mapNotNull(::itemOf).distinct() }) return
         when (id) {
             "mode" -> {
-                Trackers.lootTracker = Trackers.TRACKER_MODES.after(Trackers.lootTracker, "off")
+                Trackers.lootTracker = Trackers.lootTracker.nextOption()
                 updateLines()
             }
             "sell" -> {
-                Trackers.bazaarSettingDiana = Trackers.BAZAAR_PRICES.after(Trackers.bazaarSettingDiana)
+                Trackers.bazaarSettingDiana = Trackers.bazaarSettingDiana.nextOption()
                 updateLines()
             }
             "sort" -> {
-                Trackers.lootSort = Trackers.LOOT_SORTS.after(Trackers.lootSort)
+                Trackers.lootSort = Trackers.lootSort.nextOption()
                 updateLines()
             }
             "reset" -> resetSession()
@@ -436,9 +435,9 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
         }
     }
 
-    private fun timer(type: String) = when (type) {
-        "total" -> SboTimerManager.timerTotal
-        "session" -> SboTimerManager.timerSession
+    private fun timer(type: Trackers.TrackerMode) = when (type) {
+        Trackers.TrackerMode.TOTAL -> SboTimerManager.timerTotal
+        Trackers.TrackerMode.SESSION -> SboTimerManager.timerSession
         else -> SboTimerManager.timerMayor
     }
 
@@ -492,28 +491,28 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
         return lines
     }
 
-    private fun getDianaTracker(type: String): DianaTracker? {
+    private fun getDianaTracker(type: Trackers.TrackerMode): DianaTracker? {
         return when (type) {
-            "total" -> DataManager.dianaTrackerTotalData
-            "event" -> DataManager.dianaTrackerMayorData
-            "session" -> DataManager.dianaTrackerSessionData
-            else -> null
+            Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
+            Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
+            Trackers.TrackerMode.SESSION -> DataManager.dianaTrackerSessionData
+            Trackers.TrackerMode.OFF -> null
         }
     }
 
     private fun updateControlLines(lines: MutableList<OverlayTextLine>, isCraftingOpen: Boolean) {
         val screenOpen = isCraftingOpen || isCraftingScreenOpen()
         val sellTypeText = if (isSellTypeHovered) {
-            "$YELLOW$UNDERLINE${Helper.toTitleCase(Trackers.bazaarSettingDiana)}"
+            "$YELLOW$UNDERLINE${Helper.toTitleCase(Trackers.bazaarSettingDiana.name)}"
         } else {
-            "$YELLOW${Helper.toTitleCase(Trackers.bazaarSettingDiana)}"
+            "$YELLOW${Helper.toTitleCase(Trackers.bazaarSettingDiana.name)}"
         }
         changeSellType.text = sellTypeText
-        changeSort.text = "${YELLOW}Sort: ${Trackers.LOOT_SORTS.label(Trackers.lootSort)}"
+        changeSort.text = "${YELLOW}Sort: ${Trackers.lootSort.label}"
 
         if (screenOpen) {
             lines.addAll(listOf(changeView, delimiter, changeSellType, changeSort))
-            if (Trackers.lootTracker == "session") lines.add(resetSession)
+            if (Trackers.lootTracker == Trackers.TrackerMode.SESSION) lines.add(resetSession)
         }
     }
 
@@ -532,11 +531,11 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
         }
     }
 
-    private fun generateStatisticsLines(tracker: DianaTracker, type: String): List<OverlayTextLine> {
+    private fun generateStatisticsLines(tracker: DianaTracker, type: Trackers.TrackerMode): List<OverlayTextLine> {
         val timer = when (type) {
-            "total" -> SboTimerManager.timerTotal
-            "event" -> SboTimerManager.timerMayor
-            "session" -> SboTimerManager.timerSession
+            Trackers.TrackerMode.TOTAL -> SboTimerManager.timerTotal
+            Trackers.TrackerMode.EVENT -> SboTimerManager.timerMayor
+            Trackers.TrackerMode.SESSION -> SboTimerManager.timerSession
             else -> SboTimerManager.timerMayor
         }
         val totalBurrows = tracker.items.TOTAL_BURROWS
@@ -558,7 +557,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
         )
 
         stats.add(timerLine)
-        if (type == "total") stats.add(OverlayTextLine("${YELLOW}Total Events: $AQUA$totalEvents"))
+        if (type == Trackers.TrackerMode.TOTAL) stats.add(OverlayTextLine("${YELLOW}Total Events: $AQUA$totalEvents"))
 
         return stats
     }
@@ -640,20 +639,20 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", "loot", { Trackers
     private fun updateTimerText() {
         val type = Trackers.lootTracker
         val tracker = when (type) {
-            "total" -> DataManager.dianaTrackerTotalData
-            "event" -> DataManager.dianaTrackerMayorData
-            "session" -> DataManager.dianaTrackerSessionData
-            else -> {
+            Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
+            Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
+            Trackers.TrackerMode.SESSION -> DataManager.dianaTrackerSessionData
+            Trackers.TrackerMode.OFF -> {
                 timerLine.text = ""
                 return
             }
         }
 
         val timer = when (type) {
-            "total" -> SboTimerManager.timerTotal
-            "event" -> SboTimerManager.timerMayor
-            "session" -> SboTimerManager.timerSession
-            else -> {
+            Trackers.TrackerMode.TOTAL -> SboTimerManager.timerTotal
+            Trackers.TrackerMode.EVENT -> SboTimerManager.timerMayor
+            Trackers.TrackerMode.SESSION -> SboTimerManager.timerSession
+            Trackers.TrackerMode.OFF -> {
                 timerLine.text = ""
                 return
             }

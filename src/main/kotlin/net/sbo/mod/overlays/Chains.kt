@@ -14,7 +14,7 @@ import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.waypoint.WaypointManager
 
-object Chains : DianaOverlay<Chains.View>("Diana Chains", "chains", { Burrows.ongoingChainsDisplay },
+object Chains : DianaOverlay<Chains.View>("Diana Chains", Trackers.TrackerLook.CHAINS, { Burrows.ongoingChainsDisplay },
     allowedScreens = listOf(CHAT_SCREEN_FILTER)
 ) {
     private var failureTimes = 0

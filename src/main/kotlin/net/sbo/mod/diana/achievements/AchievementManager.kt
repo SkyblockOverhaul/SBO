@@ -9,9 +9,9 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
+import net.sbo.mod.diana.RareMob
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
 import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.CrownOfAvarice.isCoA
 import net.sbo.mod.overlays.DianaLoot.totalProfit
@@ -138,7 +138,7 @@ object AchievementManager {
     @SboEvent
     fun onEntityHit(event: EntitiyHitEvent) {
         if (event.entity !is Player) return
-        val isRareMob = RareDianaMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
+        val isRareMob = RareMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
         if (!isRareMob) return
         val item = event.player.mainHandItem
         val lookup = ItemLookup(item)
@@ -419,7 +419,7 @@ object AchievementManager {
             25.0 -> {
                 unlockAchievement(124)
                 if (CrownOfAvarice.helmet.isCoA() && CrownOfAvarice.helmet != null &&
-                    lookup.uuid == CrownOfAvarice.primaryCoaUuid && Trackers.coaTracker != "off")
+                    lookup.uuid == CrownOfAvarice.primaryCoaUuid && Trackers.coaTracker != Trackers.TrackerMode.OFF)
                     Chat.chat("§6[SBO] §aYour CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /sbosetprimarycoa on the new one to continue tracking your CoA stats.", true)
             }
 

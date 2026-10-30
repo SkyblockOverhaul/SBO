@@ -73,7 +73,7 @@ object DianaTracker {
             sboData.trackerLookAnswered = true
             DataManager.save(DataManager::sboData)
             if (legacy) {
-                Trackers.legacyTrackers = Trackers.LOOKS.map { it.id }.toSet()
+                Trackers.legacyTrackers = Trackers.TrackerLook.entries.toSet()
                 Settings.save()
                 Chat.chat("§6[SBO] §aAll trackers use the legacy look now. §7Change it per tracker in Trackers > Tracker Legacy Look.")
             } else {
@@ -231,11 +231,11 @@ object DianaTracker {
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
             lastBurrow = BURROW_TYPE.MOB
             val mob = matchResult.group(3)
-            if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable "diana" !in General.hideMessages
+            if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable General.HiddenMessage.DIANA !in General.hideMessages
 
             trackMobOnSpawnAndSave(mob)
 
-            "diana" !in General.hideMessages
+            General.HiddenMessage.DIANA !in General.hideMessages
         }
     }
 
@@ -934,7 +934,7 @@ object DianaTracker {
                     trackItem("COINS", 2000)
                 }
             }
-            "diana" !in General.hideMessages
+            General.HiddenMessage.DIANA !in General.hideMessages
         }
     }
 

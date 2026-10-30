@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.RareMob
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
@@ -50,7 +51,7 @@ class Waypoint(
     val type: String,
     val ttl: Long = 1800,
     var line: Boolean = false,
-    val rareMobType: String? = null,
+    val rareMobType: RareMob? = null,
     val rareMobSentBy: String? = null
 ) {
     var pos: SboVec = SboVec(this.x, this.y, this.z)

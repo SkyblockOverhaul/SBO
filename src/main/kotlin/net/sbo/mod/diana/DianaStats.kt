@@ -119,7 +119,7 @@ object DianaStats {
         val totalValue = DianaLoot.totalProfit(tracker)
         val profit = listOf(
             Helper.formatNumber(totalValue),
-            Trackers.bazaarSettingDiana.uppercase(),
+            Trackers.bazaarSettingDiana.name,
             Helper.formatNumber(totalValue / playTimeHrs)
         )
         return PlayerStats(

@@ -9,6 +9,7 @@ import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
+import net.sbo.mod.diana.RareMob
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
 import net.sbo.mod.diana.DianaMobDetect
@@ -88,11 +89,11 @@ object WaypointManager {
             val mob = trailing.replace("|", "").trim()
             val selfName = Player.getName() ?: ""
             if (!channel.contains("Guild")) {
-                val mobType: String? = when (mob) {
-                    "Minos Inquisitor" -> RareMobs.INQ
-                    "King Minos" -> RareMobs.KING
-                    "Manticore" -> RareMobs.MANTICORE
-                    "Sphinx" -> RareMobs.SPHINX
+                val mobType: RareMob? = when (mob) {
+                    "Minos Inquisitor" -> RareMob.INQ
+                    "King Minos" -> RareMob.KING
+                    "Manticore" -> RareMob.MANTICORE
+                    "Sphinx" -> RareMob.SPHINX
                     else -> null
                 }
 
@@ -117,7 +118,7 @@ object WaypointManager {
                         isOwnSpawn
                     )
                 } else if (patcherWaypoints) {
-                    if (hideOwnWaypoints.contains("normal") && player.contains(selfName)) return@onChatMessage
+                    if (Waypoints.hideOwnCoordinateWaypoints && player.contains(selfName)) return@onChatMessage
 
                     addWaypoint(Waypoint(player, pos.x, pos.y, pos.z, type = "world", ttl = 30))
                 }
@@ -334,36 +335,35 @@ object WaypointManager {
         val mobName: String
     )
 
-    fun notifyRareMob(player: String, mobType: String, isOwnSpawn: Boolean, fromSelfSpawnMessage: Boolean = false): String {
+    fun notifyRareMob(player: String, mobType: RareMob, isOwnSpawn: Boolean, fromSelfSpawnMessage: Boolean = false): String {
         val mobData = when (mobType) {
-            RareMobs.INQ -> RareMobData(
+            RareMob.INQ -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §d§lINQUISITOR! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.inqSound,
                 DataManager.soundSettingsData.inqVolume,
                 "§dInquisitor"
             )
 
-            RareMobs.KING -> RareMobData(
+            RareMob.KING -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §6§lKING MINOS! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.kingSound,
                 DataManager.soundSettingsData.kingVolume,
                 "§6King Minos"
             )
 
-            RareMobs.MANTICORE -> RareMobData(
+            RareMob.MANTICORE -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §2§lMANTICORE! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.mantiSound,
                 DataManager.soundSettingsData.mantiVolume,
                 "§2Manticore"
             )
 
-            RareMobs.SPHINX -> RareMobData(
+            RareMob.SPHINX -> RareMobData(
                 "§r§6§l<§b§l§kO§6§l> §9§lSPHINX! §6§l<§b§l§kO§6§l>",
                 DataManager.soundSettingsData.sphinxSound,
                 DataManager.soundSettingsData.sphinxVolume,
                 "§9Sphinx"
             )
-            else -> return mobType
         }
 
         if (!isOwnSpawn || fromSelfSpawnMessage) {
@@ -510,12 +510,7 @@ object WaypointManager {
 
             if (!shouldAddWaypoints) continue
 
-            val receiveType = when (mobType) {
-                DianaMobDetect.RareDianaMob.INQ -> RareMobs.INQ
-                DianaMobDetect.RareDianaMob.KING -> RareMobs.KING
-                DianaMobDetect.RareDianaMob.SPHINX -> RareMobs.SPHINX
-                DianaMobDetect.RareDianaMob.MANTI -> RareMobs.MANTICORE
-            }
+            val receiveType = mobType
 
             if (receiveType !in RareMobs.ReceiveMobs) continue
             if (existing.any { it.rareMobType == receiveType && it.pos.distanceTo(standPos) <= 60 }) continue
@@ -577,7 +572,7 @@ object WaypointManager {
     fun addRareMobWaypoint(
         player: String,
         pos: SboVec,
-        mobType: String,
+        mobType: RareMob,
         mobDisplayName: String,
         isOwnSpawn: Boolean
     ): Waypoint? {
@@ -600,10 +595,10 @@ object WaypointManager {
     fun removeRareMobWaypointBySpawner(player: String, mobName: String) {
         val cleanPlayer = player.removeFormatting().trim()
         val mobType = when (mobName) {
-            DianaMobDetect.RareDianaMob.INQ.display -> RareMobs.INQ
-            DianaMobDetect.RareDianaMob.KING.display -> RareMobs.KING
-            DianaMobDetect.RareDianaMob.MANTI.display -> RareMobs.MANTICORE
-            DianaMobDetect.RareDianaMob.SPHINX.display -> RareMobs.SPHINX
+            RareMob.INQ.display -> RareMob.INQ
+            RareMob.KING.display -> RareMob.KING
+            RareMob.MANTICORE.display -> RareMob.MANTICORE
+            RareMob.SPHINX.display -> RareMob.SPHINX
             else -> return
         }
 
@@ -929,7 +924,8 @@ object WaypointManager {
         }
 
         val warps = hubWarps.filter { it.value.unlocked }.toMutableMap()
-        for (warpName in Warps.allowedWarps) {
+        for (warp in Warps.allowedWarps) {
+            val warpName = warp.lowercaseName
             val additionalWarp = additionalHubWarps[warpName]
             if (additionalWarp != null && additionalWarp.unlocked) {
                 warps[warpName] = additionalWarp
