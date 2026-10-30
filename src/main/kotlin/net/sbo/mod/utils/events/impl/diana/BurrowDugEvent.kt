@@ -18,7 +18,7 @@ import net.sbo.mod.utils.math.SboVec
 class BurrowDugEvent (
     private val burrowPos: SboVec?,
     private val waypointPos: SboVec?,
-    private val lastBlock: SboVec?,
+    val lastBlock: SboVec?,
     val currentBurrow: Int,
     val maxBurrow: Int
 )

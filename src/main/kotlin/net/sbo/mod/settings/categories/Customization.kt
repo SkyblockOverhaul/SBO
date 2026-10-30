@@ -34,7 +34,7 @@ object Customization : Category("Customization") {
     }
 
     var ChainEndColor by color(
-        Color(1.0f, 0.25f, 0.85f).rgb
+        Color(1.0f, 0.84f, 0.0f).rgb
     ) {
         this.name = Literal("Chain End Color")
         depends(Diana::highlightChainEnds)
