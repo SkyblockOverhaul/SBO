@@ -54,6 +54,8 @@ object PreciseGuessBurrow {
 
     /** The guess of the current spade use, moved as more particles come in. */
     private var throwGuess: SboVec? = null
+    /** Whether [throwGuess]'s waypoint was made by this spade use, a guess that was already there is left when it moves. */
+    private var ownsThrowGuess = false
     private var shortTrailChecked = false
 
     private val SPADE_WINDOW = TimeUnit.MILLISECONDS.toNanos(3000L)
@@ -71,6 +73,22 @@ object PreciseGuessBurrow {
     private const val PICK_SIDE = 3
     private const val PICK_UP = 2
 
+    // The step counts tried for the curve: N_MIN, N_MIN + N_STEP, ... up to 200
+    private const val N_MIN = 5.0
+    private const val N_STEP = 0.01
+    private const val N_COUNT = 19501
+
+    // Per step count, the sums over the particles summed so far: the curve end is (sx, sy, sz) / den and
+    // the residual at it is saa - |(sx, sy, sz)|^2 / den, so each new particle is one pass over the step counts
+    private val sx = DoubleArray(N_COUNT)
+    private val sy = DoubleArray(N_COUNT)
+    private val sz = DoubleArray(N_COUNT)
+    private val den = DoubleArray(N_COUNT)
+    private val saa = DoubleArray(N_COUNT)
+    private val scores = DoubleArray(N_COUNT)
+    /** Particles in the sums, particle 0 is P0 itself. */
+    private var summed = 1
+
     fun init() {
         Register.onTick(1) { checkShortTrail() }
     }
@@ -80,6 +98,8 @@ object PreciseGuessBurrow {
         if (!Diana.spadeGuess) return
         this.particleLocations.clear()
         throwGuess = null
+        ownsThrowGuess = false
+        resetFits()
     }
 
     @SboEvent
@@ -149,7 +169,9 @@ object PreciseGuessBurrow {
         throwEye = player.eyePosition.toSboVec()
         firstNote = null
         throwGuess = null
+        ownsThrowGuess = false
         shortTrailChecked = false
+        resetFits()
     }
 
     /** The spade guess from before the curve guess, a cubic fit of the particles, used with [Diana.curveSpadeGuess] off. */
@@ -173,9 +195,11 @@ object PreciseGuessBurrow {
      */
     private fun moveGuess(pos: SboVec) {
         if (pos == throwGuess) return
-        throwGuess?.let { WaypointManager.removeWaypointAt(it, "guess") }
+        if (ownsThrowGuess) throwGuess?.let { WaypointManager.removeWaypointAt(it, "guess") }
         throwGuess = pos
+        val existed = WaypointManager.waypointExists("guess", pos).first
         WaypointManager.addSpadeGuess(pos)
+        ownsThrowGuess = !existed && WaypointManager.waypointExists("guess", pos).first
     }
 
     /** Whether a burrow can be on the block: grass with air above (or not loaded yet), and on [BurrowSpots] if it has a list. */
@@ -215,8 +239,8 @@ object PreciseGuessBurrow {
         val (p0, p1) = curveStart() ?: return null
         val count = particleLocations.size.toDouble()
         val short = curveFits(p0, p1, count - 1, count).minByOrNull { it.first } ?: return null
-        val long = curveFits(p0, p1, 5.0, 200.0).minByOrNull { it.first }
-        if (long != null && long.first < short.first) return null
+        updateFits(p0, p1)
+        if (scores[bestFit()] < short.first) return null
         return pickBlock(p0, p1, short.second)
     }
 
@@ -225,23 +249,82 @@ object PreciseGuessBurrow {
      * solved for every n and scored by how well the particles and n fit.
      */
     private fun curveEnds(p0: SboVec, p1: SboVec): List<SboVec> {
-        val points = particleLocations
-        val fits = curveFits(p0, p1, 5.0, 200.0)
-        val best = listOfNotNull(fits.minByOrNull { it.first }?.second)
-        if (points.size >= 3) return best
+        updateFits(p0, p1)
+        val best = listOf(fitEnd(bestFit()))
+        if (particleLocations.size >= 3) return best
 
         // With 2 particles, every good fit (a local best) that the first note allows, farthest first
-        val good = (1 until fits.size - 1).filter {
-            fits[it].first <= fits[it - 1].first && fits[it].first <= fits[it + 1].first && fits[it].first < 25
-        }.map { fits[it].second }
+        val good = ArrayList<SboVec>()
+        for (k in 1 until N_COUNT - 1) {
+            val score = scores[k]
+            if (score <= scores[k - 1] && score <= scores[k + 1] && score < 25) good.add(fitEnd(k))
+        }
         if (good.isEmpty()) return best
         val note = firstNote
         val allowed = if (note == null) good else good.filter { noteAllows(note, it.distanceTo(p0)) }.ifEmpty { good }
         return allowed.sortedByDescending { it.distanceTo(p0) }
     }
 
+    private fun resetFits() {
+        sx.fill(0.0)
+        sy.fill(0.0)
+        sz.fill(0.0)
+        den.fill(0.0)
+        saa.fill(0.0)
+        summed = 1
+    }
+
     /**
-     * The curve end for every step count from [minN] to [maxN] with its score, lower is better.
+     * Adds the particles not in the sums yet and scores every step count from [N_MIN], lower is better: how far the
+     * particles are from the curve and how far the step count is from what the curve's length gives.
+     * @param p0 The first control point.
+     * @param p1 The second control point.
+     */
+    private fun updateFits(p0: SboVec, p1: SboVec) {
+        while (summed < particleLocations.size) {
+            val i = summed++
+            val q = particleLocations[i]
+            for (k in 0 until N_COUNT) {
+                val t = i / (N_MIN + k * N_STEP)
+                val u = 1 - t
+                val a = u * u * u
+                val b = 3 * u * u * t
+                val c3 = 3 * u * t * t
+                val c = c3 + t * t * t
+                val ax = q.x - a * p0.x - b * p1.x
+                val ay = q.y - a * p0.y - b * p1.y - 3 * c3
+                val az = q.z - a * p0.z - b * p1.z
+                sx[k] += c * ax
+                sy[k] += c * ay
+                sz[k] += c * az
+                den[k] += c * c
+                saa[k] += ax * ax + ay * ay + az * az
+            }
+        }
+        for (k in 0 until N_COUNT) {
+            val d = den[k]
+            val residual = saa[k] - (sx[k] * sx[k] + sy[k] * sy[k] + sz[k] * sz[k]) / d
+            val dx = sx[k] / d - p0.x
+            val dy = sy[k] / d - p0.y
+            val dz = sz[k] / d - p0.z
+            val off = (N_PER_BLOCK * sqrt(dx * dx + dy * dy + dz * dz) + N_BASE - (N_MIN + k * N_STEP)) / N_SPREAD
+            scores[k] = residual / (POINT_ERROR * POINT_ERROR) + off * off
+        }
+    }
+
+    /** The step count index with the lowest score. */
+    private fun bestFit(): Int {
+        var best = 0
+        for (k in 1 until N_COUNT) if (scores[k] < scores[best]) best = k
+        return best
+    }
+
+    /** The curve end for step count index [k], made only for the ones used. */
+    private fun fitEnd(k: Int) = SboVec(sx[k] / den[k], sy[k] / den[k], sz[k] / den[k])
+
+    /**
+     * The curve end for every step count from [minN] to [maxN] with its score, lower is better. Used for the few step
+     * counts of a short trail, [updateFits] scores the full range.
      * @param p0 The first control point.
      * @param p1 The second control point.
      */
