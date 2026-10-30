@@ -249,7 +249,9 @@ object WaypointManager {
             // Perform internal-state cleanup after the iterator finishes.
             invalidSubGuessPositions.forEach(ArrowGuessBurrow::removeSubGuessFromInternalState)
 
-            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 2 blocks near it (a shovel guess is exact or next to the burrow, so a farther one is a different burrow)
+            // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 2 blocks near it (a shovel guess is exact or next to the burrow, so a farther one is a different burrow).
+            // The old spade guess is less precise, 30 blocks for it
+            val shovelMergeDistance = if (Diana.curveSpadeGuess) 2 else 30
             val redundantShovelIterator = shovelGuesses.iterator()
             while (redundantShovelIterator.hasNext()) {
                 val shovelGuess = redundantShovelIterator.next()
@@ -258,21 +260,21 @@ object WaypointManager {
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
                     val waypointBlock = staticBurrow.pos.roundLocationToBlock()
 
-                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= 2
+                    waypointBlock == shovelGuessBlock || waypointBlock.distanceTo(shovelGuessBlock) <= shovelMergeDistance
                 }?.let { staticBurrow ->
                     staticBurrow.carryOverState(shovelGuess)
                     redundantShovelIterator.remove()
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 2 blocks of each other
+            // Remove duplicate shovel guesses that are within 2 blocks of each other (30 with the old spade guess)
             val duplicates = mutableSetOf<Waypoint>()
             for (index in shovelGuesses.indices) {
                 val shovelGuess = shovelGuesses[index]
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
 
                 shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
-                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= 2
+                    shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= shovelMergeDistance
                 }?.let { otherGuess ->
                     val keep = if (shovelGuess.hasStrongerStateThan(otherGuess)) shovelGuess else otherGuess
                     val remove = if (keep === shovelGuess) otherGuess else shovelGuess

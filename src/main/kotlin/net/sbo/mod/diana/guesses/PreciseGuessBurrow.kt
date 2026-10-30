@@ -91,6 +91,10 @@ object PreciseGuessBurrow {
         val now = System.nanoTime()
         this.lastLavaParticle = now
         if (now - lastGuessTime > SPADE_WINDOW) return
+        if (!Diana.curveSpadeGuess) {
+            oldGuess(currLoc)
+            return
+        }
 
         if (this.particleLocations.isNotEmpty()) {
             val distToLast = this.particleLocations.last().distanceTo(currLoc)
@@ -137,7 +141,7 @@ object PreciseGuessBurrow {
             event.isCanceled = true
             return
         }
-        if (this.particleLocations.isEmpty() && now - lastGuessTime < DOUBLE_CLICK) return
+        if (Diana.curveSpadeGuess && this.particleLocations.isEmpty() && now - lastGuessTime < DOUBLE_CLICK) return
         BurrowDetector.pendingUseSpadeTitle = null
         this.particleLocations.clear()
         lastGuessTime = now
@@ -146,6 +150,21 @@ object PreciseGuessBurrow {
         firstNote = null
         throwGuess = null
         shortTrailChecked = false
+    }
+
+    /** The spade guess from before the curve guess, a cubic fit of the particles, used with [Diana.curveSpadeGuess] off. */
+    private fun oldGuess(currLoc: SboVec) {
+        if (this.particleLocations.isEmpty()) {
+            this.particleLocations.add(currLoc)
+            return
+        }
+
+        val distToLast = this.particleLocations.last().distanceTo(currLoc)
+        if (distToLast > 3 || distToLast == 0.0) return
+        this.particleLocations.add(currLoc)
+
+        val guessPosition = this.guessBurrowLocation() ?: return
+        WaypointManager.addSpadeGuess(guessPosition.down(0.5).roundLocationToBlock())
     }
 
     /**
@@ -185,7 +204,7 @@ object PreciseGuessBurrow {
 
     /** Solves the guess again once the trail stopped after [SHORT_TRAIL] particles. */
     private fun checkShortTrail() {
-        if (shortTrailChecked || particleLocations.size != SHORT_TRAIL) return
+        if (!Diana.curveSpadeGuess || shortTrailChecked || particleLocations.size != SHORT_TRAIL) return
         if (System.nanoTime() - lastPointTime <= POINT_GAP) return
         shortTrailChecked = true
         shortTrailGuess()?.let { moveGuess(it) }
