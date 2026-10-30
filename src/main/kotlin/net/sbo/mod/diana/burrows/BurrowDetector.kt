@@ -30,6 +30,9 @@ object BurrowDetector {
     private val recentlyRemoved = mutableMapOf<String, Long>()
 
     private val CHAIN_DURATION_NS = TimeUnit.MINUTES.toNanos(30L)
+    /** The last dig and the chain finished message can both finish a chain, only once in this time counts. */
+    private val CHAIN_FINISH_DUPLICATE_NS = TimeUnit.SECONDS.toNanos(2)
+    private var lastChainFinish = 0L
 
     private val chainExpirations = ArrayDeque<Long>()
 
@@ -82,6 +85,7 @@ object BurrowDetector {
             recentlyRemoved.clear()
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
+            ChainTracker.clear()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
@@ -199,6 +203,9 @@ object BurrowDetector {
     }
 
     private fun chainFinish() {
+        val now = System.nanoTime()
+        if (now - lastChainFinish < CHAIN_FINISH_DUPLICATE_NS) return
+        lastChainFinish = now
         purgeExpiredChains()
 
         if (chainExpirations.isNotEmpty()) {
@@ -249,13 +256,14 @@ object BurrowDetector {
 
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
+        ChainTracker.onBurrowDug(event.currentBurrow, event.maxBurrow, DianaEvents.lastWaypointClicked)
         when {
             event.currentBurrow == 1 -> chainStart()
 
             event.currentBurrow != event.maxBurrow -> refreshChainTimer()
 
-            // last burrow: do nothing
-            // chainFinish() is already handled by chat
+            // last burrow: the chain finished message doesn't always come
+            else -> chainFinish()
         }
 
         if (!Diana.closeBurrowDetection) return

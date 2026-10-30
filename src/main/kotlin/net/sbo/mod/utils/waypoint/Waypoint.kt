@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Customization
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.Helper
@@ -149,7 +150,9 @@ class Waypoint(
         val showTimesDug = Customization.showTimesDug && this.type == "burrow" && this.text != "Start" && this.text != "Guess"
         val timesDug = this.timesDug
         val dist = Customization.showDistanceCutoff == 0 || this.distanceToPlayer() < Customization.showDistanceCutoff
-        val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
+        // A treasure burrow that ends its chain is dug out with one click
+        val digsNeeded = if (this.text == "Treasure" && ChainTracker.isChainEnd(pos)) 1 else 2
+        val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a$digsNeeded§7]" else ""
 
         val waypointDistanceText = getWaypointDistanceText()
 
@@ -185,6 +188,9 @@ class Waypoint(
         calculateDynamicOpacity(distanceRaw)
 
     private fun getColor(): Color {
+        if (Diana.highlightChainEnds && (this.type == "guess" || this.type == "arrow" || this.type == "burrow") && ChainTracker.isChainEnd(this.pos)) {
+            return Color(Customization.ChainEndColor)
+        }
         when (this.type) {
             "guess", "arrow" -> {
                 if (isClosest) {

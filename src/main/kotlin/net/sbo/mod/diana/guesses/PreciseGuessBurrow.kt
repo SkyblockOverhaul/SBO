@@ -3,6 +3,7 @@ package net.sbo.mod.diana.guesses
 import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
@@ -50,8 +51,10 @@ object PreciseGuessBurrow {
         this.particleLocations.add(currLoc)
 
         val guessPosition = this.guessBurrowLocation() ?: return
-        finalLocation = guessPosition.down(0.5).roundLocationToBlock()
-        WaypointManager.addSpadeGuess(finalLocation)
+        val guess = guessPosition.down(0.5).roundLocationToBlock()
+        finalLocation = guess
+        WaypointManager.addSpadeGuess(guess)
+        ChainTracker.onSpadeGuess(guess)
     }
 
     @SboEvent

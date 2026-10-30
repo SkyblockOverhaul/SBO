@@ -94,6 +94,11 @@ object Diana : Category("Diana") {
         this.description = Literal("Guess the burrow location when using spade ability. Needs Dripping Lava Particles and set /particlequality to Extreme for more accuracy.")
     }
 
+    var highlightChainEnds by boolean(true) {
+        this.name = Literal("Highlight Chain Ends")
+        this.description = Literal("Gives the last burrow of a chain its own color (Chain End Color in Customization), also while it is still a spade or arrow guess. Known once you dig the burrow before it.")
+    }
+
     var arrowGuess by boolean(true) {
         this.name = Literal("Arrow Guess")
         this.description = Literal("Guesses the burrow location from the arrow direction after digging a burrow. \n" +

@@ -7,6 +7,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.DianaEvents
@@ -408,6 +409,7 @@ object ArrowGuessBurrow {
             }
 
             allGuesses.add(entry)
+            ChainTracker.onArrowGuess(ray.origin, withinRange)
 
             WaypointManager.addArrowGuess(entry.getCurrent())
 

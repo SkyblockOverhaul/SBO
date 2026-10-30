@@ -33,6 +33,15 @@ object Customization : Category("Customization") {
         this.allowAlpha = false
     }
 
+    var ChainEndColor by color(
+        Color(1.0f, 0.25f, 0.85f).rgb
+    ) {
+        this.name = Literal("Chain End Color")
+        depends(Diana::highlightChainEnds)
+        this.description = Literal("Color of the last burrow of a chain, also while it is a guess. (only used if \"Highlight Chain Ends\" enabled in Diana category)")
+        this.allowAlpha = false
+    }
+
     var OptimalOrderLineColor by color(
         Color(1.0f, 1.0f, 1.0f).rgb) {
         this.name = Literal("Optimal Order Line Color")
