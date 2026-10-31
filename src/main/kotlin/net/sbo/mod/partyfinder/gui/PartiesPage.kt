@@ -152,7 +152,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     }
 
     // filterVersion makes the page read the saved filter again after a change
-    val filter = config.listFilters[target.key] ?: PartyListFilter()
+    val filter = filterVersion.let { config.listFilters[target.key] ?: PartyListFilter() }
     fun setFilter(block: PartyListFilter.() -> Unit) {
         val next = filter.edited(block)
         if (next == PartyListFilter()) config.listFilters.remove(target.key) else config.listFilters[target.key] = next
