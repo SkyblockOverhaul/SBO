@@ -1,6 +1,5 @@
 package net.sbo.mod.diana
 
-import jdk.jfr.Percentage
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
