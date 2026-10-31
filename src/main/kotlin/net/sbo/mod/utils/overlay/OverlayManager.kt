@@ -11,7 +11,6 @@ import net.sbo.mod.utils.events.impl.guis.GuiPostRenderEvent
 import net.sbo.mod.utils.events.impl.render.RenderEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.accessors.isSboVisible
 import net.sbo.mod.utils.render.RenderUtils2D
 
 object OverlayManager {
@@ -76,7 +75,7 @@ object OverlayManager {
         val inEditScreen = renderScreen is OverlayEditScreen
 
         if (!World.isInSkyblock() && !inEditScreen) return
-        if (mc.options.hideGui || isTabListShown()) return
+        if (mc.options.hideGui || mc.options.keyPlayerList.isDown) return
         if (!inEditScreen && renderScreen != null) return
 
         // Without a screen (and while moving them) everything is at its saved position
@@ -94,20 +93,6 @@ object OverlayManager {
         for (overlay in overlays) {
             overlay.render(drawContext, mouseX, mouseY)
         }
-    }
-
-    /**
-     * The key alone misses a tab list another mod keeps open (VanillaHUD's toggle mode), the visible flag alone misses
-     * one a mod draws itself in place of the vanilla one (SkyHanni's compact tab list).
-     */
-    private fun isTabListShown(): Boolean {
-        if (mc.options.keyPlayerList.isDown) return true
-        //#if MC > 26.1
-        //$$ val tabList = mc.gui.hud.tabList
-        //#else
-        val tabList = mc.gui.tabList
-        //#endif
-        return tabList.isSboVisible
     }
 
     private fun postRender(drawContext: GuiGraphicsExtractor, renderScreen: Screen) {
