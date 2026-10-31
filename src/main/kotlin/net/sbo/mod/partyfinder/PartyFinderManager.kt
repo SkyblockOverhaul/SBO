@@ -678,14 +678,14 @@ object PartyFinderManager {
         val text = event.message.toFormattedString()
         var match = false
 
-        if (leaderChangeMatchers.firstOrNull { it.matches(text) } != null) {
+        if (leaderChangeMatchers.any { it.matches(text) }) {
             match = true
             isInParty = true
             isLeader = false
             removePartyFromQueue()
         }
 
-        if (partyDisbandMatchers.firstOrNull { it.matches(text) } != null) {
+        if (partyDisbandMatchers.any { it.matches(text) }) {
             creatingParty = false
             partyMemberCount = 1
             match = true
@@ -704,7 +704,7 @@ object PartyFinderManager {
             sleep(3000) { joinedParties++ }
         }
 
-        if (partyJoinMatchers.firstOrNull { it.matches(text) } != null) {
+        if (partyJoinMatchers.any { it.matches(text) }) {
             quietSince = 0L
             updateBool = true
             partyMemberCount += 1
@@ -712,7 +712,7 @@ object PartyFinderManager {
             isInParty = true
         }
 
-        if (partyLeaveMatchers.firstOrNull { it.matches(text) } != null) {
+        if (partyLeaveMatchers.any { it.matches(text) }) {
             updateBool = true
             partyMemberCount -= 1
             match = true

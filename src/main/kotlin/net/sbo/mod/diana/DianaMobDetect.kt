@@ -134,7 +134,7 @@ object DianaMobDetect {
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
             // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
-            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ") } != null) {
+            if (rare != null || prefixes.any { cleanName.startsWith("$it ") }) {
                 // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
                 if (DianaTracker.lastSpawnedMob == displayName) {
                     if (rare != null) RareMobKillTime.onCocoonCaught(displayName)
