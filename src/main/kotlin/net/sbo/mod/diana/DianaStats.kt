@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 // TODO Once majority of people are on 0.7.2 or above, change the party message to send with [SBO] prefix in front.
-object DianaStats {
+internal object DianaStats {
     private val STATS_PATTERN: Pattern = Pattern.compile(
         "§9Party §8> (.*?)§f: (?:\\[SBO\\] )?Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \\((.*?)\\) - Mobs: (.*?) \\((.*?)\\) - Inquisitors: (.*?) \\((.*?)\\) - LS Inqs: (.*?) - Chimeras: (.*?) \\((.*?)\\) - LS: (.*?) \\((.*?)\\) - Sticks: (.*?) \\((.*?)\\) - Relics: (.*?) \\((.*?)\\)(.*?)",
         Pattern.DOTALL
@@ -40,7 +40,7 @@ object DianaStats {
         Pattern.DOTALL
     )
 
-    fun registerReplaceStatsMessage() {
+    internal fun registerReplaceStatsMessage() {
         // Keep old pattern for compatibility with older versions
         Register.onChatMessageCancelable(
             STATS_PATTERN
@@ -177,7 +177,7 @@ object DianaStats {
         )
     }
 
-    fun sendPlayerStats(total: Boolean? = false) {
+    internal fun sendPlayerStats(total: Boolean? = false) {
         val stats = getPlayerStats(total)
         val statsMessage = buildString {
             append("Pt:${stats.playtime}-") // Playtime
@@ -203,35 +203,35 @@ object DianaStats {
         Chat.pc(statsMessage)
     }
 
-    data class PlayerStats(
-        val playtime: String,
-        val profit: List<String>,
-        val burrows: String,
-        val burrowsPerHour: String,
-        val totalMobs: Int,
-        val mobsPerHour: String,
-        val inquisitors: Int,
-        val inqPercentage: String,
-        val sphinx: Int,
-        val sphinxPercentage: String,
-        val mantis: Int,
-        val mantisPercentage: String,
-        val kings: Int,
-        val kingPercentage: String,
-        val lsInqs: Int,
-        val chimeraDrops: Int,
-        val chimeraDropRate: String,
-        val chimeraLSDrops: Int,
-        val chimeraLSDropRate: String,
-        val sticksDropped: Int,
-        val stickDropRate: String,
-        val relicsDropped: Int,
-        val relicDropRate: String,
-        val coresDropped: Int,
-        val coreDropRate: String,
-        val woolsDropped: Int,
-        val woolDropRate: String,
-        val dyesDropped: Int,
-        val dyeDropRate: String
+    internal data class PlayerStats(
+        internal val playtime: String,
+        internal val profit: List<String>,
+        internal val burrows: String,
+        internal val burrowsPerHour: String,
+        internal val totalMobs: Int,
+        internal val mobsPerHour: String,
+        internal val inquisitors: Int,
+        internal val inqPercentage: String,
+        internal val sphinx: Int,
+        internal val sphinxPercentage: String,
+        internal val mantis: Int,
+        internal val mantisPercentage: String,
+        internal val kings: Int,
+        internal val kingPercentage: String,
+        internal val lsInqs: Int,
+        internal val chimeraDrops: Int,
+        internal val chimeraDropRate: String,
+        internal val chimeraLSDrops: Int,
+        internal val chimeraLSDropRate: String,
+        internal val sticksDropped: Int,
+        internal val stickDropRate: String,
+        internal val relicsDropped: Int,
+        internal val relicDropRate: String,
+        internal val coresDropped: Int,
+        internal val coreDropRate: String,
+        internal val woolsDropped: Int,
+        internal val woolDropRate: String,
+        internal val dyesDropped: Int,
+        internal val dyeDropRate: String
     )
 }

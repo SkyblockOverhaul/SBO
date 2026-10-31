@@ -147,7 +147,7 @@ object AchievementManager {
     }
 
 
-    fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
+    internal fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
         if (!isOnHypixel) return
         val itemsData = tracker.items
         val mobsData = tracker.mobs
