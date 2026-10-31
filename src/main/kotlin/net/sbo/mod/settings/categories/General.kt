@@ -68,6 +68,7 @@ object General : Category("General") {
     // Was one Hide ... Messages switch each
     var hideMessages by options<HiddenMessage> {
         this.name = Literal("Hide Messages")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("Chat messages to hide, hover an option for which ones.")
     }
 

@@ -115,6 +115,7 @@ object RareMobs : Category("Rare Mobs") {
 
     var lootshareText by strings(LootshareDisplay.DEFAULT_TEXT) {
         this.name = Literal("Lootshare Message Text")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("The lootshare party message, \"${LootshareDisplay.DEFAULT_TEXT}\" when empty. Use {mob} for the mob's name. Colors can be used with & and a color code (stripped when sending to party). ${LootshareDisplay.MARKER} is added at the end, so SBO users in your party see you lootshared.")
         depends(::lootshareMessage)
     }

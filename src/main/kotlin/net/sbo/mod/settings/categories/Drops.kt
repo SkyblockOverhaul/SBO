@@ -135,6 +135,7 @@ object Drops : Category("Drops") {
     // Was one Clip ... switch per drop
     var medalClips by options(*MedalDrop.entries.toTypedArray()) {
         this.name = Literal("Clip Drops")
+        this.since = "0.7.2-beta.2"
         depends(::medalEnabled)
         this.description = Literal("The drops that save a Medal clip.")
     }

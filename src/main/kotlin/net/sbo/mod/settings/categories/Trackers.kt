@@ -191,6 +191,7 @@ object Trackers : Category("Trackers") {
     var lootSort by ObservableEntry(
         option(LootSort.DEFAULT) {
             this.name = Literal("Loot Sort")
+            this.since = "0.7.2-beta.2"
             depends(notOff(::lootTracker))
             this.description = Literal(
                 "Order of the loot tracker lines: the default order, by price or by amount (highest or lowest first), or your own order.\n" +
@@ -208,6 +209,7 @@ object Trackers : Category("Trackers") {
     var mobSort by ObservableEntry(
         option(LineSort.DEFAULT) {
             this.name = Literal("Mob Sort")
+            this.since = "0.7.2-beta.2"
             depends(notOff(::mobTracker))
             this.description = Literal(
                 "Order of the mob tracker lines: the default order, by kills (most or fewest first), or your own order.\n" +
@@ -225,6 +227,7 @@ object Trackers : Category("Trackers") {
     var statsSort by ObservableEntry(
         option(LineSort.DEFAULT) {
             this.name = Literal("Stats Sort")
+            this.since = "0.7.2-beta.2"
             depends(on(::statsTracker))
             this.description = Literal(
                 "Order of the Diana stats lines: the default order, by count (highest or lowest first), or your own order.\n" +
@@ -245,6 +248,7 @@ object Trackers : Category("Trackers") {
 
     var legacyTrackers by ObservableEntry(options<TrackerLook> {
             this.name = Literal("Tracker Legacy Look")
+            this.since = "0.7.2-beta.2"
             this.description = Literal("The trackers shown as Minecraft text lines like the other overlays instead of the new box. Slightly better performance: plain text is the cheapest overlay to draw every frame.")
         }
     ) { old, new ->
@@ -253,6 +257,7 @@ object Trackers : Category("Trackers") {
 
     var trackerFont by ObservableEntry(option(TrackerFont.MINECRAFT) {
             this.name = Literal("Tracker Font")
+            this.since = "0.7.2-beta.2"
             depends(state(::legacyTrackers, "not all legacy") { it.size < TrackerLook.entries.size })
             this.description = Literal("Font of the trackers with the new look. Minecraft has better performance (about 30% less work per frame than Inter), Inter looks smoother.")
         }
@@ -262,6 +267,7 @@ object Trackers : Category("Trackers") {
 
     var trackerBackground by ObservableEntry(options(*TrackerLook.entries.toTypedArray()) {
             this.name = Literal("Tracker Background")
+            this.since = "0.7.2-beta.2"
             depends(state(::legacyTrackers, "not all legacy") { it.size < TrackerLook.entries.size })
             this.description = Literal("The trackers with the new look that get a dark box behind them. The others show only the text, with a shadow so it stays readable, and slightly better performance since the box isn't drawn.")
         }
@@ -291,6 +297,7 @@ object Trackers : Category("Trackers") {
 
     var priceSource by option(PriceSource.MARKET) {
         this.name = Literal("Prices")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("Where the loot prices come from, hover an option for what it does.")
     }
 

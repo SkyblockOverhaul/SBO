@@ -61,6 +61,15 @@ internal object SettingsMigration {
         }
         price?.let { values["priceSource"] = JsonPrimitive(it) }
 
+        // Until 0.7.2-beta.1 only the CoA tracker had the new look, with its own three settings; now they cover every tracker
+        if ("legacyTrackers" !in values && on("coaTrackerLegacy", false)) values["legacyTrackers"] = ids(listOf("coa"))
+        if ("trackerFont" !in values) {
+            (values["coaTrackerFont"] as? JsonPrimitive)?.takeIf { it.isString }?.let { values["trackerFont"] = JsonPrimitive(it.asString.lowercase()) }
+        }
+        if ("trackerBackground" !in values && !on("coaTrackerBackground", true)) {
+            values["trackerBackground"] = ids(listOf("loot", "mobs", "stats", "chains", "lootshare"))
+        }
+
         for (category in Settings.children) {
             val target = json.get(category.id) as? JsonObject ?: JsonObject().also { json.add(category.id, it) }
             for (entry in category.entries) {
