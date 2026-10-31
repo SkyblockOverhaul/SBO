@@ -291,8 +291,8 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                     val lowest = ReqMatcher.RARITIES.first()
                     val rarity = (saved as? JsonPrimitive)?.contentOrNull?.takeUnless { it.equals(lowest, ignoreCase = true) }.orEmpty()
                     select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }) {
-                        ReqMatcher.RARITIES.forEachIndexed { i, it ->
-                            option(if (i == 0) "" else it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it))
+                        ReqMatcher.RARITIES.forEachIndexed { index, rarity ->
+                            option(if (index == 0) "" else rarity, ProblemText.rarityNeed(rarity), className = StatView.rarityColor(rarity))
                         }
                     }
                 }

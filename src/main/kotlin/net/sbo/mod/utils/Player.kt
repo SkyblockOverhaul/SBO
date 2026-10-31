@@ -21,9 +21,7 @@ object Player {
 
     fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
-    fun getPlayerInventory(): Inventory? {
-        return mc.player?.inventory
-    }
+    fun getPlayerInventory(): Inventory? = mc.player?.inventory
 
     fun getName(): String? = mc.player?.name?.string
 

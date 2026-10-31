@@ -79,7 +79,7 @@ object WaypointManager {
             val world = mc.level ?: return@onChatMessage
 
             val x = match.groups["x"]?.value?.toIntOrNull() ?: 0
-            var y = match.groups["y"]?.value?.toIntOrNull() ?: 0
+            val y = match.groups["y"]?.value?.toIntOrNull() ?: 0
             val z = match.groups["z"]?.value?.toIntOrNull() ?: 0
 
             val sentPos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
@@ -372,7 +372,7 @@ object WaypointManager {
             // The self-spawn message always shows the title and plays the custom sound to let user know they spawned a rare mob.
             // For other's mobs, the title and sound does not play unless the mob was selected in "Mobs to Receive".
             if (!fromSelfSpawnMessage && mobType !in RareMobs.ReceiveMobs) return mobData.mobName
-    
+
             Helper.showTitle(
                 mobData.title,
                 player.ifEmpty { null },
@@ -387,9 +387,7 @@ object WaypointManager {
         return mobData.mobName
     }
 
-    fun floorToGround(pos: SboVec): SboVec {
-        return floorToGround(mc.level!!, pos)
-    }
+    fun floorToGround(pos: SboVec): SboVec = floorToGround(mc.level!!, pos)
 
     private fun floorToGround(level: ClientLevel, pos: SboVec): SboVec {
         val x = pos.x.roundToInt()

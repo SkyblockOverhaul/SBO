@@ -17,8 +17,8 @@ class Matrix(val data: List<List<Double>>) {
     }
 
     fun multiply(other: Matrix): Matrix {
-        if (this.cols != other.rows) {
-            throw IllegalArgumentException("Matrix dimensions do not match for multiplication")
+        require(this.cols == other.rows) {
+            "Matrix dimensions do not match for multiplication"
         }
         val result = MutableList(this.rows) { MutableList(other.cols) { 0.0 } }
         for (i in 0..<this.rows) {
@@ -34,8 +34,8 @@ class Matrix(val data: List<List<Double>>) {
     }
 
     fun inverse(): Matrix {
-        if (this.rows != this.cols) {
-            throw IllegalArgumentException("Only square matrices can be inverted")
+        require(this.rows == this.cols) {
+            "Only square matrices can be inverted"
         }
         val n = this.rows
         val augmented = Array(n) { DoubleArray(2 * n) }
@@ -61,8 +61,8 @@ class Matrix(val data: List<List<Double>>) {
             augmented[i] = augmented[maxRow]
             augmented[maxRow] = temp
 
-            if (abs(augmented[i][i]) < 1e-12) {
-                throw IllegalArgumentException("Matrix is singular and cannot be inverted")
+            require(abs(augmented[i][i]) >= 1e-12) {
+                "Matrix is singular and cannot be inverted"
             }
 
             val pivot = augmented[i][i]

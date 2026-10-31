@@ -503,11 +503,9 @@ object Helper {
 
         for ((slot, stack) in inventory.withIndex()) {
             if (slot == 8) continue // Skip SB Star
-            val stack: ItemStack = inventory[slot]
-
             if (!stack.isEmpty) {
-                var id: String
-                var item: Item
+                val id: String
+                val item: Item
                 val lookup = ItemLookup(stack)
                 val sbId = lookup.sbId
                 var isChimera = false
@@ -636,7 +634,7 @@ object Helper {
             else -> "ErrorGettingSince"
         }
     }
-  
+
     private fun getDropInfo(dropName: String): DropInfo? {
         val tracker = DataManager.dianaTrackerMayorData
         val items = tracker.items
@@ -674,7 +672,6 @@ object Helper {
 
     fun getSpawnMessage(message: String, mob: String): String {
         val mobs = DataManager.dianaTrackerMayorData.mobs
-        val items = DataManager.dianaTrackerMayorData.items
         val sboData = DataManager.sboData
 
         val kingPercent = calcPercentOne(mobs.KING_MINOS, mobs.TOTAL_MOBS)
@@ -865,7 +862,9 @@ object Helper {
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0
 
-        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: listOf()
+        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: return 0
+
+        if (linesList.isEmpty()) return 0
 
         for (lineText in linesList) {
             val line = lineText.string

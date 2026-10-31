@@ -700,7 +700,7 @@ object DataManager {
                         if (Files.exists(newDir) && !Files.isSameFile(oldDir, newDir)) {
                             if (!Files.isDirectory(newDir)) {
                                 SBOKotlin.logger.error("[$modName] Expected directory but found file: $newDir")
-                                throw RuntimeException("$newDir is a file but supposed to be a directory")
+                                error("$newDir is a file but supposed to be a directory")
                             }
                             val success = mergeDirectories(modName, oldDir, newDir)
                             cleanupIfSafe(modName, oldDir, success)

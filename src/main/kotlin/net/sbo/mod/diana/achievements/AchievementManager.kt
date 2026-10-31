@@ -78,7 +78,7 @@ object AchievementManager {
             backTrackAchievements()
         }
         addAllAchievements()
-        
+
         kingSoul()
         Register.onTick(20) { trackCOA() }
 
@@ -87,8 +87,8 @@ object AchievementManager {
     }
 
     private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true, chatOnly: Boolean = false) {
-        if (achievements.containsKey(id)) {
-            throw RuntimeException("Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}")
+        require(!achievements.containsKey(id)) {
+            "Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}"
         }
         val achievement = Achievement(id, name, description, rarity, previousId, hidden, repeatable, chatOnly)
         achievements[id] = achievement
