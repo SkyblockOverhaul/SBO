@@ -79,7 +79,7 @@ object HypixelModApi {
 
     private fun onPartyInfoPacket(packet: PartyInfoS2CPacket) {
         this.isInParty = packet.inParty
-        partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() } ?: emptyMap()
+        partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() }.orEmpty()
 
         val membersList = packet.members?.map { it.key.toString() }?.toMutableList() ?: mutableListOf()
         if (isInParty) {

@@ -14,7 +14,7 @@ object Player {
         return SboVec(player.x, player.y, player.z)
     }
 
-    fun getUUIDString(): String = mc.player?.stringUUID ?: ""
+    fun getUUIDString(): String = mc.player?.stringUUID.orEmpty()
 
     // Works in the main menu
     fun accountUuid(): String = mc.user.profileId.toString().replace("-", "").lowercase()

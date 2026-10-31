@@ -99,7 +99,7 @@ object DianaMobDetect {
             level.entitiesForRendering().forEach { entity ->
                 val health = (entity as? LivingEntity)?.let {
                     " with health ${it.health}/${it.maxHealth}"
-                } ?: ""
+                }.orEmpty()
 
                 val passengers = entity.passengers
                     .takeIf { it.isNotEmpty() }
@@ -107,13 +107,13 @@ object DianaMobDetect {
                         "${passenger.javaClass.simpleName} (${passenger.name.string})"
                     }
                     ?.let { " with passengers [$it]" }
-                    ?: ""
+                    .orEmpty()
 
                 val rider = entity.vehicle
                     ?.let {
                         " riding ${it.javaClass.simpleName} (${it.name.string})"
                     }
-                    ?: ""
+                    .orEmpty()
 
                 Chat.chat(
                     "§6[SBO] §eEntity with type ${entity.javaClass.simpleName} " +

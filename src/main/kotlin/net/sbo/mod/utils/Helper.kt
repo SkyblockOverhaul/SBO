@@ -830,7 +830,7 @@ object Helper {
     // TODO: When the Alpha Network update is pushed to main by Hypixel, remove getChance() and rename getChanceNew() to getChance().
     fun getChance(mf: Int, looting: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances = BASE_CHANCES_PERCENT[rarity.lowercase().trim()]
-            ?: emptyMap()
+            .orEmpty()
 
         val mfMultiplier = 1.0 + mf / 100.0
         val factor = if (lootshare) mfMultiplier / 5.0 else mfMultiplier * (1.0 + looting * 0.15)
@@ -840,7 +840,7 @@ object Helper {
     // TODO: When the Alpha Network update is pushed to main by Hypixel, this becomes getChance().
     fun getChanceNew(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances = BASE_CHANCES_PERCENT_NEW[rarity.lowercase().trim()]
-            ?: emptyMap()
+            .orEmpty()
 
         return calculateDropChances(baseChances, mf, lootshare)
     }

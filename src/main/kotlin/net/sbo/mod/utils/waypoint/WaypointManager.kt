@@ -85,9 +85,9 @@ object WaypointManager {
             val sentPos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
             val pos = floorToGround(world, sentPos)
 
-            val trailing = match.groups["trailing"]?.value ?: ""
+            val trailing = match.groups["trailing"]?.value.orEmpty()
             val mob = trailing.replace("|", "").trim()
-            val selfName = Player.getName() ?: ""
+            val selfName = Player.getName().orEmpty()
             if (!channel.contains("Guild")) {
                 val mobType: RareMob? = when (mob) {
                     "Minos Inquisitor" -> RareMob.INQ
@@ -886,7 +886,7 @@ object WaypointManager {
      * @param type The type of waypoints to retrieve.
      * @return The waypoints of the specified type, or an empty list if none exist.
      */
-    fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type] ?: emptyList()
+    fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type].orEmpty()
 
     private fun getWarpPoint(name: String): WarpPoint? = hubWarps[name] ?: additionalHubWarps[name]
 

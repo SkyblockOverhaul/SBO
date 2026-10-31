@@ -75,7 +75,7 @@ object DianaStats {
 
                 // Inquisitors (+ LS inqs on the same line, like the old format)
                 val lsInqs = matcher.group(11)
-                optional(9) { c, p -> "§dInquisitors: §b$c §7($p)" + (lsInqs?.let { " §6LS: §b$it" } ?: "") }
+                optional(9) { c, p -> "§dInquisitors: §b$c §7($p)" + (lsInqs?.let { " §6LS: §b$it" }.orEmpty()) }
                 if (matcher.group(9) == null && lsInqs != null) add("§dLS Inqs: §b$lsInqs")
 
                 optional(12) { c, p -> "§dSphinx: §b$c §7($p)" }

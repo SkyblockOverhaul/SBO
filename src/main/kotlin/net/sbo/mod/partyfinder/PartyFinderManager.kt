@@ -304,7 +304,7 @@ object PartyFinderManager {
         return PartyBody(
             partyType = current.partyType,
             subType = current.subType,
-            version = PartyCategories.version ?: "",
+            version = PartyCategories.version.orEmpty(),
             uuids = uuids,
             partySize = current.partySize,
             note = current.note,
@@ -505,7 +505,7 @@ object PartyFinderManager {
         val roleText = role?.let { id ->
             val label = draft?.let { PartyCategories.target(it.partyType, it.subType) }?.roles?.firstOrNull { it.id == id }?.label ?: id
             " as §b$label"
-        } ?: ""
+        }.orEmpty()
         val invite = onInvite?.let { "/__sbo_run_clickable_action ${ClickActionManager.registerAction(it)}" } ?: "/p invite $playerName"
         Chat.chat(Chat.getChatBreak())
         Chat.chat(
@@ -796,6 +796,6 @@ data class JoinRequest(val role: String?) {
         fun parse(text: String): JoinRequest = JoinRequest(ROLE.find(text)?.groupValues?.get(1))
 
         fun message(role: String?, id: String = java.util.UUID.randomUUID().toString()): String =
-            "[SBO] join party request - id:$id" + (role?.let { " role:$it" } ?: "")
+            "[SBO] join party request - id:$id" + (role?.let { " role:$it" }.orEmpty())
     }
 }

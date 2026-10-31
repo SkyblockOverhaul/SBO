@@ -126,7 +126,7 @@ object DianaTracker {
 
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { _, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase()
-            if (!player.contains((Player.getName()?: "").lowercase())) return@onChatMessageCancelable true
+            if (!player.contains((Player.getName().orEmpty()).lowercase())) return@onChatMessageCancelable true
             if (General.phoenixAnnouncer) {
                 Chat.chat("§6[SBO] §cGG §eFound a §cPhoenix §epet!")
                 Helper.showTitle("§c§lPhoenix Pet!", "", 0, 25, 35)
@@ -415,7 +415,7 @@ object DianaTracker {
             Pattern.compile("^§d§lWOW! (.*?) §6found a §2Mythological Dye.*$", Pattern.DOTALL)
         ) { _, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase().trim()
-            if (player.contains(Player.getName()?.lowercase()?.trim() ?: "")) {
+            if (player.contains(Player.getName()?.lowercase()?.trim().orEmpty())) {
                 MedalIntegration.saveMythologicalDyeClip()
                 onRareDrop(
                     "Mythological Dye",

@@ -154,7 +154,7 @@ object SoundHandler {
             ?.filter { it.isFile && SUPPORTED_EXTENSIONS.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
             ?.map { it.name }
             ?.sorted()
-            ?: emptyList()
+            .orEmpty()
     }
 
     /** Converts linear volume (0-1) to decibels for audio control */
