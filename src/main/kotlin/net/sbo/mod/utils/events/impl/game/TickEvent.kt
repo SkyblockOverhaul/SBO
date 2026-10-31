@@ -8,3 +8,4 @@ import net.minecraft.client.Minecraft
  * @param client The Minecraft client instance.
  */
 class TickEvent(val client: Minecraft)
+

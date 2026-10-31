@@ -190,7 +190,7 @@ object SBOKotlin : ClientModInitializer {
 				PartyPlayer.load()
 				unlockAchievement(38)
 				if (!Debug.disableAutoTweaks) {
-				    Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
+				    Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { _, _, unregister ->
 				        unregister()
 				        false
 				    }

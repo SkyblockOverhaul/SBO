@@ -54,3 +54,4 @@ annotation class SboEvent(val priority: Int = Priority.NORMAL) {
         const val HIGH = 2
     }
 }
+

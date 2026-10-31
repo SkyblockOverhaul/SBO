@@ -37,3 +37,4 @@ object Legion {
 
     private fun getPlayerPing(uuid: UUID): Int = mc.connection?.getPlayerInfo(uuid)?.latency ?: 0
 }
+

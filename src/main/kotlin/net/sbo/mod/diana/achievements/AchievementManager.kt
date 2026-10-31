@@ -499,7 +499,7 @@ object AchievementManager {
     }
 
     private fun kingSoul() {
-        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
+        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { _, matchResult ->
             if ("King Minos" in matchResult.groupValues[0]) unlockAchievement(118)
         }
     }

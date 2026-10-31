@@ -26,3 +26,4 @@ object SphinxQuestions {
 
     val CORRECT_ANSWERS: Set<String> = QUESTIONS.map { it.answer }.toSet()
 }
+

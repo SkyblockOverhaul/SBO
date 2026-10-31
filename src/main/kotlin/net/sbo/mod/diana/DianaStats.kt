@@ -45,7 +45,7 @@ object DianaStats {
         // Keep old pattern for compatibility with older versions
         Register.onChatMessageCancelable(
             STATS_PATTERN
-        ) { message, matcher ->
+        ) { _, matcher ->
             val statsMessage = ArrayList<String>()
             statsMessage.add("§9Party §8> ${matcher.group(1)}§f:")
             statsMessage.add("§ePlaytime: §b${matcher.group(2)}")

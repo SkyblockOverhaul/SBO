@@ -235,7 +235,7 @@ object PartyCommands {
 
     private fun registerPartyChatListeners() {
         DianaStats.registerReplaceStatsMessage()
-        Register.onChatMessage(commandRegex) { message, matchResult ->
+        Register.onChatMessage(commandRegex) { _, matchResult ->
             val unformattedPlayerName = matchResult.groupValues[1]
             val fullMessage = matchResult.groupValues[2]
             val messageParts = fullMessage.trim().split(Regex("\\s+"))
