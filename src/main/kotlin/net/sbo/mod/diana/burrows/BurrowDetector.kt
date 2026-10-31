@@ -83,6 +83,7 @@ object BurrowDetector {
             recentlyRemoved.clear()
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
+            ChainTracker.clear()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
@@ -120,7 +121,8 @@ object BurrowDetector {
             refreshBurrows(deathOriginating = true, expectedTimesDug = 1)
         }
 
-        Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
+        // A handler, not a listener: listeners never see messages the Diana message hider hides, like this one
+        Register.onChatMessageCancelable(Pattern.compile("""^§eYou finished the Griffin burrow chain!.*$""")) { message, _ ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // The chain finished message does not trigger it.
             chainFinish()
@@ -131,6 +133,7 @@ object BurrowDetector {
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
             if (Diana.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
+            true
         }
 
         // A handler, not a listener: listeners never see messages the Diana message hider hides, like mob spawns
@@ -252,6 +255,7 @@ object BurrowDetector {
 
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
+        ChainTracker.onBurrowDug(event.currentBurrow, event.maxBurrow, event.lastBlock)
         when {
             event.currentBurrow == 1 -> chainStart()
 

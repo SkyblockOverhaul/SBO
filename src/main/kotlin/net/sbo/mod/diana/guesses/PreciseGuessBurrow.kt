@@ -3,6 +3,7 @@ package net.sbo.mod.diana.guesses
 import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -186,7 +187,9 @@ object PreciseGuessBurrow {
         this.particleLocations.add(currLoc)
 
         val guessPosition = this.guessBurrowLocation() ?: return
-        WaypointManager.addSpadeGuess(guessPosition.down(0.5).roundLocationToBlock())
+        val guess = guessPosition.down(0.5).roundLocationToBlock()
+        WaypointManager.addSpadeGuess(guess)
+        ChainTracker.onSpadeGuess(guess)
     }
 
     /**
@@ -200,6 +203,7 @@ object PreciseGuessBurrow {
         val existed = WaypointManager.waypointExists("guess", pos).first
         WaypointManager.addSpadeGuess(pos)
         ownsThrowGuess = !existed && WaypointManager.waypointExists("guess", pos).first
+        ChainTracker.onSpadeGuess(pos)
     }
 
     /** Whether a burrow can be on the block: grass with air above (or not loaded yet), and on [BurrowSpots] if it has a list. */
