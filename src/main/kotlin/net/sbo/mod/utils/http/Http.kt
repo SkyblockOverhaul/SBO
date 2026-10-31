@@ -7,11 +7,15 @@ import kotlinx.serialization.json.jsonPrimitive
 import net.minecraft.SharedConstants
 import net.sbo.mod.SBOKotlin
 import java.io.IOException
+import java.io.InputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
+import java.util.Locale
+import java.util.zip.GZIPInputStream
+import java.util.zip.InflaterInputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -82,6 +86,27 @@ object Http {
         it.POST(HttpRequest.BodyPublishers.ofString(body, Charsets.UTF_8))
     }
 
+    private fun decompress(
+        body: InputStream,
+        contentEncoding: String?
+    ): InputStream {
+        if (contentEncoding == null) return body
+
+        var decoded = body
+
+        // Content codings are applied in order, so decode them in reverse order.
+        for (encoding in contentEncoding.split(',').asReversed()) {
+            decoded = when (encoding.trim().lowercase(Locale.ROOT)) {
+                "identity" -> decoded
+                "gzip", "x-gzip" -> GZIPInputStream(decoded)
+                "deflate" -> InflaterInputStream(decoded)
+                else -> throw IOException("Unsupported content encoding: $encoding")
+            }
+        }
+
+        return decoded
+    }
+
     private fun send(
         urlString: String,
         headers: Map<String, String>,
@@ -105,6 +130,7 @@ object Http {
                     .uri(uri)
                     .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
                     .header("User-Agent", USER_AGENT)
+                    .header("Accept-Encoding", "gzip, deflate")
 
                 headers.forEach { (name, value) -> builder.header(name, value) }
                 return method(builder).build()
@@ -126,7 +152,12 @@ object Http {
                 .thenAccept { response ->
                     try {
                         val code = response.statusCode()
-                        val body = response.body().use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                        val body = response.body().use { rawBody ->
+                            decompress(
+                                rawBody,
+                                response.headers().firstValue("Content-Encoding").orElse(null)
+                            ).readNBytes(MAX_BODY_BYTES + 1)
+                        }
                         if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
 
                         val status = statusMessage(code)
