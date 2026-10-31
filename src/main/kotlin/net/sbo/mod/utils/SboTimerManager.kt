@@ -1,6 +1,6 @@
 package net.sbo.mod.utils
 
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
@@ -13,7 +13,7 @@ import kotlin.reflect.KMutableProperty1
 
 internal fun getInactivityLimitNanos(): Long {
     return TimeUnit.SECONDS.toNanos(
-        Diana.afkTimeout.toLong().coerceAtLeast(15L)
+        Trackers.afkTimeout.toLong().coerceAtLeast(15L)
     )
 }
 

@@ -13,8 +13,7 @@ import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Waypoints
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
@@ -72,28 +71,28 @@ object RenderUtils3D {
             drawString(
                 context,
                 pos,
-                if (Customization.lookAlike) 1.0 else 1.5,
+                if (Waypoints.lookAlike) 1.0 else 1.5,
                 0.0,
                 text,
                 textWidth,
                 visualOrderText,
                 hexColor,
-                Customization.waypointTextShadow,
-                if (Customization.lookAlike) 1.5 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
+                Waypoints.waypointTextShadow,
+                if (Waypoints.lookAlike) 1.5 * Waypoints.waypointTextScale / 12.0 else Waypoints.waypointTextScale / 100.0
             )
 
             if (secondaryText != null && secondaryVisualOrderText != null) {
                 drawString(
                     context,
                     pos,
-                    if (Customization.lookAlike) 1.0 else 11.5,
-                    if (Customization.lookAlike) 10.0 else 0.0,
+                    if (Waypoints.lookAlike) 1.0 else 11.5,
+                    if (Waypoints.lookAlike) 10.0 else 0.0,
                     secondaryText,
                     secondaryTextWidth,
                     secondaryVisualOrderText,
                     hexColor,
-                    Customization.waypointTextShadow,
-                    if (Customization.lookAlike) 1.7 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
+                    Waypoints.waypointTextShadow,
+                    if (Waypoints.lookAlike) 1.7 * Waypoints.waypointTextScale / 12.0 else Waypoints.waypointTextScale / 100.0
                 )
             }
         }
@@ -182,13 +181,13 @@ object RenderUtils3D {
             val textDistance = textOffset.length()
             val effectiveDistance = minOf(distance, maxTextDistance)
 
-            val dynamicScale = if (Customization.lookAlike) {
+            val dynamicScale = if (Waypoints.lookAlike) {
                 distRender * scale * 0.05
             } else {
                 max(effectiveDistance, 2.5) * scale
             }
 
-            val renderPos = if (Customization.lookAlike) {
+            val renderPos = if (Waypoints.lookAlike) {
                 val compression = distRender / distToPlayer
 
                 Vec3(
@@ -209,7 +208,7 @@ object RenderUtils3D {
             mulPose(Axis.YP.rotationDegrees(-cameraYaw))
             mulPose(Axis.XP.rotationDegrees(cameraPitch))
 
-            if (Customization.lookAlike) translate(0.0, -screenYOffset * dynamicScale, 0.0)
+            if (Waypoints.lookAlike) translate(0.0, -screenYOffset * dynamicScale, 0.0)
 
             scale(-dynamicScale.toFloat(), -dynamicScale.toFloat(), dynamicScale.toFloat())
 
@@ -452,7 +451,7 @@ object RenderUtils3D {
         colorComponents: FloatArray
     ) {
         val player = mc.player ?: return
-        if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.beamDistance) return
+        if (vec.center().distanceTo(player.x, player.y, player.z) < Waypoints.beamDistance) return
 
         val world = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)

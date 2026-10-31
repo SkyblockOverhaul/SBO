@@ -1,7 +1,7 @@
 package net.sbo.mod.diana
 
 import it.unimi.dsi.fastutil.ints.IntSet
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.Chat
@@ -102,20 +102,20 @@ object RareMobKillTime {
         if (timers.isEmpty()) mobTimers.remove(mob)
 
         val elapsedNs = System.nanoTime() - timer.startNs
-        if (!nearby || !Diana.sendKillTimeMessage || elapsedNs <= 0L) return
+        if (!nearby || !RareMobs.sendKillTimeMessage || elapsedNs <= 0L) return
 
         val elapsed = Helper.formatTime(elapsedNs / 1_000_000L, decimalSeconds = true)
         val hatch = timer.hatchMs?.let { " (cocoon hatch: ${Helper.formatTime(it, decimalSeconds = true)})" }
             ?: if (timer.cocoon) " (cocoon hatch time unavailable)" else ""
         Chat.chat("§6[SBO] §eTook §6$elapsed §eto kill the $mob!$hatch")
         val shareType = when (mob) {
-            DianaMobDetect.RareDianaMob.INQ.display -> Diana.ShareList.INQ
-            DianaMobDetect.RareDianaMob.MANTI.display -> Diana.ShareList.MANTICORE
-            DianaMobDetect.RareDianaMob.KING.display -> Diana.ShareList.KING
-            DianaMobDetect.RareDianaMob.SPHINX.display -> Diana.ShareList.SPHINX
+            RareMob.INQ.display -> RareMob.INQ
+            RareMob.MANTICORE.display -> RareMob.MANTICORE
+            RareMob.KING.display -> RareMob.KING
+            RareMob.SPHINX.display -> RareMob.SPHINX
             else -> null
         }
-        if (shareType != null && shareType in Diana.ShareMobs) {
+        if (shareType != null && shareType in RareMobs.ShareMobs) {
             Chat.pc("[SBO] Took $elapsed to kill the $mob!$hatch")
         }
     }

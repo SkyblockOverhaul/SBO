@@ -6,14 +6,15 @@ import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.settings.categories.Burrows
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.settings.categories.Diana
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.waypoint.WaypointManager
 
-object Chains : DianaOverlay<Chains.View>("Diana Chains", Diana.TrackerOverlay.CHAINS, { Diana.ongoingChainsDisplay },
+object Chains : DianaOverlay<Chains.View>("Diana Chains", Trackers.TrackerLook.CHAINS, { Burrows.ongoingChainsDisplay },
     allowedScreens = listOf(CHAT_SCREEN_FILTER)
 ) {
     private var failureTimes = 0
@@ -96,7 +97,7 @@ object Chains : DianaOverlay<Chains.View>("Diana Chains", Diana.TrackerOverlay.C
         val debug = Debug.debugOnlyMessages
         var showStatus = false
         // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly
-        if (!Diana.simpleChainsOverlayMode) {
+        if (!Burrows.simpleChainsOverlayMode) {
             if (issue || debug) { // hide for less verbosity unless theres an issue
                 failureTimes++
 
@@ -116,7 +117,7 @@ object Chains : DianaOverlay<Chains.View>("Diana Chains", Diana.TrackerOverlay.C
         val state = state()
         val rows = mutableListOf<Row>()
         val warnings = mutableListOf<String>()
-        if (!Diana.simpleChainsOverlayMode) {
+        if (!Burrows.simpleChainsOverlayMode) {
             rows += Row(null, "Started", GREEN, "${state.chains}/${state.chains.coerceAtLeast(7)}", "${state.knownWStart} pending start", valueClass = colorClass(colorBasedOnAmount(state.chains)))
             rows += Row(null, "Waypoints", AQUA, "${state.waypoints}/${state.waypoints.coerceAtLeast(7)}", "${state.knownW} known, ${state.arrowW} arrow", valueClass = colorClass(colorBasedOnAmount(state.waypoints)))
             if (state.showStatus) {
@@ -161,7 +162,7 @@ object Chains : DianaOverlay<Chains.View>("Diana Chains", Diana.TrackerOverlay.C
         val chainsMax = chains.coerceAtLeast(7)
         val waypointsMax = waypoints.coerceAtLeast(7)
 
-        if (!Diana.simpleChainsOverlayMode) {
+        if (!Burrows.simpleChainsOverlayMode) {
             lines.add(OverlayTextLine("$GRAY - ${GREEN}Started: $chainsColor$chains/$chainsMax (${state.knownWStart} pending start)"))
             lines.add(OverlayTextLine("$GRAY - ${AQUA}Waypoints: $waypointsColor$waypoints/$waypointsMax (${state.knownW} known, ${state.arrowW} arrow)"))
 

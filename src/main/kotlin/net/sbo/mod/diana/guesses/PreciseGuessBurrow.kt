@@ -4,7 +4,7 @@ import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.burrows.ChainTracker
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlaySoundEvent
@@ -96,7 +96,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
-        if (!Diana.spadeGuess) return
+        if (!Burrows.spadeGuess) return
         this.particleLocations.clear()
         throwGuess = null
         ownsThrowGuess = false
@@ -106,13 +106,13 @@ object PreciseGuessBurrow {
     @SboEvent
     fun onReceiveParticle(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (!Diana.spadeGuess || !World.isInHub()) return
+        if (!Burrows.spadeGuess || !World.isInHub()) return
         if (packet.particle.type != ParticleTypes.DRIPPING_LAVA || packet.count != 2 || packet.maxSpeed != -0.5f) return
         val currLoc = SboVec(packet.x, packet.y, packet.z)
         val now = System.nanoTime()
         this.lastLavaParticle = now
         if (now - lastGuessTime > SPADE_WINDOW) return
-        if (!Diana.curveSpadeGuess) {
+        if (!Burrows.curveSpadeGuess) {
             oldGuess(currLoc)
             return
         }
@@ -136,7 +136,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onPlaySound(event: PlaySoundEvent) {
-        if (!Diana.spadeGuess || !World.isInHub() || firstNote != null) return
+        if (!Burrows.spadeGuess || !World.isInHub() || firstNote != null) return
         if (System.nanoTime() - lastGuessTime > SPADE_WINDOW) return
         val sound = event.sound
         if (sound.identifier.path != "block.note_block.harp") return
@@ -147,7 +147,7 @@ object PreciseGuessBurrow {
 
     @SboEvent
     fun onUseSpade(event: PlayerInteractEvent) {
-        if (!Diana.spadeGuess || !World.isInHub()) return
+        if (!Burrows.spadeGuess || !World.isInHub()) return
         val action = event.action
         if (action != "useItem" && action != "useBlock") return
         val player = SBOKotlin.mc.player
@@ -162,7 +162,7 @@ object PreciseGuessBurrow {
             event.isCanceled = true
             return
         }
-        if (Diana.curveSpadeGuess && this.particleLocations.isEmpty() && now - lastGuessTime < DOUBLE_CLICK) return
+        if (Burrows.curveSpadeGuess && this.particleLocations.isEmpty() && now - lastGuessTime < DOUBLE_CLICK) return
         BurrowDetector.pendingUseSpadeTitle = null
         this.particleLocations.clear()
         lastGuessTime = now
@@ -175,7 +175,7 @@ object PreciseGuessBurrow {
         resetFits()
     }
 
-    /** The spade guess from before the curve guess, a cubic fit of the particles, used with [Diana.curveSpadeGuess] off. */
+    /** The spade guess from before the curve guess, a cubic fit of the particles, used with [Burrows.curveSpadeGuess] off. */
     private fun oldGuess(currLoc: SboVec) {
         if (this.particleLocations.isEmpty()) {
             this.particleLocations.add(currLoc)
@@ -232,7 +232,7 @@ object PreciseGuessBurrow {
 
     /** Solves the guess again once the trail stopped after [SHORT_TRAIL] particles. */
     private fun checkShortTrail() {
-        if (!Diana.curveSpadeGuess || shortTrailChecked || particleLocations.size != SHORT_TRAIL) return
+        if (!Burrows.curveSpadeGuess || shortTrailChecked || particleLocations.size != SHORT_TRAIL) return
         if (System.nanoTime() - lastPointTime <= POINT_GAP) return
         shortTrailChecked = true
         shortTrailGuess()?.let { moveGuess(it) }

@@ -22,7 +22,7 @@ import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
@@ -55,7 +55,7 @@ object EventsGui {
             val sticksRelics = (byItem["DAEDALUS_STICK"] ?: 0L) + (byItem["MINOS_RELIC"] ?: 0L)
             // Shurikens come off the other drops, a bar part can't be negative
             val otherDrops = (byItem.values.sum() - chimeras - sticksRelics).coerceAtLeast(0L)
-            listOf(chimeras, sticksRelics, otherDrops, if (Diana.excludeCoinsFromProfit) 0L else data.items.COINS)
+            listOf(chimeras, sticksRelics, otherDrops, if (Trackers.excludeCoinsFromProfit) 0L else data.items.COINS)
         }
         val profit = parts.sum()
         val profitPerHour = perHour(profit.toDouble(), data.items.TIME)

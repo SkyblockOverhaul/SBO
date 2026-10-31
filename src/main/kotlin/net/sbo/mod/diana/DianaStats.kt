@@ -2,7 +2,7 @@ package net.sbo.mod.diana
 
 import jdk.jfr.Percentage
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
@@ -119,7 +119,7 @@ object DianaStats {
         val totalValue = DianaLoot.totalProfit(tracker)
         val profit = listOf(
             Helper.formatNumber(totalValue),
-            Diana.bazaarSettingDiana.toString(),
+            Trackers.bazaarSettingDiana.name,
             Helper.formatNumber(totalValue / playTimeHrs)
         )
         return PlayerStats(

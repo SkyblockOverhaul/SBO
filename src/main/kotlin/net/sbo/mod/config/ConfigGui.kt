@@ -36,15 +36,15 @@ import kotlin.math.pow
 object ConfigGui {
     private val STYLES = listOf("sbo:ui/config/config.css", SboLook.STYLE)
 
-    fun open(config: Config, title: String, onBack: (() -> Unit)? = null) {
-        GuiLib.open(app(config, title, onBack), STYLES, title)
+    fun open(config: Config, title: String, onBack: (() -> Unit)? = null, whatsNew: WhatsNew? = null) {
+        GuiLib.open(app(config, title, onBack, whatsNew), STYLES, title)
     }
 
-    fun screen(config: Config, title: String, onBack: (() -> Unit)? = null): GuiLibScreen =
-        GuiLib.screen(app(config, title, onBack), STYLES, title)
+    fun screen(config: Config, title: String, onBack: (() -> Unit)? = null, whatsNew: WhatsNew? = null): GuiLibScreen =
+        GuiLib.screen(app(config, title, onBack, whatsNew), STYLES, title)
 
-    private fun app(config: Config, title: String, onBack: (() -> Unit)?) =
-        component(title) { App(AppProps(config, onBack)) }
+    private fun app(config: Config, title: String, onBack: (() -> Unit)?, whatsNew: WhatsNew?) =
+        component(title) { App(AppProps(config, onBack, whatsNew?.takeIf { it.hits.isNotEmpty() })) }
 }
 
 private class Ui(
@@ -60,11 +60,16 @@ private class Ui(
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
 
-private data class AppProps(val config: Config, val onBack: (() -> Unit)?)
+private data class AppProps(val config: Config, val onBack: (() -> Unit)?, val whatsNew: WhatsNew?)
 
-private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
+private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew) ->
     val hasGeneral = config.elements.isNotEmpty()
-    var page by useState<Category>(if (hasGeneral) config else config.children.firstOrNull() ?: config)
+    // null is the home page with every category below each other
+    var page by useState<Category?>(null)
+    // What's New is shown instead of the page while this is on
+    var showNew by useState(whatsNew?.openFirst == true)
+    // The count only marks it as not looked at yet
+    var newSeen by useState(whatsNew?.seen == true)
     var query by useState("")
     var target by useState<ConfigElement?>(null)
     var editing by useState<StringsEntry?>(null)
@@ -81,7 +86,9 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     }
 
     fun show(category: Category, element: ConfigElement) {
-        page = category
+        // The home page has it too, so that stays
+        if (page != null) page = category
+        showNew = false
         query = ""
         target = element
         // Jumping from the search into a collapsed sub opens it
@@ -113,7 +120,12 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     // Typing and dragging only save when the screen closes
     useEffect { onCleanup { config.save() } }
     useEscapeBack(searching) { query = "" }
-    useEffect(page, searching) { body.current?.scrollTop = 0f }
+    useEffect(page, searching, showNew) { body.current?.scrollTop = 0f }
+    useEffect(showNew) {
+        if (!showNew) return@useEffect
+        whatsNew?.onOpened()
+        newSeen = true
+    }
     useEffect(target) {
         val element = target ?: return@useEffect
         // A few frames later the category page is laid out
@@ -150,16 +162,33 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
             div(className = "cfg-main") {
                 aside(className = "cfg-sidebar") {
                     scroll(className = "cfg-categories guilib-autohide") {
+                        if (whatsNew != null) {
+                            val classes = listOfNotNull("cfg-category", "home", "whats-new", "active".takeIf { showNew && !searching }).joinToString(" ")
+                            button(className = classes, key = "cat:new", onClick = {
+                                showNew = true
+                                query = ""
+                            }) {
+                                span(className = "cfg-category-name") { +"What's New" }
+                                if (!newSeen) span(className = "cfg-count") { +whatsNew.hits.size.toString() }
+                            }
+                        }
+                        categoryLink("home", "All Settings", page == null && !showNew && !searching, hits.size, searching, home = true) {
+                            page = null
+                            showNew = false
+                            query = ""
+                        }
                         if (hasGeneral) {
-                            categoryLink(config, "General", page === config && !searching, hits.count { it.path.size == 1 }, searching) {
+                            categoryLink(config.id, "General", page === config && !showNew && !searching, hits.count { it.path.size == 1 }, searching) {
                                 page = config
+                                showNew = false
                                 query = ""
                             }
                         }
                         config.children.forEach { category ->
                             val count = hits.count { it.path.getOrNull(1) === category }
-                            categoryLink(category, category.name, page === category && !searching, count, searching) {
+                            categoryLink(category.id, category.name, page === category && !showNew && !searching, count, searching) {
                                 page = category
+                                showNew = false
                                 query = ""
                             }
                         }
@@ -169,11 +198,13 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                 scroll(className = "cfg-body guilib-autohide", ref = body) {
                     when {
                         searching -> results(query, hits, revision.value)
+                        showNew && whatsNew != null -> whatsNewPage(whatsNew, revision.value, ui)
+                        page == null -> home(config, hasGeneral, revision.value, target, ui) { page = it }
                         page === config -> {
                             h1(className = "cfg-page-title") { +"General" }
                             elements(config, revision.value, target, ui)
                         }
-                        else -> categoryPage(page, revision.value, target, ui)
+                        else -> page?.let { categoryPage(it, revision.value, target, ui) }
                     }
                 }
             }
@@ -189,21 +220,72 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
 }
 
 private fun NodeBuilder.categoryLink(
-    category: Category,
+    id: String,
     label: String,
     active: Boolean,
     count: Int,
     searching: Boolean,
+    home: Boolean = false,
     onClick: () -> Unit,
 ) {
     val classes = listOfNotNull(
         "cfg-category",
+        "home".takeIf { home },
         "active".takeIf { active },
         "no-hits".takeIf { searching && count == 0 },
     ).joinToString(" ")
-    button(className = classes, key = "cat:${category.id}", onClick = { onClick() }) {
+    button(className = classes, key = "cat:$id", onClick = { onClick() }) {
         span(className = "cfg-category-name") { +label }
         if (searching && count > 0) span(className = "cfg-count") { +count.toString() }
+    }
+}
+
+// The settings added since the last version, with switches for all of them at once
+private fun NodeBuilder.whatsNewPage(whatsNew: WhatsNew, revision: Int, ui: Ui) {
+    h1(className = "cfg-page-title") { +whatsNew.title }
+    if (whatsNew.text.isNotEmpty()) description(whatsNew.text, "cfg-page-description")
+    val toggles = whatsNew.hits.mapNotNull { it.element as? ConfigEntry<*> }.filter(::switchable)
+    if (toggles.isNotEmpty()) {
+        div(className = "cfg-new-actions") {
+            button(className = "cfg-button", title = "Turn every new feature below on", onClick = {
+                toggles.forEach { switchTo(it, true) }
+                ui.changed()
+            }) { +"Enable all" }
+            button(className = "cfg-button", title = "Turn every new feature below off", onClick = {
+                toggles.forEach { switchTo(it, false) }
+                ui.changed()
+            }) { +"Disable all" }
+        }
+    }
+    whatsNew.extra?.let { Row(RowProps(it, revision, false), key = "new:extra") }
+    whatsNew.hits.groupBy { (it.element as ConfigEntry<*>).since }.forEach { (since, group) ->
+        div(className = "cfg-result-group", key = "new:$since") {
+            h2(className = "cfg-result-category") { +"New in $since" }
+            group.forEach { hit ->
+                Row(RowProps(hit.element, revision, false, hit), key = "new:${System.identityHashCode(hit.element)}")
+            }
+        }
+    }
+}
+
+// Every category below each other, so all settings can be scrolled through at once; a title opens the category alone
+private fun NodeBuilder.home(config: Config, hasGeneral: Boolean, revision: Int, target: ConfigElement?, ui: Ui, open: (Category) -> Unit) {
+    if (hasGeneral) {
+        div(className = "cfg-home-section", key = "home:${config.id}") {
+            h1(className = "cfg-page-title cfg-home-title", title = "Show only General", onClick = { _ -> open(config) }) { +"General" }
+            elements(config, revision, target, ui)
+        }
+    }
+    config.children.forEach { category ->
+        div(className = "cfg-home-section", key = "home:${category.id}") {
+            h1(className = "cfg-page-title cfg-home-title", title = "Show only ${category.name}", onClick = { _ -> open(category) }) { +category.name }
+            if (category.description.isNotEmpty()) description(category.description, "cfg-page-description")
+            elements(category, revision, target, ui)
+            category.children.forEach { child ->
+                h2(className = "cfg-child-category", key = "child:${child.id}") { +child.name }
+                elements(child, revision, target, ui)
+            }
+        }
     }
 }
 
@@ -414,20 +496,20 @@ private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Un
                 options.forEach { option(it.id, it.label, title = it.description.ifEmpty { null }) }
             }
         }
-        is EnumEntry<*> -> {
+        is OptionEntry<*> -> {
             select(value = entry.value.name, className = "cfg-select", onChange = { event ->
                 entry.setName(event.value)
                 ui.changed()
             }) {
-                entry.constants.forEach { option(it.name, it.toString()) }
+                entry.constants.forEach { option(it.name, it.optionLabel, title = it.optionDescription.ifEmpty { null }) }
             }
         }
-        is SelectEntry<*> -> {
+        is OptionsEntry<*> -> {
             multiSelect(values = entry.value.map { it.name }, className = "cfg-select", placeholder = "None", onChange = { names ->
                 entry.setNames(names)
                 ui.changed()
             }) {
-                entry.constants.forEach { option(it.name, it.toString()) }
+                entry.constants.forEach { option(it.name, it.optionLabel, title = it.optionDescription.ifEmpty { null }) }
             }
         }
     }

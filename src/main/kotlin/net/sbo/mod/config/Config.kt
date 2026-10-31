@@ -70,7 +70,7 @@ open class Category(val id: String) : EntriesBuilder() {
     companion object {
         internal val logger = LoggerFactory.getLogger("sbo-config")
 
-        private const val DISABLED_SUBS_KEY = "sbo:disabledSubs"
+        internal const val DISABLED_SUBS_KEY = "sbo:disabledSubs"
         private const val DISABLED_SUBS_COMMENT = "Subs switched off in the settings, their on/off settings count as off."
     }
 }
@@ -84,10 +84,15 @@ open class Config(val file: String) : Category(file) {
 
     private val backup: Path get() = path.resolveSibling("${path.fileName}.bak")
 
+    /** Whether the file was there when it was last loaded, false for a new install. */
+    var existed: Boolean = false
+        private set
+
     fun load(configDir: Path) {
         this.configDir = configDir
         linkRequirements()
-        if (Files.exists(path)) {
+        existed = Files.exists(path)
+        if (existed) {
             val current = read(path)
             val json = current ?: read(backup)
             if (current == null) {

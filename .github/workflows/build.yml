@@ -23,8 +23,8 @@ jobs:
           build-scan-terms-of-use-agree: 'yes'
       - name: build
         run: |
-          # A beta tag (v0.7.2-beta.1) builds as that version, so the jars and the mod itself carry it
-          if [[ "$GITHUB_REF" == refs/tags/*-beta* ]]; then
+          # A version tag (0.7.2-beta.1, 0.7.2, with or without a v) builds as that version, so the jars and the mod itself carry it
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             ./gradlew build --scan "-Pmod.version=${GITHUB_REF_NAME#v}"
           else
             ./gradlew build --scan
@@ -35,19 +35,23 @@ jobs:
           name: Artifacts
           path: build/versions/
 
-  # Pushing a tag like 0.7.2-beta.1 uploads the build to Modrinth as a beta version. The changelog is the
-  # tag message (git tag -a), or the commit titles since the previous tag for a tag without one.
+  # Pushing a version tag publishes the build. A beta tag (0.7.2-beta.1) becomes a beta version on Modrinth,
+  # a release tag (0.7.2) a featured release version on Modrinth and a GitHub release with the jars,
+  # but only when the tagged commit is on main.
+  # The changelog is the tag message (git tag -a), or the commit titles since the previous tag for a tag
+  # without one (for a release since the previous release, so its betas are in it too).
   # Needs the MODRINTH_TOKEN repository secret (a Modrinth PAT with "Create versions").
-  modrinth-beta:
+  release:
     needs: build
     # Forks have no MODRINTH_TOKEN, there the job would only fail
-    if: github.repository == 'SkyblockOverhaul/SBO' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && contains(github.ref_name, '-beta')
+    if: github.repository == 'SkyblockOverhaul/SBO' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     permissions:
-      contents: read
+      contents: write
     runs-on: ubuntu-26.04
     env:
       PROJECT_ID: 9lBqVbQF
       MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: checkout repository
         uses: actions/checkout@v7
@@ -58,18 +62,39 @@ jobs:
         with:
           name: Artifacts
           path: jars
-      - name: upload to modrinth
+      - name: release only from main
+        if: ${{ !contains(github.ref_name, '-beta') }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-
+          # A tag has no branch, so the tagged commit has to be on main; betas can come from any branch
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME is a release tag on a commit that isn't on main. Releases are only made from main, use a -beta tag for other branches."
+            exit 1
+          fi
+      - name: changelog
+        run: |
           # checkout can leave the tag lightweight, this brings back the annotated one with its message
           git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
           if [ "$(git cat-file -t "$GITHUB_REF_NAME")" = "tag" ]; then
-            changelog=$(git tag -l --format='%(contents)' "$GITHUB_REF_NAME")
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > changelog.md
           else
-            # Everything since the previous tag, beta or release
-            previous=$(git describe --tags --abbrev=0 "$GITHUB_SHA^" 2>/dev/null || true)
-            changelog=$(git log --no-merges --format='- %s' ${previous:+"$previous..$GITHUB_SHA"} | head -n 50)
+            if [[ "$GITHUB_REF_NAME" == *-beta* ]]; then
+              # Everything since the previous tag, beta or release
+              previous=$(git describe --tags --abbrev=0 "$GITHUB_SHA^" 2>/dev/null || true)
+            else
+              previous=$(git describe --tags --abbrev=0 --exclude='*-beta*' "$GITHUB_SHA^" 2>/dev/null || true)
+            fi
+            git log --no-merges --format='- %s' ${previous:+"$previous..$GITHUB_SHA"} | head -n 50 > changelog.md
+          fi
+      - name: upload to modrinth
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          changelog=$(cat changelog.md)
+          if [[ "$version" == *-beta* ]]; then
+            type="beta"
+            featured=false
+          else
+            type="release"
+            featured=true
           fi
 
           for jar in jars/*.jar; do
@@ -88,16 +113,18 @@ jobs:
               --arg name "Skyblock Overhaul (SBO) $version" \
               --arg number "$version-$label" \
               --arg changelog "$changelog" \
+              --arg type "$type" \
+              --argjson featured "$featured" \
               --argjson game_versions "$game_versions" \
               '{
                 project_id: $project,
                 name: $name,
                 version_number: $number,
                 changelog: $changelog,
-                version_type: "beta",
+                version_type: $type,
                 game_versions: $game_versions,
                 loaders: ["fabric"],
-                featured: false,
+                featured: $featured,
                 dependencies: [
                   {project_id: "P7dR8mSH", dependency_type: "required"},
                   {project_id: "Ha28R6CL", dependency_type: "required"}
@@ -105,10 +132,18 @@ jobs:
                 file_parts: ["file"]
               }')
 
-            echo "Uploading $(basename "$jar") as $version-$label"
+            echo "Uploading $(basename "$jar") as $version-$label ($type)"
             curl -fsS -X POST https://api.modrinth.com/v2/version \
               -H "Authorization: $MODRINTH_TOKEN" \
               -H "User-Agent: SkyblockOverhaul/SBO (github actions)" \
               --form-string "data=$data" \
               -F "file=@$jar" > /dev/null
           done
+      - name: github release
+        if: ${{ !contains(github.ref_name, '-beta') }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" jars/*.jar \
+            --title "Skyblock Overhaul (SBO) ${GITHUB_REF_NAME#v}" \
+            --notes-file changelog.md \
+            --verify-tag \
+            --latest

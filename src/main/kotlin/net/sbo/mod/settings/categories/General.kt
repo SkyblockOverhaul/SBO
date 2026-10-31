@@ -1,12 +1,30 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
+import net.sbo.mod.config.Option
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.SoundsGui
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 
 object General : Category("General") {
-    enum class HideOwnWaypoints {
-        NORMAL, INQ, MANTICORE, KING, SPHINX
+    override val description = "Everything that isn't only for Diana: overlays, chat, achievements, sounds and the chunk cache."
+
+    enum class HiddenMessage(override val label: String, override val description: String) : Option {
+        DIANA("Diana spam", "The treasure arrow hint, ability cooldown, Warping... and blocks in the way messages."),
+        AUTOPET("Autopet", "All autopet messages."),
+        IMPLOSION("Implosion", "All implosion messages."),
+        SACKS("Sacks", "All sack messages."),
+    }
+
+    init {
+        sub {
+            this.title = "New Settings"
+        }
+    }
+
+    var disableNewSettings by boolean(false) {
+        this.name = Literal("Disable All New Settings")
+        this.description = Literal("New features that would be on right after an update start switched off instead. What's New at the top of the settings lists them, with what they do, so you can turn on the ones you want.")
     }
 
     init {
@@ -25,6 +43,11 @@ object General : Category("General") {
         this.description = Literal("Tracks the players near you for legion buff /sboguis to move the overlay.")
     }
 
+    var pickuplogOverlay by boolean(false) {
+        this.name = Literal("Pickup Log Overlay")
+        this.description = Literal("Displays a pickup log in an overlay like sba. /sboguis to move the overlay.")
+    }
+
     init {
         button {
             title = "Move GUI's"
@@ -38,29 +61,25 @@ object General : Category("General") {
         }
 
         sub {
-            this.title = "Waypoints"
+            this.title = "Chat"
         }
     }
 
-    var hideOwnWaypoints by select<HideOwnWaypoints> {
-        this.name = Literal("Hide Own Waypoints")
-        this.description = Literal("Hides waypoints you created.")
-    }
-
-    var patcherWaypoints by boolean(true) {
-        this.name = Literal("Waypoints From Chat")
-        this.description = Literal("Creates waypoints from chat messages. (format: x: 20, y: 60, z: 80)")
-    }
-
-    init {
-        sub {
-            this.title = "Accessibility"
-        }
+    // Was one Hide ... Messages switch each
+    var hideMessages by options<HiddenMessage> {
+        this.name = Literal("Hide Messages")
+        this.since = "0.7.2-beta.2"
+        this.description = Literal("Chat messages to hide, hover an option for which ones.")
     }
 
     var assumeMuted by boolean(false) {
         this.name = Literal("Assume Muted")
         this.description = Literal("Assumes you are muted and instead of running /pc to send mod messages always prefers to send them client-side to yourself only.")
+    }
+
+    var phoenixAnnouncer by boolean(true) {
+        this.name = Literal("Phoenix Announcer")
+        this.description = Literal("Announces on screen when you drop a phoenix pet.")
     }
 
     init {
@@ -80,6 +99,19 @@ object General : Category("General") {
     }
 
     init {
+        sub {
+            this.title = "Sounds"
+        }
+
+        button {
+            title = "Sound Settings"
+            text = "Configure"
+            description = "Open the sound GUI: sounds, volumes, master volume and the sound folder."
+            onClick {
+                SoundsGui.open()
+            }
+        }
+
         sub {
             this.title = "Chunk Cache"
         }

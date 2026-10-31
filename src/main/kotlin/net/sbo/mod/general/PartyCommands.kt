@@ -5,7 +5,7 @@ import net.sbo.mod.diana.DianaStats
 import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.partyfinder.PartyFinderManager
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.PartyCommands
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOne
@@ -206,7 +206,7 @@ object PartyCommands {
             val playtime = dianaTrackerMayorData.items.TIME
             val playTimeHrs = playtime.toDouble() / TimeUnit.HOURS.toMillis(1)
             val profit = DianaLoot.totalProfit(dianaTrackerMayorData) + CrownOfAvarice.getProfit()
-            val offerType = if (Diana.ironmanOverrides) "NPC Sell" else Diana.bazaarSettingDiana.toString()
+            val offerType = if (Trackers.npcOnlyPrices) "NPC Sell" else Trackers.bazaarSettingDiana.name
             val profitHour = profit / playTimeHrs
             "Profit: ${formatNumber(profit)} (${Helper.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"
         },

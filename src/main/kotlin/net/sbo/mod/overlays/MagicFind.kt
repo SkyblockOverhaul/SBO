@@ -1,7 +1,7 @@
 package net.sbo.mod.overlays
 
 import net.minecraft.ChatFormatting.*
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.game.World
@@ -11,7 +11,7 @@ import net.sbo.mod.utils.overlay.OverlayTextLine
 
 object MagicFind : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana MagicFind", 10f, 10f)
-        .setCondition { Diana.magicFindTracker }
+        .setCondition { Trackers.magicFindTracker }
         .setExtraCondition { Helper.hasSpade && World.isInHub() }
 
     fun init() {

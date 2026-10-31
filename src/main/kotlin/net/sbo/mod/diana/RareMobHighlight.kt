@@ -4,8 +4,7 @@ import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.utils.accessors.isSboGlowing
 import net.sbo.mod.utils.accessors.setSboGlowColor
 import net.sbo.mod.utils.events.Register
@@ -34,7 +33,7 @@ import java.util.concurrent.TimeUnit
 object RareMobHighlight {
     private val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
 
-    private val rareMobs = mutableMapOf<LivingEntity, RareDianaMob>()
+    private val rareMobs = mutableMapOf<LivingEntity, RareMob>()
     private val pendingMobs = mutableMapOf<LivingEntity, Long>()
 
     fun init() {
@@ -47,7 +46,7 @@ object RareMobHighlight {
 
         //#if MC > 26.1
         //$$ CustomGlowCallback.EVENT.register { entity, _ ->
-        //$$    if (!Diana.HighlightRareMobs) GlowConstants.NO_GLOW
+        //$$    if (!RareMobs.HighlightRareMobs) GlowConstants.NO_GLOW
         //$$
         //$$    // Minecraft already renders all glow as opaque, and non-opaque values are reserved by Render Chest.
         //$$    rareMobs[entity]?.glowColor?.let(ARGB::opaque) ?: GlowConstants.NO_GLOW
@@ -59,10 +58,10 @@ object RareMobHighlight {
     fun onEntityLoad(event: EntityLoadEvent) {
         val mob = event.entity
         if (mob is LivingEntity) {
-            if (!Diana.HighlightRareMobs) return
+            if (!RareMobs.HighlightRareMobs) return
             if (event.entity is Player && event.entity.uuid.version() == 4) return
 
-            val rare = RareDianaMob.fromName(mob.name.string)
+            val rare = RareMob.fromName(mob.name.string)
             if (rare != null) {
                 rareMobs[mob] = rare
             } else {
@@ -93,7 +92,7 @@ object RareMobHighlight {
                 continue
             }
 
-            val rare = RareDianaMob.fromName(mob.name.string)
+            val rare = RareMob.fromName(mob.name.string)
             if (rare != null) {
                 rareMobs[mob] = rare
                 pendingIterator.remove()
@@ -116,7 +115,7 @@ object RareMobHighlight {
 
             //#if MC < 26.2
             val hasLineOfSight = player != null && player.hasLineOfSight(mob)
-            if (Diana.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
+            if (RareMobs.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
                 mob.isSboGlowing = true
                 mob.setSboGlowColor(Color(type.glowColor))
             } else {

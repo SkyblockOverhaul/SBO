@@ -68,6 +68,7 @@ object Themes : Category("Themes") {
 
     var itemsLoading by choice(ITEMS_LOADING_SIMPLE) {
         this.name = Literal("Item Loading Animation")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("What the profile viewer shows while it loads the items of a player.")
         this.options = {
             listOf(

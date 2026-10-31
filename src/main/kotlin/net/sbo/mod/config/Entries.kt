@@ -51,11 +51,13 @@ open class EntriesBuilder {
     fun strings(vararg value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description) }
 
-    inline fun <reified E : Enum<E>> enum(value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> EnumEntry(id, value, b.name, b.description, enumValues<E>().toList()) }
+    /** One constant of [E], options show the [Option] label and description. */
+    inline fun <reified E : Enum<E>> option(value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionEntry(id, value, b.name, b.description, enumValues<E>().toList()) }
 
-    inline fun <reified E : Enum<E>> select(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> SelectEntry(id, arrayOf(*value), b.name, b.description, E::class.java) }
+    /** Any number of constants of [E], [value] is the default selection. */
+    inline fun <reified E : Enum<E>> options(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionsEntry(id, value.toCollection(LinkedHashSet()), b.name, b.description, enumValues<E>().toList()) }
 
     fun button(builder: ButtonBuilder.() -> Unit) {
         val button = ButtonBuilder().apply(builder)
@@ -91,6 +93,7 @@ class EntryProvider<T, B : TypeBuilder> @PublishedApi internal constructor(
         val built = builderFactory(id).apply(builder)
         val entry = create(id, built)
         entry.requirements = built.requirements
+        entry.since = built.since?.let { requireNotNull(ModVersion.parse(it)) { "Setting $id has an invalid since version: $it" } }
         entries.add(entry)
         return entry
     }
@@ -109,6 +112,10 @@ class ObservableEntry<T>(
 open class TypeBuilder(val id: String) {
     var name: String = id
     var description: String = ""
+
+    /** The mod version that adds the setting ("0.7.2-beta.2"), it is listed under What's New for players updating to it. */
+    var since: String? = null
+
     internal var requirements: List<Requirement> = emptyList()
 
     // Until a requirement is met an on/off setting reads as off, and the settings screen locks the row and links the requirement
@@ -122,7 +129,7 @@ open class TypeBuilder(val id: String) {
     /** Only usable while at least one of [settings] is on: `dependsAny(::guessAndBurrowLine, ::inqLine)`. */
     fun dependsAny(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map(::on), any = true)
 
-    /** For settings that aren't on/off: `depends(state(::lootTracker, "on") { it != Tracker.OFF })`. */
+    /** For settings that aren't on/off: `depends(state(::waypointOpacity, "above 0") { it > 0 })`, an option with an [OffOption] uses [notOff]. */
     fun depends(vararg conditions: Condition) = addRequirement(conditions.toList(), any = false)
 
     /** At least one of [conditions] has to be met, they can mix [state] and [on]. */
@@ -133,6 +140,9 @@ open class TypeBuilder(val id: String) {
     fun <T> state(setting: KProperty0<T>, state: String, check: (T) -> Boolean) = Condition(setting, state) { check(it as T) }
 
     fun on(setting: KProperty0<Boolean>) = state(setting, "") { it }
+
+    /** [setting] isn't on its [OffOption] constant: `depends(notOff(::lootTracker))`. */
+    fun <E : Enum<E>> notOff(setting: KProperty0<E>) = state(setting, "on") { !it.isOff }
 
     private fun addRequirement(conditions: List<Condition>, any: Boolean) {
         requirements = requirements + Requirement(conditions, any)
@@ -150,6 +160,7 @@ class ColorBuilder(id: String) : TypeBuilder(id) {
 }
 
 class ChoiceBuilder(id: String) : TypeBuilder(id) {
+    /** Read every time the settings screen shows the entry, so the options can change while the game runs. */
     var options: () -> List<Choice> = { emptyList() }
 }
 

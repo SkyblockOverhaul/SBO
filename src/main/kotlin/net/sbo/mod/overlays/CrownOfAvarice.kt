@@ -8,7 +8,8 @@ import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.config.nextOption
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
@@ -47,19 +48,19 @@ object CrownOfAvarice {
         allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER),
         stylesheets = listOf("sbo:ui/coa/coa.css")
     )
-        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && !Diana.isLegacy(Diana.TrackerOverlay.COA) }
+        .setCondition { Trackers.coaTracker != Trackers.TrackerMode.OFF && !Trackers.isLegacy(Trackers.TrackerLook.COA) }
         .setExtraCondition { World.isInHub() && Helper.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
 
     // The legacy look: Minecraft text lines like the other overlays, slightly better performance
     private val legacyOverlay = Overlay(OVERLAY_NAME, 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
-        .setCondition { Diana.coaTracker != Diana.Tracker.OFF && Diana.isLegacy(Diana.TrackerOverlay.COA) }
+        .setCondition { Trackers.coaTracker != Trackers.TrackerMode.OFF && Trackers.isLegacy(Trackers.TrackerLook.COA) }
         .setExtraCondition { World.isInHub() && Helper.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
 
     private val changeView = OverlayUtils.createClickableTextLine(
         text = "§eChange View",
         hoverText = "§e§nChange View",
         onClick = {
-            Diana.coaTracker = Diana.coaTracker.next()
+            Trackers.coaTracker = Trackers.coaTracker.nextOption()
             updateLines()
         }
     )
@@ -73,10 +74,10 @@ object CrownOfAvarice {
     var primaryCoaUuid: String? = null
     private var cachedCoaCoins: Long = -1L // Coins of the PRIMARY CoA only. -1 means that primary CoA isn't equipped
     private var tracker: DianaTracker? = null
-        get() = when (Diana.coaTracker) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
+        get() = when (Trackers.coaTracker) {
+            Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
+            Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
+            Trackers.TrackerMode.SESSION -> DataManager.dianaTrackerSessionData
             else -> null
         }
 
@@ -103,7 +104,7 @@ object CrownOfAvarice {
         legacyOverlay.setLabel("Crown of Avarice", "CoA")
         // The view badge in the top right changes the view
         overlay.onClick(".coa-mode") {
-            Diana.coaTracker = Diana.coaTracker.next()
+            Trackers.coaTracker = Trackers.coaTracker.nextOption()
             updateLines()
         }
 
@@ -164,7 +165,7 @@ object CrownOfAvarice {
             }
 
             if (tracker == null) {
-                Chat.chat("§6[SBO] §cPlease enable your CoA tracker (Settings -> Diana -> CoA Tracker) first")
+                Chat.chat("§6[SBO] §cPlease enable your CoA tracker (Settings -> Trackers -> CoA Tracker) first")
                 return@command
             }
 
@@ -302,7 +303,7 @@ object CrownOfAvarice {
         // Re-rendering means a full GuiLib layout pass, so only when something shown changed
         if (view == shownView) return
         shownView = view
-        if (Diana.isLegacy(Diana.TrackerOverlay.COA)) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
+        if (Trackers.isLegacy(Trackers.TrackerLook.COA)) legacyOverlay.setLines(legacyLines(view)) else overlay.setContent { content(view) }
     }
 
     /** Called when the look setting changes: the other overlay takes over on the next tick, at the same saved position. */
@@ -345,9 +346,9 @@ object CrownOfAvarice {
         val percent = "${percentTenths / 10}.${percentTenths % 10}"
         return View(
             icon = icon,
-            mode = Helper.toTitleCase(Diana.coaTracker.name),
-            inter = Diana.trackerFont == Diana.TrackerFont.INTER,
-            background = Diana.hasBackground(Diana.TrackerOverlay.COA),
+            mode = Helper.toTitleCase(Trackers.coaTracker.name),
+            inter = Trackers.trackerFont == Trackers.TrackerFont.INTER,
+            background = Trackers.hasBackground(Trackers.TrackerLook.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
             fillWidth = percent,
             percent = if (coins >= 0L) "$percent%" else "-",

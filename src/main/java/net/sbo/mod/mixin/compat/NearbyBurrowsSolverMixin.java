@@ -1,7 +1,7 @@
 package net.sbo.mod.mixin.compat;
 
 import net.minecraft.core.BlockPos;
-import net.sbo.mod.settings.categories.Diana;
+import net.sbo.mod.settings.categories.Burrows;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -26,7 +26,7 @@ final class NearbyBurrowsSolverMixin {
     @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "onParticles", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnParticlesIfSBOEnabled(@NonNull @Coerce final Object event, @NonNull final CallbackInfo ci) {
-        if (Diana.INSTANCE.getCloseBurrowDetection()) {
+        if (Burrows.INSTANCE.getCloseBurrowDetection()) {
             ci.cancel();
         }
     }
@@ -34,7 +34,7 @@ final class NearbyBurrowsSolverMixin {
     @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "onRender", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnRenderIfSBOEnabled(@NonNull @Coerce final Object event, @NonNull final CallbackInfo ci) {
-        if (Diana.INSTANCE.getCloseBurrowDetection()) {
+        if (Burrows.INSTANCE.getCloseBurrowDetection()) {
             ci.cancel();
         }
     }
@@ -42,7 +42,7 @@ final class NearbyBurrowsSolverMixin {
     @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "onBlockClick", at = @At("HEAD"), cancellable = true)
     private final void sbo$disableNearbyBurrowsSolverOnBlockClickIfSBOEnabled(@NonNull final BlockPos blockPos, @NonNull final CallbackInfo ci) {
-        if (Diana.INSTANCE.getCloseBurrowDetection()) {
+        if (Burrows.INSTANCE.getCloseBurrowDetection()) {
             ci.cancel();
         }
     }

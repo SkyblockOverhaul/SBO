@@ -2,7 +2,7 @@ package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
@@ -132,7 +132,7 @@ object BurrowDetector {
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
-            if (Diana.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
+            if (Burrows.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
             true
         }
 
@@ -236,7 +236,7 @@ object BurrowDetector {
         return "Mob" // assume mob if not a known treasure drop
     }
 
-    private fun canShowUseSpade() = Diana.spadeGuess && Helper.hasSpade && World.isInHub()
+    private fun canShowUseSpade() = Burrows.spadeGuess && Helper.hasSpade && World.isInHub()
 
     fun requestSpade(reason: String) {
         if (!canShowUseSpade()) return
@@ -265,7 +265,7 @@ object BurrowDetector {
             // chainFinish() is already handled by chat
         }
 
-        if (!Diana.closeBurrowDetection) return
+        if (!Burrows.closeBurrowDetection) return
         lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
     }
@@ -273,7 +273,7 @@ object BurrowDetector {
     @SboEvent
     fun onParticleReceive(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (!Diana.closeBurrowDetection) return
+        if (!Burrows.closeBurrowDetection) return
         if (!World.isInHub()) return
 
         if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
@@ -349,7 +349,7 @@ object BurrowDetector {
         source: String,
         carriedTimesDug: Int? = null
     ) {
-        if (!Diana.closeBurrowDetection) return
+        if (!Burrows.closeBurrowDetection) return
 
         val posString = blockKey(pos)
         val burrow = burrows.getOrPut(posString) {

@@ -97,7 +97,7 @@ class Button(
     val onClick: () -> Unit,
 ) : ConfigElement
 
-// The JSON matches what ResourcefulConfig wrote, so existing config.jsonc files and cloud saves load unchanged
+// The JSON keeps the layout ResourcefulConfig wrote (comments, version key), older files are converted by the config's migration
 sealed class ConfigEntry<T>(
     val id: String,
     val default: T,
@@ -111,6 +111,10 @@ sealed class ConfigEntry<T>(
     var onChange: (T, T) -> Unit = { _, _ -> }
 
     internal var sub: Sub? = null
+
+    /** The version that added the setting, from `since` in its builder; listed under What's New after updating. */
+    var since: ModVersion? = null
+        internal set
 
     /** From `depends(...)`, `dependsOff(...)` and `dependsAny(...)` in the entry's builder. */
     var requirements: List<Requirement> = emptyList()
@@ -270,6 +274,39 @@ class StringEntry internal constructor(id: String, default: String, name: String
 
 class Choice(val id: String, val label: String, val description: String = "")
 
+/** An enum constant in a dropdown: the settings screen shows [label], [description] when hovered. */
+interface Option {
+    val label: String
+    val description: String get() = ""
+}
+
+/** Marks the constant that turns the feature off, see [isOff] and [nextOption]. */
+@Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class OffOption
+
+private val offConstants = object : ClassValue<Set<String>>() {
+    override fun computeValue(type: Class<*>): Set<String> =
+        type.fields.filter { it.isEnumConstant && it.isAnnotationPresent(OffOption::class.java) }.mapTo(HashSet()) { it.name }
+}
+
+// A constant with a body is a subclass of its enum
+private val Enum<*>.enumClass: Class<*> get() = javaClass.let { if (it.isEnum) it else it.superclass }
+
+/** True for the constant marked with [OffOption]. */
+val Enum<*>.isOff: Boolean get() = name in offConstants.get(enumClass)
+
+val Enum<*>.optionLabel: String get() = (this as? Option)?.label ?: name.lowercase().replaceFirstChar { it.uppercase() }
+
+val Enum<*>.optionDescription: String get() = (this as? Option)?.description ?: ""
+
+/** The next constant, from the last one back to the first. The [OffOption] one is skipped, so cycling never turns a feature off. */
+fun <E : Enum<E>> E.nextOption(): E {
+    @Suppress("UNCHECKED_CAST")
+    val cycle = (enumClass.enumConstants as Array<E>).filterNot { it.isOff }
+    return cycle.getOrNull((cycle.indexOf(this) + 1) % cycle.size) ?: this
+}
+
 // A string out of options that can change while the game runs (e.g. files in a folder), shown as a dropdown.
 // Ids that aren't an option (anymore) are kept, the code reading the entry picks the fallback.
 class ChoiceEntry internal constructor(
@@ -296,7 +333,13 @@ class StringsEntry internal constructor(id: String, default: Array<String>, name
     }
 }
 
-class EnumEntry<E : Enum<E>> @PublishedApi internal constructor(
+// Saved as the constant's name in lower case. Read ignoring case, so files from before (upper case names) load too.
+private fun <E : Enum<E>> List<E>.byId(id: String) = firstOrNull { it.name.equals(id, ignoreCase = true) }
+
+private fun Enum<*>.id() = name.lowercase()
+
+// One constant of an enum, shown as a dropdown
+class OptionEntry<E : Enum<E>> @PublishedApi internal constructor(
     id: String,
     default: E,
     name: String,
@@ -304,44 +347,44 @@ class EnumEntry<E : Enum<E>> @PublishedApi internal constructor(
     val constants: List<E>,
 ) : ConfigEntry<E>(id, default, name, description) {
 
-    override fun toJson() = JsonPrimitive(value.name)
-    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.let { p -> constants.find { it.name == p.asString } }
+    override fun toJson() = JsonPrimitive(value.id())
+    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.let { constants.byId(it.asString) }
 
     fun setName(name: String) {
-        constants.find { it.name == name }?.let(::set)
+        constants.byId(name)?.let(::set)
     }
-    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.name })
+
+    /** The [OffOption] constant, null when there is none. */
+    val off: E? get() = constants.firstOrNull { it.isOff }
+
+    /** On is the default, or the first constant that isn't off when the default is off. */
+    fun switchTo(on: Boolean) {
+        val target = if (on) default.takeUnless { it.isOff } ?: constants.firstOrNull { !it.isOff } else off
+        target?.let(::set)
+    }
+
+    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.id() })
 }
 
-class SelectEntry<E : Enum<E>> @PublishedApi internal constructor(
+// Any number of constants of an enum, shown as a multi select, kept in the order of the enum
+class OptionsEntry<E : Enum<E>> @PublishedApi internal constructor(
     id: String,
-    default: Array<E>,
+    default: Set<E>,
     name: String,
     description: String,
-    private val enumClass: Class<E>,
-) : ConfigEntry<Array<E>>(id, default, name, description) {
+    val constants: List<E>,
+) : ConfigEntry<Set<E>>(id, default, name, description) {
 
-    val constants: List<E> = enumClass.enumConstants.toList()
+    override fun toJson() = JsonArray().apply { value.forEach { add(it.id()) } }
 
-    override fun same(a: Array<E>, b: Array<E>) = a.contentEquals(b)
-    override fun toJson() = JsonArray().apply { value.forEach { add(it.name) } }
-
-    // Unknown names (e.g. a removed warp) are dropped instead of rejecting the whole list.
-    override fun parse(json: JsonElement): Array<E>? {
+    // Unknown names (e.g. a removed warp) are dropped instead of rejecting the whole list
+    override fun parse(json: JsonElement): Set<E>? {
         val array = json as? JsonArray ?: return null
-        val names = array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }
-        return arrayOf(names.mapNotNull { name -> constants.find { it.name == name } })
+        val ids = array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }
+        return constants.filterTo(LinkedHashSet()) { constant -> ids.any { constant.name.equals(it, ignoreCase = true) } }
     }
 
-    fun setNames(names: Collection<String>) = set(arrayOf(constants.filter { it.name in names }))
+    fun setNames(names: Collection<String>) = set(constants.filterTo(LinkedHashSet()) { it.name in names })
 
-    // A real E[], code reading the entry casts it to its enum's array type
-    private fun arrayOf(constants: List<E>): Array<E> {
-        @Suppress("UNCHECKED_CAST")
-        val result = java.lang.reflect.Array.newInstance(enumClass, constants.size) as Array<E>
-        constants.forEachIndexed { i, constant -> result[i] = constant }
-        return result
-    }
-
-    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.name })
+    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.id() })
 }

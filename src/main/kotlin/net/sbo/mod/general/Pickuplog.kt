@@ -3,7 +3,7 @@ package net.sbo.mod.general
 import net.minecraft.network.chat.HoverEvent
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.DianaTracker
-import net.sbo.mod.settings.categories.QOL
+import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.Item
 import net.sbo.mod.utils.events.Register
@@ -41,7 +41,7 @@ object Pickuplog {
     fun init() {
         overlay.init()
         overlay.setLabel("Pickup Log", "PL")
-        overlay.setCondition { QOL.pickuplogOverlay }
+        overlay.setCondition { General.pickuplogOverlay }
 
         Register.onTick(1) {
             if (!inventoryDirty) return@onTick
@@ -65,7 +65,7 @@ object Pickuplog {
                                 DianaTracker.trackWithSacksMessage(item, amount.toInt())
                             }
                         }
-                        cancel = !QOL.hideSacksMSG
+                        cancel = General.HiddenMessage.SACKS !in General.hideMessages
                     }
                 }
             }
