@@ -1,6 +1,7 @@
 package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
+import java.awt.Color
 
 object Burrows : Category("Burrows") {
     override val description = "Finding burrows: the guesses, burrow detection and chains."
@@ -15,6 +16,12 @@ object Burrows : Category("Burrows") {
     var spadeGuess by boolean(true) {
         this.name = Literal("Spade Guess")
         this.description = Literal("Guess the burrow location when using spade ability. Needs Dripping Lava Particles and set /particlequality to Extreme for more accuracy.")
+    }
+
+    var curveSpadeGuess by boolean(true) {
+        this.name = Literal("Curve Spade Guess (WIP)")
+        this.description = Literal("Guesses the exact block from the spade trail's curve, from the second particle on. Turn off to use the old spade guess if it acts up.")
+        depends(::spadeGuess)
     }
 
     var arrowGuess by boolean(true) {
@@ -61,6 +68,25 @@ object Burrows : Category("Burrows") {
         sub {
             this.title = "Chains"
         }
+    }
+
+    var highlightChainEnds by boolean(true) {
+        this.name = Literal("Highlight Chain Ends")
+        this.description = Literal("Gives the last burrow of a chain its own color, also while it is still a spade or arrow guess. Known once you dig the burrow before it.")
+    }
+
+    var ChainEndColor by color(
+        Color(1.0f, 0.84f, 0.0f).rgb
+    ) {
+        this.name = Literal("Chain End Color")
+        depends(::highlightChainEnds)
+        this.description = Literal("Color of the last burrow of a chain, also while it is a guess.")
+        this.allowAlpha = false
+    }
+
+    var showChainStep by boolean(false) {
+        this.name = Literal("Show Chain Step")
+        this.description = Literal("Shows which burrow of the chain a spade or arrow guess is, like 3/10. Known once you dig the burrow before it.")
     }
 
     var ongoingChainsDisplay by boolean(false) {

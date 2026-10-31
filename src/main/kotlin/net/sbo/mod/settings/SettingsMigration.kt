@@ -113,7 +113,7 @@ internal object SettingsMigration {
     // The on/off settings in every old sub that could be switched off, by category and sub title
     private val OLD_SUB_SWITCHES: Map<String, Map<String, List<String>>> = mapOf(
         "Diana" to mapOf(
-            "Diana Burrows" to listOf("spadeGuess", "arrowGuess", "closeBurrowDetection"),
+            "Diana Burrows" to listOf("spadeGuess", "curveSpadeGuess", "highlightChainEnds", "showChainStep", "arrowGuess", "closeBurrowDetection"),
             "Diana Burrows Preferences" to listOf(
                 "showArrowSubGuesses", "showTextOnSubGuess", "drawOptimalOrderLines", "showBeaconBeam", "showTitleWhenFailure",
                 "showTitleWhenChainEnds", "muteBuggedSpadeSounds", "ongoingChainsDisplay", "simpleChainsOverlayMode",

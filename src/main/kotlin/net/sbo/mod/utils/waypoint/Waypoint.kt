@@ -5,6 +5,8 @@ import net.minecraft.util.FormattedCharSequence
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.RareMob
+import net.sbo.mod.diana.burrows.ChainTracker
+import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
@@ -151,16 +153,19 @@ class Waypoint(
         val showTimesDug = Waypoints.showTimesDug && this.type == "burrow" && this.text != "Start" && this.text != "Guess"
         val timesDug = this.timesDug
         val dist = Waypoints.showDistanceCutoff == 0 || this.distanceToPlayer() < Waypoints.showDistanceCutoff
-        val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a2§7]" else ""
+        // A treasure burrow that ends its chain is dug out with one click
+        val digsNeeded = if (this.text == "Treasure" && ChainTracker.isChainEnd(pos, this.type)) 1 else 2
+        val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a$digsNeeded§7]" else ""
 
         val waypointDistanceText = getWaypointDistanceText()
+        val chainStepText = getChainStepText()
 
         if (isClosest) {
             val closest = if (this.type == "rareMob") WaypointManager.getFinalClosestWarpToFixedTarget(this.pos) else WaypointManager.getFinalClosestWarp(this.pos)
 
             this.formattedText = closest?.let {
-                "$text§7 (warp $it)$waypointDistanceText$timesDugText"
-            } ?: "${this.text}$waypointDistanceText$timesDugText"
+                "$text§7 (warp $it)$waypointDistanceText$chainStepText$timesDugText"
+            } ?: "${this.text}$waypointDistanceText$chainStepText$timesDugText"
 
             val title = Warps.showTitleWhenWarpAvailable
             if (title && closest != null && World.isInHub() && Helper.hasSpade) {
@@ -179,14 +184,24 @@ class Waypoint(
                 }
             }
         } else {
-            this.formattedText = "${this.text}$waypointDistanceText$timesDugText"
+            this.formattedText = "${this.text}$waypointDistanceText$chainStepText$timesDugText"
         }
+    }
+
+    /** Which burrow of the chain a spade or arrow guess is, like " (3/10)", on the main line with and without Look Alike. */
+    private fun getChainStepText(): String {
+        if (!Burrows.showChainStep || (this.type != "guess" && this.type != "arrow")) return ""
+        val step = ChainTracker.stepAt(this.pos) ?: return ""
+        return " §7${step.step}/${step.max}"
     }
 
     private fun updateDynamicOpacity(): Float =
         calculateDynamicOpacity(distanceRaw)
 
     private fun getColor(): Color {
+        if (Burrows.highlightChainEnds && (this.type == "guess" || this.type == "arrow" || this.type == "burrow") && ChainTracker.isChainEnd(this.pos, this.type)) {
+            return Color(Burrows.ChainEndColor)
+        }
         when (this.type) {
             "guess", "arrow" -> {
                 if (isClosest) {

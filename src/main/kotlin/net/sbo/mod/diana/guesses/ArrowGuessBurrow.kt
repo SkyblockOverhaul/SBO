@@ -7,6 +7,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.DianaEvents
@@ -408,6 +409,7 @@ object ArrowGuessBurrow {
             }
 
             allGuesses.add(entry)
+            ChainTracker.onArrowGuess(ray.origin, withinRange)
 
             WaypointManager.addArrowGuess(entry.getCurrent())
 
@@ -493,14 +495,22 @@ object ArrowGuessBurrow {
         return isBlockTrulyValid(pos)
     }
 
-    private fun isBlockTrulyValid(pos: SboVec): Boolean {
-        val block = pos.getBlockAt()
-        val isGrass = block == Blocks.GRASS_BLOCK
-        val isAir = block == Blocks.AIR
-        val isGround = isGrass || isAir && pos in recentClickedBlocks
+    /** [isBlockValid] without adding to the invalid block cache, the spade guess checks many blocks per particle. */
+    internal fun isBlockValidNoCache(pos: SboVec): Boolean {
+        if (!HUB_BOUNDS.isInside(pos)) return false
+        if (pos in invalidCache) return false
+        if (!pos.isInLoadedChunk()) return true
+        return isGroundBlock(pos)
+    }
 
-        val isValidBlockAbove = pos.up().getBlockAt() == Blocks.AIR
-        val valid = isGround && isValidBlockAbove
+    private fun isGroundBlock(pos: SboVec): Boolean {
+        val block = pos.getBlockAt()
+        val isGround = block == Blocks.GRASS_BLOCK || block == Blocks.AIR && pos in recentClickedBlocks
+        return isGround && pos.up().getBlockAt() == Blocks.AIR
+    }
+
+    private fun isBlockTrulyValid(pos: SboVec): Boolean {
+        val valid = isGroundBlock(pos)
 
         // Second condition is for an edge case where you would mine an arrow guess block and your network goes off - recentClickedBlocks would stop having the block after 4 seconds, and since network went off the server will not be able to put grass block back in again. So we check that server connection is healthy before proceeding to cache it as invalid.
         if (!valid && System.nanoTime() - ServerStats.lastPacket < TimeUnit.SECONDS.toNanos(4L)) {
