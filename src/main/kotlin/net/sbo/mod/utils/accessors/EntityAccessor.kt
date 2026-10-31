@@ -31,3 +31,4 @@ var Entity.sboGlowingColor: Int
 fun Entity.setSboGlowColor(color: Color) {
     this.sboGlowingColor = color.rgb
 }
+

@@ -9,3 +9,4 @@ import net.minecraft.client.multiplayer.ClientLevel
  * @param world The new ClientWorld instance.
  */
 class WorldChangeEvent(val mc: Minecraft, val world: ClientLevel)
+

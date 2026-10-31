@@ -15,3 +15,4 @@ class GuiMouseClickBefore (
     val mouseY: Double,
     val button: Int
 )
+

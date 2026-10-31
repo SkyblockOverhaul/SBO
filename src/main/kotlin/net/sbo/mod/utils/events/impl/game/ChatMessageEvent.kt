@@ -7,3 +7,4 @@ import net.minecraft.network.chat.Component
  * @param message The chat message text.
  */
 class ChatMessageEvent(val message: Component)
+
