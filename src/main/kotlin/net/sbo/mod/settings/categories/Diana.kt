@@ -105,7 +105,7 @@ object Diana : Category("Diana") {
         this.description = Literal("Gives the last burrow of a chain its own color (Chain End Color in Customization), also while it is still a spade or arrow guess. Known once you dig the burrow before it.")
     }
 
-    var showChainStep by boolean(true) {
+    var showChainStep by boolean(false) {
         this.name = Literal("Show Chain Step")
         this.description = Literal("Shows which burrow of the chain a spade or arrow guess is, like 3/10. Known once you dig the burrow before it.")
     }
