@@ -8,6 +8,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
 import net.minecraft.resources.Identifier
+import net.minecraft.util.FormattedCharSequence
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.BadgeGui
@@ -385,6 +386,53 @@ object SboBadges {
             from = from,
             nameOnly = nameOnly,
         )
+    }
+
+    /**
+     * Recolors every badge holder's name (and the level/rank in front of it) in any text that is drawn:
+     * GUIs, titles, signs, scoreboards, books... Returns null when nothing changes.
+     */
+    fun replaceEverywhere(text: FormattedCharSequence?): FormattedCharSequence? {
+        if (text == null || !DataManager.sboData.badgeReplaceEverywhere) return null
+        if (byName.isEmpty()) return null
+        return try { replaceEverywhereOf(text) } catch (e: Exception) { null } // never cost a frame
+    }
+
+    private fun replaceEverywhereOf(text: FormattedCharSequence): FormattedCharSequence? {
+        val plain = StringBuilder()
+        val runs = ArrayList<Pair<String, Style>>()
+        val run = StringBuilder()
+        var runStyle: Style? = null
+        text.accept { _, style, codePoint ->
+            if (style != runStyle) {
+                if (run.isNotEmpty()) runs += run.toString() to runStyle!!
+                run.setLength(0)
+                runStyle = style
+            }
+            run.appendCodePoint(codePoint)
+            plain.appendCodePoint(codePoint)
+            true
+        }
+        if (run.isNotEmpty()) runs += run.toString() to runStyle!!
+
+        val str = plain.toString()
+        if (LOGO in str) return null
+        val matches = MENTION.findAll(str)
+            .filter { it.value.length <= 16 && byName[it.value.lowercase()]?.name == it.value }
+            .toList()
+        if (matches.isEmpty()) return null
+
+        var out: Component = Component.empty().also { c -> runs.forEach { (s, st) -> c.append(Component.literal(s).withStyle(st)) } }
+        for (m in matches.asReversed()) {
+            val badge = byName[m.value.lowercase()] ?: continue
+            val animate = DataManager.sboData.badgeAnimationsOfOthers || badge.name.equals(own()?.name, ignoreCase = true)
+            out = recolor(
+                out, m.value, badge, TeamTagPlace.CHAT,
+                tag = null, afterName = null,   // no tag/logo: keeps it idempotent and the width unchanged
+                animate = animate, from = m.range.first, nameOnly = false, // false = also recolor [level] and [RANK]
+            )
+        }
+        return out.visualOrderText
     }
 
     /** Name of the badge holder or tagged team member a tab entry shows, null for everyone else. */
