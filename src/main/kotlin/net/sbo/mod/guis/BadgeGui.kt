@@ -176,6 +176,7 @@ object BadgeGui {
         var inChat by useState(DataManager.sboData.badgesInChat)
         var namesInChat by useState(DataManager.sboData.badgeNamesInChat)
         var namesTag by useState(DataManager.sboData.badgeNamesTag)
+        var replaceEverywhere by useState(DataManager.sboData.badgeReplaceEverywhere)
         var animations by useState(DataManager.sboData.badgeAnimationsOfOthers)
         var motion by useState(DataManager.sboData.badgeMotionOfOthers)
         var tabAnimations by useState(DataManager.sboData.badgeAnimationsInTab)
@@ -214,6 +215,15 @@ object BadgeGui {
                 switch(checked = namesTag, onChange = {
                     namesTag = it.checked
                     DataManager.sboData.badgeNamesTag = it.checked
+                    DataManager.sboData.save()
+                })
+            }
+        }
+        if (namesInChat != SboBadges.NAMES_OFF) {
+            setting("Replace everywhere", "Replaces every instance of {name}/{rank}{player} with it colored everywhere (GUIs, titles, etc...) like shwords would do.") {
+                switch(checked = replaceEverywhere, onChange = {
+                    replaceEverywhere = it.checked
+                    DataManager.sboData.badgeReplaceEverywhere = it.checked
                     DataManager.sboData.save()
                 })
             }

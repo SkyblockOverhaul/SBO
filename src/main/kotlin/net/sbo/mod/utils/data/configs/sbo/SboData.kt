@@ -87,6 +87,7 @@ data class SboData(
     var badgeOwnInF5: Boolean = true,
     var badgeNamesInChat: String = "off", // "own" or "all": names inside chat messages look like the sender's, see SboBadges.NAMES_*
     var badgeNamesTag: Boolean = true, // false: names inside chat messages only get their color, no team tag
+    var badgeReplaceEverywhere: Boolean = false, // true: replaces every instance of {name}/{rank}{player} with it colored everywhere (GUIs, titles, etc...)
     var badgeAnimationsOfOthers: Boolean = true, // false shows other players' moving badge colors standing still
     var badgeMotionOfOthers: Boolean = true, // false keeps the chars of other players' badges from moving above heads
     var badgeAnimationsInTab: Boolean = true, // false shows every badge in the tab list standing still, your own too
