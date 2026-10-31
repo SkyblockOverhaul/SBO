@@ -43,10 +43,12 @@ abstract class AvatarRendererMixin {
 
     // Vanilla never shows the camera's own name, in third person the own badge should be visible
     @ModifyReturnValue(method = "shouldShowName(Lnet/minecraft/world/entity/Avatar;D)Z", at = @At("RETURN"), order = 2000, require = 0)
+    @SuppressWarnings("ReferenceEquality") // entity != mc.player is safe
     private final boolean sbo$showOwnBadge(final boolean original, @NonNull final Avatar entity, final double distanceSq) {
         if (original) return true;
         final Minecraft mc = Minecraft.getInstance();
         if (entity != mc.player || mc.options.getCameraType().isFirstPerson() || entity.isInvisible()) return false;
+
         return SboBadges.INSTANCE.showOwnNameTag();
     }
 }

@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.Pseudo;
 final class SkyblockAddonsTabListParserMixin {
     @SuppressWarnings("UnresolvedMixinReference")
     @WrapMethod(method = "parse()V", require = 0)
-    private static void sbo$parseUndecorated(@NonNull final Operation<Void> original) {
+    private static final void sbo$parseUndecorated(@NonNull final Operation<Void> original) {
         SboBadges.INSTANCE.undecoratedTab(original::call);
     }
 }

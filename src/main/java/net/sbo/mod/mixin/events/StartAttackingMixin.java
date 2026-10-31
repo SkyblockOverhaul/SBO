@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Minecraft.class)
 final class StartAttackingMixin {
     @Shadow
-    protected int missTime;
+    private int missTime;
 
     @Inject(method = "startAttack", at = @At("HEAD"))
     private final void sbo$onStartAttack(@NonNull final CallbackInfoReturnable<Boolean> cir) {
