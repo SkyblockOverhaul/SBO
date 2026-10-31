@@ -10,7 +10,7 @@ enum class RareMob(val display: String, override val label: String) : Option {
     KING("King Minos", "King Minos"),
     SPHINX("Sphinx", "Sphinx");
 
-    // Read when needed, the settings load after this class
+    // Read when needed: RareMobs uses this enum for its defaults, reading its colors while this class loads would loop
     val glowColor: Int
         get() = when (this) {
             INQ -> RareMobs.MinosInquisitorGlowColor

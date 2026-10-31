@@ -18,6 +18,17 @@ object General : Category("General") {
 
     init {
         sub {
+            this.title = "New Settings"
+        }
+    }
+
+    var disableNewSettings by boolean(false) {
+        this.name = Literal("Disable All New Settings")
+        this.description = Literal("New features that would be on right after an update start switched off instead. What's New at the top of the settings lists them, with what they do, so you can turn on the ones you want.")
+    }
+
+    init {
+        sub {
             this.title = "Overlays"
         }
     }

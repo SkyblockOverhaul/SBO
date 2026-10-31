@@ -176,6 +176,8 @@ body {
 .cfg-category.no-hits { color: var(--dim); }
 /* All Settings, apart from the categories below it */
 .cfg-category.home { margin-bottom: 4px; font-weight: bold; }
+/* What's New, above All Settings while there are new settings */
+.cfg-category.whats-new { color: var(--title); }
 .cfg-category-name { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cfg-count {
     padding: 0 3px;
@@ -295,6 +297,7 @@ body {
 .cfg-editor-done { padding: 1px 8px; }
 .cfg-editor-text { flex-grow: 1; min-height: 0; }
 
+.cfg-new-actions { display: flex; gap: 4px; margin: 4px 0 6px 0; }
 .cfg-results-info { margin: 4px 0; color: var(--muted); font-size: 7px; }
 .cfg-result-group { margin-bottom: 6px; }
 .cfg-result-category { margin: 6px 0 2px 0; padding: 0 4px 2px 4px; font-size: 8px; color: var(--title); border-bottom: 1px solid var(--border); }

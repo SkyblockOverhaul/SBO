@@ -20,6 +20,7 @@ object Burrows : Category("Burrows") {
 
     var curveSpadeGuess by boolean(true) {
         this.name = Literal("Curve Spade Guess (WIP)")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("Guesses the exact block from the spade trail's curve, from the second particle on. Turn off to use the old spade guess if it acts up.")
         depends(::spadeGuess)
     }
@@ -72,6 +73,7 @@ object Burrows : Category("Burrows") {
 
     var highlightChainEnds by boolean(true) {
         this.name = Literal("Highlight Chain Ends")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("Gives the last burrow of a chain its own color, also while it is still a spade or arrow guess. Known once you dig the burrow before it.")
     }
 
@@ -79,6 +81,7 @@ object Burrows : Category("Burrows") {
         Color(1.0f, 0.84f, 0.0f).rgb
     ) {
         this.name = Literal("Chain End Color")
+        this.since = "0.7.2-beta.2"
         depends(::highlightChainEnds)
         this.description = Literal("Color of the last burrow of a chain, also while it is a guess.")
         this.allowAlpha = false
@@ -86,6 +89,7 @@ object Burrows : Category("Burrows") {
 
     var showChainStep by boolean(false) {
         this.name = Literal("Show Chain Step")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("Shows which burrow of the chain a spade or arrow guess is, like 3/10. Known once you dig the burrow before it.")
     }
 

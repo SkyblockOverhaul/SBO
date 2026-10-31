@@ -97,7 +97,7 @@ class Button(
     val onClick: () -> Unit,
 ) : ConfigElement
 
-// The JSON matches what ResourcefulConfig wrote, so existing config.jsonc files and cloud saves load unchanged
+// The JSON keeps the layout ResourcefulConfig wrote (comments, version key), older files are converted by the config's migration
 sealed class ConfigEntry<T>(
     val id: String,
     val default: T,
@@ -111,6 +111,10 @@ sealed class ConfigEntry<T>(
     var onChange: (T, T) -> Unit = { _, _ -> }
 
     internal var sub: Sub? = null
+
+    /** The version that added the setting, from `since` in its builder; listed under What's New after updating. */
+    var since: ModVersion? = null
+        internal set
 
     /** From `depends(...)`, `dependsOff(...)` and `dependsAny(...)` in the entry's builder. */
     var requirements: List<Requirement> = emptyList()
@@ -348,6 +352,15 @@ class OptionEntry<E : Enum<E>> @PublishedApi internal constructor(
 
     fun setName(name: String) {
         constants.byId(name)?.let(::set)
+    }
+
+    /** The [OffOption] constant, null when there is none. */
+    val off: E? get() = constants.firstOrNull { it.isOff }
+
+    /** On is the default, or the first constant that isn't off when the default is off. */
+    fun switchTo(on: Boolean) {
+        val target = if (on) default.takeUnless { it.isOff } ?: constants.firstOrNull { !it.isOff } else off
+        target?.let(::set)
     }
 
     override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.id() })

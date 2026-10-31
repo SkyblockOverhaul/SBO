@@ -7,6 +7,11 @@ data class SboData(
     var effects: List<Effect> = emptyList(),
     var resetVersion: String = "0.1.3",
     var changelogVersion: String = "1.0.0",
+    // For What's New in the settings (SettingsChanges): the version run last, the one before it, and the version What's New was opened and announced for
+    var settingsVersion: String = "",
+    var settingsPreviousVersion: String = "",
+    var whatsNewOpenedVersion: String = "",
+    var whatsNewChatVersion: String = "",
     var downloadMsg: Boolean = false,
     var mobsSinceInq: Int = 0,
     var inqsSinceChim: Int = 0,

@@ -93,6 +93,7 @@ class EntryProvider<T, B : TypeBuilder> @PublishedApi internal constructor(
         val built = builderFactory(id).apply(builder)
         val entry = create(id, built)
         entry.requirements = built.requirements
+        entry.since = built.since?.let { requireNotNull(ModVersion.parse(it)) { "Setting $id has an invalid since version: $it" } }
         entries.add(entry)
         return entry
     }
@@ -111,6 +112,10 @@ class ObservableEntry<T>(
 open class TypeBuilder(val id: String) {
     var name: String = id
     var description: String = ""
+
+    /** The mod version that adds the setting ("0.7.2-beta.2"), it is listed under What's New for players updating to it. */
+    var since: String? = null
+
     internal var requirements: List<Requirement> = emptyList()
 
     // Until a requirement is met an on/off setting reads as off, and the settings screen locks the row and links the requirement

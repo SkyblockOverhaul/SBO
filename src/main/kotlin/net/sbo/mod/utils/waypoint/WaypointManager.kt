@@ -370,7 +370,7 @@ object WaypointManager {
 
         if (!isOwnSpawn || fromSelfSpawnMessage) {
             // The self-spawn message always shows the title and plays the custom sound to let user know they spawned a rare mob.
-            // For other's mobs, the title and sound does not play unless the mob was selected in "Select Whichs Mobs to Receive".
+            // For other's mobs, the title and sound does not play unless the mob was selected in "Mobs to Receive".
             if (!fromSelfSpawnMessage && mobType !in RareMobs.ReceiveMobs) return mobData.mobName
     
             Helper.showTitle(

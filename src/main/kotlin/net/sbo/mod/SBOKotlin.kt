@@ -42,6 +42,7 @@ import net.sbo.mod.profileviewer.ProfileViewerGui
 import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.settings.SettingsChanges
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.utils.*
 import net.sbo.mod.utils.chat.Chat
@@ -112,6 +113,7 @@ object SBOKotlin : ClientModInitializer {
 
 		// Load configuration and data
 		DataManager.init()
+		SettingsChanges.init()
 		SboLook.init()
 
 		// Load Custom Sound System
@@ -183,6 +185,7 @@ object SBOKotlin : ClientModInitializer {
 			val player = mc.player
 			if (player != null && World.isInSkyblock()) {
 				if (UpdateChecker.isUpdateAvailable) UpdateChecker.printUpdateMessage()
+				SettingsChanges.announce()
 				DianaTracker.checkMayorTracker()
 				PartyPlayer.load()
 				unlockAchievement(38)

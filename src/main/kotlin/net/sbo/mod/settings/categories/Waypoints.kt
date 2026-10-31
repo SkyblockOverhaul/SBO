@@ -198,6 +198,7 @@ object Waypoints : Category("Waypoints") {
 
     var hideOwnCoordinateWaypoints by boolean(false) {
         this.name = Literal("Hide Own Coordinate Waypoints")
+        this.since = "0.7.2-beta.2"
         this.description = Literal("Hides the waypoints from coordinates you sent in chat yourself.")
     }
 

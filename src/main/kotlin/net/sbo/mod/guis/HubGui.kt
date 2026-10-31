@@ -33,6 +33,7 @@ import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.settings.SettingsChanges
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 import org.lwjgl.glfw.GLFW
@@ -46,11 +47,12 @@ object HubGui {
         GuiLib.open(App, STYLES, title = "Skyblock Overhaul")
     }
 
-    fun openSettings() {
-        ConfigGui.open(Settings, "SBO Settings", onBack = ::open)
+    /** [whatsNew] opens on What's New even when it was seen already. */
+    fun openSettings(whatsNew: Boolean = false) {
+        ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(force = whatsNew))
     }
 
-    fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open)
+    fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew())
 
     private class Tile(
         val title: String,

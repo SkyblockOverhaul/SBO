@@ -84,10 +84,15 @@ open class Config(val file: String) : Category(file) {
 
     private val backup: Path get() = path.resolveSibling("${path.fileName}.bak")
 
+    /** Whether the file was there when it was last loaded, false for a new install. */
+    var existed: Boolean = false
+        private set
+
     fun load(configDir: Path) {
         this.configDir = configDir
         linkRequirements()
-        if (Files.exists(path)) {
+        existed = Files.exists(path)
+        if (existed) {
             val current = read(path)
             val json = current ?: read(backup)
             if (current == null) {
