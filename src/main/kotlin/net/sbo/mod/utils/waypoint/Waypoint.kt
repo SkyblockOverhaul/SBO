@@ -151,7 +151,7 @@ class Waypoint(
         val timesDug = this.timesDug
         val dist = Customization.showDistanceCutoff == 0 || this.distanceToPlayer() < Customization.showDistanceCutoff
         // A treasure burrow that ends its chain is dug out with one click
-        val digsNeeded = if (this.text == "Treasure" && ChainTracker.isChainEnd(pos)) 1 else 2
+        val digsNeeded = if (this.text == "Treasure" && ChainTracker.isChainEnd(pos, this.type)) 1 else 2
         val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a$digsNeeded§7]" else ""
 
         val waypointDistanceText = getWaypointDistanceText()
@@ -188,7 +188,7 @@ class Waypoint(
         calculateDynamicOpacity(distanceRaw)
 
     private fun getColor(): Color {
-        if (Diana.highlightChainEnds && (this.type == "guess" || this.type == "arrow" || this.type == "burrow") && ChainTracker.isChainEnd(this.pos)) {
+        if (Diana.highlightChainEnds && (this.type == "guess" || this.type == "arrow" || this.type == "burrow") && ChainTracker.isChainEnd(this.pos, this.type)) {
             return Color(Customization.ChainEndColor)
         }
         when (this.type) {

@@ -17,8 +17,9 @@ import java.util.concurrent.TimeUnit
  * A burrow found by its particles takes the step of the guess it replaces: the nearest one within [MATCH_DISTANCE]
  * blocks, as arrow guesses can be that far off.
  *
- * A step is dropped when its chain is dug further (other steps of that chain were wrong guesses), and once no guess or
- * burrow is left near it (a wrong guess that was removed, or a burrow removed by its smoke).
+ * Only one chain runs at a time and every step is added after the dig before it, so all steps are dropped on the next dig
+ * (the ones not dug were wrong guesses, or from a chain that ran out). A step is also dropped once no guess or burrow is
+ * left near it (a wrong guess that was removed, or a burrow removed by its smoke).
  */
 object ChainTracker {
     private const val MATCH_DISTANCE = 10.0
@@ -29,20 +30,20 @@ object ChainTracker {
     private val EXPIRE_NANOS = TimeUnit.MINUTES.toNanos(30)
     private const val PRUNE_TICKS = 20
 
-    class Step(val positions: List<SboVec>, val step: Int, val max: Int, val chain: Int, val time: Long) {
+    class Step(val positions: List<SboVec>, val step: Int, val max: Int, val time: Long) {
         val isChainEnd: Boolean get() = step == max
+
+        fun distanceTo(pos: SboVec): Double = positions.minOf { it.distanceTo(pos) }
     }
 
     private val steps = mutableListOf<Step>()
 
-    private class Dig(val pos: SboVec, val step: Int, val max: Int, val chain: Int, val time: Long)
+    private class Dig(val pos: SboVec, val step: Int, val max: Int, val time: Long)
 
     /** Recent digs whose arrow did not show yet. */
     private val digsWaitingForArrow = mutableListOf<Dig>()
     private var lastDigStep = 0
     private var lastDigMax = 0
-    private var lastDigChain = 0
-    private var nextChain = 0
     /** The step added for the current spade use, replaced while its guess moves. */
     private var spadeStep: Step? = null
     private var ticks = 0
@@ -55,18 +56,13 @@ object ChainTracker {
      */
     fun onBurrowDug(current: Int, max: Int, pos: SboVec?) {
         val now = System.nanoTime()
-        steps.removeAll { now - it.time > EXPIRE_NANOS }
-        val dug = pos?.let { nearest(it) }
-        // A chain's first burrow starts a new one, otherwise it's the chain of the step dug (a new one if not known)
-        val chain = if (current > 1 && dug != null) dug.chain else nextChain++
-        // The chain moved on or finished: its other steps were wrong guesses
-        steps.removeAll { it === dug || it.chain == chain }
+        // The chain moved on, finished or a new one started: the steps not dug were wrong guesses
+        steps.clear()
         lastDigStep = current
         lastDigMax = max
-        lastDigChain = chain
         spadeStep = null
         digsWaitingForArrow.removeAll { now - it.time > LINK_NANOS }
-        if (pos != null && current < max) digsWaitingForArrow.add(Dig(pos, current, max, chain, now))
+        if (pos != null && current < max) digsWaitingForArrow.add(Dig(pos, current, max, now))
     }
 
     /**
@@ -85,7 +81,7 @@ object ChainTracker {
             steps.remove(it)
             spadeStep = null
         }
-        add(candidates, dig.step + 1, dig.max, dig.chain)
+        add(candidates, dig.step + 1, dig.max)
     }
 
     /**
@@ -98,7 +94,7 @@ object ChainTracker {
         spadeStep?.let { steps.remove(it) }
         spadeStep = null
         if (nearest(pos) != null) return
-        spadeStep = add(listOf(pos), lastDigStep + 1, lastDigMax, lastDigChain)
+        spadeStep = add(listOf(pos), lastDigStep + 1, lastDigMax)
     }
 
     /** After a lobby swap the spade points at the nearest burrow, so its guesses are no longer the last chain's next step. */
@@ -111,14 +107,25 @@ object ChainTracker {
     @SboEvent
     fun onTick(event: TickEvent) {
         if (steps.isEmpty() || ++ticks % PRUNE_TICKS != 0) return
+        val now = System.nanoTime()
         val waypoints = WaypointManager.getAllGuessesAndBurrows()
         steps.removeAll { step ->
-            waypoints.none { waypoint -> step.positions.any { it.distanceTo(waypoint.pos) <= MATCH_DISTANCE } }
+            now - step.time > EXPIRE_NANOS || waypoints.none { step.distanceTo(it.pos) <= MATCH_DISTANCE }
         }
         if (spadeStep != null && spadeStep !in steps) spadeStep = null
     }
 
-    fun isChainEnd(pos: SboVec): Boolean = nearest(pos)?.isChainEnd == true
+    /**
+     * Whether the waypoint at [pos] is the end of its chain.
+     * @param type The waypoint's type. Burrows are often close together, so of the known burrows only the one closest to
+     * the chain end step is it.
+     */
+    fun isChainEnd(pos: SboVec, type: String): Boolean {
+        val step = nearest(pos)?.takeIf { it.isChainEnd } ?: return false
+        if (type != "burrow") return true
+        val distance = step.distanceTo(pos)
+        return WaypointManager.getWaypointsOfType("burrow").none { step.distanceTo(it.pos) < distance }
+    }
 
     fun clear() {
         steps.clear()
@@ -128,8 +135,8 @@ object ChainTracker {
         digsWaitingForArrow.clear()
     }
 
-    private fun add(positions: List<SboVec>, stepNumber: Int, max: Int, chain: Int): Step {
-        val step = Step(positions, stepNumber, max, chain, System.nanoTime())
+    private fun add(positions: List<SboVec>, stepNumber: Int, max: Int): Step {
+        val step = Step(positions, stepNumber, max, System.nanoTime())
         steps.add(step)
         return step
     }
