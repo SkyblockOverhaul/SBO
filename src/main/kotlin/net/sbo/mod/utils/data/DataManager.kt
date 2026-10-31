@@ -3,11 +3,13 @@ package net.sbo.mod.utils.data
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
@@ -166,8 +168,11 @@ object DataManager {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
         val dataFile = File(modConfigDir, fileName)
         dataFile.parentFile.mkdirs()
-        writeJsonAtomically(dataFile, data as Any)
+        writeJsonAtomically(dataFile, if (data is DianaTracker) sealedTree(data, fileName) else data as Any)
     }
+
+    // The seal is made from the same tree that gets written, the timers change the tracker while it saves
+    private fun sealedTree(data: DianaTracker, fileName: String) = TrackerSeal.sealed(gson.toJsonTree(data).asJsonObject, fileName)
 
     fun <T : Any> save(property: KProperty0<T>) {
         val entryName = property.name.replaceFirstChar { it.uppercase() }
@@ -189,6 +194,8 @@ object DataManager {
                 val data = loadDataForFile(modName, fileName, field.type as Class<Any>) { field.type.getDeclaredConstructor().newInstance() }
                 field.set(this, data)
             }
+        // The save right after loading seals the trackers
+        sboData.trackersSealed = true
         SBOKotlin.logger.info("All data loaded successfully.")
     }
 
@@ -213,7 +220,7 @@ object DataManager {
 
         if (!dataFile.exists()) {
             val data = defaultSupplier()
-            writeJsonAtomically(dataFile, data)
+            writeJsonAtomically(dataFile, sealedTree(data, fileName))
             return data
         }
 
@@ -237,22 +244,42 @@ object DataManager {
                 if (oldTime > 0) {
                     loadedData.items.TIME = oldTime
                     SBOKotlin.logger.info("[$modName] Old DianaTracker time format detected and migrated.")
-                    writeJsonAtomically(dataFile, loadedData)
+                    writeJsonAtomically(dataFile, sealedTree(loadedData, fileName))
                 }
             }
 
-            loadedData
+            checkSeal(modName, loadedData, jsonObject, dataFile, fileName, clazz)
         } catch (_: JsonSyntaxException) {
             SBOKotlin.logger.error("[$modName] Error parsing JSON in $fileName, resetting to default data.")
             val data = defaultSupplier()
-            writeJsonAtomically(dataFile, data)
+            writeJsonAtomically(dataFile, sealedTree(data, fileName))
             data
         } catch (e: Exception) {
             SBOKotlin.logger.error("[$modName] Error reading $fileName, resetting to default data.", e)
             val data = defaultSupplier()
-            writeJsonAtomically(dataFile, data)
+            writeJsonAtomically(dataFile, sealedTree(data, fileName))
             data
         }
+    }
+
+    // Changes made outside of SBO are undone with the sealed copy, only a file without a usable seal stays as it is
+    private fun <T : DianaTracker> checkSeal(modName: String, loaded: T, tree: JsonObject, dataFile: File, fileName: String, clazz: Class<T>): T {
+        val original = TrackerSeal.original(tree, fileName)
+        if (original != null) {
+            if (!TrackerSeal.changed(tree, original)) return loaded
+            val restored = gson.fromJson(original, clazz)
+            SBOKotlin.logger.warn("[$modName] $fileName was changed outside of SBO, restored the last saved values")
+            writeJsonAtomically(dataFile, sealedTree(restored, fileName))
+            return restored
+        }
+        // A missing seal is fine until the first sealed save, and in alpha copies older versions wrote
+        val unsealed = !TrackerSeal.isSealed(tree) && (!sboData.trackersSealed || fileName.contains('/'))
+        if (!unsealed && !loaded.edited) {
+            loaded.edited = true
+            SBOKotlin.logger.warn("[$modName] $fileName has no usable seal, the tracker is marked as edited")
+            writeJsonAtomically(dataFile, sealedTree(loaded, fileName))
+        }
+        return loaded
     }
 
     private fun saveAllData() {
@@ -376,10 +403,16 @@ object DataManager {
         // Snapshot before the swap, the single thread executor backs it up before the next save
         val snapshot = exportAll()
         DATA_SAVER_EXECUTOR.execute { createBackup(dataDir, snapshot) }
+        val resets = dianaTrackerMayorData.resetCount
+        // The timers write their playtime into the trackers, so they have to move over to the restored ones
+        SboTimerManager.beforeTrackerSwap()
         parsed.forEach { (field, value) ->
             field.isAccessible = true
             field.set(this, value)
         }
+        // A restore counts as a reset of the tracker
+        dianaTrackerMayorData.resetCount = maxOf(resets, dianaTrackerMayorData.resetCount) + 1
+        SboTimerManager.afterTrackerSwap()
         saveAllDataThreaded(dataDir)
     }
 

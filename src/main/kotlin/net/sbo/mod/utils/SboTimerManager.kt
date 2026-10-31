@@ -214,6 +214,8 @@ object SboTimerManager {
 
         internal fun getHourTime(): Double = getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
 
+        internal fun getElapsedMillis(): Long = TimeUnit.NANOSECONDS.toMillis(getElapsedNanos())
+
         fun updateActivity() {
             start()
             continueTimer()

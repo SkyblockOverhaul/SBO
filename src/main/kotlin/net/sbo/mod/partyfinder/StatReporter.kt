@@ -3,57 +3,65 @@ package net.sbo.mod.partyfinder
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.partyfinder.api.BphReport
 import net.sbo.mod.partyfinder.api.PartyFinderApi
+import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.StatsReportBody
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.SboTimerManager
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.Mayor
-import java.math.BigDecimal
-import java.math.RoundingMode
+import kotlin.random.Random
 
-/** Sends stats only the mod can measure to the backend. For now burrows per hour from the Diana mayor tracker. */
+/** Sends stats only the mod can measure to the backend. For now the totals of the Diana mayor tracker. */
 object StatReporter {
     private const val INTERVAL_TICKS = 20 * 60 * 15
     private const val STARTUP_DELAY_TICKS = 20 * 30
-    private const val HOUR_MS = 60 * 60 * 1000.0
-    private const val MIN_HOURS = 1.0
-    private const val MAX_BPH = 1500.0
+    // Spreads the reports, so players who start together don't all report together
+    private const val MAX_JITTER_TICKS = 20 * 60
 
+    @Volatile
     private var lastSent: BphReport? = null
+    @Volatile
+    private var outdatedShown = false
 
     internal fun init() {
         // Once shortly after the start, so short sessions report too
-        Register.onTick(STARTUP_DELAY_TICKS) { unregister ->
+        Register.onTick(STARTUP_DELAY_TICKS + Random.nextInt(MAX_JITTER_TICKS)) { unregister ->
             unregister()
             report()
         }
-        Register.onTick(INTERVAL_TICKS) { report() }
+        Register.onTick(INTERVAL_TICKS + Random.nextInt(MAX_JITTER_TICKS)) { report() }
     }
 
     internal fun report() {
-        if (!SboKey.get().startsWith("sbo") || Mayor.mayorElectedYear == 0) return
+        // Burrows on the Alpha Network don't count
+        if (!SboKey.get().startsWith("sbo") || Mayor.mayorElectedYear == 0 || DataManager.alphaActive) return
         val tracker = DataManager.dianaTrackerMayorData
-        // The mayor tracker resets when Diana is elected again, until then it holds the last event
-        val current = tracker.year != 0 && tracker.year >= Mayor.mayorElectedYear
-        // Less than an hour in the current event: the newest past event with enough data instead
-        val next = bphReport(tracker.items.TOTAL_BURROWS.toLong(), SboTimerManager.timerMayor.getHourTime(), current)
-            ?: DataManager.pastDianaEventsData.events.asReversed().firstNotNullOfOrNull { event ->
-                bphReport(event.items.TOTAL_BURROWS.toLong(), event.items.TIME / HOUR_MS, current = false)
-            }
-            ?: return
+        // Until the first burrow after an election the tracker still holds the last event, which was already reported
+        if (tracker.year != Mayor.mayorElectedYear) return
+        val playtimeMs = SboTimerManager.timerMayor.getElapsedMillis()
+        if (tracker.items.TOTAL_BURROWS <= 0 && playtimeMs <= 0) return
+        val mods = BphGuard.foreignMods()
+        val next = BphReport(
+            burrows = tracker.items.TOTAL_BURROWS.toLong(),
+            playtimeMs = playtimeMs,
+            mayorYear = tracker.year,
+            resetCount = tracker.resetCount,
+            modified = mods.isNotEmpty(),
+            edited = tracker.edited,
+            mods = mods,
+        )
         if (next == lastSent) return
-        PartyFinderApi.reportStats(
-            StatsReportBody(next),
-            onError = { logger.warn("[SBO] Burrows per hour not reported: ${it.code} ${it.message}") }
-        ) { lastSent = next }
+        PartyFinderApi.reportStats(StatsReportBody(next), onError = { error ->
+            if (error.code == PfError.MOD_OUTDATED) showOutdated()
+            else logger.warn("[SBO] Burrows per hour not reported: ${error.code} ${error.message}")
+        }) { lastSent = next }
     }
 
-    /** Null when there is nothing worth sending: less than an hour, no burrows or an impossible value. */
-    internal fun bphReport(burrows: Long, hours: Double, current: Boolean): BphReport? {
-        if (hours < MIN_HOURS || burrows <= 0) return null
-        val value = BigDecimal.valueOf(burrows / hours).setScale(2, RoundingMode.HALF_UP).toDouble()
-        if (value > MAX_BPH) return null
-        return BphReport(value, if (current) "current" else "lastEvent", hours, burrows)
+    private fun showOutdated() {
+        if (outdatedShown) return
+        outdatedShown = true
+        Chat.chat("§6[SBO] §eYour burrows per hour no longer count for party finder requirements with this SBO version. Update SBO to keep them counting.")
     }
 }

@@ -107,7 +107,7 @@ object ModConflicts {
     }
 
     // Mixin package of every mod, read from the mixin configs its fabric.mod.json lists
-    private fun mixinPackages(): Map<String, ModContainer> = buildMap {
+    internal fun mixinPackages(): Map<String, ModContainer> = buildMap {
         for (mod in FabricLoader.getInstance().allMods) {
             val meta = mod.findPath("fabric.mod.json").orElse(null)?.let(::readJson) ?: continue
             val configs = meta.getAsJsonArray("mixins") ?: continue

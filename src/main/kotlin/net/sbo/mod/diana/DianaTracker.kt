@@ -1019,6 +1019,7 @@ object DianaTracker {
         // Proceed with the reset
         dianaTrackerMayorData.reset()
         dianaTrackerMayorData.year = Mayor.mayorElectedYear
+        dianaTrackerMayorData.resetCount += 1
         DataManager.save(DataManager::dianaTrackerMayorData)
 
         SboTimerManager.timerMayor.reset()
