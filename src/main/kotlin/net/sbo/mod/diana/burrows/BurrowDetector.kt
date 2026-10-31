@@ -136,7 +136,8 @@ object BurrowDetector {
             true
         }
 
-        Register.onChatMessage(Regex("""§eYou (?:just )?dug out(?!.*\(\d+/\d+\)$)""")) { message, matchResult ->
+        // A handler, not a listener: listeners never see messages the Diana message hider hides, like mob spawns
+        Register.onChatMessageCancelable(Pattern.compile("""§eYou (?:just )?dug (?!.*\(\d+/\d+\)$)""")) { message, _ ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 
@@ -147,6 +148,7 @@ object BurrowDetector {
                 expectedTimesDug = 1,
                 burrowType = parseTypeFromChatMsg(message.string)
             )
+            true
         }
 
         Register.onTick(1) {
