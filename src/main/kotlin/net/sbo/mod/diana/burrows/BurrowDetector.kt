@@ -116,13 +116,13 @@ object BurrowDetector {
             }
         }
 
-        Register.onChatMessage(Regex("""^§c ☠ §7You .+$""")) { message, matchResult ->
+        Register.onChatMessage(Regex("""^§c ☠ §7You .+$""")) { _, _ ->
             if (!World.isInHub()) return@onChatMessage
             refreshBurrows(deathOriginating = true, expectedTimesDug = 1)
         }
 
         // A handler, not a listener: listeners never see messages the Diana message hider hides, like this one
-        Register.onChatMessageCancelable(Pattern.compile("""^§eYou finished the Griffin burrow chain!.*$""")) { message, _ ->
+        Register.onChatMessageCancelable(Pattern.compile("""^§eYou finished the Griffin burrow chain!.*$""")) { _, _ ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // The chain finished message does not trigger it.
             chainFinish()

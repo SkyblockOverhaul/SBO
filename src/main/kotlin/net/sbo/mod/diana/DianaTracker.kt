@@ -124,7 +124,7 @@ object DianaTracker {
             true
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { _, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase()
             if (!player.contains((Player.getName()?: "").lowercase())) return@onChatMessageCancelable true
             if (General.phoenixAnnouncer) {
@@ -228,7 +228,7 @@ object DianaTracker {
     }
 
     private fun trackMobsWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { _, matchResult ->
             lastBurrow = BURROW_TYPE.MOB
             val mob = matchResult.group(3)
             if (isMobOnCooldown.getOrDefault(mob, false)) return@onChatMessageCancelable General.HiddenMessage.DIANA !in General.hideMessages
@@ -384,7 +384,7 @@ object DianaTracker {
     }
 
     private fun trackTreasuresWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { _, matchResult ->
             if (!(lastBurrow == BURROW_TYPE.MOB && lastSpawnedMob == "Sphinx")) lastBurrow = BURROW_TYPE.TREASURE
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather" -> trackItem(drop, 1)
@@ -406,14 +406,14 @@ object DianaTracker {
     }
 
     private fun trackRngDropsWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! (.*?)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! (.*?)$", Pattern.DOTALL)) { _, matchResult ->
             trackChatRngDrop(matchResult.group(1))
             true
         }
 
         Register.onChatMessageCancelable(
             Pattern.compile("^§d§lWOW! (.*?) §6found a §2Mythological Dye.*$", Pattern.DOTALL)
-        ) { message, matchResult ->
+        ) { _, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase().trim()
             if (player.contains(Player.getName()?.lowercase()?.trim() ?: "")) {
                 MedalIntegration.saveMythologicalDyeClip()
@@ -922,7 +922,7 @@ object DianaTracker {
     }
 
     private fun trackBurrowsWithChat() {
-        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$", Pattern.DOTALL)) { _, matchResult ->
             if (matchResult.group(2).removeFormatting().contains("(1/")) lastBurrow = BURROW_TYPE.START // The first one is always Start
             trackItem("TOTAL_BURROWS", 1)
             if (Trackers.fourEyedFish) {
@@ -1041,7 +1041,7 @@ object DianaTracker {
                 "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §[0-9a-f](.*?) Shards?§7!$",
                 Pattern.DOTALL
             )
-        ) { message, matchResult ->
+        ) { _, matchResult ->
             val shard = matchResult.group(3).removeFormatting()
             val amount = matchResult.group(2).toIntOrNull() ?: 0
 
@@ -1061,7 +1061,7 @@ object DianaTracker {
                 "^§e§lLOOT SHARE §fYou received §b(\\d+) §[0-9a-f](.*?) §fShards for assisting §b(.*?)§f!$",
                 Pattern.DOTALL
             )
-        ) { message, matchResult ->
+        ) { _, matchResult ->
             val shard = matchResult.group(2).removeFormatting()
             val amount = matchResult.group(1).toIntOrNull() ?: 0
 
@@ -1078,7 +1078,7 @@ object DianaTracker {
     }
 
     private fun trackMythTheFish() {
-        Register.onChatMessage(Regex("^(.*?) §eYou just dug out(.*?)$")) { message, matchResult ->
+        Register.onChatMessage(Regex("^(.*?) §eYou just dug out(.*?)$")) { _, matchResult ->
             if (matchResult.groupValues[2].contains("Myth the Fish")) {
                 MedalIntegration.saveMythTheFishClip()
                 onRareDrop("Myth the Fish",
