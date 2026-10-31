@@ -134,10 +134,6 @@ object SBOKotlin : ClientModInitializer {
 			mc.schedule { HubGui.openSettings() }
 		}
 
-		Register.command("testDisplay") {
-			Helper.showTitle("JudgementCorePls", "That's you", 20, 20, 20)
-		}
-
 		PartyFinderGui.register()
 		ProfileViewerGui.register()
 		SoundsGui.register()
