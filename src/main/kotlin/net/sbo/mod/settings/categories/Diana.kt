@@ -94,6 +94,12 @@ object Diana : Category("Diana") {
         this.description = Literal("Guess the burrow location when using spade ability. Needs Dripping Lava Particles and set /particlequality to Extreme for more accuracy.")
     }
 
+    var curveSpadeGuess by boolean(true) {
+        this.name = Literal("Curve Spade Guess (WIP)")
+        this.description = Literal("Guesses the exact block from the spade trail's curve, from the second particle on. Turn off to use the old spade guess if it acts up.")
+        depends(::spadeGuess)
+    }
+
     var arrowGuess by boolean(true) {
         this.name = Literal("Arrow Guess")
         this.description = Literal("Guesses the burrow location from the arrow direction after digging a burrow. \n" +
