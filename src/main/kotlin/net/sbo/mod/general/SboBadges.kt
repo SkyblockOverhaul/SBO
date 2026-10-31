@@ -395,7 +395,7 @@ object SboBadges {
     fun replaceEverywhere(text: FormattedCharSequence?): FormattedCharSequence? {
         if (text == null || !DataManager.sboData.badgeReplaceEverywhere) return null
         if (byName.isEmpty()) return null
-        return try { replaceEverywhereOf(text) } catch (e: Exception) { null } // never cost a frame
+        return try { replaceEverywhereOf(text) } catch (e: Exception) { null }
     }
 
     private fun replaceEverywhereOf(text: FormattedCharSequence): FormattedCharSequence? {
@@ -510,7 +510,7 @@ object SboBadges {
         // Name, level and rank each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
         val nameColor = badge?.takeIf { it.shows(BadgePart.NAME, place) }?.colorOf(BadgePart.NAME)
         val levelColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.LEVEL, place) }?.colorOf(BadgePart.LEVEL)
-        val rankColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.RANK, place) }?.colorOf(BadgePart.RANK)
+        val rankColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.RANK, place) || DataManager.sboData.badgeReplaceEverywhere }?.colorOf(BadgePart.RANK)
         val tagInfo = tag?.let { ranks[it.rank] }
         val tagText = tagInfo?.tag
         if (nameColor == null && levelColor == null && rankColor == null && tagText == null && afterName == null) return line
