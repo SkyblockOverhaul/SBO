@@ -70,7 +70,7 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Trac
             val now = System.nanoTime()
             when {
                 lootsharedRegex.matches(text) -> lootshared[sender] = now
-                RareMob.fromName(spawnShareRegex.find(text)?.groupValues?.get(1) ?: "") != null -> spawners[sender] = now
+                RareMob.fromName(spawnShareRegex.find(text)?.groupValues?.get(1).orEmpty()) != null -> spawners[sender] = now
             }
         }
 

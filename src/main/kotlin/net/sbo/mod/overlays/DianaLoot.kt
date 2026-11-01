@@ -217,7 +217,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemName, dropId)
         }
-        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
+        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" }.orEmpty()
         val hidePrice = Trackers.npcOnlyPrices && Helper.getItemPrice(itemName.replace("_LS", ""), amount) == 0L
         val formattedText = "${if (hidePrice) "$DARK_GRAY  -  " else "$GOLD$price"} $GRAY| $formattedName$percentText"
         val line = OverlayTextLine(formattedText).onClick { toggleHidden(itemName) }
@@ -244,11 +244,11 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameBase, dropId)
         }
-        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
+        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" }.orEmpty()
         val percentLs = data.dropMobLsId?.let { dropLsId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameLs, dropLsId)
         }
-        val percentLsText = percentLs?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
+        val percentLsText = percentLs?.let { " $GRAY($AQUA$it%$GRAY)" }.orEmpty()
         val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         val baseText = "$priceCombined $GRAY| $color${data.name}: $AQUA${Helper.formatNumber(amountBase,
             withCommas = true
@@ -468,7 +468,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
         val amountLs = tracker.getAmountOf(itemNameLs)
         val hidePrices = Trackers.npcOnlyPrices && Helper.getItemPrice(data.id, tracker.getAmountOf(data.id) + amountLs) == 0L
         val priceLs = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(data.id, amountLs)}"
-        val percentLs = data.dropMobLsId?.let { " $GRAY($AQUA${calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameLs, it)}%$GRAY)" } ?: ""
+        val percentLs = data.dropMobLsId?.let { " $GRAY($AQUA${calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameLs, it)}%$GRAY)" }.orEmpty()
         val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
         return "$YELLOW${Helper.toTitleCase(data.id.replace("_", " ").lowercase())} LS Details:\n" +
             "$priceLs $GRAY| $color${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${Helper.formatNumber(amountLs, withCommas = true)}$percentLs"

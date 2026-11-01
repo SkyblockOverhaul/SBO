@@ -452,14 +452,10 @@ object CrownOfAvarice {
     }
 
     /** Total coins made from leveling COAs with this tracker */
-    private fun getTotalCoins(): Long {
-        return tracker?.items?.COA_COINS ?: 0L
-    }
+    private fun getTotalCoins(): Long = tracker?.items?.COA_COINS ?: 0L
 
     // Infinite while nothing was earned yet
-    private fun maxedIn(coins: Long): Double {
-        return (MAX_COINS - coins.coerceAtLeast(0L)) / getCoinsPerHour()
-    }
+    private fun maxedIn(coins: Long): Double = (MAX_COINS - coins.coerceAtLeast(0L)) / getCoinsPerHour()
 
     /** Current COA's coins, or -1 if the item isn't a CoA */
     private fun getCurrentCoins(item: ItemStack? = null): Long {

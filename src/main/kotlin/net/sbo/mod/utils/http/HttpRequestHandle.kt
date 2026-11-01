@@ -12,7 +12,7 @@ import java.io.InputStream
  * The .string() method reads the body as text.
  */
 class ResponseBody(private val inputStream: InputStream?) {
-    fun string(): String = inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
+    fun string(): String = inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
 }
 
 /**
@@ -182,3 +182,4 @@ class HttpRequestHandle {
         error?.let { failure?.invoke(it) }
     }
 }
+

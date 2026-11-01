@@ -89,7 +89,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { _, _ ->
             onLootShare()
             true
         }
@@ -503,11 +503,9 @@ object Helper {
 
         for ((slot, stack) in inventory.withIndex()) {
             if (slot == 8) continue // Skip SB Star
-            val stack: ItemStack = inventory[slot]
-
             if (!stack.isEmpty) {
-                var id: String
-                var item: Item
+                val id: String
+                val item: Item
                 val lookup = ItemLookup(stack)
                 val sbId = lookup.sbId
                 var isChimera = false
@@ -636,7 +634,7 @@ object Helper {
             else -> "ErrorGettingSince"
         }
     }
-  
+
     private fun getDropInfo(dropName: String): DropInfo? {
         val tracker = DataManager.dianaTrackerMayorData
         val items = tracker.items
@@ -674,7 +672,6 @@ object Helper {
 
     fun getSpawnMessage(message: String, mob: String): String {
         val mobs = DataManager.dianaTrackerMayorData.mobs
-        val items = DataManager.dianaTrackerMayorData.items
         val sboData = DataManager.sboData
 
         val kingPercent = calcPercentOne(mobs.KING_MINOS, mobs.TOTAL_MOBS)
@@ -830,7 +827,7 @@ object Helper {
     // TODO: When the Alpha Network update is pushed to main by Hypixel, remove getChance() and rename getChanceNew() to getChance().
     fun getChance(mf: Int, looting: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances = BASE_CHANCES_PERCENT[rarity.lowercase().trim()]
-            ?: emptyMap()
+            .orEmpty()
 
         val mfMultiplier = 1.0 + mf / 100.0
         val factor = if (lootshare) mfMultiplier / 5.0 else mfMultiplier * (1.0 + looting * 0.15)
@@ -840,7 +837,7 @@ object Helper {
     // TODO: When the Alpha Network update is pushed to main by Hypixel, this becomes getChance().
     fun getChanceNew(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances = BASE_CHANCES_PERCENT_NEW[rarity.lowercase().trim()]
-            ?: emptyMap()
+            .orEmpty()
 
         return calculateDropChances(baseChances, mf, lootshare)
     }
@@ -865,7 +862,9 @@ object Helper {
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0
 
-        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: listOf()
+        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: return 0
+
+        if (linesList.isEmpty()) return 0
 
         for (lineText in linesList) {
             val line = lineText.string

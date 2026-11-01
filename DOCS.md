@@ -250,7 +250,7 @@ if (World.isInSkyblock()) {
 val worldName = World.getWorld()
 
 // Check location
-val inHub = World.getWorld() == "hub"
+val inHub = World.isInHub() // alternatively, World.getWorld() == "Hub"
 ```
 
 ---
@@ -370,7 +370,7 @@ The mod uses Mixins for Minecraft hooks. Mixin configs are in `src/main/resource
    package net.sbo.mod.mixin;
 
    @Mixin(Gui.class)
-   public class MyMixin {
+   final class MyMixin {
        // ...
    }
    ```

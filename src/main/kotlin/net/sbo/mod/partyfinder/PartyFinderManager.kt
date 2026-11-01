@@ -304,7 +304,7 @@ object PartyFinderManager {
         return PartyBody(
             partyType = current.partyType,
             subType = current.subType,
-            version = PartyCategories.version ?: "",
+            version = PartyCategories.version.orEmpty(),
             uuids = uuids,
             partySize = current.partySize,
             note = current.note,
@@ -505,7 +505,7 @@ object PartyFinderManager {
         val roleText = role?.let { id ->
             val label = draft?.let { PartyCategories.target(it.partyType, it.subType) }?.roles?.firstOrNull { it.id == id }?.label ?: id
             " as §b$label"
-        } ?: ""
+        }.orEmpty()
         val invite = onInvite?.let { "/__sbo_run_clickable_action ${ClickActionManager.registerAction(it)}" } ?: "/p invite $playerName"
         Chat.chat(Chat.getChatBreak())
         Chat.chat(
@@ -678,14 +678,14 @@ object PartyFinderManager {
         val text = event.message.toFormattedString()
         var match = false
 
-        if (leaderChangeMatchers.firstOrNull { it.matches(text) } != null) {
+        if (leaderChangeMatchers.any { it.matches(text) }) {
             match = true
             isInParty = true
             isLeader = false
             removePartyFromQueue()
         }
 
-        if (partyDisbandMatchers.firstOrNull { it.matches(text) } != null) {
+        if (partyDisbandMatchers.any { it.matches(text) }) {
             creatingParty = false
             partyMemberCount = 1
             match = true
@@ -704,7 +704,7 @@ object PartyFinderManager {
             sleep(3000) { joinedParties++ }
         }
 
-        if (partyJoinMatchers.firstOrNull { it.matches(text) } != null) {
+        if (partyJoinMatchers.any { it.matches(text) }) {
             quietSince = 0L
             updateBool = true
             partyMemberCount += 1
@@ -712,7 +712,7 @@ object PartyFinderManager {
             isInParty = true
         }
 
-        if (partyLeaveMatchers.firstOrNull { it.matches(text) } != null) {
+        if (partyLeaveMatchers.any { it.matches(text) }) {
             updateBool = true
             partyMemberCount -= 1
             match = true
@@ -796,6 +796,6 @@ data class JoinRequest(val role: String?) {
         fun parse(text: String): JoinRequest = JoinRequest(ROLE.find(text)?.groupValues?.get(1))
 
         fun message(role: String?, id: String = java.util.UUID.randomUUID().toString()): String =
-            "[SBO] join party request - id:$id" + (role?.let { " role:$it" } ?: "")
+            "[SBO] join party request - id:$id" + (role?.let { " role:$it" }.orEmpty())
     }
 }

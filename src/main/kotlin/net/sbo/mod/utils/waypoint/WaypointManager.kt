@@ -79,15 +79,15 @@ object WaypointManager {
             val world = mc.level ?: return@onChatMessage
 
             val x = match.groups["x"]?.value?.toIntOrNull() ?: 0
-            var y = match.groups["y"]?.value?.toIntOrNull() ?: 0
+            val y = match.groups["y"]?.value?.toIntOrNull() ?: 0
             val z = match.groups["z"]?.value?.toIntOrNull() ?: 0
 
             val sentPos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
             val pos = floorToGround(world, sentPos)
 
-            val trailing = match.groups["trailing"]?.value ?: ""
+            val trailing = match.groups["trailing"]?.value.orEmpty()
             val mob = trailing.replace("|", "").trim()
-            val selfName = Player.getName() ?: ""
+            val selfName = Player.getName().orEmpty()
             if (!channel.contains("Guild")) {
                 val mobType: RareMob? = when (mob) {
                     "Minos Inquisitor" -> RareMob.INQ
@@ -372,7 +372,7 @@ object WaypointManager {
             // The self-spawn message always shows the title and plays the custom sound to let user know they spawned a rare mob.
             // For other's mobs, the title and sound does not play unless the mob was selected in "Mobs to Receive".
             if (!fromSelfSpawnMessage && mobType !in RareMobs.ReceiveMobs) return mobData.mobName
-    
+
             Helper.showTitle(
                 mobData.title,
                 player.ifEmpty { null },
@@ -387,9 +387,7 @@ object WaypointManager {
         return mobData.mobName
     }
 
-    fun floorToGround(pos: SboVec): SboVec {
-        return floorToGround(mc.level!!, pos)
-    }
+    fun floorToGround(pos: SboVec): SboVec = floorToGround(mc.level!!, pos)
 
     private fun floorToGround(level: ClientLevel, pos: SboVec): SboVec {
         val x = pos.x.roundToInt()
@@ -886,7 +884,7 @@ object WaypointManager {
      * @param type The type of waypoints to retrieve.
      * @return The waypoints of the specified type, or an empty list if none exist.
      */
-    fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type] ?: emptyList()
+    fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type].orEmpty()
 
     private fun getWarpPoint(name: String): WarpPoint? = hubWarps[name] ?: additionalHubWarps[name]
 

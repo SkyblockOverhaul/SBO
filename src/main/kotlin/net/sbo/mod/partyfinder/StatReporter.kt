@@ -14,7 +14,7 @@ import net.sbo.mod.utils.game.Mayor
 import kotlin.random.Random
 
 /** Sends stats only the mod can measure to the backend. For now the totals of the Diana mayor tracker. */
-object StatReporter {
+internal object StatReporter {
     private const val INTERVAL_TICKS = 20 * 60 * 15
     private const val STARTUP_DELAY_TICKS = 20 * 30
     // Spreads the reports, so players who start together don't all report together

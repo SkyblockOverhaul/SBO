@@ -43,7 +43,7 @@ object SoundHandler {
      * Initializes sound system: extracts built-in sounds and scans for available sounds.
      */
     fun init() {
-        File(SOUND_DIR_PATH).apply { mkdirs() }
+        File(SOUND_DIR_PATH).mkdirs()
         migrateMasterVolume()
         // Defer the expensive operations to avoid blocking game startup
         AUDIO_EXECUTOR.execute {
@@ -154,7 +154,7 @@ object SoundHandler {
             ?.filter { it.isFile && SUPPORTED_EXTENSIONS.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
             ?.map { it.name }
             ?.sorted()
-            ?: emptyList()
+            .orEmpty()
     }
 
     /** Converts linear volume (0-1) to decibels for audio control */

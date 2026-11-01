@@ -32,16 +32,18 @@ class OverlayTextLine(
     var x: Int = 0
     var y: Int = 0
 
-    private var textWidth: Int = -1
+    private var cachedTextWidth: Int = -1
+
+    private val textWidth: Int
         get() {
             val currentText = text
 
-            if (orderedTextSource == currentText && field != -1) {
-                return field
+            if (orderedTextSource == currentText && cachedTextWidth != -1) {
+                return cachedTextWidth
             }
 
             val computedWidth = mc.font.width(getOrderedText())
-            field = computedWidth
+            cachedTextWidth = computedWidth
 
             return computedWidth
         }
@@ -56,8 +58,6 @@ class OverlayTextLine(
     /** The height of the line including the 1px gap below it. */
     val height: Int
         get() = maxOf(mc.font.lineHeight, if (icon != null) iconSize else 0) + 1
-
-    private var renderDebugBox: Boolean = false
 
     private var condition: () -> Boolean = { true }
     private var cachedCondition = true
@@ -140,14 +140,14 @@ class OverlayTextLine(
         if (isHovered) hoverAction?.invoke(drawContext, textRenderer)
     }
 
-    fun lineClicked(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float) {
+    fun lineClicked(mouseX: Double, mouseY: Double, x: Float, y: Float, scale: Float) {
         if (text.isEmpty() || clickAction == null) return
-        if (isMouseOver(mouseX, mouseY, x, y, textRenderer, scale)) {
+        if (isMouseOver(mouseX, mouseY, x, y, scale)) {
             clickAction?.invoke()
         }
     }
 
-    private fun isMouseOver(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float): Boolean {
+    private fun isMouseOver(mouseX: Double, mouseY: Double, x: Float, y: Float, scale: Float): Boolean {
         val lineWidth = width * scale
         val lineHeight = height * scale - 1
 
@@ -160,7 +160,7 @@ class OverlayTextLine(
             return
         }
         val wasHovered = isHovered
-        val isNowHovered = isMouseOver(mouseX, mouseY, x, y, textRenderer, scale)
+        val isNowHovered = isMouseOver(mouseX, mouseY, x, y, scale)
         isHovered = isNowHovered
 
         if (isNowHovered && !wasHovered) {
@@ -180,10 +180,6 @@ class OverlayTextLine(
         this.x = x
         this.y = y
         val lineHeight = height
-
-        if (renderDebugBox) {
-            drawContext.fill(x, y, x + width, y + lineHeight, Color(128, 128, 128, 130).rgb)
-        }
 
         // Everything is centered vertically in the line, which is taller than the text with a large icon
         var currentX = x

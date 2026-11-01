@@ -78,7 +78,7 @@ object AchievementManager {
             backTrackAchievements()
         }
         addAllAchievements()
-        
+
         kingSoul()
         Register.onTick(20) { trackCOA() }
 
@@ -87,8 +87,8 @@ object AchievementManager {
     }
 
     private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true, chatOnly: Boolean = false) {
-        if (achievements.containsKey(id)) {
-            throw RuntimeException("Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}")
+        require(!achievements.containsKey(id)) {
+            "Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}"
         }
         val achievement = Achievement(id, name, description, rarity, previousId, hidden, repeatable, chatOnly)
         achievements[id] = achievement
@@ -147,7 +147,7 @@ object AchievementManager {
     }
 
 
-    fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
+    internal fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
         if (!isOnHypixel) return
         val itemsData = tracker.items
         val mobsData = tracker.mobs
@@ -499,7 +499,7 @@ object AchievementManager {
     }
 
     private fun kingSoul() {
-        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
+        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { _, matchResult ->
             if ("King Minos" in matchResult.groupValues[0]) unlockAchievement(118)
         }
     }

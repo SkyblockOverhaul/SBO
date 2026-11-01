@@ -10,7 +10,6 @@ class StartAttackingEvent (
     val target: HitResult,
     val world: Level
 ) {
-    fun getMainHandItem(): ItemStack {
-        return player.mainHandItem
-    }
+    fun getMainHandItem() = player.mainHandItem
 }
+

@@ -490,7 +490,7 @@ object DataManager {
                 file.isFile &&
                 file.extension == "zip" &&
                 file.length() > 0L
-            }?.toList() ?: emptyList()
+            }?.toList().orEmpty()
             if (existingBackups.size > MAX_BACKUPS) {
                 val oldestBackup = existingBackups.minByOrNull { it.lastModified() }
                 oldestBackup?.let {
@@ -613,7 +613,7 @@ object DataManager {
             // migration 2: "unlocked" list ("unlocked": [1, 2, 3])
             val existingUnlockedList = (rawData["unlocked"] as? List<*>)?.mapNotNull {
                 (it as? Number)?.toInt() ?: it.toString().toIntOrNull()
-            } ?: emptyList()
+            }.orEmpty()
 
             if (existingUnlockedList.isNotEmpty()) {
                 foundUnlockedIds.addAll(existingUnlockedList)
@@ -700,7 +700,7 @@ object DataManager {
                         if (Files.exists(newDir) && !Files.isSameFile(oldDir, newDir)) {
                             if (!Files.isDirectory(newDir)) {
                                 SBOKotlin.logger.error("[$modName] Expected directory but found file: $newDir")
-                                throw RuntimeException("$newDir is a file but supposed to be a directory")
+                                error("$newDir is a file but supposed to be a directory")
                             }
                             val success = mergeDirectories(modName, oldDir, newDir)
                             cleanupIfSafe(modName, oldDir, success)

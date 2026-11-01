@@ -51,7 +51,7 @@ object Pickuplog {
 
         Register.onChatMessageCancelable(
             Pattern.compile("^.*Sacks.*\\s+(?:§.)?\\+\\d+ items\\..*\\(Last \\d+s\\.\\)(?:§.)*$")
-        ) { message, matchResult ->
+        ) { message, _ ->
             var cancel = true
             if (World.isInSkyblock()) {
                 message.siblings.forEach { part ->

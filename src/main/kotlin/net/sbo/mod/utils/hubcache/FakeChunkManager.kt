@@ -15,9 +15,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.General
 import java.util.concurrent.TimeUnit
 
-fun renderHubIslandOnlyEnabled(): Boolean {
-    return General.chunkCacheRenderHubIslandOnly
-}
+fun renderHubIslandOnlyEnabled(): Boolean = General.chunkCacheRenderHubIslandOnly
 
 fun inArea(chunkX: Int, chunkZ: Int, area: AABB): Boolean {
     val minX = chunkX * 16.0
@@ -42,6 +40,7 @@ class FakeChunkManager internal constructor(
     /** Chunks outside of it are neither stored nor faked, null for no limit. */
     private val area: AABB?,
 ) {
+    @JvmField
     val chunkCache: ClientChunkCache = level.chunkSource
 
     private val fakeChunks = Long2ObjectMaps.synchronize(Long2ObjectOpenHashMap<FakeChunk>())
@@ -66,7 +65,7 @@ class FakeChunkManager internal constructor(
 
     fun getChunk(chunkX: Int, chunkZ: Int): LevelChunk? {
         if (!hasFakeChunks) return null
-        return fakeChunks.get(ChunkPos.pack(chunkX, chunkZ))
+        return fakeChunks[ChunkPos.pack(chunkX, chunkZ)]
     }
 
     val fakeChunkCount: Int get() = fakeChunks.size
@@ -116,7 +115,7 @@ class FakeChunkManager internal constructor(
     }
 
     private fun load(chunkX: Int, chunkZ: Int, chunk: FakeChunk, snapshot: ChunkSnapshot) {
-        fakeChunks.put(ChunkPos.pack(chunkX, chunkZ), chunk)
+        fakeChunks[ChunkPos.pack(chunkX, chunkZ)] = chunk
         hasFakeChunks = true
 
         lightColumns.sbo_enableFakeColumn(SectionPos.getZeroNode(chunkX, chunkZ))

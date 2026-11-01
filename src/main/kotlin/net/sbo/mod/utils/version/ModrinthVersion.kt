@@ -11,3 +11,4 @@ data class ModrinthVersion(
     val projectId: String,
     val id: String
 )
+

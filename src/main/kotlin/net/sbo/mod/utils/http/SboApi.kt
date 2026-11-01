@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets
  */
 object SboApi {
     private val json = Json { encodeDefaults = false }
-    
+
     private val VERSION_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9.+_-]{0,31}")
 
     private var cachedVersion: String? = null
@@ -120,7 +120,7 @@ object SboApi {
     fun ahItems(): HttpRequestHandle = get("/ahItems")
 
     fun badges(knownVersion: String?): HttpRequestHandle =
-        get("/badges" + (knownVersion?.let { "?v=${encode(it)}" } ?: ""))
+        get("/badges" + (knownVersion?.let { "?v=${encode(it)}" }.orEmpty()))
 
     // format=2: hex colors, gradients and team tags; without it the backend answers like for 0.7.0
     fun ownBadge(): HttpRequestHandle = authedGet("/badge?format=2")

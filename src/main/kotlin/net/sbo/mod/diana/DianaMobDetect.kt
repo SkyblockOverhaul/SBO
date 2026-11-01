@@ -99,7 +99,7 @@ object DianaMobDetect {
             level.entitiesForRendering().forEach { entity ->
                 val health = (entity as? LivingEntity)?.let {
                     " with health ${it.health}/${it.maxHealth}"
-                } ?: ""
+                }.orEmpty()
 
                 val passengers = entity.passengers
                     .takeIf { it.isNotEmpty() }
@@ -107,13 +107,13 @@ object DianaMobDetect {
                         "${passenger.javaClass.simpleName} (${passenger.name.string})"
                     }
                     ?.let { " with passengers [$it]" }
-                    ?: ""
+                    .orEmpty()
 
                 val rider = entity.vehicle
                     ?.let {
                         " riding ${it.javaClass.simpleName} (${it.name.string})"
                     }
-                    ?: ""
+                    .orEmpty()
 
                 Chat.chat(
                     "§6[SBO] §eEntity with type ${entity.javaClass.simpleName} " +
@@ -134,7 +134,7 @@ object DianaMobDetect {
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
             // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
-            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ") } != null) {
+            if (rare != null || prefixes.any { cleanName.startsWith("$it ") }) {
                 // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
                 if (DianaTracker.lastSpawnedMob == displayName) {
                     if (rare != null) RareMobKillTime.onCocoonCaught(displayName)

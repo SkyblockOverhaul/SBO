@@ -129,7 +129,7 @@ object ProblemText {
     fun orBetter(label: String, top: Boolean): String = if (top) label else "$label or better"
 
     fun rarityNeed(rarity: String?): String =
-        orBetter(title(rarity ?: ""), ReqMatcher.rarityRank(rarity) == ReqMatcher.RARITIES.lastIndex)
+        orBetter(title(rarity.orEmpty()), ReqMatcher.rarityRank(rarity) == ReqMatcher.RARITIES.lastIndex)
 
     /** "Terror Armor (Fiery or better)", "Infernal Terror Armor" at the top tier, any tier for Basic. */
     fun tierPick(label: String, minTier: String?): String {

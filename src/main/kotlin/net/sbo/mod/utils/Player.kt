@@ -14,16 +14,14 @@ object Player {
         return SboVec(player.x, player.y, player.z)
     }
 
-    fun getUUIDString(): String = mc.player?.stringUUID ?: ""
+    fun getUUIDString(): String = mc.player?.stringUUID.orEmpty()
 
     // Works in the main menu
     fun accountUuid(): String = mc.user.profileId.toString().replace("-", "").lowercase()
 
     fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
-    fun getPlayerInventory(): Inventory? {
-        return mc.player?.inventory
-    }
+    fun getPlayerInventory(): Inventory? = mc.player?.inventory
 
     fun getName(): String? = mc.player?.name?.string
 

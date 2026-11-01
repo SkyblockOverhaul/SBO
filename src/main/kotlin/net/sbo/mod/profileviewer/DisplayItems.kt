@@ -68,7 +68,11 @@ class DisplayItem(
 
 /** An item with and without the model of the Hypixel resource pack, which is only loaded while you are on Hypixel. */
 class BuiltItem(private val plain: ItemStack, private val model: Identifier?) {
-    private val withModel = model?.let { id -> plain.copy().also { it.set(DataComponents.ITEM_MODEL, id) } }
+    private val withModel = model?.let { id ->
+        plain.copy().apply {
+            set(DataComponents.ITEM_MODEL, id)
+        }
+    }
 
     fun stack(): ItemStack = if (withModel != null && DisplayItemStacks.hasModel(model!!)) withModel else plain
 }

@@ -342,7 +342,7 @@ object EventsGui {
                 div(className = classNames("ev-row", "zero" to (s.number == 0.0))) {
                     span(className = "ev-row-label") { +s.label }
                     span(className = "ev-row-value") { +s.value }
-                    span(className = "ev-row-percent") { +(s.rate ?: "") }
+                    span(className = "ev-row-percent") { +(s.rate.orEmpty()) }
                     val avg = averages?.getOrNull(n)
                     val diff = if (avg == null) 0.0 else s.compared - avg
                     when {

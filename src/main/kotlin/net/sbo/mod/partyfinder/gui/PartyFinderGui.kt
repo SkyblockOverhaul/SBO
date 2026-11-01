@@ -73,7 +73,7 @@ object PartyFinderGui {
 
     private fun startKey(): String {
         val config = DataManager.partyFinderConfigState
-        return if (config.startWithFavorites) config.favorites.firstOrNull() ?: "" else ""
+        return if (config.startWithFavorites) config.favorites.firstOrNull().orEmpty() else ""
     }
 
     private val App = component("PartyFinder") {
