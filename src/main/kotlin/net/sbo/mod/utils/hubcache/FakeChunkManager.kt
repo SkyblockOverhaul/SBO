@@ -40,6 +40,7 @@ class FakeChunkManager internal constructor(
     /** Chunks outside of it are neither stored nor faked, null for no limit. */
     private val area: AABB?,
 ) {
+    @JvmField
     val chunkCache: ClientChunkCache = level.chunkSource
 
     private val fakeChunks = Long2ObjectMaps.synchronize(Long2ObjectOpenHashMap<FakeChunk>())

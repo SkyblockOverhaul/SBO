@@ -57,9 +57,13 @@ object HubChunkCache {
     }
 
     @JvmStatic
-    fun managerFor(cache: ClientChunkCache): FakeChunkManager? {
-        val current = manager ?: return null
-        return if (current.chunkCache === cache) current else null
+    fun managerFor(cache: ClientChunkCache?): FakeChunkManager? {
+        val current = manager
+
+        if (current == null) return null
+        if (current.chunkCache !== cache) return null
+
+        return current
     }
 
     /** True while fake chunks are shown, the render distance then ignores the server's limit. */
@@ -141,7 +145,7 @@ object HubChunkCache {
             if (current.level !== level) {
                 current.close(unloadFakes = false)
                 manager = null
-            } else if (!extendsServerView(level)) {
+            } else if (!extendsServerView()) {
                 current.close(unloadFakes = true)
                 manager = null
             } else {
@@ -160,7 +164,7 @@ object HubChunkCache {
             return
         }
         if (!World.isInSkyblock()) return // scoreboard not there yet
-        if (!extendsServerView(level)) return // checked again every tick, the setting and render distance can change
+        if (!extendsServerView()) return // checked again every tick, the setting and render distance can change
         skippedLevel = level
         if (bobbyLoaded && BobbyCompat.isEnabled()) {
             // Bobby already shows fake chunks in this level, two caches would fight. Bobby wins. Turning Bobby
@@ -181,7 +185,7 @@ object HubChunkCache {
      * Fake chunks only fill the client render distance, so while the server already sends that far they only
      * help right after a lobby switch. [General.chunkCacheAboveServerOnly] skips them then.
      */
-    private fun extendsServerView(level: ClientLevel): Boolean {
+    private fun extendsServerView(): Boolean {
         if (!General.chunkCacheAboveServerOnly) return true
         return mc.options.renderDistance().get() > 8
     }
