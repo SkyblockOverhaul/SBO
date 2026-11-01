@@ -15,6 +15,7 @@ import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Warps
@@ -905,6 +906,8 @@ object WaypointManager {
 
     private fun getBestGuessAt(pos: SboVec): Waypoint? {
         val ignoreYLevel = Warps.ignoreYLevel
+        // A place to use the spade comes before any burrow
+        SpadeGuessOptimizer.shownSpot()?.let { return it }
         return getAllGuessesAndBurrows()
             .asSequence()
             .filter { !it.hidden }
@@ -1041,6 +1044,8 @@ object WaypointManager {
 
     fun warpToGuess() {
         val bestGuess = getBestGuess() ?: return
+        // The Spade Guess Optimizer's place is near the chain you just finished, no warp needed
+        if (SpadeGuessOptimizer.isNearChainEnd(bestGuess)) return
         getFinalClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
     }
 
