@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.sbo.mod.diana.RareMob
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
@@ -523,8 +523,8 @@ object WaypointManager {
             val mobName = mobType.display
 
             val isOwnSpawn =
-                DianaTracker.lastSpawnedMob == mobName &&
-                now - DianaTracker.lastSpawnedMobTime <= TimeUnit.SECONDS.toNanos(5)
+                Tracker.lastSpawnedMob == mobName &&
+                now - Tracker.lastSpawnedMobTime <= TimeUnit.SECONDS.toNanos(5)
 
             addRareMobWaypoint(
                 player = "",

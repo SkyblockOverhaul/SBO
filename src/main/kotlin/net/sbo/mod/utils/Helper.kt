@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.RareMobKillTime
 import net.sbo.mod.overlays.DianaLoot
@@ -116,24 +116,24 @@ object Helper {
 
         /*Register.command("sbotestlschimdrop") {
             handleDianaMobDeath("Minos Inquisitor", 30.0f)
-            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
+            RareDrops.onChatDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }
 
         Register.command("sbotestdrops") {
-            DianaTracker.trackChatRngDrop("Daedalus Stick §b(+§b483 ✯ Magic Find)")
-            DianaTracker.trackChatRngDrop("Minos Relic §b(+§b483 ✯ Magic Find)")
-            DianaTracker.trackChatRngDrop("Crown of Greed")
-            DianaTracker.trackChatRngDrop("Myth the Fish")
-            DianaTracker.trackChatRngDrop("Daedalus Stick")
-            DianaTracker.trackChatRngDrop("Shimmering Wool §b(+§b483 ✯ Magic Find)")
+            RareDrops.onChatDrop("Daedalus Stick §b(+§b483 ✯ Magic Find)")
+            RareDrops.onChatDrop("Minos Relic §b(+§b483 ✯ Magic Find)")
+            RareDrops.onChatDrop("Crown of Greed")
+            RareDrops.onChatDrop("Myth the Fish")
+            RareDrops.onChatDrop("Daedalus Stick")
+            RareDrops.onChatDrop("Shimmering Wool §b(+§b483 ✯ Magic Find)")
         }
 
         Register.command("sbotestbraideddrop") {
-            DianaTracker.onBraidedDrop()
+            RareDrops.onBraidedFeather()
         }
 
         Register.command("sbotestchimdrop") {
-            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
+            RareDrops.onChatDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }*/
 
         // Workaround to not timeout on the first requests since there is lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
@@ -158,7 +158,7 @@ object Helper {
 
     private fun handleDianaMobDeath(name: String, dist: Float, pos: SboVec) {
         val nearby = dist <= 30
-        val last = DianaTracker.lastSpawnedMob
+        val last = Tracker.lastSpawnedMob
         val lsOverride = Trackers.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
@@ -168,7 +168,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
                     notifyUserOfLs("Minos Inquisitor")
-                    DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
+                    Tracker.trackItem("MINOS_INQUISITOR_LS", 1)
                     sleep(2000) {
                         hasTrackedInq = false
                     }
@@ -182,7 +182,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
                     notifyUserOfLs("King Minos")
-                    DianaTracker.trackItem("KING_MINOS_LS", 1)
+                    Tracker.trackItem("KING_MINOS_LS", 1)
                     sleep(2000) {
                         hasTrackedKing = false
                     }
@@ -195,7 +195,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
-                    DianaTracker.trackItem("SPHINX_LS", 1)
+                    Tracker.trackItem("SPHINX_LS", 1)
                     sleep(2000) {
                         hasTrackedSphinx = false
                     }
@@ -209,7 +209,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
                     notifyUserOfLs("Manticore")
-                    DianaTracker.trackItem("MANTICORE_LS", 1)
+                    Tracker.trackItem("MANTICORE_LS", 1)
                     sleep(2000) {
                         hasTrackedManti = false
                     }

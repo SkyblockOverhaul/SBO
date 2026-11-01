@@ -2,7 +2,7 @@ package net.sbo.mod.general
 
 import net.minecraft.network.chat.HoverEvent
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.Item
@@ -62,7 +62,7 @@ object Pickuplog {
                             regex.findAll(plain).forEach { match ->
                                 val amount = match.groupValues[1].replace(",", "")
                                 val item = match.groupValues[2].trim()
-                                DianaTracker.trackWithSacksMessage(item, amount.toInt())
+                                Tracker.trackWithSacksMessage(item, amount.toInt())
                             }
                         }
                         cancel = General.HiddenMessage.SACKS !in General.hideMessages
@@ -113,7 +113,7 @@ object Pickuplog {
     private fun compareInventory() {
         val purseChange = newPurse - oldPurse
         if (purseChange != 0L) {
-            DianaTracker.trackScavengerCoins(purseChange)
+            Tracker.trackScavengerCoins(purseChange)
         }
 
         val newItems = mutableListOf<Item>()
@@ -139,16 +139,16 @@ object Pickuplog {
         for (item in newItems) {
             refreshOverlay(item.itemId, item.name, item.count)
             if (item.itemUUID != "") {
-                DianaTracker.trackWithPickuplog(item)
+                Tracker.trackWithPickuplog(item)
             } else {
-                DianaTracker.trackWithPickuplogStackable(item, item.count)
+                Tracker.trackWithPickuplogStackable(item, item.count)
             }
         }
 
         for ((item, countChange) in changedItemCounts) {
             refreshOverlay(item.itemId, item.name, countChange)
             if (countChange > 0) {
-                DianaTracker.trackWithPickuplogStackable(item, countChange)
+                Tracker.trackWithPickuplogStackable(item, countChange)
             }
         }
 

@@ -9,7 +9,8 @@ import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.tracker.MayorReset
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.LootshareParty
 import net.sbo.mod.diana.RareMobHighlight
@@ -156,7 +157,7 @@ object SBOKotlin : ClientModInitializer {
 		PreciseGuessBurrow.init()
 		HubChunkCache.init()
 		TimeUtil.start()
-		DianaTracker.init()
+		Tracker.init()
 		PartyPlayer.init()
 		Pickuplog.init()
 		OverlayManager.init()
@@ -186,7 +187,7 @@ object SBOKotlin : ClientModInitializer {
 			if (player != null && World.isInSkyblock()) {
 				if (UpdateChecker.isUpdateAvailable) UpdateChecker.printUpdateMessage()
 				SettingsChanges.announce()
-				DianaTracker.checkMayorTracker()
+				MayorReset.check()
 				PartyPlayer.load()
 				unlockAchievement(38)
 				if (!Debug.disableAutoTweaks) {

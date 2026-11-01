@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
-import net.sbo.mod.diana.DianaTracker as DianaItemTracker
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
@@ -168,7 +168,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
             val count = countShurikens()
             val used = shurikenCount - count
             val moved = mc.screen != null || now - shurikenDropAt <= SHURIKEN_USE_WINDOW_MS
-            if (used > 0 && !moved) DianaItemTracker.trackItem("FAKE_SHURIKEN", used, enforceCooldown = false)
+            if (used > 0 && !moved) Tracker.trackItem("FAKE_SHURIKEN", used, enforceCooldown = false)
             shurikenCount = count
         }
     }
