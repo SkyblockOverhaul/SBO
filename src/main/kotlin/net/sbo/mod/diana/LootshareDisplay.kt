@@ -208,7 +208,9 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
             val name = if (mob is Player) mob.name else mob.customName
             val type = if (name != null) RareMob.fromName(name.string) else null
             if (type != null) {
-                targets[mob.id] = Target(mob, type, consumeOwnSpawn(type, mob, now)).also { it.takeOverRemoved(now) }
+                targets[mob.id] = Target(mob, type, consumeOwnSpawn(type, mob, now)).apply {
+                    takeOverRemoved(now)
+                }
                 iterator.remove()
             } else if (!mob.isAlive || now - loadNanos > NAME_CHECK_TIMEOUT_NS) {
                 iterator.remove()

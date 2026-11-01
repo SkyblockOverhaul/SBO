@@ -104,7 +104,7 @@ object PartyFinderApi {
             result.fold(
                 onSuccess = { onSuccess(it) },
                 onFailure = {
-                    val error = (it as? PfException)?.error ?: PfError(PfError.BAD_RESPONSE, it.message ?: "")
+                    val error = (it as? PfException)?.error ?: PfError(PfError.BAD_RESPONSE, it.message.orEmpty())
                     BanNotice.check(error)
                     onError(error)
                 }

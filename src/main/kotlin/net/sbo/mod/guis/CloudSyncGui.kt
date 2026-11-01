@@ -85,7 +85,7 @@ object CloudSyncGui {
     private val MainPage = component<MainProps>("CloudSyncMain") { (size, onCompare, onBackups) ->
         var status by useState<CloudSync.Status?>(null)
         var revision by useState(0)
-        var signKey by useState(CloudSyncKeys.text() ?: "")
+        var signKey by useState(CloudSyncKeys.text().orEmpty())
         var confirmDelete by useState(false)
         var showKey by useState(false)
         var refreshing by useState(false)

@@ -180,7 +180,7 @@ internal object StatView {
 
     fun accuracyText(stat: StatDef): String = when (stat.accuracy) {
         "minimum" -> {
-            val more = stat.unverifiedUpTo?.let { " The real value can be up to ${ProblemText.number(it)} higher." } ?: ""
+            val more = stat.unverifiedUpTo?.let { " The real value can be up to ${ProblemText.number(it)} higher." }.orEmpty()
             "Estimated: SBO only counts what it can check, so this is the lowest possible value.$more"
         }
         "reported" -> "Estimated: sent by the player's own SBO mod, cannot be verified by Hypixel API."

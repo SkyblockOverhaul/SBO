@@ -7,6 +7,7 @@ import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
@@ -99,7 +100,7 @@ object DianaMobDetect {
             level.entitiesForRendering().forEach { entity ->
                 val health = (entity as? LivingEntity)?.let {
                     " with health ${it.health}/${it.maxHealth}"
-                } ?: ""
+                }.orEmpty()
 
                 val passengers = entity.passengers
                     .takeIf { it.isNotEmpty() }
@@ -107,13 +108,13 @@ object DianaMobDetect {
                         "${passenger.javaClass.simpleName} (${passenger.name.string})"
                     }
                     ?.let { " with passengers [$it]" }
-                    ?: ""
+                    .orEmpty()
 
                 val rider = entity.vehicle
                     ?.let {
                         " riding ${it.javaClass.simpleName} (${it.name.string})"
                     }
-                    ?: ""
+                    .orEmpty()
 
                 Chat.chat(
                     "§6[SBO] §eEntity with type ${entity.javaClass.simpleName} " +
@@ -134,13 +135,13 @@ object DianaMobDetect {
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
             // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
-            if (rare != null || prefixes.firstOrNull { cleanName.startsWith("$it ") } != null) {
+            if (rare != null || prefixes.any { cleanName.startsWith("$it ") }) {
                 // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
-                if (DianaTracker.lastSpawnedMob == displayName) {
+                if (Tracker.lastSpawnedMob == displayName) {
                     if (rare != null) RareMobKillTime.onCocoonCaught(displayName)
                     // Count as a new spawned mob, exactly as if it was received as spawned by a regular burrow, so that achievements and mob tracking work.
                     // This will give an error in chat if we pass a string that matches no mob name in the tracker handler code.
-                    DianaTracker.trackMobOnSpawnAndSave(displayName, fromCocoon = true)
+                    Tracker.trackMobOnSpawnAndSave(displayName, fromCocoon = true)
                 }
             }
 

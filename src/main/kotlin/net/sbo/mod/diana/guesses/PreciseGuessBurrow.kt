@@ -44,7 +44,7 @@ import kotlin.math.*
  * the cubic fit can end on a burrow next to the one the spade points at.
  */
 object PreciseGuessBurrow {
-    private var particleLocations = mutableListOf<SboVec>()
+    private val particleLocations = mutableListOf<SboVec>()
     private var lastLavaParticle: Long = 0
     private var lastPointTime: Long = 0
 

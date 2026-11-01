@@ -160,8 +160,8 @@ object TimeUtil {
             // T4: client response receive time.
             val localReceiveNanoTime = System.nanoTime()
 
-            if (responsePacket.length < NTP_PACKET_SIZE) {
-                throw IllegalStateException("Invalid NTP response")
+            check(responsePacket.length >= NTP_PACKET_SIZE) {
+                "Invalid NTP response"
             }
 
             // T2: server request receive time.

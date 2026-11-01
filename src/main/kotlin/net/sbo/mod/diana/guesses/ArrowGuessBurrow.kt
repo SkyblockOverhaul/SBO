@@ -41,7 +41,7 @@ import kotlin.time.Duration.Companion.seconds
 object ArrowGuessBurrow {
     private const val SHAFT_LENGTH = 20
     private const val PARTICLE_DETECTION_TOLERANCE = 0.12
-    private val PARTICLE_DETECTION_TOLERANCE_SQ = PARTICLE_DETECTION_TOLERANCE * PARTICLE_DETECTION_TOLERANCE
+    private const val PARTICLE_DETECTION_TOLERANCE_SQ = PARTICLE_DETECTION_TOLERANCE * PARTICLE_DETECTION_TOLERANCE
     private const val COUNT_NEAR_TIP = 4
     private const val COUNT_NEAR_BASE = 2
     private const val EPSILON = 1e-6

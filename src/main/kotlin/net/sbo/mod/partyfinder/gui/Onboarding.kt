@@ -272,7 +272,7 @@ internal fun tourParty(target: PartyTarget, own: MemberView?): PartyView {
     return PartyView(
         id = TOUR_LEADER,
         partyType = shown.partyType,
-        subType = shown.sub?.id ?: "",
+        subType = shown.sub?.id.orEmpty(),
         partySize = shown.maxSize,
         memberCount = 2,
         note = "Example party for the tour",

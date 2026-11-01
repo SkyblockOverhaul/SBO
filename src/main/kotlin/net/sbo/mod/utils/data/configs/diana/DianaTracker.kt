@@ -21,7 +21,5 @@ interface DianaTracker {
         return this
     }
 
-    fun getAmountOf(itemId: String): Int {
-        return (itemProperties[itemId]?.get(items) as? Number)?.toInt() ?: 0
-    }
+    fun getAmountOf(itemId: String): Int = (itemProperties[itemId]?.get(items) as? Number)?.toInt() ?: 0
 }

@@ -655,10 +655,10 @@ object ProfileViewerGui {
 
     private fun NodeBuilder.inventory(items: PlayerItems) {
         div(className = "pv-slots") {
-            (9 until 36).forEach { slot(items.inventory.getOrNull(it), key = it) }
+            for (it in 9 until 36) slot(items.inventory.getOrNull(it), key = it)
         }
         div(className = "pv-slots pv-hotbar") {
-            (0 until 9).forEach { slot(items.inventory.getOrNull(it), key = it) }
+            for (it in 0 until 9) slot(items.inventory.getOrNull(it), key = it)
         }
     }
 
@@ -666,8 +666,8 @@ object ProfileViewerGui {
     private fun NodeBuilder.setPage(page: Int, worn: Int?, setOf: (Int) -> List<DisplayItem?>?) {
         val first = page * SETS_PAGE
         div(className = "pv-slots") {
-            (0 until 4).forEach { piece ->
-                (first + 1..first + SETS_PAGE).forEach { set ->
+            for (piece in 0 until 4) {
+                for (set in first + 1..first + SETS_PAGE) {
                     slot(setOf(set)?.getOrNull(piece), key = "$set:$piece", extra = if (worn == set) "equipped" else null)
                 }
             }
@@ -684,9 +684,9 @@ object ProfileViewerGui {
                     span(className = "pv-loadout-number", title = loadout.name) { +"${first + i + 1}" }
                     val armor = loadout.armorSet?.let(items::wardrobeSet)
                     val equipment = loadout.equipmentSet?.let(items::equipmentSet)
-                    (0 until 4).forEach { slot(armor?.getOrNull(it), key = "a$it") }
+                    for (it in 0 until 4) slot(armor?.getOrNull(it), key = "a$it")
                     div(className = "pv-loadout-gap")
-                    (0 until 4).forEach { slot(equipment?.getOrNull(it), key = "e$it") }
+                    for (it in 0 until 4) slot(equipment?.getOrNull(it), key = "e$it")
                 }
             }
         }
@@ -732,7 +732,7 @@ object ProfileViewerGui {
     private fun NodeBuilder.grid(list: List<DisplayItem?>, page: Int, worn: Int? = null) {
         val first = page * CONTAINER_PAGE
         div(className = "pv-slots") {
-            (first until first + CONTAINER_PAGE).forEach { slot(list.getOrNull(it), key = it, extra = if (it == worn) "equipped" else null) }
+            for (it in first until first + CONTAINER_PAGE) slot(list.getOrNull(it), key = it, extra = if (it == worn) "equipped" else null)
         }
     }
 
@@ -745,8 +745,11 @@ object ProfileViewerGui {
         val pages = enderChestPages(items)
         div(className = "pv-storage-label") { +"Ender Chest" }
         div(className = "pv-slots") {
-            (0 until ENDER_CHEST_PAGES).forEach { page ->
-                if (page >= pages) return@forEach slot(null, key = "ec$page", extra = "locked")
+            for (page in 0 until ENDER_CHEST_PAGES) {
+                if (page >= pages) {
+                    slot(null, key = "ec$page", extra = "locked")
+                    continue
+                }
                 storagePreview("ec:$page", items.enderChest, page) {
                     div(className = "pv-slot pv-openable", onClick = { onOpen("ec:$page") }) {
                         StatItems.stack("items:enderChestPage")?.let { item(it, className = "pv-item", decorations = false) }
@@ -756,9 +759,12 @@ object ProfileViewerGui {
         }
         div(className = "pv-storage-label") { +"Backpacks" }
         div(className = "pv-slots") {
-            (0 until BACKPACK_SLOTS).forEach { slot ->
+            for (slot in 0 until BACKPACK_SLOTS) {
                 val backpack = items.backpacks.firstOrNull { it.slot == slot }
-                if (backpack == null) return@forEach slot(null, key = "bp$slot", extra = "locked")
+                if (backpack == null) {
+                    slot(null, key = "bp$slot", extra = "locked")
+                    continue
+                }
                 storagePreview("bp:$slot", backpack.items, 0) {
                     div(className = "pv-slot pv-openable", onClick = { onOpen("bp:$slot") }) {
                         backpack.icon?.built?.let { item(it.stack(), className = "pv-item", decorations = false) }

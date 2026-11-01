@@ -7,3 +7,4 @@ import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket
  * @param packet The packet that was received, can be null.
  */
 class InventorySlotUpdateEvent(val packet: ClientboundContainerSetSlotPacket?)
+

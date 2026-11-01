@@ -83,7 +83,6 @@ class Overlay(
     override fun overlayClicked(mouseX: Double, mouseY: Double) {
         if (!World.isInSkyblock()) return
         if (!allowedScreens.any { it(mc.screen) }) return
-        val textRenderer = mc.font
         if (!isOverOverlay(mouseX, mouseY)) return
 
         var currentY = renderY / scale
@@ -91,7 +90,7 @@ class Overlay(
 
         for (line in getLines()) {
             if (!line.checkCondition()) continue
-            line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale)
+            line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, scale)
 
             if (line.linebreak) {
                 currentY += line.height

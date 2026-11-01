@@ -27,11 +27,11 @@ class ItemLookup(private val stack: ItemStack) {
 
     private var sbIdCached: String? = null
     val sbId: String
-        get() = sbIdCached ?: (nbt?.getString("id")?.orElse("") ?: "").also { sbIdCached = it }
+        get() = sbIdCached ?: (nbt?.getString("id")?.orElse("").orEmpty()).also { sbIdCached = it }
 
     private var uuidCached: String? = null
     val uuid: String
-        get() = uuidCached ?: (nbt?.getString("uuid")?.orElse("") ?: "").also { uuidCached = it }
+        get() = uuidCached ?: (nbt?.getString("uuid")?.orElse("").orEmpty()).also { uuidCached = it }
 
     private var timestampCached = LONG_SENTINEL
     val timestamp: Long
@@ -47,10 +47,10 @@ class ItemLookup(private val stack: ItemStack) {
     private var loreListCached: List<String>? = null
     val loreList: List<String>
         get() = loreListCached ?: (stack[DataComponents.LORE]?.lines?.map { it.toFormattedString() }
-            ?: emptyList()).also { loreListCached = it }
+            .orEmpty()).also { loreListCached = it }
 
     private var cleanLoreListCached: List<String>? = null
     val cleanLoreList: List<String>
         get() = cleanLoreListCached ?: (stack[DataComponents.LORE]?.lines?.map { it.string.removeFormatting() }
-            ?: emptyList()).also { cleanLoreListCached = it }
+            .orEmpty()).also { cleanLoreListCached = it }
 }

@@ -355,7 +355,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         // Without wanted roles the leader can still note what someone plays
         val choices = if (leaderSelf) partyTarget.roles.map { it.id } else party.roles.wanted.distinct().ifEmpty { partyTarget.roles.map { it.id } }
         val limit = partyTarget.roleLimit ?: Int.MAX_VALUE
-        radioGroup(value = newRole ?: "", onChange = { newRole = it.ifEmpty { null } }, vertical = true) {
+        radioGroup(value = newRole.orEmpty(), onChange = { newRole = it.ifEmpty { null } }, vertical = true) {
             choices.forEach { id ->
                 val taken = if (leaderSelf) {
                     party.roles.wanted.count { it == id } - (if (id == member.role) 1 else 0) + 1 > limit
@@ -498,7 +498,7 @@ private fun NodeBuilder.filterDialog(
                 }
                 filterRow(partyOption.label, null, key = partyOption.id, option = partyOption) {
                     val shown = filter.options[partyOption.id]?.takeIf { value -> PartyListFilters.filterValues(partyOption).any { it.id == value } }
-                    select(value = shown ?: "", onChange = { e ->
+                    select(value = shown.orEmpty(), onChange = { e ->
                         setFilter { if (e.value.isEmpty()) options.remove(partyOption.id) else options[partyOption.id] = e.value }
                     }) {
                         option("", "Show all")
@@ -547,13 +547,13 @@ private fun NodeBuilder.reqFilterRow(def: ReqDef, wanted: String?, setFilter: (P
         val labels = stat?.valueLabels.orEmpty()
         when {
             def.type == "flag" -> checkbox(checked = wanted == "true", onChange = { e -> save(if (e.checked) "true" else null) }, label = "Party requires it")
-            def.type == "rarity" -> select(value = wanted ?: "", onChange = { e -> save(e.value.ifEmpty { null }) }) {
+            def.type == "rarity" -> select(value = wanted.orEmpty(), onChange = { e -> save(e.value.ifEmpty { null }) }) {
                 option("", "Show all")
                 // Common asks for nothing, like in create
                 ReqMatcher.RARITIES.drop(1).forEach { option(it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it)) }
             }
             labels.isNotEmpty() -> select(
-                value = wanted ?: "",
+                value = wanted.orEmpty(),
                 onChange = { e -> save(e.value.ifEmpty { null }) }
             ) {
                 option("", "Show all")

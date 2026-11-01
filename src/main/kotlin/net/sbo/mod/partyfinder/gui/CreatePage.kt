@@ -170,7 +170,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                 div(className = "pf-field", key = "ownRole") {
                     span(className = "pf-field-label") { +"Your role" }
                     div(className = "pf-field-input") {
-                        select(value = draft.ownRole ?: "", onChange = { e ->
+                        select(value = draft.ownRole.orEmpty(), onChange = { e ->
                             change {
                                 ownRole = e.value.ifEmpty { null }
                                 // The own place counts towards the role limit, so one place for others may have to go
@@ -289,10 +289,10 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
                 "rarity" -> {
                     // The lowest rarity asks for nothing, e.g. everyone playing Diana has at least a Common Griffin
                     val lowest = ReqMatcher.RARITIES.first()
-                    val rarity = (saved as? JsonPrimitive)?.contentOrNull?.takeUnless { it.equals(lowest, ignoreCase = true) } ?: ""
+                    val rarity = (saved as? JsonPrimitive)?.contentOrNull?.takeUnless { it.equals(lowest, ignoreCase = true) }.orEmpty()
                     select(value = rarity, onChange = { e -> save(e.value.takeIf { it.isNotEmpty() }?.let { "\"$it\"" }) }) {
-                        ReqMatcher.RARITIES.forEachIndexed { i, it ->
-                            option(if (i == 0) "" else it, ProblemText.rarityNeed(it), className = StatView.rarityColor(it))
+                        ReqMatcher.RARITIES.forEachIndexed { index, rarity ->
+                            option(if (index == 0) "" else rarity, ProblemText.rarityNeed(rarity), className = StatView.rarityColor(rarity))
                         }
                     }
                 }
@@ -361,7 +361,7 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
             div(className = "pf-tier-row", key = id) {
                 span { +"${choice.label}, at least " }
                 val lowest = if (choice.tiers) ReqMatcher.KUUDRA_TIERS.first() else choice.rarities.first()
-                select(value = minimum?.takeUnless { it.equals(lowest, ignoreCase = true) } ?: "", onChange = { e ->
+                select(value = minimum?.takeUnless { it.equals(lowest, ignoreCase = true) }.orEmpty(), onChange = { e ->
                     store(picks.map { if (it.first == id) id to e.value.takeIf { v -> v.isNotEmpty() } else it })
                 }) {
                     // The lowest tier or rarity asks for nothing extra, so it stands for no minimum

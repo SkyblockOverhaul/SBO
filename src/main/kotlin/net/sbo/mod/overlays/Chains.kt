@@ -66,10 +66,10 @@ object Chains : DianaOverlay<Chains.View>("Diana Chains", Trackers.TrackerLook.C
 
         val burrowWayps = WaypointManager.getWaypointsOfType("burrow")
 
-        val knownW = burrowWayps.filter { !it.hidden && it.text != "Start" }.size
-        val knownWStart = burrowWayps.filter { it.text == "Start" }.size
+        val knownW = burrowWayps.count { !it.hidden && it.text != "Start" }
+        val knownWStart = burrowWayps.count { it.text == "Start" }
 
-        val arrowW = WaypointManager.getWaypointsOfType("arrow").filter { !it.hidden }.size
+        val arrowW = WaypointManager.getWaypointsOfType("arrow").count { !it.hidden }
 
         val arrows = ArrowGuessBurrow.allGuesses.size
         val known = BurrowDetector.burrows.filter { it.value.type != "Start" }.size
