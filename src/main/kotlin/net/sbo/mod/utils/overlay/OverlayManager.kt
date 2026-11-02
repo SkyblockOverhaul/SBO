@@ -102,11 +102,7 @@ object OverlayManager {
      */
     private fun isTabListShown(): Boolean {
         if (mc.options.keyPlayerList.isDown) return true
-        //#if MC > 26.1
-        //$$ val tabList = mc.gui.hud.tabList
-        //#else
         val tabList = mc.gui.tabList
-        //#endif
         return tabList.isSboVisible
     }
 
