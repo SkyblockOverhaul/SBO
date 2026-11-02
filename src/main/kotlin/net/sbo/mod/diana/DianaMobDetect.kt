@@ -53,8 +53,6 @@ object DianaMobDetect {
 
     private val kingHitsRegex = """(?:§[0-9a-fk-or])*.*?(\d+)\s+Hits.*""".toRegex()
 
-    private var wasInHub = false
-
     internal val rareMobNames: Set<String> = RareMob.entries.mapTo(mutableSetOf()) { it.display }
     private val prefixes = setOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
@@ -153,20 +151,15 @@ object DianaMobDetect {
 
         Register.onTick(1) {
             if (!World.isInHub()) {
-                if (wasInHub) {
-                    wasInHub = false
-                    unconfirmed.clear()
-                    tracked.clear()
-                    defeated.clear()
-                    warned.clear()
-                    mobHpOverlay.clearLines()
-                    noShurikenOverlay.clearLines()
-                }
+                unconfirmed.clear()
+                tracked.clear()
+                defeated.clear()
+                warned.clear()
+                mobHpOverlay.clearLines()
+                noShurikenOverlay.clearLines()
 
                 return@onTick
             }
-
-            wasInHub = true
 
             val world = mc.level ?: return@onTick
             val player = mc.player ?: return@onTick
@@ -188,12 +181,18 @@ object DianaMobDetect {
                     continue
                 }
 
-                val name = entity.customName?.formattedString() ?: continue
+                val name = entity.customName?.formattedString()
+                if (name == null) {
+                    if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) unconfirmedIterator.remove()
+                    continue
+                }
+
                 if (hasMythoMobTypeChar(name) || isKingHitPhase(name)) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
+                } else if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) {
+                    unconfirmedIterator.remove()
                 }
-                else if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) unconfirmedIterator.remove()
             }
 
             var closestStarlessMob: ArmorStand? = null
