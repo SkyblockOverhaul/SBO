@@ -64,7 +64,7 @@ object SboThemes {
     val BASES: List<String> = BUILT_IN.asSequence().map { it.base }.distinct().toList()
 
     /** Variables a custom theme may set; the README lists them with their meaning. */
-    private val COLOR_NAMES: Set<String> = setOf(
+    val COLOR_NAMES: Set<String> = setOf(
         "bg", "panel", "panel-2", "card", "card-hover", "border", "border-hover",
         "text", "text-strong", "text-soft", "subtle", "muted", "dim", "title",
         "accent", "accent-hover", "accent-text", "accent-soft", "accent-faint",
@@ -165,7 +165,7 @@ object SboThemes {
         }
     }
 
-    private fun isOldExample(file: File): Boolean {
+    fun isOldExample(file: File): Boolean {
         if (!file.isFile) return false
         val digest = MessageDigest.getInstance("SHA-256").digest(file.readText().replace("\r", "").toByteArray())
         return digest.joinToString("") { "%02x".format(Locale.ROOT, it) } == OLD_EXAMPLE_SHA256

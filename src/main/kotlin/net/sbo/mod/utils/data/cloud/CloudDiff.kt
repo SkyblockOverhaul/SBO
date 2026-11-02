@@ -132,7 +132,7 @@ object CloudDiff {
     }
 
     // "mobsSinceInq" -> "Mobs Since Inq"
-    private fun humanize(key: String): String {
+    fun humanize(key: String): String {
         if (key.contains(' ')) return key
         return key.replace('_', ' ')
             .replace(Regex("(?<=[a-z0-9])(?=[A-Z])"), " ")
