@@ -53,6 +53,8 @@ object DianaMobDetect {
 
     private val kingHitsRegex = """(?:§[0-9a-fk-or])*.*?(\d+)\s+Hits.*""".toRegex()
 
+    private var wasInHub = false
+
     internal val rareMobNames: Set<String> = RareMob.entries.mapTo(mutableSetOf()) { it.display }
     private val prefixes = setOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
 
@@ -150,21 +152,14 @@ object DianaMobDetect {
         }
 
         Register.onTick(1) {
-            if (!World.isInHub()) {
+            val world = mc.level
+            if (world == null) {
                 unconfirmed.clear()
-                tracked.clear()
-                defeated.clear()
-                warned.clear()
-                mobHpOverlay.clearLines()
-                noShurikenOverlay.clearLines()
-
                 return@onTick
             }
 
-            val world = mc.level ?: return@onTick
-            val player = mc.player ?: return@onTick
-            val overlayLines = mutableListOf<OverlayTextLine>()
-
+            // Runs in every world: onEntityLoad adds armor stands everywhere, and entities can load before the tab list says Hub
+            val inHub = World.isInHub()
             val unconfirmedIterator = unconfirmed.int2ObjectEntrySet().fastIterator()
             val now = System.nanoTime()
 
@@ -182,18 +177,31 @@ object DianaMobDetect {
                 }
 
                 val name = entity.customName?.formattedString()
-                if (name == null) {
-                    if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) unconfirmedIterator.remove()
-                    continue
-                }
-
-                if (hasMythoMobTypeChar(name) || isKingHitPhase(name)) {
+                if (inHub && name != null && (hasMythoMobTypeChar(name) || isKingHitPhase(name))) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
                 } else if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) {
                     unconfirmedIterator.remove()
                 }
             }
+
+            if (!inHub) {
+                if (wasInHub) {
+                    wasInHub = false
+                    tracked.clear()
+                    defeated.clear()
+                    warned.clear()
+                    mobHpOverlay.clearLines()
+                    noShurikenOverlay.clearLines()
+                }
+
+                return@onTick
+            }
+
+            wasInHub = true
+
+            val player = mc.player ?: return@onTick
+            val overlayLines = mutableListOf<OverlayTextLine>()
 
             var closestStarlessMob: ArmorStand? = null
             var closestDistanceSq = Double.MAX_VALUE
