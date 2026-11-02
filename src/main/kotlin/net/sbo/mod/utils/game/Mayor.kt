@@ -46,7 +46,6 @@ object Mayor {
 
         skyblockDate = convertStringToDate(skyblockDateString)
         updateMayorElection()
-        updateSbYear()
         fetchMayorIfNeeded()
     }
 
@@ -71,12 +70,6 @@ object Mayor {
                 dateMayorElected = electionThisYear
                 newMayorAtDate = date(ELECTION_DAY, ELECTION_MONTH, currentYear + 1)
             }
-        }
-    }
-
-    private fun updateSbYear() {
-        Calendar.getInstance().apply {
-            time = skyblockDate!!
         }
     }
 
