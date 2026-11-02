@@ -221,8 +221,8 @@ object TimeUtil {
         offset: Int
     ): Long {
         return (packet[offset].toLong() and 0xFF) shl 24 or
-            ((packet[offset + 1].toLong() and 0xFF) shl 16) or
-            ((packet[offset + 2].toLong() and 0xFF) shl 8) or
+            (packet[offset + 1].toLong() and 0xFF) shl 16 or
+            (packet[offset + 2].toLong() and 0xFF) shl 8 or
             (packet[offset + 3].toLong() and 0xFF)
     }
 

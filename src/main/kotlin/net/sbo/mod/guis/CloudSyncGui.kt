@@ -230,7 +230,7 @@ object CloudSyncGui {
 
         fun side(id: String): CloudSide = choices[id] ?: CloudSide.PC
         fun pick(id: String, side: CloudSide) {
-            choices += (id to side)
+            choices += id to side
         }
 
         div(className = "cs-window cs-wide") {

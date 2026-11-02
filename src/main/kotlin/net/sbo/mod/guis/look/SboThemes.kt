@@ -93,7 +93,7 @@ object SboThemes {
     private val COLOR_VALUE = Regex("^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
 
     // The comment at the top of a .css theme
-    private val CSS_HEADER = Regex("^\\s*/\\*(.*?)\\*/", RegexOption.DOT_MATCHES_ALL)
+    private val CSS_HEADER = Regex("""^\s*/\*(.*?)\*/""", RegexOption.DOT_MATCHES_ALL)
 
     // Own logger, SBOKotlin.logger would start mod code in tests
     private val logger = LoggerFactory.getLogger("SBO")
@@ -270,8 +270,11 @@ object SboThemes {
         copyResource("reference-README.txt", File(dir, "README.txt"))
         for ((name, resource) in REFERENCE) {
             val css = SboThemes::class.java.getResourceAsStream(resource)?.use { it.readBytes() } ?: continue
-            val header = "/* REFERENCE ONLY, NOT LOADED. A copy of SBO's own CSS ($resource), rewritten by SBO so changes here are lost.\n" +
-                "   Copy the rules you want to change into user.css or your own .css theme one folder up. See README.txt here. */\n\n"
+            val header = """
+                /* REFERENCE ONLY, NOT LOADED. A copy of SBO's own CSS ($resource), rewritten by SBO so changes here are lost.
+                   Copy the rules you want to change into user.css or your own .css theme one folder up. See README.txt here. */
+
+                """.trimIndent()
             val text = header.toByteArray() + css
             val target = File(dir, name)
             if (!target.exists() || !target.readBytes().contentEquals(text)) target.writeBytes(text)

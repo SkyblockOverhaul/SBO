@@ -192,7 +192,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         OwnStats.getMany(wanted, onError = { partyTarget, options, _ ->
             val key = keyOf(partyTarget, options)
             ownLoading.current = ownLoading.current - key
-            ownFailed.current += (key to System.currentTimeMillis())
+            ownFailed.current += key to System.currentTimeMillis()
         }) { partyTarget, options, _ ->
             ownLoading.current = ownLoading.current - keyOf(partyTarget, options)
             ownVersion.current++

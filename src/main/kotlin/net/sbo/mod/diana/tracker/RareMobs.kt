@@ -74,7 +74,7 @@ internal object RareMobs {
     private fun onRareSpawn(mob: String, rare: RareMob) {
         DianaMobDetect.onRareSpawn(mob)
         Tracker.trackMob(mob)
-        sboData.(rare.countForDrops)()
+        rare.countForDrops(sboData)
 
         val mobsSince = rare.mobsSince.value
         if (Drops.sendSinceMessage) {

@@ -409,7 +409,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
         val tracker = getDianaTracker(type) ?: return emptyList()
         val hidden = DataManager.sboData.hideTrackerLines
         // Only the main loot, the lootshare drops added after a +
-        val items = lootLines(tracker).filter { !it.ls }.map { it.data }.filter { it.short != null && it.id !in hidden }
+        val items = lootLines(tracker).asSequence().filter { !it.ls }.map { it.data }.filter { it.short != null && it.id !in hidden }.toList()
         val entries = items.mapNotNull { data ->
             val amount = tracker.getAmountOf(data.id)
             val lsAmount = if (data.combined) tracker.getAmountOf("${data.id}_LS") else 0

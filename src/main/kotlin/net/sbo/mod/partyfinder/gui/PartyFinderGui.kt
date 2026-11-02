@@ -156,7 +156,7 @@ object PartyFinderGui {
             ownError = null
             OwnStats.getAll(targets, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { x, me ->
                 if (currentKey.current == t.key) {
-                    ownCollected.current += (x.key to me)
+                    ownCollected.current += x.key to me
                     ownBySub = ownCollected.current
                     if (x == targets.first()) own = me
                 }
