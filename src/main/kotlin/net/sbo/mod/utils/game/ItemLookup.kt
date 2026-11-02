@@ -8,14 +8,14 @@ import net.sbo.mod.utils.chat.toFormattedString
 import net.sbo.mod.utils.Helper.removeFormatting
 
 private val SENTINEL = Any()
-private val LONG_SENTINEL = Long.MIN_VALUE + 31L
+private const val LONG_SENTINEL = Long.MIN_VALUE + 31L
 
 class ItemLookup(private val stack: ItemStack) {
     private var customDataCached: Any? = SENTINEL
     private val customData: CustomData?
         get() {
             if (customDataCached !== SENTINEL) return customDataCached as CustomData?
-            return (stack[DataComponents.CUSTOM_DATA]).also { customDataCached = it }
+            return stack[DataComponents.CUSTOM_DATA].also { customDataCached = it }
         }
 
     private var nbtCached: Any? = SENTINEL
@@ -27,11 +27,11 @@ class ItemLookup(private val stack: ItemStack) {
 
     private var sbIdCached: String? = null
     val sbId: String
-        get() = sbIdCached ?: (nbt?.getString("id")?.orElse("").orEmpty()).also { sbIdCached = it }
+        get() = sbIdCached ?: nbt?.getString("id")?.orElse("").orEmpty().also { sbIdCached = it }
 
     private var uuidCached: String? = null
     val uuid: String
-        get() = uuidCached ?: (nbt?.getString("uuid")?.orElse("").orEmpty()).also { uuidCached = it }
+        get() = uuidCached ?: nbt?.getString("uuid")?.orElse("").orEmpty().also { uuidCached = it }
 
     private var timestampCached = LONG_SENTINEL
     val timestamp: Long
@@ -46,11 +46,11 @@ class ItemLookup(private val stack: ItemStack) {
 
     private var loreListCached: List<String>? = null
     val loreList: List<String>
-        get() = loreListCached ?: (stack[DataComponents.LORE]?.lines?.map { it.toFormattedString() }
-            .orEmpty()).also { loreListCached = it }
+        get() = loreListCached ?: stack[DataComponents.LORE]?.lines?.map { it.toFormattedString() }
+            .orEmpty().also { loreListCached = it }
 
     private var cleanLoreListCached: List<String>? = null
     val cleanLoreList: List<String>
-        get() = cleanLoreListCached ?: (stack[DataComponents.LORE]?.lines?.map { it.string.removeFormatting() }
-            .orEmpty()).also { cleanLoreListCached = it }
+        get() = cleanLoreListCached ?: stack[DataComponents.LORE]?.lines?.map { it.string.removeFormatting() }
+            .orEmpty().also { cleanLoreListCached = it }
 }

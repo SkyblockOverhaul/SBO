@@ -35,33 +35,33 @@ object Drops : Category("Drops") {
     }
 
     var lootAnnouncerChat by boolean(true) {
-        this.name = Literal("Rare Drop Announcer")
-        this.description = Literal("Announces relic/shelmet/plushie/remedies in chat.")
+        this.name = literal("Rare Drop Announcer")
+        this.description = literal("Announces relic/shelmet/plushie/remedies in chat.")
     }
 
     var hiltDropMessage by boolean(true) {
-        this.name = Literal("Hilt of Revelations Drop Message")
-        this.description = Literal("Sends rare drop message for Hilt of Revelations, since Hypixel does not send one.")
+        this.name = literal("Hilt of Revelations Drop Message")
+        this.description = literal("Sends rare drop message for Hilt of Revelations, since Hypixel does not send one.")
     }
 
     var lootAnnouncerScreen by boolean(true) {
-        this.name = Literal("Loot Screen Announcer")
-        this.description = Literal("Announces chimera/stick/relic on screen.")
+        this.name = literal("Loot Screen Announcer")
+        this.description = literal("Announces chimera/stick/relic on screen.")
     }
 
     var announceCrownOfGreed by boolean(true) {
-        this.name = Literal("Crown Of Greed Title")
-        this.description = Literal("Whether you want \"§6Crown Of Greed§r\" to appear on your screen when dropping one")
+        this.name = literal("Crown Of Greed Title")
+        this.description = literal("Whether you want \"§6Crown Of Greed§r\" to appear on your screen when dropping one")
     }
 
     var lootAnnouncerParty by boolean(true) {
-        this.name = Literal("Loot Party Announcer")
-        this.description = Literal("Announces chimera/wool/stinger/food in party chat.")
+        this.name = literal("Loot Party Announcer")
+        this.description = literal("Announces chimera/wool/stinger/food in party chat.")
     }
 
     var sendSinceMessage by boolean(true) {
-        this.name = Literal("Stats Message")
-        this.description = Literal("Sends the chat Message with stat: [SBO] Took 120 Mobs to get a Inquis!")
+        this.name = literal("Stats Message")
+        this.description = literal("Sends the chat Message with stat: [SBO] Took 120 Mobs to get a Minos Inquisitor!")
     }
 
     init {
@@ -72,28 +72,28 @@ object Drops : Category("Drops") {
     }
 
     var customChimeraMessage by strings("") {
-        this.name = Literal("Chimera")
-        this.description = Literal("{since}: inquis it took to drop the chim.")
+        this.name = literal("Chimera")
+        this.description = literal("{since}: inquisitor it took to drop the chim.")
     }
 
     var customManticoreMessage by strings("") {
-        this.name = Literal("Manti-core")
-        this.description = Literal("{since}: manti it took to drop the core.")
+        this.name = literal("Manti-core")
+        this.description = literal("{since}: manti it took to drop the core.")
     }
 
     var customFatefulStingerMessage by strings("") {
-        this.name = Literal("Fateful Stinger")
-        this.description = Literal("{since}: manti it took to drop the stinger.")
+        this.name = literal("Fateful Stinger")
+        this.description = literal("{since}: manti it took to drop the stinger.")
     }
 
     var customBrainFoodMessage by strings("") {
-        this.name = Literal("Brain Food")
-        this.description = Literal("{since}: sphinx it took to drop the food.")
+        this.name = literal("Brain Food")
+        this.description = literal("{since}: sphinx it took to drop the food.")
     }
 
     var customShimmeringWoolMessage by strings("") {
-        this.name = Literal("Shimmering Wool")
-        this.description = Literal("{since}: kings it took to drop the wool.")
+        this.name = literal("Shimmering Wool")
+        this.description = literal("{since}: kings it took to drop the wool.")
     }
 
     init {
@@ -128,31 +128,31 @@ object Drops : Category("Drops") {
     }
 
     var medalEnabled by boolean(false) {
-        this.name = Literal("Enable Medal Clips")
-        this.description = Literal("Saves Medal clips on selected Diana drops")
+        this.name = literal("Enable Medal Clips")
+        this.description = literal("Saves Medal clips on selected Diana drops")
     }
 
     // Was one Clip ... switch per drop
-    var medalClips by options(*MedalDrop.entries.toTypedArray()) {
-        this.name = Literal("Clip Drops")
+    var medalClips by options(MedalDrop.entries) {
+        this.name = literal("Clip Drops")
         this.since = "0.7.2-beta.2"
         depends(::medalEnabled)
-        this.description = Literal("The drops that save a Medal clip.")
+        this.description = literal("The drops that save a Medal clip.")
     }
 
     var medalClipDurationSeconds by int(30) {
         this.range = 1..120
         this.slider = true
-        this.name = Literal("Clip Duration (seconds)")
+        this.name = literal("Clip Duration (seconds)")
         depends(::medalEnabled)
-        this.description = Literal("How long Medal clips should be")
+        this.description = literal("How long Medal clips should be")
     }
 
     var medalCaptureDelayMs by int(10000) {
         this.range = 0..60000
         this.slider = true
-        this.name = Literal("Capture Delay (ms)")
+        this.name = literal("Capture Delay (ms)")
         depends(::medalEnabled)
-        this.description = Literal("Delay before Medal captures clips")
+        this.description = literal("Delay before Medal captures clips")
     }
 }

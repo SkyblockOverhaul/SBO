@@ -4,15 +4,11 @@ import javazoom.jl.player.JavaSoundAudioDevice
 import com.google.gson.JsonParser
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.network.chat.Component
-import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
 import net.minecraft.util.Util
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
-import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import java.io.File
 import java.io.FileInputStream
@@ -149,11 +145,13 @@ object SoundHandler {
         }
     }
 
-    fun scanUserSounds() {
+    private fun scanUserSounds() {
         availableSoundsWithExt = File(SOUND_DIR_PATH).listFiles()
+            ?.asSequence()
             ?.filter { it.isFile && SUPPORTED_EXTENSIONS.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
             ?.map { it.name }
             ?.sorted()
+            ?.toList()
             .orEmpty()
     }
 

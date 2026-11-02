@@ -6,7 +6,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
-import java.awt.Color
 
 /**
  * A line of an [Overlay]. In front of the text it can draw an item [icon]: [ICON_SMALL] fits the text line, a bigger
@@ -19,7 +18,7 @@ class OverlayTextLine(
     var linebreak: Boolean = true,
     var centered: Boolean = false,
     var icon: ItemStack? = null,
-    var iconSize: Int = ICON_SMALL
+    private var iconSize: Int = ICON_SMALL
 ) {
     private var orderedText: FormattedCharSequence? = null
     private var orderedTextSource: String? = null

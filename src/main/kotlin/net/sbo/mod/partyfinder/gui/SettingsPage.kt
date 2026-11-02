@@ -219,7 +219,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                         PartyPlayer.reloadWait(stats)?.let { toast.info(it) } ?: toast.success("Your stats are up to date.")
                         props.onStatsReloaded()
                     }
-                }) { +(if (reloading) "Reloading..." else "Reload my stats") }
+                }) { +if (reloading) "Reloading..." else "Reload my stats" }
 
                 h3(className = "pf-section") { +"Help" }
                 settingRow("Tour", "Shows the party finder tour from the first time again.") {

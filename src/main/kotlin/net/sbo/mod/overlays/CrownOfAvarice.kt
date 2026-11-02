@@ -6,7 +6,6 @@ import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
-import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
@@ -73,7 +72,7 @@ object CrownOfAvarice {
     private var icon: ItemStack? = null
     var primaryCoaUuid: String? = null
     private var cachedCoaCoins: Long = -1L // Coins of the PRIMARY CoA only. -1 means that primary CoA isn't equipped
-    private var tracker: DianaTracker? = null
+    private val tracker: DianaTracker?
         get() = when (Trackers.coaTracker) {
             Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
             Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
@@ -475,14 +474,15 @@ object CrownOfAvarice {
     }
 
     fun ItemStack?.isCoA(): Boolean {
-        if (this == null) return false
+        if (this == null || this.isEmpty()) return false
 
-        return "CROWN_OF_AVARICE" in ItemLookup(this).sbId ||"CROWN_OF_AVARICE_CELEBRATION" in ItemLookup(this).sbId
+        val lookup = ItemLookup(this)
+        return "CROWN_OF_AVARICE" in lookup.sbId || "CROWN_OF_AVARICE_CELEBRATION" in lookup.sbId
     }
 
     private fun updateCoaPrice() {
-        cleanCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE", 1)
-        maxCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED", 1)
+        cleanCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE")
+        maxCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED")
     }
 
     // The click hint only shows in the inventory

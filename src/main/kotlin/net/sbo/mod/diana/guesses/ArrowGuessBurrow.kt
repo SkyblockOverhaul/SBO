@@ -228,6 +228,16 @@ object ArrowGuessBurrow {
             val yComparison = y.compareTo(other.y)
             return if (yComparison != 0) yComparison else z.compareTo(other.z)
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is LocationCell) return false
+
+            if (x != other.x) return false
+            if (y != other.y) return false
+            if (z != other.z) return false
+            return cachedHashCode == other.cachedHashCode
+        }
     }
 
     private data class IndexedLocation(val point: SboVec, val order: Int)
@@ -266,8 +276,7 @@ object ArrowGuessBurrow {
                             if (!isCollinear(first, second, point)) continue
 
                             val currentClosest = closest
-                            if (distSq < minDistSq ||
-                                (distSq == minDistSq && currentClosest != null && candidate.order < currentClosest.order)
+                            if (distSq < minDistSq || distSq == minDistSq && currentClosest != null && candidate.order < currentClosest.order
                             ) {
                                 minDistSq = distSq
                                 closest = candidate
@@ -339,8 +348,7 @@ object ArrowGuessBurrow {
             val first = line.first()
             val second = if (line.size > 1) line[1] else first
             val last = line.last()
-            val nextLoc = locationIndex.closestUnvisitedWithinTolerance(last, first, second, visited)
-            if (nextLoc == null) return false
+            val nextLoc = locationIndex.closestUnvisitedWithinTolerance(last, first, second, visited) ?: return false
 
             line.add(nextLoc)
             visited.add(nextLoc)
@@ -450,10 +458,8 @@ object ArrowGuessBurrow {
             }
             if (hasSpade) {
                 val isKnownBurrow = current in burrowLocations
-                if (!isKnownBurrow && current.distanceSq(playerPos) <= 1024) { // 32 blocks
-                    if (!guess.moveToNext()) {
-                        toRemove.add(guess)
-                    }
+                if (!isKnownBurrow && current.distanceSq(playerPos) <= 1024 && !guess.moveToNext()) { // 32 blocks
+                    toRemove.add(guess)
                 }
             }
         }
@@ -534,7 +540,7 @@ object ArrowGuessBurrow {
         return parameters is DustParticleOptions
     }
 
-    private fun SboVec.isCloseToLastBurrow(): Boolean = DianaEvents.lastWaypointClicked?.let { this.distanceTo(it) <= 7 } ?: true // null at startup then never null, pass condition if its null since we do not know, but it is probably close
+    private fun SboVec.isCloseToLastBurrow(): Boolean = DianaEvents.lastWaypointClicked?.let { this.distanceTo(it) <= 7 } != false // null at startup then never null, pass condition if its null since we do not know, but it is probably close
 
     private fun IntRange.processArrowDetection(): IntRange {
         val arrow = detectArrow() ?: return this

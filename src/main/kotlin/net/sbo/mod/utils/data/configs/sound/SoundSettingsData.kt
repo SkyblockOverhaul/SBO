@@ -4,13 +4,13 @@ import net.sbo.mod.utils.data.DataManager
 
 data class SoundSettingsData(
     var lowInqHpSound: String = "",
-    var lowInqHpVoume: Float = 1.0f,
+    var lowInqHpVolume: Float = 1.0f,
     var lowSphinxHpSound: String = "",
-    var lowSphinxHpVoume: Float = 1.0f,
+    var lowSphinxHpVolume: Float = 1.0f,
     var lowKingHpSound: String = "",
-    var lowKingHpVoume: Float = 1.0f,
+    var lowKingHpVolume: Float = 1.0f,
     var lowMantiHpSound: String = "",
-    var lowMantiHpVoume: Float = 1.0f,
+    var lowMantiHpVolume: Float = 1.0f,
     var inqSound: String = "",
     var inqVolume: Float = 1.0f,
     var sphinxSound: String = "",

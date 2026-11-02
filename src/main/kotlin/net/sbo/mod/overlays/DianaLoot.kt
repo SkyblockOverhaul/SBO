@@ -303,7 +303,10 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
             Trackers.LootSort.AMOUNT_DESC -> lines.sortedByDescending { amount(it, tracker) }
             Trackers.LootSort.AMOUNT_ASC -> lines.sortedBy { amount(it, tracker) }
             // The lootshare line stays below its item
-            Trackers.LootSort.CUSTOM -> customOrder(ORDER, ITEM_IDS).let { order -> lines.sortedBy { order.indexOf(it.data.id) } }
+            Trackers.LootSort.CUSTOM -> {
+                val order = customOrder(ORDER, ITEM_IDS)
+                lines.sortedBy { order.indexOf(it.data.id) }
+            }
         }
     }
 
@@ -435,7 +438,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     }
 
     override fun elementClicked(id: String) {
-        if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.mapNotNull(::itemOf).distinct() }) return
+        if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.asSequence().mapNotNull(::itemOf).distinct().toList() }) return
         when (id) {
             "mode" -> {
                 Trackers.lootTracker = Trackers.lootTracker.nextOption()
@@ -487,10 +490,12 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     }
 
     private fun coinBreakdown(tracker: DianaTracker): String =
-        "$YELLOW${BOLD}Coin Break Down:\n" +
-            "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
-            "${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}\n" +
-            "${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}"
+        """
+        $YELLOW${BOLD}Coin Break Down:
+        ${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}
+        ${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}
+        ${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}
+        """.trimIndent()
 
     private fun profitBreakdown(profitPerHr: Any, profitPerBurrow: Any, coaProfitPerHr: Number): String =
         "$GOLD$profitPerHr coins/hr\n" +
@@ -603,12 +608,11 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor
                 val mouseY = mc.mouseHandler.ypos() / scaleFactor
-                RenderUtils2D.drawHoveringString(drawContext,
-                    "$YELLOW${BOLD}Coin Break Down:\n" +
-                            "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
-                            "${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}\n" +
-                            "${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}",
-                    mouseX, mouseY, textRenderer)
+                RenderUtils2D.drawHoveringString(
+                    drawContext,
+                    coinBreakdown(tracker),
+                    mouseX, mouseY, textRenderer
+                )
             }
     }
 
@@ -644,14 +648,16 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     )
 
     /** Used up items (shurikens), their worth counts against the profit. */
-    private val lossFields = LOOT_ITEMS.filter { it.negativeValue }.map { it.id }.toSet()
+    private val lossFields = LOOT_ITEMS.asSequence().filter { it.negativeValue }.map { it.id }.toSet()
 
     private val profitFields = DianaItemsData::class.java.declaredFields
+        .asSequence()
         .filterNot { it.name in excludedProfitFields }
         .map { field ->
             field.isAccessible = true
             field to field.name.replace("_LS", "")
         }
+        .toList()
 
     /** Coins worth of every dropped item with a price (field name without "_LS", lootshare drops added in), coins not included. */
     fun profitByItem(tracker: DianaTracker): Map<String, Long> {

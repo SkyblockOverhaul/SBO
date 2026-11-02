@@ -13,7 +13,7 @@ object UiScale {
 
     val OWN_CHOICES: List<Float?> = listOf(null) + GLOBAL_CHOICES
 
-    val global: Float get() = parse(Themes.uiScale)?.takeIf { it in GLOBAL_CHOICES } ?: AUTO
+    private val global: Float get() = parse(Themes.uiScale)?.takeIf { it in GLOBAL_CHOICES } ?: AUTO
 
     fun id(scale: Float?): String = when {
         scale == null -> "global"

@@ -25,8 +25,8 @@ object Pickuplog {
     private var newPurse: Long = 0L
     private var inventoryDirty = false
 
-    private var oldInventory = mapOf<String, Item>()
-    private var newInventory = mapOf<String, Item>()
+    private var oldInventory = emptyMap<String, Item>()
+    private var newInventory = emptyMap<String, Item>()
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
@@ -50,7 +50,7 @@ object Pickuplog {
         }
 
         Register.onChatMessageCancelable(
-            Pattern.compile("^.*Sacks.*\\s+(?:§.)?\\+\\d+ items\\..*\\(Last \\d+s\\.\\)(?:§.)*$")
+            Pattern.compile("""^.*Sacks.*\s+(?:§.)?\+\d+ items\..*\(Last \d+s\.\)(?:§.)*$""")
         ) { message, _ ->
             var cancel = true
             if (World.isInSkyblock()) {

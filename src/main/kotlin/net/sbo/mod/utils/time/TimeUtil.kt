@@ -184,7 +184,7 @@ object TimeUtil {
              * offset = ((T2 - T1) + (T3 - T4)) / 2
              */
             val offsetMillis = (
-                (serverReceiveMillis - localSendMillis) +
+                serverReceiveMillis - localSendMillis +
                     (serverTransmitMillis - localReceiveMillis)
                 ) / 2L
 
@@ -211,7 +211,7 @@ object TimeUtil {
             seconds - NTP_EPOCH_OFFSET_SECONDS
 
         val millis =
-            (fraction * 1_000L) / 0x1_0000_0000L
+            fraction * 1_000L / 0x1_0000_0000L
 
         return unixSeconds * 1_000L + millis
     }
@@ -220,12 +220,10 @@ object TimeUtil {
         packet: ByteArray,
         offset: Int
     ): Long {
-        return (
-            (packet[offset].toLong() and 0xFF) shl 24 or
-                ((packet[offset + 1].toLong() and 0xFF) shl 16) or
-                ((packet[offset + 2].toLong() and 0xFF) shl 8) or
-                (packet[offset + 3].toLong() and 0xFF)
-            )
+        return (packet[offset].toLong() and 0xFF) shl 24 or
+            ((packet[offset + 1].toLong() and 0xFF) shl 16) or
+            ((packet[offset + 2].toLong() and 0xFF) shl 8) or
+            (packet[offset + 3].toLong() and 0xFF)
     }
 
     private fun localTimeAtNano(nanoTime: Long): Long {

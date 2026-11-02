@@ -242,10 +242,11 @@ object Chat {
 
     /**
      * Gets a message that fills one line of chat by repeating the separator.
-     * @param separator The string to repeat. Defaults to -.
-     * @return The message string that fills the chat line.
+     * @param separator The message to repeat. Defaults to -.
+     * @param color     The color to append before the repeated text. Defaults to §b.
+     * @return The message that fills the chat line, with the given color.
      */
-    fun getChatBreak(separator: String = "-", colorCodes: String = "§b"): String {
+    fun getChatBreak(separator: String = "-", color: String = "§b"): String {
         if (separator.isEmpty()) {
             return ""
         }
@@ -258,6 +259,6 @@ object Chat {
         }
 
         val repeatCount = chatWidth / separatorWidth
-        return colorCodes + separator.repeat(repeatCount)
+        return color + separator.repeat(repeatCount)
     }
 }

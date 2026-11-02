@@ -22,7 +22,7 @@ enum class RareMob(val display: String, override val label: String) : Option {
     companion object {
         fun fromName(name: String): RareMob? {
             // Avoids Iterator object allocation, small optimization.
-            for (i in 0 until entries.size) {
+            for (i in 0..<entries.size) {
                 val mob = entries[i]
                 if (name.contains(mob.display)) return mob
             }

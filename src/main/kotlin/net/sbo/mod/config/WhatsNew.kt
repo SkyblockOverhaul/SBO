@@ -12,7 +12,7 @@ class ModVersion private constructor(private val numbers: List<Int>, val beta: I
     val lineStart: ModVersion get() = ModVersion(numbers, (beta ?: 1) - 1)
 
     override fun compareTo(other: ModVersion): Int {
-        for (i in 0 until maxOf(numbers.size, other.numbers.size)) {
+        for (i in 0..<maxOf(numbers.size, other.numbers.size)) {
             val diff = numbers.getOrElse(i) { 0 } - other.numbers.getOrElse(i) { 0 }
             if (diff != 0) return diff
         }
@@ -21,7 +21,7 @@ class ModVersion private constructor(private val numbers: List<Int>, val beta: I
 
     override fun equals(other: Any?) = other is ModVersion && compareTo(other) == 0
     override fun hashCode() = numbers.dropLastWhile { it == 0 }.hashCode() * 31 + (beta ?: -1)
-    override fun toString() = numbers.joinToString(".") + (beta?.let { "-beta.$it" } ?: "")
+    override fun toString() = numbers.joinToString(".") + beta?.let { "-beta.$it" }.orEmpty()
 
     companion object {
         private val FORMAT = Regex("""(\d+(?:\.\d+)*)(?:-beta\.?(\d+))?""")

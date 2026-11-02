@@ -46,7 +46,7 @@ internal val ONBOARDING_STEPS = listOf(
     ),
     OnboardingStep(
         "Quick Filters",
-        "\"Can I join\" hides parties whose requirements you don't meet, \"Not full\" hides full parties.",
+        """"Can I join" hides parties whose requirements you don't meet, "Not full" hides full parties.""",
         ".pf-filters"
     ),
     OnboardingStep(
@@ -216,7 +216,7 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
     val vw = document.viewportWidth
     val vh = document.viewportHeight
     val hole = spot.rect?.let { highlight(it, vw, vh) }
-    // The ring's shadow dims the screen around it. Without a hole it shrinks to a dimmed dot in the middle, so it
+    // The ring's shadow dims the surrounding screen. Without a hole it shrinks to a dimmed dot in the middle, so it
     // grows smoothly into the next hole (a shadow needs a box of at least one pixel)
     val ring = hole ?: Rect(vw / 2 - 1f, vh / 2 - 1f, 2f, 2f)
 
@@ -253,7 +253,7 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
                     button(className = "pf-small", disabled = step == 0, onClick = { go(step - 1) }) { +"Back" }
                     val last = step == ONBOARDING_STEPS.lastIndex
                     button(className = "pf-small primary", onClick = { go(step + 1) }) {
-                        +(if (last) "Finish" else "Next")
+                        +if (last) "Finish" else "Next"
                     }
                 }
             }
@@ -264,9 +264,9 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
 // One requirement met and one not, so the requirements step shows both colors
 internal fun tourParty(target: PartyTarget, own: MemberView?): PartyView {
     val shown = target.subTargets().first()
-    val reqs = shown.reqs.filter { it.type == "min" }.take(2).mapIndexed { i, def ->
+    val reqs = shown.reqs.asSequence().filter { it.type == "min" }.take(2).mapIndexed { i, def ->
         val have = floor((own?.stats?.get(def.stat) as? JsonPrimitive)?.doubleOrNull ?: 0.0).toLong()
-        def.stat to (JsonPrimitive(if (i == 0) have else have * 2 + 1) as JsonElement)
+        def.stat to JsonPrimitive(if (i == 0) have else have * 2 + 1) as JsonElement
     }.toMap()
     val leader = MemberView(TOUR_LEADER, "ExampleLeader")
     return PartyView(

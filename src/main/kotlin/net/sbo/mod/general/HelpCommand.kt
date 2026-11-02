@@ -1,17 +1,11 @@
 package net.sbo.mod.general
 
-import net.minecraft.ChatFormatting
-import net.minecraft.network.chat.ClickEvent.RunCommand
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.HoverEvent.ShowText
-import net.minecraft.network.chat.Style
-import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.HubGui
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
-import kotlin.math.roundToInt
+import java.util.Locale
 
 object HelpCommand {
     val commands = arrayOf(
@@ -87,7 +81,7 @@ object HelpCommand {
             }
 
             postTrackingChances.forEach { (mob, chance) ->
-                val formattedChance = "§b%.2f%% §7(§b1/%.0f§7)".format(chance * 100, (1 / chance))
+                val formattedChance = "§b%.2f%% §7(§b1/%.0f§7)".format(Locale.ROOT, chance * 100, 1 / chance)
                 Chat.chat("§6[SBO] §e$mob $formattedChance [TRACKING:$tracking]")
             }
         }

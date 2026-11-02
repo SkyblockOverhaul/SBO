@@ -171,6 +171,6 @@ internal object RareDrops {
         DropAnnouncer.onRareDrop("Myth the Fish", showMessageOrTitle = true, trackLootshare = false, magicFind = 0)
         DropAnnouncer.announceLootToParty("Myth the Fish", "Myth the Fish", amount = dianaTrackerMayorData.items.MYTH_THE_FISH)
 
-        if (Tracker.lastSpawnedMob == "Sphinx" && Tracker.lastBurrow == Tracker.BURROW_TYPE.MOB) unlockAchievement(119)
+        if (Tracker.lastSpawnedMob == "Sphinx" && Tracker.lastBurrow == Tracker.BurrowType.MOB) unlockAchievement(119)
     }
 }

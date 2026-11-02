@@ -20,7 +20,7 @@ class Achievement(
     val hidden: Boolean = false,
     val repeatable: Boolean = false,
     // Only a chat message on unlock, no title and no sound
-    val chatOnly: Boolean = false,
+    private val chatOnly: Boolean = false,
 ) {
     val color = AchievementManager.rarityColorDict[rarity] ?: "§f"
 
@@ -98,7 +98,7 @@ class Achievement(
         checkYearReset()
 
         if (this.repeatable && Debug.repeatableAchie && !total) {
-            return achievementsData.currentEventAchievements[id] ?: false
+            return achievementsData.currentEventAchievements[id] == true
         }
         return achievementsData.totalAchievements[id] ?: 0 > 0
     }

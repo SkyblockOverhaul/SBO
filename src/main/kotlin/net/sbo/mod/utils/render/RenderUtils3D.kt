@@ -9,18 +9,21 @@ import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.network.chat.Component
-import net.minecraft.util.FormattedCharSequence
+//#if MC > 26.1
+//$$ import net.minecraft.util.FormattedCharSequence
+//#endif
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.Waypoints
-import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.sqrt
+//#if MC < 26.3
 import org.joml.Matrix4f
-//#if MC > 26.1
+//#endif
+//#if MC > 26.1 && MC < 26.3
 //$$ import net.fabricmc.fabric.api.client.rendering.v1.SubmitRenderPhases
 //$$ import net.minecraft.client.renderer.feature.TextFeatureRenderer
 //#endif
@@ -29,12 +32,20 @@ object RenderUtils3D {
     fun renderWaypoint(
         context: LevelRenderContext,
         renderText: Boolean,
+        //#if MC < 26.2
         text: Component,
+        //#endif
         textWidth: Int,
-        visualOrderText: FormattedCharSequence,
+        //#if MC > 26.1
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
+        //#if MC < 26.2
         secondaryText: Component?,
+        //#endif
         secondaryTextWidth: Int,
-        secondaryVisualOrderText: FormattedCharSequence?,
+        //#if MC > 26.1
+        //$$ secondaryVisualOrderText: FormattedCharSequence?,
+        //#endif
         pos: SboVec,
         colorComponents: FloatArray,
         hexColor: Int,
@@ -73,23 +84,35 @@ object RenderUtils3D {
                 pos,
                 if (Waypoints.lookAlike) 1.0 else 1.5,
                 0.0,
+                //#if MC < 26.2
                 text,
+                //#endif
                 textWidth,
-                visualOrderText,
+                //#if MC > 26.1
+                //$$ visualOrderText,
+                //#endif
                 hexColor,
                 Waypoints.waypointTextShadow,
                 if (Waypoints.lookAlike) 1.5 * Waypoints.waypointTextScale / 12.0 else Waypoints.waypointTextScale / 100.0
             )
 
-            if (secondaryText != null && secondaryVisualOrderText != null) {
+            //#if MC > 26.1
+            //$$ if (secondaryVisualOrderText != null) {
+            //#else
+            if (secondaryText != null) {
+            //#endif
                 drawString(
                     context,
                     pos,
                     if (Waypoints.lookAlike) 1.0 else 11.5,
                     if (Waypoints.lookAlike) 10.0 else 0.0,
+                    //#if MC < 26.2
                     secondaryText,
+                    //#endif
                     secondaryTextWidth,
-                    secondaryVisualOrderText,
+                    //#if MC > 26.1
+                    //$$ secondaryVisualOrderText,
+                    //#endif
                     hexColor,
                     Waypoints.waypointTextShadow,
                     if (Waypoints.lookAlike) 1.7 * Waypoints.waypointTextScale / 12.0 else Waypoints.waypointTextScale / 100.0
@@ -118,6 +141,7 @@ object RenderUtils3D {
         Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
     }
 
+    //#if MC < 26.2
     private val legacyDrawString = mutableListOf<DrawInBatchParameters>()
 
     class DrawInBatchParameters(
@@ -131,12 +155,17 @@ object RenderUtils3D {
         val packedLightCoords: Int,
         val pose: Matrix4f
     )
+    //#endif
 
     /**
      * Draws a string in the 3D world that always faces the player.
-     * @param context The matrix stack for transformations.
+     * @param context The render context used for transformations.
      * @param pos The position in the world where the text should be drawn.
-     * @param text The text to draw.
+     * @param worldYOffset The vertical offset of the text in world space.
+     * @param screenYOffset The vertical offset of the text in screen space, used when [Waypoints.lookAlike] is enabled.
+     * @param text The text [Component] to draw. Only used in Minecraft versions below 26.2, above 26.2 the visualOrderText is used instead.
+     * @param textWidth The width of the text in pixels, used to center it horizontally.
+     * @param visualOrderText The text in visual order for rendering. Only used in Minecraft versions 26.2 and above, lower versions use the text parameter (a [Component]).
      * @param color The color of the text in ARGB format.
      * @param shadow Whether to draw the text with a shadow.
      * @param scale The scale of the text.
@@ -146,9 +175,13 @@ object RenderUtils3D {
         pos: SboVec,
         worldYOffset: Double,
         screenYOffset: Double,
+        //#if MC < 26.2
         text: Component,
+        //#endif
         textWidth: Int,
-        visualOrderText: FormattedCharSequence,
+        //#if MC > 26.1
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
         color: Int,
         shadow: Boolean,
         scale: Double
@@ -215,7 +248,11 @@ object RenderUtils3D {
             val xOffset = -textWidth / 2f
             val yOffset = 0f
 
-            submitText(context, xOffset, yOffset, text, visualOrderText, color, shadow)
+            //#if MC > 26.1
+            //$$ submitText(context, xOffset, yOffset, visualOrderText, color, shadow)
+            //#else
+            submitText(context, xOffset, yOffset, text, color, shadow)
+            //#endif
         }
     }
 
@@ -245,7 +282,11 @@ object RenderUtils3D {
 
             val visualOrderText = text.visualOrderText
             val yOffset = -(mc.font.lineHeight * (linesUp + 1) + linesUp).toFloat()
-            submitText(context, -mc.font.width(visualOrderText) / 2f, yOffset, text, visualOrderText, -1, true)
+            //#if MC > 26.1
+            //$$ submitText(context, -mc.font.width(visualOrderText) / 2f, yOffset, visualOrderText, -1, true)
+            //#else
+            submitText(context, -mc.font.width(visualOrderText) / 2f, yOffset, text, -1, true)
+            //#endif
         }
     }
 
@@ -260,13 +301,19 @@ object RenderUtils3D {
         context: LevelRenderContext,
         xOffset: Float,
         yOffset: Float,
+        //#if MC < 26.2
         text: Component,
-        visualOrderText: FormattedCharSequence,
+        //#endif
+        //#if MC > 26.1
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
         color: Int,
         shadow: Boolean
     ) {
         val layerType = Font.DisplayMode.SEE_THROUGH
-        val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
+        //#if MC > 26.1
+        //$$ val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
+        //#endif
 
         val backgroundColor = 0
 
@@ -314,10 +361,8 @@ object RenderUtils3D {
         //#endif
     }
 
+    //#if MC < 26.2
     fun flushLegacyDrawString(context: LevelRenderContext) {
-        //#if MC > 26.1
-        //$$ throw IllegalStateException("legacy code-path called in 26.2+")
-        //#else
         val iterator = legacyDrawString.iterator()
 
         while (iterator.hasNext()) {
@@ -338,8 +383,8 @@ object RenderUtils3D {
 
             iterator.remove()
         }
-        //#endif
     }
+    //#endif
 
     /**
      * Draws a line from the player's eyes to a target point in the world.
@@ -379,7 +424,7 @@ object RenderUtils3D {
      * Draws a line from a start point to a target point in the world.
      * @param context The world render context.
      * @param startPos The start position in the world.
-     * @param target The target position in the world.
+     * @param endPos The end position in the world.
      * @param color The RGB color of the line as a FloatArray (0.0 to 1.0).
      * @param lineWidth The width of the line.
      * @param alpha The alpha value for transparency (0.0 to 1.0).
@@ -443,7 +488,6 @@ object RenderUtils3D {
      * @param ctx The world render context.
      * @param vec The position in the world where the beacon beam should be rendered.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to
-     * @param phase Whether the beam should render through walls.
      */
     private fun renderBeaconBeam(
         ctx: LevelRenderContext,

@@ -24,7 +24,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 /**
- * While a rare mob is around, lists the party with who lootshared it: red until they sent the
+ * While a rare mob is around, lists the party with whom lootshared it: red until they sent the
  * lootshare party message from [LootshareDisplay] (ends in its marker), aqua after. Whoever shared the
  * mob's coords in party chat is shown as the spawner, they always get the loot.
  */
@@ -103,8 +103,8 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Trac
         val key = name.lowercase()
         val isSelf = key == Player.getName()?.lowercase()
         return when {
-            (isSelf && LootshareDisplay.ownMobAround) || spawners.isRecent(key, now) -> Status.SPAWNED
-            (isSelf && LootshareDisplay.lootsharedAny) || lootshared.isRecent(key, now) -> Status.SHARED
+            isSelf && LootshareDisplay.ownMobAround || spawners.isRecent(key, now) -> Status.SPAWNED
+            isSelf && LootshareDisplay.lootsharedAny || lootshared.isRecent(key, now) -> Status.SHARED
             else -> Status.MISSING
         }
     }

@@ -46,7 +46,7 @@ object Tracker {
     var lastSpawnedMob: String? = null
     var lastSpawnedMobTime: Long = 0L
 
-    internal var lastBurrow: BURROW_TYPE = BURROW_TYPE.START
+    internal var lastBurrow: BurrowType = BurrowType.START
         private set
 
     // "Minos Hunter" intentionally skipped until its tracker entry exists.
@@ -64,7 +64,7 @@ object Tracker {
         Commands.register()
 
         Register.onChatMessageCancelable(
-            Pattern.compile("^§eThe election room is now closed\\. Clerk Seraphine is doing a final count of the votes\\.\\.\\.$", Pattern.DOTALL)
+            Pattern.compile("""^§eThe election room is now closed\. Clerk Seraphine is doing a final count of the votes\.\.\.$""", Pattern.DOTALL)
         ) { _, _ ->
             sleep(10000) {
                 MayorReset.check()
@@ -75,7 +75,7 @@ object Tracker {
         Register.onChatMessageCancelable(
             Pattern.compile("^§6§lWow! §eYou dug out §6(.*?) coins§e!$")
         ) { _, matchResult ->
-            lastBurrow = BURROW_TYPE.TREASURE
+            lastBurrow = BurrowType.TREASURE
             allowScavTracking = false
             sleep(1000) {
                 allowScavTracking = true
@@ -87,7 +87,7 @@ object Tracker {
 
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { _, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase()
-            if (!player.contains((Player.getName().orEmpty()).lowercase())) return@onChatMessageCancelable true
+            if (!player.contains(Player.getName().orEmpty().lowercase())) return@onChatMessageCancelable true
             if (General.phoenixAnnouncer) {
                 Chat.chat("§6[SBO] §cGG §eFound a §cPhoenix §epet!")
                 Helper.showTitle("§c§lPhoenix Pet!", "", 0, 25, 35)
@@ -99,10 +99,10 @@ object Tracker {
         }
 
         Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$", Pattern.DOTALL)) { _, matchResult ->
-            if (matchResult.group(2).removeFormatting().contains("(1/")) lastBurrow = BURROW_TYPE.START // The first one is always Start
+            if (matchResult.group(2).removeFormatting().contains("(1/")) lastBurrow = BurrowType.START // The first one is always Start
             trackItem("TOTAL_BURROWS", 1)
             if (Trackers.fourEyedFish) {
-                val fishCoins = if (lastBurrow != BURROW_TYPE.START) 4000 else 2000
+                val fishCoins = if (lastBurrow != BurrowType.START) 4000 else 2000
                 trackItem("FISH_COINS", fishCoins)
                 trackItem("COINS", fishCoins)
             }
@@ -110,14 +110,14 @@ object Tracker {
         }
 
         Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { _, matchResult ->
-            lastBurrow = BURROW_TYPE.MOB
+            lastBurrow = BurrowType.MOB
             val mob = matchResult.group(3)
             if (!isMobOnCooldown.getOrDefault(mob, false)) trackMobOnSpawnAndSave(mob)
             General.HiddenMessage.DIANA !in General.hideMessages
         }
 
         Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { _, matchResult ->
-            if (!(lastBurrow == BURROW_TYPE.MOB && lastSpawnedMob == "Sphinx")) lastBurrow = BURROW_TYPE.TREASURE
+            if (!(lastBurrow == BurrowType.MOB && lastSpawnedMob == "Sphinx")) lastBurrow = BurrowType.TREASURE
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather", "Mythos Fragment" -> trackItem(drop, 1)
                 "Braided Griffin Feather" -> RareDrops.onBraidedFeather()
@@ -249,13 +249,13 @@ object Tracker {
         DataManager.save(DataManager::sboData)
     }
 
-    internal fun trackMob(item: String, amount: Int) {
+    internal fun trackMob(item: String) {
         if (isMobOnCooldown.getOrDefault(item, false)) return
         isMobOnCooldown[item] = true
 
-        trackItem(item, amount)
-        trackItem("TOTAL_MOBS", amount)
-        RareMobs.countMob(amount)
+        trackItem(item, 1)
+        trackItem("TOTAL_MOBS", 1)
+        RareMobs.countMob(1)
         DataManager.save(DataManager::sboData)
 
         sleep(500) {
@@ -298,7 +298,7 @@ object Tracker {
         }
     }
 
-    enum class BURROW_TYPE {
+    enum class BurrowType {
         START, MOB, TREASURE
     }
 }

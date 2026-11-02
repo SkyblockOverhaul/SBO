@@ -96,7 +96,9 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
     private fun mobsPerHour(tracker: DianaTracker): Double {
         val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
         return if (playTimeHrs > 0) {
-            BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
+            BigDecimal.valueOf(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs)
+                .setScale(2, RoundingMode.HALF_UP)
+                .toDouble()
         } else 0.0
     }
 
@@ -320,7 +322,7 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
                 withCommas = true
             )} $GRAY($AQUA$hunterPercent%$GRAY)", tracker.mobs.MINOS_HUNTER)
         )
-        lines.addAll(sortedMobs(tracker.mobs).map { mobLines[MOBS.indexOf(it)] })
+        sortedMobs(tracker.mobs).mapTo(lines) { mobLines[MOBS.indexOf(it)] }
         lines.add(OverlayTextLine("$GRAY - ${GRAY}Total Mobs: $AQUA${Helper.formatNumber(tracker.mobs.TOTAL_MOBS,
             withCommas = true
         )} $GRAY[$AQUA$mobsPerHr$GRAY/${AQUA}hr$GRAY]"))

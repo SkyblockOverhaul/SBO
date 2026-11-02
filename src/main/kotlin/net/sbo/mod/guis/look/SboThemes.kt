@@ -7,6 +7,7 @@ import net.minecraft.util.Util
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.security.MessageDigest
+import java.util.Locale
 
 /** Looks of all SBO windows: built-in themes plus custom ones from `config/sbo/themes`. */
 object SboThemes {
@@ -31,7 +32,7 @@ object SboThemes {
         val example: Boolean = false
     )
 
-    val BUILT_IN = listOf(
+    private val BUILT_IN = listOf(
         Theme(DEFAULT, "SBO Dark", "The standard SBO look: dark gray with SBO blue.", DEFAULT),
         Theme(
             "hypixel", "Hypixel Colors",
@@ -60,10 +61,10 @@ object SboThemes {
         )
     )
 
-    val BASES: List<String> = BUILT_IN.map { it.base }.distinct()
+    val BASES: List<String> = BUILT_IN.asSequence().map { it.base }.distinct().toList()
 
     /** Variables a custom theme may set; the README lists them with their meaning. */
-    val COLOR_NAMES: Set<String> = setOf(
+    private val COLOR_NAMES: Set<String> = setOf(
         "bg", "panel", "panel-2", "card", "card-hover", "border", "border-hover",
         "text", "text-strong", "text-soft", "subtle", "muted", "dim", "title",
         "accent", "accent-hover", "accent-text", "accent-soft", "accent-faint",
@@ -87,7 +88,7 @@ object SboThemes {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true; allowTrailingComma = true; allowComments = true }
 
-    val folder: File get() = FabricLoader.getInstance().configDir.resolve("sbo/themes").toFile()
+    private val folder: File get() = FabricLoader.getInstance().configDir.resolve("sbo/themes").toFile()
 
     @Serializable
     private data class ThemeFile(
@@ -103,9 +104,10 @@ object SboThemes {
     fun all(): List<Theme> {
         prepareFolder()
         val custom = folder.listFiles { file -> file.isFile && file.extension.equals("json", ignoreCase = true) }
-            .orEmpty()
+            .asSequence()
             .mapNotNull(::load)
             .sortedWith(compareBy<Theme> { it.example }.thenBy { it.label.lowercase() })
+            .toList()
         return BUILT_IN + custom
     }
 
@@ -163,10 +165,10 @@ object SboThemes {
         }
     }
 
-    internal fun isOldExample(file: File): Boolean {
+    private fun isOldExample(file: File): Boolean {
         if (!file.isFile) return false
         val digest = MessageDigest.getInstance("SHA-256").digest(file.readText().replace("\r", "").toByteArray())
-        return digest.joinToString("") { "%02x".format(it) } == OLD_EXAMPLE_SHA256
+        return digest.joinToString("") { "%02x".format(Locale.ROOT, it) } == OLD_EXAMPLE_SHA256
     }
 
     private fun copyResource(name: String, target: File) {
@@ -174,3 +176,4 @@ object SboThemes {
         if (!target.exists() || !target.readBytes().contentEquals(text)) target.writeBytes(text)
     }
 }
+

@@ -28,7 +28,7 @@ object BurrowSpots {
     /** Whether a burrow can be on the block according to the list, always true without a list. */
     fun isPossible(block: SboVec): Boolean {
         if (!loaded) load()
-        return spots?.contains(key(block)) ?: true
+        return spots?.contains(key(block)) != false
     }
 
     private fun load() {

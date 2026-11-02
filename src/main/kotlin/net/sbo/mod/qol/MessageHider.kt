@@ -15,7 +15,7 @@ object MessageHider {
     private val dianaRules = listOf(
         HideRule(Pattern.compile("^§eFollow the arrows to find the §6treasure§e!$")) { General.HiddenMessage.DIANA in General.hideMessages },
         HideRule(Pattern.compile("^§cThis ability is on cooldown for (.*?)$")) { General.HiddenMessage.DIANA in General.hideMessages },
-        HideRule(Pattern.compile("^§7Warping\\.\\.\\.$")) { General.HiddenMessage.DIANA in General.hideMessages },
+        HideRule(Pattern.compile("""^§7Warping\.\.\.$""")) { General.HiddenMessage.DIANA in General.hideMessages },
         HideRule(Pattern.compile("^§cThere are blocks in the way!$")) { General.HiddenMessage.DIANA in General.hideMessages },
     )
 

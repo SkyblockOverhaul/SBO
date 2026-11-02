@@ -8,7 +8,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import net.sbo.mod.partyfinder.api.MemberView
 import net.sbo.mod.partyfinder.api.PartyView
 import net.sbo.mod.partyfinder.api.Problem
@@ -55,7 +54,7 @@ object ReqMatcher {
         val problems = mutableListOf<Problem>()
         for (def in target.reqs) {
             val need = reqs[def.stat] ?: continue
-            if (need is JsonNull) continue
+            if (need === JsonNull) continue
             val have = stats[def.stat] ?: JsonNull
             if (!meets(def.type, have, need)) problems += Problem(name, def.stat, have, need)
         }
@@ -77,7 +76,7 @@ object ReqMatcher {
         val problems = check(me.name, me.stats, party.reqs, target, party.options).toMutableList()
         if (party.roles.wanted.isEmpty()) return problems
         val open = party.openRoles.distinct()
-        if (open.isEmpty() || (role != null && role !in open)) {
+        if (open.isEmpty() || role != null && role !in open) {
             problems += Problem(me.name, "role", role?.let(::JsonPrimitive) ?: JsonNull, JsonArray(open.map { JsonPrimitive(it) }))
         }
         return problems
@@ -100,9 +99,9 @@ object ReqMatcher {
 
     private fun JsonElement?.primitive(): JsonPrimitive? = this as? JsonPrimitive
 
-    private fun JsonElement?.number(): Double? = primitive()?.takeUnless { it is JsonNull }?.doubleOrNull
+    private fun JsonElement?.number(): Double? = primitive()?.takeUnless { it === JsonNull }?.doubleOrNull
 
-    private fun JsonElement?.text(): String? = primitive()?.takeUnless { it is JsonNull }?.contentOrNull
+    private fun JsonElement?.text(): String? = primitive()?.takeUnless { it === JsonNull }?.contentOrNull
 
     private fun JsonElement.pickId(): String? = when (this) {
         is JsonObject -> field("id")
@@ -111,5 +110,5 @@ object ReqMatcher {
     }
 
     private fun JsonElement.field(key: String): String? =
-        ((this as? JsonObject)?.get(key) as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+        ((this as? JsonObject)?.get(key) as? JsonPrimitive)?.takeUnless { it === JsonNull }?.contentOrNull
 }

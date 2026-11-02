@@ -38,7 +38,8 @@ object CloudDiff {
     fun label(file: String): String = LABELS[file] ?: file.removeSuffix(".json")
 
     fun compare(pc: Map<String, String>, cloud: Map<String, String>): List<CloudArea> {
-        val files = (LABELS.keys + pc.keys + cloud.keys).distinct().filter { it in pc || it in cloud }
+        val files = (LABELS.keys + pc.keys + cloud.keys).asSequence().distinct().filter { it in pc || it in cloud }
+            .toList()
         return files.mapNotNull { file ->
             val pcJson = pc[file]?.let(::parse)
             val cloudJson = cloud[file]?.let(::parse)
@@ -117,25 +118,26 @@ object CloudDiff {
     }
 
     fun display(value: JsonElement): String {
-        val text = when {
-            value is JsonPrimitive && value.isBoolean -> if (value.asBoolean) "On" else "Off"
-            value is JsonPrimitive && value.isString -> value.asString.ifEmpty { "(empty)" }
-            value is JsonPrimitive -> value.asString
-            value is JsonArray && value.isEmpty -> "(empty)"
-            value is JsonArray && value.size() <= 3 && value.all { it is JsonPrimitive } -> value.joinToString(", ") { display(it) }
-            value is JsonArray -> if (value.size() == 1) "1 entry" else "${value.size()} entries"
-            value is JsonObject -> if (value.size() == 1) "1 value" else "${value.size()} values"
+        val text = when (value) {
+            is JsonPrimitive if value.isBoolean -> if (value.asBoolean) "On" else "Off"
+            is JsonPrimitive if value.isString -> value.asString.ifEmpty { "(empty)" }
+            is JsonPrimitive -> value.asString
+            is JsonArray if value.isEmpty -> "(empty)"
+            is JsonArray if value.size() <= 3 && value.all { it is JsonPrimitive } -> value.joinToString(", ") { display(it) }
+            is JsonArray -> if (value.size() == 1) "1 entry" else "${value.size()} entries"
+            is JsonObject -> if (value.size() == 1) "1 value" else "${value.size()} values"
             else -> "(empty)"
         }
         return if (text.length > MAX_TEXT) text.take(MAX_TEXT - 1) + "…" else text
     }
 
     // "mobsSinceInq" -> "Mobs Since Inq"
-    fun humanize(key: String): String {
+    private fun humanize(key: String): String {
         if (key.contains(' ')) return key
         return key.replace('_', ' ')
             .replace(Regex("(?<=[a-z0-9])(?=[A-Z])"), " ")
             .split(' ')
+            .asSequence()
             .filter { it.isNotEmpty() }
             .joinToString(" ") { it.replaceFirstChar(Char::uppercaseChar) }
     }

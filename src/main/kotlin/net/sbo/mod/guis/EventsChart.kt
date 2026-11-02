@@ -242,8 +242,8 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
         val w = plot.current?.box?.width ?: 0f
         if (s != null && w > 0f) {
             // Keep the point under the mouse (or the middle) where it is
-            val offset = mouseX ?: (s.box.width / 2f)
-            anchor.current = ((s.scrollLeft + offset) / w) to offset
+            val offset = mouseX ?: s.box.width / 2f
+            anchor.current = (s.scrollLeft + offset) / w to offset
         }
         zoom = z
     }
@@ -313,7 +313,7 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
                             fun y(v: Long) = if (top <= 0.0) h else (h * (1.0 - v / top)).toFloat()
                             shown.forEach { s ->
                                 div(className = classNames("ev-lines-series", s.colorClass), key = s.id) {
-                                    for (i in 0 until points.size - 1) {
+                                    for (i in 0..<points.size - 1) {
                                         val x1 = x(i)
                                         val y1 = y(s.values[i])
                                         val dx = x(i + 1) - x1
