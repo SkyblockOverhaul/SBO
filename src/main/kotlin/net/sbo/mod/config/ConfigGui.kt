@@ -77,7 +77,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew) 
     val revision = useState(0)
     val body = useElementRef()
     useSboScale()
-    useSboTheme()
+    useSboTheme("settings")
 
     fun setCollapsed(keys: Set<String>) {
         collapsed = keys

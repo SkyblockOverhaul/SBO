@@ -59,7 +59,7 @@ object AchievementsGui {
         var query by useState("")
         val grouped = view.sort == "grouped"
         useSboScale(UiScale.own(view.uiScale))
-        useSboTheme()
+        useSboTheme("achievements")
 
         fun update(next: AchievementsView) {
             view = next

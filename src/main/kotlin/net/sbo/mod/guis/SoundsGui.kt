@@ -91,7 +91,7 @@ object SoundsGui {
         var master by useState(percent(settings.masterVolume))
         var uiScale by useState(UiScale.own(settings.uiScale))
         useSboScale(uiScale)
-        useSboTheme()
+        useSboTheme("sounds")
 
         // Changes are saved right away, this catches a slider still being dragged when the window closes
         useEffect { onCleanup { settings.save() } }

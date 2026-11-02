@@ -119,7 +119,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 p(className = "pf-hint pf-theme-info") { +props.theme.description }
                 settingRow(
                     "Your own themes",
-                    "Put theme files into this folder. The README in it explains every color, example.json is a theme to copy."
+                    "Put theme files into this folder: a .json with colors or a .css file to restyle everything. The README in it explains it all, example.json and example.css are themes to copy. Ctrl + Shift + C shows the CSS classes of what is under the mouse."
                 ) {
                     button(onClick = {
                         SboThemes.openFolder()

@@ -55,7 +55,7 @@ object CloudSyncGui {
         useEscapeBack(page != Page.MAIN) { page = Page.MAIN }
         var uiScale by useState(UiScale.own(DataManager.sboData.cloudSyncUiScale))
         useSboScale(uiScale)
-        useSboTheme()
+        useSboTheme("cloud")
         val size = WindowSize(uiScale) { scale ->
             uiScale = scale
             DataManager.sboData.cloudSyncUiScale = scale

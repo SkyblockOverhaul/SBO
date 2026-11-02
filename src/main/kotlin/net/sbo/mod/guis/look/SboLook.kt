@@ -1,6 +1,11 @@
 package net.sbo.mod.guis.look
 
 import net.sbo.guilib.core.dsl.ComponentScope
+import net.sbo.guilib.core.dsl.button
+import net.sbo.guilib.core.dsl.div
+import net.sbo.guilib.core.dsl.modal
+import net.sbo.guilib.core.dsl.scroll
+import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.settings.categories.Themes
 import net.sbo.mod.utils.data.DataManager
@@ -44,14 +49,17 @@ fun ComponentScope.useSboScale(own: Float? = null) = useScreenScale(UiScale.reso
 
 /**
  * Puts the theme on the body, so modals, tooltips and toasts follow it too, and applies the background blur setting.
- * [ownId] is a theme picked only for this window, null uses the global one. Needs `sbo:ui/themes/themes.css` in the
- * window's styles.
+ * [window] names the window for players' CSS (`body.sbo-window-<window>`), [ownId] is a theme picked only for this
+ * window, null uses the global one. Needs `sbo:ui/themes/themes.css` in the window's styles.
  */
-fun ComponentScope.useSboTheme(ownId: String? = null): SboThemes.Theme {
+fun ComponentScope.useSboTheme(window: String, ownId: String? = null): SboThemes.Theme {
     val id = ownId ?: Themes.theme
     val theme = useMemo(id) { SboThemes.find(id) }
     useBackgroundBlur(Themes.backgroundBlur)
+    useBodyClass("sbo")
+    useBodyClass("sbo-window-$window")
     SboThemes.BASES.forEach { base -> useBodyClass("sbo-theme-$base", theme.base == base) }
+    useThemeCss(theme)
     val document = useDocument()
     useEffect(theme) {
         val body = document.body
@@ -61,6 +69,51 @@ fun ComponentScope.useSboTheme(ownId: String? = null): SboThemes.Theme {
         onCleanup { colors.keys.forEach { body.removeStyleProperty("--$it") } }
     }
     return theme
+}
+
+// The theme's CSS file and user.css after SBO's own CSS, user.css last; read again when one of them changes
+private fun ComponentScope.useThemeCss(theme: SboThemes.Theme) {
+    val user = SboThemes.userCss
+    fun stamp() = listOfNotNull(theme.css, user).map { it.lastModified() to it.length() }
+    val seen = useState(stamp())
+    useInterval(1000) {
+        val now = stamp()
+        if (now != seen.value) seen.value = now
+    }
+    val themeCss = useMemo(theme, seen.value) { SboThemes.readCss(theme.css) }
+    val userCss = useMemo(seen.value) { SboThemes.readCss(user) }
+    val themeSheet = useStylesheet(themeCss, theme.css?.name ?: "theme.css")
+    val userSheet = useStylesheet(userCss, user.name, order = 1)
+    cssProblems(listOfNotNull(themeSheet, userSheet).flatMap { it.problems }, themeCss to userCss)
+}
+
+// The CSS whose mistakes were closed, so other windows don't show them again until a file changes
+private var closedCss: Pair<String?, String?>? = null
+
+/** A popup with the mistakes in the player's CSS, when it is loaded or changed and has some. */
+private fun ComponentScope.cssProblems(problems: List<String>, texts: Pair<String?, String?>) {
+    val clipboard = useClipboard()
+    var closedFor by useState(closedCss)
+    fun close() {
+        closedFor = texts
+        closedCss = texts
+    }
+    modal(open = problems.isNotEmpty() && closedFor != texts, onClose = { close() }, className = "sbo-css-problems") {
+        div(className = "sbo-css-problems-title") {
+            +"Your CSS has ${problems.size} ${if (problems.size == 1) "mistake" else "mistakes"}"
+        }
+        div(className = "sbo-css-problems-text") {
+            +"Only these lines are skipped, the rest still works. Fix them and save the file, this window checks again by itself."
+        }
+        scroll(className = "sbo-css-problems-log") {
+            problems.forEach { div(className = "sbo-css-problems-line") { +it } }
+        }
+        div(className = "sbo-css-problems-buttons") {
+            button(onClick = { SboThemes.openFolder() }) { +"Open theme folder" }
+            button(onClick = { clipboard.set(problems.joinToString("\n")) }) { +"Copy" }
+            button(className = "sbo-css-problems-close", onClick = { close() }) { +"Close" }
+        }
+    }
 }
 
 object SboLook {

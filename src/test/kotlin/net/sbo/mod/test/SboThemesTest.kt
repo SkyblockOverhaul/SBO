@@ -4,6 +4,7 @@ import net.sbo.mod.guis.look.SboThemes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -66,6 +67,31 @@ class SboThemesTest {
         assertTrue(theme.hypixelColors)
         assertTrue(theme.example)
         assertEquals(SboThemes.COLOR_NAMES, theme.colors.keys)
+    }
+
+    @Test
+    fun cssThemeTakesItsSettingsFromTheTopComment() {
+        val file = File(dir, "mine.css")
+        file.writeText("/*\nname: Mine\n * base: minecraft\nmarks: true\n*/\nbody.sbo { --accent: #ff8800; }\n")
+        val theme = SboThemes.load(file)!!
+        assertEquals("Mine", theme.label)
+        assertEquals("minecraft", theme.base)
+        assertTrue(theme.hypixelColors) // from the base
+        assertTrue(theme.marks)
+        assertEquals(file, theme.css)
+
+        val example = File(dir, "example.css").apply {
+            writeBytes(SboThemes::class.java.getResourceAsStream("/assets/sbo/ui/themes/example.css")!!.use { it.readBytes() })
+        }
+        assertEquals("midnight", SboThemes.load(example)!!.base)
+    }
+
+    @Test
+    fun jsonThemeOnlyReachesCssInItsOwnFolder() {
+        File(dir, "a.json").writeText("""{ "css": "a.css" }""")
+        assertEquals(File(dir, "a.css"), SboThemes.load(File(dir, "a.json"))!!.css)
+        File(dir, "b.json").writeText("""{ "css": "../outside.css" }""")
+        assertNull(SboThemes.load(File(dir, "b.json"))!!.css)
     }
 
     @Test

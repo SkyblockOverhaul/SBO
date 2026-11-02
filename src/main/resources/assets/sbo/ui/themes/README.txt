@@ -1,7 +1,7 @@
 SBO THEMES
 ==========
 
-Every .json file in this folder shows up as a theme for all SBO windows:
+Every .json and .css file in this folder shows up as a theme for all SBO windows:
 open the SBO settings (/sbosettings) and go to Themes > Theme.
 The party finder can also have its own theme: Party Finder > Settings > Look > Theme.
 The list is read again every time you open the settings, no restart needed.
@@ -9,6 +9,12 @@ The list is read again every time you open the settings, no restart needed.
 SBO writes this README again on every start, so changes to it are lost.
 example.json is only created once, you can change or delete it. It sets everything a theme can change.
 If you never changed the old example (Forest), SBO replaces it with the new one.
+example.css is also only created once, it shows a CSS theme.
+
+There are two kinds of themes:
+  .json  Only colors, see MAKE YOUR OWN THEME. Easy, nothing can break.
+  .css   Real CSS, see CSS THEMES. You can restyle everything: sizes, corners, fonts, borders, single windows.
+And user.css: CSS that is added on top of every theme, also the built-in ones.
 
 
 MAKE YOUR OWN THEME
@@ -47,6 +53,59 @@ Text after // up to the end of the line is a note and is ignored, like in exampl
 Colors are written as #rgb, #rgba, #rrggbb or #rrggbbaa, for example "#ff8800" or "#ff880080".
 The last two digits of #rrggbbaa are the transparency: 00 is invisible, 80 is half, ff is solid.
 A file with a mistake is skipped, check the Minecraft log for "[SBO] Theme".
+
+
+CSS THEMES
+----------
+A .css file is a theme like a .json one. The comment at the very top sets the same things,
+one "key: value" per line (all optional):
+
+/*
+name: My CSS Theme
+description: Shown under the theme list when the theme is picked.
+base: sbo-dark
+hypixelColors: false
+marks: false
+*/
+
+body.sbo {
+    --accent: #ff8800;
+}
+body.sbo button {
+    border-radius: 6px;
+}
+
+Everything after the comment is normal CSS. It is added after SBO's own CSS, so your rule wins over
+SBO's when both are equally specific. Use a more specific selector or !important where it doesn't.
+Changes to the file show up in open windows within a second, no reopening needed.
+A mistake only drops that rule or line. A window then shows a popup with every mistake (file, line
+and what is wrong), it comes back when you save the file with mistakes again. They are also in the log.
+
+A .json theme can bring CSS too: "css": "my-theme.css" (a .css file in this folder).
+
+user.css in this folder is not a theme, it is always added after the theme, whatever theme you use.
+Good for small changes you want everywhere, e.g. a font or rounder buttons. It doesn't exist at first,
+just create it.
+
+Selectors you can use
+  body.sbo                    Every SBO window. Put color variables here, so they beat the base theme.
+  body.sbo-theme-<base>       The base theme that is active, e.g. body.sbo-theme-minecraft
+  body.sbo-window-<name>      Only one window. Names: hub, settings, partyfinder, profileviewer,
+                              events, achievements, sounds, cloud, badge
+  button, input, select ...   The elements themselves, like on a web page
+
+Each window also has its own classes, e.g. .hub-window, .pf-window, .cfg-sidebar or .ev-header.
+Those are SBO's inner workings: they can change in an update without notice. The ones above stay.
+
+Which classes exist?
+  - In the game: open any SBO window and press Ctrl + Shift + C (inspector). The element under the
+    mouse shows its classes, a left click copies its selector. Ctrl + Shift + C or Escape turns it off.
+  - In the folder "reference" here: copies of all of SBO's CSS, one file per window, with their own
+    README. They are not loaded, they are only there to look things up and copy rules from.
+Not styled: the HUD overlays (trackers, Crown of Avarice), only the windows.
+
+Images and fonts in url() only come from Minecraft resources (e.g. "sbo:fonts/nunito-400.ttf" or a
+resource pack), not from your disk or the internet.
 
 
 ALL COLORS (default values of SBO Dark)
