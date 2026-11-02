@@ -256,9 +256,9 @@ object Trackers : Category("Trackers") {
     }
 
     var compactTrackers by ObservableEntry(options<CompactTracker> {
-            this.name = Literal("Tracker Compact Look")
+            this.name = literal("Tracker Compact Look")
             this.since = "0.7.2-beta.3"
-            this.description = Literal(
+            this.description = literal(
                 "The trackers that take as little space as possible: a few lines with short names and several entries per line, only the rare mobs and the main loot, no prices or percentages. " +
                     "Works with the legacy and the new look. In the inventory the full tracker is shown, to hide lines and change the view or sort.\n" +
                     "Lootshare counts are added after a +, in the stats after a /."
@@ -289,21 +289,21 @@ object Trackers : Category("Trackers") {
     }
 
     var trackerBackgroundOpacity by ObservableEntry(int(DEFAULT_BACKGROUND_OPACITY) {
-            this.name = Literal("Tracker Background Opacity")
+            this.name = literal("Tracker Background Opacity")
             this.since = "0.7.2-beta.3"
             this.range = 10..100
             depends(state(::trackerBackground, "a tracker with background") { it.isNotEmpty() })
-            this.description = Literal("How dark the box behind the trackers is, in percent ($DEFAULT_BACKGROUND_OPACITY is the normal look). Lower lets more of the game through, about 30% still keeps the text readable.")
+            this.description = literal("How dark the box behind the trackers is, in percent ($DEFAULT_BACKGROUND_OPACITY is the normal look). Lower lets more of the game through, about 30% still keeps the text readable.")
         }
     ) { old, new ->
         if (old != new) onTrackerLookChanged()
     }
 
     var trackerOutline by ObservableEntry(options<TrackerLook> {
-            this.name = Literal("Tracker Text Outline")
+            this.name = literal("Tracker Text Outline")
             this.since = "0.7.2-beta.3"
             depends(state(::legacyTrackers, "not all legacy") { it.size < TrackerLook.entries.size })
-            this.description = Literal("The trackers with the new look whose text gets a black outline instead of the shadow, readable on any ground even without a box. Slightly more work per frame: the text is drawn five times.")
+            this.description = literal("The trackers with the new look whose text gets a black outline instead of the shadow, readable on any ground even without a box. Slightly more work per frame: the text is drawn five times.")
         }
     ) { old, new ->
         if (old != new) onTrackerLookChanged()

@@ -112,7 +112,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
 
     override fun compactLines(): List<CompactLine>? {
         if (!Trackers.isCompact(Trackers.CompactTracker.STATS)) return null
-        val hidden = DataManager.sboData.hideTrackerLines
+        val hidden = sboData.hideTrackerLines
         val entries = sortedStats().filter { it.key !in hidden }.map { stat ->
             val ls = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "/${Helper.formatNumber(it(), withCommas = true)}" }.orEmpty()
             Entry(stat.short, stat.color, Helper.formatNumber(stat.count(), withCommas = true) + ls)
