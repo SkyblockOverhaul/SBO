@@ -78,7 +78,7 @@ object Pickuplog {
         inventoryDirty = true
     }
 
-    private fun shouldTrackInventoryChanges() {
+    private fun shouldTrackInventoryChanges(): Boolean {
         // Hilt of Revelations & Crown of Greed (Before MF Rework), Enchanted Ancient Claw & Ancient Claw and Enchanted Gold (When not having relevant sacks) needs it, so still track if has a diana spade and is in the hub, even if the pickup log feature itself is disabled.
         return General.pickuplogOverlay || (Helper.hasSpade && World.isInHub())
     }
