@@ -63,6 +63,14 @@ object Trackers : Category("Trackers") {
         LOOT("Loot"), MOBS("Mobs"), STATS("Stats"), COA("CoA"), CHAINS("Chains"), LOOTSHARE("Lootshare"),
     }
 
+    // The box of tracker.css and coa.css, rgba(14, 14, 16, 0.78)
+    private const val DEFAULT_BACKGROUND_OPACITY = 78
+
+    // The trackers with a compact look, in both looks
+    enum class CompactTracker(override val label: String) : Option {
+        LOOT("Loot"), MOBS("Mobs"), STATS("Stats"),
+    }
+
     init {
         button {
             title = "Open Events"
@@ -255,6 +263,19 @@ object Trackers : Category("Trackers") {
         if (old != new) onTrackerLookChanged()
     }
 
+    var compactTrackers by ObservableEntry(options<CompactTracker> {
+            this.name = Literal("Tracker Compact Look")
+            this.since = "0.7.2-beta.3"
+            this.description = Literal(
+                "The trackers that take as little space as possible: a few lines with short names and several entries per line, only the rare mobs and the main loot, no prices or percentages. " +
+                    "Works with the legacy and the new look. In the inventory the full tracker is shown, to hide lines and change the view or sort.\n" +
+                    "Lootshare counts are added after a +, in the stats after a /."
+            )
+        }
+    ) { old, new ->
+        if (old != new) onTrackerLookChanged()
+    }
+
     var trackerFont by ObservableEntry(option(TrackerFont.MINECRAFT) {
             this.name = Literal("Tracker Font")
             this.since = "0.7.2-beta.2"
@@ -275,9 +296,44 @@ object Trackers : Category("Trackers") {
         if (old != new) onTrackerLookChanged()
     }
 
+    var trackerBackgroundOpacity by ObservableEntry(int(DEFAULT_BACKGROUND_OPACITY) {
+            this.name = Literal("Tracker Background Opacity")
+            this.since = "0.7.2-beta.3"
+            this.range = 10..100
+            depends(state(::trackerBackground, "a tracker with background") { it.isNotEmpty() })
+            this.description = Literal("How dark the box behind the trackers is, in percent ($DEFAULT_BACKGROUND_OPACITY is the normal look). Lower lets more of the game through, about 30% still keeps the text readable.")
+        }
+    ) { old, new ->
+        if (old != new) onTrackerLookChanged()
+    }
+
+    var trackerOutline by ObservableEntry(options<TrackerLook> {
+            this.name = Literal("Tracker Text Outline")
+            this.since = "0.7.2-beta.3"
+            depends(state(::legacyTrackers, "not all legacy") { it.size < TrackerLook.entries.size })
+            this.description = Literal("The trackers with the new look whose text gets a black outline instead of the shadow, readable on any ground even without a box. Slightly more work per frame: the text is drawn five times.")
+        }
+    ) { old, new ->
+        if (old != new) onTrackerLookChanged()
+    }
+
     fun isLegacy(look: TrackerLook): Boolean = look in legacyTrackers
 
     fun hasBackground(look: TrackerLook): Boolean = look in trackerBackground
+
+    /** The classes of [look]'s box for the look settings: font, background and outline. */
+    fun lookClasses(look: TrackerLook): String = buildString {
+        if (trackerFont == TrackerFont.INTER) append(" inter")
+        if (!hasBackground(look)) append(" no-bg")
+        if (look in trackerOutline) append(" outline")
+    }
+
+    /** The inline style of [look]'s box for "Tracker Background Opacity", null for the stylesheet's own. */
+    fun boxStyle(look: TrackerLook): String? =
+        if (hasBackground(look) && trackerBackgroundOpacity != DEFAULT_BACKGROUND_OPACITY) "background-color: rgba(14, 14, 16, ${trackerBackgroundOpacity / 100f})"
+        else null
+
+    fun isCompact(tracker: CompactTracker): Boolean = tracker in compactTrackers
 
     // The trackers pick the changed look up on their next tick, the settings can also change while the config loads
     fun onTrackerLookChanged() {

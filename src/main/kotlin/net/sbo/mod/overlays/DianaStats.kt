@@ -54,21 +54,22 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
         return line
     }
 
-    // The stats of the new look: hide key, name, color, the count and the lootshare count (null for stats without lootshare)
-    private class Stat(val key: String, val name: String, val color: ChatFormatting, val count: () -> Int, val lsCount: (() -> Int)? = null)
+    // The stats of the new look: hide key, name, color, the count and the lootshare count (null for stats without lootshare),
+    // [short] is the name in the compact look, after "Since"
+    private class Stat(val key: String, val name: String, val short: String, val color: ChatFormatting, val count: () -> Int, val lsCount: (() -> Int)? = null)
 
     private val STATS = listOf(
-        Stat("STATS_MOBS_SINCE_KING", "Mobs since King", RED, { sboData.mobsSinceKing }),
-        Stat("STATS_KINGS_SINCE_WOOL", "Kings since Wool", RED, { sboData.kingSinceWool }, { sboData.kingSinceLsWool }),
-        Stat("STATS_MOBS_SINCE_MANTI", "Mobs since Manti", RED, { sboData.mobsSinceManti }),
-        Stat("STATS_MANTIS_SINCE_CORE", "Mantis since Core", RED, { sboData.mantiSinceCore }, { sboData.mantiSinceLsCore }),
-        Stat("STATS_MANTIS_SINCE_STINGER", "Mantis since Stinger", RED, { sboData.mantiSinceStinger }, { sboData.mantiSinceLsStinger }),
-        Stat("STATS_MOBS_SINCE_INQ", "Mobs since Inq", LIGHT_PURPLE, { sboData.mobsSinceInq }),
-        Stat("STATS_INQS_SINCE_CHIM", "Inqs since Chimera", LIGHT_PURPLE, { sboData.inqsSinceChim }, { sboData.inqsSinceLsChim }),
-        Stat("STATS_MOBS_SINCE_SPHINX", "Mobs since Sphinx", LIGHT_PURPLE, { sboData.mobsSinceSphinx }),
-        Stat("STATS_SPHINXES_SINCE_FOOD", "Sphinxes since Food", DARK_PURPLE, { sboData.sphinxSinceFood }, { sboData.sphinxSinceLsFood }),
-        Stat("STATS_CHAMPS_SINCE_RELIC", "Champs since Relic", DARK_PURPLE, { sboData.champsSinceRelic }),
-        Stat("STATS_MINOTAURS_SINCE_STICK", "Minotaurs since Stick", GOLD, { sboData.minotaursSinceStick })
+        Stat("STATS_MOBS_SINCE_KING", "Mobs since King", "King", RED, { sboData.mobsSinceKing }),
+        Stat("STATS_KINGS_SINCE_WOOL", "Kings since Wool", "Wool", RED, { sboData.kingSinceWool }, { sboData.kingSinceLsWool }),
+        Stat("STATS_MOBS_SINCE_MANTI", "Mobs since Manti", "Manti", RED, { sboData.mobsSinceManti }),
+        Stat("STATS_MANTIS_SINCE_CORE", "Mantis since Core", "Core", RED, { sboData.mantiSinceCore }, { sboData.mantiSinceLsCore }),
+        Stat("STATS_MANTIS_SINCE_STINGER", "Mantis since Stinger", "Sting", RED, { sboData.mantiSinceStinger }, { sboData.mantiSinceLsStinger }),
+        Stat("STATS_MOBS_SINCE_INQ", "Mobs since Inq", "Inq", LIGHT_PURPLE, { sboData.mobsSinceInq }),
+        Stat("STATS_INQS_SINCE_CHIM", "Inqs since Chimera", "Chim", LIGHT_PURPLE, { sboData.inqsSinceChim }, { sboData.inqsSinceLsChim }),
+        Stat("STATS_MOBS_SINCE_SPHINX", "Mobs since Sphinx", "Sphinx", LIGHT_PURPLE, { sboData.mobsSinceSphinx }),
+        Stat("STATS_SPHINXES_SINCE_FOOD", "Sphinxes since Food", "Food", DARK_PURPLE, { sboData.sphinxSinceFood }, { sboData.sphinxSinceLsFood }),
+        Stat("STATS_CHAMPS_SINCE_RELIC", "Champs since Relic", "Relic", DARK_PURPLE, { sboData.champsSinceRelic }),
+        Stat("STATS_MINOTAURS_SINCE_STICK", "Minotaurs since Stick", "Stick", GOLD, { sboData.minotaursSinceStick })
     )
 
     private const val ORDER = "stats"
@@ -108,6 +109,17 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
             if (view.reorder) hint("Click a stat to hide it, the arrows to move it")
             else if (view.inventory) hint("Click a stat to hide it, the badge to change the order")
         }
+    }
+
+    override fun compactLines(): List<CompactLine>? {
+        if (!Trackers.isCompact(Trackers.CompactTracker.STATS)) return null
+        val hidden = DataManager.sboData.hideTrackerLines
+        val entries = sortedStats().filter { it.key !in hidden }.map { stat ->
+            val ls = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "/${Helper.formatNumber(it(), withCommas = true)}" }.orEmpty()
+            Entry(stat.short, stat.color, Helper.formatNumber(stat.count(), withCommas = true) + ls)
+        }
+        val lines = packed(entries)
+        return if (lines.isEmpty()) lines else listOf(lines.first().copy(title = "Since")) + lines.drop(1)
     }
 
     override fun elementClicked(id: String) {

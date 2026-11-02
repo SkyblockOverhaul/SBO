@@ -3,7 +3,8 @@
  * every frame.
  * Same look as the CoA tracker (ui/coa/coa.css) and kept cheap to draw the same way: Minecraft's font by default, only
  * the outer box is rounded and everything inside is a plain fill. 8px is the Minecraft font's own size.
- * .inter and .no-bg come from the "Tracker Font" and "Tracker Background" settings, .loot/.mobs/... set the accent.
+ * .inter, .no-bg and .outline come from the tracker look settings (Trackers.lookClasses),
+ * .loot/.mobs/... set the accent.
  */
 
 .tracker {
@@ -131,6 +132,20 @@
 .tracker-notice-line { display: flex; gap: 3px; }
 .tracker-notice-cmd { color: #55ffff; }
 
+/* "Tracker Compact Look": a few lines with several entries each, as small as possible */
+.tracker.compact {
+    min-width: 0;
+    padding: 3px 4px 4px;
+}
+
+.tracker-cline {
+    display: flex;
+    gap: 3px;
+}
+
+.tracker-ctitle { color: var(--accent); }
+.tracker-dot { color: #55575d; }
+
 /* Minecraft's color codes */
 .mc-red { color: #ff5555; }
 .mc-light_purple { color: #ff55ff; }
@@ -158,3 +173,6 @@
 }
 .tracker.no-bg .tracker-badge { background-color: transparent; }
 .tracker.no-bg .tracker-sep { background-color: rgba(0, 0, 0, 0.45); }
+
+/* "Tracker Text Outline": a black outline instead of the shadow, drawn as four 1px shadows */
+.tracker.outline { text-shadow: 1px 0 #000000, -1px 0 #000000, 0 1px #000000, 0 -1px #000000; }

@@ -317,8 +317,9 @@ object CrownOfAvarice {
     private data class View(
         val icon: ItemStack?,
         val mode: String,
-        val inter: Boolean,
-        val background: Boolean,
+        // The look settings, see Trackers.lookClasses
+        val lookClasses: String,
+        val boxStyle: String?,
         val fillWidth: String,
         val percent: String,
         val maxed: Boolean,
@@ -347,8 +348,8 @@ object CrownOfAvarice {
         return View(
             icon = icon,
             mode = Helper.toTitleCase(Trackers.coaTracker.name),
-            inter = Trackers.trackerFont == Trackers.TrackerFont.INTER,
-            background = Trackers.hasBackground(Trackers.TrackerLook.COA),
+            lookClasses = Trackers.lookClasses(Trackers.TrackerLook.COA),
+            boxStyle = Trackers.boxStyle(Trackers.TrackerLook.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
             fillWidth = percent,
             percent = if (coins >= 0L) "$percent%" else "-",
@@ -389,11 +390,9 @@ object CrownOfAvarice {
 
     private fun NodeBuilder.content(view: View) {
         val classes = buildString {
-            append("coa")
-            if (view.inter) append(" inter")
-            if (!view.background) append(" no-bg")
+            append("coa").append(view.lookClasses)
         }
-        div(className = classes) {
+        div(className = classes, style = view.boxStyle) {
             div(className = "coa-head") {
                 view.icon?.let { item(it, className = "coa-icon", decorations = false) }
                 span(className = "coa-title") { +"Crown of Avarice" }

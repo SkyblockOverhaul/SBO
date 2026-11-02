@@ -21,7 +21,8 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
  * A Diana overlay with two looks: the new one built with GuiLib (sbo:ui/tracker/tracker.css) and, when picked in
  * "Tracker Legacy Look", Minecraft text lines from [generateLines]. Both share one name, so they share the saved
  * position; only the chosen one is shown.
- * The new look is only laid out again when its [view] changed.
+ * The new look is only laid out again when its [view] changed. With "Tracker Compact Look" both show [compactLines]
+ * instead, outside the inventory.
  * By default it is shown with a spade in the hub, [extraCondition] changes that (it is ignored in /sboguis).
  */
 abstract class DianaOverlay<V : Any>(
@@ -43,6 +44,7 @@ abstract class DianaOverlay<V : Any>(
         .setExtraCondition(extraCondition)
 
     private var shownView: V? = null
+    private var shownCompact: List<CompactLine>? = null
     // Handled on the next flush, the look settings can also change while the config loads
     private var lookChanged = false
 
@@ -67,17 +69,49 @@ abstract class DianaOverlay<V : Any>(
             overlay.loadPosition()
             modern.loadPosition()
             shownView = null
+            shownCompact = null
         }
+        // The inventory keeps the full tracker, to hide lines and change the view or sort there
+        val compact = if (isCraftingScreenOpen()) null else compactLines()
         if (Trackers.isLegacy(look)) {
-            overlay.setLines(generateLines())
+            overlay.setLines(compact?.map { OverlayTextLine(it.text()) } ?: generateLines())
+            return
+        }
+        // Re-rendering means a full GuiLib layout pass, so only when something shown changed
+        if (compact != null) {
+            if (compact == shownCompact) return
+            shownCompact = compact
+            shownView = null
+            modern.setContent { compactContent(compact) }
             return
         }
         val view = view()
-        // Re-rendering means a full GuiLib layout pass, so only when something shown changed
         if (view == shownView) return
         shownView = view
+        shownCompact = null
         modern.setContent { content(view) }
     }
+
+    /** The lines of the compact look ("Tracker Compact Look"), null while it is off for this tracker. */
+    protected open fun compactLines(): List<CompactLine>? = null
+
+    private fun NodeBuilder.compactContent(lines: List<CompactLine>) {
+        tracker(look.name.lowercase(), compact = true) {
+            lines.forEach { line ->
+                div(className = "tracker-cline") {
+                    if (line.title != null) span(className = "tracker-ctitle") { +line.title }
+                    line.entries.forEachIndexed { i, entry ->
+                        if (i > 0) span(className = "tracker-dot") { +"·" }
+                        if (entry.name != null) span(className = entry.color?.let { "tracker-cname ${colorClass(it)}" } ?: "tracker-cname") { +entry.name }
+                        span(className = "tracker-value") { +entry.value }
+                    }
+                }
+            }
+        }
+    }
+
+    /** [entries] packed [perLine] to a line. */
+    protected fun packed(entries: List<Entry>, perLine: Int = 3): List<CompactLine> = entries.chunked(perLine).map { CompactLine(null, it) }
 
     /** Everything the new look shows, as data: equal views look the same. */
     protected abstract fun view(): V
@@ -163,14 +197,28 @@ abstract class DianaOverlay<V : Any>(
         val valueClass: String? = null
     )
 
-    /** The outer box, with the font and background settings. */
-    protected fun NodeBuilder.tracker(accent: String, children: NodeBuilder.() -> Unit) {
+    /** One entry of a compact line, e.g. "Inq 41+12"; without [name] only the value. */
+    data class Entry(val name: String?, val color: ChatFormatting?, val value: String)
+
+    /** One line of the compact look: the [title] in front, then the entries separated by dots. */
+    data class CompactLine(val title: String?, val entries: List<Entry>) {
+        fun text(): String = buildString {
+            if (title != null) append(ChatFormatting.YELLOW).append(ChatFormatting.BOLD).append(title).append(ChatFormatting.RESET).append(' ')
+            append(entries.joinToString("${ChatFormatting.DARK_GRAY} · ") { entry ->
+                val value = "${ChatFormatting.AQUA}${entry.value}"
+                if (entry.name == null) value else "${entry.color ?: ChatFormatting.GRAY}${entry.name} $value"
+            })
+        }
+    }
+
+    /** The outer box, with the look settings. */
+    protected fun NodeBuilder.tracker(accent: String, compact: Boolean = false, children: NodeBuilder.() -> Unit) {
         val classes = buildString {
             append("tracker ").append(accent)
-            if (Trackers.trackerFont == Trackers.TrackerFont.INTER) append(" inter")
-            if (!Trackers.hasBackground(look)) append(" no-bg")
+            if (compact) append(" compact")
+            append(Trackers.lookClasses(look))
         }
-        div(className = classes) {
+        div(className = classes, style = Trackers.boxStyle(look)) {
             children()
             if (showLookNotice()) lookNotice("tracker")
         }
