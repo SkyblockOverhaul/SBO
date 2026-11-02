@@ -156,11 +156,10 @@ object Http {
                 .thenAccept { response ->
                     try {
                         val code = response.statusCode()
-                        val body = decompress(
-                            response.body(),
-                            response.headers().allValues("Content-Encoding").joinToString(",").ifEmpty { null }
-                        ).use {
-                            it.readNBytes(MAX_BODY_BYTES + 1)
+                        val encoding = response.headers().allValues("Content-Encoding").joinToString(",").ifEmpty { null }
+                        // The outer use closes the raw body when decompress() throws before returning a stream
+                        val body = response.body().use { raw ->
+                            decompress(raw, encoding).use { it.readNBytes(MAX_BODY_BYTES + 1) }
                         }
                         if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
 
