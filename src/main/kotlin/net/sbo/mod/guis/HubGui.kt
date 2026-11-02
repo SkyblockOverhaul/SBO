@@ -145,7 +145,7 @@ object HubGui {
         var showCommands by useState(openCommandsOnNextOpen)
         openCommandsOnNextOpen = false
         useSboScale()
-        useSboTheme()
+        useSboTheme("hub")
         val fit = useFitScale()
 
         div(className = "hub-window", ref = fit.ref, style = fit.style) {

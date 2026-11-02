@@ -75,7 +75,7 @@ object BadgeGui {
         // The dialog asking before leaving unsaved changes
         var leaving by useState(false)
         useSboScale()
-        useSboTheme()
+        useSboTheme("badge")
 
         fun loaded(response: OwnBadgeResponse) {
             if (response.success && response.settings != null) {

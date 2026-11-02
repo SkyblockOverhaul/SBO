@@ -184,7 +184,7 @@ object ProfileViewerGui {
         val now = useState(System.currentTimeMillis())
         PartyFinderGui.FONTS.keys.forEach { id -> useBodyClass("pf-font-$id", config.font == id) }
         useSboScale(UiScale.own(config.uiScale))
-        val theme = useSboTheme(config.theme)
+        val theme = useSboTheme("profileviewer", config.theme)
         useBodyClass("pf-hypixel", theme.hypixelColors)
         useBodyClass("pf-recomb", config.recombobulated)
         useBodyClass("pf-marks", theme.marks)

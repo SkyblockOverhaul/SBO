@@ -77,7 +77,7 @@ object EventsGui {
         var sort by useState(DataManager.sboData.eventsSort.takeIf { it in SORTS } ?: "year")
         var uiScale by useState(UiScale.own(DataManager.sboData.eventsUiScale))
         useSboScale(uiScale)
-        useSboTheme()
+        useSboTheme("events")
         // The running event keeps counting while the window is open
         var tick by useState(0)
         useInterval(1000) { tick++ }

@@ -34,7 +34,7 @@ object Themes : Category("Themes") {
         button {
             title = "Your own themes"
             text = "Open theme folder"
-            description = "Put theme files into this folder. The README in it explains every color, example.json is a theme to copy. New files show up the next time you open the settings."
+            description = "Put theme files into this folder: a .json with colors or a .css file to restyle everything. user.css there is added on top of every theme. The README explains it all, example.json and example.css are themes to copy. New files show up the next time you open the settings, changes to CSS files show up right away. Ctrl + Shift + C in any SBO window shows the CSS classes of what is under the mouse, the folder \"reference\" has all of SBO's CSS to look up."
             onClick { SboThemes.openFolder() }
         }
 

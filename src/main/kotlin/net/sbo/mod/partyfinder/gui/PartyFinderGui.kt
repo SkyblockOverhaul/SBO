@@ -97,7 +97,7 @@ object PartyFinderGui {
         var uiScale by useState(UiScale.own(config.uiScale))
         useSboScale(uiScale)
         var themeId by useState(config.theme)
-        val theme = useSboTheme(themeId)
+        val theme = useSboTheme("partyfinder", themeId)
         var recombobulated by useState(config.recombobulated)
         var favoritesOnlyOnce by useState(config.favoritesOnlyOnce)
         // On the body like the theme, so modals, tooltips and toasts follow it
