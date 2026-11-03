@@ -81,7 +81,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
         fun hitBefore(nanos: Long): Long? = hits.firstOrNull { nanos - it in 0..ATTACK_WINDOW_NS }
 
-        // Kept until a splash that loaded inside the window had it's time to get its name
+        // Kept until a splash that loaded inside the window had its time to get its name
         fun dropOldHits(now: Long) {
             while (hits.isNotEmpty() && now - hits.first() > ATTACK_WINDOW_NS + NAME_CHECK_TIMEOUT_NS) hits.removeFirst()
         }

@@ -28,7 +28,7 @@ class Sub(
 
     fun setEnabled(value: Boolean) {
         if (enabled == value || !toggleable) return
-        // Features that react to an on/off setting see it switches with the sub, and so do settings depending on it
+        // Features that react to an on/off setting see it switch with the sub, and so do settings depending on it
         notifyChanges(entries, includeRoots = true) { enabled = value }
     }
 }
