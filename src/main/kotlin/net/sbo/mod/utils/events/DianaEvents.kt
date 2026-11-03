@@ -17,7 +17,9 @@ import java.util.regex.Pattern
 
 object DianaEvents {
     var lastBlockClicked: SboVec? = null
+        private set
     var lastWaypointClicked: SboVec? = null
+        private set
     private var lastBurrowClicked: SboVec? = null
 
     internal fun init() {
