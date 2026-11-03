@@ -82,7 +82,10 @@ object Pickuplog {
     private fun shouldTrackInventoryChanges(): Boolean = General.pickuplogOverlay || Helper.hasSpade && World.isInHub()
 
     private fun updateInventorySnapshot() {
-        if (mc.player == null || !World.isInSkyblock() || World.isNone() || !shouldTrackInventoryChanges()) return
+        if (mc.player == null || !World.isInSkyblock() || World.isNone() || !shouldTrackInventoryChanges()) {
+            oldInventory = emptyMap()
+            return
+        }
 
         newInventory = Helper.readPlayerInv()
         newPurse = Helper.getPurse()
