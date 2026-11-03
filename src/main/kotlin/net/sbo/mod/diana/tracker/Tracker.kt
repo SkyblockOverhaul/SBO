@@ -31,6 +31,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import net.sbo.mod.utils.game.World.isInSkyblock
+import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.time.TimeUtil
 import java.util.regex.Pattern
 
@@ -63,13 +64,9 @@ object Tracker {
     fun init() {
         Commands.register()
 
-        Register.onChatMessageCancelable(
-            Pattern.compile("^§eThe election room is now closed\\. Clerk Seraphine is doing a final count of the votes\\.\\.\\.$", Pattern.DOTALL)
-        ) { _, _ ->
-            sleep(10000) {
-                MayorReset.check()
-            }
-            true
+        // Only a compare of two years, the overlays switch to the new event right when the election ends instead of on the next drop
+        Register.onTick(20) {
+            if (isInSkyblock()) MayorReset.check()
         }
 
         Register.onChatMessageCancelable(
@@ -282,6 +279,7 @@ object Tracker {
         }
 
         Counters.add(dianaTrackerMayorData, itemName, amount)
+        dianaTrackerMayorData.lastTrackedAt = Http.serverTimeMillis()
         Counters.add(dianaTrackerSessionData, itemName, amount)
         Counters.add(dianaTrackerTotalData, itemName, amount)
         saveTrackerData()

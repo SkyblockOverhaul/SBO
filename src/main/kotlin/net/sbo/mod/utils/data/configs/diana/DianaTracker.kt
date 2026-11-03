@@ -17,7 +17,10 @@ interface DianaTracker {
         items = DianaItemsData()
         mobs = DianaMobsData()
         edited = false
-        if (this is DianaTrackerMayorData) year = 0
+        if (this is DianaTrackerMayorData) {
+            year = 0
+            lastTrackedAt = 0L
+        }
         return this
     }
 
