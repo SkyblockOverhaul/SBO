@@ -799,7 +799,7 @@ object BadgeGui {
         fun bracketed(builder: NodeBuilder, part: String, text: String, painted: Painted?) = with(builder) {
             if (text.isEmpty()) return@with
             if (painted == null) {
-                span(className = "bd-tag-level") { +"[$text] " }
+                span(className = "bd-tag-level") { +"[$text]\u00A0" }
                 return@with
             }
             val color = settings.colorOf(part)
@@ -821,7 +821,7 @@ object BadgeGui {
                     }
                 }
             }
-            span(className = "bd-tag-plain") { +" " }
+            span(className = "bd-tag-plain") { +"\u00A0" }
         }
 
         /** The part in its chain's colors where it is colored, plain otherwise. */
@@ -867,7 +867,7 @@ object BadgeGui {
                     }
                 }
             }
-            span(className = "bd-tag-plain") { +" " }
+            span(className = "bd-tag-plain") { +"\u00A0" }
         }
     }
 
