@@ -246,7 +246,7 @@ object DianaMobDetect {
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
-        if (event.entity is ArmorStand && World.isInHub()) {
+        if (event.entity is ArmorStand) {
             unconfirmed[event.entity.id] = UnconfirmedMob(event.entity, System.nanoTime())
         }
     }
