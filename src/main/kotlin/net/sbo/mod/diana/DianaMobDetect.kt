@@ -384,7 +384,7 @@ object DianaMobDetect {
             if (mobType !in RareMobs.ShareMobs) return
 
             // TODO Once majority of people are on 0.7.2 or above, change it to send with [SBO] prefix in front.
-            val message = "x: ${groundedPos.x.roundToInt()}, y: ${groundedPos.y.roundToInt() - 1}, z: ${groundedPos.z.roundToInt()} | $mob"
+            val message = "x: ${groundedPos.x.roundToInt()}, y: ${groundedPos.y.roundToInt()}, z: ${groundedPos.z.roundToInt()} | $mob"
             if (RareMobs.shareRareMobInPublicChat) Chat.allChat(message) else Chat.pc(message)
         }
 
