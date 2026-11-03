@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.data.configs.sound
 
+import com.google.gson.annotations.SerializedName
 import net.sbo.mod.utils.data.DataManager
 
 // TODO: remove the voume typo compatibility from @SerializedName alternate once most people have upgraded to 0.7.2-beta.3 or higher, as the typo in source code still flags typo detection tools
