@@ -69,7 +69,7 @@ open class EntriesBuilder {
         value: Collection<E>,
         noinline builder: TypeBuilder.() -> Unit = {},
     ) = EntryProvider(null, ::TypeBuilder, builder) { id, b ->
-        OptionsEntry(id, value.asSet(), b.name, b.description, value.asList())
+        OptionsEntry(id, value.asSet(), b.name, b.description, enumValues<E>().asList())
     }
 
     fun button(builder: ButtonBuilder.() -> Unit) {
