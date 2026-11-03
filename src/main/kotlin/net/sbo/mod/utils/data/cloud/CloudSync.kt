@@ -374,22 +374,10 @@ object CloudSync {
     }
 
     private fun canonical(files: Map<String, String>): String =
-        files.toSortedMap().entries.joinToString("") { (name, content) ->
-            """
-            $name
-            ${content.length}
-            $content
-
-            """.trimIndent()
-        }
+        files.toSortedMap().entries.joinToString("") { (name, content) -> "$name\n${content.length}\n$content\n" }
 
     private fun signedBytes(uuid: String, counter: Long, files: Map<String, String>): ByteArray =
-        """
-        sbo-cloud-v1
-        $uuid
-        $SLOT
-        $counter
-        ${canonical(files)}""".trimIndent().toByteArray(Charsets.UTF_8)
+        "sbo-cloud-v1\n$uuid\n$SLOT\n$counter\n${canonical(files)}".toByteArray(Charsets.UTF_8)
 
     private fun hashOf(files: Map<String, String>): String =
         Base64.getEncoder().encodeToString(
