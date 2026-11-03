@@ -14,10 +14,13 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.zip.GZIPInputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.abs
 
 object Http {
     private const val CONNECT_TIMEOUT = 30_000L
@@ -49,6 +52,34 @@ object Http {
         .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
         .followRedirects(HttpClient.Redirect.NEVER)
         .build()
+
+    // Their Date header sets the server time, both run on synced clocks and get called every few minutes anyway
+    private val TIME_HOSTS = setOf("api.hypixel.net", URI.create(SBOKotlin.API_URL).host)
+
+    /** How far the PC clock is behind Hypixel and the SBO backend, from the Date header of their last response. */
+    @Volatile
+    private var clockOffsetMillis = 0L
+
+    /** The real time even when the PC clock is wrong, the PC clock until the first response from one of the [TIME_HOSTS]. */
+    fun serverTimeMillis(): Long = System.currentTimeMillis() + clockOffsetMillis
+
+    private fun updateClockOffset(host: String?, date: String?) {
+        if (host !in TIME_HOSTS || date == null) return
+        val server = try {
+            // RFC_1123_DATE_TIME has fixed English names, a formatter from a pattern would follow the locale
+            ZonedDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli()
+        } catch (_: Exception) {
+            return
+        }
+        val offset = (server - System.currentTimeMillis()).let {
+            // The header has whole seconds and the request takes a moment, a clock this close is left as it is
+            if (abs(it) < 5_000) 0L else it
+        }
+        if (abs(offset - clockOffsetMillis) > 60_000) {
+            SBOKotlin.logger.warn("PC clock is ${-offset / 1000}s off $host, using the server time for SkyBlock dates")
+        }
+        clockOffsetMillis = offset
+    }
 
     private fun http3WithFallback(): HttpClient.Version {
         return try {
@@ -156,6 +187,7 @@ object Http {
                 .thenAccept { response ->
                     try {
                         val code = response.statusCode()
+                        updateClockOffset(uri.host, response.headers().firstValue("Date").orElse(null))
                         val encoding = response.headers().allValues("Content-Encoding").joinToString(",").ifEmpty { null }
                         // The outer use closes the raw body when decompress() throws before returning a stream
                         val body = response.body().use { raw ->
