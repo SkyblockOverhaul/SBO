@@ -220,7 +220,7 @@ object BadgeGui {
             }
         }
         if (namesInChat != SboBadges.NAMES_OFF) {
-            setting("Replace everywhere", "Replaces every instance of {name}/{rank}{player} with it colored everywhere (GUIs, titles, etc...) like shwords would do.") {
+            setting("Names everywhere", "The names from \"Names in messages\" with their level and rank in their badge colors in all text: menus, titles, scoreboard, signs.") {
                 switch(checked = replaceEverywhere, onChange = {
                     replaceEverywhere = it.checked
                     DataManager.sboData.badgeReplaceEverywhere = it.checked
