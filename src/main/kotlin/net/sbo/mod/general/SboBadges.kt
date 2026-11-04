@@ -8,6 +8,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
 import net.minecraft.resources.Identifier
+import net.minecraft.util.FormattedCharSequence
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.BadgeGui
@@ -118,6 +119,7 @@ object SboBadges {
     // Lowercase names whose name tag or tab line has moving colors, built again every frame instead of cached
     @Volatile private var movingAtHead: Set<String> = emptySet()
     @Volatile private var movingInTab: Set<String> = emptySet()
+    @Volatile private var movingEverywhere: Set<String> = emptySet()
     @Volatile private var lastList: BadgeListResponse? = null
     @Volatile private var version: String? = null
     @Volatile private var fetching = false
@@ -185,6 +187,12 @@ object SboBadges {
         movingAtHead = movingAt(TeamTagPlace.HEAD, byName(TeamTagPlace.HEAD))
         // Off, every tab line stands still, your own too
         movingInTab = if (DataManager.sboData.badgeAnimationsInTab) movingAt(TeamTagPlace.TAB, tabTags) else emptySet()
+        // Names recolored everywhere look like names inside chat messages, with their rank always colored
+        movingEverywhere = holders.filter { (uuid, badge) ->
+            animates(uuid) && listOf(BadgePart.NAME, BadgePart.LEVEL, BadgePart.RANK).any {
+                (it == BadgePart.RANK || badge.shows(it, TeamTagPlace.CHAT)) && movesAt(badge.colorOf(it), it, TeamTagPlace.CHAT)
+            }
+        }.mapTo(HashSet()) { it.value.name.lowercase() }
         fixedLines = holders.filter { (uuid, badge) -> !moves(badge.colorOf(BadgePart.STAT), BadgePart.STAT) || !animates(uuid) }
             .mapValues { line(it.value, animate = false) }
         byUuid = holders
@@ -193,6 +201,7 @@ object SboBadges {
         lastList = response
         synchronized(tabCache) { tabCache.clear() }
         synchronized(recolorCache) { recolorCache.clear() }
+        synchronized(scans) { scans.clear() }
     }
 
     /** Builds the badges again after the viewer turned animations of others on or off. */
@@ -353,11 +362,7 @@ object SboBadges {
         if (LOGO in plain) return line
         val colon = plain.indexOf(": ").takeIf { it in 1..MAX_SENDER_LENGTH }
         val sender = colon?.let { end -> WORD.findAll(plain.take(end)).map { it.value }.firstOrNull(::shownInChat) }
-        val wanted: ((String) -> Boolean)? = when (mentions) {
-            NAMES_ALL -> ::shownInChat
-            NAMES_OWN -> ownName()?.let { own -> { name: String -> name.equals(own, ignoreCase = true) } }
-            else -> null
-        }
+        val wanted = wantedNames()
         var out = line
         // Right to left, so a tag put in never moves the names still to come; the sender stands before all of them
         if (wanted != null) {
@@ -366,6 +371,13 @@ object SboBadges {
         }
         if (sender != null) out = decorateChatName(out, sender)
         return out
+    }
+
+    /** Which names inside a message get their look, null while names in messages are off. */
+    private fun wantedNames(): ((String) -> Boolean)? = when (DataManager.sboData.badgeNamesInChat) {
+        NAMES_ALL -> ::shownInChat
+        NAMES_OWN -> ownName()?.let { own -> { name: String -> name.equals(own, ignoreCase = true) } }
+        else -> null
     }
 
     private fun shownInChat(name: String): Boolean =
@@ -384,6 +396,89 @@ object SboBadges {
             from = from,
             nameOnly = nameOnly,
         )
+    }
+
+    /**
+     * Recolors the badge holders' names that names in messages picks (and the level/rank in front of them) in any text that is drawn:
+     * GUIs, titles, signs, scoreboards, books... Returns null when nothing changes.
+     */
+    fun replaceEverywhere(text: FormattedCharSequence?): FormattedCharSequence? {
+        if (text == null || !DataManager.sboData.badgeReplaceEverywhere || byName.isEmpty()) return null
+        return safe(null) { replaceEverywhereOf(text) }
+    }
+
+    private fun replaceEverywhereOf(text: FormattedCharSequence): FormattedCharSequence? {
+        // Names in messages decide whose names are recolored, off recolors none
+        val mode = DataManager.sboData.badgeNamesInChat
+        if (mode == NAMES_OFF) return null
+        val list = byName
+        val inChat = showInChat
+        // Every drawn text passes here (drt and SkyOcean scanning all of it cost players whole frames). Chat lines and most
+        // component text come back as the same object every frame, so what was found in it is kept: text without a name
+        // then costs one lookup, text whose colors stand still is built once
+        val known = synchronized(scans) { scans[text] }?.takeIf { it.list === list && it.mode == mode && it.inChat == inChat }
+        if (known != null) {
+            if (known.found.isEmpty()) return null
+            known.still?.let { return it }
+        }
+        val found = known?.found ?: namesIn(text, list, wantedNames() ?: return null)
+        if (found.isEmpty()) {
+            synchronized(scans) { scans[text] = Scan(list, mode, inChat, found, null) }
+            return null
+        }
+
+        val runs = ArrayList<Pair<String, Style>>()
+        val run = StringBuilder()
+        var runStyle: Style? = null
+        text.accept { _, style, codePoint ->
+            if (style != runStyle) {
+                runStyle?.let { runs += run.toString() to it }
+                run.setLength(0)
+                runStyle = style
+            }
+            run.appendCodePoint(codePoint)
+            true
+        }
+        runStyle?.let { runs += run.toString() to it }
+
+        var out: Component = Component.empty().also { line -> runs.forEach { (s, style) -> line.append(Component.literal(s).withStyle(style)) } }
+        // Right to left, like names inside chat messages
+        for (name in found.asReversed()) {
+            out = recolor(
+                out, name.name, list[name.name.lowercase()], TeamTagPlace.CHAT,
+                // No tag or logo, so the text keeps its width and recoloring it again changes nothing
+                animate = name.name.lowercase() in movingEverywhere, from = name.start, forceRank = true,
+            )
+        }
+        val result = out.visualOrderText
+        val still = found.none { it.name.lowercase() in movingEverywhere }
+        synchronized(scans) { scans[text] = Scan(list, mode, inChat, found, result.takeIf { still }) }
+        return result
+    }
+
+    /** Badge holders' names in the text, written exactly like theirs; empty when it holds none. */
+    private fun namesIn(text: FormattedCharSequence, list: Map<String, SboBadge>, wanted: (String) -> Boolean): List<FoundName> {
+        val plain = StringBuilder()
+        text.accept { _, _, codePoint -> plain.appendCodePoint(codePoint); true }
+        if (plain.indexOf(LOGO) >= 0) return emptyList()
+        var found: MutableList<FoundName>? = null
+        var start = -1
+        // Whole words only, so the end of a longer word never reads as a name; no regex, this runs for every new text
+        for (i in 0..plain.length) {
+            val inWord = i < plain.length && isNameChar(plain[i])
+            if (inWord) {
+                if (start < 0) start = i
+                continue
+            }
+            if (start >= 0 && i - start <= 16) {
+                val word = plain.substring(start, i)
+                if (list[word.lowercase()]?.name == word && wanted(word)) {
+                    (found ?: ArrayList<FoundName>().also { found = it }).add(FoundName(word, start))
+                }
+            }
+            start = -1
+        }
+        return found ?: emptyList()
     }
 
     /** Name of the badge holder or tagged team member a tab entry shows, null for everyone else. */
@@ -405,6 +500,12 @@ object SboBadges {
     private val recolorCache = object : LinkedHashMap<Triple<Component, String, String>, Component>(64, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Triple<Component, String, String>, Component>) = size > RECOLOR_CACHE_SIZE
     }
+
+    private class FoundName(val name: String, val start: Int)
+    // What a drawn text held, valid for the list and settings it was found with; still is the finished text when its colors stand still
+    private class Scan(val list: Map<String, SboBadge>, val mode: String, val inChat: Boolean, val found: List<FoundName>, val still: FormattedCharSequence?)
+    // By the text object itself, gone once the game drops the text
+    private val scans = WeakHashMap<FormattedCharSequence, Scan>()
 
     private fun recolored(line: Component, player: String, place: String, tag: TagLook?): Component {
         val lower = player.lowercase()
@@ -475,6 +576,8 @@ object SboBadges {
         // The name is looked for from this char on; nameOnly leaves level and rank in front of it alone (names inside a message)
         from: Int = 0,
         nameOnly: Boolean = false,
+        // The rank takes its color even where the badge doesn't show it (names recolored everywhere)
+        forceRank: Boolean = false,
     ): Component {
         val read = ArrayList<StyledChar>()
         val readPlainBuilder = StringBuilder()
@@ -500,7 +603,7 @@ object SboBadges {
         // Name, level and rank each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
         val nameColor = badge?.takeIf { it.shows(BadgePart.NAME, place) }?.colorOf(BadgePart.NAME)
         val levelColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.LEVEL, place) }?.colorOf(BadgePart.LEVEL)
-        val rankColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.RANK, place) }?.colorOf(BadgePart.RANK)
+        val rankColor = badge?.takeIf { !nameOnly && (forceRank || it.shows(BadgePart.RANK, place)) }?.colorOf(BadgePart.RANK)
         val tagInfo = tag?.let { ranks[it.rank] }
         val tagText = tagInfo?.tag
         if (nameColor == null && levelColor == null && rankColor == null && tagText == null && afterName == null) return line
