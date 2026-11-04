@@ -465,7 +465,7 @@ object SboBadges {
         var start = -1
         // Whole words only, so the end of a longer word never reads as a name; no regex, this runs for every new text
         for (i in 0..plain.length) {
-            val inWord = i < plain.length && plain[i].isNameChar()
+            val inWord = i < plain.length && isNameChar(plain[i])
             if (inWord) {
                 if (start < 0) start = i
                 continue
@@ -480,8 +480,6 @@ object SboBadges {
         }
         return found ?: emptyList()
     }
-
-    private fun Char.isNameChar() = this in 'a'..'z' || this in 'A'..'Z' || this in '0'..'9' || this == '_'
 
     /** Name of the badge holder or tagged team member a tab entry shows, null for everyone else. */
     private fun tabPlayerOf(info: PlayerInfo): String? {
