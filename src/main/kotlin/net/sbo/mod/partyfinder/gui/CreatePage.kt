@@ -110,7 +110,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         h3(className = "pf-section") { +"Party size" }
         div(className = "pf-size-row") {
             numberInput(value = draft.partySize, onChange = { size -> change { partySize = size } }, min = target.minSize, max = target.maxSize)
-            span(className = "pf-muted") { +(if (draft.partySize == target.maxSize) "full party" else sizeLabel(draft.partySize)) }
+            span(className = "pf-muted") { +if (draft.partySize == target.maxSize) "full party" else sizeLabel(draft.partySize) }
         }
         p(className = "pf-hint") { +"${target.label} parties can have up to ${target.maxSize} players." }
 
@@ -217,10 +217,10 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
         div(className = "pf-form-buttons") {
             button(onClick = { draft = PartyDraft(target.partyType, target.subType, target.maxSize) }) { +"Reset" }
             val createHint = "You must be alone or the party leader. Everyone already in your party has to meet the requirements too." +
-                (if (props.inQueue) " Updating replaces the party you have listed right now." else "")
+                if (props.inQueue) " Updating replaces the party you have listed right now." else ""
             tooltip(createHint, placement = "top", className = "pf-tip") {
                 button(className = "primary", disabled = !target.createOpen, onClick = { submit() }) {
-                    +(if (props.inQueue) "Update party" else "Create party")
+                    +if (props.inQueue) "Update party" else "Create party"
                 }
             }
         }
@@ -300,8 +300,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
             }
         }
         if (own != null) {
-            val need = saved
-            val meets = need?.let { StatView.meets(def, it, own) }
+            val meets = saved?.let { StatView.meets(def, it, own) }
             val text = "You: ${StatView.value(stat, own.stats[stat])}"
             // Always met or not met colors, never Hypixel colors
             span(className = classNames("pf-own", "ok" to (meets == true), "bad" to (meets == false)), title = text) {
@@ -312,7 +311,7 @@ private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView
     }
 }
 
-/** Pick several items, players need one or all of them; Kuudra armor gets a lowest tier, pets a lowest rarity. */
+/** Pick several items, players need one or all of them; Kuudra armor gets the lowest tier, pets the lowest rarity. */
 private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (String?) -> Unit) {
     val all = ReqMatcher.matchesAll(saved)
     val picks = ReqMatcher.picks(saved).mapNotNull { pick ->
@@ -388,7 +387,7 @@ private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, c
     fun setCount(roleId: String, count: Int) = change {
         val wanted = wantedRoles.filter { it != roleId } + List(count) { roleId }
         // Definition order, so every list shows the roles the same way
-        wantedRoles = target.roles.flatMap { r -> wanted.filter { it == r.id } }.toMutableList()
+        wantedRoles = target.roles.asSequence().flatMap { r -> wanted.filter { it == r.id } }.toMutableList()
     }
     div(className = "guilib-chips") {
         target.roles.forEach { role ->

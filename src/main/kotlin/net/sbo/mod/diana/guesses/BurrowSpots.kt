@@ -28,7 +28,7 @@ object BurrowSpots {
     /** Whether a burrow can be on the block according to the list, always true without a list. */
     fun isPossible(block: SboVec): Boolean {
         if (!loaded) load()
-        return spots?.contains(key(block)) ?: true
+        return spots?.contains(key(block)) != false
     }
 
     private fun load() {
@@ -48,5 +48,5 @@ object BurrowSpots {
 
     /** Packs a block into a Long, x and z within +-2^20 and y within 0..4095 (Hub coordinates fit easily). */
     private fun key(x: Int, y: Int, z: Int): Long =
-        ((x.toLong() and 0x1FFFFF) shl 33) or ((z.toLong() and 0x1FFFFF) shl 12) or (y.toLong() and 0xFFF)
+        x.toLong() and 0x1FFFFF shl 33 or (z.toLong() and 0x1FFFFF shl 12) or (y.toLong() and 0xFFF)
 }

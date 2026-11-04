@@ -7,7 +7,6 @@ import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
@@ -32,7 +31,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
             changeSort.text = "${YELLOW}Sort: ${Trackers.statsSort.label}"
         }
 
-    // The new look shows hidden lines and the hint only in the inventory
+    // The new-look shows hidden lines and the hint only in the inventory
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) updateLines()
@@ -45,10 +44,10 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
 
     private fun createStatLine(name: String, formattedText: String): OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick { toggleHidden(name) }.setCondition {
-            val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in DataManager.sboData.hideTrackerLines)
+            val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in sboData.hideTrackerLines)
             meetsManualHideCondition
         }
-        if (name in DataManager.sboData.hideTrackerLines) {
+        if (name in sboData.hideTrackerLines) {
             line.text = "$GRAY$STRIKETHROUGH${formattedText.removeFormatting()}"
         }
         return line
@@ -83,7 +82,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
 
     override fun view(): View {
         val inventory = isCraftingScreenOpen()
-        val hidden = DataManager.sboData.hideTrackerLines
+        val hidden = sboData.hideTrackerLines
         val rows = sortedStats().mapNotNull { stat ->
             // Hidden lines only show (crossed out) in the inventory, to unhide them
             val isHidden = stat.key in hidden
@@ -113,7 +112,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
 
     override fun compactLines(): List<CompactLine>? {
         if (!Trackers.isCompact(Trackers.CompactTracker.STATS)) return null
-        val hidden = DataManager.sboData.hideTrackerLines
+        val hidden = sboData.hideTrackerLines
         val entries = sortedStats().filter { it.key !in hidden }.map { stat ->
             val ls = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "/${Helper.formatNumber(it(), withCommas = true)}" }.orEmpty()
             Entry(stat.short, stat.color, Helper.formatNumber(stat.count(), withCommas = true) + ls)
@@ -158,7 +157,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
                 withCommas = true
             )}"),
         )
-        lines.addAll(sortedStats().map { statLines[STATS.indexOf(it)] })
+        sortedStats().mapTo(lines) { statLines[STATS.indexOf(it)] }
         return lines
     }
 }

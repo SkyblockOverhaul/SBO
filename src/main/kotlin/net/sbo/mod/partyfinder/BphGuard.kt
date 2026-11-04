@@ -14,7 +14,7 @@ internal object BphGuard {
     private val WATCHED = listOf(
         "net.sbo.mod.utils.SboTimerManagerKt",
         "net.sbo.mod.utils.SboTimerManager",
-        "net.sbo.mod.utils.SboTimerManager\$SBOTimer",
+        $$"net.sbo.mod.utils.SboTimerManager$SBOTimer",
         "net.sbo.mod.diana.tracker.Tracker",
         "net.sbo.mod.diana.tracker.Counters",
         "net.sbo.mod.diana.tracker.RareMobs",
@@ -43,12 +43,15 @@ internal object BphGuard {
         val owners = ModConflicts.mixinPackages()
         fun modOf(mixinClass: String) = owners.entries.filter { mixinClass.startsWith(it.key + ".") }
             .maxByOrNull { it.key.length }?.value?.metadata?.id ?: mixinClass.substringBeforeLast('.')
-        // Other mods' mixins leave @MixinMerged on every method they add or change. Class.forName loads the class, so
-        // this also sees mixins of classes nothing has touched yet.
-        val mods = WATCHED.flatMap { name ->
-            val type = runCatching { Class.forName(name) }.getOrNull() ?: return@flatMap emptyList()
+
+        // Other mods' mixins leave @MixinMerged on every method they add or change. Loading the class triggers
+        // its transformation, so this also sees mixins of classes nothing has touched yet.
+        val mods = WATCHED.asSequence().flatMap { name ->
+            val type = runCatching { Class.forName(name, false, BphGuard::class.java.classLoader) }.getOrNull()
+                ?: return@flatMap emptyList()
             type.declaredMethods.mapNotNull { it.getAnnotation(MixinMerged::class.java)?.mixin }
-        }.filterNot { it.startsWith("net.sbo.mod.") }.map(::modOf).distinct().take(MAX_MODS)
+        }.filterNot { it.startsWith("net.sbo.mod.") }.map(::modOf).distinct().take(MAX_MODS).toList()
+
         if (mods.isNotEmpty()) logger.warn("[SBO] Mods hooking into the burrows per hour tracking: ${mods.joinToString()}")
         return mods
     }

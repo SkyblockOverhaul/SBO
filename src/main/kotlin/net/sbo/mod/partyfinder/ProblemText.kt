@@ -14,6 +14,7 @@ import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.MojangAuth
 import java.util.Locale
+import kotlin.math.floor
 
 object ProblemText {
     private const val RELOAD = "/sboreloadstats"
@@ -36,8 +37,9 @@ object ProblemText {
     fun describe(problem: Problem, target: PartyTarget?): String = when (problem.stat) {
         "ironman" -> if (problem.need.text() == "only") "this party is only for Ironman players" else "this party is not for Ironman players"
         "role" -> {
-            val labels = (problem.need as? JsonArray).orEmpty().mapNotNull { it.text() }
+            val labels = (problem.need as? JsonArray).orEmpty().asSequence().mapNotNull { it.text() }
                 .map { id -> target?.roleLabel(id) ?: id }
+                .toList()
             // need lists the open roles, a known role missing there is taken
             val have = problem.have.text()?.takeIf { id -> target?.roles?.any { it.id == id } == true }
             when {
@@ -85,7 +87,7 @@ object ProblemText {
     private val COMPACT_STATS = listOf("Xp", "Powder")
 
     fun value(statId: String, value: JsonElement?): String {
-        if (value == null || value is JsonNull) return "no data"
+        if (value == null || value === JsonNull) return "no data"
         val stat = PartyCategories.stat(statId)
         return when (value) {
             is JsonPrimitive -> {
@@ -116,7 +118,7 @@ object ProblemText {
     }
 
     fun number(value: Double): String =
-        if (value == Math.floor(value) && !value.isInfinite()) String.format(Locale.US, "%,d", value.toLong())
+        if (value == floor(value) && !value.isInfinite()) String.format(Locale.US, "%,d", value.toLong())
         else String.format(Locale.US, "%,.1f", value)
 
     fun title(text: String): String = text.lowercase().split('_', ' ').joinToString(" ") { part ->
@@ -132,7 +134,7 @@ object ProblemText {
         orBetter(title(rarity.orEmpty()), ReqMatcher.rarityRank(rarity) == ReqMatcher.RARITIES.lastIndex)
 
     /** "Terror Armor (Fiery or better)", "Infernal Terror Armor" at the top tier, any tier for Basic. */
-    fun tierPick(label: String, minTier: String?): String {
+    private fun tierPick(label: String, minTier: String?): String {
         val rank = minTier?.let { ReqMatcher.tierRank(it) } ?: return label
         return when (rank) {
             0 -> label
@@ -142,7 +144,7 @@ object ProblemText {
     }
 
     /** "Ender Dragon (Legendary or better)", "Legendary Ender Dragon" at the pet's top rarity, any rarity for its lowest. */
-    fun rarityPick(label: String, minRarity: String, rarities: List<String>): String {
+    private fun rarityPick(label: String, minRarity: String, rarities: List<String>): String {
         val rank = rarities.indexOf(minRarity.uppercase(Locale.US))
         return when {
             rank <= 0 -> label
@@ -167,5 +169,5 @@ object ProblemText {
 
     fun choiceLabel(statId: String, id: String): String = PartyCategories.choice(statId, id)?.label ?: title(id)
 
-    private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+    private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it === JsonNull }?.contentOrNull
 }

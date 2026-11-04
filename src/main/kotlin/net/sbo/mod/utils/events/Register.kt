@@ -99,6 +99,7 @@ object Register {
      *
      * @param regex The regular expression to filter messages with.
      * @param action The action to execute. It receives the message and the `MatchResult`.
+     * @param noFormatting Whether to strip formatting before checking if the [regex] matches. If false, the Regex must match the message exactly, including colors. If true, the Regex must not expect any color codes.
      */
     fun onChatMessage(
         regex: Regex,

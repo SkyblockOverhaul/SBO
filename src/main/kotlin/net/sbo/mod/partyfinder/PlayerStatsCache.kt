@@ -76,7 +76,7 @@ object PlayerStatsCache {
 
     /** Up to 5 players by uuid in one request. Players loaded in the last 10 minutes or failing right now are not asked for. */
     fun players(uuids: List<String>, onError: (PfError) -> Unit, onDone: (List<PlayerStats>) -> Unit) {
-        val ids = uuids.map(::key).distinct()
+        val ids = uuids.asSequence().map(::key).distinct().toList()
         val missing = ids.filter { cached(it) == null && paused(it) == null }
         if (missing.isEmpty()) return onDone(ids.mapNotNull(::cached))
         PartyFinderApi.viewerStats(ViewerStatsBody(uuids = missing), onError = { error ->

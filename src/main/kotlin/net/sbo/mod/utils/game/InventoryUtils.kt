@@ -70,8 +70,8 @@ object InventoryUtils {
         val now = System.nanoTime()
         val requiredNs = duration.inWholeNanoseconds
 
-        if (itemId in currentItemId) {
-            if (now - currentItemStartTime >= requiredNs) return true
+        if (itemId in currentItemId && now - currentItemStartTime >= requiredNs) {
+            return true
         }
 
         return heldHistory.any { (histId, histDuration, stoppedAt) ->

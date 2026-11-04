@@ -85,9 +85,9 @@ object PartyFinderGui {
         var settingsSection by useState("general")
         var favorites by useState(config.favorites.toList())
         var own by useState<MemberView?>(null)
-        var ownBySub by useState(mapOf<String, MemberView>())
+        var ownBySub by useState(emptyMap<String, MemberView>())
         // Answers arrive one by one, the ref always holds all of them so far
-        val ownCollected = useRef(mapOf<String, MemberView>())
+        val ownCollected = useRef(emptyMap<String, MemberView>())
         var ownError by useState<String?>(null)
         var reload by useState(0)
         var inspected by useState<InspectedPlayer?>(null)
@@ -156,7 +156,7 @@ object PartyFinderGui {
             ownError = null
             OwnStats.getAll(targets, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { x, me ->
                 if (currentKey.current == t.key) {
-                    ownCollected.current = ownCollected.current + (x.key to me)
+                    ownCollected.current += x.key to me
                     ownBySub = ownCollected.current
                     if (x == targets.first()) own = me
                 }

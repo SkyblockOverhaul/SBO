@@ -3,13 +3,19 @@ package net.sbo.mod.config
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 
+fun <T> Collection<T>.asSet(): Set<T> =
+    this as? Set<T> ?: toSet()
+
+fun <T> Collection<T>.asList(): List<T> =
+    this as? List<T> ?: toList()
+
 open class EntriesBuilder {
 
     private val ids = mutableSetOf<String>()
     internal val elements = mutableListOf<ConfigElement>()
     private var currentSub: Sub? = null
 
-    val subs: List<Sub> get() = elements.filterIsInstance<Sub>().filter { it.toggleable }
+    val subs: List<Sub> get() = elements.asSequence().filterIsInstance<Sub>().filter { it.toggleable }.toList()
 
     internal fun add(element: ConfigElement) {
         if (element is ConfigEntry<*>) {
@@ -35,7 +41,7 @@ open class EntriesBuilder {
 
     private fun <T> number(value: T, convert: (Number) -> T, builder: NumberBuilder<T>.() -> Unit)
         where T : Number, T : Comparable<T> =
-        EntryProvider(null, { NumberBuilder<T>(it) }, builder) { id, b ->
+        EntryProvider(null, { NumberBuilder(it) }, builder) { id, b ->
             NumberEntry(id, value, b.name, b.description, b.range, b.slider, convert)
         }
 
@@ -59,6 +65,13 @@ open class EntriesBuilder {
     inline fun <reified E : Enum<E>> options(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionsEntry(id, value.toCollection(LinkedHashSet()), b.name, b.description, enumValues<E>().toList()) }
 
+    inline fun <reified E : Enum<E>> options(
+        value: Collection<E>,
+        noinline builder: TypeBuilder.() -> Unit = {},
+    ) = EntryProvider(null, ::TypeBuilder, builder) { id, b ->
+        OptionsEntry(id, value.asSet(), b.name, b.description, enumValues<E>().asList())
+    }
+
     fun button(builder: ButtonBuilder.() -> Unit) {
         val button = ButtonBuilder().apply(builder)
         add(Button(button.title, button.description, button.text, button.condition, button.callback))
@@ -73,7 +86,7 @@ open class EntriesBuilder {
 
     companion object {
         // Kept from ResourcefulConfigKt so the existing categories compile unchanged
-        fun Literal(value: String): String = value
+        fun literal(value: String): String = value
     }
 }
 

@@ -103,8 +103,8 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Trac
         val key = name.lowercase()
         val isSelf = key == Player.getName()?.lowercase()
         return when {
-            (isSelf && LootshareDisplay.ownMobAround) || spawners.isRecent(key, now) -> Status.SPAWNED
-            (isSelf && LootshareDisplay.lootsharedAny) || lootshared.isRecent(key, now) -> Status.SHARED
+            isSelf && LootshareDisplay.ownMobAround || spawners.isRecent(key, now) -> Status.SPAWNED
+            isSelf && LootshareDisplay.lootsharedAny || lootshared.isRecent(key, now) -> Status.SHARED
             else -> Status.MISSING
         }
     }

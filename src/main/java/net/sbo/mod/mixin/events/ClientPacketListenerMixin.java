@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 final class ClientPacketListenerMixin {
     @Inject(method = "sendChat", at = @At("HEAD"))
     private final void sbo$onSendMessage(@NonNull final String content, @NonNull final CallbackInfo ci) {
-        SBOEvent.INSTANCE.emit(new SentMessageEvent(content));
+        SBOEvent.INSTANCE.emit(new SentMessageEvent());
     }
 
     @Inject(method = "sendCommand", at = @At("HEAD"))

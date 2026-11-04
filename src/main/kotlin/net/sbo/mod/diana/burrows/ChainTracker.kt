@@ -60,7 +60,7 @@ object ChainTracker {
     fun onBurrowDug(current: Int, max: Int, pos: SboVec?) {
         val now = System.nanoTime()
         val dug = if (current > 1 && pos != null) {
-            steps.filter { it.step == current && it.max == max }.minByOrNull { it.distanceTo(pos) }
+            steps.asSequence().filter { it.step == current && it.max == max }.minByOrNull { it.distanceTo(pos) }
         } else null
         // A chain's first burrow starts a new one, as does a dig whose step was not tracked
         val chain = dug?.chain ?: nextChain++
@@ -77,13 +77,13 @@ object ChainTracker {
     /**
      * Called when an arrow guess is made.
      * @param origin Where the arrow starts, at the burrow that was dug.
-     * @param candidates The blocks along the arrow the burrow can be on, best first.
+     * @param candidates The blocks along the arrow the burrow can be on, the best first.
      */
     fun onArrowGuess(origin: SboVec, candidates: List<SboVec>) {
         if (candidates.isEmpty()) return
         val now = System.nanoTime()
         digsWaitingForArrow.removeAll { now - it.time > LINK_NANOS }
-        val dig = digsWaitingForArrow.filter { it.pos.distanceTo(origin) <= ARROW_ORIGIN_DISTANCE }.minByOrNull { it.pos.distanceTo(origin) } ?: return
+        val dig = digsWaitingForArrow.asSequence().filter { it.pos.distanceTo(origin) <= ARROW_ORIGIN_DISTANCE }.minByOrNull { it.pos.distanceTo(origin) } ?: return
         digsWaitingForArrow.remove(dig)
         // A spade guess for the same burrow made before the arrow showed is replaced
         spadeStep?.takeIf { s -> candidates.any { it.distanceTo(s.positions[0]) <= MATCH_DISTANCE } }?.let {
@@ -121,11 +121,13 @@ object ChainTracker {
         steps.removeAll { step ->
             now - step.time > EXPIRE_NANOS || waypoints.none { step.distanceTo(it.pos) <= MATCH_DISTANCE }
         }
-        if (spadeStep != null && spadeStep !in steps) spadeStep = null
+        val currentSpadeStep = spadeStep
+        if (currentSpadeStep != null && currentSpadeStep !in steps) spadeStep = null
     }
 
     /**
      * Whether the waypoint at [pos] is the end of its chain.
+     * @param pos  The position to check if waypoint at that position is end of the chain.
      * @param type The waypoint's type. Burrows are often close together, so of the known burrows only the one closest to
      * the chain end step is it.
      */

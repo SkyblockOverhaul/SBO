@@ -25,8 +25,8 @@ object Themes : Category("Themes") {
     }
 
     var theme by choice(SboThemes.DEFAULT) {
-        this.name = Literal("Theme")
-        this.description = Literal("Colors of all SBO windows: party finder, settings, events, achievements, sounds, cloud sync and the hub. Hover a theme in the list to see what it does.")
+        this.name = literal("Theme")
+        this.description = literal("Colors of all SBO windows: party finder, settings, events, achievements, sounds, cloud sync and the hub. Hover a theme in the list to see what it does.")
         this.options = { SboThemes.all().map { Choice(it.id, it.label, it.description) } }
     }
 
@@ -44,8 +44,8 @@ object Themes : Category("Themes") {
     }
 
     var uiScale by choice(UiScale.id(UiScale.AUTO)) {
-        this.name = Literal("Window Size")
-        this.description = Literal("How big all SBO windows are. Auto uses your Minecraft GUI scale. Windows with their own Size setting keep it unless it is set to Global.")
+        this.name = literal("Window Size")
+        this.description = literal("How big all SBO windows are. Auto uses your Minecraft GUI scale. Windows with their own Size setting keep it unless it is set to Global.")
         this.options = { UiScale.GLOBAL_CHOICES.map { Choice(UiScale.id(it), UiScale.label(it)) } }
     }
 
@@ -56,8 +56,8 @@ object Themes : Category("Themes") {
     }
 
     var backgroundBlur by boolean(true) {
-        this.name = Literal("Background Blur")
-        this.description = Literal("Blurs the game behind all SBO windows. Turn it off to see the game clearly, the dark overlay stays.")
+        this.name = literal("Background Blur")
+        this.description = literal("Blurs the game behind all SBO windows. Turn it off to see the game clearly, the dark overlay stays.")
     }
 
     init {
@@ -67,9 +67,9 @@ object Themes : Category("Themes") {
     }
 
     var itemsLoading by choice(ITEMS_LOADING_SIMPLE) {
-        this.name = Literal("Item Loading Animation")
+        this.name = literal("Item Loading Animation")
         this.since = "0.7.2-beta.2"
-        this.description = Literal("What the profile viewer shows while it loads the items of a player.")
+        this.description = literal("What the profile viewer shows while it loads the items of a player.")
         this.options = {
             listOf(
                 Choice(ITEMS_LOADING_BLOCKS, "Blocks", "Blocks that fill up like memory, with the progress in percent."),
@@ -79,7 +79,7 @@ object Themes : Category("Themes") {
         }
     }
 
-    const val ITEMS_LOADING_BLOCKS = "blocks"
+    private const val ITEMS_LOADING_BLOCKS = "blocks"
     const val ITEMS_LOADING_SIMPLE = "simple"
     const val ITEMS_LOADING_OFF = "off"
 }

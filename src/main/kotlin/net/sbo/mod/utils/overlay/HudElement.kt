@@ -13,6 +13,10 @@ import java.awt.Color
 /**
  * Something on the HUD that /sboguis can move and scale: an [Overlay] of text lines or a [GuiLibOverlay].
  * Keeps the saved position, keeps it on the screen and runs the render conditions.
+ * @property name The name of this HUD element.
+ * @property x The horizontal position of this HUD element.
+ * @property y The vertical position of this HUD element.
+ * @property scale The scale of this HUD element.
  * @property allowedScreens The screens it is also drawn in (and clickable in), besides no screen.
  */
 abstract class HudElement(
@@ -49,8 +53,7 @@ abstract class HudElement(
     /** The full name (hover of the eye) and the 1-3 letters on the collapsed bar. */
     var label: String = defaultLabel(name)
         private set
-    var shortLabel: String = defaultShortLabel(label)
-        private set
+    private var shortLabel: String = defaultShortLabel(label)
 
     // Where the eye was drawn this frame (GUI px), null while it isn't
     private var eyeBounds: FloatArray? = null
@@ -174,7 +177,7 @@ abstract class HudElement(
     open fun updateConditions() {
         cachedCondition = condition()
 
-        // When on the editing screen, show overlays even if extra condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well. The main condition() checks for Config toggle (we don't show these on overlay edit screen), while extraCondition() checks for these dynamic toggles like being in The Hub.
+        // When on the editing screen, show overlays even if extra condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit its position outside The Hub as well. The main condition() checks for Config toggle (we don't show these on overlay edit screen), while extraCondition() checks for these dynamic toggles like being in The Hub.
         cachedExtraCondition = extraCondition() || inEditingScreen()
     }
 
@@ -228,7 +231,7 @@ abstract class HudElement(
         // "Diana Loot" -> "DL", a single word -> its first letters
         private fun defaultShortLabel(label: String): String {
             val words = label.split(' ').filter { it.isNotEmpty() }
-            return if (words.size == 1) words[0].take(3) else words.take(3).joinToString("") { it.take(1).uppercase() }
+            return if (words.size == 1) words[0].take(3) else words.asSequence().take(3).joinToString("") { it.take(1).uppercase() }
         }
     }
 }

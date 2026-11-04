@@ -229,7 +229,9 @@ object CloudSyncGui {
         useEffect { CloudSync.compare { result = it } }
 
         fun side(id: String): CloudSide = choices[id] ?: CloudSide.PC
-        fun pick(id: String, side: CloudSide) { choices = choices + (id to side) }
+        fun pick(id: String, side: CloudSide) {
+            choices += id to side
+        }
 
         div(className = "cs-window cs-wide") {
             windowHeader("Compare", size, onBack)

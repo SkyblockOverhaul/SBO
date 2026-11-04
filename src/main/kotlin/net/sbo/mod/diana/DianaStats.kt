@@ -15,28 +15,30 @@ import java.util.regex.Pattern
 // TODO Once majority of people are on 0.7.2 or above, change the party message to send with [SBO] prefix in front.
 internal object DianaStats {
     private val STATS_PATTERN: Pattern = Pattern.compile(
-        "§9Party §8> (.*?)§f: (?:\\[SBO\\] )?Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \\((.*?)\\) - Mobs: (.*?) \\((.*?)\\) - Inquisitors: (.*?) \\((.*?)\\) - LS Inqs: (.*?) - Chimeras: (.*?) \\((.*?)\\) - LS: (.*?) \\((.*?)\\) - Sticks: (.*?) \\((.*?)\\) - Relics: (.*?) \\((.*?)\\)(.*?)",
+        """
+        §9Party §8> (.*?)§f: (?:\[SBO\] )?Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \((.*?)\) - Mobs: (.*?) \((.*?)\) - Inquisitors: (.*?) \((.*?)\) - LS Inqs: (.*?) - Chimeras: (.*?) \((.*?)\) - LS: (.*?) \((.*?)\) - Sticks: (.*?) \((.*?)\) - Relics: (.*?) \((.*?)\)(.*?)
+        """.trimIndent(),
         Pattern.DOTALL
     )
 
     private val STATS_PATTERN_TWO: Pattern = Pattern.compile(
-        "§9Party §8> (.*?)§f: (?:\\[SBO\\] )?" +
-            "Pt:([^-]+)-" +                       // 2 playtime
-            "Pr:(.+?)/(.+?)/h-" +                 // 3 profit, 4 profit/h
-            "B:(.+?)/(.+?)-" +                    // 5 burrows, 6 burrows/h
-            "M:(\\d+)/(.+?)-" +                   // 7 mobs, 8 mobs/h
-            "(?:I:(\\d+)/(.+?)-)?" +              // 9 inqs, 10 inq %
-            "(?:LSI:(\\d+)-)?" +                  // 11 LS inqs
-            "(?:S:(\\d+)/(.+?)-)?" +              // 12 sphinx, 13 %
-            "(?:K:(\\d+)/(.+?)-)?" +              // 14 kings, 15 %
-            "(?:M:(\\d+)/(.+?)-)?" +              // 16 mantis, 17 %
-            "(?:C(\\d+)/(.+?)-)?" +               // 18 chimeras, 19 %
-            "(?:LS: (\\d+)/\\((.+?)\\)-)?" +      // 20 LS chimeras, 21 %
-            "(?:S(\\d+)/(.+?)-)?" +               // 22 sticks, 23 %
-            "(?:R(\\d+)/(.+?)-)?" +               // 24 relics, 25 %
-            "(?:C(\\d+)/(.+?)-)?" +               // 26 cores, 27 %
-            "(?:W(\\d+)/(.+?)-)?" +               // 28 wools, 29 %
-            "(?:D(\\d+)/(.+?))?-?$",              // 30 dyes, 31 %
+        """§9Party §8> (.*?)§f: (?:\[SBO\] )?""" +
+            """Pt:([^-]+)-""" +                       // 2 playtime
+            """Pr:(.+?)/(.+?)/h-""" +                 // 3 profit, 4 profit/h
+            """B:(.+?)/(.+?)-""" +                    // 5 burrows, 6 burrows/h
+            """M:(\d+)/(.+?)-""" +                    // 7 mobs, 8 mobs/h
+            """(?:I:(\d+)/(.+?)-)?""" +               // 9 inqs, 10 inq %
+            """(?:LSI:(\d+)-)?""" +                   // 11 LS inqs
+            """(?:S:(\d+)/(.+?)-)?""" +               // 12 sphinx, 13 %
+            """(?:K:(\d+)/(.+?)-)?""" +               // 14 kings, 15 %
+            """(?:M:(\d+)/(.+?)-)?""" +               // 16 mantis, 17 %
+            """(?:C(\d+)/(.+?)-)?""" +                // 18 chimeras, 19 %
+            """(?:LS: (\d+)/\((.+?)\)-)?""" +         // 20 LS chimeras, 21 %
+            """(?:S(\d+)/(.+?)-)?""" +                // 22 sticks, 23 %
+            """(?:R(\d+)/(.+?)-)?""" +                // 24 relics, 25 %
+            """(?:C(\d+)/(.+?)-)?""" +                // 26 cores, 27 %
+            """(?:W(\d+)/(.+?)-)?""" +                // 28 wools, 29 %
+            """(?:D(\d+)/(.+?))?-?$""",               // 30 dyes, 31 %
         Pattern.DOTALL
     )
 
@@ -74,7 +76,7 @@ internal object DianaStats {
 
                 // Inquisitors (+ LS inqs on the same line, like the old format)
                 val lsInqs = matcher.group(11)
-                optional(9) { c, p -> "§dInquisitors: §b$c §7($p)" + (lsInqs?.let { " §6LS: §b$it" }.orEmpty()) }
+                optional(9) { c, p -> "§dInquisitors: §b$c §7($p)" + lsInqs?.let { " §6LS: §b$it" }.orEmpty() }
                 if (matcher.group(9) == null && lsInqs != null) add("§dLS Inqs: §b$lsInqs")
 
                 optional(12) { c, p -> "§dSphinx: §b$c §7($p)" }
@@ -185,7 +187,7 @@ internal object DianaStats {
             append("B:${stats.burrows}/${stats.burrowsPerHour}-") // Burrows & Burrows/h
             append("M:${stats.totalMobs}/${stats.mobsPerHour}-") // Mobs & Mobs/h
 
-            // Only shows intresting stats to avoid cluttering the chat with 0s especially for players without the mythic griffin
+            // Only shows interesting stats to avoid cluttering the chat with 0s especially for players without the mythic griffin
             if (stats.inquisitors > 0) append("I:${stats.inquisitors}/${stats.inqPercentage}-") // Inquisitors & Inquisitor %
             if (stats.lsInqs > 0) append("LSI:${stats.lsInqs}-") // LS Inquisitors
             if (stats.sphinx > 0) append("S:${stats.sphinx}/${stats.sphinxPercentage}-") // Sphinx & Sphinx %

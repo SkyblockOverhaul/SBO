@@ -23,7 +23,7 @@ import kotlin.math.*
 /**
  * Guesses the burrow the spade points at from its dripping lava trail.
  *
- * The trail is a cubic Bezier curve:
+ * The trail is a cubic Bézier curve:
  * - P0 is the first particle, 1 block out from the eyes along the look
  * - P1 is P0 + 4 * look + 3 blocks up
  * - P2 is P3 + 3 blocks up
@@ -249,7 +249,7 @@ object PreciseGuessBurrow {
     }
 
     /**
-     * The places the curve can end, best first. For a given step count n the end is linear in the particles, so it is
+     * The places the curve can end, the best first. For a given step count n the end is linear in the particles, so it is
      * solved for every n and scored by how well the particles and n fit.
      */
     private fun curveEnds(p0: SboVec, p1: SboVec): List<SboVec> {
@@ -259,7 +259,7 @@ object PreciseGuessBurrow {
 
         // With 2 particles, every good fit (a local best) that the first note allows, farthest first
         val good = ArrayList<SboVec>()
-        for (k in 1 until N_COUNT - 1) {
+        for (k in 1..<N_COUNT - 1) {
             val score = scores[k]
             if (score <= scores[k - 1] && score <= scores[k + 1] && score < 25) good.add(fitEnd(k))
         }
@@ -288,7 +288,7 @@ object PreciseGuessBurrow {
         while (summed < particleLocations.size) {
             val i = summed++
             val q = particleLocations[i]
-            for (k in 0 until N_COUNT) {
+            for (k in 0..<N_COUNT) {
                 val t = i / (N_MIN + k * N_STEP)
                 val u = 1 - t
                 val a = u * u * u
@@ -305,7 +305,7 @@ object PreciseGuessBurrow {
                 saa[k] += ax * ax + ay * ay + az * az
             }
         }
-        for (k in 0 until N_COUNT) {
+        for (k in 0..<N_COUNT) {
             val d = den[k]
             val residual = saa[k] - (sx[k] * sx[k] + sy[k] * sy[k] + sz[k] * sz[k]) / d
             val dx = sx[k] / d - p0.x
@@ -319,7 +319,7 @@ object PreciseGuessBurrow {
     /** The step count index with the lowest score. */
     private fun bestFit(): Int {
         var best = 0
-        for (k in 1 until N_COUNT) if (scores[k] < scores[best]) best = k
+        for (k in 1..<N_COUNT) if (scores[k] < scores[best]) best = k
         return best
     }
 
@@ -331,6 +331,8 @@ object PreciseGuessBurrow {
      * counts of a short trail, [updateFits] scores the full range.
      * @param p0 The first control point.
      * @param p1 The second control point.
+     * @param minN The minimum step count to evaluate, inclusive.
+     * @param maxN The maximum step count to evaluate, inclusive.
      */
     private fun curveFits(p0: SboVec, p1: SboVec, minN: Double, maxN: Double): List<Pair<Double, SboVec>> {
         val points = particleLocations
@@ -341,7 +343,7 @@ object PreciseGuessBurrow {
             var ny = 0.0
             var nz = 0.0
             var den = 0.0
-            for (i in 1 until points.size) {
+            for (i in 1..<points.size) {
                 val t = i / n
                 val u = 1 - t
                 val c = 3 * u * t * t + t * t * t
@@ -373,7 +375,7 @@ object PreciseGuessBurrow {
     private fun residual(p0: SboVec, p1: SboVec, p3: SboVec, n: Double): Double {
         // Plain doubles since this runs tens of thousands of times per particle
         var res = 0.0
-        for (i in 1 until particleLocations.size) {
+        for (i in 1..<particleLocations.size) {
             val t = i / n
             val u = 1 - t
             val a = u * u * u

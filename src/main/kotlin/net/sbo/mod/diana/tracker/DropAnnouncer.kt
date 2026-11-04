@@ -88,7 +88,7 @@ internal object DropAnnouncer {
 
         if (Drops.lootAnnouncerChat && showMessageOrTitle) {
             val customKey = RareDrops.rareDrops.firstOrNull { it.itemId == itemId }?.customKey
-            val customMsg = customKey?.let { Helper.checkCustomDropMessage(it, magicFind, ls, totalCount) } ?: (false to "")
+            val customMsg = customKey?.let { Helper.checkCustomDropMessage(it, magicFind, ls, totalCount) } ?: false to ""
 
             if (customMsg.first) {
                 Chat.chat(customMsg.second)

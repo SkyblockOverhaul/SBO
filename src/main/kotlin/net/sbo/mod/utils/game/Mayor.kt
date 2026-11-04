@@ -76,7 +76,7 @@ object Mayor {
 
     private fun processMayorResponse(response: MayorResponse) {
         mayor = response.mayor.name
-        perks = response.mayor.perks.map { it.name }.toMutableSet()
+        perks = response.mayor.perks.asSequence().map { it.name }.toMutableSet()
         minister = response.mayor.minister?.name
         ministerPerk = response.mayor.minister?.perk?.name
         mayorApiError = false

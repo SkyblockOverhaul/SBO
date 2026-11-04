@@ -7,6 +7,7 @@ import net.minecraft.util.Util
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.security.MessageDigest
+import java.util.Locale
 
 /**
  * Looks of all SBO windows: built-in themes plus custom ones from `config/sbo/themes` (a .json with colors or a .css
@@ -40,7 +41,7 @@ object SboThemes {
         val example: Boolean = false
     )
 
-    val BUILT_IN = listOf(
+    private val BUILT_IN = listOf(
         Theme(DEFAULT, "SBO Dark", "The standard SBO look: dark gray with SBO blue.", DEFAULT),
         Theme(
             "hypixel", "Hypixel Colors",
@@ -69,7 +70,7 @@ object SboThemes {
         )
     )
 
-    val BASES: List<String> = BUILT_IN.map { it.base }.distinct()
+    val BASES: List<String> = BUILT_IN.asSequence().map { it.base }.distinct().toList()
 
     /** Variables a custom theme may set; the README lists them with their meaning. */
     val COLOR_NAMES: Set<String> = setOf(
@@ -92,14 +93,14 @@ object SboThemes {
     private val COLOR_VALUE = Regex("^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
 
     // The comment at the top of a .css theme
-    private val CSS_HEADER = Regex("^\\s*/\\*(.*?)\\*/", RegexOption.DOT_MATCHES_ALL)
+    private val CSS_HEADER = Regex("""^\s*/\*(.*?)\*/""", RegexOption.DOT_MATCHES_ALL)
 
     // Own logger, SBOKotlin.logger would start mod code in tests
     private val logger = LoggerFactory.getLogger("SBO")
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true; allowTrailingComma = true; allowComments = true }
 
-    val folder: File get() = FabricLoader.getInstance().configDir.resolve("sbo/themes").toFile()
+    private val folder: File get() = FabricLoader.getInstance().configDir.resolve("sbo/themes").toFile()
 
     @Serializable
     private data class ThemeFile(
@@ -119,9 +120,10 @@ object SboThemes {
     fun all(): List<Theme> {
         prepareFolder()
         val custom = folder.listFiles { file -> isThemeFile(file) }
-            .orEmpty()
+            .asSequence()
             .mapNotNull(::load)
             .sortedWith(compareBy<Theme> { it.example }.thenBy { it.label.lowercase() })
+            .toList()
         return BUILT_IN + custom
     }
 
@@ -268,8 +270,11 @@ object SboThemes {
         copyResource("reference-README.txt", File(dir, "README.txt"))
         for ((name, resource) in REFERENCE) {
             val css = SboThemes::class.java.getResourceAsStream(resource)?.use { it.readBytes() } ?: continue
-            val header = "/* REFERENCE ONLY, NOT LOADED. A copy of SBO's own CSS ($resource), rewritten by SBO so changes here are lost.\n" +
-                "   Copy the rules you want to change into user.css or your own .css theme one folder up. See README.txt here. */\n\n"
+            val header = """
+                /* REFERENCE ONLY, NOT LOADED. A copy of SBO's own CSS ($resource), rewritten by SBO so changes here are lost.
+                   Copy the rules you want to change into user.css or your own .css theme one folder up. See README.txt here. */
+
+                """.trimIndent()
             val text = header.toByteArray() + css
             val target = File(dir, name)
             if (!target.exists() || !target.readBytes().contentEquals(text)) target.writeBytes(text)
@@ -279,7 +284,7 @@ object SboThemes {
     internal fun isOldExample(file: File): Boolean {
         if (!file.isFile) return false
         val digest = MessageDigest.getInstance("SHA-256").digest(file.readText().replace("\r", "").toByteArray())
-        return digest.joinToString("") { "%02x".format(it) } == OLD_EXAMPLE_SHA256
+        return digest.joinToString("") { "%02x".format(Locale.ROOT, it) } == OLD_EXAMPLE_SHA256
     }
 
     private fun copyResource(name: String, target: File) {
@@ -287,3 +292,4 @@ object SboThemes {
         if (!target.exists() || !target.readBytes().contentEquals(text)) target.writeBytes(text)
     }
 }
+

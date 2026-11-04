@@ -244,7 +244,7 @@ private fun NodeBuilder.categoryLink(
 private fun NodeBuilder.whatsNewPage(whatsNew: WhatsNew, revision: Int, ui: Ui) {
     h1(className = "cfg-page-title") { +whatsNew.title }
     if (whatsNew.text.isNotEmpty()) description(whatsNew.text, "cfg-page-description")
-    val toggles = whatsNew.hits.mapNotNull { it.element as? ConfigEntry<*> }.filter(::switchable)
+    val toggles = whatsNew.hits.asSequence().mapNotNull { it.element as? ConfigEntry<*> }.filter(::switchable).toList()
     if (toggles.isNotEmpty()) {
         div(className = "cfg-new-actions") {
             button(className = "cfg-button", title = "Turn every new feature below on", onClick = {
@@ -343,7 +343,7 @@ private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, enabled, 
                         sub.setEnabled(!enabled)
                         ui.changed()
                     },
-                ) { +(if (enabled) "ON" else "OFF") }
+                ) { +if (enabled) "ON" else "OFF" }
             }
         }
         if (sub.description.isNotEmpty()) description(sub.description, "cfg-sub-description")
@@ -369,7 +369,7 @@ private fun NodeBuilder.results(query: String, hits: List<SearchHit>, revision: 
         div(className = "cfg-empty") { +"No settings match \"${query.trim()}\"." }
         return
     }
-    div(className = "cfg-results-info") { +(if (hits.size == 1) "1 setting found" else "${hits.size} settings found") }
+    div(className = "cfg-results-info") { +if (hits.size == 1) "1 setting found" else "${hits.size} settings found" }
     hits.groupBy { it.category }.forEach { (category, group) ->
         div(className = "cfg-result-group", key = "group:${category.id}") {
             h2(className = "cfg-result-category") { +placeName(group.first().path) }
@@ -380,7 +380,7 @@ private fun NodeBuilder.results(query: String, hits: List<SearchHit>, revision: 
     }
 }
 
-private fun placeName(path: List<Category>) = if (path.size == 1) "General" else path.drop(1).joinToString(" › ") { it.name }
+private fun placeName(path: List<Category>) = if (path.size == 1) "General" else path.asSequence().drop(1).joinToString(" › ") { it.name }
 
 private fun NodeBuilder.description(text: String, className: String) {
     div(className = className) {
@@ -412,7 +412,7 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
                 // The setting is hidden on the page while its sub is off, so that jumps to the sub instead
                 val offSub = hit.sub?.takeIf { !it.enabled }
                 span(className = "cfg-row-place", title = "Show it in its category", onClick = { ui.show(hit.category, offSub ?: element) }) {
-                    +(if (offSub != null) "$place · off ↗" else "$place ↗")
+                    +if (offSub != null) "$place · off ↗" else "$place ↗"
                 }
             }
             val text = rowDescription(element)
@@ -442,14 +442,14 @@ private fun NodeBuilder.needs(entry: ConfigEntry<*>, ui: Ui) {
             val conditions = requirement.conditions.mapNotNull { condition -> condition.entry?.let { condition to it } }
             if (requirement.any && conditions.size > 1) +"one of "
             conditions.forEachIndexed { j, (condition, required) ->
-                if (j > 0) +(if (requirement.any) " or " else ", ")
+                if (j > 0) +if (requirement.any) " or " else ", "
                 val state = when {
                     condition.met -> "ok"
                     // In a met "one of" the others don't need to change
                     requirement.met -> "idle"
                     else -> "missing"
                 }
-                val label = listOf(required.name, condition.state).filter { it.isNotEmpty() }.joinToString(" ")
+                val label = listOf(required.name, condition.state).asSequence().filter { it.isNotEmpty() }.joinToString(" ")
                 span(className = "cfg-needs-link $state", title = "Show ${required.name}", onClick = { ui.jump(required) }) { +label }
             }
         }

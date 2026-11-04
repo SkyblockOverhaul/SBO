@@ -88,64 +88,62 @@ object Trackers : Category("Trackers") {
 
     var lootTracker by ObservableEntry(
         option(TrackerMode.EVENT) {
-            this.name = Literal("Loot Tracker")
-            this.description = Literal(
-                "Shows your Diana loot, /sboguis to move the overlay.\n" +
-                    "§bNOTE!: You can interact with the tracker in the inventory!!!§r\n" +
-                    "By clicking on a loot line you can hide/unhide it.\n" +
-                    "Hovering over some lines may display additional information."
+            this.name = literal("Loot Tracker")
+            this.description = literal(
+                """
+                Shows your Diana loot, /sboguis to move the overlay.
+                §bNOTE!: You can interact with the tracker in the inventory!!!§r
+                By clicking on a loot line you can hide/unhide it.
+                Hovering over some lines may display additional information.
+                """.trimIndent()
             )
         }
     ) { old, new ->
-        if (old != new) {
-            if (new != TrackerMode.OFF) {
-                DianaLoot.updateLines()
-            }
+        if (old != new && new != TrackerMode.OFF) {
+            DianaLoot.updateLines()
         }
     }
 
     var mobTracker by ObservableEntry(
         option(TrackerMode.OFF) {
-            this.name = Literal("Mob Tracker")
-            this.description = Literal(
-                "Shows your Diana mob kills, /sboguis to move the overlay.\n" +
-                "§bNOTE!: You can interact with the tracker in the inventory!!!§r\n" +
-                "By clicking on a mob line you can hide/unhide it.\n" +
-                "Hovering over some lines may display additional information."
+            this.name = literal("Mob Tracker")
+            this.description = literal(
+                """
+                Shows your Diana mob kills, /sboguis to move the overlay.
+                §bNOTE!: You can interact with the tracker in the inventory!!!§r
+                By clicking on a mob line you can hide/unhide it.
+                Hovering over some lines may display additional information.
+                """.trimIndent()
             )
         }
     ) { old, new ->
-        if (old != new) {
-            if (new != TrackerMode.OFF) {
-                DianaMobs.updateLines()
-            }
+        if (old != new && new != TrackerMode.OFF) {
+            DianaMobs.updateLines()
         }
     }
 
     var coaTracker by ObservableEntry(
         option(TrackerMode.EVENT) {
-            this.name = Literal("CoA Tracker")
-            this.description = Literal(
+            this.name = literal("CoA Tracker")
+            this.description = literal(
                 "Shows a tracker for the Crown of Avarice. \n" +
                     "/sboguis to move the overlay.\n"
             )
         }
     ) { old, new ->
-        if (old != new) {
-            if (new != TrackerMode.OFF) {
-                CrownOfAvarice.updateLines()
-            }
+        if (old != new && new != TrackerMode.OFF) {
+            CrownOfAvarice.updateLines()
         }
     }
 
     var statsTracker by boolean(false) {
-        this.name = Literal("Diana Stats Tracker")
-        this.description = Literal("Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, /sboguis to move the overlay.")
+        this.name = literal("Diana Stats Tracker")
+        this.description = literal("Shows stats like Mobs since Inquisitor, Inquisitors since Chimera, /sboguis to move the overlay.")
     }
 
     var magicFindTracker by boolean(false) {
-        this.name = Literal("Magic Find Tracker")
-        this.description = Literal("Shows your highest magic find for sticks and chimeras (only after you dropped it once), /sboguis to move the overlay.")
+        this.name = literal("Magic Find Tracker")
+        this.description = literal("Shows your highest magic find for sticks and chimeras (only after you dropped it once), /sboguis to move the overlay.")
     }
 
     init {
@@ -156,9 +154,9 @@ object Trackers : Category("Trackers") {
 
     var hideUnobtainedItems by ObservableEntry(
         boolean(true) {
-            this.name = Literal("Hide Unobtained Items")
+            this.name = literal("Hide Unobtained Items")
             dependsAny(notOff(::mobTracker), notOff(::lootTracker))
-            this.description = Literal("Hides any loot or mob lines that have not been tracked yet (value is 0) to reduce clutter in the overlays.")
+            this.description = literal("Hides any loot or mob lines that have not been tracked yet (value is 0) to reduce clutter in the overlays.")
         }
     ) { old, new ->
         if (old != new) {
@@ -173,22 +171,20 @@ object Trackers : Category("Trackers") {
 
     var combineLootLines by ObservableEntry(
         boolean(false) {
-            this.name = Literal("Combine LS Loot")
+            this.name = literal("Combine LS Loot")
             depends(notOff(::lootTracker))
-            this.description = Literal("Combines the base item and the Loot Share (LS) variant into a single line. The individual LS count is shown on hover.")
+            this.description = literal("Combines the base item and the Loot Share (LS) variant into a single line. The individual LS count is shown on hover.")
         }
     ) { old, new ->
-        if (old != new) {
-            if (lootTracker != TrackerMode.OFF) {
-                DianaLoot.updateLines()
-            }
+        if (old != new && lootTracker != TrackerMode.OFF) {
+            DianaLoot.updateLines()
         }
     }
 
     var hideLsStats by ObservableEntry(boolean(false) {
-            this.name = Literal("Hide LS Stats")
+            this.name = literal("Hide LS Stats")
             dependsAny(notOff(::mobTracker), on(::statsTracker))
-            this.description = Literal("Hides the Loot Share (LS) portion of the Diana stats lines.")
+            this.description = literal("Hides the Loot Share (LS) portion of the Diana stats lines.")
         }
     ) { old, new ->
         if (old != new) {
@@ -198,46 +194,42 @@ object Trackers : Category("Trackers") {
 
     var lootSort by ObservableEntry(
         option(LootSort.DEFAULT) {
-            this.name = Literal("Loot Sort")
+            this.name = literal("Loot Sort")
             this.since = "0.7.2-beta.2"
             depends(notOff(::lootTracker))
-            this.description = Literal(
+            this.description = literal(
                 "Order of the loot tracker lines: the default order, by price or by amount (highest or lowest first), or your own order.\n" +
                     "It can also be changed by clicking the sort badge of the tracker in the inventory. With Custom, the arrows next to each line move it up or down there (new look only)."
             )
         }
     ) { old, new ->
-        if (old != new) {
-            if (lootTracker != TrackerMode.OFF) {
-                DianaLoot.updateLines()
-            }
+        if (old != new && lootTracker != TrackerMode.OFF) {
+            DianaLoot.updateLines()
         }
     }
 
     var mobSort by ObservableEntry(
         option(LineSort.DEFAULT) {
-            this.name = Literal("Mob Sort")
+            this.name = literal("Mob Sort")
             this.since = "0.7.2-beta.2"
             depends(notOff(::mobTracker))
-            this.description = Literal(
+            this.description = literal(
                 "Order of the mob tracker lines: the default order, by kills (most or fewest first), or your own order.\n" +
                     "It can also be changed by clicking the sort badge of the tracker in the inventory. With Custom, the arrows next to each line move it up or down there (new look only)."
             )
         }
     ) { old, new ->
-        if (old != new) {
-            if (mobTracker != TrackerMode.OFF) {
-                DianaMobs.updateLines()
-            }
+        if (old != new && mobTracker != TrackerMode.OFF) {
+            DianaMobs.updateLines()
         }
     }
 
     var statsSort by ObservableEntry(
         option(LineSort.DEFAULT) {
-            this.name = Literal("Stats Sort")
+            this.name = literal("Stats Sort")
             this.since = "0.7.2-beta.2"
             depends(on(::statsTracker))
-            this.description = Literal(
+            this.description = literal(
                 "Order of the Diana stats lines: the default order, by count (highest or lowest first), or your own order.\n" +
                     "It can also be changed by clicking the sort badge of the tracker in the inventory. With Custom, the arrows next to each line move it up or down there (new look only)."
             )
@@ -255,18 +247,18 @@ object Trackers : Category("Trackers") {
     }
 
     var legacyTrackers by ObservableEntry(options<TrackerLook> {
-            this.name = Literal("Tracker Legacy Look")
+            this.name = literal("Tracker Legacy Look")
             this.since = "0.7.2-beta.2"
-            this.description = Literal("The trackers shown as Minecraft text lines like the other overlays instead of the new box. Slightly better performance: plain text is the cheapest overlay to draw every frame.")
+            this.description = literal("The trackers shown as Minecraft text lines like the other overlays instead of the new box. Slightly better performance: plain text is the cheapest overlay to draw every frame.")
         }
     ) { old, new ->
         if (old != new) onTrackerLookChanged()
     }
 
     var compactTrackers by ObservableEntry(options<CompactTracker> {
-            this.name = Literal("Tracker Compact Look")
+            this.name = literal("Tracker Compact Look")
             this.since = "0.7.2-beta.3"
-            this.description = Literal(
+            this.description = literal(
                 "The trackers that take as little space as possible: a few lines with short names and several entries per line, only the rare mobs and the main loot, no prices or percentages. " +
                     "Works with the legacy and the new look. In the inventory the full tracker is shown, to hide lines and change the view or sort.\n" +
                     "Lootshare counts are added after a +, in the stats after a /."
@@ -277,41 +269,41 @@ object Trackers : Category("Trackers") {
     }
 
     var trackerFont by ObservableEntry(option(TrackerFont.MINECRAFT) {
-            this.name = Literal("Tracker Font")
+            this.name = literal("Tracker Font")
             this.since = "0.7.2-beta.2"
             depends(state(::legacyTrackers, "not all legacy") { it.size < TrackerLook.entries.size })
-            this.description = Literal("Font of the trackers with the new look. Minecraft has better performance (about 30% less work per frame than Inter), Inter looks smoother.")
+            this.description = literal("Font of the trackers with the new look. Minecraft has better performance (about 30% less work per frame than Inter), Inter looks smoother.")
         }
     ) { old, new ->
         if (old != new) onTrackerLookChanged()
     }
 
-    var trackerBackground by ObservableEntry(options(*TrackerLook.entries.toTypedArray()) {
-            this.name = Literal("Tracker Background")
+    private val trackerBackground by ObservableEntry(options(TrackerLook.entries) {
+            this.name = literal("Tracker Background")
             this.since = "0.7.2-beta.2"
             depends(state(::legacyTrackers, "not all legacy") { it.size < TrackerLook.entries.size })
-            this.description = Literal("The trackers with the new look that get a dark box behind them. The others show only the text, with a shadow so it stays readable, and slightly better performance since the box isn't drawn.")
+            this.description = literal("The trackers with the new look that get a dark box behind them. The others show only the text, with a shadow so it stays readable, and slightly better performance since the box isn't drawn.")
         }
     ) { old, new ->
         if (old != new) onTrackerLookChanged()
     }
 
     var trackerBackgroundOpacity by ObservableEntry(int(DEFAULT_BACKGROUND_OPACITY) {
-            this.name = Literal("Tracker Background Opacity")
+            this.name = literal("Tracker Background Opacity")
             this.since = "0.7.2-beta.3"
             this.range = 10..100
             depends(state(::trackerBackground, "a tracker with background") { it.isNotEmpty() })
-            this.description = Literal("How dark the box behind the trackers is, in percent ($DEFAULT_BACKGROUND_OPACITY is the normal look). Lower lets more of the game through, about 30% still keeps the text readable.")
+            this.description = literal("How dark the box behind the trackers is, in percent ($DEFAULT_BACKGROUND_OPACITY is the normal look). Lower lets more of the game through, about 30% still keeps the text readable.")
         }
     ) { old, new ->
         if (old != new) onTrackerLookChanged()
     }
 
     var trackerOutline by ObservableEntry(options<TrackerLook> {
-            this.name = Literal("Tracker Text Outline")
+            this.name = literal("Tracker Text Outline")
             this.since = "0.7.2-beta.3"
             depends(state(::legacyTrackers, "not all legacy") { it.size < TrackerLook.entries.size })
-            this.description = Literal("The trackers with the new look whose text gets a black outline instead of the shadow, readable on any ground even without a box. Slightly more work per frame: the text is drawn five times.")
+            this.description = literal("The trackers with the new look whose text gets a black outline instead of the shadow, readable on any ground even without a box. Slightly more work per frame: the text is drawn five times.")
         }
     ) { old, new ->
         if (old != new) onTrackerLookChanged()
@@ -352,19 +344,19 @@ object Trackers : Category("Trackers") {
     }
 
     var priceSource by option(PriceSource.MARKET) {
-        this.name = Literal("Prices")
+        this.name = literal("Prices")
         this.since = "0.7.2-beta.2"
-        this.description = Literal("Where the loot prices come from, hover an option for what it does.")
+        this.description = literal("Where the loot prices come from, hover an option for what it does.")
     }
 
     var bazaarSettingDiana by option(BazaarPrice.SELLOFFER) {
-        this.name = Literal("Bazaar Setting")
-        this.description = Literal("Bazaar setting to set the price for loot.")
+        this.name = literal("Bazaar Setting")
+        this.description = literal("Bazaar setting to set the price for loot.")
     }
 
     var excludeCoinsFromProfit by boolean(false) {
-        this.name = Literal("Exclude Coins from Profit")
-        this.description = Literal("Excludes coins from the loot tracker's profit calculation when enabled, useful if using a non-1B crown since coins are consumed.")
+        this.name = literal("Exclude Coins from Profit")
+        this.description = literal("Excludes coins from the loot tracker's profit calculation when enabled, useful if using a non-1B crown since coins are consumed.")
     }
 
     val npcOnlyPrices: Boolean get() = priceSource == PriceSource.NPC_ONLY
@@ -376,23 +368,23 @@ object Trackers : Category("Trackers") {
     }
 
     var afkTimeout by int(60) {
-        this.name = Literal("AFK Timeout")
-        this.description = Literal("Pause the trackers if it is not modified for this amount of seconds. Minimum 15, maximum 900 seconds is allowed.")
+        this.name = literal("AFK Timeout")
+        this.description = literal("Pause the trackers if it is not modified for this amount of seconds. Minimum 15, maximum 900 seconds is allowed.")
         this.range = 15..900
     }
 
     var assumeAllLS by boolean(false) {
-        this.name = Literal("Assume All LS")
-        this.description = Literal("Assumes you get loot share on all Kings, Inquisitors and Manticores. This works around the LOOT SHARE! message not being always sent by the server, but might inflate your numbers if you don't actually do enough damage to these mobs for lootshare. To reduce false positives a bit (not fully!), you need to be 32 blocks nearby the rare mob when it died.")
+        this.name = literal("Assume All LS")
+        this.description = literal("Assumes you get loot share on all Kings, Inquisitors and Manticores. This works around the LOOT SHARE! message not being always sent by the server, but might inflate your numbers if you don't actually do enough damage to these mobs for lootshare. To reduce false positives a bit (not fully!), you need to be 32 blocks nearby the rare mob when it died.")
     }
 
     var fourEyedFish by boolean(false) {
-        this.name = Literal("Four-Eyed Fish")
-        this.description = Literal("Set if you have a Four-Eyed Fish on your griffin pet.")
+        this.name = literal("Four-Eyed Fish")
+        this.description = literal("Set if you have a Four-Eyed Fish on your griffin pet.")
     }
 
     var resetSessionOnGameRestart by boolean(false) {
-        this.name = Literal("Reset Session on Game Restart")
-        this.description = Literal("Resets the Diana session tracker when you restart Minecraft.")
+        this.name = literal("Reset Session on Game Restart")
+        this.description = literal("Resets the Diana session tracker when you restart Minecraft.")
     }
 }

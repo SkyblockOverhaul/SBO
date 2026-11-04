@@ -81,6 +81,7 @@ bloom {
         replacement("mc.gui.titleTime", "mc.gui.hud.titleTime")
         replacement("mc.gui.title", "mc.gui.hud.title")
         replacement("mc.gui.subtitle", "mc.gui.hud.subtitle")
+        replacement("mc.gui.tabList", "mc.gui.hud.tabList")
         replacement("SystemToast.multiline(mc, ", "SystemToast(")
         replacement("mc.gui.chat.addClientSystemMessage", "mc.gui.hud.chat.addClientSystemMessage")
         replacement("formatting?.char", "formatting?.code")

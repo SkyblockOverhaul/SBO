@@ -23,7 +23,7 @@ import net.sbo.mod.utils.overlay.isCraftingScreenOpen
  * position; only the chosen one is shown.
  * The new look is only laid out again when its [view] changed. With "Tracker Compact Look" both show [compactLines]
  * instead, outside the inventory.
- * By default it is shown with a spade in the hub, [extraCondition] changes that (it is ignored in /sboguis).
+ * By default, it is shown with a spade in the hub, [extraCondition] changes that (it is ignored in /sboguis).
  */
 abstract class DianaOverlay<V : Any>(
     name: String,
@@ -113,7 +113,7 @@ abstract class DianaOverlay<V : Any>(
     /** [entries] packed [perLine] to a line. */
     protected fun packed(entries: List<Entry>, perLine: Int = 3): List<CompactLine> = entries.chunked(perLine).map { CompactLine(null, it) }
 
-    /** Everything the new look shows, as data: equal views look the same. */
+    /** Everything the new-look shows, as data: equal views look the same. */
     protected abstract fun view(): V
 
     protected abstract fun NodeBuilder.content(view: V)
@@ -134,7 +134,7 @@ abstract class DianaOverlay<V : Any>(
 
     /** The line [keys] in the "Custom" sort of tracker [orderName]: the saved ones first, the ones it doesn't have yet in their default order after. */
     protected fun customOrder(orderName: String, keys: List<String>): List<String> {
-        val saved = DataManager.sboData.trackerOrder[orderName].orEmpty().filter { it in keys }.distinct()
+        val saved = DataManager.sboData.trackerOrder[orderName].orEmpty().asSequence().filter { it in keys }.distinct().toList()
         return saved + keys.filter { it !in saved }
     }
 
@@ -144,7 +144,10 @@ abstract class DianaOverlay<V : Any>(
             Trackers.LineSort.DEFAULT -> lines
             Trackers.LineSort.HIGHEST -> lines.sortedByDescending(amount)
             Trackers.LineSort.LOWEST -> lines.sortedBy(amount)
-            Trackers.LineSort.CUSTOM -> customOrder(orderName, lines.map(key)).let { order -> lines.sortedBy { order.indexOf(key(it)) } }
+            Trackers.LineSort.CUSTOM -> {
+                val order = customOrder(orderName, lines.map(key))
+                lines.sortedBy { order.indexOf(key(it)) }
+            }
         }
 
     /**
@@ -169,7 +172,7 @@ abstract class DianaOverlay<V : Any>(
 
     /** The rows, with ▲ ▼ to move them in the custom order when [reorder]; rows with the same [key] move together. */
     protected fun NodeBuilder.rows(rows: List<Row>, reorder: Boolean, key: (Row) -> String? = { it.id }) {
-        val keys = rows.mapNotNull(key).distinct()
+        val keys = rows.asSequence().mapNotNull(key).distinct().toList()
         rows.forEach { row ->
             val line = key(row)
             if (!reorder || line == null) row(row)
@@ -266,7 +269,7 @@ abstract class DianaOverlay<V : Any>(
         // Minecraft's color codes as classes, e.g. "mc-light_purple"
         fun colorClass(color: ChatFormatting) = "mc-${color.name.lowercase()}"
 
-        /** True until the player answered the new look notice, see [lookNotice]. */
+        /** True until the player answered the new-look notice, see [lookNotice]. */
         fun showLookNotice(): Boolean = !DataManager.sboData.trackerLookAnswered
 
         /** The id of a row element, null for other elements. */

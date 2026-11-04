@@ -34,7 +34,6 @@ import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.settings.SettingsChanges
-import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 import org.lwjgl.glfw.GLFW
 import java.util.Collections
@@ -98,7 +97,7 @@ object HubGui {
 
     private val TILES = listOf(
         Tile("Settings", "Every option, with a search over all of them", "/sbosettings", Items.COMPARATOR) { openSettings() },
-        Tile("Party Finder", "Join a party in seconds or create your own", "/sbopf", Items.PLAYER_HEAD) { PartyFinderGui.open() },
+        Tile("Party Finder", "Join a party or create your own", "/sbopf", Items.PLAYER_HEAD) { PartyFinderGui.open() },
         Tile("Events", "Your Diana events, trackers and comparisons", "/sboevents", Items.CLOCK) { EventsGui.open() },
         Tile("Achievements", "Everything you unlocked and what is left", "/sboachievements", Items.NETHER_STAR) { AchievementsGui.open() },
         Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { SoundsGui.open() },
@@ -159,7 +158,7 @@ object HubGui {
                     div(className = "hub-hero-text") {
                         div(className = "hub-eyebrow") { +"Hypixel Skyblock · Diana · Party Finder" }
                         h1(className = "hub-title") { +"Skyblock Overhaul" }
-                        div(className = "hub-tagline") { +"Find a party in seconds with the SBO Party Finder or use our Amazing Diana Features." }
+                        div(className = "hub-tagline") { +"Find a party with the SBO Party Finder or use our Amazing Diana Features." }
                         div(className = "hub-chips") {
                             span(className = "hub-chip hub-chip-version") { +"SBO ${SBOKotlin.version}" }
                             span(className = "hub-chip") { +"Minecraft ${SBOKotlin.mcVersion}" }

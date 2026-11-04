@@ -65,7 +65,7 @@ data class SboVec(val x: Double, val y: Double, val z: Double) : Comparable<SboV
 
     fun normalize() = length().let { SboVec(x / it, y / it, z / it) }
 
-    fun lengthSquared(): Double = x * x + y * y + z * z
+    private fun lengthSquared(): Double = x * x + y * y + z * z
 
     fun isNormalized(tolerance: Double = 0.01) = (lengthSquared() - 1.0).absoluteValue < tolerance
 
@@ -84,7 +84,7 @@ data class SboVec(val x: Double, val y: Double, val z: Double) : Comparable<SboV
         return dx * dx + dy * dy + dz * dz
     }
 
-    fun isInLoadedChunk(): Boolean = SBOKotlin.mc.level?.isLoaded(toBlockPos()) ?: false
+    fun isInLoadedChunk(): Boolean = SBOKotlin.mc.level?.isLoaded(toBlockPos()) == true
 
     fun toBlockPos(): BlockPos = BlockPos(floor(x).toInt(), floor(y).toInt(), floor(z).toInt())
 
@@ -107,6 +107,16 @@ data class SboVec(val x: Double, val y: Double, val z: Double) : Comparable<SboV
             cachedHashCode = result
         }
         return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SboVec) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+        if (z != other.z) return false
+        return cachedHashCode == other.cachedHashCode
     }
 
     override fun compareTo(other: SboVec): Int {

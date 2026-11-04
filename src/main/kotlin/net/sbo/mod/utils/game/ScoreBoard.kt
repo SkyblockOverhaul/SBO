@@ -37,7 +37,7 @@ object ScoreBoard {
         linesDirty = true
     }
 
-    fun markTitleDirty() {
+    private fun markTitleDirty() {
         titleDirty = true
     }
 

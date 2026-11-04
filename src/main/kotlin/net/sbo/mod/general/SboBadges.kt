@@ -42,9 +42,8 @@ object SboBadges {
 
     // Switches for other players' badges in the tab list and chat in /sbobadge; false hides them and always shows badges.
     // They only hide supporters and contributors, the team (moderators and above) always shows; above heads always shows
-    const val VIEWER_TOGGLES = true
-    private val showInTab: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInTab
-    private val showInChat: Boolean get() = !VIEWER_TOGGLES || DataManager.sboData.badgesInChat
+    private val showInTab: Boolean get() = DataManager.sboData.badgesInTab
+    private val showInChat: Boolean get() = DataManager.sboData.badgesInChat
 
     // Names anywhere in a chat message (not only the sender's) in their badge look: nobody's, only your own, or everyone's
     const val NAMES_OFF = "off"
@@ -171,12 +170,12 @@ object SboBadges {
         team = members
         teamNames = members.values.mapTo(HashSet()) { it.name.lowercase() }
         // The tag takes the member's tag color, the rank's while their badge is off
-        val tagged = members.filter { ranks[it.value.rank]?.tag != null }.map { (uuid, member) ->
+        val tagged = members.asSequence().filter { ranks[it.value.rank]?.tag != null }.map { (uuid, member) ->
             val color = holders[uuid]?.colorOf(BadgePart.TAG)
             Triple(uuid, member, TagLook(member.rank, color, animates(uuid)))
-        }
-        fun byName(place: String) = tagged.filter { place in it.second.tagPlaces }.associate { (_, member, tag) -> member.name.lowercase() to tag }
-        tags = tagged.filter { TeamTagPlace.HEAD in it.second.tagPlaces }.associate { (uuid, _, tag) -> uuid to tag }
+        }.toList()
+        fun byName(place: String) = tagged.asSequence().filter { place in it.second.tagPlaces }.associate { (_, member, tag) -> member.name.lowercase() to tag }
+        tags = tagged.asSequence().filter { TeamTagPlace.HEAD in it.second.tagPlaces }.associate { (uuid, _, tag) -> uuid to tag }
         tabTags = byName(TeamTagPlace.TAB)
         chatTags = byName(TeamTagPlace.CHAT)
         fun movingAt(place: String, tagsAt: Map<String, TagLook>) = holders.filter { (uuid, badge) ->
@@ -269,7 +268,7 @@ object SboBadges {
     fun isSupporter(uuid: String): Boolean = uuidOf(uuid)?.let { byUuid[it] }?.rank == "supporter"
 
     /** "[SBO Dev] " in the given color or the rank's, null for ranks without a tag. */
-    fun tagOf(rank: String, partColor: PartColor? = null): Component? {
+    private fun tagOf(rank: String, partColor: PartColor? = null): Component? {
         val info = ranks[rank] ?: return null
         val text = info.tag ?: return null
         fun bracket(hex: String?) = Style.EMPTY.withColor(hex?.let(::parseHex) ?: TAG_BRACKETS)
@@ -298,7 +297,7 @@ object SboBadges {
     fun decorateTab(info: PlayerInfo, line: Component): Component = safe(line) { decorateTabOf(info, line) }
 
     private fun decorateTabOf(info: PlayerInfo, line: Component): Component {
-        if (compactReading || (!showInTab && team.isEmpty()) || (byUuid.isEmpty() && tabTags.isEmpty())) return line
+        if (compactReading || !showInTab && team.isEmpty() || byUuid.isEmpty() && tabTags.isEmpty()) return line
         val player = tabPlayerOf(info)?.takeIf { shown(showInTab, it) } ?: return line
         return decorateTab(line, player)
     }
@@ -326,7 +325,7 @@ object SboBadges {
     fun decorateSkyHanniTab(line: Component?): Component? = safe(null) { decorateSkyHanniTabOf(line) }
 
     private fun decorateSkyHanniTabOf(line: Component?): Component? {
-        if (line == null || (!showInTab && team.isEmpty()) || (byName.isEmpty() && tabTags.isEmpty())) return null
+        if (line == null || !showInTab && team.isEmpty() || byName.isEmpty() && tabTags.isEmpty()) return null
         val plain = ChatFormatting.stripFormatting(line.string) ?: return null
         val player = tabPlayerIn(plain)?.takeIf { shown(showInTab, it) } ?: return null
         return decorateTab(line, player).takeIf { it !== line }
@@ -349,11 +348,11 @@ object SboBadges {
 
     private fun decorateChatOf(line: Component): Component {
         val mentions = DataManager.sboData.badgeNamesInChat
-        if ((mentions != NAMES_OWN && !showInChat && team.isEmpty()) || (byName.isEmpty() && chatTags.isEmpty())) return line
+        if (mentions != NAMES_OWN && !showInChat && team.isEmpty() || byName.isEmpty() && chatTags.isEmpty()) return line
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
         val colon = plain.indexOf(": ").takeIf { it in 1..MAX_SENDER_LENGTH }
-        val sender = colon?.let { end -> WORD.findAll(plain.substring(0, end)).map { it.value }.firstOrNull(::shownInChat) }
+        val sender = colon?.let { end -> WORD.findAll(plain.take(end)).map { it.value }.firstOrNull(::shownInChat) }
         val wanted: ((String) -> Boolean)? = when (mentions) {
             NAMES_ALL -> ::shownInChat
             NAMES_OWN -> ownName()?.let { own -> { name: String -> name.equals(own, ignoreCase = true) } }
@@ -422,6 +421,46 @@ object SboBadges {
 
     private class StyledChar(val char: Char, val style: Style)
 
+    private fun findPlayerNameRange(
+        text: String,
+        playerName: String,
+        from: Int = 0,
+    ): IntRange? {
+        if (playerName.isEmpty()) return null
+
+        val nameLength = playerName.length
+        val startFrom = from.coerceIn(0, text.length)
+
+        for (start in startFrom..text.length - nameLength) {
+            val end = start + nameLength
+
+            // The character before the name must not be [A-Za-z0-9_].
+            if (start > 0 && isNameChar(text[start - 1])) continue
+
+            // The character after the name must not be [A-Za-z0-9_].
+            if (end < text.length && isNameChar(text[end])) continue
+
+            if (text.regionMatches(
+                    ignoreCase = true,
+                    thisOffset = start,
+                    other = playerName,
+                    otherOffset = 0,
+                    length = nameLength,
+                )
+            ) {
+                return start..<end
+            }
+        }
+
+        return null
+    }
+
+    private fun isNameChar(char: Char): Boolean =
+        char in 'A'..'Z' ||
+            char in 'a'..'z' ||
+            char in '0'..'9' ||
+            char == '_'
+
     // Hypixel mixes styles and § codes, so the line is read char by char and built again.
     // The team tag goes in as chars too (in front of the whole name tag above heads, in front of the name elsewhere),
     // so it can share a chain with the parts next to it
@@ -457,8 +496,7 @@ object SboBadges {
         }, Style.EMPTY)
 
         val readPlain = readPlainBuilder.toString()
-        val foundName = Regex("(?<![A-Za-z0-9_])${Regex.escape(playerName)}(?![A-Za-z0-9_])", RegexOption.IGNORE_CASE)
-            .find(readPlain, from.coerceIn(0, readPlain.length)) ?: return line
+        val foundName = findPlayerNameRange(readPlain, playerName, from) ?: return line
         // Name, level and rank each take their own color where the badge shows them; without a badge (team tag only) nothing is colored
         val nameColor = badge?.takeIf { it.shows(BadgePart.NAME, place) }?.colorOf(BadgePart.NAME)
         val levelColor = badge?.takeIf { !nameOnly && it.shows(BadgePart.LEVEL, place) }?.colorOf(BadgePart.LEVEL)
@@ -468,41 +506,45 @@ object SboBadges {
         if (nameColor == null && levelColor == null && rankColor == null && tagText == null && afterName == null) return line
 
         // A name another mod already colored (not one of the 16 § colors Hypixel uses) keeps its color, only the tag and logo go in
-        val foreign = foundName.range.any { i -> read[i].style.color?.let { it.value !in CHAT_COLORS } == true }
+        val foreign = foundName.any { i ->
+            read[i].style.color?.let { it.value !in CHAT_COLORS } == true
+        }
         if (foreign && tagText == null && afterName == null) return line
 
         // "[SBO Dev] " goes in as chars, everything behind it moves along
-        val insertAt = if (place == TeamTagPlace.HEAD) 0 else foundName.range.first
+        val insertAt = if (place == TeamTagPlace.HEAD) 0 else foundName.first
         val tagChars = tagText?.let { "[$it] " }.orEmpty()
         fun moved(range: IntRange) = if (range.first >= insertAt) range.first + tagChars.length..range.last + tagChars.length else range
-        val name = moved(foundName.range)
+        val name = moved(foundName)
 
         // Found in the line as it came, so a tag never reads as a rank. In chat and for some ranks in the tab list
         // Hypixel's rank stands between level and name
-        val rankStart = RANK.find(readPlain.substring(0, foundName.range.first))?.range?.first
-        val levelEnd = rankStart ?: foundName.range.first
+        val rankStart = RANK.find(readPlain.take(foundName.first))?.range?.first
+        val levelEnd = rankStart ?: foundName.first
         // Only the brackets and digits, an emblem behind them keeps its own color
-        val levelRange = levelColor?.let { LEVEL.find(readPlain.substring(0, levelEnd))?.groups?.get(1)?.range }?.let { moved(it) }
-        val rankRange = rankColor?.let { rankStart }?.let { moved(it until foundName.range.first) }
+        val levelRange = levelColor?.let { LEVEL.find(readPlain.take(levelEnd))?.groups?.get(1)?.range }?.let { moved(it) }
+        val rankRange = rankColor?.let { rankStart }?.let { moved(it..<foundName.first) }
         // Without the space behind it, so the gap check below sees it
-        val tagRange = tagText?.let { insertAt until insertAt + tagChars.length - 1 }
+        val tagRange = tagText?.let { insertAt..<insertAt + tagChars.length - 1 }
         val tagColor = tag?.color ?: tagInfo?.let { PartColor(it.color, it.to) }
 
-        val now = System.currentTimeMillis()
         val segments = listOfNotNull(
             levelColor?.let { color -> levelRange?.takeUnless { foreign }?.let { Segment(BadgePart.LEVEL, color, it) } },
             rankColor?.let { color -> rankRange?.takeUnless { foreign }?.let { Segment(BadgePart.RANK, color, it) } },
             nameColor?.takeUnless { foreign }?.let { Segment(BadgePart.NAME, it, name) },
             tagColor?.let { color -> tagRange?.let { Segment(BadgePart.TAG, color, it) } },
         ).sortedBy { it.range.first }
-        if (segments.isEmpty() && afterName == null) return line
+        if (afterName == null && segments.isEmpty()) return line
         // Only spaces may stand between chained parts
         val paints = paints(segments) { before, next ->
-            (before.range.last + 1 until next.range.first).all { i ->
-                if (i in insertAt until insertAt + tagChars.length) tagChars[i - insertAt] == ' '
+            (before.range.last + 1..<next.range.first).all { i ->
+                if (i in insertAt..<insertAt + tagChars.length) tagChars[i - insertAt] == ' '
                 else read[if (i < insertAt) i else i - tagChars.length].char == ' '
             }
         }
+
+        val now = System.currentTimeMillis()
+
         // Brackets and the rank's plus can have their own color; the tag's brackets are gray without one,
         // unless the tag flows in a line with the parts next to it
         fun colorOf(k: Int, i: Int, char: Char): Int {
@@ -526,8 +568,8 @@ object SboBadges {
         }
         var segmentIndex = 0
         val outputLength = read.size + tagChars.length
-        for (i in 0 until outputLength) {
-            val inTag = i in insertAt until insertAt + tagChars.length
+        for (i in 0..<outputLength) {
+            val inTag = i in insertAt..<insertAt + tagChars.length
             val sourceIndex = if (inTag) -1 else if (i < insertAt) i else i - tagChars.length
             val char = if (inTag) tagChars[i - insertAt] else read[sourceIndex].char
             val baseStyle = if (inTag) Style.EMPTY else read[sourceIndex].style
@@ -566,7 +608,7 @@ object SboBadges {
 
     fun logo(): MutableComponent = Component.literal(LOGO).withStyle(LOGO_STYLE)
 
-    fun colored(text: String, color: PartColor, part: String, animate: Boolean): MutableComponent {
+    private fun colored(text: String, color: PartColor, part: String, animate: Boolean): MutableComponent {
         if (color.to == null && color.effectOf(part) == BadgeEffect.STATIC && (!animate || color.motion.isStill())) {
             return Component.literal(text).withStyle { it.withColor(parseHex(color.color)) }
         }
@@ -584,13 +626,14 @@ object SboBadges {
     class Segment(val part: String, val color: PartColor, val range: IntRange)
 
     /** The colors and motion of a part, counted over the chars of its whole chain. */
-    class Paint(val color: PartColor, val part: String, val motion: String?, val range: IntRange, private val colorRange: IntRange) {
+    class Paint(val color: PartColor, val part: String, private val motion: String?, val range: IntRange, private val colorRange: IntRange) {
         private val length get() = range.last - range.first + 1
         fun at(i: Int, animate: Boolean, now: Long): Int =
             colorAt(color, part, i - colorRange.first, colorRange.last - colorRange.first + 1, animate, now)
-        fun moved(style: Style, i: Int, char: Char, animate: Boolean, now: Long): Style = SboBadges.moved(style, motion, i - range.first, length, char, animate, now)
-        fun dropAt(i: Int, now: Long): Int = SboBadges.dropAt(motion, i - range.first, length, now)
-        fun glitchAt(i: Int, now: Long): Boolean = SboBadges.glitchAt(motion, i - range.first, length, now)
+        fun moved(style: Style, i: Int, char: Char, animate: Boolean, now: Long): Style =
+            moved(style, motion, i - range.first, length, char, animate, now)
+        fun dropAt(i: Int, now: Long): Int = dropAt(motion, i - range.first, length, now)
+        fun glitchAt(i: Int, now: Long): Boolean = glitchAt(motion, i - range.first, length, now)
     }
 
     /**
@@ -696,9 +739,9 @@ object SboBadges {
     private fun noise(i: Int, slot: Long): Int {
         var h = slot * 0x9E3779B97F4A7C15uL.toLong() + i * 0xBF58476D1CE4E5B9uL.toLong()
         h = (h xor (h ushr 31)) * 0x94D049BB133111EBuL.toLong()
-        return ((h xor (h ushr 29)) and 0x7FFFFFFF).toInt()
+        return (h xor (h ushr 29) and 0x7FFFFFFF).toInt()
     }
-    private fun phase(now: Long, periodMs: Long): Float = (now % periodMs) / periodMs.toFloat()
+    private fun phase(now: Long, periodMs: Long): Float = now % periodMs / periodMs.toFloat()
 
     /** Full, bright color of a hue from 0 to 1. */
     private fun hue(h: Float): Int {
@@ -707,18 +750,18 @@ object SboBadges {
             val k = (offset + x) % 6f
             return ((1f - maxOf(0f, minOf(k, 4f - k, 1f))) * 255).toInt()
         }
-        return (channel(5f) shl 16) or (channel(3f) shl 8) or channel(1f)
+        return channel(5f) shl 16 or (channel(3f) shl 8) or channel(1f)
     }
 
     private fun mix(a: Int, b: Int, t: Float): Int {
-        fun channel(shift: Int) = (((a shr shift) and 0xFF) * (1 - t) + ((b shr shift) and 0xFF) * t).toInt()
-        return (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
+        fun channel(shift: Int) = ((a shr shift and 0xFF) * (1 - t) + (b shr shift and 0xFF) * t).toInt()
+        return channel(16) shl 16 or (channel(8) shl 8) or channel(0)
     }
 
     fun parseHex(hex: String): Int = hex.removePrefix("#").toIntOrNull(16) ?: 0xFFFFFF
 
     private fun uuidOf(raw: String): UUID? = runCatching {
         val s = raw.replace("-", "")
-        UUID(s.substring(0, 16).toULong(16).toLong(), s.substring(16, 32).toULong(16).toLong())
+        UUID(s.take(16).toULong(16).toLong(), s.substring(16, 32).toULong(16).toLong())
     }.getOrNull()
 }

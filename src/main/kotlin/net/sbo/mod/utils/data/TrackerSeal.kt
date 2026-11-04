@@ -13,7 +13,7 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * A sealed copy of a Diana tracker, saved in its own file. Changes made outside of SBO are undone with it when the
+ * A sealed copy of a Diana tracker, saved in its own file. Changes made outside SBO are undone with it when the
  * file loads. A tracker whose seal was changed as well can't be brought back, it is marked as edited until it is reset.
  */
 internal object TrackerSeal {
