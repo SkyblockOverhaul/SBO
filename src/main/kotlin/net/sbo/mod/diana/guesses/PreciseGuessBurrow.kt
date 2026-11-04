@@ -204,6 +204,7 @@ object PreciseGuessBurrow {
         WaypointManager.addSpadeGuess(pos)
         ownsThrowGuess = !existed && WaypointManager.waypointExists("guess", pos).first
         ChainTracker.onSpadeGuess(pos)
+        throwEye?.let { SpadeGuessOptimizer.onSpadeGuess(it, pos) }
     }
 
     /** Whether a burrow can be on the block: grass with air above (or not loaded yet), and on [BurrowSpots] if it has a list. */

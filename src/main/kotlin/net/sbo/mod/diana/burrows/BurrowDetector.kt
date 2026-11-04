@@ -2,6 +2,7 @@ package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper
@@ -83,6 +84,7 @@ object BurrowDetector {
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
             ChainTracker.clear()
+            SpadeGuessOptimizer.reset()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
@@ -131,7 +133,8 @@ object BurrowDetector {
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
-            if (Burrows.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
+            // With a place to use the spade, the title shows once you are there
+            if (Burrows.showTitleWhenChainEnds && anyClose.isEmpty() && !SpadeGuessOptimizer.hasSpotAfterChain()) requestSpade("chain")
             true
         }
 
@@ -205,6 +208,8 @@ object BurrowDetector {
 
     private fun chainFinish() {
         purgeExpiredChains()
+        // A new chain starts somewhere, even where you've already looked
+        SpadeGuessOptimizer.reset("chain")
 
         if (chainExpirations.isNotEmpty()) {
             chainExpirations.removeFirst()
@@ -263,6 +268,8 @@ object BurrowDetector {
             // last burrow: do nothing
             // chainFinish() is already handled by chat
         }
+        // Until the chain is finished the spade points at its next burrow
+        if (event.currentBurrow != event.maxBurrow) SpadeGuessOptimizer.onChainDig()
 
         if (!Burrows.closeBurrowDetection) return
         lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
